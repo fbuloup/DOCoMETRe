@@ -1,4 +1,4 @@
-[![CeCILL-B License](http://img.shields.io/badge/license-Eclipse-brightgreen.svg)](https://github.com/fbuloup/DOCoMETRe/blob/master/LICENCE)
+[![CeCILL-B License](https://img.shields.io/badge/Licence-CeCILL--B-brightgreen)](https://github.com/fbuloup/DOCoMETRe/blob/master/LICENCE)
 
 # DOCoMETRe
 
