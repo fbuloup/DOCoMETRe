@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cheatsheet title="Quick Start Guide">
+	<intro>
+		<description>
+			<b>Welcome in this Quick Start Tutorial.</b><br/><br/>
+			You will learn how to create an experiment based on an ADWin Gold
+			hardware configuration. Then you will add a Subject to this
+			experiment. This Subject will contain one session with ten trials.
+		</description>
+	</intro>
+	<item title="Create an experiment">
+		<description>
+			Select menu item
+			<b>File &gt; New &gt; Experiment</b>
+			<br />
+			Enter &quot;
+			<b>NewExperiment</b>
+			&quot; as experiment name and an optional description of this
+			experiment. You could type &quot;
+			<b>Quick start tutorial experiment</b>
+			&quot; for instance.
+		</description>
+	</item>
+	<item title="Select created experiment">
+		<description>
+			In the Experiments View, select this new created experiment. If the
+			Experiments View is not visible, then select menu item
+			<b>Window > Show > Experiments View</b>
+			and select the new created experiment in this view.
+		</description>
+	</item>
+	<item title="Add an hardware configuration">
+		<description>
+			Select menu item
+			<b>File &gt; New &gt; DAQ Configuration</b>
+			<br />
+			Enter "
+			<b>ADWinGold</b>
+			" as DAQ configuration name, "
+			<b>ADWinGold hardware configuration</b>
+			" as optional description and select <b>ADWin</b> as configuration, then
+			click
+			<b>Finish</b>
+		</description>
+	</item>
+	<item title="Add a subject with a session of ten trials">
+		<description>
+			In the Experiments View, select the created experiment then
+			select menu item
+			<b>File &gt; New &gt; Subject</b>
+			<br />
+			Enter &quot;
+			<b>John_DOE</b>
+			&quot; as subject name and an optional description, then click
+			<b>Finish</b>
+			<br />
+			Select &quot;
+			<b>John_DOE</b>
+			&quot; Subject in the experiment view, then select menu item
+			<b>File &gt; New &gt; Session</b>
+			<br />
+			Enter &quot;
+			<b>Session1</b>
+			&quot; as session name, an optional description and ten as trials
+			number, then click
+			<b>Finish</b>
+			<br />
+		</description>
+	</item>
+
+</cheatsheet>

@@ -1,0 +1,6 @@
+instructions.configure=\
+org.eclipse.equinox.p2.touchpoint.natives.remove(path:${installFolder}/eclipsec.exe);\
+addRepository(type:0,location:http${#58}//www.ism.univmed.fr/buloup/documents/Docometre/repository,name:DOCoMETRe Update Site,enabled:true);\
+addRepository(type:1,location:http${#58}//www.ism.univmed.fr/buloup/documents/Docometre/repository,name:DOCoMETRe Update Site,enabled:true);
+properties.0.name = org.eclipse.equinox.p2.description
+properties.0.value = Bundles required by DOCoMETRe application.\nSee Feature on next page for more informations.

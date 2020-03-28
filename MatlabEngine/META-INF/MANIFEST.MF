@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: MatlabEngine
+Bundle-SymbolicName: MatlabEngine
+Bundle-Version: 1.0.0.qualifier
+Bundle-ClassPath: matlabcontrol-4.1.0.jar
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Automatic-Module-Name: MatlabEngine
+Export-Package: matlabcontrol,
+ matlabcontrol.extensions,
+ matlabcontrol.internal
+Bundle-Vendor: Joshua Kaplan

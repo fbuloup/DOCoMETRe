@@ -1,0 +1,27 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: JSSC
+Bundle-SymbolicName: JSSC;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Comment: Eclipse-BundleShape: dir
+Export-Package: jssc,
+ libs.linux,
+ libs.mac_os_x,
+ libs.solaris,
+ libs.windows
+Bundle-ClassPath: jssc-2.8.0.jar,
+ .
+Bundle-NativeCode: 
+ natives/mac_os_x/libjSSC-2.8_x86_64.jnilib; 
+ osname=macosx; processor=x86_64,
+ natives/windows/jSSC-2.8_x86.dll; 
+ osname=win32; processor=x86,
+ natives/windows/jSSC-2.8_x86_64.dll; 
+ osname=win32; processor=x86_64,
+ natives/linux/libjSSC-2.8_x86.so; 
+ osname=linux; processor=x86,
+ natives/linux/libjSSC-2.8_x86_64.so; 
+ osname=linux; processor=x86_64, *
+Automatic-Module-Name: JSSC
+Bundle-Vendor: Scream3r

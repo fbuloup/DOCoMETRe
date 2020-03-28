@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<introContent>
+  	<extensionContent id="Docometre-introExtension" style="css/sample.css"
+		name="Tutorials Extension" path="tutorials/@">
+		<group style-id="content-group" id="Docometre-introLink-group">
+			<link
+				url="http://org.eclipse.ui.intro/showStandby?partId=docometre.CheatSheetStandby&amp;input=Docometre.QuickStartCheatSheet"
+				label="Quick Start Tutorial" id="Docometre-quickstart" style-id="content-link">
+				<text>This tutorial will guide you into the creation of an experiment containing a data acquisition configuration and a Subject with a session of ten trials.
+				</text>
+			</link>
+		</group>
+		<group style-id="content-group" id="Docometre-Install-ADwin-group">
+			<link
+				url="http://org.eclipse.ui.intro/showStandby?partId=docometre.CheatSheetStandby&amp;input=Docometre.ADBasicInstallWindowsCheatSheet"
+				label="Install ADWin on Windows" id="Docometre-introLink-ADWin" style-id="content-link">
+				<text>This tutorial will help you to install ADWin software (ADBasic) in order to be able to use ADWin systems on Windows OS with DOCoMETRe.
+				</text>
+			</link>
+		</group>
+		<group style-id="content-group" id="Docometre-Install-ADwin-group">
+			<link
+				url="http://org.eclipse.ui.intro/showStandby?partId=docometre.CheatSheetStandby&amp;input=Docometre.ADBasicInstallMacOSCheatSheet"
+				label="Install ADWin on Mac OS X" id="Docometre-introLink-ADWin" style-id="content-link">
+				<text>This tutorial will help you to install ADWin software (ADBasic) in order to be able to use ADWin systems on Mac OS with DOCoMETRe.
+				</text>
+			</link>
+		</group>
+		<group style-id="content-group" id="Docometre-Install-ADwin-group">
+			<link
+				url="http://org.eclipse.ui.intro/showStandby?partId=docometre.CheatSheetStandby&amp;input=Docometre.ADBasicInstallLinuxCheatSheet"
+				label="Install ADWin on Linux" id="Docometre-introLink-ADWin" style-id="content-link">
+				<text>This tutorial will help you to install ADWin software (ADBasic) in order to be able to use ADWin systems on Linux OS with DOCoMETRe.
+				</text>
+			</link>
+		</group> 
+		<group style-id="content-group" id="Docometre-Install-ArduinoUno-group">
+			<link
+				url="http://org.eclipse.ui.intro/showStandby?partId=docometre.CheatSheetStandby&amp;input=Docometre.ArduinoInstallCheatSheet"
+				label="Install ArduinoUno" id="Docometre-introLink-ArduinoUno" style-id="content-link">
+				<text>This tutorial will help you to install ArduinoUno software in order to be able to use ArduinoUno systems with DOCoMETRe.
+				</text>
+			</link>
+		</group>
+	</extensionContent>
+</introContent>

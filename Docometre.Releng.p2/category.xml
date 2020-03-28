@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/Docometre.feature_1.0.0.qualifier.jar" id="Docometre.feature" version="1.0.0.qualifier">
+      <category name="docometre_category"/>
+   </feature>
+   <category-def name="docometre_category" label="Docometre Category"/>
+</site>

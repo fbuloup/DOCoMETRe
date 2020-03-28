@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Matlabdemo
+Bundle-SymbolicName: matlabdemo
+Bundle-Version: 1.0.0
+Bundle-ClassPath: .
+Export-Package: demo.gui,
+ matlabcontrol,
+ matlabcontrol.extensions,
+ matlabcontrol.internal
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Automatic-Module-Name: matlabdemo

@@ -1,0 +1,65 @@
+<project default="D_uploadZIPFiles" name="Deploy DOCoMETRe p2 repository Files To Server">
+
+	<!--
+	Add commons-net-3.3-bin.jar to Preferences->Ant->runtime->Ant Home Entries
+	-->
+	
+	<include file = "FtpLoginProperties.xml" as="FtpProperties"/>
+
+	<!-- clear server -->
+	<target name="B_resetFTPFilesFolders" description="Create an empty DOCoMETRe folder" depends="FtpProperties.FTP_INPUT">
+		<echo>Remove all files from FTP DOCoMETRe directory</echo>
+		<ftp action="del" server="${ftp.ip}" userid="${ftp.login}" password="${ftp.password}" remotedir="${ftp.base.remotedir}DOCoMETRe">
+			<fileset>
+				<include name="**" />
+			</fileset>
+		</ftp>
+		<echo>Remove DOCoMETRe from FTP directory</echo>
+		<ftp action="rmdir" server="${ftp.ip}" userid="${ftp.login}" password="${ftp.password}" remotedir="${ftp.base.remotedir}">
+			<fileset>
+				<include name="DOCoMETRe/**" />
+			</fileset>
+		</ftp>
+	</target>
+
+	<!-- Create folder structure -->
+	<target name="C_createFoldersStructure" description="Create folder structure" depends="FtpProperties.FTP_INPUT">
+		<echo>Create DOCoMETRe folders in FTP server</echo>
+		<ftp action="mkdir" server="${ftp.ip}" userid="${ftp.login}" password="${ftp.password}" remotedir="${ftp.base.remotedir}DOCoMETRe" />
+		<ftp action="mkdir" server="${ftp.ip}" userid="${ftp.login}" password="${ftp.password}" remotedir="${ftp.base.remotedir}DOCoMETRe/repository" />
+		<!-- <ftp action="mkdir" server="${ftp.ip}" userid="${ftp.login}" password="${ftp.password}" remotedir="${ftp.base.remotedir}Docometre/repository/binary" />
+				<ftp action="mkdir" server="${ftp.ip}" userid="${ftp.login}" password="${ftp.password}" remotedir="${ftp.base.remotedir}Docometre/repository/features" />
+				<ftp action="mkdir" server="${ftp.ip}" userid="${ftp.login}" password="${ftp.password}" remotedir="${ftp.base.remotedir}Docometre/repository//plugins" /> -->
+	</target>
+
+	<!-- Upload to server -->
+	<target name="D_uploadZIPFiles" description="Upload created files to server" depends="B_resetFTPFilesFolders,C_createFoldersStructure">
+
+		<!-- <echo>Uploading linux32</echo> >>>>>>>>>> No more 32 bits releases
+		<ftp server="${ftp.ip}" passive="yes" remotedir="${ftp.base.remotedir}DOCoMETRe" userid="${ftp.login}" password="${ftp.password}" depends="no">
+			<fileset file="target/products/DocometreProduct-linux.gtk.x86.zip" />
+		</ftp>
+		<echo>Uploading win32</echo>
+		<ftp server="${ftp.ip}" passive="yes" remotedir="${ftp.base.remotedir}DOCoMETRe" userid="${ftp.login}" password="${ftp.password}" depends="no">
+			<fileset file="target/products/DocometreProduct-win32.win32.x86.zip" />
+		</ftp> -->
+
+		<echo>Uploading linux64</echo>
+		<ftp server="${ftp.ip}" passive="yes" remotedir="${ftp.base.remotedir}DOCoMETRe" userid="${ftp.login}" password="${ftp.password}" depends="no">
+			<fileset file="target/products/DocometreProduct-linux.gtk.x86_64.zip" />
+		</ftp>
+		<echo>Uploading mac</echo>
+		<ftp server="${ftp.ip}" passive="yes" remotedir="${ftp.base.remotedir}DOCoMETRe" userid="${ftp.login}" password="${ftp.password}" depends="no">
+			<fileset file="target/products/DocometreProduct-macosx.cocoa.x86_64.zip" />
+		</ftp>
+		<echo>Uploading win64</echo>
+		<ftp server="${ftp.ip}" passive="yes" remotedir="${ftp.base.remotedir}DOCoMETRe" userid="${ftp.login}" password="${ftp.password}" depends="no">
+			<fileset file="target/products/DocometreProduct-win32.win32.x86_64.zip" />
+		</ftp>
+		<echo>Uploading repository</echo>
+		<ftp server="${ftp.ip}" passive="yes" remotedir="${ftp.base.remotedir}DOCoMETRe/repository" userid="${ftp.login}" password="${ftp.password}" depends="no">
+			<fileset dir="target/repository" />
+		</ftp>
+	</target>
+
+</project>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cheatsheet
+      title="Installation d&apos;ADBasic [Linux]">
+   <intro>
+      <description>
+         <b>Bienvenue dans le guide d&apos;installation d&apos;ADBasic pour Linux</b>
+			<br/><br/>
+			Afin d&apos;utiliser les systèmes vendu par la société JAGER Gmbh,
+			tels que les ADwin Pro ou Gold, il vous faut installer le logiciel
+			ADBasic. Ce logiciel permet de créer et compiler les programmes utilisables par
+			ces systèmes et apporte également un pilote pour dialoguer avec eux.
+			Ce logiciel est fournit par la même société et peut être téléchargé à
+			partir de leur site internet (http://www.adwin.de).
+			Mais son installation dépend du système sur lequel vous souhaitez
+			utiliser DOCoMETRe. Ce guide vous aidera à installer ADBasic sur
+			Linux Ubuntu, Debian ou Fedora.
+      </description>
+   </intro>
+   <item
+         skip="false"
+         title="Installation sous Ubuntu">
+      <description>
+		Cliquez sur le bouton ci-contre			
+      </description>
+       <command
+               required="false"
+               serialization="Docometre.cheatsheet.OpenURLHandler(Docometre.cheatsheet.OpenURLHandler.Value=https://wiki.winehq.org/Ubuntu)"/>
+   </item>
+   <item
+         skip="false"
+         title="Installation sous Debian">
+      <description>
+		Cliquez sur le bouton ci-contre			
+      </description>
+       <command
+               required="false"
+               serialization="Docometre.cheatsheet.OpenURLHandler(Docometre.cheatsheet.OpenURLHandler.Value=https://wiki.winehq.org/Debian)"/>
+   </item>
+    <item
+         skip="false"
+         title="Installation sous Fedora">
+      <description>
+		Cliquez sur le bouton ci-contre			
+      </description>
+       <command
+               required="false"
+               serialization="Docometre.cheatsheet.OpenURLHandler(Docometre.cheatsheet.OpenURLHandler.Value=https://wiki.winehq.org/Fedora)"/>
+   </item>
+    <item
+         title="Installation de ADBasic">
+      <description>
+         Vous pouvez maintenant installer ADBasic en suivant le tutoriel pour Windows.
+      </description>
+            <command
+               required="false"
+               serialization="Docometre.cheatsheet.OpenURLHandler(Docometre.cheatsheet.OpenURLHandler.Value=cheatsheet:Docometre.ADBasicInstallWindowsCheatSheet)"/>
+   </item>
+</cheatsheet>

@@ -1,0 +1,30 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+	<title>Main Topic</title>
+</head>
+
+<body>
+<h1>Toubleshoots with Arduino Uno System</h1>
+<h2>Linux</h2>
+<h3>I can't see Arduino Uno port on Linux. What can I do ?</h3>
+
+<p>
+On linux OS, an Arduino Uno is usually connected to <b>/dev/ttyACMn</b>. But if you do
+not have right access to <b>/dev/ttyACMn</b>, you won't be able to use it in DOCoMETRe. 
+In order to access this device, please run these commands in terminal :
+</p>
+<pre>
+   sudo usermod -a -G tty UserName
+   sudo usermod -a -G dialout UserName
+   sudo chmod a+rw /dev/ttyACMn
+</pre>
+<p>
+These commands simply add <b>UserName</b> to <b>tty</b> and <b>dialout</b> groups and make sure
+<b>UserName</b> has read and write acces to <b>/dev/ttyACMn</b>. Please follow this
+<a href="https://www.arduino.cc/en/Guide/Linux">link</a> if you need more informations.
+</p>
+</body>
+</html>

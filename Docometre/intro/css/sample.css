@@ -1,0 +1,8 @@
+a#Docometre-introLink-ADWin img { background-image : url(graphics/gold.png); }
+a#Docometre-introLink-ADWin:hover img { background-image : url(graphics/gold_hov.png); }
+
+a#Docometre-introLink-ArduinoUno img { background-image : url(graphics/arduino_uno.png); }
+a#Docometre-introLink-ArduinoUno:hover img { background-image : url(graphics/arduino_uno_hov.png); }
+
+a#Docometre-quickstart img { background-image : url(graphics/quickstart.gif); }
+a#Docometre-quickstart:hover img { background-image : url(graphics/quickstart_hov.gif); } 

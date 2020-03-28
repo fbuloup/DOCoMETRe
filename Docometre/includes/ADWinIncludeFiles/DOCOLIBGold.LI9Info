@@ -1,0 +1,107 @@
+
+Lib_Function ceil(BYVAL value AS FLOAT) As FLOAT
+
+
+
+
+
+
+
+
+Lib_Function floor(BYVAL value AS FLOAT) As FLOAT
+
+
+
+
+
+
+Lib_Function trunc(BYVAL value AS FLOAT) As INTEGER
+
+
+
+
+Lib_Function frac(BYVAL value AS FLOAT) As FLOAT
+
+
+
+
+Lib_Function power(BYVAL xValue AS FLOAT, BYVAL yValue AS FLOAT) As FLOAT
+
+
+
+
+Lib_Function sign(BYVAL xValue AS FLOAT) As FLOAT
+
+
+
+
+
+
+
+
+
+
+
+
+Lib_Function indiceOfMaxValueInArray(BYREF values[] AS FLOAT, BYVAL nbElements AS INTEGER) As INTEGER
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Lib_Sub swap(BYREF values[] AS FLOAT, BYVAL i1 AS INTEGER, BYVAL i2 AS INTEGER)
+
+
+
+
+
+
+
+Lib_Sub sortArray(BYREF values[] AS FLOAT, BYVAL nbElements AS INTEGER)
+
+
+
+
+
+
+
+
+
+
+
+Lib_Function median(BYREF values[] AS FLOAT, BYVAL nbElements AS INTEGER) As FLOAT
+
+
+
+
+
+
+
+
+
+
+
+
+
+Lib_Function binaryMedian(BYREF values[] AS INTEGER, BYVAL nbElements AS INTEGER) As INTEGER
+
+
+
+
+
+
+
+
+
+Lib_Function binaryMedian(BYREF values[] AS INTEGER, BYVAL nbElements AS INTEGER) As INTEGER
