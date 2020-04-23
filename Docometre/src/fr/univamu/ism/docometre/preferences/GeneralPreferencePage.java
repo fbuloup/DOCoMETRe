@@ -41,20 +41,14 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.preferences;
 
-import java.io.File;
-
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.preference.BooleanFieldEditor;
-import org.eclipse.jface.preference.DirectoryFieldEditor;
+import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.jface.preference.IntegerFieldEditor;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
@@ -64,48 +58,6 @@ import fr.univamu.ism.docometre.DocometreMessages;
 
 public class GeneralPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 	
-	private class FolderPathFieldEditor extends FileFieldEditor {
-		
-		public FolderPathFieldEditor(String name, String labelText, Composite parent) {
-			super(name, labelText, parent);
-		}
-		
-		private File getFile(File startingDirectory) {
-	        FileDialog dialog = new FileDialog(getShell(), SWT.OPEN | SWT.SHEET);
-	        if (startingDirectory != null) {
-				dialog.setFilterPath(startingDirectory.getPath());
-			}
-	        String file = dialog.open();
-	        if (file != null) {
-	            file = file.trim();
-	            if (file.length() > 0) {
-					return new File(file);
-				}
-	        }
-	        return null;
-	    }
-		
-		@Override
-		protected String changePressed() {
-			File f = new File(getTextControl().getText());
-	        if (!f.exists()) {
-				f = null;
-			}
-	        File d = getFile(f);
-	        if (d == null) {
-				return null;
-			}
-	        return d.getAbsolutePath();
-		}
-		
-		@Override
-		protected boolean checkState() {
-			if(!Platform.getOS().equals(Platform.OS_WIN32)) return super.checkState();
-			else return true;
-		}
-		
-	}
-
 	public GeneralPreferencePage() {
 		super(GRID);
 	}
@@ -158,23 +110,12 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
 				DocometreMessages.AutoValidateTrial, getFieldEditorParent());
 		addField(autoTrialValidation);
 		
-		BooleanFieldEditor autoTrialStarting = new BooleanFieldEditor(GeneralPreferenceConstants.AUTO_START_TRIALS,
+		BooleanFieldEditor autoTrialStartingFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.AUTO_START_TRIALS,
 				DocometreMessages.AutoStartTrial, getFieldEditorParent());
-		addField(autoTrialStarting);
+		addField(autoTrialStartingFieldEditor);
 		
-		// Matlab preferences
-		BooleanFieldEditor showMatlabWindow = new BooleanFieldEditor(GeneralPreferenceConstants.SHOW_MATLAB_WINDOW, DocometreMessages.MathEngineShowMatlabWindow, getFieldEditorParent());
-		addField(showMatlabWindow);
-		
-		IntegerFieldEditor matlabTimeOut = new IntegerFieldEditor(GeneralPreferenceConstants.MATLAB_TIME_OUT, DocometreMessages.MathEngineTimeOut, getFieldEditorParent());
-		addField(matlabTimeOut);
-		
-		FileFieldEditor matlabLocation = new FolderPathFieldEditor(GeneralPreferenceConstants.MATLAB_LOCATION, DocometreMessages.MathEngineLocation, getFieldEditorParent());
-		addField(matlabLocation);
-		
-		DirectoryFieldEditor matlabScriptsLocation = new DirectoryFieldEditor(GeneralPreferenceConstants.MATLAB_SCRIPT_LOCATION, DocometreMessages.MathEngineScriptLocation, getFieldEditorParent());
-		addField(matlabScriptsLocation);
-		
+		ComboFieldEditor mathEngineFieldEditor = new ComboFieldEditor(GeneralPreferenceConstants.MATH_ENGINE, DocometreMessages.MathEngineLabel, GeneralPreferenceConstants.MATH_ENGINE_VALUES, getFieldEditorParent());
+		addField(mathEngineFieldEditor);
 		
 	}
 

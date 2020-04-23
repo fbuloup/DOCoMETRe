@@ -235,6 +235,17 @@
             id="Docometre.DefaultArduinoUnoSystem"
             name="%PrefPage_DefaultArduinoUnoSystem">
       </page>
+      <page
+            class="fr.univamu.ism.docometre.preferences.MathEnginePrefrencePage"
+            id="Docometre.MathEnginePreferencePage"
+            name="%PrefPage_MathEngine">
+      </page>
+      <page
+            category="Docometre.MathEnginePreferencePage"
+            class="fr.univamu.ism.docometre.preferences.MatlabPreferencePage"
+            id="Docometre.MatlabEnginePreferencePage"
+            name="%PrefPage_Matlab">
+      </page>
    </extension>
    <extension
          point="org.eclipse.core.runtime.preferences">

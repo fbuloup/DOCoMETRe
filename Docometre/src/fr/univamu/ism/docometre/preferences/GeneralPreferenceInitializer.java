@@ -68,6 +68,8 @@ public class GeneralPreferenceInitializer extends AbstractPreferenceInitializer 
 		defaults.putBoolean(GeneralPreferenceConstants.AUTO_VALIDATE_TRIALS, false);
 		defaults.putBoolean(GeneralPreferenceConstants.AUTO_START_TRIALS, false);
 		
+		defaults.put(GeneralPreferenceConstants.MATH_ENGINE, GeneralPreferenceConstants.MATH_ENGINE_MATLAB);
+		
 		defaults.putBoolean(GeneralPreferenceConstants.SHOW_MATLAB_WINDOW, false);
 		defaults.put(GeneralPreferenceConstants.MATLAB_LOCATION, "");
 		defaults.put(GeneralPreferenceConstants.MATLAB_SCRIPT_LOCATION, "");

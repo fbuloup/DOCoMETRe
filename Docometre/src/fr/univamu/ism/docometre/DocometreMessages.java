@@ -81,7 +81,7 @@ public final class DocometreMessages extends NLS {
 	public static String GeneralPreferences_WineFileLocation;
 	
 	
-	public static String SystemsPreferencePage_Label;
+	public static String RootPreferencePage_Label;
 	public static String DefaultADWinSystemPreference_Description;
 	public static String DefaultArduinoUnoSystemPreference_Description;
 //	public static String ADWinDefaultSystemPreferencePage_Label;
@@ -648,10 +648,14 @@ public final class DocometreMessages extends NLS {
 	public static String WaitingForMatlab;
 	
 	// Math Engine Preferences
-	public static String MathEngineShowMatlabWindow;
-	public static String MathEngineTimeOut;
-	public static String MathEngineScriptLocation;
-	public static String MathEngineLocation;
+	public static String MathEngineLabel;
+	
+	// Matlab preferences 
+	public static String MatlabPreferences_Description;
+	public static String MatlabEngineShowMatlabWindow;
+	public static String MatlabEngineTimeOut;
+	public static String MatlabEngineScriptLocation;
+	public static String MatlabEngineLocation;
 	
 	// Export to zip or tar
 	public static String DataTransfer_errorExporting;

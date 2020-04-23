@@ -75,7 +75,7 @@ public class SystemsPreferencePage extends PreferencePage implements IWorkbenchP
 		Composite container = new Composite(parent, SWT.NORMAL);
 		container.setLayout(new FillLayout());
 		Label label = new Label(container, SWT.NORMAL);
-		label.setText(DocometreMessages.SystemsPreferencePage_Label);
+		label.setText(DocometreMessages.RootPreferencePage_Label);
 		
 		return container;
 	}
