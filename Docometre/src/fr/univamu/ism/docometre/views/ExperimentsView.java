@@ -69,6 +69,8 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProviderChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.dnd.DND;
@@ -91,6 +93,7 @@ import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.operations.UndoRedoActionGroup;
 import org.eclipse.ui.part.ViewPart;
 
+import fr.univamu.ism.docometre.AcquirePerspective;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ApplicationActionBarAdvisor;
 import fr.univamu.ism.docometre.DesignPerspective;
@@ -222,6 +225,17 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 				Object element = ((IStructuredSelection) experimentsTreeViewer.getSelection()).getFirstElement();
 				experimentsTreeViewer.setExpandedState(element, !experimentsTreeViewer.getExpandedState(element));
 				ApplicationActionBarAdvisor.openEditorAction.run();
+			}
+		});
+		experimentsTreeViewer.addFilter(new ViewerFilter() {
+			
+			@Override
+			public boolean select(Viewer viewer, Object parentElement, Object element) {
+				String currentPerspectiveID = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getPerspective().getId();
+				boolean isDesignPerspective = currentPerspectiveID.equals(DesignPerspective.ID);
+				boolean isAcquirePerspective = currentPerspectiveID.equals(AcquirePerspective.ID);
+				if(isDesignPerspective || isAcquirePerspective) return true;
+				return false;
 			}
 		});
 		
@@ -431,14 +445,12 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 
 	@Override
 	public void perspectiveActivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
-		if(perspective.getId().equals(DesignPerspective.ID)) {
-			experimentsTreeViewer.refresh();
-		}
+		experimentsTreeViewer.refresh();
 	}
 
 	@Override
 	public void perspectiveChanged(IWorkbenchPage page, IPerspectiveDescriptor perspective, String changeId) {
-		// TODO Auto-generated method stub
+		experimentsTreeViewer.refresh();
 		
 	}
 

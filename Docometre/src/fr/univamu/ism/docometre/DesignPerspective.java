@@ -54,10 +54,10 @@ public class DesignPerspective implements IPerspectiveFactory {
 	public static String ID = "Docometre.designperspective";
 
 	public void createInitialLayout(IPageLayout layout) {
-		layout.addView(ExperimentsView.ID, IPageLayout.LEFT, .5f, layout.getEditorArea());
+		layout.addView(ExperimentsView.ID, IPageLayout.LEFT, .25f, layout.getEditorArea());
 //		layout.getViewLayout(ExperimentsView.ID).setCloseable(false);
 		
 		layout.addView(DescriptionView.ID, IPageLayout.BOTTOM, .75f, ExperimentsView.ID);
-		layout.addView(MessagesView.ID, IPageLayout.BOTTOM, .5f, layout.getEditorArea());
+		layout.addView(MessagesView.ID, IPageLayout.BOTTOM, .75f, layout.getEditorArea());
 	}
 }

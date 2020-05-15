@@ -444,6 +444,7 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 
 	@Override
 	public void mouseMove(MouseEvent event) {
+		if(currentSeries == null) return;
 		int previousCurrentX = currentX;
 		currentX = event.x;
 		double x = chart.getAxisSet().getXAxes()[0].getDataCoordinate(event.x);

@@ -99,6 +99,12 @@
             id="Docometre.acquireperspective"
             name="%Acquire_Title">
       </perspective>
+      <perspective
+            class="fr.univamu.ism.docometre.AnalysePerspective"
+            icon="icons/data_analyse.gif"
+            id="Docometre.analyseperspective"
+            name="Analyse">
+      </perspective>
    </extension>
    <extension
          point="org.eclipse.ui.views">
@@ -993,8 +999,8 @@
                   style="push">
             </command>
             <command
-                  commandId="StartStopMatlabCommand"
-                  label="Start/Stop Matlab"
+                  commandId="StartStopMathEngineCommand"
+                  label="Start/Stop Math Engine"
                   style="push">
             </command>
          </menu>
@@ -1794,6 +1800,21 @@
                </visibleWhen>
             </command>
          </toolbar>
+         <toolbar
+               id="Docometre.AnalyseCoolBarToolbar">
+            <command
+                  commandId="StartStopMathEngineCommand"
+                  icon="icons/run.gif"
+                  style="push"
+                  tooltip="Start/Stop Math Engine">
+               <visibleWhen
+                     checkEnabled="false">
+                  <reference
+                        definitionId="Docometre.AnalysePerspectiveSelected">
+                  </reference>
+               </visibleWhen>
+            </command>
+         </toolbar>
       </menuContribution>
    </extension>
    <extension
@@ -1836,6 +1857,15 @@
                variable="activeWorkbenchWindow.activePerspective">
             <equals
                   value="Docometre.acquireperspective">
+            </equals>
+         </with>
+      </definition>
+      <definition
+            id="Docometre.AnalysePerspectiveSelected">
+         <with
+               variable="activeWorkbenchWindow.activePerspective">
+            <equals
+                  value="Docometre.analyseperspective">
             </equals>
          </with>
       </definition>
@@ -1971,9 +2001,9 @@
             name="CleanCommand">
       </command>
       <command
-            defaultHandler="fr.univamu.ism.docometre.handlers.StartStopMatlabHandler"
-            id="StartStopMatlabCommand"
-            name="StartStopMatlabCommand">
+            defaultHandler="fr.univamu.ism.docometre.handlers.StartStopMathEngineHandler"
+            id="StartStopMathEngineCommand"
+            name="StartStopMathEngineCommand">
       </command>
       <command
             id="ShowProgressViewAction"
