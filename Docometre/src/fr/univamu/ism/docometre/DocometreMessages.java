@@ -429,6 +429,10 @@ public final class DocometreMessages extends NLS {
 	public static String RunAction_Tooltip;
 	public static String StopAction_Tooltip;
 	
+	/* Analyse perspective toolbar */
+	public static String StartMathEngine_Tooltip;
+	public static String StopMathEngine_Tooltip;
+	
 	/* Acquire perspective status bar */
 	public static String Experiment_Label;
 	public static String Subject_Label;

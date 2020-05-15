@@ -74,10 +74,10 @@ public class StartStopMathEngineHandler extends AbstractHandler implements IElem
 		MathEngine mathEngine = MathEngineFactory.getMathEngine();
 		if (mathEngine.isStarted()) {
 			element.setIcon(Activator.getImageDescriptor(IImageKeys.STOP_ICON));
-			element.setTooltip(DocometreMessages.StopAction_Tooltip);
+			element.setTooltip(DocometreMessages.StopMathEngine_Tooltip);
 		} else {
 			element.setIcon(Activator.getImageDescriptor(IImageKeys.RUN_ICON));
-			element.setTooltip(DocometreMessages.RunAction_Tooltip);
+			element.setTooltip(DocometreMessages.StartMathEngine_Tooltip);
 		}
 	}
 

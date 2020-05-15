@@ -1805,8 +1805,9 @@
             <command
                   commandId="StartStopMathEngineCommand"
                   icon="icons/run.gif"
+                  label="%StartStopMathEngineAction.label"
                   style="push"
-                  tooltip="Start/Stop Math Engine">
+                  tooltip="%StartStopMathEngineAction.tooltip">
                <visibleWhen
                      checkEnabled="false">
                   <reference
