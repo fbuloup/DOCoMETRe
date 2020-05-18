@@ -144,6 +144,14 @@
             name="Progress"
             restorable="true">
       </view>
+      <view
+            allowMultiple="false"
+            class="fr.univamu.ism.docometre.views.SubjectsView"
+            icon="icons/subject.png"
+            id="Docometre.SubjectsView"
+            name="%SubjectsView_Title"
+            restorable="true">
+      </view>
    </extension>
    <extension
          point="org.eclipse.ui.perspectiveExtensions">
@@ -972,6 +980,12 @@
                      commandId="ShowProgressViewAction"
                      icon="platform:/plugin/org.eclipse.ui/icons/full/progress/pview.png"
                      label="%ShowProgressViewAction.label"
+                     style="push">
+               </command>
+               <command
+                     commandId="ShowSubjectsViewCommand"
+                     icon="icons/subject.png"
+                     label="%ShowSubjectsViewCommand.label"
                      style="push">
                </command>
             </menu>
@@ -1803,6 +1817,23 @@
          <toolbar
                id="Docometre.AnalyseCoolBarToolbar">
             <command
+                  commandId="SelectExperimentCommand"
+                  icon="icons/select.gif"
+                  label="%SelectExperimentCommand.label"
+                  style="push"
+                  tooltip="%SelectExperimentCommand.label">
+               <visibleWhen
+                     checkEnabled="false">
+                  <reference
+                        definitionId="Docometre.AnalysePerspectiveSelected">
+                  </reference>
+               </visibleWhen>
+            </command>
+            <separator
+                  name="Docometre.separator1"
+                  visible="true">
+            </separator>
+            <command
                   commandId="StartStopMathEngineCommand"
                   icon="icons/run.gif"
                   label="%StartStopMathEngineAction.label"
@@ -2034,6 +2065,16 @@
             defaultHandler="fr.univamu.ism.docometre.handlers.ExportExperimentHandler"
             id="ExportExperimentCommand"
             name="ExportExperimentCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.handlers.ShowSubjectsViewHandler"
+            id="ShowSubjectsViewCommand"
+            name="ShowSubjectsViewCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.handlers.SelectExperimentHandler"
+            id="SelectExperimentCommand"
+            name="SelectExperimentCommand">
       </command>
    </extension>
    <extension
