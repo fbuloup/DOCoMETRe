@@ -77,6 +77,7 @@ import fr.univamu.ism.docometre.actions.ShowExperimentsViewAction;
 import fr.univamu.ism.docometre.actions.ShowMessagesViewAction;
 import fr.univamu.ism.docometre.actions.ShowProgressViewAction;
 import fr.univamu.ism.docometre.actions.TestOpenGLAction;
+import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
 import fr.univamu.ism.docometre.editors.ChartContributionItem;
 
 public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
@@ -126,6 +127,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	public static ChartContributionItem cursorContributionItem;
 	public static ChartContributionItem markerContributionItem;
 	public static ChartContributionItem deltaContributionItem;
+	public static SelectedExprimentContributionItem selectedExprimentContributionItem;
 	
 	public ApplicationActionBarAdvisor(IActionBarConfigurer configurer) {
         super(configurer);
@@ -237,6 +239,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		
 		workloadTimeContributionItem = new WorkloadTimeContributionItem("WorkloadTimeContributionItem");
 		statusLine.appendToGroup(StatusLineManager.MIDDLE_GROUP, workloadTimeContributionItem);
+		
+		selectedExprimentContributionItem = new SelectedExprimentContributionItem("selectedExprimentContributionItem");
+		statusLine.appendToGroup(StatusLineManager.BEGIN_GROUP, selectedExprimentContributionItem);
 		
 		super.fillStatusLine(statusLine);
 	}

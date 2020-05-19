@@ -4,6 +4,8 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;
 
+import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
+
 public class SubjectsView extends ViewPart {
 	
 	public static String ID = "Docometre.SubjectsView";
@@ -16,7 +18,13 @@ public class SubjectsView extends ViewPart {
 	@Override
 	public void createPartControl(Composite parent) {
 		subjectsTreeViewer = new TreeViewer(parent);
-
+		subjectsTreeViewer.setContentProvider(new SubjectsContentProvider());
+		subjectsTreeViewer.setLabelProvider(new ExperimentsLabelProvider());
+		updateInput();
+	}
+	
+	public void updateInput() {
+		subjectsTreeViewer.setInput(SelectedExprimentContributionItem.selectedExperiment);
 	}
 
 	@Override
