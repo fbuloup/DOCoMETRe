@@ -1,4 +1,4 @@
-package fr.univamu.ism.docometre.handlers;
+package fr.univamu.ism.docometre.analyse.handlers;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -14,7 +14,7 @@ import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import fr.univamu.ism.docometre.ApplicationActionBarAdvisor;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
-import fr.univamu.ism.docometre.views.SubjectsView;
+import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 
 public final class SelectExperimentHandler extends AbstractHandler {
 	

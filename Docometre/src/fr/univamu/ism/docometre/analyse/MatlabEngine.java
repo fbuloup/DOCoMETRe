@@ -3,6 +3,7 @@ package fr.univamu.ism.docometre.analyse;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -115,6 +116,53 @@ public final class MatlabEngine implements MathEngine {
 		for (MathEngineListener mathEngineListener : mathEngineListeners) {
 			mathEngineListener.notifyListener();
 		}
+	}
+	
+	private String getMatlabFullPath(IResource resource) {
+		String resourceFullPath = resource.getFullPath().toString();
+		resourceFullPath = resourceFullPath.replaceAll("^/", "");
+		resourceFullPath = resourceFullPath.replaceAll("/", ".");
+		return resourceFullPath;
+	}
+
+	@Override
+	public boolean isSubjectLoaded(IResource subject) {
+		if(!isStarted()) return false;
+		Object o = null;
+		try {
+			String subjectFullPath = getMatlabFullPath(subject);
+			o = matlabController.getVariable(subjectFullPath);
+			if(o != null) System.out.println(o.getClass().getCanonicalName());
+			System.out.println(o);
+			return o !=  null;
+		} catch (Exception e) {
+			if(o != null) {
+				e.printStackTrace();
+				Activator.getLogErrorMessageWithCause(e);
+			} else {
+				Activator.logErrorMessage(getLastErrorMessage());
+			}
+		}
+		return false;
+	}
+
+	private String getLastErrorMessage() {
+		Object o = null;
+		try {
+			matlabController.eval("ERROR = lasterr;");
+			o = matlabController.getVariable("ERROR");
+			matlabController.eval("clear ERROR;");
+			if(o != null && o instanceof String) {
+				String message = (String)o;
+				return message;
+			}
+		} catch (Exception e) {
+			if(o != null) {
+				Activator.getLogErrorMessageWithCause(e);
+				e.printStackTrace();
+			}
+		}
+		return "";
 	}
 
 }

@@ -10,7 +10,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.Activator;
-import fr.univamu.ism.docometre.views.SubjectsView;
+import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 
 public class ShowSubjectsViewHandler extends AbstractHandler {
 

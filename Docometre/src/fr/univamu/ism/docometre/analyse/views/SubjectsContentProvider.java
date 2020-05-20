@@ -1,4 +1,4 @@
-package fr.univamu.ism.docometre.views;
+package fr.univamu.ism.docometre.analyse.views;
 
 import java.util.ArrayList;
 import java.util.List;

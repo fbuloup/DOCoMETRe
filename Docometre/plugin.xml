@@ -146,7 +146,7 @@
       </view>
       <view
             allowMultiple="false"
-            class="fr.univamu.ism.docometre.views.SubjectsView"
+            class="fr.univamu.ism.docometre.analyse.views.SubjectsView"
             icon="icons/subject.png"
             id="Docometre.SubjectsView"
             name="%SubjectsView_Title"
@@ -1846,6 +1846,22 @@
                   </reference>
                </visibleWhen>
             </command>
+            <separator
+                  name="Docometre.separator1"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="LoadUnloadSubjectsCommand"
+                  icon="icons/LoadUnloadSubjects.gif"
+                  label="%LoadUnloadSubjectsCommand.label"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                  <reference
+                        definitionId="Docometre.AnalysePerspectiveSelected">
+                  </reference>
+               </visibleWhen>
+            </command>
          </toolbar>
       </menuContribution>
    </extension>
@@ -2072,9 +2088,14 @@
             name="ShowSubjectsViewCommand">
       </command>
       <command
-            defaultHandler="fr.univamu.ism.docometre.handlers.SelectExperimentHandler"
+            defaultHandler="fr.univamu.ism.docometre.analyse.handlers.SelectExperimentHandler"
             id="SelectExperimentCommand"
             name="SelectExperimentCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.analyse.handlers.LoadUnloadSubjectsHandler"
+            id="LoadUnloadSubjectsCommand"
+            name="LoadUnloadSubjectsCommand">
       </command>
    </extension>
    <extension

@@ -3,8 +3,8 @@ package fr.univamu.ism.docometre;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
 
+import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.views.MessagesView;
-import fr.univamu.ism.docometre.views.SubjectsView;
 
 public class AnalysePerspective implements IPerspectiveFactory {
 	

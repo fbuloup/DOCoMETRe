@@ -1,10 +1,11 @@
-package fr.univamu.ism.docometre.views;
+package fr.univamu.ism.docometre.analyse.views;
 
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;
 
 import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
+import fr.univamu.ism.docometre.views.ExperimentsLabelProvider;
 
 public class SubjectsView extends ViewPart {
 	
@@ -20,6 +21,9 @@ public class SubjectsView extends ViewPart {
 		subjectsTreeViewer = new TreeViewer(parent);
 		subjectsTreeViewer.setContentProvider(new SubjectsContentProvider());
 		subjectsTreeViewer.setLabelProvider(new ExperimentsLabelProvider());
+		
+		getSite().setSelectionProvider(subjectsTreeViewer);
+		
 		updateInput();
 	}
 	
