@@ -2095,7 +2095,7 @@
       <command
             defaultHandler="fr.univamu.ism.docometre.analyse.handlers.LoadUnloadSubjectsHandler"
             id="LoadUnloadSubjectsCommand"
-            name="LoadUnloadSubjectsCommand">
+            name="%LoadUnloadSubjectsCommand.title">
       </command>
    </extension>
    <extension

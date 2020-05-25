@@ -63,6 +63,7 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 import fr.univamu.ism.docometre.wizards.NewResourceWizard;
 
@@ -95,6 +96,7 @@ public class NewSubjectAction extends Action implements IWorkbenchAction, ISelec
 				ResourceProperties.setDescriptionPersistentProperty(subject, newResourceWizard.getResourceDescription());
 				ResourceProperties.setTypePersistentProperty(subject, ResourceType.SUBJECT.toString());
 				ExperimentsView.refresh(subject.getParent(), new IResource[]{subject});
+				SubjectsView.refresh();
 			} catch (CoreException e) {
 				e.printStackTrace();
 				Activator.logErrorMessageWithCause(e);

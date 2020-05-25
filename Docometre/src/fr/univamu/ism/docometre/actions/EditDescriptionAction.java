@@ -90,7 +90,7 @@ public class EditDescriptionAction extends Action implements ISelectionListener,
 				if(descriptionView == null) descriptionView = (DescriptionView) page.showView(DescriptionView.ID);
 				if(!isChecked()) {
 					try {
-						if(selectedResource != null) {
+						if(selectedResource != null  && selectedResource.exists()) {
 							String currentDescription = ResourceProperties.getDescriptionPersistentProperty(selectedResource);
 							if(!descriptionView.getDescription().equals(currentDescription))
 							operationHistory.execute(new EditDescriptionOperation(DocometreMessages.EditActionTitle, selectedResource, descriptionView.getDescription()), null, null);

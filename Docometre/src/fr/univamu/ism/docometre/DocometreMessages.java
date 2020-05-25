@@ -716,6 +716,7 @@ public final class DocometreMessages extends NLS {
 	
 	public static String SelectExperimentDialogMessage;
 	public static String SelectExperimentDialogTitle;
+	public static String SelectExperimentToProcessDataFilesMessage;
 	
 //	public static String OrganizeSessionWizardPage_button_1_text;
 //	public static String OrganizeSessionWizardPage_tbtmNewItem_text;
