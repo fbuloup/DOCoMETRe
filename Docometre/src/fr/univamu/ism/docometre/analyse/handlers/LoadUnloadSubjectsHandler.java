@@ -7,13 +7,17 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 
+import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.analyse.Analyse;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 
 public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelectionListener {
@@ -29,9 +33,17 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 		for (IResource subject : selectedSubjects) {
 			boolean loaded = MathEngineFactory.getMathEngine().isSubjectLoaded(subject);
 			if(loaded) {
-				// Unload subject
+				MathEngineFactory.getMathEngine().unload(subject);
 			} else {
-				// Load subject
+				try {
+					// Get data files 
+					String dataFilesList = Analyse.getDataFiles(subject);
+					subject.setSessionProperty(ResourceProperties.DATA_FILES_LIST_QN, dataFilesList);
+					MathEngineFactory.getMathEngine().load(subject);
+				} catch (CoreException e) {
+					Activator.logErrorMessageWithCause(e);
+					e.printStackTrace();
+				}
 			}
 		}
 		return null;

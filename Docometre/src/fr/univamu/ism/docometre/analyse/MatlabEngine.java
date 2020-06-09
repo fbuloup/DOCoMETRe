@@ -11,6 +11,7 @@ import org.eclipse.core.runtime.jobs.Job;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.matlab.MatlabController;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
@@ -119,64 +120,114 @@ public final class MatlabEngine implements MathEngine {
 		}
 	}
 	
-	private String getMatlabFullPath(IResource resource) {
-		String resourceFullPath = resource.getFullPath().toString();
-		resourceFullPath = resourceFullPath.replaceAll("^/", "");
-		resourceFullPath = resourceFullPath.replaceAll("/", ".");
-		return resourceFullPath;
-	}
+//	private String getMatlabFullPath(IResource resource) {
+//		String resourceFullPath = resource.getFullPath().toString();
+//		resourceFullPath = resourceFullPath.replaceAll("^/", "");
+//		resourceFullPath = resourceFullPath.replaceAll("/", ".");
+//		return resourceFullPath;
+//	}
 
 	@Override
 	public boolean isSubjectLoaded(IResource subject) {
-		if(!isStarted()) return false;
-		Object o = null;
+		if(!isStarted() || !ResourceType.isSubject(subject)) return false;
+		String experimentName = subject.getFullPath().segment(0);
+		String subjectName = subject.getFullPath().segment(1);
+		return exist(experimentName) && isStruct(experimentName) && isField(experimentName, subjectName); 
+	}
+	
+	@Override
+	public boolean isField(String variableName, String fieldName) {
 		try {
-			String subjectFullPath = getMatlabFullPath(subject);
-			o = matlabController.getVariable(subjectFullPath);
-			if(o != null) System.out.println(o.getClass().getCanonicalName());
-			System.out.println(o);
-			return o !=  null;
-		} catch (Exception e) {
-			if(o != null) {
-				e.printStackTrace();
-				Activator.getLogErrorMessageWithCause(e);
-			} else {
-				Activator.logErrorMessage(getLastErrorMessage());
+			Object[] responses = matlabController.returningEval("isfield(" + variableName + ",'" + fieldName + "')", 1);
+			Object response = responses[0];
+			if(response instanceof boolean[]) {
+				boolean[] values = (boolean[])response;
+				return values[0];
 			}
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean isStruct(String variableName) {
+		try {
+			Object[] responses = matlabController.returningEval("isstruct(" + variableName + ")", 1);
+			Object response = responses[0];
+			if(response instanceof boolean[]) {
+				boolean[] values = (boolean[])response;
+				return values[0];
+			}
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return false;
+		
+	}
+
+	@Override
+	public boolean exist(String variableName) {
+		try {
+			Object[] responses = matlabController.returningEval("exist('" + variableName + "','var')", 1);
+			Object response = responses[0];
+			if(response instanceof double[]) {
+				double[] values = (double[])response;
+				return values[0] > 0;
+			}
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
 		}
 		return false;
 	}
 
-	private String getLastErrorMessage() {
-		Object o = null;
-		try {
-			matlabController.eval("ERROR = lasterr;");
-			o = matlabController.getVariable("ERROR");
-			matlabController.eval("clear ERROR;");
-			if(o != null && o instanceof String) {
-				String message = (String)o;
-				return message;
-			}
-		} catch (Exception e) {
-			if(o != null) {
-				Activator.getLogErrorMessageWithCause(e);
-				e.printStackTrace();
-			}
-		}
-		return "";
-	}
+//	private String getLastErrorMessage() {
+//		Object o = null;
+//		try {
+//			matlabController.eval("ERROR = lasterr;");
+//			o = matlabController.getVariable("ERROR");
+//			matlabController.eval("clear ERROR;");
+//			if(o != null && o instanceof String) {
+//				String message = (String)o;
+//				return message;
+//			}
+//		} catch (Exception e) {
+//			if(o != null) {
+//				Activator.logErrorMessageWithCause(e);
+//				e.printStackTrace();
+//			}
+//		}
+//		return "";
+//	}
 
 	@Override
 	public void load(IResource subject) {
 		try {
 			if(!ResourceType.isSubject(subject)) return;
-			return;
-//			String experimentName = subject.getFullPath().segment(0);
-//			String subjectName = subject.getFullPath().segment(1);
-//			String cmd = experimentName + "." + subjectName + ", message = loadData('DOCOMETRE', '')";
-//			matlabController.eval(cmd);
+			String experimentName = subject.getFullPath().segment(0);
+			String subjectName = subject.getFullPath().segment(1);
+			String dataFilesList = (String)subject.getSessionProperty(ResourceProperties.DATA_FILES_LIST_QN);
+			String cmd = "[" + experimentName + "." + subjectName + ", message] = loadData('DOCOMETRE', '" + dataFilesList + "')";
+			matlabController.eval(cmd);
 		} catch (Exception e) {
-			Activator.getLogErrorMessageWithCause(e);
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void unload(IResource subject) {
+		try {
+			if(!ResourceType.isSubject(subject)) return;
+			String experimentName = subject.getFullPath().segment(0);
+			String subjectName = subject.getFullPath().segment(1);
+			String cmd = experimentName + " = rmfield(" + experimentName + ", '" + subjectName + "');";
+			matlabController.eval(cmd);
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
 		}
 	}

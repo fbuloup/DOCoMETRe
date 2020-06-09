@@ -54,9 +54,10 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.dacqsystems.DocometreBuilder;
 
-public class ExperimentsViewLabelDecorator implements ILightweightLabelDecorator {
+public class ExperimentsLabelDecorator implements ILightweightLabelDecorator {
 	
 	public static String ID = "Docometre.ExperimentsViewDecorator";
 
@@ -96,6 +97,11 @@ public class ExperimentsViewLabelDecorator implements ILightweightLabelDecorator
 					if(fullPath != null) isActive = resource.getFullPath().equals(new Path(fullPath));
 					if(isActive)
 					decoration.addOverlay(Activator.getImageDescriptor(IImageKeys.DAQ_CONFIGURATION_ACTIVE_OVERLAY), IDecoration.BOTTOM_RIGHT);
+				}
+				if(ResourceType.isSubject((IResource) element)) {
+					boolean isLoaded = MathEngineFactory.getMathEngine().isSubjectLoaded((IResource) element);
+					if(isLoaded)
+					decoration.addOverlay(Activator.getImageDescriptor(IImageKeys.SUBJECT_LOADED_OVERLAY), IDecoration.TOP_RIGHT);
 				}
 				try {
 					int severity = resource.findMaxProblemSeverity(DocometreBuilder.MARKER_ID, true, IResource.DEPTH_INFINITE);

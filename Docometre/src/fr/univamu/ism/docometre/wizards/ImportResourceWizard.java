@@ -144,7 +144,7 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 						DocometreBuilder.addProject(newExperiment);
 						ExperimentsView.refresh(newExperiment.getParent(), new IResource[]{newExperiment});
 					} catch (CoreException e) {
-						Activator.getLogErrorMessageWithCause(e);
+						Activator.logErrorMessageWithCause(e);
 						e.printStackTrace();
 					}
 				} else {
@@ -172,7 +172,7 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 							
 						} catch (IOException | CoreException e) {
 							e.printStackTrace();
-							Activator.getLogErrorMessageWithCause(e);
+							Activator.logErrorMessageWithCause(e);
 						}
 					} else {
 						
@@ -220,14 +220,14 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 				resource.setPersistentProperty(QN , value);
 			}
 		} catch (IOException | CoreException e) {
-			Activator.getLogErrorMessageWithCause(e);
+			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
 		} finally {
 			if(inputStreamReader != null)
 				try {
 					inputStreamReader.close();
 				} catch (IOException e) {
-					Activator.getLogErrorMessageWithCause(e);
+					Activator.logErrorMessageWithCause(e);
 					e.printStackTrace();
 				}
 		}

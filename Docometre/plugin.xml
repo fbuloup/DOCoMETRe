@@ -410,7 +410,7 @@
    <extension
          point="org.eclipse.ui.decorators">
       <decorator
-            class="fr.univamu.ism.docometre.views.ExperimentsViewLabelDecorator"
+            class="fr.univamu.ism.docometre.views.ExperimentsLabelDecorator"
             icon="icons/activeDAQConfiguration.gif"
             id="Docometre.ExperimentsViewDecorator"
             label="Experiments View Decorator"

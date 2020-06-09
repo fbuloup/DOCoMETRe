@@ -61,6 +61,7 @@ public interface IImageKeys {
 	public static final String PROCESS_ICON = "icons/process.gif"; //$NON-NLS-1$
 	public static final String EXPERIMENTS_VIEW_ICON = "icons/experimentsView.gif"; //$NON-NLS-1$
 	public static final String DAQ_CONFIGURATION_ACTIVE_OVERLAY = "icons/activeDAQConfiguration.gif"; //$NON-NLS-1$
+	public static final String SUBJECT_LOADED_OVERLAY = "icons/subjectLoaded.gif"; //$NON-NLS-1$
 	public static final String COLLAPSE_ALL = "icons/collapseAll.gif"; //$NON-NLS-1$
 	public static final String PARAMETERS_FILE_ICON = "icons/parameters.gif"; //$NON-NLS-1$
 

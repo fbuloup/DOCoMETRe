@@ -238,7 +238,7 @@ public class RenameResourceAction extends Action implements ISelectionListener, 
 						try {
 							status = operationHistory.execute(new RenameResourceOperation(DocometreMessages.RenameAction_Text, dataFile, newPath.removeFileExtension().lastSegment(), false), monitor, null);
 						} catch (ExecutionException e) {
-							Activator.getLogErrorMessageWithCause(e);
+							Activator.logErrorMessageWithCause(e);
 							e.printStackTrace();
 						}
 					}

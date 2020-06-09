@@ -102,8 +102,14 @@ public final class MatlabController {
 		return matlabProxy != null;
 	}
 	
+	public Object[] returningEval(String cmd, int nbParameters) throws Exception {
+		if(isStarted()) return matlabProxy.returningEval(cmd, nbParameters);
+		return null;
+	}
+	
 	public void eval(String cmd) throws Exception {
 		if(isStarted()) matlabProxy.eval(cmd);
+		//else throw new Exception("Matlab is not running !");
 	}
 	
 	public void evaluate(String command) throws Exception {
