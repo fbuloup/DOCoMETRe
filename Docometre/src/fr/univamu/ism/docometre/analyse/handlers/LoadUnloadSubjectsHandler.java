@@ -27,7 +27,12 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		for (IResource subject : selectedSubjects) {
-			MathEngineFactory.getMathEngine().isSubjectLoaded(subject);
+			boolean loaded = MathEngineFactory.getMathEngine().isSubjectLoaded(subject);
+			if(loaded) {
+				// Unload subject
+			} else {
+				// Load subject
+			}
 		}
 		return null;
 	}
@@ -43,6 +48,7 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 				if(ResourceType.isSubject(resource)) selectedSubjects.add(resource);
 			}
 		}
+		System.out.println(selectedSubjects.toString());
 	}
 
 }

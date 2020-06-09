@@ -234,6 +234,7 @@ public final class DocometreMessages extends NLS {
 	public static String ImportResourceWizardErrorMessage1;
 	public static String ImportResourceWizardErrorMessage2;
 	public static String ImportResourceWizardErrorMessage3;
+	public static String NewSubjectFromADWDataFileLabel;
 	
 	
 	/*New Folder Page*/

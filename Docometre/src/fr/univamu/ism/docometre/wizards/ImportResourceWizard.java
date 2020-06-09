@@ -57,6 +57,7 @@ import java.util.zip.ZipInputStream;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -76,6 +77,7 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.dacqsystems.DocometreBuilder;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfiguration;
@@ -105,7 +107,30 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 			File file = (File)element;
 			if(!file.isDirectory()) {
 				String rootPath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();
-				if(file.getName().endsWith(".zip") || file.getName().endsWith(".tar")) {
+				if(file.getName().endsWith(Activator.adwFileExtension)) {
+					try {
+						// First create new subject : subject name is file name without extension
+						String subjectName = file.getName().replaceAll(Activator.adwFileExtension + "$", "");
+						IFolder subject = parentResource.getFolder(new org.eclipse.core.runtime.Path(subjectName));
+						subject.create(true, true, null);
+						ResourceProperties.setDescriptionPersistentProperty(subject, "");
+						ResourceProperties.setTypePersistentProperty(subject, ResourceType.SUBJECT.toString());
+						// Then copy data file in this new created subject
+						Path newPath = Paths.get(rootPath + parentResource.getFullPath().toOSString() + File.separator + subject.getName() + File.separator + file.getName());
+						Path originalPath = file.toPath();
+						Files.copy(originalPath, newPath, StandardCopyOption.REPLACE_EXISTING);
+						IFile newFile = subject.getFile(new org.eclipse.core.runtime.Path(file.getName()));
+						newFile.refreshLocal(IResource.DEPTH_ZERO, null);
+						ResourceProperties.setDescriptionPersistentProperty(newFile, "");
+						ResourceProperties.setTypePersistentProperty(newFile, ResourceType.ADW_DATA_FILE.toString());
+						ExperimentsView.refresh(subject.getParent(), new IResource[]{subject});
+						SubjectsView.refresh();
+						
+					} catch (CoreException | IOException e) {
+						Activator.logErrorMessageWithCause(e);
+						e.printStackTrace();
+					}
+				} else if(file.getName().endsWith(".zip") || file.getName().endsWith(".tar")) {
 					try {
 						String experimentName = file.getName().replaceAll(".zip$", "").replaceAll(".tar$", "");
 						IProject newExperiment = ResourcesPlugin.getWorkspace().getRoot().getProject(experimentName);

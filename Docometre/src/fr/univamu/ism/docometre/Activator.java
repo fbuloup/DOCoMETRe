@@ -89,6 +89,7 @@ public class Activator extends AbstractUIPlugin {
 	public static String logFileExtension = ".log";
 	public static String samplesFileExtension = ".samples";
 	public static String parametersFileExtension = ".params";
+	public static String adwFileExtension = ".adw";
 	
 	// System types
 	public static String ADWIN_SYSTEM = "ADWin";

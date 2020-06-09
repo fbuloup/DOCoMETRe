@@ -83,6 +83,7 @@ public class ExperimentsLabelProvider implements ILabelProvider {
 		if(ResourceType.isTrial(resource) && !ResourceProperties.isTrialDone((IFolder) resource)) return Activator.getImageDescriptor(IImageKeys.UNDONE_ICON).createImage();
 		if(ResourceType.isLog(resource)) return Activator.getImageDescriptor(IImageKeys.DIARY_ICON).createImage();
 		if(ResourceType.isSamples(resource)) return Activator.getImageDescriptor(IImageKeys.SAMPLES_ICON).createImage();
+		if(ResourceType.isADWDataFile(resource)) return Activator.getImageDescriptor(IImageKeys.SAMPLES_ICON).createImage();
 		if(ResourceType.isParameters(resource)) return Activator.getImageDescriptor(IImageKeys.PARAMETERS_FILE_ICON).createImage();
 		if(ResourceType.isProcessTest(resource)) return Activator.getImageDescriptor(IImageKeys.FOLDER_ICON).createImage();
 		return Activator.getImageDescriptor("org.eclipse.ui", "icons/full/etool16/help_contents.png").createImage();

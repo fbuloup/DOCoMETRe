@@ -11,6 +11,7 @@ import org.eclipse.core.runtime.jobs.Job;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.matlab.MatlabController;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
@@ -163,6 +164,21 @@ public final class MatlabEngine implements MathEngine {
 			}
 		}
 		return "";
+	}
+
+	@Override
+	public void load(IResource subject) {
+		try {
+			if(!ResourceType.isSubject(subject)) return;
+			return;
+//			String experimentName = subject.getFullPath().segment(0);
+//			String subjectName = subject.getFullPath().segment(1);
+//			String cmd = experimentName + "." + subjectName + ", message = loadData('DOCOMETRE', '')";
+//			matlabController.eval(cmd);
+		} catch (Exception e) {
+			Activator.getLogErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
 	}
 
 }

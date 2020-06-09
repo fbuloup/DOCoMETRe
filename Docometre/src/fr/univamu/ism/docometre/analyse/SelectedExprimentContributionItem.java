@@ -43,6 +43,7 @@ public class SelectedExprimentContributionItem extends StatusLineContributionIte
 
 	@Override
 	public void resourceChanged(IResourceChangeEvent event) {
+		if(event.getDelta() == null) return;
 		IResourceDelta[] resourceDeltas = event.getDelta().getAffectedChildren();
 		for (IResourceDelta resourceDelta : resourceDeltas) {
 			if(resourceDelta.getResource() == selectedExperiment && resourceDelta.getKind() == IResourceDelta.REMOVED) selectedExperiment = null; 

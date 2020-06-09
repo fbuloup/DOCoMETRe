@@ -57,7 +57,8 @@ public enum ResourceType {
 	LOG("LOG"),
 	SAMPLES("SAMPLES"),
 	PARAMETERS("PARAMETERS"),
-	PROCESS_TEST("PROCESS_TEST");
+	PROCESS_TEST("PROCESS_TEST"),
+	ADW_DATA_FILE("ADW_DATA_FILE");
 
 	private String name = "";
 
@@ -83,6 +84,7 @@ public enum ResourceType {
 		if(typeValue.equals(SAMPLES.toString())) return SAMPLES;
 		if(typeValue.equals(PARAMETERS.toString())) return PARAMETERS;
 		if(typeValue.equals(PROCESS_TEST.toString())) return PROCESS_TEST;
+		if(typeValue.equals(ADW_DATA_FILE.toString())) return ADW_DATA_FILE;
 		return ANY;
 	}
 	
@@ -128,6 +130,10 @@ public enum ResourceType {
 	
 	public static boolean isProcessTest(IResource resource) {
 		return check(resource, PROCESS_TEST);
+	}
+	
+	public static boolean isADWDataFile(IResource resource) {
+		return check(resource, ADW_DATA_FILE);
 	}
 	
 	public static boolean isAnyTest(IResource resource) {

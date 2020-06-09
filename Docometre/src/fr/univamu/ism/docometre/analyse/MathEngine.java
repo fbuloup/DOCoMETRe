@@ -10,4 +10,5 @@ public interface MathEngine {
 	boolean isStarted();
 	void addListener(MathEngineListener listener);
 	boolean isSubjectLoaded(IResource subject);
+	void load(IResource subject);
 }

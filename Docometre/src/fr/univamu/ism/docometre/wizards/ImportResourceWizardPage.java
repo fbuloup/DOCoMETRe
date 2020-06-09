@@ -92,35 +92,32 @@ public class ImportResourceWizardPage extends WizardPage {
 			boolean valid = false;
 			File file = new File(dir, name);
 			// If it's a directory, accept only if it contains process or dacq or ...
-			if(file.isDirectory()) valid = validateFolder(file);
-			else {
-				if(selection == ResourceType.EXPERIMENT) {
-					valid = name.endsWith(".zip") || name.endsWith(".tar");
-				} else {
-					String extension = Activator.daqFileExtension;
-					if(selection == ResourceType.PROCESS) extension = Activator.processFileExtension;
-					valid = name.endsWith(extension);
-				}
-			}
+			if(file.isDirectory()) valid = validateFolder(file, name);
+			else valid = validateFile(file, name);
 			return valid;
 		}
 		
-		private boolean validateFolder(File folder) {
+		private boolean validateFolder(File folder, String name) {
 			boolean valid = false;
 			String[] filesNames = folder.list();
 			for (String fileName : filesNames) {
 				File file = new File(folder, fileName);
 				// If it's a directory, accept only if it contains process or dacq or ...
-				if(file.isDirectory()) valid = valid || validateFolder(file);
-				else {
-					if(selection == ResourceType.EXPERIMENT) {
-						valid = fileName.endsWith(".zip") || fileName.endsWith(".tar");
-					} else {
-						String extension = Activator.daqFileExtension;
-						if(selection == ResourceType.PROCESS) extension = Activator.processFileExtension;
-						valid = valid || fileName.endsWith(extension);
-					}
-				}
+				if(file.isDirectory()) valid = valid || validateFolder(file, name);
+				else valid = valid || validateFile(file, name);
+			}
+			return valid;
+		}
+		
+		private boolean validateFile(File file, String name) {
+			boolean valid = false;
+			if(selection == ResourceType.EXPERIMENT) {
+				valid = name.matches("^[a-zA-Z][a-zA-Z0-9_]*.zip$") || name.matches("^[a-zA-Z][a-zA-Z0-9_]*.tar$");
+			} else {
+				String extension = Activator.daqFileExtension;
+				if(selection == ResourceType.PROCESS) extension = Activator.processFileExtension;
+				if(selection == ResourceType.ADW_DATA_FILE) extension = Activator.adwFileExtension;
+				valid = name.matches("^[a-zA-Z][a-zA-Z0-9_]*" + extension + "$");
 			}
 			return valid;
 		}
@@ -163,11 +160,12 @@ public class ImportResourceWizardPage extends WizardPage {
 				if(element == ResourceType.DACQ_CONFIGURATION) return DocometreMessages.NewDACQConfigurationAction_Text;
 				if(element == ResourceType.PROCESS) return DocometreMessages.NewProcessAction_Text;
 				if(element == ResourceType.EXPERIMENT) return DocometreMessages.NewExperimentAction_Text + " (*.zip, *.tar)";
+				if(element == ResourceType.ADW_DATA_FILE) return DocometreMessages.NewSubjectFromADWDataFileLabel;
 				return super.getText(element);
 			}
 		});
 		if(!ImportResourceWizard.getSelectedResource().equals(ResourcesPlugin.getWorkspace().getRoot())) {
-			resourceTypeComboViewer.setInput(new Object[] {ResourceType.DACQ_CONFIGURATION, ResourceType.PROCESS, ResourceType.EXPERIMENT});
+			resourceTypeComboViewer.setInput(new Object[] {ResourceType.DACQ_CONFIGURATION, ResourceType.PROCESS, ResourceType.EXPERIMENT, ResourceType.ADW_DATA_FILE});
 			resourceTypeComboViewer.setSelection(new StructuredSelection(ResourceType.DACQ_CONFIGURATION));
 		} else {
 			resourceTypeComboViewer.setInput(new Object[] {ResourceType.EXPERIMENT});
@@ -198,8 +196,8 @@ public class ImportResourceWizardPage extends WizardPage {
 			@Override
 			public boolean hasChildren(Object element) {
 				if(!(element instanceof File)) return false;
-					File file = (File)element;
-					File[] files = file.listFiles(new ValidatFiles(resourceTypeComboViewer.getStructuredSelection().getFirstElement()));
+				File file = (File)element;
+				File[] files = file.listFiles(new ValidatFiles(resourceTypeComboViewer.getStructuredSelection().getFirstElement()));
 				return files != null && files.length > 0;
 			}
 			
@@ -250,6 +248,7 @@ public class ImportResourceWizardPage extends WizardPage {
 				if(file.getName().endsWith(Activator.daqFileExtension)) return Activator.getImageDescriptor(IImageKeys.DACQ_CONFIGURATION_ICON).createImage();
 				if(file.getName().endsWith(Activator.processFileExtension)) return Activator.getImageDescriptor(IImageKeys.PROCESS_ICON).createImage();
 				if(file.getName().endsWith(".zip") || file.getName().endsWith("*.tar")) return Activator.getImageDescriptor(IImageKeys.ZIP).createImage();
+				if(file.getName().endsWith(Activator.adwFileExtension)) return Activator.getImageDescriptor(IImageKeys.SAMPLES_ICON).createImage();
 				return  Activator.getImageDescriptor(IImageKeys.FOLDER_ICON).createImage();
 			}
 		});

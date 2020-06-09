@@ -37,6 +37,18 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 	@Override
 	public void createPartControl(Composite parent) {
 		this.parent = parent;
+		this.parent.setLayout(new GridLayout());
+		
+		// Create tree viewer
+		subjectsTreeViewer = new TreeViewer(parent);
+		subjectsTreeViewer.setContentProvider(new SubjectsContentProvider());
+		subjectsTreeViewer.setLabelProvider(new ExperimentsLabelProvider());
+		subjectsTreeViewer.getTree().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		getSite().setSelectionProvider(subjectsTreeViewer);
+		
+		ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
+		PlatformUI.getWorkbench().getActiveWorkbenchWindow().addPerspectiveListener(this);
+		
 		updateInput();
 	}
 	
@@ -48,16 +60,10 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 	}
 	
 	private void createMessageInfo() {
-		// Remove tree viewer
-		if(subjectsTreeViewer != null) {
-			if(subjectsTreeViewer.getTree() != null && !subjectsTreeViewer.getTree().isDisposed()) subjectsTreeViewer.getTree().dispose();
-			getSite().setSelectionProvider(null);
-			subjectsTreeViewer = null;
-			ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
-			PlatformUI.getWorkbench().getActiveWorkbenchWindow().removePerspectiveListener(this);
-		}
 		// Create infos
+		if(imageMessageContainer != null) return;
 		imageMessageContainer = new Composite(parent, SWT.NORMAL);
+		imageMessageContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		imageMessageContainer.setLayout(new GridLayout());
 		Label imageSelectLabel = new Label(imageMessageContainer, SWT.CENTER);
 		imageSelectLabel.setImage(Activator.getImage(IImageKeys.SELECT_ICON));
@@ -67,26 +73,10 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 		messageLabel.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false));
 	}
 
-	private void createViewer() {
-		// Remove infos
-		if(imageMessageContainer != null && !imageMessageContainer.isDisposed()) imageMessageContainer.dispose();
-		// Create tree viewer
-		if(subjectsTreeViewer == null) {
-			subjectsTreeViewer = new TreeViewer(parent);
-			subjectsTreeViewer.setContentProvider(new SubjectsContentProvider());
-			subjectsTreeViewer.setLabelProvider(new ExperimentsLabelProvider());
-			getSite().setSelectionProvider(subjectsTreeViewer);
-			ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
-			PlatformUI.getWorkbench().getActiveWorkbenchWindow().addPerspectiveListener(this);
-		}
-		subjectsTreeViewer.setInput(null);
-		subjectsTreeViewer.setInput(SelectedExprimentContributionItem.selectedExperiment);
-	}
-
 	public void updateInput() {
 		if(SelectedExprimentContributionItem.selectedExperiment != null) {
-			// Create viewer
-			createViewer();
+			// Remove infos
+			if(imageMessageContainer != null && !imageMessageContainer.isDisposed()) imageMessageContainer.dispose();
 			// Update part name
 			String partName = getPartName();
 			partName = partName.replaceAll("\\s\\[.*\\]", "");
@@ -99,6 +89,8 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 			partName = partName.replaceAll("\\s\\[.*\\]", "");
 			setPartName(partName);
 		}
+		subjectsTreeViewer.setInput(SelectedExprimentContributionItem.selectedExperiment);
+		subjectsTreeViewer.refresh();
 		// Layout
 		parent.layout();
 	}
@@ -111,7 +103,13 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 	private void refreshInput(IResourceChangeEvent event) {
 		if(SelectedExprimentContributionItem.selectedExperiment == null) return;
 		if(event != null && event.getDelta().findMember(SelectedExprimentContributionItem.selectedExperiment.getFullPath()) == null) return;
-		if(subjectsTreeViewer != null) subjectsTreeViewer.refresh();
+		if(subjectsTreeViewer != null) 
+			PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+				@Override
+				public void run() {
+					subjectsTreeViewer.refresh();
+				}
+			});
 	}
 	
 	@Override
