@@ -15,4 +15,9 @@ public interface MathEngine {
 	boolean exist(String variableName);
 	boolean isStruct(String variableName);
 	boolean isField(String variableName, String fieldName);
+	String[] getChannelsNames(IResource subject);
+	public boolean isSignal(String fullName);
+	public boolean isCategory(String fullName);
+	public boolean isEvent(String fullName);
+	public String getCriteriaForCategory(String fullName);
 }

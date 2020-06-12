@@ -411,9 +411,8 @@
          point="org.eclipse.ui.decorators">
       <decorator
             class="fr.univamu.ism.docometre.views.ExperimentsLabelDecorator"
-            icon="icons/activeDAQConfiguration.gif"
-            id="Docometre.ExperimentsViewDecorator"
-            label="Experiments View Decorator"
+            id="Docometre.ExperimentsDecorator"
+            label="Experiments Decorator"
             lightweight="true"
             state="true">
       </decorator>

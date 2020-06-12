@@ -19,6 +19,8 @@ import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.Analyse;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
+import fr.univamu.ism.docometre.analyse.views.SubjectsView;
+import fr.univamu.ism.docometre.views.ExperimentsView;
 
 public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelectionListener {
 	
@@ -45,7 +47,10 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 					e.printStackTrace();
 				}
 			}
+			ExperimentsView.refresh(subject, null);
+			SubjectsView.refresh(subject, null);
 		}
+		
 		return null;
 	}
 
@@ -60,7 +65,6 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 				if(ResourceType.isSubject(resource)) selectedSubjects.add(resource);
 			}
 		}
-		System.out.println(selectedSubjects.toString());
 	}
 
 }

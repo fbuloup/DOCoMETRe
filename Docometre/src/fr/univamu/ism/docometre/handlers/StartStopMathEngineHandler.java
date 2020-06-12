@@ -62,6 +62,7 @@ import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.analyse.MathEngine;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.MathEngineListener;
+import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 
 @SuppressWarnings("restriction")
 public class StartStopMathEngineHandler extends AbstractHandler implements IElementUpdater, MathEngineListener {
@@ -98,6 +99,7 @@ public class StartStopMathEngineHandler extends AbstractHandler implements IElem
 					MathEngineFactory.clear();
 				}
 				setBaseEnabled(true);
+				SubjectsView.refresh(null, null);
 				return response;
 			}
 		};

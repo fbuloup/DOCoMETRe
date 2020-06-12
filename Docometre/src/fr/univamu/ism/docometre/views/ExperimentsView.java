@@ -63,10 +63,8 @@ import org.eclipse.jface.viewers.DecoratingLabelProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ILabelDecorator;
-import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.LabelProviderChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
@@ -84,6 +82,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IPerspectiveListener;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PlatformUI;
@@ -166,27 +165,10 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 		}
 	}
 	
-	private class ExperimentViewDecoratingLabelProvider extends DecoratingLabelProvider {
-
-		public ExperimentViewDecoratingLabelProvider(ILabelProvider provider, ILabelDecorator decorator) {
-			super(provider, decorator);
-		}
-		
-		public void updateDecoration(Object element) {
-			if(element != null) fireLabelProviderChanged(new LabelProviderChangedEvent(this, element));
-		}
-		
-	}
-	
 	public static ExperimentsViewUndoContext experimentsViewUndoContext;
-	
 	private TreeViewer experimentsTreeViewer;
-
 	private MenuManager popUpMenuManager;
-
 	private PartListenerAdapter partListenerAdapter;
-
-	private ExperimentViewDecoratingLabelProvider experimentViewDecoratingLabelProvider;
 
 	public ExperimentsView() {
 		experimentsViewUndoContext = new ExperimentsViewUndoContext();
@@ -199,10 +181,9 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 		Display.getDefault().asyncExec(new Runnable() {
 			@Override
 			public void run() {
-				ExperimentsView experimentsView = (ExperimentsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-						.getActivePage().findView(ExperimentsView.ID);
-				if (experimentsView != null)
-					experimentsView.refreshInput(parentResource, resourcesToSelect);
+				IViewPart experimentsView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(ExperimentsView.ID);
+				if (experimentsView instanceof ExperimentsView)
+					((ExperimentsView)experimentsView).refreshInput(parentResource, resourcesToSelect);
 			}
 		});
 	}
@@ -213,8 +194,7 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 		experimentsTreeViewer.setContentProvider(new ExperimentsContentProvider());
 		ExperimentsLabelProvider experimentsLabelProvider = new ExperimentsLabelProvider();
 		ILabelDecorator decorator = PlatformUI.getWorkbench().getDecoratorManager().getLabelDecorator();
-		experimentViewDecoratingLabelProvider = new ExperimentViewDecoratingLabelProvider(experimentsLabelProvider, decorator);
-		experimentsTreeViewer.setLabelProvider(experimentViewDecoratingLabelProvider);
+		experimentsTreeViewer.setLabelProvider(new DecoratingLabelProvider(experimentsLabelProvider, decorator));
 		experimentsTreeViewer.setComparator(new ExperimentsViewerSorter());
 		experimentsTreeViewer.addDoubleClickListener(new IDoubleClickListener() {
 			public void doubleClick(DoubleClickEvent event) {
@@ -389,7 +369,7 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 
 	public void refreshInput(Object parentResource, Object[] newResourcesToSelect) {
 		experimentsTreeViewer.refresh(parentResource, true);
-		experimentViewDecoratingLabelProvider.updateDecoration(parentResource);
+		PlatformUI.getWorkbench().getDecoratorManager().update(ExperimentsLabelDecorator.ID);
 		if(newResourcesToSelect != null) {
 			List<Object> list = Arrays.asList(newResourcesToSelect);
 			for (Object object : newResourcesToSelect) {

@@ -59,7 +59,7 @@ import fr.univamu.ism.docometre.dacqsystems.DocometreBuilder;
 
 public class ExperimentsLabelDecorator implements ILightweightLabelDecorator {
 	
-	public static String ID = "Docometre.ExperimentsViewDecorator";
+	public static String ID = "Docometre.ExperimentsDecorator";
 
 	@Override
 	public void addListener(ILabelProviderListener listener) {

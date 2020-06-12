@@ -13,6 +13,7 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
 import fr.univamu.ism.docometre.matlab.MatlabController;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
@@ -212,6 +213,9 @@ public final class MatlabEngine implements MathEngine {
 			String dataFilesList = (String)subject.getSessionProperty(ResourceProperties.DATA_FILES_LIST_QN);
 			String cmd = "[" + experimentName + "." + subjectName + ", message] = loadData('DOCOMETRE', '" + dataFilesList + "')";
 			matlabController.eval(cmd);
+			String[] channelsNames = getChannelsNames(subject);
+			ChannelsContainer channelsContainer = new ChannelsContainer(subject, channelsNames);
+			subject.setSessionProperty(ResourceProperties.CHANNELS_LIST_QN, channelsContainer);
 		} catch (Exception e) {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
@@ -230,6 +234,62 @@ public final class MatlabEngine implements MathEngine {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public String[] getChannelsNames(IResource subject) {
+		try {
+			if(!ResourceType.isSubject(subject)) return null;
+			String expression = subject.getFullPath().toString().replaceFirst("/", "").replaceAll("/", ".");
+			Object[] responses = matlabController.returningEval("fieldnames(" + expression + ")", 1);
+			Object response = responses[0];
+			return (String[]) response;
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	private boolean isSignalCategoryOrEvent(String fullName, String check) {
+		try {
+			Object[] responses = matlabController.returningEval(fullName + check, 1);
+			Object response = responses[0];
+			if(response instanceof double[]) {
+				return ((double[])response)[0] > 0;
+			}
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
+	public boolean isSignal(String fullName) {
+		return isSignalCategoryOrEvent(fullName, ".isSignal");
+	}
+	
+	public boolean isCategory(String fullName) {
+		return isSignalCategoryOrEvent(fullName, ".isCategory");
+	}
+	
+	public boolean isEvent(String fullName) {
+		return isSignalCategoryOrEvent(fullName, ".isEvent");
+	}
+
+	@Override
+	public String getCriteriaForCategory(String fullName) {
+		try {
+			Object[] responses = matlabController.returningEval(fullName + ".Criteria", 1);
+			Object response = responses[0];
+			if(response instanceof String) {
+				return (String)response;
+			}
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 }

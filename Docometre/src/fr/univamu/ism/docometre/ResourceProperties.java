@@ -91,8 +91,10 @@ public final class ResourceProperties {
 	 */
 	// Deserialized object associated to resource file 
 	public static QualifiedName OBJECT_QN = new QualifiedName(Activator.PLUGIN_ID, "object");
-	// Deserialized object associated to resource file 
+	// Data files list
 	public static QualifiedName DATA_FILES_LIST_QN = new QualifiedName(Activator.PLUGIN_ID, "data.files.list");
+	// Channels list
+	public static QualifiedName CHANNELS_LIST_QN = new QualifiedName(Activator.PLUGIN_ID, "channels.list");
 	
 	/////////////////////////////////////////////////////////////////////////////
 	/*

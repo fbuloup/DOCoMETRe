@@ -1,8 +1,11 @@
 package fr.univamu.ism.docometre.analyse.views;
 
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.jface.viewers.DecoratingLabelProvider;
+import org.eclipse.jface.viewers.ILabelDecorator;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -12,6 +15,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IPerspectiveListener;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
@@ -21,7 +25,7 @@ import fr.univamu.ism.docometre.AnalysePerspective;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
-import fr.univamu.ism.docometre.views.ExperimentsLabelProvider;
+import fr.univamu.ism.docometre.views.ExperimentsLabelDecorator;
 
 public class SubjectsView extends ViewPart implements IResourceChangeListener, IPerspectiveListener {
 	
@@ -33,16 +37,43 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 
 	public SubjectsView() {
 	}
+	
+	/*
+	 * Refresh subject view
+	 */
+	public static void refresh(IResource parentResource, IResource[] resourcesToSelect) {
+		Display.getDefault().asyncExec(new Runnable() {
+			@Override
+			public void run() {
+				IViewPart subjectsView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(SubjectsView.ID);
+				if (subjectsView instanceof SubjectsView)
+					((SubjectsView)subjectsView).refreshInput(parentResource, resourcesToSelect);
+			}
+		});
+	}
+
+	protected void refreshInput(IResource parentResource, IResource[] resourcesToSelect) {
+		subjectsTreeViewer.refresh(parentResource, true);
+		PlatformUI.getWorkbench().getDecoratorManager().update(ExperimentsLabelDecorator.ID);
+		
+	}
 
 	@Override
 	public void createPartControl(Composite parent) {
 		this.parent = parent;
-		this.parent.setLayout(new GridLayout());
+		GridLayout gl = new GridLayout();
+		gl.marginHeight = 0;
+		gl.marginWidth = 0;
+		this.parent.setLayout(gl);
 		
 		// Create tree viewer
 		subjectsTreeViewer = new TreeViewer(parent);
 		subjectsTreeViewer.setContentProvider(new SubjectsContentProvider());
-		subjectsTreeViewer.setLabelProvider(new ExperimentsLabelProvider());
+		
+		ILabelDecorator decorator = PlatformUI.getWorkbench().getDecoratorManager().getLabelDecorator();
+		SubjectsLabelProvider subjectsLabelProvider = new SubjectsLabelProvider();
+		subjectsTreeViewer.setLabelProvider(new DecoratingLabelProvider(subjectsLabelProvider, decorator));
+		
 		subjectsTreeViewer.getTree().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		getSite().setSelectionProvider(subjectsTreeViewer);
 		
@@ -130,10 +161,9 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 		Display.getDefault().asyncExec(new Runnable() {
 			@Override
 			public void run() {
-				SubjectsView subjectsView = (SubjectsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-						.getActivePage().findView(SubjectsView.ID);
-				if (subjectsView != null)
-					subjectsView.refreshInput(null);
+				IViewPart subjectsView =  PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(SubjectsView.ID);
+				if (subjectsView instanceof SubjectsView)
+					((SubjectsView)subjectsView).refreshInput(null);
 			}
 		});
 		

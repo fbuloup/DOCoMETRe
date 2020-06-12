@@ -167,6 +167,12 @@ public interface IImageKeys {
 	
 	public static final String ORGANIZE_SESSION_WIZBAN = "icons/organizeSessionWizardBanner.png"; //$NON-NLS-1$
 	
+	public static final String SIGNAL_ICON = "icons/signal.png"; //$NON-NLS-1$
+	public static final String CATEGORY_ICON = "icons/category.png"; //$NON-NLS-1$
+	public static final String EVENT_ICON = "icons/event.png"; //$NON-NLS-1$
+	
+	
+	
 	
 	
 }
