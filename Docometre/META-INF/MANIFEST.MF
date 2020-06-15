@@ -27,7 +27,8 @@ Require-Bundle: org.eclipse.ui;bundle-version="3.108.0",
  org.eclipse.swtchart;bundle-version="1.0.0",
  org.eclipse.swtchart.extensions;bundle-version="1.0.0",
  MatlabController;bundle-version="1.0.0",
- org.eclipse.core.filesystem;bundle-version="1.7.600"
+ org.eclipse.core.filesystem;bundle-version="1.7.600",
+ JZY3D;bundle-version="1.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-Localization: OSGI-INF/l10n/bundle

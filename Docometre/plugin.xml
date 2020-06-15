@@ -1012,6 +1012,11 @@
                   style="push">
             </command>
             <command
+                  commandId="TestJZY3DAction"
+                  label="Test JZY3D Charts..."
+                  style="push">
+            </command>
+            <command
                   commandId="StartStopMathEngineCommand"
                   label="Start/Stop Math Engine"
                   style="push">
@@ -2095,6 +2100,10 @@
             defaultHandler="fr.univamu.ism.docometre.analyse.handlers.LoadUnloadSubjectsHandler"
             id="LoadUnloadSubjectsCommand"
             name="%LoadUnloadSubjectsCommand.title">
+      </command>
+      <command
+            id="TestJZY3DAction"
+            name="TestJZY3DAction">
       </command>
    </extension>
    <extension

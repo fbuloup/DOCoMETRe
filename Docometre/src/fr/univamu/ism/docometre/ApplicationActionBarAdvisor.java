@@ -76,6 +76,7 @@ import fr.univamu.ism.docometre.actions.ShowDescriptionViewAction;
 import fr.univamu.ism.docometre.actions.ShowExperimentsViewAction;
 import fr.univamu.ism.docometre.actions.ShowMessagesViewAction;
 import fr.univamu.ism.docometre.actions.ShowProgressViewAction;
+import fr.univamu.ism.docometre.actions.TestJZY3DAction;
 import fr.univamu.ism.docometre.actions.TestOpenGLAction;
 import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
 import fr.univamu.ism.docometre.editors.ChartContributionItem;
@@ -121,6 +122,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	public static RefreshResourceAction refreshResourceAction;
 	
 	public static TestOpenGLAction testOpenGLAction;
+	public static TestJZY3DAction testJZY3DAction;
 	
 	public static WorkloadTimeContributionItem workloadTimeContributionItem;
 	public static PausePendingContributionItem pausePendingContributionItem;
@@ -220,6 +222,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
     	
     	testOpenGLAction = new TestOpenGLAction();
     	register(testOpenGLAction);
+    	
+    	testJZY3DAction = new TestJZY3DAction();
+    	register(testJZY3DAction);
 	}
 	
 	@Override

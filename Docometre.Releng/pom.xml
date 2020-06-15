@@ -144,5 +144,7 @@
 		
 		<module>../PythonController</module>
 		<module>../Docometre.theme</module>
+		
+		<module>../JZY3D</module>
 	</modules>
 </project>
