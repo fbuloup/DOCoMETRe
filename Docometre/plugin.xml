@@ -406,6 +406,13 @@
             id="Docoemtre.ArduinoUnoSourceEditor"
             name="ArduinoUnoSourceEditor">
       </editor>
+      <editor
+            class="fr.univamu.ism.docometre.analyse.editors.ChannelEditor"
+            contributorClass="fr.univamu.ism.docometre.analyse.editors.ChannelEditorActionBarContributor"
+            default="false"
+            id="Docometre.ChannelEditor"
+            name="ChannelEditor">
+      </editor>
    </extension>
    <extension
          point="org.eclipse.ui.decorators">
@@ -1857,7 +1864,7 @@
             <command
                   commandId="LoadUnloadSubjectsCommand"
                   icon="icons/LoadUnloadSubjects.gif"
-                  label="%LoadUnloadSubjectsCommand.label"
+                  label="%LoadUnloadSubjectsCommand.title"
                   style="push">
                <visibleWhen
                      checkEnabled="false">
@@ -1867,6 +1874,59 @@
                </visibleWhen>
             </command>
          </toolbar>
+      </menuContribution>
+      <menuContribution
+            allPopups="true"
+            locationURI="popup:Docometre.SubjectsView">
+         <command
+               commandId="OpenEditorAction"
+               label="%OpenEditorAction.label"
+               style="push">
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="selection">
+                  <iterate>
+                     <or>
+                        <adapt
+                              type="org.eclipse.core.resources.IResource">
+                           <test
+                                 args="Docometre.type,CHANNEL"
+                                 property="org.eclipse.core.resources.persistentProperty">
+                           </test>
+                        </adapt>
+                     </or>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </command>
+         <separator
+               name="Docometre.separator2"
+               visible="true">
+         </separator>
+         <command
+               commandId="SelectExperimentCommand"
+               icon="icons/select.gif"
+               label="%SelectExperimentCommand.label"
+               style="push">
+         </command>
+         <command
+               commandId="StartStopMathEngineCommand"
+               icon="icons/run.gif"
+               label="%StartStopMathEngineAction.label"
+               style="push"
+               tooltip="%StartStopMathEngineAction.tooltip">
+         </command>
+         <separator
+               name="Docometre.separator1"
+               visible="true">
+         </separator>
+         <command
+               commandId="LoadUnloadSubjectsCommand"
+               icon="icons/LoadUnloadSubjects.gif"
+               label="%LoadUnloadSubjectsCommand.title"
+               style="push">
+         </command>
       </menuContribution>
    </extension>
    <extension

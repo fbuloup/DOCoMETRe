@@ -723,6 +723,31 @@ public final class DocometreMessages extends NLS {
 	public static String UnloadingSubject;
 	public static String Done;
 	
+	public static String PleaseStartMathEngineFirst;
+	
+	// Channel Editor
+	public static String MarkersGroupTitle;
+	public static String GroupNameLabel;
+	public static String GraphicalSymbolLabel;
+	public static String TrialNumberLabel;
+	public static String XMarkerValueLabel;
+	public static String YMarkerValueLabel;
+	public static String FieldsGroupTitle;
+	public static String FieldsNameLabel;
+	public static String TrialsGroupLabel;
+	public static String FrontCutLabel;
+	public static String EndCutLabel;
+	public static String SamplesNumberLabel;
+	public static String DurationLabel;
+	public static String GeneralInfoGroupLabel;
+	public static String FrequencyLabel;
+	public static String TrialsNumberLabel2;
+	public static String SignalNameLabel;
+	public static String DeleteSelectedMarkersGroupTooltip;
+	public static String DeleteSelectedMarkerTrialTooltip;
+	public static String DeleteSelectedFieldTooltip;
+	public static String CategoryCriteriaLabel;
+	
 //	public static String OrganizeSessionWizardPage_button_1_text;
 //	public static String OrganizeSessionWizardPage_tbtmNewItem_text;
 //	public static String OrganizeSessionWizardPage_tbtmNewItem_1_text;

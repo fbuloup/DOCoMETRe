@@ -57,8 +57,8 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorActionBarContributor;
 
+import fr.univamu.ism.docometre.AcquirePerspective;
 import fr.univamu.ism.docometre.Activator;
-import fr.univamu.ism.docometre.DesignPerspective;
 import fr.univamu.ism.docometre.IImageKeys;
 
 public class DataEditorActionBarContributor extends EditorActionBarContributor implements IPerspectiveListener {
@@ -227,6 +227,12 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 	}
 	
 	@Override
+	public void dispose() {
+		PlatformUI.getWorkbench().getActiveWorkbenchWindow().removePerspectiveListener(this);
+		super.dispose();
+	}
+	
+	@Override
 	public void contributeToToolBar(IToolBarManager toolBarManager) {
 		
 		subToolBarManager = new SubToolBarManager(toolBarManager);
@@ -254,7 +260,7 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 
 	@Override
 	public void perspectiveActivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
-		boolean actionsVisibility = perspective.getId().equals(DesignPerspective.ID);
+		boolean actionsVisibility = !perspective.getId().equals(AcquirePerspective.ID);
 		
 		editGraphActionContributionItem.setVisible(actionsVisibility);
 		autoScaleGraphActionContributionItem.setVisible(actionsVisibility);

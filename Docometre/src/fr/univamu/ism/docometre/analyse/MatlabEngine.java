@@ -1,8 +1,10 @@
 package fr.univamu.ism.docometre.analyse;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -13,6 +15,7 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
 import fr.univamu.ism.docometre.matlab.MatlabController;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
@@ -121,12 +124,9 @@ public final class MatlabEngine implements MathEngine {
 		}
 	}
 	
-//	private String getMatlabFullPath(IResource resource) {
-//		String resourceFullPath = resource.getFullPath().toString();
-//		resourceFullPath = resourceFullPath.replaceAll("^/", "");
-//		resourceFullPath = resourceFullPath.replaceAll("/", ".");
-//		return resourceFullPath;
-//	}
+	private String getMatlabFullPath(IResource resource) {
+		return resource.getFullPath().toString().replaceAll("^/", "").replaceAll("/", ".");
+	}
 
 	@Override
 	public boolean isSubjectLoaded(IResource subject) {
@@ -213,8 +213,8 @@ public final class MatlabEngine implements MathEngine {
 			String dataFilesList = (String)subject.getSessionProperty(ResourceProperties.DATA_FILES_LIST_QN);
 			String cmd = "[" + experimentName + "." + subjectName + ", message] = loadData('DOCOMETRE', '" + dataFilesList + "')";
 			matlabController.eval(cmd);
-			String[] channelsNames = getChannelsNames(subject);
-			ChannelsContainer channelsContainer = new ChannelsContainer(subject, channelsNames);
+			Channel[] channels = getChannels(subject);
+			ChannelsContainer channelsContainer = new ChannelsContainer((IFolder) subject, channels);
 			subject.setSessionProperty(ResourceProperties.CHANNELS_LIST_QN, channelsContainer);
 		} catch (Exception e) {
 			Activator.logErrorMessageWithCause(e);
@@ -237,18 +237,54 @@ public final class MatlabEngine implements MathEngine {
 	}
 
 	@Override
-	public String[] getChannelsNames(IResource subject) {
+	public Channel[] getChannels(IResource subject) {
 		try {
 			if(!ResourceType.isSubject(subject)) return null;
-			String expression = subject.getFullPath().toString().replaceFirst("/", "").replaceAll("/", ".");
+			String expression = getMatlabFullPath(subject);
 			Object[] responses = matlabController.returningEval("fieldnames(" + expression + ")", 1);
 			Object response = responses[0];
-			return (String[]) response;
+			String[] channelsNames = (String[]) response;
+			ArrayList<Channel> channels = new ArrayList<Channel>();
+			for (String channelName : channelsNames) {
+				Channel channel = new Channel((IFolder) subject, channelName);
+				if(channel.isSignal() || channel.isCategory() || channel.isEvent()) channels.add(channel);
+			}
+			return channels.toArray(new Channel[channels.size()]);
 		} catch (Exception e) {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
 		}
 		return null;
+	}
+	
+	@Override
+	public Channel[] getSignals(IResource subject) {
+		Channel[] channels = getChannels(subject);
+		ArrayList<Channel> signals = new ArrayList<Channel>();
+		for (Channel channel : channels) {
+			if(isSignal(channel)) signals.add(channel);
+		}
+		return signals.toArray(new Channel[signals.size()]);
+	}
+
+	@Override
+	public Channel[] getCategories(IResource subject) {
+		Channel[] channels = getChannels(subject);
+		ArrayList<Channel> categories = new ArrayList<Channel>();
+		for (Channel channel : channels) {
+			if(isCategory(channel)) categories.add(channel);
+		}
+		return categories.toArray(new Channel[categories.size()]);
+	}
+
+	@Override
+	public Channel[] getEvents(IResource subject) {
+		Channel[] channels = getChannels(subject);
+		ArrayList<Channel> events = new ArrayList<Channel>();
+		for (Channel channel : channels) {
+			if(isEvent(channel)) events.add(channel);
+		}
+		return events.toArray(new Channel[events.size()]);
 	}
 	
 	private boolean isSignalCategoryOrEvent(String fullName, String check) {
@@ -265,22 +301,26 @@ public final class MatlabEngine implements MathEngine {
 		return false;
 	}
 	
-	public boolean isSignal(String fullName) {
-		return isSignalCategoryOrEvent(fullName, ".isSignal");
+	@Override
+	public boolean isSignal(IResource channel) {
+		return isSignalCategoryOrEvent(getMatlabFullPath(channel), ".isSignal");
 	}
 	
-	public boolean isCategory(String fullName) {
-		return isSignalCategoryOrEvent(fullName, ".isCategory");
+	@Override
+	public boolean isCategory(IResource channel) {
+		return isSignalCategoryOrEvent(getMatlabFullPath(channel), ".isCategory");
 	}
 	
-	public boolean isEvent(String fullName) {
-		return isSignalCategoryOrEvent(fullName, ".isEvent");
+	@Override
+	public boolean isEvent(IResource channel) {
+		return isSignalCategoryOrEvent(getMatlabFullPath(channel), ".isEvent");
 	}
 
 	@Override
-	public String getCriteriaForCategory(String fullName) {
+	public String getCriteriaForCategory(IResource category) {
 		try {
-			Object[] responses = matlabController.returningEval(fullName + ".Criteria", 1);
+			if(!isCategory(category)) return null;
+			Object[] responses = matlabController.returningEval(getMatlabFullPath(category) + ".Criteria", 1);
 			Object response = responses[0];
 			if(response instanceof String) {
 				return (String)response;
@@ -291,5 +331,90 @@ public final class MatlabEngine implements MathEngine {
 		}
 		return null;
 	}
+
+	@Override
+	public Integer[] getTrialsListForCategory(IResource category) {
+		try {
+			if(!isCategory(category)) return new Integer[0];
+			Object[] responses = matlabController.returningEval(getMatlabFullPath(category) + ".TrialsList", 1);
+			Object response = responses[0];
+			if(response instanceof double[]) {
+				double[] responseDouble = (double[])response;
+				Integer[] trialsList = new Integer[responseDouble.length];
+				for (int i = 0; i < trialsList.length; i++) {
+					trialsList[i] = (int) responseDouble[i];
+				}
+				return trialsList;
+			}
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	@Override
+	public Channel getChannelWithName(IResource subject, String channelName) {
+		Channel[] channels = getChannels(subject);
+		for (Channel channel : channels) {
+			if(channel.getName().equals(channelName)) return channel;
+		}
+		return null;
+	}
+
+	@Override
+	public double[] getYValuesForSignal(Channel signal, int trialNumber) {
+		try {
+			String variableName = "yValues_" + (new Date()).getTime();
+			String varCmd = getMatlabFullPath(signal) + ".Values(" + trialNumber + ",:);";
+			String cmd = variableName + " = " + varCmd;
+			matlabController.eval(cmd);
+			Object valuesObject = matlabController.getVariable(variableName);
+			matlabController.eval("clear " + variableName + ";");
+			if(valuesObject instanceof double[]) return (double[])valuesObject;
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+
+	@Override
+	public double[] getTimeValuesForSignal(Channel signal, Integer trialNumber) {
+		try {
+			Object[] responses = matlabController.returningEval(getMatlabFullPath(signal) + ".SampleFrequency", 1);
+			double sf = ((double[]) responses[0])[0];
+			responses = matlabController.returningEval(getMatlabFullPath(signal) + ".NbSamples(" + trialNumber + ")", 1);
+			int nbSamples = (int) ((double[]) responses[0])[0];
+			double[] times = new double[nbSamples];
+			for (int i = 0; i < nbSamples; i++) {
+				times[i] = 1f*i/sf;
+			}
+			return times;
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	@Override
+	public int getTrialsNumber(Channel signal) {
+		try {
+			String variableName = "nbTrials_" + (new Date()).getTime();
+			matlabController.eval(variableName + " = size(" + getMatlabFullPath(signal) + ".Values" + ");");
+			Object valuesObject = matlabController.getVariable(variableName);
+			matlabController.eval("clear " + variableName + ";");
+			int nbTrials = (int) ((double[]) valuesObject)[0];
+			return nbTrials;
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return 0;
+	}
+
+	
 
 }

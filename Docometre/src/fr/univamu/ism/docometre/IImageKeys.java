@@ -170,6 +170,9 @@ public interface IImageKeys {
 	public static final String SIGNAL_ICON = "icons/signal.png"; //$NON-NLS-1$
 	public static final String CATEGORY_ICON = "icons/category.png"; //$NON-NLS-1$
 	public static final String EVENT_ICON = "icons/event.png"; //$NON-NLS-1$
+	public static final String DELETE_ICON = "icons/delete.png"; //$NON-NLS-1$
+	public static final String NEXT_ICON = "icons/next.gif"; //$NON-NLS-1$
+	public static final String PREVIOUS_ICON = "icons/previous.gif"; //$NON-NLS-1$
 	
 	
 	

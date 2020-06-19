@@ -4,8 +4,12 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.DecoratingLabelProvider;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ILabelDecorator;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -22,6 +26,7 @@ import org.eclipse.ui.part.ViewPart;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.AnalysePerspective;
+import fr.univamu.ism.docometre.ApplicationActionBarAdvisor;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
@@ -69,20 +74,35 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 		// Create tree viewer
 		subjectsTreeViewer = new TreeViewer(parent);
 		subjectsTreeViewer.setContentProvider(new SubjectsContentProvider());
-		
 		ILabelDecorator decorator = PlatformUI.getWorkbench().getDecoratorManager().getLabelDecorator();
 		SubjectsLabelProvider subjectsLabelProvider = new SubjectsLabelProvider();
 		subjectsTreeViewer.setLabelProvider(new DecoratingLabelProvider(subjectsLabelProvider, decorator));
-		
 		subjectsTreeViewer.getTree().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		getSite().setSelectionProvider(subjectsTreeViewer);
+		
+		subjectsTreeViewer.addDoubleClickListener(new IDoubleClickListener() {
+			@Override
+			public void doubleClick(DoubleClickEvent event) {
+				Object element = ((IStructuredSelection) subjectsTreeViewer.getSelection()).getFirstElement();
+				subjectsTreeViewer.setExpandedState(element, !subjectsTreeViewer.getExpandedState(element));
+				ApplicationActionBarAdvisor.openEditorAction.run();
+			}
+		});
 		
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
 		PlatformUI.getWorkbench().getActiveWorkbenchWindow().addPerspectiveListener(this);
 		
+		makePopupMenu();
+		
 		updateInput();
 	}
 	
+	private void makePopupMenu() {
+		MenuManager popUpMenuManager = new MenuManager("SubjectsViewPopUpMenu");
+		subjectsTreeViewer.getTree().setMenu(popUpMenuManager.createContextMenu(subjectsTreeViewer.getTree()));
+		getSite().registerContextMenu(popUpMenuManager, subjectsTreeViewer);
+	}
+
 	@Override
 	public void dispose() {
 		ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);

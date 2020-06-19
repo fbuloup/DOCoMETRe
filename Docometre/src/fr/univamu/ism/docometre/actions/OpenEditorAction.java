@@ -62,6 +62,8 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.analyse.editors.ChannelEditor;
+import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ui.dacqconfigurationeditor.ADWinDACQConfigurationEditor;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor.ADWinProcessEditor;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.dacqconfigurationeditor.ArduinoUnoDACQConfigurationEditor;
@@ -77,7 +79,7 @@ public class OpenEditorAction extends Action implements ISelectionListener, IWor
 	private static String ID = "OpenEditorAction";
 	
 	private IWorkbenchWindow window;
-	private IFile[] resources;
+	private IResource[] resources;
 
 	public OpenEditorAction(IWorkbenchWindow window) {
 		setId(ID); //$NON-NLS-1$
@@ -92,7 +94,7 @@ public class OpenEditorAction extends Action implements ISelectionListener, IWor
 	@Override
 	public void run() {
 		if(resources == null) return;
-		for (IFile resource : resources) {
+		for (IResource resource : resources) {
 			String system = null;
 			String editorID = null;
 			
@@ -118,11 +120,13 @@ public class OpenEditorAction extends Action implements ISelectionListener, IWor
 			
 			if(ResourceType.isParameters(resource)) openEditor(resource, ParametersEditor.ID);
 			
+			if(ResourceType.isChannel(resource)) openEditor(resource, ChannelEditor.ID);
+			
 			if(ResourceType.isSamples(resource)) openEditor(resource, DataEditor.ID);
 			else if(editorID != null) {
 				Object object = ResourceProperties.getObjectSessionProperty(resource);
 				if(object == null) {
-					object = ObjectsController.deserialize(resource);
+					object = ObjectsController.deserialize((IFile)resource);
 					ResourceProperties.setObjectSessionProperty(resource, object);
 				}
 				openEditor(object, editorID);
@@ -143,8 +147,12 @@ public class OpenEditorAction extends Action implements ISelectionListener, IWor
 					break;
 				}
 			}
-			if(foundEditorReference != null) window.getActivePage().activate(foundEditorReference.getPart(true));
-			else window.getActivePage().openEditor(new ResourceEditorInput(object), editorID);
+			if(foundEditorReference != null) {
+				window.getActivePage().activate(foundEditorReference.getPart(true));
+			}
+			else {
+				window.getActivePage().openEditor(new ResourceEditorInput(object), editorID);
+			}
 		} catch (CoreException e) {
 			e.printStackTrace();
 			Activator.logErrorMessageWithCause(e);
@@ -159,21 +167,22 @@ public class OpenEditorAction extends Action implements ISelectionListener, IWor
 	@Override
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
 		setEnabled(false);
-		if(part instanceof ExperimentsView) {
+		if(part instanceof ExperimentsView || part instanceof SubjectsView) {
 			resources = null;
 			if (selection instanceof IStructuredSelection) {
 				Object[] selectedObjects = ((IStructuredSelection) selection).toArray();
-				ArrayList<IFile> files = new ArrayList<>();
+				ArrayList<IResource> files = new ArrayList<>();
 				for (Object object : selectedObjects) {
 					if(object instanceof IFile) {
 						boolean canOpen = ResourceType.isDACQConfiguration((IResource) object) || ResourceType.isProcess((IResource) object);
 						canOpen = canOpen || ResourceType.isLog((IResource) object);
 						canOpen = canOpen || ResourceType.isParameters((IResource) object);
 						canOpen = canOpen || ResourceType.isSamples((IResource) object);
+						canOpen = canOpen || ResourceType.isChannel((IResource) object);
 						if(canOpen) files.add((IFile) object);
 					}
 				}
-				if(files.size() > 0) resources = files.toArray(new IFile[files.size()]);
+				if(files.size() > 0) resources = files.toArray(new IResource[files.size()]);
 			}
 			setEnabled(resources != null);
 		}

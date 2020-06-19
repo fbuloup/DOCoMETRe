@@ -67,7 +67,6 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DragSource;
@@ -79,7 +78,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IPerspectiveListener;
 import org.eclipse.ui.IViewPart;
@@ -253,7 +251,7 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 		
 		experimentsTreeViewer.setInput(ResourcesPlugin.getWorkspace().getRoot());
 		experimentsTreeViewer.getTree().addSelectionListener(new SelectionListener() {
-			private boolean fireSecondSelectionEvent = true;
+//			private boolean fireSecondSelectionEvent = true;
 
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -263,10 +261,10 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 					if(element instanceof IResource) currentSelectedResource = (IResource)element;
 					RunStopHandler.refresh();
 				}
-				if(fireSecondSelectionEvent) {
-					fireSecondSelectionEvent = false;
-					experimentsTreeViewer.getTree().notifyListeners(SWT.Selection, new Event());
-				} else fireSecondSelectionEvent = true;
+//				if(fireSecondSelectionEvent) {
+//					fireSecondSelectionEvent = false;
+//					experimentsTreeViewer.getTree().notifyListeners(SWT.Selection, new Event());
+//				} else fireSecondSelectionEvent = true;
 			}
 			
 			@Override
@@ -388,7 +386,7 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 
 	@Override
 	public void setFocus() {
-		experimentsTreeViewer.getTree().setFocus();
+		if(experimentsTreeViewer != null) experimentsTreeViewer.getTree().setFocus();
 	}
 
 	@Override

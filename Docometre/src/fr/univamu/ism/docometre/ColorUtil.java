@@ -52,14 +52,14 @@ public final class ColorUtil {
 	
 	private static ColorRegistry colorRegistry;
 	private static Byte index = 0;
-	private final static Byte maxColors = 15;
+	private final static Byte maxColors = 64;
 	
 	private static ColorRegistry getColorRegistry() {
 		if(colorRegistry == null) {
 			Random rnd = new Random();
 			colorRegistry = new ColorRegistry(PlatformUI.getWorkbench().getDisplay(), true);
 			int i = 0;
-			while (i <= maxColors) {
+			while (i < maxColors) {
 				float hue = rnd.nextInt(361);
 				float saturation = rnd.nextFloat();
 				RGB rgb = new RGB(hue, saturation, 1);
@@ -78,7 +78,7 @@ public final class ColorUtil {
 		while (colorRegistry.get(String.valueOf(i)) != null) {
 			RGB rgb = colorRegistry.get(String.valueOf(i)).getRGB();
 			double distance = Math.pow(rgb.red - newRGB.red, 2) + Math.pow(rgb.green - newRGB.green, 2) + Math.pow(rgb.blue - newRGB.blue, 2);
-			if(distance < 5000) {
+			if(distance < 500) {
 				return false;
 			}
 			i++;
@@ -89,6 +89,7 @@ public final class ColorUtil {
 	public static Color getColor() {
 		Color color = getColorRegistry().get(index.toString());
 		index++;
+		index = (byte) (index % maxColors);
 		return color;
 	}
 	

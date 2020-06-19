@@ -86,6 +86,7 @@ public class GetResourceLabelDelegate {
 			if(Double.isNaN(percent)) percentString = Double.toString(percent);
 			return resource.getName() + " [" + percentString + "]";
 		}
+		if(ResourceType.isChannel(resource)) return resource.toString();
 		
 		return resource.getName();
 		

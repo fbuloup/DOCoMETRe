@@ -33,6 +33,10 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
+		if(!MathEngineFactory.getMathEngine().isStarted()) {
+			Activator.logInfoMessage(DocometreMessages.PleaseStartMathEngineFirst, getClass());
+			return null;
+		}
 		for (IResource subject : selectedSubjects) {
 			boolean loaded = MathEngineFactory.getMathEngine().isSubjectLoaded(subject);
 			if(loaded) {
@@ -70,6 +74,9 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 				if(ResourceType.isSubject(resource)) selectedSubjects.add(resource);
 			}
 		}
+		setBaseEnabled(selectedSubjects.size() > 0);
 	}
 
+	
+	
 }

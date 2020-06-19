@@ -75,12 +75,14 @@ public final class MatlabController {
 			
 			// Try to start Matlab
 			Builder matlabBuilder = new Builder();
+			matlabBuilder.setUsePreviouslyControlledSession(true);
 			matlabBuilder.setHidden(!showWindow);
 			matlabBuilder.setProxyTimeout(timeOut*1000);
 			if(matlabLocation != null && !matlabLocation.equals("")) matlabBuilder.setMatlabLocation(matlabLocation);
 			MatlabProxyFactoryOptions matlabOptions = matlabBuilder.build();
 			MatlabProxyFactory matlabProxyFactory = new MatlabProxyFactory(matlabOptions);
 			matlabProxy = matlabProxyFactory.getProxy();
+			if(matlabProxy.isExistingSession()) matlabProxy.eval("clear all;");
 			if(matlabScriptsLocation != null && !matlabScriptsLocation.equals("")) matlabProxy.eval("addpath('" + matlabScriptsLocation + "');");
 			
 		} finally {

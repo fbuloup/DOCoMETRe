@@ -4,6 +4,8 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 
+import fr.univamu.ism.docometre.analyse.datamodel.Channel;
+
 public interface MathEngine {
 	IStatus startEngine(IProgressMonitor monitor);
 	IStatus stopEngine(IProgressMonitor monitor);
@@ -15,9 +17,17 @@ public interface MathEngine {
 	boolean exist(String variableName);
 	boolean isStruct(String variableName);
 	boolean isField(String variableName, String fieldName);
-	String[] getChannelsNames(IResource subject);
-	public boolean isSignal(String fullName);
-	public boolean isCategory(String fullName);
-	public boolean isEvent(String fullName);
-	public String getCriteriaForCategory(String fullName);
+	public Channel[] getChannels(IResource subject);
+	public Channel getChannelWithName(IResource subject, String channelName);
+	public Channel[] getSignals(IResource subject);
+	public Channel[] getCategories(IResource subject);
+	public Channel[] getEvents(IResource subject);
+	public boolean isSignal(IResource channel);
+	public boolean isCategory(IResource channel);
+	public boolean isEvent(IResource channel);
+	public String getCriteriaForCategory(IResource category);
+	Integer[] getTrialsListForCategory(IResource category);
+	double[] getYValuesForSignal(Channel signal, int trialNumber);
+	double[] getTimeValuesForSignal(Channel signal, Integer trialNumber);
+	int getTrialsNumber(Channel signal);
 }
