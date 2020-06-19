@@ -35,9 +35,17 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		gl.horizontalSpacing = 0;
 		gl.verticalSpacing = 5;
 		
-		ChannelEditorWidgetsFactory.createChart(this, 3);
+		Composite channelContainer = new Composite(this, SWT.NORMAL);
+		GridLayout gl2 = new GridLayout(2, false);
+		gl2.horizontalSpacing = 0;
+		gl2.verticalSpacing = 0;
+		gl2.marginHeight = 0;
+		gl2.marginWidth = 0;
+		channelContainer.setLayout(gl2);
+		channelContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 4, 1));
+		ChannelEditorWidgetsFactory.createChart(channelContainer, 1);
 		
-		trialsListViewer = new ListViewer(this, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
+		trialsListViewer = new ListViewer(channelContainer, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 		trialsListViewer.getList().setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
 		int nbTrials = MathEngineFactory.getMathEngine().getTrialsNumber(channelEditor.getchannel());
 		Integer[] trials = IntStream.rangeClosed(1, nbTrials).boxed().toArray(Integer[]::new);
