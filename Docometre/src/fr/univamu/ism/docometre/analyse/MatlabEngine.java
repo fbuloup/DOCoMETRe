@@ -383,10 +383,8 @@ public final class MatlabEngine implements MathEngine {
 	@Override
 	public double[] getTimeValuesForSignal(Channel signal, Integer trialNumber) {
 		try {
-			Object[] responses = matlabController.returningEval(getMatlabFullPath(signal) + ".SampleFrequency", 1);
-			double sf = ((double[]) responses[0])[0];
-			responses = matlabController.returningEval(getMatlabFullPath(signal) + ".NbSamples(" + trialNumber + ")", 1);
-			int nbSamples = (int) ((double[]) responses[0])[0];
+			double sf = getSampleFrequency(signal);
+			int nbSamples = getSamplesNumber(signal, trialNumber);
 			double[] times = new double[nbSamples];
 			for (int i = 0; i < nbSamples; i++) {
 				times[i] = 1f*i/sf;
@@ -412,6 +410,44 @@ public final class MatlabEngine implements MathEngine {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
 		}
+		return 0;
+	}
+
+	@Override
+	public double getSampleFrequency(Channel signal) {
+		try {
+			Object[] responses = matlabController.returningEval(getMatlabFullPath(signal) + ".SampleFrequency", 1);
+			double sf = ((double[]) responses[0])[0];
+			return sf;
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return 0;
+	}
+
+	@Override
+	public int getSamplesNumber(Channel signal, int trialNumber) {
+		try {
+			Object[] responses = matlabController.returningEval(getMatlabFullPath(signal) + ".NbSamples(" + trialNumber + ")", 1);
+			int nbSamples = (int) ((double[]) responses[0])[0];
+			return nbSamples;
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return 0;
+	}
+
+	@Override
+	public int getFrontCut(Channel getchannel, int selection) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int getEndCut(Channel getchannel, int selection) {
+		// TODO Auto-generated method stub
 		return 0;
 	}
 

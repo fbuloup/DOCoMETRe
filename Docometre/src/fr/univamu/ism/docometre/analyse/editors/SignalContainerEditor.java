@@ -1,5 +1,8 @@
 package fr.univamu.ism.docometre.analyse.editors;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -9,16 +12,28 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Spinner;
+import org.eclipse.swtchart.ILineSeries;
+import org.eclipse.swtchart.ISeries;
+import org.eclipse.swtchart.ILineSeries.PlotSymbolType;
+import org.eclipse.swtchart.ISeries.SeriesType;
+import org.eclipse.swtchart.extensions.charts.InteractiveChart;
 
 import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.ColorUtil;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
+import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 
 public class SignalContainerEditor extends Composite implements ISelectionChangedListener {
 	
@@ -26,6 +41,10 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 	
 	private ChannelEditor channelEditor;
 	private ListViewer trialsListViewer;
+
+	private InteractiveChart chart;
+
+	private int nbTrials;
 
 	public SignalContainerEditor(Composite parent, int style, ChannelEditor channelEditor) {
 		super(parent, style);
@@ -43,7 +62,7 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		gl2.marginWidth = 0;
 		channelContainer.setLayout(gl2);
 		channelContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 4, 1));
-		ChannelEditorWidgetsFactory.createChart(channelContainer, 1);
+		chart = ChannelEditorWidgetsFactory.createChart(channelContainer, 1);
 		
 		trialsListViewer = new ListViewer(channelContainer, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 		trialsListViewer.getList().setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
@@ -145,19 +164,38 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		trialsGroup.setLayout(new GridLayout(2, false));
 		
 		ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.Trial, SWT.LEFT, false);
-		ChannelEditorWidgetsFactory.createSpinner(trialsGroup, SWT.FILL, true);
+		Spinner trialSelectionSpinner = ChannelEditorWidgetsFactory.createSpinner(trialsGroup, SWT.FILL, true);
 		
 		ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.FrontCutLabel, SWT.LEFT, false);
-		ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.NotAvailable_Label, SWT.LEFT, true);
+		Label frontCutLabelValue = ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.NotAvailable_Label, SWT.LEFT, true);
 		
 		ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.EndCutLabel, SWT.LEFT, false);
-		ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.NotAvailable_Label, SWT.LEFT, true);
+		Label endCutLabelValue = ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.NotAvailable_Label, SWT.LEFT, true);
 		
 		ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.SamplesNumberLabel, SWT.LEFT, false);
-		ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.NotAvailable_Label, SWT.LEFT, true);
+		Label samplesNumberLabelValue = ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.NotAvailable_Label, SWT.LEFT, true);
 		
 		ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.DurationLabel, SWT.LEFT, false);
-		ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.NotAvailable_Label, SWT.LEFT, true);
+		Label durationLabelValue = ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.NotAvailable_Label, SWT.LEFT, true);
+
+		trialSelectionSpinner.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				int samplesNumber = MathEngineFactory.getMathEngine().getSamplesNumber(channelEditor.getchannel(), trialSelectionSpinner.getSelection());
+				int frontCut = MathEngineFactory.getMathEngine().getFrontCut(channelEditor.getchannel(), trialSelectionSpinner.getSelection());
+				int endCut = samplesNumber - MathEngineFactory.getMathEngine().getEndCut(channelEditor.getchannel(), trialSelectionSpinner.getSelection());
+				double sf = MathEngineFactory.getMathEngine().getSampleFrequency(channelEditor.getchannel());
+				double duration = 1f*samplesNumber/sf;
+				frontCutLabelValue.setText(Integer.toString(frontCut));
+				endCutLabelValue.setText(Integer.toString(endCut));
+				samplesNumberLabelValue.setText(Integer.toString(samplesNumber));
+				durationLabelValue.setText(Double.toString(duration));
+			}
+		});
+		trialSelectionSpinner.setMaximum(nbTrials);
+		trialSelectionSpinner.setMinimum(nbTrials>0?1:0);
+		trialSelectionSpinner.setSelection(1);
+		trialSelectionSpinner.notifyListeners(SWT.Selection, new Event());
 	}
 
 	private void createGeneralInfoGroup() {
@@ -165,19 +203,93 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		infosGroup.setLayout(new GridLayout(2, false));
 		
 		ChannelEditorWidgetsFactory.createLabel(infosGroup, DocometreMessages.SignalNameLabel, SWT.LEFT, false);
-		ChannelEditorWidgetsFactory.createLabel(infosGroup, DocometreMessages.NotAvailable_Label, SWT.LEFT, true);
+		ChannelEditorWidgetsFactory.createLabel(infosGroup, channelEditor.getchannel().getName(), SWT.LEFT, true);
 		
+		ChannelEditorWidgetsFactory.createLabel(infosGroup, DocometreMessages.Subject_Label, SWT.LEFT, false);
+		ChannelEditorWidgetsFactory.createLabel(infosGroup, channelEditor.getchannel().getParent().getName(), SWT.LEFT, true);
+		
+		ChannelEditorWidgetsFactory.createLabel(infosGroup, DocometreMessages.Experiment_Label, SWT.LEFT, false);
+		ChannelEditorWidgetsFactory.createLabel(infosGroup, channelEditor.getchannel().getParent().getParent().getName(), SWT.LEFT, true);
+		
+		double sf = MathEngineFactory.getMathEngine().getSampleFrequency(channelEditor.getchannel());
 		ChannelEditorWidgetsFactory.createLabel(infosGroup, DocometreMessages.FrequencyLabel, SWT.LEFT, false);
-		ChannelEditorWidgetsFactory.createLabel(infosGroup, DocometreMessages.NotAvailable_Label, SWT.LEFT, true);
+		ChannelEditorWidgetsFactory.createLabel(infosGroup, Double.toString(sf), SWT.LEFT, true);
 		
+		nbTrials = MathEngineFactory.getMathEngine().getTrialsNumber(channelEditor.getchannel());
 		ChannelEditorWidgetsFactory.createLabel(infosGroup, DocometreMessages.TrialsNumberLabel2, SWT.LEFT, false);
-		ChannelEditorWidgetsFactory.createLabel(infosGroup, DocometreMessages.NotAvailable_Label, SWT.LEFT, true);
+		ChannelEditorWidgetsFactory.createLabel(infosGroup, Integer.toString(nbTrials), SWT.LEFT, true);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void selectionChanged(SelectionChangedEvent event) {
-		// TODO Auto-generated method stub
+		if(trialsListViewer.getStructuredSelection().isEmpty()) {
+			removeAllSeries();
+			return;
+		}
 		
+		List<Integer> selectedTrialsNumbers = trialsListViewer.getStructuredSelection().toList();
+		// Remove series from chart if not in selection
+		Set<Integer> trialsNumbersInChart = getTrialsInChart();
+		for (Integer trialNumberInChart : trialsNumbersInChart) {
+			boolean trialSelected = selectedTrialsNumbers.contains(trialNumberInChart);
+			if(!trialSelected) removeSeriesFromChart(trialNumberInChart);
+		}
+		
+		// Add series
+		for (Integer selectedTrialNumber : selectedTrialsNumbers) {
+			if(!chartHasAlreadyThisTrial(selectedTrialNumber)) {
+				addSeriesToChart(selectedTrialNumber);
+			}
+		}
+		
+		chart.getAxisSet().adjustRange();
+		chart.redraw();
 	}
 
+	private void removeSeriesFromChart(Integer trialNumber) {
+		String seriesID = channelEditor.getchannel().getFullName() + "." + trialNumber;
+		if(chart.getSeriesSet().getSeries(seriesID) != null) {
+			chart.getSeriesSet().deleteSeries(seriesID);
+		}
+	}
+	
+	private void addSeriesToChart(Integer trialNumber) {
+		// Get x and Y values for this signal and trial
+		Channel signal = channelEditor.getchannel();
+		double[] yValues = MathEngineFactory.getMathEngine().getYValuesForSignal(signal, trialNumber);
+		double[] xValues = MathEngineFactory.getMathEngine().getTimeValuesForSignal(signal, trialNumber);
+		// Add Series
+		String seriesID = signal.getFullName() + "." + trialNumber;
+		ILineSeries series = (ILineSeries) chart.getSeriesSet().createSeries(SeriesType.LINE, seriesID);
+		series.setXSeries(xValues);
+		series.setYSeries(yValues);
+		series.setAntialias(SWT.ON);
+		series.setSymbolType(PlotSymbolType.NONE);
+		series.setLineColor(ColorUtil.getColor());
+		series.setLineWidth(3);
+	}
+	
+	private Set<Integer> getTrialsInChart() {
+		Set<Integer> trials = new HashSet<Integer>();
+		ISeries[] series = chart.getSeriesSet().getSeries();
+		for (ISeries aSeries : series) {
+			String[] segments = aSeries.getId().split("\\.");
+			trials.add(Integer.parseInt(segments[segments.length - 1]));
+		}
+		return trials;
+	}
+
+	private void removeAllSeries() {
+		ISeries[] series = chart.getSeriesSet().getSeries();
+		for (ISeries aSeries : series) {
+			chart.getSeriesSet().deleteSeries(aSeries.getId());
+		}
+	}
+	
+	private boolean chartHasAlreadyThisTrial(Integer trialNumber) {
+		String seriesID = channelEditor.getchannel().getFullName() + "." + trialNumber;
+		return chart.getSeriesSet().getSeries(seriesID) != null;
+	}
+	
 }

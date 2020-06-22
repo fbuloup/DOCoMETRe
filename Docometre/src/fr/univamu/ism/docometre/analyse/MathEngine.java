@@ -30,4 +30,8 @@ public interface MathEngine {
 	double[] getYValuesForSignal(Channel signal, int trialNumber);
 	double[] getTimeValuesForSignal(Channel signal, Integer trialNumber);
 	int getTrialsNumber(Channel signal);
+	double getSampleFrequency(Channel signal);
+	int getSamplesNumber(Channel signal, int trialNumber);
+	int getFrontCut(Channel getchannel, int selection);
+	int getEndCut(Channel getchannel, int selection);
 }

@@ -128,7 +128,6 @@ public class CategoryContainerEditor extends Composite implements ISelectionChan
 		for (ISeries aSeries : series) {
 			chart.getSeriesSet().deleteSeries(aSeries.getId());
 		}
-		
 	}
 
 	private Set<Channel> getSignalsInChart() {
