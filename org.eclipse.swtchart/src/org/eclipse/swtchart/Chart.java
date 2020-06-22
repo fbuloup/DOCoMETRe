@@ -50,6 +50,8 @@ public class Chart extends Composite implements Listener {
 	private boolean compressEnabled;
 	/** the state indicating if the update of chart appearance is suspended */
 	private boolean updateSuspended;
+	/** Series that has current focus **/
+	private ISeries currentSeries;
 
 	/**
 	 * Constructor.
@@ -74,6 +76,22 @@ public class Chart extends Composite implements Listener {
 		axisSet = new AxisSet(this);
 		updateLayout();
 		addListener(SWT.Resize, this);
+	}
+	
+	/**
+	 * Return the series that have current focus
+	 * @return the current selected Series
+	 */
+	public ISeries getCurrentSeries() {
+		return currentSeries;
+	}
+	
+	/** Set current series focus
+	 * 
+	 * @param currentSeries the series which will have current focus
+	 */
+	public void setCurrentSeries(ISeries currentSeries) {
+		this.currentSeries = currentSeries;
 	}
 
 	/**
@@ -112,7 +130,6 @@ public class Chart extends Composite implements Listener {
 	 * @return the plot area
 	 */
 	public Composite getPlotArea() {
-
 		return plotArea;
 	}
 
@@ -122,7 +139,6 @@ public class Chart extends Composite implements Listener {
 	 * @return the set of series
 	 */
 	public ISeriesSet getSeriesSet() {
-
 		return plotArea.getSeriesSet();
 	}
 
@@ -131,7 +147,6 @@ public class Chart extends Composite implements Listener {
 	 */
 	@Override
 	public void setBackground(Color color) {
-
 		super.setBackground(color);
 		for(Control child : getChildren()) {
 			if(!(child instanceof PlotArea) && !(child instanceof Legend)) {

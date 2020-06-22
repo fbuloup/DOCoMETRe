@@ -47,7 +47,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.NumberFormat;
-import java.util.Arrays;
 import java.util.HashMap;
 
 import org.eclipse.core.resources.IContainer;
@@ -111,9 +110,6 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 	private static Color RED_COLOR = PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_RED);
 	
 	private InteractiveChart chart;
-	private int currentX;
-	private int currentY;
-	private ILineSeries currentSeries;
 
 	private int currentXMarker = -1;
 	private int currentYMarker = -1;
@@ -195,25 +191,6 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 		chart.getPlotArea().addMouseMoveListener(this);
 		chart.getPlotArea().addPaintListener(this);
 		chart.getPlotArea().addListener(SWT.MouseWheel, this);
-		chart.getPlotArea().addListener(SWT.KeyDown, new Listener() {
-			@Override
-			public void handleEvent(Event event) {
-				if(event.keyCode == SWT.TAB) {
-					
-					if(chart.getSeriesSet().getSeries().length > 1 ) {
-						ISeries[] series = chart.getSeriesSet().getSeries();
-						for (int i = 0; i < series.length; i++) {
-							if(currentSeries == series[i]) {
-								int index = (i + 1) % series.length;
-								currentSeries = (ILineSeries) series[index];
-								break;
-							}
-						}
-						mouseEventHandler(event);
-					} 
-				} else mouseEventHandler(event);
-			}
-		});
 		MenuItem menuItem = chart.getMenuItem(null, Messages.ADJUST_AXIS_RANGE);
 		menuItem.addListener(SWT.Selection, this);
 		menuItem = chart.getMenuItem(null, Messages.ADJUST_X_AXIS_RANGE);
@@ -375,8 +352,6 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 			lineSeries.setLineColor(ColorUtil.getColor());
 			lineSeries.setLineWidth(3);
 			
-			currentSeries = lineSeries;
-			
 			chart.getAxisSet().adjustRange();
 			
 			refreshPartName();
@@ -444,57 +419,23 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 
 	@Override
 	public void mouseMove(MouseEvent event) {
-		if(currentSeries == null) return;
-		int previousCurrentX = currentX;
-		currentX = event.x;
-		double x = chart.getAxisSet().getXAxes()[0].getDataCoordinate(event.x);
-		int index = Arrays.binarySearch(currentSeries.getXSeries(), x);
-		double y = Double.NaN;
-		if(index < 0) {
-			index = - index - 1;
-			if(index > 0 && index < currentSeries.getXSeries().length) {
-				double y1  = currentSeries.getYSeries()[index - 1];
-				double y2  = currentSeries.getYSeries()[index];
-				double x1  = currentSeries.getXSeries()[index - 1];
-				double x2  = currentSeries.getXSeries()[index];
-				y = (y2 -y1)/(x2 - x1)*(x - x1) + y1; 
-			}
-		} else {
-			if(index >= 0 && index < currentSeries.getXSeries().length) {
-				y = currentSeries.getYSeries()[index];
-			}
-		}
-		currentY = chart.getAxisSet().getYAxes()[0].getPixelCoordinate(y);
-		
-//		chart.getPlotArea().redraw();
-		int min = Math.min(previousCurrentX, currentX);
-		int max = Math.max(previousCurrentX, currentX);
-		int width = max - min + 20;
-		chart.getPlotArea().redraw(min - 10, 0, width,chart.getPlotArea().getBounds().height, false);
-		
-		NumberFormat nf = NumberFormat.getInstance();
-		nf.setMaximumFractionDigits(6);
-		
-		StringBuilder text = new StringBuilder();
-		text.append("Cursor (");
-		text.append(nf.format(x));
-		text.append(" ; ");
-		text.append(nf.format(y));
-		text.append(")");
-		ApplicationActionBarAdvisor.cursorContributionItem.setText(text.toString());
+
+		ApplicationActionBarAdvisor.cursorContributionItem.setText(chart.getCoordinatesString());
 		
 		if(currentXMarker != -1) {
+			NumberFormat nf = NumberFormat.getInstance();
+			nf.setMaximumFractionDigits(6);
 			double mx = chart.getAxisSet().getXAxes()[0].getDataCoordinate(currentXMarker);
 			double my = chart.getAxisSet().getYAxes()[0].getDataCoordinate(currentYMarker);
-			text = new StringBuilder();
+			StringBuilder text = new StringBuilder();
 			text.append("Marker (");
 			text.append(nf.format(mx));
 			text.append(" ; ");
 			text.append(nf.format(my));
 			text.append(")");
 			ApplicationActionBarAdvisor.markerContributionItem.setText(text.toString());
-			x = x - mx;
-			y = y - my;
+			double x = chart.getCurrentX() - mx;
+			double y = chart.getCurrentY() - my;
 			text = new StringBuilder();
 			text.append("\u0394 (");
 			text.append(nf.format(x));
@@ -524,31 +465,17 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 	public void paintControl(PaintEvent e) {
 		Color oldColor = e.gc.getForeground();			
 		
-		// Draw cursor
 		e.gc.setForeground(RED_COLOR);
-		e.gc.setLineWidth(3);
-		e.gc.drawLine(currentX, 0, currentX, currentY - 3);
-		e.gc.drawLine(currentX, currentY + 3, currentX, chart.getPlotArea().getBounds().height);
-		e.gc.drawRectangle(currentX - 3, currentY - 3, 6, 6);
 		// Draw marker
 		if(currentXMarker != -1) {
-//			e.gc.drawLine(currentXMarker, 0, currentXMarker, chart.getPlotArea().getBounds().height);
-			
 			e.gc.drawLine(currentXMarker, 0, currentXMarker, currentYMarker - 3);
 			e.gc.drawLine(currentXMarker, currentYMarker + 3, currentXMarker, chart.getPlotArea().getBounds().height);
 			e.gc.drawRectangle(currentXMarker - 3, currentYMarker - 3, 6, 6);
-			
-			
 		}
-		
 		
 		e.gc.setForeground(oldColor);
 	}
 	
-	public int getCurrentX() {
-		return currentX;
-	}
-
 	@Override
 	public void handleEvent(Event event) {
 		mouseEventHandler(event);
@@ -562,7 +489,7 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 			ApplicationActionBarAdvisor.cursorContributionItem.getParent().update(true);
 		}
 		doubleClick = false;
-		event.x = currentX;
+		event.x = chart.getCurrentX_Pixel();
 		MouseEvent mouseEvent = new MouseEvent(event);
 		mouseMove(mouseEvent);
 	}
@@ -576,8 +503,8 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 
 	@Override
 	public void mouseDoubleClick(MouseEvent e) {
-		currentXMarker = currentX;
-		currentYMarker = currentY;
+		currentXMarker = chart.getCurrentX_Pixel();
+		currentYMarker = chart.getCurrentY_Pixel();
 		doubleClick = true;
 	}
 

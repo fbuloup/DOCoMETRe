@@ -72,7 +72,7 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 		public void run() {
 			if(editor.getChart().getMenuItem(null, Messages.PROPERTIES) != null) {
 				Event event = new Event();
-				event.x = editor.getCurrentX();
+				event.x = editor.getChart().getCurrentX_Pixel();
 				event.type = SWT.Selection;
 				event.widget = editor.getChart().getMenuItem(null, Messages.PROPERTIES);
 				editor.getChart().handleEvent(event);
@@ -89,7 +89,7 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 		@Override
 		public void run() {
 			Event event = new Event();
-			event.x = editor.getCurrentX();
+			event.x = editor.getChart().getCurrentX_Pixel();
 			event.type = SWT.KeyDown;
 			event.keyCode = SWT.ARROW_LEFT;
 			event.widget = panLeftActionContributionItem.getWidget();
@@ -106,7 +106,7 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 		@Override
 		public void run() {
 			Event event = new Event();
-			event.x = editor.getCurrentX();
+			event.x = editor.getChart().getCurrentX_Pixel();
 			event.type = SWT.KeyDown;
 			event.keyCode = SWT.ARROW_UP;
 			event.widget = panUpActionContributionItem.getWidget();
@@ -123,7 +123,7 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 		@Override
 		public void run() {
 			Event event = new Event();
-			event.x = editor.getCurrentX();
+			event.x = editor.getChart().getCurrentX_Pixel();
 			event.type = SWT.KeyDown;
 			event.keyCode = SWT.ARROW_DOWN;
 			event.widget = panDownActionContributionItem.getWidget();
@@ -140,7 +140,7 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 		@Override
 		public void run() {
 			Event event = new Event();
-			event.x = editor.getCurrentX();
+			event.x = editor.getChart().getCurrentX_Pixel();
 			event.type = SWT.KeyDown;
 			event.keyCode = SWT.ARROW_RIGHT;
 			event.widget = panRightActionContributionItem.getWidget();
@@ -158,7 +158,7 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 		public void run() {
 			if(editor.getChart().getMenuItem(null, Messages.ZOOMIN) != null) {
 				Event event = new Event();
-				event.x = editor.getCurrentX();
+				event.x = editor.getChart().getCurrentX_Pixel();
 				event.type = SWT.Selection;
 				event.widget = editor.getChart().getMenuItem(null, Messages.ZOOMIN);
 				editor.getChart().handleEvent(event);
@@ -176,7 +176,7 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 		public void run() {
 			if(editor.getChart().getMenuItem(null, Messages.ZOOMOUT) != null) {
 				Event event = new Event();
-				event.x = editor.getCurrentX();
+				event.x = editor.getChart().getCurrentX_Pixel();
 				event.type = SWT.Selection;
 				event.widget = editor.getChart().getMenuItem(null, Messages.ZOOMOUT);
 				editor.getChart().handleEvent(event);
@@ -194,7 +194,7 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 		public void run() {
 			if(editor.getChart().getMenuItem(null, Messages.ADJUST_AXIS_RANGE) != null) {
 				Event event = new Event();
-				event.x = editor.getCurrentX();
+				event.x = editor.getChart().getCurrentX_Pixel();
 				event.type = SWT.Selection;
 				event.widget = editor.getChart().getMenuItem(null, Messages.ADJUST_AXIS_RANGE);
 				editor.getChart().handleEvent(event);

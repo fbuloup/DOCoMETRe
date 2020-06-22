@@ -87,6 +87,7 @@ public class SeriesSet implements ISeriesSet {
 		}
 		// legend will be shown if there is previously no series.
 		chart.updateLayout();
+		chart.setCurrentSeries(series);
 		return series;
 	}
 

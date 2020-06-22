@@ -88,11 +88,6 @@ public class ChannelEditor extends EditorPart {
 	
 	@Override
 	public String getPartName() {
-		
-		/*>>>>>>>>*//*for debug, to remove*/
-		if(channel == null) return "Part name for debug only!";
-		/*>>>>>>>>*//*for debug, to remove*/
-		
 		return channel.getFullName();
 	}
 

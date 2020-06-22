@@ -11,6 +11,9 @@
  *******************************************************************************/
 package org.eclipse.swtchart.extensions.charts;
 
+import java.text.NumberFormat;
+import java.util.Arrays;
+
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.preference.PreferenceNode;
@@ -18,15 +21,20 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Cursor;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swtchart.Chart;
 import org.eclipse.swtchart.IAxis;
+import org.eclipse.swtchart.IPlotArea;
+import org.eclipse.swtchart.ISeries;
 import org.eclipse.swtchart.IAxis.Direction;
 import org.eclipse.swtchart.Range;
 import org.eclipse.swtchart.extensions.properties.AxisPage;
@@ -37,6 +45,7 @@ import org.eclipse.swtchart.extensions.properties.LegendPage;
 import org.eclipse.swtchart.extensions.properties.PropertiesResources;
 import org.eclipse.swtchart.extensions.properties.SeriesLabelPage;
 import org.eclipse.swtchart.extensions.properties.SeriesPage;
+
 
 /**
  * An interactive chart which provides the following abilities.
@@ -58,6 +67,15 @@ public class InteractiveChart extends Chart implements PaintListener {
 	private long clickedTime;
 	/** the resources created with properties dialog */
 	private PropertiesResources resources;
+
+	private int currentX_Pixel;
+	private int currentY_Pixel;
+	private double currentX;
+	private double currentY;
+	private String coordinatesString;
+	private CursorPainter cursorPainter;
+	private boolean showCursor = true;
+	private int previousCurrentX_Pixel; 
 
 	/**
 	 * Constructor.
@@ -87,7 +105,14 @@ public class InteractiveChart extends Chart implements PaintListener {
 		plot.addListener(SWT.MouseWheel, this);
 		plot.addListener(SWT.KeyDown, this);
 		plot.addPaintListener(this);
+		cursorPainter = new CursorPainter(this);
+		((IPlotArea)plot).addCustomPaintListener(cursorPainter);
+		getPlotArea().setCursor(new Cursor(Display.getDefault(), SWT.CURSOR_CROSS));
 		createMenuItems();
+	}
+	
+	public void setShowCursor(boolean showCursor) {
+		this.showCursor = showCursor;
 	}
 
 	/**
@@ -241,11 +266,90 @@ public class InteractiveChart extends Chart implements PaintListener {
 	 *            the mouse move event
 	 */
 	private void handleMouseMoveEvent(Event event) {
-
+		getPlotArea().setFocus();
 		if(!selection.isDisposed()) {
 			selection.setEndPoint(event.x, event.y);
 			redraw();
+		} else {
+			if (showCursor) {
+				// Compute current coordinates
+				computeCurrentCordinates(event);
+				// Convert to String
+				coordinatesString = convertToString();
+				PaintEvent paintEvent = new PaintEvent(event);
+				paintEvent.gc = new GC(getPlotArea());
+				cursorPainter.paintControl(paintEvent);
+			} else coordinatesString = "";
 		}
+		
+	}
+	
+	public String getCoordinatesString() {
+		return coordinatesString;
+	}
+	
+	private String convertToString() {
+		if(getCurrentSeries() == null) return "";
+		NumberFormat nf = NumberFormat.getInstance();
+		nf.setMaximumFractionDigits(6);
+		
+		StringBuilder text = new StringBuilder();
+		text.append("Cursor (");
+		text.append(nf.format(currentX));
+		text.append(" ; ");
+		text.append(nf.format(currentY));
+		text.append(")");
+		
+		
+		return text.toString();
+	}
+	
+	public int getCurrentX_Pixel() {
+		return currentX_Pixel;
+	}
+
+	public int getCurrentY_Pixel() {
+		return currentY_Pixel;
+	}
+	
+	public int getPreviousCurrentX_Pixel() {
+		return previousCurrentX_Pixel;
+	}
+	
+	public double getCurrentX() {
+		return currentX;
+	}
+	
+	public double getCurrentY() {
+		return currentY;
+	}
+	
+	private void computeCurrentCordinates(Event event) {
+		currentX = Double.NaN;
+		currentY = Double.NaN;
+		if(getCurrentSeries() == null) return;
+		previousCurrentX_Pixel = currentX_Pixel;
+		currentX_Pixel = event.x;
+		double x = getAxisSet().getXAxes()[0].getDataCoordinate(event.x);
+		int index = Arrays.binarySearch(getCurrentSeries().getXSeries(), x);
+		double y = Double.NaN;
+		if(index < 0) {
+			index = - index - 1;
+			if(index > 0 && index < getCurrentSeries().getXSeries().length) {
+				double y1  = getCurrentSeries().getYSeries()[index - 1];
+				double y2  = getCurrentSeries().getYSeries()[index];
+				double x1  = getCurrentSeries().getXSeries()[index - 1];
+				double x2  = getCurrentSeries().getXSeries()[index];
+				y = (y2 -y1)/(x2 - x1)*(x - x1) + y1; 
+			}
+		} else {
+			if(index >= 0 && index < getCurrentSeries().getXSeries().length) {
+				y = getCurrentSeries().getYSeries()[index];
+			}
+		}
+		currentY_Pixel = getAxisSet().getYAxes()[0].getPixelCoordinate(y);
+		currentX = x;
+		currentY = y;
 	}
 
 	/**
@@ -350,7 +454,28 @@ public class InteractiveChart extends Chart implements PaintListener {
 				axis.scrollUp();
 			}
 			redraw();
-		}
+		} else if(event.keyCode == SWT.TAB) {
+			if (showCursor) {
+				if (getSeriesSet().getSeries().length > 1) {
+					ISeries[] series = getSeriesSet().getSeries();
+					for (int i = 0; i < series.length; i++) {
+						if (getCurrentSeries() == series[i]) {
+							int index = 0;
+							if ((event.stateMask & SWT.SHIFT) > 0)
+								index = i - 1;
+							else
+								index = (i + 1) % series.length;
+							if (index < 0)
+								index = series.length - 1;
+							setCurrentSeries(series[index]);
+							break;
+						}
+					}
+					event.x = currentX_Pixel;
+					handleMouseMoveEvent(event);
+				} 
+			} 
+		} 
 	}
 
 	/**
