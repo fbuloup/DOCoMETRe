@@ -180,7 +180,7 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 		chart.getLegend().setPosition(SWT.BOTTOM);
 		chart.getLegend().setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_BLACK));
 		chart.getLegend().setForeground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
-		chart.setSelectionRectangelColor(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_RED));
+		chart.setSelectionRectangleColor(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_RED));
 		chart.getTitle().setVisible(false);
 		chart.getAxisSet().getXAxes()[0].getTitle().setForeground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		chart.getAxisSet().getXAxes()[0].getTitle().setText("Time (s)");
@@ -420,7 +420,7 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 	@Override
 	public void mouseMove(MouseEvent event) {
 
-		ApplicationActionBarAdvisor.cursorContributionItem.setText(chart.getCoordinatesString());
+		ApplicationActionBarAdvisor.cursorContributionItem.setText(chart.getCursorCoordinatesString());
 		
 		if(currentXMarker != -1) {
 			NumberFormat nf = NumberFormat.getInstance();

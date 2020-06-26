@@ -18,9 +18,6 @@ public class ChannelEditor extends EditorPart {
 	
 	public static String ID = "Docometre.ChannelEditor";
 	
-	private static boolean debugSignal = false;
-	private static boolean debugCategory = false;
-	
 	private Channel channel;
 	private Composite container;
 
@@ -73,10 +70,10 @@ public class ChannelEditor extends EditorPart {
 
 	@Override
 	public void createPartControl(Composite parent) {
-		if(debugSignal || channel != null && channel.isSignal()) {
+		if(channel != null && channel.isSignal()) {
 			container = new SignalContainerEditor(parent, SWT.BORDER, this);
 		}
-		if(debugCategory || channel != null && channel.isCategory()) {
+		if(channel != null && channel.isCategory()) {
 			container = new CategoryContainerEditor(parent, SWT.BORDER, this);
 		}
 	}
@@ -91,7 +88,7 @@ public class ChannelEditor extends EditorPart {
 		return channel.getFullName();
 	}
 
-	public void gotNextTrial() {
+	public void gotoNextTrial() {
 		// TODO Auto-generated method stub
 		
 	}

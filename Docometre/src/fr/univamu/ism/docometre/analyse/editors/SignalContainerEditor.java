@@ -49,10 +49,10 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 	public SignalContainerEditor(Composite parent, int style, ChannelEditor channelEditor) {
 		super(parent, style);
 		this.channelEditor = channelEditor;
-		setLayout(new GridLayout(4, true));
+		setLayout(new GridLayout(2, false));
 		GridLayout gl = (GridLayout)getLayout();
 		gl.horizontalSpacing = 0;
-		gl.verticalSpacing = 5;
+		gl.verticalSpacing = 2;
 		
 		Composite channelContainer = new Composite(this, SWT.NORMAL);
 		GridLayout gl2 = new GridLayout(2, false);
@@ -61,7 +61,7 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		gl2.marginHeight = 0;
 		gl2.marginWidth = 0;
 		channelContainer.setLayout(gl2);
-		channelContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 4, 1));
+		channelContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 		chart = ChannelEditorWidgetsFactory.createChart(channelContainer, 1);
 		
 		trialsListViewer = new ListViewer(channelContainer, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
@@ -79,15 +79,42 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		trialsListViewer.setInput(trials);
 		trialsListViewer.addSelectionChangedListener(this);
 		
-		ChannelEditorWidgetsFactory.createSeparator(this, true, false, 4, SWT.HORIZONTAL);
-		createGeneralInfoGroup();
-		createTrialsGroup();
-		createFieldsGroup();
-		createMarkersGroup();
+		ChannelEditorWidgetsFactory.createSeparator(this, true, false, 1, SWT.HORIZONTAL);
+		Button showHideInfosButton = new Button(this, SWT.FLAT);
+		showHideInfosButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+		((GridData)showHideInfosButton.getLayoutData()).heightHint = 10;
+		((GridData)showHideInfosButton.getLayoutData()).widthHint = 12;
+		showHideInfosButton.setImage(Activator.getImage(IImageKeys.HIDE_PANNEL));
+		
+		Composite infosTrialsFieldsMarkersContainer = new Composite(this, SWT.NORMAL);
+		infosTrialsFieldsMarkersContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		infosTrialsFieldsMarkersContainer.setLayout(new GridLayout(4, true));
+		GridLayout gl3 = (GridLayout) infosTrialsFieldsMarkersContainer.getLayout();
+		gl3.horizontalSpacing = 0;
+		gl3.verticalSpacing = 0;
+		gl3.marginHeight = 0;
+		gl3.marginWidth = 0;
+		createGeneralInfoGroup(infosTrialsFieldsMarkersContainer);
+		createTrialsGroup(infosTrialsFieldsMarkersContainer);
+		createFieldsGroup(infosTrialsFieldsMarkersContainer);
+		createMarkersGroup(infosTrialsFieldsMarkersContainer);
+		
+		showHideInfosButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				GridData gd = (GridData)infosTrialsFieldsMarkersContainer.getLayoutData();
+				boolean exclude = gd.exclude;
+				gd.exclude = !exclude;
+				infosTrialsFieldsMarkersContainer.setVisible(exclude);
+				infosTrialsFieldsMarkersContainer.getParent().layout(true);
+				if(gd.exclude) showHideInfosButton.setImage(Activator.getImage(IImageKeys.SHOW_PANNEL));
+				else showHideInfosButton.setImage(Activator.getImage(IImageKeys.HIDE_PANNEL));
+			}
+		});
 	}
 	
-	private void createMarkersGroup() {
-		Group markersGroupsGroup = ChannelEditorWidgetsFactory.createGroup(this, DocometreMessages.MarkersGroupTitle);
+	private void createMarkersGroup(Composite infosTrialsFieldsMarkersContainer) {
+		Group markersGroupsGroup = ChannelEditorWidgetsFactory.createGroup(infosTrialsFieldsMarkersContainer, DocometreMessages.MarkersGroupTitle);
 		markersGroupsGroup.setLayout(new GridLayout(2, false));
 		
 		ChannelEditorWidgetsFactory.createLabel(markersGroupsGroup, DocometreMessages.GroupNameLabel, SWT.LEFT, false);
@@ -133,8 +160,8 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		ChannelEditorWidgetsFactory.createLabel(markersGroupsGroup, DocometreMessages.NotAvailable_Label, SWT.LEFT, true);
 	}
 	
-	private void createFieldsGroup() {
-		Group fieldsGroup = ChannelEditorWidgetsFactory.createGroup(this, DocometreMessages.FieldsGroupTitle);
+	private void createFieldsGroup(Composite infosTrialsFieldsMarkersContainer) {
+		Group fieldsGroup = ChannelEditorWidgetsFactory.createGroup(infosTrialsFieldsMarkersContainer, DocometreMessages.FieldsGroupTitle);
 		fieldsGroup.setLayout(new GridLayout(2, false));
 		
 		ChannelEditorWidgetsFactory.createLabel(fieldsGroup, DocometreMessages.FieldsNameLabel, SWT.LEFT, false);
@@ -159,8 +186,8 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		ChannelEditorWidgetsFactory.createLabel(fieldsGroup, DocometreMessages.NotAvailable_Label, SWT.LEFT, true);
 	}
 
-	private void createTrialsGroup() {
-		Group trialsGroup = ChannelEditorWidgetsFactory.createGroup(this, DocometreMessages.TrialsGroupLabel);
+	private void createTrialsGroup(Composite infosTrialsFieldsMarkersContainer) {
+		Group trialsGroup = ChannelEditorWidgetsFactory.createGroup(infosTrialsFieldsMarkersContainer, DocometreMessages.TrialsGroupLabel);
 		trialsGroup.setLayout(new GridLayout(2, false));
 		
 		ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.Trial, SWT.LEFT, false);
@@ -198,8 +225,8 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		trialSelectionSpinner.notifyListeners(SWT.Selection, new Event());
 	}
 
-	private void createGeneralInfoGroup() {
-		Group infosGroup = ChannelEditorWidgetsFactory.createGroup(this, DocometreMessages.GeneralInfoGroupLabel);
+	private void createGeneralInfoGroup(Composite infosTrialsFieldsMarkersContainer) {
+		Group infosGroup = ChannelEditorWidgetsFactory.createGroup(infosTrialsFieldsMarkersContainer, DocometreMessages.GeneralInfoGroupLabel);
 		infosGroup.setLayout(new GridLayout(2, false));
 		
 		ChannelEditorWidgetsFactory.createLabel(infosGroup, DocometreMessages.SignalNameLabel, SWT.LEFT, false);
@@ -225,21 +252,20 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 	public void selectionChanged(SelectionChangedEvent event) {
 		if(trialsListViewer.getStructuredSelection().isEmpty()) {
 			removeAllSeries();
-			return;
-		}
-		
-		List<Integer> selectedTrialsNumbers = trialsListViewer.getStructuredSelection().toList();
-		// Remove series from chart if not in selection
-		Set<Integer> trialsNumbersInChart = getTrialsInChart();
-		for (Integer trialNumberInChart : trialsNumbersInChart) {
-			boolean trialSelected = selectedTrialsNumbers.contains(trialNumberInChart);
-			if(!trialSelected) removeSeriesFromChart(trialNumberInChart);
-		}
-		
-		// Add series
-		for (Integer selectedTrialNumber : selectedTrialsNumbers) {
-			if(!chartHasAlreadyThisTrial(selectedTrialNumber)) {
-				addSeriesToChart(selectedTrialNumber);
+		} else {
+			List<Integer> selectedTrialsNumbers = trialsListViewer.getStructuredSelection().toList();
+			// Remove series from chart if not in selection
+			Set<Integer> trialsNumbersInChart = getTrialsInChart();
+			for (Integer trialNumberInChart : trialsNumbersInChart) {
+				boolean trialSelected = selectedTrialsNumbers.contains(trialNumberInChart);
+				if(!trialSelected) removeSeriesFromChart(trialNumberInChart);
+			}
+			
+			// Add series
+			for (Integer selectedTrialNumber : selectedTrialsNumbers) {
+				if(!chartHasAlreadyThisTrial(selectedTrialNumber)) {
+					addSeriesToChart(selectedTrialNumber);
+				}
 			}
 		}
 		
@@ -249,9 +275,7 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 
 	private void removeSeriesFromChart(Integer trialNumber) {
 		String seriesID = channelEditor.getchannel().getFullName() + "." + trialNumber;
-		if(chart.getSeriesSet().getSeries(seriesID) != null) {
-			chart.getSeriesSet().deleteSeries(seriesID);
-		}
+		chart.removeSeries(seriesID);
 	}
 	
 	private void addSeriesToChart(Integer trialNumber) {

@@ -65,6 +65,8 @@ public final class ChannelEditorWidgetsFactory {
 		chart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, horizontalSpan, 1));
 		chart.setBackground(colorBlack);
 		chart.getPlotArea().setBackground(colorBlack);
+		chart.getLegend().setBackground(colorBlack);
+		chart.getLegend().setForeground(colorWhite);
 		IAxis[] axes = chart.getAxisSet().getAxes();
 		for (IAxis axe : axes) {
 			axe.getTick().setForeground(colorWhite);
@@ -74,7 +76,7 @@ public final class ChannelEditorWidgetsFactory {
 		chart.getAxisSet().getXAxes()[0].getTitle().setText("Time (s)");
 		chart.getAxisSet().getYAxes()[0].getTitle().setVisible(false);
 		chart.getLegend().setPosition(SWT.BOTTOM);
-		chart.setSelectionRectangelColor(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_RED));
+		chart.setSelectionRectangleColor(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_RED));
 		return chart;
 	}
 

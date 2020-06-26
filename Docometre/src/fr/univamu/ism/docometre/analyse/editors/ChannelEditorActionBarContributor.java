@@ -24,7 +24,7 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 		
 		@Override
 		public void run() {
-			editor.gotNextTrial();
+			editor.gotoNextTrial();
 		}
 	}
 	

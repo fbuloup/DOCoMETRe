@@ -175,6 +175,10 @@ public interface IImageKeys {
 	public static final String PREVIOUS_ICON = "icons/previous.gif"; //$NON-NLS-1$
 	
 	
+
+	public static final String SHOW_PANNEL = "icons/up-arrow.png"; //$NON-NLS-1$
+	public static final String HIDE_PANNEL = "icons/down-arrow.png"; //$NON-NLS-1$
+	
 	
 	
 	
