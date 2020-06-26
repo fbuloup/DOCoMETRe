@@ -46,7 +46,6 @@ import org.eclipse.swtchart.extensions.properties.PropertiesResources;
 import org.eclipse.swtchart.extensions.properties.SeriesLabelPage;
 import org.eclipse.swtchart.extensions.properties.SeriesPage;
 
-
 /**
  * An interactive chart which provides the following abilities.
  * <ul>
@@ -63,6 +62,7 @@ public class InteractiveChart extends Chart implements PaintListener {
 	private static final String[] EXTENSIONS = new String[]{"*.jpeg", "*.jpg", "*.png"};
 	/** the selection rectangle for zoom in/out */
 	protected SelectionRectangle selection;
+	private Color selectionColor;
 	/** the clicked time in milliseconds */
 	private long clickedTime;
 	/** the resources created with properties dialog */
@@ -72,10 +72,17 @@ public class InteractiveChart extends Chart implements PaintListener {
 	private int currentY_Pixel;
 	private double currentX;
 	private double currentY;
-	private String coordinatesString;
-	private CursorPainter cursorPainter;
+	private String cursorCoordinatesString;
+	private CursorMarkerDeltaPainter cursorMarkerDeltaPainter;
 	private boolean showCursor = true;
 	private int previousCurrentX_Pixel; 
+
+	private boolean showMarker = true;
+	private int currentXMarker_Pixel = -1;
+	private int currentYMarker_Pixel = -1;
+	private String markerCoordinatesString;
+	private String deltaCoordinateString;
+	private boolean doubleClick;
 
 	/**
 	 * Constructor.
@@ -95,7 +102,6 @@ public class InteractiveChart extends Chart implements PaintListener {
 	 */
 	private void init() {
 
-		selection = new SelectionRectangle();
 		resources = new PropertiesResources();
 		Composite plot = getPlotArea();
 		plot.addListener(SWT.Resize, this);
@@ -104,9 +110,10 @@ public class InteractiveChart extends Chart implements PaintListener {
 		plot.addListener(SWT.MouseUp, this);
 		plot.addListener(SWT.MouseWheel, this);
 		plot.addListener(SWT.KeyDown, this);
+		plot.addListener(SWT.MouseDoubleClick, this);
 		plot.addPaintListener(this);
-		cursorPainter = new CursorPainter(this);
-		((IPlotArea)plot).addCustomPaintListener(cursorPainter);
+		cursorMarkerDeltaPainter = new CursorMarkerDeltaPainter(this);
+		((IPlotArea)plot).addCustomPaintListener(cursorMarkerDeltaPainter);
 		getPlotArea().setCursor(new Cursor(Display.getDefault(), SWT.CURSOR_CROSS));
 		createMenuItems();
 	}
@@ -114,7 +121,19 @@ public class InteractiveChart extends Chart implements PaintListener {
 	public void setShowCursor(boolean showCursor) {
 		this.showCursor = showCursor;
 	}
+	
+	public boolean isShowCursor() {
+		return showCursor && getSeriesSet().getSeries().length > 0;
+	}
 
+	public void setShowMarker(boolean showMarker) {
+		this.showMarker = showMarker;
+	}
+	
+	public boolean isShowMarker() {
+		return showMarker && currentXMarker_Pixel > -1;
+	}
+	
 	/**
 	 * Creates menu items.
 	 */
@@ -214,8 +233,7 @@ public class InteractiveChart extends Chart implements PaintListener {
 	 * @see PaintListener#paintControl(PaintEvent)
 	 */
 	public void paintControl(PaintEvent e) {
-
-		selection.draw(e.gc);
+		if(selection != null && !selection.isDisposed()) selection.draw(e.gc);
 	}
 
 	/*
@@ -223,7 +241,6 @@ public class InteractiveChart extends Chart implements PaintListener {
 	 */
 	@Override
 	public void handleEvent(Event event) {
-
 		super.handleEvent(event);
 		switch(event.type) {
 			case SWT.MouseMove:
@@ -237,14 +254,20 @@ public class InteractiveChart extends Chart implements PaintListener {
 				break;
 			case SWT.MouseWheel:
 				handleMouseWheel(event);
+				resetMarker(event);
+				break;
+			case SWT.MouseDoubleClick:
+				handleMouseDoubleClick(event);
 				break;
 			case SWT.KeyDown:
 				handleKeyDownEvent(event);
 				break;
 			case SWT.Selection:
 				handleSelectionEvent(event);
+				resetMarker(event);
 				break;
 			default:
+				resetMarker(event);
 				break;
 		}
 	}
@@ -267,37 +290,65 @@ public class InteractiveChart extends Chart implements PaintListener {
 	 */
 	private void handleMouseMoveEvent(Event event) {
 		getPlotArea().setFocus();
-		if(!selection.isDisposed()) {
+		if(selection != null && !selection.isDisposed()) {
 			selection.setEndPoint(event.x, event.y);
+			if(!doubleClick) 
+				resetMarker(event);
+			doubleClick = false;
 			redraw();
 		} else {
-			if (showCursor) {
+			if (isShowCursor()) {
 				// Compute current coordinates
 				computeCurrentCordinates(event);
 				// Convert to String
-				coordinatesString = convertToString();
+				cursorCoordinatesString = convertToString(1, currentX, currentY);
+			} else cursorCoordinatesString = "";
+			if(isShowMarker()) {
+				double mx = getAxisSet().getXAxes()[0].getDataCoordinate(currentXMarker_Pixel);
+				double my = getAxisSet().getYAxes()[0].getDataCoordinate(currentYMarker_Pixel);
+				markerCoordinatesString = convertToString(2, mx, my);
+				double x = getCurrentX() - mx;
+				double y = getCurrentY() - my;
+				deltaCoordinateString = convertToString(3, x, y);
+			}
+			if(isShowCursor() || isShowMarker()) {
+				boolean disposeGC = false;
+				if(event.gc == null) {
+					event.gc = new GC(getPlotArea());
+					disposeGC = true;
+				}
 				PaintEvent paintEvent = new PaintEvent(event);
-				paintEvent.gc = new GC(getPlotArea());
-				cursorPainter.paintControl(paintEvent);
-			} else coordinatesString = "";
+				cursorMarkerDeltaPainter.paintControl(paintEvent);
+				if(disposeGC) event.gc.dispose();
+			}
 		}
 		
 	}
 	
-	public String getCoordinatesString() {
-		return coordinatesString;
+	public String getCursorCoordinatesString() {
+		return cursorCoordinatesString;
 	}
 	
-	private String convertToString() {
+	public String getMarkerCoordinatesString() {
+		return markerCoordinatesString;
+	}
+	
+	public String getDeltaCoordinateString() {
+		return deltaCoordinateString;
+	}
+	
+	private String convertToString(int type, double x, double y) {
 		if(getCurrentSeries() == null) return "";
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setMaximumFractionDigits(6);
 		
 		StringBuilder text = new StringBuilder();
-		text.append("Cursor (");
-		text.append(nf.format(currentX));
+		if(type == 2) text.append("Marker (");
+		else if(type == 1)  text.append("Cursor (");
+		else if(type == 3) text.append("\u0394 (");
+		text.append(nf.format(x));
 		text.append(" ; ");
-		text.append(nf.format(currentY));
+		text.append(nf.format(y));
 		text.append(")");
 		
 		
@@ -322,6 +373,14 @@ public class InteractiveChart extends Chart implements PaintListener {
 	
 	public double getCurrentY() {
 		return currentY;
+	}
+	
+	public int getCurrentXMarker_Pixel() {
+		return currentXMarker_Pixel;
+	}
+	
+	public int getCurrentYMarker_Pixel() {
+		return currentYMarker_Pixel;
 	}
 	
 	private void computeCurrentCordinates(Event event) {
@@ -351,6 +410,19 @@ public class InteractiveChart extends Chart implements PaintListener {
 		currentX = x;
 		currentY = y;
 	}
+	
+	private void handleMouseDoubleClick(Event event) {
+		doubleClick = true;
+		currentXMarker_Pixel = getCurrentX_Pixel();
+		currentYMarker_Pixel = getCurrentY_Pixel();
+		handleMouseMoveEvent(event);
+	}
+	
+	private void resetMarker(Event event) {
+		currentXMarker_Pixel = -1;
+		event.x = getCurrentX_Pixel();
+//		handleMouseMoveEvent(event);
+	}
 
 	/**
 	 * Handles the mouse down event.
@@ -361,6 +433,8 @@ public class InteractiveChart extends Chart implements PaintListener {
 	private void handleMouseDownEvent(Event event) {
 
 		if(event.button == 1) {
+			selection = new SelectionRectangle();
+			selection.setColor(selectionColor);
 			selection.setStartPoint(event.x, event.y);
 			clickedTime = System.currentTimeMillis();
 		}
@@ -389,6 +463,7 @@ public class InteractiveChart extends Chart implements PaintListener {
 		}
 		selection.dispose();
 		redraw();
+		if (isShowCursor()) handleMouseMoveEvent(event);
 	}
 
 	/**
@@ -416,6 +491,8 @@ public class InteractiveChart extends Chart implements PaintListener {
 			}
 		}
 		redraw();
+		if (isShowCursor()) handleMouseMoveEvent(event);
+
 	}
 
 	/**
@@ -455,7 +532,8 @@ public class InteractiveChart extends Chart implements PaintListener {
 			}
 			redraw();
 		} else if(event.keyCode == SWT.TAB) {
-			if (showCursor) {
+			if (isShowCursor()) {
+				resetMarker(event);
 				if (getSeriesSet().getSeries().length > 1) {
 					ISeries[] series = getSeriesSet().getSeries();
 					for (int i = 0; i < series.length; i++) {
@@ -471,11 +549,13 @@ public class InteractiveChart extends Chart implements PaintListener {
 							break;
 						}
 					}
-					event.x = currentX_Pixel;
-					handleMouseMoveEvent(event);
 				} 
 			} 
 		} 
+		if (isShowCursor()) {
+			event.x = currentX_Pixel;
+			handleMouseMoveEvent(event);
+		}
 	}
 
 	/**
@@ -544,6 +624,10 @@ public class InteractiveChart extends Chart implements PaintListener {
 			openPropertiesDialog();
 		}
 		redraw();
+		if (isShowCursor()) {
+			event.x = currentX_Pixel;
+			handleMouseMoveEvent(event);
+		}
 	}
 
 	/**
@@ -640,7 +724,23 @@ public class InteractiveChart extends Chart implements PaintListener {
 		axis.setRange(new Range(min, max));
 	}
 
-	public void setSelectionRectangelColor(Color color) {
-		selection.setColor(color);
+	public void setSelectionRectangleColor(Color color) {
+		selectionColor = color;
+	}
+	
+	public void removeSeries(String seriesID) {
+		if(getSeriesSet().getSeries(seriesID) != null) {
+			getSeriesSet().deleteSeries(seriesID);
+		}
+		if(getCurrentSeries() != null && getCurrentSeries().getId().equals(seriesID)) {
+			if(getSeriesSet().getSeries().length > 0) setCurrentSeries(getSeriesSet().getSeries()[0]);
+			else {
+				setCurrentSeries(null);
+			}
+		}
+		Event event = new Event();
+		event.widget = getPlotArea();
+		event.x = getCurrentX_Pixel();
+		handleMouseMoveEvent(event);
 	}
 }
