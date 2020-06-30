@@ -53,9 +53,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
-import fr.univamu.ism.rtswtchart.RTSWTOscilloChart;
-import fr.univamu.ism.rtswtchart.RTSWTOscilloSerie;
-
 /**
  * This class can be used as a start point to use the library.  
  * @author frank buloup

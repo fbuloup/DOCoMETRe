@@ -54,10 +54,6 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.Activator;
-import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
-import fr.univamu.ism.docometre.dacqsystems.Channel;
-import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
-import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfigurationProperties;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinVariable;

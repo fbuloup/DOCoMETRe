@@ -78,7 +78,6 @@ import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoChannelProperti
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDigInOutChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDigInOutModule;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoProcess;
-import fr.univamu.ism.docometre.dacqsystems.functions.GenericFunction;
 import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
 import fr.univamu.ism.process.Block;
 import fr.univamu.ism.process.ScriptSegmentType;

@@ -47,9 +47,6 @@ import java.util.ArrayList;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
-import fr.univamu.ism.process.Block;
-import fr.univamu.ism.process.DoBlock;
-import fr.univamu.ism.process.IfBlock;
 import fr.univamu.ism.process.tests.SampleScript1;
 
 /**

@@ -61,7 +61,6 @@ import org.eclipse.ui.forms.IMessageManager;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
-import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 import fr.univamu.ism.docometre.editors.ResourceEditor;
 
 public class ModifyPropertyHandler extends SelectionAdapter implements ModifyListener {

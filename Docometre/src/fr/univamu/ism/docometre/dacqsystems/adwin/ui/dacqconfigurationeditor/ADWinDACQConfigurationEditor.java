@@ -67,7 +67,6 @@ import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinAnOutModule;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinCANModule;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDigInOutModule;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinRS232Module;
-import fr.univamu.ism.docometre.dacqsystems.adwin.ui.dacqconfigurationeditor.ADWinVariablesPage;
 import fr.univamu.ism.docometre.dacqsystems.charts.ChartsConfigurationPage;
 import fr.univamu.ism.docometre.editors.ModulePage;
 import fr.univamu.ism.docometre.editors.ResourceEditor;
