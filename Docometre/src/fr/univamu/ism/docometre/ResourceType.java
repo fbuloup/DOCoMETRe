@@ -59,7 +59,8 @@ public enum ResourceType {
 	PARAMETERS("PARAMETERS"),
 	PROCESS_TEST("PROCESS_TEST"),
 	ADW_DATA_FILE("ADW_DATA_FILE"),
-	CHANNEL("CHANNEL");
+	CHANNEL("CHANNEL"),
+	DATA_PROCESSING("DATA_PROCESSING");
 
 	private String name = "";
 
@@ -87,6 +88,7 @@ public enum ResourceType {
 		if(typeValue.equals(PROCESS_TEST.toString())) return PROCESS_TEST;
 		if(typeValue.equals(ADW_DATA_FILE.toString())) return ADW_DATA_FILE;
 		if(typeValue.equals(CHANNEL.toString())) return CHANNEL;
+		if(typeValue.equals(DATA_PROCESSING.toString())) return DATA_PROCESSING;
 		return ANY;
 	}
 	
@@ -140,6 +142,10 @@ public enum ResourceType {
 	
 	public static boolean isChannel(IResource resource) {
 		return check(resource, CHANNEL);
+	}
+	
+	public static boolean isDataProcessing(IResource resource) {
+		return check(resource, DATA_PROCESSING);
 	}
 	
 	public static boolean isAnyTest(IResource resource) {

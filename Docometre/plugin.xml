@@ -484,6 +484,13 @@
                      tooltip="%NewParametersCommand.tooltip">
                </command>
                <command
+                     commandId="NewDataProcessingCommand"
+                     icon="icons/dataProcessing.gif"
+                     label="%NewDataProcessingCommand.label"
+                     style="push"
+                     tooltip="%NewDataProcessingCommand.tooltip">
+               </command>
+               <command
                      commandId="NewFolderAction"
                      icon="icons/folder.gif"
                      label="%NewFolderAction.label"
@@ -1857,15 +1864,28 @@
                   </reference>
                </visibleWhen>
             </command>
-            <separator
-                  name="Docometre.separator1"
-                  visible="true">
-            </separator>
             <command
                   commandId="LoadUnloadSubjectsCommand"
                   icon="icons/LoadUnloadSubjects.gif"
                   label="%LoadUnloadSubjectsCommand.title"
                   style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                  <reference
+                        definitionId="Docometre.AnalysePerspectiveSelected">
+                  </reference>
+               </visibleWhen>
+            </command>
+            <separator
+                  name="Docometre.separator2"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="NewDataProcessingCommand"
+                  icon="icons/dataProcessing.gif"
+                  label="%NewDataProcessingCommand.label"
+                  style="push"
+                  tooltip="%NewDataProcessingCommand.tooltip">
                <visibleWhen
                      checkEnabled="false">
                   <reference
@@ -2164,6 +2184,10 @@
       <command
             id="TestJZY3DAction"
             name="TestJZY3DAction">
+      </command>
+      <command
+            id="NewDataProcessingCommand"
+            name="NewDataProcessingCommand">
       </command>
    </extension>
    <extension
