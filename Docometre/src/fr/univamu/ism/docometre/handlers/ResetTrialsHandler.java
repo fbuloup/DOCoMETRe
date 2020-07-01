@@ -68,7 +68,7 @@ public class ResetTrialsHandler extends AbstractHandler implements ISelectionLis
 	public ResetTrialsHandler() {
 		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().addSelectionListener(this);
 		IViewPart experimentsView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(ExperimentsView.ID);
-		selectionChanged(experimentsView, experimentsView.getSite().getSelectionProvider().getSelection());
+		if(experimentsView != null) selectionChanged(experimentsView, experimentsView.getSite().getSelectionProvider().getSelection());
 	}
 
 	@Override

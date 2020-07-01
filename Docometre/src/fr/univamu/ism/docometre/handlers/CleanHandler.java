@@ -74,7 +74,7 @@ public class CleanHandler extends AbstractHandler implements ISelectionListener 
 	public CleanHandler() {
 		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().addSelectionListener(this);
 		IViewPart experimentsView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(ExperimentsView.ID);
-		selectionChanged(experimentsView, experimentsView.getSite().getSelectionProvider().getSelection());
+		if(experimentsView != null) selectionChanged(experimentsView, experimentsView.getSite().getSelectionProvider().getSelection());
 	}
 
 	@Override
