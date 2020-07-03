@@ -46,11 +46,13 @@ import org.eclipse.gef.commands.CommandStack;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoProcess;
 import fr.univamu.ism.docometre.editors.AbstractScriptSegmentEditor;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
+import fr.univamu.ism.process.Script;
 import fr.univamu.ism.process.ScriptSegmentType;
 
 public class ArduinoUnoEventSegmentEditor extends AbstractScriptSegmentEditor {
 	
 	public static String ID = "Docometre.ArduinoUnoEventSegmentEditor";
+	private ArduinoUnoProcess process;
 
 	public ArduinoUnoEventSegmentEditor(CommandStack commandStack) {
 		super(commandStack, ScriptSegmentType.LOOP);
@@ -60,6 +62,11 @@ public class ArduinoUnoEventSegmentEditor extends AbstractScriptSegmentEditor {
 	protected void createActions() {
 		process = (ArduinoUnoProcess)((ResourceEditorInput)getEditorInput()).getObject();
 		super.createActions();
+	}
+
+	@Override
+	protected Script getScript() {
+		return process.getScript();
 	}
 
 }

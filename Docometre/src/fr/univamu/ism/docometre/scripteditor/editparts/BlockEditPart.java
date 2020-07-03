@@ -72,7 +72,6 @@ import fr.univamu.ism.process.ScriptSegment;
 import fr.univamu.ism.process.SizeAndLocationListener;
 import fr.univamu.ism.docometre.scripteditor.figures.BlockFigure;
 import fr.univamu.ism.docometre.scripteditor.actions.EditBlockAction;
-import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.scripteditor.actions.AssignFunctionAction;
 import fr.univamu.ism.docometre.scripteditor.commands.AssignFunctionBlockCommand;
@@ -103,8 +102,8 @@ public class BlockEditPart extends AbstractGraphicalEditPart implements SizeAndL
 	@Override
 	protected IFigure createFigure() {
 		ResourceEditorInput resourceEditorInput = (ResourceEditorInput) ((DefaultEditDomain) getRoot().getViewer().getEditDomain()).getEditorPart().getEditorInput();
-		Process process = (Process) resourceEditorInput.getObject();
-		figure = new BlockFigure(getModel().getName(process), this) ;
+		Object object =resourceEditorInput.getObject();
+		figure = new BlockFigure(getModel().getName(object), this) ;
 		return figure ;
 	}
 	

@@ -125,6 +125,10 @@ public class ADBasicRulesPartitionScanner extends RuleBasedPartitionScanner {
 		rules.add(new WordPatternRule(new WordsDetector(new String[] { "SHIFT_RIGHT" }), "SH", "HT", reservedWordsToken));
 		rules.add(new WordPatternRule(new WordsDetector(new String[] { "OR" }), "O", "R", reservedWordsToken));
 		rules.add(new WordPatternRule(new WordsDetector(new String[] { "AND" }), "AN", "D", reservedWordsToken));
+		
+
+		rules.add(new WordPatternRule(new WordsDetector(new String[] { "for" }), "\nfo", "r", reservedWordsToken));
+		
 	    setPredicateRules(rules.toArray(new IPredicateRule[rules.size()]));
 	}
 

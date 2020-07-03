@@ -101,7 +101,6 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ObjectsController;
-import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.scripteditor.actions.CopyAction;
 import fr.univamu.ism.docometre.scripteditor.actions.EditBlockAction;
 import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
@@ -110,6 +109,7 @@ import fr.univamu.ism.docometre.scripteditor.editparts.BlockEditPart;
 import fr.univamu.ism.docometre.scripteditor.editparts.ScriptEditPartFactory;
 import fr.univamu.ism.docometre.scripteditor.editparts.ScriptSegmentEditPart;
 import fr.univamu.ism.process.Function;
+import fr.univamu.ism.process.Script;
 import fr.univamu.ism.process.ScriptSegment;
 import fr.univamu.ism.process.ScriptSegmentType;
 
@@ -281,7 +281,7 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 
 	private PaletteDrawer paletteDrawer;
 	private RulerComposite rulerComp;
-	protected Process process;
+//	protected Process process;
 	private ScriptSegmentType scriptSegmentType;
 	
 	public AbstractScriptSegmentEditor(CommandStack commandStack, ScriptSegmentType scriptSegmentType) {
@@ -294,6 +294,7 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 	private boolean getGridState() {
 		boolean state = false;
 		IResource resource = ObjectsController.getResourceForObject(((ResourceEditorInput)getEditorInput()).getObject());
+		if(resource == null && ((ResourceEditorInput)getEditorInput()).getObject() instanceof IResource) resource = (IResource) ((ResourceEditorInput)getEditorInput()).getObject();
 		QualifiedName key = new QualifiedName(AbstractScriptSegmentEditor.this.getClass().getCanonicalName(), "gridState");
 		try {
 			String gridStateString = resource.getPersistentProperty(key);
@@ -307,6 +308,7 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 	private void setGridState(boolean state) {
 		try {
 			IResource resource = ObjectsController.getResourceForObject(((ResourceEditorInput)getEditorInput()).getObject());
+			if(resource == null && ((ResourceEditorInput)getEditorInput()).getObject() instanceof IResource) resource = (IResource) ((ResourceEditorInput)getEditorInput()).getObject();
 			QualifiedName key = new QualifiedName(AbstractScriptSegmentEditor.this.getClass().getCanonicalName(), "gridState");
 			resource.setPersistentProperty(key, Boolean.toString(state));
 		} catch (CoreException e) {
@@ -319,10 +321,12 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 	private boolean getAlignmentHelperState() {
 		boolean state = false;
 		IResource resource = ObjectsController.getResourceForObject(((ResourceEditorInput)getEditorInput()).getObject());
+		if(resource == null && ((ResourceEditorInput)getEditorInput()).getObject() instanceof IResource) resource = (IResource) ((ResourceEditorInput)getEditorInput()).getObject();
 		QualifiedName key = new QualifiedName(AbstractScriptSegmentEditor.this.getClass().getCanonicalName(), "snapState");
 		try {
-			String gridStateString = resource.getPersistentProperty(key);
-			state = Boolean.parseBoolean(gridStateString);
+			String alignmentHelperString = resource.getPersistentProperty(key);
+			state = alignmentHelperString == null ? false :Boolean.parseBoolean(alignmentHelperString);
+			state = Boolean.parseBoolean(alignmentHelperString);
 		} catch (CoreException e) {
 			setGridState(false);
 		}
@@ -332,6 +336,7 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 	private void setAlignmentHelperState(boolean state) {
 		try {
 			IResource resource = ObjectsController.getResourceForObject(((ResourceEditorInput)getEditorInput()).getObject());
+			if(resource == null && ((ResourceEditorInput)getEditorInput()).getObject() instanceof IResource) resource = (IResource) ((ResourceEditorInput)getEditorInput()).getObject();
 			QualifiedName key = new QualifiedName(AbstractScriptSegmentEditor.this.getClass().getCanonicalName(), "snapState");
 			resource.setPersistentProperty(key, Boolean.toString(state));
 		} catch (CoreException e) {
@@ -358,9 +363,10 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 				@SuppressWarnings("unchecked")
 				Map<Object, Object> editPartMap = getGraphicalViewer().getEditPartRegistry();
 				ScriptSegmentEditPart scriptSegmentEditPart = null;
-				if(scriptSegmentType.equals(ScriptSegmentType.INITIALIZE)) scriptSegmentEditPart = (ScriptSegmentEditPart) editPartMap.get(process.getScript().getInitializeBlocksContainer());
-				if(scriptSegmentType.equals(ScriptSegmentType.LOOP)) scriptSegmentEditPart = (ScriptSegmentEditPart) editPartMap.get(process.getScript().getLoopBlocksContainer());
-				if(scriptSegmentType.equals(ScriptSegmentType.FINALIZE)) scriptSegmentEditPart = (ScriptSegmentEditPart) editPartMap.get(process.getScript().getFinalizeBlocksContainer());
+				if(scriptSegmentType.equals(ScriptSegmentType.INITIALIZE)) scriptSegmentEditPart = (ScriptSegmentEditPart) editPartMap.get(getScript().getInitializeBlocksContainer());
+				if(scriptSegmentType.equals(ScriptSegmentType.LOOP)) scriptSegmentEditPart = (ScriptSegmentEditPart) editPartMap.get(getScript().getLoopBlocksContainer());
+				if(scriptSegmentType.equals(ScriptSegmentType.FINALIZE)) scriptSegmentEditPart = (ScriptSegmentEditPart) editPartMap.get(getScript().getFinalizeBlocksContainer());
+//				if(scriptSegmentType.equals(ScriptSegmentType.DATA_PROCESSING)) scriptSegmentEditPart = (ScriptSegmentEditPart) editPartMap.get(getScript().getLoopBlocksContainer());
 				if(((StructuredSelection)scriptSegmentEditPart.getViewer().getSelection()).getFirstElement() instanceof BlockEditPart) editBlockAction.run();
 //				try {
 //					if(scriptSegmentType.equals(ScriptSegmentType.INITIALIZE)) System.out.println(process.getScript().getInitializeCode(process));
@@ -507,18 +513,19 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 	protected void initializeGraphicalViewer() {
 		super.initializeGraphicalViewer();
 		//Add specific factories here
-		CreationFactory ifCreationFactory = CreateEntryFactories.getIfBlockFactory(process.getScript());
-		CreationFactory doCreationFactory = CreateEntryFactories.getDoBlockFactory(process.getScript());
-		CreationFactory functionCreationFactory = CreateEntryFactories.getFunctionFactory(process.getScript());
-		CreationFactory commentCreationFactory = CreateEntryFactories.getCommentBlockFactory(process.getScript());
+		CreationFactory ifCreationFactory = CreateEntryFactories.getIfBlockFactory(getScript());
+		CreationFactory doCreationFactory = CreateEntryFactories.getDoBlockFactory(getScript());
+		CreationFactory functionCreationFactory = CreateEntryFactories.getFunctionFactory(getScript());
+		CreationFactory commentCreationFactory = CreateEntryFactories.getCommentBlockFactory(getScript());
 		addCreationEntry(DocometreMessages.IfBlockToolTitle, DocometreMessages.IfBlockToolDescription, ifCreationFactory, Activator.getImageDescriptor(IImageKeys.IF_BLOCK_16_ICON), Activator.getImageDescriptor(IImageKeys.IF_BLOCK_32_ICON));
 		addCreationEntry(DocometreMessages.DoBlockToolTitle, DocometreMessages.DoBlockToolDescription, doCreationFactory, Activator.getImageDescriptor(IImageKeys.DO_BLOCK_16_ICON), Activator.getImageDescriptor(IImageKeys.DO_BLOCK_32_ICON));
 		addCreationEntry(DocometreMessages.FunctionBlockToolTitle, DocometreMessages.FunctionBlockToolDescription, functionCreationFactory, Activator.getImageDescriptor(IImageKeys.FUNCTION_BLOCK_16_ICON), Activator.getImageDescriptor(IImageKeys.FUNCTION_BLOCK_32_ICON));
 		addCreationEntry(DocometreMessages.CommentBlockToolTitle, DocometreMessages.CommentBlockToolDescription, commentCreationFactory, Activator.getImageDescriptor(IImageKeys.COMMENT_BLOCK_16_ICON), Activator.getImageDescriptor(IImageKeys.COMMENT_BLOCK_32_ICON));
 		
-		if(scriptSegmentType.equals(ScriptSegmentType.INITIALIZE)) getGraphicalViewer().setContents(process.getInitializeBlocksContainer());
-		if(scriptSegmentType.equals(ScriptSegmentType.LOOP)) getGraphicalViewer().setContents(process.getLoopBlocksContainer());
-		if(scriptSegmentType.equals(ScriptSegmentType.FINALIZE)) getGraphicalViewer().setContents(process.getFinalizeBlocksContainer());
+		if(scriptSegmentType.equals(ScriptSegmentType.INITIALIZE)) getGraphicalViewer().setContents(getScript().getInitializeBlocksContainer());
+		if(scriptSegmentType.equals(ScriptSegmentType.LOOP)) getGraphicalViewer().setContents(getScript().getLoopBlocksContainer());
+		if(scriptSegmentType.equals(ScriptSegmentType.FINALIZE)) getGraphicalViewer().setContents(getScript().getFinalizeBlocksContainer());
+//		if(scriptSegmentType.equals(ScriptSegmentType.DATA_PROCESSING)) getGraphicalViewer().setContents(getScript().getLoopBlocksContainer());
 		
 	}
 	
@@ -556,10 +563,13 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 	public void updatePasteAction() {
 //		System.out.println("update PasteAction");
 		ScriptSegment scriptSegment = null;
-		if(scriptSegmentType.equals(ScriptSegmentType.INITIALIZE)) scriptSegment = process.getInitializeBlocksContainer();
-		if(scriptSegmentType.equals(ScriptSegmentType.LOOP)) scriptSegment = process.getLoopBlocksContainer();
-		if(scriptSegmentType.equals(ScriptSegmentType.FINALIZE)) scriptSegment = process.getFinalizeBlocksContainer();
+		if(scriptSegmentType.equals(ScriptSegmentType.INITIALIZE)) scriptSegment = getScript().getInitializeBlocksContainer();
+		if(scriptSegmentType.equals(ScriptSegmentType.LOOP)) scriptSegment = getScript().getLoopBlocksContainer();
+		if(scriptSegmentType.equals(ScriptSegmentType.FINALIZE)) scriptSegment = getScript().getFinalizeBlocksContainer();
+//		if(scriptSegmentType.equals(ScriptSegmentType.DATA_PROCESSING)) scriptSegment = getScript().getLoopBlocksContainer();
 		PasteAction.scriptSegment = scriptSegment;
 	}
+	
+	protected abstract Script getScript();
 
 }

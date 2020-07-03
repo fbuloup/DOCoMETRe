@@ -31,6 +31,7 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
 import fr.univamu.ism.docometre.views.ExperimentsLabelDecorator;
+import fr.univamu.ism.docometre.views.ExperimentsViewerSorter;
 
 public class SubjectsView extends ViewPart implements IResourceChangeListener, IPerspectiveListener {
 	
@@ -77,6 +78,7 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 		ILabelDecorator decorator = PlatformUI.getWorkbench().getDecoratorManager().getLabelDecorator();
 		SubjectsLabelProvider subjectsLabelProvider = new SubjectsLabelProvider();
 		subjectsTreeViewer.setLabelProvider(new DecoratingLabelProvider(subjectsLabelProvider, decorator));
+		subjectsTreeViewer.setComparator(new ExperimentsViewerSorter());
 		subjectsTreeViewer.getTree().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		getSite().setSelectionProvider(subjectsTreeViewer);
 		

@@ -3,7 +3,8 @@ package fr.univamu.ism.docometre.analyse.views;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -18,14 +19,14 @@ public class SubjectsContentProvider implements ITreeContentProvider {
 
 	@Override
 	public Object[] getElements(Object inputElement) {
-		if(inputElement instanceof IProject) {
+		if(inputElement instanceof IContainer) {
 			try {
-				List<IResource> subjects = new ArrayList<IResource>();
-				IResource[] resources = ((IProject)inputElement).members();
+				List<IResource> elements = new ArrayList<IResource>();
+				IResource[] resources = ((IContainer)inputElement).members();
 				for (IResource resource : resources) {
-					if(ResourceType.isSubject(resource)) subjects.add(resource);
+					if(mustAddElement(resource)) elements.add(resource);
 				}
-				return subjects.toArray();
+				return elements.toArray();
 			} catch (CoreException e) {
 				Activator.logErrorMessageWithCause(e);
 				e.printStackTrace();
@@ -34,17 +35,48 @@ public class SubjectsContentProvider implements ITreeContentProvider {
 		return null;
 	}
 
+	private boolean mustAddElement(IResource element/*, List<IResource> elements*/) {
+		try {
+			
+			if(ResourceType.isSubject(element)) return true;
+			if(ResourceType.isDataProcessing(element)) return true;
+			if(!ResourceType.isFolder(element)) return false;
+
+			boolean addElement = false;
+			IResource[] resources = ((IFolder)element).members();
+			for (IResource resource : resources) {
+				addElement = addElement || mustAddElement(resource);
+			}
+
+			return addElement;
+			
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return false;
+	}
+
 	@Override
 	public Object[] getChildren(Object parentElement) {
 		if(parentElement instanceof IResource) {
 			try {
-				IResource subject = (IResource)parentElement;
-				if(!MathEngineFactory.getMathEngine().isSubjectLoaded(subject)) return null;
-				Object sessionProperty = subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
-				if(sessionProperty != null && sessionProperty instanceof ChannelsContainer) {
-					ChannelsContainer channelsContainer = (ChannelsContainer)sessionProperty;
-					return channelsContainer.getChannels();
+				
+				IResource resource = (IResource)parentElement;
+				
+				if(ResourceType.isSubject(resource)) {
+					if(!MathEngineFactory.getMathEngine().isSubjectLoaded(resource)) return null;
+					Object sessionProperty = resource.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
+					if(sessionProperty != null && sessionProperty instanceof ChannelsContainer) {
+						ChannelsContainer channelsContainer = (ChannelsContainer)sessionProperty;
+						return channelsContainer.getChannels();
+					}
 				}
+				
+				if(ResourceType.isFolder(resource)) {
+					return getElements(resource);
+				}
+				
 				
 			} catch (CoreException e) {
 				Activator.logErrorMessageWithCause(e);
@@ -64,8 +96,9 @@ public class SubjectsContentProvider implements ITreeContentProvider {
 	@Override
 	public boolean hasChildren(Object element) {
 		if(element instanceof IResource) {
-			IResource subject = (IResource)element;
-			return MathEngineFactory.getMathEngine().isSubjectLoaded(subject);
+			IResource resource = (IResource)element;
+			if(ResourceType.isFolder(resource)) return mustAddElement(resource);
+			if(ResourceType.isSubject(resource)) return MathEngineFactory.getMathEngine().isSubjectLoaded(resource);
 		}
 		return false;
 	}

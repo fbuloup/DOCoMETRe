@@ -82,6 +82,7 @@ public class ScriptSegmentEditPart extends AbstractGraphicalEditPart implements 
 		if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.INITIALIZE)) setModel(scriptSegment.getScript().getInitializeBlocksContainer());
 		if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.LOOP)) setModel(scriptSegment.getScript().getLoopBlocksContainer());
 		if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.FINALIZE)) setModel(scriptSegment.getScript().getFinalizeBlocksContainer());
+//		if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.DATA_PROCESSING)) setModel(scriptSegment.getScript().getLoopBlocksContainer());
 	}
 	
 	@Override

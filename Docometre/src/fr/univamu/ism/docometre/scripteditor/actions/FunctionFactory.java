@@ -55,6 +55,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.IMenuManager;
 
 import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.analyse.functions.MatlabEngineFunctionsMenuFactory;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfiguration;
@@ -68,7 +69,9 @@ import fr.univamu.ism.docometre.dacqsystems.functions.ArduinoUnoFunctionsMenuFac
 import fr.univamu.ism.docometre.dacqsystems.functions.CustomerFunction;
 import fr.univamu.ism.docometre.editors.AbstractScriptSegmentEditor;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
+import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 import fr.univamu.ism.docometre.scripteditor.editparts.BlockEditPart;
+import fr.univamu.ism.process.Script;
 
 public final class FunctionFactory {
 	
@@ -79,27 +82,44 @@ public final class FunctionFactory {
 	private static final String USER_FUNCTION_KEY = "USER_FUNCTION";
 	
 	public static void populateMenu(AbstractScriptSegmentEditor scriptSegmentEditor, BlockEditPart blockEditPart, IMenuManager functionsMenuManager) {
-		Process process = (Process)((ResourceEditorInput)scriptSegmentEditor.getEditorInput()).getObject();
-		if(process instanceof ADWinProcess) ADWinFunctionsMenuFactory.populateMenu(scriptSegmentEditor, blockEditPart, functionsMenuManager);
-		if(process instanceof ArduinoUnoProcess) ArduinoUnoFunctionsMenuFactory.populateMenu(scriptSegmentEditor, blockEditPart, functionsMenuManager);
+		Object object = ((ResourceEditorInput)scriptSegmentEditor.getEditorInput()).getObject();
+		if(object instanceof ADWinProcess) ADWinFunctionsMenuFactory.populateMenu(scriptSegmentEditor, blockEditPart, functionsMenuManager);
+		if(object instanceof ArduinoUnoProcess) ArduinoUnoFunctionsMenuFactory.populateMenu(scriptSegmentEditor, blockEditPart, functionsMenuManager);
+		if(object instanceof Script) {
+			String mathEngine = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.MATH_ENGINE);
+			if(GeneralPreferenceConstants.MATH_ENGINE_MATLAB.equals(mathEngine)) MatlabEngineFunctionsMenuFactory.populateMenu(scriptSegmentEditor, blockEditPart, functionsMenuManager);
+		}
 	}
 	
-	public static Path computeAbsolutePath(Process process) {
-		DACQConfiguration dacqConfiguration = process.getDACQConfiguration();
-//		ADWinDACQConfiguration dacqConfiguration = (ADWinDACQConfiguration) ((ADWinProcess)process).getDACQConfiguration();
-		String functionsAbsolutePath = "";
-		if(dacqConfiguration instanceof ADWinDACQConfiguration) functionsAbsolutePath = dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH);
-		if(dacqConfiguration instanceof ArduinoUnoDACQConfiguration) functionsAbsolutePath = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH);
-		Path path = new Path(functionsAbsolutePath);
-		String suffix = "";
-		if (process instanceof ADWinProcess) suffix = "ADWinFunctions";
-		if (process instanceof ArduinoUnoProcess) suffix = "ArduinoUnoFunctions";
-		path = (Path) path.removeLastSegments(1).append(suffix);
-		return path;
+	public static Path computeAbsolutePath(Object context) {
+		if(context instanceof Process) {
+			Process process = (Process)context;
+			DACQConfiguration dacqConfiguration = process.getDACQConfiguration();
+			String functionsAbsolutePath = "";
+			if(dacqConfiguration instanceof ADWinDACQConfiguration) functionsAbsolutePath = dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH);
+			if(dacqConfiguration instanceof ArduinoUnoDACQConfiguration) functionsAbsolutePath = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH);
+			Path path = new Path(functionsAbsolutePath);
+			String suffix = "";
+			if (process instanceof ADWinProcess) suffix = "ADWinFunctions";
+			if (process instanceof ArduinoUnoProcess) suffix = "ArduinoUnoFunctions";
+			path = (Path) path.removeLastSegments(1).append(suffix);
+			return path;
+		}
+		if(context instanceof Script) {
+			String functionsAbsolutePath = "";
+			String mathEngine = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.MATH_ENGINE);
+			if(GeneralPreferenceConstants.MATH_ENGINE_MATLAB.equals(mathEngine)) functionsAbsolutePath =  Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.MATLAB_SCRIPT_LOCATION);
+			Path path = new Path(functionsAbsolutePath);
+			String suffix = "";
+			if(GeneralPreferenceConstants.MATH_ENGINE_MATLAB.equals(mathEngine)) suffix = "MatlabFunctions";
+			path = (Path) path.removeLastSegments(1).append(suffix);
+			return path;
+		}
+		return null;
 	}
 
-	public static String getProperty(Process process, String functionFileName, String key) {
-		Path path = computeAbsolutePath(process);
+	public static String getProperty(Object context, String functionFileName, String key) {
+		Path path = computeAbsolutePath(context);
 		try {
 			Properties properties = new Properties();
 			properties.load(new InputStreamReader(new FileInputStream(path.append(functionFileName).toOSString()), Charset.forName("UTF-8")));
@@ -112,22 +132,22 @@ public final class FunctionFactory {
 		} 
 	}
 	
-	public static String[] getCustomerFunctions(Process process) {
-		IPath path = computeAbsolutePath(process);
+	public static String[] getCustomerFunctions(Object context) {
+		IPath path = computeAbsolutePath(context);
 		path = path.append(CustomerFunction.CUSTOMER_FUNCTIONS_PATH);
 		File functionsFilesFolder = new File(path.toOSString());
 		String[] files = functionsFilesFolder.list(new FilenameFilter() {
 			@Override
 			public boolean accept(File file, String name) {
-				String value = getProperty(process, CustomerFunction.CUSTOMER_FUNCTIONS_PATH + name, USER_FUNCTION_KEY);
+				String value = getProperty(context, CustomerFunction.CUSTOMER_FUNCTIONS_PATH + name, USER_FUNCTION_KEY);
 				return value != null && ("YES".equalsIgnoreCase(value.trim()) || "1".equals(value.trim()));
 			}
 		});
 		return files==null?new String[0]:files;
 	}
 
-	public static boolean isCustomerFunction(Process process, String functionName) {
-		String[] customerFunctions = getCustomerFunctions(process);
+	public static boolean isCustomerFunction(Object context, String functionName) {
+		String[] customerFunctions = getCustomerFunctions(context);
 		return Arrays.asList(customerFunctions).contains(functionName);
 	}
 

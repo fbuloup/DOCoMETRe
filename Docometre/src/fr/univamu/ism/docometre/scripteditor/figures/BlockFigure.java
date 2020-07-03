@@ -61,7 +61,6 @@ import org.eclipse.swt.widgets.Display;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.IImageKeys;
-import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.scripteditor.editparts.BlockEditPart;
 import fr.univamu.ism.process.Block;
@@ -160,8 +159,8 @@ public class BlockFigure extends RoundedRectangle {
 			label.setToolTip(null);
 			if(blockEditPart.getModel() instanceof Function) {
 				ResourceEditorInput resourceEditorInput = (ResourceEditorInput) ((DefaultEditDomain) blockEditPart.getRoot().getViewer().getEditDomain()).getEditorPart().getEditorInput();
-				Process process = (Process) resourceEditorInput.getObject();
-				String tooltip = ((Function)blockEditPart.getModel()).getDescription(process);
+				Object object = resourceEditorInput.getObject();
+				String tooltip = ((Function)blockEditPart.getModel()).getDescription(object);
 				if(tooltip != null && !tooltip.equals("")) label.setToolTip(new TooltipFigure(tooltip));
 			}
 		} else {
@@ -204,8 +203,8 @@ public class BlockFigure extends RoundedRectangle {
 	
 	public void updateLabel() {
 		ResourceEditorInput resourceEditorInput = (ResourceEditorInput) ((DefaultEditDomain) blockEditPart.getRoot().getViewer().getEditDomain()).getEditorPart().getEditorInput();
-		Process process = (Process) resourceEditorInput.getObject();
-		label.setText(((Block)blockEditPart.getModel()).getName(process));
+		Object object = resourceEditorInput.getObject();
+		label.setText(((Block)blockEditPart.getModel()).getName(object));
 	}
 	
 }

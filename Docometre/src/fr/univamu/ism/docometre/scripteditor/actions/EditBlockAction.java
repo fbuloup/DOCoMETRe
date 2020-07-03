@@ -54,7 +54,6 @@ import org.eclipse.ui.PlatformUI;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
-import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.dialogs.CommentBlockConfigurationDialog;
 import fr.univamu.ism.docometre.dialogs.ConditionalBlockConfigurationDialog;
@@ -77,8 +76,7 @@ public class EditBlockAction extends SelectionAction {
 	private Request requestEditConditionalBlock;
 	private Request requestEditFunctionalBlock;
 	private Request requestEditCommentBlock;
-	private DACQConfiguration dacqConfiguration;
-	private Process process;
+	private Object context;
 
 	public EditBlockAction(IWorkbenchPart part) {
 		super(part);
@@ -89,8 +87,7 @@ public class EditBlockAction extends SelectionAction {
 		requestEditFunctionalBlock = new Request(REQ_EDIT_FUNCTIONAL_BLOCK);
 		requestEditCommentBlock = new Request(REQ_EDIT_COMMENT_BLOCK);
 		AbstractScriptSegmentEditor scriptSegmentEditor = (AbstractScriptSegmentEditor)getWorkbenchPart();
-		process = (Process)((ResourceEditorInput)scriptSegmentEditor.getEditorInput()).getObject();
-		this.dacqConfiguration = process.getDACQConfiguration();
+		context = ((ResourceEditorInput)scriptSegmentEditor.getEditorInput()).getObject();
 	}
 	
 	@Override
@@ -99,7 +96,13 @@ public class EditBlockAction extends SelectionAction {
 		BlockEditPart selectedBlockEditPart = (BlockEditPart) getSelectedObjects().get(0);
 		Block block = selectedBlockEditPart.getModel();
 		if(block instanceof ConditionalBlock) {
-			ConditionalBlockConfigurationDialog configurationDialog = new ConditionalBlockConfigurationDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), (ConditionalBlock) block, dacqConfiguration.getProposal());
+			
+			String[] proposal = new String[0];
+			if(context instanceof Process) {
+				proposal = ((Process)context).getDACQConfiguration().getProposal();
+			}
+			
+			ConditionalBlockConfigurationDialog configurationDialog = new ConditionalBlockConfigurationDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), (ConditionalBlock) block, proposal);
 			if(configurationDialog.open() == Window.OK) {
 				Map<String, Object> data = new HashMap<>();
 				data.put(ConditionalBlock.LEFT_OPERAND, configurationDialog.getLeftOperand());
@@ -112,7 +115,7 @@ public class EditBlockAction extends SelectionAction {
 		if(block instanceof Function) {
 			Function function = (Function)block;
 			if(function.getClassName() != null && !(function.getClassName().equals(""))) {
-				FunctionalBlockConfigurationDialog configurationDialog = new FunctionalBlockConfigurationDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), process, function);
+				FunctionalBlockConfigurationDialog configurationDialog = new FunctionalBlockConfigurationDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), context, function);
 				if(configurationDialog.open() == Window.OK) {
 					execute(selectedBlockEditPart.getCommand(requestEditFunctionalBlock));
 				}

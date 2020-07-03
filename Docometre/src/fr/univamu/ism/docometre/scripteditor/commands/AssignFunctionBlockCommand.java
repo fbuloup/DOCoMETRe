@@ -50,7 +50,6 @@ import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.commands.CommandStack;
 
 import fr.univamu.ism.docometre.Activator;
-import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.dacqsystems.functions.CustomerFunction;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
@@ -79,7 +78,7 @@ public class AssignFunctionBlockCommand extends Command {
 		try {
 			
 			ResourceEditorInput resourceEditorInput = (ResourceEditorInput) ((DefaultEditDomain) blockEditPart.getRoot().getViewer().getEditDomain()).getEditorPart().getEditorInput();
-			Process process = (Process) resourceEditorInput.getObject();
+			Object process = resourceEditorInput.getObject();
 			
 			String customerFunctionFileName = functionClassName;
 			if(FunctionFactory.isCustomerFunction(process, functionClassName)) 
@@ -171,6 +170,7 @@ public class AssignFunctionBlockCommand extends Command {
 		if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.INITIALIZE)) script.removeInitializeBlock(function1);
 		if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.LOOP)) script.removeLoopBlock(function1);
 		if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.FINALIZE)) script.removeFinalizeBlock(function1);
+//		if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.DATA_PROCESSING)) script.removeLoopBlock(function1);
 		
 		blockEditPart.setModel(function2);
 		function1.setScript(null);
@@ -179,6 +179,7 @@ public class AssignFunctionBlockCommand extends Command {
 		if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.INITIALIZE)) script.addInitializeBlock(function2);
 		if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.LOOP)) script.addLoopBlock(function2);
 		if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.FINALIZE)) script.addFinalizeBlock(function2);
+//		if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.DATA_PROCESSING)) script.addLoopBlock(function2);
 		if(function2 != null) script.selectBlocks(new Block[] {function2});
 	}
 	

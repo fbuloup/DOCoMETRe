@@ -67,6 +67,7 @@ public class CreateBlockCommand extends Command {
 		if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.INITIALIZE)) scriptSegment.getScript().addInitializeBlock(block);
 		if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.LOOP)) scriptSegment.getScript().addLoopBlock(block);
 		if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.FINALIZE)) scriptSegment.getScript().addFinalizeBlock(block);
+//		if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.DATA_PROCESSING)) scriptSegment.getScript().addLoopBlock(block);
 	}
 	
 	@Override
@@ -75,6 +76,7 @@ public class CreateBlockCommand extends Command {
 		if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.INITIALIZE)) scriptSegment.getScript().removeInitializeBlock(block);
 		if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.LOOP)) scriptSegment.getScript().removeLoopBlock(block);
 		if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.FINALIZE)) scriptSegment.getScript().removeFinalizeBlock(block);
+//		if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.DATA_PROCESSING)) scriptSegment.getScript().removeLoopBlock(block);
 	}
 	
 	private void activateSegmentProcessEditor() {

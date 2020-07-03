@@ -57,14 +57,15 @@ public class ExperimentsViewerSorter extends ViewerComparator {
 		if(resource instanceof IProject && !((IProject) resource).isOpen()) return super.category(element);
 		if(ResourceType.isDACQConfiguration(resource)) return 0;
 		if(ResourceType.isProcess(resource)) return 1;
-		if(ResourceType.isFolder(resource)) return 2;
-		if(ResourceType.isProcessTest(resource)) return 2;
-		if(ResourceType.isSubject(resource)) return 3;
-		if(ResourceType.isSession(resource)) return 4;
-		if(ResourceType.isParameters(resource)) return 5;
-		if(ResourceType.isTrial(resource)) return 6;
-		if(ResourceType.isLog(resource)) return 7;
-		if(ResourceType.isSamples(resource)) return 8;
+		if(ResourceType.isDataProcessing(resource)) return 2;
+		if(ResourceType.isFolder(resource)) return 3;
+		if(ResourceType.isProcessTest(resource)) return 4;
+		if(ResourceType.isSubject(resource)) return 5;
+		if(ResourceType.isSession(resource)) return 6;
+		if(ResourceType.isParameters(resource)) return 7;
+		if(ResourceType.isTrial(resource)) return 8;
+		if(ResourceType.isLog(resource)) return 9;
+		if(ResourceType.isSamples(resource)) return 10;
 		return super.category(element);
 	}
 	

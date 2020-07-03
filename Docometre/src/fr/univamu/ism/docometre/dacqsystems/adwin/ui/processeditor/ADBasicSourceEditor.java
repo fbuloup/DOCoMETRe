@@ -41,14 +41,13 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor;
 
-import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.gef.commands.CommandStack;
 import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.swt.widgets.Composite;
 
 import fr.univamu.ism.docometre.dacqsystems.ui.SourceEditor;
 
-public class ADBasicSourceEditor extends SourceEditor implements IResourceChangeListener {
+public class ADBasicSourceEditor extends SourceEditor {
 	
 	public static String ID =  "Docometre.ADBasicSourceEditor";
 	

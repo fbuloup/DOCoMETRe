@@ -46,11 +46,13 @@ import org.eclipse.gef.commands.CommandStack;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinProcess;
 import fr.univamu.ism.docometre.editors.AbstractScriptSegmentEditor;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
+import fr.univamu.ism.process.Script;
 import fr.univamu.ism.process.ScriptSegmentType;
 
 public class ADWinInitializeSegmentEditor extends AbstractScriptSegmentEditor {
 	
 	public static String ID = "Docometre.ADWinInitializeSegmentEditor";
+	private ADWinProcess process;
 	
 	public ADWinInitializeSegmentEditor(CommandStack commandStack) {
 		super(commandStack, ScriptSegmentType.INITIALIZE);
@@ -60,6 +62,11 @@ public class ADWinInitializeSegmentEditor extends AbstractScriptSegmentEditor {
 	protected void createActions() {
 		process = (ADWinProcess)((ResourceEditorInput)getEditorInput()).getObject();
 		super.createActions();
+	}
+
+	@Override
+	protected Script getScript() {
+		return process.getScript();
 	}
 	
 }

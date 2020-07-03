@@ -53,6 +53,7 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.Process;
+import fr.univamu.ism.process.Script;
 
 public class NewResourceWizard extends Wizard implements INewWizard {
 	
@@ -105,6 +106,7 @@ public class NewResourceWizard extends Wizard implements INewWizard {
 		if(resourceType.equals(ResourceType.FOLDER)) newResourceWizardPage = new NewFolderWizardPage();
 		if(resourceType.equals(ResourceType.TRIAL)) newResourceWizardPage = new NewTrialWizardPage();
 		if(resourceType.equals(ResourceType.PARAMETERS)) newResourceWizardPage = new NewParametersFileWizardPage();
+		if(resourceType.equals(ResourceType.DATA_PROCESSING)) newResourceWizardPage = new NewDataProcessingWizardPage();
 		addPage(newResourceWizardPage);
 		if(resourceType.equals(ResourceType.SESSION)) {
 			addPage(new OrganizeSessionWizardPage());
@@ -164,6 +166,10 @@ public class NewResourceWizard extends Wizard implements INewWizard {
 	public IResource getAssociatedProcess() {
 		if(resourceType.equals(ResourceType.TRIAL)) return ((NewTrialWizardPage)newResourceWizardPage).getAssociatedProcess();
 		return null;
+	}
+	
+	public Script getDataProcessingScript() {
+		return new Script();
 	}
 	
 	public boolean getUsePrefix() {

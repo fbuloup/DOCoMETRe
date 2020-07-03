@@ -63,6 +63,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Version;
 
+import fr.univamu.ism.docometre.analyse.editors.DataProcessEditor;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor.ADWinProcessEditor;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.processeditor.ArduinoUnoProcessEditor;
 import fr.univamu.ism.docometre.editors.DataEditor;
@@ -247,6 +248,9 @@ public class Activator extends AbstractUIPlugin {
 		if(activeEditor instanceof ArduinoUnoProcessEditor) {
 			((ArduinoUnoProcessEditor)activeEditor).activateSegmentProcessEditor(scriptSegment);
 		}
+		if(activeEditor instanceof DataProcessEditor) {
+			((DataProcessEditor)activeEditor).activateSegmentProcessEditor();
+		}
 	}
 	
 	public static double max(double[] values) {
@@ -263,6 +267,12 @@ public class Activator extends AbstractUIPlugin {
 			min = Math.min(min, value);
 		}
 		return min;
+	}
+	
+	public static void beep(Exception e) {
+		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell().getDisplay().beep();
+		logErrorMessageWithCause(e);
+		e.printStackTrace();
 	}
 	
 

@@ -413,6 +413,26 @@
             id="Docometre.ChannelEditor"
             name="ChannelEditor">
       </editor>
+      <editor
+            class="fr.univamu.ism.docometre.analyse.editors.DataProcessEditor"
+            contributorClass="fr.univamu.ism.docometre.editors.ScriptEditorActionBarContributor"
+            default="false"
+            icon="icons/dataProcessing.gif"
+            id="Docometre.DataProcessEditor"
+            name="DataProcessEditor">
+      </editor>
+      <editor
+            class="fr.univamu.ism.docometre.analyse.editors.DataProcessScriptEditor"
+            default="false"
+            id="Docometre.DataProcessScriptEditor"
+            name="DataProcessScriptEditor">
+      </editor>
+      <editor
+            class="fr.univamu.ism.docometre.analyse.editors.DataProcessScriptSourceEditor"
+            default="false"
+            id="Docometre.DataProcessScriptSourceEditor"
+            name="DataProcessScriptSourceEditor">
+      </editor>
    </extension>
    <extension
          point="org.eclipse.ui.decorators">
@@ -1148,6 +1168,13 @@
                      tooltip="%NewParametersCommand.tooltip">
                </command>
                <command
+                     commandId="NewDataProcessingCommand"
+                     icon="icons/dataProcessing.gif"
+                     label="%NewDataProcessingCommand.label"
+                     style="push"
+                     tooltip="%NewDataProcessingCommand.tooltip">
+               </command>
+               <command
                      commandId="NewFolderAction"
                      icon="icons/folder.gif"
                      label="%NewFolderAction.label"
@@ -1705,6 +1732,19 @@
 		        </visibleWhen>     
          </command>
          <command
+               commandId="NewDataProcessingCommand"
+               icon="icons/dataProcessing.gif"
+               label="%NewDataProcessingCommand.label"
+               style="push"
+               tooltip="%NewDataProcessingCommand.tooltip">
+            <visibleWhen
+                  checkEnabled="false">
+               <reference
+                     definitionId="Docometre.DesignPerspectiveSelected">
+               </reference>
+            </visibleWhen>
+         </command>
+         <command
                commandId="NewFolderAction"
                icon="icons/folder.gif"
                label="%NewFolderAction.label"
@@ -1898,6 +1938,13 @@
       <menuContribution
             allPopups="true"
             locationURI="popup:Docometre.SubjectsView">
+         <command
+               commandId="NewDataProcessingCommand"
+               icon="icons/dataProcessing.gif"
+               label="%NewDataProcessingCommand.label"
+               style="push"
+               tooltip="%NewDataProcessingCommand.tooltip">
+         </command>
          <command
                commandId="OpenEditorAction"
                label="%OpenEditorAction.label"
@@ -2186,6 +2233,7 @@
             name="TestJZY3DAction">
       </command>
       <command
+            defaultHandler="fr.univamu.ism.docometre.handlers.NewDataProcessingHandler"
             id="NewDataProcessingCommand"
             name="NewDataProcessingCommand">
       </command>

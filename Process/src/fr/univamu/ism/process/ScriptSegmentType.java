@@ -43,7 +43,10 @@ package fr.univamu.ism.process;
 
 public enum ScriptSegmentType {
 	
-	INITIALIZE("INITIALIZE", "Executed one time before event loop"), LOOP("LOOP", "Event loop, real time loop"), FINALIZE("FINALIZE", "Executed one time after last event loop");
+	INITIALIZE("INITIALIZE", "Executed one time before event loop"), 
+	LOOP("LOOP", "Event loop, real time loop"), 
+	FINALIZE("FINALIZE", "Executed one time after last event loop");
+//	DATA_PROCESSING("DATA_PROCESSING", "Executed one time for data processing using Matlab or Python etc.");
 	
 	private String name;
 	private String comment;

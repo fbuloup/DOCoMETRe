@@ -79,6 +79,7 @@ public class GetResourceLabelDelegate {
 		if(ResourceType.isLog(resource)) return resource.getName().replaceAll(Activator.logFileExtension + "$", "");
 		if(ResourceType.isSamples(resource)) return resource.getName().replaceAll(Activator.samplesFileExtension + "$", "");
 		if(ResourceType.isParameters(resource)) return resource.getName().replaceAll(Activator.parametersFileExtension + "$", "");
+		if(ResourceType.isDataProcessing(resource)) return resource.getName().replaceAll(Activator.dataProcessingFileExtension + "$", "");
 		
 		if(ResourceType.isSession(resource) || ResourceType.isSubject(resource)) {
 			double percent = ResourceProperties.getPercentDone(resource);

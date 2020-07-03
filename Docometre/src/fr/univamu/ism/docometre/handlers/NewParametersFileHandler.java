@@ -122,7 +122,6 @@ public class NewParametersFileHandler implements IHandler, ISelectionListener {
 
 	@Override
 	public boolean isEnabled() {
-		// TODO Auto-generated method stub
 		return enabled;
 	}
 

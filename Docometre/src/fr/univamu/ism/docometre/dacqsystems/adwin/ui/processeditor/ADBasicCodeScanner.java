@@ -64,7 +64,7 @@ public final class ADBasicCodeScanner extends RuleBasedScanner {
 	private static String[] DEFINE = {"#DEFINE", "FPAR_", "DATA_"};
 	private static String[] DECLARE = {"DIM", "AS", "LONG", "FLOAT", "SHORT", "INTEGER", "STRING"};
 	private static String[] SEGMENTS = {"LOWINIT:", "INIT:", "EVENT:", "FINISH:"};
-	private static String[] RESERVED_WORDS = {"FIFO_CLEAR", "FIFO_EMPTY", "IF", "ELSE", "ENDIF", "THEN", "INC", "GLOBAL_DELAY", "DO", "UNTIL", "FOR", "TO", "NEXT", "SHIFT_RIGHT", "OR", "AND"};
+	private static String[] RESERVED_WORDS = {"for", "FIFO_CLEAR", "FIFO_EMPTY", "IF", "ELSE", "ENDIF", "THEN", "INC", "GLOBAL_DELAY", "DO", "UNTIL", "FOR", "TO", "NEXT", "SHIFT_RIGHT", "OR", "AND"};
 	
 	
 //		 // Add rule for whitespace

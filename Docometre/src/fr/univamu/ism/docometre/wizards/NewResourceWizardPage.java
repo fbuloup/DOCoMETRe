@@ -164,6 +164,8 @@ public abstract class NewResourceWizardPage extends WizardPage implements IWizar
 		String fileExtension = "";
 		if(this instanceof NewDACQConfigurationWizardPage) fileExtension = Activator.daqFileExtension;
 		if(this instanceof NewProcessWizardPage) fileExtension = Activator.processFileExtension;
+		if(this instanceof NewParametersFileWizardPage) fileExtension = Activator.parametersFileExtension;
+		if(this instanceof NewDataProcessingWizardPage) fileExtension = Activator.dataProcessingFileExtension;
 		Pattern pattern = Pattern.compile(regexp);
 		Matcher matcher = pattern.matcher(name);
 		if(!matcher.matches()) {

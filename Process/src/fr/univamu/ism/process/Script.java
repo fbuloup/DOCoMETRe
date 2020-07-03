@@ -73,12 +73,12 @@ public class Script implements Serializable {
 	/**
 	 * List of blocks contained in the loop phase
 	 */
-	private ScriptSegment loopBlocks = new ScriptSegment(ScriptSegmentType.LOOP, this);;
+	private ScriptSegment loopBlocks = new ScriptSegment(ScriptSegmentType.LOOP, this);
 	
 	/**
 	 * List of blocks contained in the finalize phase
 	 */
-	private ScriptSegment finalizeBlocks = new ScriptSegment(ScriptSegmentType.FINALIZE, this);;
+	private ScriptSegment finalizeBlocks = new ScriptSegment(ScriptSegmentType.FINALIZE, this);
 
 	/**
 	 * 
@@ -356,10 +356,12 @@ public class Script implements Serializable {
 			code = code + generateCode(ifBlock.getNextTrueBranchBlock(), endifBlock, context, step);
 			if(context.getClass().getSimpleName().equals(Activator.ADWinProcess)) code = code + "ELSE\n";
 			if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess)) code = code + "} else {\n";
+			if(context.getClass().getSimpleName().equals(Activator.Script)) code = code + "else\n";
 			//generate code till this endif bloc from false branch
 			code = code + generateCode(ifBlock.getNextFalseBranchBlock(), endifBlock, context, step);
 			if(context.getClass().getSimpleName().equals(Activator.ADWinProcess)) code = code + "ENDIF\n";
 			if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess)) code = code + "} // End if .. else\n";
+			if(context.getClass().getSimpleName().equals(Activator.Script)) code = code + "end\n";
 			//Continue to next bloc
 			code = code + generateCode(endifBlock, stopBlock, context, step);
 		}
@@ -425,6 +427,19 @@ public class Script implements Serializable {
 				} else if(lines[i].startsWith("} else {")) {
 					code = code + indent.replaceFirst("\t", "") + lines[i] + "\n";
 				} else if(lines[i].startsWith("} // End if .. else") || lines[i].startsWith("} while (") || lines[i].startsWith("} // End for")) {
+					indent = indent.replaceFirst("\t", "");
+					code = code + indent + lines[i] + "\n";
+				} else code = code + indent + lines[i] + "\n";
+			}
+		}
+		if(context.getClass().getSimpleName().equals(Activator.Script)) {
+			for (int i = 0; i < lines.length; i++) {
+				if(lines[i].startsWith("if ") || lines[i].startsWith("while ") || lines[i].startsWith("for ")) {
+					code = code + indent + lines[i] + "\n";
+					indent = indent + "\t";
+				} else if(lines[i].startsWith("else")) {
+					code = code + indent.replaceFirst("\t", "") + lines[i] + "\n";
+				} else if(lines[i].startsWith("end")) {
 					indent = indent.replaceFirst("\t", "");
 					code = code + indent + lines[i] + "\n";
 				} else code = code + indent + lines[i] + "\n";

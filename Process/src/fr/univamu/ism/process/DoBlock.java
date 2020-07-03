@@ -131,6 +131,8 @@ public class DoBlock extends ConditionalBlock {
 			return "Do ... Until " + getLeftOperand() + getOperator().getValue() + getRightOperand();
 		if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess))
 			return "Do ... While " + getLeftOperand() + getOperator().getValue() + getRightOperand();
+		if(context.getClass().getSimpleName().equals(Activator.Script))
+			return "while " + getLeftOperand() + getOperator().getValue() + getRightOperand() + " ... end ";
 		return "";
 	}
 

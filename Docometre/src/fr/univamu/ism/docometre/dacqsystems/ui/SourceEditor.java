@@ -82,6 +82,7 @@ import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
+import org.eclipse.ui.part.MultiPageEditorPart;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ObjectsController;
@@ -94,6 +95,8 @@ import fr.univamu.ism.docometre.dacqsystems.DocometreBuilder;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.dialogs.FindDialog;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
+import fr.univamu.ism.process.Script;
+import fr.univamu.ism.process.ScriptSegmentType;
 
 public class SourceEditor extends EditorPart implements IResourceChangeListener {
 
@@ -107,7 +110,7 @@ public class SourceEditor extends EditorPart implements IResourceChangeListener 
 	}
 
 	private DefaultEditDomain editDomain;
-	private ProcessEditor processEditor;
+	private MultiPageEditorPart multiPageEditorPart;
 	private ActionRegistry actionRegistry;
 	protected Document document;
 	protected AnnotationModel annotationModel;
@@ -115,8 +118,8 @@ public class SourceEditor extends EditorPart implements IResourceChangeListener 
 	protected SourceViewer sourceViewer;
 	private PartListenerAdapter partListenerAdapter;
 
-	public SourceEditor(CommandStack commandStack, ProcessEditor processEditor) {
-			this.processEditor = processEditor;
+	public SourceEditor(CommandStack commandStack, MultiPageEditorPart multiPageEditorPart) {
+			this.multiPageEditorPart = multiPageEditorPart;
 			editDomain = new DefaultEditDomain(this);
 			editDomain.setCommandStack(commandStack);
 		}
@@ -133,7 +136,7 @@ public class SourceEditor extends EditorPart implements IResourceChangeListener 
 					PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
 						@Override
 						public void run() {
-							IResource process = ObjectsController.getResourceForObject(getProcess());
+							IResource process = ObjectsController.getResourceForObject(getObject());
 							if (delta.getResource().equals(process)) {
 								updateMarkers();
 							}
@@ -254,8 +257,7 @@ public class SourceEditor extends EditorPart implements IResourceChangeListener 
 					FindDialog.getInstance().open();
 				} else if(event.keyCode == SWT.F5) {
 					try {
-						Process process = getProcess();
-						update(process.getCode(null));
+						update(getCode());
 					} catch (Exception e) {
 						e.printStackTrace();
 						Activator.logErrorMessageWithCause(e);
@@ -275,7 +277,7 @@ public class SourceEditor extends EditorPart implements IResourceChangeListener 
 		partListenerAdapter = new PartListenerAdapter() {
 			@Override
 			public void partClosed(IWorkbenchPartReference partRef) {
-				if (partRef.getPart(false) == processEditor) {
+				if (partRef.getPart(false) == multiPageEditorPart) {
 					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
 							.removePartListener(partListenerAdapter);
 					ResourcesPlugin.getWorkspace().removeResourceChangeListener(SourceEditor.this);
@@ -293,13 +295,13 @@ public class SourceEditor extends EditorPart implements IResourceChangeListener 
 			}
 
 			private void update(IWorkbenchPartReference partRef) {
-				if (partRef.getPart(false) == processEditor)
+				if (partRef.getPart(false) == multiPageEditorPart)
 					FindDialog.getInstance().setTextViewer(getSourceViewer());
 			}
 		};
 		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().addPartListener(partListenerAdapter);
 		try {
-			update(getProcess().getCode(null));
+			update(getCode());
 		} catch (Exception e) {
 			e.printStackTrace();
 			Activator.logErrorMessageWithCause(e);
@@ -309,9 +311,9 @@ public class SourceEditor extends EditorPart implements IResourceChangeListener 
 
 	}
 
-	private Process getProcess() {
+	private Object getObject() {
 		ResourceEditorInput resourceEditorInput = (ResourceEditorInput) getEditorInput();
-		return (Process) resourceEditorInput.getObject();
+		return resourceEditorInput.getObject();
 	}
 
 	@Override
@@ -330,8 +332,8 @@ public class SourceEditor extends EditorPart implements IResourceChangeListener 
 
 	protected void updateMarkers() {
 		try {
-			update(getProcess().getCode(null));
-			IResource process = ObjectsController.getResourceForObject(getProcess());
+			update(getCode());
+			IResource process = ObjectsController.getResourceForObject(getObject());
 			IMarker[] markers = process.findMarkers(DocometreBuilder.MARKER_ID, true, IResource.DEPTH_INFINITE);
 			annotationModel.removeAllAnnotations();
 			for (IMarker marker : markers) {
@@ -373,6 +375,17 @@ public class SourceEditor extends EditorPart implements IResourceChangeListener 
 		ObjectsController.removeHandle(resourceEditorInput.getObject());
 		docometreAnnotationAccesExtension.dispose();
 		super.dispose();
+	}
+	
+	private String getCode() {
+			try {
+				if(getObject() instanceof Process) return ((Process)getObject()).getCode(null);
+				if(getObject() instanceof Script) return ((Script)getObject()).getLoopCode(getObject(), ScriptSegmentType.LOOP);
+			} catch (Exception e) {
+				Activator.logErrorMessageWithCause(e);
+				e.printStackTrace();
+			}
+		return "";
 	}
 
 }

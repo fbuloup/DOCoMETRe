@@ -53,19 +53,18 @@ import org.eclipse.swt.widgets.Shell;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
-import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.process.Function;
 
 public class FunctionalBlockConfigurationDialog extends TitleAreaDialog {
 	
 	private Function function;
-	private Process process;
+	private Object context;
 	
-	public FunctionalBlockConfigurationDialog(Shell parentShell, Process process, Function function) {
+	public FunctionalBlockConfigurationDialog(Shell parentShell, Object context, Function function) {
 		super(parentShell);
 		setShellStyle(getShellStyle()); 
 		this.function = function;
-		this.process = process;
+		this.context = context;
 	}
 	
 	@Override
@@ -76,12 +75,12 @@ public class FunctionalBlockConfigurationDialog extends TitleAreaDialog {
 	
 	@Override
 	protected Control createDialogArea(Composite parent) {
-		setTitle(NLS.bind(DocometreMessages.FunctionConfigurationDialog_Title, function.getTitle(process)));
-		setMessage(NLS.bind(DocometreMessages.FunctionConfigurationDialog_Message, function.getDescription(process)));
+		setTitle(NLS.bind(DocometreMessages.FunctionConfigurationDialog_Title, function.getTitle(context)));
+		setMessage(NLS.bind(DocometreMessages.FunctionConfigurationDialog_Message, function.getDescription(context)));
 		setTitleImage(Activator.getImageDescriptor(IImageKeys.CONFIGURE_FUNCTION_WIZBAN).createImage());
 		
 		Composite container = (Composite) super.createDialogArea(parent);
-		Composite composite = (Composite)function.getGUI(this , container, process);
+		Composite composite = (Composite)function.getGUI(this , container, context);
 		if(composite != null) {
 			composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 			// Build the separator line

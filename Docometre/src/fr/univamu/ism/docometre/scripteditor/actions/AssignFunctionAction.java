@@ -60,25 +60,25 @@ public class AssignFunctionAction extends WorkbenchPartAction {
 
 	private BlockEditPart selectedBlockEditPart;
 	private Request requestChangeFunctionalBlock;
-	private String ADWinFunctionClass;
+	private String functionClass;
 	
-	public AssignFunctionAction(AbstractScriptSegmentEditor scriptSegmentEditor, BlockEditPart blockEditPart, String title, String toolTip, String ADWinFunctionClass) {
+	public AssignFunctionAction(AbstractScriptSegmentEditor scriptSegmentEditor, BlockEditPart blockEditPart, String title, String toolTip, String functionClass) {
 		super(scriptSegmentEditor, IAction.AS_CHECK_BOX);
 		setText(title);
 		setToolTipText(toolTip);
 		requestChangeFunctionalBlock = new Request(REQ_CHANGE_FUNCTIONAL_BLOCK);
-		this.ADWinFunctionClass = ADWinFunctionClass;
+		this.functionClass = functionClass;
 		selectedBlockEditPart = blockEditPart;
 		if(((Function)blockEditPart.getModel()).getClassName() != null) {
 			String className = ((Function)blockEditPart.getModel()).getClassName();
-			if(className.equals(ADWinFunctionClass)) setChecked(true);
+			if(className.equals(functionClass)) setChecked(true);
 		}
 	}
 	
 	@Override
 	public void run() {
 		Map<String, Object> data = new HashMap<>();
-		data.put(Function.FUNCTION_CLASS_NAME, ADWinFunctionClass);
+		data.put(Function.FUNCTION_CLASS_NAME, functionClass);
 		data.put(Function.FUNCTION_NAME, getText());
 		requestChangeFunctionalBlock.setExtendedData(data);
 		execute(selectedBlockEditPart.getCommand(requestChangeFunctionalBlock));

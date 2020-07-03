@@ -139,6 +139,9 @@ public class IfBlock extends ConditionalBlock {
 			
 			if(contextSimpleName.equals(Activator.ADWinProcess))
 			return "IF (" + getLeftOperand() + getOperator().getValue() + getRightOperand() + ") THEN\n";
+			
+			if(contextSimpleName.equals(Activator.Script))
+				return "if " + getLeftOperand() + getOperator().getValue() + getRightOperand() + "\n";
 		}
 		
 		return "";
@@ -153,7 +156,6 @@ public class IfBlock extends ConditionalBlock {
 	
 	@Override
 	public String getName(Object context) {
-		// TODO Auto-generated method stub
 		return "If " + getLeftOperand() + getOperator().getValue() + getRightOperand();
 	}
 

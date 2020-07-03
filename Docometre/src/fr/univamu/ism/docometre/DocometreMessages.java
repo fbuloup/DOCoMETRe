@@ -747,6 +747,15 @@ public final class DocometreMessages extends NLS {
 	public static String DeleteSelectedMarkerTrialTooltip;
 	public static String DeleteSelectedFieldTooltip;
 	public static String CategoryCriteriaLabel;
+
+	// Data processing editor wizard
+	public static String NewDataProcessingWizard_PageTitle;
+	public static String NewDataProcessingWizard_PageMessage;
+	public static String NewDataProcessingizard_PageName;
+
+	// Data processing editor page editor titles
+	public static String MathEngineEditorTitle;
+	public static String MathEngineSourceCodeEditorTitle;
 	
 //	public static String OrganizeSessionWizardPage_button_1_text;
 //	public static String OrganizeSessionWizardPage_tbtmNewItem_text;

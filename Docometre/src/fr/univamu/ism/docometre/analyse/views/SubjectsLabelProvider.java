@@ -32,12 +32,17 @@ public class SubjectsLabelProvider implements ILabelProvider {
 
 	@Override
 	public Image getImage(Object element) {
-		if(element instanceof IResource && ResourceType.isSubject((IResource) element)) return Activator.getImageDescriptor(IImageKeys.SUBJECT_ICON).createImage();
-		if(element instanceof Channel) {
-			Channel channel = (Channel)element;
-			if(channel.isSignal()) return Activator.getImageDescriptor(IImageKeys.SIGNAL_ICON).createImage();
-			if(channel.isCategory()) return Activator.getImageDescriptor(IImageKeys.CATEGORY_ICON).createImage();
-			if(channel.isEvent()) return Activator.getImageDescriptor(IImageKeys.EVENT_ICON).createImage();
+		if(element instanceof IResource) {
+			IResource resource = (IResource)element;
+			if(ResourceType.isSubject(resource)) return Activator.getImageDescriptor(IImageKeys.SUBJECT_ICON).createImage();
+			if(ResourceType.isChannel(resource)) {
+				Channel channel = (Channel)element;
+				if(channel.isSignal()) return Activator.getImageDescriptor(IImageKeys.SIGNAL_ICON).createImage();
+				if(channel.isCategory()) return Activator.getImageDescriptor(IImageKeys.CATEGORY_ICON).createImage();
+				if(channel.isEvent()) return Activator.getImageDescriptor(IImageKeys.EVENT_ICON).createImage();
+			}
+			if(ResourceType.isFolder(resource)) return Activator.getImageDescriptor(IImageKeys.FOLDER_ICON).createImage();
+			if(ResourceType.isDataProcessing(resource)) return Activator.getImageDescriptor(IImageKeys.DATA_PROCESSING_ICON).createImage();
 		}
 		return null;
 	}

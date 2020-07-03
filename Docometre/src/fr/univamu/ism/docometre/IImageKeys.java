@@ -180,6 +180,6 @@ public interface IImageKeys {
 	public static final String HIDE_PANNEL = "icons/down-arrow.png"; //$NON-NLS-1$
 	
 	
-	
+	public static final String DATA_PROCESSING_ICON = "icons/dataProcessing.gif"; //$NON-NLS-1$
 	
 }
