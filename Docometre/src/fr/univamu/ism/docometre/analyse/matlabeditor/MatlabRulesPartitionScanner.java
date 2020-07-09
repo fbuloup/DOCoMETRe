@@ -46,81 +46,27 @@ import java.util.ArrayList;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.rules.EndOfLineRule;
 import org.eclipse.jface.text.rules.IPredicateRule;
+import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.RuleBasedPartitionScanner;
 import org.eclipse.jface.text.rules.Token;
-import org.eclipse.jface.text.rules.WordPatternRule;
-
-import fr.univamu.ism.docometre.editors.WordsDetector;
 
 public class MatlabRulesPartitionScanner extends RuleBasedPartitionScanner {
 	
-	public static final String FUNCTIONS = "FUNCTIONS"; 
 	public static final String COMMENT = "COMMENT"; 
-	public static final String RESERVED_WORDS = "RESERVED_WORDS"; 
+	public static final String DEFAULT = IDocument.DEFAULT_CONTENT_TYPE; 
 	
-	public static final String[] PARTITIONS = new String[]{IDocument.DEFAULT_CONTENT_TYPE, COMMENT, FUNCTIONS, RESERVED_WORDS};
+	public static final String[] PARTITIONS = new String[]{DEFAULT, COMMENT};
 	
 	public MatlabRulesPartitionScanner() {
 		
-		IToken functionToken = new Token(FUNCTIONS);
 	    IToken commentToken = new Token(COMMENT);
-	    IToken reservedWordsToken = new Token(RESERVED_WORDS);
 	    
-	    ArrayList<IPredicateRule> rules = new ArrayList<IPredicateRule>();
+	    ArrayList<IRule> rules = new ArrayList<IRule>();
+	    
 		rules.add(new EndOfLineRule("%", commentToken));
 		rules.add(new EndOfLineRule("%%", commentToken));
 
-		for(int i = 0; i < MatlabCodeScanner.FUNCTIONS.length; i++) {
-			String function = MatlabCodeScanner.FUNCTIONS[i];
-			System.out.println(function);
-			String start = "";
-			String end = "";
-			if(function.length() == 2) {
-				start = function.substring(0, 1);
-				end = function.substring(1, 2);
-			} else if(function.length() == 3) {
-				start = function.substring(0, 1);
-				end = function.substring(1, 3);
-			} else {
-				start = function.substring(0, 2);
-				end = function.substring(function.length() - 2, function.length());
-			}
-			rules.add(new WordPatternRule(new WordsDetector(new String[] { function + " " }), " " + start, end + " ", functionToken));
-			rules.add(new WordPatternRule(new WordsDetector(new String[] { function + "(" }), " " + start, end + "(", functionToken));
-			rules.add(new WordPatternRule(new WordsDetector(new String[] { function + " " }), "\n" + start, end + " ", functionToken));
-			rules.add(new WordPatternRule(new WordsDetector(new String[] { function + "(" }), "\n" + start, end + "(", functionToken));
-			
-			rules.add(new WordPatternRule(new WordsDetector(new String[] { function + "\n" }), "" + start, end + "\n", functionToken));
-			rules.add(new WordPatternRule(new WordsDetector(new String[] { function + "\n" }), "\n" + start, end + "\n", functionToken));
-			
-		}
-		
-		for(int i = 0; i < MatlabCodeScanner.RESERVED_WORDS.length; i++) {
-			String reservedWord = MatlabCodeScanner.RESERVED_WORDS[i];
-			String start = "";
-			String end = "";
-			if(reservedWord.length() == 2) {
-				start = reservedWord.substring(0, 1);
-				end = reservedWord.substring(1, 2);
-			} else if(reservedWord.length() == 3) {
-				start = reservedWord.substring(0, 1);
-				end = reservedWord.substring(1, 3);
-			} else {
-				start = reservedWord.substring(0, 1);
-				end = reservedWord.substring(reservedWord.length() - 2, reservedWord.length() - 1);
-			}
-			rules.add(new WordPatternRule(new WordsDetector(new String[] { reservedWord + " " }), " " + start, end + " ", reservedWordsToken));
-			rules.add(new WordPatternRule(new WordsDetector(new String[] { reservedWord + "(" }), " " + start, end + "(", reservedWordsToken));
-			rules.add(new WordPatternRule(new WordsDetector(new String[] { reservedWord + " " }), "\n" + start, end + " ", reservedWordsToken));
-			rules.add(new WordPatternRule(new WordsDetector(new String[] { reservedWord + "(" }), "\n" + start, end + "(", reservedWordsToken));
-			
-			rules.add(new WordPatternRule(new WordsDetector(new String[] { reservedWord + "\n" }), "" + start, end + "\n", reservedWordsToken));
-			rules.add(new WordPatternRule(new WordsDetector(new String[] { reservedWord + "\n" }), "\n" + start, end + "\n", reservedWordsToken));
-		}
-		
-		
-		
 	    setPredicateRules(rules.toArray(new IPredicateRule[rules.size()]));
 	}
 

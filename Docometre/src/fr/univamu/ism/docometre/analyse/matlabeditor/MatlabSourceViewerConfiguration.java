@@ -41,21 +41,11 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.analyse.matlabeditor;
 
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
-import org.eclipse.jface.text.rules.IRule;
-import org.eclipse.jface.text.rules.IToken;
-import org.eclipse.jface.text.rules.NumberRule;
-import org.eclipse.jface.text.rules.RuleBasedScanner;
-import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
-import org.eclipse.swt.SWT;
-
-import fr.univamu.ism.docometre.DocometreApplication;
 
 public class MatlabSourceViewerConfiguration extends SourceViewerConfiguration {
 	
@@ -71,28 +61,10 @@ public class MatlabSourceViewerConfiguration extends SourceViewerConfiguration {
 		presentationReconciler.setDamager(defaultDamagerRepairer, MatlabRulesPartitionScanner.COMMENT);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, MatlabRulesPartitionScanner.COMMENT);
 		
-		
-		defaultDamagerRepairer = new DefaultDamagerRepairer(MatlabCodeScanner.getFunctionsScanner());		
-		presentationReconciler.setDamager(defaultDamagerRepairer, MatlabRulesPartitionScanner.FUNCTIONS);
-		presentationReconciler.setRepairer(defaultDamagerRepairer, MatlabRulesPartitionScanner.FUNCTIONS);
-		
-		defaultDamagerRepairer = new DefaultDamagerRepairer(MatlabCodeScanner.getReservedWordsScanner());		
-		presentationReconciler.setDamager(defaultDamagerRepairer, MatlabRulesPartitionScanner.RESERVED_WORDS);
-		presentationReconciler.setRepairer(defaultDamagerRepairer, MatlabRulesPartitionScanner.RESERVED_WORDS);
-		
-		//
-		RuleBasedScanner defaultScanner = new RuleBasedScanner();
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLUE),
-													DocometreApplication.getColor(DocometreApplication.WHITE), 
-													SWT.NORMAL,
-													DocometreApplication.getFont(DocometreApplication.COURIER_NEW));
-		IToken token = new Token(attribute);
-		NumberRule numberRule = new NumberRule(token);		
-		defaultScanner.setRules(new IRule[]{numberRule});
-		defaultDamagerRepairer = new DefaultDamagerRepairer(defaultScanner);		
-		presentationReconciler.setDamager(defaultDamagerRepairer, IDocument.DEFAULT_CONTENT_TYPE);
-		presentationReconciler.setRepairer(defaultDamagerRepairer, IDocument.DEFAULT_CONTENT_TYPE);
-		//
+		defaultDamagerRepairer = new DefaultDamagerRepairer(MatlabCodeScanner.getMatlabCodeScanner());		
+		presentationReconciler.setDamager(defaultDamagerRepairer, MatlabRulesPartitionScanner.DEFAULT);
+		presentationReconciler.setRepairer(defaultDamagerRepairer, MatlabRulesPartitionScanner.DEFAULT);
+
 		return presentationReconciler;
 	}
 	

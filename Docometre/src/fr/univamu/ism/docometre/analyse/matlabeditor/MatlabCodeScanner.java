@@ -7,24 +7,18 @@ import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.EndOfLineRule;
 import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
+import org.eclipse.jface.text.rules.IWordDetector;
+import org.eclipse.jface.text.rules.NumberRule;
 import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.rules.WordRule;
 import org.eclipse.swt.SWT;
 
 import fr.univamu.ism.docometre.DocometreApplication;
-import fr.univamu.ism.docometre.editors.WordsDetector;
 
 public final class MatlabCodeScanner extends RuleBasedScanner {
 	
-//	private static String[] IMPORT = {"IMPORT"};
-//	private static String[] INCLUDE = {"#INCLUDE"};
-//	private static String[] DEFINE = {"#DEFINE", "FPAR_", "DATA_"};
-//	private static String[] DECLARE = {"DIM", "AS", "LONG", "FLOAT", "SHORT", "INTEGER", "STRING"};
-//	private static String[] SEGMENTS = {"LOWINIT:", "INIT:", "EVENT:", "FINISH:"};
-//	private static String[] RESERVED_WORDS = {"for", "FIFO_CLEAR", "FIFO_EMPTY", "IF", "ELSE", "ENDIF", "THEN", "INC", "GLOBAL_DELAY", "DO", "UNTIL", "FOR", "TO", "NEXT", "SHIFT_RIGHT", "OR", "AND"};
-	
-	static public String[] FUNCTIONS = {
+	public static String[] FUNCTIONS = {
 	        "abs", "acos", "acosh", "acot" ,"acoth", "acsc", "acsch",
 	        "airfoil" ,"all" ,"andrew" ,"angle", "angle" ,"ans" ,"any", "arith",
 	        "asec", "asech", "asin", "asinh", "atan", "atan2", "atanh", "auread",
@@ -115,98 +109,51 @@ public final class MatlabCodeScanner extends RuleBasedScanner {
 	        "yulewalk", "zerodemo", "zeros", "zlabel", "zp2sos", "zp2ss", "zp2tf", "zplane" 
 	    };
 	
-	static public String[] RESERVED_WORDS = {"break", "case", "catch", "continue", "else", "elseif", "end", "for", "function", "global", "if", "otherwise", "persistent", "return", "switch", "try", "while"};
+	public static String[] RESERVED_WORDS = {"break", "case", "catch", "continue", "else", "elseif", "end", "for", "function", "global", "if", "otherwise", "persistent", "return", "switch", "try", "while"};
 	
-	
-//		 // Add rule for whitespace
-//	    rules.add(new WhitespaceRule(new IWhitespaceDetector() {
-//	      public boolean isWhitespace(char c) {
-//	        return Character.isWhitespace(c);
-//	      }
-//	    }));
-		
-	
-//	public static RuleBasedScanner getSegmentScanner() {
-//		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
-//		List<IRule> rules= new ArrayList<IRule>();
-//		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.RED), 
-//				   									DocometreApplication.getColor(DocometreApplication.WHITE), 
-//				   									SWT.NORMAL, 
-//				   									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
-//		IToken token = new Token(attribute);
-//        WordRule wordRule = new WordRule(new WordsDetector(SEGMENTS), token);
-//        rules.add(wordRule);
-//        ruleBasedScanner.setRules(rules.toArray(new IRule[rules.size()]));
-//        return ruleBasedScanner;
-//	}
-	
-//	public static RuleBasedScanner getDefineScanner() {
-//		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
-//		List<IRule> rules= new ArrayList<IRule>();
-//		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLUE),
-//				 									DocometreApplication.getColor(DocometreApplication.WHITE), 
-//				 									SWT.NORMAL,
-//				 									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
-//		IToken token = new Token(attribute);
-//        WordRule wordRule = new WordRule(new WordsDetector(DEFINE), token);
-//        rules.add(wordRule);
-//        IRule[] commentRules = getCommentRules();
-//        for (int i = 0; i < commentRules.length; i++) rules.add(commentRules[i]);
-//        NumberRule numberRule = new NumberRule(token);
-//	    rules.add(numberRule);
-//        ruleBasedScanner.setRules(rules.toArray(new IRule[rules.size()]));
-//        return ruleBasedScanner;
-//	}
-//	
-//	public static RuleBasedScanner getImportScanner() {
-//		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
-//		List<IRule> rules= new ArrayList<IRule>();
-//		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLUE),
-//				 									DocometreApplication.getColor(DocometreApplication.WHITE), 
-//				 									SWT.NORMAL,
-//				 									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
-//		IToken token = new Token(attribute);
-//        WordRule wordRule = new WordRule(new WordsDetector(IMPORT), token);
-//        rules.add(wordRule);
-//        IRule[] commentRules = getCommentRules();
-//        for (int i = 0; i < commentRules.length; i++) rules.add(commentRules[i]);
-//        ruleBasedScanner.setRules(rules.toArray(new IRule[rules.size()]));
-//        return ruleBasedScanner;
-//	}
-//	
-//	public static RuleBasedScanner getIncludeScanner() {
-//		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
-//		List<IRule> rules= new ArrayList<IRule>();
-//		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLUE),
-//				 									DocometreApplication.getColor(DocometreApplication.WHITE), 
-//				 									SWT.NORMAL,
-//				 									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
-//		IToken token = new Token(attribute);
-//        WordRule wordRule = new WordRule(new WordsDetector(INCLUDE), token);
-//        rules.add(wordRule);
-//        IRule[] commentRules = getCommentRules();
-//        for (int i = 0; i < commentRules.length; i++) rules.add(commentRules[i]);
-//        ruleBasedScanner.setRules(rules.toArray(new IRule[rules.size()]));
-//        return ruleBasedScanner;
-//	}
-	
-	public static RuleBasedScanner getFunctionsScanner() {
-		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
-		List<IRule> rules= new ArrayList<IRule>();
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLUE),
-				 									DocometreApplication.getColor(DocometreApplication.WHITE), 
-				 									SWT.NORMAL,
-				 									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
-		IToken token = new Token(attribute);
-        WordRule wordRule = new WordRule(new WordsDetector(FUNCTIONS), token);
-        rules.add(wordRule);
-        IRule[] commentRules = getCommentRules();
-        for (int i = 0; i < commentRules.length; i++) rules.add(commentRules[i]);
-        ruleBasedScanner.setRules(rules.toArray(new IRule[rules.size()]));
-        return ruleBasedScanner;
+	private static class MatlabWordDetector implements IWordDetector {
+		@Override
+		public boolean isWordStart(char c) {
+			return Character.isLetter(c);
+		}
+		@Override
+		public boolean isWordPart(char c) {
+			return Character.isLetter(c);
+		}
 	}
 	
-	private static IRule[] getCommentRules() {
+	public static RuleBasedScanner getMatlabCodeScanner() {
+		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
+		List<IRule> rules = new ArrayList<IRule>();
+		
+		rules.addAll(getMatlabScanner());
+		rules.addAll(getNumbersScanner());
+		
+		ruleBasedScanner.setRules(rules.toArray(new IRule[rules.size()]));
+		return ruleBasedScanner;
+	}
+	
+	
+	private static List<IRule> getMatlabScanner() {
+		List<IRule> rules= new ArrayList<IRule>();
+        
+        WordRule wordRule = new WordRule(new MatlabWordDetector(), geDefaultTextAttributeToken());
+        
+        for (int i = 0; i < FUNCTIONS.length; i++) {
+        	wordRule.addWord(FUNCTIONS[i], getFunctionsTextAttributeToken());
+		}
+        
+        for (int i = 0; i < RESERVED_WORDS.length; i++) {
+        	wordRule.addWord(RESERVED_WORDS[i], getReservedWordsTextAttributeToken());
+		}
+
+        
+        rules.add(wordRule);
+        return rules;
+	}
+	
+	public static RuleBasedScanner  getCommentScanner() {
+		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
 		List<IRule> rules= new ArrayList<IRule>();
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.GREEN), 
 													DocometreApplication.getColor(DocometreApplication.WHITE), 
@@ -217,74 +164,47 @@ public final class MatlabCodeScanner extends RuleBasedScanner {
 		IRule commentRule2 = new EndOfLineRule("%%", token);
         rules.add(commentRule1);
         rules.add(commentRule2);
-        return rules.toArray(new IRule[rules.size()]);
-	}
-	
-	public static RuleBasedScanner getCommentScanner() {
-		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
-        ruleBasedScanner.setRules(getCommentRules());
-        return ruleBasedScanner;
-	}
-	
-//	public static RuleBasedScanner getDeclareScanner() {
-//		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
-//		List<IRule> rules= new ArrayList<IRule>();
-//		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.ORANGE),
-//				 									DocometreApplication.getColor(DocometreApplication.WHITE), 
-//				 									SWT.NORMAL,
-//				 									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
-//		IToken token = new Token(attribute);
-//        WordRule wordRule = new WordRule(new WordsDetector(DECLARE), token);
-//        rules.add(wordRule);
-//        IRule[] commentRules = getCommentRules();
-//        for (int i = 0; i < commentRules.length; i++) rules.add(commentRules[i]);
-////        rules.add(getWhiteSpaceRule());
-//        ruleBasedScanner.setRules(rules.toArray(new IRule[rules.size()]));
-//        return ruleBasedScanner;
-//	}
-	
-//	private static WhitespaceRule getWhiteSpaceRule() {
-//		WhitespaceRule whitespaceRule = new WhitespaceRule(new IWhitespaceDetector() {
-//			@Override
-//			public boolean isWhitespace(char c) {
-//				return Character.isWhitespace(c);
-//			}
-//		});
-//	    return whitespaceRule;
-//	}
-	
-	public static RuleBasedScanner getReservedWordsScanner() {
-		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
-		List<IRule> rules= new ArrayList<IRule>();
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.ORANGE),
-				 									DocometreApplication.getColor(DocometreApplication.WHITE), 
-				 									SWT.NORMAL,
-				 									DocometreApplication.getFont(DocometreApplication.COURIER_NEW));
-		IToken token = new Token(attribute);
-        WordRule wordRule = new WordRule(new WordsDetector(RESERVED_WORDS), token);
-        rules.add(wordRule);
-        IRule[] commentRules = getCommentRules();
-        for (int i = 0; i < commentRules.length; i++) rules.add(commentRules[i]);
-//        rules.add(getWhiteSpaceRule());
+		
         ruleBasedScanner.setRules(rules.toArray(new IRule[rules.size()]));
-        return ruleBasedScanner;
+		return ruleBasedScanner;
 	}
 	
-//	public static RuleBasedScanner getParFparScanner() {
-//		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
-//		List<IRule> rules= new ArrayList<IRule>();
-//		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLUE),
-//				 									DocometreApplication.getColor(DocometreApplication.WHITE), 
-//				 									SWT.NORMAL,
-//				 									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
-//		IToken token = new Token(attribute);
-//		String[] parfpar = new String[160];
-//		for (int i = 1; i <= 80; i++) parfpar[i-1] = "PAR_" + i;
-//		for (int i = 1; i <= 80; i++) parfpar[80 + i-1] = "FPAR_" + i;
-//        WordRule wordRule = new WordRule(new WordsDetector(parfpar), token);
-//        rules.add(wordRule);
-//        ruleBasedScanner.setRules(rules.toArray(new IRule[rules.size()]));
-//        return ruleBasedScanner;
-//	}
+	private static List<IRule>  getNumbersScanner() {
+		List<IRule> rules= new ArrayList<IRule>();
+		
+		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLACK), null, SWT.BOLD);
+		
+	    IToken numberToken = new Token(attribute);
 
+	    NumberRule numberRule = new NumberRule(numberToken);
+        rules.add(numberRule);
+	    
+	    FloatingPointNumberRule floatingPointNumberRule = new FloatingPointNumberRule(numberToken);
+        rules.add(floatingPointNumberRule);
+
+        return rules;
+	}
+	
+	private static IToken getFunctionsTextAttributeToken() {
+		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLUE),
+				DocometreApplication.getColor(DocometreApplication.WHITE), SWT.NORMAL,
+				DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
+		IToken token = new Token(attribute);
+		return token;
+	}
+
+	private static IToken getReservedWordsTextAttributeToken() {
+		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.ORANGE),
+				DocometreApplication.getColor(DocometreApplication.WHITE), SWT.NORMAL,
+				DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
+		IToken token = new Token(attribute);
+		return token;
+	}
+	
+	private static IToken geDefaultTextAttributeToken() {
+		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLACK));
+		IToken token = new Token(attribute);
+		return token;
+	}
+	
 }
