@@ -53,6 +53,7 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
 import fr.univamu.ism.process.Function;
+import fr.univamu.ism.process.Script;
 
 public class GenericFunction extends Function {
 	
@@ -79,13 +80,14 @@ public class GenericFunction extends Function {
 	
 	@Override
 	public String getTitle(Object process) {
-		if(!(process instanceof Process)) return "";
-		return FunctionFactory.getProperty((Process) process, getFunctionFileName(), FunctionFactory.MENU_TITLE);
+		if(!(process instanceof Process || process instanceof Script)) return "";
+		return FunctionFactory.getProperty(process, getFunctionFileName(), FunctionFactory.MENU_TITLE);
 	}
 	
 	@Override
 	public String getDescription(Object process) {
-		if(!(process instanceof Process)) return "";
-		return FunctionFactory.getProperty((Process) process, getFunctionFileName(), FunctionFactory.DESCRIPTION);
+		if(!(process instanceof Process || process instanceof Script)) return "";
+		return FunctionFactory.getProperty(process, getFunctionFileName(), FunctionFactory.DESCRIPTION);
 	}
+	
 }

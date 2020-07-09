@@ -45,10 +45,6 @@ import java.util.Locale;
 
 import org.eclipse.osgi.util.NLS;
 
-/**
- * Message class for the undo example.
- *
- */
 public final class DocometreMessages extends NLS {
 	
 	private static final String BUNDLE_NAME = "fr.univamu.ism.docometre.messages";//$NON-NLS-1$

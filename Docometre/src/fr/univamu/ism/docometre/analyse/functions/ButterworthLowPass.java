@@ -23,6 +23,8 @@ public class ButterworthLowPass extends GenericFunction {
 	
 	private static final String orderKey = "order";
 	private static final String cutOffFrequencyKey = "cutOffFrequency";
+	private static final String inputSignalKey = "inputSignal";
+	private static final String outputSignalSuffixKey = "outputSignal";
 	
 	@Override
 	public String getFunctionFileName() {
@@ -40,7 +42,7 @@ public class ButterworthLowPass extends GenericFunction {
 		
 		Label orderLabel = new Label(paramContainer, SWT.NONE);
 		orderLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-		orderLabel.setText("Order");
+		orderLabel.setText(FunctionsMessages.OrderLabel);
 		Spinner orderSpinner = new Spinner(paramContainer, SWT.BORDER);
 		orderSpinner.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		String value  = getProperty(orderKey, "2");
@@ -54,7 +56,7 @@ public class ButterworthLowPass extends GenericFunction {
 		
 		Label cutOffLabel = new Label(paramContainer, SWT.NONE);
 		cutOffLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-		cutOffLabel.setText("Cutoff");
+		cutOffLabel.setText(FunctionsMessages.CutoffFrequencyLabel);
 		Text cutOffFrequencyText = new Text(paramContainer, SWT.BORDER);
 		cutOffFrequencyText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		value  = getProperty(cutOffFrequencyKey, "5");
@@ -63,6 +65,34 @@ public class ButterworthLowPass extends GenericFunction {
 			@Override
 			public void modifyText(ModifyEvent e) {
 				getTransientProperties().put(cutOffFrequencyKey, cutOffFrequencyText.getText());
+			}
+		});
+		
+		Label inputSignalLabel = new Label(paramContainer, SWT.NONE);
+		inputSignalLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+		inputSignalLabel.setText(FunctionsMessages.InputSignalLabel);
+		Text inputSignalText = new Text(paramContainer, SWT.BORDER);
+		inputSignalText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		value  = getProperty(inputSignalKey, "");
+		inputSignalText.setText(value);
+		inputSignalText.addModifyListener(new ModifyListener() {
+			@Override
+			public void modifyText(ModifyEvent e) {
+				getTransientProperties().put(inputSignalKey, inputSignalText.getText());
+			}
+		});
+		
+		Label outputSignalSuffixLabel = new Label(paramContainer, SWT.NONE);
+		outputSignalSuffixLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+		outputSignalSuffixLabel.setText(FunctionsMessages.OutputSignalSuffixLabel);
+		Text outputSignalSuffixText = new Text(paramContainer, SWT.BORDER);
+		outputSignalSuffixText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		value  = getProperty(outputSignalSuffixKey, "BLP");
+		outputSignalSuffixText.setText(value);
+		outputSignalSuffixText.addModifyListener(new ModifyListener() {
+			@Override
+			public void modifyText(ModifyEvent e) {
+				getTransientProperties().put(outputSignalSuffixKey, outputSignalSuffixText.getText());
 			}
 		});
 		
@@ -78,7 +108,10 @@ public class ButterworthLowPass extends GenericFunction {
 		
 		String order = getProperty(orderKey, "");
 		String cutOffFrequency = getProperty(cutOffFrequencyKey, "");
+		String inputSignal = getProperty(inputSignalKey, "");
+		String outputSignal = inputSignal + getProperty(outputSignalSuffixKey, "");
 		code = code.replaceAll(orderKey, order).replaceAll(cutOffFrequencyKey, cutOffFrequency);
+		code = code.replaceAll(inputSignalKey, inputSignal).replaceAll(outputSignalSuffixKey, outputSignal);
 		
 		return code + "\n";
 	}
