@@ -38,9 +38,22 @@ DESCRIPTION_FR = Filtre passe bas de Butterworth
 
 
 FUNCTION_CODE = % Compute low pass Butterworth filter\n\
-nyquistFrequency = 0.5 * InputSignal1.SampleFrequency; % Nyquist frequency is half sample frequency\n\
+% Create filtered signal\n\
+SignalSizes = size(inputSignal.Values); % SignalSizes(1) : trials number - SignalSizes(2) : samples number\n\
+outputSignal.Values = zeroes(SignalSizes(1), SignalSizes(2));\n\
+outputSignal.NbSamples = inputSignal.NbSamples;\n\
+outputSignal.isSignal = 1;\n\
+outputSignal.isCategory = 0;\n\
+outputSignal.isEvent = 0;\n\
+outputSignal.NbMarkers = 0;\n\
+outputSignal.NbFields = 0;\n\
+outputSignal.SampleFrequency = inputSignal.SampleFrequency;\n\
+outputSignal.FrontCut = ones(SignalSizes(1), 1);\n\
+outputSignal.EndCut = SignalSizes(2)*ones(SignalSizes(1), 1);\n\
+% Compute filtering\n\
+nyquistFrequency = 0.5 * inputSignal.SampleFrequency; % Nyquist frequency is half sample frequency\n\
 normalizedCutOffFrequency = cutOffFrequency / nyquistFrequency;\n\
 [num, den] = butter(order, normalizedCutOffFrequency);\n\
 for trialNumber = trialsList\n\
-	outputSignal.Values(TrialNumber, :) = filtfilt(num, den, inputSignal.Values(trialNumber, :));\n\
+	outputSignal.Values(trialNumber, :) = filtfilt(num, den, inputSignal.Values(trialNumber, :));\n\
 end

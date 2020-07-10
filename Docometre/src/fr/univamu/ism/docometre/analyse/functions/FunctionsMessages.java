@@ -12,6 +12,8 @@ public class FunctionsMessages extends NLS {
 	public static String CutoffFrequencyLabel;
 	public static String InputSignalLabel;
 	public static String OutputSignalSuffixLabel;
+	public static String CutOffFrequencyNotValidLabel;
+	public static String TrialsListNotValidLabel;
 	
 	static {
 		// load message values from bundle file
