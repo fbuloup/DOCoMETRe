@@ -63,6 +63,8 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
+import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 import fr.univamu.ism.docometre.wizards.NewResourceWizard;
 
@@ -108,12 +110,13 @@ public class NewFolderAction extends Action implements ISelectionListener, IWork
 
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
 		setEnabled(false);
-		if(part instanceof ExperimentsView) {
+		if(part instanceof ExperimentsView || part instanceof SubjectsView) {
 			resource = null;
 			if (selection instanceof IStructuredSelection) {
 				Object object = ((IStructuredSelection) selection).getFirstElement();
 				if(object instanceof IResource)
 					if(ResourceType.isFolder((IResource) object) || ResourceType.isExperiment((IResource) object)) resource = (IContainer) object;
+				if(((IStructuredSelection) selection).isEmpty() && part instanceof SubjectsView) resource = (IContainer) SelectedExprimentContributionItem.selectedExperiment;
 			}
 			setEnabled(resource != null);
 		}

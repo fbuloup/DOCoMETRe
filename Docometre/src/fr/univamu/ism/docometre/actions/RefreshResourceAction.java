@@ -52,6 +52,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 
 import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 
 
@@ -76,6 +77,7 @@ public class RefreshResourceAction extends Action implements ISelectionListener,
 			try {
 				resource.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
 				ExperimentsView.refresh(resource.getParent(), new IResource[]{resource});
+				SubjectsView.refresh(resource.getParent(), new IResource[]{resource});
 			} catch (CoreException e) {
 				e.printStackTrace();
 				Activator.logErrorMessageWithCause(e);
@@ -86,7 +88,7 @@ public class RefreshResourceAction extends Action implements ISelectionListener,
 	@Override
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
 		setEnabled(true);
-		if(part instanceof ExperimentsView) {
+		if(part instanceof ExperimentsView || part instanceof SubjectsView) {
 			if (selection instanceof IStructuredSelection) {
 				Object[] elements = ((IStructuredSelection) selection).toArray();
 				selectedResources = new IResource[elements.length];

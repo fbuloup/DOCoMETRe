@@ -42,8 +42,9 @@ public class SubjectsContentProvider implements ITreeContentProvider {
 			if(ResourceType.isDataProcessing(element)) return true;
 			if(!ResourceType.isFolder(element)) return false;
 
-			boolean addElement = false;
+			
 			IResource[] resources = ((IFolder)element).members();
+			boolean addElement = resources.length == 0;
 			for (IResource resource : resources) {
 				addElement = addElement || mustAddElement(resource);
 			}
@@ -97,7 +98,15 @@ public class SubjectsContentProvider implements ITreeContentProvider {
 	public boolean hasChildren(Object element) {
 		if(element instanceof IResource) {
 			IResource resource = (IResource)element;
-			if(ResourceType.isFolder(resource)) return mustAddElement(resource);
+			if(ResourceType.isFolder(resource)) {
+				try {
+					boolean isEmpty = ((IContainer)resource).members().length == 0;
+					return mustAddElement(resource) && !isEmpty;
+				} catch (CoreException e) {
+					Activator.logErrorMessageWithCause(e);
+					e.printStackTrace();
+				}
+			}
 			if(ResourceType.isSubject(resource)) return MathEngineFactory.getMathEngine().isSubjectLoaded(resource);
 		}
 		return false;

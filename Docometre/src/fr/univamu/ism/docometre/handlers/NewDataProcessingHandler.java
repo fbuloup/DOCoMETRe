@@ -6,6 +6,7 @@ import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.commands.IHandlerListener;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
@@ -98,17 +99,24 @@ public class NewDataProcessingHandler implements IHandler, ISelectionListener {
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
 		enabled = false;
 		parentResource = null;
-		if(part instanceof ExperimentsView || part instanceof SubjectsView) {
+		if(part instanceof ExperimentsView) {
 			if (selection instanceof IStructuredSelection && ((IStructuredSelection) selection).size() == 1) {
 				Object selectedObject = ((IStructuredSelection) selection).getFirstElement();
 				boolean isProcessTest = ResourceType.isProcessTest((IResource) selectedObject);
 				if(((IResource) selectedObject) instanceof IContainer && !isProcessTest ) parentResource = (IContainer) selectedObject;
 			}
-			if(part instanceof SubjectsView && selection instanceof IStructuredSelection && ((IStructuredSelection) selection).isEmpty()) {
-				parentResource = (IContainer) SelectedExprimentContributionItem.selectedExperiment;
-			}
-			enabled = parentResource != null;
 		}
+		if(part instanceof SubjectsView) {
+			if(selection instanceof IStructuredSelection) {
+				 if(((IStructuredSelection) selection).isEmpty()) parentResource = (IContainer) SelectedExprimentContributionItem.selectedExperiment;
+				 else {
+					 Object selectedObject = ((IStructuredSelection) selection).getFirstElement();
+					 boolean isSubject =  ResourceType.isSubject((IResource) selectedObject);
+					 if(((IResource) selectedObject) instanceof IFolder && !isSubject ) parentResource = (IContainer) selectedObject;
+				 }
+			}
+		}
+		enabled = parentResource != null;
 	}
 
 }

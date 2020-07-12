@@ -43,6 +43,7 @@ package fr.univamu.ism.docometre.actions;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.IOperationHistory;
+import org.eclipse.core.commands.operations.IUndoContext;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.ISelection;
@@ -59,8 +60,10 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ResourceProperties;
+import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 //import fr.univamu.ism.docometre.model.Resource;
 import fr.univamu.ism.docometre.views.DescriptionView;
+import fr.univamu.ism.docometre.views.ExperimentsView;
 
 public class EditDescriptionAction extends Action implements ISelectionListener, IWorkbenchAction {
 	
@@ -92,8 +95,14 @@ public class EditDescriptionAction extends Action implements ISelectionListener,
 					try {
 						if(selectedResource != null  && selectedResource.exists()) {
 							String currentDescription = ResourceProperties.getDescriptionPersistentProperty(selectedResource);
-							if(!descriptionView.getDescription().equals(currentDescription))
-							operationHistory.execute(new EditDescriptionOperation(DocometreMessages.EditActionTitle, selectedResource, descriptionView.getDescription()), null, null);
+							if(!descriptionView.getDescription().equals(currentDescription)) {
+								IWorkbenchPart workbenchPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActivePart();
+								IUndoContext undoContext = null;
+								if(workbenchPart instanceof ExperimentsView) undoContext = ExperimentsView.experimentsViewUndoContext;
+								if(workbenchPart instanceof SubjectsView) undoContext = SubjectsView.subjectsViewUndoContext;
+								operationHistory.execute(new EditDescriptionOperation(DocometreMessages.EditActionTitle, selectedResource, descriptionView.getDescription(), undoContext), null, null);
+							}
+							
 						}
 					} catch (ExecutionException e) {
 						e.printStackTrace();

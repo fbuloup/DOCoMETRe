@@ -61,14 +61,11 @@ public class DataProcessEditor extends MultiPageEditorPart implements PartNameRe
 		IResource processFile = ObjectsController.getResourceForObject(object);
 		ObjectsController.serialize((IFile) processFile, object);
 		dataProcessScriptEditor.doSave(monitor);
-		
-		
-
 		try {
 			Script script = (Script) object;
 			System.out.println(script.getLoopCode(object, ScriptSegmentType.LOOP));
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
+			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
 		}
 		

@@ -62,6 +62,7 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 
 public class DeleteResourcesAction extends Action implements ISelectionListener, IWorkbenchAction {
@@ -123,7 +124,7 @@ public class DeleteResourcesAction extends Action implements ISelectionListener,
 
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
 		setEnabled(false);
-		if(part instanceof ExperimentsView) {
+		if(part instanceof ExperimentsView || part instanceof SubjectsView) {
 			resources = null;
 			if (selection instanceof IStructuredSelection) {
 				Object[] objects = ((IStructuredSelection) selection).toArray();

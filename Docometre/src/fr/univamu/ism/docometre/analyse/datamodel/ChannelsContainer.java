@@ -1,20 +1,19 @@
 package fr.univamu.ism.docometre.analyse.datamodel;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.eclipse.core.resources.IFolder;
+
+import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 
 public final class ChannelsContainer {
 	
-	private List<Channel> channels;
+	private IFolder subject;
 	
-	public ChannelsContainer(IFolder subject, Channel[] channels) {
-		this.channels = Arrays.asList(channels);
+	public ChannelsContainer(IFolder subject) {
+		this.subject = subject;
 	}
 
 	public Channel[] getChannels() {
-		return channels.toArray(new Channel[channels.size()]);
+		return MathEngineFactory.getMathEngine().getChannels(subject);
 	}
 
 	

@@ -43,6 +43,7 @@ package fr.univamu.ism.docometre.actions;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.AbstractOperation;
+import org.eclipse.core.commands.operations.IUndoContext;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -54,7 +55,6 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.views.DescriptionView;
-import fr.univamu.ism.docometre.views.ExperimentsView;
 
 public class EditDescriptionOperation extends AbstractOperation {
 
@@ -62,12 +62,12 @@ public class EditDescriptionOperation extends AbstractOperation {
 	private String newDescription;
 	private String oldDescription;
 
-	public EditDescriptionOperation(String label, IResource resource, String newDescription) {
+	public EditDescriptionOperation(String label, IResource resource, String newDescription, IUndoContext undoContext) {
 		super(label);
 		this.resource = resource;
 		this.newDescription = newDescription;
 		oldDescription = ResourceProperties.getDescriptionPersistentProperty(resource);
-		addContext(ExperimentsView.experimentsViewUndoContext);
+		addContext(undoContext);
 	}
 
 	@Override

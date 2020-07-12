@@ -76,6 +76,7 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.GetResourceLabelDelegate;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 
 public class DescriptionView extends ViewPart implements ISelectionListener, IPartListener {
 	
@@ -219,8 +220,9 @@ public class DescriptionView extends ViewPart implements ISelectionListener, IPa
 		
 		IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 		if(activePage != null) {
-			ExperimentsView experimentsView = (ExperimentsView) activePage.findView(ExperimentsView.ID);
-			if(experimentsView != null) selectionChanged(experimentsView, experimentsView.getSelection());
+			IWorkbenchPart activePart = activePage.getActivePart();
+			if(activePart instanceof ExperimentsView) selectionChanged(activePart, ((ExperimentsView)activePart).getSelection());
+			if(activePart instanceof SubjectsView) selectionChanged(activePart, ((SubjectsView)activePart).getSelection());
 		} 
 		getViewSite().getActionBars().getToolBarManager().add(ApplicationActionBarAdvisor.editDescriptionAction);
 	}
@@ -263,7 +265,10 @@ public class DescriptionView extends ViewPart implements ISelectionListener, IPa
 
 	@Override
 	public void partClosed(IWorkbenchPart part) {
-		if(part instanceof DescriptionView || part instanceof ExperimentsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().removeSelectionListener(ExperimentsView.ID, this);
+		if(part instanceof DescriptionView || part instanceof ExperimentsView || part instanceof SubjectsView) {
+			if(part instanceof DescriptionView || part instanceof ExperimentsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().removeSelectionListener(ExperimentsView.ID, this);
+			if(part instanceof DescriptionView || part instanceof SubjectsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().removeSelectionListener(SubjectsView.ID, this);
+		}
 		if(part instanceof DescriptionView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getPartService().removePartListener(this);
 	}
 
@@ -272,8 +277,11 @@ public class DescriptionView extends ViewPart implements ISelectionListener, IPa
 
 	@Override
 	public void partOpened(IWorkbenchPart part) {
-		if(part instanceof DescriptionView || part instanceof ExperimentsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().addSelectionListener(ExperimentsView.ID, this);
-		if(part instanceof ExperimentsView) {
+		if(part instanceof DescriptionView || part instanceof ExperimentsView || part instanceof SubjectsView) {
+			if(part instanceof DescriptionView || part instanceof ExperimentsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().addSelectionListener(ExperimentsView.ID, this);
+			if(part instanceof DescriptionView || part instanceof SubjectsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().addSelectionListener(SubjectsView.ID, this);
+		}
+		if(part instanceof ExperimentsView || part instanceof SubjectsView) {
 			selectedResourceLabel.setText(DocometreMessages.SelectedResourceNone);
 			descriptionStyledText.setText("");
 		}

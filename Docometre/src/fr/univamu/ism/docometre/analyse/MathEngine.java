@@ -34,4 +34,6 @@ public interface MathEngine {
 	int getSamplesNumber(Channel signal, int trialNumber);
 	int getFrontCut(Channel getchannel, int selection);
 	int getEndCut(Channel getchannel, int selection);
+	void runScript(String code);
+	Channel getChannelFromName(IResource experiment, String fullChannelName);
 }

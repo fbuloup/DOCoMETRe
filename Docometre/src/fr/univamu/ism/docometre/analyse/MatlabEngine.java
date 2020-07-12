@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -213,8 +214,7 @@ public final class MatlabEngine implements MathEngine {
 			String dataFilesList = (String)subject.getSessionProperty(ResourceProperties.DATA_FILES_LIST_QN);
 			String cmd = "[" + experimentName + "." + subjectName + ", message] = loadData('DOCOMETRE', '" + dataFilesList + "')";
 			matlabController.eval(cmd);
-			Channel[] channels = getChannels(subject);
-			ChannelsContainer channelsContainer = new ChannelsContainer((IFolder) subject, channels);
+			ChannelsContainer channelsContainer = new ChannelsContainer((IFolder) subject);
 			subject.setSessionProperty(ResourceProperties.CHANNELS_LIST_QN, channelsContainer);
 		} catch (Exception e) {
 			Activator.logErrorMessageWithCause(e);
@@ -449,6 +449,31 @@ public final class MatlabEngine implements MathEngine {
 	public int getEndCut(Channel getchannel, int selection) {
 		// TODO Auto-generated method stub
 		return 0;
+	}
+
+	@Override
+	public void runScript(String code) {
+		try {
+			matlabController.evaluate(code);
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public Channel getChannelFromName(IResource resource, String fullChannelName) {
+		if(!(resource instanceof IContainer)) return null;
+		if(fullChannelName == null || "".equals(fullChannelName)) return null;
+		IContainer experiment = (IContainer)resource;
+		String subjectName = fullChannelName.split("\\.")[1];
+		IResource subject = experiment.findMember(subjectName);
+		if(subject == null) return null; 
+		Channel[] channels = getChannels(subject);
+		for (Channel channel : channels) {
+			if(channel.getFullName().equals(fullChannelName)) return channel;
+		}
+		return null;
 	}
 
 	

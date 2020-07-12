@@ -1,5 +1,7 @@
 package fr.univamu.ism.docometre.analyse.views;
 
+import org.eclipse.core.commands.operations.IUndoContext;
+import org.eclipse.core.commands.operations.UndoContext;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -9,6 +11,7 @@ import org.eclipse.jface.viewers.DecoratingLabelProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ILabelDecorator;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
@@ -22,6 +25,7 @@ import org.eclipse.ui.IPerspectiveListener;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.part.ViewPart;
 
 import fr.univamu.ism.docometre.Activator;
@@ -36,12 +40,23 @@ import fr.univamu.ism.docometre.views.ExperimentsViewerSorter;
 public class SubjectsView extends ViewPart implements IResourceChangeListener, IPerspectiveListener {
 	
 	public static String ID = "Docometre.SubjectsView";
+
+	public static IUndoContext subjectsViewUndoContext;
+	
+	private class SubjectsViewUndoContext extends UndoContext {
+		@Override
+		public String getLabel() {
+			return "SubjectsViewUndoContext";
+		}
+	}
 	
 	private TreeViewer subjectsTreeViewer;
 	private Composite parent;
 	private Composite imageMessageContainer;
+	
 
 	public SubjectsView() {
+		subjectsViewUndoContext = new SubjectsViewUndoContext();
 	}
 	
 	/*
@@ -94,6 +109,11 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
 		PlatformUI.getWorkbench().getActiveWorkbenchWindow().addPerspectiveListener(this);
 		
+		getViewSite().getActionBars().setGlobalActionHandler(ActionFactory.DELETE.getId(), ApplicationActionBarAdvisor.deleteResourcesAction);
+		getViewSite().getActionBars().setGlobalActionHandler(ActionFactory.COPY.getId(), ApplicationActionBarAdvisor.copyResourcesAction);
+		getViewSite().getActionBars().setGlobalActionHandler(ActionFactory.PASTE.getId(), ApplicationActionBarAdvisor.pasteResourcesAction);
+		getViewSite().getActionBars().setGlobalActionHandler(ActionFactory.RENAME.getId(), ApplicationActionBarAdvisor.renameResourceAction);
+		getViewSite().getActionBars().setGlobalActionHandler(ActionFactory.REFRESH.getId(), ApplicationActionBarAdvisor.refreshResourceAction);
 		makePopupMenu();
 		
 		updateInput();
@@ -189,6 +209,10 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 			}
 		});
 		
+	}
+
+	public ISelection getSelection() {
+		return subjectsTreeViewer.getSelection();
 	}
 	
 }

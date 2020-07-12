@@ -73,6 +73,7 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.dialogs.RenameResourceDialog;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 
@@ -263,7 +264,7 @@ public class RenameResourceAction extends Action implements ISelectionListener, 
 
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
 		setEnabled(false);
-		if (part instanceof ExperimentsView) {
+		if (part instanceof ExperimentsView || part instanceof SubjectsView) {
 			if (selection instanceof IStructuredSelection)
 				resource = (IResource) ((IStructuredSelection) selection).getFirstElement();
 			setEnabled(resource != null);

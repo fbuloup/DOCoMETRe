@@ -460,6 +460,14 @@
                      label="%NewExperimentAction.label"
                      style="push"
                      tooltip="%NewExperimentAction.tooltip">
+                     <visibleWhen
+                           checkEnabled="false">
+                           <or>
+	                           <reference
+	                                 definitionId="Docometre.DesignPerspectiveSelected">
+	                           </reference>
+                           </or>
+                     </visibleWhen>
                </command>
                <command
                      commandId="NewDACQConfigurationAction"
@@ -467,6 +475,14 @@
                      label="%NewDACQConfigurationAction.label"
                      style="push"
                      tooltip="%NewDACQConfigurationAction.tooltip">
+                     <visibleWhen
+                           checkEnabled="false">
+                           <or>
+	                           <reference
+	                                 definitionId="Docometre.DesignPerspectiveSelected">
+	                           </reference>
+                           </or>
+                     </visibleWhen>
                </command>
                <command
                      commandId="NewProcessAction"
@@ -474,6 +490,14 @@
                      label="%NewProcessAction.label"
                      style="push"
                      tooltip="%NewProcessAction.tooltip">
+                     <visibleWhen
+                           checkEnabled="false">
+                           <or>
+	                           <reference
+	                                 definitionId="Docometre.DesignPerspectiveSelected">
+	                           </reference>
+                           </or>
+                     </visibleWhen>
                </command>
                <command
                      commandId="NewSubjectAction"
@@ -481,6 +505,14 @@
                      label="%NewSubjectAction.label"
                      style="push"
                      tooltip="%NewSubjectAction.tooltip">
+                     <visibleWhen
+                           checkEnabled="false">
+                           <or>
+	                           <reference
+	                                 definitionId="Docometre.DesignPerspectiveSelected">
+	                           </reference>
+                           </or>
+                     </visibleWhen>
                </command>
                <command
                      commandId="NewSessionAction"
@@ -488,6 +520,14 @@
                      label="%NewSessionAction.label"
                      style="push"
                      tooltip="%NewSessionAction.tooltip">
+                     <visibleWhen
+                           checkEnabled="false">
+                           <or>
+	                           <reference
+	                                 definitionId="Docometre.DesignPerspectiveSelected">
+	                           </reference>
+                           </or>
+                     </visibleWhen>
                </command>
                <command
                      commandId="NewTrialAction"
@@ -495,6 +535,14 @@
                      label="%NewTrialAction.label"
                      style="push"
                      tooltip="%NewTrialAction.tooltip">
+                     <visibleWhen
+                           checkEnabled="false">
+                           <or>
+	                           <reference
+	                                 definitionId="Docometre.DesignPerspectiveSelected">
+	                           </reference>
+                           </or>
+                     </visibleWhen>
                </command>
                <command
                      commandId="NewParametersCommand"
@@ -502,6 +550,14 @@
                      label="%NewParametersCommand.label"
                      style="push"
                      tooltip="%NewParametersCommand.tooltip">
+                     <visibleWhen
+                           checkEnabled="false">
+                           <or>
+	                           <reference
+	                                 definitionId="Docometre.DesignPerspectiveSelected">
+	                           </reference>
+                           </or>
+                     </visibleWhen>
                </command>
                <command
                      commandId="NewDataProcessingCommand"
@@ -509,6 +565,17 @@
                      label="%NewDataProcessingCommand.label"
                      style="push"
                      tooltip="%NewDataProcessingCommand.tooltip">
+                     <visibleWhen
+                           checkEnabled="false">
+                           <or>
+	                           <reference
+	                                 definitionId="Docometre.DesignPerspectiveSelected">
+	                           </reference>
+	                           <reference
+	                                 definitionId="Docometre.AnalysePerspectiveSelected">
+	                           </reference>
+                           </or>
+                     </visibleWhen>
                </command>
                <command
                      commandId="NewFolderAction"
@@ -516,13 +583,18 @@
                      label="%NewFolderAction.label"
                      style="push"
                      tooltip="%NewFolderAction.tooltip">
+                     <visibleWhen
+                           checkEnabled="false">
+                           <or>
+	                           <reference
+	                                 definitionId="Docometre.DesignPerspectiveSelected">
+	                           </reference>
+                            <reference
+                                  definitionId="Docometre.AnalysePerspectiveSelected">
+                            </reference>
+                           </or>
+                     </visibleWhen>
                </command>
-               <visibleWhen
-                     checkEnabled="false">
-                  <reference
-                        definitionId="Docometre.DesignPerspectiveSelected">
-                  </reference>
-               </visibleWhen>
             </menu>
             <separator
                   name="Docometre.separator1" visible="true">
@@ -562,6 +634,13 @@
                                   type="org.eclipse.core.resources.IResource">
                                <test
                                      args="Docometre.type,PARAMETERS"
+                                     property="org.eclipse.core.resources.persistentProperty">
+                               </test>
+                            </adapt>
+                            <adapt
+                                  type="org.eclipse.core.resources.IResource">
+                               <test
+                                     args="Docometre.type,DATA_PROCESSING"
                                      property="org.eclipse.core.resources.persistentProperty">
                                </test>
                             </adapt>
@@ -1933,18 +2012,41 @@
                   </reference>
                </visibleWhen>
             </command>
+            <command
+                  commandId="RunDataProcessingCommand"
+                  icon="icons/runDataProcessing.gif"
+                  label="%RunDataProcessingCommand.label"
+                  style="push"
+                  tooltip="%RunDataProcessingCommand.label">
+               <visibleWhen
+                     checkEnabled="false">
+                  <reference
+                        definitionId="Docometre.AnalysePerspectiveSelected">
+                  </reference>
+               </visibleWhen>
+            </command>
          </toolbar>
       </menuContribution>
       <menuContribution
             allPopups="true"
             locationURI="popup:Docometre.SubjectsView">
-         <command
-               commandId="NewDataProcessingCommand"
-               icon="icons/dataProcessing.gif"
-               label="%NewDataProcessingCommand.label"
-               style="push"
-               tooltip="%NewDataProcessingCommand.tooltip">
-         </command>
+         <menu
+               label="%New.label">
+            <command
+                  commandId="NewDataProcessingCommand"
+                  icon="icons/dataProcessing.gif"
+                  label="%NewDataProcessingCommand.label"
+                  style="push"
+                  tooltip="%NewDataProcessingCommand.tooltip">
+            </command>
+            <command
+                  commandId="NewFolderAction"
+                  icon="icons/folder.gif"
+                  label="%NewFolderAction.label"
+                  style="push"
+                  tooltip="%NewFolderAction.tooltip">
+            </command>
+         </menu>
          <command
                commandId="OpenEditorAction"
                label="%OpenEditorAction.label"
@@ -1959,6 +2061,13 @@
                               type="org.eclipse.core.resources.IResource">
                            <test
                                  args="Docometre.type,CHANNEL"
+                                 property="org.eclipse.core.resources.persistentProperty">
+                           </test>
+                        </adapt>
+                        <adapt
+                              type="org.eclipse.core.resources.IResource">
+                           <test
+                                 args="Docometre.type,DATA_PROCESSING"
                                  property="org.eclipse.core.resources.persistentProperty">
                            </test>
                         </adapt>
@@ -1977,6 +2086,10 @@
                label="%SelectExperimentCommand.label"
                style="push">
          </command>
+         <separator
+               name="Docometre.separator20"
+               visible="true">
+         </separator>
          <command
                commandId="StartStopMathEngineCommand"
                icon="icons/run.gif"
@@ -1984,14 +2097,58 @@
                style="push"
                tooltip="%StartStopMathEngineAction.tooltip">
          </command>
+         <command
+               commandId="LoadUnloadSubjectsCommand"
+               icon="icons/LoadUnloadSubjects.gif"
+               label="%LoadUnloadSubjectsCommand.title"
+               style="push">
+         </command>
+         <command
+               commandId="RunDataProcessingCommand"
+               icon="icons/runDataProcessing.gif"
+               label="%RunDataProcessingCommand.label"
+               style="push">
+         </command>
          <separator
                name="Docometre.separator1"
                visible="true">
          </separator>
          <command
-               commandId="LoadUnloadSubjectsCommand"
-               icon="icons/LoadUnloadSubjects.gif"
-               label="%LoadUnloadSubjectsCommand.title"
+               commandId="org.eclipse.ui.edit.rename"
+               label="%Rename.label"
+               style="push">
+         </command>
+         <command
+               commandId="EditDescriptionAction"
+               label="%EditDescriptionAction.label"
+               style="push">
+         </command>
+         <command
+               commandId="org.eclipse.ui.file.refresh"
+               label="%Refresh.label"
+               style="push">
+         </command>
+         <separator
+               name="Docometre.separator18"
+               visible="true">
+         </separator>
+         <command
+               commandId="org.eclipse.ui.edit.copy"
+               label="%Copy.label"
+               style="push">
+         </command>
+         <command
+               commandId="org.eclipse.ui.edit.paste"
+               label="%Paste.label"
+               style="push">
+         </command>
+         <separator
+               name="Docometre.separator19"
+               visible="true">
+         </separator>
+         <command
+               commandId="org.eclipse.ui.edit.delete"
+               label="%Delete.label"
                style="push">
          </command>
       </menuContribution>
@@ -2236,6 +2393,11 @@
             defaultHandler="fr.univamu.ism.docometre.handlers.NewDataProcessingHandler"
             id="NewDataProcessingCommand"
             name="NewDataProcessingCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.analyse.handlers.RunDataProcessingCommand"
+            id="RunDataProcessingCommand"
+            name="RunDataProcessingCommand">
       </command>
    </extension>
    <extension

@@ -40,7 +40,7 @@ DESCRIPTION_FR = Filtre passe bas de Butterworth
 FUNCTION_CODE = % Compute low pass Butterworth filter\n\
 % Create filtered signal\n\
 SignalSizes = size(inputSignal.Values); % SignalSizes(1) : trials number - SignalSizes(2) : samples number\n\
-outputSignal.Values = zeroes(SignalSizes(1), SignalSizes(2));\n\
+outputSignal.Values = zeros(SignalSizes(1), SignalSizes(2));\n\
 outputSignal.NbSamples = inputSignal.NbSamples;\n\
 outputSignal.isSignal = 1;\n\
 outputSignal.isCategory = 0;\n\
@@ -57,3 +57,9 @@ normalizedCutOffFrequency = cutOffFrequency / nyquistFrequency;\n\
 for trialNumber = trialsList\n\
 	outputSignal.Values(trialNumber, :) = filtfilt(num, den, inputSignal.Values(trialNumber, :));\n\
 end
+
+
+
+
+
+

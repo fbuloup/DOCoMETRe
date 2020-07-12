@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -18,6 +19,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 
+import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.analyse.editors.ChannelsContentProvider;
@@ -126,12 +128,7 @@ public class ButterworthLowPass extends GenericFunction {
 		inputSignalComboViewer.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		value  = getProperty(inputSignalKey, "");
 		inputSignalComboViewer.getCombo().setText(value);
-		inputSignalComboViewer.getCombo().addModifyListener(new ModifyListener() {
-			@Override
-			public void modifyText(ModifyEvent e) {
-				getTransientProperties().put(inputSignalKey, inputSignalComboViewer.getCombo().getText());
-			}
-		});
+		
 		inputSignalComboViewer.setContentProvider(new ChannelsContentProvider(true, false, false));
 		inputSignalComboViewer.setLabelProvider(LabelProvider.createTextProvider(new Function<Object, String>() {
 			
@@ -144,6 +141,15 @@ public class ButterworthLowPass extends GenericFunction {
 			}
 		}));
 		inputSignalComboViewer.setInput(SelectedExprimentContributionItem.selectedExperiment);
+		Channel channel = MathEngineFactory.getMathEngine().getChannelFromName(SelectedExprimentContributionItem.selectedExperiment, getProperty(inputSignalKey, ""));
+		if(channel != null) inputSignalComboViewer.setSelection(new StructuredSelection(channel));
+		
+		inputSignalComboViewer.getCombo().addModifyListener(new ModifyListener() {
+			@Override
+			public void modifyText(ModifyEvent e) {
+				getTransientProperties().put(inputSignalKey, inputSignalComboViewer.getCombo().getText());
+			}
+		});
 		
 		Label outputSignalSuffixLabel = new Label(paramContainer, SWT.NONE);
 		outputSignalSuffixLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));

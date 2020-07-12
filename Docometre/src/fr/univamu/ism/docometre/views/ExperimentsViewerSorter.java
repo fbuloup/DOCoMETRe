@@ -47,6 +47,7 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 
 public class ExperimentsViewerSorter extends ViewerComparator {
 	
@@ -66,6 +67,11 @@ public class ExperimentsViewerSorter extends ViewerComparator {
 		if(ResourceType.isTrial(resource)) return 8;
 		if(ResourceType.isLog(resource)) return 9;
 		if(ResourceType.isSamples(resource)) return 10;
+		if(ResourceType.isChannel(resource)) {
+			if(MathEngineFactory.getMathEngine().isSignal(resource)) return 11;
+			if(MathEngineFactory.getMathEngine().isCategory(resource)) return 12;
+			if(MathEngineFactory.getMathEngine().isEvent(resource)) return 13;
+		}
 		return super.category(element);
 	}
 	

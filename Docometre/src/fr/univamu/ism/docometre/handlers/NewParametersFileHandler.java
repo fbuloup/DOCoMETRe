@@ -79,7 +79,7 @@ public class NewParametersFileHandler implements IHandler, ISelectionListener {
 	public NewParametersFileHandler() {
 		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().addSelectionListener(this);
 		IViewPart experimentsView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(ExperimentsView.ID);
-		selectionChanged(experimentsView, experimentsView.getSite().getSelectionProvider().getSelection());
+		if(experimentsView !=  null) selectionChanged(experimentsView, experimentsView.getSite().getSelectionProvider().getSelection());
 	}
 	
 	@Override
