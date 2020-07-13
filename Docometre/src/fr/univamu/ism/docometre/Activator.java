@@ -189,7 +189,13 @@ public class Activator extends AbstractUIPlugin {
 		for (StackTraceElement stackTraceElement : stackElements) {
 			message = message + stackTraceElement.toString() + "\n";
 		}
-		if(exception.getCause() != null && exception.getCause().getMessage() != null) message = message + exception.getCause().getMessage();
+		if(exception.getCause() != null && exception.getCause().toString() != null) {
+			message = message + "Caused by : "  + exception.getCause().toString();
+			stackElements = exception.getCause().getStackTrace();
+			for (StackTraceElement stackTraceElement : stackElements) {
+				message = message + stackTraceElement.toString() + "\n";
+			}
+		}
 		return message;
 	}
 	
