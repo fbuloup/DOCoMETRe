@@ -6,13 +6,18 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.gef.commands.CommandStack;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.MultiPageEditorPart;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.GetResourceLabelDelegate;
 import fr.univamu.ism.docometre.ObjectsController;
+import fr.univamu.ism.docometre.PartListenerAdapter;
+import fr.univamu.ism.docometre.editors.AbstractScriptSegmentEditor;
 import fr.univamu.ism.docometre.editors.PartNameRefresher;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.process.Script;
@@ -25,11 +30,43 @@ public class DataProcessEditor extends MultiPageEditorPart implements PartNameRe
 	private CommandStack commandStack;
 
 	private DataProcessScriptEditor dataProcessScriptEditor;
+
+	private PartListenerAdapter partListenerAdapter;
 	
 	@Override
 	public void init(IEditorSite site, IEditorInput input) throws PartInitException {
 		super.init(site, input);
 		setPartName(GetResourceLabelDelegate.getLabel(ObjectsController.getResourceForObject(getDataProcessingScript())));
+		
+		partListenerAdapter = new PartListenerAdapter() {
+			@Override
+			public void partClosed(IWorkbenchPartReference partRef) {
+				if(partRef.getPart(false) == DataProcessEditor.this) {
+					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().removePartListener(partListenerAdapter);
+				}
+			}
+			
+			@Override
+			public void partActivated(IWorkbenchPartReference partRef) {
+				update(partRef);
+			}
+			
+			@Override
+			public void partBroughtToTop(IWorkbenchPartReference partRef) {
+				update(partRef);
+			}
+			
+			private void update(IWorkbenchPartReference partRef) {
+				IWorkbenchPart part = partRef.getPart(false);
+				if(part == DataProcessEditor.this) {
+					if(getSelectedPage() instanceof AbstractScriptSegmentEditor)
+						((AbstractScriptSegmentEditor)getSelectedPage()).updatePasteAction();
+				}
+				
+			}
+		};
+		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().addPartListener(partListenerAdapter);
+			
 	}
 
 	@Override
