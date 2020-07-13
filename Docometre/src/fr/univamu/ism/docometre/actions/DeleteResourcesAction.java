@@ -62,6 +62,8 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.analyse.MathEngineFactory;
+import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 
@@ -100,9 +102,15 @@ public class DeleteResourcesAction extends Action implements ISelectionListener,
 						if(fullPath != null && resource.getFullPath().equals(new Path(fullPath))) ResourceProperties.setDefaultDACQPersistentProperty(resource, null);
 					}
 					closeEditors(resource);
-					IResource parentResource = resource.getParent();
-					resource.delete(true, null);
-					ExperimentsView.refresh(parentResource.getProject(), new IResource[]{});
+					if(ResourceType.isChannel(resource)) {
+						MathEngineFactory.getMathEngine().deleteChannel((Channel)resource);
+						SubjectsView.refresh();
+						
+					} else {
+						IResource parentResource = resource.getParent();
+						resource.delete(true, null);
+						ExperimentsView.refresh(parentResource.getProject(), new IResource[]{});
+					}
 				}
 			}
 		} catch (CoreException e) {
@@ -112,7 +120,7 @@ public class DeleteResourcesAction extends Action implements ISelectionListener,
 
 	private void closeEditors(IResource resource) throws CoreException {
 		Object object = ResourceProperties.getObjectSessionProperty(resource);
-		if(ResourceType.isLog(resource) || ResourceType.isParameters(resource) || ResourceType.isSamples(resource)) object = resource;
+		if(ResourceType.isLog(resource) || ResourceType.isParameters(resource) || ResourceType.isSamples(resource) || ResourceType.isChannel(resource)) object = resource;
 		if(object != null) Activator.closeEditor(object);
 		if(resource instanceof IContainer) {
 			IResource[] chilrenResources = ((IContainer)resource).members();

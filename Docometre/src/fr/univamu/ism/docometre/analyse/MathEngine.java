@@ -36,4 +36,5 @@ public interface MathEngine {
 	int getEndCut(Channel getchannel, int selection);
 	void runScript(String code);
 	Channel getChannelFromName(IResource experiment, String fullChannelName);
+	void deleteChannel(Channel resource);
 }

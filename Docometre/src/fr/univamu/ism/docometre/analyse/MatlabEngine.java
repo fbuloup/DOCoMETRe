@@ -470,10 +470,25 @@ public final class MatlabEngine implements MathEngine {
 		IResource subject = experiment.findMember(subjectName);
 		if(subject == null) return null; 
 		Channel[] channels = getChannels(subject);
-		for (Channel channel : channels) {
-			if(channel.getFullName().equals(fullChannelName)) return channel;
-		}
+		if(channels != null)
+			for (Channel channel : channels) {
+				if(channel.getFullName().equals(fullChannelName)) return channel;
+			}
 		return null;
+	}
+
+	@Override
+	public void deleteChannel(Channel channel) {
+		try {
+			String channelName = channel.getName();
+			String subjectFullPath = channel.getFullPath().removeLastSegments(1).toString().replaceAll("/", ".");
+			String cmd = subjectFullPath + " = " + "rmfield(" + subjectFullPath + ", '" + channelName + "');";
+			matlabController.evaluate(cmd);
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		
 	}
 
 	
