@@ -415,6 +415,34 @@ public class InteractiveChart extends Chart implements PaintListener {
 		doubleClick = true;
 		currentXMarker_Pixel = getCurrentX_Pixel();
 		currentYMarker_Pixel = getCurrentY_Pixel();
+
+		double mx = getAxisSet().getXAxes()[0].getDataCoordinate(currentXMarker_Pixel);
+		
+		double[] xValues = getCurrentSeries().getXSeries();
+		double[] yValues = getCurrentSeries().getYSeries();
+		
+		int index = -1;
+		for (int i = 1; i < xValues.length; i++) {
+			
+			double signum_i = Math.signum(mx - xValues[i]);
+			double signum_i_1 = Math.signum(mx - xValues[i-1]);
+			
+			if(signum_i == 0) index = i;
+			else if(signum_i_1 == 0) index = i - 1;
+			else if(signum_i != signum_i_1) {
+				index = i;
+				double d1 = mx - xValues[i];
+				double d2 = mx - xValues[i - 1];
+				if(Math.abs(d2) < Math.abs(d1)) index = index - 1;
+			}
+			
+			if(index > -1) break;
+							
+		}
+		
+		currentXMarker_Pixel = getAxisSet().getXAxes()[0].getPixelCoordinate(xValues[index]);
+		currentYMarker_Pixel = getAxisSet().getYAxes()[0].getPixelCoordinate(yValues[index]);
+		
 		handleMouseMoveEvent(event);
 	}
 	
