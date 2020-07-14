@@ -41,6 +41,7 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.functions;
 
+import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -50,6 +51,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
 import fr.univamu.ism.process.Function;
@@ -62,7 +64,23 @@ public class GenericFunction extends Function {
 	
 	private static final long serialVersionUID = 1L;
 	
-	protected void addCommentField(Composite parent, int horSpan, Object process) {
+	protected boolean checkPreBuildGUI(TitleAreaDialog titleAreaDialog, Composite container, int hIndent, Object context) {
+		
+		if(context instanceof Script) {
+			if(!MathEngineFactory.getMathEngine().isStarted()) {
+				titleAreaDialog.setErrorMessage(DocometreMessages.PleaseStartMathEngineFirst);
+				Label errorLabel = new Label(container, SWT.BORDER);
+				errorLabel.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true, hIndent, 1));
+				errorLabel.setText(DocometreMessages.PleaseStartMathEngineFirst);
+				return false;
+			}
+		}
+		
+		return true;
+		
+	}
+	
+	protected void addCommentField(Composite parent, int horSpan, Object context) {
 		Label commentLabel = new Label((Composite) parent, SWT.NORMAL);
 		commentLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
 		commentLabel.setText(DocometreMessages.Comment);
@@ -75,7 +93,7 @@ public class GenericFunction extends Function {
 				getTransientProperties().put(Function.commentKey, commentText.getText());
 			}
 		});
-		commentText.setText(getName(process));
+		commentText.setText(getName(context));
 	}
 	
 	@Override

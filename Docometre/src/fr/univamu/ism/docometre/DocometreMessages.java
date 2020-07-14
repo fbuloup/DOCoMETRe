@@ -753,6 +753,9 @@ public final class DocometreMessages extends NLS {
 	public static String MathEngineEditorTitle;
 	public static String MathEngineSourceCodeEditorTitle;
 	
+	// Functional Block Configuration Dialog Blocking Message
+	public static String FunctionalBlockConfigurationDialogBlockingMessage;
+	
 //	public static String OrganizeSessionWizardPage_button_1_text;
 //	public static String OrganizeSessionWizardPage_tbtmNewItem_text;
 //	public static String OrganizeSessionWizardPage_tbtmNewItem_1_text;

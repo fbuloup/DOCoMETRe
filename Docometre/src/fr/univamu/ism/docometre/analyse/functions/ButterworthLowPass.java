@@ -4,7 +4,6 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -19,11 +18,13 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 
+import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.analyse.editors.ChannelsContentProvider;
 import fr.univamu.ism.docometre.dacqsystems.functions.GenericFunction;
+import fr.univamu.ism.docometre.dialogs.FunctionalBlockConfigurationDialog;
 import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
 import fr.univamu.ism.process.Block;
 import fr.univamu.ism.process.Script;
@@ -40,7 +41,7 @@ public class ButterworthLowPass extends GenericFunction {
 	private static final String outputSignalSuffixKey = "outputSignal";
 	private static final String trialsListKey = "trialsList";
 	
-	transient private TitleAreaDialog titleAreaDialog;
+	transient private FunctionalBlockConfigurationDialog functionalBlockConfigurationDialog;
 	
 	@Override
 	public String getFunctionFileName() {
@@ -48,15 +49,20 @@ public class ButterworthLowPass extends GenericFunction {
 	}
 	
 	@Override
-	public Object getGUI(Object titleAreaDialog, Object parent, Object context) {
+	public Object getGUI(Object functionalBlockConfigurationDialog, Object parent, Object context) {
 		if(!(context instanceof Script)) return null;
-		
-		this.titleAreaDialog = (TitleAreaDialog) titleAreaDialog;
 		
 		Composite container  = (Composite) parent;
 		Composite paramContainer = new Composite(container, SWT.NORMAL);
 		paramContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		paramContainer.setLayout(new GridLayout(2, false));
+		
+		this.functionalBlockConfigurationDialog = (FunctionalBlockConfigurationDialog) functionalBlockConfigurationDialog;
+		
+		if(!checkPreBuildGUI(this.functionalBlockConfigurationDialog, paramContainer, 2, context)) {
+			return paramContainer;
+		}
+		
 		
 		Label trialsListLabel = new Label(paramContainer, SWT.NONE);
 		trialsListLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
@@ -68,7 +74,7 @@ public class ButterworthLowPass extends GenericFunction {
 		trialsListText.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
-				ButterworthLowPass.this.titleAreaDialog.setErrorMessage(null);
+				ButterworthLowPass.this.functionalBlockConfigurationDialog.setErrorMessage(null);
 				boolean putValue = true;
 				String regExp = "^(?!([ \\d]*-){2})\\d+(?: *[-,:;] *\\d+)*$";
 				Pattern pattern = Pattern.compile(regExp);
@@ -77,7 +83,7 @@ public class ButterworthLowPass extends GenericFunction {
 				if(putValue) getTransientProperties().put(trialsListKey, trialsListText.getText());
 				else {
 					String message = NLS.bind(FunctionsMessages.TrialsListNotValidLabel, trialsListText.getText());
-					ButterworthLowPass.this.titleAreaDialog.setErrorMessage(message);
+					ButterworthLowPass.this.functionalBlockConfigurationDialog.setErrorMessage(message);
 				}
 			}
 		});
@@ -106,7 +112,7 @@ public class ButterworthLowPass extends GenericFunction {
 		cutOffFrequencyText.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
-				ButterworthLowPass.this.titleAreaDialog.setErrorMessage(null);
+				ButterworthLowPass.this.functionalBlockConfigurationDialog.setErrorMessage(null);
 				boolean putValue = true;
 				String regExp = "\\d+\\.?\\d*";
 				Pattern pattern = Pattern.compile(regExp);
@@ -115,7 +121,7 @@ public class ButterworthLowPass extends GenericFunction {
 				if(putValue) getTransientProperties().put(cutOffFrequencyKey, cutOffFrequencyText.getText());
 				else {
 					String message = NLS.bind(FunctionsMessages.CutOffFrequencyNotValidLabel, cutOffFrequencyText.getText());
-					ButterworthLowPass.this.titleAreaDialog.setErrorMessage(message);
+					ButterworthLowPass.this.functionalBlockConfigurationDialog.setErrorMessage(message);
 				}
 			}
 		});
@@ -143,6 +149,7 @@ public class ButterworthLowPass extends GenericFunction {
 		inputSignalComboViewer.setInput(SelectedExprimentContributionItem.selectedExperiment);
 		Channel channel = MathEngineFactory.getMathEngine().getChannelFromName(SelectedExprimentContributionItem.selectedExperiment, getProperty(inputSignalKey, ""));
 		if(channel != null) inputSignalComboViewer.setSelection(new StructuredSelection(channel));
+		else this.functionalBlockConfigurationDialog.setBlockingErrorMessage(DocometreMessages.FunctionalBlockConfigurationDialogBlockingMessage);
 		
 		inputSignalComboViewer.getCombo().addModifyListener(new ModifyListener() {
 			@Override
