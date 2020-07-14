@@ -183,20 +183,21 @@ public class Activator extends AbstractUIPlugin {
 	}
 	
 	public static String getLogErrorMessageWithCause(Exception exception) {
-		String message = "" + exception + "\n";
-		if(exception.getMessage() != null) message = message + exception.getMessage() + "\n";
+		StringBuffer message = new StringBuffer();
+		message.append(exception.toString() + "\n");
+		if(exception.getMessage() != null) message.append(exception.getMessage() + "\n");
 		StackTraceElement[] stackElements = exception.getStackTrace();
 		for (StackTraceElement stackTraceElement : stackElements) {
-			message = message + stackTraceElement.toString() + "\n";
+			message.append(stackTraceElement.toString() + "\n");
 		}
 		if(exception.getCause() != null && exception.getCause().toString() != null) {
-			message = message + "Caused by : "  + exception.getCause().toString();
+			message.append(">>>>>>>>>>>>\nCaused by : "  + exception.getCause().toString());
 			stackElements = exception.getCause().getStackTrace();
 			for (StackTraceElement stackTraceElement : stackElements) {
-				message = message + stackTraceElement.toString() + "\n";
+				message.append(stackTraceElement.toString() + "\n");;
 			}
 		}
-		return message;
+		return message.toString();
 	}
 	
 	/*
