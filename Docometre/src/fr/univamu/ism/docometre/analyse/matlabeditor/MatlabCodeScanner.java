@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.EndOfLineRule;
+import org.eclipse.jface.text.rules.ICharacterScanner;
 import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.IWordDetector;
@@ -122,6 +123,35 @@ public final class MatlabCodeScanner extends RuleBasedScanner {
 		}
 	}
 	
+	private static class MyNumberRule extends NumberRule {
+		
+		private char[] operators = new char[] {'=', '+' , '*', '/', '%', '-', '(', ':'};
+		
+		public MyNumberRule(IToken token) {
+			super(token);
+		}
+		
+		@Override
+		public IToken evaluate(ICharacterScanner scanner) {
+			int c = scanner.read();
+			if (Character.isDigit((char)c)) {
+				scanner.unread();
+				scanner.unread();
+				c = scanner.read();
+				if(!isOperator((char) c)) return Token.UNDEFINED;
+			} else scanner.unread();
+			return super.evaluate(scanner);
+		}
+
+		private boolean isOperator(char c) {
+			boolean isOperator = Character.isWhitespace(c);
+			for (char operaror : operators) {
+				isOperator = isOperator || c == operaror;
+			}
+			return isOperator;
+		}
+	}
+	
 	public static RuleBasedScanner getMatlabCodeScanner() {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
 		List<IRule> rules = new ArrayList<IRule>();
@@ -175,13 +205,13 @@ public final class MatlabCodeScanner extends RuleBasedScanner {
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLACK), null, SWT.BOLD);
 		
 	    IToken numberToken = new Token(attribute);
-
-	    NumberRule numberRule = new NumberRule(numberToken);
-        rules.add(numberRule);
 	    
 	    FloatingPointNumberRule floatingPointNumberRule = new FloatingPointNumberRule(numberToken);
         rules.add(floatingPointNumberRule);
 
+	    MyNumberRule numberRule = new MyNumberRule(numberToken);
+        rules.add(numberRule);
+	    
         return rules;
 	}
 	
