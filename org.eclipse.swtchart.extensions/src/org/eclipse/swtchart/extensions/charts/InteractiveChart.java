@@ -72,7 +72,7 @@ public class InteractiveChart extends Chart implements PaintListener {
 	private int currentY_Pixel;
 	private double currentX;
 	private double currentY;
-	private String cursorCoordinatesString;
+	private String cursorCoordinatesString = "";
 	private CursorMarkerDeltaPainter cursorMarkerDeltaPainter;
 	private boolean showCursor = true;
 	private int previousCurrentX_Pixel; 
@@ -80,8 +80,8 @@ public class InteractiveChart extends Chart implements PaintListener {
 	private boolean showMarker = true;
 	private int currentXMarker_Pixel = -1;
 	private int currentYMarker_Pixel = -1;
-	private String markerCoordinatesString;
-	private String deltaCoordinateString;
+	private String markerCoordinatesString = "";
+	private String deltaCoordinateString = "";
 	private boolean doubleClick;
 
 	/**
@@ -126,11 +126,12 @@ public class InteractiveChart extends Chart implements PaintListener {
 		return showCursor && getSeriesSet().getSeries().length > 0;
 	}
 
-	public void setShowMarker(boolean showMarker) {
-		this.showMarker = showMarker;
-	}
+//	public void setShowMarker(boolean showMarker) {
+//		this.showMarker = showMarker;
+//	}
 	
 	public boolean isShowMarker() {
+		System.out.println("showMarker : " + showMarker + " - currentXMarker_Pixel : " + currentXMarker_Pixel);
 		return showMarker && currentXMarker_Pixel > -1;
 	}
 	
