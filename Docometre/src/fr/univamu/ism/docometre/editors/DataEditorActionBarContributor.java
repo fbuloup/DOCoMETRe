@@ -47,7 +47,6 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.SubToolBarManager;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swtchart.extensions.charts.Messages;
 import org.eclipse.ui.IEditorPart;
@@ -76,7 +75,8 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 				event.type = SWT.Selection;
 				event.widget = editor.getChart().getMenuItem(null, Messages.PROPERTIES);
 				editor.getChart().handleEvent(event);
-				editor.mouseUp(new MouseEvent(event));
+				editor.updateContribution();
+//				editor.mouseUp(new MouseEvent(event));
 			}
 		}
 	}
@@ -94,7 +94,7 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 			event.keyCode = SWT.ARROW_LEFT;
 			event.widget = panLeftActionContributionItem.getWidget();
 			editor.getChart().handleEvent(event);
-			editor.mouseUp(new MouseEvent(event));
+			editor.updateContribution();
 		}
 	}
 	
@@ -111,7 +111,7 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 			event.keyCode = SWT.ARROW_UP;
 			event.widget = panUpActionContributionItem.getWidget();
 			editor.getChart().handleEvent(event);
-			editor.mouseUp(new MouseEvent(event));
+			editor.updateContribution();
 		}
 	}
 	
@@ -128,7 +128,7 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 			event.keyCode = SWT.ARROW_DOWN;
 			event.widget = panDownActionContributionItem.getWidget();
 			editor.getChart().handleEvent(event);
-			editor.mouseUp(new MouseEvent(event));
+			editor.updateContribution();
 		}
 	}
 	
@@ -145,7 +145,7 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 			event.keyCode = SWT.ARROW_RIGHT;
 			event.widget = panRightActionContributionItem.getWidget();
 			editor.getChart().handleEvent(event);
-			editor.mouseUp(new MouseEvent(event));
+			editor.updateContribution();
 		}
 	}
 	
@@ -162,7 +162,7 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 				event.type = SWT.Selection;
 				event.widget = editor.getChart().getMenuItem(null, Messages.ZOOMIN);
 				editor.getChart().handleEvent(event);
-				editor.mouseUp(new MouseEvent(event));
+				editor.updateContribution();
 			}
 		}
 	}
@@ -180,7 +180,7 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 				event.type = SWT.Selection;
 				event.widget = editor.getChart().getMenuItem(null, Messages.ZOOMOUT);
 				editor.getChart().handleEvent(event);
-				editor.mouseUp(new MouseEvent(event));
+				editor.updateContribution();
 			}
 		}
 	}
@@ -198,7 +198,7 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 				event.type = SWT.Selection;
 				event.widget = editor.getChart().getMenuItem(null, Messages.ADJUST_AXIS_RANGE);
 				editor.getChart().handleEvent(event);
-				editor.mouseUp(new MouseEvent(event));
+				editor.updateContribution();
 			}
 		}
 	}
