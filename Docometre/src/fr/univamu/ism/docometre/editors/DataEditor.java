@@ -46,7 +46,6 @@ import java.nio.FloatBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.NumberFormat;
 import java.util.HashMap;
 
 import org.eclipse.core.resources.IContainer;
@@ -64,12 +63,9 @@ import org.eclipse.swt.dnd.DropTargetListener;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
-import org.eclipse.swt.events.TypedEvent;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -103,18 +99,18 @@ import fr.univamu.ism.docometre.dacqsystems.ExperimentScheduler;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfiguration;
 
-public class DataEditor extends EditorPart implements PartNameRefresher, MouseMoveListener, PaintListener, Listener, MouseListener {
+public class DataEditor extends EditorPart implements PartNameRefresher, MouseMoveListener, PaintListener, Listener/*, MouseListener */{
 	
 	public static String ID = "Docometre.DataEditor";
 	
-	private static Color RED_COLOR = PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_RED);
+//	private static Color RED_COLOR = PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_RED);
 	
 	private InteractiveChart chart;
 
-	private int currentXMarker = -1;
-	private int currentYMarker = -1;
-	
-	private boolean doubleClick;
+//	private int currentXMarker = -1;
+//	private int currentYMarker = -1;
+//	
+//	private boolean doubleClick;
 	
 	
 	public DataEditor() {
@@ -210,7 +206,7 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 		menuItem = chart.getMenuItem(null, Messages.ZOOMOUT_Y);
 		menuItem.addListener(SWT.Selection, this);
 		chart.getPlotArea().addListener(SWT.Resize, this);
-		chart.getPlotArea().addMouseListener(this);
+//		chart.getPlotArea().addMouseListener(this);
 		
 		// Create trace and add it to graph
 		createTrace(dataFile);
@@ -254,7 +250,7 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 						createTrace((IFile) resource);
 						setFocus();
 					}
-					typedEventHandler(event);
+//					typedEventHandler(event);
 				 }
 			}
 		});
@@ -416,42 +412,13 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 		setPartName(partName);
 		firePropertyChange(PROP_TITLE);
 	}
-
-	@Override
-	public void mouseMove(MouseEvent event) {
-
+	
+	public void updateContribution() {
 		ApplicationActionBarAdvisor.cursorContributionItem.setText(chart.getCursorCoordinatesString());
+		ApplicationActionBarAdvisor.markerContributionItem.setText(chart.getMarkerCoordinatesString());
+		ApplicationActionBarAdvisor.deltaContributionItem.setText(chart.getDeltaCoordinateString());
 		
-		if(currentXMarker != -1) {
-			NumberFormat nf = NumberFormat.getInstance();
-			nf.setMaximumFractionDigits(6);
-			double mx = chart.getAxisSet().getXAxes()[0].getDataCoordinate(currentXMarker);
-			double my = chart.getAxisSet().getYAxes()[0].getDataCoordinate(currentYMarker);
-			StringBuilder text = new StringBuilder();
-			text.append("Marker (");
-			text.append(nf.format(mx));
-			text.append(" ; ");
-			text.append(nf.format(my));
-			text.append(")");
-			ApplicationActionBarAdvisor.markerContributionItem.setText(text.toString());
-			double x = chart.getCurrentX() - mx;
-			double y = chart.getCurrentY() - my;
-			text = new StringBuilder();
-			text.append("\u0394 (");
-			text.append(nf.format(x));
-			text.append(" ; ");
-			text.append(nf.format(y));
-			text.append(")");
-			ApplicationActionBarAdvisor.deltaContributionItem.setText(text.toString());
-			
-			if(!ApplicationActionBarAdvisor.markerContributionItem.isVisible()) {
-				ApplicationActionBarAdvisor.markerContributionItem.setVisible(true);
-				ApplicationActionBarAdvisor.deltaContributionItem.setVisible(true);
-				ApplicationActionBarAdvisor.cursorContributionItem.getParent().update(true);
-			}
-			
-		}
-		
+
 		if(!ApplicationActionBarAdvisor.cursorContributionItem.isVisible()) {
 			ApplicationActionBarAdvisor.cursorContributionItem.setVisible(true);
 			ApplicationActionBarAdvisor.markerContributionItem.setVisible(true);
@@ -459,63 +426,112 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 			ApplicationActionBarAdvisor.cursorContributionItem.getParent().update(true);
 		}
 		
+		if(!ApplicationActionBarAdvisor.markerContributionItem.isVisible() && chart.isShowMarker()) {
+			ApplicationActionBarAdvisor.markerContributionItem.setVisible(true);
+			ApplicationActionBarAdvisor.deltaContributionItem.setVisible(true);
+			ApplicationActionBarAdvisor.cursorContributionItem.getParent().update(true);
+			
+		}
+		
+		if(ApplicationActionBarAdvisor.markerContributionItem.isVisible() && !chart.isShowMarker()) {
+			ApplicationActionBarAdvisor.markerContributionItem.setVisible(false);
+			ApplicationActionBarAdvisor.deltaContributionItem.setVisible(false);
+			ApplicationActionBarAdvisor.cursorContributionItem.getParent().update(true);
+			
+		}
+	}
+
+	@Override
+	public void mouseMove(MouseEvent event) {
+		updateContribution();
+		
+		
+//		if(currentXMarker != -1) {
+//			NumberFormat nf = NumberFormat.getInstance();
+//			nf.setMaximumFractionDigits(6);
+//			double mx = chart.getAxisSet().getXAxes()[0].getDataCoordinate(currentXMarker);
+//			double my = chart.getAxisSet().getYAxes()[0].getDataCoordinate(currentYMarker);
+//			StringBuilder text = new StringBuilder();
+//			text.append("Marker (");
+//			text.append(nf.format(mx));
+//			text.append(" ; ");
+//			text.append(nf.format(my));
+//			text.append(")");
+//			ApplicationActionBarAdvisor.markerContributionItem.setText(text.toString());
+//			double x = chart.getCurrentX() - mx;
+//			double y = chart.getCurrentY() - my;
+//			text = new StringBuilder();
+//			text.append("\u0394 (");
+//			text.append(nf.format(x));
+//			text.append(" ; ");
+//			text.append(nf.format(y));
+//			text.append(")");
+//			ApplicationActionBarAdvisor.deltaContributionItem.setText(text.toString());
+//			
+//			if(!ApplicationActionBarAdvisor.markerContributionItem.isVisible()) {
+//				ApplicationActionBarAdvisor.markerContributionItem.setVisible(true);
+//				ApplicationActionBarAdvisor.deltaContributionItem.setVisible(true);
+//				ApplicationActionBarAdvisor.cursorContributionItem.getParent().update(true);
+//			}
+//			
+//		}
 	}
 
 	@Override
 	public void paintControl(PaintEvent e) {
-		Color oldColor = e.gc.getForeground();			
-		
-		e.gc.setForeground(RED_COLOR);
-		// Draw marker
-		if(currentXMarker != -1) {
-			e.gc.drawLine(currentXMarker, 0, currentXMarker, currentYMarker - 3);
-			e.gc.drawLine(currentXMarker, currentYMarker + 3, currentXMarker, chart.getPlotArea().getBounds().height);
-			e.gc.drawRectangle(currentXMarker - 3, currentYMarker - 3, 6, 6);
-		}
-		
-		e.gc.setForeground(oldColor);
+//		Color oldColor = e.gc.getForeground();			
+//		
+//		e.gc.setForeground(RED_COLOR);
+//		// Draw marker
+//		if(currentXMarker != -1) {
+//			e.gc.drawLine(currentXMarker, 0, currentXMarker, currentYMarker - 3);
+//			e.gc.drawLine(currentXMarker, currentYMarker + 3, currentXMarker, chart.getPlotArea().getBounds().height);
+//			e.gc.drawRectangle(currentXMarker - 3, currentYMarker - 3, 6, 6);
+//		}
+//		
+//		e.gc.setForeground(oldColor);
 	}
 	
 	@Override
 	public void handleEvent(Event event) {
-		mouseEventHandler(event);
+//		mouseEventHandler(event);
 	}
-	
-	private void mouseEventHandler(Event event) {
-		if(!doubleClick) {
-			currentXMarker = -1;
-			ApplicationActionBarAdvisor.markerContributionItem.setVisible(false);
-			ApplicationActionBarAdvisor.deltaContributionItem.setVisible(false);
-			ApplicationActionBarAdvisor.cursorContributionItem.getParent().update(true);
-		}
-		doubleClick = false;
-		event.x = chart.getCurrentX_Pixel();
-		MouseEvent mouseEvent = new MouseEvent(event);
-		mouseMove(mouseEvent);
-	}
-	
-	private void typedEventHandler(TypedEvent typedEvent) {
-		Event e = new Event();
-		e.widget = typedEvent.widget;
-		e.type = SWT.Selection;
-		mouseEventHandler(e);
-	}
+//	
+//	private void mouseEventHandler(Event event) {
+//		if(!doubleClick) {
+//			currentXMarker = -1;
+//			ApplicationActionBarAdvisor.markerContributionItem.setVisible(false);
+//			ApplicationActionBarAdvisor.deltaContributionItem.setVisible(false);
+//			ApplicationActionBarAdvisor.cursorContributionItem.getParent().update(true);
+//		}
+//		doubleClick = false;
+//		event.x = chart.getCurrentX_Pixel();
+//		MouseEvent mouseEvent = new MouseEvent(event);
+//		mouseMove(mouseEvent);
+//	}
+//	
+//	private void typedEventHandler(TypedEvent typedEvent) {
+//		Event e = new Event();
+//		e.widget = typedEvent.widget;
+//		e.type = SWT.Selection;
+//		mouseEventHandler(e);
+//	}
+//
+//	@Override
+//	public void mouseDoubleClick(MouseEvent e) {
+//		currentXMarker = chart.getCurrentX_Pixel();
+//		currentYMarker = chart.getCurrentY_Pixel();
+//		doubleClick = true;
+//	}
 
-	@Override
-	public void mouseDoubleClick(MouseEvent e) {
-		currentXMarker = chart.getCurrentX_Pixel();
-		currentYMarker = chart.getCurrentY_Pixel();
-		doubleClick = true;
-	}
-
-	@Override
-	public void mouseDown(MouseEvent e) {
-	}
-
-	@Override
-	public void mouseUp(MouseEvent e) {
-		typedEventHandler(e);
-	}
+//	@Override
+//	public void mouseDown(MouseEvent e) {
+//	}
+//
+//	@Override
+//	public void mouseUp(MouseEvent e) {
+//		typedEventHandler(e);
+//	}
 
 	
 
