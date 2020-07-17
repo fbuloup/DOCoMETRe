@@ -42,8 +42,6 @@
 package fr.univamu.ism.docometre.actions;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
@@ -63,12 +61,7 @@ public class ShowDescriptionViewAction extends Action {
 	
 	@Override
 	public void run() {
-		try {
-			PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(DescriptionView.ID).setFocus();
-		} catch (PartInitException e) {
-			e.printStackTrace();
-			Activator.logErrorMessageWithCause(e);
-		}
+		ShowViewDelegate.show(DescriptionView.ID, false);
 	}
 	
 }

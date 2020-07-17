@@ -46,6 +46,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -53,6 +54,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.Properties;
 import java.util.Set;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 import org.eclipse.core.resources.IContainer;
@@ -63,8 +65,11 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.QualifiedName;
+import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.wizard.Wizard;
@@ -95,6 +100,7 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 	
 	@Override
 	public void addPages() {
+		setNeedsProgressMonitor(true);
 		importResourceWizardPage = new ImportResourceWizardPage("ImportResourceWizardPage");
 		addPage(importResourceWizardPage);
 	}
@@ -109,6 +115,7 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 				String rootPath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();
 				if(file.getName().endsWith(Activator.adwFileExtension)) {
 					try {
+						// Import ADW File
 						// First create new subject : subject name is file name without extension
 						String subjectName = file.getName().replaceAll(Activator.adwFileExtension + "$", "");
 						IFolder subject = parentResource.getFolder(new org.eclipse.core.runtime.Path(subjectName));
@@ -125,29 +132,61 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 						ResourceProperties.setTypePersistentProperty(newFile, ResourceType.ADW_DATA_FILE.toString());
 						ExperimentsView.refresh(subject.getParent(), new IResource[]{subject});
 						SubjectsView.refresh();
-						
 					} catch (CoreException | IOException e) {
 						Activator.logErrorMessageWithCause(e);
 						e.printStackTrace();
 					}
 				} else if(file.getName().endsWith(".zip") || file.getName().endsWith(".tar")) {
 					try {
-						String experimentName = file.getName().replaceAll(".zip$", "").replaceAll(".tar$", "");
-						IProject newExperiment = ResourcesPlugin.getWorkspace().getRoot().getProject(experimentName);
-						newExperiment.create(null);
-						newExperiment.open(null);
-						unzip(file.getAbsolutePath(), rootPath);
-						newExperiment.getParent().refreshLocal(IResource.DEPTH_INFINITE, null);
-						readAndApplyPersitentProperties(newExperiment);
-						IFile propertiesFile = newExperiment.getFile(newExperiment.getName() + ".properties");
-						if(propertiesFile != null) propertiesFile.delete(true, null);
-						DocometreBuilder.addProject(newExperiment);
-						ExperimentsView.refresh(newExperiment.getParent(), new IResource[]{newExperiment});
-					} catch (CoreException e) {
+						// Import experiment 
+						getContainer().run(true, false, new IRunnableWithProgress() {
+							@Override
+							public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+								try {
+									String experimentName = file.getName().replaceAll(".zip$", "").replaceAll(".tar$", "");
+									
+									int nbFilesToExtract = getNbFiles(file);
+									int nbPropertiesEntriesToApply = getNbProperties(file, experimentName, rootPath);
+									
+									SubMonitor subMonitor = SubMonitor.convert(monitor, DocometreMessages.ImportingExperimentFromCompressedFile, nbFilesToExtract + nbPropertiesEntriesToApply + 2);
+
+									subMonitor.subTask(DocometreMessages.CreatingNewExperimentInWorkspace);
+									IProject newExperiment = ResourcesPlugin.getWorkspace().getRoot().getProject(experimentName);
+									newExperiment.create(null);
+									newExperiment.open(null);
+									subMonitor.worked(1);
+									
+									unzip(file.getAbsolutePath(), rootPath, subMonitor);
+									
+									subMonitor.subTask(DocometreMessages.RefreshingWorkspace);
+									newExperiment.getParent().refreshLocal(IResource.DEPTH_INFINITE, null);
+									subMonitor.worked(1);
+									
+									readAndApplyPersitentProperties(newExperiment, subMonitor, nbPropertiesEntriesToApply);
+									IFile propertiesFile = newExperiment.getFile(newExperiment.getName() + ".properties");
+									if(propertiesFile != null) propertiesFile.delete(true, null);
+									
+									subMonitor.subTask(DocometreMessages.AddingProjectToBuilderAndRefreshingExperiment);
+									DocometreBuilder.addProject(newExperiment);
+									ExperimentsView.refresh(newExperiment.getParent(), new IResource[]{newExperiment});
+									
+									subMonitor.done();
+									monitor.done();
+								} catch (CoreException e) {
+									Activator.getLogErrorMessageWithCause(e);
+									e.printStackTrace();
+								}
+								
+							}
+						});
+						
+						
+					} catch (InvocationTargetException | InterruptedException e) {
 						Activator.logErrorMessageWithCause(e);
 						e.printStackTrace();
 					}
 				} else {
+					// Import process or dacq file
 					Path newPath = Paths.get(rootPath + parentResource.getFullPath().toOSString() + File.separator + file.getName());
 					Path originalPath = file.toPath();
 					if(!originalPath.startsWith(rootPath)) {
@@ -180,7 +219,7 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 						Activator.logWarningMessage(DocometreMessages.ImportResourceWizardErrorMessage2);
 					}
 				}
-			    
+			 
 			} else {
 				Activator.logWarningMessage(NLS.bind(DocometreMessages.ImportResourceWizardErrorMessage3, file.getAbsolutePath()));
 			}
@@ -188,15 +227,58 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 		return true;
 	}
 	
-	private void readAndApplyPersitentProperties(IProject newExperiment) {
-		InputStreamReader inputStreamReader = null;
+	protected int getNbProperties(File file, String experimentName, String rootPath) {
+		int nbPropertiesEntries = 0;
+		try {
+			ZipFile zipFile = new ZipFile(file);
+			FileInputStream fis = new FileInputStream(file);
+	        ZipInputStream zis = new ZipInputStream(fis);
+	        ZipEntry ze = zis.getNextEntry();
+	        while(ze != null) {
+	        	if(ze.getName().equals(experimentName  + File.separator + experimentName + ".properties")) {
+	        		extractFile(zis, ze, rootPath + File.separator + "temp.properties");
+	        		FileInputStream fileInputStream = new FileInputStream(rootPath + File.separator + "temp.properties");
+	        		InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, "UTF-8");
+	        		Properties properties = new Properties();
+	        		properties.load(inputStreamReader);
+	        		Set<Object> keys = properties.keySet();
+	        		nbPropertiesEntries = keys.size();
+	        		break;
+	        	}
+                ze = zis.getNextEntry();
+	        }
+	        zipFile.close();
+	        zis.close();
+    		return nbPropertiesEntries;
+		} catch (IOException e) {
+			Activator.getLogErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+        return nbPropertiesEntries;
+	}
+
+	protected int getNbFiles(File file) {
+		try {
+			ZipFile zipFile = new ZipFile(file);
+			int nbFiles = zipFile.size(); 
+	    	zipFile.close();
+			return nbFiles;
+		} catch (IOException e) {
+			Activator.getLogErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return 0;
+	}
+
+	private void readAndApplyPersitentProperties(IProject newExperiment, SubMonitor subMonitor, int nbProperties) {
 		try {
 			String propertiesFileFullPath = newExperiment.getFile(newExperiment.getName() + ".properties").getLocation().toOSString();
 			FileInputStream fileInputStream = new FileInputStream(propertiesFileFullPath);
-			inputStreamReader = new InputStreamReader(fileInputStream, "UTF-8");
+			InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, "UTF-8");
 			Properties properties = new Properties();
 			properties.load(inputStreamReader);
 			Set<Object> keys = properties.keySet();
+			int numProperty = 1;
 			for (Object key : keys) {
 				String value = (String) properties.get(key);
 				String[] keyArray = key.toString().split(ResourceProperties.SEPARATOR);
@@ -215,50 +297,46 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 					resource = ResourcesPlugin.getWorkspace().getRoot().getFolder(resourcePath);
 				else 
 					resource = ResourcesPlugin.getWorkspace().getRoot().getFile(resourcePath);
+
+				String message = NLS.bind(DocometreMessages.ApplyingProperty, new Object[] {numProperty, nbProperties, value, resource.getFullPath().toOSString()});
+				subMonitor.subTask(message);
 				QualifiedName QN = new QualifiedName(Activator.PLUGIN_ID, keyArray[1]);
 				resource.refreshLocal(IResource.DEPTH_INFINITE, null);
 				resource.setPersistentProperty(QN , value);
+				subMonitor.worked(1);
+				numProperty++;
 			}
-		} catch (IOException | CoreException e) {
+			inputStreamReader.close();
+		} catch (CoreException | IOException e) {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
-		} finally {
-			if(inputStreamReader != null)
-				try {
-					inputStreamReader.close();
-				} catch (IOException e) {
-					Activator.logErrorMessageWithCause(e);
-					e.printStackTrace();
-				}
 		}
 	}
 
-	private static void unzip(String zipFilePath, String destDir) {
+	private static void unzip(String zipFilePath, String destDir, IProgressMonitor monitor) {
         File dir = new File(destDir);
         // create output directory if it doesn't exist
         if(!dir.exists()) dir.mkdirs();
         FileInputStream fis;
-        //buffer for read and write data to file
-        byte[] buffer = new byte[1024];
         try {
+        	ZipFile zipFile = new ZipFile(new File(zipFilePath));
+        	int nbFiles = zipFile.size();
             fis = new FileInputStream(zipFilePath);
             ZipInputStream zis = new ZipInputStream(fis);
             ZipEntry ze = zis.getNextEntry();
+            int numFile = 1;
             while(ze != null){
-                String fileName = ze.getName();
-                File newFile = new File(destDir + File.separator + fileName);
-                System.out.println("Unzipping to "+newFile.getAbsolutePath());
-                //create directories for sub directories in zip
-                new File(newFile.getParent()).mkdirs();
-                FileOutputStream fos = new FileOutputStream(newFile);
-                int len;
-                while ((len = zis.read(buffer)) > 0) {
-                fos.write(buffer, 0, len);
-                }
-                fos.close();
+            	String message = NLS.bind(DocometreMessages.UnzippingFile, new Object[] {numFile, nbFiles, ze.getName()});
+				monitor.subTask(message);
+                String fileName = destDir + File.separator + ze.getName();
+                
+                extractFile(zis, ze, fileName);
+                
                 //close this ZipEntry
                 zis.closeEntry();
                 ze = zis.getNextEntry();
+                numFile++;
+                monitor.worked(1);
             }
             //close last ZipEntry
             zis.closeEntry();
@@ -269,6 +347,26 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
         }
         
     }
+	
+	private static void extractFile(ZipInputStream zis, ZipEntry ze, String fileName) {
+		try {
+	        //buffer for read and write data to file
+			byte[] buffer = new byte[1024];
+			File newFile = new File(fileName);
+			// create directories for sub directories in zip
+			new File(newFile.getParent()).mkdirs();
+			FileOutputStream fos = new FileOutputStream(newFile);
+			int len;
+			while ((len = zis.read(buffer)) > 0) {
+				fos.write(buffer, 0, len);
+			}
+			fos.close();
+		} catch (IOException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		
+	}
 
 	@Override
 	public void init(IWorkbench workbench, IStructuredSelection selection) {

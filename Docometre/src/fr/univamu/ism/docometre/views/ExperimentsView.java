@@ -41,6 +41,7 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.views;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -55,10 +56,12 @@ import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.DecoratingLabelProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -196,9 +199,24 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 		experimentsTreeViewer.setComparator(new ExperimentsViewerSorter());
 		experimentsTreeViewer.addDoubleClickListener(new IDoubleClickListener() {
 			public void doubleClick(DoubleClickEvent event) {
-				Object element = ((IStructuredSelection) experimentsTreeViewer.getSelection()).getFirstElement();
-				experimentsTreeViewer.setExpandedState(element, !experimentsTreeViewer.getExpandedState(element));
-				ApplicationActionBarAdvisor.openEditorAction.run();
+				try {
+					PlatformUI.getWorkbench().getProgressService().busyCursorWhile(new IRunnableWithProgress() {
+						@Override
+						public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+							PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+								@Override
+								public void run() {
+									Object element = ((IStructuredSelection) experimentsTreeViewer.getSelection()).getFirstElement();
+									experimentsTreeViewer.setExpandedState(element, !experimentsTreeViewer.getExpandedState(element));
+									ApplicationActionBarAdvisor.openEditorAction.run();
+								}
+							});
+						}
+					});
+				} catch (InvocationTargetException | InterruptedException e) {
+					Activator.logErrorMessageWithCause(e);
+					e.printStackTrace();
+				}
 			}
 		});
 //		experimentsTreeViewer.addFilter(new ViewerFilter() {

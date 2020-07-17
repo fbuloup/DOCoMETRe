@@ -42,8 +42,6 @@
 package fr.univamu.ism.docometre.actions;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.Activator;
 
@@ -60,12 +58,7 @@ public class ShowProgressViewAction extends Action {
 	
 	@Override
 	public void run() {
-		try {
-			PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView("org.eclipse.ui.views.ProgressView").setFocus();
-		} catch (PartInitException e) {
-			e.printStackTrace();
-			Activator.logErrorMessageWithCause(e);
-		}
+		ShowViewDelegate.show("org.eclipse.ui.views.ProgressView", false);
 	}
 	
 	@Override

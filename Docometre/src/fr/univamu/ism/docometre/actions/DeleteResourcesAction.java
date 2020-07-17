@@ -41,13 +41,19 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.actions;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Shell;
@@ -71,6 +77,7 @@ public class DeleteResourcesAction extends Action implements ISelectionListener,
 
 	private IResource[] resources;
 	private IWorkbenchWindow window;
+	private Object object;
 
 	public DeleteResourcesAction(IWorkbenchWindow window) {
 		setId("DeleteResourcesAction"); //$NON-NLS-1$
@@ -86,42 +93,83 @@ public class DeleteResourcesAction extends Action implements ISelectionListener,
 
 	@Override
 	public void run() {
-		try {
-			Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-			String title = DocometreMessages.DeleteAction_Title;
-			String message = DocometreMessages.DeleteAction_Message;
-			if(MessageDialog.openQuestion(shell, title, message)) {
-				for (IResource resource : resources) {
-					if(resource instanceof IProject) {
-						if(!((IProject) resource).isOpen()) {
-							((IProject) resource).open(null);
+		Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+		String title = DocometreMessages.DeleteAction_Title;
+		String message = DocometreMessages.DeleteAction_Message;
+		if(MessageDialog.openQuestion(shell, title, message)) {
+			
+			try {
+				PlatformUI.getWorkbench().getProgressService().busyCursorWhile(new IRunnableWithProgress() {
+					
+					@Override
+					public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+						try {
+							monitor.beginTask("Deleting " + resources.length + " resource(s)", resources.length + 3);
+							boolean deleteChannel = false;
+							boolean deleteResource = false;
+							Set<IResource> parentResourcesToRefresh = new HashSet<IResource>();
+							for (IResource resource : resources) {
+								monitor.subTask("Deleting " + resource.getFullPath().toOSString());
+								if(resource instanceof IProject) {
+									if(!((IProject) resource).isOpen()) {
+										((IProject) resource).open(null);
+									}
+								}
+								if(ResourceType.isDACQConfiguration(resource)) {
+									String fullPath = ResourceProperties.getDefaultDACQPersistentProperty(resource); 
+									if(fullPath != null && resource.getFullPath().equals(new Path(fullPath))) ResourceProperties.setDefaultDACQPersistentProperty(resource, null);
+								}
+								closeEditors(resource);
+								if(ResourceType.isChannel(resource)) {
+									MathEngineFactory.getMathEngine().deleteChannel((Channel)resource);
+									deleteChannel = true;
+								} else {
+									IResource parentResource = resource.getParent();
+									resource.delete(true, monitor);
+									parentResourcesToRefresh.add(parentResource);
+									deleteResource = true;
+								}
+								monitor.worked(1);
+							}
+							
+							if(deleteChannel) {
+								SubjectsView.refresh();
+								monitor.worked(1);
+							} 
+							if(deleteResource) {
+								for (IResource parentResourceToRefresh : parentResourcesToRefresh) {
+									ExperimentsView.refresh(parentResourceToRefresh.getProject(), new IResource[]{});
+								}
+								monitor.worked(1);
+							}
+							monitor.done();
+						} catch (CoreException e) {
+							Activator.logErrorMessageWithCause(e);
+							e.printStackTrace();
 						}
-					}
-					if(ResourceType.isDACQConfiguration(resource)) {
-						String fullPath = ResourceProperties.getDefaultDACQPersistentProperty(resource); 
-						if(fullPath != null && resource.getFullPath().equals(new Path(fullPath))) ResourceProperties.setDefaultDACQPersistentProperty(resource, null);
-					}
-					closeEditors(resource);
-					if(ResourceType.isChannel(resource)) {
-						MathEngineFactory.getMathEngine().deleteChannel((Channel)resource);
-						SubjectsView.refresh();
 						
-					} else {
-						IResource parentResource = resource.getParent();
-						resource.delete(true, null);
-						ExperimentsView.refresh(parentResource.getProject(), new IResource[]{});
+						
 					}
-				}
+				});
+			} catch (InvocationTargetException | InterruptedException e) {
+				Activator.getLogErrorMessageWithCause(e);
+				e.printStackTrace();
 			}
-		} catch (CoreException e) {
-			Activator.logErrorMessageWithCause(e);
+			
 		}
 	}
 
 	private void closeEditors(IResource resource) throws CoreException {
-		Object object = ResourceProperties.getObjectSessionProperty(resource);
+		object = ResourceProperties.getObjectSessionProperty(resource);
 		if(ResourceType.isLog(resource) || ResourceType.isParameters(resource) || ResourceType.isSamples(resource) || ResourceType.isChannel(resource)) object = resource;
-		if(object != null) Activator.closeEditor(object);
+		if(object != null) {
+			PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+				@Override
+				public void run() {
+					Activator.closeEditor(object);
+				}
+			});
+		}
 		if(resource instanceof IContainer) {
 			IResource[] chilrenResources = ((IContainer)resource).members();
 			for (IResource childResource : chilrenResources) {

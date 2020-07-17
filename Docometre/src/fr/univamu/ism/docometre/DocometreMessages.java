@@ -231,7 +231,12 @@ public final class DocometreMessages extends NLS {
 	public static String ImportResourceWizardErrorMessage2;
 	public static String ImportResourceWizardErrorMessage3;
 	public static String NewSubjectFromADWDataFileLabel;
-	
+	public static String ImportingExperimentFromCompressedFile;
+	public static String CreatingNewExperimentInWorkspace;
+	public static String RefreshingWorkspace;
+	public static String AddingProjectToBuilderAndRefreshingExperiment;
+	public static String ApplyingProperty;
+	public static String UnzippingFile;
 	
 	/*New Folder Page*/
 	public static String NewFolderWizard_PageName;

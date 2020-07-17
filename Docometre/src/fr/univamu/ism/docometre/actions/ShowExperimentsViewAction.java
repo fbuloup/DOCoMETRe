@@ -41,12 +41,7 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.actions;
 
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
@@ -67,19 +62,7 @@ public class ShowExperimentsViewAction extends Action {
 
 	@Override
 	public void run() {
-		try {
-			try {
-				ResourcesPlugin.getWorkspace().getRoot().refreshLocal(IResource.DEPTH_INFINITE, null);
-			} catch (CoreException e) {
-				e.printStackTrace();
-				Activator.logErrorMessageWithCause(e);
-			} finally {
-				PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(ExperimentsView.ID).setFocus();
-			}
-		} catch (PartInitException e) {
-			e.printStackTrace();
-			Activator.logErrorMessageWithCause(e);
-		}
+		ShowViewDelegate.show(ExperimentsView.ID, true);
 	}
 
 }

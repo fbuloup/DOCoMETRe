@@ -40,15 +40,19 @@
  *  - Frank Buloup - frank.buloup@univ-amu.fr - initial API and implementation [25/03/2020]
  ******************************************************************************/
 package fr.univamu.ism.docometre.actions;
+import java.lang.reflect.InvocationTargetException;
+
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 
 import fr.univamu.ism.docometre.Activator;
@@ -73,16 +77,29 @@ public class RefreshResourceAction extends Action implements ISelectionListener,
 	
 	@Override
 	public void run() {
-		for (IResource resource : selectedResources) {
-			try {
-				resource.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
-				ExperimentsView.refresh(resource.getParent(), new IResource[]{resource});
-				SubjectsView.refresh(resource.getParent(), new IResource[]{resource});
-			} catch (CoreException e) {
-				e.printStackTrace();
-				Activator.logErrorMessageWithCause(e);
-			}
-		}
+		try {
+			PlatformUI.getWorkbench().getProgressService().busyCursorWhile(new IRunnableWithProgress() {
+				
+				@Override
+				public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+					for (IResource resource : selectedResources) {
+						try {
+							resource.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+							ExperimentsView.refresh(resource.getParent(), new IResource[]{resource});
+							SubjectsView.refresh(resource.getParent(), new IResource[]{resource});
+						} catch (CoreException e) {
+							e.printStackTrace();
+							Activator.logErrorMessageWithCause(e);
+						}
+					}
+					
+				}
+			});
+		} catch (InvocationTargetException | InterruptedException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		} 
+		
 	}
 
 	@Override
