@@ -281,7 +281,7 @@ public final class ResourceProperties {
 		try {
 			String state = trialFolder.getPersistentProperty(TRIAL_STATE_QN);
 			if(state == null) return false;
-			if(state.equals("done")) return true;
+			if(state.equals("done") || state.equals("true")) return true;
 		} catch (CoreException e) {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();

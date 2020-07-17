@@ -166,6 +166,10 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 									IFile propertiesFile = newExperiment.getFile(newExperiment.getName() + ".properties");
 									if(propertiesFile != null) propertiesFile.delete(true, null);
 									
+									subMonitor.subTask(DocometreMessages.RefreshingWorkspace);
+									newExperiment.getParent().refreshLocal(IResource.DEPTH_INFINITE, null);
+									subMonitor.worked(1);
+									
 									subMonitor.subTask(DocometreMessages.AddingProjectToBuilderAndRefreshingExperiment);
 									DocometreBuilder.addProject(newExperiment);
 									ExperimentsView.refresh(newExperiment.getParent(), new IResource[]{newExperiment});
@@ -282,9 +286,18 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 			for (Object key : keys) {
 				String value = (String) properties.get(key);
 				String[] keyArray = key.toString().split(ResourceProperties.SEPARATOR);
-				if(Platform.getOS().equals(Platform.OS_MACOSX)) keyArray[0] = keyArray[0].replace("\\", "/");
-				if(Platform.getOS().equals(Platform.OS_WIN32)) keyArray[0] = keyArray[0].replace("/", "\\");
-				if(Platform.getOS().equals(Platform.OS_LINUX)) keyArray[0] = keyArray[0].replace("\\", "/");
+				if(Platform.getOS().equals(Platform.OS_MACOSX)) {
+					keyArray[0] = keyArray[0].replace("\\", "/");
+					value = value.replace("\\", "/");
+				}
+				if(Platform.getOS().equals(Platform.OS_WIN32)) {
+					keyArray[0] = keyArray[0].replace("/", "\\");
+					value = value.replace("/", "\\");
+				}
+				if(Platform.getOS().equals(Platform.OS_LINUX)) {
+					keyArray[0] = keyArray[0].replace("\\", "/");
+					value = value.replace("\\", "/");
+				}
 				IPath resourcePath = org.eclipse.core.runtime.Path.fromOSString(keyArray[0]);
 				String resourceFullPath = newExperiment.getParent().getLocation().toOSString() + File.separator + keyArray[0];
 				File resourceFile = new File(resourceFullPath);
@@ -303,6 +316,7 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 				QualifiedName QN = new QualifiedName(Activator.PLUGIN_ID, keyArray[1]);
 				resource.refreshLocal(IResource.DEPTH_INFINITE, null);
 				resource.setPersistentProperty(QN , value);
+				resource.refreshLocal(IResource.DEPTH_INFINITE, null);
 				subMonitor.worked(1);
 				numProperty++;
 			}
