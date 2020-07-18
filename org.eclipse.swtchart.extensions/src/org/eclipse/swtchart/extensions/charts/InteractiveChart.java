@@ -131,7 +131,7 @@ public class InteractiveChart extends Chart implements PaintListener {
 //	}
 	
 	public boolean isShowMarker() {
-		System.out.println("showMarker : " + showMarker + " - currentXMarker_Pixel : " + currentXMarker_Pixel);
+//		System.out.println("showMarker : " + showMarker + " - currentXMarker_Pixel : " + currentXMarker_Pixel);
 		return showMarker && currentXMarker_Pixel > -1;
 	}
 	
