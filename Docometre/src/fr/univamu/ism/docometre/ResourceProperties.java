@@ -462,7 +462,8 @@ public final class ResourceProperties {
 		if(ResourceProperties.getTypePersistentProperty(resource) != null) properties.put(resource.getFullPath().toOSString() + SEPARATOR + TYPE_QN.getLocalName(), ResourceProperties.getTypePersistentProperty(resource));
 		if(ResourceProperties.getDescriptionPersistentProperty(resource) != null) properties.put(resource.getFullPath().toOSString() + SEPARATOR + DESCRIPTION_QN.getLocalName(), ResourceProperties.getDescriptionPersistentProperty(resource));
 		if(ResourceType.isDACQConfiguration(resource)) properties.put(resource.getFullPath().toOSString() + SEPARATOR + SYSTEM_QN.getLocalName(), ResourceProperties.getSystemPersistentProperty(resource));
-		if(ResourceType.isProcess(resource)) properties.put(resource.getFullPath().toOSString() + ">>>" + ASSOCIATED_DACQ_CONFIGURATION_FILE_QN.getLocalName(), ResourceProperties.getAssociatedDACQConfigurationProperty(resource));
+		if(ResourceType.isProcess(resource)) properties.put(resource.getFullPath().toOSString() + SEPARATOR + ASSOCIATED_DACQ_CONFIGURATION_FILE_QN.getLocalName(), ResourceProperties.getAssociatedDACQConfigurationProperty(resource));
+		if(ResourceType.isProcessTest(resource)) properties.put(resource.getFullPath().toOSString() + SEPARATOR + ASSOCIATED_PROCESS_FILE_QN.getLocalName(), ResourceProperties.getAssociatedProcessProperty(resource));
 		if(ResourceType.isTrial(resource)) {
 			properties.put(resource.getFullPath().toOSString() + SEPARATOR + ASSOCIATED_PROCESS_FILE_QN.getLocalName(), ResourceProperties.getAssociatedProcessProperty(resource));
 			properties.put(resource.getFullPath().toOSString() + SEPARATOR + TRIAL_STATE_QN.getLocalName(), String.valueOf(ResourceProperties.isTrialDone(resource)));
