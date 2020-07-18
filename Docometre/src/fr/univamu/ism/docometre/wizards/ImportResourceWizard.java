@@ -306,10 +306,8 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 				IResource resource = null;
 				if(isExperiment) 
 					resource = newExperiment;
-				else if(isFolder) 
-					resource = ResourcesPlugin.getWorkspace().getRoot().getFolder(resourcePath);
-				else 
-					resource = ResourcesPlugin.getWorkspace().getRoot().getFile(resourcePath);
+				else if(isFolder) resource = ResourcesPlugin.getWorkspace().getRoot().getFolder(resourcePath);
+				else resource = ResourcesPlugin.getWorkspace().getRoot().getFile(resourcePath);
 
 				String message = NLS.bind(DocometreMessages.ApplyingProperty, new Object[] {numProperty, nbProperties, value, resource.getFullPath().toOSString()});
 				subMonitor.subTask(message);
@@ -364,17 +362,22 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 	
 	private static void extractFile(ZipInputStream zis, ZipEntry ze, String fileName) {
 		try {
-	        //buffer for read and write data to file
-			byte[] buffer = new byte[1024];
 			File newFile = new File(fileName);
 			// create directories for sub directories in zip
-			new File(newFile.getParent()).mkdirs();
-			FileOutputStream fos = new FileOutputStream(newFile);
-			int len;
-			while ((len = zis.read(buffer)) > 0) {
-				fos.write(buffer, 0, len);
+			if(ze.isDirectory()) newFile.mkdirs();
+			else {
+				newFile.getParentFile().mkdirs();
+				FileOutputStream fos = new FileOutputStream(newFile);
+				int len;
+		        //buffer for read and write data to file
+				byte[] buffer = new byte[1024];
+				while ((len = zis.read(buffer)) > 0) {
+					fos.write(buffer, 0, len);
+				}
+				fos.close();
 			}
-			fos.close();
+			
+			
 		} catch (IOException e) {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
