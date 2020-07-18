@@ -43,6 +43,7 @@ package fr.univamu.ism.docometre.actions;
 import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
@@ -111,6 +112,10 @@ public class RefreshResourceAction extends Action implements ISelectionListener,
 				selectedResources = new IResource[elements.length];
 				for (int i = 0; i < elements.length; i++) selectedResources[i] = (IResource) elements[i]; 
 			}
+			if(selectedResources == null || selectedResources.length == 0) {
+				selectedResources = new IResource[] {ResourcesPlugin.getWorkspace().getRoot()};
+			}
+			
 			setEnabled(selectedResources != null && selectedResources.length > 0);
 		}
 	}
