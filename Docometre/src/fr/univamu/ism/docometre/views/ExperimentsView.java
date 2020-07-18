@@ -337,7 +337,7 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 					Object[] elements = ((IStructuredSelection)selection).toArray();
 					IResource project = ((IResource) selection.getFirstElement()).getProject();
 					boolean onlyProcesses = true;
-					boolean onlyTrials = true;
+					boolean onlyTrialsOrProcessesTests = true;
 					boolean sameProject = true;
 					boolean sameSystem = true;
 //					boolean onlyUntypedResources = true; 
@@ -352,7 +352,7 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 					}
 					for (Object element : elements) {
 						onlyProcesses = onlyProcesses && ResourceType.isProcess((IResource)element);
-						onlyTrials = onlyTrials && ResourceType.isTrial((IResource)element);
+						onlyTrialsOrProcessesTests = onlyTrialsOrProcessesTests && (ResourceType.isTrial((IResource)element) || ResourceType.isProcessTest((IResource)element));
 						sameProject = sameProject && ((IResource)element).getProject().equals(project);
 						IResource associatedDACQ = ResourceProperties.getAssociatedDACQConfiguration((IResource)element);
 						if(associatedDACQ != null && systemType != null) sameSystem = sameSystem && systemType.equals(ResourceProperties.getSystemPersistentProperty(associatedDACQ));
@@ -367,7 +367,7 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 							associateWithItemMenuManager.add(new AssociateDACQAction(processesFiles.toArray(new IFile[processesFiles.size()]), (IFile)daqFile));
 						}
 					}
-					if(onlyTrials && sameProject && sameSystem) {
+					if(onlyTrialsOrProcessesTests && sameProject && sameSystem) {
 						ArrayList<IFolder> trialsFiles = new ArrayList<>();
 						for (Object element : elements) trialsFiles.add((IFolder)element);
 						IResource[] processesFiles = ResourceProperties.getAllTypedResources(ResourceType.PROCESS, trialsFiles.get(0).getProject());
