@@ -326,14 +326,28 @@ public class ArchiveFileExportOperation implements IRunnableWithProgress {
 
 		return isDescendent(resources, parent);
 	}
+	
+	public int getTotalWork() {
+		int totalWork = IProgressMonitor.UNKNOWN;
+		try {
+			if (resourcesToExport == null) {
+				totalWork = countChildrenOf(resource);
+			} else {
+				totalWork = countSelectedResources();
+			}
+		} catch (CoreException e) {
+			// Should not happen
+		}
+		return totalWork;
+	}
 
 	/**
 	 *	Export the resources that were previously specified for export
 	 *	(or if a single resource was specified then export it recursively)
 	 */
 	@Override
-	public void run(IProgressMonitor progressMonitor)
-			throws InvocationTargetException, InterruptedException {
+	public void run(IProgressMonitor progressMonitor) throws InvocationTargetException, InterruptedException {
+		
 		this.monitor = progressMonitor;
 
 		try {
@@ -343,18 +357,6 @@ public class ArchiveFileExportOperation implements IRunnableWithProgress {
 		}
 
 		try {
-			// ie.- a single resource for recursive export was specified
-			int totalWork = IProgressMonitor.UNKNOWN;
-			try {
-				if (resourcesToExport == null) {
-					totalWork = countChildrenOf(resource);
-				} else {
-					totalWork = countSelectedResources();
-				}
-			} catch (CoreException e) {
-				// Should not happen
-			}
-			monitor.beginTask(DocometreMessages.DataTransfer_exportingTitle, totalWork);
 			if (resourcesToExport == null) {
 				exportResource(resource);
 			} else {
@@ -370,7 +372,7 @@ public class ArchiveFileExportOperation implements IRunnableWithProgress {
 						NLS.bind(DocometreMessages.ZipExport_cannotClose, e.getMessage()));
 			}
 		} finally {
-			monitor.done();
+			monitor.worked(1);
 		}
 	}
 

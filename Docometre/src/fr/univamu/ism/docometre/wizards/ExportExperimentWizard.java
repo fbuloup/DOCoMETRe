@@ -47,6 +47,9 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.Wizard;
 
 import fr.univamu.ism.docometre.Activator;
@@ -64,6 +67,7 @@ public class ExportExperimentWizard extends Wizard {
 
 	@Override
 	public void addPages() {
+		setNeedsProgressMonitor(true);
 		exportExperimentWizardPage = new ExportExperimentWizardPage();
 		addPage(exportExperimentWizardPage);
 	}
@@ -72,19 +76,48 @@ public class ExportExperimentWizard extends Wizard {
 	public boolean performFinish() {
 		if(exportExperimentWizardPage.validate()) {
 			try {
-				IProject experiment = exportExperimentWizardPage.getExperiment();
-				String destination = exportExperimentWizardPage.getDestination();
-				boolean compress = exportExperimentWizardPage.isCompress();
-				boolean asZip = exportExperimentWizardPage.isAsZip();
-				IFile propertiesFile = ExperimentPropertiesFileCreator.createPropertiesFile(experiment);
-				experiment.refreshLocal(IResource.DEPTH_ONE, null);
-				ArchiveFileExportOperation archiveFileExportOperation = new ArchiveFileExportOperation(experiment, destination);
-				archiveFileExportOperation.setUseCompression(compress);
-				archiveFileExportOperation.setUseTarFormat(!asZip);
-				getContainer().run(true, true, archiveFileExportOperation);
-				propertiesFile.delete(true, null);
+				getContainer().run(true, false, new IRunnableWithProgress() {
+					@Override
+					public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+						try {
+							
+							
+							
+							IProject experiment = exportExperimentWizardPage.getExperiment();
+							String destination = exportExperimentWizardPage.getDestination();
+							boolean compress = exportExperimentWizardPage.isCompress();
+							boolean asZip = exportExperimentWizardPage.isAsZip();
+							
+							ArchiveFileExportOperation archiveFileExportOperation = new ArchiveFileExportOperation(experiment, destination);
+							archiveFileExportOperation.setUseCompression(compress);
+							archiveFileExportOperation.setUseTarFormat(!asZip);
+							
+							SubMonitor subMonitor = SubMonitor.convert(monitor, DocometreMessages.ExportExperimentTaskTitle, 2 + archiveFileExportOperation.getTotalWork());
+							
+							subMonitor.subTask("createPropertiesFile");
+							IFile propertiesFile = ExperimentPropertiesFileCreator.createPropertiesFile(experiment, subMonitor);
+							subMonitor.worked(1);
+							
+							subMonitor.subTask("refreshLocal");
+							experiment.refreshLocal(IResource.DEPTH_ONE, null);
+							subMonitor.worked(1);
+							
+							
+							
+							archiveFileExportOperation.run(subMonitor);
+							
+							propertiesFile.delete(true, null);
+
+							subMonitor.done();
+							
+						} catch (CoreException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				});
 				return true;
-			} catch (InvocationTargetException | InterruptedException | CoreException e) {
+			} catch (InvocationTargetException | InterruptedException e) {
 				Activator.logErrorMessageWithCause(e);
 				e.printStackTrace();
 			}

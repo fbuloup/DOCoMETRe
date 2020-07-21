@@ -52,20 +52,21 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.SubMonitor;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ResourceProperties;
 
 public final class ExperimentPropertiesFileCreator {
 	
-	public static IFile createPropertiesFile(IProject experiment) {
+	public static IFile createPropertiesFile(IProject experiment, SubMonitor subMonitor) {
 		FileOutputStream fileOutputStream = null;
 		try {
 			IFile propertiesFile = experiment.getFile(experiment.getName()+ ".properties");
 			IPath path = propertiesFile.getLocation();
 			fileOutputStream = new FileOutputStream(path.toOSString());
 			Properties properties = new Properties();
-			writePropertiesRecursively(experiment, properties);
+			writePropertiesRecursively(experiment, properties, subMonitor);
 			properties.store(new OutputStreamWriter(fileOutputStream, "UTF-8"), null);
 			propertiesFile.refreshLocal(IResource.DEPTH_INFINITE, null);
 			return propertiesFile;
@@ -84,12 +85,13 @@ public final class ExperimentPropertiesFileCreator {
 		}
 	}
 
-	private static void writePropertiesRecursively(IResource resource, Properties properties) throws CoreException {
+	private static void writePropertiesRecursively(IResource resource, Properties properties, SubMonitor subMonitor) throws CoreException {
+		subMonitor.subTask("writeResourcePropertiesToPropertiesFile for " + resource.getFullPath().toOSString());
 		ResourceProperties.writeResourcePropertiesToPropertiesFile(resource, properties);
 		if(resource instanceof IContainer) {
 			IResource[] members = ((IContainer)resource).members();
 			for (IResource member : members) {
-				writePropertiesRecursively(member, properties);
+				writePropertiesRecursively(member, properties, subMonitor);
 			}
 		}
 		

@@ -679,6 +679,7 @@ public final class DocometreMessages extends NLS {
 	public static String ExportResourceWizardPageTitle;
 	public static String ExportResourceWizardPageDescription;
 	public static String ExportResourceWizardTitle;
+	public static String ExportExperimentTaskTitle;
 	
 	//
 	public static String UndoneTrials;
