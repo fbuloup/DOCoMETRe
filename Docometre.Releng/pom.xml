@@ -7,9 +7,19 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<tycho.version>1.4.0</tycho.version>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
+	<tycho.version>1.4.0</tycho.version>
+	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	<!-- </properties> -->
+
+	<!-- <properties> -->
+	<sonar.projectKey>fbuloup_DOCoMETRe</sonar.projectKey>
+	<sonar.organization>ism-ics</sonar.organization>
+	<sonar.host.url>https://sonarcloud.io</sonar.host.url>
+	<sonar.login>ea5ad34929e0d0b97f5ab68cc7b9e714532aa31e</sonar.login>
+	<sonar.moduleKey>
+		${artifactId}
+	</sonar.moduleKey>
+</properties>
 
 	<repositories>
 <!-- 		<repository> -->
