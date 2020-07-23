@@ -55,6 +55,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.operation.ModalContext;
@@ -71,24 +72,17 @@ import fr.univamu.ism.docometre.DocometreMessages;
  */
 public class ArchiveFileExportOperation implements IRunnableWithProgress {
 	private IFileExporter exporter;
-
 	private String destinationFilename;
-
 	private IProgressMonitor monitor;
-
 	private List<? extends IResource> resourcesToExport;
-
 	private IResource resource;
-
 	private List<IStatus> errorTable = new ArrayList<>(1); // IStatus
-
 	private boolean useCompression = true;
-
 	private boolean resolveLinks = false;
-
 	private boolean useTarFormat = false;
-
 	private boolean createLeadupStructure = true;
+	private String toRootDirectory;
+	private String fromRootDirectory;
 
 	/**
 	 *	Create an instance of this class.  Use this constructor if you wish to
@@ -205,9 +199,9 @@ public class ArchiveFileExportOperation implements IRunnableWithProgress {
 	private String createDestinationName(int leadupDepth, IResource exportResource) {
 		IPath fullPath = exportResource.getFullPath();
 		if (createLeadupStructure) {
-			return fullPath.makeRelative().toString();
+			return fullPath.makeRelative().toString().replaceFirst(fromRootDirectory, toRootDirectory);
 		}
-		return fullPath.removeFirstSegments(fullPath.segmentCount() - leadupDepth).makeRelative().toString();
+		return fullPath.removeFirstSegments(fullPath.segmentCount() - leadupDepth).makeRelative().toString().replaceFirst(fromRootDirectory, toRootDirectory);
 	}
 
 	/**
@@ -304,6 +298,9 @@ public class ArchiveFileExportOperation implements IRunnableWithProgress {
 		} else {
 			exporter = new ZipFileExporter(destinationFilename, useCompression, resolveLinks);
 		}
+		IPath path = new Path(destinationFilename);
+		toRootDirectory =  path.removeFileExtension().lastSegment();
+		fromRootDirectory = resource.getName();
 	}
 
 	/**

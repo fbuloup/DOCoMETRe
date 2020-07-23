@@ -53,18 +53,25 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.osgi.util.NLS;
 
 import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ResourceProperties;
 
 public final class ExperimentPropertiesFileCreator {
 	
-	public static IFile createPropertiesFile(IProject experiment, SubMonitor subMonitor) {
+	private static String toRootDirectory;
+	private static String fromRootDirectory;
+
+	public static IFile createPropertiesFile(IProject experiment, IPath destinationPath, SubMonitor subMonitor) {
 		FileOutputStream fileOutputStream = null;
 		try {
-			IFile propertiesFile = experiment.getFile(experiment.getName()+ ".properties");
+			IFile propertiesFile = experiment.getFile(destinationPath.removeFileExtension().lastSegment() + ".properties");
 			IPath path = propertiesFile.getLocation();
 			fileOutputStream = new FileOutputStream(path.toOSString());
+			toRootDirectory =  destinationPath.removeFileExtension().lastSegment();
+			fromRootDirectory = experiment.getName();
 			Properties properties = new Properties();
 			writePropertiesRecursively(experiment, properties, subMonitor);
 			properties.store(new OutputStreamWriter(fileOutputStream, "UTF-8"), null);
@@ -86,8 +93,9 @@ public final class ExperimentPropertiesFileCreator {
 	}
 
 	private static void writePropertiesRecursively(IResource resource, Properties properties, SubMonitor subMonitor) throws CoreException {
-		subMonitor.subTask("writeResourcePropertiesToPropertiesFile for " + resource.getFullPath().toOSString());
-		ResourceProperties.writeResourcePropertiesToPropertiesFile(resource, properties);
+		subMonitor.subTask(NLS.bind(DocometreMessages.WritingProperties, resource.getFullPath().toOSString()));
+		String keyName =  resource.getFullPath().toOSString().replaceFirst(fromRootDirectory, toRootDirectory);
+		ResourceProperties.writeResourcePropertiesToPropertiesFile(resource, properties, keyName);
 		if(resource instanceof IContainer) {
 			IResource[] members = ((IContainer)resource).members();
 			for (IResource member : members) {

@@ -458,21 +458,21 @@ public final class ResourceProperties {
 	}
 
 	
-	public static void writeResourcePropertiesToPropertiesFile(IResource resource, Properties properties) {
-		if(ResourceProperties.getTypePersistentProperty(resource) != null) properties.put(resource.getFullPath().toOSString() + SEPARATOR + TYPE_QN.getLocalName(), ResourceProperties.getTypePersistentProperty(resource));
-		if(ResourceProperties.getDescriptionPersistentProperty(resource) != null) properties.put(resource.getFullPath().toOSString() + SEPARATOR + DESCRIPTION_QN.getLocalName(), ResourceProperties.getDescriptionPersistentProperty(resource));
-		if(ResourceType.isDACQConfiguration(resource)) properties.put(resource.getFullPath().toOSString() + SEPARATOR + SYSTEM_QN.getLocalName(), ResourceProperties.getSystemPersistentProperty(resource));
-		if(ResourceType.isProcess(resource)) properties.put(resource.getFullPath().toOSString() + SEPARATOR + ASSOCIATED_DACQ_CONFIGURATION_FILE_QN.getLocalName(), ResourceProperties.getAssociatedDACQConfigurationProperty(resource));
-		if(ResourceType.isProcessTest(resource)) properties.put(resource.getFullPath().toOSString() + SEPARATOR + ASSOCIATED_PROCESS_FILE_QN.getLocalName(), ResourceProperties.getAssociatedProcessProperty(resource));
+	public static void writeResourcePropertiesToPropertiesFile(IResource resource, Properties properties, String keyName) {
+		if(ResourceProperties.getTypePersistentProperty(resource) != null) properties.put(keyName + SEPARATOR + TYPE_QN.getLocalName(), ResourceProperties.getTypePersistentProperty(resource));
+		if(ResourceProperties.getDescriptionPersistentProperty(resource) != null) properties.put(keyName + SEPARATOR + DESCRIPTION_QN.getLocalName(), ResourceProperties.getDescriptionPersistentProperty(resource));
+		if(ResourceType.isDACQConfiguration(resource)) properties.put(keyName + SEPARATOR + SYSTEM_QN.getLocalName(), ResourceProperties.getSystemPersistentProperty(resource));
+		if(ResourceType.isProcess(resource)) properties.put(keyName + SEPARATOR + ASSOCIATED_DACQ_CONFIGURATION_FILE_QN.getLocalName(), ResourceProperties.getAssociatedDACQConfigurationProperty(resource));
+		if(ResourceType.isProcessTest(resource)) properties.put(keyName + SEPARATOR + ASSOCIATED_PROCESS_FILE_QN.getLocalName(), ResourceProperties.getAssociatedProcessProperty(resource));
 		if(ResourceType.isTrial(resource)) {
-			properties.put(resource.getFullPath().toOSString() + SEPARATOR + ASSOCIATED_PROCESS_FILE_QN.getLocalName(), ResourceProperties.getAssociatedProcessProperty(resource));
-			properties.put(resource.getFullPath().toOSString() + SEPARATOR + TRIAL_STATE_QN.getLocalName(), String.valueOf(ResourceProperties.isTrialDone(resource)));
-			properties.put(resource.getFullPath().toOSString() + SEPARATOR + TRIAL_START_MODE_QN.getLocalName(), ResourceProperties.getTrialStartMode(resource).toString());
+			properties.put(keyName + SEPARATOR + ASSOCIATED_PROCESS_FILE_QN.getLocalName(), ResourceProperties.getAssociatedProcessProperty(resource));
+			properties.put(keyName + SEPARATOR + TRIAL_STATE_QN.getLocalName(), String.valueOf(ResourceProperties.isTrialDone(resource)));
+			properties.put(keyName + SEPARATOR + TRIAL_START_MODE_QN.getLocalName(), ResourceProperties.getTrialStartMode(resource).toString());
 		}
 		if(ResourceType.isSession(resource)) {
-			if(ResourceProperties.getDataFilesNamesPrefix(resource) != null) properties.put(resource.getFullPath().toOSString() + SEPARATOR + DATA_FILES_NAMES_PREFIX_QN.getLocalName(), ResourceProperties.getDataFilesNamesPrefix(resource));
-			properties.put(resource.getFullPath().toOSString() + SEPARATOR + USE_SESSION_NAME_AS_FIRST_SUFFIX_IN_DATA_FILES_NAMES_QN.getLocalName(), String.valueOf(ResourceProperties.useSessionNameInDataFilesNamesAsFirstSuffix(resource)));
-			properties.put(resource.getFullPath().toOSString() + SEPARATOR + USE_TRIAL_NUMBER_AS_SECOND_SUFFIX_IN_DATA_FILES_NAMES_QN.getLocalName(), String.valueOf(ResourceProperties.useTrialNumberInDataFilesNamesAsSecondSuffix(resource)));
+			if(ResourceProperties.getDataFilesNamesPrefix(resource) != null) properties.put(keyName + SEPARATOR + DATA_FILES_NAMES_PREFIX_QN.getLocalName(), ResourceProperties.getDataFilesNamesPrefix(resource));
+			properties.put(keyName + SEPARATOR + USE_SESSION_NAME_AS_FIRST_SUFFIX_IN_DATA_FILES_NAMES_QN.getLocalName(), String.valueOf(ResourceProperties.useSessionNameInDataFilesNamesAsFirstSuffix(resource)));
+			properties.put(keyName + SEPARATOR + USE_TRIAL_NUMBER_AS_SECOND_SUFFIX_IN_DATA_FILES_NAMES_QN.getLocalName(), String.valueOf(ResourceProperties.useTrialNumberInDataFilesNamesAsSecondSuffix(resource)));
 		}
 	}
 	

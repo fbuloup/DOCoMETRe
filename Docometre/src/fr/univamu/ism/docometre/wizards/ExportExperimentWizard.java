@@ -48,6 +48,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.Wizard;
@@ -81,28 +82,25 @@ public class ExportExperimentWizard extends Wizard {
 					public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 						try {
 							
-							
-							
 							IProject experiment = exportExperimentWizardPage.getExperiment();
 							String destination = exportExperimentWizardPage.getDestination();
 							boolean compress = exportExperimentWizardPage.isCompress();
 							boolean asZip = exportExperimentWizardPage.isAsZip();
+							Path destinationPath = new Path(destination);
 							
-							ArchiveFileExportOperation archiveFileExportOperation = new ArchiveFileExportOperation(experiment, destination);
+							ArchiveFileExportOperation archiveFileExportOperation = new ArchiveFileExportOperation(experiment, destinationPath.toOSString());
 							archiveFileExportOperation.setUseCompression(compress);
 							archiveFileExportOperation.setUseTarFormat(!asZip);
 							
 							SubMonitor subMonitor = SubMonitor.convert(monitor, DocometreMessages.ExportExperimentTaskTitle, 2 + archiveFileExportOperation.getTotalWork());
 							
-							subMonitor.subTask("createPropertiesFile");
-							IFile propertiesFile = ExperimentPropertiesFileCreator.createPropertiesFile(experiment, subMonitor);
+							subMonitor.subTask(DocometreMessages.createPropertiesFile);
+							IFile propertiesFile = ExperimentPropertiesFileCreator.createPropertiesFile(experiment, destinationPath, subMonitor);
 							subMonitor.worked(1);
 							
-							subMonitor.subTask("refreshLocal");
+							subMonitor.subTask(DocometreMessages.RefreshingWorkspace);
 							experiment.refreshLocal(IResource.DEPTH_ONE, null);
 							subMonitor.worked(1);
-							
-							
 							
 							archiveFileExportOperation.run(subMonitor);
 							
@@ -111,7 +109,7 @@ public class ExportExperimentWizard extends Wizard {
 							subMonitor.done();
 							
 						} catch (CoreException e) {
-							// TODO Auto-generated catch block
+							Activator.logErrorMessageWithCause(e);
 							e.printStackTrace();
 						}
 					}
