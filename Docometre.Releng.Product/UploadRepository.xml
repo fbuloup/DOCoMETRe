@@ -5,6 +5,19 @@
 	-->
 	
 	<include file = "FtpLoginProperties.xml" as="FtpProperties"/>
+	
+	<!-- Here is a "FtpLoginProperties.xml" file sample :
+	
+	 <project default="FTP_INPUT" name="FTP INPUT">
+		<target name="FTP_INPUT">
+			<input message="Please enter FTP IP :" addproperty="ftp.ip" defaultvalue="139.124.0.1"/>
+			<input message="Please enter FTP login :" addproperty="ftp.login" defaultvalue="lgoin"/>
+			<input message="Please enter FTP password :" addproperty="ftp.password" defaultvalue="pass"/>
+			<input message="Please enter FTP base remote directory :" addproperty="ftp.base.remotedir" defaultvalue="/Path/to/Sites/documents/"/>
+		</target>
+	</project>
+
+	-->
 
 	<!-- clear server -->
 	<target name="B_resetFTPFilesFolders" description="Create an empty DOCoMETRe folder" depends="FtpProperties.FTP_INPUT">
