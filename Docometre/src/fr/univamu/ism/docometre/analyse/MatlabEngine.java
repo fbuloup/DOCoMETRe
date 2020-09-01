@@ -212,7 +212,7 @@ public final class MatlabEngine implements MathEngine {
 			String experimentName = subject.getFullPath().segment(0);
 			String subjectName = subject.getFullPath().segment(1);
 			String dataFilesList = (String)subject.getSessionProperty(ResourceProperties.DATA_FILES_LIST_QN);
-			String cmd = "[" + experimentName + "." + subjectName + ", message] = loadData('DOCOMETRE', '" + dataFilesList + "')";
+			String cmd = experimentName + "." + subjectName + " = loadData('DOCOMETRE', '" + dataFilesList + "')";
 			matlabController.eval(cmd);
 			ChannelsContainer channelsContainer = new ChannelsContainer((IFolder) subject);
 			subject.setSessionProperty(ResourceProperties.CHANNELS_LIST_QN, channelsContainer);

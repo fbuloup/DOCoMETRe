@@ -1,9 +1,15 @@
-function [subject, message] = loadDataDocometre(dataFile) %, options)
+function subject = loadDataDocometre(dataFilesList) %, options)
       
-if contains(dataFile,'.sau,')
-	loadDataDocometreSAU(dataFile);
+if contains(dataFilesList,'.sau,')
+	loadDataDocometreSAU(dataFilesList);
+elseif contains(dataFilesList,'.samples;')
+    subject = loadDataDocometreSAMPLES(dataFilesList);
 else
     
+%% Here we are : this is ADW data file, only one file in data files list
+
+dataFile = dataFilesList;
+
 fp = fopen(dataFile, 'rb','l');
  
 nbChannels = fread(fp,1,'int32');          % nbA/D total possible
@@ -274,7 +280,6 @@ tempSubject.Categories.isSignal = 0;
 tempSubject.Categories.isEvent = 0;
     
 subject = tempSubject;
-message = '';
 
 %assignin('base','tempSubject',tempSubject);
 %evalin('base', [experimentName,'.', subjectName,'=tempSubject;']);

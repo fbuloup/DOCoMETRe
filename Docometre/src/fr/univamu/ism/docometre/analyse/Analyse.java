@@ -16,12 +16,15 @@ public final class Analyse {
 		if(!ResourceType.isSubject(subject)) return "";
 		try {
 			List<String> dataFilesList = new ArrayList<String>();
-			IResource[] members = ((IContainer)subject).members();
-			for (IResource member : members) {
-				if(ResourceType.isADWDataFile(member) || ResourceType.isSamples(member)) {
-					dataFilesList.add(member.getLocation().toOSString());
-				}
-			}
+			getData((IContainer) subject, dataFilesList);
+			
+			
+//			IResource[] members = ((IContainer)subject).members();
+//			for (IResource member : members) {
+//				if(ResourceType.isADWDataFile(member) || ResourceType.isSamples(member)) {
+//					dataFilesList.add(member.getLocation().toOSString());
+//				}
+//			}
 			return String.join(";", dataFilesList); 
 		} catch (CoreException e) {
 			Activator.logErrorMessageWithCause(e);
@@ -29,4 +32,15 @@ public final class Analyse {
 		}
 		return ""; 
 	}
+	
+	private static void getData(IContainer resource, List<String> dataFilesList) throws CoreException {
+		IResource[] members = resource.members();
+		for (IResource member : members) {
+			if(ResourceType.isADWDataFile(member) || ResourceType.isSamples(member)) {
+				dataFilesList.add(member.getLocation().toOSString());
+			}
+			if(ResourceType.isSession(member) || ResourceType.isTrial(member)) getData((IContainer)member, dataFilesList);
+		}
+	}
+	
 }

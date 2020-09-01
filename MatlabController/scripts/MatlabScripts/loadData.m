@@ -1,4 +1,4 @@
-function [subject, message] = loadData(experimentType, dataFilesList)
+function subject = loadData(experimentType, dataFilesList)
 % This function is the entry point used to create Analyse data model from an external model
 % in Matlab or Octave workspace. It redirects to the necessary function depending on the
 % experimentType value.
@@ -10,7 +10,7 @@ function [subject, message] = loadData(experimentType, dataFilesList)
 
 switch experimentType
     case 'DOCOMETRE'
-        [subject, message] = loadDataDocometre(dataFilesList);
+        subject = loadDataDocometre(dataFilesList);
     
     case 'LAVAL_ANALYSE'
         loadDataLaval_Analyse(experimentName, localSubjectName, dataFilesList);
