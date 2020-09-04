@@ -1,9 +1,9 @@
-function subject = loadDataDocometre(dataFilesList) %, options)
+function subject = loadDataDocometre(dataFilesList, varargin) %, options)
       
 if contains(dataFilesList,'.sau,')
 	loadDataDocometreSAU(dataFilesList);
 elseif contains(dataFilesList,'.samples;')
-    subject = loadDataDocometreSAMPLES(dataFilesList);
+    subject = loadDataDocometreSAMPLES(dataFilesList, varargin{1}, varargin{2});
 else
     
 %% Here we are : this is ADW data file, only one file in data files list

@@ -7,7 +7,6 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.ISelectionListener;
@@ -16,9 +15,7 @@ import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
-import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
-import fr.univamu.ism.docometre.analyse.Analyse;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.views.ExperimentsView;
@@ -44,17 +41,9 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 				MathEngineFactory.getMathEngine().unload(subject);
 				Activator.logInfoMessage(DocometreMessages.Done, getClass());
 			} else {
-				try {
 					Activator.logInfoMessage(DocometreMessages.LoadingSubject + subject.getName(), getClass());
-					// Get data files 
-					String dataFilesList = Analyse.getDataFiles(subject);
-					subject.setSessionProperty(ResourceProperties.DATA_FILES_LIST_QN, dataFilesList);
 					MathEngineFactory.getMathEngine().load(subject);
 					Activator.logInfoMessage(DocometreMessages.Done, getClass());
-				} catch (CoreException e) {
-					Activator.logErrorMessageWithCause(e);
-					e.printStackTrace();
-				}
 			}
 			ExperimentsView.refresh(subject, null);
 			SubjectsView.refresh(subject, null);
