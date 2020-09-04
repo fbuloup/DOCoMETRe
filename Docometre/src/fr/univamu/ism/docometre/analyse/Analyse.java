@@ -53,6 +53,7 @@ public final class Analyse {
 	
 	
 	public static Map<String, String> getSessionsInformations(IResource resource) {
+		int baseTrialsNumber = 0;
 		Map<String, String> values = new HashMap<String, String>();
 		Map<IResource, DACQConfiguration> dacq = new HashMap<IResource, DACQConfiguration>();
 		try {
@@ -64,6 +65,9 @@ public final class Analyse {
 					IContainer session = (IContainer) member;
 					
 					String sessionName = session.getName();
+					
+					values.put(sessionName + "_BASE_TRIALS_NUMBER", String.valueOf(baseTrialsNumber));
+					baseTrialsNumber += ResourceProperties.getTotalNumberOfTrials(session);
 
 					boolean value = ResourceProperties.useSessionNameInDataFilesNamesAsFirstSuffix(member);
 					values.put(sessionName + "_USE_SESSION_NAME_AS_FIRST_SUFFIX_IN_DATA_FILES_NAMES", Boolean.toString(value));

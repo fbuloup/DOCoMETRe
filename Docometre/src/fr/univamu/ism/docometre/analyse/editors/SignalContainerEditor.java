@@ -194,23 +194,23 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		Spinner trialSelectionSpinner = ChannelEditorWidgetsFactory.createSpinner(trialsGroup, SWT.FILL, true);
 		
 		ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.FrontCutLabel, SWT.LEFT, false);
-		Label frontCutLabelValue = ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.NotAvailable_Label, SWT.LEFT, true);
+		Label frontCutLabelValue = ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.NotAvailable_Label, SWT.FILL, true);
 		
 		ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.EndCutLabel, SWT.LEFT, false);
-		Label endCutLabelValue = ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.NotAvailable_Label, SWT.LEFT, true);
+		Label endCutLabelValue = ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.NotAvailable_Label, SWT.FILL, true);
 		
 		ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.SamplesNumberLabel, SWT.LEFT, false);
-		Label samplesNumberLabelValue = ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.NotAvailable_Label, SWT.LEFT, true);
+		Label samplesNumberLabelValue = ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.NotAvailable_Label, SWT.FILL, true);
 		
 		ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.DurationLabel, SWT.LEFT, false);
-		Label durationLabelValue = ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.NotAvailable_Label, SWT.LEFT, true);
+		Label durationLabelValue = ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.NotAvailable_Label, SWT.FILL, true);
 
 		trialSelectionSpinner.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				int samplesNumber = MathEngineFactory.getMathEngine().getSamplesNumber(channelEditor.getchannel(), trialSelectionSpinner.getSelection());
 				int frontCut = MathEngineFactory.getMathEngine().getFrontCut(channelEditor.getchannel(), trialSelectionSpinner.getSelection());
-				int endCut = samplesNumber - MathEngineFactory.getMathEngine().getEndCut(channelEditor.getchannel(), trialSelectionSpinner.getSelection());
+				int endCut =  MathEngineFactory.getMathEngine().getEndCut(channelEditor.getchannel(), trialSelectionSpinner.getSelection());
 				double sf = MathEngineFactory.getMathEngine().getSampleFrequency(channelEditor.getchannel());
 				double duration = 1f*samplesNumber/sf;
 				frontCutLabelValue.setText(Integer.toString(frontCut));

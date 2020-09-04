@@ -393,7 +393,9 @@ public final class MatlabEngine implements MathEngine {
 	public double[] getYValuesForSignal(Channel signal, int trialNumber) {
 		try {
 			String variableName = "yValues_" + (new Date()).getTime();
-			String varCmd = getMatlabFullPath(signal) + ".Values(" + trialNumber + ",:);";
+			int frontCut = getFrontCut(signal, trialNumber) + 1;
+			int endCut = getEndCut(signal, trialNumber) - 1;
+			String varCmd = getMatlabFullPath(signal) + ".Values(" + trialNumber + "," + frontCut + ":" + endCut + ");";
 			String cmd = variableName + " = " + varCmd;
 			matlabController.eval(cmd);
 			Object valuesObject = matlabController.getVariable(variableName);
@@ -457,8 +459,8 @@ public final class MatlabEngine implements MathEngine {
 	public int getSamplesNumber(Channel signal, int trialNumber) {
 		try {
 			Object[] responses = matlabController.returningEval(getMatlabFullPath(signal) + ".NbSamples(" + trialNumber + ")", 1);
-			int nbSamples = (int) ((double[]) responses[0])[0];
-			return nbSamples;
+			int value = (int) ((double[]) responses[0])[0];
+			return value;
 		} catch (Exception e) {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
@@ -467,14 +469,28 @@ public final class MatlabEngine implements MathEngine {
 	}
 
 	@Override
-	public int getFrontCut(Channel getchannel, int selection) {
-		// TODO Auto-generated method stub
+	public int getFrontCut(Channel signal, int trialNumber) {
+		try {
+			Object[] responses = matlabController.returningEval(getMatlabFullPath(signal) + ".FrontCut(" + trialNumber + ")", 1);
+			int value = (int) ((double[]) responses[0])[0];
+			return value;
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
 		return 0;
 	}
 
 	@Override
-	public int getEndCut(Channel getchannel, int selection) {
-		// TODO Auto-generated method stub
+	public int getEndCut(Channel signal, int trialNumber) {
+		try {
+			Object[] responses = matlabController.returningEval(getMatlabFullPath(signal) + ".EndCut(" + trialNumber + ")", 1);
+			int value = (int) ((double[]) responses[0])[0];
+			return value;
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
 		return 0;
 	}
 
