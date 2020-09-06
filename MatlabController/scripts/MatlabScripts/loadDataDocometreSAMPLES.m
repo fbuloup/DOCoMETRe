@@ -44,10 +44,12 @@ function subject = loadDataDocometre(dataFilesList, varargin)
         end
         
         if(isKey(createdCategories, criteria))
-            trialsList = createdCategories(criteria);
-            if(~contains(trialsList, trialNumber))
+            trialsList = createdCategories(criteria);            
+            testFindTrialInTrialsList = eval(['find([', trialsList, '] ==', trialNumber, ', 1)']);
+            if(isempty(testFindTrialInTrialsList))                              
                 trialsList = [trialsList, ', ', trialNumber];
             end
+
         else
             trialsList = trialNumber;
         end
