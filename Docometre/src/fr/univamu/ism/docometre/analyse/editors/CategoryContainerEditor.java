@@ -73,7 +73,7 @@ public class CategoryContainerEditor extends Composite implements ISelectionChan
 		trialsListViewer.setInput(trials);
 		trialsListViewer.addSelectionChangedListener(this);
 		
-		signalsListViewer = new ListViewer(categoryContainer, SWT.BORDER | SWT.MULTI);
+		signalsListViewer = new ListViewer(categoryContainer, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 		signalsListViewer.getList().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 		signalsListViewer.setContentProvider(new ArrayContentProvider());
 		signalsListViewer.setLabelProvider(new LabelProvider());
