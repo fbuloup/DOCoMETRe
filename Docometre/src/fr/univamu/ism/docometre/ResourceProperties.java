@@ -41,6 +41,7 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
@@ -584,6 +585,13 @@ public final class ResourceProperties {
 			e.printStackTrace();
 		}
 		return new int[0];
+	}
+	
+	public static long getSamplesNumber(IResource samplesFile) {
+		if(!ResourceType.isSamples(samplesFile)) return 0;
+		String wp = samplesFile.getWorkspace().getRoot().getLocation().toOSString();
+		File trialFile = new File(wp + samplesFile.getFullPath().toOSString());
+		return trialFile.length()/4;
 	}
 
 }

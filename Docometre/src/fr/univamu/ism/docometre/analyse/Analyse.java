@@ -54,6 +54,7 @@ public final class Analyse {
 	
 	public static Map<String, String> getSessionsInformations(IResource resource) {
 		int baseTrialsNumber = 0;
+		long maxSamples = 0;
 		Map<String, String> values = new HashMap<String, String>();
 		Map<IResource, DACQConfiguration> dacq = new HashMap<IResource, DACQConfiguration>();
 		try {
@@ -99,12 +100,22 @@ public final class Analyse {
 								values.put(channel.getProperty(ChannelProperties.NAME)+ "_SF", sf);
 							}
 							
+							IResource[] trialMembers = ((IContainer) sessionMember).members();
+							
+							for (IResource trialMember : trialMembers) {
+								if(ResourceType.isSamples(trialMember)) {
+									long nbSamples = ResourceProperties.getSamplesNumber(trialMember);
+									maxSamples = maxSamples < nbSamples ? nbSamples : maxSamples;
+								}
+							}
 							
 						}
 					}
 					
 				}
 			}
+			values.put("TOTAL_TRIALS_NUMBER", String.valueOf(baseTrialsNumber));
+			values.put("MAXIMUM_SAMPLES", String.valueOf(maxSamples));
 		} catch (CoreException e) {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
