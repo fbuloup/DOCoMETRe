@@ -10,6 +10,7 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -59,7 +60,10 @@ public class CategoryContainerEditor extends Composite implements ISelectionChan
 		String criteria = MathEngineFactory.getMathEngine().getCriteriaForCategory(channelEditor.getchannel());
 		ChannelEditorWidgetsFactory.createLabel(categoryContainer, criteria, SWT.LEFT, true);
 		
-		trialsListViewer = new ListViewer(categoryContainer, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
+		SashForm sashForm = new SashForm(categoryContainer, SWT.VERTICAL);
+		sashForm.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
+		
+		trialsListViewer = new ListViewer(sashForm, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 		trialsListViewer.getList().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 		Integer[] trials = MathEngineFactory.getMathEngine().getTrialsListForCategory(channelEditor.getchannel());
 		trialsListViewer.setContentProvider(new ArrayContentProvider());
@@ -73,13 +77,15 @@ public class CategoryContainerEditor extends Composite implements ISelectionChan
 		trialsListViewer.setInput(trials);
 		trialsListViewer.addSelectionChangedListener(this);
 		
-		signalsListViewer = new ListViewer(categoryContainer, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
+		signalsListViewer = new ListViewer(sashForm, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 		signalsListViewer.getList().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 		signalsListViewer.setContentProvider(new ArrayContentProvider());
 		signalsListViewer.setLabelProvider(new LabelProvider());
 		Channel[] signals = MathEngineFactory.getMathEngine().getSignals(channelEditor.getchannel().getParent());
 		signalsListViewer.setInput(signals);
 		signalsListViewer.addSelectionChangedListener(this);
+		
+		sashForm.setWeights(new int[] {70,30});
 		
 		
 	}
