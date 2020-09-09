@@ -6,10 +6,17 @@
       provider-name="ISM">
 
    <description>
-      -- 2020-07-23 --
+      -- 2020-09-09 --
+ADDED :
+* Support for SAMPLES Files with Matlab engine
+* Improve category container layout
+FIXED :
+* Bug where not all trials could have been taken in categories 
+-- 2020-07-23 --
 ADDED :
 * Improve Math Engines Preferences pages
-* Improve user information when open, delete, import, export etc. for long operation
+* Improve user information when open, delete, import, export
+etc. for long operation
 * Data processing prespective : 
 &gt;&gt;&gt;&gt;&gt; Subjects and channels View
 &gt;&gt;&gt;&gt;&gt; Channels editor (Signals with cursor and Categories)
@@ -26,11 +33,14 @@ ADDED :
 * CeCILL-B Licences
 * Organize session
 FIXED :
-* Bug correction when export experiment file name is not the same as original one
+* Bug correction when export experiment file name is not the
+same as original one
 * Delete temporary properties file when importing experiment
-* Add ASS. PRO. FILE. for process test folder in properties files when exporting experiment
+* Add ASS. PRO. FILE. for process test folder in properties files
+when exporting experiment
 * Bug on IResource Path on mac os
-* Init. cursor and marker coordinates to empty String to avoid NPE (Interactive Chart)
+* Init. cursor and marker coordinates to empty String to avoid
+NPE (Interactive Chart)
 * Set marker coordinates to nearest sample in series
 * NPE on Clean, Reset Trials and Toggle Trial Start Mode handlers
 -- 2020-03-11 -- 
