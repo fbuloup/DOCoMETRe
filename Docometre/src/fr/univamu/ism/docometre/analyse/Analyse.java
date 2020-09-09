@@ -77,6 +77,7 @@ public final class Analyse {
 					values.put(sessionName + "_USE_TRIAL_NUMBER_AS_SECOND_SUFFIX_IN_DATA_FILES_NAMES", Boolean.toString(value));
 					
 					String valueString = ResourceProperties.getDataFilesNamesPrefix(member);
+					valueString = valueString == null ? "" : valueString;
 					values.put(sessionName + "_DATA_FILES_NAMES_PREFIX", valueString);
 					
 					IResource[] sessionMembers = session.members();
@@ -85,7 +86,8 @@ public final class Analyse {
 							IResource processFile = ResourceProperties.getAssociatedProcess(sessionMember);
 							IResource dacqFile = ResourceProperties.getAssociatedDACQConfiguration(processFile);
 							String systemType = ResourceProperties.getSystemPersistentProperty(dacqFile);
-							values.put(sessionMember.getFullPath().toOSString(), systemType);
+							values.put(sessionMember.getLocation().toOSString() + "_PROCESS", processFile.getName().replaceAll(Activator.processFileExtension, ""));
+							values.put(sessionMember.getLocation().toOSString() + "_SYSTEM", systemType);
 							
 							Object object = dacq.get(dacqFile);
 							if(object == null) {

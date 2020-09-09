@@ -27,10 +27,15 @@ function subject = loadDataDocometre(dataFilesList, varargin)
         sessionNameCell = segments(length(segments) - 2);
         trialNameCell = segments(length(segments) - 1);
         prefix = sessionsProperties([sessionNameCell{1}, prefix_QN]);
-        criteria = [prefix, sessionNameCell{1}];
+        process = sessionsProperties([fileparts(dataFiles{n}), '_PROCESS']);
+        criteria = [sessionNameCell{1}, '.' process];
+        if(~isempty(prefix))
+            criteria = [prefix, '.', sessionNameCell{1}, '.' process];
+        end
         trialName = trialNameCell{1};        
-        trialNumberCell = split(trialName, '°');
+        trialNumberCell = split(trialName, 'ï¿½');
         trialNumber = trialNumberCell{2};
+        system = sessionsProperties([fileparts(dataFiles{n}), '_SYSTEM']);
         
         baseTrialsNumber = sessionsProperties([sessionNameCell{1}, baseTrialsNumber_QN]);
         trialNumber = num2str(str2double(baseTrialsNumber) + str2double(trialNumber));
@@ -71,8 +76,11 @@ function subject = loadDataDocometre(dataFilesList, varargin)
         
         % Read data
         fileHandle = fopen(dataFiles{n}, 'r');
-        data = fread(fileHandle, 'float32')';
+        data = fread(fileHandle, 'float32')';       
         fclose(fileHandle);
+        if(strcmp(system, 'Arduino UNO'))
+            data = data(2:2:end);
+        end
         
         channelNameValues = ['subject.', channelName, '.Values'];
         sizeData = size(data);
