@@ -6,12 +6,15 @@
       provider-name="ISM">
 
    <description>
-      -- 2020-09-09 --
+      -- 2020-09-09 -- BIS
+ADDED :
+* Support for comments in parameters files (ADWin)
+-- 2020-09-09 --
 ADDED :
 * Support for SAMPLES Files with Matlab engine
 * Improve category container layout
 FIXED :
-* Bug where not all trials could have been taken in categories 
+* Bug where not all trials could have been taken in categories
 -- 2020-07-23 --
 ADDED :
 * Improve Math Engines Preferences pages
