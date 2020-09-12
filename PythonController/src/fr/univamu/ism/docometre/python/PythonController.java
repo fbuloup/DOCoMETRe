@@ -41,9 +41,10 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.python;
 
-import py4j.GatewayServer;
+import py4j.ClientServer;
+import py4j.ClientServer.ClientServerBuilder;
 
-public final class PythonController {
+public final class PythonController  {
 	
 	public static PythonController getInstance() {
 		if(pythonController == null) pythonController = new PythonController();
@@ -51,18 +52,40 @@ public final class PythonController {
 	}
 
 	private static PythonController pythonController;
-	private GatewayServer server;
+	private ClientServer server;
+	private boolean isStarted;
+	private ProcessBuilder pythonProcessBuilder;
+	private JavaEntryPoint javaEntryPoint;
+	private Process pythonProcess;
 	
 	private PythonController() {
 	}
 	
-	public void startServer() {
-		server = new GatewayServer();
-		server.start();
+	public void startServer() throws Exception {
+		javaEntryPoint = new JavaEntryPoint();
+		ClientServerBuilder clientServerBuilder = new ClientServer.ClientServerBuilder(javaEntryPoint);
+		clientServerBuilder.autoStartJavaServer(false);
+		server = clientServerBuilder.build();
+		server.getJavaServer().start();
+		pythonProcessBuilder = new ProcessBuilder("/usr/local/bin/python3", "/Users/frank/git/DOCoMETRe/PythonController/scripts/PythonScripts/DOCoMETRe.py");
+		pythonProcessBuilder.redirectInput();
+		pythonProcessBuilder.redirectOutput();
+		pythonProcessBuilder.redirectErrorStream(true);
+		pythonProcess = pythonProcessBuilder.start();
+		Thread.sleep(5000);
+		isStarted = true;
 	}
 	
-	public void stopServer() {
-		server.shutdown();
+	public void stopServer() throws InterruptedException {
+		javaEntryPoint.getPythonEntryPoint().shutDownServer(this);
+		server.getJavaServer().shutdown();
+		pythonProcess.destroy();
+		Thread.sleep(5000);
+		isStarted = false;
+	}
+	
+	public boolean isStarted() {
+		return isStarted;
 	}
 
 }

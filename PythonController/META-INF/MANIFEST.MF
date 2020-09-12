@@ -7,3 +7,4 @@ Bundle-Vendor: ISM
 Automatic-Module-Name: PythonController
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: py4j-java;bundle-version="1.0.0"
+Export-Package: fr.univamu.ism.docometre.python

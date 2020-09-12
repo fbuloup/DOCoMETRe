@@ -13,6 +13,9 @@ public final class MathEngineFactory {
 		if(GeneralPreferenceConstants.MATH_ENGINE_MATLAB.equals(mathEnginePref)) {
 			mathEngine = new MatlabEngine();
 		}
+		if(GeneralPreferenceConstants.MATH_ENGINE_PYTHON.equals(mathEnginePref)) {
+			mathEngine = new PythonEngine();
+		}
 		return mathEngine;
 	}
 
