@@ -71,6 +71,20 @@ public class ADWinCANModule extends Module {
 		String cpuType = getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.CPU_TYPE);
 		String adbasicVersion = getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.ADBASIC_VERSION);
 		String canName = getProperty(ADWinCANModuleProperties.NAME);
+		String baudRate = getProperty(ADWinCANModuleProperties.FREQUENCY);
+		
+		String mode = getProperty(ADWinCANModuleProperties.MODE);
+		boolean receive = mode.equals(ADWinCANModuleProperties.RECEIVE);
+		String messageObject = getProperty(ADWinCANModuleProperties.MESSAGE_OBJECT);
+		String messageIDLength = getProperty(ADWinCANModuleProperties.MESSAGE_ID_LENGTH);
+		String messageIDLength_Code = messageIDLength.equals(ADWinCANModuleProperties.MESSAGE_ID_LENGTH_11)?"0":"1";
+		String messageID = getProperty(ADWinCANModuleProperties.MESSAGE_ID);
+		
+		if(useCodamotion() || useGyroscope() || useTimeStamp()) baudRate = "1000000";
+		else {
+			int baudRateSpeed = (int) (Double.parseDouble(baudRate) * 1000);
+			baudRate = String.valueOf(baudRateSpeed);
+		}
 		int nbSensors = 0;
 		if(getProperty(ADWinCANModuleProperties.NB_SENSORS) != null) nbSensors = Integer.parseInt(getProperty(ADWinCANModuleProperties.NB_SENSORS));
 		boolean adbasicVersionSup4 = ADWinDACQConfigurationProperties.VSUP5.equals(adbasicVersion);
@@ -116,18 +130,38 @@ public class ADWinCANModule extends Module {
 				code = code + "INIT_CAN("+ moduleNumber + ", " + interfaceNumber + ")\n";
 				code = code + "SET_CAN_REG("+ moduleNumber + ", " + interfaceNumber + ", 6, 0)\n";
 				code = code + "SET_CAN_REG("+ moduleNumber + ", " + interfaceNumber + ", 7, 0)\n";
-				code = code + "fpar_80 = SET_CAN_BAUDRATE("+ moduleNumber + ", " + interfaceNumber + ", 1000000)\n";
-				code = code + "REM Reception de message ID 2 dans message objet 2, ID normal (pas étendu)\n";
-				code = code + "EN_RECEIVE("+ moduleNumber + ", " + interfaceNumber + ", 2, 2, 0)\n";
+				code = code + "fpar_80 = SET_CAN_BAUDRATE("+ moduleNumber + ", " + interfaceNumber + ", " + baudRate + ")\n";
+				if(useCodamotion() || useGyroscope() || useTimeStamp()) {
+					code = code + "REM Reception de message ID 2 dans message objet 2, ID normal (pas étendu)\n";
+					code = code + "EN_RECEIVE("+ moduleNumber + ", " + interfaceNumber + ", 2, 2, 0)\n";
+				} else {
+					code = code + "REM " + (receive?"Receive ":"Transmit ");
+					code = code + " Message object " + messageObject;
+					code = code + " Message ID " + messageID;
+					code = code + " Message ID length " + messageIDLength + "\n";
+					if(receive)	code = code + "EN_RECEIVE("+ moduleNumber + ", " + interfaceNumber + ", " + messageObject + ", " + messageID + ", " + messageIDLength_Code + ")\n";
+					else code = code + "EN_TRANSMIT("+ moduleNumber + ", " + interfaceNumber + ", " + messageObject + ", " + messageID + ", " + messageIDLength_Code + ")\n";
+					
+				}
 			}
 			if(systemType.equals(ADWinDACQConfigurationProperties.GOLD)) {
 				code = code + "\nREM ******** Initialisation CAN interface\n";
 				code = code + "INIT_CAN(" + interfaceNumber + ")\n";
 				code = code + "SET_CAN_REG(" + interfaceNumber + ", 6, 0)\n";
 				code = code + "SET_CAN_REG(" + interfaceNumber + ", 7, 0)\n";
-				code = code + "fpar_80 = SET_CAN_BAUDRATE(" + interfaceNumber + ", 1000000)\n";
-				code = code + "REM Reception de message ID 2 dans message objet 2, ID normal (pas étendu)\n";
-				code = code + "EN_RECEIVE(" + interfaceNumber + ", 2, 2, 0)\n";
+				code = code + "fpar_80 = SET_CAN_BAUDRATE(" + interfaceNumber + ", " + baudRate + ")\n";
+				if(useCodamotion() || useGyroscope() || useTimeStamp()) {
+					code = code + "REM Reception de message ID 2 dans message objet 2, ID normal (pas étendu)\n";
+					code = code + "EN_RECEIVE(" + interfaceNumber + ", 2, 2, 0)\n";
+				} else {
+					code = code + "REM " + (receive?"Receive ":"Transmit ");
+					code = code + " Message object " + messageObject;
+					code = code + " Message ID " + messageID;
+					code = code + " Message ID length " + messageIDLength + "\n";
+					if(receive)	code = code + "EN_RECEIVE(" + interfaceNumber + ", " + messageObject + ", " + messageID + ", " + messageIDLength_Code + ")\n";
+					else code = code + "EN_TRANSMIT(" + interfaceNumber + ", " + messageObject + ", " + messageID + ", " + messageIDLength_Code + ")\n";
+				}
+				
 			}
 			
 			if(useCodamotion()) { // There is CODA

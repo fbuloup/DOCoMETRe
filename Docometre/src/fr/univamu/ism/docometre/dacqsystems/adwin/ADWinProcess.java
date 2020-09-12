@@ -954,6 +954,9 @@ public class ADWinProcess extends Process {
 				if(parametersFile != null) {
 					// Retrieve values for this trial
 					List<String> lines = Files.readAllLines(FileSystems.getDefault().getPath(parametersFile.getLocation().toOSString()), StandardCharsets.UTF_8);
+					
+					removeComments(lines);
+					
 					if(lines.size() - 1 >= currentTrialNumber) {
 						String parametersNames = lines.get(0);
 						String parametersValues = lines.get(currentTrialNumber);
@@ -1050,6 +1053,22 @@ public class ADWinProcess extends Process {
 		}
 	}
 	
+	private void removeComments(List<String> lines) {
+		int n = 0;
+		while (n < lines.size()) {
+			String line = lines.get(n);
+			if(line.startsWith("#")) lines.remove(n);
+			else {
+				if(line.indexOf("#") > -1) {
+					line = line.replaceAll("#.*$", "");
+					lines.set(n, line);
+				}
+				n++;
+			}
+		}
+		
+	}
+
 	private void pushParametersToADWinProcess() throws Exception {
 		if(currentTrialParameters.size() > 0) {
 			float[] data = new float[currentTrialParameters.size()];
