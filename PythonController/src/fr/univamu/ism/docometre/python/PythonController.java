@@ -78,11 +78,11 @@ public final class PythonController  {
 		isStarted = true;
 	}
 	
-	public void stopServer() throws InterruptedException {
+	public void stopServer(int timeOut) throws InterruptedException {
 		javaEntryPoint.getPythonEntryPoint().shutDownServer(this);
 		server.getJavaServer().shutdown();
 		pythonProcess.destroy();
-		Thread.sleep(5000);
+		Thread.sleep(timeOut*1000);
 		isStarted = false;
 	}
 	

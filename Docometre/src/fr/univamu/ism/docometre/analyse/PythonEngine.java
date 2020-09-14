@@ -76,7 +76,7 @@ public class PythonEngine implements MathEngine {
 			protected IStatus run(IProgressMonitor monitor) {
 				IStatus status = Status.OK_STATUS;
 				try {
-					pythonController.stopServer();
+					pythonController.stopServer(timeOut);
 					notifyListeners();
 				} catch (Exception e) {
 					e.printStackTrace();
