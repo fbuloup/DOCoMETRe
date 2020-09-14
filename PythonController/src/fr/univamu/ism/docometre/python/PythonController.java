@@ -41,6 +41,8 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.python;
 
+import java.io.File;
+
 import py4j.ClientServer;
 import py4j.ClientServer.ClientServerBuilder;
 
@@ -61,18 +63,18 @@ public final class PythonController  {
 	private PythonController() {
 	}
 	
-	public void startServer() throws Exception {
+	public void startServer(String pythonLocation, String pythonScriptsLocation, int timeOut) throws Exception {
 		javaEntryPoint = new JavaEntryPoint();
 		ClientServerBuilder clientServerBuilder = new ClientServer.ClientServerBuilder(javaEntryPoint);
 		clientServerBuilder.autoStartJavaServer(false);
 		server = clientServerBuilder.build();
 		server.getJavaServer().start();
-		pythonProcessBuilder = new ProcessBuilder("/usr/local/bin/python3", "/Users/frank/git/DOCoMETRe/PythonController/scripts/PythonScripts/DOCoMETRe.py");
+		pythonProcessBuilder = new ProcessBuilder(pythonLocation, pythonScriptsLocation + File.separator + "DOCoMETRe.py");
 		pythonProcessBuilder.redirectInput();
 		pythonProcessBuilder.redirectOutput();
 		pythonProcessBuilder.redirectErrorStream(true);
 		pythonProcess = pythonProcessBuilder.start();
-		Thread.sleep(5000);
+		Thread.sleep(timeOut*1000);
 		isStarted = true;
 	}
 	

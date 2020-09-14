@@ -43,7 +43,7 @@ public final class MatlabEngine implements MathEngine {
 		int timeOut = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.MATLAB_TIME_OUT);
 		boolean showWindow = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.SHOW_MATLAB_WINDOW);
 		
-		Job startMatlabInnerJob = new Job(DocometreMessages.WaitingForMatlab) {
+		Job startMatlabInnerJob = new Job(DocometreMessages.WaitingForMathEngine) {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				IStatus status = Status.OK_STATUS;
@@ -79,7 +79,7 @@ public final class MatlabEngine implements MathEngine {
 	public IStatus stopEngine(IProgressMonitor monitor) {
 		Activator.logInfoMessage(DocometreMessages.MathEngineStopping, MatlabController.class);
 		
-		Job stopMatlabInnerJob = new Job(DocometreMessages.WaitingForMatlab) {
+		Job stopMatlabInnerJob = new Job(DocometreMessages.WaitingForMathEngine) {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				IStatus status = Status.OK_STATUS;

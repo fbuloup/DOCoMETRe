@@ -29,14 +29,16 @@ public class PythonEngine implements MathEngine {
 	public IStatus startEngine(IProgressMonitor monitor) {
 		Activator.logInfoMessage(DocometreMessages.MathEngineStarting, PythonController.class);
 		
-		int timeOut = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.MATLAB_TIME_OUT);
+		String pythonLocation = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.PYTHON_LOCATION);
+		String pythonScriptsLocation = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.PYTHON_SCRIPT_LOCATION);
+		int timeOut = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.PYTHON_TIME_OUT);
 
-		Job startPythonInnerJob = new Job(DocometreMessages.WaitingForMatlab) {
+		Job startPythonInnerJob = new Job(DocometreMessages.WaitingForMathEngine) {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				IStatus status = Status.OK_STATUS;
 				try {
-					pythonController.startServer();
+					pythonController.startServer(pythonLocation, pythonScriptsLocation, timeOut);
 					notifyListeners();
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -67,9 +69,9 @@ public class PythonEngine implements MathEngine {
 	public IStatus stopEngine(IProgressMonitor monitor) {
 		Activator.logInfoMessage(DocometreMessages.MathEngineStopping, PythonController.class);
 		
-		int timeOut = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.MATLAB_TIME_OUT);
+		int timeOut = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.PYTHON_TIME_OUT);
 
-		Job stopPythonInnerJob = new Job(DocometreMessages.WaitingForMatlab) {
+		Job stopPythonInnerJob = new Job(DocometreMessages.WaitingForMathEngine) {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				IStatus status = Status.OK_STATUS;

@@ -651,7 +651,7 @@ public final class DocometreMessages extends NLS {
 	public static String MathEngineStarted;
 	public static String MathEngineStopping;
 	public static String MathEngineStopped;
-	public static String WaitingForMatlab;
+	public static String WaitingForMathEngine;
 	
 	// Math Engine Preferences
 	public static String MathEngineLabel;
@@ -662,6 +662,12 @@ public final class DocometreMessages extends NLS {
 	public static String MatlabEngineTimeOut;
 	public static String MatlabEngineScriptLocation;
 	public static String MatlabEngineLocation;
+	
+	// Python preferences 
+	public static String PythonPreferences_Description;
+	public static String PythonEngineTimeOut;
+	public static String PythonEngineScriptLocation;
+	public static String PythonEngineLocation;
 	
 	// Export to zip or tar
 	public static String DataTransfer_errorExporting;

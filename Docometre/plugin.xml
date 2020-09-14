@@ -260,6 +260,12 @@
             id="Docometre.MatlabEnginePreferencePage"
             name="%PrefPage_Matlab">
       </page>
+      <page
+            category="Docometre.MathEnginePreferencePage"
+            class="fr.univamu.ism.docometre.preferences.PythonPreferencePage"
+            id="Docometre.PythonEnginePreferencePage"
+            name="%PrefPage_Python">
+      </page>
    </extension>
    <extension
          point="org.eclipse.core.runtime.preferences">

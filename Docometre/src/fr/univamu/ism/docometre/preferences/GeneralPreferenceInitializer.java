@@ -74,6 +74,10 @@ public class GeneralPreferenceInitializer extends AbstractPreferenceInitializer 
 		defaults.put(GeneralPreferenceConstants.MATLAB_LOCATION, "");
 		defaults.put(GeneralPreferenceConstants.MATLAB_SCRIPT_LOCATION, "");
 		defaults.putInt(GeneralPreferenceConstants.MATLAB_TIME_OUT, 180);
+		
+		defaults.put(GeneralPreferenceConstants.PYTHON_LOCATION, "");
+		defaults.put(GeneralPreferenceConstants.PYTHON_SCRIPT_LOCATION, "");
+		defaults.putInt(GeneralPreferenceConstants.PYTHON_TIME_OUT, 10);
 	}
 
 }
