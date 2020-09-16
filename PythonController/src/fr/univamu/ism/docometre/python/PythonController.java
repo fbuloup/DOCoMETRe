@@ -90,4 +90,14 @@ public final class PythonController  {
 		return isStarted;
 	}
 
+	public JavaEntryPoint getJavaEntryPoint() {
+		return javaEntryPoint;
+	}
+	
+	public PythonEntryPoint getPythonEntryPoint() {
+		return javaEntryPoint.getPythonEntryPoint();
+	}
+	
+	
+
 }

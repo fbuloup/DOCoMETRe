@@ -3,7 +3,7 @@
 
 # import struct, array
 
-class Experiment(object):
+class Experiments(object):
 
     def __init__(self):
         self.data = {}

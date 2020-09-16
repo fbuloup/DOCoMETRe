@@ -28,9 +28,9 @@ function subject = loadDataDocometre(dataFilesList, varargin)
         trialNameCell = segments(length(segments) - 1);
         prefix = sessionsProperties([sessionNameCell{1}, prefix_QN]);
         process = sessionsProperties([fileparts(dataFiles{n}), '_PROCESS']);
-        criteria = [sessionNameCell{1}, '.' process];
+        criteria = [sessionNameCell{1}, '.', process];
         if(~isempty(prefix))
-            criteria = [prefix, '.', sessionNameCell{1}, '.' process];
+            criteria = [prefix, '.', sessionNameCell{1}, '.', process];
         end
         trialName = trialNameCell{1};        
         trialNumberCell = split(trialName, '�');

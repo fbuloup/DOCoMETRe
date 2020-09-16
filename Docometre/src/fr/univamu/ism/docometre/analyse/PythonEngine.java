@@ -2,6 +2,7 @@ package fr.univamu.ism.docometre.analyse;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -11,6 +12,7 @@ import org.eclipse.core.runtime.jobs.Job;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 import fr.univamu.ism.docometre.python.PythonController;
@@ -127,7 +129,18 @@ public class PythonEngine implements MathEngine {
 
 	@Override
 	public void load(IResource subject) {
-		// TODO Auto-generated method stub
+		if(!ResourceType.isSubject(subject)) return;
+		String experimentName = subject.getFullPath().segment(0);
+		String subjectName = subject.getFullPath().segment(1);
+		
+		String loadName = experimentName + "." + subjectName;
+		
+		String dataFilesList = Analyse.getDataFiles(subject);
+		//String dataFilesList = (String)subject.getSessionProperty(ResourceProperties.DATA_FILES_LIST_QN);
+
+		Map<String, String> sessionsProperties = Analyse.getSessionsInformations(subject);
+		
+		pythonController.getPythonEntryPoint().loadData("DOCOMETRE", loadName, dataFilesList, sessionsProperties);
 
 	}
 
