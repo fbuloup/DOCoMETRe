@@ -40,6 +40,8 @@ class DOCoMETRe(object):
 		totalTrialsNumber = sessionsProperties["TOTAL_TRIALS_NUMBER"];
 		for n in range(0, nbDataFiles):
 			segments = dataFiles[n].split(os.path.sep);
+
+			# Get session name for criteria, trial number and prefix
 			sessionName = segments[len(segments) - 3];
 			trialName = segments[len(segments) - 2];
 			key = os.path.dirname(os.path.abspath(dataFiles[n]))
@@ -51,6 +53,17 @@ class DOCoMETRe(object):
 				criteria = criteria + "." + sessionName + "." + process;
 			#self.gateway.jvm.System.out.println("nbDataFiles : " + str(nbDataFiles) + " fichier : " + str(n+1) + " critere : " + criteria);
 			self.gateway.jvm.System.out.println(str(n) + " - " + dataFiles[n]);
+			trialNumber = trialName.split("\u00b0")[1];
+			system = sessionsProperties[key + "_SYSTEM"];
+			baseTrialsNumber = sessionsProperties[sessionName + baseTrialsNumber_QN];
+			trialNumber = str(int(baseTrialsNumber) + int(trialNumber));
+
+			# Get channel's name
+			fileName = segments[len(segments) - 1];
+			fileNameSegments = fileName.split('.');
+			channelName = fileNameSegments[0];
+			if sessionName + prefix_QN in sessionsProperties:
+				channelName = fileNameSegments[1];
 
 	class Java:
 		implements = ["fr.univamu.ism.docometre.python.PythonEntryPoint"]
