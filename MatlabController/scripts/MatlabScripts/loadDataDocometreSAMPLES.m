@@ -33,7 +33,7 @@ function subject = loadDataDocometre(dataFilesList, varargin)
             criteria = [prefix, '.', sessionNameCell{1}, '.', process];
         end
         trialName = trialNameCell{1};        
-        trialNumberCell = split(trialName, '�');
+        trialNumberCell = split(trialName, char(176));
         trialNumber = trialNumberCell{2};
         system = sessionsProperties([fileparts(dataFiles{n}), '_SYSTEM']);
         
