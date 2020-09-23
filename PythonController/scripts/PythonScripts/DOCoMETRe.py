@@ -4,6 +4,7 @@ import os;
 import numpy;
 import io;
 import re;
+import array;
 
 class DOCoMETRe(object):
 
@@ -141,11 +142,22 @@ class DOCoMETRe(object):
 			n = n + 1;
 			
 	def evaluate(self, expression):
+		# if(jvmMode): self.gateway.jvm.System.out.println("Evaluate : " + expression);
 		return str(eval(expression));
 	
 	def unload(self, subjectFullName):
 		exec("import re;docometre.experiments = {k:v for k,v in docometre.experiments.items() if re.search('^" + subjectFullName + "\.', k) == None}");
 		
+	def getChannels(self, subjectFullName):
+		channels = list({k:v for k,v in self.experiments.items() if re.search("^" + subjectFullName + "\.\w+\.isSignal$", k)});
+		channels  = [re.sub("\.\w+$", "", channel) for channel in channels];
+		channels  = [re.sub("^\w+\.\w+\.", "", channel) for channel in channels];
+		return ",".join(channels);
+	
+	def getVector(self, expression):
+		values = eval("docometre.experiments[\"" + expression + "\"]");
+		arrayValues = array.array('d', values);
+		return arrayValues.tobytes();
 
 	class Java:
 		implements = ["fr.univamu.ism.docometre.python.PythonEntryPoint"]
@@ -187,34 +199,64 @@ if __name__ == "__main__":
 
 		docometre.loadData("DOCOMETRE", loadName, dataFilesList, sessionProperties);
 		
-		
+		# Some infos
 		print(docometre.experiments["ReachabilityCoriolis.PreTestFull.Category1.Criteria"]);
 		print(docometre.experiments["ReachabilityCoriolis.PreTestFull.Category1.isSignal"]);
 		print(docometre.experiments["ReachabilityCoriolis.PreTestFull.Category1.isCategory"]);
 		print(docometre.experiments["ReachabilityCoriolis.PreTestFull.Category1.isEvent"]);
 		print(docometre.experiments["ReachabilityCoriolis.PreTestFull.Category1.TrialsList"]);
 		print(21 in docometre.experiments["ReachabilityCoriolis.PreTestFull.Category1.TrialsList"]);
-		keys = docometre.experiments.keys();
-		print(keys);
-		print(list({k:v for k,v in docometre.experiments.items() if re.search("isSignal$", k) and v == "1"}));
 		
+		# Test if subject is loaded
 		filteredDictionnary = {k:v for k,v in docometre.experiments.items() if re.search("^ReachabilityCoriolis\.PreTestFull\.", k)};
 		testLoaded = len(filteredDictionnary) > 0;
 		print(testLoaded);
 		
-		expression = "len({k:v for k,v in docometre.experiments.items() if re.search(\"^" + "ReachabilityCoriolis\.PreTestFull" + "\.\", k)})";
-		response = docometre.evaluate(expression);
-		print(response);
+		# Test evaluate 1
+		# expression = "len({k:v for k,v in docometre.experiments.items() if re.search(\"^" + "ReachabilityCoriolis\.PreTestFull" + "\.\", k)})";
+		#response = docometre.evaluate(expression);
+		# print(response);
 		
-		expression = "len({k:v for k,v in docometre.experiments.items() if re.search(\"^" + "ReachabilityCoriolis\.PreTestFull" + "\.\", k)}) > 0";
-		response = docometre.evaluate(expression);
-		print(response);
+		# Test evaluate 1
+		# expression = "len({k:v for k,v in docometre.experiments.items() if re.search(\"^" + "ReachabilityCoriolis\.PreTestFull" + "\.\", k)}) > 0";
+		# response = docometre.evaluate(expression);
+		# print(response);
 		
-		#experiments = {k:v for k,v in experiments.items() if re.search("^ReachabilityCoriolis\.PreTestFull\.", k) == None};
+		# Unload subject
+		#print(docometre.experiments);
+		#docometre.unload("ReachabilityCoriolis\.PreTestFull");
+		#print(docometre.experiments);
 		
-		print(docometre.experiments);
-		#expression = "experiments = {k:v for k,v in experiments.items() if re.search(\"^" + "ReachabilityCoriolis\.PreTestFull" + "\.\", k) == None};";	
-		docometre.unload("ReachabilityCoriolis\.PreTestFull");
-		print(docometre.experiments);
 		
+		# Get channels, signals, categories or events names
+		keys = docometre.experiments.keys();
+		
+		signals = list({k:v for k,v in docometre.experiments.items() if re.search("isSignal$", k) and v == "1"});
+		signals  = [re.sub("\.\w+$", "", signal) for signal in signals];
+		signals  = [re.sub("^\w+\.\w+\.", "", signal) for signal in signals];
+		
+		categories = list({k:v for k,v in docometre.experiments.items() if re.search("isCategory$", k) and v == "1"});
+		categories  = [re.sub("\.\w+$", "", category) for category in categories];
+		categories  = [re.sub("^\w+\.\w+\.", "", category) for category in categories];
+		
+		events = list({k:v for k,v in docometre.experiments.items() if re.search("isEvent$", k) and v == "1"});
+		events  = [re.sub("\.\w+$", "", event) for event in events];
+		events  = [re.sub("^\w+\.\w+\.", "", event) for event in events];
+		
+		channels = list({k:v for k,v in docometre.experiments.items() if re.search("isSignal$", k)});
+		channels  = [re.sub("\.\w+$", "", channel) for channel in channels];
+		channels  = [re.sub("^\w+\.\w+\.", "", channel) for channel in channels];
+		
+		# channels = signals + categories + events;
+		
+		print(signals);
+		print(categories);
+		print(events);
+		print(channels);
+		
+		channels = docometre.getChannels("ReachabilityCoriolis.PreTestFull");
+		print(channels);
+		
+		values = docometre.getVector("ReachabilityCoriolis.PreTestFull.Category1.TrialsList");
+		print(values);
 	

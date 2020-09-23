@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -12,8 +14,10 @@ import org.eclipse.core.runtime.jobs.Job;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
+import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 import fr.univamu.ism.docometre.python.PythonController;
 
@@ -55,7 +59,7 @@ public class PythonEngine implements MathEngine {
 		long t0 = System.currentTimeMillis();
 		long t1 = t0;
 		
-		monitor.beginTask("", timeOut*1000);
+		monitor.beginTask("Waiting for Python to start. Please wait.", timeOut*1000 + 1000);
 		while(startPythonInnerJob.getState() != Job.RUNNING);
 		while(startPythonInnerJob.getState() == Job.RUNNING) {
 			t1 = System.currentTimeMillis();
@@ -63,7 +67,7 @@ public class PythonEngine implements MathEngine {
 			t0 = t1;
 		}
 		
-		if(startPythonInnerJob.getResult() != null && startPythonInnerJob.getResult().isOK()) Activator.logInfoMessage(DocometreMessages.MathEngineStarted, PythonController.class);
+		if(startPythonInnerJob.getResult() != null && startPythonInnerJob.getResult().isOK()) Activator.logInfoMessage(DocometreMessages.MathEngineStarted, PythonEngine.class);
 		return Status.OK_STATUS;
 	}
 
@@ -93,7 +97,7 @@ public class PythonEngine implements MathEngine {
 		long t0 = System.currentTimeMillis();
 		long t1 = t0;
 		
-		monitor.beginTask("", timeOut*1000);
+		monitor.beginTask("Waiting for Python to stop. Please wait.", timeOut*1000 + 1000);
 		while(stopPythonInnerJob.getState() != Job.RUNNING);
 		while(stopPythonInnerJob.getState() == Job.RUNNING) {
 			t1 = System.currentTimeMillis();
@@ -134,18 +138,22 @@ public class PythonEngine implements MathEngine {
 
 	@Override
 	public void load(IResource subject) {
-		if(!ResourceType.isSubject(subject)) return;
-		String experimentName = subject.getFullPath().segment(0);
-		String subjectName = subject.getFullPath().segment(1);
-		
-		String loadName = experimentName + "." + subjectName;
-		
-		String dataFilesList = Analyse.getDataFiles(subject);
-		//String dataFilesList = (String)subject.getSessionProperty(ResourceProperties.DATA_FILES_LIST_QN);
+		try {
+			if(!ResourceType.isSubject(subject)) return;
+			
+			String loadName = getFullPath(subject);
+			String dataFilesList = Analyse.getDataFiles(subject);
+			//String dataFilesList = (String)subject.getSessionProperty(ResourceProperties.DATA_FILES_LIST_QN);
+			Map<String, String> sessionsProperties = Analyse.getSessionsInformations(subject);
+			
+			pythonController.getPythonEntryPoint().loadData("DOCOMETRE", loadName, dataFilesList, sessionsProperties);
 
-		Map<String, String> sessionsProperties = Analyse.getSessionsInformations(subject);
-		
-		pythonController.getPythonEntryPoint().loadData("DOCOMETRE", loadName, dataFilesList, sessionsProperties);
+			ChannelsContainer channelsContainer = new ChannelsContainer((IFolder) subject);
+			subject.setSessionProperty(ResourceProperties.CHANNELS_LIST_QN, channelsContainer);
+		} catch (CoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
 
@@ -176,64 +184,42 @@ public class PythonEngine implements MathEngine {
 		// TODO Auto-generated method stub
 		return false;
 	}
-
+	
 	@Override
 	public Channel[] getChannels(IResource subject) {
-		// TODO Auto-generated method stub
-		return null;
+		String key = getFullPath(subject);
+		String channelsNamesString = pythonController.getPythonEntryPoint().getChannels(key);
+		String[] channelsNames = channelsNamesString.split(",");
+		ArrayList<Channel> channels = new ArrayList<Channel>();
+		for (String channelName : channelsNames) {
+			Channel channel = new Channel((IFolder) subject, channelName);
+			if(isSignal(channel) || isCategory(channel) || isEvent(channel)) channels.add(channel);
+		}
+		return channels.toArray(new Channel[channels.size()]);
 	}
-
+	
+	
 	@Override
-	public Channel getChannelWithName(IResource subject, String channelName) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Channel[] getSignals(IResource subject) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Channel[] getCategories(IResource subject) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Channel[] getEvents(IResource subject) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean isSignal(IResource channel) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean isCategory(IResource channel) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean isEvent(IResource channel) {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean isSignalCategoryOrEvent(String fullName, String check) {
+		String expression = fullName + check;
+		expression = "docometre.experiments[\"" + expression + "\"]";
+		String values = pythonController.getPythonEntryPoint().evaluate(expression);
+		return values.equalsIgnoreCase("true") || values.equalsIgnoreCase("1");
 	}
 
 	@Override
 	public String getCriteriaForCategory(IResource category) {
-		// TODO Auto-generated method stub
-		return null;
+		String fullName = getFullPath(category);
+		String expression = "docometre.experiments[\"" + fullName + ".Criteria\"]";
+		String value = pythonController.getPythonEntryPoint().evaluate(expression);
+		return value;
 	}
 
 	@Override
 	public Integer[] getTrialsListForCategory(IResource category) {
-		// TODO Auto-generated method stub
+		String fullName = getFullPath(category);
+		String expression = "docometre.experiments[\"" + fullName + ".TrialsList\"]";
+		byte[] value = pythonController.getPythonEntryPoint().getVector(expression);
 		return null;
 	}
 

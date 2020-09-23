@@ -63,7 +63,7 @@ public final class MatlabEngine implements MathEngine {
 		long t0 = System.currentTimeMillis();
 		long t1 = t0;
 		
-		monitor.beginTask("", timeOut*1000);
+		monitor.beginTask("Waiting for Matlab to start. Please wait.", timeOut*1000);
 		while(startMatlabInnerJob.getState() != Job.RUNNING);
 		while(startMatlabInnerJob.getState() == Job.RUNNING) {
 			t1 = System.currentTimeMillis();
@@ -99,7 +99,7 @@ public final class MatlabEngine implements MathEngine {
 		long t0 = System.currentTimeMillis();
 		long t1 = t0;
 		
-		monitor.beginTask("Task", 5*1000); // time out of 5 seconds on stopping Matlab
+		monitor.beginTask("Waiting for Matlab to stop. Please wait.", 5*1000); // time out of 5 seconds on stopping Matlab
 		while(stopMatlabInnerJob.getState() != Job.RUNNING);
 		while(stopMatlabInnerJob.getState() == Job.RUNNING) {
 			t1 = System.currentTimeMillis();
@@ -128,10 +128,6 @@ public final class MatlabEngine implements MathEngine {
 		}
 	}
 	
-	private String getMatlabFullPath(IResource resource) {
-		return resource.getFullPath().toString().replaceAll("^/", "").replaceAll("/", ".");
-	}
-
 	@Override
 	public boolean isSubjectLoaded(IResource subject) {
 		if(!isStarted() || !ResourceType.isSubject(subject)) return false;
@@ -237,12 +233,11 @@ public final class MatlabEngine implements MathEngine {
 			valuesString = stringBuffer.toString();
 			
 			String cmd = experimentName + "." + subjectName + " = loadData('DOCOMETRE', '" + dataFilesList + "', " + keysString + ", " + valuesString + ")";
-			
-			System.out.println(cmd);
-			
 			matlabController.eval(cmd);
+			
 			ChannelsContainer channelsContainer = new ChannelsContainer((IFolder) subject);
 			subject.setSessionProperty(ResourceProperties.CHANNELS_LIST_QN, channelsContainer);
+			
 		} catch (Exception e) {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
@@ -267,7 +262,7 @@ public final class MatlabEngine implements MathEngine {
 	public Channel[] getChannels(IResource subject) {
 		try {
 			if(!ResourceType.isSubject(subject)) return null;
-			String expression = getMatlabFullPath(subject);
+			String expression = getFullPath(subject);
 			Object[] responses = matlabController.returningEval("fieldnames(" + expression + ")", 1);
 			Object response = responses[0];
 			String[] channelsNames = (String[]) response;
@@ -285,36 +280,7 @@ public final class MatlabEngine implements MathEngine {
 	}
 	
 	@Override
-	public Channel[] getSignals(IResource subject) {
-		Channel[] channels = getChannels(subject);
-		ArrayList<Channel> signals = new ArrayList<Channel>();
-		for (Channel channel : channels) {
-			if(isSignal(channel)) signals.add(channel);
-		}
-		return signals.toArray(new Channel[signals.size()]);
-	}
-
-	@Override
-	public Channel[] getCategories(IResource subject) {
-		Channel[] channels = getChannels(subject);
-		ArrayList<Channel> categories = new ArrayList<Channel>();
-		for (Channel channel : channels) {
-			if(isCategory(channel)) categories.add(channel);
-		}
-		return categories.toArray(new Channel[categories.size()]);
-	}
-
-	@Override
-	public Channel[] getEvents(IResource subject) {
-		Channel[] channels = getChannels(subject);
-		ArrayList<Channel> events = new ArrayList<Channel>();
-		for (Channel channel : channels) {
-			if(isEvent(channel)) events.add(channel);
-		}
-		return events.toArray(new Channel[events.size()]);
-	}
-	
-	private boolean isSignalCategoryOrEvent(String fullName, String check) {
+	public boolean isSignalCategoryOrEvent(String fullName, String check) {
 		try {
 			Object[] responses = matlabController.returningEval(fullName + check, 1);
 			Object response = responses[0];
@@ -329,25 +295,10 @@ public final class MatlabEngine implements MathEngine {
 	}
 	
 	@Override
-	public boolean isSignal(IResource channel) {
-		return isSignalCategoryOrEvent(getMatlabFullPath(channel), ".isSignal");
-	}
-	
-	@Override
-	public boolean isCategory(IResource channel) {
-		return isSignalCategoryOrEvent(getMatlabFullPath(channel), ".isCategory");
-	}
-	
-	@Override
-	public boolean isEvent(IResource channel) {
-		return isSignalCategoryOrEvent(getMatlabFullPath(channel), ".isEvent");
-	}
-
-	@Override
 	public String getCriteriaForCategory(IResource category) {
 		try {
 			if(!isCategory(category)) return null;
-			Object[] responses = matlabController.returningEval(getMatlabFullPath(category) + ".Criteria", 1);
+			Object[] responses = matlabController.returningEval(getFullPath(category) + ".Criteria", 1);
 			Object response = responses[0];
 			if(response instanceof String) {
 				return (String)response;
@@ -363,7 +314,7 @@ public final class MatlabEngine implements MathEngine {
 	public Integer[] getTrialsListForCategory(IResource category) {
 		try {
 			if(!isCategory(category)) return new Integer[0];
-			Object[] responses = matlabController.returningEval(getMatlabFullPath(category) + ".TrialsList", 1);
+			Object[] responses = matlabController.returningEval(getFullPath(category) + ".TrialsList", 1);
 			Object response = responses[0];
 			if(response instanceof double[]) {
 				double[] responseDouble = (double[])response;
@@ -381,21 +332,12 @@ public final class MatlabEngine implements MathEngine {
 	}
 
 	@Override
-	public Channel getChannelWithName(IResource subject, String channelName) {
-		Channel[] channels = getChannels(subject);
-		for (Channel channel : channels) {
-			if(channel.getName().equals(channelName)) return channel;
-		}
-		return null;
-	}
-
-	@Override
 	public double[] getYValuesForSignal(Channel signal, int trialNumber) {
 		try {
 			String variableName = "yValues_" + (new Date()).getTime();
 			int frontCut = getFrontCut(signal, trialNumber) + 1;
 			int endCut = getEndCut(signal, trialNumber) - 1;
-			String varCmd = getMatlabFullPath(signal) + ".Values(" + trialNumber + "," + frontCut + ":" + endCut + ");";
+			String varCmd = getFullPath(signal) + ".Values(" + trialNumber + "," + frontCut + ":" + endCut + ");";
 			String cmd = variableName + " = " + varCmd;
 			matlabController.eval(cmd);
 			Object valuesObject = matlabController.getVariable(variableName);
@@ -430,7 +372,7 @@ public final class MatlabEngine implements MathEngine {
 	public int getTrialsNumber(Channel signal) {
 		try {
 			String variableName = "nbTrials_" + (new Date()).getTime();
-			matlabController.eval(variableName + " = size(" + getMatlabFullPath(signal) + ".Values" + ");");
+			matlabController.eval(variableName + " = size(" + getFullPath(signal) + ".Values" + ");");
 			Object valuesObject = matlabController.getVariable(variableName);
 			matlabController.eval("clear " + variableName + ";");
 			int nbTrials = (int) ((double[]) valuesObject)[0];
@@ -445,7 +387,7 @@ public final class MatlabEngine implements MathEngine {
 	@Override
 	public double getSampleFrequency(Channel signal) {
 		try {
-			Object[] responses = matlabController.returningEval(getMatlabFullPath(signal) + ".SampleFrequency", 1);
+			Object[] responses = matlabController.returningEval(getFullPath(signal) + ".SampleFrequency", 1);
 			double sf = ((double[]) responses[0])[0];
 			return sf;
 		} catch (Exception e) {
@@ -458,7 +400,7 @@ public final class MatlabEngine implements MathEngine {
 	@Override
 	public int getSamplesNumber(Channel signal, int trialNumber) {
 		try {
-			Object[] responses = matlabController.returningEval(getMatlabFullPath(signal) + ".NbSamples(" + trialNumber + ")", 1);
+			Object[] responses = matlabController.returningEval(getFullPath(signal) + ".NbSamples(" + trialNumber + ")", 1);
 			int value = (int) ((double[]) responses[0])[0];
 			return value;
 		} catch (Exception e) {
@@ -471,7 +413,7 @@ public final class MatlabEngine implements MathEngine {
 	@Override
 	public int getFrontCut(Channel signal, int trialNumber) {
 		try {
-			Object[] responses = matlabController.returningEval(getMatlabFullPath(signal) + ".FrontCut(" + trialNumber + ")", 1);
+			Object[] responses = matlabController.returningEval(getFullPath(signal) + ".FrontCut(" + trialNumber + ")", 1);
 			int value = (int) ((double[]) responses[0])[0];
 			return value;
 		} catch (Exception e) {
@@ -484,7 +426,7 @@ public final class MatlabEngine implements MathEngine {
 	@Override
 	public int getEndCut(Channel signal, int trialNumber) {
 		try {
-			Object[] responses = matlabController.returningEval(getMatlabFullPath(signal) + ".EndCut(" + trialNumber + ")", 1);
+			Object[] responses = matlabController.returningEval(getFullPath(signal) + ".EndCut(" + trialNumber + ")", 1);
 			int value = (int) ((double[]) responses[0])[0];
 			return value;
 		} catch (Exception e) {

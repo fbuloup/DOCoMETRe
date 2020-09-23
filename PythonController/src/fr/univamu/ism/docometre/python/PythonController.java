@@ -69,21 +69,38 @@ public final class PythonController  {
 		clientServerBuilder.autoStartJavaServer(false);
 		server = clientServerBuilder.build();
 		server.getJavaServer().start();
+		
 		pythonProcessBuilder = new ProcessBuilder(pythonLocation, pythonScriptsLocation + File.separator + "DOCoMETRe.py", "-jvm");
 		pythonProcessBuilder.redirectInput();
 		pythonProcessBuilder.redirectOutput();
 		pythonProcessBuilder.redirectErrorStream(true);
 		pythonProcess = pythonProcessBuilder.start();
-		Thread.sleep(timeOut*1000);
-		isStarted = true;
+		
+		Thread.sleep(1000);
+		
+		long t0 = System.currentTimeMillis();
+		long dt = t0;
+		while (dt < timeOut*1000 && getPythonEntryPoint() == null) {
+			dt = System.currentTimeMillis() - t0;
+		}
+		
+		isStarted = getPythonEntryPoint() != null && pythonProcess.isAlive();
 	}
 	
 	public void stopServer(int timeOut) throws InterruptedException {
 		javaEntryPoint.getPythonEntryPoint().shutDownServer(this);
 		server.getJavaServer().shutdown();
 		pythonProcess.destroy();
-		Thread.sleep(timeOut*1000);
-		isStarted = false;
+		
+		Thread.sleep(1000);
+		
+		long t0 = System.currentTimeMillis();
+		long dt = t0;
+		while (dt < timeOut*1000 && pythonProcess.isAlive()) {
+			dt = System.currentTimeMillis() - t0;
+		}
+		
+		isStarted = pythonProcess.isAlive();
 	}
 	
 	public boolean isStarted() {

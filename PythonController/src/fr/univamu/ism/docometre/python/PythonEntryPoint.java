@@ -6,5 +6,7 @@ public interface PythonEntryPoint {
 	void loadData(Object dataType, Object loadName, Object dataFilesList, Object sessionsProperties);
 	String evaluate(Object expression);
 	void unload(Object expression);
+	String getChannels(Object subjectFullName);
+	byte[] getVector(Object expression);
 
 }
