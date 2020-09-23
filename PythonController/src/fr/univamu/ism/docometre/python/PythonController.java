@@ -69,7 +69,7 @@ public final class PythonController  {
 		clientServerBuilder.autoStartJavaServer(false);
 		server = clientServerBuilder.build();
 		server.getJavaServer().start();
-		pythonProcessBuilder = new ProcessBuilder(pythonLocation, pythonScriptsLocation + File.separator + "DOCoMETRe.py");
+		pythonProcessBuilder = new ProcessBuilder(pythonLocation, pythonScriptsLocation + File.separator + "DOCoMETRe.py", "-jvm");
 		pythonProcessBuilder.redirectInput();
 		pythonProcessBuilder.redirectOutput();
 		pythonProcessBuilder.redirectErrorStream(true);

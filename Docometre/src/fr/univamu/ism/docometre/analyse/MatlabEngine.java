@@ -274,7 +274,7 @@ public final class MatlabEngine implements MathEngine {
 			ArrayList<Channel> channels = new ArrayList<Channel>();
 			for (String channelName : channelsNames) {
 				Channel channel = new Channel((IFolder) subject, channelName);
-				if(channel.isSignal() || channel.isCategory() || channel.isEvent()) channels.add(channel);
+				if(isSignal(channel) || isCategory(channel) || isEvent(channel)) channels.add(channel);
 			}
 			return channels.toArray(new Channel[channels.size()]);
 		} catch (Exception e) {

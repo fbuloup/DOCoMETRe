@@ -7,11 +7,12 @@ import re;
 
 class DOCoMETRe(object):
 
-	global experiments;
+	#global experiments;
 	global jvmMode;
 
 	def __init__(self, gateway):
 	 	self.gateway = gateway;
+	 	self.experiments = dict();
 	 	if(jvmMode): gateway.jvm.System.out.println("In __init__ gateway");
 
 	def shutDownServer(self, object):
@@ -104,13 +105,13 @@ class DOCoMETRe(object):
 			if channelName not in createdChannels:
 				createdChannels.append(channelName);
 				sampleFrequency = sessionsProperties[channelName + "_SF"];
-				experiments[loadName + "." + channelName + "." + "SampleFrequency"] = sampleFrequency;
-				experiments[loadName + "." + channelName + "." + "isSignal"] = "1";
-				experiments[loadName + "." + channelName + "." + "isCategory"] = "0";
-				experiments[loadName + "." + channelName + "." + "isEvent"] = "0";
-				experiments[loadName + "." + channelName + "." + "nbFields"] = "0";
-				experiments[loadName + "." + channelName + "." + "nbMarkers"] = "0";
-				experiments[loadName + "." + channelName + "." + "Values"] = numpy.zeros((int(totalTrialsNumber), int(maximumSamples)));
+				self.experiments[loadName + "." + channelName + "." + "SampleFrequency"] = sampleFrequency;
+				self.experiments[loadName + "." + channelName + "." + "isSignal"] = "1";
+				self.experiments[loadName + "." + channelName + "." + "isCategory"] = "0";
+				self.experiments[loadName + "." + channelName + "." + "isEvent"] = "0";
+				self.experiments[loadName + "." + channelName + "." + "nbFields"] = "0";
+				self.experiments[loadName + "." + channelName + "." + "nbMarkers"] = "0";
+				self.experiments[loadName + "." + channelName + "." + "Values"] = numpy.zeros((int(totalTrialsNumber), int(maximumSamples)));
 
 			# Read data
 			data = numpy.fromfile(dataFiles[n], dtype="float32");
@@ -120,24 +121,31 @@ class DOCoMETRe(object):
 			sizeData = len(data);
 			#if(jvmMode): self.gateway.jvm.System.out.println("sizeData : " + str(sizeData));
 			key = loadName + "." + channelName + ".NbSamples." + trialNumber;
-			experiments[key] = sizeData;
+			self.experiments[key] = sizeData;
 			key = loadName + "." + channelName + ".EndCut." + trialNumber;
-			experiments[key] = sizeData + 1;
+			self.experiments[key] = sizeData + 1;
 			key = loadName + "." + channelName + ".FrontCut." + trialNumber;
-			experiments[key] = 0;
-			values = experiments[loadName + "." + channelName + ".Values"];
+			self.experiments[key] = 0;
+			values = self.experiments[loadName + "." + channelName + ".Values"];
 			#if(jvmMode): self.gateway.jvm.System.out.println("size values : " + str(len(values[int(trialNumber) - 1])));
 			values[int(trialNumber) - 1][0:sizeData] = data;
 
 		n = 1;
 		for criteria in createdCategories:
 			values = createdCategories[criteria];
-			experiments[loadName + ".Category" + str(n) + ".Criteria"] = criteria;
-			experiments[loadName + ".Category" + str(n) + ".TrialsList"] = values;
-			experiments[loadName + ".Category" + str(n) + ".isSignal"] = "0";
-			experiments[loadName + ".Category" + str(n) + ".isCategory"] = "1";
-			experiments[loadName + ".Category" + str(n) + ".isEvent"] = "0";
+			self.experiments[loadName + ".Category" + str(n) + ".Criteria"] = criteria;
+			self.experiments[loadName + ".Category" + str(n) + ".TrialsList"] = values;
+			self.experiments[loadName + ".Category" + str(n) + ".isSignal"] = "0";
+			self.experiments[loadName + ".Category" + str(n) + ".isCategory"] = "1";
+			self.experiments[loadName + ".Category" + str(n) + ".isEvent"] = "0";
 			n = n + 1;
+			
+	def evaluate(self, expression):
+		return str(eval(expression));
+	
+	def unload(self, subjectFullName):
+		exec("import re;docometre.experiments = {k:v for k,v in docometre.experiments.items() if re.search('^" + subjectFullName + "\.', k) == None}");
+		
 
 	class Java:
 		implements = ["fr.univamu.ism.docometre.python.PythonEntryPoint"]
@@ -147,15 +155,20 @@ if __name__ == "__main__":
 	print("Current working folder : " + os.getcwd());
 	jvmMode = True;
 	
-	experiments = dict();
+	#experiments = dict();
 	
-	if(sys.argv[1] == "-jvm"):	
-		
-		gateway = ClientServer(java_parameters = JavaParameters(), python_parameters = PythonParameters());	
-		docometre = DOCoMETRe(gateway);
-		gateway.entry_point.setPythonEntryPoint(docometre);
+	if(len(sys.argv) > 1):
+		if(sys.argv[1] == "-jvm"):	
+			gateway = ClientServer(java_parameters = JavaParameters(), python_parameters = PythonParameters());	
+			docometre = DOCoMETRe(gateway);
+			gateway.entry_point.setPythonEntryPoint(docometre);
+		else:
+			jvmMode = False;
 		
 	else:
+		jvmMode = False;
+		
+	if(not jvmMode):
 		print("We are not in JVM mode");
 		jvmMode = False;
 		
@@ -174,17 +187,34 @@ if __name__ == "__main__":
 
 		docometre.loadData("DOCOMETRE", loadName, dataFilesList, sessionProperties);
 		
-		print(experiments["ReachabilityCoriolis.PreTestFull.Category1.Criteria"]);
-		print(experiments["ReachabilityCoriolis.PreTestFull.Category1.isSignal"]);
-		print(experiments["ReachabilityCoriolis.PreTestFull.Category1.isCategory"]);
-		print(experiments["ReachabilityCoriolis.PreTestFull.Category1.isEvent"]);
-		print(experiments["ReachabilityCoriolis.PreTestFull.Category1.TrialsList"]);
 		
-		print(21 in experiments["ReachabilityCoriolis.PreTestFull.Category1.TrialsList"]);
+		print(docometre.experiments["ReachabilityCoriolis.PreTestFull.Category1.Criteria"]);
+		print(docometre.experiments["ReachabilityCoriolis.PreTestFull.Category1.isSignal"]);
+		print(docometre.experiments["ReachabilityCoriolis.PreTestFull.Category1.isCategory"]);
+		print(docometre.experiments["ReachabilityCoriolis.PreTestFull.Category1.isEvent"]);
+		print(docometre.experiments["ReachabilityCoriolis.PreTestFull.Category1.TrialsList"]);
+		print(21 in docometre.experiments["ReachabilityCoriolis.PreTestFull.Category1.TrialsList"]);
+		keys = docometre.experiments.keys();
+		print(keys);
+		print(list({k:v for k,v in docometre.experiments.items() if re.search("isSignal$", k) and v == "1"}));
 		
-		keys = experiments.keys();
-		print(keys)
+		filteredDictionnary = {k:v for k,v in docometre.experiments.items() if re.search("^ReachabilityCoriolis\.PreTestFull\.", k)};
+		testLoaded = len(filteredDictionnary) > 0;
+		print(testLoaded);
 		
-		print(list({k:v for k,v in experiments.items() if re.search("isSignal$", k) and v == "1"}))
+		expression = "len({k:v for k,v in docometre.experiments.items() if re.search(\"^" + "ReachabilityCoriolis\.PreTestFull" + "\.\", k)})";
+		response = docometre.evaluate(expression);
+		print(response);
+		
+		expression = "len({k:v for k,v in docometre.experiments.items() if re.search(\"^" + "ReachabilityCoriolis\.PreTestFull" + "\.\", k)}) > 0";
+		response = docometre.evaluate(expression);
+		print(response);
+		
+		#experiments = {k:v for k,v in experiments.items() if re.search("^ReachabilityCoriolis\.PreTestFull\.", k) == None};
+		
+		print(docometre.experiments);
+		#expression = "experiments = {k:v for k,v in experiments.items() if re.search(\"^" + "ReachabilityCoriolis\.PreTestFull" + "\.\", k) == None};";	
+		docometre.unload("ReachabilityCoriolis\.PreTestFull");
+		print(docometre.experiments);
 		
 	

@@ -123,8 +123,13 @@ public class PythonEngine implements MathEngine {
 
 	@Override
 	public boolean isSubjectLoaded(IResource subject) {
-		// TODO Auto-generated method stub
-		return false;
+		if(!ResourceType.isSubject(subject)) return false;
+		if(!isStarted()) return false;
+		String experimentName = subject.getFullPath().segment(0);
+		String subjectName = subject.getFullPath().segment(1);
+		String prefixKey = experimentName + "\\." + subjectName;
+		String expression = "len({k:v for k,v in docometre.experiments.items() if re.search(\"^" + prefixKey + "\\.\", k)}) > 0";
+		return pythonController.getPythonEntryPoint().evaluate(expression).equalsIgnoreCase("true");
 	}
 
 	@Override
@@ -146,8 +151,12 @@ public class PythonEngine implements MathEngine {
 
 	@Override
 	public void unload(IResource subject) {
-		// TODO Auto-generated method stub
-
+		if(!ResourceType.isSubject(subject)) return;
+		if(!isStarted()) return;
+		String experimentName = subject.getFullPath().segment(0);
+		String subjectName = subject.getFullPath().segment(1);
+		String prefixKey = experimentName + "\\." + subjectName;
+		pythonController.getPythonEntryPoint().unload(prefixKey);
 	}
 
 	@Override
