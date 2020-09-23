@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -352,23 +351,6 @@ public final class MatlabEngine implements MathEngine {
 	}
 
 	@Override
-	public double[] getTimeValuesForSignal(Channel signal, Integer trialNumber) {
-		try {
-			double sf = getSampleFrequency(signal);
-			int nbSamples = getSamplesNumber(signal, trialNumber);
-			double[] times = new double[nbSamples];
-			for (int i = 0; i < nbSamples; i++) {
-				times[i] = 1f*i/sf;
-			}
-			return times;
-		} catch (Exception e) {
-			Activator.logErrorMessageWithCause(e);
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	@Override
 	public int getTrialsNumber(Channel signal) {
 		try {
 			String variableName = "nbTrials_" + (new Date()).getTime();
@@ -444,22 +426,6 @@ public final class MatlabEngine implements MathEngine {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
 		}
-	}
-
-	@Override
-	public Channel getChannelFromName(IResource resource, String fullChannelName) {
-		if(!(resource instanceof IContainer)) return null;
-		if(fullChannelName == null || "".equals(fullChannelName)) return null;
-		IContainer experiment = (IContainer)resource;
-		String subjectName = fullChannelName.split("\\.")[1];
-		IResource subject = experiment.findMember(subjectName);
-		if(subject == null) return null; 
-		Channel[] channels = getChannels(subject);
-		if(channels != null)
-			for (Channel channel : channels) {
-				if(channel.getFullName().equals(fullChannelName)) return channel;
-			}
-		return null;
 	}
 
 	@Override

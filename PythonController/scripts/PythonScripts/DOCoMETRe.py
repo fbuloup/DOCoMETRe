@@ -154,9 +154,17 @@ class DOCoMETRe(object):
 		channels  = [re.sub("^\w+\.\w+\.", "", channel) for channel in channels];
 		return ",".join(channels);
 	
-	def getVector(self, expression):
-		values = eval("docometre.experiments[\"" + expression + "\"]");
-		arrayValues = array.array('d', values);
+	def getVector(self, expression, dataType, trialNumber, frontCut, endCut):
+		values = eval(expression);
+		if(trialNumber > -1):
+			values = values[trialNumber][frontCut:endCut];
+		if(dataType == "i"):
+			arrayValues = array.array('i', values);
+		elif(dataType == "f"):
+			arrayValues = array.array('f', values);
+		else:
+			arrayValues = array.array('d', values);
+		
 		return arrayValues.tobytes();
 
 	class Java:
@@ -257,6 +265,12 @@ if __name__ == "__main__":
 		channels = docometre.getChannels("ReachabilityCoriolis.PreTestFull");
 		print(channels);
 		
-		values = docometre.getVector("ReachabilityCoriolis.PreTestFull.Category1.TrialsList");
+		values = docometre.getVector("docometre.experiments[\"ReachabilityCoriolis.PreTestFull.Category1.TrialsList\"]", "i", -1);
+		print(values);
+		
+		nbTrials = len(docometre.experiments["ReachabilityCoriolis.PreTestFull.CAN_FrameID.Values"]);
+		print(nbTrials);
+		
+		values = docometre.getVector("docometre.experiments[\"ReachabilityCoriolis.PreTestFull.CAN_FrameID.Values\"]", "f", 0);
 		print(values);
 	

@@ -1,6 +1,11 @@
 package fr.univamu.ism.docometre.analyse;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.DoubleBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +25,7 @@ import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 import fr.univamu.ism.docometre.python.PythonController;
+import fr.univamu.ism.docometre.python.PythonEntryPoint;
 
 public class PythonEngine implements MathEngine {
 	
@@ -151,8 +157,8 @@ public class PythonEngine implements MathEngine {
 			ChannelsContainer channelsContainer = new ChannelsContainer((IFolder) subject);
 			subject.setSessionProperty(ResourceProperties.CHANNELS_LIST_QN, channelsContainer);
 		} catch (CoreException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			Activator.logErrorMessageWithCause(e);
 		}
 
 	}
@@ -169,19 +175,16 @@ public class PythonEngine implements MathEngine {
 
 	@Override
 	public boolean exist(String variableName) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public boolean isStruct(String variableName) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public boolean isField(String variableName, String fieldName) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 	
@@ -219,62 +222,75 @@ public class PythonEngine implements MathEngine {
 	public Integer[] getTrialsListForCategory(IResource category) {
 		String fullName = getFullPath(category);
 		String expression = "docometre.experiments[\"" + fullName + ".TrialsList\"]";
-		byte[] value = pythonController.getPythonEntryPoint().getVector(expression);
-		return null;
+		byte[] byteValues = pythonController.getPythonEntryPoint().getVector(expression, PythonEntryPoint.DATA_TYPE_INT, -1, -1, -1);
+		ByteBuffer byteBuffer = ByteBuffer.wrap(byteValues);
+		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+    	IntBuffer intBuffer = byteBuffer.asIntBuffer();
+    	int[] values = new int[intBuffer.capacity()];
+    	intBuffer.get(values);
+    	Arrays.sort(values);
+    	return Arrays.stream(values).boxed().toArray(Integer[]::new);
 	}
 
 	@Override
 	public double[] getYValuesForSignal(Channel signal, int trialNumber) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public double[] getTimeValuesForSignal(Channel signal, Integer trialNumber) {
-		// TODO Auto-generated method stub
-		return null;
+		String fullName = getFullPath(signal);
+		int frontCut = getFrontCut(signal, trialNumber);
+		int endCut = getEndCut(signal, trialNumber) - 1;
+		String expression = "docometre.experiments[\"" + fullName + ".Values\"]";
+		byte[] byteValues = pythonController.getPythonEntryPoint().getVector(expression, PythonEntryPoint.DATA_TYPE_DOUBLE, trialNumber-1, frontCut, endCut);
+		ByteBuffer byteBuffer = ByteBuffer.wrap(byteValues);
+		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+    	DoubleBuffer doubleBuffer = byteBuffer.asDoubleBuffer();
+    	double[] values = new double[doubleBuffer.capacity()];
+    	doubleBuffer.get(values);
+    	return values;
 	}
 
 	@Override
 	public int getTrialsNumber(Channel signal) {
-		// TODO Auto-generated method stub
-		return 0;
+		String fullName = getFullPath(signal);
+		String expression = "len(docometre.experiments[\"" + fullName + ".Values\"])";
+		String value = pythonController.getPythonEntryPoint().evaluate(expression);
+		return Integer.parseInt(value);
 	}
 
 	@Override
 	public double getSampleFrequency(Channel signal) {
-		// TODO Auto-generated method stub
-		return 0;
+		String fullName = getFullPath(signal);
+		String expression = "docometre.experiments[\"" + fullName + ".SampleFrequency\"]";
+		String value = pythonController.getPythonEntryPoint().evaluate(expression);
+		return Double.parseDouble(value);
 	}
 
 	@Override
 	public int getSamplesNumber(Channel signal, int trialNumber) {
-		// TODO Auto-generated method stub
-		return 0;
+		String fullName = getFullPath(signal);
+		String expression = "docometre.experiments[\"" + fullName + ".NbSamples." + trialNumber + "\"]";
+		String value = pythonController.getPythonEntryPoint().evaluate(expression);
+		return Integer.parseInt(value);
 	}
 
 	@Override
 	public int getFrontCut(Channel signal, int trialNumber) {
-		// TODO Auto-generated method stub
-		return 0;
+		String fullName = getFullPath(signal);
+		String expression = "docometre.experiments[\"" + fullName + ".FrontCut." + trialNumber + "\"]";
+		String value = pythonController.getPythonEntryPoint().evaluate(expression);
+		return Integer.parseInt(value);
 	}
 
 	@Override
 	public int getEndCut(Channel signal, int trialNumber) {
-		// TODO Auto-generated method stub
-		return 0;
+		String fullName = getFullPath(signal);
+		String expression = "docometre.experiments[\"" + fullName + ".EndCut." + trialNumber + "\"]";
+		String value = pythonController.getPythonEntryPoint().evaluate(expression);
+		return Integer.parseInt(value);
 	}
 
 	@Override
 	public void runScript(String code) {
 		// TODO Auto-generated method stub
 
-	}
-
-	@Override
-	public Channel getChannelFromName(IResource experiment, String fullChannelName) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override

@@ -2,10 +2,12 @@ package fr.univamu.ism.docometre.analyse;
 
 import java.util.ArrayList;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 
+import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 
 public interface MathEngine {
@@ -24,17 +26,31 @@ public interface MathEngine {
 	public String getCriteriaForCategory(IResource category);
 	Integer[] getTrialsListForCategory(IResource category);
 	double[] getYValuesForSignal(Channel signal, int trialNumber);
-	double[] getTimeValuesForSignal(Channel signal, Integer trialNumber);
 	int getTrialsNumber(Channel signal);
 	double getSampleFrequency(Channel signal);
 	int getSamplesNumber(Channel signal, int trialNumber);
 	int getFrontCut(Channel signal, int trialNumber);
 	int getEndCut(Channel signal, int trialNumber);
 	void runScript(String code);
-	Channel getChannelFromName(IResource experiment, String fullChannelName);
 	void deleteChannel(Channel resource);
 	
-	default public Channel getChannelWithName(IResource subject, String channelName) {
+	default double[] getTimeValuesForSignal(Channel signal, Integer trialNumber) {
+		try {
+			double sf = getSampleFrequency(signal);
+			int nbSamples = getSamplesNumber(signal, trialNumber);
+			double[] times = new double[nbSamples];
+			for (int i = 0; i < nbSamples; i++) {
+				times[i] = 1f*i/sf;
+			}
+			return times;
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	default Channel getChannelWithName(IResource subject, String channelName) {
 		Channel[] channels = getChannels(subject);
 		for (Channel channel : channels) {
 			if(channel.getName().equals(channelName)) return channel;
@@ -42,11 +58,11 @@ public interface MathEngine {
 		return null;
 	}
 	
-	default public String getFullPath(IResource resource) {
+	default String getFullPath(IResource resource) {
 		return resource.getFullPath().toString().replaceAll("^/", "").replaceAll("/", ".");
 	}
 	
-	default public Channel[] getSignals(IResource subject) {
+	default Channel[] getSignals(IResource subject) {
 		Channel[] channels = getChannels(subject);
 		ArrayList<Channel> signals = new ArrayList<Channel>();
 		for (Channel channel : channels) {
@@ -55,7 +71,7 @@ public interface MathEngine {
 		return signals.toArray(new Channel[signals.size()]);
 	}
 
-	default public Channel[] getCategories(IResource subject) {
+	default Channel[] getCategories(IResource subject) {
 		Channel[] channels = getChannels(subject);
 		ArrayList<Channel> categories = new ArrayList<Channel>();
 		for (Channel channel : channels) {
@@ -64,7 +80,7 @@ public interface MathEngine {
 		return categories.toArray(new Channel[categories.size()]);
 	}
 	
-	default public Channel[] getEvents(IResource subject) {
+	default Channel[] getEvents(IResource subject) {
 		Channel[] channels = getChannels(subject);
 		ArrayList<Channel> events = new ArrayList<Channel>();
 		for (Channel channel : channels) {
@@ -74,16 +90,31 @@ public interface MathEngine {
 	}
 	
 	
-	default public boolean isSignal(IResource channel) {
+	default boolean isSignal(IResource channel) {
 		return isSignalCategoryOrEvent(getFullPath(channel), ".isSignal");
 	}
 	
-	default public boolean isCategory(IResource channel) {
+	default boolean isCategory(IResource channel) {
 		return isSignalCategoryOrEvent(getFullPath(channel), ".isCategory");
 	}
 	
-	default public boolean isEvent(IResource channel) {
+	default boolean isEvent(IResource channel) {
 		return isSignalCategoryOrEvent(getFullPath(channel), ".isEvent");
+	}
+	
+	default Channel getChannelFromName(IResource resource, String fullChannelName) {
+		if(!(resource instanceof IContainer)) return null;
+		if(fullChannelName == null || "".equals(fullChannelName)) return null;
+		IContainer experiment = (IContainer)resource;
+		String subjectName = fullChannelName.split("\\.")[1];
+		IResource subject = experiment.findMember(subjectName);
+		if(subject == null) return null; 
+		Channel[] channels = getChannels(subject);
+		if(channels != null)
+			for (Channel channel : channels) {
+				if(channel.getFullName().equals(fullChannelName)) return channel;
+			}
+		return null;
 	}
 	
 }
