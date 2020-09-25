@@ -179,7 +179,7 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 	 * Refresh experiment view
 	 */
 	public static void refresh(IResource parentResource, IResource[] resourcesToSelect) {
-		Display.getDefault().asyncExec(new Runnable() {
+		Display.getDefault().syncExec(new Runnable() {
 			@Override
 			public void run() {
 				IViewPart experimentsView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(ExperimentsView.ID);

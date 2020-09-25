@@ -1,5 +1,6 @@
 package fr.univamu.ism.docometre.analyse.handlers;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -7,6 +8,9 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.ISelectionListener;
@@ -23,7 +27,7 @@ import fr.univamu.ism.docometre.views.ExperimentsView;
 public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelectionListener {
 	
 	private Set<IResource> selectedSubjects = new HashSet<IResource>(0);
-	
+
 	public LoadUnloadSubjectsHandler() {
 		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().addSelectionListener(this);
 	}
@@ -37,18 +41,45 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 		for (IResource subject : selectedSubjects) {
 			boolean loaded = MathEngineFactory.getMathEngine().isSubjectLoaded(subject);
 			if(loaded) {
-				Activator.logInfoMessage(DocometreMessages.UnloadingSubject + subject.getName(), getClass());
-				MathEngineFactory.getMathEngine().unload(subject);
-				Activator.logInfoMessage(DocometreMessages.Done, getClass());
+				ProgressMonitorDialog progressMonitorDialog = new ProgressMonitorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+				try {
+					progressMonitorDialog.run(true, false, new IRunnableWithProgress() {
+						@Override
+						public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+							monitor.beginTask("Unloading \"" + subject.getName() + "\". Please wait...", IProgressMonitor.UNKNOWN);
+							Activator.logInfoMessage(DocometreMessages.UnloadingSubject + subject.getName(), LoadUnloadSubjectsHandler.this.getClass());
+							MathEngineFactory.getMathEngine().unload(subject);
+							Activator.logInfoMessage(DocometreMessages.Done, LoadUnloadSubjectsHandler.this.getClass());
+							monitor.done();
+						}
+					});
+				} catch (InvocationTargetException | InterruptedException e) {
+					Activator.logErrorMessageWithCause(e);
+					e.printStackTrace();
+				}
 			} else {
-					Activator.logInfoMessage(DocometreMessages.LoadingSubject + subject.getName(), getClass());
-					MathEngineFactory.getMathEngine().load(subject);
-					Activator.logInfoMessage(DocometreMessages.Done, getClass());
+				ProgressMonitorDialog progressMonitorDialog = new ProgressMonitorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+				try {
+					progressMonitorDialog.run(true, false, new IRunnableWithProgress() {
+						@Override
+						public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+							monitor.beginTask("Loading \"" + subject.getName() + "\". Please wait...", IProgressMonitor.UNKNOWN);
+							Activator.logInfoMessage(DocometreMessages.LoadingSubject + subject.getName(), LoadUnloadSubjectsHandler.this.getClass());
+							MathEngineFactory.getMathEngine().load(subject);
+							Activator.logInfoMessage(DocometreMessages.Done, LoadUnloadSubjectsHandler.this.getClass());
+							monitor.done();
+						}
+					});
+				} catch (InvocationTargetException | InterruptedException e) {
+					Activator.logErrorMessageWithCause(e);
+					e.printStackTrace();
+				}
 			}
+		}
+		for (IResource subject : selectedSubjects) {
 			ExperimentsView.refresh(subject, null);
 			SubjectsView.refresh(subject, null);
 		}
-		
 		return null;
 	}
 
@@ -65,7 +96,5 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 		}
 		setBaseEnabled(selectedSubjects.size() > 0);
 	}
-
-	
 	
 }

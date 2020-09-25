@@ -63,7 +63,7 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 	 * Refresh subject view
 	 */
 	public static void refresh(IResource parentResource, IResource[] resourcesToSelect) {
-		Display.getDefault().asyncExec(new Runnable() {
+		Display.getDefault().syncExec(new Runnable() {
 			@Override
 			public void run() {
 				IViewPart subjectsView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(SubjectsView.ID);
