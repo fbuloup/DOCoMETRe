@@ -265,12 +265,12 @@ if __name__ == "__main__":
 		channels = docometre.getChannels("ReachabilityCoriolis.PreTestFull");
 		print(channels);
 		
-		values = docometre.getVector("docometre.experiments[\"ReachabilityCoriolis.PreTestFull.Category1.TrialsList\"]", "i", -1);
+		values = docometre.getVector("docometre.experiments[\"ReachabilityCoriolis.PreTestFull.Category1.TrialsList\"]", "i", -1, -1, -1);
 		print(values);
 		
 		nbTrials = len(docometre.experiments["ReachabilityCoriolis.PreTestFull.CAN_FrameID.Values"]);
 		print(nbTrials);
 		
-		values = docometre.getVector("docometre.experiments[\"ReachabilityCoriolis.PreTestFull.CAN_FrameID.Values\"]", "f", 0);
+		values = docometre.getVector("docometre.experiments[\"ReachabilityCoriolis.PreTestFull.CAN_FrameID.Values\"]", "f", 0, 0, 100);
 		print(values);
 	
