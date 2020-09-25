@@ -289,14 +289,18 @@ public class PythonEngine implements MathEngine {
 
 	@Override
 	public void runScript(String code) {
-		// TODO Auto-generated method stub
-
+		pythonController.getPythonEntryPoint().runScript(code);
 	}
 
 	@Override
-	public void deleteChannel(Channel resource) {
-		// TODO Auto-generated method stub
-
+	public void deleteChannel(Channel channel) {
+		if(!ResourceType.isChannel(channel)) return;
+		if(!isStarted()) return;
+		String experimentName = channel.getFullPath().segment(0);
+		String subjectName = channel.getFullPath().segment(1);
+		String channelName = channel.getFullPath().segment(2);
+		channelName = experimentName + "\\." + subjectName + "\\." + channelName;
+		pythonController.getPythonEntryPoint().unload(channelName);
 	}
 
 }

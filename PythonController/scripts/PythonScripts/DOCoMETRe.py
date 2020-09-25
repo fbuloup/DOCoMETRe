@@ -166,6 +166,9 @@ class DOCoMETRe(object):
 			arrayValues = array.array('d', values);
 		
 		return arrayValues.tobytes();
+	
+	def runScript(self, code):
+		exec(code);
 
 	class Java:
 		implements = ["fr.univamu.ism.docometre.python.PythonEntryPoint"]
@@ -273,4 +276,9 @@ if __name__ == "__main__":
 		
 		values = docometre.getVector("docometre.experiments[\"ReachabilityCoriolis.PreTestFull.CAN_FrameID.Values\"]", "f", 0, 0, 100);
 		print(values);
+		
+		# Unload channel
+		docometre.unload("ReachabilityCoriolis\.PreTestFull\.CAN_FrameID")
+		channels = docometre.getChannels("ReachabilityCoriolis.PreTestFull");
+		print(channels);
 	
