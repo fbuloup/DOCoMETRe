@@ -46,7 +46,7 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 			if(loaded) {
 				ProgressMonitorDialog progressMonitorDialog = new ProgressMonitorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
 				try {
-					progressMonitorDialog.run(true, true, new IRunnableWithProgress() {
+					progressMonitorDialog.run(true, selectedSubjects.size()>1, new IRunnableWithProgress() {
 						@Override
 						public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 							
@@ -65,7 +65,7 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 			} else {
 				ProgressMonitorDialog progressMonitorDialog = new ProgressMonitorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
 				try {
-					progressMonitorDialog.run(true, true, new IRunnableWithProgress() {
+					progressMonitorDialog.run(true, selectedSubjects.size()>1, new IRunnableWithProgress() {
 						@Override
 						public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 							monitor.beginTask(DocometreMessages.LoadingSubject+ "\"" + loadUnloadName + "\". " + DocometreMessages.PleaseWait, IProgressMonitor.UNKNOWN);

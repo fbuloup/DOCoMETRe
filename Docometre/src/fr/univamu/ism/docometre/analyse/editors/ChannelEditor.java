@@ -89,13 +89,14 @@ public class ChannelEditor extends EditorPart {
 	}
 
 	public void gotoNextTrial() {
-		// TODO Auto-generated method stub
+		if(container instanceof TrialNavigator)
+			((TrialNavigator)container).gotoNextTrial();
 		
 	}
 
 	public void gotoPreviousTrial() {
-		// TODO Auto-generated method stub
-		
+		if(container instanceof TrialNavigator)
+			((TrialNavigator)container).gotoPreviousTrial();
 	}
 	
 }

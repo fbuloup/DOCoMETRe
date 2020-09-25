@@ -1,5 +1,7 @@
 package fr.univamu.ism.docometre.analyse.editors;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -11,6 +13,7 @@ import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -35,7 +38,7 @@ import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 
-public class SignalContainerEditor extends Composite implements ISelectionChangedListener {
+public class SignalContainerEditor extends Composite implements ISelectionChangedListener, TrialNavigator {
 	
 	private static String[] graphicalSymbols = new String[] {"\u25A1", "\u25C7", "\u25B3", "\u25CB", "\u2606", "+"};
 	
@@ -314,6 +317,55 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 	private boolean chartHasAlreadyThisTrial(Integer trialNumber) {
 		String seriesID = channelEditor.getchannel().getFullName() + "." + trialNumber;
 		return chart.getSeriesSet().getSeries(seriesID) != null;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void gotoNextTrial() {
+		List<Integer> selectedTrialsNumbers = trialsListViewer.getStructuredSelection().toList();
+		int maxTrialNumber = trialsListViewer.getList().getItemCount();
+		if(selectedTrialsNumbers.isEmpty()) {
+			if(maxTrialNumber >= 1) {
+				List<Integer> newSelection = new ArrayList<Integer>();
+				newSelection.add(1);
+				trialsListViewer.setSelection(new StructuredSelection(newSelection), true);
+				trialsListViewer.getList().showSelection();
+			}
+			return;
+		}
+		int maxSelectedTrialNumber = Collections.max(selectedTrialsNumbers);
+		if(maxSelectedTrialNumber < maxTrialNumber) {
+			for (int i = 0; i < selectedTrialsNumbers.size(); i++) {
+				int trialNumber = selectedTrialsNumbers.get(i);
+				trialNumber++;
+				selectedTrialsNumbers.set(i, trialNumber);
+			}
+			trialsListViewer.setSelection(new StructuredSelection(selectedTrialsNumbers), true);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void gotoPreviousTrial() {
+		List<Integer> selectedTrialsNumbers = trialsListViewer.getStructuredSelection().toList();
+		int maxTrialNumber = trialsListViewer.getList().getItemCount();
+		if(selectedTrialsNumbers.isEmpty()) {
+			if(maxTrialNumber >= 1) {
+				List<Integer> newSelection = new ArrayList<Integer>();
+				newSelection.add(maxTrialNumber);
+				trialsListViewer.setSelection(new StructuredSelection(newSelection), true);
+				trialsListViewer.getList().showSelection();
+			}
+			return;
+		}
+		if(Collections.min(selectedTrialsNumbers) > 1) {
+			for (int i = 0; i < selectedTrialsNumbers.size(); i++) {
+				int trialNumber = selectedTrialsNumbers.get(i);
+				trialNumber--;
+				selectedTrialsNumbers.set(i, trialNumber);
+			}
+			trialsListViewer.setSelection(new StructuredSelection(selectedTrialsNumbers), true);
+		}
 	}
 	
 }
