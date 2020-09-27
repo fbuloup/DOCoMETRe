@@ -77,6 +77,9 @@ public class GeneralPreferenceConstants {
 	public static final String PYTHON_TIME_OUT = "PYTHON_TIME_OUT";
 	public static final String PYTHON_SCRIPT_LOCATION = "PYTHON_SCRIPT_LOCATION";
 	
+	public static final String SHOW_CURSOR = "SHOW_CURSOR";
+	public static final String SHOW_MARKER = "SHOW_MARKER";
+	
 	
 	
 }

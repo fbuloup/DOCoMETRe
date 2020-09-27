@@ -426,6 +426,10 @@ public final class DocometreMessages extends NLS {
 	public static String YChannelName_Label;
 	public static String YChannelName_Tooltip;
 	
+	/* Charts preference */
+	public static String SHOW_CURSOR;
+	public static String SHOW_MARKER;
+	
 	/* Acquire perspective toolbar */
 	public static String ItemToRun_Label;
 	public static String RunAction_Tooltip;

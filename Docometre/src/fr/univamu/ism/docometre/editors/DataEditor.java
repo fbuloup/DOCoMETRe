@@ -98,6 +98,7 @@ import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.ExperimentScheduler;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfiguration;
+import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
 public class DataEditor extends EditorPart implements PartNameRefresher, MouseMoveListener, PaintListener, Listener/*, MouseListener */{
 	
@@ -166,6 +167,10 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 		
 		// Create XY graph
 		chart = new InteractiveChart(parent, SWT.BORDER);
+		boolean showCursor = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.SHOW_CURSOR);
+		boolean showMarker = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.SHOW_MARKER);
+		chart.setShowCursor(showCursor);
+		chart.setShowMarker(showMarker);
 		chart.setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_BLACK));
 		chart.getPlotArea().setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_BLACK));
 		chart.setForeground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));

@@ -101,7 +101,6 @@ public class InteractiveChart extends Chart implements PaintListener {
 	 * Initializes.
 	 */
 	private void init() {
-
 		resources = new PropertiesResources();
 		Composite plot = getPlotArea();
 		plot.addListener(SWT.Resize, this);
@@ -126,12 +125,11 @@ public class InteractiveChart extends Chart implements PaintListener {
 		return showCursor && getSeriesSet().getSeries().length > 0;
 	}
 
-//	public void setShowMarker(boolean showMarker) {
-//		this.showMarker = showMarker;
-//	}
+	public void setShowMarker(boolean showMarker) {
+		this.showMarker = showMarker;
+	}
 	
 	public boolean isShowMarker() {
-//		System.out.println("showMarker : " + showMarker + " - currentXMarker_Pixel : " + currentXMarker_Pixel);
 		return showMarker && currentXMarker_Pixel > -1;
 	}
 	

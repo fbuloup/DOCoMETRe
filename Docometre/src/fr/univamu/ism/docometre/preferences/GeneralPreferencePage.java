@@ -46,9 +46,13 @@ import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.jface.preference.IntegerFieldEditor;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
@@ -117,6 +121,19 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
 		ComboFieldEditor mathEngineFieldEditor = new ComboFieldEditor(GeneralPreferenceConstants.MATH_ENGINE, DocometreMessages.MathEngineLabel, GeneralPreferenceConstants.MATH_ENGINE_VALUES, getFieldEditorParent());
 		addField(mathEngineFieldEditor);
 		
+		Group chartOptionsGroup = new Group(getFieldEditorParent(), SWT.BORDER);
+		chartOptionsGroup.setText("Charts options");
+		chartOptionsGroup.setLayout(new FillLayout(SWT.HORIZONTAL));
+		chartOptionsGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1));
+		
+		BooleanFieldEditor showCursorFileEditor = new BooleanFieldEditor(GeneralPreferenceConstants.SHOW_CURSOR, DocometreMessages.SHOW_CURSOR, chartOptionsGroup);
+		addField(showCursorFileEditor);
+		
+		BooleanFieldEditor showMarkerFileEditor = new BooleanFieldEditor(GeneralPreferenceConstants.SHOW_MARKER, DocometreMessages.SHOW_MARKER, chartOptionsGroup);
+		addField(showMarkerFileEditor);
+		
 	}
+	
+	
 
 }
