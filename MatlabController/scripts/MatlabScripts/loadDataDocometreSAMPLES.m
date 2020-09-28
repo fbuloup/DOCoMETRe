@@ -68,8 +68,8 @@ function subject = loadDataDocometre(dataFilesList, varargin)
             eval(['subject.', channelName, '.isSignal = 1;']);
             eval(['subject.', channelName, '.isCategory = 0;']);
             eval(['subject.', channelName, '.isEvent = 0;']);
-            eval(['subject.', channelName, '.nbFields = 0;']);
-            eval(['subject.', channelName, '.nbMarkers = 0;']);
+            eval(['subject.', channelName, '.NbFields = 0;']);
+            eval(['subject.', channelName, '.NbMarkersGroups = 0;']);
             eval(['subject.', channelName, '.Values = zeros(', totalTrialsNumber, ', ', maximumSamples,');']);
 
         end
