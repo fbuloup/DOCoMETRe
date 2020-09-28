@@ -445,7 +445,6 @@ public final class MatlabEngine implements MathEngine {
 	@Override
 	public int getNbMarkersGroups(Channel signal) {
 		try {
-			if(!ResourceType.isChannel(signal)) return 0;
 			if(!isStarted()) return 0;
 			String channelName = getFullPath(signal);
 			String expression = channelName + ".NbMarkersGroups;";
@@ -471,10 +470,12 @@ public final class MatlabEngine implements MathEngine {
 			String expression = channelName + ".NbMarkersGroups = " + nbMarkersGroups + ";";
 			matlabController.eval(expression);
 			
-			expression = channelName + ".MarkersGroup"+ nbMarkersGroups + "_Label = " + markersGroupLabel + ";";
+			if(nbMarkersGroups == 1) expression = channelName + ".MarkersGroupsLabels = {'" + markersGroupLabel + "'};";
+			else expression = channelName + ".MarkersGroupsLabels = [" + channelName + ".MarkersGroupsLabels, {'" + markersGroupLabel + "'}];";
+			
 			matlabController.eval(expression);
 			
-			expression = channelName + ".MarkersGroup"+ nbMarkersGroups + "_Values = [];";
+			expression = channelName + ".MarkersGroup_"+ markersGroupLabel + "_Values = [];";
 			matlabController.eval(expression);
 		} catch (Exception e) {
 			Activator.logErrorMessageWithCause(e);
@@ -487,7 +488,7 @@ public final class MatlabEngine implements MathEngine {
 	public String getMarkersGroupLabel(int markersGroupNumber, Channel signal) {
 		try {
 			String fullSignalName = getFullPath(signal);
-			Object[] responses = matlabController.returningEval(fullSignalName + ".MarkersGroup" + markersGroupNumber + "_Label", 1);
+			Object[] responses = matlabController.returningEval(fullSignalName + ".MarkersGroupsLabels{" + markersGroupNumber + "}", 1);
 			Object response = responses[0];
 			if(response instanceof String) {
 				return (String)response;
@@ -501,11 +502,31 @@ public final class MatlabEngine implements MathEngine {
 
 	@Override
 	public void deleteMarkersGroup(int markersGroupNumber, Channel signal) {
-		// TODO Auto-generated method stub
 		
+		try {
+			String fullSignalName = getFullPath(signal);
+			
+			// Get markers group label
+			String markersGroupLabel = getMarkersGroupLabel(markersGroupNumber, signal);
+			
+			// Remove markers group label
+			String expression = fullSignalName + ".MarkersGroupsLabels(" + markersGroupNumber + ") = []";
+			matlabController.eval(expression);
+			
+			// Remove markers group value
+			expression = fullSignalName + " = rmfield(" + fullSignalName + ", 'MarkersGroup_" + markersGroupLabel + "_Values')";
+			matlabController.eval(expression);
+			
+			// decrease nb markers groups
+			int nbMarkersGroups = getNbMarkersGroups(signal);
+			nbMarkersGroups--;
+			expression = fullSignalName + ".NbMarkersGroups = " + nbMarkersGroups;
+			matlabController.eval(expression);
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
 	}
-
-
 	
 
 }
