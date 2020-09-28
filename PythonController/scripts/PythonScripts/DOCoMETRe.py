@@ -110,8 +110,8 @@ class DOCoMETRe(object):
 				self.experiments[loadName + "." + channelName + "." + "isSignal"] = "1";
 				self.experiments[loadName + "." + channelName + "." + "isCategory"] = "0";
 				self.experiments[loadName + "." + channelName + "." + "isEvent"] = "0";
-				self.experiments[loadName + "." + channelName + "." + "nbFields"] = "0";
-				self.experiments[loadName + "." + channelName + "." + "nbMarkers"] = "0";
+				self.experiments[loadName + "." + channelName + "." + "NbFields"] = "0";
+				self.experiments[loadName + "." + channelName + "." + "NbMarkersGroups"] = "0";
 				self.experiments[loadName + "." + channelName + "." + "Values"] = numpy.zeros((int(totalTrialsNumber), int(maximumSamples)));
 
 			# Read data
@@ -146,7 +146,7 @@ class DOCoMETRe(object):
 		return str(eval(expression));
 	
 	def unload(self, subjectFullName):
-		exec("import re;docometre.experiments = {k:v for k,v in docometre.experiments.items() if re.search('^" + subjectFullName + "\.', k) == None}");
+		exec("import re;docometre.experiments = {k:v for k,v in docometre.experiments.items() if re.search('^" + subjectFullName + "', k) == None}");
 		
 	def getChannels(self, subjectFullName):
 		channels = list({k:v for k,v in self.experiments.items() if re.search("^" + subjectFullName + "\.\w+\.isSignal$", k)});

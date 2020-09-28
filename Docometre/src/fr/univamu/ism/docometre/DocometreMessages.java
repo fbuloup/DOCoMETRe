@@ -759,9 +759,13 @@ public final class DocometreMessages extends NLS {
 	public static String TrialsNumberLabel2;
 	public static String SignalNameLabel;
 	public static String DeleteSelectedMarkersGroupTooltip;
+	public static String CreateNewMarkersGroupTooltip;
 	public static String DeleteSelectedMarkerTrialTooltip;
 	public static String DeleteSelectedFieldTooltip;
 	public static String CategoryCriteriaLabel;
+	public static String CreateNewMarkersGroupDialogTitle;
+	public static String CreateNewMarkersGroupDialogMessage;
+	
 
 	// Data processing editor wizard
 	public static String NewDataProcessingWizard_PageTitle;

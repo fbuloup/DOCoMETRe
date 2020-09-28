@@ -14,6 +14,9 @@ import org.eclipse.swtchart.IAxis;
 import org.eclipse.swtchart.extensions.charts.InteractiveChart;
 import org.eclipse.ui.PlatformUI;
 
+import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
+
 public final class ChannelEditorWidgetsFactory {
 	
 	private static Color colorWhite = PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE);
@@ -62,6 +65,10 @@ public final class ChannelEditorWidgetsFactory {
 
 	public static InteractiveChart createChart(Composite parent, int horizontalSpan) {
 		InteractiveChart chart = new InteractiveChart(parent, SWT.BORDER);
+		boolean showCursor = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.SHOW_CURSOR);
+		boolean showMarker = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.SHOW_MARKER);
+		chart.setShowCursor(showCursor);
+		chart.setShowMarker(showMarker);
 		chart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, horizontalSpan, 1));
 		chart.setBackground(colorBlack);
 		chart.getPlotArea().setBackground(colorBlack);

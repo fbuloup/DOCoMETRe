@@ -182,4 +182,6 @@ public interface IImageKeys {
 	
 	public static final String DATA_PROCESSING_ICON = "icons/dataProcessing.gif"; //$NON-NLS-1$
 	
+	public static final String ADD_MARKER_GROUP_ICON = "icons/marker_label.png"; //$NON-NLS-1$
+	
 }

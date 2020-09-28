@@ -37,7 +37,7 @@ public class ChannelEditor extends EditorPart {
 
 	}
 	
-	protected Channel getchannel() {
+	protected Channel getChannel() {
 		return channel;
 	}
 	

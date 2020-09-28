@@ -34,6 +34,20 @@ public interface MathEngine {
 	void runScript(String code);
 	void deleteChannel(Channel resource);
 	
+	int getNbMarkersGroups(Channel signal);
+	void createNewMarkersGroup(Channel signal, String markersGroupLabel);
+	String getMarkersGroupLabel(int markersGroupNumber, Channel signal);
+	void deleteMarkersGroup(int markersGroupNumber, Channel signal);
+	
+	default String[] getMarkersGroupsLabels(Channel signal) {
+		int nbMarkersGroups = getNbMarkersGroups(signal);
+		String[] markersGroupsLabels = new String[nbMarkersGroups];
+		for (int i = 0; i < markersGroupsLabels.length; i++) {
+			markersGroupsLabels[i] = getMarkersGroupLabel(i + 1, signal);
+		}
+		return markersGroupsLabels;
+	}
+	
 	default double[] getTimeValuesForSignal(Channel signal, Integer trialNumber) {
 		try {
 			double sf = getSampleFrequency(signal);
@@ -116,5 +130,7 @@ public interface MathEngine {
 			}
 		return null;
 	}
+	
+	
 	
 }

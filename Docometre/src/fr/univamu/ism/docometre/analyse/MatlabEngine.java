@@ -441,6 +441,70 @@ public final class MatlabEngine implements MathEngine {
 		}
 		
 	}
+	
+	@Override
+	public int getNbMarkersGroups(Channel signal) {
+		try {
+			if(!ResourceType.isChannel(signal)) return 0;
+			if(!isStarted()) return 0;
+			String channelName = getFullPath(signal);
+			String expression = channelName + ".NbMarkersGroups;";
+			Object[] responses = matlabController.returningEval(expression, 1);
+			int nbMarkersGroups = (int) ((double[]) responses[0])[0];
+			return nbMarkersGroups;
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return 0;
+		
+	}
+
+	@Override
+	public void createNewMarkersGroup(Channel signal, String markersGroupLabel) {
+		try {
+			int nbMarkersGroups = getNbMarkersGroups(signal);
+			nbMarkersGroups++;
+			
+			String channelName = getFullPath(signal);
+			
+			String expression = channelName + ".NbMarkersGroups = " + nbMarkersGroups + ";";
+			matlabController.eval(expression);
+			
+			expression = channelName + ".MarkersGroup"+ nbMarkersGroups + "_Label = " + markersGroupLabel + ";";
+			matlabController.eval(expression);
+			
+			expression = channelName + ".MarkersGroup"+ nbMarkersGroups + "_Values = [];";
+			matlabController.eval(expression);
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		
+	}
+
+	@Override
+	public String getMarkersGroupLabel(int markersGroupNumber, Channel signal) {
+		try {
+			String fullSignalName = getFullPath(signal);
+			Object[] responses = matlabController.returningEval(fullSignalName + ".MarkersGroup" + markersGroupNumber + "_Label", 1);
+			Object response = responses[0];
+			if(response instanceof String) {
+				return (String)response;
+			}
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return "";
+	}
+
+	@Override
+	public void deleteMarkersGroup(int markersGroupNumber, Channel signal) {
+		// TODO Auto-generated method stub
+		
+	}
+
 
 	
 

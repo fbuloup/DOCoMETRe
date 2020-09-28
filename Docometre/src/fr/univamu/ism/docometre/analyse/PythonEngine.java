@@ -294,13 +294,62 @@ public class PythonEngine implements MathEngine {
 
 	@Override
 	public void deleteChannel(Channel channel) {
-		if(!ResourceType.isChannel(channel)) return;
-		if(!isStarted()) return;
 		String experimentName = channel.getFullPath().segment(0);
 		String subjectName = channel.getFullPath().segment(1);
 		String channelName = channel.getFullPath().segment(2);
 		channelName = experimentName + "\\." + subjectName + "\\." + channelName;
 		pythonController.getPythonEntryPoint().unload(channelName);
+	}
+	
+	@Override
+	public int getNbMarkersGroups(Channel signal) {
+		if(!ResourceType.isChannel(signal)) return 0;
+		if(!isStarted()) return 0;
+		String channelName = getFullPath(signal);
+		String expression = "docometre.experiments[\"" + channelName + ".NbMarkersGroups\"]";
+		String nbMarkersGroups = pythonController.getPythonEntryPoint().evaluate(expression);
+		return Integer.parseInt(nbMarkersGroups);
+	}
+
+	@Override
+	public void createNewMarkersGroup(Channel signal, String markersGroupLabel) {
+		int nbMarkersGroups = getNbMarkersGroups(signal);
+		nbMarkersGroups++;
+		
+		String channelName = getFullPath(signal);
+		
+		String expression = "docometre.experiments[\"" + channelName + ".NbMarkersGroups\"] = " + nbMarkersGroups;
+		pythonController.getPythonEntryPoint().runScript(expression);
+		
+		expression = "docometre.experiments[\"" + channelName + ".MarkersGroup"+ nbMarkersGroups + "_Label\"] = \"" + markersGroupLabel + "\"";
+		pythonController.getPythonEntryPoint().runScript(expression);
+		
+		expression = "docometre.experiments[\"" + channelName + ".MarkersGroup"+ nbMarkersGroups + "_Values\"] = []";
+		pythonController.getPythonEntryPoint().runScript(expression);
+	}
+
+
+	@Override
+	public String getMarkersGroupLabel(int markersGroupNumber, Channel signal) {
+		String channelName = getFullPath(signal);
+		String expression = "docometre.experiments[\"" + channelName + ".MarkersGroup" + markersGroupNumber + "_Label\"]";
+		return pythonController.getPythonEntryPoint().evaluate(expression);
+	}
+
+	@Override
+	public void deleteMarkersGroup(int markersGroupNumber, Channel signal) {
+		String experimentName = signal.getFullPath().segment(0);
+		String subjectName = signal.getFullPath().segment(1);
+		String channelName = signal.getFullPath().segment(2);
+		channelName = experimentName + "\\." + subjectName + "\\." + channelName;
+		String expression = channelName + "\\.MarkersGroup" + markersGroupNumber; 
+		pythonController.getPythonEntryPoint().unload(expression);
+		
+		int nbMarkersGroups = getNbMarkersGroups(signal);
+		nbMarkersGroups--;
+		channelName = getFullPath(signal);
+		expression = "docometre.experiments[\"" + channelName + ".NbMarkersGroups\"] = " + nbMarkersGroups;
+		pythonController.getPythonEntryPoint().runScript(expression);
 	}
 
 }

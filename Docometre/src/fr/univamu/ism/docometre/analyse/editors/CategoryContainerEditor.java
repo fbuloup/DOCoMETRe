@@ -60,7 +60,7 @@ public class CategoryContainerEditor extends Composite implements ISelectionChan
 		gl2.marginWidth = 0;
 		
 		ChannelEditorWidgetsFactory.createLabel(categoryContainer, DocometreMessages.CategoryCriteriaLabel, SWT.LEFT, false);
-		String criteria = MathEngineFactory.getMathEngine().getCriteriaForCategory(channelEditor.getchannel());
+		String criteria = MathEngineFactory.getMathEngine().getCriteriaForCategory(channelEditor.getChannel());
 		ChannelEditorWidgetsFactory.createLabel(categoryContainer, criteria, SWT.LEFT, true);
 		
 		SashForm sashForm = new SashForm(categoryContainer, SWT.VERTICAL);
@@ -68,7 +68,7 @@ public class CategoryContainerEditor extends Composite implements ISelectionChan
 		
 		trialsListViewer = new ListViewer(sashForm, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 		trialsListViewer.getList().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
-		Integer[] trials = MathEngineFactory.getMathEngine().getTrialsListForCategory(channelEditor.getchannel());
+		Integer[] trials = MathEngineFactory.getMathEngine().getTrialsListForCategory(channelEditor.getChannel());
 		trialsListViewer.setContentProvider(new ArrayContentProvider());
 		trialsListViewer.setLabelProvider(new LabelProvider() {
 			@Override
@@ -84,7 +84,7 @@ public class CategoryContainerEditor extends Composite implements ISelectionChan
 		signalsListViewer.getList().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 		signalsListViewer.setContentProvider(new ArrayContentProvider());
 		signalsListViewer.setLabelProvider(new LabelProvider());
-		Channel[] signals = MathEngineFactory.getMathEngine().getSignals(channelEditor.getchannel().getParent());
+		Channel[] signals = MathEngineFactory.getMathEngine().getSignals(channelEditor.getChannel().getParent());
 		signalsListViewer.setInput(signals);
 		signalsListViewer.addSelectionChangedListener(this);
 		
@@ -145,7 +145,7 @@ public class CategoryContainerEditor extends Composite implements ISelectionChan
 		for (ISeries aSeries : series) {
 			String[] segments = aSeries.getId().split("\\.");
 			String channelName = segments[segments.length - 2];
-			Channel channel = MathEngineFactory.getMathEngine().getChannelWithName(channelEditor.getchannel().getParent(), channelName);
+			Channel channel = MathEngineFactory.getMathEngine().getChannelWithName(channelEditor.getChannel().getParent(), channelName);
 			signals.add(channel);
 		}
 		return signals;

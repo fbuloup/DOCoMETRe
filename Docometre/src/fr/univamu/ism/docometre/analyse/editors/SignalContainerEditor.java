@@ -7,13 +7,16 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.IntStream;
 
+import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -44,10 +47,9 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 	
 	private ChannelEditor channelEditor;
 	private ListViewer trialsListViewer;
-
 	private InteractiveChart chart;
-
 	private int nbTrials;
+	private MarkersManager markersManager;
 
 	public SignalContainerEditor(Composite parent, int style, ChannelEditor channelEditor) {
 		super(parent, style);
@@ -66,10 +68,11 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		channelContainer.setLayout(gl2);
 		channelContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 		chart = ChannelEditorWidgetsFactory.createChart(channelContainer, 1);
+		markersManager = new MarkersManager(chart);
 		
 		trialsListViewer = new ListViewer(channelContainer, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 		trialsListViewer.getList().setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
-		int nbTrials = MathEngineFactory.getMathEngine().getTrialsNumber(channelEditor.getchannel());
+		int nbTrials = MathEngineFactory.getMathEngine().getTrialsNumber(channelEditor.getChannel());
 		Integer[] trials = IntStream.rangeClosed(1, nbTrials).boxed().toArray(Integer[]::new);
 		trialsListViewer.setContentProvider(new ArrayContentProvider());
 		trialsListViewer.setLabelProvider(new LabelProvider() {
@@ -121,19 +124,55 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		markersGroupsGroup.setLayout(new GridLayout(2, false));
 		
 		ChannelEditorWidgetsFactory.createLabel(markersGroupsGroup, DocometreMessages.GroupNameLabel, SWT.LEFT, false);
-		Composite deleteMarkersGroupContainer = new Composite(markersGroupsGroup, SWT.NORMAL);
-		deleteMarkersGroupContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		GridLayout gl = new GridLayout(2, false);
+		Composite deleteAddMarkersGroupContainer = new Composite(markersGroupsGroup, SWT.NORMAL);
+		deleteAddMarkersGroupContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		GridLayout gl = new GridLayout(3, false);
 		gl.horizontalSpacing = 0;
 		gl.verticalSpacing = 0;
 		gl.marginHeight = 0;
 		gl.marginWidth = 0;
-		deleteMarkersGroupContainer.setLayout(gl);
-		ChannelEditorWidgetsFactory.createCombo(deleteMarkersGroupContainer, SWT.FILL, true);
-		Button deleteMarkersGroupButton = new Button(deleteMarkersGroupContainer, SWT.FLAT);
+		deleteAddMarkersGroupContainer.setLayout(gl);
+		ComboViewer markersGroupsComboViewer = ChannelEditorWidgetsFactory.createCombo(deleteAddMarkersGroupContainer, SWT.FILL, true);
+		Button deleteMarkersGroupButton = new Button(deleteAddMarkersGroupContainer, SWT.FLAT);
 		deleteMarkersGroupButton.setImage(Activator.getImage(IImageKeys.DELETE_ICON));
 		deleteMarkersGroupButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
 		deleteMarkersGroupButton.setToolTipText(DocometreMessages.DeleteSelectedMarkersGroupTooltip);
+		deleteMarkersGroupButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				int markersGroupNumber = markersGroupsComboViewer.getCombo().getSelectionIndex() + 1;
+				if(markersGroupNumber > 0) {
+					MathEngineFactory.getMathEngine().deleteMarkersGroup(markersGroupNumber, channelEditor.getChannel());
+					markersGroupsComboViewer.refresh();
+				}
+			}
+		});
+		Button addMarkersGroupButton = new Button(deleteAddMarkersGroupContainer, SWT.FLAT);
+		addMarkersGroupButton.setImage(Activator.getImage(IImageKeys.ADD_MARKER_GROUP_ICON));
+		addMarkersGroupButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
+		addMarkersGroupButton.setToolTipText(DocometreMessages.CreateNewMarkersGroupTooltip);
+		addMarkersGroupButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				InputDialog labelGroupMarkersInputDialog = new InputDialog(getShell(), DocometreMessages.CreateNewMarkersGroupDialogTitle, DocometreMessages.CreateNewMarkersGroupDialogMessage, "Label", null);
+				if(labelGroupMarkersInputDialog.open() == Window.OK) {
+					String markersGroupLabel = labelGroupMarkersInputDialog.getValue();
+					MathEngineFactory.getMathEngine().createNewMarkersGroup(channelEditor.getChannel(), markersGroupLabel);
+					markersGroupsComboViewer.refresh();
+				}
+			}
+		});
+		markersGroupsComboViewer.setContentProvider(new IStructuredContentProvider() {
+			@Override
+			public Object[] getElements(Object inputElement) {
+				if(!(inputElement instanceof Channel)) return new Object[0];
+				Channel signal = (Channel)inputElement;
+				String[] labels = MathEngineFactory.getMathEngine().getMarkersGroupsLabels(signal);
+				return labels;
+			}
+		});
+		markersGroupsComboViewer.setLabelProvider(new LabelProvider());
+		markersGroupsComboViewer.setInput(channelEditor.getChannel());
 		
 		ChannelEditorWidgetsFactory.createLabel(markersGroupsGroup, DocometreMessages.TrialNumberLabel, SWT.LEFT, false);
 		Composite deleteMarkerTrialContainer = new Composite(markersGroupsGroup, SWT.NORMAL);
@@ -211,10 +250,10 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		trialSelectionSpinner.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				int samplesNumber = MathEngineFactory.getMathEngine().getSamplesNumber(channelEditor.getchannel(), trialSelectionSpinner.getSelection());
-				int frontCut = MathEngineFactory.getMathEngine().getFrontCut(channelEditor.getchannel(), trialSelectionSpinner.getSelection());
-				int endCut =  MathEngineFactory.getMathEngine().getEndCut(channelEditor.getchannel(), trialSelectionSpinner.getSelection());
-				double sf = MathEngineFactory.getMathEngine().getSampleFrequency(channelEditor.getchannel());
+				int samplesNumber = MathEngineFactory.getMathEngine().getSamplesNumber(channelEditor.getChannel(), trialSelectionSpinner.getSelection());
+				int frontCut = MathEngineFactory.getMathEngine().getFrontCut(channelEditor.getChannel(), trialSelectionSpinner.getSelection());
+				int endCut =  MathEngineFactory.getMathEngine().getEndCut(channelEditor.getChannel(), trialSelectionSpinner.getSelection());
+				double sf = MathEngineFactory.getMathEngine().getSampleFrequency(channelEditor.getChannel());
 				double duration = 1f*samplesNumber/sf;
 				frontCutLabelValue.setText(Integer.toString(frontCut));
 				endCutLabelValue.setText(Integer.toString(endCut));
@@ -233,19 +272,19 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		infosGroup.setLayout(new GridLayout(2, false));
 		
 		ChannelEditorWidgetsFactory.createLabel(infosGroup, DocometreMessages.SignalNameLabel, SWT.LEFT, false);
-		ChannelEditorWidgetsFactory.createLabel(infosGroup, channelEditor.getchannel().getName(), SWT.LEFT, true);
+		ChannelEditorWidgetsFactory.createLabel(infosGroup, channelEditor.getChannel().getName(), SWT.LEFT, true);
 		
 		ChannelEditorWidgetsFactory.createLabel(infosGroup, DocometreMessages.Subject_Label, SWT.LEFT, false);
-		ChannelEditorWidgetsFactory.createLabel(infosGroup, channelEditor.getchannel().getParent().getName(), SWT.LEFT, true);
+		ChannelEditorWidgetsFactory.createLabel(infosGroup, channelEditor.getChannel().getParent().getName(), SWT.LEFT, true);
 		
 		ChannelEditorWidgetsFactory.createLabel(infosGroup, DocometreMessages.Experiment_Label, SWT.LEFT, false);
-		ChannelEditorWidgetsFactory.createLabel(infosGroup, channelEditor.getchannel().getParent().getParent().getName(), SWT.LEFT, true);
+		ChannelEditorWidgetsFactory.createLabel(infosGroup, channelEditor.getChannel().getParent().getParent().getName(), SWT.LEFT, true);
 		
-		double sf = MathEngineFactory.getMathEngine().getSampleFrequency(channelEditor.getchannel());
+		double sf = MathEngineFactory.getMathEngine().getSampleFrequency(channelEditor.getChannel());
 		ChannelEditorWidgetsFactory.createLabel(infosGroup, DocometreMessages.FrequencyLabel, SWT.LEFT, false);
 		ChannelEditorWidgetsFactory.createLabel(infosGroup, Double.toString(sf), SWT.LEFT, true);
 		
-		nbTrials = MathEngineFactory.getMathEngine().getTrialsNumber(channelEditor.getchannel());
+		nbTrials = MathEngineFactory.getMathEngine().getTrialsNumber(channelEditor.getChannel());
 		ChannelEditorWidgetsFactory.createLabel(infosGroup, DocometreMessages.TrialsNumberLabel2, SWT.LEFT, false);
 		ChannelEditorWidgetsFactory.createLabel(infosGroup, Integer.toString(nbTrials), SWT.LEFT, true);
 	}
@@ -277,13 +316,13 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 	}
 
 	private void removeSeriesFromChart(Integer trialNumber) {
-		String seriesID = channelEditor.getchannel().getFullName() + "." + trialNumber;
+		String seriesID = channelEditor.getChannel().getFullName() + "." + trialNumber;
 		chart.removeSeries(seriesID);
 	}
 	
 	private void addSeriesToChart(Integer trialNumber) {
 		// Get x and Y values for this signal and trial
-		Channel signal = channelEditor.getchannel();
+		Channel signal = channelEditor.getChannel();
 		double[] yValues = MathEngineFactory.getMathEngine().getYValuesForSignal(signal, trialNumber);
 		double[] xValues = MathEngineFactory.getMathEngine().getTimeValuesForSignal(signal, trialNumber);
 		// Add Series
@@ -315,7 +354,7 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 	}
 	
 	private boolean chartHasAlreadyThisTrial(Integer trialNumber) {
-		String seriesID = channelEditor.getchannel().getFullName() + "." + trialNumber;
+		String seriesID = channelEditor.getChannel().getFullName() + "." + trialNumber;
 		return chart.getSeriesSet().getSeries(seriesID) != null;
 	}
 
