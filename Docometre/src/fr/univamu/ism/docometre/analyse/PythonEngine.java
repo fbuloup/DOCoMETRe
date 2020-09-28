@@ -346,6 +346,12 @@ public class PythonEngine implements MathEngine {
 		String expression = "docometre.experiments['" + channelName + ".MarkersGroupsLabels'].pop(" + (markersGroupNumber - 1) + ")";
 		pythonController.getPythonEntryPoint().runScript(expression);
 		
+		// decrease nb markers groups
+		int nbMarkersGroups = getNbMarkersGroups(signal);
+		nbMarkersGroups--;
+		expression = "docometre.experiments[\"" + channelName + ".NbMarkersGroups\"] = " + nbMarkersGroups;
+		pythonController.getPythonEntryPoint().runScript(expression);
+		
 		// Remove markers group value
 		String experimentName = signal.getFullPath().segment(0);
 		String subjectName = signal.getFullPath().segment(1);
@@ -353,12 +359,6 @@ public class PythonEngine implements MathEngine {
 		channelName = experimentName + "\\." + subjectName + "\\." + channelName;
 		expression = channelName + "\\.MarkersGroup_" + markersGroupLabel; 
 		pythonController.getPythonEntryPoint().unload(expression);
-		
-		// decrease nb markers groups
-		int nbMarkersGroups = getNbMarkersGroups(signal);
-		nbMarkersGroups--;
-		expression = "docometre.experiments[\"" + channelName + ".NbMarkersGroups\"] = " + nbMarkersGroups;
-		pythonController.getPythonEntryPoint().runScript(expression);
 	}
 
 }

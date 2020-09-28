@@ -173,6 +173,14 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		});
 		markersGroupsComboViewer.setLabelProvider(new LabelProvider());
 		markersGroupsComboViewer.setInput(channelEditor.getChannel());
+		markersGroupsComboViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+			@Override
+			public void selectionChanged(SelectionChangedEvent event) {
+				if(markersGroupsComboViewer.getSelection().isEmpty()) markersManager.setMarkerLabel("");
+				else markersManager.setMarkerLabel(markersGroupsComboViewer.getSelection().toString());
+			}
+		});
+		
 		
 		ChannelEditorWidgetsFactory.createLabel(markersGroupsGroup, DocometreMessages.TrialNumberLabel, SWT.LEFT, false);
 		Composite deleteMarkerTrialContainer = new Composite(markersGroupsGroup, SWT.NORMAL);
