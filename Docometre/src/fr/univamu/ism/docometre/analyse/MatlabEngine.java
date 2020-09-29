@@ -528,5 +528,9 @@ public final class MatlabEngine implements MathEngine {
 		}
 	}
 	
+	@Override
+	public void addMarker(String markerLabel, int trialNumber, double xValue, double yValue, String fullSignalName) {
+		// TODO
+	}
 
 }

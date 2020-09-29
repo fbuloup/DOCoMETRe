@@ -38,6 +38,7 @@ public interface MathEngine {
 	void createNewMarkersGroup(Channel signal, String markersGroupLabel);
 	String getMarkersGroupLabel(int markersGroupNumber, Channel signal);
 	void deleteMarkersGroup(int markersGroupNumber, Channel signal);
+	void addMarker(String markerLabel, int trialNumber, double xValue, double yValue, String fullSignalName);
 	
 	default String[] getMarkersGroupsLabels(Channel signal) {
 		int nbMarkersGroups = getNbMarkersGroups(signal);

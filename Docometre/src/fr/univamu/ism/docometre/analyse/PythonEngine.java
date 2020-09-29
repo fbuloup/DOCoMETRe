@@ -360,5 +360,10 @@ public class PythonEngine implements MathEngine {
 		expression = channelName + "\\.MarkersGroup_" + markersGroupLabel; 
 		pythonController.getPythonEntryPoint().unload(expression);
 	}
+	
+	@Override
+	public void addMarker(String markerLabel, int trialNumber, double xValue, double yValue, String fullSignalName) {
+		// TODO
+	}
 
 }

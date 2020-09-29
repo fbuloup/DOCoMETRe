@@ -410,12 +410,12 @@ public class InteractiveChart extends Chart implements PaintListener {
 		currentY = y;
 	}
 	
-	private void handleMouseDoubleClick(Event event) {
+	private int handleMouseDoubleClick(Event event) {
 		doubleClick = true;
 		currentXMarker_Pixel = getCurrentX_Pixel();
 		currentYMarker_Pixel = getCurrentY_Pixel();
 		
-		if(getCurrentSeries() == null) return;
+		if(getCurrentSeries() == null) return -1;
 
 		double mx = getAxisSet().getXAxes()[0].getDataCoordinate(currentXMarker_Pixel);
 		
@@ -447,6 +447,20 @@ public class InteractiveChart extends Chart implements PaintListener {
 		}
 		
 		handleMouseMoveEvent(event);
+		
+		return index;
+	}
+	
+	public double[] getMarkerCoordinates(Event event) {
+		int index = handleMouseDoubleClick(event);
+		
+		if(index > -1) {
+			double[] xValues = getCurrentSeries().getXSeries();
+			double[] yValues = getCurrentSeries().getYSeries();
+			
+			return new double[] {xValues[index], yValues[index]};
+		}
+		return new double[0];
 	}
 	
 	private void resetMarker(Event event) {
