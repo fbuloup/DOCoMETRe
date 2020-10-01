@@ -12,6 +12,7 @@ import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -51,6 +52,12 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 	private int nbTrials;
 	private MarkersManager markersManager;
 
+	private ComboViewer markersGroupComboViewer;
+
+	private Label markerXValueLabel;
+
+	private Label markerYValueLabel;
+
 	public SignalContainerEditor(Composite parent, int style, ChannelEditor channelEditor) {
 		super(parent, style);
 		this.channelEditor = channelEditor;
@@ -68,7 +75,7 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		channelContainer.setLayout(gl2);
 		channelContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 		chart = ChannelEditorWidgetsFactory.createChart(channelContainer, 1);
-		markersManager = new MarkersManager(chart);
+		markersManager = new MarkersManager(this);
 		
 		trialsListViewer = new ListViewer(channelContainer, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 		trialsListViewer.getList().setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
@@ -118,6 +125,12 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 			}
 		});
 	}
+	
+
+	public InteractiveChart getChart() {
+		return chart;
+	}
+
 	
 	private void createMarkersGroup(Composite infosTrialsFieldsMarkersContainer) {
 		Group markersGroupsGroup = ChannelEditorWidgetsFactory.createGroup(infosTrialsFieldsMarkersContainer, DocometreMessages.MarkersGroupTitle);
@@ -176,8 +189,8 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		markersGroupsComboViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			@Override
 			public void selectionChanged(SelectionChangedEvent event) {
-				if(markersGroupsComboViewer.getSelection().isEmpty()) markersManager.setMarkerLabel("");
-				else markersManager.setMarkerLabel(markersGroupsComboViewer.getSelection().toString());
+				if(markersGroupsComboViewer.getSelection().isEmpty()) markersManager.setMarkersGroupLabel("");
+				else markersManager.setMarkersGroupLabel(((IStructuredSelection)markersGroupsComboViewer.getSelection()).getFirstElement().toString());
 			}
 		});
 		
@@ -191,7 +204,38 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		gl2.marginHeight = 0;
 		gl2.marginWidth = 0;
 		deleteMarkerTrialContainer.setLayout(gl2);
-		ChannelEditorWidgetsFactory.createSpinner(deleteMarkerTrialContainer, SWT.FILL, true);
+		markersGroupComboViewer = ChannelEditorWidgetsFactory.createCombo(deleteMarkerTrialContainer, SWT.FILL, true);
+		markersGroupComboViewer.setContentProvider(new IStructuredContentProvider() {
+			@Override
+			public Object[] getElements(Object inputElement) {
+				if(!(inputElement instanceof Channel)) return new Object[0];
+				if(markersManager.getMarkersGroupLabel() == null) return new Object[0];
+				Channel signal = (Channel)inputElement;
+				double[][] values = MathEngineFactory.getMathEngine().getMarkers(markersManager.getMarkersGroupLabel(), signal);
+				ArrayList<double[]> valuesString = new ArrayList<double[]>();
+				for (double[] trialValues : values) valuesString.add(trialValues);
+				return valuesString.toArray();
+			}
+		});
+		markersGroupComboViewer.setLabelProvider(new LabelProvider() {
+			@Override
+			public String getText(Object element) {
+				if(!(element instanceof double[])) return "";
+				double[] values = (double[])element;
+				return String.valueOf((int)values[0]);
+			}
+		});
+		markersGroupComboViewer.setInput(channelEditor.getChannel());
+		markersGroupComboViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+			@Override
+			public void selectionChanged(SelectionChangedEvent event) {
+				if(((IStructuredSelection)markersGroupComboViewer.getSelection()).isEmpty()) return;
+				double[] values = (double[])((IStructuredSelection)markersGroupComboViewer.getSelection()).getFirstElement();
+				markerXValueLabel.setText(String.valueOf(values[1]));
+				markerYValueLabel.setText(String.valueOf(values[2]));
+			}
+		});
+		
 		Button deleteMarkerTrialButton = new Button(deleteMarkerTrialContainer, SWT.FLAT);
 		deleteMarkerTrialButton.setImage(Activator.getImage(IImageKeys.DELETE_ICON));
 		deleteMarkerTrialButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
@@ -204,10 +248,10 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		graphicalComboViewer.setInput(graphicalSymbols);
 		
 		ChannelEditorWidgetsFactory.createLabel(markersGroupsGroup, DocometreMessages.XMarkerValueLabel, SWT.LEFT, false);
-		ChannelEditorWidgetsFactory.createLabel(markersGroupsGroup, DocometreMessages.NotAvailable_Label, SWT.LEFT, true);
+		markerXValueLabel = ChannelEditorWidgetsFactory.createLabel(markersGroupsGroup, DocometreMessages.NotAvailable_Label, SWT.LEFT, true);
 		
 		ChannelEditorWidgetsFactory.createLabel(markersGroupsGroup, DocometreMessages.YMarkerValueLabel, SWT.LEFT, false);
-		ChannelEditorWidgetsFactory.createLabel(markersGroupsGroup, DocometreMessages.NotAvailable_Label, SWT.LEFT, true);
+		markerYValueLabel = ChannelEditorWidgetsFactory.createLabel(markersGroupsGroup, DocometreMessages.NotAvailable_Label, SWT.LEFT, true);
 	}
 	
 	private void createFieldsGroup(Composite infosTrialsFieldsMarkersContainer) {
@@ -413,6 +457,11 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 			}
 			trialsListViewer.setSelection(new StructuredSelection(selectedTrialsNumbers), true);
 		}
+	}
+
+
+	public void updateMarkersGroup(String markersGroupLabel) {
+		markersGroupComboViewer.refresh();
 	}
 	
 }

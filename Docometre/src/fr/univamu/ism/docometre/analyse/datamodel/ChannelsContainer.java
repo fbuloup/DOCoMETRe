@@ -16,5 +16,12 @@ public final class ChannelsContainer {
 		return MathEngineFactory.getMathEngine().getChannels(subject);
 	}
 
+	public Channel getChannelFromName(String fullChannelName) {
+		Channel[] channels = getChannels();
+		for (Channel channel : channels) {
+			if(channel.getFullName().equals(fullChannelName)) return channel;
+		}
+		return null;
+	}
 	
 }

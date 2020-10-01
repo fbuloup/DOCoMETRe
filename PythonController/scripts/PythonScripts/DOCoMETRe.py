@@ -4,7 +4,6 @@ import os;
 import numpy;
 import io;
 import re;
-import array;
 
 class DOCoMETRe(object):
 
@@ -158,12 +157,10 @@ class DOCoMETRe(object):
 		values = eval(expression);
 		if(trialNumber > -1):
 			values = values[trialNumber][frontCut:endCut];
-		if(dataType == "i"):
-			arrayValues = array.array('i', values);
-		elif(dataType == "f"):
-			arrayValues = array.array('f', values);
-		else:
-			arrayValues = array.array('d', values);
+		
+		arrayValues = numpy.array(values);
+		
+		arrayValues = arrayValues.astype(dataType);
 		
 		return arrayValues.tobytes();
 	

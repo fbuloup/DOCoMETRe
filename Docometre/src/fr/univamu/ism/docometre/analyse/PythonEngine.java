@@ -225,9 +225,9 @@ public class PythonEngine implements MathEngine {
 		byte[] byteValues = pythonController.getPythonEntryPoint().getVector(expression, PythonEntryPoint.DATA_TYPE_INT, -1, -1, -1);
 		ByteBuffer byteBuffer = ByteBuffer.wrap(byteValues);
 		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-    	IntBuffer intBuffer = byteBuffer.asIntBuffer();
-    	int[] values = new int[intBuffer.capacity()];
-    	intBuffer.get(values);
+		IntBuffer intBuffer = byteBuffer.asIntBuffer();
+		int[] values = new int[intBuffer.capacity()];
+		intBuffer.get(values);
     	Arrays.sort(values);
     	return Arrays.stream(values).boxed().toArray(Integer[]::new);
 	}
@@ -362,8 +362,32 @@ public class PythonEngine implements MathEngine {
 	}
 	
 	@Override
-	public void addMarker(String markerLabel, int trialNumber, double xValue, double yValue, String fullSignalName) {
-		// TODO
+	public void addMarker(String markersGroupLabel, int trialNumber, double xValue, double yValue, Channel signal) {
+		String channelName = getFullPath(signal);
+		String valuesString = "[" + trialNumber + "," + xValue + "," + yValue + "]";
+		String expression = "docometre.experiments[\"" + channelName + ".MarkersGroup_" + markersGroupLabel + "_Values\"].append(" + valuesString + ")";
+		pythonController.getPythonEntryPoint().runScript(expression);
 	}
 
+	@Override
+	public double[][] getMarkers(String markersGroupLabel, Channel signal) {
+		String channelName = getFullPath(signal);
+		String expression = "docometre.experiments[\"" + channelName + ".MarkersGroup_" + markersGroupLabel + "_Values\"]";
+		byte[] byteValues = pythonController.getPythonEntryPoint().getVector(expression, PythonEntryPoint.DATA_TYPE_DOUBLE, -1, -1, -1);
+		
+		ByteBuffer byteBuffer = ByteBuffer.wrap(byteValues);
+		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+    	DoubleBuffer doubleBuffer = byteBuffer.asDoubleBuffer();
+    	double[] values = new double[doubleBuffer.capacity()];
+    	doubleBuffer.get(values);
+    	
+    	double[][] markersValues = new double[values.length / 3][3];
+    	
+    	for (int i = 0; i < values.length; i++) {
+			markersValues[i / 3][i % 3] = values[i];
+		}
+    	
+    	return markersValues;
+	}
+	
 }

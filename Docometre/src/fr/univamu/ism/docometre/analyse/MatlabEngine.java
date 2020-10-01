@@ -529,8 +529,14 @@ public final class MatlabEngine implements MathEngine {
 	}
 	
 	@Override
-	public void addMarker(String markerLabel, int trialNumber, double xValue, double yValue, String fullSignalName) {
+	public void addMarker(String markerLabel, int trialNumber, double xValue, double yValue, Channel signal) {
 		// TODO
+	}
+
+	@Override
+	public double[][] getMarkers(String markerLabel, Channel signal) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
