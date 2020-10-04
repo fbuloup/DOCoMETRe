@@ -371,6 +371,7 @@ public class PythonEngine implements MathEngine {
 
 	@Override
 	public double[][] getMarkers(String markersGroupLabel, Channel signal) {
+		if("".equals(markersGroupLabel)) return new double[0][0];
 		String channelName = getFullPath(signal);
 		String expression = "docometre.experiments[\"" + channelName + ".MarkersGroup_" + markersGroupLabel + "_Values\"]";
 		byte[] byteValues = pythonController.getPythonEntryPoint().getVector(expression, PythonEntryPoint.DATA_TYPE_DOUBLE, -1, -1, -1);
