@@ -1,6 +1,7 @@
 package fr.univamu.ism.docometre.analyse;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
@@ -38,8 +39,14 @@ public interface MathEngine {
 	void createNewMarkersGroup(Channel signal, String markersGroupLabel);
 	String getMarkersGroupLabel(int markersGroupNumber, Channel signal);
 	void deleteMarkersGroup(int markersGroupNumber, Channel signal);
-	void addMarker(String markerLabel, int trialNumber, double xValue, double yValue, Channel signal);
-	double[][] getMarkers(String markerLabel, Channel signal);
+	void addMarker(String markersGroupLabel, int trialNumber, double xValue, double yValue, Channel signal);
+	double[][] getMarkers(String markersGroupLabel, Channel signal);
+	void deleteMarker(String markersGroupLabel, int trialNumber, double xValue, double yValue, Channel signal);
+	
+	default int getMarkersGroupNumber(String markersGroupLabel, Channel signal) {
+		String[] labels = getMarkersGroupsLabels(signal);
+		return Arrays.binarySearch(labels, markersGroupLabel);
+	}
 	
 	default String[] getMarkersGroupsLabels(Channel signal) {
 		int nbMarkersGroups = getNbMarkersGroups(signal);

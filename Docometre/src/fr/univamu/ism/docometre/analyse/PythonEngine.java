@@ -390,5 +390,20 @@ public class PythonEngine implements MathEngine {
     	
     	return markersValues;
 	}
+
+	@Override
+	public void deleteMarker(String markersGroupLabel, int trialNumber, double xValue, double yValue, Channel signal) {
+		String channelName = getFullPath(signal);
+		String valuesString = "[" + trialNumber + "," + xValue + "," + yValue + "]";
+		String expression = "docometre.experiments[\"" + channelName + ".MarkersGroup_" + markersGroupLabel + "_Values\"].remove(" + valuesString + ")";
+		pythonController.getPythonEntryPoint().runScript(expression);
+		
+		double[][] values = getMarkers(markersGroupLabel, signal);
+		int markersGroupNumber = getMarkersGroupNumber(markersGroupLabel, signal) + 1;
+		if(values.length == 0) deleteMarkersGroup(markersGroupNumber, signal);
+		
+	}
+
+	
 	
 }

@@ -44,8 +44,6 @@ public final class MarkersManager extends MouseAdapter implements ICustomPaintLi
 			double[] coordinates = signalContainerEditor.getChart().getMarkerCoordinates(event);
 			if(coordinates.length == 2) {
 				try {
-					Activator.logInfoMessage("Add marker " + markersGroupLabel + " at index " + mouseEvent.x + " for : " + fullSignalName + " trial number " + trialNumber, getClass());
-					Activator.logInfoMessage("With coordinates x " + coordinates[0] + " and y " + coordinates[1], getClass());
 					String fullSubjectName = fullSignalName.replaceAll("\\.\\w+$", "");
 					fullSubjectName = fullSubjectName.replaceAll("\\.", "/");
 					IResource subject = ResourcesPlugin.getWorkspace().getRoot().findMember(fullSubjectName);

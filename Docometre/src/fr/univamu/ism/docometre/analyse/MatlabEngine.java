@@ -529,14 +529,74 @@ public final class MatlabEngine implements MathEngine {
 	}
 	
 	@Override
-	public void addMarker(String markerLabel, int trialNumber, double xValue, double yValue, Channel signal) {
-		// TODO
+	public void addMarker(String markersGroupLabel, int trialNumber, double xValue, double yValue, Channel signal) {
+		try {
+			String fullSignalName = getFullPath(signal);
+			
+			double[][] values = getMarkers(markersGroupLabel, signal);
+			
+			String expression = "";
+			
+			if(values.length == 0) {
+				expression = "[" + trialNumber + "," + xValue + "," + yValue + "];";
+				expression = fullSignalName + ".MarkersGroup_" + markersGroupLabel + "_Values = " + expression;
+			} else {
+				expression = "" + trialNumber + "," + xValue + "," + yValue;
+				String markersValues = fullSignalName + ".MarkersGroup_" + markersGroupLabel + "_Values";
+				expression = markersValues + " = " + "[" + markersValues + ";" + expression + "];";
+			}
+			matlabController.eval(expression);
+			
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
 	}
 
 	@Override
-	public double[][] getMarkers(String markerLabel, Channel signal) {
-		// TODO Auto-generated method stub
-		return null;
+	public double[][] getMarkers(String markersGroupLabel, Channel signal) {
+		try {
+			if("".equals(markersGroupLabel)) return new double[0][0];
+			String fullSignalName = getFullPath(signal);
+			String expression = fullSignalName + ".MarkersGroup_" + markersGroupLabel + "_Values";
+			double[][] response = matlabController.getVariable2DArray(expression);
+//			Object response = responses[0];
+			if(response instanceof double[][]) {
+				return (double[][])response;
+			}
+//			if(response instanceof double[]) {
+//				double[][] values = new double[1][3];
+//				values[0] = (double[])response;
+//				return values;
+//			}
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		
+		return new double[0][0];
+	}
+
+	@Override
+	public void deleteMarker(String markersGroupLabel, int trialNumber, double xValue, double yValue, Channel signal) {
+		try {
+			String channelName = getFullPath(signal);
+			String valuesString = "[" + trialNumber + "," + xValue + "," + yValue + "]";
+			String id = channelName + ".MarkersGroup_" + markersGroupLabel + "_Values";
+			String expression = id + " = " + id + "(~ismember(" + id + ", " + valuesString + ",'rows'), :)";
+			matlabController.eval(expression);
+			
+			double[][] values = getMarkers(markersGroupLabel, signal);
+			int markersGroupNumber = getMarkersGroupNumber(markersGroupLabel, signal) + 1;
+			if(values.length == 0) deleteMarkersGroup(markersGroupNumber, signal);
+			
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		
+		
+		
 	}
 
 }

@@ -765,6 +765,11 @@ public final class DocometreMessages extends NLS {
 	public static String CategoryCriteriaLabel;
 	public static String CreateNewMarkersGroupDialogTitle;
 	public static String CreateNewMarkersGroupDialogMessage;
+	public static String DeleteMarkerDialogTitle;
+	public static String DeleteMarkerDialogMessage;
+	public static String DeleteMarkersGroupDialogTitle;
+	public static String DeleteMarkersGroupDialogMessage;
+	public static String MarkerLabelInvalid;
 	
 
 	// Data processing editor wizard

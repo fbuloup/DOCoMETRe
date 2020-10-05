@@ -5,9 +5,12 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
+import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -20,6 +23,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.jface.window.Window;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -155,11 +159,13 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		deleteMarkersGroupButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				int markersGroupNumber = markersGroupsComboViewer.getCombo().getSelectionIndex() + 1;
-				if(markersGroupNumber > 0) {
-					MathEngineFactory.getMathEngine().deleteMarkersGroup(markersGroupNumber, channelEditor.getChannel());
-					markersGroupsComboViewer.refresh();
-					chart.redraw();
+				if(MessageDialog.openQuestion(getShell(), DocometreMessages.DeleteMarkersGroupDialogTitle, DocometreMessages.DeleteMarkersGroupDialogMessage)) {
+					int markersGroupNumber = markersGroupsComboViewer.getCombo().getSelectionIndex() + 1;
+					if(markersGroupNumber > 0) {
+						MathEngineFactory.getMathEngine().deleteMarkersGroup(markersGroupNumber, channelEditor.getChannel());
+						markersGroupsComboViewer.refresh();
+						chart.redraw();
+					}
 				}
 			}
 		});
@@ -170,7 +176,15 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		addMarkersGroupButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				InputDialog labelGroupMarkersInputDialog = new InputDialog(getShell(), DocometreMessages.CreateNewMarkersGroupDialogTitle, DocometreMessages.CreateNewMarkersGroupDialogMessage, "Label", null);
+				IInputValidator validator = new IInputValidator() {
+					@Override
+					public String isValid(String newText) {
+						if(!Pattern.matches("[a-zA-Z][a-zA-Z0-9_]*", newText))
+							return NLS.bind(DocometreMessages.MarkerLabelInvalid, newText);
+						return null;
+					}
+				};
+				InputDialog labelGroupMarkersInputDialog = new InputDialog(getShell(), DocometreMessages.CreateNewMarkersGroupDialogTitle, DocometreMessages.CreateNewMarkersGroupDialogMessage, "Label", validator);
 				if(labelGroupMarkersInputDialog.open() == Window.OK) {
 					String markersGroupLabel = labelGroupMarkersInputDialog.getValue();
 					MathEngineFactory.getMathEngine().createNewMarkersGroup(channelEditor.getChannel(), markersGroupLabel);
@@ -216,11 +230,13 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 			@Override
 			public Object[] getElements(Object inputElement) {
 				if(!(inputElement instanceof Channel)) return new Object[0];
-				if(markersManager.getMarkersGroupLabel() == null) return new Object[0];
+				if(markersManager.getMarkersGroupLabel() == null || "".equals(markersManager.getMarkersGroupLabel())) return new Object[0];
 				Channel signal = (Channel)inputElement;
 				double[][] values = MathEngineFactory.getMathEngine().getMarkers(markersManager.getMarkersGroupLabel(), signal);
 				ArrayList<double[]> valuesString = new ArrayList<double[]>();
-				for (double[] trialValues : values) valuesString.add(trialValues);
+				for (double[] trialValues : values) {
+					valuesString.add(trialValues);
+				}
 				return valuesString.toArray();
 			}
 		});
@@ -269,6 +285,20 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		deleteMarkerTrialButton.setImage(Activator.getImage(IImageKeys.DELETE_ICON));
 		deleteMarkerTrialButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
 		deleteMarkerTrialButton.setToolTipText(DocometreMessages.DeleteSelectedMarkerTrialTooltip);
+		deleteMarkerTrialButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if(MessageDialog.openQuestion(getShell(), DocometreMessages.DeleteMarkerDialogTitle, DocometreMessages.DeleteMarkerDialogMessage)) {
+					if(((IStructuredSelection)markersGroupComboViewer.getSelection()).isEmpty()) return;
+					double[] values = (double[])((IStructuredSelection)markersGroupComboViewer.getSelection()).getFirstElement();
+					String markersGroupLabel = (String) ((IStructuredSelection)markersGroupsComboViewer.getSelection()).getFirstElement();
+					MathEngineFactory.getMathEngine().deleteMarker(markersGroupLabel, (int)values[0], values[1], values[2], channelEditor.getChannel());
+					markersGroupsComboViewer.refresh();
+					updateMarkersGroup(markersGroupLabel);
+					getChart().redraw();
+				}
+			}
+		});
 		
 		/*ChannelEditorWidgetsFactory.createLabel(markersGroupsGroup, DocometreMessages.GraphicalSymbolLabel, SWT.LEFT, false);
 		ComboViewer graphicalComboViewer = ChannelEditorWidgetsFactory.createCombo(markersGroupsGroup, SWT.FILL, true);
