@@ -148,7 +148,7 @@ class DOCoMETRe(object):
 		exec("import re;docometre.experiments = {k:v for k,v in docometre.experiments.items() if re.search('^" + subjectFullName + "', k) == None}");
 		
 	def getChannels(self, subjectFullName):
-		channels = list({k:v for k,v in self.experiments.items() if re.search("^" + subjectFullName + "\.\w+\.isSignal$", k)});
+		channels = list({k:v for k,v in self.experiments.copy().items() if re.search("^" + subjectFullName + "\.\w+\.isSignal$", k)});
 		channels  = [re.sub("\.\w+$", "", channel) for channel in channels];
 		channels  = [re.sub("^\w+\.\w+\.", "", channel) for channel in channels];
 		return ",".join(channels);

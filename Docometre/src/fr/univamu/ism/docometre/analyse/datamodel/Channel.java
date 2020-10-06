@@ -29,6 +29,8 @@ import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
+import fr.univamu.ism.docometre.analyse.views.SubjectsView;
+import fr.univamu.ism.docometre.views.ExperimentsView;
 
 public class Channel implements IFile {
 	
@@ -41,6 +43,16 @@ public class Channel implements IFile {
 		ResourceProperties.setObjectSessionProperty(this, this);
 	}
 
+	public void setModified(boolean modified) {
+		ResourceProperties.setSubjectModified(subject, modified);
+		ExperimentsView.refresh(subject, null);
+		SubjectsView.refresh(subject, null);
+	}
+	
+	public boolean isModified() {
+		return ResourceProperties.isSubjectModified(subject);
+	}
+	
 	public String getFullName() {
 		return subject.getFullPath().toString().replaceAll("^/", "").replaceAll("/", ".") + "." + getName();
 	}

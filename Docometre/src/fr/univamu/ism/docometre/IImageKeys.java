@@ -184,4 +184,6 @@ public interface IImageKeys {
 	
 	public static final String ADD_MARKER_GROUP_ICON = "icons/marker_label.png"; //$NON-NLS-1$
 	
+	public static final String MODIFIED_ICON = "icons/modified.gif"; //$NON-NLS-1$
+	
 }

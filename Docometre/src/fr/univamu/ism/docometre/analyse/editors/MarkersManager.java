@@ -7,6 +7,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swtchart.internal.ChartLayout;
@@ -97,11 +98,17 @@ public final class MarkersManager extends MouseAdapter implements ICustomPaintLi
 										
 										int index = signalContainerEditor.getChart().getAxisSet().getXAxes()[0].getPixelCoordinate(markers[i][1]) + 1;
 										
+										Color oldForegroundColor = event.gc.getForeground();
+										int oldLineWidth = event.gc.getLineWidth();
+										int oldLineStyle = event.gc.getLineStyle();
 										event.gc.setForeground(((ILineSeries)series).getLineColor());
 										event.gc.setLineWidth(3);
 										event.gc.setLineStyle(SWT.LINE_DOT);
 										event.gc.drawLine(index, 0, index, signalContainerEditor.getChart().getPlotArea().getClientArea().height);
 										event.gc.drawText(markersGroupLabel, index + 3, signalContainerEditor.getChart().getPlotArea().getClientArea().height - 15);
+										event.gc.setForeground(oldForegroundColor);
+										event.gc.setLineWidth(oldLineWidth);
+										event.gc.setLineStyle(oldLineStyle);
 										
 										GC gc = new GC(signalContainerEditor.getChart());
 										int W2 = signalContainerEditor.getChart().getAxisSet().getYAxes()[0].getTick().getBounds().width;

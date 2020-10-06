@@ -34,6 +34,7 @@ public interface MathEngine {
 	int getEndCut(Channel signal, int trialNumber);
 	void runScript(String code);
 	void deleteChannel(Channel resource);
+	void saveSubject(IResource subject);
 	
 	int getNbMarkersGroups(Channel signal);
 	void createNewMarkersGroup(Channel signal, String markersGroupLabel);

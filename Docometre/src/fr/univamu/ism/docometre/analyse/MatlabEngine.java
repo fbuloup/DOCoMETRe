@@ -435,6 +435,7 @@ public final class MatlabEngine implements MathEngine {
 			String subjectFullPath = channel.getFullPath().removeLastSegments(1).toString().replaceAll("/", ".");
 			String cmd = subjectFullPath + " = " + "rmfield(" + subjectFullPath + ", '" + channelName + "');";
 			matlabController.evaluate(cmd);
+			channel.setModified(true);
 		} catch (Exception e) {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
@@ -477,6 +478,7 @@ public final class MatlabEngine implements MathEngine {
 			
 			expression = channelName + ".MarkersGroup_"+ markersGroupLabel + "_Values = [];";
 			matlabController.eval(expression);
+			signal.setModified(true);
 		} catch (Exception e) {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
@@ -522,6 +524,7 @@ public final class MatlabEngine implements MathEngine {
 			nbMarkersGroups--;
 			expression = fullSignalName + ".NbMarkersGroups = " + nbMarkersGroups;
 			matlabController.eval(expression);
+			signal.setModified(true);
 		} catch (Exception e) {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
@@ -546,6 +549,7 @@ public final class MatlabEngine implements MathEngine {
 				expression = markersValues + " = " + "[" + markersValues + ";" + expression + "];";
 			}
 			matlabController.eval(expression);
+			signal.setModified(true);
 			
 		} catch (Exception e) {
 			Activator.logErrorMessageWithCause(e);
@@ -589,14 +593,17 @@ public final class MatlabEngine implements MathEngine {
 			double[][] values = getMarkers(markersGroupLabel, signal);
 			int markersGroupNumber = getMarkersGroupNumber(markersGroupLabel, signal) + 1;
 			if(values.length == 0) deleteMarkersGroup(markersGroupNumber, signal);
-			
+
+			signal.setModified(true);
 		} catch (Exception e) {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
 		}
-		
-		
-		
+	}
+
+	@Override
+	public void saveSubject(IResource subject) {
+		// TODO Auto-generated method stub
 	}
 
 }

@@ -102,6 +102,9 @@ public class ExperimentsLabelDecorator implements ILightweightLabelDecorator {
 					boolean isLoaded = MathEngineFactory.getMathEngine().isSubjectLoaded((IResource) element);
 					if(isLoaded)
 					decoration.addOverlay(Activator.getImageDescriptor(IImageKeys.SUBJECT_LOADED_OVERLAY), IDecoration.TOP_RIGHT);
+					boolean isModified = ResourceProperties.isSubjectModified(resource);
+					if(isModified)
+						decoration.addOverlay(Activator.getImageDescriptor(IImageKeys.MODIFIED_ICON), IDecoration.BOTTOM_RIGHT);
 				}
 				try {
 					int severity = resource.findMaxProblemSeverity(DocometreBuilder.MARKER_ID, true, IResource.DEPTH_INFINITE);

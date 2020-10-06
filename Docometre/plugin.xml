@@ -1960,6 +1960,21 @@
          <toolbar
                id="Docometre.AnalyseCoolBarToolbar">
             <command
+                  commandId="org.eclipse.ui.file.save"
+                  label="%SaveAction.label"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                  <reference
+                        definitionId="Docometre.AnalysePerspectiveSelected">
+                  </reference>
+               </visibleWhen>
+            </command>
+            <separator
+                  name="Docometre.separator1"
+                  visible="true">
+            </separator>
+            <command
                   commandId="SelectExperimentCommand"
                   icon="icons/select.gif"
                   label="%SelectExperimentCommand.label"
@@ -2424,6 +2439,21 @@
             activityId="Docometre.Activity"
             pattern=".*/org.eclipse.equinox.p2.ui.sdk.update">
       </activityPatternBinding>
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="fr.univamu.ism.docometre.analyse.handlers.SaveModifiedSubjectsHandler"
+            commandId="org.eclipse.ui.file.save">
+         <activeWhen>
+            <with
+                  variable="activePartId">
+               <equals
+                     value="Docometre.SubjectsView">
+               </equals>
+            </with>
+         </activeWhen>
+      </handler>
    </extension>
 
 </plugin>

@@ -299,6 +299,7 @@ public class PythonEngine implements MathEngine {
 		String channelName = channel.getFullPath().segment(2);
 		channelName = experimentName + "\\." + subjectName + "\\." + channelName;
 		pythonController.getPythonEntryPoint().unload(channelName);
+		channel.setModified(true);
 	}
 	
 	@Override
@@ -325,6 +326,7 @@ public class PythonEngine implements MathEngine {
 		
 		expression = "docometre.experiments[\"" + channelName + ".MarkersGroup_"+ markersGroupLabel + "_Values\"] = []";
 		pythonController.getPythonEntryPoint().runScript(expression);
+		signal.setModified(true);
 	}
 
 
@@ -359,6 +361,7 @@ public class PythonEngine implements MathEngine {
 		channelName = experimentName + "\\." + subjectName + "\\." + channelName;
 		expression = channelName + "\\.MarkersGroup_" + markersGroupLabel; 
 		pythonController.getPythonEntryPoint().unload(expression);
+		signal.setModified(true);
 	}
 	
 	@Override
@@ -367,6 +370,7 @@ public class PythonEngine implements MathEngine {
 		String valuesString = "[" + trialNumber + "," + xValue + "," + yValue + "]";
 		String expression = "docometre.experiments[\"" + channelName + ".MarkersGroup_" + markersGroupLabel + "_Values\"].append(" + valuesString + ")";
 		pythonController.getPythonEntryPoint().runScript(expression);
+		signal.setModified(true);
 	}
 
 	@Override
@@ -402,6 +406,14 @@ public class PythonEngine implements MathEngine {
 		int markersGroupNumber = getMarkersGroupNumber(markersGroupLabel, signal) + 1;
 		if(values.length == 0) deleteMarkersGroup(markersGroupNumber, signal);
 		
+		signal.setModified(true);
+		
+	}
+
+	@Override
+	public void saveSubject(IResource subject) {
+		// TODO Auto-generated method stub
+		// With Pickle ...
 	}
 
 	

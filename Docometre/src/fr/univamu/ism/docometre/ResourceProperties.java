@@ -96,6 +96,33 @@ public final class ResourceProperties {
 	public static QualifiedName DATA_FILES_LIST_QN = new QualifiedName(Activator.PLUGIN_ID, "data.files.list");
 	// Channels list
 	public static QualifiedName CHANNELS_LIST_QN = new QualifiedName(Activator.PLUGIN_ID, "channels.list");
+	// Subject modified
+	public static QualifiedName SUBJECT_MODIFIED_QN = new QualifiedName(Activator.PLUGIN_ID, "subject.modified");
+	
+	public static void setSubjectModified(IResource resource, boolean modified) {
+		try {
+			if(!ResourceType.isSubject(resource)) return;
+			resource.setSessionProperty(SUBJECT_MODIFIED_QN, modified);
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+	}
+	
+	public static boolean isSubjectModified(IResource resource) {
+		boolean modified = false;
+		try {
+			if(ResourceType.isSubject(resource)) {
+				if(resource.getSessionProperty(SUBJECT_MODIFIED_QN) != null)
+					modified = (boolean) resource.getSessionProperty(SUBJECT_MODIFIED_QN);
+			}
+			
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return modified;
+	}
 	
 	/////////////////////////////////////////////////////////////////////////////
 	/*

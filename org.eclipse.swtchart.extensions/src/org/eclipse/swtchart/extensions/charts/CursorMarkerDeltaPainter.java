@@ -24,6 +24,10 @@ public class CursorMarkerDeltaPainter implements ICustomPaintListener {
 		String cursorCoordinates = chart.getCursorCoordinatesString();
 		if(cursorCoordinates == null || "".equals(cursorCoordinates)) return;
 		
+		Font oldFont = e.gc.getFont();
+		Color oldForegroundColor = e.gc.getForeground();
+		int oldLineWidth = e.gc.getLineWidth();
+		
 		// >>> Cursor coordinates text area 
 		Font font = new Font(Display.getCurrent(), "Arial", 14, SWT.BOLD);
         e.gc.setFont(font);
@@ -35,7 +39,6 @@ public class CursorMarkerDeltaPainter implements ICustomPaintListener {
 		chart.getPlotArea().redraw(chartWidth - previousCursorTextWidth, 0, previousCursorTextWidth, textHeight, true);
 		previousCursorTextWidth = textWidth;
 		// Draw cursor coordinates text
-		Color oldColor = e.gc.getForeground();
 		Color newColor = (chart.getCurrentSeries() instanceof ILineSeries) ? ((ILineSeries)chart.getCurrentSeries()).getLineColor() : Display.getCurrent().getSystemColor(SWT.COLOR_RED);
 		e.gc.setForeground(newColor);
 		e.gc.drawText(cursorCoordinates, chartWidth - textWidth, 0);
@@ -80,7 +83,10 @@ public class CursorMarkerDeltaPainter implements ICustomPaintListener {
 				e.gc.drawRectangle(chart.getCurrentXMarker_Pixel() - 3, chart.getCurrentYMarker_Pixel() - 3, 6, 6);
 			}
 		}
-		e.gc.setForeground(oldColor);
+		
+		e.gc.setForeground(oldForegroundColor);
+		e.gc.setFont(oldFont);
+		e.gc.setLineWidth(oldLineWidth);
 	}
 
 	@Override

@@ -8,6 +8,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -19,6 +20,7 @@ import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
@@ -49,13 +51,18 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 					progressMonitorDialog.run(true, selectedSubjects.size()>1, new IRunnableWithProgress() {
 						@Override
 						public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-							
-							monitor.beginTask(DocometreMessages.UnloadingSubject + "\"" + loadUnloadName + "\". " + DocometreMessages.PleaseWait, IProgressMonitor.UNKNOWN);
-							Activator.logInfoMessage(DocometreMessages.UnloadingSubject + "\"" + loadUnloadName + "\". ", LoadUnloadSubjectsHandler.this.getClass());
-							MathEngineFactory.getMathEngine().unload(subject);
-							Activator.logInfoMessage(DocometreMessages.Done, LoadUnloadSubjectsHandler.this.getClass());
-							cancel = monitor.isCanceled();
-							monitor.done();
+							try {
+								monitor.beginTask(DocometreMessages.UnloadingSubject + "\"" + loadUnloadName + "\". " + DocometreMessages.PleaseWait, IProgressMonitor.UNKNOWN);
+								Activator.logInfoMessage(DocometreMessages.UnloadingSubject + "\"" + loadUnloadName + "\". ", LoadUnloadSubjectsHandler.this.getClass());
+								MathEngineFactory.getMathEngine().unload(subject);
+								Activator.logInfoMessage(DocometreMessages.Done, LoadUnloadSubjectsHandler.this.getClass());
+								cancel = monitor.isCanceled();
+								monitor.done();
+								subject.setSessionProperty(ResourceProperties.SUBJECT_MODIFIED_QN, false);
+							} catch (CoreException e) {
+								Activator.logErrorMessageWithCause(e);
+								e.printStackTrace();
+							}
 						}
 					});
 				} catch (InvocationTargetException | InterruptedException e) {
@@ -87,6 +94,7 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 			ExperimentsView.refresh(subject, null);
 			SubjectsView.refresh(subject, null);
 		}
+		SaveModifiedSubjectsHandler.refresh();
 		return null;
 	}
 
