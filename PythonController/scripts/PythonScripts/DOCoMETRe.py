@@ -4,6 +4,8 @@ import os;
 import numpy;
 import io;
 import re;
+import gzip;
+import pickle;
 
 class DOCoMETRe(object):
 
@@ -278,4 +280,26 @@ if __name__ == "__main__":
 		docometre.unload("ReachabilityCoriolis\.PreTestFull\.CAN_FrameID")
 		channels = docometre.getChannels("ReachabilityCoriolis.PreTestFull");
 		print(channels);
+		
+		# Save Subject
+		subject = {k:v for k,v in docometre.experiments.items() if re.search('^ReachabilityCoriolis.PreTestFull', k) != None}
+		file = gzip.open("save.data", "wb") #open( "save.data", "wb" )
+		print('Dumping...')
+		pickle.dump(subject, file)
+		file.close();
+		
+		# Unload subject
+		docometre.unload("ReachabilityCoriolis\.PreTestFull")
+		print(docometre.experiments);
 	
+		# Load Subject
+		file = gzip.open("save.data", "rb") #open( "save.data", "wb" )
+		print('Loading...')
+		newSubject = pickle.load(file);
+		file.close();
+		print(newSubject)
+		
+		# Merge dictionaries
+		docometre.experiments.update(newSubject);
+		del newSubject;
+		print(docometre.experiments);
