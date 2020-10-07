@@ -1,5 +1,6 @@
 package fr.univamu.ism.docometre.analyse;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -9,6 +10,7 @@ import java.util.Set;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -207,32 +209,47 @@ public final class MatlabEngine implements MathEngine {
 	public void load(IResource subject) {
 		try {
 			if(!ResourceType.isSubject(subject)) return;
+			
 			String experimentName = subject.getFullPath().segment(0);
 			String subjectName = subject.getFullPath().segment(1);
 			
-			String dataFilesList = Analyse.getDataFiles(subject);
-			//String dataFilesList = (String)subject.getSessionProperty(ResourceProperties.DATA_FILES_LIST_QN);
+			String workpsacePath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();
+			String fileName = workpsacePath + File.separator + experimentName + File.separator + subjectName + File.separator + "save.mat";
+			File saveFile = new File(fileName);
+			if(saveFile.exists()) {
+				String cmd = "load '" + fileName + "';";
+				matlabController.eval(cmd);
+				cmd = experimentName + "." + subjectName + " = subjectName;";
+				matlabController.eval(cmd);
+				cmd = "clear subjectName;"; 
+				matlabController.eval(cmd);
+				
+			} else {
+				String dataFilesList = Analyse.getDataFiles(subject);
+				//String dataFilesList = (String)subject.getSessionProperty(ResourceProperties.DATA_FILES_LIST_QN);
 
-			Map<String, String> sessionsProperties = Analyse.getSessionsInformations(subject);
-			
-			Set<String> keys = sessionsProperties.keySet();
-			Collection<String> values = sessionsProperties.values();
-			
-			String keysString = String.join("','", keys);
-			String valuesString = String.join("','", values);
+				Map<String, String> sessionsProperties = Analyse.getSessionsInformations(subject);
+				
+				Set<String> keys = sessionsProperties.keySet();
+				Collection<String> values = sessionsProperties.values();
+				
+				String keysString = String.join("','", keys);
+				String valuesString = String.join("','", values);
 
-			StringBuffer stringBuffer = new StringBuffer(keysString);
-			stringBuffer.append("'}");
-			stringBuffer.insert(0, "{'");
-			keysString = stringBuffer.toString();
+				StringBuffer stringBuffer = new StringBuffer(keysString);
+				stringBuffer.append("'}");
+				stringBuffer.insert(0, "{'");
+				keysString = stringBuffer.toString();
 
-			stringBuffer = new StringBuffer(valuesString);
-			stringBuffer.append("'}");
-			stringBuffer.insert(0, "{'");
-			valuesString = stringBuffer.toString();
-			
-			String cmd = experimentName + "." + subjectName + " = loadData('DOCOMETRE', '" + dataFilesList + "', " + keysString + ", " + valuesString + ")";
-			matlabController.eval(cmd);
+				stringBuffer = new StringBuffer(valuesString);
+				stringBuffer.append("'}");
+				stringBuffer.insert(0, "{'");
+				valuesString = stringBuffer.toString();
+				
+				String cmd = experimentName + "." + subjectName + " = loadData('DOCOMETRE', '" + dataFilesList + "', " + keysString + ", " + valuesString + ")";
+				matlabController.eval(cmd);
+				
+			}
 			
 			ChannelsContainer channelsContainer = new ChannelsContainer((IFolder) subject);
 			subject.setSessionProperty(ResourceProperties.CHANNELS_LIST_QN, channelsContainer);
@@ -603,7 +620,25 @@ public final class MatlabEngine implements MathEngine {
 
 	@Override
 	public void saveSubject(IResource subject) {
-		// TODO Auto-generated method stub
+		try {
+			// Copy subject's data to 'subjectName' variable 
+			String fullSubjectName = getFullPath(subject);
+			String experimentName = subject.getFullPath().segment(0);
+			String subjectName = subject.getFullPath().segment(1);
+			String cmd = "subjectName = " + fullSubjectName + ";"; 
+			matlabController.eval(cmd);
+			// Save 'subjectName' variable to file
+			String workpsacePath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();
+			String fileName = workpsacePath + File.separator + experimentName + File.separator + subjectName + File.separator + "save.mat";
+			cmd = "save('" + fileName + "', 'subjectName', '-v7.3');";			
+			matlabController.eval(cmd);
+			// Clear 'subjectName' variable
+			cmd = "clear subjectName;";
+			matlabController.eval(cmd);
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
 	}
 
 }

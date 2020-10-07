@@ -784,6 +784,9 @@ public final class DocometreMessages extends NLS {
 	// Functional Block Configuration Dialog Blocking Message
 	public static String FunctionalBlockConfigurationDialogBlockingMessage;
 	
+	// Saving subject handler
+	public static String SavingSubject;
+	
 //	public static String OrganizeSessionWizardPage_button_1_text;
 //	public static String OrganizeSessionWizardPage_tbtmNewItem_text;
 //	public static String OrganizeSessionWizardPage_tbtmNewItem_1_text;
