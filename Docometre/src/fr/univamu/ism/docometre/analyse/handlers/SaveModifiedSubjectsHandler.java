@@ -110,6 +110,7 @@ public class SaveModifiedSubjectsHandler extends AbstractHandler implements ISel
 			}
 		}
 		updateBaseEnabled();
+		refreshCommand();
 	}
 	
 	@Override

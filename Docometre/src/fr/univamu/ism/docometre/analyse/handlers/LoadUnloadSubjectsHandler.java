@@ -10,10 +10,12 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
@@ -46,6 +48,28 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 			boolean loaded = MathEngineFactory.getMathEngine().isSubjectLoaded(subject);
 			String loadUnloadName = subject.getFullPath().segment(0) + "." + subject.getFullPath().segment(1);
 			if(loaded) {
+				if(ResourceProperties.isSubjectModified(subject)) {
+					String message = NLS.bind(DocometreMessages.RecordSubjectDialogMessage, loadUnloadName);
+					boolean response = MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), DocometreMessages.RecordSubjectDialogTitle, message);
+					if(response) {
+						ProgressMonitorDialog progressMonitorDialog = new ProgressMonitorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+						try {
+							progressMonitorDialog.run(true, false, new IRunnableWithProgress() {
+								@Override
+								public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+									monitor.beginTask(DocometreMessages.SavingSubject + "\"" + subject.getFullPath().toString() + "\". " + DocometreMessages.PleaseWait, IProgressMonitor.UNKNOWN);
+									Activator.logInfoMessage(DocometreMessages.SavingSubject + "\"" + subject.getFullPath().toString() + "\". ", LoadUnloadSubjectsHandler.this.getClass());
+									MathEngineFactory.getMathEngine().saveSubject(subject);
+									Activator.logInfoMessage(DocometreMessages.Done, LoadUnloadSubjectsHandler.this.getClass());
+									monitor.done();
+								}
+							});
+						} catch (InvocationTargetException | InterruptedException e) {
+							Activator.logErrorMessageWithCause(e);
+							e.printStackTrace();
+						}
+					}
+				}
 				ProgressMonitorDialog progressMonitorDialog = new ProgressMonitorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
 				try {
 					progressMonitorDialog.run(true, selectedSubjects.size()>1, new IRunnableWithProgress() {
@@ -59,6 +83,7 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 								cancel = monitor.isCanceled();
 								monitor.done();
 								subject.setSessionProperty(ResourceProperties.SUBJECT_MODIFIED_QN, false);
+								subject.setSessionProperty(ResourceProperties.CHANNELS_LIST_QN, null);
 							} catch (CoreException e) {
 								Activator.logErrorMessageWithCause(e);
 								e.printStackTrace();
