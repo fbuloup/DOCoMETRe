@@ -186,4 +186,10 @@ public interface IImageKeys {
 	
 	public static final String MODIFIED_ICON = "icons/modified.gif"; //$NON-NLS-1$
 	
+	public static final String NUMPY_ICON = "icons/numpy.png"; //$NON-NLS-1$
+	public static final String NUMPY_ICON_2 = "icons/numpy2.png"; //$NON-NLS-1$
+	
+	public static final String LOAD_UNLOAD_ICON = "icons/LoadUnloadSubjects.gif"; //$NON-NLS-1$
+	
+	
 }

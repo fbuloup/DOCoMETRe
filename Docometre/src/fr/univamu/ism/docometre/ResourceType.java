@@ -166,6 +166,14 @@ public enum ResourceType {
 		return getResourceType(resource).equals(resourceType);
 	}
 
+	public static boolean isNumpyFile(IResource resource) {
+		return resource.getFileExtension().equalsIgnoreCase("numpy");
+	}
+
+	public static boolean isSaveFile(IResource resource) {
+		return resource.getName().equalsIgnoreCase("save.data") || resource.getName().equalsIgnoreCase("save.mat");
+	}
+
 	
 	
 }
