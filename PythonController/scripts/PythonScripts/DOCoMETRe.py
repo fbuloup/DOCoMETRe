@@ -4,8 +4,6 @@ import os;
 import numpy;
 import io;
 import re;
-import gzip;
-import pickle;
 
 class DOCoMETRe(object):
 
@@ -168,6 +166,69 @@ class DOCoMETRe(object):
 	
 	def runScript(self, code):
 		exec(code);
+		
+	def saveSubject(self, fullSubjectNameRegExp, dataFilesFullPath):
+		subject = {k:v for k,v in self.experiments.items() if re.search(fullSubjectNameRegExp, k) != None}
+		ndArrayFileNumber = 1;
+		file = open(dataFilesFullPath + 'save.data','w');
+		for key,value in subject.items():
+			if isinstance(value, str):
+				file.write(key);
+				file.write('\n');
+				file.write('str("' + value + '")');
+				file.write('\n');
+			elif isinstance(value, int):
+				file.write(key);
+				file.write('\n');
+				file.write('int(' + str(value) + ')');
+				file.write('\n');
+			elif isinstance(value, numpy.ndarray):
+				fileName = dataFilesFullPath + 'data_' + str(ndArrayFileNumber) + '.numpy';
+				ndArrayFileNumber = ndArrayFileNumber + 1;
+				file.write(key);
+				file.write('\n');
+				file.write('numpy.ndarray:' + fileName);
+				file.write('\n');
+				ndArrayFile = open(fileName,'wb');
+				numpy.save(ndArrayFile, value, False, False);
+				ndArrayFile.close();
+			elif isinstance(value, list) and all(isinstance(n, str) for n in value):
+				file.write(key);
+				file.write('\n');
+				file.write('list.str(' + ':'.join(value) + ')');
+				file.write('\n');
+			else:				
+				if(jvmMode): 
+					self.gateway.jvm.System.out.print("Type not handled : " + type(value).__name__);
+					self.gateway.jvm.System.out.println(" for key : " + key);
+				else: print("Type not handled : " + type(value) + " for key : " + key);
+				
+		file.close();
+		
+	def loadSubject(self, saveFilesFullPath):
+		subject = dict();
+		file = open(saveFilesFullPath + 'save.data','r');
+		key = file.readline().strip();
+		while key:
+			value = file.readline().strip();
+			if(value.startswith('str(')):
+				subject[key] = eval(value);
+			elif(value.startswith('int(')):
+				subject[key] = eval(value);
+			elif(value.startswith('numpy.ndarray:')):
+				fileName = value.replace('numpy.ndarray:', '');
+				ndArrayFile = open(fileName,'rb');
+				value = numpy.load(ndArrayFile, None);
+				ndArrayFile.close();
+				subject[key] = value;		
+			elif(value.startswith('list.str')):
+					value = re.sub("^list\.str\(", "", value);
+					value = re.sub("\)$", "", value);
+					subject[key] = value.split(":");
+			key = file.readline().strip();
+
+		self.experiments.update(subject);
+	
 
 	class Java:
 		implements = ["fr.univamu.ism.docometre.python.PythonEntryPoint"]
@@ -282,24 +343,87 @@ if __name__ == "__main__":
 		print(channels);
 		
 		# Save Subject
-		subject = {k:v for k,v in docometre.experiments.items() if re.search('^ReachabilityCoriolis.PreTestFull', k) != None}
-		file = gzip.open("save.data", "wb") #open( "save.data", "wb" )
-		print('Dumping...')
-		pickle.dump(subject, file)
-		file.close();
+# 		subject = {k:v for k,v in docometre.experiments.items() if re.search('^ReachabilityCoriolis\.PreTestFull', k) != None}
+		
+# 		print('Dumping with pickle...')
+# 		startTime = time.time();
+# 		file = gzip.open("saveZip.data", "wb") #open( "save.data", "wb" )
+# 		pickle.dump(subject, file)
+# 		file.close();
+# 		print(time.time() - startTime)
+		
+# 		print('Dumping home made...')
+# 		startTime = time.time();
+# 		ndArrayFileNumber = 1;
+# 		file = open('save.data','w');
+# 		for key,value in subject.items():
+# 			if isinstance(value, str):
+# 				file.write(key);
+# 				file.write('\n');
+# 				file.write('str("' + value + '")');
+# 				file.write('\n');
+# 			elif isinstance(value, int):
+# 				file.write(key);
+# 				file.write('\n');
+# 				file.write('int(' + str(value) + ')');
+# 				file.write('\n');
+# 			elif isinstance(value, numpy.ndarray):
+# 				fileName = 'data_' + str(ndArrayFileNumber) + '.numpy';
+# 				ndArrayFileNumber = ndArrayFileNumber + 1;
+# 				file.write(key);
+# 				file.write('\n');
+# 				file.write('numpy.ndarray:' + fileName);
+# 				file.write('\n');
+# 				ndArrayFile = open(fileName,'wb');
+# 				numpy.save(ndArrayFile, value, False, False);
+# 				ndArrayFile.close();
+# 			else:
+# 				print(type(value))
+# 		file.close();
+# 		print(time.time() - startTime)
 		
 		# Unload subject
-		docometre.unload("ReachabilityCoriolis\.PreTestFull")
-		print(docometre.experiments);
+# 		docometre.unload("ReachabilityCoriolis\.PreTestFull")
+# 		print(docometre.experiments);
 	
 		# Load Subject
-		file = gzip.open("save.data", "rb") #open( "save.data", "wb" )
-		print('Loading...')
-		newSubject = pickle.load(file);
-		file.close();
-		print(newSubject)
+# 		print('Loading with pickle...')
+# 		startTime = time.time();
+# 		file = gzip.open("saveZip.data", "rb") #open( "save.data", "wb" )
+# 		newSubject = pickle.load(file);
+# 		file.close();
+# 		print(time.time() - startTime)
+# 		#print(newSubject)
+# 		del newSubject
+		
+		# Unload subject
+# 		docometre.unload("ReachabilityCoriolis\.PreTestFull")
+# 		print(docometre.experiments);
+		
+		# Load Subject
+# 		newSubject = dict()
+# 		print('Loading home made...')
+# 		startTime = time.time();
+# 		file = open('save.data','r');
+# 		key = file.readline().strip();
+# 		while key:
+# 			value = file.readline().strip();
+# 			#print("key : " + key + " - Value : " + value);
+# 			if(value.startswith('str(')):
+# 				newSubject[key] = eval(value);
+# 			if(value.startswith('int(')):
+# 				newSubject[key] = eval(value);
+# 			if(value.startswith('numpy.ndarray:')):
+# 				fileName = value.replace('numpy.ndarray:', '');
+# 				ndArrayFile = open(fileName,'rb');
+# 				value = numpy.load(ndArrayFile, None)
+# 				ndArrayFile.close();
+# 				newSubject[key] = value;		
+# 			key = file.readline().strip();
+# 		print(time.time() - startTime)
+		#print(newSubject)
 		
 		# Merge dictionaries
-		docometre.experiments.update(newSubject);
-		del newSubject;
-		print(docometre.experiments);
+# 		docometre.experiments.update(newSubject);
+# 		del newSubject;
+		#print(docometre.experiments);

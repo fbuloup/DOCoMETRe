@@ -13,5 +13,7 @@ public interface PythonEntryPoint {
 	String getChannels(Object subjectFullName);
 	byte[] getVector(Object expression, Object dataType, Object trialNumber, Object frontCut, Object endCut);
 	void runScript(Object code);
+	void saveSubject(Object subjectFullNameRegExp, Object saveFilesFullPath);
+	void loadSubject(Object saveFilesFullPath);
 
 }

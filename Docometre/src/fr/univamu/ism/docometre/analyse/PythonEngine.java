@@ -1,5 +1,6 @@
 package fr.univamu.ism.docometre.analyse;
 
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.DoubleBuffer;
@@ -11,6 +12,7 @@ import java.util.Map;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -147,12 +149,22 @@ public class PythonEngine implements MathEngine {
 		try {
 			if(!ResourceType.isSubject(subject)) return;
 			
-			String loadName = getFullPath(subject);
-			String dataFilesList = Analyse.getDataFiles(subject);
-			//String dataFilesList = (String)subject.getSessionProperty(ResourceProperties.DATA_FILES_LIST_QN);
-			Map<String, String> sessionsProperties = Analyse.getSessionsInformations(subject);
+			String experimentName = subject.getFullPath().segment(0);
+			String subjectName = subject.getFullPath().segment(1);
+			String workpsacePath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();
+			String saveFilesFullPath = workpsacePath + File.separator + experimentName + File.separator + subjectName + File.separator;
+			File saveFile = new File(saveFilesFullPath + "save.data");
+			if(saveFile.exists()) {
+				pythonController.getPythonEntryPoint().loadSubject(saveFilesFullPath);
+			} else {
+				String loadName = getFullPath(subject);
+				String dataFilesList = Analyse.getDataFiles(subject);
+				//String dataFilesList = (String)subject.getSessionProperty(ResourceProperties.DATA_FILES_LIST_QN);
+				Map<String, String> sessionsProperties = Analyse.getSessionsInformations(subject);
+				
+				pythonController.getPythonEntryPoint().loadData("DOCOMETRE", loadName, dataFilesList, sessionsProperties);
+			}
 			
-			pythonController.getPythonEntryPoint().loadData("DOCOMETRE", loadName, dataFilesList, sessionsProperties);
 
 			ChannelsContainer channelsContainer = new ChannelsContainer((IFolder) subject);
 			subject.setSessionProperty(ResourceProperties.CHANNELS_LIST_QN, channelsContainer);
@@ -324,7 +336,7 @@ public class PythonEngine implements MathEngine {
 		else expression ="docometre.experiments['" + channelName + ".MarkersGroupsLabels'].append('" + markersGroupLabel + "')";
 		pythonController.getPythonEntryPoint().runScript(expression);
 		
-		expression = "docometre.experiments[\"" + channelName + ".MarkersGroup_"+ markersGroupLabel + "_Values\"] = []";
+		expression = "docometre.experiments[\"" + channelName + ".MarkersGroup_"+ markersGroupLabel + "_Values\"] = numpy.zeros((0,3));";
 		pythonController.getPythonEntryPoint().runScript(expression);
 		signal.setModified(true);
 	}
@@ -368,7 +380,8 @@ public class PythonEngine implements MathEngine {
 	public void addMarker(String markersGroupLabel, int trialNumber, double xValue, double yValue, Channel signal) {
 		String channelName = getFullPath(signal);
 		String valuesString = "[" + trialNumber + "," + xValue + "," + yValue + "]";
-		String expression = "docometre.experiments[\"" + channelName + ".MarkersGroup_" + markersGroupLabel + "_Values\"].append(" + valuesString + ")";
+		String expression = "docometre.experiments[\"" + channelName + ".MarkersGroup_" + markersGroupLabel + "_Values\"]";
+		expression = expression + " = numpy.vstack([" + expression + ", " + valuesString + "]);";
 		pythonController.getPythonEntryPoint().runScript(expression);
 		signal.setModified(true);
 	}
@@ -398,22 +411,37 @@ public class PythonEngine implements MathEngine {
 	@Override
 	public void deleteMarker(String markersGroupLabel, int trialNumber, double xValue, double yValue, Channel signal) {
 		String channelName = getFullPath(signal);
-		String valuesString = "[" + trialNumber + "," + xValue + "," + yValue + "]";
-		String expression = "docometre.experiments[\"" + channelName + ".MarkersGroup_" + markersGroupLabel + "_Values\"].remove(" + valuesString + ")";
+		String x = "docometre.experiments[\"" + channelName + ".MarkersGroup_" + markersGroupLabel + "_Values\"]";
+		String rowValues = "[" + trialNumber + "," + xValue + "," + yValue + "]";
+		String expression = "tempValue = numpy.subtract(" + x + ", " + rowValues + ");\n";
+		expression = expression + "tempValue = numpy.absolute(tempValue);\n";
+		expression = expression + "tempValue = numpy.sum(tempValue, axis=1);\n";
+		expression = expression + "tempValueBoolean = numpy.isclose(tempValue, 0);\n";
+		expression = expression + "indexes = numpy.nonzero(tempValueBoolean);\n";
+		expression = expression + "index = -1;\n";
+		expression = expression + "if(indexes[0].size > 0):index = indexes[0][0];\n";
+		expression = expression + "if(index > -1):" + x + " = numpy.delete(" + x + ", index, axis=0);";
 		pythonController.getPythonEntryPoint().runScript(expression);
-		
 		double[][] values = getMarkers(markersGroupLabel, signal);
 		int markersGroupNumber = getMarkersGroupNumber(markersGroupLabel, signal) + 1;
 		if(values.length == 0) deleteMarkersGroup(markersGroupNumber, signal);
-		
 		signal.setModified(true);
 		
 	}
 
 	@Override
 	public void saveSubject(IResource subject) {
-		// TODO Auto-generated method stub
-		// With Pickle ...
+		String fullSubjectName = getFullPath(subject);
+		String fullSubjectNameRegExp  = "^" + fullSubjectName.replaceAll("\\.", "\\\\.");
+		
+		String experimentName = subject.getFullPath().segment(0);
+		String subjectName = subject.getFullPath().segment(1);
+		String workpsacePath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();
+		String dataFilesFullPath = workpsacePath + File.separator + experimentName + File.separator + subjectName + File.separator;
+		
+		pythonController.getPythonEntryPoint().saveSubject(fullSubjectNameRegExp, dataFilesFullPath);
+		
+		
 	}
 
 	
