@@ -16,8 +16,10 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.Activator;
@@ -25,7 +27,10 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
+import fr.univamu.ism.docometre.analyse.datamodel.Channel;
+import fr.univamu.ism.docometre.analyse.editors.ChannelEditor;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
+import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 
 public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelectionListener {
@@ -65,6 +70,21 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 								}
 							});
 						} catch (InvocationTargetException | InterruptedException e) {
+							Activator.logErrorMessageWithCause(e);
+							e.printStackTrace();
+						}
+					}
+				}
+				IEditorReference[] editorsReferences = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
+				for (IEditorReference editorReference : editorsReferences) {
+					if(editorReference.getId().equals(ChannelEditor.ID)) {
+						try {
+							Object object = ((ResourceEditorInput)editorReference.getEditorInput()).getObject();
+							Channel channel = (Channel)object;
+							if(channel.getParent().equals(subject)) {
+								editorReference.getEditor(false).getSite().getPage().closeEditor(editorReference.getEditor(false), true);
+							}
+						} catch (PartInitException e) {
 							Activator.logErrorMessageWithCause(e);
 							e.printStackTrace();
 						}
