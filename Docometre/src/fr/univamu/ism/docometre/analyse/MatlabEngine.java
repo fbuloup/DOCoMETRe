@@ -15,6 +15,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
@@ -30,6 +32,8 @@ public final class MatlabEngine implements MathEngine {
 	private List<MathEngineListener> mathEngineListeners = new ArrayList<MathEngineListener>();
 	
 	private MatlabController matlabController;
+
+	private boolean loadFromSavedFile;
 	
 	public MatlabEngine() {
 		matlabController = MatlabController.getInstance();
@@ -206,7 +210,7 @@ public final class MatlabEngine implements MathEngine {
 //	}
 
 	@Override
-	public void load(IResource subject, boolean fromRawData) {
+	public void load(IResource subject, boolean loadFromSavedFile) {
 		try {
 			if(!ResourceType.isSubject(subject)) return;
 			
@@ -216,7 +220,19 @@ public final class MatlabEngine implements MathEngine {
 			String workpsacePath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();
 			String fileName = workpsacePath + File.separator + experimentName + File.separator + subjectName + File.separator + "save.mat";
 			File saveFile = new File(fileName);
-			if(saveFile.exists() && !fromRawData) {
+			
+			MatlabEngine.this.loadFromSavedFile = loadFromSavedFile;
+			if(saveFile.exists() && !loadFromSavedFile) {
+				PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+					@Override
+					public void run() {
+						MatlabEngine.this.loadFromSavedFile = !MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), DocometreMessages.LoadSubjectFromRawDataDialog_Title, DocometreMessages.LoadSubjectFromRawDataDialog_Message);
+					}
+				});
+				
+			}
+			
+			if(saveFile.exists() && MatlabEngine.this.loadFromSavedFile) {
 				String cmd = "load '" + fileName + "';";
 				matlabController.eval(cmd);
 				cmd = experimentName + "." + subjectName + " = subjectName;";

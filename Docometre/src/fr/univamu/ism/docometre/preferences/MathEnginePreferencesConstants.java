@@ -10,4 +10,6 @@ public class MathEnginePreferencesConstants {
 	
 	public static final String[][] MATH_ENGINE_VALUES = new String[][] { {MATH_ENGINE_MATLAB, MATH_ENGINE_MATLAB}, {MATH_ENGINE_PYTHON, MATH_ENGINE_PYTHON}/*, {MATH_ENGINE_OCTAVE, MATH_ENGINE_OCTAVE}*/}; 
 
+	public static final String ALWAYS_LOAD_FROM_SAVED_DATA = "ALWAYS_LOAD_FROM_SAVED_DATA";
+	
 }

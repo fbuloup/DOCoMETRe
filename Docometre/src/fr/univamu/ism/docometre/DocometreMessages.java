@@ -49,6 +49,8 @@ public final class DocometreMessages extends NLS {
 	
 	private static final String BUNDLE_NAME = "fr.univamu.ism.docometre.messages";//$NON-NLS-1$
 
+	
+
 	/*Experiment View*/
 	public static String ExperimentsViewTitle;
 	public static String NoAssociatedProcessFile;
@@ -660,6 +662,10 @@ public final class DocometreMessages extends NLS {
 	
 	// Math Engine Preferences
 	public static String MathEngineLabel;
+	public static String AlwaysLoadFromSavedData;
+	public static String AlwaysLoadFromSavedData_Tooltip;
+	public static String LoadSubjectFromRawDataDialog_Title;
+	public static String LoadSubjectFromRawDataDialog_Message;
 	
 	// Matlab preferences 
 	public static String MatlabPreferences_Description;

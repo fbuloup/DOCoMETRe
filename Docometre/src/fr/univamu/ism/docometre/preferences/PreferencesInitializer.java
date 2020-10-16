@@ -68,7 +68,7 @@ public class PreferencesInitializer extends AbstractPreferenceInitializer {
 		defaults.putBoolean(GeneralPreferenceConstants.AUTO_VALIDATE_TRIALS, false);
 		defaults.putBoolean(GeneralPreferenceConstants.AUTO_START_TRIALS, false);
 		
-		defaults.put(MathEnginePreferencesConstants.MATH_ENGINE, MathEnginePreferencesConstants.MATH_ENGINE_MATLAB);
+		
 		
 		defaults.putBoolean(GeneralPreferenceConstants.SHOW_MATLAB_WINDOW, false);
 		defaults.put(GeneralPreferenceConstants.MATLAB_LOCATION, "");
@@ -81,6 +81,9 @@ public class PreferencesInitializer extends AbstractPreferenceInitializer {
 		
 		defaults.putBoolean(GeneralPreferenceConstants.SHOW_CURSOR, false);
 		defaults.putBoolean(GeneralPreferenceConstants.SHOW_MARKER, false);
+		
+		defaults.put(MathEnginePreferencesConstants.MATH_ENGINE, MathEnginePreferencesConstants.MATH_ENGINE_MATLAB);
+		defaults.putBoolean(MathEnginePreferencesConstants.ALWAYS_LOAD_FROM_SAVED_DATA, false);
 	}
 
 }

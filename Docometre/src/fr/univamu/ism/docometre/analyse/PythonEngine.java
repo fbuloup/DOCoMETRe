@@ -18,6 +18,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
@@ -34,6 +36,8 @@ public class PythonEngine implements MathEngine {
 	private List<MathEngineListener> mathEngineListeners = new ArrayList<MathEngineListener>();
 	
 	private PythonController pythonController;
+	
+	private boolean loadFromSavedFile;
 	
 	public PythonEngine() {
 		pythonController = PythonController.getInstance();
@@ -145,7 +149,7 @@ public class PythonEngine implements MathEngine {
 	}
 
 	@Override
-	public void load(IResource subject, boolean fromRawData) {
+	public void load(IResource subject, boolean loadFromSavedFile) {
 		try {
 			if(!ResourceType.isSubject(subject)) return;
 			
@@ -154,7 +158,19 @@ public class PythonEngine implements MathEngine {
 			String workpsacePath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();
 			String saveFilesFullPath = workpsacePath + File.separator + experimentName + File.separator + subjectName + File.separator;
 			File saveFile = new File(saveFilesFullPath + "save.data");
-			if(saveFile.exists() && !fromRawData) {
+			
+			PythonEngine.this.loadFromSavedFile = loadFromSavedFile;
+			if(saveFile.exists() && !loadFromSavedFile) {
+				PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+					@Override
+					public void run() {
+						PythonEngine.this.loadFromSavedFile = !MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), DocometreMessages.LoadSubjectFromRawDataDialog_Title, DocometreMessages.LoadSubjectFromRawDataDialog_Message);
+					}
+				});
+				
+			}
+			
+			if(saveFile.exists() && PythonEngine.this.loadFromSavedFile) {
 				pythonController.getPythonEntryPoint().loadSubject(saveFilesFullPath);
 			} else {
 				String loadName = getFullPath(subject);

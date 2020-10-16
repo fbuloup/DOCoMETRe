@@ -1,5 +1,6 @@
 package fr.univamu.ism.docometre.preferences;
 
+import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.ui.IWorkbench;
@@ -23,6 +24,11 @@ public class MathEnginePrefrencePage extends FieldEditorPreferencePage implement
 	protected void createFieldEditors() {
 		ComboFieldEditor mathEngineFieldEditor = new ComboFieldEditor(MathEnginePreferencesConstants.MATH_ENGINE, DocometreMessages.MathEngineLabel, MathEnginePreferencesConstants.MATH_ENGINE_VALUES, getFieldEditorParent());
 		addField(mathEngineFieldEditor);
+		
+		BooleanFieldEditor alwaysLoadFromSavedDataFieldEditor = new BooleanFieldEditor(MathEnginePreferencesConstants.ALWAYS_LOAD_FROM_SAVED_DATA,
+				DocometreMessages.AlwaysLoadFromSavedData, getFieldEditorParent());
+		alwaysLoadFromSavedDataFieldEditor.getDescriptionControl(getFieldEditorParent()).setToolTipText(DocometreMessages.AlwaysLoadFromSavedData_Tooltip);
+		addField(alwaysLoadFromSavedDataFieldEditor);
 	}
 
 }

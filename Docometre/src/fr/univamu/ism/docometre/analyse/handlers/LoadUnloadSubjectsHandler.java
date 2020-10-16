@@ -31,6 +31,7 @@ import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.analyse.editors.ChannelEditor;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
+import fr.univamu.ism.docometre.preferences.MathEnginePreferencesConstants;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 
 public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelectionListener {
@@ -130,7 +131,8 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 						public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 							monitor.beginTask(DocometreMessages.LoadingSubject+ "\"" + loadUnloadName + "\". " + DocometreMessages.PleaseWait, IProgressMonitor.UNKNOWN);
 							Activator.logInfoMessage(DocometreMessages.LoadingSubject + "\"" + loadUnloadName + "\". ", LoadUnloadSubjectsHandler.this.getClass());
-							MathEngineFactory.getMathEngine().load(subject, false);
+							boolean loadFromSavedFile = Activator.getDefault().getPreferenceStore().getBoolean(MathEnginePreferencesConstants.ALWAYS_LOAD_FROM_SAVED_DATA);
+							MathEngineFactory.getMathEngine().load(subject, loadFromSavedFile);
 							Activator.logInfoMessage(DocometreMessages.Done, LoadUnloadSubjectsHandler.this.getClass());
 							cancel = monitor.isCanceled();
 							monitor.done();
