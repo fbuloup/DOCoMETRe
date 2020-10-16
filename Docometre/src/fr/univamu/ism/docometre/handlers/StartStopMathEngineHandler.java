@@ -41,11 +41,17 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.handlers;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.Job;
@@ -59,9 +65,11 @@ import org.eclipse.ui.menus.UIElement;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
+import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.MathEngine;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.MathEngineListener;
+import fr.univamu.ism.docometre.analyse.handlers.LoadUnloadSubjectsHandler;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 
 @SuppressWarnings("restriction")
@@ -95,6 +103,39 @@ public class StartStopMathEngineHandler extends AbstractHandler implements IElem
 				if (!mathEngine.isStarted()) {
 					response = mathEngine.startEngine(monitor);
 				} else {
+					// Unload subjects :
+					// Get all loaded subjects
+					Set<IResource> loadedSubjects = new HashSet<IResource>(0);
+					IProject[] experiments = ResourcesPlugin.getWorkspace().getRoot().getProjects();
+					for (IProject experiment : experiments) {
+						try {
+							IResource[] members = experiment.members();
+							for (IResource member : members) {
+								if(ResourceType.isSubject(member) && MathEngineFactory.getMathEngine().isSubjectLoaded((IResource) member))
+									loadedSubjects.add(member);
+							}
+						} catch (CoreException e) {
+							loadedSubjects.clear();
+							setBaseEnabled(true);
+							Activator.getLogErrorMessageWithCause(e);
+							e.printStackTrace();
+						}
+					}
+						// Set selection in LoadUnloadSubjectsHandler
+						PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+							@Override
+							public void run() {
+								try {
+									LoadUnloadSubjectsHandler.getInstance().resetSelection(loadedSubjects);
+									// Launch LoadUnloadSubjectsHandler
+									LoadUnloadSubjectsHandler.getInstance().execute(new ExecutionEvent());
+								} catch (ExecutionException e) {
+									Activator.getLogErrorMessageWithCause(e);
+									e.printStackTrace();
+								}
+								
+							}
+						});
 					response = mathEngine.stopEngine(monitor);
 					MathEngineFactory.clear();
 				}

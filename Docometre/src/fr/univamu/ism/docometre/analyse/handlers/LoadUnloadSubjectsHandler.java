@@ -37,11 +37,19 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 	
 	private Set<IResource> selectedSubjects = new HashSet<IResource>(0);
 	private boolean cancel;
+	private static LoadUnloadSubjectsHandler loadUnloadSubjectsHandler;
 
-	public LoadUnloadSubjectsHandler() {
-		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().addSelectionListener(this);
+	public static LoadUnloadSubjectsHandler getInstance() {
+		return loadUnloadSubjectsHandler;
 	}
-
+	
+	public LoadUnloadSubjectsHandler() {
+		if(loadUnloadSubjectsHandler == null) {
+			PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().addSelectionListener(this);
+			loadUnloadSubjectsHandler = this;
+		}
+	}
+	
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		if(!MathEngineFactory.getMathEngine().isStarted()) {
@@ -155,6 +163,10 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 			}
 		}
 		setBaseEnabled(selectedSubjects.size() > 0);
+	}
+	
+	public void resetSelection(Set<IResource> selectedSubjects) {
+		this.selectedSubjects = selectedSubjects;
 	}
 	
 }
