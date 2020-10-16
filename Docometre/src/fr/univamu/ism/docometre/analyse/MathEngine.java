@@ -17,7 +17,7 @@ public interface MathEngine {
 	boolean isStarted();
 	void addListener(MathEngineListener listener);
 	boolean isSubjectLoaded(IResource subject);
-	void load(IResource subject);
+	void load(IResource subject, boolean fromRawData);
 	void unload(IResource subject);
 	boolean exist(String variableName);
 	boolean isStruct(String variableName);

@@ -70,6 +70,7 @@ import fr.univamu.ism.docometre.dacqsystems.functions.CustomerFunction;
 import fr.univamu.ism.docometre.editors.AbstractScriptSegmentEditor;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
+import fr.univamu.ism.docometre.preferences.MathEnginePreferencesConstants;
 import fr.univamu.ism.docometre.scripteditor.editparts.BlockEditPart;
 import fr.univamu.ism.process.Script;
 
@@ -86,8 +87,8 @@ public final class FunctionFactory {
 		if(object instanceof ADWinProcess) ADWinFunctionsMenuFactory.populateMenu(scriptSegmentEditor, blockEditPart, functionsMenuManager);
 		if(object instanceof ArduinoUnoProcess) ArduinoUnoFunctionsMenuFactory.populateMenu(scriptSegmentEditor, blockEditPart, functionsMenuManager);
 		if(object instanceof Script) {
-			String mathEngine = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.MATH_ENGINE);
-			if(GeneralPreferenceConstants.MATH_ENGINE_MATLAB.equals(mathEngine)) MatlabEngineFunctionsMenuFactory.populateMenu(scriptSegmentEditor, blockEditPart, functionsMenuManager);
+			String mathEngine = Activator.getDefault().getPreferenceStore().getString(MathEnginePreferencesConstants.MATH_ENGINE);
+			if(MathEnginePreferencesConstants.MATH_ENGINE_MATLAB.equals(mathEngine)) MatlabEngineFunctionsMenuFactory.populateMenu(scriptSegmentEditor, blockEditPart, functionsMenuManager);
 		}
 	}
 	
@@ -107,11 +108,11 @@ public final class FunctionFactory {
 		}
 		if(context instanceof Script) {
 			String functionsAbsolutePath = "";
-			String mathEngine = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.MATH_ENGINE);
-			if(GeneralPreferenceConstants.MATH_ENGINE_MATLAB.equals(mathEngine)) functionsAbsolutePath =  Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.MATLAB_SCRIPT_LOCATION);
+			String mathEngine = Activator.getDefault().getPreferenceStore().getString(MathEnginePreferencesConstants.MATH_ENGINE);
+			if(MathEnginePreferencesConstants.MATH_ENGINE_MATLAB.equals(mathEngine)) functionsAbsolutePath =  Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.MATLAB_SCRIPT_LOCATION);
 			Path path = new Path(functionsAbsolutePath);
 			String suffix = "";
-			if(GeneralPreferenceConstants.MATH_ENGINE_MATLAB.equals(mathEngine)) suffix = "MatlabFunctions";
+			if(MathEnginePreferencesConstants.MATH_ENGINE_MATLAB.equals(mathEngine)) suffix = "MatlabFunctions";
 			path = (Path) path.removeLastSegments(1).append(suffix);
 			return path;
 		}

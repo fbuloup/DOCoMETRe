@@ -130,7 +130,7 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 						public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 							monitor.beginTask(DocometreMessages.LoadingSubject+ "\"" + loadUnloadName + "\". " + DocometreMessages.PleaseWait, IProgressMonitor.UNKNOWN);
 							Activator.logInfoMessage(DocometreMessages.LoadingSubject + "\"" + loadUnloadName + "\". ", LoadUnloadSubjectsHandler.this.getClass());
-							MathEngineFactory.getMathEngine().load(subject);
+							MathEngineFactory.getMathEngine().load(subject, false);
 							Activator.logInfoMessage(DocometreMessages.Done, LoadUnloadSubjectsHandler.this.getClass());
 							cancel = monitor.isCanceled();
 							monitor.done();

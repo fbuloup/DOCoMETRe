@@ -145,7 +145,7 @@ public class PythonEngine implements MathEngine {
 	}
 
 	@Override
-	public void load(IResource subject) {
+	public void load(IResource subject, boolean fromRawData) {
 		try {
 			if(!ResourceType.isSubject(subject)) return;
 			
@@ -154,7 +154,7 @@ public class PythonEngine implements MathEngine {
 			String workpsacePath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();
 			String saveFilesFullPath = workpsacePath + File.separator + experimentName + File.separator + subjectName + File.separator;
 			File saveFile = new File(saveFilesFullPath + "save.data");
-			if(saveFile.exists()) {
+			if(saveFile.exists() && !fromRawData) {
 				pythonController.getPythonEntryPoint().loadSubject(saveFilesFullPath);
 			} else {
 				String loadName = getFullPath(subject);

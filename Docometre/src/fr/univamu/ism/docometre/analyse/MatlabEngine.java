@@ -206,7 +206,7 @@ public final class MatlabEngine implements MathEngine {
 //	}
 
 	@Override
-	public void load(IResource subject) {
+	public void load(IResource subject, boolean fromRawData) {
 		try {
 			if(!ResourceType.isSubject(subject)) return;
 			
@@ -216,7 +216,7 @@ public final class MatlabEngine implements MathEngine {
 			String workpsacePath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();
 			String fileName = workpsacePath + File.separator + experimentName + File.separator + subjectName + File.separator + "save.mat";
 			File saveFile = new File(fileName);
-			if(saveFile.exists()) {
+			if(saveFile.exists() && !fromRawData) {
 				String cmd = "load '" + fileName + "';";
 				matlabController.eval(cmd);
 				cmd = experimentName + "." + subjectName + " = subjectName;";

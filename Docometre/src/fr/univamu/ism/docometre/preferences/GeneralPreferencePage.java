@@ -42,7 +42,6 @@
 package fr.univamu.ism.docometre.preferences;
 
 import org.eclipse.jface.preference.BooleanFieldEditor;
-import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.jface.preference.IntegerFieldEditor;
@@ -117,9 +116,6 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
 		BooleanFieldEditor autoTrialStartingFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.AUTO_START_TRIALS,
 				DocometreMessages.AutoStartTrial, getFieldEditorParent());
 		addField(autoTrialStartingFieldEditor);
-		
-		ComboFieldEditor mathEngineFieldEditor = new ComboFieldEditor(GeneralPreferenceConstants.MATH_ENGINE, DocometreMessages.MathEngineLabel, GeneralPreferenceConstants.MATH_ENGINE_VALUES, getFieldEditorParent());
-		addField(mathEngineFieldEditor);
 		
 		Group chartOptionsGroup = new Group(getFieldEditorParent(), SWT.BORDER);
 		chartOptionsGroup.setText("Charts options");

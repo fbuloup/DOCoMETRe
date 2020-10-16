@@ -8,7 +8,7 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.analyse.matlabeditor.MatlabRulesPartitionScanner;
 import fr.univamu.ism.docometre.analyse.matlabeditor.MatlabSourceViewerConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.ui.SourceEditor;
-import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
+import fr.univamu.ism.docometre.preferences.MathEnginePreferencesConstants;
 
 public class DataProcessScriptSourceEditor extends SourceEditor {
 
@@ -20,8 +20,8 @@ public class DataProcessScriptSourceEditor extends SourceEditor {
 	public void createPartControl(Composite parent) {
 		super.createPartControl(parent);
 		
-		String mathEngine = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.MATH_ENGINE);
-		if(GeneralPreferenceConstants.MATH_ENGINE_MATLAB.equals(mathEngine)) {
+		String mathEngine = Activator.getDefault().getPreferenceStore().getString(MathEnginePreferencesConstants.MATH_ENGINE);
+		if(MathEnginePreferencesConstants.MATH_ENGINE_MATLAB.equals(mathEngine)) {
 			
 			// See : https://github.com/amarbanerjee23/matclipse/tree/master/org.eclipselabs.matclipse.meditor/src/org/eclipselabs/matclipse/meditor/editors
 			
