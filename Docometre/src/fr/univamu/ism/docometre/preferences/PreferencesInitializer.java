@@ -48,9 +48,9 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ChooseWorkspaceData;
 
-public class GeneralPreferenceInitializer extends AbstractPreferenceInitializer {
+public class PreferencesInitializer extends AbstractPreferenceInitializer {
 
-	public GeneralPreferenceInitializer() {
+	public PreferencesInitializer() {
 		super();
 	}
 

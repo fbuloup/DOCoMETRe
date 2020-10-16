@@ -270,7 +270,7 @@
    <extension
          point="org.eclipse.core.runtime.preferences">
       <initializer
-            class="fr.univamu.ism.docometre.preferences.GeneralPreferenceInitializer">
+            class="fr.univamu.ism.docometre.preferences.PreferencesInitializer">
       </initializer>
    </extension>
    <extension
