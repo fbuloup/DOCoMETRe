@@ -245,9 +245,10 @@ public class CustomerFunction extends GenericFunction {
 		}
 	}
 	
-	private String parseCode(Process process, String keyCode, String code) {
+	private String parseCode(Process process, String keyCode, String code, Object context) {
 		String temporaryCode = FunctionFactory.getProperty(process, functionFileName, keyCode.toUpperCase());
 		if(temporaryCode != null) {
+			temporaryCode = "\nREM Custom Function : " + getName(context) + "\n" + temporaryCode;
 			HashMap<String, String> properties = getProperties();
 			Set<String> propertiesKeys = properties.keySet();
 			String hashCode = String.valueOf(hashCode());
@@ -275,10 +276,10 @@ public class CustomerFunction extends GenericFunction {
 				key = FUNCTION_CODE;
 			} 
 			// Get any source code on generic key
-			code = parseCode(process, key, code);
+			code = parseCode(process, key, code, context);
 			// Get any source code on specific key 
 			key = key + "_" + systemType + "_" + cpuType;
-			code = parseCode(process, key.toUpperCase(), code);
+			code = parseCode(process, key.toUpperCase(), code, context);
 			
 		}
 		if(process instanceof ArduinoUnoProcess) {
@@ -287,7 +288,7 @@ public class CustomerFunction extends GenericFunction {
 			if(step == ScriptSegmentType.INITIALIZE || step == ScriptSegmentType.LOOP || step == ScriptSegmentType.FINALIZE) {
 				key = FUNCTION_CODE;
 			} 
-			code = parseCode(process, key.toUpperCase(), code);
+			code = parseCode(process, key.toUpperCase(), code, context);
 		}
 		return code;
 	}
