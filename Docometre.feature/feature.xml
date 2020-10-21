@@ -6,7 +6,22 @@
       provider-name="ISM">
 
    <description>
-      -- 2020-09-09 -- BIS
+      -- 2020-10-21 --
+ADDED :
+* Print custom function label in generated process code
+* Support for Python Engine 
+* Support for markers
+* Support for Modified/Save/Load/Unload subject
+* Allow subject to be loaded from raw or saved data
+* Move default math engine pref. from general pref. to math engine pref. 
+* Support for show marker and cursor preferences 
+* Unload subject before stopping math engine
+* When subject is unloaded, close all related editors
+* Ask to record changes before unloading modified subject 
+* Support for previous and next trial in channel editors
+* Use Progress Monitor Dialog to load/unload subjects
+FIXED :
+-- 2020-09-09 -- BIS
 ADDED :
 * Support for comments in parameters files (ADWin)
 -- 2020-09-09 --
