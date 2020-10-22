@@ -4,6 +4,7 @@ import os;
 import numpy;
 import io;
 import re;
+import time;
 
 class DOCoMETRe(object):
 
@@ -172,20 +173,22 @@ class DOCoMETRe(object):
 		ndArrayFileNumber = 1;
 		file = open(dataFilesFullPath + 'save.data','w');
 		for key,value in subject.items():
+			# Remove Experiment.Subject prefix
+			newKey = re.sub("^\w+\.\w+\.", "", key); 
 			if isinstance(value, str):
-				file.write(key);
+				file.write(newKey);
 				file.write('\n');
 				file.write('str("' + value + '")');
 				file.write('\n');
 			elif isinstance(value, int):
-				file.write(key);
+				file.write(newKey);
 				file.write('\n');
 				file.write('int(' + str(value) + ')');
 				file.write('\n');
 			elif isinstance(value, numpy.ndarray):
 				fileName = dataFilesFullPath + 'data_' + str(ndArrayFileNumber) + '.numpy';
 				ndArrayFileNumber = ndArrayFileNumber + 1;
-				file.write(key);
+				file.write(newKey);
 				file.write('\n');
 				file.write('numpy.ndarray:' + fileName);
 				file.write('\n');
@@ -193,7 +196,7 @@ class DOCoMETRe(object):
 				numpy.save(ndArrayFile, value, False, False);
 				ndArrayFile.close();
 			elif isinstance(value, list) and all(isinstance(n, str) for n in value):
-				file.write(key);
+				file.write(newKey);
 				file.write('\n');
 				file.write('list.str(' + ':'.join(value) + ')');
 				file.write('\n');
@@ -207,9 +210,15 @@ class DOCoMETRe(object):
 		
 	def loadSubject(self, saveFilesFullPath):
 		subject = dict();
+		segments = saveFilesFullPath.split(os.path.sep);
+		experimentName = segments[len(segments) - 3];
+		subjectName = segments[len(segments) - 2];
+		prefixKey = experimentName + "." + subjectName + ".";
 		file = open(saveFilesFullPath + 'save.data','r');
 		key = file.readline().strip();
 		while key:
+		# Add Experiment.Subject prefix
+			key = prefixKey + key;
 			value = file.readline().strip();
 			if(value.startswith('str(')):
 				subject[key] = eval(value);
@@ -343,87 +352,16 @@ if __name__ == "__main__":
 		print(channels);
 		
 		# Save Subject
-# 		subject = {k:v for k,v in docometre.experiments.items() if re.search('^ReachabilityCoriolis\.PreTestFull', k) != None}
-		
-# 		print('Dumping with pickle...')
-# 		startTime = time.time();
-# 		file = gzip.open("saveZip.data", "wb") #open( "save.data", "wb" )
-# 		pickle.dump(subject, file)
-# 		file.close();
-# 		print(time.time() - startTime)
-		
-# 		print('Dumping home made...')
-# 		startTime = time.time();
-# 		ndArrayFileNumber = 1;
-# 		file = open('save.data','w');
-# 		for key,value in subject.items():
-# 			if isinstance(value, str):
-# 				file.write(key);
-# 				file.write('\n');
-# 				file.write('str("' + value + '")');
-# 				file.write('\n');
-# 			elif isinstance(value, int):
-# 				file.write(key);
-# 				file.write('\n');
-# 				file.write('int(' + str(value) + ')');
-# 				file.write('\n');
-# 			elif isinstance(value, numpy.ndarray):
-# 				fileName = 'data_' + str(ndArrayFileNumber) + '.numpy';
-# 				ndArrayFileNumber = ndArrayFileNumber + 1;
-# 				file.write(key);
-# 				file.write('\n');
-# 				file.write('numpy.ndarray:' + fileName);
-# 				file.write('\n');
-# 				ndArrayFile = open(fileName,'wb');
-# 				numpy.save(ndArrayFile, value, False, False);
-# 				ndArrayFile.close();
-# 			else:
-# 				print(type(value))
-# 		file.close();
-# 		print(time.time() - startTime)
+		startTime = time.time();
+		docometre.saveSubject("^ReachabilityCoriolis\.PreTestFull", "./scripts/PythonScripts/data/")
+		print("Time to save subject :" + str(time.time() - startTime));
 		
 		# Unload subject
-# 		docometre.unload("ReachabilityCoriolis\.PreTestFull")
-# 		print(docometre.experiments);
-	
-		# Load Subject
-# 		print('Loading with pickle...')
-# 		startTime = time.time();
-# 		file = gzip.open("saveZip.data", "rb") #open( "save.data", "wb" )
-# 		newSubject = pickle.load(file);
-# 		file.close();
-# 		print(time.time() - startTime)
-# 		#print(newSubject)
-# 		del newSubject
-		
-		# Unload subject
-# 		docometre.unload("ReachabilityCoriolis\.PreTestFull")
-# 		print(docometre.experiments);
+		docometre.unload("ReachabilityCoriolis\.PreTestFull");
+		print(docometre.experiments);
 		
 		# Load Subject
-# 		newSubject = dict()
-# 		print('Loading home made...')
-# 		startTime = time.time();
-# 		file = open('save.data','r');
-# 		key = file.readline().strip();
-# 		while key:
-# 			value = file.readline().strip();
-# 			#print("key : " + key + " - Value : " + value);
-# 			if(value.startswith('str(')):
-# 				newSubject[key] = eval(value);
-# 			if(value.startswith('int(')):
-# 				newSubject[key] = eval(value);
-# 			if(value.startswith('numpy.ndarray:')):
-# 				fileName = value.replace('numpy.ndarray:', '');
-# 				ndArrayFile = open(fileName,'rb');
-# 				value = numpy.load(ndArrayFile, None)
-# 				ndArrayFile.close();
-# 				newSubject[key] = value;		
-# 			key = file.readline().strip();
-# 		print(time.time() - startTime)
-		#print(newSubject)
-		
-		# Merge dictionaries
-# 		docometre.experiments.update(newSubject);
-# 		del newSubject;
-		#print(docometre.experiments);
+		startTime = time.time();
+		docometre.loadSubject("./scripts/PythonScripts/data/");
+		print(docometre.experiments);
+		print("Time to load subject : " + str(time.time() - startTime));		
