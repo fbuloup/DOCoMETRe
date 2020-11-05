@@ -42,6 +42,9 @@
 package fr.univamu.ism.docometre.dacqsystems.adwin;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
@@ -55,6 +58,9 @@ public class ADWinCANModule extends Module {
 	public static final long serialVersionUID = AbstractElement.serialVersionUID;
 	
 	private boolean includeSegmentPassed;
+	private transient Map<String, String> receiveMessageObjectID = new HashMap<>();
+	private transient Map<String, String> transmitMessageObjectID = new HashMap<>();
+	private transient Map<String, String> messageObjectID = new HashMap<>();
 
 	public ADWinCANModule(DACQConfiguration dacqConfiguration) {
 		super(dacqConfiguration);
@@ -75,6 +81,8 @@ public class ADWinCANModule extends Module {
 		
 		String mode = getProperty(ADWinCANModuleProperties.MODE);
 		boolean receive = mode.equals(ADWinCANModuleProperties.RECEIVE);
+		boolean transmit = mode.equals(ADWinCANModuleProperties.TRANSMIT);
+		boolean receiveAndTransmit = mode.equals(ADWinCANModuleProperties.TRANSMIT_RECEIVE);
 		String messageObject = getProperty(ADWinCANModuleProperties.MESSAGE_OBJECT);
 		String messageIDLength = getProperty(ADWinCANModuleProperties.MESSAGE_ID_LENGTH);
 		String messageIDLength_Code = messageIDLength.equals(ADWinCANModuleProperties.MESSAGE_ID_LENGTH_11)?"0":"1";
@@ -135,13 +143,31 @@ public class ADWinCANModule extends Module {
 					code = code + "REM Reception de message ID 2 dans message objet 2, ID normal (pas étendu)\n";
 					code = code + "EN_RECEIVE("+ moduleNumber + ", " + interfaceNumber + ", 2, 2, 0)\n";
 				} else {
-					code = code + "REM " + (receive?"Receive ":"Transmit ");
+					populateTransmitReceiveValuePairs(receive, transmit, receiveAndTransmit);
+					code = code + "REM " + (receive ? "Receive ": (transmit ? "Transmit ": "Receive & Transmit "));
 					code = code + " Message object " + messageObject;
 					code = code + " Message ID " + messageID;
 					code = code + " Message ID length " + messageIDLength + "\n";
-					if(receive)	code = code + "EN_RECEIVE("+ moduleNumber + ", " + interfaceNumber + ", " + messageObject + ", " + messageID + ", " + messageIDLength_Code + ")\n";
-					else code = code + "EN_TRANSMIT("+ moduleNumber + ", " + interfaceNumber + ", " + messageObject + ", " + messageID + ", " + messageIDLength_Code + ")\n";
-					
+					if(receive || transmit) {
+						for (Iterator<String> keysIterator = messageObjectID.keySet().iterator(); keysIterator.hasNext();) {
+							messageObject = keysIterator.next();
+							messageID = messageObjectID.get(messageObject);
+							if(receive)	code = code + "EN_RECEIVE("+ moduleNumber + ", " + interfaceNumber + ", " + messageObject + ", " + messageID + ", " + messageIDLength_Code + ")\n";
+							else code = code + "EN_TRANSMIT("+ moduleNumber + ", " + interfaceNumber + ", " + messageObject + ", " + messageID + ", " + messageIDLength_Code + ")\n";
+						}
+					}
+					if(receiveAndTransmit) {
+						for (Iterator<String> keysIterator = receiveMessageObjectID.keySet().iterator(); keysIterator.hasNext();) {
+							messageObject = keysIterator.next();
+							messageID = messageObjectID.get(messageObject);
+							code = code + "EN_RECEIVE("+ moduleNumber + ", " + interfaceNumber + ", " + messageObject + ", " + messageID + ", " + messageIDLength_Code + ")\n";
+						}
+						for (Iterator<String> keysIterator = transmitMessageObjectID.keySet().iterator(); keysIterator.hasNext();) {
+							messageObject = keysIterator.next();
+							messageID = messageObjectID.get(messageObject);
+							code = code + "EN_TRANSMIT("+ moduleNumber + ", " + interfaceNumber + ", " + messageObject + ", " + messageID + ", " + messageIDLength_Code + ")\n";
+						}
+					}
 				}
 			}
 			if(systemType.equals(ADWinDACQConfigurationProperties.GOLD)) {
@@ -154,12 +180,31 @@ public class ADWinCANModule extends Module {
 					code = code + "REM Reception de message ID 2 dans message objet 2, ID normal (pas étendu)\n";
 					code = code + "EN_RECEIVE(" + interfaceNumber + ", 2, 2, 0)\n";
 				} else {
-					code = code + "REM " + (receive?"Receive ":"Transmit ");
+					populateTransmitReceiveValuePairs(receive, transmit, receiveAndTransmit);
+					code = code + "REM " + (receive ? "Receive ": (transmit ? "Transmit ": "Receive & Transmit "));
 					code = code + " Message object " + messageObject;
 					code = code + " Message ID " + messageID;
 					code = code + " Message ID length " + messageIDLength + "\n";
-					if(receive)	code = code + "EN_RECEIVE(" + interfaceNumber + ", " + messageObject + ", " + messageID + ", " + messageIDLength_Code + ")\n";
-					else code = code + "EN_TRANSMIT(" + interfaceNumber + ", " + messageObject + ", " + messageID + ", " + messageIDLength_Code + ")\n";
+					if(receive || transmit) {
+						for (Iterator<String> keysIterator = messageObjectID.keySet().iterator(); keysIterator.hasNext();) {
+							messageObject = keysIterator.next();
+							messageID = messageObjectID.get(messageObject);
+							if(receive)	code = code + "EN_RECEIVE(" + interfaceNumber + ", " + messageObject + ", " + messageID + ", " + messageIDLength_Code + ")\n";
+							else code = code + "EN_TRANSMIT(" + interfaceNumber + ", " + messageObject + ", " + messageID + ", " + messageIDLength_Code + ")\n";
+						}
+					}
+					if(receiveAndTransmit) {
+						for (Iterator<String> keysIterator = receiveMessageObjectID.keySet().iterator(); keysIterator.hasNext();) {
+							messageObject = keysIterator.next();
+							messageID = receiveMessageObjectID.get(messageObject);
+							code = code + "EN_RECEIVE(" + interfaceNumber + ", " + messageObject + ", " + messageID + ", " + messageIDLength_Code + ")\n";
+						}
+						for (Iterator<String> keysIterator = transmitMessageObjectID.keySet().iterator(); keysIterator.hasNext();) {
+							messageObject = keysIterator.next();
+							messageID = transmitMessageObjectID.get(messageObject);
+							code = code + "EN_TRANSMIT("+ interfaceNumber + ", " + messageObject + ", " + messageID + ", " + messageIDLength_Code + ")\n";
+						}
+					}
 				}
 				
 			}
@@ -360,6 +405,46 @@ public class ADWinCANModule extends Module {
 		
 		code += "\n";
 		return code;
+	}
+	
+	private void populateTransmitReceiveValuePairs(boolean receive, boolean transmit, boolean receiveAndTransmit) {
+		if(receiveMessageObjectID == null) receiveMessageObjectID = new HashMap<>();
+		if(transmitMessageObjectID == null) transmitMessageObjectID = new HashMap<>();
+		if(messageObjectID == null) messageObjectID = new HashMap<>();
+		receiveMessageObjectID.clear();
+		transmitMessageObjectID.clear();
+		messageObjectID.clear();
+		String messageObject = getProperty(ADWinCANModuleProperties.MESSAGE_OBJECT);
+		String messageID = getProperty(ADWinCANModuleProperties.MESSAGE_ID);
+		if(receive || transmit) {
+			String[] messageObjectSplitted = messageObject.split(",");
+			String[] messageIDSplitted = messageID.split(",");
+			if(messageObjectSplitted.length == messageIDSplitted.length) 
+				for (int i = 0; i < messageIDSplitted.length; i++) messageObjectID.put(messageObjectSplitted[i], messageIDSplitted[i]);
+		}
+		if(receiveAndTransmit) {
+			String[] messageObjectSplitted = messageObject.split(";");
+			String[] messageIDSplitted = messageID.split(";");
+			// Receive
+			messageObjectSplitted[0] = messageObjectSplitted[0].replaceAll("R\\(", "");
+			messageObjectSplitted[0] = messageObjectSplitted[0].replaceAll("\\)", "");
+			messageIDSplitted[0] = messageIDSplitted[0].replaceAll("R\\(", "");
+			messageIDSplitted[0] = messageIDSplitted[0].replaceAll("\\)", "");
+			String[] messageObjectSplittedSplitted = messageObjectSplitted[0].split(",");
+			String[] messageIDSplittedSplitted = messageIDSplitted[0].split(",");
+			if(messageObjectSplittedSplitted.length == messageIDSplittedSplitted.length) 
+				for (int i = 0; i < messageObjectSplittedSplitted.length; i++) receiveMessageObjectID.put(messageObjectSplittedSplitted[i], messageIDSplittedSplitted[i]);
+			// Transmit
+			messageObjectSplitted[1] = messageObjectSplitted[1].replaceAll("T\\(", "");
+			messageObjectSplitted[1] = messageObjectSplitted[1].replaceAll("\\)", "");
+			messageIDSplitted[1] = messageIDSplitted[1].replaceAll("T\\(", "");
+			messageIDSplitted[1] = messageIDSplitted[1].replaceAll("\\)", "");
+			messageObjectSplittedSplitted = messageObjectSplitted[1].split(",");
+			messageIDSplittedSplitted = messageIDSplitted[1].split(",");
+			if(messageObjectSplittedSplitted.length == messageIDSplittedSplitted.length) 
+				for (int i = 0; i < messageObjectSplittedSplitted.length; i++) transmitMessageObjectID.put(messageObjectSplittedSplitted[i], messageIDSplittedSplitted[i]);
+			
+		}
 	}
 	
 	@Override

@@ -47,15 +47,20 @@ import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.Property;
 
 public final class ADWinCANModuleProperties extends Property {
-
+	
+	public static String MESSAGE_OBJECT_REGEXP_1 = "^([1-9]|1[0-5])(,([1-9]|1[0-5]))*$";
+	public static String MESSAGE_OBJECT_REGEXP_2 = "^R\\(([1-9]|1[0-5])(,([1-9]|1[0-5]))*\\);T\\(([1-9]|1[0-5])(,([1-9]|1[0-5]))*\\)$";
+	public static String MESSAGE_ID_REGEXP_1 = "^([1-9]|[1-9][0-9])(,([1-9]|[1-9][0-9]))*$";
+	public static String MESSAGE_ID_REGEXP_2 = "^R\\(([1-9]|[1-9][0-9])(,([1-9]|[1-9][0-9]))*\\);T\\(([1-9]|[1-9][0-9])(,([1-9]|[1-9][0-9]))*\\)$";
+	
 	public static final ADWinCANModuleProperties INTERFACE_NUMBER = new ADWinCANModuleProperties("ADWinCANModuleProperties.INTERFACE_NUMBER", ADWinMessages.ADWinCANInterfaceNumber_Label, ADWinMessages.ADWinCANInterfaceNumber_Tooltip, "^(1|2|3|4|5|6|7|8|9)$", "1:2:3:4:5:6:7:8:9");
 	public static final ADWinCANModuleProperties NAME = new ADWinCANModuleProperties("ADWinCANModuleProperties.NAME", ADWinMessages.ADWinCANName_Label, ADWinMessages.ADWinCANName_Tooltip, "^[a-z|A-Z]+[0-9|a-z|A-Z]*$");
 	public static final ADWinCANModuleProperties SYSTEM_TYPE = new ADWinCANModuleProperties("ADWinCANModuleProperties.SYSTEM_TYPE", ADWinMessages.ADWinCANSystemType_Label, ADWinMessages.ADWinCANSystemType_Tooltip, "^(CODAMOTION|GYROSCOPE|TIMESTAMP|CODAMOTION AND GYROSCOPE|CODAMOTION AND TIMESTAMP|GYROSCOPE AND TIMESTAMP|CODAMOTION AND GYROSCOPE AND TIMESTAMP|NOT SPECIFIED)$", "CODAMOTION:GYROSCOPE:TIMESTAMP:CODAMOTION AND GYROSCOPE:CODAMOTION AND TIMESTAMP:GYROSCOPE AND TIMESTAMP:CODAMOTION AND GYROSCOPE AND TIMESTAMP:NOT SPECIFIED");
 	public static final ADWinCANModuleProperties FREQUENCY = new ADWinCANModuleProperties("ADWinCANModuleProperties.FREQUENCY", ADWinMessages.ADWinCANFrequency_Label, ADWinMessages.ADWinCANFrequency_Tooltip, "(^[+]?\\d*\\.?\\d*[1-9]+\\d*([eE][-+]?[0-9]+)?$)|(^[+]?[1-9]+\\d*\\.\\d*([eE][-+]?[0-9]+)?$)");
 	public static final ADWinCANModuleProperties NB_SENSORS = new ADWinCANModuleProperties("ADWinCANModuleProperties.NB_SENSORS", ADWinMessages.ADWinCAN_NB_SENSORS_Label, ADWinMessages.ADWinCAN_NB_SENSORS_Toolip, "^(0|1|2|3|4|5|6|7|8|9)$", "0:1:2:3:4:5:6:7:8:9");
-	public static final ADWinCANModuleProperties MODE = new ADWinCANModuleProperties("ADWinCANModuleProperties.MODE", ADWinMessages.ADWinCAN_MODE_Label, ADWinMessages.ADWinCAN_MODE_Toolip, "^(RECEIVE|TRANSMIT)$", "RECEIVE:TRANSMIT");
-	public static final ADWinCANModuleProperties MESSAGE_OBJECT = new ADWinCANModuleProperties("ADWinCANModuleProperties.MESSAGE_OBJECT", ADWinMessages.ADWinCAN_MESSAGE_OBJECT_Label, ADWinMessages.ADWinCAN_MESSAGE_OBJECT_Toolip, "^([1-9]|1[0-5])$", "1:2:3:4:5:6:7:8:9:10:11:12:13:14:15");
-	public static final ADWinCANModuleProperties MESSAGE_ID = new ADWinCANModuleProperties("ADWinCANModuleProperties.MESSAGE_ID", ADWinMessages.ADWinCAN_MESSAGE_ID_Label, ADWinMessages.ADWinCAN_MESSAGE_ID_Toolip, "^\\d+$");
+	public static final ADWinCANModuleProperties MODE = new ADWinCANModuleProperties("ADWinCANModuleProperties.MODE", ADWinMessages.ADWinCAN_MODE_Label, ADWinMessages.ADWinCAN_MODE_Toolip, "^(RECEIVE|TRANSMIT|RECEIVE & TRANSMIT)$", "RECEIVE:TRANSMIT:RECEIVE & TRANSMIT");
+	public static final ADWinCANModuleProperties MESSAGE_OBJECT = new ADWinCANModuleProperties("ADWinCANModuleProperties.MESSAGE_OBJECT", ADWinMessages.ADWinCAN_MESSAGE_OBJECT_Label, ADWinMessages.ADWinCAN_MESSAGE_OBJECT_Toolip, MESSAGE_OBJECT_REGEXP_1 );
+	public static final ADWinCANModuleProperties MESSAGE_ID = new ADWinCANModuleProperties("ADWinCANModuleProperties.MESSAGE_ID", ADWinMessages.ADWinCAN_MESSAGE_ID_Label, ADWinMessages.ADWinCAN_MESSAGE_ID_Toolip, MESSAGE_ID_REGEXP_1);
 	public static final ADWinCANModuleProperties MESSAGE_ID_LENGTH = new ADWinCANModuleProperties("ADWinCANModuleProperties.MESSAGE_ID_LENGTH", ADWinMessages.ADWinCAN_MESSAGE_ID_LENGTH_Label, ADWinMessages.ADWinCAN_MESSAGE_ID_LENGTH_Toolip, "^(11 bits|29 bits)$", "11 bits:29 bits");
 	
 	public static String CODAMOTION_SYSTEM_TYPE = "CODAMOTION";
@@ -76,8 +81,11 @@ public final class ADWinCANModuleProperties extends Property {
 	
 	public static String RECEIVE = "RECEIVE";
 	public static String TRANSMIT = "TRANSMIT";
+	public static String TRANSMIT_RECEIVE = "RECEIVE & TRANSMIT";
 	public static String MESSAGE_ID_LENGTH_11 = "11 bits";
 	public static String MESSAGE_ID_LENGTH_29 = "29 bits";
+	
+	
 	
 	public static void populateProperties(Module module){
 		ADWinModuleProperties.populateProperties(module);

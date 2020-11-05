@@ -150,4 +150,8 @@ public class ModifyPropertyHandler extends SelectionAdapter implements ModifyLis
 			} 
 
 		}
+		
+		public void setRegExp(String regExp) {
+			this.regexp = regExp;
+		}
 	}

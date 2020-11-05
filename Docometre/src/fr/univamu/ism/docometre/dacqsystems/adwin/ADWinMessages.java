@@ -181,8 +181,10 @@ public class ADWinMessages extends NLS {
 	public static String ADWinCAN_MODE_Toolip;
 	public static String ADWinCAN_MESSAGE_OBJECT_Label;
 	public static String ADWinCAN_MESSAGE_OBJECT_Toolip;
+	public static String ADWinCAN_MESSAGE_OBJECT_ErrorMessage;
 	public static String ADWinCAN_MESSAGE_ID_Label;
 	public static String ADWinCAN_MESSAGE_ID_Toolip;
+	public static String ADWinCAN_MESSAGE_ID_ErrorMessage;
 	public static String ADWinCAN_MESSAGE_ID_LENGTH_Label;
 	public static String ADWinCAN_MESSAGE_ID_LENGTH_Toolip;
 	

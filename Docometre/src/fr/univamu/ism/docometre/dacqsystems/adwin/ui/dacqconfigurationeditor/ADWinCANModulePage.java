@@ -47,9 +47,13 @@ import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Scrollable;
 import org.eclipse.swt.widgets.Text;
@@ -123,9 +127,11 @@ public class ADWinCANModulePage extends ADWinModulePage {
 	private Combo frequencyCombo;
 	private Combo nbSensorsCombo;
 	private Combo modeCombo;
-	private Combo messageObjectCombo;
+	private Text messageObjectText;
 	private Combo messageIDLengthCombo;
 	private Text messageIDtext;
+	private ModifyPropertyHandler messageObjectModifyPropertyHandler;
+	private ModifyPropertyHandler messageIDModifyPropertyHandler;
 
 	public ADWinCANModulePage(FormEditor editor, int id, Module module) {
 		super(editor, Integer.toString(id), "Temporary Title", module);
@@ -190,11 +196,11 @@ public class ADWinCANModulePage extends ADWinModulePage {
 		createLabel(generalconfigurationContainer, ADWinMessages.ADWinCAN_MESSAGE_OBJECT_Label, ADWinMessages.ADWinCAN_MESSAGE_OBJECT_Toolip);
 		value = module.getProperty(ADWinCANModuleProperties.MESSAGE_OBJECT);
 		value = value == null ? "1": value;
-		items = ADWinCANModuleProperties.MESSAGE_OBJECT.getAvailableValues();
-		messageObjectCombo = createCombo(generalconfigurationContainer, items, value, 1, 1);
-		messageObjectCombo.addModifyListener(new ModifyPropertyHandler(ADWinCANModuleProperties.MESSAGE_OBJECT, module, messageObjectCombo, ADWinCANModuleProperties.MESSAGE_OBJECT.getRegExp(), "", false, (ResourceEditor)getEditor()));
-		messageObjectCombo.setEnabled(false);
-		if(module.getProperty(ADWinCANModuleProperties.SYSTEM_TYPE).contains(ADWinCANModuleProperties.NOT_SPECIFIED_SYSTEM_TYPE)) messageObjectCombo.setEnabled(true);
+		messageObjectText = createText(generalconfigurationContainer, value, SWT.BORDER, 1, 1);
+		messageObjectModifyPropertyHandler = new ModifyPropertyHandler(ADWinCANModuleProperties.MESSAGE_OBJECT, module, messageObjectText, ADWinCANModuleProperties.MESSAGE_OBJECT.getRegExp(), ADWinMessages.ADWinCAN_MESSAGE_OBJECT_ErrorMessage, false, (ResourceEditor)getEditor());
+		messageObjectText.addModifyListener(messageObjectModifyPropertyHandler);
+		messageObjectText.setEnabled(false);
+		if(module.getProperty(ADWinCANModuleProperties.SYSTEM_TYPE).contains(ADWinCANModuleProperties.NOT_SPECIFIED_SYSTEM_TYPE)) messageObjectText.setEnabled(true);
 		
 		createLabel(generalconfigurationContainer, ADWinMessages.ADWinCAN_MESSAGE_ID_LENGTH_Label, ADWinMessages.ADWinCAN_MESSAGE_ID_LENGTH_Toolip);
 		value = module.getProperty(ADWinCANModuleProperties.MESSAGE_ID_LENGTH);
@@ -209,11 +215,44 @@ public class ADWinCANModulePage extends ADWinModulePage {
 		value = module.getProperty(ADWinCANModuleProperties.MESSAGE_ID);
 		value = value == null ? "1": value;
 		messageIDtext = createText(generalconfigurationContainer, value, SWT.BORDER, 1, 1);
-		messageIDtext.addModifyListener(new ModifyPropertyHandler(ADWinCANModuleProperties.MESSAGE_ID, module, messageIDtext, ADWinCANModuleProperties.MESSAGE_ID.getRegExp(), "", false, (ResourceEditor)getEditor()));
+		messageIDModifyPropertyHandler = new ModifyPropertyHandler(ADWinCANModuleProperties.MESSAGE_ID, module, messageIDtext, ADWinCANModuleProperties.MESSAGE_ID.getRegExp(), ADWinMessages.ADWinCAN_MESSAGE_ID_ErrorMessage, false, (ResourceEditor)getEditor());
+		messageIDtext.addModifyListener(messageIDModifyPropertyHandler);
 		messageIDtext.setEnabled(false);
 		if(module.getProperty(ADWinCANModuleProperties.SYSTEM_TYPE).contains(ADWinCANModuleProperties.NOT_SPECIFIED_SYSTEM_TYPE)) messageIDtext.setEnabled(true);
 		
+		modeCombo.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				updateMessageObjectModifyHandler();
+				updateMessageIDModifyHandler();
+			}
+		});
+		updateMessageObjectModifyHandler();
+		updateMessageIDModifyHandler();
+		
 		createChannelsConfigurationSection();
+	}
+	
+	private void updateMessageObjectModifyHandler() {
+		String selectedMode = modeCombo.getText();
+		if(ADWinCANModuleProperties.TRANSMIT.equals(selectedMode) || ADWinCANModuleProperties.RECEIVE.equals(selectedMode))
+			messageObjectModifyPropertyHandler.setRegExp(ADWinCANModuleProperties.MESSAGE_OBJECT_REGEXP_1);
+		else
+			messageObjectModifyPropertyHandler.setRegExp(ADWinCANModuleProperties.MESSAGE_OBJECT_REGEXP_2);
+		Event event = new Event();
+		event.widget = modeCombo;
+		messageObjectModifyPropertyHandler.modifyText(new ModifyEvent(event));
+	}
+	
+	private void updateMessageIDModifyHandler() {
+		String selectedMode = modeCombo.getText();
+		if(ADWinCANModuleProperties.TRANSMIT.equals(selectedMode) || ADWinCANModuleProperties.RECEIVE.equals(selectedMode))
+			messageIDModifyPropertyHandler.setRegExp(ADWinCANModuleProperties.MESSAGE_ID_REGEXP_1);
+		else
+			messageIDModifyPropertyHandler.setRegExp(ADWinCANModuleProperties.MESSAGE_ID_REGEXP_2);
+		Event event = new Event();
+		event.widget = modeCombo;
+		messageIDModifyPropertyHandler.modifyText(new ModifyEvent(event));
 	}
 	
 	/*
@@ -309,7 +348,7 @@ public class ADWinCANModulePage extends ADWinModulePage {
 					if(!wasTimeStamp && isTimeStamp) createTimeStampChannels();
 					
 					modeCombo.setEnabled(isNotSpecified);
-					messageObjectCombo.setEnabled(isNotSpecified);
+					messageObjectText.setEnabled(isNotSpecified);
 					messageIDLengthCombo.setEnabled(isNotSpecified);
 					messageIDtext.setEnabled(isNotSpecified);
 					
@@ -331,7 +370,7 @@ public class ADWinCANModulePage extends ADWinModulePage {
 		if(property == ADWinDACQConfigurationProperties.GLOBAL_FREQUENCY) populateAvailableFrequencies();
 		
 		if(property == ADWinCANModuleProperties.MODE) updateWidget(modeCombo, (ADWinCANModuleProperties) property);
-		if(property == ADWinCANModuleProperties.MESSAGE_OBJECT) updateWidget(messageObjectCombo, (ADWinCANModuleProperties) property);
+		if(property == ADWinCANModuleProperties.MESSAGE_OBJECT) updateWidget(messageObjectText, (ADWinCANModuleProperties) property);
 		if(property == ADWinCANModuleProperties.MESSAGE_ID_LENGTH) updateWidget(messageIDLengthCombo, (ADWinCANModuleProperties) property);
 		if(property == ADWinCANModuleProperties.MESSAGE_ID) updateWidget(messageIDtext, (ADWinCANModuleProperties) property);
 		
