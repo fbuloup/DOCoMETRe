@@ -100,7 +100,7 @@ public class EditDescriptionAction extends Action implements ISelectionListener,
 								IUndoContext undoContext = null;
 								if(workbenchPart instanceof ExperimentsView) undoContext = ExperimentsView.experimentsViewUndoContext;
 								if(workbenchPart instanceof SubjectsView) undoContext = SubjectsView.subjectsViewUndoContext;
-								operationHistory.execute(new EditDescriptionOperation(DocometreMessages.EditActionTitle, selectedResource, descriptionView.getDescription(), undoContext), null, null);
+								if(undoContext != null) operationHistory.execute(new EditDescriptionOperation(DocometreMessages.EditActionTitle, selectedResource, descriptionView.getDescription(), undoContext), null, null);
 							}
 							
 						}
