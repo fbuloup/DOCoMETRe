@@ -277,13 +277,21 @@ public final class MatlabEngine implements MathEngine {
 	}
 
 	@Override
-	public void unload(IResource subject) {
+	public void unload(IResource resource) {
 		try {
-			if(!ResourceType.isSubject(subject)) return;
-			String experimentName = subject.getFullPath().segment(0);
-			String subjectName = subject.getFullPath().segment(1);
-			String cmd = experimentName + " = rmfield(" + experimentName + ", '" + subjectName + "');";
-			matlabController.eval(cmd);
+			if(!(ResourceType.isSubject(resource) || ResourceType.isExperiment(resource))) return;
+			if(ResourceType.isSubject(resource)) {
+				String experimentName = resource.getFullPath().segment(0);
+				String subjectName = resource.getFullPath().segment(1);
+				String cmd = experimentName + " = rmfield(" + experimentName + ", '" + subjectName + "');";
+				matlabController.eval(cmd);
+			}
+			if(ResourceType.isExperiment(resource)) {
+				String experimentName = resource.getFullPath().segment(0);
+				String cmd = "clear " + experimentName + ";";
+				matlabController.eval(cmd);
+			}
+			
 		} catch (Exception e) {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
@@ -655,6 +663,63 @@ public final class MatlabEngine implements MathEngine {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public boolean renameExperiment(String oldName, String newName) {
+		try {
+			matlabController.eval(newName + " = " + oldName + ";");
+			matlabController.eval("clear " + oldName + ";");
+			
+			double response1 = 0;
+			Object[] responses = matlabController.returningEval("exist('" + oldName + "','var')", 1);
+			Object response = responses[0];
+			if(response instanceof double[]) {
+				double[] values = (double[])response;
+				response1 = values[0];
+			}
+			
+			double response2 = 0;
+			responses = matlabController.returningEval("exist('" + newName + "','var')", 1);
+			response = responses[0];
+			if(response instanceof double[]) {
+				double[] values = (double[])response;
+				response2 = values[0];
+			}
+			
+			return response1 == 0 && response2 == 1;
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		
+		return false;
+		
+	}
+
+	@Override
+	public boolean renameSubject(String experimentName, String oldSubjectName, String newSubjectName) {
+		try {
+			String cmd = experimentName + " = " + "rnfield(" + experimentName + ",'" + oldSubjectName +"','" + newSubjectName + "');";
+			matlabController.eval(cmd);
+			boolean oldNameFound = false;
+			boolean newNameFound = false;
+			Object[] responses = matlabController.returningEval("fieldnames(" + experimentName + ")", 1);
+			Object response = responses[0];
+			String[] subjectsNames = (String[]) response;
+			for (int i = 0; i < subjectsNames.length; i++) {
+				if(subjectsNames[i].equals(newSubjectName)) newNameFound = true;
+				if(subjectsNames[i].equals(oldSubjectName)) oldNameFound = true;
+			}
+			
+			return newNameFound && !oldNameFound;
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		
+		
+		return false;
 	}
 
 }
