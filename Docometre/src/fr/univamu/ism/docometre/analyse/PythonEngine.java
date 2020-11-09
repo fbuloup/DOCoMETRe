@@ -195,13 +195,20 @@ public class PythonEngine implements MathEngine {
 	}
 
 	@Override
-	public void unload(IResource subject) {
-		if(!ResourceType.isSubject(subject)) return;
+	public void unload(IResource resource) {
+		if(!(ResourceType.isSubject(resource) || ResourceType.isExperiment(resource))) return;
 		if(!isStarted()) return;
-		String experimentName = subject.getFullPath().segment(0);
-		String subjectName = subject.getFullPath().segment(1);
-		String prefixKey = experimentName + "\\." + subjectName;
-		pythonController.getPythonEntryPoint().unload(prefixKey);
+		if(ResourceType.isSubject(resource)) {
+			String experimentName = resource.getFullPath().segment(0);
+			String subjectName = resource.getFullPath().segment(1);
+			String prefixKey = experimentName + "\\." + subjectName;
+			pythonController.getPythonEntryPoint().unload(prefixKey);
+		}
+		if(ResourceType.isExperiment(resource)) {
+			String experimentName = resource.getFullPath().segment(0);
+			String prefixKey = experimentName;
+			pythonController.getPythonEntryPoint().unload(prefixKey);
+		}
 	}
 
 	@Override
@@ -461,6 +468,18 @@ public class PythonEngine implements MathEngine {
 		pythonController.getPythonEntryPoint().saveSubject(fullSubjectNameRegExp, dataFilesFullPath);
 		
 		
+	}
+
+	@Override
+	public boolean renameExperiment(String oldName, String newName) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean renameSubject(String experimentName, String oldSubjectName, String newSubjectName) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 	

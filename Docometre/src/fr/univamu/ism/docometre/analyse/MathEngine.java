@@ -44,6 +44,9 @@ public interface MathEngine {
 	double[][] getMarkers(String markersGroupLabel, Channel signal);
 	void deleteMarker(String markersGroupLabel, int trialNumber, double xValue, double yValue, Channel signal);
 	
+	boolean renameExperiment(String oldName, String newName);
+	boolean renameSubject(String experimentName, String oldSubjectName, String newSubjectName);
+	
 	default int getMarkersGroupNumber(String markersGroupLabel, Channel signal) {
 		String[] labels = getMarkersGroupsLabels(signal);
 		return Arrays.binarySearch(labels, markersGroupLabel);
