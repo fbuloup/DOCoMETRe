@@ -123,7 +123,12 @@ public class DeleteResourcesAction extends Action implements ISelectionListener,
 								if(ResourceType.isChannel(resource)) {
 									MathEngineFactory.getMathEngine().deleteChannel((Channel)resource);
 									deleteChannel = true;
-								} else {
+								} else if(ResourceType.isSubject(resource) && MathEngineFactory.getMathEngine().isSubjectLoaded(resource)) {
+									MathEngineFactory.getMathEngine().unload(resource);
+								} else if(ResourceType.isExperiment(resource)) {
+									MathEngineFactory.getMathEngine().unload(resource);
+								}
+								if (!deleteChannel) {
 									IResource parentResource = resource.getParent();
 									resource.delete(true, monitor);
 									parentResourcesToRefresh.add(parentResource);
@@ -139,6 +144,7 @@ public class DeleteResourcesAction extends Action implements ISelectionListener,
 							if(deleteResource) {
 								for (IResource parentResourceToRefresh : parentResourcesToRefresh) {
 									ExperimentsView.refresh(parentResourceToRefresh.getProject(), new IResource[]{});
+									SubjectsView.refresh();
 								}
 								monitor.worked(1);
 							}
