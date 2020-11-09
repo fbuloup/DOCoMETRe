@@ -183,7 +183,7 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 			@Override
 			public void run() {
 				IViewPart experimentsView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(ExperimentsView.ID);
-				if (experimentsView instanceof ExperimentsView)
+				if (experimentsView instanceof ExperimentsView)// Check null also !
 					((ExperimentsView)experimentsView).refreshInput(parentResource, resourcesToSelect);
 			}
 		});
