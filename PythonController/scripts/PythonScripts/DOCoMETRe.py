@@ -145,8 +145,8 @@ class DOCoMETRe(object):
 		# if(jvmMode): self.gateway.jvm.System.out.println("Evaluate : " + expression);
 		return str(eval(expression));
 	
-	def unload(self, subjectFullName):
-		exec("import re;docometre.experiments = {k:v for k,v in docometre.experiments.items() if re.search('^" + subjectFullName + "', k) == None}");
+	def unload(self, fullName):
+		exec("import re;docometre.experiments = {k:v for k,v in docometre.experiments.items() if re.search('^" + fullName + "', k) == None}");
 		
 	def getChannels(self, subjectFullName):
 		channels = list({k:v for k,v in self.experiments.copy().items() if re.search("^" + subjectFullName + "\.\w+\.isSignal$", k)});
@@ -186,13 +186,13 @@ class DOCoMETRe(object):
 				file.write('int(' + str(value) + ')');
 				file.write('\n');
 			elif isinstance(value, numpy.ndarray):
-				fileName = dataFilesFullPath + 'data_' + str(ndArrayFileNumber) + '.numpy';
+				fileName =  'data_' + str(ndArrayFileNumber) + '.numpy';
 				ndArrayFileNumber = ndArrayFileNumber + 1;
 				file.write(newKey);
 				file.write('\n');
 				file.write('numpy.ndarray:' + fileName);
 				file.write('\n');
-				ndArrayFile = open(fileName,'wb');
+				ndArrayFile = open(dataFilesFullPath + fileName,'wb');
 				numpy.save(ndArrayFile, value, False, False);
 				ndArrayFile.close();
 			elif isinstance(value, list) and all(isinstance(n, str) for n in value):
@@ -218,7 +218,7 @@ class DOCoMETRe(object):
 			currentWD = previousWD + os.path.sep + experimentName + os.path.sep + subjectName;
 			os.chdir(currentWD);
 			prefixKey = experimentName + "." + subjectName + ".";
-			file = open(saveFilesFullPath + 'save.data','r');
+			file = open('save.data','r');
 			key = file.readline().strip();
 			while key:
 			# Add Experiment.Subject prefix
@@ -372,6 +372,9 @@ if __name__ == "__main__":
 		
 		# Load Subject
 		startTime = time.time();
-		docometre.loadSubject("./scripts/PythonScripts/data/");
+		
+		os.chdir(os.getcwd() + '/scripts')
+		
+		docometre.loadSubject("./PythonScripts/data/");
 		print(docometre.experiments);
 		print("Time to load subject : " + str(time.time() - startTime));		
