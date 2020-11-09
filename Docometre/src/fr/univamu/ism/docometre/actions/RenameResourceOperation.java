@@ -59,6 +59,7 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.editors.PartNameRefresher;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.views.ExperimentsView;
@@ -120,7 +121,17 @@ public class RenameResourceOperation extends AbstractOperation {
 				updateProcessTest(resource, newResource);
 			}
 			// Get editors (dacq configuration and process) to update part names when necessary
-			 updateEditorsPartName(resource, newResource);
+			updateEditorsPartName(resource, newResource);
+			// If it's a loaded subject, must be renamed in mathengine
+			if(ResourceType.isSubject(newResource)) {
+				if(MathEngineFactory.getMathEngine().isStarted()) {
+					if(MathEngineFactory.getMathEngine().isSubjectLoaded(newResource)) {
+						// TODO
+						System.out.println("Need to rename in mathengine");
+					}
+				}
+				
+			}
 			resource = newResource;
 			return Status.OK_STATUS;
 		} catch (CoreException e) {

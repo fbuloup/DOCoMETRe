@@ -56,7 +56,10 @@ public class PythonEngine implements MathEngine {
 			protected IStatus run(IProgressMonitor monitor) {
 				IStatus status = Status.OK_STATUS;
 				try {
+					String workspacePath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();
 					pythonController.startServer(pythonLocation, pythonScriptsLocation, timeOut);
+					String cmd = "import os;os.chdir('" + workspacePath + "')";
+					pythonController.getPythonEntryPoint().runScript(cmd);
 					notifyListeners();
 				} catch (Exception e) {
 					e.printStackTrace();

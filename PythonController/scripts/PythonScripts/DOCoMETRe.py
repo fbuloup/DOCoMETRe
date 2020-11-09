@@ -209,34 +209,44 @@ class DOCoMETRe(object):
 		file.close();
 		
 	def loadSubject(self, saveFilesFullPath):
-		subject = dict();
-		segments = saveFilesFullPath.split(os.path.sep);
-		experimentName = segments[len(segments) - 3];
-		subjectName = segments[len(segments) - 2];
-		prefixKey = experimentName + "." + subjectName + ".";
-		file = open(saveFilesFullPath + 'save.data','r');
-		key = file.readline().strip();
-		while key:
-		# Add Experiment.Subject prefix
-			key = prefixKey + key;
-			value = file.readline().strip();
-			if(value.startswith('str(')):
-				subject[key] = eval(value);
-			elif(value.startswith('int(')):
-				subject[key] = eval(value);
-			elif(value.startswith('numpy.ndarray:')):
-				fileName = value.replace('numpy.ndarray:', '');
-				ndArrayFile = open(fileName,'rb');
-				value = numpy.load(ndArrayFile, None);
-				ndArrayFile.close();
-				subject[key] = value;		
-			elif(value.startswith('list.str')):
-					value = re.sub("^list\.str\(", "", value);
-					value = re.sub("\)$", "", value);
-					subject[key] = value.split(":");
+		previousWD = os.getcwd();
+		try:
+			subject = dict();
+			segments = saveFilesFullPath.split(os.path.sep);
+			experimentName = segments[len(segments) - 3];
+			subjectName = segments[len(segments) - 2];
+			currentWD = previousWD + os.path.sep + experimentName + os.path.sep + subjectName;
+			os.chdir(currentWD);
+			prefixKey = experimentName + "." + subjectName + ".";
+			file = open(saveFilesFullPath + 'save.data','r');
 			key = file.readline().strip();
-
-		self.experiments.update(subject);
+			while key:
+			# Add Experiment.Subject prefix
+				key = prefixKey + key;
+				value = file.readline().strip();
+				if(value.startswith('str(')):
+					subject[key] = eval(value);
+				elif(value.startswith('int(')):
+					subject[key] = eval(value);
+				elif(value.startswith('numpy.ndarray:')):
+					fileName = value.replace('numpy.ndarray:', '');
+					ndArrayFile = open(fileName,'rb');
+					value = numpy.load(ndArrayFile, None);
+					ndArrayFile.close();
+					subject[key] = value;		
+				elif(value.startswith('list.str')):
+						value = re.sub("^list\.str\(", "", value);
+						value = re.sub("\)$", "", value);
+						subject[key] = value.split(":");
+				key = file.readline().strip();
+	
+			self.experiments.update(subject);
+			
+		finally:
+			os.chdir(previousWD);
+			
+		if(jvmMode): 
+			self.gateway.jvm.System.out.println("WD : " + os.getcwd());
 	
 
 	class Java:
