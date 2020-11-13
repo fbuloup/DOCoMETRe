@@ -472,14 +472,15 @@ public class PythonEngine implements MathEngine {
 
 	@Override
 	public boolean renameExperiment(String oldName, String newName) {
-		// TODO Auto-generated method stub
-		return false;
+		String keyRegExp = "^" + oldName; 
+		return pythonController.getPythonEntryPoint().rename(keyRegExp, newName);
 	}
 
 	@Override
 	public boolean renameSubject(String experimentName, String oldSubjectName, String newSubjectName) {
-		// TODO Auto-generated method stub
-		return false;
+		String keyRegExp = "^" + experimentName + "\\." + oldSubjectName; 
+		String keyReplace = experimentName + "." + newSubjectName; 
+		return pythonController.getPythonEntryPoint().rename(keyRegExp, keyReplace);
 	}
 
 	

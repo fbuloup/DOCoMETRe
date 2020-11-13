@@ -5,6 +5,7 @@ import org.eclipse.core.commands.operations.UndoContext;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.DecoratingLabelProvider;
@@ -116,7 +117,7 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 		getViewSite().getActionBars().setGlobalActionHandler(ActionFactory.REFRESH.getId(), ApplicationActionBarAdvisor.refreshResourceAction);
 		makePopupMenu();
 		
-		updateInput();
+		updateInput(SelectedExprimentContributionItem.selectedExperiment);
 	}
 	
 	private void makePopupMenu() {
@@ -146,14 +147,14 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 		messageLabel.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false));
 	}
 
-	public void updateInput() {
-		if(SelectedExprimentContributionItem.selectedExperiment != null) {
+	public void updateInput(IResource input) {
+		if(input != null) {
 			// Remove infos
 			if(imageMessageContainer != null && !imageMessageContainer.isDisposed()) imageMessageContainer.dispose();
 			// Update part name
 			String partName = getPartName();
 			partName = partName.replaceAll("\\s\\[.*\\]", "");
-			setPartName(partName + " [" + SelectedExprimentContributionItem.selectedExperiment.getName() + "]");
+			setPartName(partName + " [" + input.getName() + "]");
 		} else {
 			// Create infos
 			createMessageInfo();
@@ -162,7 +163,7 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 			partName = partName.replaceAll("\\s\\[.*\\]", "");
 			setPartName(partName);
 		}
-		subjectsTreeViewer.setInput(SelectedExprimentContributionItem.selectedExperiment);
+		subjectsTreeViewer.setInput(input);
 		subjectsTreeViewer.refresh();
 		// Layout
 		parent.layout();
@@ -173,26 +174,52 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 		if(subjectsTreeViewer != null) subjectsTreeViewer.getTree().setFocus();
 	}
 
-	private void refreshInput(IResourceChangeEvent event) {
-		if(SelectedExprimentContributionItem.selectedExperiment == null) return;
-		if(event != null && event.getDelta().findMember(SelectedExprimentContributionItem.selectedExperiment.getFullPath()) == null) return;
-		if(subjectsTreeViewer != null) 
-			PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
-				@Override
-				public void run() {
-					subjectsTreeViewer.refresh();
-				}
-			});
-	}
+//	private void refreshInput(IResourceChangeEvent event) {
+//		if(SelectedExprimentContributionItem.selectedExperiment != null) 
+//			if(event != null && event.getDelta() != null && event.getDelta().findMember(SelectedExprimentContributionItem.selectedExperiment.getFullPath()) == null) return;
+//		if(subjectsTreeViewer != null) 
+//			PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+//				@Override
+//				public void run() {
+//					System.out.println("selectedExperiment : " + SelectedExprimentContributionItem.selectedExperiment);
+//					if (SelectedExprimentContributionItem.selectedExperiment != null) System.out.println("exist : " + SelectedExprimentContributionItem.selectedExperiment.exists());
+//					if(SelectedExprimentContributionItem.selectedExperiment != null && !SelectedExprimentContributionItem.selectedExperiment.exists()) SelectedExprimentContributionItem.selectedExperiment = null;
+//					updateInput();
+//				}
+//			});
+//	}
 	
 	@Override
 	public void resourceChanged(IResourceChangeEvent event) {
-		refreshInput(event);
+		if (event.getDelta() == null) return;
+		IResourceDelta[] resourceDeltas = event.getDelta().getAffectedChildren();
+		for (IResourceDelta resourceDelta : resourceDeltas) {
+			if (resourceDelta.getKind() == IResourceDelta.ADDED) {
+				if (subjectsTreeViewer.getInput() != null) {
+					if (((IResource)subjectsTreeViewer.getInput()).getFullPath().equals(resourceDelta.getMovedFromPath())) {
+						PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+							@Override
+							public void run() {
+								updateInput(resourceDelta.getResource());
+							}
+						});
+					} 
+				}
+			} 
+			if (resourceDelta.getKind() == IResourceDelta.CHANGED) {
+				PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+					@Override
+					public void run() {
+						subjectsTreeViewer.refresh();
+					}
+				});
+			}
+		}
 	}
 
 	@Override
 	public void perspectiveActivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
-		if(perspective.getId().equals(AnalysePerspective.ID)) refreshInput(null);
+		if(perspective.getId().equals(AnalysePerspective.ID)) updateInput(SelectedExprimentContributionItem.selectedExperiment);
 	}
 
 	@Override
@@ -205,7 +232,7 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 			public void run() {
 				IViewPart subjectsView =  PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(SubjectsView.ID);
 				if (subjectsView instanceof SubjectsView)
-					((SubjectsView)subjectsView).refreshInput(null);
+					((SubjectsView)subjectsView).subjectsTreeViewer.refresh();
 			}
 		});
 		

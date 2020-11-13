@@ -41,8 +41,12 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.actions;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.AbstractOperation;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
@@ -50,16 +54,22 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
+import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
+import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.editors.PartNameRefresher;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.views.ExperimentsView;
@@ -70,14 +80,18 @@ public class RenameResourceOperation extends AbstractOperation {
 	private String oldName;
 	private String newName;
 	private boolean refreshUI;
+	private Status renameInMathEngineStatus;
+	private boolean renameDataFiles;
+	private Status renameDataFilesStatus;
 
-	public RenameResourceOperation(String label, IResource resource, String newName, boolean refreshUI) {
+	public RenameResourceOperation(String label, IResource resource, String newName, boolean refreshUI, boolean renameDataFiles) {
 		super(label);
 		addContext(ExperimentsView.experimentsViewUndoContext);
 		this.resource = resource;
 		oldName = resource.getName();
 		this.newName = newName;
 		this.refreshUI = refreshUI;
+		this.renameDataFiles = renameDataFiles;
 	}
 
 	@Override
@@ -97,87 +111,170 @@ public class RenameResourceOperation extends AbstractOperation {
 	
 	private IStatus performOperation(String name) {
 		try {
-			String fileExtension = "";
-			// Detect if it is a dacq default renaming
-			boolean setDACQAsDefault = false;
-			if(ResourceType.isDACQConfiguration(resource)) {
-				String fullPath = ResourceProperties.getDefaultDACQPersistentProperty(resource);
-				if(fullPath != null) if(fullPath.equals(resource.getFullPath().toOSString())) setDACQAsDefault = true;
-			}
-			// Compute file extension
-			if(resource.getFileExtension() != null) fileExtension = "." + resource.getFileExtension();
-			// Rename resource and get new resource
-			resource.move(resource.getParent().getFullPath().append(name + fileExtension), true, null);
-			IResource newResource = resource.getParent().findMember(name + fileExtension);
-			// Update default DACQ if necessary
-			if(setDACQAsDefault) ResourceProperties.setDefaultDACQPersistentProperty(newResource, newResource.getFullPath().toOSString());
-			// Refresh experiments view for this resource
-			if(refreshUI) ExperimentsView.refresh(newResource.getParent(), new IResource[]{newResource});
-			// Update all process resources affected by this path renaming and update experiments view
-			updateProcesses(resource, newResource);
-			// Update all trials and process test resources affected by this path renaming and update experiments view
-			if(ResourceType.isProcess(newResource)) {
-				updateTrials(resource, newResource);
-				updateProcessTest(resource, newResource);
-			}
-			// Get editors (dacq configuration and process) to update part names when necessary
-			updateEditorsPartName(resource, newResource);
-			// If it's a loaded subject, must be renamed in mathengine
-			if(ResourceType.isSubject(newResource)) {
-				if(MathEngineFactory.getMathEngine().isStarted()) {
-					if(MathEngineFactory.getMathEngine().isSubjectLoaded(newResource)) {
-						// TODO
-						System.out.println("Need to rename in mathengine");
+			ProgressMonitorDialog progressMonitorDialog = new ProgressMonitorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+			progressMonitorDialog.run(true, false, new IRunnableWithProgress() {
+				@Override
+				public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+					
+					try {
+						monitor.beginTask("Rename Resource", IProgressMonitor.UNKNOWN);
+						boolean wasSubject = ResourceType.isSubject(resource);
+						boolean wasLoaded = MathEngineFactory.getMathEngine().isSubjectLoaded(resource);
+						boolean wasExperiment = ResourceType.isExperiment(resource);
+//						boolean updateSelectedExperiment = SelectedExprimentContributionItem.selectedExperiment == resource;
+						String fileExtension = "";
+						// Detect if it is a dacq default renaming
+						monitor.subTask("Check dacq default renaming");
+						boolean setDACQAsDefault = false;
+						if(ResourceType.isDACQConfiguration(resource)) {
+							String fullPath = ResourceProperties.getDefaultDACQPersistentProperty(resource);
+							if(fullPath != null) if(fullPath.equals(resource.getFullPath().toOSString())) setDACQAsDefault = true;
+						}
+						// Compute file extension
+						monitor.subTask("Compute file extension");
+						if(resource.getFileExtension() != null) fileExtension = "." + resource.getFileExtension();
+						// Rename resource and get new resource
+						monitor.subTask("Rename and get new resource");
+						IContainer parentResource = resource.getParent();
+						resource.move(parentResource.getFullPath().append(name + fileExtension), true, monitor);
+						IResource newResource = parentResource.findMember(name + fileExtension);
+						newResource.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+						// Update default DACQ if necessary
+						monitor.subTask("Update default DACQ if necessary");
+						if(setDACQAsDefault) ResourceProperties.setDefaultDACQPersistentProperty(newResource, newResource.getFullPath().toOSString());
+						
+						// Update all process resources affected by this path renaming and update experiments view
+						monitor.subTask("Update all affected process resources");
+						updateProcesses(resource, newResource);
+						// Update all trials and process test resources affected by this path renaming and update experiments view
+						monitor.subTask("Update all affected process tests and trials resources");
+						if(ResourceType.isProcess(newResource)) {
+							updateTrials(resource, newResource);
+							updateProcessTest(resource, newResource);
+						}
+						// Get editors (dacq configuration and process) to update part names when necessary
+						monitor.subTask("Update editors");
+						updateEditorsPartName(resource, newResource);
+						// If Math engine is started check if renaming is necessary
+						monitor.subTask("Rename in mathengine if necessary");
+						renameInMathEngineStatus = (Status) Status.OK_STATUS;
+						if(MathEngineFactory.getMathEngine().isStarted()) {
+							if(wasSubject) {
+								if(wasLoaded) {
+									// If it's a loaded subject, must be renamed in mathengine
+									if(!MathEngineFactory.getMathEngine().renameSubject(resource.getParent().getName(), resource.getName(), name)) {
+										renameInMathEngineStatus = new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Error renaming subject in mathEngine");
+									}
+									Object sessionProperty = newResource.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
+									if(sessionProperty != null && sessionProperty instanceof ChannelsContainer) {
+										ChannelsContainer channelsContainer = (ChannelsContainer)sessionProperty;
+										channelsContainer.setSubject((IFolder) newResource);
+									}
+								}
+								
+							}
+							// If it's an experiment, brute force rename in mathengine
+							if(wasExperiment) {
+								if(!MathEngineFactory.getMathEngine().renameExperiment(resource.getName(), name)) {
+									renameInMathEngineStatus = new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Error renaming experiment in mathEngine");
+								}
+								IResource[] subjects = ResourceProperties.getAllTypedResources(ResourceType.SUBJECT, (IContainer) newResource);
+								for (IResource subject : subjects) {
+									if(MathEngineFactory.getMathEngine().isSubjectLoaded(subject) ) {
+										Object sessionProperty = subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
+										if(sessionProperty != null && sessionProperty instanceof ChannelsContainer) {
+											ChannelsContainer channelsContainer = (ChannelsContainer)sessionProperty;
+											channelsContainer.setSubject((IFolder) subject);
+										}
+									}
+								}
+							}
+//							if(updateSelectedExperiment) SelectedExprimentContributionItem.selectedExperiment = newResource;
+//							if(wasSubject || wasExperiment) {
+//								monitor.subTask("Refresh Subject view");
+//								SubjectsView.refresh();
+//							}
+						}
+						
+						if(refreshUI) {
+							// Refresh experiments view for this resource
+							monitor.subTask("Refresh experiments view");
+							ExperimentsView.refresh(newResource.getParent(), new IResource[]{newResource});
+							SubjectsView.refresh();
+						}
+						
+						renameDataFilesStatus = (Status) Status.OK_STATUS;
+						if(renameDataFiles) {
+							if((ResourceType.isSubject(newResource) || ResourceType.isSession(newResource) || ResourceType.isTrial(newResource))) {
+								monitor.subTask(DocometreMessages.CollectDataFileTaskTitle);
+								ArrayList<IResource> dataFiles = new ArrayList<IResource>();
+								RenameDataFilesHelper.populateDataFilesToRename((IContainer)newResource, dataFiles);
+								monitor.subTask(DocometreMessages.RenameDataFileTaskTitle);
+								renameDataFilesStatus = (Status) RenameDataFilesHelper.renameDataFiles(newResource, resource, monitor);
+							}
+						}
+						
+						resource = newResource;
+						monitor.done();
+					} catch (CoreException e) {
+						Activator.logErrorMessageWithCause(e);
+						e.printStackTrace();
 					}
+					
 				}
-				
-			}
-			resource = newResource;
-			return Status.OK_STATUS;
-		} catch (CoreException e) {
+			});
+			if(renameDataFilesStatus.isOK() && renameInMathEngineStatus.isOK()) return Status.OK_STATUS;
+		} catch (InvocationTargetException | InterruptedException e) {
 			e.printStackTrace();
 			Activator.logErrorMessageWithCause(e);
 		}
-		return new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Error renaming resource");
+		MultiStatus multiStatus = new MultiStatus(Activator.PLUGIN_ID, IStatus.ERROR, "Error renaming resource");
+		if(!renameDataFilesStatus.isOK()) multiStatus.add(renameDataFilesStatus);
+		if(!renameInMathEngineStatus.isOK()) multiStatus.add(renameInMathEngineStatus);
+		return multiStatus;
 	}
 	
 	/*
 	 * This method update all editors part names when renamed resource affects their path, including DACQ associated file
 	 */
 	private void updateEditorsPartName(IResource resource, IResource newResource) {
-		IEditorReference[] editorReferences = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
-		for (int i = 0; i < editorReferences.length; i++) {
-			try {
-				ResourceEditorInput resourceEditorInput = ((ResourceEditorInput)editorReferences[i].getEditorInput());
-				Object object = resourceEditorInput.getObject();
-				IResource editedResource = ObjectsController.getResourceForObject(object);
-				if(editedResource == null && object instanceof IResource) {
-					if(ResourceType.isLog(newResource) || ResourceType.isParameters(newResource) || ResourceType.isSamples(newResource)) {
-						if(resource.equals(object)) {
-							editedResource = newResource;
-							resourceEditorInput.setObject(newResource);
+		PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+			@Override
+			public void run() {
+				IEditorReference[] editorReferences = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
+				for (int i = 0; i < editorReferences.length; i++) {
+					try {
+						ResourceEditorInput resourceEditorInput = ((ResourceEditorInput)editorReferences[i].getEditorInput());
+						Object object = resourceEditorInput.getObject();
+						IResource editedResource = ObjectsController.getResourceForObject(object);
+						if(editedResource == null && object instanceof IResource) {
+							if(ResourceType.isLog(newResource) || ResourceType.isParameters(newResource) || ResourceType.isSamples(newResource)) {
+								if(resource.equals(object)) {
+									editedResource = newResource;
+									resourceEditorInput.setObject(newResource);
+								}
+							}
 						}
+						boolean refreshPartName = false;
+						// Mark this part to be updated if its resource has been renamed
+						if(editedResource != null) {
+							if(editedResource.equals(newResource)) refreshPartName = true;
+							if(ResourceType.isProcess(editedResource)) {
+								// If editor resource is a process, check if associated DACQ file has been renamed
+								String fullPathAssociatedDAQ = ResourceProperties.getAssociatedDACQConfigurationProperty((IFile) editedResource);
+								String fullNewPath = newResource.getFullPath().toOSString();
+								// If yes mark this editor to be refreshed
+								if(fullPathAssociatedDAQ.startsWith(fullNewPath)) refreshPartName = true;
+							}
+						}
+						if(refreshPartName) ((PartNameRefresher)editorReferences[i].getEditor(false)).refreshPartName();
+					} catch (PartInitException e) {
+						e.printStackTrace();
+						Activator.logErrorMessageWithCause(e);
 					}
-					
 				}
-				boolean refreshPartName = false;
-				// Mark this part to be updated if its resource has been renamed
-				if(editedResource != null) {
-					if(editedResource.equals(newResource)) refreshPartName = true;
-					if(ResourceType.isProcess(editedResource)) {
-						// If editor resource is a process, check if associated DACQ file has been renamed
-						String fullPathAssociatedDAQ = ResourceProperties.getAssociatedDACQConfigurationProperty((IFile) editedResource);
-						String fullNewPath = newResource.getFullPath().toOSString();
-						// If yes mark this editor to be refreshed
-						if(fullPathAssociatedDAQ.startsWith(fullNewPath)) refreshPartName = true;
-					}
-				}
-				if(refreshPartName) ((PartNameRefresher)editorReferences[i].getEditor(false)).refreshPartName();
-			} catch (PartInitException e) {
-				e.printStackTrace();
-				Activator.logErrorMessageWithCause(e);
 			}
-		}
+		});
 	}
 	
 	/*

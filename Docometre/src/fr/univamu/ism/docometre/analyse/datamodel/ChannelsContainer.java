@@ -23,5 +23,9 @@ public final class ChannelsContainer {
 		}
 		return null;
 	}
+
+	public void setSubject(IFolder subject) {
+		this.subject = subject;
+	}
 	
 }

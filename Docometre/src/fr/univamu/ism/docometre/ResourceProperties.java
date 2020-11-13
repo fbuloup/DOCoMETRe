@@ -158,7 +158,7 @@ public final class ResourceProperties {
 	 */
 	public static String getTypePersistentProperty(IResource resource) {
 		try {
-			return resource.getPersistentProperty(TYPE_QN);
+			if(resource.exists()) return resource.getPersistentProperty(TYPE_QN);
 		} catch (CoreException e) {
 			e.printStackTrace();
 			Activator.logErrorMessageWithCause(e);

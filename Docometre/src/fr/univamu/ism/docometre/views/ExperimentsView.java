@@ -44,6 +44,7 @@ package fr.univamu.ism.docometre.views;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.eclipse.core.commands.operations.UndoContext;
@@ -387,12 +388,12 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 		experimentsTreeViewer.refresh(parentResource, true);
 		PlatformUI.getWorkbench().getDecoratorManager().update(ExperimentsLabelDecorator.ID);
 		if(newResourcesToSelect != null) {
-			List<Object> list = Arrays.asList(newResourcesToSelect);
+			List<Object> list = new LinkedList<>(Arrays.asList(newResourcesToSelect));
 			for (Object object : newResourcesToSelect) {
 				IResource resource = (IResource)object;
 				if(!resource.exists()) list.remove(object);
 			}
-			StructuredSelection structuredSelection = new StructuredSelection(newResourcesToSelect);
+			StructuredSelection structuredSelection = new StructuredSelection(list.toArray());
 			experimentsTreeViewer.setSelection(structuredSelection, true);
 //			experimentsTreeViewer.getTree().notifyListeners(SWT.Selection, new Event());
 		}

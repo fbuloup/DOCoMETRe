@@ -36,7 +36,7 @@ public final class SelectExperimentHandler extends AbstractHandler {
 			SelectedExprimentContributionItem.selectedExperiment = (IResource)selectedExperimentDialog.getResult()[0];
 			ApplicationActionBarAdvisor.selectedExprimentContributionItem.setText(DocometreMessages.Experiment_Label + SelectedExprimentContributionItem.selectedExperiment.getName());
 			IViewPart view = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(SubjectsView.ID);
-			if(view != null) ((SubjectsView) view).updateInput();
+			if(view != null) ((SubjectsView) view).updateInput(SelectedExprimentContributionItem.selectedExperiment);
 		}
 		return null;
 	}

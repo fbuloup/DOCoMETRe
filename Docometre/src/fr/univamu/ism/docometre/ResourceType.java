@@ -167,10 +167,12 @@ public enum ResourceType {
 	}
 
 	public static boolean isNumpyFile(IResource resource) {
+		if(!resource.exists()) return false;
 		return resource.getFileExtension().equalsIgnoreCase("numpy");
 	}
 
 	public static boolean isSaveFile(IResource resource) {
+		if(!resource.exists()) return false;
 		return resource.getName().equalsIgnoreCase("save.data") || resource.getName().equalsIgnoreCase("save.mat");
 	}
 

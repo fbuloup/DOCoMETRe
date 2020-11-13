@@ -40,13 +40,41 @@ public class SelectedExprimentContributionItem extends StatusLineContributionIte
 			if(selectedExperiment != null) ApplicationActionBarAdvisor.selectedExprimentContributionItem.setText(DocometreMessages.Experiment_Label + selectedExperiment.getName());
 		} else ApplicationActionBarAdvisor.selectedExprimentContributionItem.setText("");
 	}
-
+	
 	@Override
 	public void resourceChanged(IResourceChangeEvent event) {
-		if(event.getDelta() == null) return;
+		if (event.getDelta() == null) return;
 		IResourceDelta[] resourceDeltas = event.getDelta().getAffectedChildren();
 		for (IResourceDelta resourceDelta : resourceDeltas) {
-			if(resourceDelta.getResource() == selectedExperiment && resourceDelta.getKind() == IResourceDelta.REMOVED) selectedExperiment = null; 
+
+//			if (resourceDelta.getKind() == IResourceDelta.ADDED)
+//				System.out.println("ADDED");
+//			if ((resourceDelta.getFlags() & IResourceDelta.MOVED_FROM) > 0)
+//				System.out.println("MOVED_FROM");
+//			if (resourceDelta.getMovedFromPath() != null)
+//				System.out.println(resourceDelta.getMovedFromPath().toOSString());
+//
+//			if (resourceDelta.getKind() == IResourceDelta.REMOVED)
+//				System.out.println("REMOVED");
+//			if ((resourceDelta.getFlags() & IResourceDelta.MOVED_TO) > 0)
+//				System.out.println("MOVED_TO");
+//			if (resourceDelta.getMovedToPath() != null)
+//				System.out.println(resourceDelta.getMovedToPath().toOSString());
+
+			if (resourceDelta.getKind() == IResourceDelta.ADDED) {
+				if (selectedExperiment != null) {
+					if (selectedExperiment.getFullPath().equals(resourceDelta.getMovedFromPath())) {
+						selectedExperiment = resourceDelta.getResource();
+						PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+							@Override
+							public void run() {
+								ApplicationActionBarAdvisor.selectedExprimentContributionItem.setText(DocometreMessages.Experiment_Label + selectedExperiment.getName());
+							}
+						});
+
+					}
+				}
+			}
 		}
 	}
 

@@ -15,5 +15,6 @@ public interface PythonEntryPoint {
 	void runScript(Object code);
 	void saveSubject(Object subjectFullNameRegExp, Object saveFilesFullPath);
 	void loadSubject(Object saveFilesFullPath);
+	boolean rename(String keyRegExp, String keyReplace);
 
 }

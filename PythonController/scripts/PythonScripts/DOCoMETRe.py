@@ -247,7 +247,16 @@ class DOCoMETRe(object):
 			
 		if(jvmMode): 
 			self.gateway.jvm.System.out.println("WD : " + os.getcwd());
-	
+			
+	def rename(self, keyRegExp, keyReplace):
+		subDict = {k:v for k,v in docometre.experiments.items() if re.search(keyRegExp, k) != None}
+		for key,value in subDict.items():
+			newKey = re.sub(keyRegExp, keyReplace, key)
+			docometre.experiments[newKey] = docometre.experiments.pop(key);
+		subDict = {k:v for k,v in docometre.experiments.items() if re.search(keyRegExp, k) != None}
+		keyReplace = "^" + re.sub("\.", "\.", keyReplace);
+		subDict2 = {k:v for k,v in docometre.experiments.items() if re.search(keyReplace, k) != None}
+		return (not(any(subDict)) and any(subDict2))
 
 	class Java:
 		implements = ["fr.univamu.ism.docometre.python.PythonEntryPoint"]
@@ -376,5 +385,17 @@ if __name__ == "__main__":
 		os.chdir(os.getcwd() + '/scripts')
 		
 		docometre.loadSubject("./PythonScripts/data/");
-		print(docometre.experiments);
+		# print(docometre.experiments);
 		print("Time to load subject : " + str(time.time() - startTime));		
+		
+		
+		# Rename
+		startTime = time.time();
+		docometre.rename("^PythonScripts\.data", "ExperimentName.SubjectName");
+		print("Time to rename : " + str(time.time() - startTime));		
+		print(docometre.experiments)
+		subject = {k:v for k,v in docometre.experiments.items() if re.search("^PythonScripts\.data", k) != None}
+		print(subject)
+		
+		
+		
