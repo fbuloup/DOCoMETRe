@@ -46,6 +46,7 @@ outputSignal.isSignal = 1;\n\
 outputSignal.isCategory = 0;\n\
 outputSignal.isEvent = 0;\n\
 outputSignal.NbMarkers = 0;\n\
+outputSignal.NbMarkersGroups = 0;\n\
 outputSignal.NbFields = 0;\n\
 outputSignal.SampleFrequency = inputSignal.SampleFrequency;\n\
 outputSignal.FrontCut = ones(SignalSizes(1), 1);\n\
@@ -56,7 +57,8 @@ normalizedCutOffFrequency = cutOffFrequency / nyquistFrequency;\n\
 [num, den] = butter(order, normalizedCutOffFrequency);\n\
 for trialNumber = trialsList\n\
 	outputSignal.Values(trialNumber, :) = filtfilt(num, den, inputSignal.Values(trialNumber, :));\n\
-end
+end\n\
+clear num den nyquistFrequency normalizedCutOffFrequency SignalSizes trialNumber
 
 
 
