@@ -478,9 +478,14 @@ public class PythonEngine implements MathEngine {
 
 	@Override
 	public boolean renameSubject(String experimentName, String oldSubjectName, String newSubjectName) {
-		String keyRegExp = "^" + experimentName + "\\." + oldSubjectName; 
-		String keyReplace = experimentName + "." + newSubjectName; 
+		String keyRegExp = "^" + experimentName + "\\." + oldSubjectName + "\\."; 
+		String keyReplace = experimentName + "." + newSubjectName + "."; 
 		return pythonController.getPythonEntryPoint().rename(keyRegExp, keyReplace);
+	}
+
+	@Override
+	public String evaluate(String command) {
+		return pythonController.getPythonEntryPoint().evaluate(command);
 	}
 
 	

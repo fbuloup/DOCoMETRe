@@ -152,6 +152,13 @@
             name="%SubjectsView_Title"
             restorable="true">
       </view>
+      <view
+            class="fr.univamu.ism.docometre.analyse.views.MathEngineCommandView"
+            icon="icons/mathEngine.png"
+            id="Docometre.MathEngineCommandView"
+            name="%MathEngineCommandView_Tilte"
+            restorable="true">
+      </view>
    </extension>
    <extension
          point="org.eclipse.ui.perspectiveExtensions">

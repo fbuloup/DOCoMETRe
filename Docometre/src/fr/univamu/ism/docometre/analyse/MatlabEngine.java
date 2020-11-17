@@ -722,4 +722,16 @@ public final class MatlabEngine implements MathEngine {
 		return false;
 	}
 
+	@Override
+	public String evaluate(String command) throws Exception {
+		long timeStamp = (new Date()).getTime();
+		command = command.replaceAll("'", "''");
+		String variable = "Var_" + timeStamp;
+		command = variable + " = evalc('" + command + "');";
+		runScript(command);
+		Object value = matlabController.getVariable(variable);
+		runScript("clear " + variable + ";");;
+		return value.toString();
+	}
+
 }

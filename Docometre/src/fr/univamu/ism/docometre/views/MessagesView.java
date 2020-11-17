@@ -83,7 +83,6 @@ public class MessagesView extends ViewPart implements ILogListener, IDocumentLis
 		@Override
 		public void run() {
 			autoScroll = !isChecked();
-			Activator.logErrorMessage("ERROR " + isChecked());
 		}
 	}
 	
@@ -104,7 +103,7 @@ public class MessagesView extends ViewPart implements ILogListener, IDocumentLis
 		}
 	}
 	
-	private WorkbenchJob revealJob = new WorkbenchJob("Reveal End of Document") {//$NON-NLS-1$
+	private WorkbenchJob revealJob = new WorkbenchJob(DocometreMessages.RevealEODTitle) {//$NON-NLS-1$
         public IStatus runInUIThread(IProgressMonitor monitor) {
             StyledText textWidget = messagesViewer.getTextWidget();
             if (textWidget != null && !textWidget.isDisposed()) {

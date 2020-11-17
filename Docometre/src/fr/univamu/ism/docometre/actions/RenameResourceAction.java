@@ -46,6 +46,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.commands.operations.IOperationHistory;
+import org.eclipse.core.commands.operations.IUndoContext;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -77,7 +78,8 @@ public class RenameResourceAction extends Action implements ISelectionListener, 
 	private IResource resource;
 	private IWorkbenchWindow window;
 	protected IStatus status;
-
+	private IUndoContext undoContext;
+	
 	public RenameResourceAction(IWorkbenchWindow window) {
 		setId("RenameResourceAction"); //$NON-NLS-1$
 		operationHistory = PlatformUI.getWorkbench().getOperationSupport().getOperationHistory();
@@ -114,9 +116,7 @@ public class RenameResourceAction extends Action implements ISelectionListener, 
 					}
 				}
 				
-				System.out.println("resource before :" + resource); 
-				IStatus status = operationHistory.execute(new RenameResourceOperation(DocometreMessages.RenameAction_Text, resource, inputDialog.getValue(), true, inputDialog.isAlsoRenameDataFiles()), null, null);
-				System.out.println("resource after :" + resource);
+				IStatus status = operationHistory.execute(new RenameResourceOperation(DocometreMessages.RenameAction_Text, resource, inputDialog.getValue(), true, inputDialog.isAlsoRenameDataFiles(), undoContext), null, null);
 				
 				if(!status.isOK()) {
 					if(status instanceof MultiStatus) {
@@ -143,6 +143,9 @@ public class RenameResourceAction extends Action implements ISelectionListener, 
 			if (selection instanceof IStructuredSelection)
 				resource = (IResource) ((IStructuredSelection) selection).getFirstElement();
 			setEnabled(resource != null);
+			undoContext = null;
+			if(part instanceof ExperimentsView) undoContext = ExperimentsView.experimentsViewUndoContext;
+			if(part instanceof SubjectsView) undoContext = SubjectsView.subjectsViewUndoContext;
 		}
 	}
 

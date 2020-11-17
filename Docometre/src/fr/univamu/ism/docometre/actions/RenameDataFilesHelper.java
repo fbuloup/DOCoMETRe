@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.IOperationHistory;
+import org.eclipse.core.commands.operations.IUndoContext;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -21,7 +22,7 @@ public class RenameDataFilesHelper {
 	
 	private static IStatus status;
 
-	public static IStatus renameDataFiles(IResource newResource, IResource oldResource, IProgressMonitor monitor) throws CoreException {
+	public static IStatus renameDataFiles(IResource newResource, IResource oldResource, IProgressMonitor monitor, IUndoContext undoContext) throws CoreException {
 		status = Status.OK_STATUS;
 		// Collect all data files
 		ArrayList<IResource> dataFiles = new ArrayList<IResource>();
@@ -98,7 +99,7 @@ public class RenameDataFilesHelper {
 					public void run() {
 						try {
 							IOperationHistory operationHistory = PlatformUI.getWorkbench().getOperationSupport().getOperationHistory();
-							status = operationHistory.execute(new RenameResourceOperation(DocometreMessages.RenameAction_Text, dataFile, newPath.removeFileExtension().lastSegment(), false, false), monitor, null);
+							status = operationHistory.execute(new RenameResourceOperation(DocometreMessages.RenameAction_Text, dataFile, newPath.removeFileExtension().lastSegment(), false, false, undoContext), monitor, null);
 						} catch (ExecutionException e) {
 							Activator.logErrorMessageWithCause(e);
 							e.printStackTrace();

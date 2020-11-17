@@ -256,6 +256,9 @@ class DOCoMETRe(object):
 		subDict = {k:v for k,v in docometre.experiments.items() if re.search(keyRegExp, k) != None}
 		keyReplace = "^" + re.sub("\.", "\.", keyReplace);
 		subDict2 = {k:v for k,v in docometre.experiments.items() if re.search(keyReplace, k) != None}
+		#if(jvmMode): 
+		#	self.gateway.jvm.System.out.println("Is dict empty : " + str(any(subDict)) + " for " + keyRegExp);
+		#	self.gateway.jvm.System.out.println("Is dict empty : " + str(any(subDict2)) + " for " + keyReplace);
 		return (not(any(subDict)) and any(subDict2))
 
 	class Java:

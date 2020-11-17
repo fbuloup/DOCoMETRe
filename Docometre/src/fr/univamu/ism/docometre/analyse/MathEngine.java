@@ -35,6 +35,7 @@ public interface MathEngine {
 	void runScript(String code);
 	void deleteChannel(Channel resource);
 	void saveSubject(IResource subject);
+	String evaluate(String command) throws Exception;
 	
 	int getNbMarkersGroups(Channel signal);
 	void createNewMarkersGroup(Channel signal, String markersGroupLabel);

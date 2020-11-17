@@ -796,6 +796,26 @@ public final class DocometreMessages extends NLS {
 	public static String RecordSubjectDialogTitle;
 	public static String RecordSubjectDialogMessage;
 	
+	// Mathengine view
+	public static String sendButtonTitle;
+	public static String commandTitle;
+	public static String RevealEODTitle;
+	
+	// Rename resource operation
+	public static String RenameRessourceTaskTitle;
+	public static String CheckIsDacqSubTaskTitle;
+	public static String ComputeFileExtensionSubTaskTitle;
+	public static String RenameAndGetNewResourceSubTaskTitle;
+	public static String UpdateDefaultDacqSubTaskTitle;
+	public static String UpdateAffectedProcessesSubTaskTitle;
+	public static String UpdateAffectedProcessTestsAndTrialsSubTaskTitle;
+	public static String UpdateEditorsSubTaskTitle;
+	public static String RenameInMathengineSubTaskTitle;
+	public static String ErrorRenamingSubjectInMathengine;
+	public static String ErrorRenamingEsxperimentInMathengine;
+	public static String RefreshExperimentsSubjectsViewsSubTaskTitle;
+	public static String ErrorRenamingResource;
+	
 //	public static String OrganizeSessionWizardPage_button_1_text;
 //	public static String OrganizeSessionWizardPage_tbtmNewItem_text;
 //	public static String OrganizeSessionWizardPage_tbtmNewItem_1_text;

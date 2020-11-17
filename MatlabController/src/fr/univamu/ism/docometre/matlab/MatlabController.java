@@ -115,7 +115,6 @@ public final class MatlabController {
 	}
 	
 	public void evaluate(String command) throws Exception {
-			System.out.println("Sended Matlab command : " + command);
 			eval(command);
 	}
 	
