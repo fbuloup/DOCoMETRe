@@ -2,6 +2,7 @@ package fr.univamu.ism.docometre.analyse.views;
 
 import org.eclipse.core.commands.operations.IUndoContext;
 import org.eclipse.core.commands.operations.UndoContext;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -240,6 +241,11 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 
 	public ISelection getSelection() {
 		return subjectsTreeViewer.getSelection();
+	}
+	
+	public IContainer getInput() {
+		if(subjectsTreeViewer != null) return (IContainer) subjectsTreeViewer.getInput();
+		return null;
 	}
 	
 }

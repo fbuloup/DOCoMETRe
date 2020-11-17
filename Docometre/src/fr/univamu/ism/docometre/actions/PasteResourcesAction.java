@@ -170,8 +170,11 @@ public class PasteResourcesAction extends Action implements ISelectionListener, 
 		setEnabled(false);
 		if(part instanceof ExperimentsView || part instanceof SubjectsView) {
 			destinationResource = null;
-			if(selection.isEmpty()) destinationResource = ResourcesPlugin.getWorkspace().getRoot();
-			else if (selection instanceof IStructuredSelection) {
+			if(selection.isEmpty() && part instanceof ExperimentsView) 
+				destinationResource = ResourcesPlugin.getWorkspace().getRoot();
+			else if(selection.isEmpty() && part instanceof SubjectsView) {
+				destinationResource = ((SubjectsView)part).getInput();
+			} else if (selection instanceof IStructuredSelection) {
 				Object element = ((IStructuredSelection) selection).getFirstElement();
 				if(element instanceof IContainer) destinationResource = (IContainer) element;
 			}
