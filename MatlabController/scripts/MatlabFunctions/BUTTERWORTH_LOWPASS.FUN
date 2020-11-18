@@ -58,7 +58,12 @@ normalizedCutOffFrequency = cutOffFrequency / nyquistFrequency;\n\
 for trialNumber = trialsList\n\
 	outputSignal.Values(trialNumber, :) = filtfilt(num, den, inputSignal.Values(trialNumber, :));\n\
 end\n\
-clear num den nyquistFrequency normalizedCutOffFrequency SignalSizes trialNumber
+clear num den nyquistFrequency normalizedCutOffFrequency SignalSizes trialNumber;\n\
+if (~exist('createdOrModifiedChannels'))\n\
+createdOrModifiedChannels = {'outputSignal'};\n\
+else\n\
+createdOrModifiedChannels = [createdOrModifiedChannels; 'outputSignal'];\n\
+end
 
 
 

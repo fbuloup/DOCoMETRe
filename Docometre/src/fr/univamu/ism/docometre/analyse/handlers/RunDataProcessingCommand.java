@@ -21,6 +21,7 @@ import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
+import fr.univamu.ism.docometre.views.ExperimentsView;
 import fr.univamu.ism.process.Script;
 import fr.univamu.ism.process.ScriptSegmentType;
 
@@ -52,7 +53,12 @@ public class RunDataProcessingCommand extends AbstractHandler implements ISelect
 					Script script = (Script)object;
 					String code = script.getLoopCode(object, ScriptSegmentType.LOOP);
 					MathEngineFactory.getMathEngine().runScript(code);
-					SubjectsView.refresh();
+					IResource[] modifiedSubjects = MathEngineFactory.getMathEngine().getCreatedOrModifiedSubjects();
+					for (IResource modifiedSubject : modifiedSubjects) {
+						ResourceProperties.setSubjectModified(modifiedSubject, true);
+						ExperimentsView.refresh(modifiedSubject, null);
+						SubjectsView.refresh(modifiedSubject, null);
+					}
 				} catch (Exception e) {
 					Activator.logErrorMessageWithCause(e);
 					e.printStackTrace();

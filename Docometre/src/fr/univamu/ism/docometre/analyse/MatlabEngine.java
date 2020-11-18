@@ -4,12 +4,14 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -732,6 +734,36 @@ public final class MatlabEngine implements MathEngine {
 		Object value = matlabController.getVariable(variable);
 		runScript("clear " + variable + ";");;
 		return value.toString();
+	}
+
+	@Override
+	public IResource[] getCreatedOrModifiedSubjects() {
+		Set<IResource> createdOrModifiedSubjects = new HashSet<>();
+		try {
+			String[] createdOrModifiedChannels = null;
+			Object createdOrModifiedChannelsObject = matlabController.getVariable("createdOrModifiedChannels");
+			if(createdOrModifiedChannelsObject instanceof String) {
+				createdOrModifiedChannels = new String[] {(String)createdOrModifiedChannelsObject};
+			}
+			if(createdOrModifiedChannelsObject instanceof String[]) {
+				createdOrModifiedChannels = (String[])createdOrModifiedChannelsObject;
+			}
+			if(createdOrModifiedChannels != null) {
+				IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
+				for (String createdOrModifiedChannel : createdOrModifiedChannels) {
+					String[] segments = createdOrModifiedChannel.split("\\.");
+					String subjectPath = segments[0] + "/" + segments[1];
+					IResource subject = workspaceRoot.findMember(subjectPath);
+					createdOrModifiedSubjects.add(subject);
+				}
+				matlabController.evaluate("clear createdOrModifiedChannels;");
+			}
+			return createdOrModifiedSubjects.toArray(new IResource[createdOrModifiedSubjects.size()]);
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return new IResource[0];
 	}
 
 }

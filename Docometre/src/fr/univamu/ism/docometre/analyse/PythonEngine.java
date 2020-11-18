@@ -7,11 +7,14 @@ import java.nio.DoubleBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -486,6 +489,36 @@ public class PythonEngine implements MathEngine {
 	@Override
 	public String evaluate(String command) {
 		return pythonController.getPythonEntryPoint().evaluate(command);
+	}
+
+	@Override
+	public IResource[] getCreatedOrModifiedSubjects() {
+		Set<IResource> createdOrModifiedSubjects = new HashSet<>();
+		try {
+			String[] createdOrModifiedChannels = null;
+			Object createdOrModifiedChannelsObject = evaluate("createdOrModifiedChannels");
+			if(createdOrModifiedChannelsObject instanceof String) {
+				createdOrModifiedChannels = new String[] {(String)createdOrModifiedChannelsObject};
+			}
+			if(createdOrModifiedChannelsObject instanceof String[]) {
+				createdOrModifiedChannels = (String[])createdOrModifiedChannelsObject;
+			}
+			if(createdOrModifiedChannels != null) {
+				IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
+				for (String createdOrModifiedChannel : createdOrModifiedChannels) {
+					String[] segments = createdOrModifiedChannel.split("\\.");
+					String subjectPath = segments[0] + "/" + segments[1];
+					IResource subject = workspaceRoot.findMember(subjectPath);
+					createdOrModifiedSubjects.add(subject);
+				}
+				evaluate("del createdOrModifiedChannels;");
+			}
+			return createdOrModifiedSubjects.toArray(new IResource[createdOrModifiedSubjects.size()]);
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return new IResource[0];
 	}
 
 	
