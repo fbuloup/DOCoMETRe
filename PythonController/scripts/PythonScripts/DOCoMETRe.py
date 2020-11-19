@@ -290,11 +290,11 @@ if __name__ == "__main__":
 		
 		loadName = "ReachabilityCoriolis.PreTestFull";
 
-		fileHandle = io.open("./scripts/PythonScripts/dataFilesList.txt", "r", encoding="utf-8");		
+		fileHandle = io.open("./tests/dataFilesList.txt", "r", encoding="utf-8");		
 		dataFilesList = fileHandle.read();
 		fileHandle.close();
 		
-		fileHandle = io.open("./scripts/PythonScripts/sessionsProperties.txt", "r", encoding="utf-8");		
+		fileHandle = io.open("./tests/sessionsProperties.txt", "r", encoding="utf-8");		
 		sessionPropertiesString = fileHandle.read();
 		sessionProperties = eval(sessionPropertiesString);
 		fileHandle.close();
@@ -375,7 +375,7 @@ if __name__ == "__main__":
 		
 		# Save Subject
 		startTime = time.time();
-		docometre.saveSubject("^ReachabilityCoriolis\.PreTestFull", "./scripts/PythonScripts/data/")
+		docometre.saveSubject("^ReachabilityCoriolis\.PreTestFull", "./tests/data/")
 		print("Time to save subject :" + str(time.time() - startTime));
 		
 		# Unload subject
@@ -385,20 +385,20 @@ if __name__ == "__main__":
 		# Load Subject
 		startTime = time.time();
 		
-		os.chdir(os.getcwd() + '/scripts')
+		#os.chdir(os.getcwd() + '/scripts')
 		
-		docometre.loadSubject("./PythonScripts/data/");
+		docometre.loadSubject("./tests/data/");
 		# print(docometre.experiments);
 		print("Time to load subject : " + str(time.time() - startTime));		
 		
 		
 		# Rename
 		startTime = time.time();
-		docometre.rename("^PythonScripts\.data", "ExperimentName.SubjectName");
+		docometre.rename("^tests\.data", "ExperimentName.SubjectName");
 		print("Time to rename : " + str(time.time() - startTime));		
-		print(docometre.experiments)
-		subject = {k:v for k,v in docometre.experiments.items() if re.search("^PythonScripts\.data", k) != None}
-		print(subject)
+		#print(docometre.experiments)
+		subject = {k:v for k,v in docometre.experiments.items() if re.search("^tests\.data", k) != None}
+		#print(subject)
 		
 		
 		
