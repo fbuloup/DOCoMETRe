@@ -56,6 +56,7 @@ import org.eclipse.jface.action.IMenuManager;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.analyse.functions.MatlabEngineFunctionsMenuFactory;
+import fr.univamu.ism.docometre.analyse.functions.PythonEngineFunctionsMenuFactory;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfiguration;
@@ -89,6 +90,7 @@ public final class FunctionFactory {
 		if(object instanceof Script) {
 			String mathEngine = Activator.getDefault().getPreferenceStore().getString(MathEnginePreferencesConstants.MATH_ENGINE);
 			if(MathEnginePreferencesConstants.MATH_ENGINE_MATLAB.equals(mathEngine)) MatlabEngineFunctionsMenuFactory.populateMenu(scriptSegmentEditor, blockEditPart, functionsMenuManager);
+			if(MathEnginePreferencesConstants.MATH_ENGINE_PYTHON.equals(mathEngine)) PythonEngineFunctionsMenuFactory.populateMenu(scriptSegmentEditor, blockEditPart, functionsMenuManager);
 		}
 	}
 	
@@ -110,9 +112,11 @@ public final class FunctionFactory {
 			String functionsAbsolutePath = "";
 			String mathEngine = Activator.getDefault().getPreferenceStore().getString(MathEnginePreferencesConstants.MATH_ENGINE);
 			if(MathEnginePreferencesConstants.MATH_ENGINE_MATLAB.equals(mathEngine)) functionsAbsolutePath =  Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.MATLAB_SCRIPT_LOCATION);
+			if(MathEnginePreferencesConstants.MATH_ENGINE_PYTHON.equals(mathEngine)) functionsAbsolutePath =  Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.PYTHON_SCRIPT_LOCATION);
 			Path path = new Path(functionsAbsolutePath);
 			String suffix = "";
 			if(MathEnginePreferencesConstants.MATH_ENGINE_MATLAB.equals(mathEngine)) suffix = "MatlabFunctions";
+			if(MathEnginePreferencesConstants.MATH_ENGINE_PYTHON.equals(mathEngine)) suffix = "PythonFunctions";
 			path = (Path) path.removeLastSegments(1).append(suffix);
 			return path;
 		}
