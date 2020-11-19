@@ -8,8 +8,12 @@ public final class MathEngineFactory {
 	private static MathEngine mathEngine;
 	
 	public static MathEngine getMathEngine() {
-		if(mathEngine != null) return mathEngine;
 		String mathEnginePref = Activator.getDefault().getPreferenceStore().getString(MathEnginePreferencesConstants.MATH_ENGINE);
+		if(mathEngine != null) {
+			if(MathEnginePreferencesConstants.MATH_ENGINE_MATLAB.equals(mathEnginePref) && mathEngine instanceof MatlabEngine) return mathEngine;
+			if(MathEnginePreferencesConstants.MATH_ENGINE_PYTHON.equals(mathEnginePref) && mathEngine instanceof PythonEngine) return mathEngine;
+		}
+		clear();
 		if(MathEnginePreferencesConstants.MATH_ENGINE_MATLAB.equals(mathEnginePref)) {
 			mathEngine = new MatlabEngine();
 		}
