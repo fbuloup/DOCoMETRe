@@ -80,13 +80,17 @@ public class ADWinCANModule extends Module {
 		String baudRate = getProperty(ADWinCANModuleProperties.FREQUENCY);
 		
 		String mode = getProperty(ADWinCANModuleProperties.MODE);
+		if(mode == null) mode = ADWinCANModuleProperties.RECEIVE;
 		boolean receive = mode.equals(ADWinCANModuleProperties.RECEIVE);
 		boolean transmit = mode.equals(ADWinCANModuleProperties.TRANSMIT);
 		boolean receiveAndTransmit = mode.equals(ADWinCANModuleProperties.TRANSMIT_RECEIVE);
 		String messageObject = getProperty(ADWinCANModuleProperties.MESSAGE_OBJECT);
+		if(messageObject == null) messageObject = "1";
 		String messageIDLength = getProperty(ADWinCANModuleProperties.MESSAGE_ID_LENGTH);
+		if(messageIDLength == null) messageIDLength = ADWinCANModuleProperties.MESSAGE_ID_LENGTH_11;
 		String messageIDLength_Code = messageIDLength.equals(ADWinCANModuleProperties.MESSAGE_ID_LENGTH_11)?"0":"1";
 		String messageID = getProperty(ADWinCANModuleProperties.MESSAGE_ID);
+		if(messageID == null) messageID = "1";
 		
 		if(useCodamotion() || useGyroscope() || useTimeStamp()) baudRate = "1000000";
 		else {
