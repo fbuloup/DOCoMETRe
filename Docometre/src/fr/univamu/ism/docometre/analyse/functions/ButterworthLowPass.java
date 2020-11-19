@@ -149,11 +149,12 @@ public class ButterworthLowPass extends GenericFunction {
 		inputSignalComboViewer.setInput(SelectedExprimentContributionItem.selectedExperiment);
 		Channel channel = MathEngineFactory.getMathEngine().getChannelFromName(SelectedExprimentContributionItem.selectedExperiment, getProperty(inputSignalKey, ""));
 		if(channel != null) inputSignalComboViewer.setSelection(new StructuredSelection(channel));
-		else this.functionalBlockConfigurationDialog.setBlockingErrorMessage(DocometreMessages.FunctionalBlockConfigurationDialogBlockingMessage);
+		else this.functionalBlockConfigurationDialog.setErrorMessage(DocometreMessages.FunctionalBlockConfigurationDialogBlockingMessage);
 		
 		inputSignalComboViewer.getCombo().addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
+				ButterworthLowPass.this.functionalBlockConfigurationDialog.setErrorMessage(null);
 				getTransientProperties().put(inputSignalKey, inputSignalComboViewer.getCombo().getText());
 			}
 		});
@@ -183,6 +184,7 @@ public class ButterworthLowPass extends GenericFunction {
 		String code = FunctionFactory.getProperty(context, functionFileName, FUNCTION_CODE);
 		
 		String trialsList = getProperty(trialsListKey, "");
+		trialsList = FunctionsHelper.createTrialsListHelper(trialsList);
 		String order = getProperty(orderKey, "");
 		String cutOffFrequency = getProperty(cutOffFrequencyKey, "");
 		String inputSignal = getProperty(inputSignalKey, "");
