@@ -87,22 +87,33 @@ public class Script implements Serializable {
 	
 	private transient ArrayList<IStatus> codeGenerationStatus = new ArrayList<>(0);
 	
+	/**
+	 * 
+	 */
+	private transient boolean indentCode = true;
+	
 	public static Script getSampleScript() {
 		return SampleScript1.getSampleScript();
 	}
 	
 	//constructors
 	public Script() {
-		
+		indentCode = true;
 	}
 	
 	public Script(String name) {
 		this.name = name;
+		indentCode = true;
 	}
 	
 	//Getters and setters
 	public String getName() {
 		return name;
+	}
+	
+	//
+	public void setIndentCode(boolean indentCode) {
+		this.indentCode = indentCode;
 	}
 
 	public void setName(String name) {
@@ -403,6 +414,7 @@ public class Script implements Serializable {
 	 */
 	private String indentCode(Object context, String code, String initialIndent) {
 		if(code.equals("")) return "";
+		if(!indentCode) return code;
 		String[] lines = code.split("\n");
 		String indent = initialIndent;
 		code = "";

@@ -95,6 +95,7 @@ import fr.univamu.ism.docometre.dacqsystems.DocometreBuilder;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.dialogs.FindDialog;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
+import fr.univamu.ism.docometre.preferences.MathEnginePreferencesConstants;
 import fr.univamu.ism.process.Script;
 import fr.univamu.ism.process.ScriptSegmentType;
 
@@ -380,7 +381,13 @@ public class SourceEditor extends EditorPart implements IResourceChangeListener 
 	private String getCode() {
 			try {
 				if(getObject() instanceof Process) return ((Process)getObject()).getCode(null);
-				if(getObject() instanceof Script) return ((Script)getObject()).getLoopCode(getObject(), ScriptSegmentType.LOOP);
+				if(getObject() instanceof Script) {
+					Script script = (Script)getObject();
+					String mathEngine = Activator.getDefault().getPreferenceStore().getString(MathEnginePreferencesConstants.MATH_ENGINE);
+					boolean isPython = MathEnginePreferencesConstants.MATH_ENGINE_PYTHON.equals(mathEngine);
+					script.setIndentCode(!isPython);
+					return ((Script)getObject()).getLoopCode(getObject(), ScriptSegmentType.LOOP);
+				}
 			} catch (Exception e) {
 				Activator.logErrorMessageWithCause(e);
 				e.printStackTrace();

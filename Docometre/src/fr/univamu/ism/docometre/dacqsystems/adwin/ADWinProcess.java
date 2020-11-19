@@ -507,6 +507,8 @@ public class ADWinProcess extends Process {
 	@Override
 	public String getCode(ModuleBehaviour script) throws Exception {
 		
+		getCurrentProcess().getScript().setIndentCode(true);
+		
 //		for (int i = 0; i < getDACQConfiguration().getModulesNumber(); i++) {
 //			getDACQConfiguration().getModule(i).reset();
 //		}

@@ -653,6 +653,8 @@ public class ArduinoUnoProcess extends Process {
 
 	@Override
 	public String getCode(ModuleBehaviour script) throws Exception {
+		getCurrentProcess().getScript().setIndentCode(true);
+		
 		reset();
 		
 		String code = "";
