@@ -497,14 +497,9 @@ public class PythonEngine implements MathEngine {
 		Set<IResource> createdOrModifiedSubjects = new HashSet<>();
 		try {
 			String[] createdOrModifiedChannels = null;
-			Object createdOrModifiedChannelsObject = evaluate("createdOrModifiedChannels");
-			if(createdOrModifiedChannelsObject instanceof String) {
-				createdOrModifiedChannels = new String[] {(String)createdOrModifiedChannelsObject};
-			}
-			if(createdOrModifiedChannelsObject instanceof String[]) {
-				createdOrModifiedChannels = (String[])createdOrModifiedChannelsObject;
-			}
-			if(createdOrModifiedChannels != null) {
+			String createdOrModifiedChannelsString = evaluate("docometre.experiments['createdOrModifiedChannels']");
+			if(createdOrModifiedChannelsString != null && !"".equals(createdOrModifiedChannelsString)) {
+				createdOrModifiedChannels = createdOrModifiedChannelsString.split(":");
 				IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
 				for (String createdOrModifiedChannel : createdOrModifiedChannels) {
 					String[] segments = createdOrModifiedChannel.split("\\.");
@@ -512,13 +507,15 @@ public class PythonEngine implements MathEngine {
 					IResource subject = workspaceRoot.findMember(subjectPath);
 					createdOrModifiedSubjects.add(subject);
 				}
-				evaluate("del createdOrModifiedChannels;");
 			}
 			return createdOrModifiedSubjects.toArray(new IResource[createdOrModifiedSubjects.size()]);
 		} catch (Exception e) {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
+		} finally {
+			evaluate("docometre.experiments.pop('createdOrModifiedChannels', None)");
 		}
+		
 		return new IResource[0];
 	}
 
