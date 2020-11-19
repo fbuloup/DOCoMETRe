@@ -49,8 +49,8 @@ outputSignal.NbMarkers = 0;\n\
 outputSignal.NbMarkersGroups = 0;\n\
 outputSignal.NbFields = 0;\n\
 outputSignal.SampleFrequency = inputSignal.SampleFrequency;\n\
-outputSignal.FrontCut = ones(SignalSizes(1), 1);\n\
-outputSignal.EndCut = SignalSizes(2)*ones(SignalSizes(1), 1);\n\
+outputSignal.FrontCut = inputSignal.FrontCut;\n\
+outputSignal.EndCut = inputSignal.EndCut;\n\
 % Compute filtering\n\
 nyquistFrequency = 0.5 * inputSignal.SampleFrequency; % Nyquist frequency is half sample frequency\n\
 normalizedCutOffFrequency = cutOffFrequency / nyquistFrequency;\n\
