@@ -59,7 +59,7 @@ public class FunctionalBlockConfigurationDialog extends TitleAreaDialog {
 	
 	private Function function;
 	private Object context;
-	private String blockingErrorMessage;
+//	private String blockingErrorMessage;
 	
 	public FunctionalBlockConfigurationDialog(Shell parentShell, Object context, Function function) {
 		super(parentShell);
@@ -94,8 +94,8 @@ public class FunctionalBlockConfigurationDialog extends TitleAreaDialog {
 	
 	@Override
 	public void setErrorMessage(String newErrorMessage) {
-		String errorMessage = newErrorMessage == null ? blockingErrorMessage : newErrorMessage;
-		super.setErrorMessage(errorMessage);
+//		String errorMessage = newErrorMessage == null ? blockingErrorMessage : newErrorMessage;
+		super.setErrorMessage(newErrorMessage);
 		if(getButton(OK) != null) getButton(OK).setEnabled(newErrorMessage == null);
 	}
 	
@@ -115,12 +115,12 @@ public class FunctionalBlockConfigurationDialog extends TitleAreaDialog {
 	@Override
 	public String getErrorMessage() {
 		String errorMessage = super.getErrorMessage();
-		if(errorMessage == null) errorMessage = blockingErrorMessage;
+//		if(errorMessage == null) errorMessage = blockingErrorMessage;
 		return errorMessage;
 	}
 	
-	public void setBlockingErrorMessage(String blockingErrorMessage) {
-		this.blockingErrorMessage = blockingErrorMessage;
-	}
+//	public void setBlockingErrorMessage(String blockingErrorMessage) {
+//		this.blockingErrorMessage = blockingErrorMessage;
+//	}
 
 }
