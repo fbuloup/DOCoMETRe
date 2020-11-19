@@ -236,6 +236,7 @@ public class PythonEngine implements MathEngine {
 		String[] channelsNames = channelsNamesString.split(",");
 		ArrayList<Channel> channels = new ArrayList<Channel>();
 		for (String channelName : channelsNames) {
+			if("".equals(channelName)) continue;
 			Channel channel = new Channel((IFolder) subject, channelName);
 			if(isSignal(channel) || isCategory(channel) || isEvent(channel)) channels.add(channel);
 		}
