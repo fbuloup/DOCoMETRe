@@ -135,14 +135,16 @@ public interface MathEngine {
 		if(!(resource instanceof IContainer)) return null;
 		if(fullChannelName == null || "".equals(fullChannelName)) return null;
 		IContainer experiment = (IContainer)resource;
-		String subjectName = fullChannelName.split("\\.")[1];
-		IResource subject = experiment.findMember(subjectName);
-		if(subject == null) return null; 
-		Channel[] channels = getChannels(subject);
-		if(channels != null)
-			for (Channel channel : channels) {
-				if(channel.getFullName().equals(fullChannelName)) return channel;
-			}
+		if(fullChannelName.split("\\.").length > 1) {
+			String subjectName = fullChannelName.split("\\.")[1];
+			IResource subject = experiment.findMember(subjectName);
+			if(subject == null) return null; 
+			Channel[] channels = getChannels(subject);
+			if(channels != null)
+				for (Channel channel : channels) {
+					if(channel.getFullName().equals(fullChannelName)) return channel;
+				}
+		}
 		return null;
 	}
 	
