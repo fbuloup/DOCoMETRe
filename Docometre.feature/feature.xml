@@ -6,14 +6,32 @@
       provider-name="ISM">
 
    <description>
-      -- 2020-10-21 --
+      -- 2020-11-26 --
+ADDED :
+* Add Math Engine view
+* Save subject without Exp.Subj prefix - Load adding Exp.Subj prefix
+* Add support to handle transmit/receive mode and multiple message IDs in CAN module
+* Update Math engine when subject/experiment is loaded and renamed
+* Unload experiment in Math engine when it is deleted
+* Update Exp. and Subj. view once a launched data processing has finished
+* Manage indentation for Arduino/ADWin - Matlab/Python
+* Remove blocking error message when configuring function
+pref. 
+* Add support for live Math engine type changes : don&apos;t need to restart anymore
+FIXED :
+* Bug correction on retrieving created or modified channels
+* FrontCut &amp; EndCut correction for Matlab Engine
+* Bug correction on numpy data files path
+* Some NPE
+-- 2020-10-21 --
 ADDED :
 * Print custom function label in generated process code
 * Support for Python Engine 
 * Support for markers
 * Support for Modified/Save/Load/Unload subject
 * Allow subject to be loaded from raw or saved data
-* Move default math engine pref. from general pref. to math engine pref. 
+* Move default math engine pref. from general pref. to math engine
+pref. 
 * Support for show marker and cursor preferences 
 * Unload subject before stopping math engine
 * When subject is unloaded, close all related editors
