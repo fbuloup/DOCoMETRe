@@ -223,36 +223,40 @@ public class ADWinCANModulePage extends ADWinModulePage {
 		modeCombo.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				updateMessageObjectModifyHandler();
-				updateMessageIDModifyHandler();
+				updateMessageObjectModifyHandler(true);
+				updateMessageIDModifyHandler(true);
 			}
 		});
-		updateMessageObjectModifyHandler();
-		updateMessageIDModifyHandler();
+		updateMessageObjectModifyHandler(false);
+		updateMessageIDModifyHandler(false);
 		
 		createChannelsConfigurationSection();
 	}
 	
-	private void updateMessageObjectModifyHandler() {
+	private void updateMessageObjectModifyHandler(boolean sendEvent) {
 		String selectedMode = modeCombo.getText();
 		if(ADWinCANModuleProperties.TRANSMIT.equals(selectedMode) || ADWinCANModuleProperties.RECEIVE.equals(selectedMode))
 			messageObjectModifyPropertyHandler.setRegExp(ADWinCANModuleProperties.MESSAGE_OBJECT_REGEXP_1);
 		else
 			messageObjectModifyPropertyHandler.setRegExp(ADWinCANModuleProperties.MESSAGE_OBJECT_REGEXP_2);
-		Event event = new Event();
-		event.widget = modeCombo;
-		messageObjectModifyPropertyHandler.modifyText(new ModifyEvent(event));
+		if(sendEvent) {
+			Event event = new Event();
+			event.widget = modeCombo;
+			messageObjectModifyPropertyHandler.modifyText(new ModifyEvent(event));
+		}
 	}
 	
-	private void updateMessageIDModifyHandler() {
+	private void updateMessageIDModifyHandler(boolean sendEvent) {
 		String selectedMode = modeCombo.getText();
 		if(ADWinCANModuleProperties.TRANSMIT.equals(selectedMode) || ADWinCANModuleProperties.RECEIVE.equals(selectedMode))
 			messageIDModifyPropertyHandler.setRegExp(ADWinCANModuleProperties.MESSAGE_ID_REGEXP_1);
 		else
 			messageIDModifyPropertyHandler.setRegExp(ADWinCANModuleProperties.MESSAGE_ID_REGEXP_2);
-		Event event = new Event();
-		event.widget = modeCombo;
-		messageIDModifyPropertyHandler.modifyText(new ModifyEvent(event));
+		if(sendEvent) {
+			Event event = new Event();
+			event.widget = modeCombo;
+			messageIDModifyPropertyHandler.modifyText(new ModifyEvent(event));
+		}
 	}
 	
 	/*
