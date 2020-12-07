@@ -789,6 +789,7 @@ public final class DocometreMessages extends NLS {
 	
 	// Functional Block Configuration Dialog Blocking Message
 	public static String FunctionalBlockConfigurationDialogBlockingMessage;
+	public static String ImpossibleToFindChannelTitle;
 	
 	// Saving subject handler
 	public static String SavingSubject;

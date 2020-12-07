@@ -18,6 +18,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 
+import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
@@ -149,7 +150,11 @@ public class ButterworthLowPass extends GenericFunction {
 		inputSignalComboViewer.setInput(SelectedExprimentContributionItem.selectedExperiment);
 		Channel channel = MathEngineFactory.getMathEngine().getChannelFromName(SelectedExprimentContributionItem.selectedExperiment, getProperty(inputSignalKey, ""));
 		if(channel != null) inputSignalComboViewer.setSelection(new StructuredSelection(channel));
-		else this.functionalBlockConfigurationDialog.setErrorMessage(DocometreMessages.FunctionalBlockConfigurationDialogBlockingMessage);
+		else {
+			String message = NLS.bind(DocometreMessages.ImpossibleToFindChannelTitle, value);
+			Activator.logErrorMessage(message);
+			this.functionalBlockConfigurationDialog.setErrorMessage(DocometreMessages.FunctionalBlockConfigurationDialogBlockingMessage);
+		}
 		
 		inputSignalComboViewer.getCombo().addModifyListener(new ModifyListener() {
 			@Override
