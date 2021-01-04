@@ -40,6 +40,7 @@ public class SubjectsContentProvider implements ITreeContentProvider {
 			
 			if(ResourceType.isSubject(element)) return true;
 			if(ResourceType.isDataProcessing(element)) return true;
+			if(ResourceType.isBatchDataProcessing(element)) return true;
 			if(!ResourceType.isFolder(element)) return false;
 
 			

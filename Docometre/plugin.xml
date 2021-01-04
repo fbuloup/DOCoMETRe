@@ -449,6 +449,7 @@
       <editor
             class="fr.univamu.ism.docometre.analyse.editors.DataProcessBatchEditor"
             default="false"
+            icon="icons/batchDataProcessing.gif"
             id="Docometre.DataProcessBatchEditor"
             name="DataProcessBatchEditor">
       </editor>

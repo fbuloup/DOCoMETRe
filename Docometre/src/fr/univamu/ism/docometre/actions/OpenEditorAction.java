@@ -186,6 +186,7 @@ public class OpenEditorAction extends Action implements ISelectionListener, IWor
 						canOpen = canOpen || ResourceType.isSamples((IResource) object);
 						canOpen = canOpen || ResourceType.isChannel((IResource) object);
 						canOpen = canOpen || ResourceType.isDataProcessing((IResource) object);
+						canOpen = canOpen || ResourceType.isBatchDataProcessing((IResource) object);
 						if(canOpen) files.add((IFile) object);
 					}
 				}

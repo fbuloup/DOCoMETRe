@@ -191,5 +191,7 @@ public interface IImageKeys {
 	
 	public static final String LOAD_UNLOAD_ICON = "icons/LoadUnloadSubjects.gif"; //$NON-NLS-1$
 	
+	public static final String BATCH_DATA_PROCESSING_ICON = "icons/batchDataProcessing.gif"; //$NON-NLS-1$
+	
 	
 }

@@ -51,6 +51,7 @@ import org.eclipse.ui.IWorkbench;
 
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.analyse.datamodel.BatchDataProcessing;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.process.Script;
@@ -199,7 +200,7 @@ public class NewResourceWizard extends Wizard implements INewWizard {
 	}
 
 	public Object getBatchDataProcessing() {
-		return null;
+		return new BatchDataProcessing();
 	}
  	
 }
