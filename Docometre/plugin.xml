@@ -446,6 +446,12 @@
             id="Docometre.DataProcessScriptSourceEditor"
             name="DataProcessScriptSourceEditor">
       </editor>
+      <editor
+            class="fr.univamu.ism.docometre.analyse.editors.DataProcessBatchEditor"
+            default="false"
+            id="Docometre.DataProcessBatchEditor"
+            name="DataProcessBatchEditor">
+      </editor>
    </extension>
    <extension
          point="org.eclipse.ui.decorators">
@@ -591,6 +597,23 @@
                      </visibleWhen>
                </command>
                <command
+                     commandId="NewBatchDataProcessingCommand"
+                     icon="icons/batchDataProcessing.gif"
+                     label="%NewBatchDataProcessingCommand.label"
+                     style="push">
+                  <visibleWhen
+                        checkEnabled="false">
+                     <or>
+                        <reference
+                              definitionId="Docometre.DesignPerspectiveSelected">
+                        </reference>
+                        <reference
+                              definitionId="Docometre.AnalysePerspectiveSelected">
+                        </reference>
+                     </or>
+                  </visibleWhen>
+               </command>
+               <command
                      commandId="NewFolderAction"
                      icon="icons/folder.gif"
                      label="%NewFolderAction.label"
@@ -598,14 +621,14 @@
                      tooltip="%NewFolderAction.tooltip">
                      <visibleWhen
                            checkEnabled="false">
-                           <or>
-	                           <reference
-	                                 definitionId="Docometre.DesignPerspectiveSelected">
-	                           </reference>
-                            <reference
-                                  definitionId="Docometre.AnalysePerspectiveSelected">
-                            </reference>
-                           </or>
+                        <or>
+                           <reference
+                                 definitionId="Docometre.DesignPerspectiveSelected">
+                           </reference>
+                           <reference
+                                 definitionId="Docometre.AnalysePerspectiveSelected">
+                           </reference>
+                        </or>
                      </visibleWhen>
                </command>
             </menu>
@@ -1267,6 +1290,12 @@
                      tooltip="%NewDataProcessingCommand.tooltip">
                </command>
                <command
+                     commandId="NewBatchDataProcessingCommand"
+                     icon="icons/batchDataProcessing.gif"
+                     label="%NewBatchDataProcessingCommand.label"
+                     style="push">
+               </command>
+               <command
                      commandId="NewFolderAction"
                      icon="icons/folder.gif"
                      label="%NewFolderAction.label"
@@ -1837,6 +1866,18 @@
             </visibleWhen>
          </command>
          <command
+               commandId="NewBatchDataProcessingCommand"
+               icon="icons/batchDataProcessing.gif"
+               label="%NewBatchDataProcessingCommand.label"
+               style="push">
+            <visibleWhen
+                  checkEnabled="false">
+               <reference
+                     definitionId="Docometre.DesignPerspectiveSelected">
+               </reference>
+            </visibleWhen>
+         </command>
+         <command
                commandId="NewFolderAction"
                icon="icons/folder.gif"
                label="%NewFolderAction.label"
@@ -2041,6 +2082,19 @@
                </visibleWhen>
             </command>
             <command
+                  commandId="NewBatchDataProcessingCommand"
+                  icon="icons/batchDataProcessing.gif"
+                  label="%NewBatchDataProcessingCommand.label"
+                  style="push"
+                  tooltip="%NewBatchDataProcessingCommand.tooltip">
+               <visibleWhen
+                     checkEnabled="false">
+                  <reference
+                        definitionId="Docometre.AnalysePerspectiveSelected">
+                  </reference>
+               </visibleWhen>
+            </command>
+            <command
                   commandId="RunDataProcessingCommand"
                   icon="icons/runDataProcessing.gif"
                   label="%RunDataProcessingCommand.label"
@@ -2066,6 +2120,12 @@
                   label="%NewDataProcessingCommand.label"
                   style="push"
                   tooltip="%NewDataProcessingCommand.tooltip">
+            </command>
+            <command
+                  commandId="NewBatchDataProcessingCommand"
+                  icon="icons/batchDataProcessing.gif"
+                  label="%NewBatchDataProcessingCommand.label"
+                  style="push">
             </command>
             <command
                   commandId="NewFolderAction"
@@ -2426,6 +2486,11 @@
             defaultHandler="fr.univamu.ism.docometre.analyse.handlers.RunDataProcessingCommand"
             id="RunDataProcessingCommand"
             name="RunDataProcessingCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.analyse.handlers.NewBatchDataProcessingHandler"
+            id="NewBatchDataProcessingCommand"
+            name="NewBatchDataProcessingCommand">
       </command>
    </extension>
    <extension

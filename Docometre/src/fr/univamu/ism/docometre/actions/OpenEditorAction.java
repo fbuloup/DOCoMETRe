@@ -63,6 +63,7 @@ import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.editors.ChannelEditor;
+import fr.univamu.ism.docometre.analyse.editors.DataProcessBatchEditor;
 import fr.univamu.ism.docometre.analyse.editors.DataProcessEditor;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ui.dacqconfigurationeditor.ADWinDACQConfigurationEditor;
@@ -124,6 +125,8 @@ public class OpenEditorAction extends Action implements ISelectionListener, IWor
 			if(ResourceType.isChannel(resource)) openEditor(resource, ChannelEditor.ID);
 			
 			if(ResourceType.isDataProcessing(resource)) editorID = DataProcessEditor.ID;
+			
+			if(ResourceType.isBatchDataProcessing(resource)) editorID = DataProcessBatchEditor.ID;
 			
 			if(ResourceType.isSamples(resource)) openEditor(resource, DataEditor.ID);
 			else if(editorID != null) {

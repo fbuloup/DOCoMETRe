@@ -107,6 +107,7 @@ public class NewResourceWizard extends Wizard implements INewWizard {
 		if(resourceType.equals(ResourceType.TRIAL)) newResourceWizardPage = new NewTrialWizardPage();
 		if(resourceType.equals(ResourceType.PARAMETERS)) newResourceWizardPage = new NewParametersFileWizardPage();
 		if(resourceType.equals(ResourceType.DATA_PROCESSING)) newResourceWizardPage = new NewDataProcessingWizardPage();
+		if(resourceType.equals(ResourceType.BATCH_DATA_PROCESSING)) newResourceWizardPage = new NewBatchDataProcessingWizardPage();
 		addPage(newResourceWizardPage);
 		if(resourceType.equals(ResourceType.SESSION)) {
 			addPage(new OrganizeSessionWizardPage());
@@ -195,6 +196,10 @@ public class NewResourceWizard extends Wizard implements INewWizard {
 	public int getMinTrials() {
 		if(resourceType.equals(ResourceType.SESSION)) return ((NewSessionWizardPage)newResourceWizardPage).getMinTrials();
 		return 0;
+	}
+
+	public Object getBatchDataProcessing() {
+		return null;
 	}
  	
 }

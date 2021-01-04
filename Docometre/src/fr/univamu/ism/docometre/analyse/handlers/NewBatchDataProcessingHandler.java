@@ -1,4 +1,4 @@
-package fr.univamu.ism.docometre.handlers;
+package fr.univamu.ism.docometre.analyse.handlers;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -29,12 +29,12 @@ import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 import fr.univamu.ism.docometre.wizards.NewResourceWizard;
 
-public class NewDataProcessingHandler implements IHandler, ISelectionListener {
+public class NewBatchDataProcessingHandler implements IHandler, ISelectionListener {
 	
 	private boolean enabled;
 	private IContainer parentResource;
-
-	public NewDataProcessingHandler() {
+	
+	public NewBatchDataProcessingHandler() {
 		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().addSelectionListener(this);
 		IViewPart view = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(ExperimentsView.ID);
 		if(view != null) selectionChanged(view, view.getSite().getSelectionProvider().getSelection());
@@ -43,7 +43,6 @@ public class NewDataProcessingHandler implements IHandler, ISelectionListener {
 			if(view != null) selectionChanged(view, view.getSite().getSelectionProvider().getSelection());
 		}
 	}
-	
 
 	@Override
 	public void addHandlerListener(IHandlerListener handlerListener) {
@@ -60,17 +59,17 @@ public class NewDataProcessingHandler implements IHandler, ISelectionListener {
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-		NewResourceWizard newResourceWizard = new NewResourceWizard(ResourceType.DATA_PROCESSING, parentResource, NewResourceWizard.CREATE);
+		NewResourceWizard newResourceWizard = new NewResourceWizard(ResourceType.BATCH_DATA_PROCESSING, parentResource, NewResourceWizard.CREATE);
 		WizardDialog wizardDialog = new WizardDialog(shell, newResourceWizard);
 		if(wizardDialog.open() == Window.OK) {
 			try {
-				final IFile dataProcessingFile = parentResource.getFile(new Path(newResourceWizard.getResourceName() + Activator.dataProcessingFileExtension));
-				ObjectsController.serialize(dataProcessingFile, newResourceWizard.getDataProcessingScript());
-				dataProcessingFile.refreshLocal(IResource.DEPTH_ZERO, null);
-				ResourceProperties.setDescriptionPersistentProperty(dataProcessingFile, newResourceWizard.getResourceDescription());
-				ResourceProperties.setTypePersistentProperty(dataProcessingFile, ResourceType.DATA_PROCESSING.toString());
-				ExperimentsView.refresh(dataProcessingFile.getParent(), new IResource[]{dataProcessingFile});
-				SubjectsView.refresh(dataProcessingFile.getParent(), new IResource[]{dataProcessingFile});
+				final IFile batchProcessingFile = parentResource.getFile(new Path(newResourceWizard.getResourceName() + Activator.batchDataProcessingFileExtension));
+				ObjectsController.serialize(batchProcessingFile, newResourceWizard.getBatchDataProcessing());
+				batchProcessingFile.refreshLocal(IResource.DEPTH_ZERO, null);
+				ResourceProperties.setDescriptionPersistentProperty(batchProcessingFile, newResourceWizard.getResourceDescription());
+				ResourceProperties.setTypePersistentProperty(batchProcessingFile, ResourceType.BATCH_DATA_PROCESSING.toString());
+				ExperimentsView.refresh(batchProcessingFile.getParent(), new IResource[]{batchProcessingFile});
+				SubjectsView.refresh(batchProcessingFile.getParent(), new IResource[]{batchProcessingFile});
 			} catch (CoreException e) {
 				e.printStackTrace();
 				Activator.logErrorMessageWithCause(e);
@@ -118,6 +117,7 @@ public class NewDataProcessingHandler implements IHandler, ISelectionListener {
 			}
 		}
 		enabled = parentResource != null;
+		
 	}
 
 }

@@ -92,6 +92,7 @@ public class Activator extends AbstractUIPlugin {
 	public static String parametersFileExtension = ".params";
 	public static String adwFileExtension = ".adw";
 	public static String dataProcessingFileExtension = ".dataprocess";
+	public static String batchDataProcessingFileExtension = ".batchdataprocess";
 	
 	// System types
 	public static String ADWIN_SYSTEM = "ADWin";

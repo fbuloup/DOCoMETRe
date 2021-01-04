@@ -781,7 +781,12 @@ public final class DocometreMessages extends NLS {
 	// Data processing editor wizard
 	public static String NewDataProcessingWizard_PageTitle;
 	public static String NewDataProcessingWizard_PageMessage;
-	public static String NewDataProcessingizard_PageName;
+	public static String NewDataProcessingWizard_PageName;
+	
+	// Batch data processing editor wizard
+	public static String NewBatchDataProcessingWizard_PageTitle;
+	public static String NewBatchDataProcessingWizard_PageMessage;
+	public static String NewBatchDataProcessingWizard_PageName;
 
 	// Data processing editor page editor titles
 	public static String MathEngineEditorTitle;
