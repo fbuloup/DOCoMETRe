@@ -33,11 +33,13 @@ class DOCoMETRe(object):
 	def loadDataDocometre(self, loadName, dataFilesList, sessionsProperties):
 		if(jvmMode): self.gateway.jvm.System.out.println("In loadDataDocometre");
 		if ".sau" in dataFilesList:
-			pass;
+			if(jvmMode): self.gateway.jvm.System.out.println("For now, sau files are not handled with Python");
 		elif ".samples" in dataFilesList:
 			self.loadDataDocometreSAMPLES(loadName, dataFilesList, sessionsProperties);
+		elif ".adw" in dataFilesList:
+			if(jvmMode): self.gateway.jvm.System.out.println("For now, ADW files are not handled with Python");
 		else:
-			pass;
+			if(jvmMode): self.gateway.jvm.System.out.println("Data files format not hanled with Python");
 
 	def loadDataDocometreSAMPLES(self, loadName, dataFilesList, sessionsProperties):
 		if(jvmMode): self.gateway.jvm.System.out.println("In loadDataDocometreSAMPLES");
