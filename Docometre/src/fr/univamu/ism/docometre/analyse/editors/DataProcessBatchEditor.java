@@ -2,6 +2,7 @@ package fr.univamu.ism.docometre.analyse.editors;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -140,17 +141,24 @@ public class DataProcessBatchEditor extends EditorPart implements PartNameRefres
 		Composite processContainer = new Composite(parent, SWT.NONE);
 		processContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		processContainer.setLayout(new GridLayout(2, false));
+		GridLayout gl = (GridLayout)processContainer.getLayout();
+		gl.horizontalSpacing = 0;
+		gl.verticalSpacing = 0;
+		gl.marginHeight = 0;
+		gl.marginWidth = 0;
 		processListViewer = new ListViewer(processContainer);
 		processListViewer.getList().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		processListViewer.setContentProvider(new ArrayContentProvider());
+		processListViewer.setInput(getBatchDataProcessing().getProcesses());
 		
 		Composite processListToolBarContainer = new Composite(processContainer, SWT.NONE);
 		processListToolBarContainer.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 		processListToolBarContainer.setLayout(new GridLayout());
-		GridLayout gl = (GridLayout)processListToolBarContainer.getLayout();
-		gl.horizontalSpacing = 0;
-		gl.verticalSpacing = 2;
-		gl.marginHeight = 0;
-		gl.marginWidth = 0;
+		GridLayout gl2 = (GridLayout)processListToolBarContainer.getLayout();
+		gl2.horizontalSpacing = 0;
+		gl2.verticalSpacing = 2;
+		gl2.marginHeight = 0;
+		gl2.marginWidth = 0;
 
 		Button upButton = new Button(processListToolBarContainer, SWT.FLAT);
 		upButton.setImage(Activator.getImage(IImageKeys.UP_ICON));
@@ -166,17 +174,24 @@ public class DataProcessBatchEditor extends EditorPart implements PartNameRefres
 		Composite subjectsContainer = new Composite(parent, SWT.NONE);
 		subjectsContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		subjectsContainer.setLayout(new GridLayout(2, false));
+		GridLayout gl = (GridLayout)subjectsContainer.getLayout();
+		gl.horizontalSpacing = 0;
+		gl.verticalSpacing = 0;
+		gl.marginHeight = 0;
+		gl.marginWidth = 0;
 		ListViewer subjectsListViewer = new ListViewer(subjectsContainer);
 		subjectsListViewer.getList().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		subjectsListViewer.setContentProvider(new ArrayContentProvider());
+		subjectsListViewer.setInput(getBatchDataProcessing().getSubjects());
 		
 		Composite subjectListToolBarContainer = new Composite(subjectsContainer, SWT.NONE);
 		subjectListToolBarContainer.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 		subjectListToolBarContainer.setLayout(new GridLayout());
-		GridLayout gl = (GridLayout)subjectListToolBarContainer.getLayout();
-		gl.horizontalSpacing = 0;
-		gl.verticalSpacing = 2;
-		gl.marginHeight = 0;
-		gl.marginWidth = 0;
+		GridLayout gl2 = (GridLayout)subjectListToolBarContainer.getLayout();
+		gl2.horizontalSpacing = 0;
+		gl2.verticalSpacing = 2;
+		gl2.marginHeight = 0;
+		gl2.marginWidth = 0;
 		
 		Button upButton = new Button(subjectListToolBarContainer, SWT.FLAT);
 		upButton.setImage(Activator.getImage(IImageKeys.UP_ICON));
