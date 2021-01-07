@@ -1,5 +1,6 @@
 package fr.univamu.ism.docometre.analyse.editors;
 
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.swt.SWT;
@@ -10,19 +11,25 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
 
 import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.GetResourceLabelDelegate;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ObjectsController;
+import fr.univamu.ism.docometre.PartListenerAdapter;
 import fr.univamu.ism.docometre.analyse.datamodel.BatchDataProcessing;
+import fr.univamu.ism.docometre.editors.PartNameRefresher;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 
-public class DataProcessBatchEditor extends EditorPart {
+public class DataProcessBatchEditor extends EditorPart implements PartNameRefresher  {
 	
 	public static String ID = "Docometre.DataProcessBatchEditor";
 	private ListViewer processListViewer;
+	private PartListenerAdapter partListenerAdapter;
 
 	public DataProcessBatchEditor() {
 		// TODO Auto-generated constructor stub
@@ -49,6 +56,26 @@ public class DataProcessBatchEditor extends EditorPart {
 	public void init(IEditorSite site, IEditorInput input) throws PartInitException {
 		setSite(site);
 		setInput(input);
+		setPartName(GetResourceLabelDelegate.getLabel(ObjectsController.getResourceForObject(getBatchDataProcessing())));
+		
+		partListenerAdapter = new PartListenerAdapter() {
+			@Override
+			public void partClosed(IWorkbenchPartReference partRef) {
+				if(partRef.getPart(false) == DataProcessBatchEditor.this) {
+					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().removePartListener(partListenerAdapter);
+				}
+			}
+			
+			@Override
+			public void partActivated(IWorkbenchPartReference partRef) {
+			}
+			
+			@Override
+			public void partBroughtToTop(IWorkbenchPartReference partRef) {
+			}
+			
+		};
+		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().addPartListener(partListenerAdapter);
 	}
 
 	@Override
@@ -170,15 +197,15 @@ public class DataProcessBatchEditor extends EditorPart {
 		gl.marginWidth = 5;
 		
 		Label dataProcessingLabel = new Label(container, SWT.BORDER);
-		dataProcessingLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		dataProcessingLabel.setText("Traitements");
+		dataProcessingLabel.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false));
+		dataProcessingLabel.setText("TRAITEMENTS");
 		
 		Label separatorLabel = new Label(container, SWT.SEPARATOR);
 		separatorLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 3));
 		
 		Label subjectLabel = new Label(container, SWT.BORDER);
-		subjectLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		subjectLabel.setText("Sujets");
+		subjectLabel.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false));
+		subjectLabel.setText("SUJETS");
 		
 		createProcessToolBar(container);
 		
@@ -199,6 +226,14 @@ public class DataProcessBatchEditor extends EditorPart {
 	@Override
 	public void setFocus() {
 		processListViewer.getList().setFocus();
+	}
+
+	@Override
+	public void refreshPartName() {
+		IResource resource = ObjectsController.getResourceForObject(getBatchDataProcessing());
+		setPartName(GetResourceLabelDelegate.getLabel(resource));
+		setTitleToolTip(getEditorInput().getToolTipText());
+		firePropertyChange(PROP_TITLE);
 	}
 
 }
