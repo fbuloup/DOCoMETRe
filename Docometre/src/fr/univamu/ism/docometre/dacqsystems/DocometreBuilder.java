@@ -128,7 +128,7 @@ public class DocometreBuilder extends IncrementalProjectBuilder {
 				if(resourceDelta.getKind() == IResourceDelta.CHANGED) {
 					// Retrieve all attached processes
 					// Add these processes to compilation
-					IResource[] resources = ResourceProperties.getAllTypedResources(ResourceType.PROCESS, getProject());
+					IResource[] resources = ResourceProperties.getAllTypedResources(ResourceType.PROCESS, getProject(), monitor);
 					for (IResource localResource : resources) {
 						String fullPath = ResourceProperties.getAssociatedDACQConfigurationProperty((IFile) localResource);
 						if(resource.getFullPath().toOSString().equals(fullPath)) processesToBuild.add((IFile) localResource);

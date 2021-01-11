@@ -36,8 +36,20 @@ public class BatchDataProcessing extends AbstractElement {
 		processes.add(batchDataProcessingItem);
 	}
 	
+	public void addProcesses(IResource[] processes) {
+		for (IResource process : processes) {
+			addProcess(process);
+		}
+	}
+	
 	public void removeProcess(int index) {
 		processes.remove(index);
+	}
+	
+	public void removeProcesses(BatchDataProcessingItem[] batchDataProcessingItems) {
+		for (BatchDataProcessingItem batchDataProcessingItem : batchDataProcessingItems) {
+			processes.remove(batchDataProcessingItem);
+		}
 	}
 	
 	public void moveProcessUp(int index) {
@@ -48,12 +60,22 @@ public class BatchDataProcessing extends AbstractElement {
 		}
 	}
 	
+	public void moveProcessUp(BatchDataProcessingItem batchDataProcessingItem) {
+		int index = processes.indexOf(batchDataProcessingItem);
+		moveProcessUp(index);
+	}
+	
 	public void moveProcessDown(int index) {
 		if(index < processes.size() - 1) {
 			BatchDataProcessingItem batchDataProcessingItem = processes.remove(index);
 			index++;
 			processes.add(index, batchDataProcessingItem);
 		}
+	}
+	
+	public void moveProcessDown(BatchDataProcessingItem batchDataProcessingItem) {
+		int index = processes.indexOf(batchDataProcessingItem);
+		moveProcessDown(index);
 	}
 	
 	public BatchDataProcessingItem[] getProcesses() {
@@ -71,8 +93,20 @@ public class BatchDataProcessing extends AbstractElement {
 		subjects.add(batchDataProcessingItem);
 	}
 	
+	public void addSubjects(IResource[] subjects) {
+		for (IResource subject : subjects) {
+			addSubject(subject);
+		}
+	}
+	
 	public void removeSubject(int index) {
 		subjects.remove(index);
+	}
+	
+	public void removeSubjects(BatchDataProcessingItem[] batchDataProcessingItems) {
+		for (BatchDataProcessingItem batchDataProcessingItem : batchDataProcessingItems) {
+			subjects.remove(batchDataProcessingItem);
+		}
 	}
 	
 	public void moveSubjectUp(int index) {
@@ -83,12 +117,22 @@ public class BatchDataProcessing extends AbstractElement {
 		}
 	}
 	
+	public void moveSubjectUp(BatchDataProcessingItem batchDataProcessingItem) {
+		int index = subjects.indexOf(batchDataProcessingItem);
+		moveSubjectUp(index);
+	}
+	
 	public void moveSubjectDown(int index) {
 		if(index < subjects.size() - 1) {
 			BatchDataProcessingItem batchDataProcessingItem = subjects.remove(index);
 			index++;
 			subjects.add(index, batchDataProcessingItem);
 		}
+	}
+	
+	public void moveSubjectDown(BatchDataProcessingItem batchDataProcessingItem) {
+		int index = subjects.indexOf(batchDataProcessingItem);
+		moveSubjectDown(index);
 	}
 	
 	public BatchDataProcessingItem[] getSubjects() {
@@ -99,4 +143,6 @@ public class BatchDataProcessing extends AbstractElement {
 		}
 		return subjects.toArray(new BatchDataProcessingItem[subjects.size()]);
 	}
+
+	
 }

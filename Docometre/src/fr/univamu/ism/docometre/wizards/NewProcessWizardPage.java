@@ -90,7 +90,7 @@ public class NewProcessWizardPage extends NewResourceWizardPage {
 		
 		daqConfigurationComboViewer = new ComboViewer(container);
 		daqConfigurationComboViewer.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		IResource[] resources = ResourceProperties.getAllTypedResources(ResourceType.DACQ_CONFIGURATION, newResourceWizard.getProject());
+		IResource[] resources = ResourceProperties.getAllTypedResources(ResourceType.DACQ_CONFIGURATION, newResourceWizard.getProject(), null);
 		IResource defaultDAQConfiguration = null;
 		String defaultDAQConfigurationFullPath = ResourceProperties.getDefaultDACQPersistentProperty(((NewResourceWizard)getWizard()).getParentResource());
 		for (IResource resource : resources) {

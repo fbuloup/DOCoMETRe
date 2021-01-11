@@ -95,7 +95,7 @@ public class NewTrialWizardPage extends NewResourceWizardPage {
 		});
 		IContainer subject = ((NewResourceWizard)getWizard()).getParentResource();
 		IContainer project = subject.getProject();
-		IResource[] processes = ResourceProperties.getAllTypedResources(ResourceType.PROCESS, project);
+		IResource[] processes = ResourceProperties.getAllTypedResources(ResourceType.PROCESS, project, null);
 		processesComboViewer.setInput(processes);
 		processesComboViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			

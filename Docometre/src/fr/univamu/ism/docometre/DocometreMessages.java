@@ -822,6 +822,16 @@ public final class DocometreMessages extends NLS {
 	public static String RefreshExperimentsSubjectsViewsSubTaskTitle;
 	public static String ErrorRenamingResource;
 	
+	public static String Delete_Tooltip;
+	public static String Add_Tooltip;
+	public static String ActivateDeactivate_Tooltip;
+	public static String Processes;
+	public static String Subjects;
+	public static String SelectProcessDialogTitle;
+	public static String SelectProcessDialogMessage;
+	public static String SelectSubjectDialogMessage;
+	public static String SelectSubjectDialogTitle;
+	
 //	public static String OrganizeSessionWizardPage_button_1_text;
 //	public static String OrganizeSessionWizardPage_tbtmNewItem_text;
 //	public static String OrganizeSessionWizardPage_tbtmNewItem_1_text;

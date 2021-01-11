@@ -165,7 +165,7 @@ public class OrganizeSessionWizardPage extends WizardPage {
 		availableProcessesList.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 2));
 		IResource session = ((NewResourceWizard)getWizard()).getResource();
 		if(session != null) {
-			IResource[] elements = ResourceProperties.getAllTypedResources(ResourceType.PROCESS, session.getProject());
+			IResource[] elements = ResourceProperties.getAllTypedResources(ResourceType.PROCESS, session.getProject(), null);
 			for (IResource item : elements) {
 				availableProcesses.add(item);
 			}

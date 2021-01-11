@@ -50,6 +50,7 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.QualifiedName;
 
 public final class ResourceProperties {
@@ -464,7 +465,7 @@ public final class ResourceProperties {
 	/*
 	 * Get all resources of type resourceType in container
 	 */
-	public static IResource[] getAllTypedResources(ResourceType resourceType, IContainer resourceContainer) {
+	public static IResource[] getAllTypedResources(ResourceType resourceType, IContainer resourceContainer, IProgressMonitor monitor) {
 		ArrayList<IResource> resources = new ArrayList<>(0);
 		try {
 			IResource[] resourcesMember = resourceContainer.members();
@@ -473,10 +474,12 @@ public final class ResourceProperties {
 				if (resourceType.toString().equals(currentResourceType))
 					resources.add(currentResource);
 				if (currentResource instanceof IContainer) {
-					IResource[] allResources = getAllTypedResources(resourceType, (IContainer) currentResource);
+					IResource[] allResources = getAllTypedResources(resourceType, (IContainer) currentResource, monitor);
 					resources.addAll(Arrays.asList(allResources));
 				}
+				if(monitor.isCanceled()) return new IResource[0];
 			}
+			if(monitor.isCanceled()) return new IResource[0];
 			return resources.toArray(new IResource[resources.size()]);
 		} catch (CoreException e) {
 			e.printStackTrace();

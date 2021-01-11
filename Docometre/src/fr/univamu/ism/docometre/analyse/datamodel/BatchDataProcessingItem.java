@@ -1,6 +1,10 @@
 package fr.univamu.ism.docometre.analyse.datamodel;
 
-public class BatchDataProcessingItem {
+import java.io.Serializable;
+
+public class BatchDataProcessingItem implements Serializable {
+	
+	public static final long serialVersionUID =  1L;
 	
 	private String path;
 	private boolean activated;

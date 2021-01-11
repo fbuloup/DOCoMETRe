@@ -361,7 +361,7 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 					if(onlyProcesses && sameProject && sameSystem) {
 						ArrayList<IFile> processesFiles = new ArrayList<>();
 						for (Object element : elements) processesFiles.add((IFile)element);
-						IResource[] daqFiles = ResourceProperties.getAllTypedResources(ResourceType.DACQ_CONFIGURATION, processesFiles.get(0).getProject());
+						IResource[] daqFiles = ResourceProperties.getAllTypedResources(ResourceType.DACQ_CONFIGURATION, processesFiles.get(0).getProject(), null);
 						if(daqFiles.length > 0) associateWithItemMenuManager.setVisible(true);
 						for (IResource daqFile : daqFiles) {
 							if(ResourceProperties.getSystemPersistentProperty(daqFile) != null && (ResourceProperties.getSystemPersistentProperty(daqFile).equals(systemType) || systemType == null))
@@ -371,7 +371,7 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 					if(onlyTrialsOrProcessesTests && sameProject && sameSystem) {
 						ArrayList<IFolder> trialsFiles = new ArrayList<>();
 						for (Object element : elements) trialsFiles.add((IFolder)element);
-						IResource[] processesFiles = ResourceProperties.getAllTypedResources(ResourceType.PROCESS, trialsFiles.get(0).getProject());
+						IResource[] processesFiles = ResourceProperties.getAllTypedResources(ResourceType.PROCESS, trialsFiles.get(0).getProject(), null);
 						if(processesFiles.length > 0) associateWithItemMenuManager.setVisible(true);
 						for (IResource processFile : processesFiles) {
 							associateWithItemMenuManager.add(new AssociateWithProcessAction(trialsFiles.toArray(new IFolder[trialsFiles.size()]), (IFile)processFile));

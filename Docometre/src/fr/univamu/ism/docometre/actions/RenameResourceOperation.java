@@ -187,7 +187,7 @@ public class RenameResourceOperation extends AbstractOperation {
 								if(!MathEngineFactory.getMathEngine().renameExperiment(resource.getName(), name)) {
 									renameInMathEngineStatus = new Status(IStatus.ERROR, Activator.PLUGIN_ID, DocometreMessages.ErrorRenamingEsxperimentInMathengine);
 								}
-								IResource[] subjects = ResourceProperties.getAllTypedResources(ResourceType.SUBJECT, (IContainer) newResource);
+								IResource[] subjects = ResourceProperties.getAllTypedResources(ResourceType.SUBJECT, (IContainer) newResource, monitor);
 								for (IResource subject : subjects) {
 									if(MathEngineFactory.getMathEngine().isSubjectLoaded(subject) ) {
 										Object sessionProperty = subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
@@ -288,7 +288,7 @@ public class RenameResourceOperation extends AbstractOperation {
 	private void updateProcesses(IResource oldResource, IResource newResource) {
 		String fullOldPath = oldResource.getFullPath().toOSString();
 		String fullNewPath = newResource.getFullPath().toOSString();
-		IResource[] processes = ResourceProperties.getAllTypedResources(ResourceType.PROCESS, newResource.getProject());
+		IResource[] processes = ResourceProperties.getAllTypedResources(ResourceType.PROCESS, newResource.getProject(), null);
 		for (IResource process : processes) {
 			String fullPathAssociatedDAQ = ResourceProperties.getAssociatedDACQConfigurationProperty((IFile) process);
 			if((fullPathAssociatedDAQ != null) && fullPathAssociatedDAQ.startsWith(fullOldPath)) {
@@ -306,7 +306,7 @@ public class RenameResourceOperation extends AbstractOperation {
 	private void updateTrials(IResource oldResource, IResource newResource) {
 		String fullOldPath = oldResource.getFullPath().toOSString();
 		String fullNewPath = newResource.getFullPath().toOSString();
-		IResource[] trials = ResourceProperties.getAllTypedResources(ResourceType.TRIAL, newResource.getProject());
+		IResource[] trials = ResourceProperties.getAllTypedResources(ResourceType.TRIAL, newResource.getProject(), null);
 		for (IResource trial : trials) {
 			String fullPathAssociatedProcess = ResourceProperties.getAssociatedProcessProperty(((IFolder) trial));
 			if((fullPathAssociatedProcess != null) && fullPathAssociatedProcess.equals(fullOldPath)) {
@@ -323,7 +323,7 @@ public class RenameResourceOperation extends AbstractOperation {
 	private void updateProcessTest(IResource oldResource, IResource newResource) {
 		String fullOldPath = oldResource.getFullPath().toOSString();
 		String fullNewPath = newResource.getFullPath().toOSString();
-		IResource[] processTests = ResourceProperties.getAllTypedResources(ResourceType.PROCESS_TEST, newResource.getProject());
+		IResource[] processTests = ResourceProperties.getAllTypedResources(ResourceType.PROCESS_TEST, newResource.getProject(), null);
 		for (IResource processTest : processTests) {
 			String fullPathAssociatedProcess = ResourceProperties.getAssociatedProcessProperty(processTest);
 			if((fullPathAssociatedProcess != null) && fullPathAssociatedProcess.equals(fullOldPath)) {
