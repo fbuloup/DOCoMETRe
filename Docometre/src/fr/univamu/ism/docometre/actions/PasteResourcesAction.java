@@ -114,7 +114,9 @@ public class PasteResourcesAction extends Action implements ISelectionListener, 
 								IResource newResource = destinationResource.findMember(newResourcePath.makeRelativeTo(destinationResource.getFullPath()));
 								int n = 1;
 								while (newResource != null) {
-									newResourcePath = destinationResource.getFullPath().append(resource.getName() + "_Copy_" + n);
+									String fileExtension = resource.getFullPath().getFileExtension();
+									String resourceName = resource.getFullPath().removeFileExtension().lastSegment();
+									newResourcePath = destinationResource.getFullPath().append(resourceName + "_Copy_" + n + "." + fileExtension);
 									newResource = destinationResource.findMember(newResourcePath.makeRelativeTo(destinationResource.getFullPath()));
 									n++;
 								}
