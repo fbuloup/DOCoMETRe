@@ -831,6 +831,8 @@ public final class DocometreMessages extends NLS {
 	public static String SelectProcessDialogMessage;
 	public static String SelectSubjectDialogMessage;
 	public static String SelectSubjectDialogTitle;
+	public static String OrganizeProcessesAndSubjects;
+	public static String Explanation;
 	
 //	public static String OrganizeSessionWizardPage_button_1_text;
 //	public static String OrganizeSessionWizardPage_tbtmNewItem_text;

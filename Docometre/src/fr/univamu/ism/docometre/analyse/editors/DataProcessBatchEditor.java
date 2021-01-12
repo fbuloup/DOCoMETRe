@@ -20,15 +20,19 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
+import org.eclipse.ui.forms.widgets.Form;
+import org.eclipse.ui.forms.widgets.FormText;
+import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.part.EditorPart;
 
 import fr.univamu.ism.docometre.Activator;
@@ -64,6 +68,7 @@ public class DataProcessBatchEditor extends EditorPart implements PartNameRefres
 	private IResource[] resources = null;
 	private boolean dirty;
 	private TableViewer subjectsTableViewer;
+	private FormToolkit formToolkit;
 
 	public DataProcessBatchEditor() {
 		// TODO Auto-generated constructor stub
@@ -127,19 +132,13 @@ public class DataProcessBatchEditor extends EditorPart implements PartNameRefres
 		return false;
 	}
 	
-	private void createProcessToolBar(Composite parent) {
-		Composite processToolBarContainer = new Composite(parent, SWT.NORMAL);
-		processToolBarContainer.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, false, false));
-		processToolBarContainer.setLayout(new GridLayout(3, true));
-		GridLayout gl = (GridLayout)processToolBarContainer.getLayout();
-		gl.horizontalSpacing = 2;
-		gl.verticalSpacing = 0;
-		gl.marginHeight = 0;
-		gl.marginWidth = 0;
+	private void createProcessToolBar(Section parent) {
 		
-		Button deleteButton = new Button(processToolBarContainer, SWT.FLAT);
+		ToolBar toolBar = new ToolBar(parent, SWT.FLAT | SWT.HORIZONTAL);
+		
+		
+		ToolItem deleteButton = new ToolItem(toolBar, SWT.NULL);
 		deleteButton.setImage(Activator.getImage(IImageKeys.DELETE_ICON));
-		deleteButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		deleteButton.setToolTipText(DocometreMessages.Delete_Tooltip);
 		deleteButton.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -154,9 +153,10 @@ public class DataProcessBatchEditor extends EditorPart implements PartNameRefres
 			}
 		});
 		
-		Button addButton = new Button(processToolBarContainer, SWT.FLAT);
+		new ToolItem(toolBar, SWT.SEPARATOR);
+		
+		ToolItem addButton = new ToolItem(toolBar, SWT.NULL);
 		addButton.setImage(Activator.getImage(IImageKeys.ADD_ICON));
-		addButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
 		addButton.setToolTipText(DocometreMessages.Add_Tooltip);
 		ResourceEditorInput editorInput = (ResourceEditorInput) getEditorInput();
 		IResource resource = ObjectsController.getResourceForObject(editorInput.getObject());
@@ -190,9 +190,8 @@ public class DataProcessBatchEditor extends EditorPart implements PartNameRefres
 			}
 		});
 		
-		Button activateDeactivateButton = new Button(processToolBarContainer, SWT.FLAT);
+		ToolItem activateDeactivateButton = new ToolItem(toolBar, SWT.NULL);
 		activateDeactivateButton.setImage(Activator.getImage(IImageKeys.ACTIVATE_DEACTIVATE_ICON));
-		activateDeactivateButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
 		activateDeactivateButton.setToolTipText(DocometreMessages.ActivateDeactivate_Tooltip);
 		activateDeactivateButton.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -209,21 +208,60 @@ public class DataProcessBatchEditor extends EditorPart implements PartNameRefres
 				}
 			}
 		});
+		
+		new ToolItem(toolBar, SWT.SEPARATOR);
+		
+		ToolItem upButton = new ToolItem(toolBar, SWT.NULL);
+		upButton.setImage(Activator.getImage(IImageKeys.UP_ICON));
+		upButton.setToolTipText(DocometreMessages.Up_Label);
+		upButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				IStructuredSelection selection = processesTableViewer.getStructuredSelection();
+				if(!selection.isEmpty()) {
+					BatchDataProcessingItem[] batchDataProcessingItems = Arrays.asList(selection.toArray()).toArray(new BatchDataProcessingItem[selection.size()]);
+					for (BatchDataProcessingItem batchDataProcessingItem : batchDataProcessingItems) {
+						getBatchDataProcessing().moveProcessUp(batchDataProcessingItem);
+					}
+					processesTableViewer.refresh();
+					setDirty(true);
+					refreshPartName();
+				}
+			}
+		});
+		
+		ToolItem downButton = new ToolItem(toolBar, SWT.NULL);
+		downButton.setImage(Activator.getImage(IImageKeys.DOWN_ICON));
+		downButton.setToolTipText(DocometreMessages.Down_Label);
+		downButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				IStructuredSelection selection = processesTableViewer.getStructuredSelection();
+				if(!selection.isEmpty()) {
+					List<Object> list = Arrays.asList(selection.toArray());
+					Collections.reverse(list);
+					BatchDataProcessingItem[] batchDataProcessingItems = list.toArray(new BatchDataProcessingItem[selection.size()]);
+					for (BatchDataProcessingItem batchDataProcessingItem : batchDataProcessingItems) {
+						getBatchDataProcessing().moveProcessDown(batchDataProcessingItem);
+					}
+					processesTableViewer.refresh();
+					setDirty(true);
+					refreshPartName();
+				}
+			}
+		});
+		
+		
+		parent.setTextClient(toolBar);
+		
 	}
 	
-	private void createSubjectToolBar(Composite parent) {
-		Composite subjectToolBarContainer = new Composite(parent, SWT.NONE);
-		subjectToolBarContainer.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, false, false));
-		subjectToolBarContainer.setLayout(new GridLayout(3, true));
-		GridLayout gl = (GridLayout)subjectToolBarContainer.getLayout();
-		gl.horizontalSpacing = 2;
-		gl.verticalSpacing = 0;
-		gl.marginHeight = 0;
-		gl.marginWidth = 0;
+	private void createSubjectToolBar(Section parent) {
 		
-		Button deleteButton = new Button(subjectToolBarContainer, SWT.FLAT);
+		ToolBar toolBar = new ToolBar(parent, SWT.FLAT | SWT.HORIZONTAL);
+		
+		ToolItem deleteButton = new ToolItem(toolBar, SWT.NULL);
 		deleteButton.setImage(Activator.getImage(IImageKeys.DELETE_ICON));
-		deleteButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true));
 		deleteButton.setToolTipText(DocometreMessages.Delete_Tooltip);
 		deleteButton.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -238,9 +276,10 @@ public class DataProcessBatchEditor extends EditorPart implements PartNameRefres
 			}
 		});
 		
-		Button addButton = new Button(subjectToolBarContainer, SWT.FLAT);
+		new ToolItem(toolBar, SWT.SEPARATOR);
+		
+		ToolItem addButton = new ToolItem(toolBar, SWT.NULL);
 		addButton.setImage(Activator.getImage(IImageKeys.ADD_ICON));
-		addButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true));
 		addButton.setToolTipText(DocometreMessages.Add_Tooltip);
 		ResourceEditorInput editorInput = (ResourceEditorInput) getEditorInput();
 		IResource resource = ObjectsController.getResourceForObject(editorInput.getObject());
@@ -274,9 +313,8 @@ public class DataProcessBatchEditor extends EditorPart implements PartNameRefres
 			}
 		});
 		
-		Button activateDeactivateButton = new Button(subjectToolBarContainer, SWT.FLAT);
+		ToolItem activateDeactivateButton = new ToolItem(toolBar, SWT.NULL);
 		activateDeactivateButton.setImage(Activator.getImage(IImageKeys.ACTIVATE_DEACTIVATE_ICON));
-		activateDeactivateButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true));
 		activateDeactivateButton.setToolTipText(DocometreMessages.ActivateDeactivate_Tooltip);
 		activateDeactivateButton.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -293,18 +331,54 @@ public class DataProcessBatchEditor extends EditorPart implements PartNameRefres
 				}
 			}
 		});
+		
+		new ToolItem(toolBar, SWT.SEPARATOR);
+		
+		ToolItem upButton = new ToolItem(toolBar, SWT.NULL);
+		upButton.setImage(Activator.getImage(IImageKeys.UP_ICON));
+		upButton.setToolTipText(DocometreMessages.Up_Label);
+		upButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				IStructuredSelection selection = subjectsTableViewer.getStructuredSelection();
+				if(!selection.isEmpty()) {
+					BatchDataProcessingItem[] batchDataProcessingItems = Arrays.asList(selection.toArray()).toArray(new BatchDataProcessingItem[selection.size()]);
+					for (BatchDataProcessingItem batchDataProcessingItem : batchDataProcessingItems) {
+						getBatchDataProcessing().moveSubjectUp(batchDataProcessingItem);
+					}
+					subjectsTableViewer.refresh();
+					setDirty(true);
+					refreshPartName();
+				}
+			}
+		});
+		
+		ToolItem downButton = new ToolItem(toolBar, SWT.NULL);
+		downButton.setImage(Activator.getImage(IImageKeys.DOWN_ICON));
+		downButton.setToolTipText(DocometreMessages.Down_Label);
+		downButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				IStructuredSelection selection = subjectsTableViewer.getStructuredSelection();
+				if(!selection.isEmpty()) {
+					List<Object> list = Arrays.asList(selection.toArray());
+					Collections.reverse(list);
+					BatchDataProcessingItem[] batchDataProcessingItems = list.toArray(new BatchDataProcessingItem[selection.size()]);
+					for (BatchDataProcessingItem batchDataProcessingItem : batchDataProcessingItems) {
+						getBatchDataProcessing().moveSubjectDown(batchDataProcessingItem);
+					}
+					subjectsTableViewer.refresh();
+					setDirty(true);
+					refreshPartName();
+				}
+			}
+		});
+		
+		parent.setTextClient(toolBar);
 	}
 
 	private void createProcessContainer(Composite parent) {
-		Composite processContainer = new Composite(parent, SWT.NONE);
-		processContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		processContainer.setLayout(new GridLayout(2, false));
-		GridLayout gl = (GridLayout)processContainer.getLayout();
-		gl.horizontalSpacing = 0;
-		gl.verticalSpacing = 0;
-		gl.marginHeight = 0;
-		gl.marginWidth = 0;
-		processesTableViewer = new TableViewer(processContainer);
+		processesTableViewer = new TableViewer(parent);
 		processesTableViewer.getTable().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		processesTableViewer.setContentProvider(new ArrayContentProvider() {
 			@Override
@@ -336,68 +410,10 @@ public class DataProcessBatchEditor extends EditorPart implements PartNameRefres
 		});
 		processesTableViewer.setInput(getBatchDataProcessing());
 		
-		Composite processListToolBarContainer = new Composite(processContainer, SWT.NONE);
-		processListToolBarContainer.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
-		processListToolBarContainer.setLayout(new GridLayout());
-		GridLayout gl2 = (GridLayout)processListToolBarContainer.getLayout();
-		gl2.horizontalSpacing = 0;
-		gl2.verticalSpacing = 2;
-		gl2.marginHeight = 0;
-		gl2.marginWidth = 0;
-
-		Button upButton = new Button(processListToolBarContainer, SWT.FLAT);
-		upButton.setImage(Activator.getImage(IImageKeys.UP_ICON));
-		upButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
-		upButton.setToolTipText(DocometreMessages.Up_Label);
-		upButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				IStructuredSelection selection = processesTableViewer.getStructuredSelection();
-				if(!selection.isEmpty()) {
-					BatchDataProcessingItem[] batchDataProcessingItems = Arrays.asList(selection.toArray()).toArray(new BatchDataProcessingItem[selection.size()]);
-					for (BatchDataProcessingItem batchDataProcessingItem : batchDataProcessingItems) {
-						getBatchDataProcessing().moveProcessUp(batchDataProcessingItem);
-					}
-					processesTableViewer.refresh();
-					setDirty(true);
-					refreshPartName();
-				}
-			}
-		});
-		
-		Button downButton = new Button(processListToolBarContainer, SWT.FLAT);
-		downButton.setImage(Activator.getImage(IImageKeys.DOWN_ICON));
-		downButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
-		downButton.setToolTipText(DocometreMessages.Down_Label);
-		downButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				IStructuredSelection selection = processesTableViewer.getStructuredSelection();
-				if(!selection.isEmpty()) {
-					List<Object> list = Arrays.asList(selection.toArray());
-					Collections.reverse(list);
-					BatchDataProcessingItem[] batchDataProcessingItems = list.toArray(new BatchDataProcessingItem[selection.size()]);
-					for (BatchDataProcessingItem batchDataProcessingItem : batchDataProcessingItems) {
-						getBatchDataProcessing().moveProcessDown(batchDataProcessingItem);
-					}
-					processesTableViewer.refresh();
-					setDirty(true);
-					refreshPartName();
-				}
-			}
-		});
 	}
 	
 	private void createSubjectContainer(Composite parent) {
-		Composite subjectsContainer = new Composite(parent, SWT.NONE);
-		subjectsContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		subjectsContainer.setLayout(new GridLayout(2, false));
-		GridLayout gl = (GridLayout)subjectsContainer.getLayout();
-		gl.horizontalSpacing = 0;
-		gl.verticalSpacing = 0;
-		gl.marginHeight = 0;
-		gl.marginWidth = 0;
-		subjectsTableViewer = new TableViewer(subjectsContainer);
+		subjectsTableViewer = new TableViewer(parent);
 		subjectsTableViewer.getTable().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		subjectsTableViewer.setContentProvider(new ArrayContentProvider() {
 			@Override
@@ -427,86 +443,43 @@ public class DataProcessBatchEditor extends EditorPart implements PartNameRefres
 		});
 		subjectsTableViewer.setInput(getBatchDataProcessing());
 		
-		Composite subjectListToolBarContainer = new Composite(subjectsContainer, SWT.NONE);
-		subjectListToolBarContainer.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
-		subjectListToolBarContainer.setLayout(new GridLayout());
-		GridLayout gl2 = (GridLayout)subjectListToolBarContainer.getLayout();
-		gl2.horizontalSpacing = 0;
-		gl2.verticalSpacing = 2;
-		gl2.marginHeight = 0;
-		gl2.marginWidth = 0;
-		
-		Button upButton = new Button(subjectListToolBarContainer, SWT.FLAT);
-		upButton.setImage(Activator.getImage(IImageKeys.UP_ICON));
-		upButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
-		upButton.setToolTipText(DocometreMessages.Up_Label);
-		upButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				IStructuredSelection selection = subjectsTableViewer.getStructuredSelection();
-				if(!selection.isEmpty()) {
-					BatchDataProcessingItem[] batchDataProcessingItems = Arrays.asList(selection.toArray()).toArray(new BatchDataProcessingItem[selection.size()]);
-					for (BatchDataProcessingItem batchDataProcessingItem : batchDataProcessingItems) {
-						getBatchDataProcessing().moveSubjectUp(batchDataProcessingItem);
-					}
-					subjectsTableViewer.refresh();
-					setDirty(true);
-					refreshPartName();
-				}
-			}
-		});
-		
-		Button downButton = new Button(subjectListToolBarContainer, SWT.FLAT);
-		downButton.setImage(Activator.getImage(IImageKeys.DOWN_ICON));
-		downButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
-		downButton.setToolTipText(DocometreMessages.Down_Label);
-		downButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				IStructuredSelection selection = subjectsTableViewer.getStructuredSelection();
-				if(!selection.isEmpty()) {
-					List<Object> list = Arrays.asList(selection.toArray());
-					Collections.reverse(list);
-					BatchDataProcessingItem[] batchDataProcessingItems = list.toArray(new BatchDataProcessingItem[selection.size()]);
-					for (BatchDataProcessingItem batchDataProcessingItem : batchDataProcessingItems) {
-						getBatchDataProcessing().moveSubjectDown(batchDataProcessingItem);
-					}
-					subjectsTableViewer.refresh();
-					setDirty(true);
-					refreshPartName();
-				}
-			}
-		});
 	}
 	
 	@Override
 	public void createPartControl(Composite parent) {
 		
-		Composite container = new Composite(parent, SWT.NONE);
-		container.setLayout(new GridLayout(3, false));
+		formToolkit = new FormToolkit(parent.getDisplay());
+		Form form = formToolkit.createForm(parent);
+		formToolkit.decorateFormHeading(form);
+		form.setText(DocometreMessages.OrganizeProcessesAndSubjects);
+		
+		Composite container = form.getBody();
+		container.setLayout(new GridLayout(2, true));
 		GridLayout gl = (GridLayout)container.getLayout();
 		gl.marginHeight = 2;
 		gl.marginWidth = 5;
 		
-		Label dataProcessingLabel = new Label(container, SWT.BORDER);
-		dataProcessingLabel.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false));
-		dataProcessingLabel.setText(DocometreMessages.Processes);
+		FormText formText = formToolkit.createFormText(container, false);
+		formText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		formText.setWhitespaceNormalized(true);
+		formText.setImage("ADD", Activator.getImage(IImageKeys.ADD_ICON));
+		formText.setImage("DEL", Activator.getImage(IImageKeys.DELETE_ICON));
+		formText.setImage("UP", Activator.getImage(IImageKeys.UP_ICON));
+		formText.setImage("DOWN", Activator.getImage(IImageKeys.DOWN_ICON));
+		formText.setImage("ACTDEACT", Activator.getImage(IImageKeys.ACTIVATE_DEACTIVATE_ICON));
+		formText.setImage("DEACT", Activator.getImage(IImageKeys.DEACTIVATE_ICON));
+		formText.setText(DocometreMessages.Explanation, true, false);
 		
-		Label separatorLabel = new Label(container, SWT.SEPARATOR);
-		separatorLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 4));
+		Section processingSection = formToolkit.createSection(container, Section.DESCRIPTION | Section.TITLE_BAR);
+		processingSection.setText(DocometreMessages.Processes);
+		processingSection.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		
-		Label subjectLabel = new Label(container, SWT.BORDER);
-		subjectLabel.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false));
-		subjectLabel.setText(DocometreMessages.Subjects);
+		Section subjectsSection = formToolkit.createSection(container, Section.DESCRIPTION | Section.TITLE_BAR);
+		subjectsSection.setText(DocometreMessages.Subjects);
+		subjectsSection.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		
-		Label separatorLabel2 = new Label(container, SWT.SEPARATOR | SWT.HORIZONTAL);
-		separatorLabel2.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
-		
-		Label separatorLabel3 = new Label(container, SWT.SEPARATOR | SWT.HORIZONTAL);
-		separatorLabel3.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
-		
-		createProcessToolBar(container);
-		createSubjectToolBar(container);
+		createProcessToolBar(processingSection);
+		createSubjectToolBar(subjectsSection);
 		createProcessContainer(container);
 		createSubjectContainer(container);
 		
@@ -514,8 +487,9 @@ public class DataProcessBatchEditor extends EditorPart implements PartNameRefres
 	
 	@Override
 	public void dispose() {
-		super.dispose();
 		ObjectsController.removeHandle(getBatchDataProcessing());
+		formToolkit.dispose();
+		super.dispose();
 	}
 
 	@Override
