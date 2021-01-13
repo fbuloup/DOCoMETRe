@@ -1,15 +1,10 @@
 package fr.univamu.ism.docometre.analyse.editors;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
+import org.eclipse.core.commands.operations.ObjectUndoContext;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.dialogs.ProgressMonitorDialog;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -20,6 +15,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
@@ -28,11 +24,11 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormText;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
+import org.eclipse.ui.operations.UndoRedoActionGroup;
 import org.eclipse.ui.part.EditorPart;
 
 import fr.univamu.ism.docometre.Activator;
@@ -41,10 +37,15 @@ import fr.univamu.ism.docometre.GetResourceLabelDelegate;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.PartListenerAdapter;
-import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.analyse.datamodel.EnableDisableHandler;
+import fr.univamu.ism.docometre.analyse.datamodel.AddHandler;
 import fr.univamu.ism.docometre.analyse.datamodel.BatchDataProcessing;
 import fr.univamu.ism.docometre.analyse.datamodel.BatchDataProcessingItem;
+import fr.univamu.ism.docometre.analyse.datamodel.BatchDataProcessingProperties;
+import fr.univamu.ism.docometre.analyse.datamodel.MoveDownHandler;
+import fr.univamu.ism.docometre.analyse.datamodel.MoveUpHandler;
+import fr.univamu.ism.docometre.analyse.datamodel.RemoveHandler;
 import fr.univamu.ism.docometre.editors.PartNameRefresher;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 
@@ -52,23 +53,13 @@ public class DataProcessBatchEditor extends EditorPart implements PartNameRefres
 	
 	public static String ID = "Docometre.DataProcessBatchEditor";
 	
-	private final class ProcessesSubjectsLabelProvider extends LabelProvider {
-		@Override
-		public String getText(Object element) {
-			if(element instanceof IResource) {
-				if(ResourceType.isDataProcessing((IResource) element)) return ((IResource)element).getName().replaceAll(Activator.dataProcessingFileExtension, ""); 
-				else return ((IResource)element).getName();
-			}
-			return super.getText(element);
-		}
-	}
-	
 	private TableViewer processesTableViewer;
 	private PartListenerAdapter partListenerAdapter;
-	private IResource[] resources = null;
 	private boolean dirty;
 	private TableViewer subjectsTableViewer;
 	private FormToolkit formToolkit;
+	private ObjectUndoContext resourceEditorUndoContext;
+	private UndoRedoActionGroup undoRedoActionGroup;
 
 	public DataProcessBatchEditor() {
 		// TODO Auto-generated constructor stub
@@ -86,9 +77,17 @@ public class DataProcessBatchEditor extends EditorPart implements PartNameRefres
 
 	}
 
-	private BatchDataProcessing getBatchDataProcessing() {
+	public BatchDataProcessing getBatchDataProcessing() {
 		ResourceEditorInput resourceEditorInput = (ResourceEditorInput)getEditorInput();
 		return (BatchDataProcessing) resourceEditorInput.getObject();
+	}
+	
+	public ObjectUndoContext getUndoContext() {
+		Object object = ((ResourceEditorInput)getEditorInput()).getObject();
+		IResource resource = ObjectsController.getResourceForObject(object);
+		String fullName = resource.getFullPath().toOSString();
+		if(resourceEditorUndoContext == null) resourceEditorUndoContext = new ObjectUndoContext(this, "ResourceEditorUndoContext_" + fullName);
+		return resourceEditorUndoContext;
 	}
 	
 	@Override
@@ -96,6 +95,10 @@ public class DataProcessBatchEditor extends EditorPart implements PartNameRefres
 		setSite(site);
 		setInput(input);
 		setPartName(GetResourceLabelDelegate.getLabel(ObjectsController.getResourceForObject(getBatchDataProcessing())));
+		setTitleToolTip(getEditorInput().getToolTipText());
+		
+		undoRedoActionGroup = new UndoRedoActionGroup(getSite(), getUndoContext(), true);
+		undoRedoActionGroup.fillActionBars(getEditorSite().getActionBars());
 		
 		partListenerAdapter = new PartListenerAdapter() {
 			@Override
@@ -125,6 +128,7 @@ public class DataProcessBatchEditor extends EditorPart implements PartNameRefres
 	private void setDirty(boolean dirty) {
 		this.dirty = dirty;
 		firePropertyChange(PROP_DIRTY);
+		refreshPartName();
 	}
 
 	@Override
@@ -133,124 +137,35 @@ public class DataProcessBatchEditor extends EditorPart implements PartNameRefres
 	}
 	
 	private void createProcessToolBar(Section parent) {
-		
 		ToolBar toolBar = new ToolBar(parent, SWT.FLAT | SWT.HORIZONTAL);
-		
-		
 		ToolItem deleteButton = new ToolItem(toolBar, SWT.NULL);
 		deleteButton.setImage(Activator.getImage(IImageKeys.DELETE_ICON));
 		deleteButton.setToolTipText(DocometreMessages.Delete_Tooltip);
-		deleteButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				IStructuredSelection selection = processesTableViewer.getStructuredSelection();
-				if(!selection.isEmpty()) {
-					getBatchDataProcessing().removeProcesses(Arrays.asList(selection.toArray()).toArray(new BatchDataProcessingItem[selection.size()]));
-					processesTableViewer.refresh();
-					setDirty(true);
-					refreshPartName();
-				}
-			}
-		});
+		deleteButton.addSelectionListener(new RemoveHandler(this, ResourceType.PROCESS));
 		
 		new ToolItem(toolBar, SWT.SEPARATOR);
 		
 		ToolItem addButton = new ToolItem(toolBar, SWT.NULL);
 		addButton.setImage(Activator.getImage(IImageKeys.ADD_ICON));
 		addButton.setToolTipText(DocometreMessages.Add_Tooltip);
-		ResourceEditorInput editorInput = (ResourceEditorInput) getEditorInput();
-		IResource resource = ObjectsController.getResourceForObject(editorInput.getObject());
-		addButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				try {
-					ProgressMonitorDialog progressMonitorDialog = new ProgressMonitorDialog(getSite().getShell());
-					progressMonitorDialog.run(true, false, new IRunnableWithProgress() {
-						@Override
-						public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-							resources = ResourceProperties.getAllTypedResources(ResourceType.DATA_PROCESSING, resource.getProject(), monitor);
-						}
-					});
-					ElementListSelectionDialog elementListSelectionDialog = new ElementListSelectionDialog(getSite().getShell(), new ProcessesSubjectsLabelProvider());
-					elementListSelectionDialog.setMultipleSelection(true);
-					elementListSelectionDialog.setMessage(DocometreMessages.SelectProcessDialogMessage);
-					elementListSelectionDialog.setTitle(DocometreMessages.SelectProcessDialogTitle);
-					elementListSelectionDialog.setElements(resources);
-					if(elementListSelectionDialog.open() == Dialog.OK) {
-						IResource[] selection = Arrays.asList(elementListSelectionDialog.getResult()).toArray(new IResource[elementListSelectionDialog.getResult().length]);
-						getBatchDataProcessing().addProcesses(selection);
-						processesTableViewer.refresh();
-						setDirty(true);
-						refreshPartName();
-					}
-				} catch (InvocationTargetException | InterruptedException e1) {
-					e1.printStackTrace();
-					Activator.logErrorMessageWithCause(e1);
-				}
-			}
-		});
+		addButton.addSelectionListener(new AddHandler(this, ResourceType.PROCESS));
 		
-		ToolItem activateDeactivateButton = new ToolItem(toolBar, SWT.NULL);
-		activateDeactivateButton.setImage(Activator.getImage(IImageKeys.ACTIVATE_DEACTIVATE_ICON));
-		activateDeactivateButton.setToolTipText(DocometreMessages.ActivateDeactivate_Tooltip);
-		activateDeactivateButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				IStructuredSelection selection = processesTableViewer.getStructuredSelection();
-				if(!selection.isEmpty()) {
-					BatchDataProcessingItem[] batchDataProcessingItems = Arrays.asList(selection.toArray()).toArray(new BatchDataProcessingItem[selection.size()]);
-					for (BatchDataProcessingItem batchDataProcessingItem : batchDataProcessingItems) {
-						batchDataProcessingItem.setActivated(!batchDataProcessingItem.isActivated());
-					}
-					processesTableViewer.refresh();
-					setDirty(true);
-					refreshPartName();
-				}
-			}
-		});
+		ToolItem enableDisableButton = new ToolItem(toolBar, SWT.NULL);
+		enableDisableButton.setImage(Activator.getImage(IImageKeys.ENABLE_DISABLE_ICON));
+		enableDisableButton.setToolTipText(DocometreMessages.EnableDisable_Tooltip);
+		enableDisableButton.addSelectionListener(new EnableDisableHandler(this, ResourceType.PROCESS));
 		
 		new ToolItem(toolBar, SWT.SEPARATOR);
 		
 		ToolItem upButton = new ToolItem(toolBar, SWT.NULL);
 		upButton.setImage(Activator.getImage(IImageKeys.UP_ICON));
 		upButton.setToolTipText(DocometreMessages.Up_Label);
-		upButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				IStructuredSelection selection = processesTableViewer.getStructuredSelection();
-				if(!selection.isEmpty()) {
-					BatchDataProcessingItem[] batchDataProcessingItems = Arrays.asList(selection.toArray()).toArray(new BatchDataProcessingItem[selection.size()]);
-					for (BatchDataProcessingItem batchDataProcessingItem : batchDataProcessingItems) {
-						getBatchDataProcessing().moveProcessUp(batchDataProcessingItem);
-					}
-					processesTableViewer.refresh();
-					setDirty(true);
-					refreshPartName();
-				}
-			}
-		});
+		upButton.addSelectionListener(new MoveUpHandler(this, ResourceType.PROCESS));
 		
 		ToolItem downButton = new ToolItem(toolBar, SWT.NULL);
 		downButton.setImage(Activator.getImage(IImageKeys.DOWN_ICON));
 		downButton.setToolTipText(DocometreMessages.Down_Label);
-		downButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				IStructuredSelection selection = processesTableViewer.getStructuredSelection();
-				if(!selection.isEmpty()) {
-					List<Object> list = Arrays.asList(selection.toArray());
-					Collections.reverse(list);
-					BatchDataProcessingItem[] batchDataProcessingItems = list.toArray(new BatchDataProcessingItem[selection.size()]);
-					for (BatchDataProcessingItem batchDataProcessingItem : batchDataProcessingItems) {
-						getBatchDataProcessing().moveProcessDown(batchDataProcessingItem);
-					}
-					processesTableViewer.refresh();
-					setDirty(true);
-					refreshPartName();
-				}
-			}
-		});
-		
+		downButton.addSelectionListener(new MoveDownHandler(this, ResourceType.PROCESS));
 		
 		parent.setTextClient(toolBar);
 		
@@ -263,116 +178,31 @@ public class DataProcessBatchEditor extends EditorPart implements PartNameRefres
 		ToolItem deleteButton = new ToolItem(toolBar, SWT.NULL);
 		deleteButton.setImage(Activator.getImage(IImageKeys.DELETE_ICON));
 		deleteButton.setToolTipText(DocometreMessages.Delete_Tooltip);
-		deleteButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				IStructuredSelection selection = subjectsTableViewer.getStructuredSelection();
-				if(!selection.isEmpty()) {
-					getBatchDataProcessing().removeSubjects(Arrays.asList(selection.toArray()).toArray(new BatchDataProcessingItem[selection.size()]));
-					subjectsTableViewer.refresh();
-					setDirty(true);
-					refreshPartName();
-				}
-			}
-		});
+		deleteButton.addSelectionListener(new RemoveHandler(this, ResourceType.SUBJECT));
 		
 		new ToolItem(toolBar, SWT.SEPARATOR);
 		
 		ToolItem addButton = new ToolItem(toolBar, SWT.NULL);
 		addButton.setImage(Activator.getImage(IImageKeys.ADD_ICON));
 		addButton.setToolTipText(DocometreMessages.Add_Tooltip);
-		ResourceEditorInput editorInput = (ResourceEditorInput) getEditorInput();
-		IResource resource = ObjectsController.getResourceForObject(editorInput.getObject());
-		addButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				try {
-					ProgressMonitorDialog progressMonitorDialog = new ProgressMonitorDialog(getSite().getShell());
-					progressMonitorDialog.run(true, false, new IRunnableWithProgress() {
-						@Override
-						public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-							resources = ResourceProperties.getAllTypedResources(ResourceType.SUBJECT, resource.getProject(), monitor);
-						}
-					});
-					ElementListSelectionDialog elementListSelectionDialog = new ElementListSelectionDialog(getSite().getShell(), new ProcessesSubjectsLabelProvider());
-					elementListSelectionDialog.setMultipleSelection(true);
-					elementListSelectionDialog.setMessage(DocometreMessages.SelectSubjectDialogMessage);
-					elementListSelectionDialog.setTitle(DocometreMessages.SelectSubjectDialogTitle);
-					elementListSelectionDialog.setElements(resources);
-					if(elementListSelectionDialog.open() == Dialog.OK) {
-						IResource[] selection = Arrays.asList(elementListSelectionDialog.getResult()).toArray(new IResource[elementListSelectionDialog.getResult().length]);
-						getBatchDataProcessing().addSubjects(selection);
-						subjectsTableViewer.refresh();
-						setDirty(true);
-						refreshPartName();
-					}
-				} catch (InvocationTargetException | InterruptedException e1) {
-					e1.printStackTrace();
-					Activator.logErrorMessageWithCause(e1);
-				}
-			}
-		});
+		addButton.addSelectionListener(new AddHandler(this, ResourceType.SUBJECT));
 		
-		ToolItem activateDeactivateButton = new ToolItem(toolBar, SWT.NULL);
-		activateDeactivateButton.setImage(Activator.getImage(IImageKeys.ACTIVATE_DEACTIVATE_ICON));
-		activateDeactivateButton.setToolTipText(DocometreMessages.ActivateDeactivate_Tooltip);
-		activateDeactivateButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				IStructuredSelection selection = subjectsTableViewer.getStructuredSelection();
-				if(!selection.isEmpty()) {
-					BatchDataProcessingItem[] batchDataProcessingItems = Arrays.asList(selection.toArray()).toArray(new BatchDataProcessingItem[selection.size()]);
-					for (BatchDataProcessingItem batchDataProcessingItem : batchDataProcessingItems) {
-						batchDataProcessingItem.setActivated(!batchDataProcessingItem.isActivated());
-					}
-					subjectsTableViewer.refresh();
-					setDirty(true);
-					refreshPartName();
-				}
-			}
-		});
+		ToolItem enableDisableButton = new ToolItem(toolBar, SWT.NULL);
+		enableDisableButton.setImage(Activator.getImage(IImageKeys.ENABLE_DISABLE_ICON));
+		enableDisableButton.setToolTipText(DocometreMessages.EnableDisable_Tooltip);
+		enableDisableButton.addSelectionListener(new EnableDisableHandler(this, ResourceType.SUBJECT));
 		
 		new ToolItem(toolBar, SWT.SEPARATOR);
 		
 		ToolItem upButton = new ToolItem(toolBar, SWT.NULL);
 		upButton.setImage(Activator.getImage(IImageKeys.UP_ICON));
 		upButton.setToolTipText(DocometreMessages.Up_Label);
-		upButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				IStructuredSelection selection = subjectsTableViewer.getStructuredSelection();
-				if(!selection.isEmpty()) {
-					BatchDataProcessingItem[] batchDataProcessingItems = Arrays.asList(selection.toArray()).toArray(new BatchDataProcessingItem[selection.size()]);
-					for (BatchDataProcessingItem batchDataProcessingItem : batchDataProcessingItems) {
-						getBatchDataProcessing().moveSubjectUp(batchDataProcessingItem);
-					}
-					subjectsTableViewer.refresh();
-					setDirty(true);
-					refreshPartName();
-				}
-			}
-		});
+		upButton.addSelectionListener(new MoveUpHandler(this, ResourceType.SUBJECT));
 		
 		ToolItem downButton = new ToolItem(toolBar, SWT.NULL);
 		downButton.setImage(Activator.getImage(IImageKeys.DOWN_ICON));
 		downButton.setToolTipText(DocometreMessages.Down_Label);
-		downButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				IStructuredSelection selection = subjectsTableViewer.getStructuredSelection();
-				if(!selection.isEmpty()) {
-					List<Object> list = Arrays.asList(selection.toArray());
-					Collections.reverse(list);
-					BatchDataProcessingItem[] batchDataProcessingItems = list.toArray(new BatchDataProcessingItem[selection.size()]);
-					for (BatchDataProcessingItem batchDataProcessingItem : batchDataProcessingItems) {
-						getBatchDataProcessing().moveSubjectDown(batchDataProcessingItem);
-					}
-					subjectsTableViewer.refresh();
-					setDirty(true);
-					refreshPartName();
-				}
-			}
-		});
+		downButton.addSelectionListener(new MoveDownHandler(this, ResourceType.SUBJECT));
 		
 		parent.setTextClient(toolBar);
 	}
@@ -459,16 +289,34 @@ public class DataProcessBatchEditor extends EditorPart implements PartNameRefres
 		gl.marginHeight = 2;
 		gl.marginWidth = 5;
 		
-		FormText formText = formToolkit.createFormText(container, false);
+		Section introSection = formToolkit.createSection(container, Section.DESCRIPTION | Section.TITLE_BAR | Section.TWISTIE);
+		introSection.setText(DocometreMessages.Introduction);
+		introSection.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		
+		FormText formText = formToolkit.createFormText(introSection, false);
 		formText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 		formText.setWhitespaceNormalized(true);
 		formText.setImage("ADD", Activator.getImage(IImageKeys.ADD_ICON));
 		formText.setImage("DEL", Activator.getImage(IImageKeys.DELETE_ICON));
 		formText.setImage("UP", Activator.getImage(IImageKeys.UP_ICON));
 		formText.setImage("DOWN", Activator.getImage(IImageKeys.DOWN_ICON));
-		formText.setImage("ACTDEACT", Activator.getImage(IImageKeys.ACTIVATE_DEACTIVATE_ICON));
+		formText.setImage("ENDIS", Activator.getImage(IImageKeys.ENABLE_DISABLE_ICON));
 		formText.setImage("DEACT", Activator.getImage(IImageKeys.DEACTIVATE_ICON));
 		formText.setText(DocometreMessages.Explanation, true, false);
+		
+		introSection.setClient(formText);
+		
+		Button loadSubjectButton = formToolkit.createButton(container, DocometreMessages.AutoLoadSubjectTitle, SWT.CHECK);
+		loadSubjectButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		loadSubjectButton.setSelection("true".equalsIgnoreCase(getBatchDataProcessing().getProperty(BatchDataProcessingProperties.AUTO_LOAD_SUBJECT)));
+		loadSubjectButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				boolean checked = loadSubjectButton.getSelection();
+				getBatchDataProcessing().setProperty(BatchDataProcessingProperties.AUTO_LOAD_SUBJECT, checked?"true":"false");
+				setDirty(true);
+			}
+		});
 		
 		Section processingSection = formToolkit.createSection(container, Section.DESCRIPTION | Section.TITLE_BAR);
 		processingSection.setText(DocometreMessages.Processes);
@@ -505,4 +353,26 @@ public class DataProcessBatchEditor extends EditorPart implements PartNameRefres
 		firePropertyChange(PROP_TITLE);
 	}
 
+	public BatchDataProcessingItem[] getSelectedProcesses() {
+		IStructuredSelection selection = (IStructuredSelection)processesTableViewer.getSelection();
+		Object[] items = selection.toArray();
+		return Arrays.asList(items).toArray(new BatchDataProcessingItem[items.length]);
+	}
+	
+	public BatchDataProcessingItem[] getSelectedSubjects() {
+		IStructuredSelection selection = (IStructuredSelection)subjectsTableViewer.getSelection();
+		Object[] items = selection.toArray();
+		return Arrays.asList(items).toArray(new BatchDataProcessingItem[items.length]);
+	}
+	
+	public void refreshProcesses() {
+		processesTableViewer.refresh();
+		setDirty(true);
+	}
+
+	public void refreshSubjects() {
+		subjectsTableViewer.refresh();
+		setDirty(true);
+	}
+	
 }

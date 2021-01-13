@@ -2,7 +2,7 @@ package fr.univamu.ism.docometre.analyse.datamodel;
 
 import java.io.Serializable;
 
-public class BatchDataProcessingItem implements Serializable {
+public class BatchDataProcessingItem implements Serializable, Cloneable {
 	
 	public static final long serialVersionUID =  1L;
 	
@@ -33,6 +33,12 @@ public class BatchDataProcessingItem implements Serializable {
 
 	public void setActivated(boolean activated) {
 		this.activated = activated;
+	}
+	
+	@Override
+	protected Object clone() throws CloneNotSupportedException {
+		BatchDataProcessingItem batchDataProcessingItem = new BatchDataProcessingItem(path, activated);
+		return batchDataProcessingItem;
 	}
 	
 }

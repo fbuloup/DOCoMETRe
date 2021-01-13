@@ -195,7 +195,7 @@ public interface IImageKeys {
 	
 	public static final String ACTIVATE_ICON = "icons/activate.png"; //$NON-NLS-1$
 	public static final String DEACTIVATE_ICON = "icons/deactivate.gif"; //$NON-NLS-1$
-	public static final String ACTIVATE_DEACTIVATE_ICON = "icons/activateDeactivate.png"; //$NON-NLS-1$
+	public static final String ENABLE_DISABLE_ICON = "icons/activateDeactivate.png"; //$NON-NLS-1$
 	
 	
 }

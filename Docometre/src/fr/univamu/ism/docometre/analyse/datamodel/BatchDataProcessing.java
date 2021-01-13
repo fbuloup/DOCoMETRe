@@ -13,11 +13,14 @@ public class BatchDataProcessing extends AbstractElement {
 	
 	private ArrayList<BatchDataProcessingItem> processes = new ArrayList<>();
 	private ArrayList<BatchDataProcessingItem> subjects = new ArrayList<>();
+	
+	public BatchDataProcessing() {
+		BatchDataProcessingProperties.populateProperties(this);
+	}
 
 	@Override
 	public Object clone() throws CloneNotSupportedException {
-		// TODO Auto-generated method stub
-		return null;
+		return BatchDataProcessingProperties.cloneBatchDataProcessing(this);
 	}
 
 	@Override
@@ -31,14 +34,34 @@ public class BatchDataProcessing extends AbstractElement {
 	}
 	
 	//Processes
-	public void addProcess(IResource process) {
+	public BatchDataProcessingItem addProcess(IResource process) {
 		BatchDataProcessingItem batchDataProcessingItem = new BatchDataProcessingItem(getPath(process), true);
 		processes.add(batchDataProcessingItem);
+		return batchDataProcessingItem;
 	}
 	
-	public void addProcesses(IResource[] processes) {
+	public BatchDataProcessingItem[] addProcesses(IResource[] processes) {
+		BatchDataProcessingItem[] addedBatchDataProcessing = new BatchDataProcessingItem[processes.length];
+		int i = 0;
 		for (IResource process : processes) {
-			addProcess(process);
+			BatchDataProcessingItem batchDataProcessingItem = addProcess(process);
+			addedBatchDataProcessing[i] = batchDataProcessingItem;
+			i++;
+		}
+		return addedBatchDataProcessing;
+	}
+	
+	public void addProcesses(BatchDataProcessingItem[] items, int[] indexes) {
+		int i = 0;
+		for (BatchDataProcessingItem item : items) {
+			processes.add(indexes[i], item);
+			i++;
+		}
+	}
+	
+	public void addProcesses(BatchDataProcessingItem[] items) {
+		for (BatchDataProcessingItem item : items) {
+			processes.add(item);
 		}
 	}
 	
@@ -46,10 +69,15 @@ public class BatchDataProcessing extends AbstractElement {
 		processes.remove(index);
 	}
 	
-	public void removeProcesses(BatchDataProcessingItem[] batchDataProcessingItems) {
+	public int[] removeProcesses(BatchDataProcessingItem[] batchDataProcessingItems) {
+		int[] indexes = new int[batchDataProcessingItems.length]; 
+		int i = 0;
 		for (BatchDataProcessingItem batchDataProcessingItem : batchDataProcessingItems) {
+			indexes[i] = processes.indexOf(batchDataProcessingItem);
+			i++;
 			processes.remove(batchDataProcessingItem);
 		}
+		return indexes;
 	}
 	
 	public void moveProcessUp(int index) {
@@ -88,14 +116,34 @@ public class BatchDataProcessing extends AbstractElement {
 	}
 	
 	// Subjects
-	public void addSubject(IResource subject) {
+	public BatchDataProcessingItem addSubject(IResource subject) {
 		BatchDataProcessingItem batchDataProcessingItem = new BatchDataProcessingItem(getPath(subject), true);
 		subjects.add(batchDataProcessingItem);
+		return batchDataProcessingItem;
 	}
 	
-	public void addSubjects(IResource[] subjects) {
+	public BatchDataProcessingItem[] addSubjects(IResource[] subjects) {
+		BatchDataProcessingItem[] addedBatchDataProcessing = new BatchDataProcessingItem[subjects.length];
+		int i = 0;
 		for (IResource subject : subjects) {
-			addSubject(subject);
+			BatchDataProcessingItem batchDataProcessingItem = addSubject(subject);
+			addedBatchDataProcessing[i] = batchDataProcessingItem;
+			i++;
+		}
+		return addedBatchDataProcessing;
+	}
+	
+	public void addSubjects(BatchDataProcessingItem[] items) {
+		for (BatchDataProcessingItem item : items) {
+			subjects.add(item);
+		}
+	}
+	
+	public void addSubjects(BatchDataProcessingItem[] items, int[] indexes) {
+		int i = 0;
+		for (BatchDataProcessingItem item : items) {
+			subjects.add(indexes[i], item);
+			i++;
 		}
 	}
 	
@@ -103,10 +151,15 @@ public class BatchDataProcessing extends AbstractElement {
 		subjects.remove(index);
 	}
 	
-	public void removeSubjects(BatchDataProcessingItem[] batchDataProcessingItems) {
+	public int[] removeSubjects(BatchDataProcessingItem[] batchDataProcessingItems) {
+		int[] indexes = new int[batchDataProcessingItems.length]; 
+		int i = 0;
 		for (BatchDataProcessingItem batchDataProcessingItem : batchDataProcessingItems) {
+			indexes[i] = subjects.indexOf(batchDataProcessingItem);
+			i++;
 			subjects.remove(batchDataProcessingItem);
 		}
+		return indexes;
 	}
 	
 	public void moveSubjectUp(int index) {
