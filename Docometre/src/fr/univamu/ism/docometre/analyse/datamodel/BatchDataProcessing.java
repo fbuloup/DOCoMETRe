@@ -115,6 +115,20 @@ public class BatchDataProcessing extends AbstractElement {
 		return processes.toArray(new BatchDataProcessingItem[processes.size()]);
 	}
 	
+	public boolean canMoveProcessesUp(BatchDataProcessingItem[] items) {
+		for (BatchDataProcessingItem item : items) {
+			if(processes.indexOf(item) == 0) return false;
+		}
+		return true;
+	}
+	
+	public boolean canMoveProcessesDown(BatchDataProcessingItem[] items) {
+		for (BatchDataProcessingItem item : items) {
+			if(processes.indexOf(item) == processes.size() - 1) return false;
+		}
+		return true;
+	}
+	
 	// Subjects
 	public BatchDataProcessingItem addSubject(IResource subject) {
 		BatchDataProcessingItem batchDataProcessingItem = new BatchDataProcessingItem(getPath(subject), true);
@@ -197,5 +211,18 @@ public class BatchDataProcessing extends AbstractElement {
 		return subjects.toArray(new BatchDataProcessingItem[subjects.size()]);
 	}
 
+	public boolean canMoveSubjectsUp(BatchDataProcessingItem[] items) {
+		for (BatchDataProcessingItem item : items) {
+			if(subjects.indexOf(item) == 0) return false;
+		}
+		return true;
+	}
+	
+	public boolean canMoveSubjectsDown(BatchDataProcessingItem[] items) {
+		for (BatchDataProcessingItem item : items) {
+			if(subjects.indexOf(item) == subjects.size() - 1) return false;
+		}
+		return true;
+	}
 	
 }

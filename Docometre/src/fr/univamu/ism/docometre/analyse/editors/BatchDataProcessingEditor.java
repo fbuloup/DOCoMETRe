@@ -49,9 +49,9 @@ import fr.univamu.ism.docometre.analyse.datamodel.RemoveHandler;
 import fr.univamu.ism.docometre.editors.PartNameRefresher;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 
-public class DataProcessBatchEditor extends EditorPart implements PartNameRefresher  {
+public class BatchDataProcessingEditor extends EditorPart implements PartNameRefresher  {
 	
-	public static String ID = "Docometre.DataProcessBatchEditor";
+	public static String ID = "Docometre.BatchDataProcessingEditor";
 	
 	private TableViewer processesTableViewer;
 	private PartListenerAdapter partListenerAdapter;
@@ -61,7 +61,7 @@ public class DataProcessBatchEditor extends EditorPart implements PartNameRefres
 	private ObjectUndoContext resourceEditorUndoContext;
 	private UndoRedoActionGroup undoRedoActionGroup;
 
-	public DataProcessBatchEditor() {
+	public BatchDataProcessingEditor() {
 		// TODO Auto-generated constructor stub
 	}
 
@@ -103,7 +103,7 @@ public class DataProcessBatchEditor extends EditorPart implements PartNameRefres
 		partListenerAdapter = new PartListenerAdapter() {
 			@Override
 			public void partClosed(IWorkbenchPartReference partRef) {
-				if(partRef.getPart(false) == DataProcessBatchEditor.this) {
+				if(partRef.getPart(false) == BatchDataProcessingEditor.this) {
 					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().removePartListener(partListenerAdapter);
 				}
 			}

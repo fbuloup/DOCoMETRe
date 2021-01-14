@@ -25,7 +25,7 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
-import fr.univamu.ism.docometre.analyse.editors.DataProcessBatchEditor;
+import fr.univamu.ism.docometre.analyse.editors.BatchDataProcessingEditor;
 
 public class AddHandler extends SelectionAdapter {
 	
@@ -82,7 +82,7 @@ public class AddHandler extends SelectionAdapter {
 		
 	}
 	
-	private DataProcessBatchEditor dataProcessBatchEditor;
+	private BatchDataProcessingEditor dataProcessBatchEditor;
 	private IOperationHistory operationHistory;
 	private BatchDataProcessing batchDataProcessing;
 	private IResource resource;
@@ -90,7 +90,7 @@ public class AddHandler extends SelectionAdapter {
 	private ResourceType resourceType;
 	
 
-	public AddHandler(DataProcessBatchEditor dataProcessBatchEditor, ResourceType resourceType) {
+	public AddHandler(BatchDataProcessingEditor dataProcessBatchEditor, ResourceType resourceType) {
 		this.dataProcessBatchEditor = dataProcessBatchEditor;
 		operationHistory = PlatformUI.getWorkbench().getOperationSupport().getOperationHistory();
 		this.batchDataProcessing = dataProcessBatchEditor.getBatchDataProcessing();

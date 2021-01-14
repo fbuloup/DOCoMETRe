@@ -14,7 +14,7 @@ import org.eclipse.ui.PlatformUI;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ResourceType;
-import fr.univamu.ism.docometre.analyse.editors.DataProcessBatchEditor;
+import fr.univamu.ism.docometre.analyse.editors.BatchDataProcessingEditor;
 
 public class RemoveHandler extends SelectionAdapter {
 	
@@ -60,11 +60,11 @@ public class RemoveHandler extends SelectionAdapter {
 		
 	}
 
-	private DataProcessBatchEditor dataProcessBatchEditor;
+	private BatchDataProcessingEditor dataProcessBatchEditor;
 	private IOperationHistory operationHistory;
 	private ResourceType resourceType;
 	
-	public RemoveHandler(DataProcessBatchEditor dataProcessBatchEditor, ResourceType resourceType) {
+	public RemoveHandler(BatchDataProcessingEditor dataProcessBatchEditor, ResourceType resourceType) {
 		this.dataProcessBatchEditor = dataProcessBatchEditor;
 		operationHistory = PlatformUI.getWorkbench().getOperationSupport().getOperationHistory();
 		this.resourceType = resourceType;

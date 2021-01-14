@@ -18,7 +18,7 @@ import org.eclipse.ui.PlatformUI;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ResourceType;
-import fr.univamu.ism.docometre.analyse.editors.DataProcessBatchEditor;
+import fr.univamu.ism.docometre.analyse.editors.BatchDataProcessingEditor;
 
 public class MoveDownHandler extends SelectionAdapter {
 	
@@ -69,11 +69,11 @@ public class MoveDownHandler extends SelectionAdapter {
 		
 	}
 	
-	private DataProcessBatchEditor dataProcessBatchEditor;
+	private BatchDataProcessingEditor dataProcessBatchEditor;
 	private IOperationHistory operationHistory;
 	private ResourceType resourceType;
 	
-	public MoveDownHandler(DataProcessBatchEditor dataProcessBatchEditor, ResourceType resourceType) {
+	public MoveDownHandler(BatchDataProcessingEditor dataProcessBatchEditor, ResourceType resourceType) {
 		this.dataProcessBatchEditor = dataProcessBatchEditor;
 		operationHistory = PlatformUI.getWorkbench().getOperationSupport().getOperationHistory();
 		this.resourceType = resourceType;
@@ -86,9 +86,11 @@ public class MoveDownHandler extends SelectionAdapter {
 		if(selection.length > 0) {
 			try {
 				if(resourceType == ResourceType.PROCESS) {
-					operationHistory.execute(new MoveDownOperation(DocometreMessages.MoveDownProcessModifyOperationLabel, selection), null, null);
+					if(dataProcessBatchEditor.getBatchDataProcessing().canMoveProcessesDown(selection)) 
+						operationHistory.execute(new MoveDownOperation(DocometreMessages.MoveDownProcessModifyOperationLabel, selection), null, null);
 				} else {
-					operationHistory.execute(new MoveDownOperation(DocometreMessages.MoveDownSubjectModifyOperationLabel, selection), null, null);
+					if(dataProcessBatchEditor.getBatchDataProcessing().canMoveSubjectsDown(selection)) 
+						operationHistory.execute(new MoveDownOperation(DocometreMessages.MoveDownSubjectModifyOperationLabel, selection), null, null);
 				}
 			} catch (ExecutionException e1) {
 				Activator.logErrorMessageWithCause(e1);

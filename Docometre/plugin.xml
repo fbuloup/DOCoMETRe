@@ -447,11 +447,11 @@
             name="DataProcessScriptSourceEditor">
       </editor>
       <editor
-            class="fr.univamu.ism.docometre.analyse.editors.DataProcessBatchEditor"
+            class="fr.univamu.ism.docometre.analyse.editors.BatchDataProcessingEditor"
             default="false"
             icon="icons/batchDataProcessing.gif"
-            id="Docometre.DataProcessBatchEditor"
-            name="DataProcessBatchEditor">
+            id="Docometre.BatchDataProcessingEditor"
+            name="BatchDataProcessingEditor">
       </editor>
    </extension>
    <extension
@@ -2097,7 +2097,7 @@
             </command>
             <command
                   commandId="RunDataProcessingCommand"
-                  icon="icons/runDataProcessing.gif"
+                  icon="icons/runDataProcessing.png"
                   label="%RunDataProcessingCommand.label"
                   style="push"
                   tooltip="%RunDataProcessingCommand.label">
@@ -2194,7 +2194,7 @@
          </command>
          <command
                commandId="RunDataProcessingCommand"
-               icon="icons/runDataProcessing.gif"
+               icon="icons/runDataProcessing.png"
                label="%RunDataProcessingCommand.label"
                style="push">
          </command>

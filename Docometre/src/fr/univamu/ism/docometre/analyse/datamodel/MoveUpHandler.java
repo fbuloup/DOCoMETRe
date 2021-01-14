@@ -18,7 +18,7 @@ import org.eclipse.ui.PlatformUI;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ResourceType;
-import fr.univamu.ism.docometre.analyse.editors.DataProcessBatchEditor;
+import fr.univamu.ism.docometre.analyse.editors.BatchDataProcessingEditor;
 
 public class MoveUpHandler extends SelectionAdapter {
 	
@@ -31,7 +31,7 @@ public class MoveUpHandler extends SelectionAdapter {
 			this.items = items;
 			addContext(dataProcessBatchEditor.getUndoContext());
 		}
-
+		
 		@Override
 		public IStatus execute(IProgressMonitor monitor, IAdaptable info) throws ExecutionException {
 			if(resourceType == ResourceType.PROCESS) {
@@ -69,11 +69,11 @@ public class MoveUpHandler extends SelectionAdapter {
 		
 	}
 	
-	private DataProcessBatchEditor dataProcessBatchEditor;
+	private BatchDataProcessingEditor dataProcessBatchEditor;
 	private IOperationHistory operationHistory;
 	private ResourceType resourceType;
 	
-	public MoveUpHandler(DataProcessBatchEditor dataProcessBatchEditor, ResourceType resourceType) {
+	public MoveUpHandler(BatchDataProcessingEditor dataProcessBatchEditor, ResourceType resourceType) {
 		this.dataProcessBatchEditor = dataProcessBatchEditor;
 		operationHistory = PlatformUI.getWorkbench().getOperationSupport().getOperationHistory();
 		this.resourceType = resourceType;
@@ -86,9 +86,11 @@ public class MoveUpHandler extends SelectionAdapter {
 		if(selection.length > 0) {
 			try {
 				if(resourceType == ResourceType.PROCESS) {
-					operationHistory.execute(new MoveUpOperation(DocometreMessages.MoveUpProcessModifyOperationLabel, selection), null, null);
+					if(dataProcessBatchEditor.getBatchDataProcessing().canMoveProcessesUp(selection)) 
+						operationHistory.execute(new MoveUpOperation(DocometreMessages.MoveUpProcessModifyOperationLabel, selection), null, null);
 				} else {
-					operationHistory.execute(new MoveUpOperation(DocometreMessages.MoveUpSubjectModifyOperationLabel, selection), null, null);
+					if(dataProcessBatchEditor.getBatchDataProcessing().canMoveSubjectsUp(selection)) 
+						operationHistory.execute(new MoveUpOperation(DocometreMessages.MoveUpSubjectModifyOperationLabel, selection), null, null);
 				}
 			} catch (ExecutionException e1) {
 				Activator.logErrorMessageWithCause(e1);

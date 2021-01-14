@@ -78,6 +78,7 @@ public class RunDataProcessingCommand extends AbstractHandler implements ISelect
 			if(element instanceof IResource) {
 				IResource resource = (IResource)element;
 				if(ResourceType.isDataProcessing(resource)) selectedDataProcesses.add(resource);
+				if(ResourceType.isBatchDataProcessing(resource)) selectedDataProcesses.add(resource);
 			}
 		}
 		setBaseEnabled(selectedDataProcesses.size() > 0);
