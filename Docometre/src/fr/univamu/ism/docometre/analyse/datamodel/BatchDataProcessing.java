@@ -33,6 +33,10 @@ public class BatchDataProcessing extends AbstractElement {
 		return resource.getFullPath().toPortableString();
 	}
 	
+	public boolean loadSubject() {
+		return "true".equalsIgnoreCase(getProperty(BatchDataProcessingProperties.AUTO_LOAD_SUBJECT));
+	}
+	
 	//Processes
 	public BatchDataProcessingItem addProcess(IResource process) {
 		BatchDataProcessingItem batchDataProcessingItem = new BatchDataProcessingItem(getPath(process), true);

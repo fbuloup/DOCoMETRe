@@ -13,6 +13,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.part.EditorPart;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
@@ -20,7 +21,11 @@ import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
+import fr.univamu.ism.docometre.analyse.datamodel.BatchDataProcessing;
+import fr.univamu.ism.docometre.analyse.editors.BatchDataProcessingEditor;
+import fr.univamu.ism.docometre.analyse.editors.DataProcessEditor;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
+import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 import fr.univamu.ism.process.Script;
 import fr.univamu.ism.process.ScriptSegmentType;
@@ -64,6 +69,9 @@ public class RunDataProcessingCommand extends AbstractHandler implements ISelect
 					e.printStackTrace();
 				}
 			}
+			if(object instanceof BatchDataProcessing) {
+				RunBatchDataProcessingDelegate.run((BatchDataProcessing) object);
+			}
 			if(removeHandle) ObjectsController.removeHandle(object);
 		}
 		return null;
@@ -74,12 +82,20 @@ public class RunDataProcessingCommand extends AbstractHandler implements ISelect
 		selectedDataProcesses.clear();
 		if(!(selection instanceof StructuredSelection)) return;
 		StructuredSelection structuredSelection = (StructuredSelection)selection;
-		for (Object element : structuredSelection) {
-			if(element instanceof IResource) {
-				IResource resource = (IResource)element;
-				if(ResourceType.isDataProcessing(resource)) selectedDataProcesses.add(resource);
-				if(ResourceType.isBatchDataProcessing(resource)) selectedDataProcesses.add(resource);
+		if(part instanceof SubjectsView) {
+			for (Object element : structuredSelection) {
+				if(element instanceof IResource) {
+					IResource resource = (IResource)element;
+					if(ResourceType.isDataProcessing(resource)) selectedDataProcesses.add(resource);
+					if(ResourceType.isBatchDataProcessing(resource)) selectedDataProcesses.add(resource);
+				}
 			}
+		}
+		if(part instanceof BatchDataProcessingEditor || part instanceof DataProcessEditor) {
+			ResourceEditorInput editorInput = (ResourceEditorInput) ((EditorPart) part).getEditorInput();
+			IResource resource = ObjectsController.getResourceForObject(editorInput.getObject());
+			if(ResourceType.isDataProcessing(resource)) selectedDataProcesses.add(resource);
+			if(ResourceType.isBatchDataProcessing(resource)) selectedDataProcesses.add(resource);
 		}
 		setBaseEnabled(selectedDataProcesses.size() > 0);
 	}

@@ -110,6 +110,7 @@ public class BatchDataProcessingEditor extends EditorPart implements PartNameRef
 			
 			@Override
 			public void partActivated(IWorkbenchPartReference partRef) {
+				
 			}
 			
 			@Override
@@ -118,6 +119,7 @@ public class BatchDataProcessingEditor extends EditorPart implements PartNameRef
 			
 		};
 		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().addPartListener(partListenerAdapter);
+		
 	}
 
 	@Override
@@ -331,6 +333,8 @@ public class BatchDataProcessingEditor extends EditorPart implements PartNameRef
 		createProcessContainer(container);
 		createSubjectContainer(container);
 		
+		getSite().setSelectionProvider(processesTableViewer);
+		
 	}
 	
 	@Override
@@ -374,5 +378,5 @@ public class BatchDataProcessingEditor extends EditorPart implements PartNameRef
 		subjectsTableViewer.refresh();
 		setDirty(true);
 	}
-	
+
 }
