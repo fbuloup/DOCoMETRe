@@ -45,7 +45,9 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.PreferenceManager;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
@@ -53,6 +55,7 @@ import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 
+import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
 public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
@@ -82,11 +85,23 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 		preferenceManager.remove( "org.eclipse.help.ui.browsersPreferencePage" ); //$NON-NLS-1$
 	}
 	
+	
+	
 	@Override
 	public boolean preShutdown() {
 		try {
 			IProgressMonitor monitor = new NullProgressMonitor();
 			ResourcesPlugin.getWorkspace().save(true, monitor);
+			final Shell shell = getWorkbenchConfigurer().getWorkbench().getActiveWorkbenchWindow().getShell();
+			if(MathEngineFactory.getMathEngine().isStarted()) {
+				shell.getDisplay().asyncExec(new Runnable() {
+					@Override
+					public void run() {
+						MessageDialog.openInformation(shell, DocometreMessages.CloseMathEngineDialogTitle, DocometreMessages.CloseMathEngineDialogMessage);
+					}
+				});
+				return false;
+			}
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
