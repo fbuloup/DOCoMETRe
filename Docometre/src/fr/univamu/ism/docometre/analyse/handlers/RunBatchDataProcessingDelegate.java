@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ObjectsController;
@@ -18,8 +19,9 @@ import fr.univamu.ism.process.ScriptSegmentType;
 
 public final class RunBatchDataProcessingDelegate {
 	
-	public static void run(BatchDataProcessing batchDataProcessing) {
+	public static boolean run(BatchDataProcessing batchDataProcessing, IProgressMonitor monitor) {
 		// Get all data processing
+		monitor.subTask("Get all data processing");
 		BatchDataProcessingItem[] processes = batchDataProcessing.getProcesses();
 		ArrayList<IResource> processesResource = new ArrayList<>();
 		for (BatchDataProcessingItem batchDataProcessingItem : processes) {
@@ -29,6 +31,7 @@ public final class RunBatchDataProcessingDelegate {
 			}
 		}
 		// Generate global script
+		monitor.subTask("Generate global script");
 		String code = "";
 		for (IResource resource : processesResource) {
 			boolean removeHandle = false;
@@ -52,6 +55,7 @@ public final class RunBatchDataProcessingDelegate {
 		}
 		System.out.println(code);
 		// Get all subjects
+		monitor.subTask("Get all subjects");
 		BatchDataProcessingItem[] subjects = batchDataProcessing.getSubjects();
 		ArrayList<IResource> subjectsResource = new ArrayList<>();
 		for (BatchDataProcessingItem batchDataProcessingItem : subjects) {
@@ -63,16 +67,22 @@ public final class RunBatchDataProcessingDelegate {
 		// For each subject
 		for (IResource subjectResource : subjectsResource) {
 			// Load subject if necessary
+//			boolean unload = false;
 			if(batchDataProcessing.loadSubject() && !MathEngineFactory.getMathEngine().isSubjectLoaded(subjectResource)) {
+				monitor.subTask("Loading " + subjectResource.getName());
 				boolean loadFromSavedFile = Activator.getDefault().getPreferenceStore().getBoolean(MathEnginePreferencesConstants.ALWAYS_LOAD_FROM_SAVED_DATA);
 				MathEngineFactory.getMathEngine().load(subjectResource, loadFromSavedFile);
+//				unload = true;
 			}
 			// Run global script on current subject
 			// TODO
-			code = code.replaceAll("['ReachabilityCoriolis\\.\\w+\\.", "");// Only for Python...
+			monitor.subTask("Processing " + subjectResource.getName());
+			code = MathEngineFactory.getMathEngine().refactor(code, subjectResource);
 			MathEngineFactory.getMathEngine().runScript(code);
+			monitor.subTask("Unloading " + subjectResource.getName());
+//			if(unload) MathEngineFactory.getMathEngine().unload(subjectResource);
 		}
-		
+		return false;
 	}
 
 }

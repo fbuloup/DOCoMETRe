@@ -148,6 +148,8 @@ public interface MathEngine {
 		return null;
 	}
 	
+	String refactor(String code, IResource subjectResource);
+	
 	
 	
 }

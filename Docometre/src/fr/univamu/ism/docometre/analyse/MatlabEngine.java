@@ -766,4 +766,9 @@ public final class MatlabEngine implements MathEngine {
 		return new IResource[0];
 	}
 
+	@Override
+	public String refactor(String code, IResource subjectResource) {
+		return code;
+	}
+
 }

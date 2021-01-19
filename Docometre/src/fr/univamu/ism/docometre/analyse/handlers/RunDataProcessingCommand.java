@@ -1,5 +1,6 @@
 package fr.univamu.ism.docometre.analyse.handlers;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -8,6 +9,9 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.ISelectionListener;
@@ -33,6 +37,9 @@ import fr.univamu.ism.process.ScriptSegmentType;
 public class RunDataProcessingCommand extends AbstractHandler implements ISelectionListener {
 	
 	private Set<IResource>  selectedDataProcesses = new HashSet<IResource>(0);
+	protected IResource[] modifiedSubjects;
+	private Object object;
+	private boolean cancel;
 
 	public RunDataProcessingCommand() {
 		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().addSelectionListener(this);
@@ -44,9 +51,10 @@ public class RunDataProcessingCommand extends AbstractHandler implements ISelect
 			Activator.logInfoMessage(DocometreMessages.PleaseStartMathEngineFirst, getClass());
 			return null;
 		}
+		cancel = false;
 		for (IResource dataProcessing : selectedDataProcesses) {
 			boolean removeHandle = false;
-			Object object = ResourceProperties.getObjectSessionProperty(dataProcessing);
+			object = ResourceProperties.getObjectSessionProperty(dataProcessing);
 			if(object == null) {
 				object = ObjectsController.deserialize((IFile)dataProcessing);
 				ResourceProperties.setObjectSessionProperty(dataProcessing, object);
@@ -55,25 +63,61 @@ public class RunDataProcessingCommand extends AbstractHandler implements ISelect
 			}
 			if(object instanceof Script) {
 				try {
-					Script script = (Script)object;
-					String code = script.getLoopCode(object, ScriptSegmentType.LOOP);
-					MathEngineFactory.getMathEngine().runScript(code);
-					IResource[] modifiedSubjects = MathEngineFactory.getMathEngine().getCreatedOrModifiedSubjects();
+					ProgressMonitorDialog pmd = new ProgressMonitorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+					pmd.run(true, true, new IRunnableWithProgress() {
+						@Override
+						public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+							try {
+								monitor.beginTask("Running script " + dataProcessing.getName(), IProgressMonitor.UNKNOWN);
+								Script script = (Script)object;
+								String code = script.getLoopCode(object, ScriptSegmentType.LOOP);
+								MathEngineFactory.getMathEngine().runScript(code);
+								modifiedSubjects = MathEngineFactory.getMathEngine().getCreatedOrModifiedSubjects();
+								monitor.done();
+							} catch (Exception e) {
+								Activator.logErrorMessageWithCause(e);
+								e.printStackTrace();
+							}
+							
+						}
+					});
 					for (IResource modifiedSubject : modifiedSubjects) {
 						ResourceProperties.setSubjectModified(modifiedSubject, true);
 						ExperimentsView.refresh(modifiedSubject, null);
 						SubjectsView.refresh(modifiedSubject, null);
 					}
-				} catch (Exception e) {
+				} catch (InterruptedException | InvocationTargetException e) {
 					Activator.logErrorMessageWithCause(e);
 					e.printStackTrace();
 				}
 			}
 			if(object instanceof BatchDataProcessing) {
-				RunBatchDataProcessingDelegate.run((BatchDataProcessing) object);
+				ProgressMonitorDialog pmd = new ProgressMonitorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+				try {
+					pmd.run(true, true, new IRunnableWithProgress() {
+						@Override
+						public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+							monitor.beginTask("Running script " + dataProcessing.getName(), IProgressMonitor.UNKNOWN);
+							cancel = RunBatchDataProcessingDelegate.run((BatchDataProcessing) object, monitor);
+							monitor.done();
+						}
+					});
+				} catch (InterruptedException | InvocationTargetException e) {
+					Activator.logErrorMessageWithCause(e);
+					e.printStackTrace();
+				} 
 			}
 			if(removeHandle) ObjectsController.removeHandle(object);
+			if(cancel) break;
 		}
+		
+		
+//		modifiedSubjects = MathEngineFactory.getMathEngine().getCreatedOrModifiedSubjects();
+//		for (IResource modifiedSubject : modifiedSubjects) {
+//			ResourceProperties.setSubjectModified(modifiedSubject, true);
+//			ExperimentsView.refresh(modifiedSubject, null);
+//			SubjectsView.refresh(modifiedSubject, null);
+//		}
 		return null;
 	}
 
