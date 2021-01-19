@@ -77,6 +77,18 @@ public class StartStopMathEngineHandler extends AbstractHandler implements IElem
 	
 	private static String COMMAND_ID = "StartStopMathEngineCommand";
 	
+	private static StartStopMathEngineHandler startStopMathEngineHandler;
+	
+	public static StartStopMathEngineHandler getInstance() {
+		return startStopMathEngineHandler;
+	}
+	
+	public StartStopMathEngineHandler() {
+		if(startStopMathEngineHandler == null) {
+			startStopMathEngineHandler = this;
+		}
+	}
+	
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void updateElement(UIElement element, Map parameters) {
@@ -92,7 +104,7 @@ public class StartStopMathEngineHandler extends AbstractHandler implements IElem
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		Job startMatlabJob = new Job(DocometreMessages.MathEngineStartStop) {
+		Job startStopMathEngineJob = new Job(DocometreMessages.MathEngineStartStop) {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				setBaseEnabled(false);
@@ -121,21 +133,21 @@ public class StartStopMathEngineHandler extends AbstractHandler implements IElem
 							e.printStackTrace();
 						}
 					}
-						// Set selection in LoadUnloadSubjectsHandler
-						PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
-							@Override
-							public void run() {
-								try {
-									LoadUnloadSubjectsHandler.getInstance().resetSelection(loadedSubjects);
-									// Launch LoadUnloadSubjectsHandler
-									LoadUnloadSubjectsHandler.getInstance().execute(new ExecutionEvent());
-								} catch (ExecutionException e) {
-									Activator.getLogErrorMessageWithCause(e);
-									e.printStackTrace();
-								}
-								
+					// Set selection in LoadUnloadSubjectsHandler
+					PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+						@Override
+						public void run() {
+							try {
+								LoadUnloadSubjectsHandler.getInstance().resetSelection(loadedSubjects);
+								// Launch LoadUnloadSubjectsHandler
+								LoadUnloadSubjectsHandler.getInstance().execute(new ExecutionEvent());
+							} catch (ExecutionException e) {
+								Activator.getLogErrorMessageWithCause(e);
+								e.printStackTrace();
 							}
-						});
+							
+						}
+					});
 					response = mathEngine.stopEngine(monitor);
 					MathEngineFactory.clear();
 				}
@@ -145,8 +157,8 @@ public class StartStopMathEngineHandler extends AbstractHandler implements IElem
 			}
 		};
 		
-		startMatlabJob.setUser(true);
-		startMatlabJob.schedule();
+		startStopMathEngineJob.setUser(true);
+		startStopMathEngineJob.schedule();
 		return null;
 	}
 	
