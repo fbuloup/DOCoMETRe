@@ -519,16 +519,4 @@ public class PythonEngine implements MathEngine {
 		return new IResource[0];
 	}
 
-	@Override
-	public String refactor(String code, IResource subjectResource) {
-		String projectName = subjectResource.getProject().getName();
-		String subjectName = subjectResource.getName();
-		String replaceRegExp = projectName + "\\.\\w+\\.";
-		String replaceBy = projectName + "." + subjectName +".";
-		code = code.replaceAll(replaceRegExp, replaceBy);
-		return code;
-	}
-
-	
-	
 }

@@ -148,7 +148,14 @@ public interface MathEngine {
 		return null;
 	}
 	
-	String refactor(String code, IResource subjectResource);
+	default String refactor(String code, IResource subjectResource) {
+		String projectName = subjectResource.getProject().getName();
+		String subjectName = subjectResource.getName();
+		String replaceRegExp = projectName + "\\.\\w+\\.";
+		String replaceBy = projectName + "." + subjectName +".";
+		code = code.replaceAll(replaceRegExp, replaceBy);
+		return code;
+	}
 	
 	
 	
