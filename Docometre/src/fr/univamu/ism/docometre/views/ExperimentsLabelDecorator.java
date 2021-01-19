@@ -56,6 +56,7 @@ import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.dacqsystems.DocometreBuilder;
+import py4j.Py4JException;
 
 public class ExperimentsLabelDecorator implements ILightweightLabelDecorator {
 	
@@ -87,34 +88,42 @@ public class ExperimentsLabelDecorator implements ILightweightLabelDecorator {
 
 	@Override
 	public void decorate(Object element, IDecoration decoration) {
-		if(element instanceof IResource) {
-			IResource resource = (IResource)element;
-			if(resource instanceof IProject && !((IProject) resource).isOpen()) return;
-			if(resource.exists()) {
-				if(ResourceType.isDACQConfiguration((IResource) element)) {
-					boolean isActive = false;
-					String fullPath = ResourceProperties.getDefaultDACQPersistentProperty(resource); 
-					if(fullPath != null) isActive = resource.getFullPath().equals(new Path(fullPath));
-					if(isActive)
-					decoration.addOverlay(Activator.getImageDescriptor(IImageKeys.DAQ_CONFIGURATION_ACTIVE_OVERLAY), IDecoration.BOTTOM_RIGHT);
-				}
-				if(ResourceType.isSubject((IResource) element)) {
-					boolean isLoaded = MathEngineFactory.getMathEngine().isSubjectLoaded((IResource) element);
-					if(isLoaded)
-					decoration.addOverlay(Activator.getImageDescriptor(IImageKeys.SUBJECT_LOADED_OVERLAY), IDecoration.TOP_RIGHT);
-					boolean isModified = ResourceProperties.isSubjectModified(resource);
-					if(isModified)
-						decoration.addOverlay(Activator.getImageDescriptor(IImageKeys.MODIFIED_ICON), IDecoration.BOTTOM_RIGHT);
-				}
-				try {
-					int severity = resource.findMaxProblemSeverity(DocometreBuilder.MARKER_ID, true, IResource.DEPTH_INFINITE);
-					if(severity == IMarker.SEVERITY_ERROR) decoration.addOverlay(Activator.getImageDescriptor(IImageKeys.ERROR_ICON), IDecoration.BOTTOM_LEFT);
-					if(severity == IMarker.SEVERITY_WARNING) decoration.addOverlay(Activator.getImageDescriptor(IImageKeys.WARNING_ICON), IDecoration.BOTTOM_LEFT);	
-				} catch (CoreException e) {
-					e.printStackTrace();
-					Activator.logErrorMessageWithCause(e);
+		try {
+			if(element instanceof IResource) {
+				IResource resource = (IResource)element;
+				if(resource instanceof IProject && !((IProject) resource).isOpen()) return;
+				if(resource.exists()) {
+					if(ResourceType.isDACQConfiguration((IResource) element)) {
+						boolean isActive = false;
+						String fullPath = ResourceProperties.getDefaultDACQPersistentProperty(resource); 
+						if(fullPath != null) isActive = resource.getFullPath().equals(new Path(fullPath));
+						if(isActive)
+						decoration.addOverlay(Activator.getImageDescriptor(IImageKeys.DAQ_CONFIGURATION_ACTIVE_OVERLAY), IDecoration.BOTTOM_RIGHT);
+					}
+					if(ResourceType.isSubject((IResource) element) && MathEngineFactory.getMathEngine().isStarted()) {
+						boolean isLoaded = MathEngineFactory.getMathEngine().isSubjectLoaded((IResource) element);
+						if(isLoaded)
+						decoration.addOverlay(Activator.getImageDescriptor(IImageKeys.SUBJECT_LOADED_OVERLAY), IDecoration.TOP_RIGHT);
+						boolean isModified = ResourceProperties.isSubjectModified(resource);
+						if(isModified)
+							decoration.addOverlay(Activator.getImageDescriptor(IImageKeys.MODIFIED_ICON), IDecoration.BOTTOM_RIGHT);
+					}
+					try {
+						int severity = resource.findMaxProblemSeverity(DocometreBuilder.MARKER_ID, true, IResource.DEPTH_INFINITE);
+						if(severity == IMarker.SEVERITY_ERROR) decoration.addOverlay(Activator.getImageDescriptor(IImageKeys.ERROR_ICON), IDecoration.BOTTOM_LEFT);
+						if(severity == IMarker.SEVERITY_WARNING) decoration.addOverlay(Activator.getImageDescriptor(IImageKeys.WARNING_ICON), IDecoration.BOTTOM_LEFT);	
+					} catch (CoreException e) {
+						e.printStackTrace();
+						Activator.logErrorMessageWithCause(e);
+					}
 				}
 			}
+		} catch (Exception e) {
+			if(!(e instanceof Py4JException)) {
+				// Refreshing labels calling isSubjectLoaded after mathengine has stopped
+				Activator.logErrorMessageWithCause(e);
+			}	
+			e.printStackTrace();
 		}
 		
 	}
