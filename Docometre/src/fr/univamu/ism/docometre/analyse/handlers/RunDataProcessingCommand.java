@@ -14,6 +14,7 @@ import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
@@ -68,11 +69,11 @@ public class RunDataProcessingCommand extends AbstractHandler implements ISelect
 						@Override
 						public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 							try {
-								monitor.beginTask("Running script " + dataProcessing.getName(), IProgressMonitor.UNKNOWN);
+								String message = NLS.bind(DocometreMessages.RunningScriptLabel, dataProcessing.getFullPath().removeFileExtension().lastSegment());
+								monitor.beginTask(message, IProgressMonitor.UNKNOWN);
 								Script script = (Script)object;
 								String code = script.getLoopCode(object, ScriptSegmentType.LOOP);
 								MathEngineFactory.getMathEngine().runScript(code);
-								modifiedSubjects = MathEngineFactory.getMathEngine().getCreatedOrModifiedSubjects();
 								monitor.done();
 							} catch (Exception e) {
 								Activator.logErrorMessageWithCause(e);
@@ -81,11 +82,6 @@ public class RunDataProcessingCommand extends AbstractHandler implements ISelect
 							
 						}
 					});
-					for (IResource modifiedSubject : modifiedSubjects) {
-						ResourceProperties.setSubjectModified(modifiedSubject, true);
-						ExperimentsView.refresh(modifiedSubject, null);
-						SubjectsView.refresh(modifiedSubject, null);
-					}
 				} catch (InterruptedException | InvocationTargetException e) {
 					Activator.logErrorMessageWithCause(e);
 					e.printStackTrace();
@@ -97,7 +93,8 @@ public class RunDataProcessingCommand extends AbstractHandler implements ISelect
 					pmd.run(true, true, new IRunnableWithProgress() {
 						@Override
 						public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-							monitor.beginTask("Running script " + dataProcessing.getName(), IProgressMonitor.UNKNOWN);
+							String message = NLS.bind(DocometreMessages.RunningScriptLabel, dataProcessing.getFullPath().removeFileExtension().lastSegment());
+							monitor.beginTask(message, IProgressMonitor.UNKNOWN);
 							cancel = RunBatchDataProcessingDelegate.run((BatchDataProcessing) object, monitor);
 							monitor.done();
 						}
@@ -108,16 +105,15 @@ public class RunDataProcessingCommand extends AbstractHandler implements ISelect
 				} 
 			}
 			if(removeHandle) ObjectsController.removeHandle(object);
+			modifiedSubjects = MathEngineFactory.getMathEngine().getCreatedOrModifiedSubjects();
+			for (IResource modifiedSubject : modifiedSubjects) {
+				ResourceProperties.setSubjectModified(modifiedSubject, true);
+				ExperimentsView.refresh(modifiedSubject, null);
+				SubjectsView.refresh(modifiedSubject, null);
+			}
 			if(cancel) break;
 		}
-		
-		
-//		modifiedSubjects = MathEngineFactory.getMathEngine().getCreatedOrModifiedSubjects();
-//		for (IResource modifiedSubject : modifiedSubjects) {
-//			ResourceProperties.setSubjectModified(modifiedSubject, true);
-//			ExperimentsView.refresh(modifiedSubject, null);
-//			SubjectsView.refresh(modifiedSubject, null);
-//		}
+
 		return null;
 	}
 

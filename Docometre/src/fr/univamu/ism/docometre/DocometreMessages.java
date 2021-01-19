@@ -822,7 +822,7 @@ public final class DocometreMessages extends NLS {
 	public static String RefreshExperimentsSubjectsViewsSubTaskTitle;
 	public static String ErrorRenamingResource;
 	
-	// BAtch processing editor
+	// Batch processing editor
 	public static String Delete_Tooltip;
 	public static String Add_Tooltip;
 	public static String EnableDisable_Tooltip;
@@ -846,6 +846,16 @@ public final class DocometreMessages extends NLS {
 	public static String MoveDownProcessModifyOperationLabel;
 	public static String MoveUpSubjectModifyOperationLabel;
 	public static String MoveDownSubjectModifyOperationLabel;
+	public static String GetAllDataProcessingLabel;
+	public static String GenerateGlobalScriptLabel;
+	public static String GetAllSubjectsLabel;
+	public static String LoadingLabel;
+	public static String ProcessingLabel;
+	public static String RunningScriptLabel;
+
+	// Close workbench
+	public static String CloseMathEngineDialogTitle;
+	public static String CloseMathEngineDialogMessage;
 	
 //	public static String OrganizeSessionWizardPage_button_1_text;
 //	public static String OrganizeSessionWizardPage_tbtmNewItem_text;
