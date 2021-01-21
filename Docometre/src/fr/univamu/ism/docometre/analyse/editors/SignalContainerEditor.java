@@ -314,10 +314,10 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 	}
 	
 	private void createFieldsGroup(Composite infosTrialsFieldsMarkersContainer) {
-		Group fieldsGroup = ChannelEditorWidgetsFactory.createGroup(infosTrialsFieldsMarkersContainer, DocometreMessages.FieldsGroupTitle);
+		Group fieldsGroup = ChannelEditorWidgetsFactory.createGroup(infosTrialsFieldsMarkersContainer, DocometreMessages.FeaturesGroupTitle);
 		fieldsGroup.setLayout(new GridLayout(2, false));
 		
-		ChannelEditorWidgetsFactory.createLabel(fieldsGroup, DocometreMessages.FieldsNameLabel, SWT.LEFT, false);
+		ChannelEditorWidgetsFactory.createLabel(fieldsGroup, DocometreMessages.FeaturesNameLabel, SWT.LEFT, false);
 		Composite deletFieldContainer = new Composite(fieldsGroup, SWT.NORMAL);
 		deletFieldContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		GridLayout gl = new GridLayout(2, false);
@@ -330,7 +330,7 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		Button deleteFieldButton = new Button(deletFieldContainer, SWT.FLAT);
 		deleteFieldButton.setImage(Activator.getImage(IImageKeys.DELETE_ICON));
 		deleteFieldButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
-		deleteFieldButton.setToolTipText(DocometreMessages.DeleteSelectedFieldTooltip);
+		deleteFieldButton.setToolTipText(DocometreMessages.DeleteSelectedFeatureTooltip);
 		
 		ChannelEditorWidgetsFactory.createLabel(fieldsGroup, DocometreMessages.TrialNumberLabel, SWT.LEFT, false);
 		ChannelEditorWidgetsFactory.createSpinner(fieldsGroup, SWT.FILL, true);

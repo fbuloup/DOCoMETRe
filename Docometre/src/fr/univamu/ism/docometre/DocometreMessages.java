@@ -753,8 +753,8 @@ public final class DocometreMessages extends NLS {
 	public static String TrialNumberLabel;
 	public static String XMarkerValueLabel;
 	public static String YMarkerValueLabel;
-	public static String FieldsGroupTitle;
-	public static String FieldsNameLabel;
+	public static String FeaturesGroupTitle;
+	public static String FeaturesNameLabel;
 	public static String TrialsGroupLabel;
 	public static String FrontCutLabel;
 	public static String EndCutLabel;
@@ -767,7 +767,7 @@ public final class DocometreMessages extends NLS {
 	public static String DeleteSelectedMarkersGroupTooltip;
 	public static String CreateNewMarkersGroupTooltip;
 	public static String DeleteSelectedMarkerTrialTooltip;
-	public static String DeleteSelectedFieldTooltip;
+	public static String DeleteSelectedFeatureTooltip;
 	public static String CategoryCriteriaLabel;
 	public static String CreateNewMarkersGroupDialogTitle;
 	public static String CreateNewMarkersGroupDialogMessage;
