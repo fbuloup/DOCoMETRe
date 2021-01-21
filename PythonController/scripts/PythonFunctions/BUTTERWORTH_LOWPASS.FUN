@@ -27,7 +27,7 @@ nyquistFrequency = 0.5 * float(docometre.experiments['inputSignal.SampleFrequenc
 docometre.gateway.jvm.System.out.println("nyquistFrequency : " + str(nyquistFrequency));\n\
 normalizedCutOffFrequency = cutOffFrequency / nyquistFrequency;\n\
 docometre.gateway.jvm.System.out.println("normalizedCutOffFrequency : " + str(normalizedCutOffFrequency));\n\
-num, den = scipy.signal.butter(order, normalizedCutOffFrequency, 'low', analog = True);\n\
+num, den = scipy.signal.butter(order, normalizedCutOffFrequency, 'low', analog = False);\n\
 inputValues = docometre.experiments['inputSignal.Values'];\n\
 outputValues = docometre.experiments['outputSignal.Values'];\n\
 docometre.gateway.jvm.System.out.println("trialsList : " + str(range(trialsList)));\n\
