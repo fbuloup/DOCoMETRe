@@ -477,9 +477,9 @@ public final class ResourceProperties {
 					IResource[] allResources = getAllTypedResources(resourceType, (IContainer) currentResource, monitor);
 					resources.addAll(Arrays.asList(allResources));
 				}
-				if(monitor.isCanceled()) return new IResource[0];
+				if(monitor != null && monitor.isCanceled()) return new IResource[0];
 			}
-			if(monitor.isCanceled()) return new IResource[0];
+			if(monitor != null && monitor.isCanceled()) return new IResource[0];
 			return resources.toArray(new IResource[resources.size()]);
 		} catch (CoreException e) {
 			e.printStackTrace();
