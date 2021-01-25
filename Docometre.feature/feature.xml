@@ -6,18 +6,30 @@
       provider-name="ISM">
 
    <description>
-      -- 2020-11-26 --
+      -- 2021-01-25 --
+ADDED :
+* Show message when channel used by any function cannot be found
+* Batch data processing editor (data model, GUI and Undo/Redo)
+* Ask to stop MathEngine before allowing workbench shutdown
+FIXED :
+* CAN Module page was always marked dirty when opened.
+* Bug correction when a paste resource has file extension
+-- 2020-11-26 --
 ADDED :
 * Add Math Engine view
-* Save subject without Exp.Subj prefix - Load adding Exp.Subj prefix
-* Add support to handle transmit/receive mode and multiple message IDs in CAN module
+* Save subject without Exp.Subj prefix - Load adding Exp.Subj
+prefix
+* Add support to handle transmit/receive mode and multiple message
+IDs in CAN module
 * Update Math engine when subject/experiment is loaded and renamed
 * Unload experiment in Math engine when it is deleted
-* Update Exp. and Subj. view once a launched data processing has finished
+* Update Exp. and Subj. view once a launched data processing
+has finished
 * Manage indentation for Arduino/ADWin - Matlab/Python
 * Remove blocking error message when configuring function
 pref. 
-* Add support for live Math engine type changes : don&apos;t need to restart anymore
+* Add support for live Math engine type changes : don&apos;t need
+to restart anymore
 FIXED :
 * Bug correction on retrieving created or modified channels
 * FrontCut &amp; EndCut correction for Matlab Engine
