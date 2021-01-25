@@ -6,7 +6,9 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-01-25 --
+      -- 2021-01-25 -- BIS
+FIXED :
+* NPE on monitor cancellation
 ADDED :
 * Show message when channel used by any function cannot be found
 * Batch data processing editor (data model, GUI and Undo/Redo)
@@ -14,7 +16,6 @@ ADDED :
 FIXED :
 * CAN Module page was always marked dirty when opened.
 * Bug correction when a paste resource has file extension
-
 ADDED :
 * Add Math Engine view
 * Save subject without Exp.Subj prefix - Load adding Exp.Subj
