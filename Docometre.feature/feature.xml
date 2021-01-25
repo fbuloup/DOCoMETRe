@@ -14,7 +14,7 @@ ADDED :
 FIXED :
 * CAN Module page was always marked dirty when opened.
 * Bug correction when a paste resource has file extension
--- 2020-11-26 --
+
 ADDED :
 * Add Math Engine view
 * Save subject without Exp.Subj prefix - Load adding Exp.Subj
