@@ -59,18 +59,18 @@ public class PythonEngineFunctionsMenuFactory {
 	private static String CUSTOMER_FUNCTIONS_MENU = "CUSTOMER_FUNCTIONS_MENU";
 	
 	public static String[] PythonEngineFunctionsFiles = new String[] {ButterworthLowPass.functionFileName, 
-		    														/*SEPARATOR,
-																	DigitalOutputFunction.functionFileName,
-																	DigitalInputFunction.functionFileName,
+		    														SEPARATOR,
+																	Mean.functionFileName,
+																	/*DigitalInputFunction.functionFileName,
 																	SEPARATOR,
 																    ExpressionFunction.functionFileName,
 																    SEPARATOR,
 																    TerminateProcessFunction.functionFileName*/};
 	
 	public static String[] PythonEngineFunctionsClasses = new String[] {ButterworthLowPass.class.getName(),
-																	  /*null,
-																	  DigitalOutputFunction.class.getName(),
-																	  DigitalInputFunction.class.getName(),
+																	  null,
+																	  Mean.class.getName(),
+																	  /*DigitalInputFunction.class.getName(),
 																	  null,
 																	  ExpressionFunction.class.getName(),
 																	  null,
