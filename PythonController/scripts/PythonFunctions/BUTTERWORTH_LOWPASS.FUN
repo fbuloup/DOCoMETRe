@@ -18,8 +18,7 @@ for trial in range(1,SignalSizes[0]+1):\n\
 docometre.experiments['outputSignal.isSignal'] = 1;\n\
 docometre.experiments['outputSignal.isCategory'] = 0;\n\
 docometre.experiments['outputSignal.isEvent'] = 0;\n\
-docometre.experiments['outputSignal.NbMarkers'] = 0;\n\
-docometre.experiments['outputSignal.NbFields'] = 0;\n\
+docometre.experiments['outputSignal.NbFeatures'] = 0;\n\
 docometre.experiments['outputSignal.NbMarkersGroups'] = 0;\n\
 docometre.experiments['outputSignal.SampleFrequency'] = docometre.experiments['inputSignal.SampleFrequency'];\n\
 # Compute filtering\n\

@@ -112,7 +112,7 @@ class DOCoMETRe(object):
 				self.experiments[loadName + "." + channelName + "." + "isSignal"] = "1";
 				self.experiments[loadName + "." + channelName + "." + "isCategory"] = "0";
 				self.experiments[loadName + "." + channelName + "." + "isEvent"] = "0";
-				self.experiments[loadName + "." + channelName + "." + "NbFields"] = "0";
+				self.experiments[loadName + "." + channelName + "." + "NbFeatures"] = "0";
 				self.experiments[loadName + "." + channelName + "." + "NbMarkersGroups"] = "0";
 				self.experiments[loadName + "." + channelName + "." + "Values"] = numpy.zeros((int(totalTrialsNumber), int(maximumSamples)));
 

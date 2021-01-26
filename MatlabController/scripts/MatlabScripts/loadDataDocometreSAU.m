@@ -29,8 +29,8 @@ for l=1:numel(signalsNames)
             eval([subjectName, '.', signalsNames{l}, '.isEvent = 0;']);    
             eval([subjectName, '.', signalsNames{l}, '.FrontCut = [1];']);
             eval([subjectName, '.', signalsNames{l}, '.SampleFrequency =  str2num(signalsSampleFrequencies{l});']); 
-            eval([subjectName, '.', signalsNames{l}, '.NbMarkers =  0;']); 
-            eval([subjectName, '.', signalsNames{l}, '.NbFields = 0;']); 
+            eval([subjectName, '.', signalsNames{l}, '.NbMarkersGroups =  0;']); 
+            eval([subjectName, '.', signalsNames{l}, '.NbFeatures = 0;']); 
             eval([subjectName, '.', signalsNames{l}, '.EndCut = [nbSamples];']); 
             eval([subjectName, '.', signalsNames{l}, '.NbSamples = [nbSamples];']); 
 

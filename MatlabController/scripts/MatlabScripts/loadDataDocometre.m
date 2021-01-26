@@ -63,9 +63,8 @@ if nbTrials > 0
                     signals{currentNumChannel,1}.isSignal = 1;   
                     signals{currentNumChannel,1}.isCategory = 0;   
                     signals{currentNumChannel,1}.isEvent = 0;       
-                    signals{currentNumChannel,1}.NbMarkers = 0;
-                    signals{currentNumChannel,1}.NbFields = 0;
                     signals{currentNumChannel,1}.NbMarkersGroups = 0;
+                    signals{currentNumChannel,1}.NbFeatures = 0;
                     signals{currentNumChannel,1}.SampleFrequency = sampleFrequency;                    
                     signalName = char(channelsNames{numChannel,1});
                     fullSignalName = [ 'tempSubject.' signalName ];
