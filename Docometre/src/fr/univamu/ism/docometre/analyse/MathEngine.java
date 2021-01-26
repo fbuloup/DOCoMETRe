@@ -38,6 +38,7 @@ public interface MathEngine {
 	String evaluate(String command) throws Exception;
 	IResource[] getCreatedOrModifiedSubjects();
 	
+	// Markers
 	int getNbMarkersGroups(Channel signal);
 	void createNewMarkersGroup(Channel signal, String markersGroupLabel);
 	String getMarkersGroupLabel(int markersGroupNumber, Channel signal);
@@ -45,6 +46,14 @@ public interface MathEngine {
 	void addMarker(String markersGroupLabel, int trialNumber, double xValue, double yValue, Channel signal);
 	double[][] getMarkers(String markersGroupLabel, Channel signal);
 	void deleteMarker(String markersGroupLabel, int trialNumber, double xValue, double yValue, Channel signal);
+	
+	// Features
+	int getNbFeatures(Channel signal);
+//	void createNewFeature(Channel signal, String featureLabel);
+	String getFeatureLabel(int featureNumber, Channel signal);
+	void deleteFeature(int featureNumber, Channel signal);
+//	void addFeature(String featureLabel, double[] values, Channel signal);
+	double[] getFeature(String featureLabel, Channel signal);
 	
 	boolean renameExperiment(String oldName, String newName);
 	boolean renameSubject(String experimentName, String oldSubjectName, String newSubjectName);
@@ -63,6 +72,15 @@ public interface MathEngine {
 			markersGroupsLabels[i] = getMarkersGroupLabel(i + 1, signal);
 		}
 		return markersGroupsLabels;
+	}
+	
+	default String[] getFeaturesLabels(Channel signal) {
+		int nbFeatures = getNbFeatures(signal);
+		String[] featuresLabels = new String[nbFeatures];
+		for (int i = 0; i < featuresLabels.length; i++) {
+			featuresLabels[i] = getFeatureLabel(i + 1, signal);
+		}
+		return featuresLabels;
 	}
 	
 	default double[] getTimeValuesForSignal(Channel signal, Integer trialNumber) {

@@ -547,7 +547,6 @@ public final class MatlabEngine implements MathEngine {
 
 	@Override
 	public void deleteMarkersGroup(int markersGroupNumber, Channel signal) {
-		
 		try {
 			String fullSignalName = getFullPath(signal);
 			
@@ -790,6 +789,85 @@ public final class MatlabEngine implements MathEngine {
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public int getNbFeatures(Channel signal) {
+		try {
+			if(!isStarted()) return 0;
+			String channelName = getFullPath(signal);
+			String expression = channelName + ".NbFeatures;";
+			Object[] responses = matlabController.returningEval(expression, 1);
+			int nbFeatures = (int) ((double[]) responses[0])[0];
+			return nbFeatures;
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return 0;
+	}
+
+	@Override
+	public String getFeatureLabel(int featureNumber, Channel signal) {
+		try {
+			String fullSignalName = getFullPath(signal);
+			Object[] responses = matlabController.returningEval(fullSignalName + ".FeaturesLabels{" + featureNumber + "}", 1);
+			Object response = responses[0];
+			if(response instanceof String) {
+				return (String)response;
+			}
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return "";
+	}
+
+	@Override
+	public void deleteFeature(int featureNumber, Channel signal) {
+		try {
+			String fullSignalName = getFullPath(signal);
+			
+			// Get feature label
+			String featureLabel = getFeatureLabel(featureNumber, signal);
+			
+			// Remove feature label
+			String expression = fullSignalName + ".FeaturesLabels(" + featureNumber + ") = []";
+			matlabController.eval(expression);
+			
+			// Remove feature values
+			expression = fullSignalName + " = rmfield(" + fullSignalName + ", 'Feature_" + featureLabel + "_Values')";
+			matlabController.eval(expression);
+			
+			// decrease nb features
+			int nbFeatures = getNbFeatures(signal);
+			nbFeatures--;
+			expression = fullSignalName + ".NbFeatures = " + nbFeatures;
+			matlabController.eval(expression);
+			signal.setModified(true);
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public double[] getFeature(String featureLabel, Channel signal) {
+		try {
+			if("".equals(featureLabel)) return new double[0];
+			String fullSignalName = getFullPath(signal);
+			String expression = fullSignalName + ".Feature_" + featureLabel + "_Values";
+			Object[] responses = matlabController.returningEval(expression, 1);
+			Object response = responses[0];
+			if(response instanceof double[]) {
+				return (double[])response;
+			}
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		
+		return new double[0];
 	}
 
 }
