@@ -738,6 +738,7 @@ public final class MatlabEngine implements MathEngine {
 
 	@Override
 	public IResource[] getCreatedOrModifiedSubjects() {
+		if(!exist("createdOrModifiedChannels")) return new IResource[0];
 		Set<IResource> createdOrModifiedSubjects = new HashSet<>();
 		try {
 			String[] createdOrModifiedChannels = null;
@@ -764,6 +765,31 @@ public final class MatlabEngine implements MathEngine {
 			e.printStackTrace();
 		}
 		return new IResource[0];
+	}
+
+	@Override
+	public String getErrorMessages() {
+		if(exist("ErrorMessages")) {
+			try {
+				String errorMessages = "\n";
+				String cmd = "ErrorMessagesSize = size(ErrorMessages); nbErrorMessages = ErrorMessagesSize(2)";
+				matlabController.eval(cmd);
+				Object response = matlabController.getVariable("nbErrorMessages");
+				int nbErrorMessages = (int) ((double[]) response)[0];
+				cmd = "clear ErrorMessagesSize nbErrorMessages;";
+				matlabController.eval(cmd);
+				for (int i = 1; i <= nbErrorMessages; i++) {
+					Object[] error = matlabController.returningEval("ErrorMessages{" + i + "}", 1);
+					errorMessages = errorMessages + error[0] + "\n" ;
+				}
+				matlabController.eval("clear ErrorMessages;");
+				return errorMessages;
+			} catch (Exception e) {
+				Activator.logErrorMessageWithCause(e);
+				e.printStackTrace();
+			}
+		}
+		return null;
 	}
 
 }

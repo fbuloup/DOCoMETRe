@@ -216,7 +216,9 @@ public class PythonEngine implements MathEngine {
 
 	@Override
 	public boolean exist(String variableName) {
-		return false;
+		String cmd = "'" + variableName + "'" + " in docometre.experiments.keys()";
+		String response = evaluate(cmd);
+		return "True".equals(response);
 	}
 
 	@Override
@@ -494,6 +496,7 @@ public class PythonEngine implements MathEngine {
 
 	@Override
 	public IResource[] getCreatedOrModifiedSubjects() {
+		if(!exist("createdOrModifiedChannels")) return new IResource[0];
 		Set<IResource> createdOrModifiedSubjects = new HashSet<>();
 		try {
 			String[] createdOrModifiedChannels = null;
@@ -517,6 +520,22 @@ public class PythonEngine implements MathEngine {
 		}
 		
 		return new IResource[0];
+	}
+
+	@Override
+	public String getErrorMessages() {
+		try {
+			if(!exist("ErrorMessages")) return null;
+			String errorMessages = "\n" + evaluate("docometre.experiments['ErrorMessages']");
+			errorMessages = errorMessages.replaceAll("\\|", "\n");
+			return errorMessages;
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		} finally {
+			evaluate("docometre.experiments.pop('ErrorMessages', None)");
+		}
+		return null;
 	}
 
 }

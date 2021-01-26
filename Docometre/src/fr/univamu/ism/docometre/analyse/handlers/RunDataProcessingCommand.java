@@ -114,6 +114,10 @@ public class RunDataProcessingCommand extends AbstractHandler implements ISelect
 			if(cancel) break;
 		}
 
+		// Get back potential error messages
+		String errorMessages =  MathEngineFactory.getMathEngine().getErrorMessages();
+		if(errorMessages != null) Activator.logErrorMessage(errorMessages);
+		
 		return null;
 	}
 

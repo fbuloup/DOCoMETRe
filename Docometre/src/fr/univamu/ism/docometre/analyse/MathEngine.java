@@ -49,6 +49,8 @@ public interface MathEngine {
 	boolean renameExperiment(String oldName, String newName);
 	boolean renameSubject(String experimentName, String oldSubjectName, String newSubjectName);
 	
+	String getErrorMessages();
+	
 	default int getMarkersGroupNumber(String markersGroupLabel, Channel signal) {
 		String[] labels = getMarkersGroupsLabels(signal);
 		return Arrays.binarySearch(labels, markersGroupLabel);
@@ -156,7 +158,5 @@ public interface MathEngine {
 		code = code.replaceAll(replaceRegExp, replaceBy);
 		return code;
 	}
-	
-	
 	
 }
