@@ -25,6 +25,8 @@ import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseWheelListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -56,13 +58,20 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 	private ListViewer trialsListViewer;
 	private InteractiveChart chart;
 	private int nbTrials;
+	
 	private MarkersManager markersManager;
-
 	private ComboViewer markersGroupComboViewer;
-
 	private Label markerXValueLabel;
-
 	private Label markerYValueLabel;
+	
+	private Label featureValueLabel;
+	private ComboViewer featuresComboViewer;
+	private Spinner trialFeatureSpinner;
+	private Spinner trialSelectionSpinner;
+	private Label frontCutLabelValue;
+	private Label endCutLabelValue;
+	private Label samplesNumberLabelValue;
+	private Label durationLabelValue;
 
 	public SignalContainerEditor(Composite parent, int style, ChannelEditor channelEditor) {
 		super(parent, style);
@@ -105,27 +114,27 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		((GridData)showHideInfosButton.getLayoutData()).widthHint = 12;
 		showHideInfosButton.setImage(Activator.getImage(IImageKeys.HIDE_PANNEL));
 		
-		Composite infosTrialsFieldsMarkersContainer = new Composite(this, SWT.NORMAL);
-		infosTrialsFieldsMarkersContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
-		infosTrialsFieldsMarkersContainer.setLayout(new GridLayout(4, true));
-		GridLayout gl3 = (GridLayout) infosTrialsFieldsMarkersContainer.getLayout();
+		Composite infosTrialFeaturesMarkersContainer = new Composite(this, SWT.NORMAL);
+		infosTrialFeaturesMarkersContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		infosTrialFeaturesMarkersContainer.setLayout(new GridLayout(4, true));
+		GridLayout gl3 = (GridLayout) infosTrialFeaturesMarkersContainer.getLayout();
 		gl3.horizontalSpacing = 0;
 		gl3.verticalSpacing = 0;
 		gl3.marginHeight = 0;
 		gl3.marginWidth = 0;
-		createGeneralInfoGroup(infosTrialsFieldsMarkersContainer);
-		createTrialsGroup(infosTrialsFieldsMarkersContainer);
-		createFieldsGroup(infosTrialsFieldsMarkersContainer);
-		createMarkersGroup(infosTrialsFieldsMarkersContainer);
+		createGeneralInfoGroup(infosTrialFeaturesMarkersContainer);
+		createTrialsGroup(infosTrialFeaturesMarkersContainer);
+		createFeaturesGroup(infosTrialFeaturesMarkersContainer);
+		createMarkersGroup(infosTrialFeaturesMarkersContainer);
 		
 		showHideInfosButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				GridData gd = (GridData)infosTrialsFieldsMarkersContainer.getLayoutData();
+				GridData gd = (GridData)infosTrialFeaturesMarkersContainer.getLayoutData();
 				boolean exclude = gd.exclude;
 				gd.exclude = !exclude;
-				infosTrialsFieldsMarkersContainer.setVisible(exclude);
-				infosTrialsFieldsMarkersContainer.getParent().layout(true);
+				infosTrialFeaturesMarkersContainer.setVisible(exclude);
+				infosTrialFeaturesMarkersContainer.getParent().layout(true);
 				if(gd.exclude) showHideInfosButton.setImage(Activator.getImage(IImageKeys.SHOW_PANNEL));
 				else showHideInfosButton.setImage(Activator.getImage(IImageKeys.HIDE_PANNEL));
 			}
@@ -138,8 +147,8 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 	}
 
 	
-	private void createMarkersGroup(Composite infosTrialsFieldsMarkersContainer) {
-		Group markersGroupsGroup = ChannelEditorWidgetsFactory.createGroup(infosTrialsFieldsMarkersContainer, DocometreMessages.MarkersGroupTitle);
+	private void createMarkersGroup(Composite infosTrialFeaturesMarkersContainer) {
+		Group markersGroupsGroup = ChannelEditorWidgetsFactory.createGroup(infosTrialFeaturesMarkersContainer, DocometreMessages.MarkersGroupTitle);
 		markersGroupsGroup.setLayout(new GridLayout(2, false));
 		
 		ChannelEditorWidgetsFactory.createLabel(markersGroupsGroup, DocometreMessages.GroupNameLabel, SWT.LEFT, false);
@@ -313,30 +322,89 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		markerYValueLabel = ChannelEditorWidgetsFactory.createLabel(markersGroupsGroup, DocometreMessages.NotAvailable_Label, SWT.FILL, true);
 	}
 	
-	private void createFieldsGroup(Composite infosTrialsFieldsMarkersContainer) {
-		Group fieldsGroup = ChannelEditorWidgetsFactory.createGroup(infosTrialsFieldsMarkersContainer, DocometreMessages.FeaturesGroupTitle);
-		fieldsGroup.setLayout(new GridLayout(2, false));
+	private void createFeaturesGroup(Composite infosTrialFeaturesMarkersContainer) {
+		Group featuresGroup = ChannelEditorWidgetsFactory.createGroup(infosTrialFeaturesMarkersContainer, DocometreMessages.FeaturesGroupTitle);
+		featuresGroup.setLayout(new GridLayout(2, false));
 		
-		ChannelEditorWidgetsFactory.createLabel(fieldsGroup, DocometreMessages.FeaturesNameLabel, SWT.LEFT, false);
-		Composite deletFieldContainer = new Composite(fieldsGroup, SWT.NORMAL);
-		deletFieldContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		ChannelEditorWidgetsFactory.createLabel(featuresGroup, DocometreMessages.FeaturesNameLabel, SWT.LEFT, false);
+		Composite deleteFeatureContainer = new Composite(featuresGroup, SWT.NORMAL);
+		deleteFeatureContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		GridLayout gl = new GridLayout(2, false);
 		gl.horizontalSpacing = 0;
 		gl.verticalSpacing = 0;
 		gl.marginHeight = 0;
 		gl.marginWidth = 0;
-		deletFieldContainer.setLayout(gl);
-		ChannelEditorWidgetsFactory.createCombo(deletFieldContainer, SWT.FILL, true);
-		Button deleteFieldButton = new Button(deletFieldContainer, SWT.FLAT);
-		deleteFieldButton.setImage(Activator.getImage(IImageKeys.DELETE_ICON));
-		deleteFieldButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
-		deleteFieldButton.setToolTipText(DocometreMessages.DeleteSelectedFeatureTooltip);
+		deleteFeatureContainer.setLayout(gl);
+		featuresComboViewer = ChannelEditorWidgetsFactory.createCombo(deleteFeatureContainer, SWT.FILL, true);
+		featuresComboViewer.setContentProvider(new IStructuredContentProvider() {
+			@Override
+			public Object[] getElements(Object inputElement) {
+				if(!(inputElement instanceof Channel)) return new Object[0];
+				Channel signal = (Channel)inputElement;
+				String[] labels = MathEngineFactory.getMathEngine().getFeaturesLabels(signal);
+				return labels;
+			}
+		});
+		featuresComboViewer.setLabelProvider(new LabelProvider());
+		featuresComboViewer.setComparator(new ViewerComparator());
+		featuresComboViewer.setInput(channelEditor.getChannel());
+		featuresComboViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+			@Override
+			public void selectionChanged(SelectionChangedEvent event) {
+				updateFeatureValueHandler();
+			}
+		});
 		
-		ChannelEditorWidgetsFactory.createLabel(fieldsGroup, DocometreMessages.TrialNumberLabel, SWT.LEFT, false);
-		ChannelEditorWidgetsFactory.createSpinner(fieldsGroup, SWT.FILL, true);
+		Button deleteFeatureButton = new Button(deleteFeatureContainer, SWT.FLAT);
+		deleteFeatureButton.setImage(Activator.getImage(IImageKeys.DELETE_ICON));
+		deleteFeatureButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
+		deleteFeatureButton.setToolTipText(DocometreMessages.DeleteSelectedFeatureTooltip);
+		deleteFeatureButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if(MessageDialog.openQuestion(getShell(), DocometreMessages.DeleteFeatureDialogTitle, DocometreMessages.DeleteFeatureDialogMessage)) {
+					int featureNumber = featuresComboViewer.getCombo().getSelectionIndex() + 1;
+					if(featureNumber > 0) {
+						MathEngineFactory.getMathEngine().deleteFeature(featureNumber, (Channel) featuresComboViewer.getInput());
+						featuresComboViewer.refresh();
+					}
+				}
+			}
+		});
 		
-		ChannelEditorWidgetsFactory.createLabel(fieldsGroup, DocometreMessages.ValueLabel, SWT.LEFT, false);
-		ChannelEditorWidgetsFactory.createLabel(fieldsGroup, DocometreMessages.NotAvailable_Label, SWT.LEFT, true);
+		ChannelEditorWidgetsFactory.createLabel(featuresGroup, DocometreMessages.TrialNumberLabel, SWT.LEFT, false);
+		trialFeatureSpinner = ChannelEditorWidgetsFactory.createSpinner(featuresGroup, SWT.FILL, true);
+		trialFeatureSpinner.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				updateFeatureValueHandler();
+			}
+		});
+		trialFeatureSpinner.addMouseWheelListener(new MouseWheelListener() {
+			@Override
+			public void mouseScrolled(MouseEvent e) {
+				updateFeatureValueHandler();
+			}
+		});
+		
+		ChannelEditorWidgetsFactory.createLabel(featuresGroup, DocometreMessages.ValueLabel, SWT.LEFT, false);
+		featureValueLabel = ChannelEditorWidgetsFactory.createLabel(featuresGroup, DocometreMessages.NotAvailable_Label, SWT.FILL, true);
+		
+		trialFeatureSpinner.setMaximum(nbTrials);
+		trialFeatureSpinner.setMinimum(nbTrials>0?1:0);
+		trialFeatureSpinner.setSelection(1);
+		trialFeatureSpinner.notifyListeners(SWT.Selection, new Event());
+	}
+	
+	private void updateFeatureValueHandler() {
+		if(!featuresComboViewer.getSelection().isEmpty()) {
+			int trialNumber = trialFeatureSpinner.getSelection();
+			String featureLabel = ((IStructuredSelection)featuresComboViewer.getSelection()).getFirstElement().toString();
+			double[] values = MathEngineFactory.getMathEngine().getFeature(featureLabel, (Channel) featuresComboViewer.getInput());
+			featureValueLabel.setText(String.valueOf(values[trialNumber - 1]));
+		} else {
+			featureValueLabel.setText(DocometreMessages.NotAvailable_Label);
+		}
 	}
 
 	private void createTrialsGroup(Composite infosTrialsFieldsMarkersContainer) {
@@ -344,38 +412,48 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		trialsGroup.setLayout(new GridLayout(2, false));
 		
 		ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.Trial, SWT.LEFT, false);
-		Spinner trialSelectionSpinner = ChannelEditorWidgetsFactory.createSpinner(trialsGroup, SWT.FILL, true);
+		trialSelectionSpinner = ChannelEditorWidgetsFactory.createSpinner(trialsGroup, SWT.FILL, true);
 		
 		ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.FrontCutLabel, SWT.LEFT, false);
-		Label frontCutLabelValue = ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.NotAvailable_Label, SWT.FILL, true);
+		frontCutLabelValue = ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.NotAvailable_Label, SWT.FILL, true);
 		
 		ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.EndCutLabel, SWT.LEFT, false);
-		Label endCutLabelValue = ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.NotAvailable_Label, SWT.FILL, true);
+		endCutLabelValue = ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.NotAvailable_Label, SWT.FILL, true);
 		
 		ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.SamplesNumberLabel, SWT.LEFT, false);
-		Label samplesNumberLabelValue = ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.NotAvailable_Label, SWT.FILL, true);
+		samplesNumberLabelValue = ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.NotAvailable_Label, SWT.FILL, true);
 		
 		ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.DurationLabel, SWT.LEFT, false);
-		Label durationLabelValue = ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.NotAvailable_Label, SWT.FILL, true);
+		durationLabelValue = ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.NotAvailable_Label, SWT.FILL, true);
 
 		trialSelectionSpinner.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				int samplesNumber = MathEngineFactory.getMathEngine().getSamplesNumber(channelEditor.getChannel(), trialSelectionSpinner.getSelection());
-				int frontCut = MathEngineFactory.getMathEngine().getFrontCut(channelEditor.getChannel(), trialSelectionSpinner.getSelection());
-				int endCut =  MathEngineFactory.getMathEngine().getEndCut(channelEditor.getChannel(), trialSelectionSpinner.getSelection());
-				double sf = MathEngineFactory.getMathEngine().getSampleFrequency(channelEditor.getChannel());
-				double duration = 1f*samplesNumber/sf;
-				frontCutLabelValue.setText(Integer.toString(frontCut));
-				endCutLabelValue.setText(Integer.toString(endCut));
-				samplesNumberLabelValue.setText(Integer.toString(samplesNumber));
-				durationLabelValue.setText(Double.toString(duration));
+				updateTrialsValuesHandler();
+			}
+		});
+		trialSelectionSpinner.addMouseWheelListener(new MouseWheelListener() {
+			@Override
+			public void mouseScrolled(MouseEvent e) {
+				updateTrialsValuesHandler();
 			}
 		});
 		trialSelectionSpinner.setMaximum(nbTrials);
 		trialSelectionSpinner.setMinimum(nbTrials>0?1:0);
 		trialSelectionSpinner.setSelection(1);
 		trialSelectionSpinner.notifyListeners(SWT.Selection, new Event());
+	}
+	
+	private void updateTrialsValuesHandler() {
+		int samplesNumber = MathEngineFactory.getMathEngine().getSamplesNumber(channelEditor.getChannel(), trialSelectionSpinner.getSelection());
+		int frontCut = MathEngineFactory.getMathEngine().getFrontCut(channelEditor.getChannel(), trialSelectionSpinner.getSelection());
+		int endCut =  MathEngineFactory.getMathEngine().getEndCut(channelEditor.getChannel(), trialSelectionSpinner.getSelection());
+		double sf = MathEngineFactory.getMathEngine().getSampleFrequency(channelEditor.getChannel());
+		double duration = 1f*samplesNumber/sf;
+		frontCutLabelValue.setText(Integer.toString(frontCut));
+		endCutLabelValue.setText(Integer.toString(endCut));
+		samplesNumberLabelValue.setText(Integer.toString(samplesNumber));
+		durationLabelValue.setText(Double.toString(duration));
 	}
 
 	private void createGeneralInfoGroup(Composite infosTrialsFieldsMarkersContainer) {
@@ -523,6 +601,11 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		markersGroupComboViewer.refresh();
 		markerXValueLabel.setText(DocometreMessages.NotAvailable_Label);
 		markerYValueLabel.setText(DocometreMessages.NotAvailable_Label);
+	}
+	
+	public void update() {
+		markersGroupComboViewer.refresh();
+		featuresComboViewer.refresh();
 	}
 	
 }

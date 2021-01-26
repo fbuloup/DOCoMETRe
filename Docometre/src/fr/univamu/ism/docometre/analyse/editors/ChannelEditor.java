@@ -96,4 +96,10 @@ public class ChannelEditor extends EditorPart {
 			((TrialNavigator)container).gotoPreviousTrial();
 	}
 	
+	public void update() {
+		if(getChannel().isModified() && getChannel().isSignal()) {
+			((SignalContainerEditor)container).update();
+		}
+	}
+	
 }

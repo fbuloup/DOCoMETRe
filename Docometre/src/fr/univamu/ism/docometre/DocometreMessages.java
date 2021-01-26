@@ -775,6 +775,8 @@ public final class DocometreMessages extends NLS {
 	public static String DeleteMarkerDialogMessage;
 	public static String DeleteMarkersGroupDialogTitle;
 	public static String DeleteMarkersGroupDialogMessage;
+	public static String DeleteFeatureDialogTitle;
+	public static String DeleteFeatureDialogMessage;
 	public static String MarkerLabelInvalid;
 	
 

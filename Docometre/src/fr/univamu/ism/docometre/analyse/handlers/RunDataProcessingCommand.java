@@ -15,6 +15,8 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
@@ -28,6 +30,7 @@ import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.datamodel.BatchDataProcessing;
 import fr.univamu.ism.docometre.analyse.editors.BatchDataProcessingEditor;
+import fr.univamu.ism.docometre.analyse.editors.ChannelEditor;
 import fr.univamu.ism.docometre.analyse.editors.DataProcessEditor;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
@@ -110,6 +113,15 @@ public class RunDataProcessingCommand extends AbstractHandler implements ISelect
 				ResourceProperties.setSubjectModified(modifiedSubject, true);
 				ExperimentsView.refresh(modifiedSubject, null);
 				SubjectsView.refresh(modifiedSubject, null);
+			}
+			if(modifiedSubjects.length > 0) {
+				IEditorReference[] editorsRefs = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
+				for (IEditorReference editorRef : editorsRefs) {
+					IEditorPart editor = editorRef.getEditor(false);
+					if(editor instanceof ChannelEditor) {
+						((ChannelEditor)editor).update();
+					}
+				}
 			}
 			if(cancel) break;
 		}
