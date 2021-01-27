@@ -33,6 +33,8 @@ public class Mean extends GenericFunction {
 	public static final String functionFileName = "MEAN.FUN";
 	
 	private static final String inputSignalKey = "inputSignal";
+	private static final String fromKey = "from";
+	private static final String toKey = "to";
 	
 	transient private FunctionalBlockConfigurationDialog functionalBlockConfigurationDialog;
 	
@@ -56,6 +58,7 @@ public class Mean extends GenericFunction {
 			return paramContainer;
 		}
 		
+		// Input
 		Label inputSignalLabel = new Label(paramContainer, SWT.NONE);
 		inputSignalLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
 		inputSignalLabel.setText(FunctionsMessages.InputSignalLabel);
@@ -64,16 +67,13 @@ public class Mean extends GenericFunction {
 		inputSignalComboViewer.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		String value  = getProperty(inputSignalKey, "");
 		inputSignalComboViewer.getCombo().setText(value);
-		
-		inputSignalComboViewer.setContentProvider(new ChannelsContentProvider(true, false, false));
+		inputSignalComboViewer.setContentProvider(new ChannelsContentProvider(true, false, false, false, false, false, false));
 		inputSignalComboViewer.setLabelProvider(LabelProvider.createTextProvider(new Function<Object, String>() {
-			
 			@Override
 			public String apply(Object t) {
 				if(!(t instanceof Channel)) return null;
 				Channel channel = (Channel)t;
-				if(channel.isSignal()) return channel.getFullName();
-				return null;
+				return channel.getFullName();
 			}
 		}));
 		inputSignalComboViewer.setInput(SelectedExprimentContributionItem.selectedExperiment);
@@ -84,12 +84,79 @@ public class Mean extends GenericFunction {
 			Activator.logErrorMessage(message);
 			this.functionalBlockConfigurationDialog.setErrorMessage(DocometreMessages.FunctionalBlockConfigurationDialogBlockingMessage);
 		}
-		
 		inputSignalComboViewer.getCombo().addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
 				Mean.this.functionalBlockConfigurationDialog.setErrorMessage(null);
 				getTransientProperties().put(inputSignalKey, inputSignalComboViewer.getCombo().getText());
+			}
+		});
+		
+		// From
+		Label fromLabel = new Label(paramContainer, SWT.NONE);
+		fromLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+		fromLabel.setText(FunctionsMessages.FromLabel);
+		
+		ComboViewer fromComboViewer = new ComboViewer(paramContainer, SWT.BORDER);
+		fromComboViewer.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		value  = getProperty(fromKey, "");
+		fromComboViewer.getCombo().setText(value);
+		fromComboViewer.setContentProvider(new ChannelsContentProvider(false, false, false, true, false, true, true));
+		fromComboViewer.setLabelProvider(LabelProvider.createTextProvider(new Function<Object, String>() {
+			@Override
+			public String apply(Object t) {
+				if(!(t instanceof Channel)) return null;
+				Channel channel = (Channel)t;
+				return channel.getFullName();
+			}
+		}));
+		fromComboViewer.setInput(SelectedExprimentContributionItem.selectedExperiment);
+		channel = MathEngineFactory.getMathEngine().getChannelFromName(SelectedExprimentContributionItem.selectedExperiment, getProperty(fromKey, ""));
+		if(channel != null) fromComboViewer.setSelection(new StructuredSelection(channel));
+		else {
+			String message = NLS.bind(DocometreMessages.ImpossibleToFindChannelTitle, value);
+			Activator.logErrorMessage(message);
+			this.functionalBlockConfigurationDialog.setErrorMessage(DocometreMessages.FunctionalBlockConfigurationDialogBlockingMessage);
+		}
+		fromComboViewer.getCombo().addModifyListener(new ModifyListener() {
+			@Override
+			public void modifyText(ModifyEvent e) {
+				Mean.this.functionalBlockConfigurationDialog.setErrorMessage(null);
+				getTransientProperties().put(fromKey, fromComboViewer.getCombo().getText());
+			}
+		});
+		
+		// To
+		Label toLabel = new Label(paramContainer, SWT.NONE);
+		toLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+		toLabel.setText(FunctionsMessages.ToLabel);
+		
+		ComboViewer toComboViewer = new ComboViewer(paramContainer, SWT.BORDER);
+		toComboViewer.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		value  = getProperty(toKey, "");
+		toComboViewer.getCombo().setText(value);
+		toComboViewer.setContentProvider(new ChannelsContentProvider(false, false, false, true, false, true, true));
+		toComboViewer.setLabelProvider(LabelProvider.createTextProvider(new Function<Object, String>() {
+			@Override
+			public String apply(Object t) {
+				if(!(t instanceof Channel)) return null;
+				Channel channel = (Channel)t;
+				return channel.getFullName();
+			}
+		}));
+		toComboViewer.setInput(SelectedExprimentContributionItem.selectedExperiment);
+		channel = MathEngineFactory.getMathEngine().getChannelFromName(SelectedExprimentContributionItem.selectedExperiment, getProperty(toKey, ""));
+		if(channel != null) toComboViewer.setSelection(new StructuredSelection(channel));
+		else {
+			String message = NLS.bind(DocometreMessages.ImpossibleToFindChannelTitle, value);
+			Activator.logErrorMessage(message);
+			this.functionalBlockConfigurationDialog.setErrorMessage(DocometreMessages.FunctionalBlockConfigurationDialogBlockingMessage);
+		}
+		toComboViewer.getCombo().addModifyListener(new ModifyListener() {
+			@Override
+			public void modifyText(ModifyEvent e) {
+				Mean.this.functionalBlockConfigurationDialog.setErrorMessage(null);
+				getTransientProperties().put(toKey, toComboViewer.getCombo().getText());
 			}
 		});
 		

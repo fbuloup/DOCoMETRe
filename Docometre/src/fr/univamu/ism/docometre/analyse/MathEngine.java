@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -22,9 +23,9 @@ public interface MathEngine {
 	boolean exist(String variableName);
 	boolean isStruct(String variableName);
 	boolean isField(String variableName, String fieldName);
-	public Channel[] getChannels(IResource subject);
-	public boolean isSignalCategoryOrEvent(String fullName, String check);
-	public String getCriteriaForCategory(IResource category);
+	Channel[] getChannels(IResource subject);
+	boolean isSignalCategoryOrEvent(String fullName, String check);
+	String getCriteriaForCategory(IResource category);
 	Integer[] getTrialsListForCategory(IResource category);
 	double[] getYValuesForSignal(Channel signal, int trialNumber);
 	int getTrialsNumber(Channel signal);
@@ -155,10 +156,31 @@ public interface MathEngine {
 		if(!(resource instanceof IContainer)) return null;
 		if(fullChannelName == null || "".equals(fullChannelName)) return null;
 		IContainer experiment = (IContainer)resource;
-		if(fullChannelName.split("\\.").length > 1) {
-			String subjectName = fullChannelName.split("\\.")[1];
-			IResource subject = experiment.findMember(subjectName);
-			if(subject == null) return null; 
+		
+		String subjectName = fullChannelName.split("\\.")[1];
+		IResource subject = experiment.findMember(subjectName);
+		if(subject == null) return null; 
+		
+		if(Channel.matchMarker(fullChannelName)) {
+			Channel[] markers = getMarkers(subject);
+			for (Channel marker : markers) {
+				if(fullChannelName.equals(marker.getFullName())) return marker;
+			}
+		} else if(Channel.matchFeature(fullChannelName)) {
+			Channel[] features = getFeatures(subject);
+			for (Channel feature : features) {
+				if(fullChannelName.equals(feature.getFullName())) return feature;
+			}
+		} else if(Channel.matchFrontEndCut(fullChannelName)) {
+			Channel[] frontEndCuts = getFrontEndCuts(subject);
+			for (Channel frontEndCut : frontEndCuts) {
+				if(fullChannelName.equals(frontEndCut.getFullName())) return frontEndCut;
+			}
+		} else if(Channel.fromBeginningChannel.getName().equals(fullChannelName)) 
+			return Channel.fromBeginningChannel;
+		else if(Channel.toEndChannel.getName().equals(fullChannelName)) 
+			return Channel.toEndChannel;
+		else if(fullChannelName.split("\\.").length > 1) {
 			Channel[] channels = getChannels(subject);
 			if(channels != null)
 				for (Channel channel : channels) {
@@ -175,6 +197,48 @@ public interface MathEngine {
 		String replaceBy = projectName + "." + subjectName +".";
 		code = code.replaceAll(replaceRegExp, replaceBy);
 		return code;
+	}
+	
+	default Channel[] getMarkers(IResource subject) {
+		Channel[] channels = getChannels(subject);
+		ArrayList<Channel> markers = new ArrayList<>();
+		for (Channel channel : channels) {
+			if(channel.isSignal()) {
+				int nbMarkersGroups = getNbMarkersGroups(channel);
+				for (int i = 0; i < nbMarkersGroups; i++) {
+					String markersGroupLabel = getMarkersGroupLabel(i, channel);
+					markers.add(new Channel((IFolder)subject, "MarkersGroup_" + markersGroupLabel));
+				}
+			}
+		}
+		return markers.toArray(new Channel[markers.size()]);
+	}
+
+	default Channel[] getFeatures(IResource subject) {
+		Channel[] channels = getChannels(subject);
+		ArrayList<Channel> features = new ArrayList<>();
+		for (Channel channel : channels) {
+			if(channel.isSignal()) {
+				int nbFeatures = getNbFeatures(channel);
+				for (int i = 0; i < nbFeatures; i++) {
+					String featureLabel = getFeatureLabel(i, channel);
+					features.add(new Channel((IFolder)subject, "Feature_" + featureLabel));
+				}
+			}
+		}
+		return features.toArray(new Channel[features.size()]);
+	}
+	
+	default Channel[] getFrontEndCuts(IResource subject) {
+		Channel[] channels = getChannels(subject);
+		ArrayList<Channel> frontEndCuts = new ArrayList<>();
+		for (Channel channel : channels) {
+			if(channel.isSignal()) {
+				frontEndCuts.add(new Channel((IFolder)subject, channel.getName() + ".FrontCut"));
+				frontEndCuts.add(new Channel((IFolder)subject, channel.getName() + ".EndCut"));
+			}
+		}
+		return frontEndCuts.toArray(new Channel[frontEndCuts.size()]);
 	}
 	
 }

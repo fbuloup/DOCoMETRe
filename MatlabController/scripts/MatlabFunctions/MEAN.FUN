@@ -1,7 +1,7 @@
 MENU_TITLE = Mean
-DESCRIPTION = Compute Signal mean
+DESCRIPTION = Compute Signal mean on a provided interval
 MENU_TITLE_FR = Moyenne
-DESCRIPTION_FR = Calcule la moyenne
+DESCRIPTION_FR = Calcule la moyenne sur un intervalle donné
 # Now start specific matlab function 
 
 #%Enter your comments here

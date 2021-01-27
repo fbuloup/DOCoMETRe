@@ -136,7 +136,7 @@ public class ButterworthLowPass extends GenericFunction {
 		value  = getProperty(inputSignalKey, "");
 		inputSignalComboViewer.getCombo().setText(value);
 		
-		inputSignalComboViewer.setContentProvider(new ChannelsContentProvider(true, false, false));
+		inputSignalComboViewer.setContentProvider(new ChannelsContentProvider(true, false, false, false, false, false, false));
 		inputSignalComboViewer.setLabelProvider(LabelProvider.createTextProvider(new Function<Object, String>() {
 			
 			@Override
