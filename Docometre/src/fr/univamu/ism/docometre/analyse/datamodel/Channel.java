@@ -14,6 +14,7 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IPathVariableManager;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceProxy;
 import org.eclipse.core.resources.IResourceProxyVisitor;
 import org.eclipse.core.resources.IResourceVisitor;
@@ -45,6 +46,10 @@ public class Channel implements IFile {
 		this.subject = subject;
 		this.name = name;
 		ResourceProperties.setObjectSessionProperty(this, this);
+	}
+	
+	public IResource getSubject() {
+		return subject;
 	}
 
 	public void setModified(boolean modified) {
