@@ -152,6 +152,7 @@ public class SaveModifiedSubjectsHandler extends AbstractHandler implements ISel
 	}
 	
 	public static void refresh() {
+		if(SaveModifiedSubjectsHandler.saveModifiedSubjectsHandler == null) return;
 		SaveModifiedSubjectsHandler.saveModifiedSubjectsHandler.updateBaseEnabled();
 		refreshCommand();
 	}

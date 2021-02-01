@@ -172,6 +172,7 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 					int markersGroupNumber = markersGroupsComboViewer.getCombo().getSelectionIndex() + 1;
 					if(markersGroupNumber > 0) {
 						MathEngineFactory.getMathEngine().deleteMarkersGroup(markersGroupNumber, channelEditor.getChannel());
+						MathEngineFactory.getMathEngine().setUpdateChannelsCache(channelEditor.getChannel().getSubject(), true);
 						markersGroupsComboViewer.refresh();
 						chart.redraw();
 					}
@@ -197,6 +198,7 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 				if(labelGroupMarkersInputDialog.open() == Window.OK) {
 					String markersGroupLabel = labelGroupMarkersInputDialog.getValue();
 					MathEngineFactory.getMathEngine().createNewMarkersGroup(channelEditor.getChannel(), markersGroupLabel);
+					MathEngineFactory.getMathEngine().setUpdateChannelsCache(channelEditor.getChannel().getSubject(), true);
 					markersGroupsComboViewer.refresh();
 				}
 			}
@@ -304,6 +306,7 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 					MathEngineFactory.getMathEngine().deleteMarker(markersGroupLabel, (int)values[0], values[1], values[2], channelEditor.getChannel());
 					markersGroupsComboViewer.refresh();
 					updateMarkersGroup(markersGroupLabel);
+					MathEngineFactory.getMathEngine().setUpdateChannelsCache(channelEditor.getChannel().getSubject(), true);
 					getChart().redraw();
 				}
 			}
@@ -365,7 +368,9 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 				if(MessageDialog.openQuestion(getShell(), DocometreMessages.DeleteFeatureDialogTitle, DocometreMessages.DeleteFeatureDialogMessage)) {
 					int featureNumber = featuresComboViewer.getCombo().getSelectionIndex() + 1;
 					if(featureNumber > 0) {
-						MathEngineFactory.getMathEngine().deleteFeature(featureNumber, (Channel) featuresComboViewer.getInput());
+						Channel channel = (Channel) featuresComboViewer.getInput();
+						MathEngineFactory.getMathEngine().deleteFeature(featureNumber,channel);
+						MathEngineFactory.getMathEngine().setUpdateChannelsCache(channel.getSubject(), true);
 						featuresComboViewer.refresh();
 					}
 				}

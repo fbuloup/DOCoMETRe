@@ -1,16 +1,18 @@
 package fr.univamu.ism.docometre.analyse;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 
 import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
+import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
 
 public interface MathEngine {
 	IStatus startEngine(IProgressMonitor monitor);
@@ -18,8 +20,25 @@ public interface MathEngine {
 	boolean isStarted();
 	void addListener(MathEngineListener listener);
 	boolean isSubjectLoaded(IResource subject);
-	void load(IResource subject, boolean fromRawData);
-	void unload(IResource subject);
+	default void load(IResource subject, boolean fromRawData) {
+		try {
+			ChannelsContainer channelsContainer = new ChannelsContainer((IFolder) subject);
+			subject.setSessionProperty(ResourceProperties.CHANNELS_LIST_QN, channelsContainer);
+			getChannels(subject);
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+	}
+	default void unload(IResource subject) {
+		try {
+			subject.setSessionProperty(ResourceProperties.CHANNELS_LIST_QN, null);
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+	}
+	String[] getLoadedSubjects();
 	boolean exist(String variableName);
 	boolean isStruct(String variableName);
 	boolean isField(String variableName, String fieldName);
@@ -50,10 +69,8 @@ public interface MathEngine {
 	
 	// Features
 	int getNbFeatures(Channel signal);
-//	void createNewFeature(Channel signal, String featureLabel);
 	String getFeatureLabel(int featureNumber, Channel signal);
 	void deleteFeature(int featureNumber, Channel signal);
-//	void addFeature(String featureLabel, double[] values, Channel signal);
 	double[] getFeature(String featureLabel, Channel signal);
 	
 	boolean renameExperiment(String oldName, String newName);
@@ -113,32 +130,95 @@ public interface MathEngine {
 	}
 	
 	default Channel[] getSignals(IResource subject) {
-		Channel[] channels = getChannels(subject);
-		ArrayList<Channel> signals = new ArrayList<Channel>();
-		for (Channel channel : channels) {
-			if(isSignal(channel)) signals.add(channel);
+		try {
+			if(subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) != null && subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) instanceof ChannelsContainer) {
+				ChannelsContainer channelsContainer = (ChannelsContainer)subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
+				return channelsContainer.getSignals(subject);
+			}
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
 		}
-		return signals.toArray(new Channel[signals.size()]);
+		return null;
 	}
 
+	
 	default Channel[] getCategories(IResource subject) {
-		Channel[] channels = getChannels(subject);
-		ArrayList<Channel> categories = new ArrayList<Channel>();
-		for (Channel channel : channels) {
-			if(isCategory(channel)) categories.add(channel);
+		try {
+			if(subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) != null && subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) instanceof ChannelsContainer) {
+				ChannelsContainer channelsContainer = (ChannelsContainer)subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
+				return channelsContainer.getCategories(subject);
+			}
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
 		}
-		return categories.toArray(new Channel[categories.size()]);
+		return null;
 	}
 	
 	default Channel[] getEvents(IResource subject) {
-		Channel[] channels = getChannels(subject);
-		ArrayList<Channel> events = new ArrayList<Channel>();
-		for (Channel channel : channels) {
-			if(isEvent(channel)) events.add(channel);
+		try {
+			if(subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) != null && subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) instanceof ChannelsContainer) {
+				ChannelsContainer channelsContainer = (ChannelsContainer)subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
+				return channelsContainer.getEvents(subject);
+			}
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
 		}
-		return events.toArray(new Channel[events.size()]);
+		return null;
 	}
 	
+	default Channel[] getMarkers(IResource subject) {
+		try {
+			if(subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) != null && subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) instanceof ChannelsContainer) {
+				ChannelsContainer channelsContainer = (ChannelsContainer)subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
+				return channelsContainer.getMarkers(subject);
+			}
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	default Channel[] getFeatures(IResource subject) {
+		try {
+			if(subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) != null && subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) instanceof ChannelsContainer) {
+				ChannelsContainer channelsContainer = (ChannelsContainer)subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
+				return channelsContainer.getFeatures(subject);
+			}
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	default Channel[] getFrontEndCuts(IResource subject) {
+		try {
+			if(subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) != null && subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) instanceof ChannelsContainer) {
+				ChannelsContainer channelsContainer = (ChannelsContainer)subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
+				return channelsContainer.getFrontEndCuts(subject);
+			}
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	default void setUpdateChannelsCache(IResource subject, boolean update) {
+		try {
+			if(subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) != null && subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) instanceof ChannelsContainer) {
+				ChannelsContainer channelsContainer = (ChannelsContainer)subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
+				channelsContainer.setUpdateChannelsCache(subject, update);
+			}
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+	}
 	
 	default boolean isSignal(IResource channel) {
 		return isSignalCategoryOrEvent(getFullPath(channel), ".isSignal");
@@ -153,39 +233,47 @@ public interface MathEngine {
 	}
 	
 	default Channel getChannelFromName(IResource resource, String fullChannelName) {
-		if(!(resource instanceof IContainer)) return null;
-		if(fullChannelName == null || "".equals(fullChannelName)) return null;
-		IContainer experiment = (IContainer)resource;
-		
-		String subjectName = fullChannelName.split("\\.")[1];
-		IResource subject = experiment.findMember(subjectName);
-		if(subject == null) return null; 
-		
-		if(Channel.matchMarker(fullChannelName)) {
-			Channel[] markers = getMarkers(subject);
-			for (Channel marker : markers) {
-				if(fullChannelName.equals(marker.getFullName())) return marker;
-			}
-		} else if(Channel.matchFeature(fullChannelName)) {
-			Channel[] features = getFeatures(subject);
-			for (Channel feature : features) {
-				if(fullChannelName.equals(feature.getFullName())) return feature;
-			}
-		} else if(Channel.matchFrontEndCut(fullChannelName)) {
-			Channel[] frontEndCuts = getFrontEndCuts(subject);
-			for (Channel frontEndCut : frontEndCuts) {
-				if(fullChannelName.equals(frontEndCut.getFullName())) return frontEndCut;
-			}
-		} else if(Channel.fromBeginningChannel.getName().equals(fullChannelName)) 
-			return Channel.fromBeginningChannel;
-		else if(Channel.toEndChannel.getName().equals(fullChannelName)) 
-			return Channel.toEndChannel;
-		else if(fullChannelName.split("\\.").length > 1) {
-			Channel[] channels = getChannels(subject);
-			if(channels != null)
-				for (Channel channel : channels) {
-					if(channel.getFullName().equals(fullChannelName)) return channel;
+		try {
+			if(!(resource instanceof IContainer)) return null;
+			if(fullChannelName == null || "".equals(fullChannelName)) return null;
+			IContainer experiment = (IContainer)resource;
+			
+			String subjectName = fullChannelName.split("\\.")[1];
+			IResource subject = experiment.findMember(subjectName);
+			if(subject == null) return null; 
+			
+			if(subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) != null && subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) instanceof ChannelsContainer) {
+				ChannelsContainer channelsContainer = (ChannelsContainer)subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
+				if(Channel.matchMarker(fullChannelName)) {
+					Channel[] markers = channelsContainer.getMarkers(subject);
+					for (Channel marker : markers) {
+						if(fullChannelName.equals(marker.getFullName())) return marker;
+					}
+				} else if(Channel.matchFeature(fullChannelName)) {
+					Channel[] features = channelsContainer.getFeatures(subject);
+					for (Channel feature : features) {
+						if(fullChannelName.equals(feature.getFullName())) return feature;
+					}
+				} else if(Channel.matchFrontEndCut(fullChannelName)) {
+					Channel[] frontEndCuts = channelsContainer.getFrontEndCuts(subject);
+					for (Channel frontEndCut : frontEndCuts) {
+						if(fullChannelName.equals(frontEndCut.getFullName())) return frontEndCut;
+					}
+				} else if(Channel.fromBeginningChannel.getName().equals(fullChannelName)) 
+					return Channel.fromBeginningChannel;
+				else if(Channel.toEndChannel.getName().equals(fullChannelName)) 
+					return Channel.toEndChannel;
+				else if(fullChannelName.split("\\.").length > 1) {
+					Channel[] channels = getChannels(subject);
+					if(channels != null)
+						for (Channel channel : channels) {
+							if(channel.getFullName().equals(fullChannelName)) return channel;
+						}
 				}
+			}
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
 		}
 		return null;
 	}
@@ -199,46 +287,7 @@ public interface MathEngine {
 		return code;
 	}
 	
-	default Channel[] getMarkers(IResource subject) {
-		Channel[] channels = getChannels(subject);
-		ArrayList<Channel> markers = new ArrayList<>();
-		for (Channel channel : channels) {
-			if(channel.isSignal()) {
-				int nbMarkersGroups = getNbMarkersGroups(channel);
-				for (int i = 0; i < nbMarkersGroups; i++) {
-					String markersGroupLabel = getMarkersGroupLabel(i, channel);
-					markers.add(new Channel((IFolder)subject, "MarkersGroup_" + markersGroupLabel));
-				}
-			}
-		}
-		return markers.toArray(new Channel[markers.size()]);
-	}
-
-	default Channel[] getFeatures(IResource subject) {
-		Channel[] channels = getChannels(subject);
-		ArrayList<Channel> features = new ArrayList<>();
-		for (Channel channel : channels) {
-			if(channel.isSignal()) {
-				int nbFeatures = getNbFeatures(channel);
-				for (int i = 0; i < nbFeatures; i++) {
-					String featureLabel = getFeatureLabel(i, channel);
-					features.add(new Channel((IFolder)subject, "Feature_" + featureLabel));
-				}
-			}
-		}
-		return features.toArray(new Channel[features.size()]);
-	}
 	
-	default Channel[] getFrontEndCuts(IResource subject) {
-		Channel[] channels = getChannels(subject);
-		ArrayList<Channel> frontEndCuts = new ArrayList<>();
-		for (Channel channel : channels) {
-			if(channel.isSignal()) {
-				frontEndCuts.add(new Channel((IFolder)subject, channel.getName() + ".FrontCut"));
-				frontEndCuts.add(new Channel((IFolder)subject, channel.getName() + ".EndCut"));
-			}
-		}
-		return frontEndCuts.toArray(new Channel[frontEndCuts.size()]);
-	}
+	
 	
 }

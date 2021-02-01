@@ -4,14 +4,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.swt.custom.BusyIndicator;
+import org.eclipse.ui.PlatformUI;
 
-import fr.univamu.ism.docometre.Activator;
-import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 
@@ -38,11 +37,14 @@ public class ChannelsContentProvider implements IStructuredContentProvider {
 	@Override
 	public Object[] getElements(Object inputElement) {
 		if(inputElement instanceof IProject) {
-			try {
-				List<IResource> elements = new ArrayList<IResource>();
-				IResource[] resources = ((IContainer)inputElement).members();
-				for (IResource resource : resources) {
-					if(ResourceType.isSubject(resource) && MathEngineFactory.getMathEngine().isSubjectLoaded(resource)) {
+			List<IResource> elements = new ArrayList<IResource>();
+			BusyIndicator.showWhile(PlatformUI.getWorkbench().getDisplay(), new Runnable() {
+				@Override
+				public void run() {
+					String[] loadedSubjects = MathEngineFactory.getMathEngine().getLoadedSubjects();
+					for (String loadedSubject : loadedSubjects) {
+						String path = loadedSubject.replaceAll("\\.", "/");
+						IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(path);
 						if(signals) elements.addAll(Arrays.asList(MathEngineFactory.getMathEngine().getSignals(resource)));
 						if(categories) elements.addAll(Arrays.asList(MathEngineFactory.getMathEngine().getCategories(resource)));
 						if(events) elements.addAll(Arrays.asList(MathEngineFactory.getMathEngine().getEvents(resource)));
@@ -55,13 +57,10 @@ public class ChannelsContentProvider implements IStructuredContentProvider {
 						if(frontEndCut) elements.addAll(Arrays.asList(MathEngineFactory.getMathEngine().getFrontEndCuts(resource)));
 					}
 				}
-				return elements.toArray();
-			} catch (CoreException e) {
-				Activator.logErrorMessageWithCause(e);
-				e.printStackTrace();
-			}
+			});
+			return elements.toArray();
 		}
 		return null;
-	}
+	}	
 	
 }

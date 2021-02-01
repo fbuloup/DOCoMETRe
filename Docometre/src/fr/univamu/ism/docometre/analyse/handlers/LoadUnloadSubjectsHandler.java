@@ -28,6 +28,7 @@ import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
+import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
 import fr.univamu.ism.docometre.analyse.editors.ChannelEditor;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
@@ -148,6 +149,15 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 		for (IResource subject : selectedSubjects) {
 			ExperimentsView.refresh(subject, null);
 			SubjectsView.refresh(subject, null);
+			try {
+				if(subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) != null && subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) instanceof ChannelsContainer) {
+					ChannelsContainer channelsContainer = (ChannelsContainer)subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
+					channelsContainer.setUpdateChannelsCache(subject, true);
+				}
+			} catch (CoreException e) {
+				Activator.logErrorMessageWithCause(e);
+				e.printStackTrace();
+			}
 		}
 		SaveModifiedSubjectsHandler.refresh();
 		return null;

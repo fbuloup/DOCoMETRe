@@ -253,7 +253,7 @@ class DOCoMETRe(object):
 	def rename(self, keyRegExp, keyReplace):
 		subDict = {k:v for k,v in docometre.experiments.items() if re.search(keyRegExp, k) != None}
 		for key,value in subDict.items():
-			newKey = re.sub(keyRegExp, keyReplace, key)
+			newKey = re.sub(keyRegExp, keyReplace, key);
 			docometre.experiments[newKey] = docometre.experiments.pop(key);
 		subDict = {k:v for k,v in docometre.experiments.items() if re.search(keyRegExp, k) != None}
 		keyReplace = "^" + re.sub("\.", "\.", keyReplace);
@@ -263,6 +263,16 @@ class DOCoMETRe(object):
 		#	self.gateway.jvm.System.out.println("Is dict empty : " + str(any(subDict2)) + " for " + keyReplace);
 		return (not(any(subDict)) and any(subDict2))
 
+	def getLoadedSubjects(self):
+		keys = {k for k,v in docometre.experiments.items() if re.search('^\w+\.\w+\.\w+\.isSignal', k) != None};
+		loadedSubjects = set();
+		for key in keys:
+			newKey = re.sub("\.\w+\.isSignal$", "", key);
+			loadedSubjects.add(newKey);
+		if(len(loadedSubjects) > 0):
+			return ":".join(loadedSubjects);
+		return "";
+		
 	class Java:
 		implements = ["fr.univamu.ism.docometre.python.PythonEntryPoint"]
 
@@ -391,7 +401,10 @@ if __name__ == "__main__":
 		
 		docometre.loadSubject("./tests/data/");
 		# print(docometre.experiments);
-		print("Time to load subject : " + str(time.time() - startTime));		
+		print("Time to load subject : " + str(time.time() - startTime));	
+		
+		loadedSubjects = docometre.getLoadedSubjects();
+		print(loadedSubjects);	
 		
 		
 		# Rename

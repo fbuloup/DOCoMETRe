@@ -9,6 +9,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -29,6 +30,7 @@ import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.datamodel.BatchDataProcessing;
+import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
 import fr.univamu.ism.docometre.analyse.editors.BatchDataProcessingEditor;
 import fr.univamu.ism.docometre.analyse.editors.ChannelEditor;
 import fr.univamu.ism.docometre.analyse.editors.DataProcessEditor;
@@ -113,6 +115,15 @@ public class RunDataProcessingCommand extends AbstractHandler implements ISelect
 				ResourceProperties.setSubjectModified(modifiedSubject, true);
 				ExperimentsView.refresh(modifiedSubject, null);
 				SubjectsView.refresh(modifiedSubject, null);
+				try {
+					if(modifiedSubject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) != null && modifiedSubject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) instanceof ChannelsContainer) {
+						ChannelsContainer channelsContainer = (ChannelsContainer)modifiedSubject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
+						channelsContainer.setUpdateChannelsCache(modifiedSubject, true);
+					}
+				} catch (CoreException e) {
+					Activator.logErrorMessageWithCause(e);
+					e.printStackTrace();
+				}
 			}
 			if(modifiedSubjects.length > 0) {
 				IEditorReference[] editorsRefs = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
