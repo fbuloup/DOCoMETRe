@@ -269,8 +269,7 @@ public final class MatlabEngine implements MathEngine {
 				
 			}
 			
-			ChannelsContainer channelsContainer = new ChannelsContainer((IFolder) subject);
-			subject.setSessionProperty(ResourceProperties.CHANNELS_LIST_QN, channelsContainer);
+			MathEngine.super.load(subject, loadFromSavedFile);
 			
 		} catch (Exception e) {
 			Activator.logErrorMessageWithCause(e);
@@ -303,17 +302,25 @@ public final class MatlabEngine implements MathEngine {
 	@Override
 	public Channel[] getChannels(IResource subject) {
 		try {
-			if(!ResourceType.isSubject(subject)) return null;
-			String expression = getFullPath(subject);
-			Object[] responses = matlabController.returningEval("fieldnames(" + expression + ")", 1);
-			Object response = responses[0];
-			String[] channelsNames = (String[]) response;
-			ArrayList<Channel> channels = new ArrayList<Channel>();
-			for (String channelName : channelsNames) {
-				Channel channel = new Channel((IFolder) subject, channelName);
-				if(isSignal(channel) || isCategory(channel) || isEvent(channel)) channels.add(channel);
+			if(subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) != null && subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) instanceof ChannelsContainer) {
+				ChannelsContainer channelsContainer = (ChannelsContainer)subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
+				ArrayList<Channel> channels = channelsContainer.manageChannelsCacheBefore(subject);
+				if(channelsContainer.updateChannelsCache(subject)) {
+					System.out.println("Updating cache channel");
+					channels.clear();
+					String expression = getFullPath(subject);
+					Object[] responses = matlabController.returningEval("fieldnames(" + expression + ")", 1);
+					Object response = responses[0];
+					String[] channelsNames = (String[]) response;
+					for (String channelName : channelsNames) {
+						Channel channel = new Channel((IFolder) subject, channelName);
+						if(isSignal(channel) || isCategory(channel) || isEvent(channel)) channels.add(channel);
+					}
+					channelsContainer.manageChannelsCacheAfter(subject, channels);
+				}
+				return channels.toArray(new Channel[channels.size()]);
 			}
-			return channels.toArray(new Channel[channels.size()]);
+			
 		} catch (Exception e) {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
@@ -868,6 +875,38 @@ public final class MatlabEngine implements MathEngine {
 		}
 		
 		return new double[0];
+	}
+
+	@Override
+	public String[] getLoadedSubjects() {
+		try {
+			ArrayList<String> loadedSubjects = new ArrayList<>();
+			long timeStamp = (new Date()).getTime();
+			String variablesString = "Var_" + timeStamp;
+			String cmd = variablesString + " = who;";
+			matlabController.eval(cmd);
+			Object response = matlabController.getVariable(variablesString);
+			cmd = "clear " + variablesString + ";";
+			matlabController.eval(cmd);
+			if(response instanceof String[]) {
+				String[] variables = (String[]) response;
+				for (String variable : variables) {
+					if(isStruct(variable)) {
+						Object[] responses = matlabController.returningEval("fieldnames(" + variable + ")", 1);
+						response = responses[0];
+						String[] subjectsNames = (String[]) response;
+						for (String subjectName : subjectsNames) {
+							loadedSubjects.add(variable + "." + subjectName);
+						}
+					}
+				}
+			}
+			return loadedSubjects.toArray(new String[loadedSubjects.size()]);
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 }

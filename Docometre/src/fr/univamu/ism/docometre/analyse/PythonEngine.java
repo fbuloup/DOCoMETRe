@@ -156,7 +156,7 @@ public class PythonEngine implements MathEngine {
 
 	@Override
 	public void load(IResource subject, boolean loadFromSavedFile) {
-		try {
+//		try {
 			if(!ResourceType.isSubject(subject)) return;
 			
 			String experimentName = subject.getFullPath().segment(0);
@@ -188,12 +188,12 @@ public class PythonEngine implements MathEngine {
 			}
 			
 
-			ChannelsContainer channelsContainer = new ChannelsContainer((IFolder) subject);
-			subject.setSessionProperty(ResourceProperties.CHANNELS_LIST_QN, channelsContainer);
-		} catch (CoreException e) {
-			e.printStackTrace();
-			Activator.logErrorMessageWithCause(e);
-		}
+			MathEngine.super.load(subject, loadFromSavedFile);
+			
+//		} catch (CoreException e) {
+//			e.printStackTrace();
+//			Activator.logErrorMessageWithCause(e);
+//		}
 
 	}
 
@@ -233,16 +233,32 @@ public class PythonEngine implements MathEngine {
 	
 	@Override
 	public Channel[] getChannels(IResource subject) {
-		String key = getFullPath(subject);
-		String channelsNamesString = pythonController.getPythonEntryPoint().getChannels(key);
-		String[] channelsNames = channelsNamesString.split(",");
-		ArrayList<Channel> channels = new ArrayList<Channel>();
-		for (String channelName : channelsNames) {
-			if("".equals(channelName)) continue;
-			Channel channel = new Channel((IFolder) subject, channelName);
-			if(isSignal(channel) || isCategory(channel) || isEvent(channel)) channels.add(channel);
+		long t0 = System.currentTimeMillis();
+		try {
+			if(subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) != null && subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) instanceof ChannelsContainer) {
+				ChannelsContainer channelsContainer = (ChannelsContainer)subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
+				ArrayList<Channel> channels = channelsContainer.manageChannelsCacheBefore(subject);
+				if(channelsContainer.updateChannelsCache(subject)) {
+					System.out.println("Updating cache channel");
+					channels.clear();
+					String key = getFullPath(subject);
+					String channelsNamesString = pythonController.getPythonEntryPoint().getChannels(key);
+					String[] channelsNames = channelsNamesString.split(",");
+					for (String channelName : channelsNames) {
+						if("".equals(channelName)) continue;
+						Channel channel = new Channel((IFolder) subject, channelName);
+						if(isSignal(channel) || isCategory(channel) || isEvent(channel)) channels.add(channel);
+					}
+					channelsContainer.manageChannelsCacheAfter(subject, channels);
+				}
+				System.out.println("getChannels Duration = " + (System.currentTimeMillis() - t0));
+				return channels.toArray(new Channel[channels.size()]);
+			}
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
 		}
-		return channels.toArray(new Channel[channels.size()]);
+		return null;
 	}
 	
 	
@@ -594,6 +610,12 @@ public class PythonEngine implements MathEngine {
     	double[] values = new double[doubleBuffer.capacity()];
     	doubleBuffer.get(values);
     	return values;
+	}
+	
+	@Override
+	public String[] getLoadedSubjects() {
+		String loadedSubjects = pythonController.getPythonEntryPoint().getLoadedSubjects();
+		return loadedSubjects.split(":");
 	}
 
 }
