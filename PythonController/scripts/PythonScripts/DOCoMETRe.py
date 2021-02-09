@@ -418,15 +418,18 @@ if __name__ == "__main__":
 		subject = {k:v for k,v in docometre.experiments.items() if re.search("^tests\.data", k) != None}
 		#print(subject)
 		
-		#values = docometre.experiments["ExperimentName.SubjectName.CAN_Marker1_X.Values"];
-		#frontCut = docometre.experiments["ExperimentName.SubjectName.CAN_Marker1_X.FrontCut"];
-		#endcut = docometre.experiments["ExperimentName.SubjectName.CAN_Marker1_X.endCut"];
-		#columns = numpy.arange(values.shape[1]).reshape(-1,1);
-		#frontCut = 2;
-		#endcut = 4;
-		#mask = (startIndex <= columns) & (columns < stopIndex);
-		#mask = numpy.tile(mask,a.shape[0]);
-		#sum = numpy.nansum(a.T*mask, axis = 0)/mask.sum(axis = 0)
+		# Compute mean using mask 
+		docometre.experiments["ReachabilityCoriolis.PreTestFull.CAN_Marker1_X.NbFeatures"] = NbFeatures + 1;
+		values = docometre.experiments["ReachabilityCoriolis.PreTestFull.CAN_Marker1_X.Values"];
+		fromValues = docometre.experiments["ReachabilityCoriolis.PreTestFull.CAN_Marker1_X.FrontCut"];
+		toValues = docometre.experiments["ReachabilityCoriolis.PreTestFull.CAN_Marker1_X.EndCut"];
+		columns = numpy.arange(values.shape[1]).reshape(-1,1);
+		mask = (fromValues <= columns) & (columns < toValues);
+		docometre.experiments["ReachabilityCoriolis.PreTestFull.CAN_Marker1_X.Feature_MEAN_Values"] = numpy.nansum(values.T*mask, axis = 0)/mask.sum(axis = 0);
+		print(mean[0])
+		print(mean[1])
+		print(mean[2])
+		print(mean[3])
 
 
 		#columns = numpy.arange(docometre.experiments["inputSignal" + ".Values"].shape[1]).reshape(-1,1);
