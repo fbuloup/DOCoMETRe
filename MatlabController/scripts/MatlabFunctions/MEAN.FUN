@@ -57,7 +57,21 @@ if(compute)\n\
 \t\tinputSignal.FeaturesLabels = [inputSignal.FeaturesLabels, {'MEAN'}];\n\
 \tend\n\
 \tinputSignal.NbFeatures = NbFeatures + 1;\n\
-\tinputSignal.Feature_MEAN_Values = mean(inputSignal.Values,2);\n\
+\t[rows, cols] = size(inputSignal.Values);\n\
+\tfromValues = zeros(rows,cols); % Default values when from beginning\n\
+\tif("From_Beginning" ~= "fromInputSignal")\n\
+	\t\tfromValues = inputSignal.FrontCut';\n\
+	\t\tfromValues = repelem(fromValues,1,cols);\n\
+\tend\n\
+\ttoValues = cols*ones(rows,cols); % Default values when to end\n\
+\tif("To_End" ~= "toInputSignal")\n\
+	\t\ttoValues = inputSignal.EndCut';\n\
+	\t\ttoValues = repelem(toValues,1,cols);\n\
+\tend\n\
+\tcolumns = 1:cols;\n\
+\tcolumns = repelem(columns,rows,1);\n\
+\tmask = (fromValues <= columns) & (columns < toValues);\n\
+\tinputSignal.Feature_MEAN_Values = sum(inputSignal.Values,2)./sum(mask, 2);\n\
 \tif (~exist('createdOrModifiedChannels'))\n\
 \t\tcreatedOrModifiedChannels = {'inputSignal'};\n\
 \telse\n\
@@ -70,4 +84,4 @@ else\n\
 \t\tErrorMessages = {[datestr(now,'HH:MM:SS.FFF'), 'From Mean function -> A feature with this label already exists : MEAN']};\n\
 \tend\n\
 end\n\
-clear compute NbFeatures featureNumber;\n\
+clear compute NbFeatures featureNumber rows cols values fromValues toValues columns mask;\n\
