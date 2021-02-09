@@ -148,7 +148,7 @@ public final class ChannelsContainer {
 					// Features
 					int nbFeatures = MathEngineFactory.getMathEngine().getNbFeatures(channel);
 					for (int i = 0; i < nbFeatures; i++) {
-						String featureLabel = MathEngineFactory.getMathEngine().getFeatureLabel(i, channel);
+						String featureLabel = MathEngineFactory.getMathEngine().getFeatureLabel(i+1, channel);
 						features.add(new Channel((IFolder)subject, "Feature_" + featureLabel));
 					}
 					// Front/End cuts
