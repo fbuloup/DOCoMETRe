@@ -115,6 +115,9 @@ class DOCoMETRe(object):
 				self.experiments[loadName + "." + channelName + "." + "NbFeatures"] = "0";
 				self.experiments[loadName + "." + channelName + "." + "NbMarkersGroups"] = "0";
 				self.experiments[loadName + "." + channelName + "." + "Values"] = numpy.zeros((int(totalTrialsNumber), int(maximumSamples)));
+				self.experiments[loadName + "." + channelName + "." + "NbSamples"] = numpy.zeros(int(totalTrialsNumber));
+				self.experiments[loadName + "." + channelName + "." + "FrontCut"] = numpy.zeros(int(totalTrialsNumber));
+				self.experiments[loadName + "." + channelName + "." + "EndCut"] = numpy.zeros(int(totalTrialsNumber));
 
 			# Read data
 			data = numpy.fromfile(dataFiles[n], dtype="float32");
@@ -123,12 +126,12 @@ class DOCoMETRe(object):
 
 			sizeData = len(data);
 			#if(jvmMode): self.gateway.jvm.System.out.println("sizeData : " + str(sizeData));
-			key = loadName + "." + channelName + ".NbSamples." + trialNumber;
-			self.experiments[key] = sizeData;
-			key = loadName + "." + channelName + ".EndCut." + trialNumber;
-			self.experiments[key] = sizeData + 1;
-			key = loadName + "." + channelName + ".FrontCut." + trialNumber;
-			self.experiments[key] = 0;
+			key = loadName + "." + channelName + ".NbSamples";
+			self.experiments[key][int(trialNumber) - 1] = sizeData;
+			key = loadName + "." + channelName + ".FrontCut";
+			self.experiments[key][int(trialNumber) - 1] = 0;
+			key = loadName + "." + channelName + ".EndCut";
+			self.experiments[key][int(trialNumber) - 1] = sizeData + 1;
 			values = self.experiments[loadName + "." + channelName + ".Values"];
 			#if(jvmMode): self.gateway.jvm.System.out.println("size values : " + str(len(values[int(trialNumber) - 1])));
 			values[int(trialNumber) - 1][0:sizeData] = data;
@@ -415,5 +418,19 @@ if __name__ == "__main__":
 		subject = {k:v for k,v in docometre.experiments.items() if re.search("^tests\.data", k) != None}
 		#print(subject)
 		
+		#values = docometre.experiments["ExperimentName.SubjectName.CAN_Marker1_X.Values"];
+		#frontCut = docometre.experiments["ExperimentName.SubjectName.CAN_Marker1_X.FrontCut"];
+		#endcut = docometre.experiments["ExperimentName.SubjectName.CAN_Marker1_X.endCut"];
+		#columns = numpy.arange(values.shape[1]).reshape(-1,1);
+		#frontCut = 2;
+		#endcut = 4;
+		#mask = (startIndex <= columns) & (columns < stopIndex);
+		#mask = numpy.tile(mask,a.shape[0]);
+		#sum = numpy.nansum(a.T*mask, axis = 0)/mask.sum(axis = 0)
+
+
+		#columns = numpy.arange(docometre.experiments["inputSignal" + ".Values"].shape[1]).reshape(-1,1);
+		#frontCut = from;
+		#endCut = to;
 		
 		

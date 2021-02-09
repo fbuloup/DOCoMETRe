@@ -326,25 +326,28 @@ public class PythonEngine implements MathEngine {
 	@Override
 	public int getSamplesNumber(Channel signal, int trialNumber) {
 		String fullName = getFullPath(signal);
-		String expression = "docometre.experiments[\"" + fullName + ".NbSamples." + trialNumber + "\"]";
+//		String expression = "docometre.experiments[\"" + fullName + ".NbSamples." + trialNumber + "\"]";
+		String expression = "docometre.experiments[\"" + fullName + ".NbSamples\"][" + (trialNumber-1) + "]" ;
 		String value = pythonController.getPythonEntryPoint().evaluate(expression);
-		return Integer.parseInt(value);
+		return (int) Double.parseDouble(value);
 	}
 
 	@Override
 	public int getFrontCut(Channel signal, int trialNumber) {
 		String fullName = getFullPath(signal);
-		String expression = "docometre.experiments[\"" + fullName + ".FrontCut." + trialNumber + "\"]";
+//		String expression = "docometre.experiments[\"" + fullName + ".FrontCut." + trialNumber + "\"]";
+		String expression = "docometre.experiments[\"" + fullName + ".FrontCut\"][" + (trialNumber-1) + "]" ;
 		String value = pythonController.getPythonEntryPoint().evaluate(expression);
-		return Integer.parseInt(value);
+		return (int) Double.parseDouble(value);
 	}
 
 	@Override
 	public int getEndCut(Channel signal, int trialNumber) {
 		String fullName = getFullPath(signal);
-		String expression = "docometre.experiments[\"" + fullName + ".EndCut." + trialNumber + "\"]";
+//		String expression = "docometre.experiments[\"" + fullName + ".EndCut." + trialNumber + "\"]";
+		String expression = "docometre.experiments[\"" + fullName + ".EndCut\"][" + (trialNumber-1) + "]" ;
 		String value = pythonController.getPythonEntryPoint().evaluate(expression);
-		return Integer.parseInt(value);
+		return (int) Double.parseDouble(value);
 	}
 
 	@Override
