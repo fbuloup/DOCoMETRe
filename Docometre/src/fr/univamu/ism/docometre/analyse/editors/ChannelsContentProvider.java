@@ -42,18 +42,22 @@ public class ChannelsContentProvider implements IStructuredContentProvider {
 				@Override
 				public void run() {
 					String[] loadedSubjects = MathEngineFactory.getMathEngine().getLoadedSubjects();
+					boolean alreadyDone = false;
 					for (String loadedSubject : loadedSubjects) {
+						if("".equals(loadedSubject)) continue;
 						String path = loadedSubject.replaceAll("\\.", "/");
 						IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(path);
+						if(fromBegToEnd && !alreadyDone) {
+							elements.add(Channel.fromBeginningChannel);
+							elements.add(Channel.toEndChannel);
+							alreadyDone = true;
+						}
 						if(signals) elements.addAll(Arrays.asList(MathEngineFactory.getMathEngine().getSignals(resource)));
 						if(categories) elements.addAll(Arrays.asList(MathEngineFactory.getMathEngine().getCategories(resource)));
 						if(events) elements.addAll(Arrays.asList(MathEngineFactory.getMathEngine().getEvents(resource)));
 						if(markers) elements.addAll(Arrays.asList(MathEngineFactory.getMathEngine().getMarkers(resource)));
 						if(features) elements.addAll(Arrays.asList(MathEngineFactory.getMathEngine().getFeatures(resource)));
-						if(fromBegToEnd) {
-							elements.add(Channel.fromBeginningChannel);
-							elements.add(Channel.toEndChannel);
-						}
+						
 						if(frontEndCut) elements.addAll(Arrays.asList(MathEngineFactory.getMathEngine().getFrontEndCuts(resource)));
 					}
 				}
