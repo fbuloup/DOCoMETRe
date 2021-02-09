@@ -236,6 +236,12 @@ public interface MathEngine {
 		try {
 			if(!(resource instanceof IContainer)) return null;
 			if(fullChannelName == null || "".equals(fullChannelName)) return null;
+			
+			if(Channel.fromBeginningChannel.getName().equals(fullChannelName)) 
+				return Channel.fromBeginningChannel;
+			else if(Channel.toEndChannel.getName().equals(fullChannelName)) 
+				return Channel.toEndChannel;
+			
 			IContainer experiment = (IContainer)resource;
 			
 			String subjectName = fullChannelName.split("\\.")[1];
@@ -259,11 +265,7 @@ public interface MathEngine {
 					for (Channel frontEndCut : frontEndCuts) {
 						if(fullChannelName.equals(frontEndCut.getFullName())) return frontEndCut;
 					}
-				} else if(Channel.fromBeginningChannel.getName().equals(fullChannelName)) 
-					return Channel.fromBeginningChannel;
-				else if(Channel.toEndChannel.getName().equals(fullChannelName)) 
-					return Channel.toEndChannel;
-				else if(fullChannelName.split("\\.").length > 1) {
+				} else if(fullChannelName.split("\\.").length > 1) {
 					Channel[] channels = getChannels(subject);
 					if(channels != null)
 						for (Channel channel : channels) {
