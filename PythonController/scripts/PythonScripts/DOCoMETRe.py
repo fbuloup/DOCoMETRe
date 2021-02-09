@@ -419,17 +419,24 @@ if __name__ == "__main__":
 		#print(subject)
 		
 		# Compute mean using mask 
-		docometre.experiments["ReachabilityCoriolis.PreTestFull.CAN_Marker1_X.NbFeatures"] = NbFeatures + 1;
-		values = docometre.experiments["ReachabilityCoriolis.PreTestFull.CAN_Marker1_X.Values"];
-		fromValues = docometre.experiments["ReachabilityCoriolis.PreTestFull.CAN_Marker1_X.FrontCut"];
-		toValues = docometre.experiments["ReachabilityCoriolis.PreTestFull.CAN_Marker1_X.EndCut"];
+		#docometre.experiments["ExperimentName.SubjectName.CAN_Marker1_X.NbFeatures"] = NbFeatures + 1;
+		values = docometre.experiments["ExperimentName.SubjectName.CAN_Marker1_X.Values"];
+		fromValues = docometre.experiments["ExperimentName.SubjectName.CAN_Marker1_X.FrontCut"];
+		toValues = docometre.experiments["ExperimentName.SubjectName.CAN_Marker1_X.EndCut"];
 		columns = numpy.arange(values.shape[1]).reshape(-1,1);
+		
+		fromValues = numpy.zeros(values.shape[0]);
+		#if "From_Beginning" != "fromInputSignal" : fromValues = docometre.experiments["ExperimentName.SubjectName.CAN_Marker1_X.FrontCut"];
+		toValues = values.shape[1]*numpy.ones(values.shape[0]);
+		#if "To_End" != "toInputSignal" : toValues = docometre.experiments["ExperimentName.SubjectName.CAN_Marker1_X.EndCut"];
+		
+		
 		mask = (fromValues <= columns) & (columns < toValues);
-		docometre.experiments["ReachabilityCoriolis.PreTestFull.CAN_Marker1_X.Feature_MEAN_Values"] = numpy.nansum(values.T*mask, axis = 0)/mask.sum(axis = 0);
-		print(mean[0])
-		print(mean[1])
-		print(mean[2])
-		print(mean[3])
+		docometre.experiments["ExperimentName.SubjectName.Feature_MEAN_Values"] = numpy.nansum(values.T*mask, axis = 0)/mask.sum(axis = 0);
+		print(docometre.experiments["ExperimentName.SubjectName.Feature_MEAN_Values"][0])
+		print(docometre.experiments["ExperimentName.SubjectName.Feature_MEAN_Values"][1])
+		print(docometre.experiments["ExperimentName.SubjectName.Feature_MEAN_Values"][2])
+		print(docometre.experiments["ExperimentName.SubjectName.Feature_MEAN_Values"][3])
 
 
 		#columns = numpy.arange(docometre.experiments["inputSignal" + ".Values"].shape[1]).reshape(-1,1);
