@@ -659,6 +659,7 @@ public final class DocometreMessages extends NLS {
 	public static String MathEngineStopped;
 	public static String WaitingForMathEngine;
 	public static String PleaseWait;
+	public static String UpdateCacheChannels;
 	
 	// Math Engine Preferences
 	public static String MathEngineLabel;

@@ -18,6 +18,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.Activator;
@@ -306,9 +307,9 @@ public final class MatlabEngine implements MathEngine {
 				ChannelsContainer channelsContainer = (ChannelsContainer)subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
 				ArrayList<Channel> channels = channelsContainer.manageChannelsCacheBefore(subject);
 				if(channelsContainer.updateChannelsCache(subject)) {
-					System.out.println("Updating cache channel");
 					channels.clear();
 					String expression = getFullPath(subject);
+					Activator.logInfoMessage(NLS.bind(DocometreMessages.UpdateCacheChannels, expression), MatlabEngine.class);
 					Object[] responses = matlabController.returningEval("fieldnames(" + expression + ")", 1);
 					Object response = responses[0];
 					String[] channelsNames = (String[]) response;

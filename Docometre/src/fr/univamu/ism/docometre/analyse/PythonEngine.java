@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.Activator;
@@ -233,15 +234,14 @@ public class PythonEngine implements MathEngine {
 	
 	@Override
 	public Channel[] getChannels(IResource subject) {
-		long t0 = System.currentTimeMillis();
 		try {
 			if(subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) != null && subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) instanceof ChannelsContainer) {
 				ChannelsContainer channelsContainer = (ChannelsContainer)subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
 				ArrayList<Channel> channels = channelsContainer.manageChannelsCacheBefore(subject);
 				if(channelsContainer.updateChannelsCache(subject)) {
-					System.out.println("Updating cache channel");
 					channels.clear();
 					String key = getFullPath(subject);
+					Activator.logInfoMessage(NLS.bind(DocometreMessages.UpdateCacheChannels, key), PythonEngine.class);
 					String channelsNamesString = pythonController.getPythonEntryPoint().getChannels(key);
 					String[] channelsNames = channelsNamesString.split(",");
 					for (String channelName : channelsNames) {
@@ -251,7 +251,6 @@ public class PythonEngine implements MathEngine {
 					}
 					channelsContainer.manageChannelsCacheAfter(subject, channels);
 				}
-				System.out.println("getChannels Duration = " + (System.currentTimeMillis() - t0));
 				return channels.toArray(new Channel[channels.size()]);
 			}
 		} catch (CoreException e) {
