@@ -54,9 +54,7 @@ outputSignal.EndCut = inputSignal.EndCut;\n\
 nyquistFrequency = 0.5 * inputSignal.SampleFrequency; % Nyquist frequency is half sample frequency\n\
 normalizedCutOffFrequency = cutOffFrequency / nyquistFrequency;\n\
 [num, den] = butter(order, normalizedCutOffFrequency);\n\
-for trialNumber = trialsList\n\
-	outputSignal.Values(trialNumber, :) = filtfilt(num, den, inputSignal.Values(trialNumber, :));\n\
-end\n\
+outputSignal.Values(trialsList, :) = filtfilt(num, den, inputSignal.Values(trialsList, :)')';\n\
 clear num den nyquistFrequency normalizedCutOffFrequency SignalSizes trialNumber;\n\
 if (~exist('createdOrModifiedChannels'))\n\
 createdOrModifiedChannels = {'outputSignal'};\n\
