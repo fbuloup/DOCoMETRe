@@ -57,6 +57,7 @@ public class ADWinRS232Module extends Module {
 	public static final long serialVersionUID = AbstractElement.serialVersionUID;
 	
 	private List<Channel> backedChannels = new ArrayList<Channel>(0);
+	private boolean includeSegmentPassed;
 	
 	public ADWinRS232Module(DACQConfiguration dacqConfiguration) {
 		super(dacqConfiguration);
@@ -66,10 +67,16 @@ public class ADWinRS232Module extends Module {
 	@Override
 	public String getCodeSegment(Object segment) throws Exception {
 		String code = "";
-		if (segment == ADWinCodeSegmentProperties.INCLUDE){
+		if (segment == ADWinCodeSegmentProperties.INCLUDE && !includeSegmentPassed){
+			includeSegmentPassed = true;
 			String systemType = getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.SYSTEM_TYPE);
 //			String cpuType = getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.CPU_TYPE);
-			if(systemType.equals(ADWinDACQConfigurationProperties.PRO)) code = code + "#INCLUDE ADwpEXT.INC\n";
+			boolean addInclude = true;
+			Module[] modules = dacqConfiguration.getModules();
+			for (Module module : modules) {
+				if(module instanceof ADWinCANModule) addInclude = false;
+			}
+			if(systemType.equals(ADWinDACQConfigurationProperties.PRO) && addInclude) code = code + "#INCLUDE ADwpEXT.INC\n";
 		}	
 		
 		if (segment == ADWinCodeSegmentProperties.INITIALIZATION){
@@ -118,8 +125,7 @@ public class ADWinRS232Module extends Module {
 
 	@Override
 	public void reset() {
-		// TODO Auto-generated method stub
-		
+		includeSegmentPassed = false;
 	}
 	
 	private Channel getChannelFromName(String nameToFind) {
