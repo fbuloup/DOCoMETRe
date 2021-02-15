@@ -6,7 +6,17 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-01-25 -- BIS
+      -- 2021-02-15
+ADDED :
+* Support for features in MathEngine
+* Error management  to MathEngine scripts
+* Mean function
+* Channels choices improvements in functions
+* Cache support for channel management
+Fixed :
+* Bug correction on multiple &quot;#INCLUDE ADWPEXT.INC&quot;
+* NbMarkers and NbFields correction to NbMarkersGroups and NbFeatures in data model
+-- 2021-01-25 -- BIS
 FIXED :
 * NPE on monitor cancellation
 ADDED :
