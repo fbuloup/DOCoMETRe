@@ -172,7 +172,7 @@ public class SerialOutputFunction extends GenericFunction {
 		value  = getProperty(asciiStringValueKey, "");
 		stringValueText.setText(value);
 		
-		Label dummyLabel = new Label(paramContainer, SWT.BORDER);
+		Label dummyLabel = new Label(paramContainer, SWT.NONE);
 		dummyLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		
 		Button crlfButton = new Button(paramContainer, SWT.CHECK);

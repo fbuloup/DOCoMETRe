@@ -209,7 +209,7 @@ public class FloatSerialOutputFunction extends GenericFunction {
 		value  = getProperty(floatValueKey, "0");
 		floatValueComboViewer.getCombo().setText(value);
 		
-		Label dummyLabel = new Label(paramContainer, SWT.BORDER);
+		Label dummyLabel = new Label(paramContainer, SWT.NONE);
 		dummyLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		
 		Button crlfButton = new Button(paramContainer, SWT.CHECK);
