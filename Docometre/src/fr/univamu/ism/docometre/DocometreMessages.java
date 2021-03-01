@@ -859,6 +859,14 @@ public final class DocometreMessages extends NLS {
 	// Close workbench
 	public static String CloseMathEngineDialogTitle;
 	public static String CloseMathEngineDialogMessage;
+
+
+	// Export data wizard page
+	public static String ExportDataWizardPageTitle;
+	public static String ExportDataWizardPageDescription;
+	public static String ExportDataWizardPageAdd;
+	public static String ExportDataWizardPageRemoveSelection;
+	public static String ExportDataWizardPageRemoveAll;
 	
 //	public static String OrganizeSessionWizardPage_button_1_text;
 //	public static String OrganizeSessionWizardPage_tbtmNewItem_text;
