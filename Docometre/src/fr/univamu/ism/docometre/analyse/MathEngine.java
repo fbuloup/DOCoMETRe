@@ -133,7 +133,7 @@ public interface MathEngine {
 		try {
 			if(subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) != null && subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) instanceof ChannelsContainer) {
 				ChannelsContainer channelsContainer = (ChannelsContainer)subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
-				return channelsContainer.getSignals(subject);
+				return channelsContainer.getSignals();
 			}
 		} catch (CoreException e) {
 			Activator.logErrorMessageWithCause(e);
@@ -147,7 +147,7 @@ public interface MathEngine {
 		try {
 			if(subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) != null && subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) instanceof ChannelsContainer) {
 				ChannelsContainer channelsContainer = (ChannelsContainer)subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
-				return channelsContainer.getCategories(subject);
+				return channelsContainer.getCategories();
 			}
 		} catch (CoreException e) {
 			Activator.logErrorMessageWithCause(e);
@@ -160,7 +160,7 @@ public interface MathEngine {
 		try {
 			if(subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) != null && subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) instanceof ChannelsContainer) {
 				ChannelsContainer channelsContainer = (ChannelsContainer)subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
-				return channelsContainer.getEvents(subject);
+				return channelsContainer.getEvents();
 			}
 		} catch (CoreException e) {
 			Activator.logErrorMessageWithCause(e);
@@ -173,7 +173,7 @@ public interface MathEngine {
 		try {
 			if(subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) != null && subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) instanceof ChannelsContainer) {
 				ChannelsContainer channelsContainer = (ChannelsContainer)subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
-				return channelsContainer.getMarkers(subject);
+				return channelsContainer.getMarkers();
 			}
 		} catch (CoreException e) {
 			Activator.logErrorMessageWithCause(e);
@@ -186,7 +186,7 @@ public interface MathEngine {
 		try {
 			if(subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) != null && subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) instanceof ChannelsContainer) {
 				ChannelsContainer channelsContainer = (ChannelsContainer)subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
-				return channelsContainer.getFeatures(subject);
+				return channelsContainer.getFeatures();
 			}
 		} catch (CoreException e) {
 			Activator.logErrorMessageWithCause(e);
@@ -199,7 +199,7 @@ public interface MathEngine {
 		try {
 			if(subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) != null && subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) instanceof ChannelsContainer) {
 				ChannelsContainer channelsContainer = (ChannelsContainer)subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
-				return channelsContainer.getFrontEndCuts(subject);
+				return channelsContainer.getFrontEndCuts();
 			}
 		} catch (CoreException e) {
 			Activator.logErrorMessageWithCause(e);
@@ -212,7 +212,7 @@ public interface MathEngine {
 		try {
 			if(subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) != null && subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) instanceof ChannelsContainer) {
 				ChannelsContainer channelsContainer = (ChannelsContainer)subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
-				channelsContainer.setUpdateChannelsCache(subject, update);
+				channelsContainer.setUpdateChannelsCache(update);
 			}
 		} catch (CoreException e) {
 			Activator.logErrorMessageWithCause(e);
@@ -251,17 +251,17 @@ public interface MathEngine {
 			if(subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) != null && subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) instanceof ChannelsContainer) {
 				ChannelsContainer channelsContainer = (ChannelsContainer)subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
 				if(Channel.matchMarker(fullChannelName)) {
-					Channel[] markers = channelsContainer.getMarkers(subject);
+					Channel[] markers = channelsContainer.getMarkers();
 					for (Channel marker : markers) {
 						if(fullChannelName.equals(marker.getFullName())) return marker;
 					}
 				} else if(Channel.matchFeature(fullChannelName)) {
-					Channel[] features = channelsContainer.getFeatures(subject);
+					Channel[] features = channelsContainer.getFeatures();
 					for (Channel feature : features) {
 						if(fullChannelName.equals(feature.getFullName())) return feature;
 					}
 				} else if(Channel.matchFrontEndCut(fullChannelName)) {
-					Channel[] frontEndCuts = channelsContainer.getFrontEndCuts(subject);
+					Channel[] frontEndCuts = channelsContainer.getFrontEndCuts();
 					for (Channel frontEndCut : frontEndCuts) {
 						if(fullChannelName.equals(frontEndCut.getFullName())) return frontEndCut;
 					}

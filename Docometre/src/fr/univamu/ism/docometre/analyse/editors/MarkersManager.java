@@ -55,7 +55,7 @@ public final class MarkersManager extends MouseAdapter implements ICustomPaintLi
 							Channel signal = channelsContainer.getChannelFromName(fullSignalName);
 							if(signal != null) {
 								MathEngineFactory.getMathEngine().addMarker(markersGroupLabel, trialNumber, coordinates[0], coordinates[1], signal);
-								channelsContainer.setUpdateChannelsCache(signal.getSubject(), true);
+								channelsContainer.setUpdateChannelsCache(true);
 								signalContainerEditor.updateMarkersGroup(markersGroupLabel);
 								signalContainerEditor.getChart().redraw();
 							}

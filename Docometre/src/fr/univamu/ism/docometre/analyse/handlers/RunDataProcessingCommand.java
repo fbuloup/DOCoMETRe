@@ -118,7 +118,7 @@ public class RunDataProcessingCommand extends AbstractHandler implements ISelect
 				try {
 					if(modifiedSubject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) != null && modifiedSubject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) instanceof ChannelsContainer) {
 						ChannelsContainer channelsContainer = (ChannelsContainer)modifiedSubject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
-						channelsContainer.setUpdateChannelsCache(modifiedSubject, true);
+						channelsContainer.setUpdateChannelsCache(true);
 					}
 				} catch (CoreException e) {
 					Activator.logErrorMessageWithCause(e);

@@ -152,7 +152,7 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 			try {
 				if(subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) != null && subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) instanceof ChannelsContainer) {
 					ChannelsContainer channelsContainer = (ChannelsContainer)subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
-					channelsContainer.setUpdateChannelsCache(subject, true);
+					channelsContainer.setUpdateChannelsCache(true);
 				}
 			} catch (CoreException e) {
 				Activator.logErrorMessageWithCause(e);

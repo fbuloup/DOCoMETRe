@@ -43,18 +43,18 @@ public final class ChannelsContainer {
 		this.subject = subject;
 	}
 	
-	public boolean updateChannelsCache(IResource subject) {
+	public boolean updateChannelsCache() {
 		Boolean updateCache = updateChannelsCache.get(subject.getFullPath().toPortableString());
 		updateCache = (updateCache == null) ? true : updateCache;
 		return updateCache;
 	}
 	
-	public void setUpdateChannelsCache(IResource subject, boolean update) {
+	public void setUpdateChannelsCache(boolean update) {
 		if(MathEngineFactory.getMathEngine().isSubjectLoaded(subject)) updateChannelsCache.put(subject.getFullPath().toPortableString(), update);
-		else removeChannelsCache(subject);
+		else removeChannelsCache();
 	}
 	
-	private void removeChannelsCache(IResource subject) {
+	private void removeChannelsCache() {
 		channelsCache.remove(subject.getFullPath().toPortableString());
 		channelsMarkersCache.remove(subject.getFullPath().toPortableString());
 		channelsFeaturesCache.remove(subject.getFullPath().toPortableString());
@@ -64,57 +64,57 @@ public final class ChannelsContainer {
 		eventsCache.remove(subject.getFullPath().toPortableString());
 	}
 	
-	public ArrayList<Channel> manageChannelsCacheBefore(IResource subject) {
+	public ArrayList<Channel> manageChannelsCacheBefore() {
 		ArrayList<Channel> channels = new ArrayList<>();
-		if(!updateChannelsCache(subject)) channels = channelsCache.get(subject.getFullPath().toPortableString());
+		if(!updateChannelsCache()) channels = channelsCache.get(subject.getFullPath().toPortableString());
 		return channels;
 	}
 	
-	private void checkChannelsCache(IResource subject) {
-		if(MathEngineFactory.getMathEngine().isSubjectLoaded(subject) && updateChannelsCache(subject) == true) {
+	private void checkChannelsCache() {
+		if(MathEngineFactory.getMathEngine().isSubjectLoaded(subject) && updateChannelsCache() == true) {
 			MathEngineFactory.getMathEngine().getChannels(subject);
 		}
 	}
 	
-	public Channel[] getSignals(IResource subject) {
-		checkChannelsCache(subject);
+	public Channel[] getSignals() {
+		checkChannelsCache();
 		ArrayList<Channel> signals = signalsCache.get(subject.getFullPath().toPortableString());
 		return signals.toArray(new Channel[signals.size()]);
 	}
 
 	
-	public Channel[] getCategories(IResource subject) {
-		checkChannelsCache(subject);
+	public Channel[] getCategories() {
+		checkChannelsCache();
 		ArrayList<Channel> categories = categoriesCache.get(subject.getFullPath().toPortableString());
 		return categories.toArray(new Channel[categories.size()]);
 	}
 	
-	public Channel[] getEvents(IResource subject) {
-		checkChannelsCache(subject);
+	public Channel[] getEvents() {
+		checkChannelsCache();
 		ArrayList<Channel> events = eventsCache.get(subject.getFullPath().toPortableString());
 		return events.toArray(new Channel[events.size()]);
 	}
 	
-	public Channel[] getMarkers(IResource subject) {
-		checkChannelsCache(subject);
+	public Channel[] getMarkers() {
+		checkChannelsCache();
 		ArrayList<Channel> markers = channelsMarkersCache.get(subject.getFullPath().toPortableString());
 		return markers.toArray(new Channel[markers.size()]);
 	}
 
-	public Channel[] getFeatures(IResource subject) {
-		checkChannelsCache(subject);
+	public Channel[] getFeatures() {
+		checkChannelsCache();
 		ArrayList<Channel> features = channelsFeaturesCache.get(subject.getFullPath().toPortableString());
 		return features.toArray(new Channel[features.size()]);
 	}
 	
-	public Channel[] getFrontEndCuts(IResource subject) {
-		checkChannelsCache(subject);
+	public Channel[] getFrontEndCuts() {
+		checkChannelsCache();
 		ArrayList<Channel> frontEndCuts = channelsFrontEndCutsCache.get(subject.getFullPath().toPortableString());
 		return frontEndCuts.toArray(new Channel[frontEndCuts.size()]);
 	}
 	
 	public void manageChannelsCacheAfter(IResource subject, ArrayList<Channel> channels) {
-		if(updateChannelsCache(subject)) {
+		if(updateChannelsCache()) {
 			channelsCache.put(subject.getFullPath().toPortableString(), channels);
 			// Update markers, features and front/end cuts cache
 			ArrayList<Channel> markers = channelsMarkersCache.get(subject.getFullPath().toPortableString());
@@ -170,7 +170,7 @@ public final class ChannelsContainer {
 			signalsCache.put(subject.getFullPath().toPortableString(), signals);
 			categoriesCache.put(subject.getFullPath().toPortableString(), categories);
 			eventsCache.put(subject.getFullPath().toPortableString(), events);
-			setUpdateChannelsCache(subject, false);
+			setUpdateChannelsCache(false);
 		}
 	}
 	
