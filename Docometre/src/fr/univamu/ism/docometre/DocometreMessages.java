@@ -867,6 +867,16 @@ public final class DocometreMessages extends NLS {
 	public static String ExportDataWizardPageAdd;
 	public static String ExportDataWizardPageRemoveSelection;
 	public static String ExportDataWizardPageRemoveAll;
+	public static String ExportDestination;
+	public static String ExportType;
+	public static String ExportInSingleFile;
+	public static String SingleFileName;
+	public static String Separator;
+	public static String DataExportError1;
+	public static String DataExportError2;
+	public static String DataExportError3;
+	public static String DataExportError4;
+	public static String DataExportError5;
 	
 //	public static String OrganizeSessionWizardPage_button_1_text;
 //	public static String OrganizeSessionWizardPage_tbtmNewItem_text;
