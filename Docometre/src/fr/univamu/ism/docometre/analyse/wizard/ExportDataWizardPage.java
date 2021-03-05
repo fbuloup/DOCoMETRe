@@ -45,7 +45,12 @@ public class ExportDataWizardPage extends WizardPage {
 	private Button exportSingleFileButton;
 	private Text singleFileNameText;
 	private Text separatorText;
-	private ListViewer dataListViewer; 
+	private ListViewer dataListViewer;
+	private String destination;
+	private String exportType;
+	private boolean singleFile;
+	private String singleFileName;
+	private String separator; 
 
 	protected ExportDataWizardPage() {
 		super("ExportDataWizardPage");
@@ -90,7 +95,7 @@ public class ExportDataWizardPage extends WizardPage {
 		exportTypeComboViewer = new ComboViewer(container, SWT.READ_ONLY);
 		exportTypeComboViewer.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 		exportTypeComboViewer.setContentProvider(new ArrayContentProvider());
-		exportTypeComboViewer.setInput(new String[] {"Signal", "Event", "Marker", "Feature"});
+		exportTypeComboViewer.setInput(new String[] {ExportDataWizard.SIGNAL_TYPE, ExportDataWizard.EVENT_TYPE, ExportDataWizard.MARKER_TYPE, ExportDataWizard.FEATURE_TYPE});
 		exportTypeComboViewer.getCombo().addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -201,8 +206,9 @@ public class ExportDataWizardPage extends WizardPage {
 	}
 	
 	private Object[] computeSelectionItems() {
+		checkPageComplete();
 		String exportType = exportTypeComboViewer.getCombo().getText();
-		if(exportType == null) return new Object[0];
+		if(exportType == null || "".equals(exportType)) return new Object[0];
 		if(!MathEngineFactory.getMathEngine().isStarted()) return new Object[0];
 		
 		ArrayList<Object> elements = new ArrayList<>();
@@ -218,9 +224,9 @@ public class ExportDataWizardPage extends WizardPage {
 					ChannelsContainer channelsContainer = (ChannelsContainer)object;
 					Channel[] channels = null;
 					if("Signal".equals(exportType)) channels = channelsContainer.getSignals();
-					if("Event".equals(exportType)) channelsContainer.getEvents();
-					if("Marker".equals(exportType)) channelsContainer.getMarkers();
-					if("Feature".equals(exportType)) channelsContainer.getFeatures();
+					if("Event".equals(exportType)) channels = channelsContainer.getEvents();
+					if("Marker".equals(exportType)) channels = channelsContainer.getMarkers();
+					if("Feature".equals(exportType)) channels = channelsContainer.getFeatures();
 					elements.addAll(Arrays.asList(channels));
 				}
 			} catch (CoreException e) {
@@ -234,11 +240,11 @@ public class ExportDataWizardPage extends WizardPage {
 	}
 	
 	private void checkPageComplete() {
-		String destination = exportDestinationText.getText();
-		String exportType = exportTypeComboViewer.getCombo().getText();
-		boolean singleFile = exportSingleFileButton.getSelection();
-		String singleFileName = singleFileNameText.getText();
-		String separator = separatorText.getText();
+		destination = exportDestinationText.getText();
+		exportType = exportTypeComboViewer.getCombo().getText();
+		singleFile = exportSingleFileButton.getSelection();
+		singleFileName = singleFileNameText.getText();
+		separator = separatorText.getText();
 		setErrorMessage(null);
 		setPageComplete(false);
 		File destinationFolder = new File(destination);
@@ -266,4 +272,31 @@ public class ExportDataWizardPage extends WizardPage {
 		}
 		setPageComplete(true);
 	}
+
+	public LinkedHashSet<Object> getSelection() {
+		return selection;
+	}
+
+	public String getDestination() {
+		return destination;
+	}
+
+	public String getExportType() {
+		return exportType;
+	}
+
+	public boolean isSingleFile() {
+		return singleFile;
+	}
+
+	public String getSingleFileName() {
+		return singleFileName;
+	}
+
+	public String getSeparator() {
+		return separator;
+	}
+	
+	
+	
 }

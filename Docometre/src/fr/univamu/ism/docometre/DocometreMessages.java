@@ -49,8 +49,6 @@ public final class DocometreMessages extends NLS {
 	
 	private static final String BUNDLE_NAME = "fr.univamu.ism.docometre.messages";//$NON-NLS-1$
 
-	
-
 	/*Experiment View*/
 	public static String ExperimentsViewTitle;
 	public static String NoAssociatedProcessFile;
@@ -877,6 +875,10 @@ public final class DocometreMessages extends NLS {
 	public static String DataExportError3;
 	public static String DataExportError4;
 	public static String DataExportError5;
+	public static String DataExportMainTaskTitle;
+	public static String DataExportSignalSubtaskMessage;
+	public static String DataExportErrorOccuredDialogTitle;
+	public static String DataExportErrorOccuredDialogMessage;
 	
 //	public static String OrganizeSessionWizardPage_button_1_text;
 //	public static String OrganizeSessionWizardPage_tbtmNewItem_text;

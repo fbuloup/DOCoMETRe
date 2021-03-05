@@ -289,6 +289,18 @@ public interface MathEngine {
 		return code;
 	}
 	
+	default String getCategoryForTrialNumber(Channel channel, int trialNumber) {
+		IResource subject = channel.getSubject();
+		Channel[] categories = getCategories(subject);
+		for (Channel category : categories) {
+			Integer[] trials = getTrialsListForCategory(category);
+			if(Arrays.asList(trials).contains(trialNumber)) {
+				return getCriteriaForCategory(category);
+			}
+		}
+		return "";
+	}
+	
 	
 	
 	
