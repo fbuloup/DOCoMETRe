@@ -142,7 +142,7 @@ public final class ChannelsContainer {
 					// Markers
 					int nbMarkersGroups = MathEngineFactory.getMathEngine().getNbMarkersGroups(channel);
 					for (int i = 0; i < nbMarkersGroups; i++) {
-						String markersGroupLabel = MathEngineFactory.getMathEngine().getMarkersGroupLabel(i, channel);
+						String markersGroupLabel = MathEngineFactory.getMathEngine().getMarkersGroupLabel(i+1, channel);
 						markers.add(new Channel((IFolder)subject, "MarkersGroup_" + markersGroupLabel));
 					}
 					// Features
