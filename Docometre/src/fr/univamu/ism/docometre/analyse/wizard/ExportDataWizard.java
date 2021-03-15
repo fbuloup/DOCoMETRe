@@ -129,7 +129,10 @@ public class ExportDataWizard extends Wizard {
 									
 								}
 								if(MARKER_TYPE.equals(exportType)) {
-									
+									// Trial Number; Session Name ;Channel Name; Marker Group Name; time; Value; Channel Name; Marker Group Name; time; Value; etc.
+									if(channel.isMarker()) {
+										System.out.println("Markers");
+									}
 								}
 								if(FEATURE_TYPE.equals(exportType)) {
 									
