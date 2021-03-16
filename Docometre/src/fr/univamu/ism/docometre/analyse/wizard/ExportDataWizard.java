@@ -78,8 +78,7 @@ public class ExportDataWizard extends Wizard {
 						}
 					}
 					
-					if(SIGNAL_TYPE.equals(exportType)) monitor.beginTask(DocometreMessages.DataExportMainTaskTitle, selection.size()*100);
-					if(MARKER_TYPE.equals(exportType)) {
+					if(MARKER_TYPE.equals(exportType) || FEATURE_TYPE.equals(exportType)) {
 						int work = selection.size()*100;
 						work = singleFile ? work + 10 : work + selection.size()*10;
 						monitor.beginTask(DocometreMessages.DataExportMainTaskTitle, work);
