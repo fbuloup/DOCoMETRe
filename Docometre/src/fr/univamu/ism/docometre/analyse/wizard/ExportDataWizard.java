@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -57,10 +58,13 @@ public class ExportDataWizard extends Wizard {
 					LinkedHashSet<Object> selection = exportDataWizardPage.getSelection();
 					HashMap<IResource, FileWriter> dataFiles = new HashMap<>();
 					FileWriter currentFileWriter = null;
+					HashMap<FileWriter, HashMap<Integer, String>> currentMFHashMap = new HashMap<>();
 					if (singleFile) {
 						try {
-							String dataFileName = destination + File.pathSeparator + singleFileName;
+							String dataFileName = destination + File.separator + singleFileName;
 							currentFileWriter = new FileWriter(dataFileName);
+							HashMap<Integer, String> currentMFValuesHashMap = new HashMap<>();
+							currentMFHashMap.put(currentFileWriter, currentMFValuesHashMap);
 						} catch (IOException e) {
 							Activator.logErrorMessageWithCause(e);
 							e.printStackTrace();
@@ -68,7 +72,12 @@ public class ExportDataWizard extends Wizard {
 						}
 					}
 					
-					monitor.beginTask(DocometreMessages.DataExportMainTaskTitle, selection.size()*100);
+					if(SIGNAL_TYPE.equals(exportType)) monitor.beginTask(DocometreMessages.DataExportMainTaskTitle, selection.size()*100);
+					if(MARKER_TYPE.equals(exportType)) {
+						int work = selection.size()*100;
+						work = singleFile ? work + 10 : work + selection.size()*10;
+						monitor.beginTask(DocometreMessages.DataExportMainTaskTitle, work);
+					}
 					
 					MathEngine mathEngine = MathEngineFactory.getMathEngine();
 					for (Object object : selection) {
@@ -84,6 +93,8 @@ public class ExportDataWizard extends Wizard {
 										dataFileName = destination + File.separator + dataFileName + ".txt";
 										dataFile = new FileWriter(dataFileName);
 										dataFiles.put(subject, dataFile);
+										HashMap<Integer, String> currentMFValuesHashMap = new HashMap<>();
+										currentMFHashMap.put(dataFile, currentMFValuesHashMap);
 									}
 									currentFileWriter = dataFile;
 								} catch (IOException e) {
@@ -104,7 +115,8 @@ public class ExportDataWizard extends Wizard {
 									// 3 ; cat1 ; values...
 									// 4 ; cat3 ; values...
 									// ...
-									currentFileWriter.write("Signal name" + separator + channel.getName() + "\n");
+									if(!singleFile) currentFileWriter.write("Signal name" + separator + channel.getName() + "\n");
+									else currentFileWriter.write("Signal name" + separator + channel.getFullName() + "\n");
 									double sf = mathEngine.getSampleFrequency(channel);
 									currentFileWriter.write("Sample frequency" + separator + String.valueOf(sf) + "\n");
 									int nbTrials = mathEngine.getTrialsNumber(channel);
@@ -116,7 +128,7 @@ public class ExportDataWizard extends Wizard {
 										double[] values = mathEngine.getYValuesForSignal(channel, trialNumber + 1);
 										String criteria = mathEngine.getCategoryForTrialNumber(channel, trialNumber + 1);
 										String stringValues = Arrays.toString(values).replaceAll("\\[", "").replaceAll("\\]", "").replaceAll(",", separator);
-										currentFileWriter.write(String.valueOf(trialNumber) + separator + criteria + separator + stringValues + "\n");
+										currentFileWriter.write(String.valueOf(trialNumber+1) + separator + criteria + separator + stringValues + "\n");
 										double worked = 1.0*trialNumber/nbTrials*100 - lastWorks;
 										if(worked >= 1) {
 											monitor.worked(1);
@@ -130,12 +142,59 @@ public class ExportDataWizard extends Wizard {
 								}
 								if(MARKER_TYPE.equals(exportType)) {
 									// Trial Number; Session Name ;Channel Name; Marker Group Name; time; Value; Channel Name; Marker Group Name; time; Value; etc.
-									if(channel.isMarker()) {
-										System.out.println("Markers");
+									HashMap<Integer, String> currentMarkersValuesHashMap = currentMFHashMap.get(currentFileWriter);
+									double[][] markersValues = MathEngineFactory.getMathEngine().getMarkers(channel.getLabel(), channel.getParentChannel());
+									int totalTrials = markersValues.length;
+									int numTrial = 0;
+									double lastWorks = 0;
+									monitor.subTask("Getting markers values for " + channel.getFullName());
+									for (double[] values : markersValues) {
+										int trialNumber = (int)values[0];
+										numTrial++;
+										String markersLine = currentMarkersValuesHashMap.get(trialNumber);
+										if(markersLine == null) {
+											String category = MathEngineFactory.getMathEngine().getCategoryForTrialNumber(channel.getParentChannel(), trialNumber);
+											markersLine = "" + trialNumber + separator + category;
+										}
+										if(!singleFile) markersLine += separator + channel.getParentChannel().getName();
+										else markersLine += separator + channel.getParentChannel().getFullName();
+										markersLine += separator + channel.getLabel() + separator + values[1] + separator + values[2];
+										currentMarkersValuesHashMap.put(trialNumber, markersLine);
+										double worked = 1.0*numTrial/totalTrials*100 - lastWorks;
+										if(worked >= 1) {
+											monitor.worked((int) worked);
+											lastWorks += worked;
+										}
+										Thread.sleep(1000);
 									}
 								}
 								if(FEATURE_TYPE.equals(exportType)) {
-									
+									// Trial Number; Session Name ;Channel Name; Feature Name; Value; Channel Name; Feature Name; Value; etc.
+									HashMap<Integer, String> currentFeaturesValuesHashMap = currentMFHashMap.get(currentFileWriter);
+									double[] featuresValues = MathEngineFactory.getMathEngine().getFeature(channel.getLabel(), channel.getParentChannel());
+									int totalTrials = featuresValues.length;
+									int numTrial = 0;
+									double lastWorks = 0;
+									monitor.subTask("Getting features values for " + channel.getFullName());
+									for (double value : featuresValues) {
+										int trialNumber = numTrial + 1;
+										numTrial++;
+										String featuresLine = currentFeaturesValuesHashMap.get(trialNumber);
+										if(featuresLine == null) {
+											String category = MathEngineFactory.getMathEngine().getCategoryForTrialNumber(channel.getParentChannel(), trialNumber);
+											featuresLine = "" + trialNumber + separator + category;
+										}
+										if(!singleFile) featuresLine += separator + channel.getParentChannel().getName();
+										else featuresLine += separator + channel.getParentChannel().getFullName();
+										featuresLine += separator + channel.getLabel() + separator + value;
+										currentFeaturesValuesHashMap.put(trialNumber, featuresLine);
+										double worked = 1.0*numTrial/totalTrials*100 - lastWorks;
+										if(worked >= 1) {
+											monitor.worked((int) worked);
+											lastWorks += worked;
+										}
+										Thread.sleep(1000);
+									}
 								}
 							} catch (IOException e) {
 								Activator.logErrorMessageWithCause(e);
@@ -145,23 +204,53 @@ public class ExportDataWizard extends Wizard {
 							}
 							
 
-							Thread.sleep(100);
 						}
-						monitor.worked(1);
+						//monitor.worked(1);
 						if (monitor.isCanceled()) break;
 					}
-					// Close data files
-					Set<IResource> keys = dataFiles.keySet();
-					for (IResource subject : keys) {
-						FileWriter dataFile = dataFiles.get(subject);
+					// if export markers or features, write data to file
+					Set<FileWriter> fileWriters = currentMFHashMap.keySet();
+					for (FileWriter fileWriter : fileWriters) {
 						try {
-							dataFile.close();
+							monitor.subTask("Writing file...");
+							HashMap<Integer, String> mfValuesHashMap = currentMFHashMap.get(fileWriter);
+							Collection<String> mfValues = mfValuesHashMap.values();
+							for (String mfValue : mfValues) {
+								fileWriter.write(mfValue + "\n");
+							}
+							fileWriter.flush();
+							monitor.worked(100);
+							Thread.sleep(1000);
 						} catch (IOException e) {
 							Activator.logErrorMessageWithCause(e);
 							e.printStackTrace();
 							anErrorOccured = true;
 						}
 					}
+					// Close data files
+					if(singleFile) {
+						try {
+							currentFileWriter.close();
+						} catch (IOException e) {
+							Activator.logErrorMessageWithCause(e);
+							e.printStackTrace();
+							anErrorOccured = true;
+						}
+					} else {
+						Set<IResource> keys = dataFiles.keySet();
+						for (IResource subject : keys) {
+							FileWriter dataFile = dataFiles.get(subject);
+							try {
+								dataFile.flush();
+								dataFile.close();
+							} catch (IOException e) {
+								Activator.logErrorMessageWithCause(e);
+								e.printStackTrace();
+								anErrorOccured = true;
+							}
+						}
+					}
+					
 					
 				}
 			});

@@ -41,6 +41,9 @@ public class Channel implements IFile {
 	
 	private String name;
 	private IFolder subject;
+	private Channel parentChannel;
+	private boolean isMarker;
+	private boolean isFeature;
 	
 	public Channel(IFolder subject, String name) {
 		this.subject = subject;
@@ -48,8 +51,25 @@ public class Channel implements IFile {
 		ResourceProperties.setObjectSessionProperty(this, this);
 	}
 	
+	public Channel(IFolder subject, Channel parentChannel, String name, boolean isMarker, boolean isFeature) {
+		this(subject, name);
+		if(isMarker && isFeature) throw new IllegalArgumentException("Cannot be a marker and a feature at the same time !");
+		this.parentChannel = parentChannel;
+		this.isMarker = isMarker;
+		this.isFeature = isFeature;
+	}
+	
 	public IResource getSubject() {
 		return subject;
+	}
+	
+	public Channel getParentChannel() {
+		return parentChannel;
+	}
+	
+	public String getLabel() {
+		if(!(isMarker || isFeature)) return null;
+		return getName().split("_")[1];
 	}
 
 	public void setModified(boolean modified) {
@@ -63,7 +83,10 @@ public class Channel implements IFile {
 	}
 	
 	public String getFullName() {
-		if(isMarker() || isFeature() || isFrontEndCut() || isFromBeginningToEnd()) return getName();
+		if(isMarker() || isFeature()) {
+			return subject.getFullPath().toString().replaceAll("^/", "").replaceAll("/", ".") + "." + parentChannel.getName() + "." + getName();
+		}
+		if(isFrontEndCut() || isFromBeginningToEnd()) return getName();
 		return subject.getFullPath().toString().replaceAll("^/", "").replaceAll("/", ".") + "." + getName();
 	}
 	
@@ -95,7 +118,7 @@ public class Channel implements IFile {
 	}
 	
 	public boolean isMarker() {
-		return matchMarker(getName());
+		return isMarker;
 	}
 	
 	public static boolean matchFeature(String name) {
@@ -103,7 +126,7 @@ public class Channel implements IFile {
 	}
 	
 	public boolean isFeature() {
-		return matchFeature(getName());
+		return isFeature;
 	}
 	
 	public static boolean matchFrontEndCut(String name) {
@@ -119,7 +142,7 @@ public class Channel implements IFile {
 	public boolean isFromBeginningToEnd() {
 		return this == fromBeginningChannel || this == toEndChannel;
 	}
-
+	
 	@Override
 	public void accept(IResourceProxyVisitor visitor, int memberFlags) throws CoreException {
 		

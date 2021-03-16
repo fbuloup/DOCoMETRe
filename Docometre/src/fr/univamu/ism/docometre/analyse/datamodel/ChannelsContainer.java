@@ -143,13 +143,15 @@ public final class ChannelsContainer {
 					int nbMarkersGroups = MathEngineFactory.getMathEngine().getNbMarkersGroups(channel);
 					for (int i = 0; i < nbMarkersGroups; i++) {
 						String markersGroupLabel = MathEngineFactory.getMathEngine().getMarkersGroupLabel(i+1, channel);
-						markers.add(new Channel((IFolder)subject, "MarkersGroup_" + markersGroupLabel));
+						Channel newMarker = new Channel((IFolder)subject, channel, "MarkersGroup_" + markersGroupLabel, true, false);
+						markers.add(newMarker);
 					}
 					// Features
 					int nbFeatures = MathEngineFactory.getMathEngine().getNbFeatures(channel);
 					for (int i = 0; i < nbFeatures; i++) {
 						String featureLabel = MathEngineFactory.getMathEngine().getFeatureLabel(i+1, channel);
-						features.add(new Channel((IFolder)subject, "Feature_" + featureLabel));
+						Channel newFeature = new Channel((IFolder)subject, channel, "Feature_" + featureLabel, false, true);
+						features.add(newFeature);
 					}
 					// Front/End cuts
 					if(channel.isSignal()) {
