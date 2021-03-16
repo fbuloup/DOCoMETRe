@@ -40,5 +40,5 @@ else:\n\
 	\tif "ErrorMessages" in docometre.experiments.keys():\n\
 		\t\tdocometre.experiments["ErrorMessages"] = docometre.experiments["ErrorMessages"] + "|" + datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S:%f')[:-3] + " - From Mean function -> A feature with this label already exists : MEAN";\n\
 	\telse:\n\
-		\t\tdocometre.experiments["ErrorMessages"] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S:%f')[:-3] + " - From Mean function -> A feature with this label already exists : MEAN";\n\
+		\t\tdocometre.experiments["ErrorMessages"] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S:%f')[:-3] + " - From Mean function -> A feature with this label already exists : MEAN (inputSignal)";\n\
 #del compute NbFeatures featureNumber;
