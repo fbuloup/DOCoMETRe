@@ -11,10 +11,9 @@ import numpy;\n\
 # Create filtered signal\n\
 SignalSizes = docometre.experiments['inputSignal.Values'].shape; # SignalSizes[0] : trials number - SignalSizes[1] : samples number\n\
 docometre.experiments['outputSignal.Values'] = numpy.zeros((SignalSizes[0], SignalSizes[1]));\n\
-for trial in range(1,SignalSizes[0]+1):\n\
-\tdocometre.experiments['outputSignal.NbSamples.' + str(trial)] = docometre.experiments['inputSignal.NbSamples.' + str(trial)];\n\
-\tdocometre.experiments['outputSignal.FrontCut.' + str(trial)] = docometre.experiments['inputSignal.FrontCut.' + str(trial)];\n\
-\tdocometre.experiments['outputSignal.EndCut.' + str(trial)] = docometre.experiments['inputSignal.EndCut.' + str(trial)];\n\
+docometre.experiments['outputSignal.NbSamples'] = docometre.experiments['inputSignal.NbSamples'];\n\
+docometre.experiments['outputSignal.FrontCut'] = docometre.experiments['inputSignal.FrontCut'];\n\
+docometre.experiments['outputSignal.EndCut'] = docometre.experiments['inputSignal.EndCut'];\n\
 docometre.experiments['outputSignal.isSignal'] = 1;\n\
 docometre.experiments['outputSignal.isCategory'] = 0;\n\
 docometre.experiments['outputSignal.isEvent'] = 0;\n\
