@@ -58,13 +58,19 @@ public class ExportDataWizard extends Wizard {
 					LinkedHashSet<Object> selection = exportDataWizardPage.getSelection();
 					HashMap<IResource, FileWriter> dataFiles = new HashMap<>();
 					FileWriter currentFileWriter = null;
+					HashMap<FileWriter, String> fileWriterToFileName = new HashMap<>();
 					HashMap<FileWriter, HashMap<Integer, String>> currentMFHashMap = new HashMap<>();
 					if (singleFile) {
 						try {
 							String dataFileName = destination + File.separator + singleFileName;
 							currentFileWriter = new FileWriter(dataFileName);
-							HashMap<Integer, String> currentMFValuesHashMap = new HashMap<>();
-							currentMFHashMap.put(currentFileWriter, currentMFValuesHashMap);
+							fileWriterToFileName.put(currentFileWriter, dataFileName);
+							if(MARKER_TYPE.equals(exportType) || FEATURE_TYPE.equals(exportType)) {
+								HashMap<Integer, String> currentMFValuesHashMap = new HashMap<>();
+								currentMFHashMap.put(currentFileWriter, currentMFValuesHashMap);
+								if(MARKER_TYPE.equals(exportType)) currentFileWriter.write("Trial Number;Session;Signal Name;Marker Label;Time Value;Value\n");
+								if(FEATURE_TYPE.equals(exportType)) currentFileWriter.write("Trial Number;Session;Signal Name;Feature Label;Value\n");
+							}
 						} catch (IOException e) {
 							Activator.logErrorMessageWithCause(e);
 							e.printStackTrace();
@@ -93,8 +99,11 @@ public class ExportDataWizard extends Wizard {
 										dataFileName = destination + File.separator + dataFileName + ".txt";
 										dataFile = new FileWriter(dataFileName);
 										dataFiles.put(subject, dataFile);
+										fileWriterToFileName.put(dataFile, dataFileName);
 										HashMap<Integer, String> currentMFValuesHashMap = new HashMap<>();
 										currentMFHashMap.put(dataFile, currentMFValuesHashMap);
+										if(MARKER_TYPE.equals(exportType)) dataFile.write("Trial Number;Session;Signal Name;Marker Label;Time Value;Value\n");
+										if(FEATURE_TYPE.equals(exportType)) dataFile.write("Trial Number;Session;Signal Name;Feature Label;Value\n");
 									}
 									currentFileWriter = dataFile;
 								} catch (IOException e) {
@@ -138,7 +147,7 @@ public class ExportDataWizard extends Wizard {
 									
 								}
 								if(EVENT_TYPE.equals(exportType)) {
-									
+									// TODO
 								}
 								if(MARKER_TYPE.equals(exportType)) {
 									// Trial Number; Session Name ;Channel Name; Marker Group Name; time; Value; Channel Name; Marker Group Name; time; Value; etc.
@@ -147,7 +156,7 @@ public class ExportDataWizard extends Wizard {
 									int totalTrials = markersValues.length;
 									int numTrial = 0;
 									double lastWorks = 0;
-									monitor.subTask("Getting markers values for " + channel.getFullName());
+									monitor.subTask(channel.getFullName());
 									for (double[] values : markersValues) {
 										int trialNumber = (int)values[0];
 										numTrial++;
@@ -165,7 +174,6 @@ public class ExportDataWizard extends Wizard {
 											monitor.worked((int) worked);
 											lastWorks += worked;
 										}
-										Thread.sleep(1000);
 									}
 								}
 								if(FEATURE_TYPE.equals(exportType)) {
@@ -175,7 +183,7 @@ public class ExportDataWizard extends Wizard {
 									int totalTrials = featuresValues.length;
 									int numTrial = 0;
 									double lastWorks = 0;
-									monitor.subTask("Getting features values for " + channel.getFullName());
+									monitor.subTask(channel.getFullName());
 									for (double value : featuresValues) {
 										int trialNumber = numTrial + 1;
 										numTrial++;
@@ -193,7 +201,6 @@ public class ExportDataWizard extends Wizard {
 											monitor.worked((int) worked);
 											lastWorks += worked;
 										}
-										Thread.sleep(1000);
 									}
 								}
 							} catch (IOException e) {
@@ -209,24 +216,27 @@ public class ExportDataWizard extends Wizard {
 						if (monitor.isCanceled()) break;
 					}
 					// if export markers or features, write data to file
-					Set<FileWriter> fileWriters = currentMFHashMap.keySet();
-					for (FileWriter fileWriter : fileWriters) {
-						try {
-							monitor.subTask("Writing file...");
-							HashMap<Integer, String> mfValuesHashMap = currentMFHashMap.get(fileWriter);
-							Collection<String> mfValues = mfValuesHashMap.values();
-							for (String mfValue : mfValues) {
-								fileWriter.write(mfValue + "\n");
+					if(MARKER_TYPE.equals(exportType) || FEATURE_TYPE.equals(exportType)) {
+						Set<FileWriter> fileWriters = currentMFHashMap.keySet();
+						for (FileWriter fileWriter : fileWriters) {
+							try {
+								String fileName = fileWriterToFileName.get(fileWriter);
+								monitor.subTask(fileName);
+								HashMap<Integer, String> mfValuesHashMap = currentMFHashMap.get(fileWriter);
+								Collection<String> mfValues = mfValuesHashMap.values();
+								for (String mfValue : mfValues) {
+									fileWriter.write(mfValue + "\n");
+								}
+								fileWriter.flush();
+								monitor.worked(100);
+							} catch (IOException e) {
+								Activator.logErrorMessageWithCause(e);
+								e.printStackTrace();
+								anErrorOccured = true;
 							}
-							fileWriter.flush();
-							monitor.worked(100);
-							Thread.sleep(1000);
-						} catch (IOException e) {
-							Activator.logErrorMessageWithCause(e);
-							e.printStackTrace();
-							anErrorOccured = true;
 						}
 					}
+					
 					// Close data files
 					if(singleFile) {
 						try {
