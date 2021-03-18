@@ -228,6 +228,7 @@ public class FilteredDerivatorFunction extends GenericFunction {
 	
 	@Override
 	public String getCode(Object context, Object step) {
+		if(!isActivated()) return GenericFunction.getCommentedCode(this, context);
 		String code = "";
 		Process process = (Process) context;
 		if(process instanceof ADWinProcess) {

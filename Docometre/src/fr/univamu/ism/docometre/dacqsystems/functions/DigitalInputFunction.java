@@ -150,6 +150,7 @@ public static final String functionFileName = "DIGITAL_INPUT.FUN";
 	
 	@Override
 	public String getCode(Object context, Object step) {
+		if(!isActivated()) return GenericFunction.getCommentedCode(this, context);
 		String code = "";
 		Process process = (Process) context;
 		DACQConfiguration dacqConfiguration = process.getDACQConfiguration();

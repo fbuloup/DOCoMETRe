@@ -94,7 +94,8 @@ public abstract class Block implements Serializable {
 	 * It true, this block will taken in account.
 	 * It false, this block will be ignored.
 	 */
-	private boolean activated;
+	private boolean activated = true;
+	
 	/**
 	 * The parent script that is the container of this block
 	 */
@@ -136,10 +137,11 @@ public abstract class Block implements Serializable {
 	
 	//Contructors
 	public Block() {
-
+		activated = true;
 	}
 
 	public Block(Script script, String name) {
+		this();
 		this.script = script;
 		this.name = name;
 	}
@@ -424,5 +426,5 @@ public abstract class Block implements Serializable {
 	public IStatus getStatus() {
 		return status;
 	}
-
+	
 }

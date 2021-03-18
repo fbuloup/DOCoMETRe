@@ -138,6 +138,7 @@ public final class AnalogOutputFunction extends GenericFunction {
 	
 	@Override
 	public String getCode(Object context, Object step) {
+		if(!isActivated()) return GenericFunction.getCommentedCode(this, context);
 		String code = "";
 		Process process = (Process) context;
 		DACQConfiguration dacqConfiguration =  process.getDACQConfiguration();

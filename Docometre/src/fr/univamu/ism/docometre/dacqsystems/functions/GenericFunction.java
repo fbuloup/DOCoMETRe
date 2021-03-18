@@ -52,7 +52,10 @@ import org.eclipse.swt.widgets.Text;
 
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
+import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.Process;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfiguration;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfiguration;
 import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
 import fr.univamu.ism.process.Function;
 import fr.univamu.ism.process.Script;
@@ -63,6 +66,21 @@ public class GenericFunction extends Function {
 	public static String UNO_FINALIZE_INDENT = "";
 	
 	private static final long serialVersionUID = 1L;
+	
+	public static String getCommentedCode(GenericFunction genericFunction, Object context) {
+		String comment = "";
+		if(context instanceof Process) {
+			Process process = (Process)context;
+			DACQConfiguration dacqConfiguration = process.getDACQConfiguration();
+			if(dacqConfiguration instanceof ADWinDACQConfiguration) comment = "REM";
+			if(dacqConfiguration instanceof ArduinoUnoDACQConfiguration) comment = "//";
+		}
+		if(context instanceof Script) { 
+			if(MathEngineFactory.isMatlab()) comment = "%";
+			if(MathEngineFactory.isPython()) comment = "#";
+		}
+		return comment + " NOT ACTIVATED (COMMENTED) - " + genericFunction.getDescription(context) + "\n" ;
+	}
 	
 	protected boolean checkPreBuildGUI(TitleAreaDialog titleAreaDialog, Composite container, int hIndent, Object context) {
 		

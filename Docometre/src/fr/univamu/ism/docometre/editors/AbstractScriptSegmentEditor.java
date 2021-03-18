@@ -102,6 +102,7 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.scripteditor.actions.CopyAction;
+import fr.univamu.ism.docometre.scripteditor.actions.DeactivateBlockAction;
 import fr.univamu.ism.docometre.scripteditor.actions.EditBlockAction;
 import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
 import fr.univamu.ism.docometre.scripteditor.actions.PasteAction;
@@ -241,6 +242,10 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 	        		
 	        }
 	        menuManager.appendToGroup(GEFActionConstants.GROUP_EDIT, new Separator());
+	        action = getActionRegistry().getAction(DeactivateBlockAction.DEACTIVATE_BLOCK);
+	        menuManager.appendToGroup(GEFActionConstants.GROUP_EDIT, action);
+	        
+	        menuManager.appendToGroup(GEFActionConstants.GROUP_EDIT, new Separator());
 	        action = getActionRegistry().getAction(ActionFactory.DELETE.getId());
 	        menuManager.appendToGroup(GEFActionConstants.GROUP_EDIT, action);
 	        
@@ -278,6 +283,7 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 	private CopyAction copyAction;
 	private PasteAction pasteAction;
 	private EditBlockAction editBlockAction;
+	private DeactivateBlockAction deactivateBlockAction;
 
 	private PaletteDrawer paletteDrawer;
 	private RulerComposite rulerComp;
@@ -409,6 +415,9 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 		editBlockAction = new EditBlockAction(this); 
 		registry.registerAction(editBlockAction);
 	    getSelectionActions().add(editBlockAction.getId());
+	    deactivateBlockAction = new DeactivateBlockAction(this);
+	    registry.registerAction(deactivateBlockAction);
+	    getSelectionActions().add(deactivateBlockAction.getId());
 	    
 	    Action action = (Action) registry.getAction(ActionFactory.DELETE.getId());
 	    action.setText(DocometreMessages.DeleteAction_Text);
