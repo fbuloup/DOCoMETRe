@@ -27,4 +27,14 @@ public final class MathEngineFactory {
 		mathEngine = null;
 	}
 	
+	public static boolean isMatlab() {
+		String mathEnginePref = Activator.getDefault().getPreferenceStore().getString(MathEnginePreferencesConstants.MATH_ENGINE);
+		return MathEnginePreferencesConstants.MATH_ENGINE_MATLAB.equals(mathEnginePref);
+	}
+	
+	public static boolean isPython() {
+		String mathEnginePref = Activator.getDefault().getPreferenceStore().getString(MathEnginePreferencesConstants.MATH_ENGINE);
+		return MathEnginePreferencesConstants.MATH_ENGINE_PYTHON.equals(mathEnginePref);
+	}
+	
 }
