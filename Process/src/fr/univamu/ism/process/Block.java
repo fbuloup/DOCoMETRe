@@ -91,6 +91,11 @@ public abstract class Block implements Serializable {
 	private int height = 30;
 	
 	/**
+	 * It true, this block will taken in account.
+	 * It false, this block will be ignored.
+	 */
+	private boolean activated;
+	/**
 	 * The parent script that is the container of this block
 	 */
 	private Script script;
@@ -186,6 +191,14 @@ public abstract class Block implements Serializable {
 
 	public void setHeight(int height) {
 		this.height = height;
+	}
+	
+	public boolean isActivated() {
+		return activated;
+	}
+
+	public void setActivated(boolean activated) {
+		this.activated = activated;
 	}
 
 	protected List<Boolean> getPreviousBlocksIsLastBlockInDoBlock() {
