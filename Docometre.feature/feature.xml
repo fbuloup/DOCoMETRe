@@ -6,7 +6,15 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-02-15
+      -- 2021-03-19
+ADDED :
+* Export data wizard
+* Support for comment in processes (ADWin, Arduino Uno, Matlab, Python)
+* Support for Python syntax coloring editor
+FIXED :
+* Wrong markers group number in MathEngine
+* Channels Container Refactoring
+-- 2021-02-15
 ADDED :
 * Support for features in MathEngine
 * Error management  to MathEngine scripts
@@ -15,7 +23,8 @@ ADDED :
 * Cache support for channel management
 Fixed :
 * Bug correction on multiple &quot;#INCLUDE ADWPEXT.INC&quot;
-* NbMarkers and NbFields correction to NbMarkersGroups and NbFeatures in data model
+* NbMarkers and NbFields correction to NbMarkersGroups and NbFeatures
+in data model
 -- 2021-01-25 -- BIS
 FIXED :
 * NPE on monitor cancellation
