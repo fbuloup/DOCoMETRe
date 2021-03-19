@@ -7,6 +7,8 @@ import org.eclipse.swt.widgets.Composite;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.analyse.matlabeditor.MatlabRulesPartitionScanner;
 import fr.univamu.ism.docometre.analyse.matlabeditor.MatlabSourceViewerConfiguration;
+import fr.univamu.ism.docometre.analyse.pythoneditor.PythonRulesPartitionScanner;
+import fr.univamu.ism.docometre.analyse.pythoneditor.PythonSourceViewerConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.ui.SourceEditor;
 import fr.univamu.ism.docometre.preferences.MathEnginePreferencesConstants;
 
@@ -30,6 +32,14 @@ public class DataProcessScriptSourceEditor extends SourceEditor {
 		    matlabFastPartitioner.connect(document);
 			sourceViewer.setDocument(document, annotationModel, -1, -1);
 			sourceViewer.configure(new MatlabSourceViewerConfiguration());
+		}
+		if(MathEnginePreferencesConstants.MATH_ENGINE_PYTHON.equals(mathEngine)) {
+			
+			FastPartitioner pythonFastPartitioner = new FastPartitioner(new PythonRulesPartitionScanner(), PythonRulesPartitionScanner.PARTITIONS);
+		    document.setDocumentPartitioner(pythonFastPartitioner);
+		    pythonFastPartitioner.connect(document);
+			sourceViewer.setDocument(document, annotationModel, -1, -1);
+			sourceViewer.configure(new PythonSourceViewerConfiguration());
 		}
 		
 		
