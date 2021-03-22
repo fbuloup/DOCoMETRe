@@ -331,7 +331,7 @@ public final class DocometreMessages extends NLS {
 	public static String LoopEditorTitle;
 	public static String EndEditorTitle;
 	public static String ArduinoUnoSourceCodeEditorTitle;
-	public static String ToggleActivtedState;
+	public static String ToggleActivatedState;
 
 	/* Dialogs */
 	public static String BlockDialogShellTitle;

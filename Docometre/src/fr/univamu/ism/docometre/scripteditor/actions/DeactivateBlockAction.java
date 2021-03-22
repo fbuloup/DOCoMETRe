@@ -20,7 +20,7 @@ public class DeactivateBlockAction extends SelectionAction {
 	public DeactivateBlockAction(IWorkbenchPart part) {
 		super(part);
 		setId(DEACTIVATE_BLOCK);
-		setText(DocometreMessages.ToggleActivtedState);
+		setText(DocometreMessages.ToggleActivatedState);
 		requestDeactivateBlock = new Request(REQ_DEACTIVATE_BLOCK);
 	}
 
