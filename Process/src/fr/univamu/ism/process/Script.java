@@ -349,7 +349,7 @@ public class Script implements Serializable {
 		boolean isScriptSegmentType = step == ScriptSegmentType.INITIALIZE || step == ScriptSegmentType.LOOP || step == ScriptSegmentType.FINALIZE;
 		String code = "";
 		if(block == stopBlock) return "";
-		if(block instanceof IfBlock && isScriptSegmentType) {
+		if(block instanceof IfBlock /*&& isScriptSegmentType*/) {
 			IfBlock ifBlock = (IfBlock)block;
 			code = ifBlock.getCode(context, step);
 			if(ifBlock.getNextTrueBranchBlock() == null) {
@@ -365,21 +365,21 @@ public class Script implements Serializable {
 			Block endifBlock = ifBlock.getEndBlock();
 			//generate code till this endif bloc from true branch
 			code = code + generateCode(ifBlock.getNextTrueBranchBlock(), endifBlock, context, step);
-			if(context.getClass().getSimpleName().equals(Activator.ADWinProcess)) code = code + "ELSE\n";
-			if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess)) code = code + "} else {\n";
-			if(context.getClass().getSimpleName().equals(Activator.Script)) code = code + "else\n";
+			if(context.getClass().getSimpleName().equals(Activator.ADWinProcess) && isScriptSegmentType) code = code + "ELSE\n";
+			if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess) && isScriptSegmentType) code = code + "} else {\n";
+			if(context.getClass().getSimpleName().equals(Activator.Script) && isScriptSegmentType) code = code + "else\n";
 			//generate code till this endif bloc from false branch
 			code = code + generateCode(ifBlock.getNextFalseBranchBlock(), endifBlock, context, step);
-			if(context.getClass().getSimpleName().equals(Activator.ADWinProcess)) code = code + "ENDIF\n";
-			if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess)) code = code + "} // End if .. else\n";
-			if(context.getClass().getSimpleName().equals(Activator.Script)) code = code + "end\n";
+			if(context.getClass().getSimpleName().equals(Activator.ADWinProcess) && isScriptSegmentType) code = code + "ENDIF\n";
+			if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess) && isScriptSegmentType) code = code + "} // End if .. else\n";
+			if(context.getClass().getSimpleName().equals(Activator.Script) && isScriptSegmentType) code = code + "end\n";
 			//Continue to next bloc
 			code = code + generateCode(endifBlock, stopBlock, context, step);
 		}
-		else if(block instanceof DoBlock && isScriptSegmentType) {
+		else if(block instanceof DoBlock /*&& isScriptSegmentType*/) {
 			DoBlock doBlock = (DoBlock)block;
-			if(context.getClass().getSimpleName().equals(Activator.ADWinProcess)) code = "DO\n";
-			if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess)) code = "do {\n";
+			if(context.getClass().getSimpleName().equals(Activator.ADWinProcess) && isScriptSegmentType) code = "DO\n";
+			if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess) && isScriptSegmentType) code = "do {\n";
 			//Find end do bloc
 			Block endDoBlock = doBlock.getEndBlock();
 			if(endDoBlock == null ) {
