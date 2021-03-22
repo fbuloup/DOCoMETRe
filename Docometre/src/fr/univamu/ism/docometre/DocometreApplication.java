@@ -95,7 +95,7 @@ public class DocometreApplication implements IApplication {
 		colorRegistry = new ColorRegistry(display);
 		colorRegistry.put(WHITE, new RGB(255, 255, 255));
 		colorRegistry.put(BLACK, new RGB(0, 0, 0));
-		colorRegistry.put(RED, new RGB(255, 0, 0));
+		colorRegistry.put(RED, new RGB(202, 0, 42));
 		colorRegistry.put(GREEN, new RGB(61, 119, 91));
 		colorRegistry.put(BLUE, new RGB(0, 0, 255));
 		colorRegistry.put(ORANGE, new RGB(255, 102, 0));
