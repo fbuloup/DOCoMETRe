@@ -58,6 +58,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -258,8 +259,13 @@ public class ImportResourceWizardPage extends WizardPage {
 				DirectoryDialog directoryDialog = new DirectoryDialog(getShell());
 				String parentDirectory = directoryDialog.open();
 				if(parentDirectory != null) {
-					resourceTreeViewer.setInput(new File(parentDirectory));
-					parentFolderText.setText(parentDirectory);
+					BusyIndicator.showWhile(getShell().getDisplay(), new Runnable() {
+						@Override
+						public void run() {
+							resourceTreeViewer.setInput(new File(parentDirectory));
+							parentFolderText.setText(parentDirectory);
+						}
+					});
 				}
 			}
 		});
