@@ -87,15 +87,16 @@ public class ExportExperimentWizard extends Wizard {
 							boolean compress = exportExperimentWizardPage.isCompress();
 							boolean asZip = exportExperimentWizardPage.isAsZip();
 							Path destinationPath = new Path(destination);
+							boolean includeData = exportExperimentWizardPage.isIncludeData();
 							
-							ArchiveFileExportOperation archiveFileExportOperation = new ArchiveFileExportOperation(experiment, destinationPath.toOSString());
+							ArchiveFileExportOperation archiveFileExportOperation = new ArchiveFileExportOperation(experiment, destinationPath.toOSString(), includeData);
 							archiveFileExportOperation.setUseCompression(compress);
 							archiveFileExportOperation.setUseTarFormat(!asZip);
 							
 							SubMonitor subMonitor = SubMonitor.convert(monitor, DocometreMessages.ExportExperimentTaskTitle, 2 + archiveFileExportOperation.getTotalWork());
 							
 							subMonitor.subTask(DocometreMessages.createPropertiesFile);
-							IFile propertiesFile = ExperimentPropertiesFileCreator.createPropertiesFile(experiment, destinationPath, subMonitor);
+							IFile propertiesFile = ExperimentPropertiesFileCreator.createPropertiesFile(experiment, destinationPath, subMonitor, includeData);
 							subMonitor.worked(1);
 							
 							subMonitor.subTask(DocometreMessages.RefreshingWorkspace);

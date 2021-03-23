@@ -63,6 +63,7 @@ import org.eclipse.osgi.util.NLS;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.ResourceType;
 
 /**
  *	Operation for exporting a resource and its children to a new .zip or
@@ -83,6 +84,7 @@ public class ArchiveFileExportOperation implements IRunnableWithProgress {
 	private boolean createLeadupStructure = true;
 	private String toRootDirectory;
 	private String fromRootDirectory;
+	private boolean includeData = true;
 
 	/**
 	 *	Create an instance of this class.  Use this constructor if you wish to
@@ -114,10 +116,11 @@ public class ArchiveFileExportOperation implements IRunnableWithProgress {
 	 *  @param res org.eclipse.core.resources.IResource;
 	 *  @param filename java.lang.String
 	 */
-	public ArchiveFileExportOperation(IResource res, String filename) {
+	public ArchiveFileExportOperation(IResource res, String filename, boolean includeData) {
 		super();
 		resource = res;
 		destinationFilename = filename;
+		this.includeData = includeData;
 	}
 
 	/**
@@ -129,8 +132,8 @@ public class ArchiveFileExportOperation implements IRunnableWithProgress {
 	 *  @param resources java.util.Vector
 	 *  @param filename java.lang.String
 	 */
-	public ArchiveFileExportOperation(IResource res, List<IResource> resources, String filename) {
-		this(res, filename);
+	public ArchiveFileExportOperation(IResource res, List<IResource> resources, String filename, boolean includeData) {
+		this(res, filename, includeData);
 		resourcesToExport = resources;
 	}
 
@@ -216,6 +219,8 @@ public class ArchiveFileExportOperation implements IRunnableWithProgress {
 		if (!exportResource.isAccessible() || (!resolveLinks && exportResource.isLinked())) {
 			return;
 		}
+		
+		if(!includeData) if(ResourceType.isDataFile(exportResource)) return;
 
 		if (exportResource.getType() == IResource.FILE) {
 			String destinationName = createDestinationName(leadupDepth, exportResource);

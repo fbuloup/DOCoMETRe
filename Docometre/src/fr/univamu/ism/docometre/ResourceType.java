@@ -174,6 +174,7 @@ public enum ResourceType {
 
 	public static boolean isNumpyFile(IResource resource) {
 		if(!resource.exists()) return false;
+		if(resource.getFileExtension() == null) return false;
 		return resource.getFileExtension().equalsIgnoreCase("numpy");
 	}
 
@@ -182,6 +183,11 @@ public enum ResourceType {
 		return resource.getName().equalsIgnoreCase("save.data") || resource.getName().equalsIgnoreCase("save.mat");
 	}
 
+	public static boolean isDataFile(IResource resource) {
+		boolean isDataFile = ResourceType.isADWDataFile(resource) || ResourceType.isSamples(resource); 
+		isDataFile = isDataFile ||ResourceType.isSaveFile(resource) || ResourceType.isNumpyFile(resource);
+		return isDataFile;
+	}
 	
 	
 }

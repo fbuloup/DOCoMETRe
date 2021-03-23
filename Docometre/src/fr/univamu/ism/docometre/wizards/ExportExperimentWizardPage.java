@@ -86,6 +86,7 @@ public class ExportExperimentWizardPage extends WizardPage {
 	private boolean compress= true;
 	private IProject experiment;
 	private String destination;
+	private boolean includeData = true;
 	
 	private static class ViewerLabelProvider extends LabelProvider {
 		public Image getImage(Object element) {
@@ -145,7 +146,7 @@ public class ExportExperimentWizardPage extends WizardPage {
 		exportDestinationLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
 		exportDestinationLabel.setText(DocometreMessages.DestinationFolderLabel);
 		
-		Text exportDestinationText = new Text(container, SWT.BORDER);
+		Text exportDestinationText = new Text(container, SWT.BORDER | SWT.READ_ONLY);
 		exportDestinationText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		exportDestinationText.addModifyListener(new ModifyListener() {
 			@Override
@@ -202,6 +203,16 @@ public class ExportExperimentWizardPage extends WizardPage {
 			}
 		});
 		
+		Button exportWithDataButton = new Button(optionsGroup, SWT.CHECK);
+		exportWithDataButton.setText("Export with data");
+		exportWithDataButton.setSelection(true);
+		exportWithDataButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				includeData = exportWithDataButton.getSelection();
+			}
+		});
+		
 		exportProjectComboViewer.setInput(ResourcesPlugin.getWorkspace().getRoot());
 		
 	}
@@ -231,6 +242,10 @@ public class ExportExperimentWizardPage extends WizardPage {
 
 	public String getDestination() {
 		return destination;
+	}
+	
+	public boolean isIncludeData() {
+		return includeData;
 	}
 	
 }
