@@ -154,7 +154,8 @@ public class ArchiveFileExportOperation implements IRunnableWithProgress {
 	 */
 	protected int countChildrenOf(IResource checkResource) throws CoreException {
 		if (checkResource.getType() == IResource.FILE) {
-			return 1;
+			if(!includeData && ResourceType.isDataFile(checkResource)) return 0;
+			else return 1;
 		}
 
 		int count = 0;
