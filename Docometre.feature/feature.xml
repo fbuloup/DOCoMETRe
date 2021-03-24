@@ -6,10 +6,18 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-03-19
+      -- 2021-03-24
+ADDED :
+* It is now possible to export experiment with or without data files
+* Improve export wizard description message
+* Improve export progress monitor
+FIXED :
+* Code generation bug where If and Do blocks where not taken in account
+-- 2021-03-19
 ADDED :
 * Export data wizard
-* Support for comment in processes (ADWin, Arduino Uno, Matlab, Python)
+* Support for comment in processes (ADWin, Arduino Uno, Matlab,
+Python)
 * Support for Python syntax coloring editor
 FIXED :
 * Wrong markers group number in MathEngine
