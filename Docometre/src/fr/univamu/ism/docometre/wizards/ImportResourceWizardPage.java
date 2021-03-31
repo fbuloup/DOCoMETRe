@@ -101,6 +101,7 @@ public class ImportResourceWizardPage extends WizardPage {
 		private boolean validateFolder(File folder, String name) {
 			boolean valid = false;
 			String[] filesNames = folder.list();
+			if(filesNames == null) return false;
 			for (String fileName : filesNames) {
 				File file = new File(folder, fileName);
 				// If it's a directory, accept only if it contains process or dacq or ...
