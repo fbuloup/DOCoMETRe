@@ -314,10 +314,14 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 
 				String message = NLS.bind(DocometreMessages.ApplyingProperty, new Object[] {numProperty, nbProperties, value, resource.getFullPath().toOSString()});
 				subMonitor.subTask(message);
-				QualifiedName QN = new QualifiedName(Activator.PLUGIN_ID, keyArray[1]);
-				resource.refreshLocal(IResource.DEPTH_INFINITE, null);
-				resource.setPersistentProperty(QN , value);
-				resource.refreshLocal(IResource.DEPTH_INFINITE, null);
+				
+				if(resource.exists()) {
+					QualifiedName QN = new QualifiedName(Activator.PLUGIN_ID, keyArray[1]);
+					resource.refreshLocal(IResource.DEPTH_INFINITE, null);
+					resource.setPersistentProperty(QN , value);
+					resource.refreshLocal(IResource.DEPTH_INFINITE, null);
+				}
+
 				subMonitor.worked(1);
 				numProperty++;
 			}
