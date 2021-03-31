@@ -63,7 +63,7 @@ public final class PythonController  {
 	private PythonController() {
 	}
 	
-	public void startServer(String pythonLocation, String pythonScriptsLocation, int timeOut) throws Exception {
+	public boolean startServer(String pythonLocation, String pythonScriptsLocation, int timeOut) throws Exception {
 		javaEntryPoint = new JavaEntryPoint();
 		ClientServerBuilder clientServerBuilder = new ClientServer.ClientServerBuilder(javaEntryPoint);
 		clientServerBuilder.autoStartJavaServer(false);
@@ -79,12 +79,14 @@ public final class PythonController  {
 		Thread.sleep(1000);
 		
 		long t0 = System.currentTimeMillis();
-		long dt = t0;
+		long dt = 0;
 		while (dt < timeOut*1000 && getPythonEntryPoint() == null) {
 			dt = System.currentTimeMillis() - t0;
 		}
 		
 		isStarted = getPythonEntryPoint() != null && pythonProcess.isAlive();
+		
+		return isStarted;
 	}
 	
 	public void stopServer(int timeOut) throws InterruptedException {
@@ -95,7 +97,7 @@ public final class PythonController  {
 		Thread.sleep(1000);
 		
 		long t0 = System.currentTimeMillis();
-		long dt = t0;
+		long dt = 0;
 		while (dt < timeOut*1000 && pythonProcess.isAlive()) {
 			dt = System.currentTimeMillis() - t0;
 		}

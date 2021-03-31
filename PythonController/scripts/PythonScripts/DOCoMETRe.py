@@ -171,6 +171,7 @@ class DOCoMETRe(object):
 		return arrayValues.tobytes();
 	
 	def runScript(self, code):
+		if(jvmMode): gateway.jvm.System.out.println("In runScript : " + code);
 		exec(code);
 		
 	def saveSubject(self, fullSubjectNameRegExp, dataFilesFullPath):
