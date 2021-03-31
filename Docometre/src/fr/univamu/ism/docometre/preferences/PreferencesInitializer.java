@@ -77,7 +77,7 @@ public class PreferencesInitializer extends AbstractPreferenceInitializer {
 		
 		defaults.put(GeneralPreferenceConstants.PYTHON_LOCATION, "");
 		defaults.put(GeneralPreferenceConstants.PYTHON_SCRIPT_LOCATION, "");
-		defaults.putInt(GeneralPreferenceConstants.PYTHON_TIME_OUT, 10);
+		defaults.putInt(GeneralPreferenceConstants.PYTHON_TIME_OUT, 15);
 		
 		defaults.putBoolean(GeneralPreferenceConstants.SHOW_CURSOR, false);
 		defaults.putBoolean(GeneralPreferenceConstants.SHOW_MARKER, false);
