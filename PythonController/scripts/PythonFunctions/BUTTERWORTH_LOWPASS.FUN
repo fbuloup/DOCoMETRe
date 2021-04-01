@@ -1,7 +1,7 @@
 MENU_TITLE = Butterworth low pass filter
-DESCRIPTION = Butterworth low pass filter
+DESCRIPTION = As 'filtfilt' function is used, resulting order will be twice the provided one
 MENU_TITLE_FR = Filtre passe bas de Butterworth
-DESCRIPTION_FR = Filtre passe bas de Butterworth
+DESCRIPTION_FR = Comme la fonction 'filtfilt' est utilisée, l'ordre résultant sera le double de celui fourni
 
 # Now start specific python function 
 FUNCTION_CODE = # Compute low pass Butterworth filter\n\
