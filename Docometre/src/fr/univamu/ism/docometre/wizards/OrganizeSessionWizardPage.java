@@ -607,15 +607,25 @@ public class OrganizeSessionWizardPage extends WizardPage {
 		if(trialsNumbers.size() > 0 && selectedProcesses.size() > 0) {
 			double mean = 1f*trialsNumbers.size() / (1f*selectedProcesses.size());
 			int index = 0;
-			while (index < trialsNumbers.size()) {
+			long t0 = System.currentTimeMillis();
+			redo : while (index < trialsNumbers.size()) {
 				Integer trialNumber = trialsNumbers.get(index);
 				monitor.subTask(DocometreMessages.ChooseProcess + DocometreMessages.Trial + trialNumber);
 				int selectedProcessNumber = random.nextInt(selectedProcesses.size());
 				Integer occurence = selectedProcessesOccurences.get(selectedProcesses.get(selectedProcessNumber));
-				if(occurence == null || occurence <= mean) {
+				if(System.currentTimeMillis() - t0 > 500) {
+					System.out.println("Time out at " + index + " - Redo"); 
+					index = 0;
+					t0 = System.currentTimeMillis();
+					resultAssociation.clear();
+					selectedProcessesOccurences.clear();
+					continue redo;
+				}
+				if(occurence == null || occurence < mean) {
 					if(index == 0 || !resultAssociation.get(trialsNumbers.get(index - 1)).equals(selectedProcesses.get(selectedProcessNumber))) {
 						putAssociation(trialNumber, selectedProcesses.get(selectedProcessNumber));
 						index++;
+						t0 = System.currentTimeMillis();
 					}
 				}
 				if(monitor.isCanceled()) throw new OperationCanceledException();
@@ -625,8 +635,8 @@ public class OrganizeSessionWizardPage extends WizardPage {
 //		procedure TAppliqueRepartEssaisDLGForm.appliquerAleat2(listeEssai : array of integer;taillePaquet : integer);//Appliquer aleat2
 //		var i,numST,nbEssais,n,m,o : integer;
 //		    mean : double;
-//				occurences : array of integer;
-//				label goAgain;
+//			occurences : array of integer;
+//		label goAgain;
 //		begin
 //			if high(listeEssai) > -1 then//taille paquet=1
 //		  begin
@@ -646,12 +656,9 @@ public class OrganizeSessionWizardPage extends WizardPage {
 //						begin
 //							if (i>0)then
 //							begin
-//								if (STSelectListBox.Items[numST] <>
-//										
-//		DocDOCOMETRE.SESSIONS[numSession].ESSAIS[listeEssai[i-1]].NOMST) then
+//								if (STSelectListBox.Items[numST] <> DocDOCOMETRE.SESSIONS[numSession].ESSAIS[listeEssai[i-1]].NOMST) then
 //								begin
-//									
-//		DocDOCOMETRE.SESSIONS[numSession].ESSAIS[listeEssai[i]].NOMST := STSelectListBox.Items[numST];
+//									DocDOCOMETRE.SESSIONS[numSession].ESSAIS[listeEssai[i]].NOMST := STSelectListBox.Items[numST];
 //									inc(occurences[numST]);
 //									inc(i);
 //								end else
@@ -665,7 +672,7 @@ public class OrganizeSessionWizardPage extends WizardPage {
 //										if i < nbEssais then
 //										begin
 //											
-//		DocDOCOMETRE.SESSIONS[numSession].ESSAIS[listeEssai[i]].NOMST := STSelectListBox.Items[o];
+//											DocDOCOMETRE.SESSIONS[numSession].ESSAIS[listeEssai[i]].NOMST := STSelectListBox.Items[o];
 //											inc(occurences[o]);
 //											inc(i);
 //										end;
@@ -673,8 +680,7 @@ public class OrganizeSessionWizardPage extends WizardPage {
 //								end;
 //							end else
 //							begin
-//								DocDOCOMETRE.SESSIONS[numSession].ESSAIS[listeEssai[i]].NOMST := 
-//		STSelectListBox.Items[numST];
+//								DocDOCOMETRE.SESSIONS[numSession].ESSAIS[listeEssai[i]].NOMST := STSelectListBox.Items[numST];
 //								inc(occurences[numST]);
 //								inc(i);
 //							end;
@@ -682,8 +688,7 @@ public class OrganizeSessionWizardPage extends WizardPage {
 //					end;
 //				until i = nbEssais;
 //				setLength(occurences,0);
-//				if DocDOCOMETRE.SESSIONS[numSession].ESSAIS[listeEssai[i-1]].NOMST =
-//					 DocDOCOMETRE.SESSIONS[numSession].ESSAIS[listeEssai[i-2]].NOMST
+//				if DocDOCOMETRE.SESSIONS[numSession].ESSAIS[listeEssai[i-1]].NOMST = DocDOCOMETRE.SESSIONS[numSession].ESSAIS[listeEssai[i-2]].NOMST
 //				then goto goAgain;
 //			end else
 //			begin
@@ -702,7 +707,7 @@ public class OrganizeSessionWizardPage extends WizardPage {
 				monitor.subTask(DocometreMessages.ChooseProcess + DocometreMessages.Trial + trialNumber);
 				int selectedProcessNumber = random.nextInt(selectedProcesses.size());
 				Integer occurence = selectedProcessesOccurences.get(selectedProcesses.get(selectedProcessNumber));
-				if(occurence == null || occurence <= mean) {
+				if(occurence == null || occurence < mean ) {
 					putAssociation(trialNumber, selectedProcesses.get(selectedProcessNumber));
 					index++;
 				}
