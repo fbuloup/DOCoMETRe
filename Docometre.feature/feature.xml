@@ -6,13 +6,26 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-03-24
+      -- 2021-04-7
+ADDED : 
+* Improve description message in Function Configuration Dialog
+* Improve process random spreading (never two same consecutive trials)
+* Default python time out from 10 to 15 sec.
+FIXED :
+* Bug when starting Python Engine on Windows (use now portable strings)
+* Internationalization : some strings unused some others missing
+* Import Wizard : NPE if folder is empty
+* Import Wizard : Do not apply property if resource does not exist
+* Bug on time out evaluation in Python Controller
+-- 2021-03-24
 ADDED :
-* It is now possible to export experiment with or without data files
+* It is now possible to export experiment with or without data
+files
 * Improve export wizard description message
 * Improve export progress monitor
 FIXED :
-* Code generation bug where If and Do blocks where not taken in account
+* Code generation bug where If and Do blocks where not taken
+in account
 -- 2021-03-19
 ADDED :
 * Export data wizard
