@@ -70,19 +70,27 @@ public final class PythonController  {
 		server = clientServerBuilder.build();
 		server.getJavaServer().start();
 		
+		System.out.println("Starting Python Process");
+		
 		pythonProcessBuilder = new ProcessBuilder(pythonLocation, pythonScriptsLocation + File.separator + "DOCoMETRe.py", "-jvm");
 		pythonProcessBuilder.redirectInput();
 		pythonProcessBuilder.redirectOutput();
 		pythonProcessBuilder.redirectErrorStream(true);
 		pythonProcess = pythonProcessBuilder.start();
 		
+		System.out.println("Waiting 1s");
+		
 		Thread.sleep(1000);
 		
+		System.out.println("Waiting for time out");
 		long t0 = System.currentTimeMillis();
 		long dt = 0;
 		while (dt < timeOut*1000 && getPythonEntryPoint() == null) {
 			dt = System.currentTimeMillis() - t0;
 		}
+		
+		System.out.println("Python entry point: " + getPythonEntryPoint());
+		System.out.println("Is python process alive ? " + pythonProcess.isAlive());
 		
 		isStarted = getPythonEntryPoint() != null && pythonProcess.isAlive();
 		
@@ -114,6 +122,7 @@ public final class PythonController  {
 	}
 	
 	public PythonEntryPoint getPythonEntryPoint() {
+		System.out.println("In getPythonEntryPoint()");
 		return javaEntryPoint.getPythonEntryPoint();
 	}
 	
