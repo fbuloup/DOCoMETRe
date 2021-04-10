@@ -41,7 +41,13 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.python;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.concurrent.ExecutionException;
+
+import org.eclipse.core.runtime.IProgressMonitor;
 
 import py4j.ClientServer;
 import py4j.ClientServer.ClientServerBuilder;
@@ -63,34 +69,36 @@ public final class PythonController  {
 	private PythonController() {
 	}
 	
-	public boolean startServer(String pythonLocation, String pythonScriptsLocation, int timeOut) throws Exception {
+	public boolean startServer(String pythonLocation, String pythonScriptsLocation, int timeOut, IProgressMonitor monitor) throws Exception {
 		javaEntryPoint = new JavaEntryPoint();
 		ClientServerBuilder clientServerBuilder = new ClientServer.ClientServerBuilder(javaEntryPoint);
 		clientServerBuilder.autoStartJavaServer(false);
 		server = clientServerBuilder.build();
 		server.getJavaServer().start();
 		
-		System.out.println("Starting Python Process");
-		
 		pythonProcessBuilder = new ProcessBuilder(pythonLocation, pythonScriptsLocation + File.separator + "DOCoMETRe.py", "-jvm");
-		pythonProcessBuilder.redirectInput();
-		pythonProcessBuilder.redirectOutput();
-		pythonProcessBuilder.redirectErrorStream(true);
 		pythonProcess = pythonProcessBuilder.start();
-		
-		System.out.println("Waiting 1s");
 		
 		Thread.sleep(1000);
 		
-		System.out.println("Waiting for time out");
 		long t0 = System.currentTimeMillis();
 		long dt = 0;
-		while (dt < timeOut*1000 && getPythonEntryPoint() == null) {
+		while (dt < timeOut*1000 && getPythonEntryPoint() == null && pythonProcess.isAlive() && !monitor.isCanceled()) {
 			dt = System.currentTimeMillis() - t0;
 		}
 		
-		System.out.println("Python entry point: " + getPythonEntryPoint());
-		System.out.println("Is python process alive ? " + pythonProcess.isAlive());
+		if(!pythonProcess.isAlive() && pythonProcess.exitValue() != 0) {
+			InputStream errorStream = pythonProcess.getErrorStream();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(errorStream));
+	        StringBuilder stringBuilder = new StringBuilder();
+	        String errorMessage;
+	        while ((errorMessage = reader.readLine()) != null) {
+	        	stringBuilder.append(errorMessage);
+	        }
+	        reader.close();
+	        Throwable throwable = new Throwable(stringBuilder.toString());
+			throw new ExecutionException(throwable);
+		}
 		
 		isStarted = getPythonEntryPoint() != null && pythonProcess.isAlive();
 		
@@ -122,7 +130,6 @@ public final class PythonController  {
 	}
 	
 	public PythonEntryPoint getPythonEntryPoint() {
-		System.out.println("In getPythonEntryPoint()");
 		return javaEntryPoint.getPythonEntryPoint();
 	}
 	

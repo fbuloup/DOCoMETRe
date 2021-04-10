@@ -48,6 +48,9 @@ import org.eclipse.osgi.util.NLS;
 public final class DocometreMessages extends NLS {
 	
 	private static final String BUNDLE_NAME = "fr.univamu.ism.docometre.messages";//$NON-NLS-1$
+	
+	/* General */
+	public static String OperationCanceledByUser;
 
 	/*Experiment View*/
 	public static String ExperimentsViewTitle;

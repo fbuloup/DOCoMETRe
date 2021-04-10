@@ -61,11 +61,14 @@ public class PythonEngine implements MathEngine {
 				IStatus status = Status.OK_STATUS;
 				try {
 					String workspacePath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toPortableString();
-					if(pythonController.startServer(pythonLocation, pythonScriptsLocation, timeOut)) {
-						String cmd = "import os;os.chdir('" + workspacePath + "')";
-						pythonController.getPythonEntryPoint().runScript(cmd);
+					if(pythonController.startServer(pythonLocation, pythonScriptsLocation, timeOut, monitor)) {
+						if(!monitor.isCanceled()) {
+							String cmd = "import os;os.chdir('" + workspacePath + "')";
+							pythonController.getPythonEntryPoint().runScript(cmd);
+						}
 					}
 					notifyListeners();
+					if(monitor.isCanceled()) throw new InterruptedException(DocometreMessages.OperationCanceledByUser);
 				} catch (Exception e) {
 					e.printStackTrace();
 					Activator.logErrorMessageWithCause(e);
@@ -79,7 +82,7 @@ public class PythonEngine implements MathEngine {
 		long t0 = System.currentTimeMillis();
 		long t1 = t0;
 		
-		monitor.beginTask("Waiting for Python to start. Please wait.", timeOut*1000 + 1000);
+		monitor.beginTask(DocometreMessages.MathEngineStarting, timeOut*1000 + 1000);
 		while(startPythonInnerJob.getState() != Job.RUNNING);
 		while(startPythonInnerJob.getState() == Job.RUNNING) {
 			t1 = System.currentTimeMillis();
@@ -117,7 +120,7 @@ public class PythonEngine implements MathEngine {
 		long t0 = System.currentTimeMillis();
 		long t1 = t0;
 		
-		monitor.beginTask("Waiting for Python to stop. Please wait.", timeOut*1000 + 1000);
+		monitor.beginTask(DocometreMessages.MathEngineStopping, timeOut*1000 + 1000);
 		while(stopPythonInnerJob.getState() != Job.RUNNING);
 		while(stopPythonInnerJob.getState() == Job.RUNNING) {
 			t1 = System.currentTimeMillis();
