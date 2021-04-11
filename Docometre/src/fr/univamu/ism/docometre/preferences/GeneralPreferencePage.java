@@ -117,7 +117,7 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
 				DocometreMessages.AutoStartTrial, getFieldEditorParent());
 		addField(autoTrialStartingFieldEditor);
 		
-		Group chartOptionsGroup = new Group(getFieldEditorParent(), SWT.BORDER);
+		Group chartOptionsGroup = new Group(getFieldEditorParent(), SWT.NONE);
 		chartOptionsGroup.setText("Charts options");
 		chartOptionsGroup.setLayout(new FillLayout(SWT.HORIZONTAL));
 		chartOptionsGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1));
