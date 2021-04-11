@@ -47,6 +47,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
@@ -183,21 +184,46 @@ public class Activator extends AbstractUIPlugin {
 		logErrorMessage(getLogErrorMessageWithCause(exception));
 	}
 	
+	private static void getMultiStatusMessages(StringBuffer message, IStatus status) {
+		message.append(status.getMessage() + "\n");
+		if(status.getException() != null) {
+			//message.append(status.getException().getMessage());
+			if(status.getException() instanceof CoreException) {
+				getMultiStatusMessages(message, ((CoreException) status.getException()).getStatus());
+			} else {
+				message.append(status.getException().getMessage());
+				if(status.getException().getCause() !=  null ) getMultiCauseMessages(message, status.getException().getCause());
+			}
+		}
+		
+		if(status.isMultiStatus()) {
+			IStatus[] childrenStatuses = status.getChildren();
+			for (IStatus childrenStatus : childrenStatuses) {
+				getMultiStatusMessages(message, childrenStatus);
+			}
+		}
+	}
+	
+	private static void getMultiCauseMessages(StringBuffer message, Throwable throwable) {
+		if(throwable.getMessage() != null) message.append(throwable.getMessage() + "\n");
+		if(throwable.getCause() != null) getMultiCauseMessages(message, throwable.getCause());
+	}
+	
 	public static String getLogErrorMessageWithCause(Exception exception) {
 		StringBuffer message = new StringBuffer();
-		message.append(exception.toString() + "\n");
-		if(exception.getMessage() != null) message.append(exception.getMessage() + "\n");
+		if(exception instanceof CoreException) {
+			getMultiStatusMessages(message, ((CoreException) exception).getStatus());
+		} else {
+			if(exception.getMessage() != null) message.append(exception.getMessage() + "\n");
+			if(exception.getCause() !=  null ) getMultiCauseMessages(message, exception.getCause());
+		}
+		
 		StackTraceElement[] stackElements = exception.getStackTrace();
+		if(stackElements != null) message.append("Stack trace :\n");
 		for (StackTraceElement stackTraceElement : stackElements) {
 			message.append(stackTraceElement.toString() + "\n");
 		}
-		if(exception.getCause() != null && exception.getCause().toString() != null) {
-			message.append(">>>>>>>>>>>>\nCaused by : "  + exception.getCause().toString());
-			stackElements = exception.getCause().getStackTrace();
-			for (StackTraceElement stackTraceElement : stackElements) {
-				message.append(stackTraceElement.toString() + "\n");;
-			}
-		}
+		
 		return message.toString();
 	}
 	

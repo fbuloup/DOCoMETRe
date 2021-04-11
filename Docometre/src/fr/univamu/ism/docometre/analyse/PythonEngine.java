@@ -72,7 +72,9 @@ public class PythonEngine implements MathEngine {
 				} catch (Exception e) {
 					e.printStackTrace();
 					Activator.logErrorMessageWithCause(e);
-					status = new Status(Status.ERROR, Activator.PLUGIN_ID, e.getMessage());
+					String message = e.getMessage();
+					message = message == null ? e.getCause().getMessage() : message;
+					status = new Status(Status.ERROR, Activator.PLUGIN_ID, message);
 				}
 				return status;
 			}
