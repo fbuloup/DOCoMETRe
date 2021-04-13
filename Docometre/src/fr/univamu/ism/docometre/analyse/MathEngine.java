@@ -105,9 +105,12 @@ public interface MathEngine {
 		try {
 			double sf = getSampleFrequency(signal);
 			int nbSamples = getSamplesNumber(signal, trialNumber);
-			double[] times = new double[nbSamples];
-			for (int i = 0; i < nbSamples; i++) {
-				times[i] = 1f*i/sf;
+			// Adjust for front and end cut
+			int frontCut = MathEngineFactory.getMathEngine().getFrontCut(signal, trialNumber);
+			int endCut = MathEngineFactory.getMathEngine().getEndCut(signal, trialNumber);
+			double[] times = new double[nbSamples - frontCut - (nbSamples - endCut + 1)];
+			for (int i = frontCut; i < endCut - 1; i++) {
+				times[i-frontCut] = 1f*i/sf;
 			}
 			return times;
 		} catch (Exception e) {
