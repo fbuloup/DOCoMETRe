@@ -66,8 +66,8 @@ public class PythonEngineFunctionsMenuFactory {
 	public static String[] PythonEngineFunctionsFiles = new String[] {SUBMENU_SIGNALS, SUBMENU_MARKERS, SUBMENU_FEATURES, SUBMENU_EVENTS};
 	public static String[] PythonEngineFunctionsClasses = new String[] {null, null, null, null};
 	
-	public static String[] SignalsFunctionsFiles = new String[] {SUBMENU_FILTERING};
-	public static String[] SignalsFunctionsClasses = new String[] {null};
+	public static String[] SignalsFunctionsFiles = new String[] {SUBMENU_FILTERING, FrontCut.functionFileName, EndCut.functionFileName};
+	public static String[] SignalsFunctionsClasses = new String[] {null, FrontCut.class.getName(), EndCut.class.getName()};
 	
 	public static String[] FilteringFunctionsFiles = new String[] {ButterworthLowPass.functionFileName, ButterworthHighPass.functionFileName};
 	public static String[] FilteringFunctionsClasses = new String[] {ButterworthLowPass.class.getName(), ButterworthHighPass.class.getName()};
@@ -156,6 +156,7 @@ public class PythonEngineFunctionsMenuFactory {
 			MenuManager subSubMenuManager = new MenuManager("Fitering", SUBMENU_FILTERING);
 			populateSubMenu(subSubMenuManager, context, scriptSegmentEditor, blockEditPart);
 			subMenuManager.add(subSubMenuManager);
+			createSubmenuActions(subMenuManager, SignalsFunctionsFiles, SignalsFunctionsClasses, context, scriptSegmentEditor, blockEditPart);
 		}
 		if(subMenuManager.getId().equals(SUBMENU_FILTERING)) {
 			createSubmenuActions(subMenuManager, FilteringFunctionsFiles, FilteringFunctionsClasses, context, scriptSegmentEditor, blockEditPart);
@@ -178,11 +179,13 @@ public class PythonEngineFunctionsMenuFactory {
 			if (file.equals(SEPARATOR)) {
 				menuManager.add(new Separator());
 			}  else {
-				String menuTitle = FunctionFactory.getProperty(context, file, FunctionFactory.MENU_TITLE);
-				String menuTooltip = FunctionFactory.getProperty(context, file, FunctionFactory.DESCRIPTION);
-				if(menuTitle != null && menuTooltip != null) {
-					AssignFunctionAction assignFunctionAction = new AssignFunctionAction(scriptSegmentEditor, blockEditPart, menuTitle, menuTooltip, classes[i]);
-					menuManager.add(assignFunctionAction);
+				if(classes[i] != null) {
+					String menuTitle = FunctionFactory.getProperty(context, file, FunctionFactory.MENU_TITLE);
+					String menuTooltip = FunctionFactory.getProperty(context, file, FunctionFactory.DESCRIPTION);
+					if(menuTitle != null && menuTooltip != null) {
+						AssignFunctionAction assignFunctionAction = new AssignFunctionAction(scriptSegmentEditor, blockEditPart, menuTitle, menuTooltip, classes[i]);
+						menuManager.add(assignFunctionAction);
+					}
 				}
 			}
 			i++;
