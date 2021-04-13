@@ -7,6 +7,12 @@ import org.eclipse.osgi.util.NLS;
 public class FunctionsMessages extends NLS {
 	
 	private static final String BUNDLE_NAME = "fr.univamu.ism.docometre.analyse.functions.messages";//$NON-NLS-1$
+	
+	public static String Signals;
+	public static String Markers;
+	public static String Features;
+	public static String Events;
+	public static String Filtering;
 
 	// FILTERING functions
 	public static String OrderLabel;

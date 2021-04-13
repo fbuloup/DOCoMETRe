@@ -108,19 +108,19 @@ public class PythonEngineFunctionsMenuFactory {
 			if (functionFilePath.equals(SEPARATOR)) {
 				functionMenuManager.add(new Separator());
 			}  else if(functionFilePath.equals(SUBMENU_SIGNALS)) {
-				MenuManager subMenuManager = new MenuManager("Signals", SUBMENU_SIGNALS);
+				MenuManager subMenuManager = new MenuManager(FunctionsMessages.Signals, SUBMENU_SIGNALS);
 				populateSubMenu(subMenuManager, context, scriptSegmentEditor, blockEditPart);
 				functionMenuManager.add(subMenuManager);
 			} else if(functionFilePath.equals(SUBMENU_MARKERS)) {
-				MenuManager subMenuManager = new MenuManager("Markers", SUBMENU_MARKERS);
+				MenuManager subMenuManager = new MenuManager(FunctionsMessages.Markers, SUBMENU_MARKERS);
 				populateSubMenu(subMenuManager, context, scriptSegmentEditor, blockEditPart);
 				functionMenuManager.add(subMenuManager);
 			} else if(functionFilePath.equals(SUBMENU_FEATURES)) {
-				MenuManager subMenuManager = new MenuManager("Features", SUBMENU_FEATURES);
+				MenuManager subMenuManager = new MenuManager(FunctionsMessages.Features, SUBMENU_FEATURES);
 				populateSubMenu(subMenuManager, context, scriptSegmentEditor, blockEditPart);
 				functionMenuManager.add(subMenuManager);
 			} else if(functionFilePath.equals(SUBMENU_EVENTS)) {
-				MenuManager subMenuManager = new MenuManager("Events", SUBMENU_EVENTS);
+				MenuManager subMenuManager = new MenuManager(FunctionsMessages.Events, SUBMENU_EVENTS);
 				populateSubMenu(subMenuManager, context, scriptSegmentEditor, blockEditPart);
 				functionMenuManager.add(subMenuManager);
 			} else {
@@ -153,7 +153,7 @@ public class PythonEngineFunctionsMenuFactory {
 	
 	private static void populateSubMenu(MenuManager subMenuManager, Object context, AbstractScriptSegmentEditor scriptSegmentEditor, BlockEditPart blockEditPart) {
 		if(subMenuManager.getId().equals(SUBMENU_SIGNALS)) {
-			MenuManager subSubMenuManager = new MenuManager("Fitering", SUBMENU_FILTERING);
+			MenuManager subSubMenuManager = new MenuManager(FunctionsMessages.Filtering, SUBMENU_FILTERING);
 			populateSubMenu(subSubMenuManager, context, scriptSegmentEditor, blockEditPart);
 			subMenuManager.add(subSubMenuManager);
 			createSubmenuActions(subMenuManager, SignalsFunctionsFiles, SignalsFunctionsClasses, context, scriptSegmentEditor, blockEditPart);
