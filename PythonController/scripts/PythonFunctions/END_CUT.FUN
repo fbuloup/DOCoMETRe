@@ -6,10 +6,7 @@ DESCRIPTION_FR = Cette fonction modifie "l'après coupe" du signal sélectionné
 L'après coupe est une durée, en secondes, en fin de signal qui ne doit pas être montrée dans un graphe.
 
 # Now start specific python
-FUNCTION_CODE = # Change front cut\n\
-# import scipy;\n\
-# import numpy;\n\
-# Create filtered signal\n\
+FUNCTION_CODE = # Change end cut\n\
 import math;\n\
 SF = float(docometre.experiments['inputSignal.SampleFrequency']);\n\
 docometre.experiments['inputSignal.EndCut'][numpy.r_[trialsList]] = math.floor(endCut*SF);\n\

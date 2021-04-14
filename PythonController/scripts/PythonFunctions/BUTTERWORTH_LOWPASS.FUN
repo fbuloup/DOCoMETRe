@@ -28,8 +28,7 @@ docometre.gateway.jvm.System.out.println("normalizedCutOffFrequency : " + str(no
 num, den = scipy.signal.butter(order, normalizedCutOffFrequency, 'low', analog = False);\n\
 inputValues = docometre.experiments['inputSignal.Values'];\n\
 outputValues = docometre.experiments['outputSignal.Values'];\n\
-docometre.gateway.jvm.System.out.println("trialsList : " + str(range(trialsList)));\n\
-for trialNumber in range(trialsList):\n\
+for trialNumber in numpy.r_[trialsList]:\n\
 \toutputValues[trialNumber][0:SignalSizes[1]] = scipy.signal.filtfilt(num, den, inputValues[trialNumber][0:SignalSizes[1]]);\n\
 del num; del den; del nyquistFrequency; del normalizedCutOffFrequency; del SignalSizes; del trialNumber;\n\
 #del inputValues; del outputValues;\n\

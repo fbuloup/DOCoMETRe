@@ -7,9 +7,6 @@ L'avant coupe est une durée, en secondes, au début du signal qui ne doit pas �
 
 # Now start specific python function
 FUNCTION_CODE = # Change front cut\n\
-# import scipy;\n\
-# import numpy;\n\
-# Create filtered signal\n\
 import math;\n\
 SF = float(docometre.experiments['inputSignal.SampleFrequency']);\n\
 docometre.experiments['inputSignal.FrontCut'][numpy.r_[trialsList]] = math.floor(frontCut*SF);\n\

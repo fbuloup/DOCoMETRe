@@ -38,11 +38,11 @@ public class PythonCodeScanner extends RuleBasedScanner {
 											"not", "class", "from", "or", "continue", "global", "pass", "def", "if", 
 											"raise", "del", "import", "return", "elif", "in", "True", "else"};
 	
-	public static String[] NUMPY_RESERVED_WORDS = {"numpy", "zeros", "ones", "arange", "nansum"};
+	public static String[] NUMPY_RESERVED_WORDS = {"numpy", "zeros", "ones", "arange", "nansum", "r\\_"};
 	
 	public static String[] SCIPY_RESERVED_WORDS = {"scipy", "signal", "butter", "filtfilt"};
 	
-	
+	public static String[] MATH_RESERVED_WORDS = {"math", "floor"};
 	
 	private static class PythonWordDetector implements IWordDetector {
 		@Override
@@ -115,6 +115,10 @@ public class PythonCodeScanner extends RuleBasedScanner {
         
         for (int i = 0; i < SCIPY_RESERVED_WORDS.length; i++) {
         	wordRule.addWord(SCIPY_RESERVED_WORDS[i], getScipyReservedWordsTextAttributeToken());
+		}
+        
+    for (int i = 0; i < MATH_RESERVED_WORDS.length; i++) {
+        	wordRule.addWord(MATH_RESERVED_WORDS[i], getMathReservedWordsTextAttributeToken());
 		}
         
         for (int i = 0; i < DOCOMETRE_RESERVED_WORDS.length; i++) {
@@ -192,6 +196,14 @@ public class PythonCodeScanner extends RuleBasedScanner {
 	
 	private static IToken getDocometreReservedWordsTextAttributeToken() {
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.RED),
+				DocometreApplication.getColor(DocometreApplication.WHITE), SWT.NORMAL,
+				DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
+		IToken token = new Token(attribute);
+		return token;
+	}
+	
+	private static IToken getMathReservedWordsTextAttributeToken() {
+		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.MAROON),
 				DocometreApplication.getColor(DocometreApplication.WHITE), SWT.NORMAL,
 				DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
