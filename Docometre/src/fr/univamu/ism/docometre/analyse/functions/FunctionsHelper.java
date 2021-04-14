@@ -26,13 +26,24 @@ public final class FunctionsHelper {
 	
 	public static String createTrialsListHelper(String trialsList) {
 		String mathEngine = Activator.getDefault().getPreferenceStore().getString(MathEnginePreferencesConstants.MATH_ENGINE);
+		trialsList = trialsList.replaceAll(";", ",");
+		trialsList = trialsList.replaceAll("-", ":");
 		if(MathEnginePreferencesConstants.MATH_ENGINE_PYTHON.equals(mathEngine)) {
-			Pattern pattern = Pattern.compile("^\\d+:\\d+$");
+			Pattern pattern = Pattern.compile("^(?!([ \\d]*-){2})\\d+(?: *[-,:;] *\\d+)*$");
 			Matcher matcher = pattern.matcher(trialsList);
 	        if(matcher.matches()) {
-	        	String[] numbersString = trialsList.split(":");
-	        	int startNumber = Integer.valueOf(numbersString[0]) - 1;
-	        	trialsList = "" + startNumber + "," + numbersString[1];
+	        	String[] rangesString = trialsList.split(",");
+	        	for (int i = 0; i < rangesString.length; i++) {
+					if(rangesString[i].contains(":")) {
+						String[] numbers = rangesString[i].split(":");
+						numbers[0] = String.valueOf(Integer.parseInt(numbers[0]) - 1);
+						rangesString[i] = numbers[0] + ":" + numbers[1];
+					} else {
+						rangesString[i] = String.valueOf(Integer.parseInt(rangesString[i]) - 1);
+					}
+				}
+	        	
+	        	trialsList = String.join(",", rangesString);
 	        	return trialsList;
 	        }
 	        pattern = Pattern.compile("^\\d+$");

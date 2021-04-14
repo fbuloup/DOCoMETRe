@@ -12,7 +12,7 @@ FUNCTION_CODE = # Change front cut\n\
 # Create filtered signal\n\
 import math;\n\
 SF = float(docometre.experiments['inputSignal.SampleFrequency']);\n\
-docometre.experiments['inputSignal.EndCut'][range(trialsList)] = math.floor(endCut*SF);\n\
+docometre.experiments['inputSignal.EndCut'][numpy.r_[trialsList]] = math.floor(endCut*SF);\n\
 docometre.gateway.jvm.System.out.println("EC : " + str(math.floor(endCut*SF)));\n\
 if not('createdOrModifiedChannels' in docometre.experiments.keys()):\n\
 \tdocometre.experiments['createdOrModifiedChannels'] = 'inputSignal';\n\
