@@ -22,16 +22,11 @@ docometre.experiments['outputSignal.NbMarkersGroups'] = 0;\n\
 docometre.experiments['outputSignal.SampleFrequency'] = docometre.experiments['inputSignal.SampleFrequency'];\n\
 # Compute filtering\n\
 nyquistFrequency = 0.5 * float(docometre.experiments['inputSignal.SampleFrequency']); # Nyquist frequency is half sample frequency\n\
-docometre.gateway.jvm.System.out.println("nyquistFrequency : " + str(nyquistFrequency));\n\
 normalizedCutOffFrequency = cutOffFrequency / nyquistFrequency;\n\
-docometre.gateway.jvm.System.out.println("normalizedCutOffFrequency : " + str(normalizedCutOffFrequency));\n\
-num, den = scipy.signal.butter(order, normalizedCutOffFrequency, 'low', analog = False);\n\
+den, num = scipy.signal.butter(order, normalizedCutOffFrequency, 'low', analog = False);\n\
 inputValues = docometre.experiments['inputSignal.Values'];\n\
 outputValues = docometre.experiments['outputSignal.Values'];\n\
-for trialNumber in numpy.r_[trialsList]:\n\
-\toutputValues[trialNumber][0:SignalSizes[1]] = scipy.signal.filtfilt(num, den, inputValues[trialNumber][0:SignalSizes[1]]);\n\
-del num; del den; del nyquistFrequency; del normalizedCutOffFrequency; del SignalSizes; del trialNumber;\n\
-#del inputValues; del outputValues;\n\
+outputValues[numpy.r_[trialsList],:] = scipy.signal.filtfilt(den, num, inputValues[numpy.r_[trialsList],:]);\n\
 if not('createdOrModifiedChannels' in docometre.experiments.keys()):\n\
 \tdocometre.experiments['createdOrModifiedChannels'] = 'outputSignal';\n\
 else:\n\

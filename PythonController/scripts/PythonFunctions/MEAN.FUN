@@ -12,12 +12,10 @@ NbFeatures = 0;\n\
 # Check if feature already exists\n\
 if "inputSignal.NbFeatures" in docometre.experiments.keys():\n\
 	\tNbFeatures = int(docometre.experiments["inputSignal.NbFeatures"]);\n\
-	\tdocometre.gateway.jvm.System.out.println("NbFeatures : " + str(NbFeatures));\n\
 	\tfor featureNumber in range(NbFeatures):\n\
 		\t\tif docometre.experiments["inputSignal.FeaturesLabels"][featureNumber] == "MEAN":\n\
 			\t\t\tcompute = False;\n\
 			\t\t\tbreak;\n\
-docometre.gateway.jvm.System.out.println("compute : " + str(compute));\n\
 if compute:\n\
 	\tif NbFeatures == 0:\n\
 		\t\tdocometre.experiments["inputSignal.FeaturesLabels"] = ["MEAN"];\n\

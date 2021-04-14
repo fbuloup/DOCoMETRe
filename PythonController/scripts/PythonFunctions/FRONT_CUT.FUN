@@ -10,7 +10,6 @@ FUNCTION_CODE = # Change front cut\n\
 import math;\n\
 SF = float(docometre.experiments['inputSignal.SampleFrequency']);\n\
 docometre.experiments['inputSignal.FrontCut'][numpy.r_[trialsList]] = math.floor(frontCut*SF);\n\
-docometre.gateway.jvm.System.out.println("FC : " + str(math.floor(frontCut*SF)));\n\
 if not('createdOrModifiedChannels' in docometre.experiments.keys()):\n\
 \tdocometre.experiments['createdOrModifiedChannels'] = 'inputSignal';\n\
 else:\n\
