@@ -113,8 +113,6 @@ public class RunDataProcessingCommand extends AbstractHandler implements ISelect
 			modifiedSubjects = MathEngineFactory.getMathEngine().getCreatedOrModifiedSubjects();
 			for (IResource modifiedSubject : modifiedSubjects) {
 				ResourceProperties.setSubjectModified(modifiedSubject, true);
-				ExperimentsView.refresh(modifiedSubject, null);
-				SubjectsView.refresh(modifiedSubject, null);
 				try {
 					if(modifiedSubject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) != null && modifiedSubject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) instanceof ChannelsContainer) {
 						ChannelsContainer channelsContainer = (ChannelsContainer)modifiedSubject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
@@ -123,6 +121,9 @@ public class RunDataProcessingCommand extends AbstractHandler implements ISelect
 				} catch (CoreException e) {
 					Activator.logErrorMessageWithCause(e);
 					e.printStackTrace();
+				} finally {
+					ExperimentsView.refresh(modifiedSubject, null);
+					SubjectsView.refresh(modifiedSubject, null);
 				}
 			}
 			if(modifiedSubjects.length > 0) {
