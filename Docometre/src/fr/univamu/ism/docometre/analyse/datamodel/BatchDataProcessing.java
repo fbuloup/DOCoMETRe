@@ -37,6 +37,10 @@ public class BatchDataProcessing extends AbstractElement {
 		return "true".equalsIgnoreCase(getProperty(BatchDataProcessingProperties.AUTO_LOAD_SUBJECT));
 	}
 	
+	public boolean unloadSubject() {
+		return "true".equalsIgnoreCase(getProperty(BatchDataProcessingProperties.AUTO_UNLOAD_SUBJECT));
+	}
+	
 	//Processes
 	public BatchDataProcessingItem addProcess(IResource process) {
 		BatchDataProcessingItem batchDataProcessingItem = new BatchDataProcessingItem(getPath(process), true);

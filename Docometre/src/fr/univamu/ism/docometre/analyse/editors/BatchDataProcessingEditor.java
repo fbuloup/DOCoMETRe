@@ -320,6 +320,18 @@ public class BatchDataProcessingEditor extends EditorPart implements PartNameRef
 			}
 		});
 		
+		Button unloadSubjectButton = formToolkit.createButton(container, DocometreMessages.AutoUnLoadSubjectTitle, SWT.CHECK);
+		unloadSubjectButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		unloadSubjectButton.setSelection("true".equalsIgnoreCase(getBatchDataProcessing().getProperty(BatchDataProcessingProperties.AUTO_UNLOAD_SUBJECT)));
+		unloadSubjectButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				boolean checked = loadSubjectButton.getSelection();
+				getBatchDataProcessing().setProperty(BatchDataProcessingProperties.AUTO_UNLOAD_SUBJECT, checked?"true":"false");
+				setDirty(true);
+			}
+		});
+		
 		Section processingSection = formToolkit.createSection(container, Section.DESCRIPTION | Section.TITLE_BAR);
 		processingSection.setText(DocometreMessages.Processes);
 		processingSection.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));

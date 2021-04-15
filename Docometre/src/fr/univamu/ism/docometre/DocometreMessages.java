@@ -745,6 +745,7 @@ public final class DocometreMessages extends NLS {
 	
 	public static String LoadingSubject;
 	public static String UnloadingSubject;
+	public static String AutoUnLoadSubjectTitle;
 	public static String Done;
 	
 	public static String PleaseStartMathEngineFirst;
@@ -856,6 +857,8 @@ public final class DocometreMessages extends NLS {
 	public static String GetAllSubjectsLabel;
 	public static String LoadingLabel;
 	public static String ProcessingLabel;
+	public static String SavingLabel;
+	public static String UnloadingLabel;
 	public static String RunningScriptLabel;
 
 	// Close workbench

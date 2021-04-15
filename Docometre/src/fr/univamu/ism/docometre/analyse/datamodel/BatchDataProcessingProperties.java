@@ -5,16 +5,19 @@ import fr.univamu.ism.docometre.dacqsystems.Property;
 
 public final class BatchDataProcessingProperties extends Property  {
 	
-	public static final BatchDataProcessingProperties AUTO_LOAD_SUBJECT = new BatchDataProcessingProperties("BatchDataProcessingProperties.GAIN", "", "", "^(true|false)$");
+	public static final BatchDataProcessingProperties AUTO_LOAD_SUBJECT = new BatchDataProcessingProperties("BatchDataProcessingProperties.AUTO_LOAD_SUBJECT", "", "", "^(true|false)$");
+	public static final BatchDataProcessingProperties AUTO_UNLOAD_SUBJECT = new BatchDataProcessingProperties("BatchDataProcessingProperties.AUTO_UNLOAD_SUBJECT", "", "", "^(true|false)$");
 
 	public static void populateProperties(BatchDataProcessing batchDataProcessing) {
 		batchDataProcessing.setProperty(AUTO_LOAD_SUBJECT, "true");
+		batchDataProcessing.setProperty(AUTO_UNLOAD_SUBJECT, "true");
 	}
 	
 	public static BatchDataProcessing cloneBatchDataProcessing(BatchDataProcessing batchDataProcessing) {
 		try {
 			BatchDataProcessing clonedBatchDataProcessing = new BatchDataProcessing();
 			clonedBatchDataProcessing.setProperty(AUTO_LOAD_SUBJECT, batchDataProcessing.getProperty(AUTO_LOAD_SUBJECT));
+			clonedBatchDataProcessing.setProperty(AUTO_UNLOAD_SUBJECT, batchDataProcessing.getProperty(AUTO_UNLOAD_SUBJECT));
 			BatchDataProcessingItem[] items = batchDataProcessing.getProcesses();
 			BatchDataProcessingItem[] clonedItems = new BatchDataProcessingItem[items.length];
 			int i = 0;
