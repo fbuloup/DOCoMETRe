@@ -6,7 +6,24 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-04-9
+      -- 2021-04-16
+ADDED :
+* vectorize endcut and frontcut 
+* Set Charts dialog layout modeless
+* Functions menu internationalization
+* Add Front Cut and End Cut functions (python only for now) 
+* Add Butterworth high pass filter to python engine 
+FIXED :
+* ArrayIndexOutOfBoundsException: Index 0 out of bounds for length 0 (RTSWChartOscillo)
+* JRE and compiler compliance to 1.8 (Theme plugin)
+* Python functions enhancement (remove gateway System.out)
+* Update cache channels when channel is deleted
+* Some enhancement in python functions and code scanner 
+* Managing load/Save/Unload subject with batch processing
+* Bad style in chart options Group preferences
+* Front and End cut where not taken in account in time vector creation 
+* Manage bug when path to Docometre.py is wrong 
+-- 2021-04-9
 ADDED :
 Some Console Messages for python controller
 -- 2021-04-7
