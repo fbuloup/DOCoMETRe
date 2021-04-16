@@ -423,9 +423,9 @@ public final class RTSWTOscilloChart extends RTSWTChart {
 			if (serie.getLineStyle() == SWT.LINE_DASHDOTDOT)
 				chartAreaGLContext.getGL().getGL2().glLineStipple(1, (short) 0x333F);
 			int[] points = ((RTSWTOscilloSerie)serie).getPointsArrayToDraw();
+			if(points.length == 0) continue;
 			int currentPostion = ((RTSWTOscilloSerie)serie).getCurrentIndex();
-			if (currentPostion == -1)
-				continue;
+			if (currentPostion == -1) continue;
 			chartAreaGLContext.getGL().getGL2().glBegin(GL2.GL_LINE_STRIP);
 			int D = showLegend && legendPosition == SWT.TOP ? getLegendHeight() : 0;
 			for (int j = 0; j < 2 * (currentPostion + 1); j += 2)
