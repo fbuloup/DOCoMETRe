@@ -15,6 +15,7 @@ import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ILabelDecorator;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -156,6 +157,7 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 			String partName = getPartName();
 			partName = partName.replaceAll("\\s\\[.*\\]", "");
 			setPartName(partName + " [" + input.getName() + "]");
+			getSite().getSelectionProvider().setSelection(new StructuredSelection(input));
 		} else {
 			// Create infos
 			createMessageInfo();
@@ -164,6 +166,7 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 			partName = partName.replaceAll("\\s\\[.*\\]", "");
 			setPartName(partName);
 		}
+		
 		subjectsTreeViewer.setInput(input);
 		subjectsTreeViewer.refresh();
 		// Layout
