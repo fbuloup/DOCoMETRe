@@ -66,8 +66,8 @@ public class PythonEngineFunctionsMenuFactory {
 	public static String[] PythonEngineFunctionsFiles = new String[] {SUBMENU_SIGNALS, SUBMENU_MARKERS, SUBMENU_FEATURES, SUBMENU_EVENTS};
 	public static String[] PythonEngineFunctionsClasses = new String[] {null, null, null, null};
 	
-	public static String[] SignalsFunctionsFiles = new String[] {SUBMENU_FILTERING, FrontCut.functionFileName, EndCut.functionFileName};
-	public static String[] SignalsFunctionsClasses = new String[] {null, FrontCut.class.getName(), EndCut.class.getName()};
+	public static String[] SignalsFunctionsFiles = new String[] {SUBMENU_FILTERING, FrontCut.functionFileName, EndCut.functionFileName, SEPARATOR, MotionDistance.functionFileName};
+	public static String[] SignalsFunctionsClasses = new String[] {null, FrontCut.class.getName(), EndCut.class.getName(), null, MotionDistance.class.getName()};
 	
 	public static String[] FilteringFunctionsFiles = new String[] {ButterworthLowPass.functionFileName, ButterworthHighPass.functionFileName};
 	public static String[] FilteringFunctionsClasses = new String[] {ButterworthLowPass.class.getName(), ButterworthHighPass.class.getName()};
