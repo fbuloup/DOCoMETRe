@@ -67,7 +67,7 @@ public class ButterworthHighPass extends GenericFunction {
 		
 		Label trialsListLabel = new Label(paramContainer, SWT.NONE);
 		trialsListLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-		trialsListLabel.setText(FunctionsMessages.CutoffFrequencyLabel);
+		trialsListLabel.setText(FunctionsMessages.TrialsList);
 		Text trialsListText = new Text(paramContainer, SWT.BORDER);
 		trialsListText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		String value  = getProperty(trialsListKey, "1:10,15,20:25");

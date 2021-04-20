@@ -67,7 +67,7 @@ public class MotionDistance extends GenericFunction {
 		// Trials list
 		Label trialsListLabel = new Label(paramContainer, SWT.NONE);
 		trialsListLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-		trialsListLabel.setText(FunctionsMessages.CutoffFrequencyLabel);
+		trialsListLabel.setText(FunctionsMessages.TrialsList);
 		Text trialsListText = new Text(paramContainer, SWT.BORDER);
 		trialsListText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		String value  = getProperty(trialsListKey, "1:10,15,20:25");
@@ -160,7 +160,7 @@ public class MotionDistance extends GenericFunction {
 		// Input Marker 1 : from
 		Label inputMarker1Label = new Label(paramContainer, SWT.NONE);
 		inputMarker1Label.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-		inputMarker1Label.setText(FunctionsMessages.InputSignalLabel);
+		inputMarker1Label.setText(FunctionsMessages.FromMarkerLabel);
 		ComboViewer inputMarker1ComboViewer = new ComboViewer(paramContainer, SWT.BORDER);
 		inputMarker1ComboViewer.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		value  = getProperty(inputMarker1Key, "");
@@ -186,7 +186,7 @@ public class MotionDistance extends GenericFunction {
 		// Input Marker 2 : to
 		Label inputMarker2Label = new Label(paramContainer, SWT.NONE);
 		inputMarker2Label.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-		inputMarker2Label.setText(FunctionsMessages.InputSignalLabel);
+		inputMarker2Label.setText(FunctionsMessages.ToMarkerLabel);
 		ComboViewer inputMarker2ComboViewer = new ComboViewer(paramContainer, SWT.BORDER);
 		inputMarker2ComboViewer.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		value  = getProperty(inputMarker2Key, "");
@@ -215,7 +215,7 @@ public class MotionDistance extends GenericFunction {
 		outputSignalSuffixLabel.setText(FunctionsMessages.OutputSignalSuffixLabel);
 		Text outputSignalSuffixText = new Text(paramContainer, SWT.BORDER);
 		outputSignalSuffixText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		value  = getProperty(outputSignalSuffixKey, "BLP");
+		value  = getProperty(outputSignalSuffixKey, "MD");
 		outputSignalSuffixText.setText(value);
 		outputSignalSuffixText.addModifyListener(new ModifyListener() {
 			@Override

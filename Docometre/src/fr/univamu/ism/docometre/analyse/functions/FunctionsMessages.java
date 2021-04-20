@@ -14,6 +14,8 @@ public class FunctionsMessages extends NLS {
 	public static String Events;
 	public static String Filtering;
 
+	public static String TrialsList;
+	
 	// FILTERING functions
 	public static String OrderLabel;
 	public static String CutoffFrequencyLabel;
@@ -32,6 +34,16 @@ public class FunctionsMessages extends NLS {
 	// END_CUT
 	public static String EndCutLabel;
 	protected static String EndCutNotValidLabel;
+
+	// TIME_MARKER
+	public static String TimeValueLabel;
+	public static String MarkersGroupLabel;
+
+	// Motion Distance
+	public static String FromMarkerLabel;
+	public static String ToMarkerLabel;
+
+	
 	
 	static {
 		// load message values from bundle file

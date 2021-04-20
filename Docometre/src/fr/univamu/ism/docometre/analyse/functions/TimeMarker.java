@@ -29,14 +29,15 @@ import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
 import fr.univamu.ism.process.Block;
 import fr.univamu.ism.process.Script;
 
-public class EndCut extends GenericFunction {
+public class TimeMarker extends GenericFunction {
 	
 	private static final long serialVersionUID = 1L;
 	
-	public static final String functionFileName = "END_CUT.FUN";
+	public static final String functionFileName = "TIME_MARKER.FUN";
 	
-	private static final String endCutKey = "endCut";
 	private static final String inputSignalKey = "inputSignal";
+	private static final String markersGroupLabelKey = "markersGroupLabel";
+	private static final String timeMarkerValueKey = "timeMarkerValue";
 	private static final String trialsListKey = "trialsList";
 	
 	transient private FunctionalBlockConfigurationDialog functionalBlockConfigurationDialog;
@@ -60,8 +61,8 @@ public class EndCut extends GenericFunction {
 		if(!checkPreBuildGUI(this.functionalBlockConfigurationDialog, paramContainer, 2, context)) {
 			return paramContainer;
 		}
-		
-		
+
+		// Trials list
 		Label trialsListLabel = new Label(paramContainer, SWT.NONE);
 		trialsListLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
 		trialsListLabel.setText(FunctionsMessages.TrialsList);
@@ -72,7 +73,7 @@ public class EndCut extends GenericFunction {
 		trialsListText.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
-				EndCut.this.functionalBlockConfigurationDialog.setErrorMessage(null);
+				TimeMarker.this.functionalBlockConfigurationDialog.setErrorMessage(null);
 				boolean putValue = true;
 				String regExp = "^(?!([ \\d]*-){2})\\d+(?: *[-,:;] *\\d+)*$";
 				Pattern pattern = Pattern.compile(regExp);
@@ -81,47 +82,21 @@ public class EndCut extends GenericFunction {
 				if(putValue) getTransientProperties().put(trialsListKey, trialsListText.getText());
 				else {
 					String message = NLS.bind(FunctionsMessages.TrialsListNotValidLabel, trialsListText.getText());
-					EndCut.this.functionalBlockConfigurationDialog.setErrorMessage(message);
+					TimeMarker.this.functionalBlockConfigurationDialog.setErrorMessage(message);
 				}
 			}
 		});
 		
-		Label endCutLabel = new Label(paramContainer, SWT.NONE);
-		endCutLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-		endCutLabel.setText(FunctionsMessages.EndCutLabel);
-		Text endCutText = new Text(paramContainer, SWT.BORDER);
-		endCutText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		value  = getProperty(endCutKey, "0");
-		endCutText.setText(value);
-		endCutText.addModifyListener(new ModifyListener() {
-			@Override
-			public void modifyText(ModifyEvent e) {
-				EndCut.this.functionalBlockConfigurationDialog.setErrorMessage(null);
-				boolean putValue = true;
-				String regExp = "\\d+\\.?\\d*";
-				Pattern pattern = Pattern.compile(regExp);
-				Matcher matcher = pattern.matcher(endCutText.getText());
-				putValue = matcher.matches();
-				if(putValue) getTransientProperties().put(endCutKey, endCutText.getText());
-				else {
-					String message = NLS.bind(FunctionsMessages.EndCutNotValidLabel, endCutText.getText());
-					EndCut.this.functionalBlockConfigurationDialog.setErrorMessage(message);
-				}
-			}
-		});
-		
-		Label inputSignalLabel = new Label(paramContainer, SWT.NONE);
-		inputSignalLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-		inputSignalLabel.setText(FunctionsMessages.InputSignalLabel);
-		
-		ComboViewer inputSignalComboViewer = new ComboViewer(paramContainer, SWT.BORDER);
-		inputSignalComboViewer.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		// Input Signal
+		Label inputSignal1Label = new Label(paramContainer, SWT.NONE);
+		inputSignal1Label.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+		inputSignal1Label.setText(FunctionsMessages.InputSignalLabel);
+		ComboViewer inputSignal1ComboViewer = new ComboViewer(paramContainer, SWT.BORDER);
+		inputSignal1ComboViewer.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		value  = getProperty(inputSignalKey, "");
-		inputSignalComboViewer.getCombo().setText(value);
-		
-		inputSignalComboViewer.setContentProvider(new ChannelsContentProvider(true, false, false, false, false, false, false));
-		inputSignalComboViewer.setLabelProvider(LabelProvider.createTextProvider(new Function<Object, String>() {
-			
+		inputSignal1ComboViewer.getCombo().setText(value);
+		inputSignal1ComboViewer.setContentProvider(new ChannelsContentProvider(true, false, false, false, false, false, false));
+		inputSignal1ComboViewer.setLabelProvider(LabelProvider.createTextProvider(new Function<Object, String>() {
 			@Override
 			public String apply(Object t) {
 				if(!(t instanceof Channel)) return null;
@@ -130,20 +105,69 @@ public class EndCut extends GenericFunction {
 				return null;
 			}
 		}));
-		inputSignalComboViewer.setInput(SelectedExprimentContributionItem.selectedExperiment);
+		inputSignal1ComboViewer.setInput(SelectedExprimentContributionItem.selectedExperiment);
 		Channel channel = MathEngineFactory.getMathEngine().getChannelFromName(SelectedExprimentContributionItem.selectedExperiment, getProperty(inputSignalKey, ""));
-		if(channel != null) inputSignalComboViewer.setSelection(new StructuredSelection(channel));
+		if(channel != null) inputSignal1ComboViewer.setSelection(new StructuredSelection(channel));
 		else {
 			String message = NLS.bind(DocometreMessages.ImpossibleToFindChannelTitle, value);
 			Activator.logErrorMessage(message);
 			this.functionalBlockConfigurationDialog.setErrorMessage(DocometreMessages.FunctionalBlockConfigurationDialogBlockingMessage);
 		}
-		
-		inputSignalComboViewer.getCombo().addModifyListener(new ModifyListener() {
+		inputSignal1ComboViewer.getCombo().addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
-				EndCut.this.functionalBlockConfigurationDialog.setErrorMessage(null);
-				getTransientProperties().put(inputSignalKey, inputSignalComboViewer.getCombo().getText());
+				TimeMarker.this.functionalBlockConfigurationDialog.setErrorMessage(null);
+				getTransientProperties().put(inputSignalKey, inputSignal1ComboViewer.getCombo().getText());
+			}
+		});
+		
+		// Markers group label 
+		Label markersGroupLabelLabel = new Label(paramContainer, SWT.NONE);
+		markersGroupLabelLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+		markersGroupLabelLabel.setText(FunctionsMessages.MarkersGroupLabel);
+		Text markersGroupLabelText = new Text(paramContainer, SWT.BORDER);
+		markersGroupLabelText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		value  = getProperty(markersGroupLabelKey, "Time_Marker");
+		markersGroupLabelText.setText(value);
+		markersGroupLabelText.addModifyListener(new ModifyListener() {
+			@Override
+			public void modifyText(ModifyEvent e) {
+				TimeMarker.this.functionalBlockConfigurationDialog.setErrorMessage(null);
+				boolean putValue = true;
+				String regExp = "^[a-zA-Z][a-zA-Z0-9_]*$";
+				Pattern pattern = Pattern.compile(regExp);
+				Matcher matcher = pattern.matcher(markersGroupLabelText.getText());
+				putValue = matcher.matches();
+				if(putValue) getTransientProperties().put(markersGroupLabelKey, markersGroupLabelText.getText());
+				else {
+					String message = NLS.bind(FunctionsMessages.EndCutNotValidLabel, markersGroupLabelText.getText());
+					TimeMarker.this.functionalBlockConfigurationDialog.setErrorMessage(message);
+				}
+			}
+		});
+		
+		// Time value 
+		Label timeLabel = new Label(paramContainer, SWT.NONE);
+		timeLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+		timeLabel.setText(FunctionsMessages.TimeValueLabel);
+		Text timeText = new Text(paramContainer, SWT.BORDER);
+		timeText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		value  = getProperty(timeMarkerValueKey, "0");
+		timeText.setText(value);
+		timeText.addModifyListener(new ModifyListener() {
+			@Override
+			public void modifyText(ModifyEvent e) {
+				TimeMarker.this.functionalBlockConfigurationDialog.setErrorMessage(null);
+				boolean putValue = true;
+				String regExp = "\\d+\\.?\\d*";
+				Pattern pattern = Pattern.compile(regExp);
+				Matcher matcher = pattern.matcher(timeText.getText());
+				putValue = matcher.matches();
+				if(putValue) getTransientProperties().put(timeMarkerValueKey, timeText.getText());
+				else {
+					String message = NLS.bind(FunctionsMessages.EndCutNotValidLabel, timeText.getText());
+					TimeMarker.this.functionalBlockConfigurationDialog.setErrorMessage(message);
+				}
 			}
 		});
 		
@@ -161,18 +185,19 @@ public class EndCut extends GenericFunction {
 		
 		String trialsList = getProperty(trialsListKey, "");
 		trialsList = FunctionsHelper.createTrialsListHelper(trialsList);
-		String endCut = getProperty(endCutKey, "");
 		String inputSignal = getProperty(inputSignalKey, "");
+		String timeMarkerValue = getProperty(timeMarkerValueKey, "");
+		String markersGroupLabel = getProperty(markersGroupLabelKey, "");
 		
-		code = code.replaceAll(trialsListKey, trialsList).replaceAll(endCutKey, endCut);
-		code = code.replaceAll(inputSignalKey, inputSignal);
+		code = code.replaceAll(trialsListKey, trialsList).replaceAll(inputSignalKey, inputSignal).replaceAll(timeMarkerValueKey, timeMarkerValue);
+		code = code.replaceAll(markersGroupLabelKey, markersGroupLabel);
 		
 		return code + "\n";
 	}
 	
 	@Override
 	public Block clone() {
-		EndCut function = new EndCut();
+		TimeMarker function = new TimeMarker();
 		super.clone(function);
 		return function;
 	}
