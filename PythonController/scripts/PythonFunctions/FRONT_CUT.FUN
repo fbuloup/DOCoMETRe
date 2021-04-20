@@ -13,4 +13,4 @@ docometre.experiments['inputSignal.FrontCut'][numpy.r_[trialsList]] = math.floor
 if not('createdOrModifiedChannels' in docometre.experiments.keys()):\n\
 \tdocometre.experiments['createdOrModifiedChannels'] = 'inputSignal';\n\
 else:\n\
-\tdocometre.experiments['createdOrModifiedChannels'] = docometre.experiments['createdOrModifiedChannels'] + ':inputSignal';
+\tdocometre.experiments['createdOrModifiedChannels'] = docometre.experiments['createdOrModifiedChannels'] + ':inputSignal';\n\

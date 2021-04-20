@@ -32,14 +32,14 @@ if "From_Beginning" == "inputMarker1":\n\
 	\tfromValues[:,0] = numpy.r_[trialsList] + 1;\n\
 	\tfromValues[:,2] = values1[:,0];\n\
 else:\n\
-	\tfromValues = docometre.experiments["inputMarker1"];\n\
+	\tfromValues = docometre.experiments["inputMarker1_Values"];\n\
 if "To_End" == "inputMarker2":\n\
 	\ttoValues = numpy.zeros((SignalSizes[0],3));\n\
 	\ttoValues[:,0] = numpy.r_[trialsList] + 1;\n\
 	\ttoValues[:,1] = numpy.true_divide(nbSamples, sampleFrequency);\n\
 	\ttoValues[:,2] = nbSamples;\n\
 else:\n\
-	\ttoValues = docometre.experiments["inputMarker2"];\n\
+	\ttoValues = docometre.experiments["inputMarker2_Values"];\n\
 # Loop over trials	\n\
 for trialNumber in numpy.r_[trialsList]:\n\
 	\t# Get from and to index in from and to values for trialNumber\n\
@@ -62,4 +62,4 @@ for trialNumber in numpy.r_[trialsList]:\n\
 if not("createdOrModifiedChannels" in docometre.experiments.keys()):\n\
 	\tdocometre.experiments["createdOrModifiedChannels"] = "outputSignal";\n\
 else:\n\
-	\tdocometre.experiments["createdOrModifiedChannels"] = docometre.experiments["createdOrModifiedChannels"] + ":outputSignal";
+	\tdocometre.experiments["createdOrModifiedChannels"] = docometre.experiments["createdOrModifiedChannels"] + ":outputSignal";\n\
