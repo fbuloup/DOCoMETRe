@@ -53,7 +53,7 @@ public class AddHandler extends SelectionAdapter {
 
 		@Override
 		public IStatus execute(IProgressMonitor monitor, IAdaptable info) throws ExecutionException {
-			if(resourceType == ResourceType.PROCESS) {
+			if(resourceType == ResourceType.DATA_PROCESSING) {
 				addedBatchDataProcessing = batchDataProcessing.addProcesses(selection);
 				dataProcessBatchEditor.refreshProcesses();
 			} else {
@@ -70,7 +70,7 @@ public class AddHandler extends SelectionAdapter {
 
 		@Override
 		public IStatus undo(IProgressMonitor monitor, IAdaptable info) throws ExecutionException {
-			if(resourceType == ResourceType.PROCESS) {
+			if(resourceType == ResourceType.DATA_PROCESSING) {
 				batchDataProcessing.removeProcesses(addedBatchDataProcessing);
 				dataProcessBatchEditor.refreshProcesses();
 			} else {
@@ -111,7 +111,7 @@ public class AddHandler extends SelectionAdapter {
 			ElementListSelectionDialog elementListSelectionDialog = new ElementListSelectionDialog(dataProcessBatchEditor.getSite().getShell(), new ProcessesSubjectsLabelProvider());
 			elementListSelectionDialog.setMultipleSelection(true);
 			
-			if(resourceType == ResourceType.PROCESS) {
+			if(resourceType == ResourceType.DATA_PROCESSING) {
 				elementListSelectionDialog.setMessage(DocometreMessages.SelectProcessDialogMessage);
 				elementListSelectionDialog.setTitle(DocometreMessages.SelectProcessDialogTitle);
 			} else {
@@ -121,7 +121,7 @@ public class AddHandler extends SelectionAdapter {
 			elementListSelectionDialog.setElements(AddHandler.this.resources);
 			if(elementListSelectionDialog.open() == Dialog.OK) {
 				IResource[] selection = Arrays.asList(elementListSelectionDialog.getResult()).toArray(new IResource[elementListSelectionDialog.getResult().length]);
-				if(resourceType == ResourceType.PROCESS) {
+				if(resourceType == ResourceType.DATA_PROCESSING) {
 					operationHistory.execute(new AddOperation(DocometreMessages.AddProcessModifyOperationLabel, selection), null, null);
 				} else {
 					operationHistory.execute(new AddOperation(DocometreMessages.AddSubjectModifyOperationLabel, selection), null, null);

@@ -39,7 +39,7 @@ public class MoveDownHandler extends SelectionAdapter {
 			List<Object> list = Arrays.asList((Object[])newItems);
 			Collections.reverse(list);
 			BatchDataProcessingItem[] batchDataProcessingItems = list.toArray(new BatchDataProcessingItem[items.length]);
-			if(resourceType == ResourceType.PROCESS) {
+			if(resourceType == ResourceType.DATA_PROCESSING) {
 				for (BatchDataProcessingItem item : batchDataProcessingItems) dataProcessBatchEditor.getBatchDataProcessing().moveProcessDown(item);
 				dataProcessBatchEditor.refreshProcesses();
 			} else {
@@ -57,7 +57,7 @@ public class MoveDownHandler extends SelectionAdapter {
 
 		@Override
 		public IStatus undo(IProgressMonitor monitor, IAdaptable info) throws ExecutionException {
-			if(resourceType == ResourceType.PROCESS) {
+			if(resourceType == ResourceType.DATA_PROCESSING) {
 				for (BatchDataProcessingItem item : items) dataProcessBatchEditor.getBatchDataProcessing().moveProcessUp(item);
 				dataProcessBatchEditor.refreshProcesses();
 			} else {
@@ -85,7 +85,7 @@ public class MoveDownHandler extends SelectionAdapter {
 		if(resourceType == ResourceType.SUBJECT) selection = dataProcessBatchEditor.getSelectedSubjects();
 		if(selection.length > 0) {
 			try {
-				if(resourceType == ResourceType.PROCESS) {
+				if(resourceType == ResourceType.DATA_PROCESSING) {
 					if(dataProcessBatchEditor.getBatchDataProcessing().canMoveProcessesDown(selection)) 
 						operationHistory.execute(new MoveDownOperation(DocometreMessages.MoveDownProcessModifyOperationLabel, selection), null, null);
 				} else {

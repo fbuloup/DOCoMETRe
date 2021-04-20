@@ -143,31 +143,31 @@ public class BatchDataProcessingEditor extends EditorPart implements PartNameRef
 		ToolItem deleteButton = new ToolItem(toolBar, SWT.NULL);
 		deleteButton.setImage(Activator.getImage(IImageKeys.DELETE_ICON));
 		deleteButton.setToolTipText(DocometreMessages.Delete_Tooltip);
-		deleteButton.addSelectionListener(new RemoveHandler(this, ResourceType.PROCESS));
+		deleteButton.addSelectionListener(new RemoveHandler(this, ResourceType.DATA_PROCESSING));
 		
 		new ToolItem(toolBar, SWT.SEPARATOR);
 		
 		ToolItem addButton = new ToolItem(toolBar, SWT.NULL);
 		addButton.setImage(Activator.getImage(IImageKeys.ADD_ICON));
 		addButton.setToolTipText(DocometreMessages.Add_Tooltip);
-		addButton.addSelectionListener(new AddHandler(this, ResourceType.PROCESS));
+		addButton.addSelectionListener(new AddHandler(this, ResourceType.DATA_PROCESSING));
 		
 		ToolItem enableDisableButton = new ToolItem(toolBar, SWT.NULL);
 		enableDisableButton.setImage(Activator.getImage(IImageKeys.ENABLE_DISABLE_ICON));
 		enableDisableButton.setToolTipText(DocometreMessages.EnableDisable_Tooltip);
-		enableDisableButton.addSelectionListener(new EnableDisableHandler(this, ResourceType.PROCESS));
+		enableDisableButton.addSelectionListener(new EnableDisableHandler(this, ResourceType.DATA_PROCESSING));
 		
 		new ToolItem(toolBar, SWT.SEPARATOR);
 		
 		ToolItem upButton = new ToolItem(toolBar, SWT.NULL);
 		upButton.setImage(Activator.getImage(IImageKeys.UP_ICON));
 		upButton.setToolTipText(DocometreMessages.Up_Label);
-		upButton.addSelectionListener(new MoveUpHandler(this, ResourceType.PROCESS));
+		upButton.addSelectionListener(new MoveUpHandler(this, ResourceType.DATA_PROCESSING));
 		
 		ToolItem downButton = new ToolItem(toolBar, SWT.NULL);
 		downButton.setImage(Activator.getImage(IImageKeys.DOWN_ICON));
 		downButton.setToolTipText(DocometreMessages.Down_Label);
-		downButton.addSelectionListener(new MoveDownHandler(this, ResourceType.PROCESS));
+		downButton.addSelectionListener(new MoveDownHandler(this, ResourceType.DATA_PROCESSING));
 		
 		parent.setTextClient(toolBar);
 		

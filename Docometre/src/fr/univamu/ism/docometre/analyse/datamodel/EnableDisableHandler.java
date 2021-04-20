@@ -33,7 +33,7 @@ public class EnableDisableHandler extends SelectionAdapter {
 			for (BatchDataProcessingItem item : items) {
 				item.setActivated(!item.isActivated());
 			}
-			if(resourceType == ResourceType.PROCESS) dataProcessBatchEditor.refreshProcesses();
+			if(resourceType == ResourceType.DATA_PROCESSING) dataProcessBatchEditor.refreshProcesses();
 			else dataProcessBatchEditor.refreshSubjects();
 			return Status.OK_STATUS;
 		}
@@ -66,7 +66,7 @@ public class EnableDisableHandler extends SelectionAdapter {
 		if(resourceType == ResourceType.SUBJECT) selection = dataProcessBatchEditor.getSelectedSubjects();
 		if(selection.length > 0) {
 			try {
-				if(resourceType == ResourceType.PROCESS) {
+				if(resourceType == ResourceType.DATA_PROCESSING) {
 					operationHistory.execute(new ActivateDeactivateOperation(DocometreMessages.EnableDisableProcessModifyOperationLabel, selection), null, null);
 				} else {
 					operationHistory.execute(new ActivateDeactivateOperation(DocometreMessages.EnableDisableSubjectModifyOperationLabel, selection), null, null);
