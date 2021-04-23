@@ -161,7 +161,7 @@ public class EndCut extends GenericFunction {
 		
 		String trialsList = getProperty(trialsListKey, "");
 		trialsList = FunctionsHelper.createTrialsListHelper(trialsList);
-		String endCut = getProperty(endCutKey, "");
+		String endCut = getProperty(endCutKey, "0");
 		String inputSignal = getProperty(inputSignalKey, "");
 		
 		code = code.replaceAll(trialsListKey, trialsList).replaceAll(endCutKey, endCut);

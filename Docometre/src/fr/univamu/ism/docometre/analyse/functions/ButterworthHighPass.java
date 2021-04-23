@@ -192,10 +192,10 @@ public class ButterworthHighPass extends GenericFunction {
 		
 		String trialsList = getProperty(trialsListKey, "");
 		trialsList = FunctionsHelper.createTrialsListHelper(trialsList);
-		String order = getProperty(orderKey, "");
-		String cutOffFrequency = getProperty(cutOffFrequencyKey, "");
+		String order = getProperty(orderKey, "2");
+		String cutOffFrequency = getProperty(cutOffFrequencyKey, "5");
 		String inputSignal = getProperty(inputSignalKey, "");
-		String outputSignal = inputSignal + getProperty(outputSignalSuffixKey, "");
+		String outputSignal = inputSignal + getProperty(outputSignalSuffixKey, "BHP");
 		
 		code = code.replaceAll(trialsListKey, trialsList).replaceAll(orderKey, order).replaceAll(cutOffFrequencyKey, cutOffFrequency);
 		code = code.replaceAll(inputSignalKey, inputSignal).replaceAll(outputSignalSuffixKey, outputSignal);

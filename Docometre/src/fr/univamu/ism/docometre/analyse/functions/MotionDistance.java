@@ -242,7 +242,7 @@ public class MotionDistance extends GenericFunction {
 		String inputSignal2 = getProperty(inputSignal2Key, "");
 		String inputMarker1 = getProperty(inputMarker1Key, "");
 		String inputMarker2 = getProperty(inputMarker2Key, "");
-		String outputSignal = inputSignal1 + getProperty(outputSignalSuffixKey, "");
+		String outputSignal = inputSignal1 + getProperty(outputSignalSuffixKey, "MD");
 		
 		code = code.replaceAll(trialsListKey, trialsList).replaceAll(inputSignal1Key, inputSignal1).replaceAll(inputSignal2Key, inputSignal2);
 		code = code.replaceAll(inputMarker1Key, inputMarker1).replaceAll(inputMarker2Key, inputMarker2).replaceAll(outputSignalSuffixKey, outputSignal);

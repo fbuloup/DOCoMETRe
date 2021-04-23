@@ -161,7 +161,7 @@ public class FrontCut extends GenericFunction {
 		
 		String trialsList = getProperty(trialsListKey, "");
 		trialsList = FunctionsHelper.createTrialsListHelper(trialsList);
-		String frontCut = getProperty(frontCutKey, "");
+		String frontCut = getProperty(frontCutKey, "0");
 		String inputSignal = getProperty(inputSignalKey, "");
 		
 		code = code.replaceAll(trialsListKey, trialsList).replaceAll(frontCutKey, frontCut);
