@@ -4,6 +4,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.gef.commands.CommandStack;
+import org.eclipse.jface.dialogs.IPageChangedListener;
+import org.eclipse.jface.dialogs.PageChangedEvent;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPart;
@@ -56,17 +58,26 @@ public class DataProcessEditor extends MultiPageEditorPart implements PartNameRe
 				update(partRef);
 			}
 			
-			private void update(IWorkbenchPartReference partRef) {
-				IWorkbenchPart part = partRef.getPart(false);
-				if(part == DataProcessEditor.this) {
-					if(getSelectedPage() instanceof AbstractScriptSegmentEditor)
-						((AbstractScriptSegmentEditor)getSelectedPage()).updatePasteAction();
-				}
-				
-			}
+			
 		};
 		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().addPartListener(partListenerAdapter);
+		addPageChangedListener(new IPageChangedListener() {
+			@Override
+			public void pageChanged(PageChangedEvent event) {
+				IWorkbenchPartReference partRef = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActivePartReference();
+				update(partRef);
+			}
+		});
 			
+	}
+	
+	private void update(IWorkbenchPartReference partRef) {
+		IWorkbenchPart part = partRef.getPart(false);
+		if(part == DataProcessEditor.this) {
+			if(getSelectedPage() instanceof AbstractScriptSegmentEditor)
+				((AbstractScriptSegmentEditor)getSelectedPage()).updatePasteAction();
+		}
+		
 	}
 
 	@Override
