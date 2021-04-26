@@ -24,7 +24,7 @@ sampleFrequency = float(sampleFrequency);\n\
 # Get end cut values\n\
 endCutValues = docometre.experiments["inputSignal.EndCut"];\n\
 # Loop over trials list\n\
-for trialNumber in numpy.r_[0:417]:\n\
+for trialNumber in numpy.r_[trialsList]:\n\
 	\tindex = round(timeMarkerValue*sampleFrequency+1);\n\
 	\tendCut = endCutValues[trialNumber];\n\
 	\tif endCut >= index :\n\
