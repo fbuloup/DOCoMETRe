@@ -577,6 +577,12 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 		if(scriptSegmentType.equals(ScriptSegmentType.FINALIZE)) scriptSegment = getScript().getFinalizeBlocksContainer();
 //		if(scriptSegmentType.equals(ScriptSegmentType.DATA_PROCESSING)) scriptSegment = getScript().getLoopBlocksContainer();
 		PasteAction.scriptSegment = scriptSegment;
+//		rulerComp.requestLayout();
+//		rulerComp.layout(true);
+//		rulerComp.redraw();
+//		rulerComp.update();
+		rulerComp.getParent().update();
+		
 	}
 	
 	protected abstract Script getScript();
