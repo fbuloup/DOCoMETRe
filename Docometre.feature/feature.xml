@@ -6,14 +6,21 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-04-23
+      -- 2021-04-27
+ADDED :
+* Minimum and Maximum Python functions
+FIXED :
+* Process editor force update
+* TIMER_MARKER function : trialsList was hard coded to 0:417 !
+-- 2021-04-23
 ADDED :
 * Add Motion Distance function (Python)
 * Add Time Marker function (Python)
 * Add Derivative function (Python)
 FIXED :
 * Use default parameters in functions
-* Add CR to each end python functions (clearly separate each functions in script)
+* Add CR to each end python functions (clearly separate each
+functions in script)
 * Update selection service in Subjects View
 -- 2021-04-16
 ADDED :
