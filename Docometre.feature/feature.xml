@@ -6,12 +6,16 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-04-27
+      -- 2021-04-27 - BIS
+FIXED :
+* Channel name was wrong when &quot;use prefix&quot; Session property is empty
+-- 2021-04-27
 ADDED :
 * Minimum and Maximum Python functions
 FIXED :
 * Process editor force update
-* TIMER_MARKER function : trialsList was hard coded to 0:417 !
+* TIMER_MARKER function : trialsList was hard coded to 0:417
+!
 -- 2021-04-23
 ADDED :
 * Add Motion Distance function (Python)
