@@ -77,7 +77,7 @@ public final class Analyse {
 					values.put(sessionName + "_USE_TRIAL_NUMBER_AS_SECOND_SUFFIX_IN_DATA_FILES_NAMES", Boolean.toString(value));
 					
 					String valueString = ResourceProperties.getDataFilesNamesPrefix(member);
-					valueString = valueString == null ? "" : valueString;
+					valueString = valueString == null ? "false" : valueString;
 					values.put(sessionName + "_DATA_FILES_NAMES_PREFIX", valueString);
 					
 					IResource[] sessionMembers = session.members();
