@@ -68,7 +68,7 @@ class DOCoMETRe(object):
 			# if(jvmMode): self.gateway.jvm.System.out.println("nbDataFiles : " + str(nbDataFiles) + " fichier : " + str(n+1) + " sessionName : " + sessionName + " process : " + process + " - " + dataFiles[n]);
 			criteria = sessionName + "." + process;
 			if sessionName + prefix_QN in sessionsProperties:
-				if sessionsProperties[sessionName + prefix_QN] == "true":
+				if sessionsProperties[sessionName + prefix_QN] != "":
 					criteria = sessionsProperties[sessionName + prefix_QN];
 					criteria = criteria + "." + sessionName + "." + process;
 			# if(jvmMode): self.gateway.jvm.System.out.println("nbDataFiles : " + str(nbDataFiles) + " fichier : " + str(n+1) + " critere : " + criteria);
@@ -83,7 +83,7 @@ class DOCoMETRe(object):
 			fileNameSegments = fileName.split('.');
 			channelName = fileNameSegments[0];
 			if sessionName + prefix_QN in sessionsProperties:
-				if sessionsProperties[sessionName + prefix_QN] == "true":
+				if sessionsProperties[sessionName + prefix_QN] != "":
 					channelName = fileNameSegments[1];
 
 			if criteria in createdCategories:
