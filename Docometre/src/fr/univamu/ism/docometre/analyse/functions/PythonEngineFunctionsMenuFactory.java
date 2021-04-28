@@ -72,8 +72,8 @@ public class PythonEngineFunctionsMenuFactory {
 	public static String[] FilteringFunctionsFiles = new String[] {ButterworthLowPass.functionFileName, ButterworthHighPass.functionFileName};
 	public static String[] FilteringFunctionsClasses = new String[] {ButterworthLowPass.class.getName(), ButterworthHighPass.class.getName()};
 	
-	public static String[] MarkersFunctionsFiles = new String[] {TimeMarker.functionFileName, Maximum.functionFileName, Minimum.functionFileName};
-	public static String[] MarkersFunctionsClasses = new String[] {TimeMarker.class.getName(), Maximum.class.getName(), Minimum.class.getName()};
+	public static String[] MarkersFunctionsFiles = new String[] {TimeMarker.functionFileName, Maximum.functionFileName, Minimum.functionFileName, FindAmplitudeBackward.functionFileName, FindAmplitudeForward.functionFileName};
+	public static String[] MarkersFunctionsClasses = new String[] {TimeMarker.class.getName(), Maximum.class.getName(), Minimum.class.getName(), FindAmplitudeBackward.class.getName(), FindAmplitudeForward.class.getName()};
 	
 	public static String[] FeaturesFunctionsFiles = new String[] {Mean.functionFileName};
 	public static String[] FeaturesFunctionsClasses = new String[] {Mean.class.getName()};
