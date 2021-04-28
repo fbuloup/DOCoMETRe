@@ -71,6 +71,10 @@ public abstract class RTSWTSerie {
 	 */
 	protected int lineWidth;
 	/**
+	 * Show current serie value
+	 */
+	private boolean showCurrentValue;
+	/**
 	 * Flag to tell if new values has been sent to the serie
 	 */
 	private boolean modified;
@@ -153,5 +157,13 @@ public abstract class RTSWTSerie {
 		return Utils.getMax(yValues);
 	}
 	
+	public boolean isShowCurrentValue() {
+		return showCurrentValue;
+	}
+
+	public void setShowCurrentValue(boolean showCurrentValue) {
+		this.showCurrentValue = showCurrentValue;
+	}
+
 	protected abstract void reset();
 }

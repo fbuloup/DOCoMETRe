@@ -159,7 +159,7 @@ public class TestRTSWTOscilloChart {
 		shell.setLayout(new GridLayout(1,true));
 		
 		/* Create the first chart */
-		rtswtChartOscillo = new RTSWTOscilloChart(shell, SWT.NORMAL);
+		rtswtChartOscillo = new RTSWTOscilloChart(shell, SWT.NORMAL, RTSWTChartFonts.BITMAP_HELVETICA_18);
 		rtswtChartOscillo.setAutoScale(true);
 		rtswtChartOscillo.setWaitForAllSeriesToRedraw(false);
 		rtswtChartOscillo.setAntialias(SWT.ON);
@@ -169,7 +169,9 @@ public class TestRTSWTOscilloChart {
 		rtswtChartOscillo.setGridLinesColor(display.getSystemColor(SWT.COLOR_DARK_GREEN));
 		/* Create two series in this first chart */
 		serie1 = rtswtChartOscillo.createSerie("serie1", display.getSystemColor(SWT.COLOR_GREEN), SWT.LINE_DASHDOTDOT, 4);
+		serie1.setShowCurrentValue(true);
 		serie2 = rtswtChartOscillo.createSerie("serie2", display.getSystemColor(SWT.COLOR_RED));
+		serie2.setShowCurrentValue(true);
 		
 //		/* Create a second chart */
 //		RTSWTOscilloChart rtswtChartOscillo2 = new RTSWTOscilloChart(shell, SWT.NORMAL);

@@ -63,6 +63,7 @@ import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.calibration.CalibrationFactory;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
+import fr.univamu.ism.rtswtchart.RTSWTChartFonts;
 import fr.univamu.ism.rtswtchart.RTSWTOscilloChart;
 import fr.univamu.ism.rtswtchart.RTSWTOscilloSerie;
 
@@ -229,9 +230,7 @@ public class ChannelViewer extends Composite {
 		gl.verticalSpacing = 0;
 		gl.marginHeight = 5;
 		gl.marginWidth = 0;
-		
-		
-		rtswtOscilloChart = new RTSWTOscilloChart(container, SWT.NONE, 10);
+		rtswtOscilloChart = new RTSWTOscilloChart(container, SWT.NONE, RTSWTChartFonts.BITMAP_HELVETICA_10, 10);
 		rtswtOscilloChart.setBackGroundColor(rtswtOscilloChart.getParent().getBackground());
 		rtswtOscilloChart.setGridLinesColor(Display.getDefault().getSystemColor(SWT.COLOR_BLACK));
 		rtswtOscilloChart.setFontColor(Display.getDefault().getSystemColor(SWT.COLOR_BLACK));

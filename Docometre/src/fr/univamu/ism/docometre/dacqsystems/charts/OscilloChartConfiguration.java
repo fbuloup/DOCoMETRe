@@ -66,6 +66,7 @@ import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyHandler;
 import fr.univamu.ism.docometre.dacqsystems.Property;
 import fr.univamu.ism.docometre.editors.ResourceEditor;
 import fr.univamu.ism.docometre.editors.ModulePage.ModuleSectionPart;
+import fr.univamu.ism.rtswtchart.RTSWTChartFonts;
 import fr.univamu.ism.rtswtchart.RTSWTOscilloChart;
 import fr.univamu.ism.rtswtchart.RTSWTOscilloSerie;
 
@@ -75,6 +76,8 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 	transient private Button autoScaleButton;
 	transient private Text ampMaxText;
 	transient private Text ampMinText;
+	transient private Combo fontCombo;
+	transient private Button displayCurrentValuesButton;
 
 	public OscilloChartConfiguration() {
 		super(ChartTypes.OSCILLO_CHART);
@@ -126,6 +129,18 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 			}
 		});
 		
+		page.createLabel(container, DocometreMessages.Font_Title, DocometreMessages.Font_Tooltip);
+		value = getProperty(OscilloChartConfigurationProperties.FONT);
+		value = value==null?RTSWTChartFonts.BITMAP_HELVETICA_10.getLabel():value;
+		fontCombo = page.createCombo(container, OscilloChartConfigurationProperties.FONT.getAvailableValues(), value, 1, 1);
+		fontCombo.addModifyListener(page.getGeneralConfigurationModifyListener());
+		fontCombo.addModifyListener(new ModifyPropertyHandler(OscilloChartConfigurationProperties.FONT, this, fontCombo, OscilloChartConfigurationProperties.FONT.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		
+		displayCurrentValuesButton = page.createButton(container, DocometreMessages.DisplayValues_Title, SWT.CHECK, 2, 1);
+		value = getProperty(OscilloChartConfigurationProperties.DISPLAY_CURRENT_VALUES);
+		boolean displayCurrentValues = Boolean.valueOf(value);
+		displayCurrentValuesButton.setSelection(displayCurrentValues);
+		displayCurrentValuesButton.addSelectionListener(new ModifyPropertyHandler(OscilloChartConfigurationProperties.DISPLAY_CURRENT_VALUES, OscilloChartConfiguration.this, displayCurrentValuesButton, OscilloChartConfigurationProperties.DISPLAY_CURRENT_VALUES.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
 		
 	}
 	
@@ -162,6 +177,10 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 			updateWidget(ampMaxText, (OscilloChartConfigurationProperties)property);
 		if(property == OscilloChartConfigurationProperties.Y_MIN)
 			updateWidget(ampMinText, (OscilloChartConfigurationProperties)property);
+		if(property == OscilloChartConfigurationProperties.DISPLAY_CURRENT_VALUES)
+			updateWidget(displayCurrentValuesButton, (OscilloChartConfigurationProperties)property);
+		if(property == OscilloChartConfigurationProperties.FONT)
+			updateWidget(fontCombo, (OscilloChartConfigurationProperties)property);
 	}
 	
 	public CurveConfiguration[] createCurvesConfiguration(IStructuredSelection selection) {
@@ -210,7 +229,11 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 		double yMax = Double.parseDouble(value);
 		value = getProperty(OscilloChartConfigurationProperties.Y_MIN);
 		double yMin = Double.parseDouble(value);
-		RTSWTOscilloChart oscilloChart = new RTSWTOscilloChart(container, SWT.NORMAL, timeWidth, yMin, yMax, autoscale, SWT.ON, SWT.HIGH);
+		String font = getProperty(OscilloChartConfigurationProperties.FONT);
+		if(font == null) font = RTSWTChartFonts.BITMAP_HELVETICA_10.getLabel();
+		value = getProperty(OscilloChartConfigurationProperties.DISPLAY_CURRENT_VALUES);
+		boolean displayCurrentValues = Boolean.parseBoolean(value);
+		RTSWTOscilloChart oscilloChart = new RTSWTOscilloChart(container, SWT.NORMAL, RTSWTChartFonts.getFont(font), timeWidth, yMin, yMax, autoscale, SWT.ON, SWT.HIGH);
 		oscilloChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, hSpan, vSpan));
 		// Create curves
 		for (CurveConfiguration curveConfiguration : curvesConfigurations) {
@@ -221,6 +244,7 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 			int serieStyle = CurveConfigurationProperties.getStyle(oscilloCurveConfiguration);
 			int serieWidth = Integer.parseInt(oscilloCurveConfiguration.getProperty(CurveConfigurationProperties.WIDTH));
 			RTSWTOscilloSerie oscilloSerie = oscilloChart.createSerie(serieID, serieColor, serieStyle, serieWidth);
+			oscilloSerie.setShowCurrentValue(displayCurrentValues);
 			// Set serie to update in configuration
 			oscilloCurveConfiguration.setSerie(oscilloSerie);
 		}

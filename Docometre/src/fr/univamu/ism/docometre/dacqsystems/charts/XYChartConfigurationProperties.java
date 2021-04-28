@@ -43,6 +43,7 @@ package fr.univamu.ism.docometre.dacqsystems.charts;
 
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.dacqsystems.Property;
+import fr.univamu.ism.rtswtchart.RTSWTChartFonts;
 
 public final class XYChartConfigurationProperties extends Property {
 	
@@ -51,6 +52,7 @@ public final class XYChartConfigurationProperties extends Property {
 	public static final XYChartConfigurationProperties Y_MAX = new XYChartConfigurationProperties("XYChartConfigurationProperties.Y_MAX", DocometreMessages.yMaxAmplitude_Title, DocometreMessages.yMaxAmplitude_Tooltip, "^-?(([1-9][0-9]*)|(0))(?:\\.[0-9]+)?$");
 	public static final XYChartConfigurationProperties Y_MIN = new XYChartConfigurationProperties("XYChartConfigurationProperties.Y_MIN", DocometreMessages.yMinAmplitude_Title, DocometreMessages.yMinAmplitude_Tooltip, "^-?(([1-9][0-9]*)|(0))(?:\\.[0-9]+)?$");
 	public static final XYChartConfigurationProperties AUTO_SCALE = new XYChartConfigurationProperties("XYChartConfigurationProperties.AUTO_SCALE", DocometreMessages.AutoScale_Title, DocometreMessages.AutoScale_Tooltip, "^(true|false)$", "true:false");
+	public static final XYChartConfigurationProperties FONT = new XYChartConfigurationProperties("XYChartConfigurationProperties.FONT", DocometreMessages.Font_Title, DocometreMessages.Font_Tooltip, RTSWTChartFonts.getRegExp(), RTSWTChartFonts.getAvailableValues());
 	
 	public static void populateProperties(XYChartConfiguration xyChartConfiguration){
 		ChartConfigurationProperties.populateProperties(xyChartConfiguration);
@@ -59,6 +61,7 @@ public final class XYChartConfigurationProperties extends Property {
 		xyChartConfiguration.setProperty(Y_MAX, "10");
 		xyChartConfiguration.setProperty(Y_MIN, "-10");
 		xyChartConfiguration.setProperty(AUTO_SCALE, "false");
+		xyChartConfiguration.setProperty(FONT, RTSWTChartFonts.BITMAP_HELVETICA_10.getLabel());
 	}
 
 	public static XYChartConfiguration clone(XYChartConfiguration xyChartConfiguration) {
@@ -69,6 +72,7 @@ public final class XYChartConfigurationProperties extends Property {
 		newXYChartConfiguration.setProperty(Y_MAX, new String(xyChartConfiguration.getProperty(Y_MAX)));
 		newXYChartConfiguration.setProperty(Y_MIN, new String(xyChartConfiguration.getProperty(Y_MIN)));
 		newXYChartConfiguration.setProperty(AUTO_SCALE, new String(xyChartConfiguration.getProperty(AUTO_SCALE)));
+		newXYChartConfiguration.setProperty(FONT, new String(xyChartConfiguration.getProperty(FONT)));
 		CurveConfiguration[] curveConfigurations = xyChartConfiguration.getCurvesConfiguration();
 		for (CurveConfiguration curveConfiguration : curveConfigurations) {
 			try {

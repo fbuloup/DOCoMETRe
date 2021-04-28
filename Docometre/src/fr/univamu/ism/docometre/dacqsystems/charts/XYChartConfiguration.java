@@ -63,6 +63,7 @@ import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyHandler;
 import fr.univamu.ism.docometre.dacqsystems.Property;
 import fr.univamu.ism.docometre.editors.ResourceEditor;
+import fr.univamu.ism.rtswtchart.RTSWTChartFonts;
 import fr.univamu.ism.rtswtchart.RTSWTXYChart;
 import fr.univamu.ism.rtswtchart.RTSWTXYSerie;
 import fr.univamu.ism.docometre.editors.ModulePage.ModuleSectionPart;
@@ -76,6 +77,7 @@ public class XYChartConfiguration extends ChartConfiguration {
 	transient private Text xAmpMinText;
 	transient private Text yAmpMaxText;
 	transient private Text yAmpMinText;
+	transient private Combo fontCombo;
 
 	public XYChartConfiguration() {
 		super(ChartTypes.XY_CHART);
@@ -135,6 +137,14 @@ public class XYChartConfiguration extends ChartConfiguration {
 				yAmpMinText.setEnabled(!autoScaleButton.getSelection());
 			}
 		});
+		
+		page.createLabel(container, DocometreMessages.Font_Title, DocometreMessages.Font_Tooltip);
+		value = getProperty(XYChartConfigurationProperties.FONT);
+		value = value==null?RTSWTChartFonts.BITMAP_HELVETICA_10.getLabel():value;
+		fontCombo = page.createCombo(container, XYChartConfigurationProperties.FONT.getAvailableValues(), value, 1, 1);
+		fontCombo.addModifyListener(page.getGeneralConfigurationModifyListener());
+		fontCombo.addModifyListener(new ModifyPropertyHandler(XYChartConfigurationProperties.FONT, this, fontCombo, XYChartConfigurationProperties.FONT.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		
 
 	}
 	
@@ -175,6 +185,8 @@ public class XYChartConfiguration extends ChartConfiguration {
 			updateWidget(xAmpMaxText, (XYChartConfigurationProperties)property);
 		if(property == XYChartConfigurationProperties.X_MIN)
 			updateWidget(xAmpMinText, (XYChartConfigurationProperties)property);
+		if(property == XYChartConfigurationProperties.FONT)
+			updateWidget(fontCombo, (XYChartConfigurationProperties)property);
 	}
 
 	@Override
@@ -199,7 +211,9 @@ public class XYChartConfiguration extends ChartConfiguration {
 		double yMax = Double.parseDouble(value);
 		value = getProperty(XYChartConfigurationProperties.Y_MIN);
 		double yMin = Double.parseDouble(value);
-		RTSWTXYChart xyChart = new RTSWTXYChart(container, SWT.NORMAL, yMin, yMax, xMin, xMax, autoscale, SWT.ON, SWT.HIGH);
+		String font = getProperty(XYChartConfigurationProperties.FONT);
+		if(font == null) font = RTSWTChartFonts.BITMAP_HELVETICA_10.getLabel();
+		RTSWTXYChart xyChart = new RTSWTXYChart(container, SWT.NORMAL, RTSWTChartFonts.getFont(font), yMin, yMax, xMin, xMax, autoscale, SWT.ON, SWT.HIGH);
 		xyChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, hSpan, vSpan));
 		// Create curves
 		for (CurveConfiguration curveConfiguration : curvesConfigurations) {

@@ -386,6 +386,10 @@ public final class DocometreMessages extends NLS {
 	public static String MaxAmplitude_Tooltip;
 	public static String MinAmplitude_Title;
 	public static String MinAmplitude_Tooltip;
+	public static String Font_Title;
+	public static String Font_Tooltip;
+	public static String DisplayValues_Title;
+	public static String DisplayValues_Tooltip;
 
 	public static String xMaxAmplitude_Title;
 	public static String xMaxAmplitude_Tooltip;

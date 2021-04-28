@@ -158,4 +158,9 @@ public final class RTSWTOscilloSerie extends RTSWTSerie {
 		return currentIndex;
 	}
 	
+	public double getCurrentValue() {
+		if(currentIndex > -1) return yValues[currentIndex];
+		return Double.NaN;
+	}
+	
 }

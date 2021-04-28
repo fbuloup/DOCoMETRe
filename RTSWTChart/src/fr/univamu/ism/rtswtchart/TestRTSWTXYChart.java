@@ -122,7 +122,7 @@ public class TestRTSWTXYChart {
 		shell.setLayout(new GridLayout(1,true));
 		
 		/* Create the first chart */
-		chart = new RTSWTXYChart(shell, SWT.NORMAL);
+		chart = new RTSWTXYChart(shell, SWT.NORMAL, RTSWTChartFonts.BITMAP_HELVETICA_10);
 		chart.setAutoScale(true);
 		chart.setWaitForAllSeriesToRedraw(false);
 		chart.setAntialias(SWT.ON);

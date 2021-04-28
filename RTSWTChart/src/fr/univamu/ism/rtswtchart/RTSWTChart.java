@@ -143,6 +143,10 @@ public abstract class RTSWTChart extends Composite implements ControlListener {
 	 * Decimal formatter to display axis scales
 	 */
 	protected DecimalFormat decimalFormatter = new DecimalFormat("0.###E0");
+	/**
+	 * Decimal formatter to display current values
+	 */
+	protected DecimalFormat decimalFormatterCurrentValues = new DecimalFormat("#0.000000");
 	/***
 	 * Width in pixels of left axis as the length of the biggest displayed
 	 * number
@@ -236,6 +240,10 @@ public abstract class RTSWTChart extends Composite implements ControlListener {
 	 */
 	protected GLContext chartAreaGLContext;
 	/**
+	 * The font 
+	 */
+	protected RTSWTChartFonts font;
+	/**
 	 * The colour of the font in bottom and left axis
 	 */
 	protected Color fontColor = Display.getDefault().getSystemColor(SWT.COLOR_WHITE);
@@ -256,8 +264,9 @@ public abstract class RTSWTChart extends Composite implements ControlListener {
 	 */
 	private double xMax = 10;
 
-	public RTSWTChart(Composite parent, int style) {
+	public RTSWTChart(Composite parent, int style, RTSWTChartFonts font) {
 		super(parent, style);
+		this.font = font;
 		setLayout(new FillLayout());
 		GLProfile.initSingleton();
 		glProfile = GLProfile.get(GLProfile.GL2ES2);// GLProfile.getMinimum(true);
@@ -573,7 +582,7 @@ public abstract class RTSWTChart extends Composite implements ControlListener {
 	 * @return
 	 */
 	protected int getFontNumber() {
-		return GLUT.BITMAP_HELVETICA_10;
+		return font.getValue();
 	}
 	
 	/**

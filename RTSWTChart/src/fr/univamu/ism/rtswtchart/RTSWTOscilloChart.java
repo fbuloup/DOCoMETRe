@@ -149,8 +149,8 @@ public final class RTSWTOscilloChart extends RTSWTChart {
 	 * @param style
 	 *            the style of control to construct
 	 */
-	public RTSWTOscilloChart(final Composite parent, int style) {
-		super(parent, style);
+	public RTSWTOscilloChart(final Composite parent, int style, RTSWTChartFonts font) {
+		super(parent, style, font);
 	}
 
 	/**
@@ -166,8 +166,8 @@ public final class RTSWTOscilloChart extends RTSWTChart {
 	 * @param windowTimeWidth
 	 *            window time width
 	 */
-	public RTSWTOscilloChart(Composite parent, int style, double windowTimeWidth) {
-		this(parent, style);
+	public RTSWTOscilloChart(Composite parent, int style, RTSWTChartFonts font, double windowTimeWidth) {
+		this(parent, style, font);
 		if (windowTimeWidth <= 0)
 			SWT.error(SWT.ERROR_INVALID_ARGUMENT, null, "windowTimeWidth can not be null or negative");
 		this.windowTimeWidth = windowTimeWidth;
@@ -190,8 +190,8 @@ public final class RTSWTOscilloChart extends RTSWTChart {
 	 * @param yMax
 	 *            maximum amplitude value
 	 */
-	public RTSWTOscilloChart(Composite parent, int style, double windowTimeWidth, double yMin, double yMax) {
-		this(parent, style, windowTimeWidth);
+	public RTSWTOscilloChart(Composite parent, int style, RTSWTChartFonts font, double windowTimeWidth, double yMin, double yMax) {
+		this(parent, style, font, windowTimeWidth);
 		if (yMin > yMax)
 			SWT.error(SWT.ERROR_INVALID_ARGUMENT, null, "yMin can not be greater than yMax");
 		if (yMin == yMax)
@@ -218,8 +218,8 @@ public final class RTSWTOscilloChart extends RTSWTChart {
 	 * @param autoscale
 	 *            enable or disable autoscale capability
 	 */
-	public RTSWTOscilloChart(Composite parent, int style, double windowTimeWidth, double yMin, double yMax, boolean autoScale) {
-		this(parent, style, windowTimeWidth, yMin, yMax);
+	public RTSWTOscilloChart(Composite parent, int style, RTSWTChartFonts font, double windowTimeWidth, double yMin, double yMax, boolean autoScale) {
+		this(parent, style, font, windowTimeWidth, yMin, yMax);
 		setAutoScale(autoScale);
 	}
 
@@ -248,8 +248,8 @@ public final class RTSWTOscilloChart extends RTSWTChart {
 	 * @param interpolation
 	 *            antialiasis quality
 	 */
-	public RTSWTOscilloChart(Composite parent, int style, double windowTimeWidth, double yMin, double yMax, boolean autoScale, int antialias, int interpolation) {
-		this(parent, style, windowTimeWidth, yMin, yMax, autoScale);
+	public RTSWTOscilloChart(Composite parent, int style, RTSWTChartFonts font, double windowTimeWidth, double yMin, double yMax, boolean autoScale, int antialias, int interpolation) {
+		this(parent, style, font, windowTimeWidth, yMin, yMax, autoScale);
 		setAntialias(antialias);
 		setInterpolation(interpolation);
 	}
@@ -408,6 +408,7 @@ public final class RTSWTOscilloChart extends RTSWTChart {
 		if (chartArea.isDisposed())
 			return;
 		RTSWTSerie[] series = getSeries();
+		int nbShowCurrentValueSeries = 0;
 		for (int i = 0; i < series.length; i++) {
 			RTSWTSerie serie = series[i];
 			chartAreaGLContext.getGL().getGL2().glColor3f(serie.getLineColor().getRed() / 255.0f, serie.getLineColor().getGreen() / 255.0f, serie.getLineColor().getBlue() / 255.0f);
@@ -435,6 +436,17 @@ public final class RTSWTOscilloChart extends RTSWTChart {
 			for (int j = 2 * (currentPostion + 1); j < points.length; j += 2)
 				chartAreaGLContext.getGL().getGL2().glVertex2i(points[j] + getLeftAxisWidth() + 1, D + points[j + 1]);
 			chartAreaGLContext.getGL().getGL2().glEnd();
+			if(((RTSWTOscilloSerie)serie).isShowCurrentValue()) {
+				double currentValue = ((RTSWTOscilloSerie)serie).getCurrentValue();
+				String valueString = decimalFormatterCurrentValues.format(currentValue);
+				int valueStringLength = glut.glutBitmapLength(getFontNumber(), valueString) + 5;
+				float xPosition = getWidth() - valueStringLength ;
+				int yOffset = (showLegend && legendPosition == SWT.TOP) ? getLegendHeight() : 0;
+				float yPostion = yOffset + getFontHeight()*(nbShowCurrentValueSeries+1) + 3*nbShowCurrentValueSeries;
+				chartAreaGLContext.getGL().getGL2().glRasterPos3f(xPosition, yPostion, 0);
+				glut.glutBitmapString(getFontNumber(), valueString);
+				nbShowCurrentValueSeries++;
+			}
 			serie.setModified(false);
 		}
 	}

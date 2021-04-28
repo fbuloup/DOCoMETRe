@@ -54,8 +54,8 @@ public class RTSWTXYChart extends RTSWTChart {
 	 * @param parent
 	 * @param style
 	 */
-	public RTSWTXYChart(Composite parent, int style) {
-		super(parent, style);
+	public RTSWTXYChart(Composite parent, int style, RTSWTChartFonts font) {
+		super(parent, style, font);
 	}
 	
 	/**
@@ -67,8 +67,8 @@ public class RTSWTXYChart extends RTSWTChart {
 	 * @param xMin
 	 * @param xMax
 	 */
-	public RTSWTXYChart(Composite parent, int style, double yMin, double yMax, double xMin, double xMax) {
-		this(parent, style);
+	public RTSWTXYChart(Composite parent, int style, RTSWTChartFonts font, double yMin, double yMax, double xMin, double xMax) {
+		this(parent, style, font);
 		setyMax(yMax);
 		setyMin(yMin);
 		setxMax(xMax);
@@ -85,8 +85,8 @@ public class RTSWTXYChart extends RTSWTChart {
 	 * @param xMax
 	 * @param autoscale
 	 */
-	public RTSWTXYChart(Composite parent, int style, double yMin, double yMax, double xMin, double xMax, boolean autoscale) {
-		this(parent, style, yMin, yMax, xMin, xMax);
+	public RTSWTXYChart(Composite parent, int style, RTSWTChartFonts font, double yMin, double yMax, double xMin, double xMax, boolean autoscale) {
+		this(parent, style, font, yMin, yMax, xMin, xMax);
 		setAutoScale(autoscale);
 	}
 	
@@ -102,8 +102,8 @@ public class RTSWTXYChart extends RTSWTChart {
 	 * @param antialias
 	 * @param interpolation
 	 */
-	public RTSWTXYChart(Composite parent, int style, double yMin, double yMax, double xMin, double xMax, boolean autoscale, int antialias, int interpolation) {
-		this(parent, style, yMin, yMax, xMin, xMax, autoscale);
+	public RTSWTXYChart(Composite parent, int style, RTSWTChartFonts font, double yMin, double yMax, double xMin, double xMax, boolean autoscale, int antialias, int interpolation) {
+		this(parent, style, font, yMin, yMax, xMin, xMax, autoscale);
 		setAntialias(antialias);
 		setInterpolation(interpolation);
 	}

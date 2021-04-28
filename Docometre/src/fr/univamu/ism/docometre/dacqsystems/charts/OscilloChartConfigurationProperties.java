@@ -43,6 +43,7 @@ package fr.univamu.ism.docometre.dacqsystems.charts;
 
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.dacqsystems.Property;
+import fr.univamu.ism.rtswtchart.RTSWTChartFonts;
 
 public final class OscilloChartConfigurationProperties extends Property {
 	
@@ -50,6 +51,8 @@ public final class OscilloChartConfigurationProperties extends Property {
 	public static final OscilloChartConfigurationProperties Y_MAX = new OscilloChartConfigurationProperties("OscilloChartConfigurationProperties.Y_MAX", DocometreMessages.MaxAmplitude_Title, DocometreMessages.MaxAmplitude_Tooltip, "^-?(([1-9][0-9]*)|(0))(?:\\.[0-9]+)?$");
 	public static final OscilloChartConfigurationProperties Y_MIN = new OscilloChartConfigurationProperties("OscilloChartConfigurationProperties.Y_MIN", DocometreMessages.MinAmplitude_Title, DocometreMessages.MinAmplitude_Tooltip, "^-?(([1-9][0-9]*)|(0))(?:\\.[0-9]+)?$");
 	public static final OscilloChartConfigurationProperties AUTO_SCALE = new OscilloChartConfigurationProperties("OscilloChartConfigurationProperties.AUTO_SCALE", DocometreMessages.AutoScale_Title, DocometreMessages.AutoScale_Tooltip, "^(true|false)$", "true:false");
+	public static final OscilloChartConfigurationProperties FONT = new OscilloChartConfigurationProperties("OscilloChartConfigurationProperties.FONT", DocometreMessages.Font_Title, DocometreMessages.Font_Tooltip, RTSWTChartFonts.getRegExp(), RTSWTChartFonts.getAvailableValues());
+	public static final OscilloChartConfigurationProperties DISPLAY_CURRENT_VALUES = new OscilloChartConfigurationProperties("OscilloChartConfigurationProperties.DISPLAY_CURRENT_VALUES", DocometreMessages.DisplayValues_Title, DocometreMessages.DisplayValues_Tooltip, "^(true|false)$", "true:false");
 	
 	public static void populateProperties(OscilloChartConfiguration oscilloChartConfiguration){
 		ChartConfigurationProperties.populateProperties(oscilloChartConfiguration);
@@ -57,6 +60,8 @@ public final class OscilloChartConfigurationProperties extends Property {
 		oscilloChartConfiguration.setProperty(Y_MAX, "10");
 		oscilloChartConfiguration.setProperty(Y_MIN, "-10");
 		oscilloChartConfiguration.setProperty(AUTO_SCALE, "false");
+		oscilloChartConfiguration.setProperty(FONT, RTSWTChartFonts.BITMAP_HELVETICA_10.getLabel());
+		oscilloChartConfiguration.setProperty(DISPLAY_CURRENT_VALUES, "false");
 	}
 
 	public static OscilloChartConfiguration clone(OscilloChartConfiguration oscilloChartConfiguration) {
@@ -66,6 +71,8 @@ public final class OscilloChartConfigurationProperties extends Property {
 		newOscilloChartConfiguration.setProperty(Y_MAX, new String(oscilloChartConfiguration.getProperty(Y_MAX)));
 		newOscilloChartConfiguration.setProperty(Y_MIN, new String(oscilloChartConfiguration.getProperty(Y_MIN)));
 		newOscilloChartConfiguration.setProperty(AUTO_SCALE, new String(oscilloChartConfiguration.getProperty(AUTO_SCALE)));
+		newOscilloChartConfiguration.setProperty(FONT, new String(oscilloChartConfiguration.getProperty(FONT)));
+		newOscilloChartConfiguration.setProperty(DISPLAY_CURRENT_VALUES, new String(oscilloChartConfiguration.getProperty(DISPLAY_CURRENT_VALUES)));
 		CurveConfiguration[] curveConfigurations = oscilloChartConfiguration.getCurvesConfiguration();
 		for (CurveConfiguration curveConfiguration : curveConfigurations) {
 			try {
