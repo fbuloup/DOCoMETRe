@@ -31,7 +31,7 @@ public class RemoveHandler extends SelectionAdapter {
 
 		@Override
 		public IStatus execute(IProgressMonitor monitor, IAdaptable info) throws ExecutionException {
-			if(resourceType == ResourceType.PROCESS) {
+			if(resourceType == ResourceType.DATA_PROCESSING) {
 				indexes = dataProcessBatchEditor.getBatchDataProcessing().removeProcesses(items);
 				dataProcessBatchEditor.refreshProcesses();
 			} else {
@@ -48,7 +48,7 @@ public class RemoveHandler extends SelectionAdapter {
 
 		@Override
 		public IStatus undo(IProgressMonitor monitor, IAdaptable info) throws ExecutionException {
-			if(resourceType == ResourceType.PROCESS) {
+			if(resourceType == ResourceType.DATA_PROCESSING) {
 				dataProcessBatchEditor.getBatchDataProcessing().addProcesses(items, indexes);
 				dataProcessBatchEditor.refreshProcesses();
 			} else {
@@ -76,7 +76,7 @@ public class RemoveHandler extends SelectionAdapter {
 		if(resourceType == ResourceType.SUBJECT) selection = dataProcessBatchEditor.getSelectedSubjects();
 		if(selection.length > 0) {
 			try {
-				if(resourceType == ResourceType.PROCESS) {
+				if(resourceType == ResourceType.DATA_PROCESSING) {
 					operationHistory.execute(new RemoveOperation(DocometreMessages.RemoveProcessModifyOperationLabel, selection), null, null);
 				} else {
 					operationHistory.execute(new RemoveOperation(DocometreMessages.RemoveSubjectModifyOperationLabel, selection), null, null);

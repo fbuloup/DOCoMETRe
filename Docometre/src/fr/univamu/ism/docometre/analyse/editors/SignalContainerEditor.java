@@ -1,6 +1,7 @@
 package fr.univamu.ism.docometre.analyse.editors;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -169,7 +170,8 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				if(MessageDialog.openQuestion(getShell(), DocometreMessages.DeleteMarkersGroupDialogTitle, DocometreMessages.DeleteMarkersGroupDialogMessage)) {
-					int markersGroupNumber = markersGroupsComboViewer.getCombo().getSelectionIndex() + 1;
+					String[] labels = MathEngineFactory.getMathEngine().getMarkersGroupsLabels(channelEditor.getChannel());
+					int markersGroupNumber = Arrays.asList(labels).indexOf(markersGroupsComboViewer.getStructuredSelection().getFirstElement()) + 1;
 					if(markersGroupNumber > 0) {
 						MathEngineFactory.getMathEngine().deleteMarkersGroup(markersGroupNumber, channelEditor.getChannel());
 						MathEngineFactory.getMathEngine().setUpdateChannelsCache(channelEditor.getChannel().getSubject(), true);
