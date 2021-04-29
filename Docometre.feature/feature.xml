@@ -6,9 +6,21 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-04-27 - BIS
+      -- 2021-04-29
+ADDED :
+* Find Amplitude backward and forward to python functions
+* Add Front and End cut from marker functions (Python)
+* Add Font and display current value support to Oscillo and XY charts
 FIXED :
-* Channel name was wrong when &quot;use prefix&quot; Session property is empty
+* Markers group number was wrong when deleting it (Signal editor)
+* Channel name was wrong when &quot;use prefix&quot; Session property is false
+* Some functions titles refactoring
+* Manage some errors when front cut is greater than end cut
+-- 2021-04-27 - BIS
+FIXED :
+* Channel name was wrong when &quot;use prefix&quot; Session property is
+empty
+* Use num.copy to avoid &quot;pointer effect&quot; with numpy array assignment
 -- 2021-04-27
 ADDED :
 * Minimum and Maximum Python functions
