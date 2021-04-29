@@ -6,14 +6,19 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-04-29
+      -- 2021-04-29 - BIS
+FIXED :
+* bug where temporaryBuffer declared several times when floats are transfered (Arduino Uno)
+-- 2021-04-29
 ADDED :
 * Find Amplitude backward and forward to python functions
 * Add Front and End cut from marker functions (Python)
-* Add Font and display current value support to Oscillo and XY charts
+* Add Font and display current value support to Oscillo and XY
+charts
 FIXED :
 * Markers group number was wrong when deleting it (Signal editor)
-* Channel name was wrong when &quot;use prefix&quot; Session property is false
+* Channel name was wrong when &quot;use prefix&quot; Session property is
+false
 * Some functions titles refactoring
 * Manage some errors when front cut is greater than end cut
 -- 2021-04-27 - BIS
