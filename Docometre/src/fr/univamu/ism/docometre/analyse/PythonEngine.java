@@ -302,6 +302,10 @@ public class PythonEngine implements MathEngine {
 		String fullName = getFullPath(signal);
 		int frontCut = getFrontCut(signal, trialNumber);
 		int endCut = getEndCut(signal, trialNumber) - 1;
+		if(frontCut > endCut) {
+			Activator.logErrorMessage("Error in getYValuesForSignal() from PythonEngine.java : frontCut (" + frontCut + ") is greater than endCut (" + endCut + ")");
+			return null;
+		}
 		String expression = "docometre.experiments[\"" + fullName + ".Values\"]";
 		byte[] byteValues = pythonController.getPythonEntryPoint().getVector(expression, PythonEntryPoint.DATA_TYPE_DOUBLE, trialNumber-1, frontCut, endCut);
 		ByteBuffer byteBuffer = ByteBuffer.wrap(byteValues);

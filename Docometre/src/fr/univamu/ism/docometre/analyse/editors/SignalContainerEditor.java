@@ -521,6 +521,8 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		Channel signal = channelEditor.getChannel();
 		double[] yValues = MathEngineFactory.getMathEngine().getYValuesForSignal(signal, trialNumber);
 		double[] xValues = MathEngineFactory.getMathEngine().getTimeValuesForSignal(signal, trialNumber);
+		// 
+		if(yValues == null || xValues == null || yValues.length ==0 || xValues.length == 0) return;
 		// Add Series
 		String seriesID = signal.getFullName() + "." + trialNumber;
 		ILineSeries series = (ILineSeries) chart.getSeriesSet().createSeries(SeriesType.LINE, seriesID);
