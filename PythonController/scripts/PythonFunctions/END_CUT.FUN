@@ -1,7 +1,7 @@
 MENU_TITLE = Modify "End Cut"
-DESCRIPTION = This function modify end cut value of selected signals.\n\
+DESCRIPTION = This function modify end cut value of selected signal.\n\
 End cut is a duration, in seconds, at the end of signal that have not to be displayed in charts.
-MENU_TITLE_FR = Modification de "l'après coupe"
+MENU_TITLE_FR = Modifier "l'après coupe"
 DESCRIPTION_FR = Cette fonction modifie "l'après coupe" du signal sélectionné.\n\
 L'après coupe est une durée, en secondes, en fin de signal qui ne doit pas être montrée dans un graphe.
 
