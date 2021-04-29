@@ -118,6 +118,7 @@ public class VariablesCodeGenerationDelegate {
 	private static String getDeclarationCode() {
 		String  code = "";
 		ArduinoUnoVariable[] variables = ((ArduinoUnoDACQConfiguration)process.getDACQConfiguration()).getVariables();
+		boolean temporaryBufferAlreadyDeclared = false;
 		for (ArduinoUnoVariable variable : variables) {
 			String name = variable.getProperty(ChannelProperties.NAME);
 			String type = variable.getProperty(ArduinoUnoVariableProperties.TYPE);
@@ -157,7 +158,10 @@ public class VariablesCodeGenerationDelegate {
 			code = code + "\n" + type + " " + name + size + ";\n";
 			
 			if(isTransfered) {
-				if(type.equals(ArduinoUnoVariableProperties.FLOAT)) code = code + "char temporaryBuffer[64];\n";
+				if(!temporaryBufferAlreadyDeclared && type.equals(ArduinoUnoVariableProperties.FLOAT)) {
+					code = code + "char temporaryBuffer[64];\n";
+					temporaryBufferAlreadyDeclared = true;
+				}
 				code = code + "byte transfer_" + name + " = " + frequencyRatio + ";\n";
 				code = code + "unsigned long lastTransferTime_" + name + ";\n";
 			}
