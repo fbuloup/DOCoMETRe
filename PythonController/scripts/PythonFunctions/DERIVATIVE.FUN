@@ -9,9 +9,9 @@ import numpy;\n\
 # Create derivative signal\n\
 SignalSizes = docometre.experiments['inputSignal.Values'].shape; # SignalSizes[0] : trials number - SignalSizes[1] : samples number\n\
 docometre.experiments['outputSignal.Values'] = numpy.zeros((SignalSizes[0], SignalSizes[1]));\n\
-docometre.experiments['outputSignal.NbSamples'] = docometre.experiments['inputSignal.NbSamples'];\n\
-docometre.experiments['outputSignal.FrontCut'] = docometre.experiments['inputSignal.FrontCut'];\n\
-docometre.experiments['outputSignal.EndCut'] = docometre.experiments['inputSignal.EndCut'];\n\
+docometre.experiments['outputSignal.NbSamples'] = numpy.copy(docometre.experiments['inputSignal.NbSamples']);\n\
+docometre.experiments['outputSignal.FrontCut'] = numpy.copy(docometre.experiments['inputSignal.FrontCut']);\n\
+docometre.experiments['outputSignal.EndCut'] = numpy.copy(docometre.experiments['inputSignal.EndCut']);\n\
 docometre.experiments['outputSignal.isSignal'] = 1;\n\
 docometre.experiments['outputSignal.isCategory'] = 0;\n\
 docometre.experiments['outputSignal.isEvent'] = 0;\n\
