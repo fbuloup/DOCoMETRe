@@ -6,9 +6,16 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-04-29 - BIS
+      -- 2021-04-30
+ADDED :
+* Transfer Markers Group function (Python)
+* Motion Direction function (Python)
 FIXED :
-* bug where temporaryBuffer declared several times when floats are transfered (Arduino Uno)
+* Change default suffix in Motion Distance function (Python)
+-- 2021-04-29 - BIS
+FIXED :
+* bug where temporaryBuffer declared several times when floats
+are transfered (Arduino Uno)
 -- 2021-04-29
 ADDED :
 * Find Amplitude backward and forward to python functions
