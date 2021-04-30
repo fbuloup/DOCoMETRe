@@ -215,7 +215,7 @@ public class MotionDistance extends GenericFunction {
 		outputSignalSuffixLabel.setText(FunctionsMessages.OutputSignalSuffixLabel);
 		Text outputSignalSuffixText = new Text(paramContainer, SWT.BORDER);
 		outputSignalSuffixText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		value  = getProperty(outputSignalSuffixKey, "MD");
+		value  = getProperty(outputSignalSuffixKey, "MDist");
 		outputSignalSuffixText.setText(value);
 		outputSignalSuffixText.addModifyListener(new ModifyListener() {
 			@Override
@@ -242,7 +242,7 @@ public class MotionDistance extends GenericFunction {
 		String inputSignal2 = getProperty(inputSignal2Key, "");
 		String inputMarker1 = getProperty(inputMarker1Key, "");
 		String inputMarker2 = getProperty(inputMarker2Key, "");
-		String outputSignal = inputSignal1 + getProperty(outputSignalSuffixKey, "MD");
+		String outputSignal = inputSignal1 + getProperty(outputSignalSuffixKey, "MDist");
 		
 		code = code.replaceAll(trialsListKey, trialsList).replaceAll(inputSignal1Key, inputSignal1).replaceAll(inputSignal2Key, inputSignal2);
 		code = code.replaceAll(inputMarker1Key, inputMarker1).replaceAll(inputMarker2Key, inputMarker2).replaceAll(outputSignalSuffixKey, outputSignal);
