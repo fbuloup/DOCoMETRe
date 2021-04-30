@@ -47,6 +47,7 @@ import java.util.List;
 import org.eclipse.jface.layout.TableColumnLayout;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CellLabelProvider;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -530,6 +531,27 @@ public class ChartsConfigurationPage extends ModulePage {
 				if(!(element instanceof OscilloCurveConfiguration)) return;
 				OscilloCurveConfiguration curve = (OscilloCurveConfiguration)cell.getElement();
 				cell.setText(curve.getProperty(CurveConfigurationProperties.WIDTH));
+			}
+		});
+		
+		
+		TableViewerColumn curveDisplayValueTableViewerColumn = createColumn(OscilloCurveConfigurationProperties.DISPLAY_CURRENT_VALUES.getTooltip(), curvesTableColumnLayout, OscilloCurveConfigurationProperties.DISPLAY_CURRENT_VALUES, defaultColumnWidth + 100, 4);
+		curveDisplayValueTableViewerColumn.setLabelProvider(new ColumnLabelProvider() {
+			@Override
+			public String getText(Object element) {
+				if(!(element instanceof OscilloCurveConfiguration)) return "";
+				OscilloCurveConfiguration curve = (OscilloCurveConfiguration)element;
+				String value = curve.getProperty(OscilloCurveConfigurationProperties.DISPLAY_CURRENT_VALUES);
+				return value == null ? "false":value;
+			}
+			
+			@Override
+			public Image getImage(Object element) {
+				if(!(element instanceof OscilloCurveConfiguration)) return null;
+				OscilloCurveConfiguration curve = (OscilloCurveConfiguration)element;
+				String value = "false";
+				value = curve.getProperty(OscilloCurveConfigurationProperties.DISPLAY_CURRENT_VALUES);
+				return "true".equals(value) ? ModulePage.checkedImage : ModulePage.uncheckedImage;
 			}
 		});
 		

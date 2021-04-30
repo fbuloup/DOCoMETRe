@@ -232,7 +232,7 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 		String font = getProperty(OscilloChartConfigurationProperties.FONT);
 		if(font == null) font = RTSWTChartFonts.BITMAP_HELVETICA_10.getLabel();
 		value = getProperty(OscilloChartConfigurationProperties.DISPLAY_CURRENT_VALUES);
-		boolean displayCurrentValues = Boolean.parseBoolean(value);
+		boolean displayCurrentValuesChart = Boolean.parseBoolean(value);
 		RTSWTOscilloChart oscilloChart = new RTSWTOscilloChart(container, SWT.NORMAL, RTSWTChartFonts.getFont(font), timeWidth, yMin, yMax, autoscale, SWT.ON, SWT.HIGH);
 		oscilloChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, hSpan, vSpan));
 		// Create curves
@@ -244,6 +244,9 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 			int serieStyle = CurveConfigurationProperties.getStyle(oscilloCurveConfiguration);
 			int serieWidth = Integer.parseInt(oscilloCurveConfiguration.getProperty(CurveConfigurationProperties.WIDTH));
 			RTSWTOscilloSerie oscilloSerie = oscilloChart.createSerie(serieID, serieColor, serieStyle, serieWidth);
+			value = getProperty(OscilloCurveConfigurationProperties.DISPLAY_CURRENT_VALUES);
+			boolean displayCurrentValues = Boolean.parseBoolean(value);
+			displayCurrentValues = displayCurrentValuesChart || displayCurrentValues;
 			oscilloSerie.setShowCurrentValue(displayCurrentValues);
 			// Set serie to update in configuration
 			oscilloCurveConfiguration.setSerie(oscilloSerie);
