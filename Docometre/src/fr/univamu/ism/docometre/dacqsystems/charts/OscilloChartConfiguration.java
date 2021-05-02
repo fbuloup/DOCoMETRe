@@ -244,7 +244,7 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 			int serieStyle = CurveConfigurationProperties.getStyle(oscilloCurveConfiguration);
 			int serieWidth = Integer.parseInt(oscilloCurveConfiguration.getProperty(CurveConfigurationProperties.WIDTH));
 			RTSWTOscilloSerie oscilloSerie = oscilloChart.createSerie(serieID, serieColor, serieStyle, serieWidth);
-			value = getProperty(OscilloCurveConfigurationProperties.DISPLAY_CURRENT_VALUES);
+			value = oscilloCurveConfiguration.getProperty(OscilloCurveConfigurationProperties.DISPLAY_CURRENT_VALUES);
 			boolean displayCurrentValues = Boolean.parseBoolean(value);
 			displayCurrentValues = displayCurrentValuesChart || displayCurrentValues;
 			oscilloSerie.setShowCurrentValue(displayCurrentValues);
