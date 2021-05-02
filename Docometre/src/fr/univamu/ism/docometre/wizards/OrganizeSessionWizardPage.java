@@ -163,14 +163,11 @@ public class OrganizeSessionWizardPage extends WizardPage {
 		availableProcessesListViewer.setComparator(new ViewerComparator());
 		List availableProcessesList = availableProcessesListViewer.getList();
 		availableProcessesList.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 2));
-		IResource session = ((NewResourceWizard)getWizard()).getResource();
-		if(session != null) {
-			IResource[] elements = ResourceProperties.getAllTypedResources(ResourceType.PROCESS, session.getProject(), null);
-			for (IResource item : elements) {
-				availableProcesses.add(item);
-			}
-			availableProcessesListViewer.setInput(availableProcesses);
+		IResource[] elements = ResourceProperties.getAllTypedResources(ResourceType.PROCESS, ((NewResourceWizard)getWizard()).getParentResource().getProject(), null);
+		for (IResource item : elements) {
+			availableProcesses.add(item);
 		}
+		availableProcessesListViewer.setInput(availableProcesses);
 		Button addButton = new Button(leftContainer, SWT.FLAT);
 		addButton.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, false, false));
 		addButton.setImage(Activator.getImage(IImageKeys.ADD_ICON));

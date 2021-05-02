@@ -114,7 +114,7 @@ public class NewSessionWizardPage extends NewResourceWizardPage {
 		
 		// Prefix : use this as prefix for data files names (default subject name)
 		prefixButton = new Button(container, SWT.CHECK);
-		usePrefix = true;
+		usePrefix = false;
 		if(wizard.getMode() == NewResourceWizard.MODIFY) usePrefix = ResourceProperties.getDataFilesNamesPrefix(wizard.getResource()) !=  null;
 		prefixButton.setSelection(usePrefix);
 		prefixButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
@@ -192,7 +192,11 @@ public class NewSessionWizardPage extends NewResourceWizardPage {
 		trialsNumberSpinner.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
-				modifyHandler();
+				int value = trialsNumberSpinner.getSelection();
+				if(value < minTrial) {
+					value = minTrial;
+					trialsNumberSpinner.setSelection(value);
+				} else modifyHandler();
 			}
 		});
 		trialsNumberSpinner.addMouseWheelListener(new MouseWheelListener() {
