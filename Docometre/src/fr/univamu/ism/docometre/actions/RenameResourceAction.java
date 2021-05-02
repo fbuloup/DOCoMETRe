@@ -168,6 +168,9 @@ public class RenameResourceAction extends Action implements ISelectionListener, 
 			if (ResourceType.isSamples(resource)){
 				regexp = "^([a-zA-Z]+(\\w|\\.)*)+$"; //$NON-NLS-1$
 			} 
+			if (ResourceType.isBatchDataProcessing(resource) || ResourceType.isDataProcessing(resource)){
+				regexp = "^([a-zA-Z]+(\\w|\\.|_)*)+$"; //$NON-NLS-1$
+			} 
 		}
 		
 		@Override
