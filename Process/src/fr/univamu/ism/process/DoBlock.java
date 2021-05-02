@@ -108,10 +108,9 @@ public class DoBlock extends ConditionalBlock {
 	public String getCode(Object context, Object step) {
 		if(step == ScriptSegmentType.INITIALIZE || step == ScriptSegmentType.LOOP || step == ScriptSegmentType.FINALIZE) {
 			if(context.getClass().getSimpleName().equals(Activator.ADWinProcess))
-				return "UNTIL (" + getLeftOperand() + getOperator().getValue() + getRightOperand() + ")\n";
+				return "UNTIL (" + getLeftOperand() + Operator.getOperatorForADBasic(getOperator()) + getRightOperand() + ")\n";
 			if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess)) {
-				String operator =  getOperator() == Operator.IS_EQUAL_TO ? " == " : getOperator().getValue();
-				return "} while (" + getLeftOperand() + operator + getRightOperand() + ");\n";
+				return "} while (" + getLeftOperand() + Operator.getOperatorForC(getOperator()) + getRightOperand() + ");\n";
 			}
 				
 		}
@@ -128,9 +127,9 @@ public class DoBlock extends ConditionalBlock {
 	@Override
 	public String getName(Object context) {
 		if(context.getClass().getSimpleName().equals(Activator.ADWinProcess))
-			return "Do ... Until " + getLeftOperand() + getOperator().getValue() + getRightOperand();
+			return "Do ... Until " + getLeftOperand() + Operator.getOperatorForADBasic(getOperator()) + getRightOperand();
 		if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess))
-			return "Do ... While " + getLeftOperand() + getOperator().getValue() + getRightOperand();
+			return "Do ... While " + getLeftOperand() + Operator.getOperatorForC(getOperator()) + getRightOperand();
 		if(context.getClass().getSimpleName().equals(Activator.Script))
 			return "while " + getLeftOperand() + getOperator().getValue() + getRightOperand() + " ... end ";
 		return "";

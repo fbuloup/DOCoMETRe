@@ -72,4 +72,27 @@ public enum Operator {
 		if(IS_EQUAL_TO.getValue().equals(value)) return IS_EQUAL_TO;
 		return IS_NOT_EQUAL_TO;
 	}
+	
+	public static String getOperatorForADBasic(Operator operator) {
+		return operator.getValue();
+	}
+	
+	public static String getOperatorForC(Operator operator) {
+		if(operator == IS_EQUAL_TO) return " == ";
+		if(operator == IS_NOT_EQUAL_TO) return " != ";
+		return operator.getValue();
+	}
+	
+	public static String getOperatorForPython(Operator operator) {
+		if(operator == IS_EQUAL_TO) return " == ";
+		if(operator == IS_NOT_EQUAL_TO) return " != ";
+		return operator.getValue();
+	}
+	
+	public static String getOperatorForMatlab(Operator operator) {
+		if(operator == IS_EQUAL_TO) return " == ";
+		if(operator == IS_NOT_EQUAL_TO) return " ~= ";
+		return operator.getValue();
+	}
+	
 }
