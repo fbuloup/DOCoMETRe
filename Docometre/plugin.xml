@@ -453,6 +453,13 @@
             id="Docometre.BatchDataProcessingEditor"
             name="BatchDataProcessingEditor">
       </editor>
+      <editor
+            class="fr.univamu.ism.docometre.analyse.editors.XYChartEditor"
+            default="false"
+            icon="icons/XYChartIcon.png"
+            id="Docometre.XYChartEditor"
+            name="XYChartEditor">
+      </editor>
    </extension>
    <extension
          point="org.eclipse.ui.decorators">
@@ -620,6 +627,24 @@
                      label="%NewFolderAction.label"
                      style="push"
                      tooltip="%NewFolderAction.tooltip">
+                     <visibleWhen
+                           checkEnabled="false">
+                        <or>
+                           <reference
+                                 definitionId="Docometre.DesignPerspectiveSelected">
+                           </reference>
+                           <reference
+                                 definitionId="Docometre.AnalysePerspectiveSelected">
+                           </reference>
+                        </or>
+                     </visibleWhen>
+               </command>
+               <command
+                     commandId="NewXYChartCommand"
+                     icon="icons/XYChartIcon.png"
+                     label="%NewXYChartCommand.label"
+                     style="push"
+                     tooltip="%NewXYChartCommand.tooltip">
                      <visibleWhen
                            checkEnabled="false">
                         <or>
@@ -1310,6 +1335,13 @@
                      style="push"
                      tooltip="%NewFolderAction.tooltip">
                </command>
+               <command
+                     commandId="NewXYChartCommand"
+                     icon="icons/XYChartIcon.png"
+                     label="%NewXYChartCommand.label"
+                     style="push"
+                     tooltip="%NewXYChartCommand.tooltip">
+               </command>
                
                
          </menu>
@@ -1898,6 +1930,19 @@
 		           </reference>
 		        </visibleWhen>      
          </command>
+         <command
+               commandId="NewXYChartCommand"
+               icon="icons/XYChartIcon.png"
+               label="%NewXYChartCommand.label"
+               style="push"
+               tooltip="%NewXYChartCommand.tooltip">
+            <visibleWhen
+                  checkEnabled="false">
+               <reference
+                     definitionId="Docometre.DesignPerspectiveSelected">
+               </reference>
+            </visibleWhen>
+         </command>
          <separator
                name="Docometre.separator2"
                visible="true">
@@ -2115,6 +2160,19 @@
                   </reference>
                </visibleWhen>
             </command>
+            <command
+                  commandId="NewXYChartCommand"
+                  icon="icons/XYChartIcon.png"
+                  label="%NewXYChartCommand.label"
+                  style="push"
+                  tooltip="%NewXYChartCommand.tooltip">
+               <visibleWhen
+                     checkEnabled="false">
+                  <reference
+                        definitionId="Docometre.AnalysePerspectiveSelected">
+                  </reference>
+               </visibleWhen>
+            </command>
             <separator
                   name="Docometre.separator3"
                   visible="true">
@@ -2158,6 +2216,13 @@
                   label="%NewFolderAction.label"
                   style="push"
                   tooltip="%NewFolderAction.tooltip">
+            </command>
+            <command
+                  commandId="NewXYChartCommand"
+                  icon="icons/XYChartIcon.png"
+                  label="%NewXYChartCommand.label"
+                  style="push"
+                  tooltip="%NewXYChartCommand.tooltip">
             </command>
          </menu>
          <command
@@ -2532,6 +2597,11 @@
             defaultHandler="fr.univamu.ism.docometre.analyse.handlers.ExportDataHandler"
             id="ExportDataCommand"
             name="ExportDataCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.analyse.handlers.NewXYChartHandler"
+            id="NewXYChartCommand"
+            name="NewXYChartCommand">
       </command>
    </extension>
    <extension

@@ -52,6 +52,7 @@ import org.eclipse.ui.IWorkbench;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.datamodel.BatchDataProcessing;
+import fr.univamu.ism.docometre.analyse.datamodel.XYChart;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.process.Script;
@@ -109,6 +110,7 @@ public class NewResourceWizard extends Wizard implements INewWizard {
 		if(resourceType.equals(ResourceType.PARAMETERS)) newResourceWizardPage = new NewParametersFileWizardPage();
 		if(resourceType.equals(ResourceType.DATA_PROCESSING)) newResourceWizardPage = new NewDataProcessingWizardPage();
 		if(resourceType.equals(ResourceType.BATCH_DATA_PROCESSING)) newResourceWizardPage = new NewBatchDataProcessingWizardPage();
+		if(resourceType.equals(ResourceType.XYCHART)) newResourceWizardPage = new NewXYChartWizardPage();
 		addPage(newResourceWizardPage);
 		if(resourceType.equals(ResourceType.SESSION)) {
 			addPage(new OrganizeSessionWizardPage());
@@ -202,5 +204,10 @@ public class NewResourceWizard extends Wizard implements INewWizard {
 	public Object getBatchDataProcessing() {
 		return new BatchDataProcessing();
 	}
+	
+	public Object getXYChart() {
+		return new XYChart();
+	}
+	
  	
 }

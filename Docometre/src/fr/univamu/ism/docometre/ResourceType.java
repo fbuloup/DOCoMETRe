@@ -61,7 +61,8 @@ public enum ResourceType {
 	ADW_DATA_FILE("ADW_DATA_FILE"),
 	CHANNEL("CHANNEL"),
 	DATA_PROCESSING("DATA_PROCESSING"),
-	BATCH_DATA_PROCESSING("BATCH_DATA_PROCESSING");
+	BATCH_DATA_PROCESSING("BATCH_DATA_PROCESSING"),
+	XYCHART("XYCHART");
 
 	private String name = "";
 
@@ -91,6 +92,7 @@ public enum ResourceType {
 		if(typeValue.equals(CHANNEL.toString())) return CHANNEL;
 		if(typeValue.equals(DATA_PROCESSING.toString())) return DATA_PROCESSING;
 		if(typeValue.equals(BATCH_DATA_PROCESSING.toString())) return BATCH_DATA_PROCESSING;
+		if(typeValue.equals(XYCHART.toString())) return XYCHART;
 		return ANY;
 	}
 	
@@ -152,6 +154,10 @@ public enum ResourceType {
 	
 	public static boolean isBatchDataProcessing(IResource resource) {
 		return check(resource, BATCH_DATA_PROCESSING);
+	}
+	
+	public static boolean isXYChart(IResource resource) {
+		return check(resource, XYCHART);
 	}
 	
 	public static boolean isAnyTest(IResource resource) {
