@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-05-02
+      -- 2021-05-03
+ADDED :
+* XY Chart Support (Step 1)
+FIXED : Nothing
+-- 2021-05-02
 ADDED :
 * Some enhancement in session wizard pages 
 * Allow &quot;_&quot; char in data and data batch processing file name
