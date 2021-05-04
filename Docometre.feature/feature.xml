@@ -6,7 +6,18 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-04-30
+      -- 2021-05-03
+ADDED :
+* XY Chart Support (Step 1)
+FIXED : Nothing
+-- 2021-05-02
+ADDED :
+* Some enhancement in session wizard pages 
+* Allow &quot;_&quot; char in data and data batch processing file name
+FIXED :
+* Display current value now works properly for Oscillo charts
+* Manage operators for ADBasic, C, Python and Matlab
+-- 2021-04-30
 ADDED :
 * Transfer Markers Group function (Python)
 * Motion Direction function (Python)

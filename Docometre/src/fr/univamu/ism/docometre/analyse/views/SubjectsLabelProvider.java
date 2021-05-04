@@ -44,6 +44,7 @@ public class SubjectsLabelProvider implements ILabelProvider {
 			if(ResourceType.isFolder(resource)) return Activator.getImageDescriptor(IImageKeys.FOLDER_ICON).createImage();
 			if(ResourceType.isDataProcessing(resource)) return Activator.getImageDescriptor(IImageKeys.DATA_PROCESSING_ICON).createImage();
 			if(ResourceType.isBatchDataProcessing(resource)) return Activator.getImageDescriptor(IImageKeys.BATCH_DATA_PROCESSING_ICON).createImage();
+			if(ResourceType.isXYChart(resource)) return Activator.getImageDescriptor(IImageKeys.XYChart_ICON).createImage();
 		}
 		return null;
 	}

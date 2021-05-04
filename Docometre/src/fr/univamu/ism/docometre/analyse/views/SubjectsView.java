@@ -9,6 +9,7 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.DecoratingLabelProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -18,6 +19,11 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.DND;
+import org.eclipse.swt.dnd.DragSource;
+import org.eclipse.swt.dnd.DragSourceEvent;
+import org.eclipse.swt.dnd.DragSourceListener;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -37,6 +43,7 @@ import fr.univamu.ism.docometre.ApplicationActionBarAdvisor;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
+import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.views.ExperimentsLabelDecorator;
 import fr.univamu.ism.docometre.views.ExperimentsViewerSorter;
 
@@ -106,6 +113,29 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 				Object element = ((IStructuredSelection) subjectsTreeViewer.getSelection()).getFirstElement();
 				subjectsTreeViewer.setExpandedState(element, !subjectsTreeViewer.getExpandedState(element));
 				ApplicationActionBarAdvisor.openEditorAction.run();
+			}
+		});
+		
+		LocalSelectionTransfer transfer = LocalSelectionTransfer.getTransfer();
+		DragSource dragSource = new DragSource(subjectsTreeViewer.getTree(), DND.DROP_COPY);
+		dragSource.setTransfer(new Transfer[] {transfer});
+		
+		dragSource.addDragListener(new DragSourceListener() {
+			public void dragStart(DragSourceEvent event) {
+				event.doit = false;
+				if(!subjectsTreeViewer.getSelection().isEmpty()) {
+					IStructuredSelection selection = ((IStructuredSelection)subjectsTreeViewer.getSelection());
+					Object[] items = selection.toArray();
+					event.doit = items.length == 2 && (items[0] instanceof Channel && items[1] instanceof Channel);
+				}
+			}
+			public void dragSetData(DragSourceEvent event) {
+				if (LocalSelectionTransfer.getTransfer().isSupportedType(event.dataType)) {
+					IStructuredSelection selection = ((IStructuredSelection)subjectsTreeViewer.getSelection());
+					transfer.setSelection(selection);
+				}
+			}
+			public void dragFinished(DragSourceEvent event) {
 			}
 		});
 		
