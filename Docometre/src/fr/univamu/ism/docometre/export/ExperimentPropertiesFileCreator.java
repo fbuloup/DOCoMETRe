@@ -95,7 +95,7 @@ public final class ExperimentPropertiesFileCreator {
 
 	private static void writePropertiesRecursively(IResource resource, Properties properties, boolean includeData, SubMonitor subMonitor) throws CoreException {
 		subMonitor.subTask(NLS.bind(DocometreMessages.WritingProperties, resource.getFullPath().toOSString()));
-		String keyName =  resource.getFullPath().toOSString().replaceFirst(fromRootDirectory, toRootDirectory);
+		String keyName =  resource.getFullPath().toPortableString().replaceFirst(fromRootDirectory, toRootDirectory);
 		if(ResourceType.isDataFile(resource)) {
 			if(includeData) ResourceProperties.writeResourcePropertiesToPropertiesFile(resource, properties, keyName);
 		} else ResourceProperties.writeResourcePropertiesToPropertiesFile(resource, properties, keyName);
