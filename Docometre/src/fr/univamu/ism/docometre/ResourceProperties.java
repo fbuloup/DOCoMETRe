@@ -582,7 +582,7 @@ public final class ResourceProperties {
 				for (int i = 0; i < members.length; i++) {
 					if(ResourceType.isTrial(members[i])) {
 						if(!ResourceProperties.isTrialDone(members[i])) {
-							String trialNumberString = members[i].getName().replaceAll(DocometreMessages.Trial, "");
+							String trialNumberString = members[i].getName().split("°")[1];//members[i].getName().replaceAll(DocometreMessages.Trial, "");
 							numbersArrayList.add(Integer.parseInt(trialNumberString));
 						}
 					}
