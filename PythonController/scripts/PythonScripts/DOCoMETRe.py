@@ -123,8 +123,9 @@ class DOCoMETRe(object):
 
 			# Read data
 			data = numpy.fromfile(dataFiles[n], dtype="float32");
+			
 			if system == "Arduino UNO":
-				data = data[2::2];
+				data = data[1::2];
 
 			sizeData = len(data);
 			#if(jvmMode): self.gateway.jvm.System.out.println("sizeData : " + str(sizeData));
