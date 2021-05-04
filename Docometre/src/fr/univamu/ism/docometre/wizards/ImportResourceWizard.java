@@ -239,7 +239,7 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 	        ZipInputStream zis = new ZipInputStream(fis);
 	        ZipEntry ze = zis.getNextEntry();
 	        while(ze != null) {
-	        	if(ze.getName().equals(experimentName  + File.separator + experimentName + ".properties")) {
+	        	if(ze.getName().equals(experimentName  + "/" + experimentName + ".properties")) {
 	        		extractFile(zis, ze, rootPath + File.separator + "temp.properties");
 	        		File temporaryPropertiesFile = new File(rootPath + File.separator + "temp.properties");
 	        		FileInputStream fileInputStream = new FileInputStream(temporaryPropertiesFile);
