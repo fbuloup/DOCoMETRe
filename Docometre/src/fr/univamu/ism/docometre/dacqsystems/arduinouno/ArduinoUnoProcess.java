@@ -90,6 +90,8 @@ import jssc.SerialPortList;
 @SuppressWarnings("restriction")
 public class ArduinoUnoProcess extends Process {
 
+	public static int DELAY_MICRO = 10;
+	
 	public transient static final long serialVersionUID = DACQConfiguration.serialVersionUID;
 	public transient static String previousINOHexFilePath = "";
 	public transient static boolean forceUpload = false;
@@ -204,9 +206,19 @@ public class ArduinoUnoProcess extends Process {
 //		                    	System.out.println(messageString);
 		                    	message.setLength(0);
 		                    	String[] segments = messageString.split(":");
-		                    	trsfrNum = Integer.parseInt(segments[0]);
-	                    		time = Float.parseFloat(segments[1])/1000000f; 
-	                    		value = Float.parseFloat(segments[2]); 
+		                    	
+		                    	if(segments.length != 3) continue;
+		                    	try {
+									trsfrNum = Integer.parseInt(segments[0]);
+									time = Float.parseFloat(segments[1])/1000000f; 
+									value = Float.parseFloat(segments[2]);
+								} catch (Exception e) {
+									Activator.logErrorMessageWithCause(e);
+									e.printStackTrace();
+									appendToEventDiary("ERROR at " + time + " : " + e.getMessage());
+									continue;
+								} 
+	                    		
 		                    	if(trsfrNum == 0) {
 
 		                    		timeAfter = System.currentTimeMillis()/1000d;
@@ -232,14 +244,21 @@ public class ArduinoUnoProcess extends Process {
 			    						}
 			    					});
 		                    	} else {
-//		                    		timeBefore = System.currentTimeMillis()/1000d;
-		                    		transferedChannelsOrderedByTransferNumber[trsfrNum - 1].addSamples(new float[] {time, value});
-//		                    		channelName = transferedChannelsOrderedByTransferNumber[trsfrNum - 1].getProperty(ChannelProperties.NAME);
-		                    		nbSamples[trsfrNum - 1] +=1;
-		                    		transferedChannelsOrderedByTransferNumber[trsfrNum - 1].notifyChannelObservers();
-//		                    		timeAfter = System.currentTimeMillis()/1000d;
-//		        					appendToEventDiary("Display time : " + (timeAfter - timeBefore));
-//		                    		appendToEventDiary("New sample for channel " + channelName + "  - dt : " + formater.format(time) + "  - Total " + nbSamples[trsfrNum - 1] + " samples");
+		                    		try {
+//			                    		timeBefore = System.currentTimeMillis()/1000d;
+										transferedChannelsOrderedByTransferNumber[trsfrNum - 1].addSamples(new float[] {time, value});
+//		                    			channelName = transferedChannelsOrderedByTransferNumber[trsfrNum - 1].getProperty(ChannelProperties.NAME);
+										nbSamples[trsfrNum - 1] +=1;
+										transferedChannelsOrderedByTransferNumber[trsfrNum - 1].notifyChannelObservers();
+//			                    		timeAfter = System.currentTimeMillis()/1000d;
+//			        					appendToEventDiary("Display time : " + (timeAfter - timeBefore));
+//			                    		appendToEventDiary("New sample for channel " + channelName + "  - dt : " + formater.format(time) + "  - Total " + nbSamples[trsfrNum - 1] + " samples");
+									} catch (Exception e) {
+										Activator.logErrorMessageWithCause(e);
+										e.printStackTrace();
+										appendToEventDiary("ERROR at " + time + " : "+ e.getMessage());
+										continue;
+									}
 		                    	}
 		                    } else {
 		                    	if(b == 's') {
@@ -499,6 +518,7 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "\t\t\t\t\t\tworkload = computeWorkload(previousLoopTime);\n";
 			code = code + "\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, loopTime_MS, workload);\n";
 			code = code + "\t\t\t\t\t\tSerial.println(serialMessage);\n";
+			code = code + "\t\t\t\t\t\tdelayMicroseconds(" + ArduinoUnoProcess.DELAY_MICRO + ");\n";
 			code = code + "\t\t\t\t\t\tpreviousLoopTime = currentLoopTime;\n";
 			code = code + "\t\t\t\t}\n";
 			
@@ -588,6 +608,7 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "\t\tif(transfert) {\n";
 			code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", transferNumber, (loopTime_MS - *lastAcquisitionTime), value);\n";
 			code = code + "\t\t\t\tSerial.println(serialMessage);\n";
+			code = code + "\t\t\t\tdelayMicroseconds(" + ArduinoUnoProcess.DELAY_MICRO + ");\n";
 			code = code + "\t\t}\n";
 			code = code + "\t\t*lastAcquisitionTime = loopTime_MS;\n";
 			code = code + "\t\treturn value;\n";

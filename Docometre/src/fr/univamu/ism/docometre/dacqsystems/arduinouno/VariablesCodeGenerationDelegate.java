@@ -105,6 +105,7 @@ public class VariablesCodeGenerationDelegate {
 				}
 				
 				code = code + "\t\t\t\t\t\t\t\tSerial.println(serialMessage);\n";
+				code = code + "\t\t\t\t\t\t\t\tdelayMicroseconds(" + ArduinoUnoProcess.DELAY_MICRO + ");\n";
 				code = code + "\t\t\t\t\t\t\t\tlastTransferTime_" + name + " = loopTime_MS;\n";
 				code = code + "\t\t\t\t\t\t\t\ttransfer_" + name + " = 0;\n";
 				code = code + "\t\t\t\t\t\t}\n";

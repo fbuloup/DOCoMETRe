@@ -102,6 +102,7 @@ public class ArduinoUnoAnOutModule extends Module {
 					if(isTransfered) {
 						code = code + "\t\t\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", " + transferNumber + ", (loopTime_MS - lastGenerateTime_" + name + "), " + name + ");\n";
 						code = code + "\t\t\t\t\t\t\t\tSerial.println(serialMessage);\n";
+						code = code + "\t\t\t\t\t\t\t\tdelayMicroseconds(" + ArduinoUnoProcess.DELAY_MICRO + ");\n";
 					}
 					code = code + "\t\t\t\t\t\t\t\tlastGenerateTime_" + name + "= loopTime_MS;\n";
 					code = code + "\t\t\t\t\t\t}\n";
