@@ -260,6 +260,7 @@ public class ArduinoUnoProcess extends Process {
 	    			}
 	            }
 	            catch (Exception e1) {
+	            	Activator.logErrorMessageWithCause(e1);
 					double processEndTime = System.currentTimeMillis()/1000d;
 					appendToEventDiary("\nEnd time (s) : " + Double.toString(processEndTime));
 					appendToEventDiary(ObjectsController.getResourceForObject(ArduinoUnoProcess.this).getName() + " duration (s) is about : " + Double.toString(processEndTime - processBeginTime) + "\n");
