@@ -4,7 +4,7 @@ MENU_TITLE_FR = Trouver l'amplitude en avant
 DESCRIPTION_FR = Trouver l'amplitude en avant
 
 # Now start specific python function 
-FUNCTION_CODE = # Compute Find amplitude backward\n\
+FUNCTION_CODE = # Compute Find amplitude forward\n\
 import numpy;\n\
 from datetime import datetime;\n\
 signalSizes = docometre.experiments['inputSignal.Values'].shape;\n\
