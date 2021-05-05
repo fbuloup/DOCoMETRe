@@ -51,7 +51,7 @@ for trialNumber in numpy.r_[trialsList]:\n\
 	\tif(fromIndex.size > 0 and toIndex.size > 0):\n\
 		\t\t# Convert from and to in samples number\n\
 		\t\tfromIndex = int(fromValues[fromIndex[0]][1] * sampleFrequency);\n\
-		\t\ttoIndex = int(toValues[toIndex[0]][1] * sampleFrequency);\n\
+		\t\ttoIndex = int(toValues[toIndex[0]][1] * sampleFrequency) + 1;\n\
 		\t\t# Origine coordinates\n\
 		\t\tx0 = values1[trialNumber,fromIndex];\n\
 		\t\ty0 = values2[trialNumber,fromIndex];\n\
