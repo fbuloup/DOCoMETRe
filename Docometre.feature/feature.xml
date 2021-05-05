@@ -6,7 +6,18 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-05-03
+      -- 2021-05-05
+ADDED :
+* Log error message when Serial Port Exception
+* Add a small delay (10us) after each Serial.println
+FIXED :
+* Retrieve right indexes from data files for Arduino Uno
+* Fix a bug when locale is different from exported locale
+* Use portable string when creating properties file for exportation
+* Use &quot;/&quot; instead of File.separator as it is platform dependent
+* Process one more sample (Motion direction)
+* Copy Front and End Cut in new created signal (Motion Distance)
+-- 2021-05-03
 ADDED :
 * XY Chart Support (Step 1)
 FIXED : Nothing
