@@ -178,7 +178,7 @@ public class FindAmplitudeForward extends GenericFunction {
 		// Amplitude
 		Label amplitudeLabel = new Label(paramContainer, SWT.NONE);
 		amplitudeLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-		amplitudeLabel.setText(FunctionsMessages.MarkersGroupLabel);
+		amplitudeLabel.setText(FunctionsMessages.AmplitudeValueLabel);
 		Text amplitudeText = new Text(paramContainer, SWT.BORDER);
 		amplitudeText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		value  = getProperty(amplitudeKey, "0.0");

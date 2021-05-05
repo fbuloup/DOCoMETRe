@@ -43,6 +43,9 @@ public class FunctionsMessages extends NLS {
 	public static String FromMarkerLabel;
 	public static String ToMarkerLabel;
 
+	// Find amplitude back and forward
+	public static String AmplitudeValueLabel;
+
 	
 	
 	static {
