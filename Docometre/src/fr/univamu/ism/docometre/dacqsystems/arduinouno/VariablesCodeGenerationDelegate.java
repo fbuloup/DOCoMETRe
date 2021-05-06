@@ -41,7 +41,9 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.arduinouno;
 
+import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
+import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
 public class VariablesCodeGenerationDelegate {
 	
@@ -72,6 +74,7 @@ public class VariablesCodeGenerationDelegate {
 
 	private static String getTransferCode() {
 		String  code = "";
+		int delay = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.ARDUINO_DELAY_TIME_AFTER_SERIAL_PRINT);
 		ArduinoUnoVariable[] variables = ((ArduinoUnoDACQConfiguration)process.getDACQConfiguration()).getVariables();
 		for (ArduinoUnoVariable variable : variables) {
 			String name = variable.getProperty(ChannelProperties.NAME);
@@ -105,7 +108,7 @@ public class VariablesCodeGenerationDelegate {
 				}
 				
 				code = code + "\t\t\t\t\t\t\t\tSerial.println(serialMessage);\n";
-				code = code + "\t\t\t\t\t\t\t\tdelayMicroseconds(" + ArduinoUnoProcess.DELAY_MICRO + ");\n";
+				if(delay > 0)code = code + "\t\t\t\t\t\t\t\tdelayMicroseconds(" + delay + ");\n";
 				code = code + "\t\t\t\t\t\t\t\tlastTransferTime_" + name + " = loopTime_MS;\n";
 				code = code + "\t\t\t\t\t\t\t\ttransfer_" + name + " = 0;\n";
 				code = code + "\t\t\t\t\t\t}\n";

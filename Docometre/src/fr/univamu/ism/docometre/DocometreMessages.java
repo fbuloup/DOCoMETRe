@@ -83,6 +83,7 @@ public final class DocometreMessages extends NLS {
 	public static String RootPreferencePage_Label;
 	public static String DefaultADWinSystemPreference_Description;
 	public static String DefaultArduinoUnoSystemPreference_Description;
+	public static String ArduinoDelayTimeAfterSerialPrint_Label;
 //	public static String ADWinDefaultSystemPreferencePage_Label;
 //	public static String NIDefaultSystemPreferencePage_Label;
 	

@@ -82,6 +82,7 @@ import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.ModuleBehaviour;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.dacqconfigurationeditor.DeviceSelectionDialog;
+import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 import fr.univamu.ism.process.ScriptSegmentType;
 import jssc.SerialPort;
 import jssc.SerialPortException;
@@ -90,8 +91,6 @@ import jssc.SerialPortList;
 @SuppressWarnings("restriction")
 public class ArduinoUnoProcess extends Process {
 
-	public static int DELAY_MICRO = 10;
-	
 	public transient static final long serialVersionUID = DACQConfiguration.serialVersionUID;
 	public transient static String previousINOHexFilePath = "";
 	public transient static boolean forceUpload = false;
@@ -349,6 +348,8 @@ public class ArduinoUnoProcess extends Process {
 	public String getCodeSegment(Object segment) throws Exception {
 		String code = "";
 		
+		int delay = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.ARDUINO_DELAY_TIME_AFTER_SERIAL_PRINT);
+		
 		if(segment == ArduinoUnoCodeSegmentProperties.INCLUDE) {
 			code = "// Include for watch dog timer\n";
 			code = code + "#include  <avr/wdt.h>\n";
@@ -518,7 +519,7 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "\t\t\t\t\t\tworkload = computeWorkload(previousLoopTime);\n";
 			code = code + "\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, loopTime_MS, workload);\n";
 			code = code + "\t\t\t\t\t\tSerial.println(serialMessage);\n";
-			code = code + "\t\t\t\t\t\tdelayMicroseconds(" + ArduinoUnoProcess.DELAY_MICRO + ");\n";
+			if(delay > 0) code = code + "\t\t\t\t\t\tdelayMicroseconds(" + delay + ");\n";
 			code = code + "\t\t\t\t\t\tpreviousLoopTime = currentLoopTime;\n";
 			code = code + "\t\t\t\t}\n";
 			
@@ -608,7 +609,7 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "\t\tif(transfert) {\n";
 			code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", transferNumber, (loopTime_MS - *lastAcquisitionTime), value);\n";
 			code = code + "\t\t\t\tSerial.println(serialMessage);\n";
-			code = code + "\t\t\t\tdelayMicroseconds(" + ArduinoUnoProcess.DELAY_MICRO + ");\n";
+			if(delay > 0)code = code + "\t\t\t\tdelayMicroseconds(" + delay + ");\n";
 			code = code + "\t\t}\n";
 			code = code + "\t\t*lastAcquisitionTime = loopTime_MS;\n";
 			code = code + "\t\treturn value;\n";
