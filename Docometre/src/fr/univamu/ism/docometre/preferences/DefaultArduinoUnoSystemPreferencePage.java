@@ -46,6 +46,8 @@ import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseWheelListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridLayout;
@@ -54,6 +56,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -74,6 +77,7 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 	private Text devicePathText;
 	private Combo baudRateCombo;
 	private Text libraryPathText;
+	private Spinner delayTimeSpinner;
 	
 	public static ArduinoUnoDACQConfiguration getDefaultDACQConfiguration() {
 		IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
@@ -125,6 +129,7 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH.getKey(), devicePathText.getText());
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.BAUD_RATE.getKey(), baudRateCombo.getText());
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), libraryPathText.getText());
+		preferenceStore.putValue(GeneralPreferenceConstants.ARDUINO_DELAY_TIME_AFTER_SERIAL_PRINT, delayTimeSpinner.getText());
 		return super.performOk();
 	}
 
@@ -203,6 +208,23 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 		baudRateCombo.setItems(ArduinoUnoDACQConfigurationProperties.BAUD_RATES);
 		baudRateCombo.setText(getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.BAUD_RATE.getKey()));
 		GridDataFactory.fillDefaults().grab(true, false).span(2, 1).applyTo(baudRateCombo);
+		
+		// Delay time
+		Label delayTimeLabel = new Label(container, SWT.NONE);
+		delayTimeLabel.setText(DocometreMessages.ArduinoDelayTimeAfterSerialPrint_Label);
+		GridDataFactory.fillDefaults().align(SWT.RIGHT, SWT.CENTER).applyTo(delayTimeLabel);
+		delayTimeSpinner = new Spinner(container, SWT.BORDER);
+		delayTimeSpinner.setMinimum(0);
+		delayTimeSpinner.setMaximum(10000);
+		delayTimeSpinner.setSelection(getPreferenceStore().getInt(GeneralPreferenceConstants.ARDUINO_DELAY_TIME_AFTER_SERIAL_PRINT));
+		GridDataFactory.fillDefaults().grab(true, false).span(2, 1).applyTo(delayTimeSpinner);
+		delayTimeSpinner.addMouseWheelListener(new MouseWheelListener() {
+			@Override
+			public void mouseScrolled(MouseEvent e) {
+				int value = delayTimeSpinner.getSelection() + e.count;
+				delayTimeSpinner.setSelection(value); 
+			}
+		});
 		
 		return container;
 	}
