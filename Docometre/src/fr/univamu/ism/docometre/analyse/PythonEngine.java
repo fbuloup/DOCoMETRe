@@ -315,7 +315,7 @@ public class PythonEngine implements MathEngine {
     	doubleBuffer.get(values);
     	return values;
 	}
-
+	
 	@Override
 	public int getTrialsNumber(Channel signal) {
 		String fullName = getFullPath(signal);

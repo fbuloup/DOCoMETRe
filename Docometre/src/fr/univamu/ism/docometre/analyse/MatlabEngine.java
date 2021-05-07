@@ -400,7 +400,7 @@ public final class MatlabEngine implements MathEngine {
 		
 		return null;
 	}
-
+	
 	@Override
 	public int getTrialsNumber(Channel signal) {
 		try {

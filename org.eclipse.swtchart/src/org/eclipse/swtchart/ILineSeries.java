@@ -220,4 +220,8 @@ public interface ILineSeries extends ISeries {
 	 *            <tt>SWT.ON</tt> or <tt>SWT.OFF</tt>.
 	 */
 	void setAntialias(int antialias);
+	
+	public void setFrontCut(int frontCut);
+
+	public void setEndCut(int endCut);
 }

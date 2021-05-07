@@ -27,6 +27,7 @@ import org.eclipse.swtchart.internal.Util;
 import org.eclipse.swtchart.internal.axis.Axis;
 import org.eclipse.swtchart.internal.compress.CompressLineSeries;
 import org.eclipse.swtchart.internal.compress.CompressScatterSeries;
+import org.eclipse.swtchart.internal.compress.ICompress;
 
 /**
  * Line series.
@@ -457,9 +458,9 @@ public class LineSeries extends Series implements ILineSeries {
 			}
 		} else {
 			if(lineStyle == LineStyle.SOLID) {
-				drawLine(gc, xAxis, yAxis, xseries, yseries, isHorizontal);
+				drawLine(gc, xAxis, yAxis, xseries, yseries, isHorizontal, frontCut, endCut, maxEndCut, compressor);
 			} else if(lineStyle != LineStyle.NONE) {
-				drawLineWithStyle(gc, xAxis, yAxis, xseries, yseries, isHorizontal);
+				drawLineWithStyle(gc, xAxis, yAxis, xseries, yseries, isHorizontal, frontCut, endCut, maxEndCut, compressor);
 			}
 		}
 		gc.setForeground(oldForeground);
@@ -473,21 +474,29 @@ public class LineSeries extends Series implements ILineSeries {
 	 * for solid line style until that bug is fixed and the workaround is
 	 * removed.
 	 */
-	private static void drawLine(GC gc, Axis xAxis, Axis yAxis, double[] xseries, double[] yseries, boolean isHorizontal) {
-
+	private static void drawLine(GC gc, Axis xAxis, Axis yAxis, double[] xseries, double[] yseries, boolean isHorizontal, int frontCut, int endCut, int maxEndCut, ICompress compressor) {
+		
+		
+		// Map front end cuts to compressed indexes
+		int[] indexes = compressor.getCompressedIndexes();
+		int minIndex = 0;
+		int maxIndex = indexes.length-1;
+		frontCut = (int) ((maxIndex - minIndex)/(1.0*maxEndCut) * frontCut + minIndex);
+		endCut = (int) ((maxIndex - minIndex)/(1.0*maxEndCut) * endCut + minIndex);
+		
 		double xLower = xAxis.getRange().lower;
 		double xUpper = xAxis.getRange().upper;
 		double yLower = yAxis.getRange().lower;
 		double yUpper = yAxis.getRange().upper;
-		int prevX = xAxis.getPixelCoordinate(xseries[0], xLower, xUpper);
-		int prevY = yAxis.getPixelCoordinate(yseries[0], yLower, yUpper);
+		int prevX = xAxis.getPixelCoordinate(xseries[frontCut], xLower, xUpper);
+		int prevY = yAxis.getPixelCoordinate(yseries[frontCut], yLower, yUpper);
 		boolean drawVerticalLine = false;
 		int verticalLineYLower = 0;
 		int verticalLineYUpper = 0;
-		for(int i = 0; i < xseries.length - 1; i++) {
+		for(int i = frontCut; i < endCut - 1; i++) {
 			int x = xAxis.getPixelCoordinate(xseries[i + 1], xLower, xUpper);
 			int y = yAxis.getPixelCoordinate(yseries[i + 1], yLower, yUpper);
-			if(x == prevX && i < xseries.length - 2) {
+			if(x == prevX && i < endCut - 2) {
 				if(drawVerticalLine) {
 					// extend vertical line
 					verticalLineYLower = Math.min(verticalLineYLower, y);
@@ -544,24 +553,31 @@ public class LineSeries extends Series implements ILineSeries {
 	 * @param isHorizontal
 	 *            true if orientation is horizontal
 	 */
-	private static void drawLineWithStyle(GC gc, Axis xAxis, Axis yAxis, double[] xseries, double[] yseries, boolean isHorizontal) {
+	private static void drawLineWithStyle(GC gc, Axis xAxis, Axis yAxis, double[] xseries, double[] yseries, boolean isHorizontal, int frontCut, int endCut, int maxEndCut, ICompress compressor) {
 
+		// Map front end cuts to compressed indexes
+		int[] indexes = compressor.getCompressedIndexes();
+		int minIndex = 0;
+		int maxIndex = indexes.length-1;
+		frontCut = (int) ((maxIndex - minIndex)/(1.0*maxEndCut) * frontCut + minIndex);
+		endCut = (int) ((maxIndex - minIndex)/(1.0*maxEndCut) * endCut + minIndex);
+		
 		double xLower = xAxis.getRange().lower;
 		double xUpper = xAxis.getRange().upper;
 		double yLower = yAxis.getRange().lower;
 		double yUpper = yAxis.getRange().upper;
 		List<Integer> pointList = new ArrayList<Integer>();
-		int prevX = xAxis.getPixelCoordinate(xseries[0], xLower, xUpper);
-		int prevY = yAxis.getPixelCoordinate(yseries[0], yLower, yUpper);
+		int prevX = xAxis.getPixelCoordinate(xseries[frontCut], xLower, xUpper);
+		int prevY = yAxis.getPixelCoordinate(yseries[frontCut], yLower, yUpper);
 		// add initial point
 		addPoint(pointList, prevX, prevY, isHorizontal);
 		boolean drawVerticalLine = false;
 		int verticalLineYLower = 0;
 		int verticalLineYUpper = 0;
-		for(int i = 0; i < xseries.length - 1; i++) {
+		for(int i = frontCut; i < endCut - 1; i++) {
 			int x = xAxis.getPixelCoordinate(xseries[i + 1], xLower, xUpper);
 			int y = yAxis.getPixelCoordinate(yseries[i + 1], yLower, yUpper);
-			if(x == prevX && i < xseries.length - 2) {
+			if(x == prevX && i < endCut - 2) {
 				if(drawVerticalLine) {
 					// extend vertical line
 					verticalLineYLower = Math.min(verticalLineYLower, y);
