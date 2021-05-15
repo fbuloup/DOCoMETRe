@@ -808,6 +808,14 @@ public final class DocometreMessages extends NLS {
 	public static String GraphicalCutsTitle;
 	public static String ScaleValueTitle;
 	public static String ApplyTitle;
+	public static String AddNewCurveToolTip;
+	public static String RemoveCurveToolTip;
+	public static String XAxisSelectionDialogTitle;
+	public static String XAxisSelectionDialogMessage;
+	public static String YAxisSelectionDialogTitle;
+	public static String YAxisSelectionDialogMessage;
+	public static String CurvesSelectionDialogTitle;
+	public static String CurvesSelectionDialogMessage;
 	
 	// Data processing editor page editor titles
 	public static String MathEngineEditorTitle;
