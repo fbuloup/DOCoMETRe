@@ -578,8 +578,8 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		Set<String> keys = xyChartData.getCurvesIDs();
 		for (String key : keys) {
 			Channel[] channels = xyChartData.getXYChannels(key);
-			double[] yValues = MathEngineFactory.getMathEngine().getYValuesForSignal(channels[0], trialNumber);
-			double[] xValues = MathEngineFactory.getMathEngine().getYValuesForSignal(channels[1], trialNumber);
+			double[] xValues = MathEngineFactory.getMathEngine().getYValuesForSignal(channels[0], trialNumber);
+			double[] yValues = MathEngineFactory.getMathEngine().getYValuesForSignal(channels[1], trialNumber);
 			// 
 			if(yValues == null || xValues == null || yValues.length ==0 || xValues.length == 0) return;
 			// Add Series
