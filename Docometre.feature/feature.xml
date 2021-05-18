@@ -6,10 +6,17 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-05-17
+      -- 2021-05-18
+ADDED :
+* Support for displaying Markers in XY Chart editor
+* Improve zoom and chart parameters handlers in XY Chart editor
+* Add support for Zoom listeners in interactive chart
+FIXED : Nothing
+-- 2021-05-17
 ADDED :
 * Write Delay value for Arduino Uno in preferences
-* Add support for Range and front/end cuts managements in XY Chart
+* Add support for Range and front/end cuts managements in XY
+Chart
 * XY chart persistence
 FIXED :
 * Check if chart name already exists for chart renaming or creation
