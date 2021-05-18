@@ -13,6 +13,8 @@ package org.eclipse.swtchart.extensions.charts;
 
 import java.text.NumberFormat;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.preference.PreferenceManager;
@@ -83,6 +85,8 @@ public class InteractiveChart extends Chart implements PaintListener {
 	private String markerCoordinatesString = "";
 	private String deltaCoordinateString = "";
 	private boolean doubleClick;
+	
+	private Set<ZoomListener> zoomListeners = new HashSet<>();
 
 	/**
 	 * Constructor.
@@ -97,6 +101,14 @@ public class InteractiveChart extends Chart implements PaintListener {
 		init();
 	}
 
+	public void addZoomListener(ZoomListener zoomListener) {
+		zoomListeners.add(zoomListener);
+	}
+	
+	public void removeZoomListener(ZoomListener zoomListener) {
+		zoomListeners.remove(zoomListener);
+	}
+	
 	/**
 	 * Initializes.
 	 */
@@ -492,7 +504,7 @@ public class InteractiveChart extends Chart implements PaintListener {
 	 *            the mouse up event
 	 */
 	private void handleMouseUpEvent(Event event) {
-
+		boolean fireZoomListeners = false;
 		if(event.button == 1 && System.currentTimeMillis() - clickedTime > 100) {
 			for(IAxis axis : getAxisSet().getAxes()) {
 				Point range = null;
@@ -503,14 +515,22 @@ public class InteractiveChart extends Chart implements PaintListener {
 				}
 				if(range != null && range.x != range.y) {
 					setRange(range, axis);
+					fireZoomListeners = true;
 				}
 			}
 		}
 		selection.dispose();
 		redraw();
 		if (isShowCursor()) handleMouseMoveEvent(event);
+		if(fireZoomListeners) fireZoomListeners();
 	}
-
+	
+	private void fireZoomListeners() {
+		for (ZoomListener zoomListener : zoomListeners) {
+			zoomListener.postZoomUpdate();
+		}
+	}
+	
 	/**
 	 * Handles mouse wheel event.
 	 * 
@@ -551,29 +571,35 @@ public class InteractiveChart extends Chart implements PaintListener {
 		if(event.keyCode == SWT.ARROW_DOWN) {
 			if(event.stateMask == SWT.CTRL) {
 				getAxisSet().zoomOut();
+				fireZoomListeners();
 			} else {
 				for(IAxis axis : getAxes(SWT.VERTICAL)) {
 					axis.scrollDown();
+					fireZoomListeners();
 				}
 			}
 			redraw();
 		} else if(event.keyCode == SWT.ARROW_UP) {
 			if(event.stateMask == SWT.CTRL) {
 				getAxisSet().zoomIn();
+				fireZoomListeners();
 			} else {
 				for(IAxis axis : getAxes(SWT.VERTICAL)) {
 					axis.scrollUp();
+					fireZoomListeners();
 				}
 			}
 			redraw();
 		} else if(event.keyCode == SWT.ARROW_LEFT) {
 			for(IAxis axis : getAxes(SWT.HORIZONTAL)) {
 				axis.scrollDown();
+				fireZoomListeners();
 			}
 			redraw();
 		} else if(event.keyCode == SWT.ARROW_RIGHT) {
 			for(IAxis axis : getAxes(SWT.HORIZONTAL)) {
 				axis.scrollUp();
+				fireZoomListeners();
 			}
 			redraw();
 		} else if(event.keyCode == SWT.TAB) {
@@ -635,33 +661,42 @@ public class InteractiveChart extends Chart implements PaintListener {
 		MenuItem menuItem = (MenuItem)event.widget;
 		if(menuItem.getText().equals(Messages.ADJUST_AXIS_RANGE)) {
 			getAxisSet().adjustRange();
+			fireZoomListeners();
 		} else if(menuItem.getText().equals(Messages.ADJUST_X_AXIS_RANGE)) {
 			for(IAxis axis : getAxisSet().getXAxes()) {
 				axis.adjustRange();
+				fireZoomListeners();
 			}
 		} else if(menuItem.getText().equals(Messages.ADJUST_Y_AXIS_RANGE)) {
 			for(IAxis axis : getAxisSet().getYAxes()) {
 				axis.adjustRange();
+				fireZoomListeners();
 			}
 		} else if(menuItem.getText().equals(Messages.ZOOMIN)) {
 			getAxisSet().zoomIn();
+			fireZoomListeners();
 		} else if(menuItem.getText().equals(Messages.ZOOMIN_X)) {
 			for(IAxis axis : getAxisSet().getXAxes()) {
 				axis.zoomIn();
+				fireZoomListeners();
 			}
 		} else if(menuItem.getText().equals(Messages.ZOOMIN_Y)) {
 			for(IAxis axis : getAxisSet().getYAxes()) {
 				axis.zoomIn();
+				fireZoomListeners();
 			}
 		} else if(menuItem.getText().equals(Messages.ZOOMOUT)) {
 			getAxisSet().zoomOut();
+			fireZoomListeners();
 		} else if(menuItem.getText().equals(Messages.ZOOMOUT_X)) {
 			for(IAxis axis : getAxisSet().getXAxes()) {
 				axis.zoomOut();
+				fireZoomListeners();
 			}
 		} else if(menuItem.getText().equals(Messages.ZOOMOUT_Y)) {
 			for(IAxis axis : getAxisSet().getYAxes()) {
 				axis.zoomOut();
+				fireZoomListeners();
 			}
 		} else if(menuItem.getText().equals(Messages.SAVE_AS)) {
 			openSaveAsDialog();
