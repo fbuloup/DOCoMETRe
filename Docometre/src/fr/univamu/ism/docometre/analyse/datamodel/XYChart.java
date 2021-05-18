@@ -11,7 +11,10 @@ import java.util.Set;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.osgi.util.NLS;
 
+import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 
@@ -29,6 +32,9 @@ public class XYChart extends AbstractElement {
 	private boolean autoScale;
 	private int frontCut;
 	private int endCut;
+	private boolean showMarkers;
+	private boolean showMarkersLabels;
+	private int markersSize;
 	
 	public XYChart() {
 		seriesIDs = new HashSet<>();
@@ -90,6 +96,30 @@ public class XYChart extends AbstractElement {
 
 	public void setAutoScale(boolean autoScale) {
 		this.autoScale = autoScale;
+	}
+	
+	public boolean isShowMarkers() {
+		return showMarkers;
+	}
+
+	public void setShowMarkers(boolean showMarkers) {
+		this.showMarkers = showMarkers;
+	}
+
+	public boolean isShowMarkersLabels() {
+		return showMarkersLabels;
+	}
+
+	public void setShowMarkersLabels(boolean showMarkersLabels) {
+		this.showMarkersLabels = showMarkersLabels;
+	}
+	
+	public int getMarkersSize() {
+		return markersSize == 0 ? 3 : markersSize;
+	}
+
+	public void setMarkersSize(int markersSize) {
+		this.markersSize = markersSize;
 	}
 
 	public int getFrontCut() {
@@ -158,7 +188,10 @@ public class XYChart extends AbstractElement {
 	public void initialize() {
 		if(xyChannelsMap != null) xyChannelsMap.clear();
 		xyChannelsMap = new HashMap<>();
-		if(!MathEngineFactory.getMathEngine().isStarted()) return;
+		if(!MathEngineFactory.getMathEngine().isStarted()) {
+			Activator.logErrorMessage(DocometreMessages.PleaseStartMathEngineFirst);
+			return;
+		}
 		for (String seriesID : getSeriesIDsPrefixes()) {
 			String yChannelName = seriesID.split("\\(")[0];
 			String xChannelName = seriesID.split("\\(")[1].replaceAll("\\)", "");
@@ -166,9 +199,14 @@ public class XYChart extends AbstractElement {
 			String subjectName = seriesID.split("\\.")[1];
 			IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
 			IResource subject = project.findMember(subjectName);
-			Channel xChannel = MathEngineFactory.getMathEngine().getChannelWithName(subject, xChannelName.split("\\.")[2]);
-			Channel yChannel = MathEngineFactory.getMathEngine().getChannelWithName(subject, yChannelName.split("\\.")[2]);
-			xyChannelsMap.put(seriesID, new Channel[] {xChannel, yChannel});
+			if(MathEngineFactory.getMathEngine().isSubjectLoaded(subject)) {
+				Channel xChannel = MathEngineFactory.getMathEngine().getChannelWithName(subject, xChannelName.split("\\.")[2]);
+				Channel yChannel = MathEngineFactory.getMathEngine().getChannelWithName(subject, yChannelName.split("\\.")[2]);
+				xyChannelsMap.put(seriesID, new Channel[] {xChannel, yChannel});
+			} else {
+				String message = NLS.bind(DocometreMessages.ImpossibleToFindChannelTitle, xChannelName);
+				Activator.logErrorMessage(message);
+			}
 		}
 	}
 

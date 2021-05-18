@@ -31,8 +31,6 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseWheelListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.TraverseEvent;
-import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -49,6 +47,7 @@ import org.eclipse.swtchart.ILineSeries.PlotSymbolType;
 import org.eclipse.swtchart.ISeries.SeriesType;
 import org.eclipse.swtchart.Range;
 import org.eclipse.swtchart.extensions.charts.InteractiveChart;
+import org.eclipse.swtchart.extensions.charts.ZoomListener;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
@@ -68,7 +67,7 @@ import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.analyse.datamodel.XYChart;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 
-public class XYChartEditor extends EditorPart implements ISelectionChangedListener {
+public class XYChartEditor extends EditorPart implements ISelectionChangedListener, IMarkersManager, ZoomListener {
 	
 	public static String ID = "Docometre.XYChartEditor";
 	private XYChart xyChartData;
@@ -82,6 +81,8 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 	private Spinner frontCutSpinner;
 	private Spinner endCutSpinner;
 	private boolean dirty;
+	private Button autoScaleButton;
+	private Group scaleValuesGroup;
 
 	public XYChartEditor() {
 	}
@@ -128,6 +129,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		container = new SashForm(innerContainer, SWT.HORIZONTAL);
 		
 		chart = new InteractiveChart(container, SWT.NONE);
+		new MarkersManager(this);
 		chart.setShowCursor(false);
 		chart.setShowMarker(false);
 		chart.setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_BLACK));
@@ -147,17 +149,10 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		chart.addMouseWheelListener(new MouseWheelListener() {
 			@Override
 			public void mouseScrolled(MouseEvent e) {
-				xyChartData.setxMin(chart.getAxisSet().getXAxes()[0].getRange().lower);
-				xyChartData.setxMax(chart.getAxisSet().getXAxes()[0].getRange().upper);
-				xyChartData.setyMin(chart.getAxisSet().getYAxes()[0].getRange().lower);
-				xyChartData.setyMax(chart.getAxisSet().getYAxes()[0].getRange().upper);
-				xMinText.setText(Double.toString(xyChartData.getxMin()));
-				xMaxText.setText(Double.toString(xyChartData.getxMax()));
-				yMinText.setText(Double.toString(xyChartData.getyMin()));
-				yMaxText.setText(Double.toString(xyChartData.getyMax()));
-				setDirty(true);
+				postZoomUpdate();
 			}
 		});
+		chart.addZoomListener(this);
 		
 		// Allow data to be copied or moved to the drop target
 		int operations = DND.DROP_COPY;
@@ -310,27 +305,12 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		frontCutSpinner.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		frontCutSpinner.setMaximum(1000000000);
 		frontCutSpinner.setSelection(xyChartData.getFrontCut());
-		frontCutSpinner.addMouseWheelListener(new MouseWheelListener() {
-			@Override
-			public void mouseScrolled(MouseEvent e) {
-				int value = frontCutSpinner.getSelection() + e.count;
-				if(value < endCutSpinner.getSelection()) {
-					frontCutSpinner.setSelection(value);
-					updateFrontEndCutsChartHandler();
-					setDirty(true);
-				}
-			}
-		});
-		frontCutSpinner.addTraverseListener(new TraverseListener() {
-			@Override
-			public void keyTraversed(TraverseEvent e) {
-				if(e.detail == SWT.TRAVERSE_RETURN) {
-					if(frontCutSpinner.getSelection() < endCutSpinner.getSelection()) updateFrontEndCutsChartHandler();
-					else frontCutSpinner.setSelection(endCutSpinner.getSelection() - 1);
-					setDirty(true);
-				}
-			}
-		});
+		frontCutSpinner.setData("frontCut");
+		FrontEndCutsHandler frontCutsHandler = new FrontEndCutsHandler(frontCutSpinner, this);
+		frontCutSpinner.addMouseWheelListener(frontCutsHandler);
+		frontCutSpinner.addTraverseListener(frontCutsHandler);
+		frontCutSpinner.addSelectionListener(frontCutsHandler);
+		
 		Label endCutLabel = new Label(frontEndCutValuesGroup, SWT.NONE);
 		endCutLabel.setText(DocometreMessages.EndCutLabel);
 		endCutLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.VERTICAL_ALIGN_FILL));
@@ -338,34 +318,18 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		endCutSpinner.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		endCutSpinner.setMaximum(1000000000);
 		endCutSpinner.setSelection(xyChartData.getEndCut());
-		endCutSpinner.addMouseWheelListener(new MouseWheelListener() {
-			@Override
-			public void mouseScrolled(MouseEvent e) {
-				int value = endCutSpinner.getSelection() + e.count;
-				if(value > frontCutSpinner.getSelection()) {
-					endCutSpinner.setSelection(value);
-					updateFrontEndCutsChartHandler();
-					setDirty(true);
-				}
-			}
-		});
-		endCutSpinner.addTraverseListener(new TraverseListener() {
-			@Override
-			public void keyTraversed(TraverseEvent e) {
-				if(e.detail == SWT.TRAVERSE_RETURN) {
-					if(frontCutSpinner.getSelection() < endCutSpinner.getSelection()) updateFrontEndCutsChartHandler();
-					else endCutSpinner.setSelection(frontCutSpinner.getSelection() + 1);
-					setDirty(true);
-				}
-			}
-		});
+		endCutSpinner.setData("endCut");
+		FrontEndCutsHandler endCutHandler = new FrontEndCutsHandler(endCutSpinner, this);
+		endCutSpinner.addMouseWheelListener(endCutHandler);
+		endCutSpinner.addTraverseListener(endCutHandler);
+		endCutSpinner.addSelectionListener(endCutHandler);
 		
 		// Scales
-		Group scaleValuesGroup = new Group(container2, SWT.NONE);
+		scaleValuesGroup = new Group(container2, SWT.NONE);
 		scaleValuesGroup.setText(DocometreMessages.ScaleValueTitle);
 		scaleValuesGroup.setLayout(new GridLayout(4, false));
 		scaleValuesGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		scaleValuesGroup.setEnabled(false);
+		scaleValuesGroup.setEnabled(!xyChartData.isAutoScale());
 		
 		Label xMinLabel = new Label(scaleValuesGroup, SWT.NONE);
 		xMinLabel.setText("X min. :");
@@ -373,12 +337,16 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		xMinText = new Text(scaleValuesGroup, SWT.BORDER);
 		xMinText.setText(Double.toString(xyChartData.getxMin()));
 		xMinText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		xMinText.setData("xMin");
+		xMinText.addTraverseListener(new RangeHandler(xMinText, this));
 		Label xMaxLabel = new Label(scaleValuesGroup, SWT.NONE);
 		xMaxLabel.setText("X max. :");
 		xMaxLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
 		xMaxText = new Text(scaleValuesGroup, SWT.BORDER);
 		xMaxText.setText(Double.toString(xyChartData.getxMax()));
 		xMaxText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		xMaxText.setData("xMax");
+		xMaxText.addTraverseListener(new RangeHandler(xMaxText, this));
 
 		Label yMinLabel = new Label(scaleValuesGroup, SWT.NONE);
 		yMinLabel.setText("Y min. :");
@@ -386,24 +354,94 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		yMinText = new Text(scaleValuesGroup, SWT.BORDER);
 		yMinText.setText(Double.toString(xyChartData.getyMin()));
 		yMinText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		yMinText.setData("yMin");
+		yMinText.addTraverseListener(new RangeHandler(yMinText, this));
+		
 		Label yMaxLabel = new Label(scaleValuesGroup, SWT.NONE);
 		yMaxLabel.setText("Y max. :");
 		yMaxLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
 		yMaxText = new Text(scaleValuesGroup, SWT.BORDER);
 		yMaxText.setText(Double.toString(xyChartData.getyMax()));
 		yMaxText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		yMaxText.setData("yMax");
+		yMaxText.addTraverseListener(new RangeHandler(yMaxText, this));
 		
 		Composite bottomContainer = new Composite(container2, SWT.NONE);
 		bottomContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		gl = new GridLayout();
-		gl.numColumns = 2;
+		gl.numColumns = 3;
 		gl.marginHeight = 0;
 		gl.marginWidth = 0;
 		gl.marginBottom = 5;
 		gl.marginRight = 5;
 		bottomContainer.setLayout(gl);
 		
-		Button autoScaleButton = new Button(bottomContainer, SWT.CHECK);
+		Button showMarkersButton = new Button(bottomContainer, SWT.CHECK);
+		showMarkersButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		showMarkersButton.setText(DocometreMessages.ShowMarkersTitle);
+		showMarkersButton.setSelection(xyChartData.isShowMarkers());
+		showMarkersButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				boolean showMarkers = showMarkersButton.getSelection();
+				xyChartData.setShowMarkers(showMarkers);
+				chart.redraw();
+				setDirty(true);
+			}
+		});
+		
+		Label sizeLabel = new Label(bottomContainer, SWT.NONE);
+		sizeLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.VERTICAL_ALIGN_CENTER));
+		sizeLabel.setText(DocometreMessages.MarkersSizeTitle);
+		Spinner sizeSpinner = new Spinner(bottomContainer, SWT.BORDER);
+		sizeSpinner.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		sizeSpinner.setMaximum(10);
+		sizeSpinner.setMinimum(3);
+		sizeSpinner.setSelection(xyChartData.getMarkersSize());
+		sizeSpinner.addMouseWheelListener(new MouseWheelListener() {
+			@Override
+			public void mouseScrolled(MouseEvent e) {
+				int value = sizeSpinner.getSelection() + e.count;
+				sizeSpinner.setSelection(value);
+				xyChartData.setMarkersSize(sizeSpinner.getSelection());
+				chart.redraw();
+				setDirty(true);
+			}
+		});
+		sizeSpinner.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				xyChartData.setMarkersSize(sizeSpinner.getSelection());
+				chart.redraw();
+				setDirty(true);
+			}
+		});
+		
+		Button showMarkersLabelsButton = new Button(bottomContainer, SWT.CHECK);
+		showMarkersLabelsButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
+		showMarkersLabelsButton.setText(DocometreMessages.ShowMarkersLabelsTitle);
+		showMarkersLabelsButton.setSelection(xyChartData.isShowMarkersLabels());
+		showMarkersLabelsButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				boolean showMarkersLabels = showMarkersLabelsButton.getSelection();
+				xyChartData.setShowMarkersLabels(showMarkersLabels);
+				chart.redraw();
+				setDirty(true);
+			}
+		});
+		
+		Composite bottomContainer2 = new Composite(container2, SWT.NONE);
+		bottomContainer2.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		gl = new GridLayout();
+		gl.numColumns = 2;
+		gl.marginHeight = 0;
+		gl.marginWidth = 0;
+		gl.marginBottom = 5;
+		gl.marginRight = 5;
+		bottomContainer2.setLayout(gl);
+		
+		autoScaleButton = new Button(bottomContainer2, SWT.CHECK);
 		autoScaleButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
 		autoScaleButton.setText(DocometreMessages.AutoScale_Title);
 		autoScaleButton.setSelection(xyChartData.isAutoScale());
@@ -422,7 +460,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 			}
 		});
 		
-		Button applyButton = new Button(bottomContainer, SWT.FLAT);
+		Button applyButton = new Button(bottomContainer2, SWT.FLAT);
 		applyButton.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, true, false));
 		applyButton.setText(DocometreMessages.ApplyTitle);
 		applyButton.addSelectionListener(new SelectionAdapter() {
@@ -487,10 +525,12 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		return ids.toArray(new String[ids.size()]);
 	}
 	
-	private void updateFrontEndCutsChartHandler() {
+	protected void updateFrontEndCutsChartHandler() {
 		int value = frontCutSpinner.getSelection();
+		xyChartData.setFrontCut(value);
 		for (ISeries series : chart.getSeriesSet().getSeries()) ((ILineSeries)series).setFrontCut(value);
 		value = endCutSpinner.getSelection();
+		xyChartData.setEndCut(value);
 		for (ISeries series : chart.getSeriesSet().getSeries()) ((ILineSeries)series).setEndCut(value);
 		chart.redraw();
 	}
@@ -604,7 +644,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		return false;
 	}
 	
-	private void setDirty(boolean dirty) {
+	protected void setDirty(boolean dirty) {
 		this.dirty = dirty;
 		firePropertyChange(PROP_DIRTY);
 	}
@@ -614,5 +654,37 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		ObjectsController.removeHandle(xyChartData);
 		super.dispose();
 	}
+
+	@Override
+	public InteractiveChart getChart() {
+		return chart;
+	}
+
+	@Override
+	public void updateMarkersGroup(String markersGroupLabel) {
+		// TODO Nothing
+	}
+
+	public XYChart getXYChartData() {
+		return xyChartData;
+	}
+
+	@Override
+	public void postZoomUpdate() {
+		xyChartData.setxMin(chart.getAxisSet().getXAxes()[0].getRange().lower);
+		xyChartData.setxMax(chart.getAxisSet().getXAxes()[0].getRange().upper);
+		xyChartData.setyMin(chart.getAxisSet().getYAxes()[0].getRange().lower);
+		xyChartData.setyMax(chart.getAxisSet().getYAxes()[0].getRange().upper);
+		xMinText.setText(Double.toString(xyChartData.getxMin()));
+		xMaxText.setText(Double.toString(xyChartData.getxMax()));
+		yMinText.setText(Double.toString(xyChartData.getyMin()));
+		yMaxText.setText(Double.toString(xyChartData.getyMax()));
+		xyChartData.setAutoScale(false);
+		autoScaleButton.setSelection(false);
+		scaleValuesGroup.setEnabled(true);
+		setDirty(true);
+	}
+	
+	
 	
 }

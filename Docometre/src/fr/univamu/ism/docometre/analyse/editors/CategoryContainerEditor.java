@@ -28,7 +28,7 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 
-public class CategoryContainerEditor extends Composite implements ISelectionChangedListener, TrialNavigator {
+public class CategoryContainerEditor extends Composite implements ISelectionChangedListener, TrialNavigator, IMarkersManager {
 
 
 	private InteractiveChart chart;
@@ -49,6 +49,8 @@ public class CategoryContainerEditor extends Composite implements ISelectionChan
 		
 		chart = ChannelEditorWidgetsFactory.createChart(this, 1);
 		ChannelEditorWidgetsFactory.createSeparator(this, false, true, 1, SWT.VERTICAL);
+		
+		new MarkersManager(this);
 		
 		Composite categoryContainer = new Composite(this, SWT.NORMAL);
 		categoryContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true));
@@ -234,6 +236,16 @@ public class CategoryContainerEditor extends Composite implements ISelectionChan
 			}
 			trialsListViewer.setSelection(new StructuredSelection(selectedTrialsNumbers), true);
 		}
+	}
+
+	@Override
+	public InteractiveChart getChart() {
+		return chart;
+	}
+
+	@Override
+	public void updateMarkersGroup(String markersGroupLabel) {
+		// TODO Nothing
 	}
 
 }

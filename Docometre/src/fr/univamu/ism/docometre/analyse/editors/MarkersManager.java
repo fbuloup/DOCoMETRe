@@ -1,5 +1,7 @@
 package fr.univamu.ism.docometre.analyse.editors;
 
+import java.util.List;
+
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -17,32 +19,34 @@ import org.eclipse.swtchart.IPlotArea;
 import org.eclipse.swtchart.ISeries;
 
 import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
+import fr.univamu.ism.docometre.analyse.datamodel.XYChart;
 
 public final class MarkersManager extends MouseAdapter implements ICustomPaintListener {
 
-	private SignalContainerEditor signalContainerEditor; 
+	private IMarkersManager containerEditor; 
 	private String markersGroupLabel;
 
-	public MarkersManager(SignalContainerEditor signalContainerEditor) {
-		this.signalContainerEditor = signalContainerEditor;
-		signalContainerEditor.getChart().getPlotArea().addMouseListener(this);
-		((IPlotArea)signalContainerEditor.getChart().getPlotArea()).addCustomPaintListener(this);
+	public MarkersManager(IMarkersManager containerEditor) {
+		this.containerEditor = containerEditor;
+		containerEditor.getChart().getPlotArea().addMouseListener(this);
+		((IPlotArea)containerEditor.getChart().getPlotArea()).addCustomPaintListener(this);
 	}
 	
 	@Override
 	public void mouseDoubleClick(MouseEvent mouseEvent) {
-		if (markersGroupLabel != null && !markersGroupLabel.equals("") && !(signalContainerEditor.getChart().getCurrentSeries() == null)) {
-			ISeries series = signalContainerEditor.getChart().getCurrentSeries();
+		if (markersGroupLabel != null && !markersGroupLabel.equals("") && !(containerEditor.getChart().getCurrentSeries() == null)) {
+			ISeries series = containerEditor.getChart().getCurrentSeries();
 			String fullSignalName = series.getId().replaceAll("\\.\\d+$", "");
 			int trialNumber = Integer.parseInt(series.getId().replaceAll("^\\w+\\.\\w+\\.\\w+\\.", ""));
 			Event event = new Event();
 			event.x = mouseEvent.x;
 			event.y = mouseEvent.y;
-			double[] coordinates = signalContainerEditor.getChart().getMarkerCoordinates(event);
+			double[] coordinates = containerEditor.getChart().getMarkerCoordinates(event);
 			if(coordinates.length == 2) {
 				try {
 					String fullSubjectName = fullSignalName.replaceAll("\\.\\w+$", "");
@@ -56,8 +60,8 @@ public final class MarkersManager extends MouseAdapter implements ICustomPaintLi
 							if(signal != null) {
 								MathEngineFactory.getMathEngine().addMarker(markersGroupLabel, trialNumber, coordinates[0], coordinates[1], signal);
 								channelsContainer.setUpdateChannelsCache(true);
-								signalContainerEditor.updateMarkersGroup(markersGroupLabel);
-								signalContainerEditor.getChart().redraw();
+								containerEditor.updateMarkersGroup(markersGroupLabel);
+								containerEditor.getChart().redraw();
 							}
 						}
 					}
@@ -74,11 +78,10 @@ public final class MarkersManager extends MouseAdapter implements ICustomPaintLi
 	public boolean drawBehindSeries() {
 		return false;
 	}
-
-	@Override
-	public void paintControl(PaintEvent event) {
+	
+	private void paintMarkersForSignalOrCategoryEditor(PaintEvent event) {
 		try {
-			ISeries[] seriesSet = signalContainerEditor.getChart().getSeriesSet().getSeries();
+			ISeries[] seriesSet = containerEditor.getChart().getSeriesSet().getSeries();
 			for (ISeries series : seriesSet) {
 				int trialNumber = Integer.parseInt(series.getId().replaceAll("^\\w+\\.\\w+\\.\\w+\\.", ""));
 				String fullSignalName = series.getId().replaceAll("\\.\\d+$", "");
@@ -97,7 +100,7 @@ public final class MarkersManager extends MouseAdapter implements ICustomPaintLi
 								for (int i = 0; i < markers.length; i++) {
 									if(((int)markers[i][0]) == trialNumber) {
 										
-										int index = signalContainerEditor.getChart().getAxisSet().getXAxes()[0].getPixelCoordinate(markers[i][1]) + 1;
+										int index = containerEditor.getChart().getAxisSet().getXAxes()[0].getPixelCoordinate(markers[i][1]) + 1;
 										
 										Color oldForegroundColor = event.gc.getForeground();
 										int oldLineWidth = event.gc.getLineWidth();
@@ -105,19 +108,19 @@ public final class MarkersManager extends MouseAdapter implements ICustomPaintLi
 										event.gc.setForeground(((ILineSeries)series).getLineColor());
 										event.gc.setLineWidth(3);
 										event.gc.setLineStyle(SWT.LINE_DOT);
-										event.gc.drawLine(index, 0, index, signalContainerEditor.getChart().getPlotArea().getClientArea().height);
-										event.gc.drawText(markersGroupLabel, index + 3, signalContainerEditor.getChart().getPlotArea().getClientArea().height - 15);
+										event.gc.drawLine(index, 0, index, containerEditor.getChart().getPlotArea().getClientArea().height);
+										event.gc.drawText(markersGroupLabel, index + 3, containerEditor.getChart().getPlotArea().getClientArea().height - 15);
 										event.gc.setForeground(oldForegroundColor);
 										event.gc.setLineWidth(oldLineWidth);
 										event.gc.setLineStyle(oldLineStyle);
 										
-										GC gc = new GC(signalContainerEditor.getChart());
-										int W2 = signalContainerEditor.getChart().getAxisSet().getYAxes()[0].getTick().getBounds().width;
+										GC gc = new GC(containerEditor.getChart());
+										int W2 = containerEditor.getChart().getAxisSet().getYAxes()[0].getTick().getBounds().width;
 										W2 += ChartLayout.MARGIN;
 										gc.setForeground(((ILineSeries)series).getLineColor());
 										gc.setLineWidth(3);
 										gc.setLineStyle(SWT.LINE_DOT);
-										gc.drawLine(index + W2, 0, index + W2, signalContainerEditor.getChart().getPlotArea().getClientArea().height + 15);
+										gc.drawLine(index + W2, 0, index + W2, containerEditor.getChart().getPlotArea().getClientArea().height + 15);
 										gc.dispose();
 										
 									}
@@ -126,8 +129,6 @@ public final class MarkersManager extends MouseAdapter implements ICustomPaintLi
 							
 						}
 					}
-					
-					
 				}
 			}
 		} catch (Exception e) {
@@ -136,6 +137,77 @@ public final class MarkersManager extends MouseAdapter implements ICustomPaintLi
 		}
 	}
 	
+	private void displayXYMarkers(ISeries series, Channel xSignal, Channel ySignal, boolean displayXMarkers, int trialNumber, PaintEvent event) {
+		XYChart xyChartData = ((XYChartEditor)containerEditor).getXYChartData();
+		int delta = xyChartData.getMarkersSize();
+		double sf = MathEngineFactory.getMathEngine().getSampleFrequency(xSignal);
+		String[] markersGroupsLabel = new String[0]; 
+		if(displayXMarkers) markersGroupsLabel = MathEngineFactory.getMathEngine().getMarkersGroupsLabels(xSignal);
+		else markersGroupsLabel = MathEngineFactory.getMathEngine().getMarkersGroupsLabels(ySignal);
+		for (String markersGroupLabel : markersGroupsLabel) {
+			double[][] markers = new double[0][0];
+			if(displayXMarkers) markers = MathEngineFactory.getMathEngine().getMarkers(markersGroupLabel, xSignal);
+			else markers = MathEngineFactory.getMathEngine().getMarkers(markersGroupLabel, ySignal);
+			for (int i = 0; i < markers.length; i++) {
+				if(((int)markers[i][0]) == trialNumber) {
+					int xIndex = 0;
+					int yIndex = 0;
+					int sampleIndex = (int) (sf * markers[i][1]);
+					if(displayXMarkers) {
+						xIndex = containerEditor.getChart().getAxisSet().getXAxes()[0].getPixelCoordinate(markers[i][2]);
+						double[] values = MathEngineFactory.getMathEngine().getYValuesForSignal(ySignal, trialNumber);
+						yIndex = containerEditor.getChart().getAxisSet().getYAxes()[0].getPixelCoordinate(values[sampleIndex]);
+					} else {
+						yIndex = containerEditor.getChart().getAxisSet().getXAxes()[0].getPixelCoordinate(markers[i][2]);
+						double[] values = MathEngineFactory.getMathEngine().getYValuesForSignal(xSignal, trialNumber);
+						xIndex = containerEditor.getChart().getAxisSet().getYAxes()[0].getPixelCoordinate(values[sampleIndex]);
+					}
+					Color oldForegroundColor = event.gc.getForeground();
+					Color oldBackgroundColor = event.gc.getBackground();
+					int oldLineWidth = event.gc.getLineWidth();
+					int oldLineStyle = event.gc.getLineStyle();
+					event.gc.setBackground(DocometreApplication.getColor(DocometreApplication.WHITE));
+					event.gc.fillOval(xIndex - delta + 1, yIndex - delta + 1, 2*delta, 2*delta);
+					event.gc.setForeground(((ILineSeries)series).getLineColor());
+					event.gc.drawOval(xIndex - delta, yIndex - delta, 2*delta + 1, 2*delta + 1);
+					
+					event.gc.setBackground(oldBackgroundColor);
+					if(xyChartData.isShowMarkersLabels()) {
+						event.gc.drawText(markersGroupLabel, xIndex + delta, yIndex + delta);
+					}
+					event.gc.setForeground(oldForegroundColor);
+					event.gc.setLineWidth(oldLineWidth);
+					event.gc.setLineStyle(oldLineStyle);
+					
+				}
+			}
+		}
+	}
+	
+	private void paintMarkersForXYChartEditor(PaintEvent event) {
+		XYChart xyChartData = ((XYChartEditor)containerEditor).getXYChartData();
+		if(!xyChartData.isShowMarkers()) return;
+		for (String seriesID : xyChartData.getSeriesIDsPrefixes()) {
+			Channel[] signals = xyChartData.getXYChannels(seriesID);
+			Channel xSignal = signals[0];
+			Channel ySignal = signals[1];
+			List<Integer> trialsNumbers = xyChartData.getSelectedTrialsNumbers();
+			for (Integer trialNumber : trialsNumbers) {
+				ISeries series = containerEditor.getChart().getSeriesSet().getSeries(seriesID + "." + trialNumber);
+				// Display xSignal markers
+				displayXYMarkers(series, xSignal, ySignal, true, trialNumber, event);
+				// Display ySignal markers
+				displayXYMarkers(series, xSignal, ySignal, false, trialNumber, event);
+			}
+		}
+	}
+
+	@Override
+	public void paintControl(PaintEvent event) {
+		if(containerEditor instanceof SignalContainerEditor || containerEditor instanceof CategoryContainerEditor) paintMarkersForSignalOrCategoryEditor(event);
+		if(containerEditor instanceof XYChartEditor) paintMarkersForXYChartEditor(event);
+	}
+
 	public void setMarkersGroupLabel(String markersGroupLabel) {
 		this.markersGroupLabel = markersGroupLabel;
 	}

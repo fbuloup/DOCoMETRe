@@ -51,7 +51,7 @@ import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 
-public class SignalContainerEditor extends Composite implements ISelectionChangedListener, TrialNavigator {
+public class SignalContainerEditor extends Composite implements ISelectionChangedListener, TrialNavigator, IMarkersManager {
 	
 	//private static String[] graphicalSymbols = new String[] {"\u25A1", "\u25C7", "\u25B3", "\u25CB", "\u2606", "+"};
 	

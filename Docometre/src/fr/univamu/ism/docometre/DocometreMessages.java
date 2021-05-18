@@ -816,6 +816,9 @@ public final class DocometreMessages extends NLS {
 	public static String YAxisSelectionDialogMessage;
 	public static String CurvesSelectionDialogTitle;
 	public static String CurvesSelectionDialogMessage;
+	public static String ShowMarkersLabelsTitle;
+	public static String ShowMarkersTitle;
+	public static String MarkersSizeTitle;
 	
 	// Data processing editor page editor titles
 	public static String MathEngineEditorTitle;
@@ -888,7 +891,6 @@ public final class DocometreMessages extends NLS {
 	public static String CloseMathEngineDialogTitle;
 	public static String CloseMathEngineDialogMessage;
 
-
 	// Export data wizard page
 	public static String ExportDataWizardPageTitle;
 	public static String ExportDataWizardPageDescription;
@@ -909,7 +911,11 @@ public final class DocometreMessages extends NLS {
 	public static String DataExportSignalSubtaskMessage;
 	public static String DataExportErrorOccuredDialogTitle;
 	public static String DataExportErrorOccuredDialogMessage;
+
 	
+
+	
+
 //	public static String OrganizeSessionWizardPage_button_1_text;
 //	public static String OrganizeSessionWizardPage_tbtmNewItem_text;
 //	public static String OrganizeSessionWizardPage_tbtmNewItem_1_text;
