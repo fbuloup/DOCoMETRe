@@ -41,8 +41,6 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre;
 
-import java.util.Random;
-
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
@@ -51,51 +49,40 @@ import org.eclipse.ui.PlatformUI;
 public final class ColorUtil {
 	
 	private static ColorRegistry colorRegistry;
-	private static Byte index = 0;
-	private final static Byte maxColors = 64;
+	private static RGB[] rgbs = new RGB[] { 
+									new RGB(0xFF, 0x00, 0x00),
+									new RGB(0x00, 0xFF, 0x00),
+									new RGB(0x00, 0x00, 0xFF),
+									new RGB(0xFF, 0xFF, 0x00),
+									new RGB(0x00, 0xFF, 0xFF),
+									new RGB(0xFF, 0x00, 0xFF),
+									new RGB(0xFF, 0x80, 0x00),
+									new RGB(0x80, 0x80, 0x80),
+									new RGB(0xA0, 0x60, 0x20),
+									new RGB(0x60, 0xA0, 0x20),
+									new RGB(0x20, 0x60, 0xA0),
+									new RGB(0x6D, 0x1D, 0x73),
+									new RGB(0xFF, 0xAA, 0x00),
+									new RGB(0x99, 0x91, 0x26),
+									new RGB(0xFF, 0x80, 0x91),
+									new RGB(0x36, 0xB8, 0xD9)
+								};
+	private static int maxColors = rgbs.length;;
 	
 	private static ColorRegistry getColorRegistry() {
 		if(colorRegistry == null) {
-			Random rnd = new Random();
 			colorRegistry = new ColorRegistry(PlatformUI.getWorkbench().getDisplay(), true);
-			int i = 0;
-			while (i < maxColors) {
-				float hue = rnd.nextInt(361);
-				float saturation = rnd.nextFloat();
-				RGB rgb = new RGB(hue, saturation, 1);
-				if(isAcceptable(rgb)) {
-					colorRegistry.put(String.valueOf(i), rgb);
-					i++;
-				}
-			}				
-				
+			for (int i = 0; i < rgbs.length; i++) {
+				colorRegistry.put(String.valueOf(i), rgbs[i]);
+			}
 		}
 		return colorRegistry;
 	}
 	
-	private static boolean isAcceptable(RGB newRGB) {
-		int i = 0;
-		while (colorRegistry.get(String.valueOf(i)) != null) {
-			RGB rgb = colorRegistry.get(String.valueOf(i)).getRGB();
-			double distance = Math.pow(rgb.red - newRGB.red, 2) + Math.pow(rgb.green - newRGB.green, 2) + Math.pow(rgb.blue - newRGB.blue, 2);
-			if(distance < 500) {
-				return false;
-			}
-			i++;
-		}
-		return true;
-	}
-	
-	public static Color getColor() {
-		Color color = getColorRegistry().get(index.toString());
-		index++;
-		index = (byte) (index % maxColors);
-		return color;
-	}
-	
 	public static Color getColor(Byte index) {
+		if(colorRegistry == null) getColorRegistry();
 		if(index < 0) index = 0;
-		if(index > ColorUtil.index) index = ColorUtil.index;
+		index = (byte) (index % maxColors);
 		Color color = getColorRegistry().get(index.toString());
 		return color;
 	}

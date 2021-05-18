@@ -181,8 +181,17 @@ public class CategoryContainerEditor extends Composite implements ISelectionChan
 		series.setYSeries(yValues);
 		series.setAntialias(SWT.ON);
 		series.setSymbolType(PlotSymbolType.NONE);
-		series.setLineColor(ColorUtil.getColor());
+		Byte index = getSeriesIndex(series);
+		series.setLineColor(ColorUtil.getColor(index));
 		series.setLineWidth(3);
+	}
+	
+	private Byte getSeriesIndex(ILineSeries series) {
+		ISeries[] seriesArray = chart.getSeriesSet().getSeries();
+		for (int i = 0; i < seriesArray.length; i++) {
+			if(series == seriesArray[i]) return (byte) i;
+		}
+		return 0;
 	}
 	
 	private boolean chartHasAlreadyThisTrial(Channel signalInChart, Integer trialNumber) {

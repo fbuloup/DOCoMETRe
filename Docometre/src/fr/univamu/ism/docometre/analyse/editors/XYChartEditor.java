@@ -621,7 +621,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 			double[] xValues = MathEngineFactory.getMathEngine().getYValuesForSignal(channels[0], trialNumber);
 			double[] yValues = MathEngineFactory.getMathEngine().getYValuesForSignal(channels[1], trialNumber);
 			// 
-			if(yValues == null || xValues == null || yValues.length ==0 || xValues.length == 0) return;
+			if(yValues == null || xValues == null || yValues.length == 0 || xValues.length == 0) return;
 			// Add Series
 			String seriesID = key + "." + trialNumber;
 			ILineSeries series = (ILineSeries) chart.getSeriesSet().createSeries(SeriesType.LINE, seriesID);
@@ -631,9 +631,18 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 			series.setEndCut(endCut);
 			series.setAntialias(SWT.ON);
 			series.setSymbolType(PlotSymbolType.NONE);
-			series.setLineColor(ColorUtil.getColor());
+			Byte index = getSeriesIndex(series);
+			series.setLineColor(ColorUtil.getColor(index));
 			series.setLineWidth(3);
 		}
+	}
+	
+	private Byte getSeriesIndex(ILineSeries series) {
+		ISeries[] seriesArray = chart.getSeriesSet().getSeries();
+		for (int i = 0; i < seriesArray.length; i++) {
+			if(series == seriesArray[i]) return (byte) i;
+		}
+		return 0;
 	}
 	
 	private boolean chartHasAlreadyThisTrial(Integer trialNumber) {

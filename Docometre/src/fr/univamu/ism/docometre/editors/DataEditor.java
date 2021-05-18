@@ -350,7 +350,8 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 			lineSeries.setYSeries(yDoubleValues);
 			lineSeries.setAntialias(SWT.ON);
 			lineSeries.setSymbolType(PlotSymbolType.NONE);
-			lineSeries.setLineColor(ColorUtil.getColor());
+			Byte index = getSeriesIndex(lineSeries);
+			lineSeries.setLineColor(ColorUtil.getColor(index));
 			lineSeries.setLineWidth(3);
 			
 			chart.getAxisSet().adjustRange();
@@ -361,6 +362,14 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 			e.printStackTrace();
 		}
 		
+	}
+	
+	private Byte getSeriesIndex(ILineSeries series) {
+		ISeries[] seriesArray = chart.getSeriesSet().getSeries();
+		for (int i = 0; i < seriesArray.length; i++) {
+			if(series == seriesArray[i]) return (byte) i;
+		}
+		return 0;
 	}
 
 	private HashMap<String, double[]> createXYDoubleValues(float[] values, double sf, DACQConfiguration dacqConfiguration) {
