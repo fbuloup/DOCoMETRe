@@ -87,9 +87,7 @@ abstract public class Series implements ISeries {
 	protected int frontCut;
 	/** End cut **/
 	protected int endCut;
-	/** Max end cut **/
-	protected int maxEndCut;
-
+	
 	/**
 	 * Constructor.
 	 *
@@ -117,7 +115,6 @@ abstract public class Series implements ISeries {
 		ySeries = new double[0];
 		frontCut = -1;
 		endCut = -1;
-		maxEndCut = -1;
 	}
 
 	public void setFrontCut(int frontCut) {
@@ -199,7 +196,6 @@ abstract public class Series implements ISeries {
 		xSeries = new double[series.length];
 		frontCut = frontCut == -1 ? 0 : frontCut;
 		endCut = endCut == -1 ? xSeries.length : endCut;
-		maxEndCut = xSeries.length;
 		System.arraycopy(series, 0, xSeries, 0, series.length);
 		isDateSeries = false;
 		if(xSeries.length == 0) {
