@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-05-18
+      -- 2021-05-19
+ADDED : Nothing
+FIXED :
+* Fix OOBE when front/end cuts are taken in account
+-- 2021-05-18
 ADDED :
 * Support for displaying Markers in XY Chart editor
 * Improve zoom and chart parameters handlers in XY Chart editor
