@@ -306,10 +306,10 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		frontCutSpinner.setMaximum(1000000000);
 		frontCutSpinner.setSelection(xyChartData.getFrontCut());
 		frontCutSpinner.setData("frontCut");
-		FrontEndCutsHandler frontCutsHandler = new FrontEndCutsHandler(frontCutSpinner, this);
-		frontCutSpinner.addMouseWheelListener(frontCutsHandler);
-		frontCutSpinner.addTraverseListener(frontCutsHandler);
-		frontCutSpinner.addSelectionListener(frontCutsHandler);
+		FrontEndCutsHandler frontCutHandler = new FrontEndCutsHandler(frontCutSpinner, this);
+		frontCutSpinner.addMouseWheelListener(frontCutHandler);
+		frontCutSpinner.addTraverseListener(frontCutHandler);
+		frontCutSpinner.addSelectionListener(frontCutHandler);
 		
 		Label endCutLabel = new Label(frontEndCutValuesGroup, SWT.NONE);
 		endCutLabel.setText(DocometreMessages.EndCutLabel);
@@ -493,25 +493,29 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		}
 		Collection<Channel[]> xyChannels = xyChartData.getXYChannels();
 		int nbTrials = 0;
-		int fc = Integer.MAX_VALUE;
-		int ec = 0;
+		int fc = frontCutSpinner.getSelection();
+		int ec = endCutSpinner.getSelection();
+		int baseFrontCut = fc;
+		int baseEndCut = ec;
 		for (Channel[] xyChannel : xyChannels) {
 			Channel xChannel = xyChannel[0];
 			Channel yChannel = xyChannel[1];
 			nbTrials = Math.max(MathEngineFactory.getMathEngine().getTrialsNumber(xChannel), nbTrials);
-			fc = Math.min(fc, MathEngineFactory.getMathEngine().getFrontCut(xChannel, 0));
-			ec = Math.max(ec, MathEngineFactory.getMathEngine().getEndCut(xChannel, 0));
-			fc = Math.min(fc, MathEngineFactory.getMathEngine().getFrontCut(yChannel, 0));
-			ec = Math.max(ec, MathEngineFactory.getMathEngine().getEndCut(yChannel, 0));
+			baseFrontCut = MathEngineFactory.getMathEngine().getFrontCut(xChannel, 0);
+			baseEndCut = MathEngineFactory.getMathEngine().getEndCut(yChannel, 0);
+//			fc = Math.max(fc, MathEngineFactory.getMathEngine().getFrontCut(xChannel, 0));
+//			ec = Math.min(ec, MathEngineFactory.getMathEngine().getEndCut(xChannel, 0));
+//			fc = Math.max(fc, MathEngineFactory.getMathEngine().getFrontCut(yChannel, 0));
+//			ec = Math.min(ec, MathEngineFactory.getMathEngine().getEndCut(yChannel, 0));
 		}
 		Integer[] trials = IntStream.rangeClosed(1, nbTrials).boxed().toArray(Integer[]::new);
 		trialsListViewer.setInput(trials);
 		frontCutSpinner.setSelection(fc);
 		endCutSpinner.setSelection(ec);
-		frontCutSpinner.setMinimum(fc);
-		endCutSpinner.setMaximum(ec);
-		frontCutSpinner.setMaximum(ec);
-		endCutSpinner.setMinimum(fc);
+		frontCutSpinner.setMinimum(baseFrontCut);
+		frontCutSpinner.setMaximum(baseEndCut);
+		endCutSpinner.setMinimum(baseFrontCut);
+		endCutSpinner.setMaximum(baseEndCut);
 	}
 	
 	private String[] getSeriesIDs() {
@@ -612,9 +616,6 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 	
 	private void addSeriesToChart(Integer trialNumber) {
 		// Get x and Y values for this signal and trial
-		int frontCut = frontCutSpinner.getSelection();
-		int endCut = endCutSpinner.getSelection();
-		
 		Set<String> keys = xyChartData.getCurvesIDs();
 		for (String key : keys) {
 			Channel[] channels = xyChartData.getXYChannels(key);
@@ -627,6 +628,8 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 			ILineSeries series = (ILineSeries) chart.getSeriesSet().createSeries(SeriesType.LINE, seriesID);
 			series.setXSeries(xValues);
 			series.setYSeries(yValues);
+			int frontCut = xyChartData.getFrontCut();
+			int endCut = xyChartData.getEndCut();
 			series.setFrontCut(frontCut);
 			series.setEndCut(endCut);
 			series.setAntialias(SWT.ON);

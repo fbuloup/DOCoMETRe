@@ -72,6 +72,10 @@ public class LineSeries extends Series implements ILineSeries {
 	private static final int DEFAULT_ANTIALIAS = SWT.DEFAULT;
 	/** the margin in pixels attached at the minimum/maximum plot */
 	private static final int MARGIN_AT_MIN_MAX_PLOT = 6;
+	/** Front cut **/
+	protected int frontCut;
+	/** End cut **/
+	protected int endCut;
 
 	/**
 	 * Constructor.
@@ -93,8 +97,20 @@ public class LineSeries extends Series implements ILineSeries {
 		lineWidth = DEFAULT_LINE_WIDTH;
 		compressor = new CompressLineSeries();
 		symbolColors = new Color[0];
+		frontCut = -1;
+		endCut = -1;
+	}
+	
+	public void setFrontCut(int frontCut) {
+		this.frontCut = frontCut;
+		System.out.println("setFrontCut Series : " + frontCut);
 	}
 
+	public void setEndCut(int endCut) {
+		this.endCut = endCut;
+		System.out.println("setEndCut Series : " + endCut);
+	}
+	
 	/*
 	 * @see ILineSeries#getLineStyle()
 	 */
