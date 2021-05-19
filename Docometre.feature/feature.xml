@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-05-19
+      -- 2021-05-19 - Bis
+ADDED : Nothing
+FIXED :
+* Fix bug with front cut other than zero
+-- 2021-05-19
 ADDED : Nothing
 FIXED :
 * Fix OOBE when front/end cuts are taken in account
