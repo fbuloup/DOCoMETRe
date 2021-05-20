@@ -241,4 +241,10 @@ public interface ISeries {
 	 *            the dispose listener
 	 */
 	void addDisposeListener(IDisposeListener listener);
+	
+	void setFrontCut(int frontCut);
+
+	void setEndCut(int endCut);
+	
+	void setBaseFrontCut(int baseFrontCut);
 }

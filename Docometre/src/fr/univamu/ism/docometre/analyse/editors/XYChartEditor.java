@@ -493,16 +493,16 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		}
 		Collection<Channel[]> xyChannels = xyChartData.getXYChannels();
 		int nbTrials = 0;
-		int fc = frontCutSpinner.getSelection();
-		int ec = endCutSpinner.getSelection();
-		int baseFrontCut = fc;
-		int baseEndCut = ec;
+//		int fc = frontCutSpinner.getSelection();
+//		int ec = endCutSpinner.getSelection();
+		int baseFrontCut = Integer.MAX_VALUE;
+		int baseEndCut = 0;
 		for (Channel[] xyChannel : xyChannels) {
 			Channel xChannel = xyChannel[0];
 			Channel yChannel = xyChannel[1];
 			nbTrials = Math.max(MathEngineFactory.getMathEngine().getTrialsNumber(xChannel), nbTrials);
-			baseFrontCut = MathEngineFactory.getMathEngine().getFrontCut(xChannel, 0);
-			baseEndCut = MathEngineFactory.getMathEngine().getEndCut(yChannel, 0);
+			baseFrontCut = Math.min(MathEngineFactory.getMathEngine().getFrontCut(xChannel, 0), baseFrontCut);
+			baseEndCut = Math.max(MathEngineFactory.getMathEngine().getEndCut(yChannel, 0), baseEndCut);
 //			fc = Math.max(fc, MathEngineFactory.getMathEngine().getFrontCut(xChannel, 0));
 //			ec = Math.min(ec, MathEngineFactory.getMathEngine().getEndCut(xChannel, 0));
 //			fc = Math.max(fc, MathEngineFactory.getMathEngine().getFrontCut(yChannel, 0));
@@ -510,12 +510,14 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		}
 		Integer[] trials = IntStream.rangeClosed(1, nbTrials).boxed().toArray(Integer[]::new);
 		trialsListViewer.setInput(trials);
-		frontCutSpinner.setSelection(fc);
-		endCutSpinner.setSelection(ec);
+		frontCutSpinner.setSelection(baseFrontCut);
+		endCutSpinner.setSelection(baseEndCut);
 		frontCutSpinner.setMinimum(baseFrontCut);
 		frontCutSpinner.setMaximum(baseEndCut);
 		endCutSpinner.setMinimum(baseFrontCut);
 		endCutSpinner.setMaximum(baseEndCut);
+		xyChartData.setFrontCut(baseFrontCut);
+		xyChartData.setEndCut(baseEndCut);
 	}
 	
 	private String[] getSeriesIDs() {
@@ -630,6 +632,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 			series.setYSeries(yValues);
 			int frontCut = xyChartData.getFrontCut();
 			int endCut = xyChartData.getEndCut();
+			series.setBaseFrontCut(frontCutSpinner.getMinimum());
 			series.setFrontCut(frontCut);
 			series.setEndCut(endCut);
 			series.setAntialias(SWT.ON);

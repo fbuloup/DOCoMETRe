@@ -72,10 +72,6 @@ public class LineSeries extends Series implements ILineSeries {
 	private static final int DEFAULT_ANTIALIAS = SWT.DEFAULT;
 	/** the margin in pixels attached at the minimum/maximum plot */
 	private static final int MARGIN_AT_MIN_MAX_PLOT = 6;
-	/** Front cut **/
-	protected int frontCut;
-	/** End cut **/
-	protected int endCut;
 
 	/**
 	 * Constructor.
@@ -97,20 +93,8 @@ public class LineSeries extends Series implements ILineSeries {
 		lineWidth = DEFAULT_LINE_WIDTH;
 		compressor = new CompressLineSeries();
 		symbolColors = new Color[0];
-		frontCut = -1;
-		endCut = -1;
-	}
-	
-	public void setFrontCut(int frontCut) {
-		this.frontCut = frontCut;
-		System.out.println("setFrontCut Series : " + frontCut);
 	}
 
-	public void setEndCut(int endCut) {
-		this.endCut = endCut;
-		System.out.println("setEndCut Series : " + endCut);
-	}
-	
 	/*
 	 * @see ILineSeries#getLineStyle()
 	 */
@@ -474,9 +458,9 @@ public class LineSeries extends Series implements ILineSeries {
 			}
 		} else {
 			if(lineStyle == LineStyle.SOLID) {
-				drawLine(gc, xAxis, yAxis, xseries, yseries, isHorizontal, frontCut, endCut, compressor);
+				drawLine(gc, xAxis, yAxis, xseries, yseries, isHorizontal, frontCut, endCut, baseFrontCut, compressor);
 			} else if(lineStyle != LineStyle.NONE) {
-				drawLineWithStyle(gc, xAxis, yAxis, xseries, yseries, isHorizontal, frontCut, endCut, compressor);
+				drawLineWithStyle(gc, xAxis, yAxis, xseries, yseries, isHorizontal, frontCut, endCut, baseFrontCut, compressor);
 			}
 		}
 		gc.setForeground(oldForeground);
@@ -490,7 +474,7 @@ public class LineSeries extends Series implements ILineSeries {
 	 * for solid line style until that bug is fixed and the workaround is
 	 * removed.
 	 */
-	private static void drawLine(GC gc, Axis xAxis, Axis yAxis, double[] xseries, double[] yseries, boolean isHorizontal, int frontCut, int endCut, ICompress compressor) {
+	private static void drawLine(GC gc, Axis xAxis, Axis yAxis, double[] xseries, double[] yseries, boolean isHorizontal, int frontCut, int endCut, int baseFrontCut, ICompress compressor) {
 		int[] indexes = compressor.getCompressedIndexes();
 		double xLower = xAxis.getRange().lower;
 		double xUpper = xAxis.getRange().upper;
@@ -504,7 +488,7 @@ public class LineSeries extends Series implements ILineSeries {
 		for(int i = 0; i < xseries.length - 1; i++) {
 			int x = xAxis.getPixelCoordinate(xseries[i + 1], xLower, xUpper);
 			int y = yAxis.getPixelCoordinate(yseries[i + 1], yLower, yUpper);
-			if(indexes[i] > frontCut && indexes[i] < endCut) {
+			if(indexes[i] > frontCut - baseFrontCut && indexes[i] < endCut - baseFrontCut) {
 				if(x == prevX && i < xseries.length - 2) {
 					if(drawVerticalLine) {
 						// extend vertical line
@@ -562,8 +546,9 @@ public class LineSeries extends Series implements ILineSeries {
 	 *            the y series
 	 * @param isHorizontal
 	 *            true if orientation is horizontal
+	 * @param baseFrontCut 
 	 */
-	private static void drawLineWithStyle(GC gc, Axis xAxis, Axis yAxis, double[] xseries, double[] yseries, boolean isHorizontal, int frontCut, int endCut, ICompress compressor) {
+	private static void drawLineWithStyle(GC gc, Axis xAxis, Axis yAxis, double[] xseries, double[] yseries, boolean isHorizontal, int frontCut, int endCut, int baseFrontCut, ICompress compressor) {
 		int[] indexes = compressor.getCompressedIndexes();
 		double xLower = xAxis.getRange().lower;
 		double xUpper = xAxis.getRange().upper;
@@ -580,7 +565,7 @@ public class LineSeries extends Series implements ILineSeries {
 		for(int i = 0; i < xseries.length - 1; i++) {
 			int x = xAxis.getPixelCoordinate(xseries[i + 1], xLower, xUpper);
 			int y = yAxis.getPixelCoordinate(yseries[i + 1], yLower, yUpper);
-			if(indexes[i] > frontCut && indexes[i] < endCut) {
+			if(indexes[i] > frontCut - baseFrontCut && indexes[i] < endCut - baseFrontCut) {
 				if(x == prevX && i < xseries.length - 2) {
 					if(drawVerticalLine) {
 						// extend vertical line
