@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-05-19 - Bis
+      -- 2021-05-20
+ADDED : Nothing
+FIXED :
+* Bug With base front cuts in XY Chart editor
+-- 2021-05-19 - Bis
 ADDED : Nothing
 FIXED :
 * Fix bug with front cut other than zero
