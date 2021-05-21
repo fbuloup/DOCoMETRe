@@ -45,6 +45,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -71,6 +72,7 @@ import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
+import fr.univamu.ism.docometre.analyse.handlers.LoadUnloadSubjectsHandler;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 
@@ -135,9 +137,30 @@ public class DeleteResourcesAction extends Action implements ISelectionListener,
 									}
 									deleteChannel = true;
 								} else if(ResourceType.isSubject(resource) && MathEngineFactory.getMathEngine().isSubjectLoaded(resource)) {
+									try {
+										HashSet<IResource> resources = new HashSet<>();
+										resources.add(resource);
+										LoadUnloadSubjectsHandler.getInstance().resetSelection(resources);
+										LoadUnloadSubjectsHandler.getInstance().execute(null);
+									} catch (ExecutionException e) {
+										Activator.logErrorMessageWithCause(e);
+										e.printStackTrace();
+									}
 									MathEngineFactory.getMathEngine().unload(resource);
 								} else if(ResourceType.isExperiment(resource)) {
-									MathEngineFactory.getMathEngine().unload(resource);
+									try {
+										IResource[] subjects = ResourceProperties.getAllTypedResources(ResourceType.SUBJECT, (IContainer) resource, null);
+										HashSet<IResource> resources = new HashSet<>();
+										for (IResource subject : subjects) {
+											if(MathEngineFactory.getMathEngine().isSubjectLoaded(subject)) resources.add(subject);
+										}
+										LoadUnloadSubjectsHandler.getInstance().resetSelection(resources);
+										LoadUnloadSubjectsHandler.getInstance().execute(null);
+										MathEngineFactory.getMathEngine().unload(resource);
+									} catch (ExecutionException e) {
+										Activator.logErrorMessageWithCause(e);
+										e.printStackTrace();
+									}
 								}
 								if (!deleteChannel) {
 									IResource parentResource = resource.getParent();
@@ -188,8 +211,8 @@ public class DeleteResourcesAction extends Action implements ISelectionListener,
 			});
 		}
 		if(resource instanceof IContainer) {
-			IResource[] chilrenResources = ((IContainer)resource).members();
-			for (IResource childResource : chilrenResources) {
+			IResource[] childrenResources = ((IContainer)resource).members();
+			for (IResource childResource : childrenResources) {
 				closeEditors(childResource);
 			}
 		}

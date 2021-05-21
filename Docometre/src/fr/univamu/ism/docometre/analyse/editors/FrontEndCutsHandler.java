@@ -28,7 +28,32 @@ public class FrontEndCutsHandler extends SelectionAdapter implements TraverseLis
 	@Override
 	public void keyTraversed(TraverseEvent e) {
 		if(e.detail == SWT.TRAVERSE_RETURN) {
-			Handle();
+			if(key.equals("frontCut")) {
+				int fc = spinner.getSelection();
+				int ec = xyChartData.getEndCut();
+				if(fc < ec) {
+					if(spinner.getMinimum() <= fc) {
+						xyChartEditor.updateFrontEndCutsChartHandler();
+					}
+				} else {
+					spinner.setSelection(ec - 1);
+					xyChartEditor.updateFrontEndCutsChartHandler();
+				}
+			}
+			if(key.equals("endCut")) {
+				int ec = spinner.getSelection();
+				int fc = xyChartData.getFrontCut();
+				if(ec > fc) {
+					if(spinner.getMaximum() >= ec) {
+						xyChartEditor.updateFrontEndCutsChartHandler();
+					}
+				} else {
+					spinner.setSelection(fc + 1);
+					xyChartEditor.updateFrontEndCutsChartHandler();
+				}
+			}
+			spinner.getParent().getParent().setFocus();
+			xyChartEditor.setDirty(true);
 		}
 	}
 
@@ -56,17 +81,19 @@ public class FrontEndCutsHandler extends SelectionAdapter implements TraverseLis
 	
 	@Override
 	public void widgetSelected(SelectionEvent e) {
-		Handle();
-	}
-	
-	private void Handle() {
+		if(e.stateMask != SWT.BUTTON1) return;
 		int value1 = spinner.getSelection();
 		int value2 = value1;
 		if(key.equals("frontCut")) {
 			value2 = xyChartData.getEndCut();
 			if(value1 < value2) {
+				if(spinner.getMinimum() <= value1) {
+					xyChartEditor.updateFrontEndCutsChartHandler();
+				}
+			} else {
 				xyChartEditor.updateFrontEndCutsChartHandler();
-			} else spinner.setSelection(value2 - 1);
+				spinner.setSelection(value2 - 1);
+			}
 		}
 		if(key.equals("endCut")) {
 			value2 = xyChartData.getFrontCut();
@@ -74,6 +101,7 @@ public class FrontEndCutsHandler extends SelectionAdapter implements TraverseLis
 				xyChartEditor.updateFrontEndCutsChartHandler();
 			} else spinner.setSelection(value2 + 1);
 		}
+		spinner.getParent().getParent().setFocus();
 		xyChartEditor.setDirty(true);
 	}
 

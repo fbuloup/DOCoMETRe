@@ -301,7 +301,7 @@ public class PythonEngine implements MathEngine {
 	public double[] getYValuesForSignal(Channel signal, int trialNumber) {
 		String fullName = getFullPath(signal);
 		int frontCut = getFrontCut(signal, trialNumber);
-		int endCut = getEndCut(signal, trialNumber) - 1;
+		int endCut = getEndCut(signal, trialNumber);
 		if(frontCut > endCut) {
 			Activator.logErrorMessage("Error in getYValuesForSignal() from PythonEngine.java : frontCut (" + frontCut + ") is greater than endCut (" + endCut + ")");
 			return null;

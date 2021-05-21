@@ -41,7 +41,7 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 	private ActionContributionItem nextTrialActionContributionItem;
 	private ActionContributionItem previousTrialActionContributionItem;
 	private SubToolBarManager subToolBarManager;
-	private ChannelEditor editor;
+	private TrialsEditor editor;
 
 	public ChannelEditorActionBarContributor() {
 		nextTrialActionContributionItem = new ActionContributionItem(new NextTrialAction());
@@ -66,8 +66,8 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 	@Override
 	public void setActiveEditor(IEditorPart targetEditor) {
 		editor = null;
-		if(!(targetEditor instanceof ChannelEditor)) return;
-		editor = (ChannelEditor) targetEditor;
+		if(!(targetEditor instanceof TrialsEditor)) return;
+		editor = (TrialsEditor) targetEditor;
 		
 	}
 

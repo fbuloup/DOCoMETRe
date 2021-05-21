@@ -455,6 +455,7 @@
       </editor>
       <editor
             class="fr.univamu.ism.docometre.analyse.editors.XYChartEditor"
+            contributorClass="fr.univamu.ism.docometre.analyse.editors.ChannelEditorActionBarContributor"
             default="false"
             icon="icons/XYChartIcon.png"
             id="Docometre.XYChartEditor"

@@ -14,7 +14,7 @@ import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 
-public class ChannelEditor extends EditorPart {
+public class ChannelEditor extends EditorPart implements TrialsEditor {
 	
 	public static String ID = "Docometre.ChannelEditor";
 	
@@ -85,12 +85,14 @@ public class ChannelEditor extends EditorPart {
 		return channel.getFullName();
 	}
 
+	@Override
 	public void gotoNextTrial() {
 		if(container instanceof TrialNavigator)
 			((TrialNavigator)container).gotoNextTrial();
 		
 	}
 
+	@Override
 	public void gotoPreviousTrial() {
 		if(container instanceof TrialNavigator)
 			((TrialNavigator)container).gotoPreviousTrial();

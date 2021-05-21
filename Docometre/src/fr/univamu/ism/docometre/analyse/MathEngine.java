@@ -104,7 +104,6 @@ public interface MathEngine {
 	default double[] getTimeValuesForSignal(Channel signal, Integer trialNumber) {
 		try {
 			double sf = getSampleFrequency(signal);
-			int nbSamples = getSamplesNumber(signal, trialNumber);
 			// Adjust for front and end cut
 			int frontCut = MathEngineFactory.getMathEngine().getFrontCut(signal, trialNumber);
 			int endCut = MathEngineFactory.getMathEngine().getEndCut(signal, trialNumber);
@@ -112,8 +111,8 @@ public interface MathEngine {
 				Activator.logErrorMessage("Error in getTimeValuesForSignal() from MathEngine.java : frontCut (" + frontCut + ") is greater than endCut (" + endCut + ")");
 				return null;
 			}
-			double[] times = new double[nbSamples - frontCut - (nbSamples - endCut + 1)];
-			for (int i = frontCut; i < endCut - 1; i++) {
+			double[] times = new double[endCut - frontCut];
+			for (int i = frontCut; i < endCut; i++) {
 				times[i-frontCut] = 1f*i/sf;
 			}
 			return times;

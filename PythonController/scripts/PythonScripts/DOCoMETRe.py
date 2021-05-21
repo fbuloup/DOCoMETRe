@@ -134,7 +134,7 @@ class DOCoMETRe(object):
 			key = loadName + "." + channelName + ".FrontCut";
 			self.experiments[key][int(trialNumber) - 1] = 0;
 			key = loadName + "." + channelName + ".EndCut";
-			self.experiments[key][int(trialNumber) - 1] = sizeData + 1;
+			self.experiments[key][int(trialNumber) - 1] = sizeData;
 			values = self.experiments[loadName + "." + channelName + ".Values"];
 			#if(jvmMode): self.gateway.jvm.System.out.println("size values : " + str(len(values[int(trialNumber) - 1])));
 			values[int(trialNumber) - 1][0:sizeData] = data;

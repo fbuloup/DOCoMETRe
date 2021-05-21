@@ -819,6 +819,11 @@ public final class DocometreMessages extends NLS {
 	public static String ShowMarkersLabelsTitle;
 	public static String ShowMarkersTitle;
 	public static String MarkersSizeTitle;
+	public static String SomethingWentWrong;
+	public static String PressEnter;
+	public static String PressEnterFrontCut;
+	public static String PressEnterEndCut;
+	public static String SubjectNotLoaded;
 	
 	// Data processing editor page editor titles
 	public static String MathEngineEditorTitle;

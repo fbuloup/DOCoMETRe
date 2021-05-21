@@ -44,8 +44,8 @@ public class XYChart extends AbstractElement {
 		xMin = -10;
 		yMax = 10;
 		yMin = -10;
-		frontCut = 0;
-		endCut = 0;
+		frontCut = -1;
+		endCut = -1;
 	}
 	
 	@Override
@@ -185,29 +185,70 @@ public class XYChart extends AbstractElement {
 		return selectedTrialsNumbers;
 	}
 
-	public void initialize() {
+	public boolean initialize() {
 		if(xyChannelsMap != null) xyChannelsMap.clear();
 		xyChannelsMap = new HashMap<>();
 		if(!MathEngineFactory.getMathEngine().isStarted()) {
 			Activator.logErrorMessage(DocometreMessages.PleaseStartMathEngineFirst);
-			return;
+			return false;
 		}
 		for (String seriesID : getSeriesIDsPrefixes()) {
-			String yChannelName = seriesID.split("\\(")[0];
-			String xChannelName = seriesID.split("\\(")[1].replaceAll("\\)", "");
-			String projectName = seriesID.split("\\.")[0];
-			String subjectName = seriesID.split("\\.")[1];
-			IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
-			IResource subject = project.findMember(subjectName);
-			if(MathEngineFactory.getMathEngine().isSubjectLoaded(subject)) {
-				Channel xChannel = MathEngineFactory.getMathEngine().getChannelWithName(subject, xChannelName.split("\\.")[2]);
-				Channel yChannel = MathEngineFactory.getMathEngine().getChannelWithName(subject, yChannelName.split("\\.")[2]);
+			
+			//pro.sub.chann(pro.sub.chann)
+			
+			String yFullChannelName = seriesID.split("\\(")[0];
+			String xFullChannelName = seriesID.split("\\(")[1].replaceAll("\\)", "");
+			
+			String xProjectName = xFullChannelName.split("\\.")[0];
+			String xSubjectName = xFullChannelName.split("\\.")[1];
+			IProject xProject = ResourcesPlugin.getWorkspace().getRoot().getProject(xProjectName);
+			IResource xSubject = xProject.findMember(xSubjectName);
+			
+			String yProjectName = yFullChannelName.split("\\.")[0];
+			String ySubjectName = yFullChannelName.split("\\.")[1];
+			IProject yProject = ResourcesPlugin.getWorkspace().getRoot().getProject(yProjectName);
+			IResource ySubject = yProject.findMember(ySubjectName);
+			
+			
+			if(MathEngineFactory.getMathEngine().isSubjectLoaded(xSubject) && MathEngineFactory.getMathEngine().isSubjectLoaded(ySubject)) {
+				Channel xChannel = MathEngineFactory.getMathEngine().getChannelWithName(xSubject, xFullChannelName.split("\\.")[2]);
+				Channel yChannel = MathEngineFactory.getMathEngine().getChannelWithName(ySubject, yFullChannelName.split("\\.")[2]);
+				if(xChannel == null || yChannel == null) {
+					if(xChannel == null) {
+						String message = NLS.bind(DocometreMessages.ImpossibleToFindChannelTitle, xFullChannelName);
+						Activator.logErrorMessage(message);
+					}
+					if(yChannel == null) {
+						String message = NLS.bind(DocometreMessages.ImpossibleToFindChannelTitle, yFullChannelName);
+						Activator.logErrorMessage(message);
+					}
+					return false;
+				}
 				xyChannelsMap.put(seriesID, new Channel[] {xChannel, yChannel});
 			} else {
-				String message = NLS.bind(DocometreMessages.ImpossibleToFindChannelTitle, xChannelName);
-				Activator.logErrorMessage(message);
+				if(!MathEngineFactory.getMathEngine().isSubjectLoaded(xSubject)) {
+					String message = NLS.bind(DocometreMessages.SubjectNotLoaded, xSubject.getFullPath());
+					Activator.logErrorMessage(message);
+				}
+				if(!MathEngineFactory.getMathEngine().isSubjectLoaded(ySubject) && !xSubject.equals(ySubject)) {
+					String message = NLS.bind(DocometreMessages.SubjectNotLoaded, ySubject.getFullPath());
+					Activator.logErrorMessage(message);
+				}
+				return false;
 			}
 		}
+		return true;
+	}
+	
+	public boolean contains(IResource subject) {
+		for (String seriesID : getSeriesIDsPrefixes()) {
+			String subjectName = seriesID.split("\\.")[1];
+			if(subject.getName().equals(subjectName)) return true;
+			subjectName = seriesID.split("\\.")[3];
+			if(subject.getName().equals(subjectName)) return true;
+		}
+		return false;
+		
 	}
 
 }
