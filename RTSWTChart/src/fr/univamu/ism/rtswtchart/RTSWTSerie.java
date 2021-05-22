@@ -45,6 +45,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 
 public abstract class RTSWTSerie {
+	
+	public static final String HORIZONTAL_REFERENCE = "Horizontal Reference";
+	
 	/**
 	 * Values in pixels width. 
 	 */
@@ -78,6 +81,10 @@ public abstract class RTSWTSerie {
 	 * Flag to tell if new values has been sent to the serie
 	 */
 	private boolean modified;
+	/**
+	 * If true, serie will be a simple horizontal line at value specified in yValues[0]
+	 */
+	protected boolean isHorizontalReference;
 	
 	public RTSWTSerie(RTSWTChart chart, String id, Color lineColor, int lineStyle, int lineWidth) {
 		if(chart == null) SWT.error(SWT.ERROR_INVALID_ARGUMENT, null, " chart cannot be null");
@@ -91,6 +98,14 @@ public abstract class RTSWTSerie {
 		this.chart = chart;
 		this.lineStyle = lineStyle;
 		this.lineWidth = lineWidth;
+	}
+	
+	/**
+	 * true if serie is a n horizontal reference.
+	 * @return true or false
+	 */
+	public boolean isHorizontalReference() {
+		return isHorizontalReference;
 	}
 	
 	/**

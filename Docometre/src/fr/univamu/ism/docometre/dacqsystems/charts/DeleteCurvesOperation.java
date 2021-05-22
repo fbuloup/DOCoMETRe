@@ -72,7 +72,7 @@ public class DeleteCurvesOperation extends AbstractOperation {
 
 	@Override
 	public IStatus execute(IProgressMonitor monitor, IAdaptable info) throws ExecutionException {
-		if(MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), DocometreMessages.DeleteCurvesDialog_Title , DocometreMessages.DeleteChartsDialog_Message)) {
+		if(MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), DocometreMessages.DeleteCurvesDialog_Title , DocometreMessages.DeleteCurvesDialog_Message)) {
 			for (Object curve : selectedCurves) {
 				chartConfiguration.removeCurveConfiguration((CurveConfiguration) curve);
 			}

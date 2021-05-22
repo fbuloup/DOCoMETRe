@@ -72,6 +72,7 @@ import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.charts.ChartConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.charts.CurveConfiguration;
+import fr.univamu.ism.docometre.dacqsystems.charts.HorizontalReferenceChannel;
 import fr.univamu.ism.docometre.dacqsystems.charts.OscilloChartConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.charts.OscilloCurveConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.charts.XYChartConfiguration;
@@ -98,7 +99,7 @@ public class AddCurveDialog extends TitleAreaDialog {
 	@Override
 	protected void configureShell(Shell newShell) {
 		super.configureShell(newShell);
-		newShell.setText(DocometreMessages.AddCurvesDialog_ShellTitle);//);
+		newShell.setText(DocometreMessages.AddCurvesDialog_ShellTitle);
 	}
 	
 	@Override
@@ -127,6 +128,7 @@ public class AddCurveDialog extends TitleAreaDialog {
 			channelsListViewer.setComparator(new ViewerComparator());
 			// Get all transfered channels
 			ArrayList<Channel> channels = new ArrayList<Channel>(0);
+			channels.add(new HorizontalReferenceChannel());
 			channels.addAll(Arrays.asList(dacqConfiguration.getTransferedChannels()));
 			// Remove the one already used 
 			CurveConfiguration[] curvesConfigurations = chartConfiguration.getCurvesConfiguration();

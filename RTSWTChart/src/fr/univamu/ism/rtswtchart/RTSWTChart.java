@@ -721,6 +721,7 @@ public abstract class RTSWTChart extends Composite implements ControlListener {
 		int totalWidth = 0;
 		int legendLineWidth = 40;
 		for (int i = 0; i < seriesList.length; i++) {
+			if(seriesList[i].isHorizontalReference()) continue;
 			totalWidth += legendLineWidth + 5;
 			totalWidth += glut.glutBitmapLength(getFontNumber(), seriesList[i].getId());
 			totalWidth += glut.glutBitmapLength(getFontNumber(), "  ");
@@ -729,6 +730,7 @@ public abstract class RTSWTChart extends Composite implements ControlListener {
 		int position = 0;
 		for (int i = 0; i < seriesList.length; i++) {
 			RTSWTSerie serie = seriesList[i];
+			if(serie.isHorizontalReference()) continue;
 			chartAreaGLContext.getGL().getGL2().glColor3f(serie.getLineColor().getRed() / 255.0f, serie.getLineColor().getGreen() / 255.0f, serie.getLineColor().getBlue() / 255.0f);
 			chartAreaGLContext.getGL().getGL2().glLineWidth(serie.getLineWidth());
 			if (serie.getLineStyle() == SWT.LINE_SOLID)

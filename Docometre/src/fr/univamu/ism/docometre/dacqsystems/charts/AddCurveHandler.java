@@ -41,19 +41,32 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.charts;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.regex.Pattern;
+
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.IOperationHistory;
 import org.eclipse.core.commands.operations.ObjectUndoContext;
+import org.eclipse.jface.dialogs.IInputValidator;
+import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.window.Window;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
+import fr.univamu.ism.docometre.dialogs.AddCurveDialog;
 import fr.univamu.ism.docometre.editors.ModulePage;
 
 public class AddCurveHandler extends SelectionAdapter implements ISelectionChangedListener {
@@ -63,6 +76,7 @@ public class AddCurveHandler extends SelectionAdapter implements ISelectionChang
 	private ObjectUndoContext undoContext;
 	private ModulePage modulePage;
 	private DACQConfiguration dacqConfiguration;
+	private ArrayList<Double> reservedReferenceValues = new ArrayList<>();; 
 
 	public AddCurveHandler(ModulePage modulePage, DACQConfiguration dacqConfiguration, ObjectUndoContext undoContext) {
 		operationHistory = PlatformUI.getWorkbench().getOperationSupport().getOperationHistory();
@@ -71,10 +85,47 @@ public class AddCurveHandler extends SelectionAdapter implements ISelectionChang
 		this.dacqConfiguration = dacqConfiguration;
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public void widgetSelected(SelectionEvent event) {
 		try {
-			operationHistory.execute(new AddCurveOperation(modulePage, DocometreMessages.AddCurveOperation_Label, selectedChartConfiguration, dacqConfiguration, undoContext), null, null);
+			reservedReferenceValues.clear();
+			for (CurveConfiguration curveConfiguration : selectedChartConfiguration.curvesConfigurations) {
+				if(curveConfiguration instanceof OscilloCurveConfiguration) {
+					Channel channel = ((OscilloCurveConfiguration)curveConfiguration).getChannel();
+					if(channel instanceof HorizontalReferenceChannel) {
+						reservedReferenceValues.add(((HorizontalReferenceChannel)channel).getValue());
+					}
+				}
+			}
+			AddCurveDialog addCurveDialog = new AddCurveDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), dacqConfiguration, selectedChartConfiguration);
+			if(addCurveDialog.open() == Window.OK) {
+				IStructuredSelection selection = addCurveDialog.getSelection();
+				List<Channel> selectedChannels = new ArrayList<Channel>(selection.toList());
+				List<Channel> selectedChannelsToRemove = new ArrayList<>();
+				selectedChannels.forEach(new Consumer<Channel>() {
+					public void accept(final Channel channel) {
+						if(channel instanceof HorizontalReferenceChannel) {
+							IInputValidator inputValidator = new IInputValidator() {
+								@Override
+								public String isValid(String newText) {
+									if(!Pattern.matches("^(-)?\\d+(\\.\\d*)?$", newText)) return NLS.bind(DocometreMessages.IsNotAValidValue, newText);
+									if(reservedReferenceValues.contains(Double.parseDouble(newText))) return DocometreMessages.ErrorValueAlreadyUsed;
+									return null;
+								}
+							};
+							InputDialog inputDialog = new InputDialog(Display.getDefault().getActiveShell(), DocometreMessages.ReferenceValueDialogTitle, DocometreMessages.ReferenceValueDialogMessage, "0", inputValidator);
+							if(inputDialog.open() == Window.OK) ((HorizontalReferenceChannel)channel).setValue(inputDialog.getValue());
+							else selectedChannelsToRemove.add(channel);
+						}
+					};
+				});
+				selectedChannels.removeAll(selectedChannelsToRemove);
+				if(selectedChannels.size() > 0) {
+					selection = new StructuredSelection(selectedChannels.toArray()); 
+					operationHistory.execute(new AddCurveOperation(modulePage, DocometreMessages.AddCurveOperation_Label, selectedChartConfiguration, selection, undoContext), null, null);
+				}
+			}
 		} catch (ExecutionException e) {
 			e.printStackTrace();
 			Activator.logErrorMessageWithCause(e);
@@ -83,10 +134,16 @@ public class AddCurveHandler extends SelectionAdapter implements ISelectionChang
 
 	@Override
 	public void selectionChanged(SelectionChangedEvent event) {
+		
 		IStructuredSelection selection = (IStructuredSelection)event.getSelection();
 		if(selection.getFirstElement() instanceof ChartConfiguration) {
-			if(selection.size() == 1) selectedChartConfiguration = (ChartConfiguration) selection.getFirstElement();
-			else selectedChartConfiguration = null;
+			if(selection.size() == 1) {
+				selectedChartConfiguration = (ChartConfiguration) selection.getFirstElement();
+			} else {
+				selectedChartConfiguration = null;
+				reservedReferenceValues.clear();
+			}
+			
 		}
 	}
 

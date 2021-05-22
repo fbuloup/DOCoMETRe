@@ -48,11 +48,9 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.window.Window;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.PlatformUI;
 
-import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
-import fr.univamu.ism.docometre.dialogs.AddCurveDialog;
 import fr.univamu.ism.docometre.editors.ModulePage;
 import fr.univamu.ism.docometre.editors.ResourceEditor;
 
@@ -60,28 +58,24 @@ public class AddCurveOperation extends AbstractOperation {
 
 	private ModulePage modulePage;
 	private ChartConfiguration chartConfiguration;
-	private DACQConfiguration dacqConfiguration;
 	private CurveConfiguration[] newCurvesConfigurations;
+	private IStructuredSelection selection;
 
-	public AddCurveOperation(ModulePage modulePage, String label, ChartConfiguration chartConfiguration, DACQConfiguration dacqConfiguration, ObjectUndoContext undoContext) {
+	public AddCurveOperation(ModulePage modulePage, String label, ChartConfiguration chartConfiguration, IStructuredSelection selection, ObjectUndoContext undoContext) {
 		super(label);
 		this.modulePage = modulePage;
 		this.chartConfiguration = chartConfiguration;
-		this.dacqConfiguration = dacqConfiguration;
+		this.selection = selection;
 		addContext(undoContext);
 	}
 
 	@Override
 	public IStatus execute(IProgressMonitor monitor, IAdaptable info) throws ExecutionException {
-		AddCurveDialog addCurveDialog = new AddCurveDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), dacqConfiguration, chartConfiguration);
-		if(addCurveDialog.open() == Window.OK) {
-			newCurvesConfigurations = chartConfiguration.createCurvesConfiguration(addCurveDialog.getSelection());
-			for (CurveConfiguration curveConfiguration : newCurvesConfigurations) {
-				curveConfiguration.addObserver(modulePage);
-			}
-			return Status.OK_STATUS;
+		newCurvesConfigurations = chartConfiguration.createCurvesConfiguration(selection);
+		for (CurveConfiguration curveConfiguration : newCurvesConfigurations) {
+			curveConfiguration.addObserver(modulePage);
 		}
-		return Status.CANCEL_STATUS;
+		return Status.OK_STATUS;
 	}
 
 	@Override

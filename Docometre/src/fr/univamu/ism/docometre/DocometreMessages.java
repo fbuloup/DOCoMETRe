@@ -431,6 +431,9 @@ public final class DocometreMessages extends NLS {
 	public static String AddCurvesDialog_ShellTitle;
 	public static String AddCurvesDialog_Title;
 	public static String AddCurvesDialog_Message;
+	public static String ErrorValueAlreadyUsed;
+	public static String ReferenceValueDialogTitle;
+	public static String ReferenceValueDialogMessage;
 	public static String AssociatedProcessLabel;
 	public static String XChannelName_Label;
 	public static String XChannelName_Tooltip;

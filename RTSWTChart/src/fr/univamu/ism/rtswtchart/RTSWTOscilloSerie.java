@@ -63,7 +63,6 @@ public final class RTSWTOscilloSerie extends RTSWTSerie {
 	 */
 	private double lastPointTime = Double.NEGATIVE_INFINITY;
 	
-	
 	/**
 	 * This constructor is used within corresponding chart class.
 	 * 
@@ -75,11 +74,19 @@ public final class RTSWTOscilloSerie extends RTSWTSerie {
 	 */
 	protected RTSWTOscilloSerie(RTSWTChart chart, String id, Color lineColor, int lineStyle, int lineWidth) {
 		super(chart, id, lineColor, lineStyle, lineWidth);
+		if(id.startsWith(HORIZONTAL_REFERENCE)) {
+			String value = id.split("\\[")[1].replaceAll("\\]", "");
+			yValues = new double[1];
+			yValues[0] = Double.parseDouble(value);
+			isHorizontalReference = true;
+			currentIndex = 0;
+			setModified(true);
+		}
 	}
-	
 	
 	@Override
 	protected void reset() {
+		if(isHorizontalReference) return;
 		yValues = new double[chart.getWidth()];
 		for (int i = 0; i < yValues.length; i++) yValues[i] = Double.NaN;
 		currentIndex = -1;
