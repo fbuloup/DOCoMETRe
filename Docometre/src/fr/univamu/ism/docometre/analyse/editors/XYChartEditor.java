@@ -43,12 +43,12 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.swtchart.IAxis;
 import org.eclipse.swtchart.ILineSeries;
 import org.eclipse.swtchart.ISeries;
 import org.eclipse.swtchart.ILineSeries.PlotSymbolType;
 import org.eclipse.swtchart.ISeries.SeriesType;
 import org.eclipse.swtchart.Range;
+import org.eclipse.swtchart.extensions.charts.ChartPropertiesListener;
 import org.eclipse.swtchart.extensions.charts.InteractiveChart;
 import org.eclipse.swtchart.extensions.charts.ZoomListener;
 import org.eclipse.ui.IEditorInput;
@@ -70,7 +70,7 @@ import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.analyse.datamodel.XYChart;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 
-public class XYChartEditor extends EditorPart implements ISelectionChangedListener, IMarkersManager, ZoomListener, TrialsEditor {
+public class XYChartEditor extends EditorPart implements ISelectionChangedListener, IMarkersManager, ZoomListener, TrialsEditor, ChartPropertiesListener {
 	
 	public static String ID = "Docometre.XYChartEditor";
 	private XYChart xyChartData;
@@ -140,23 +140,29 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		}
 		
 		chart = new InteractiveChart(container, SWT.NONE);
+		chart.setBackground(xyChartData.getBackGroundColor());
+		chart.getPlotArea().setBackground(xyChartData.getPlotAreaBackGroundColor());
+		innerContainer.setBackground(xyChartData.getBackGroundColor());
 		new MarkersManager(this);
 		chart.setShowCursor(false);
 		chart.setShowMarker(false);
-		chart.setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_BLACK));
-		chart.setForeground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
-		chart.getPlotArea().setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_BLACK));
 		chart.getLegend().setPosition(SWT.BOTTOM);
-		chart.getLegend().setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_BLACK));
-		chart.getLegend().setForeground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
+		chart.getLegend().setBackground(xyChartData.getLegendBackGroundColor());
+		chart.getLegend().setForeground(xyChartData.getLegendForeGroundColor());
+		chart.getLegend().setVisible(xyChartData.isLegendVisible());
+		chart.getAxisSet().getXAxis(0).getTick().setVisible(xyChartData.isXAxisVisible());
+		chart.getAxisSet().getYAxis(0).getTick().setVisible(xyChartData.isYAxisVisible());
+		chart.getAxisSet().getXAxis(0).getTick().setForeground(xyChartData.getXAxisForeGroundColor());
+		chart.getAxisSet().getYAxis(0).getTick().setForeground(xyChartData.getYAxisForeGroundColor());
 		chart.setSelectionRectangleColor(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_RED));
 		chart.getTitle().setVisible(false);
-		IAxis[] axes = chart.getAxisSet().getAxes();
-		for (IAxis axe : axes) {
-			axe.getTick().setForeground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
-		}
 		chart.getAxisSet().getYAxes()[0].getTitle().setVisible(false);
 		chart.getAxisSet().getXAxes()[0].getTitle().setVisible(false);
+		chart.getAxisSet().getXAxis(0).getGrid().setStyle(xyChartData.getXAxisGridStyle());
+		chart.getAxisSet().getYAxis(0).getGrid().setStyle(xyChartData.getYAxisGridStyle());
+		chart.getAxisSet().getXAxis(0).getGrid().setForeground(xyChartData.getXAxisGridColor());
+		chart.getAxisSet().getYAxis(0).getGrid().setForeground(xyChartData.getYAxisGridColor());
+		
 		chart.addMouseWheelListener(new MouseWheelListener() {
 			@Override
 			public void mouseScrolled(MouseEvent e) {
@@ -164,6 +170,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 			}
 		});
 		chart.addZoomListener(this);
+		chart.addPropertiesListener(this);
 		
 		// Allow data to be copied or moved to the drop target
 		int operations = DND.DROP_COPY;
@@ -505,12 +512,12 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		
 		frontCutSpinner.setMinimum(baseFrontCut);
 		frontCutSpinner.setMaximum(baseEndCut);
-		String message = NLS.bind(DocometreMessages.PressEnterFrontCut, baseFrontCut);
+		String message = NLS.bind(DocometreMessages.PressEnterFrontCut, baseFrontCut, baseEndCut);
 		frontCutSpinner.setToolTipText(message);
 		
 		endCutSpinner.setMinimum(baseFrontCut);
 		endCutSpinner.setMaximum(baseEndCut);
-		message = NLS.bind(DocometreMessages.PressEnterEndCut, baseEndCut);
+		message = NLS.bind(DocometreMessages.PressEnterEndCut, baseFrontCut, baseEndCut);
 		endCutSpinner.setToolTipText(message);
 		
 		if(xyChartData.getFrontCut() == -1 && xyChartData.getEndCut() == -1) {
@@ -747,6 +754,25 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 			trialsListViewer.setSelection(new StructuredSelection(selectedTrialsNumbers), true);
 		}
 		
+	}
+
+	@Override
+	public void updateChartProperties() {
+		xyChartData.setBackGroundColor(chart.getBackground());
+		chart.getParent().getParent().setBackground(chart.getBackground());
+		xyChartData.setPlotAreaBackGroundColor(chart.getBackgroundInPlotArea());
+		xyChartData.setLegendBackGroundColor(chart.getLegend().getBackground());
+		xyChartData.setLegendForeGroundColor(chart.getLegend().getForeground());
+		xyChartData.setLegendVisible(chart.getLegend().isVisible());
+		xyChartData.setXAxisForeGroundColor(chart.getAxisSet().getXAxis(0).getTick().getForeground());
+		xyChartData.setYAxisForeGroundColor(chart.getAxisSet().getYAxis(0).getTick().getForeground());
+		xyChartData.setXAxisVisibility(chart.getAxisSet().getXAxis(0).getTick().isVisible());
+		xyChartData.setYAxisVisibility(chart.getAxisSet().getYAxis(0).getTick().isVisible());
+		xyChartData.setXAxisGridColor(chart.getAxisSet().getXAxis(0).getGrid().getForeground());
+		xyChartData.setXAxisGridStyle(chart.getAxisSet().getXAxis(0).getGrid().getStyle().name());
+		xyChartData.setYAxisGridColor(chart.getAxisSet().getYAxis(0).getGrid().getForeground());
+		xyChartData.setYAxisGridStyle(chart.getAxisSet().getYAxis(0).getGrid().getStyle().name());
+		setDirty(true);
 	}
 	
 }

@@ -19,6 +19,7 @@ import java.util.Set;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.preference.PreferenceNode;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
@@ -69,6 +70,8 @@ public class InteractiveChart extends Chart implements PaintListener {
 	private long clickedTime;
 	/** the resources created with properties dialog */
 	private PropertiesResources resources;
+	/** **/
+	private HashSet<ChartPropertiesListener> propertiesListeners = new HashSet<>(); 
 
 	private int currentX_Pixel;
 	private int currentY_Pixel;
@@ -99,6 +102,14 @@ public class InteractiveChart extends Chart implements PaintListener {
 	public InteractiveChart(Composite parent, int style) {
 		super(parent, style);
 		init();
+	}
+	
+	public void addPropertiesListener(ChartPropertiesListener propertiesListener) {
+		propertiesListeners.add(propertiesListener);
+	}
+	
+	public void removePropertiesListener(ChartPropertiesListener propertiesListener) {
+		propertiesListeners.remove(propertiesListener);
 	}
 
 	public void addZoomListener(ZoomListener zoomListener) {
@@ -783,7 +794,13 @@ public class InteractiveChart extends Chart implements PaintListener {
 		dialog.create();
 		dialog.getShell().setText("Properties");
 		dialog.getTreeViewer().expandAll();
-		dialog.open();
+		if(dialog.open() == Window.OK) {
+			for (ChartPropertiesListener listener : propertiesListeners) {
+				listener.updateChartProperties();
+			}
+		};
+		
+		
 	}
 
 	/**

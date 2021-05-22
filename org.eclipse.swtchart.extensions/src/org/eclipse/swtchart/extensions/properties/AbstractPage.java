@@ -82,7 +82,7 @@ public abstract class AbstractPage extends PreferencePage {
 	 */
 	protected Group createGroupControl(Composite parent, String text, boolean equal) {
 
-		Group group = new Group(parent, SWT.NULL);
+		Group group = new Group(parent, SWT.NONE);
 		group.setText(text);
 		group.setLayout(new GridLayout(2, equal));
 		group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -102,7 +102,7 @@ public abstract class AbstractPage extends PreferencePage {
 
 		Label label = new Label(parent, SWT.NULL);
 		label.setText(text);
-		GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
+		GridData gridData = new GridData(SWT.RIGHT, SWT.CENTER, false, false);
 		gridData.horizontalSpan = 1;
 		label.setLayoutData(gridData);
 		return label;
@@ -140,7 +140,8 @@ public abstract class AbstractPage extends PreferencePage {
 		GridData gridData1 = new GridData();
 		gridData1.horizontalSpan = 1;
 		button.setLayoutData(gridData1);
-		createLabelControl(composite, label);
+		button.setText(label);
+		//createLabelControl(composite, label);
 		return button;
 	}
 
@@ -154,7 +155,7 @@ public abstract class AbstractPage extends PreferencePage {
 	protected Text createTextControl(Composite parent) {
 
 		Text text = new Text(parent, SWT.BORDER | SWT.SINGLE);
-		GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
+		GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, false);
 		gridData.horizontalSpan = 1;
 		text.setLayoutData(gridData);
 		return text;

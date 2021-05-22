@@ -49,6 +49,7 @@ import org.eclipse.ui.PlatformUI;
 public final class ColorUtil {
 	
 	private static ColorRegistry colorRegistry;
+	private static ColorRegistry rgbColorRegistry;
 	private static RGB[] rgbs = new RGB[] { 
 									new RGB(0xFF, 0x00, 0x00),
 									new RGB(0x00, 0xFF, 0x00),
@@ -80,11 +81,25 @@ public final class ColorUtil {
 	}
 	
 	public static Color getColor(Byte index) {
-		if(colorRegistry == null) getColorRegistry();
 		if(index < 0) index = 0;
 		index = (byte) (index % maxColors);
 		Color color = getColorRegistry().get(index.toString());
 		return color;
 	}
 
+	public static Color getColor(RGB rgb) {
+		Color color = getRGBColorRegistry().get(rgb.toString());
+		if(color == null) {
+			getRGBColorRegistry().put(rgb.toString(), rgb);
+			color = getRGBColorRegistry().get(rgb.toString());
+		}
+		return color;
+	}
+
+	private static ColorRegistry getRGBColorRegistry() {
+		if(rgbColorRegistry == null) 
+			rgbColorRegistry = new ColorRegistry(PlatformUI.getWorkbench().getDisplay(), true);
+		return rgbColorRegistry;
+	}
+	
 }

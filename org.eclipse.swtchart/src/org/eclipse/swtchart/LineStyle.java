@@ -40,4 +40,14 @@ public enum LineStyle {
 	private LineStyle(String label) {
 		this.label = label;
 	}
+	
+	public static LineStyle getLineStyle(String name) {
+		if(NONE.name().equals(name)) return NONE;
+		if(SOLID.name().equals(name)) return SOLID;
+		if(DASH.name().equals(name)) return DASH;
+		if(DOT.name().equals(name)) return DOT;
+		if(DASHDOT.name().equals(name)) return DASHDOT;
+		if(DASHDOTDOT.name().equals(name)) return DASHDOTDOT;
+		return DOT;
+	}
 }

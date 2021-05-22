@@ -141,10 +141,10 @@ public final class MarkersManager extends MouseAdapter implements ICustomPaintLi
 		XYChart xyChartData = ((XYChartEditor)containerEditor).getXYChartData();
 		int delta = xyChartData.getMarkersSize();
 		double sf = MathEngineFactory.getMathEngine().getSampleFrequency(xSignal);
-		String[] markersGroupsLabel = new String[0]; 
-		if(displayXMarkers) markersGroupsLabel = MathEngineFactory.getMathEngine().getMarkersGroupsLabels(xSignal);
-		else markersGroupsLabel = MathEngineFactory.getMathEngine().getMarkersGroupsLabels(ySignal);
-		for (String markersGroupLabel : markersGroupsLabel) {
+		String[] markersGroupsLabels = new String[0]; 
+		if(displayXMarkers) markersGroupsLabels = MathEngineFactory.getMathEngine().getMarkersGroupsLabels(xSignal);
+		else markersGroupsLabels = MathEngineFactory.getMathEngine().getMarkersGroupsLabels(ySignal);
+		for (String markersGroupLabel : markersGroupsLabels) {
 			double[][] markers = new double[0][0];
 			if(displayXMarkers) markers = MathEngineFactory.getMathEngine().getMarkers(markersGroupLabel, xSignal);
 			else markers = MathEngineFactory.getMathEngine().getMarkers(markersGroupLabel, ySignal);
@@ -153,7 +153,7 @@ public final class MarkersManager extends MouseAdapter implements ICustomPaintLi
 					int xIndex = 0;
 					int yIndex = 0;
 					int sampleIndex = (int) (sf * markers[i][1]);
-					if(sampleIndex < frontCut || sampleIndex > endCut) continue;
+					if(sampleIndex <= frontCut || sampleIndex >= endCut) continue;
 					if(displayXMarkers) {
 						xIndex = containerEditor.getChart().getAxisSet().getXAxes()[0].getPixelCoordinate(markers[i][2]);
 						double[] values = MathEngineFactory.getMathEngine().getYValuesForSignal(ySignal, trialNumber);

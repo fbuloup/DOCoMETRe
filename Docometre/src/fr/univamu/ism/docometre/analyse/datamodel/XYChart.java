@@ -12,8 +12,12 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swtchart.LineStyle;
 
 import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.ColorUtil;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
@@ -36,6 +40,23 @@ public class XYChart extends AbstractElement {
 	private boolean showMarkersLabels;
 	private int markersSize;
 	
+	private RGB backGroundRGBColor;
+	private RGB plotAreaBackGroundRGBColor;
+	
+	private RGB legendBackGroundRGBColor;
+	private RGB legendForeGroundRGBColor;
+	private boolean legendVisible;
+	
+	private boolean xAxisVisible;
+	private boolean yAxisVisible;
+	private RGB xAxisColor;
+	private RGB yAxisColor;
+	
+	private String xAxisGridStyle;
+	private String yAxisGridStyle;
+	private RGB xAxisGridColor;
+	private RGB yAxisGridColor;
+	
 	public XYChart() {
 		seriesIDs = new HashSet<>();
 		selectedTrialsNumbers = new ArrayList<>();
@@ -46,6 +67,15 @@ public class XYChart extends AbstractElement {
 		yMin = -10;
 		frontCut = -1;
 		endCut = -1;
+		backGroundRGBColor = new RGB(0, 0, 0);
+		plotAreaBackGroundRGBColor = new RGB(0, 0, 0);
+		legendBackGroundRGBColor = new RGB(0, 0, 0);
+		legendForeGroundRGBColor = new RGB(255,  255,  255);
+		legendVisible= true;
+		xAxisColor = new RGB(255,  255,  255);
+		yAxisColor = new RGB(255,  255,  255);
+		xAxisVisible = true;
+		yAxisVisible = true;
 	}
 	
 	@Override
@@ -250,5 +280,119 @@ public class XYChart extends AbstractElement {
 		return false;
 		
 	}
+
+	public void setBackGroundColor(Color background) {
+		backGroundRGBColor = background.getRGB();
+	}
+	
+	public Color getBackGroundColor() {
+		if(backGroundRGBColor == null) backGroundRGBColor = new RGB(0, 0, 0);
+		return ColorUtil.getColor(backGroundRGBColor);
+	}
+
+	public void setPlotAreaBackGroundColor(Color backgroundInPlotArea) {
+		plotAreaBackGroundRGBColor = backgroundInPlotArea.getRGB();
+	}
+	
+	public Color getPlotAreaBackGroundColor() {
+		if(plotAreaBackGroundRGBColor == null) plotAreaBackGroundRGBColor = new RGB(0, 0, 0);
+		return ColorUtil.getColor(plotAreaBackGroundRGBColor);
+	}
+	
+	public void setLegendBackGroundColor(Color color) {
+		legendBackGroundRGBColor = color.getRGB();
+	}
+	
+	public Color getLegendBackGroundColor() {
+		if(legendBackGroundRGBColor == null) legendBackGroundRGBColor = new RGB(0, 0, 0);
+		return ColorUtil.getColor(legendBackGroundRGBColor);
+	}
+	
+	public void setLegendForeGroundColor(Color color) {
+		legendForeGroundRGBColor = color.getRGB();
+	}
+	
+	public Color getLegendForeGroundColor() {
+		if(legendForeGroundRGBColor == null) legendForeGroundRGBColor = new RGB(255, 255, 255);
+		return ColorUtil.getColor(legendForeGroundRGBColor);
+	}
+	
+	public boolean isLegendVisible() {
+		return legendVisible;
+	}
+	
+	public void setLegendVisible(boolean visible) {
+		legendVisible = visible;
+	}
+	
+	public void setXAxisForeGroundColor(Color color) {
+		xAxisColor = color.getRGB();
+	}
+	
+	public Color getXAxisForeGroundColor() {
+		if(xAxisColor == null) xAxisColor = new RGB(255, 255, 255);
+		return ColorUtil.getColor(xAxisColor);
+	}
+	
+	public void setYAxisForeGroundColor(Color color) {
+		yAxisColor = color.getRGB();
+	}
+	
+	public Color getYAxisForeGroundColor() {
+		if(yAxisColor == null) yAxisColor = new RGB(255, 255, 255);
+		return ColorUtil.getColor(yAxisColor);
+	}
+	
+	public void setXAxisVisibility(boolean visible) {
+		xAxisVisible = visible;
+	}
+	
+	public boolean isXAxisVisible() {
+		return xAxisVisible;
+	}
+	
+	public void setYAxisVisibility(boolean visible) {
+		yAxisVisible = visible;
+	}
+	
+	public boolean isYAxisVisible() {
+		return yAxisVisible;
+	}
+
+	public LineStyle getXAxisGridStyle() {
+		return LineStyle.getLineStyle(xAxisGridStyle);
+	}
+
+	public void setXAxisGridStyle(String gridStyle) {
+		this.xAxisGridStyle = gridStyle;
+	}
+
+	public Color getXAxisGridColor() {
+		if(xAxisGridColor == null) xAxisGridColor = new RGB(255, 255, 255);
+		return ColorUtil.getColor(xAxisGridColor);
+	}
+
+	public void setXAxisGridColor(Color color) {
+		this.xAxisGridColor = color.getRGB();
+	}
+	
+	public LineStyle getYAxisGridStyle() {
+		return LineStyle.getLineStyle(yAxisGridStyle);
+	}
+
+	public void setYAxisGridStyle(String gridStyle) {
+		this.yAxisGridStyle = gridStyle;
+	}
+
+	public Color getYAxisGridColor() {
+		if(yAxisGridColor == null) yAxisGridColor = new RGB(255, 255, 255);
+		return ColorUtil.getColor(yAxisGridColor);
+	}
+
+	public void setYAxisGridColor(Color color) {
+		this.yAxisGridColor = color.getRGB();
+	}
+	
+	
 
 }
