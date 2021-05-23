@@ -98,18 +98,20 @@ public class NewDACQConfigurationWizardPage extends NewResourceWizardPage {
 		controlDecoration2 = new ControlDecoration(configurationCombo, SWT.LEFT | SWT.TOP);
 		controlDecoration2.setDescriptionText(DocometreMessages.NewDAQConfigurationWizard_ErrorMessage);
 		controlDecoration2.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_ERROR).getImage());
+		controlDecoration2.hide();
 		
 		defaultButton = new Button(container, SWT.CHECK);
 		defaultButton.setText(DocometreMessages.NewDAQConfigurationWizard_Default_Button_Label);
 		defaultButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		defaultButton.setSelection(true);
 		defaultButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				modifyHandler();
 			}
 		});
-		defaultButton.setSelection(true);
 		
+		modifyHandler();
 		setPageComplete(false);
 		
 	}
@@ -126,8 +128,8 @@ public class NewDACQConfigurationWizardPage extends NewResourceWizardPage {
 				setErrorMessage(null);
 				controlDecoration2.hide();
 				system = configurationCombo.getText();
-				super.modifyHandler();
 			}
+			super.modifyHandler();
 		}
 	}
 	
