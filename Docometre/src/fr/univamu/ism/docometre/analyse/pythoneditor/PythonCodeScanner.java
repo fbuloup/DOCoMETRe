@@ -16,6 +16,7 @@ import org.eclipse.jface.text.rules.WordRule;
 import org.eclipse.swt.SWT;
 
 import fr.univamu.ism.docometre.DocometreApplication;
+import fr.univamu.ism.docometre.ThemeColors;
 import fr.univamu.ism.docometre.analyse.matlabeditor.FloatingPointNumberRule;
 
 public class PythonCodeScanner extends RuleBasedScanner {
@@ -133,7 +134,7 @@ public class PythonCodeScanner extends RuleBasedScanner {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
 		List<IRule> rules= new ArrayList<IRule>();
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.GREEN), 
-													DocometreApplication.getColor(DocometreApplication.WHITE), 
+													ThemeColors.getBackgroundColor(), 
 													SWT.NORMAL, 
 													DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
@@ -164,7 +165,7 @@ public class PythonCodeScanner extends RuleBasedScanner {
 	
 	private static IToken getFunctionsTextAttributeToken() {
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLUE),
-				DocometreApplication.getColor(DocometreApplication.WHITE), SWT.NORMAL,
+				ThemeColors.getBackgroundColor(), SWT.NORMAL,
 				DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
 		return token;
@@ -172,7 +173,7 @@ public class PythonCodeScanner extends RuleBasedScanner {
 	
 	private static IToken getReservedWordsTextAttributeToken() {
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.ORANGE),
-				DocometreApplication.getColor(DocometreApplication.WHITE), SWT.NORMAL,
+				ThemeColors.getBackgroundColor(), SWT.NORMAL,
 				DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
 		return token;
@@ -180,7 +181,7 @@ public class PythonCodeScanner extends RuleBasedScanner {
 	
 	private static IToken getNumpyReservedWordsTextAttributeToken() {
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.MAROON),
-				DocometreApplication.getColor(DocometreApplication.WHITE), SWT.NORMAL,
+				ThemeColors.getBackgroundColor(), SWT.NORMAL,
 				DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
 		return token;
@@ -188,7 +189,7 @@ public class PythonCodeScanner extends RuleBasedScanner {
 	
 	private static IToken getScipyReservedWordsTextAttributeToken() {
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.MAROON),
-				DocometreApplication.getColor(DocometreApplication.WHITE), SWT.NORMAL,
+				ThemeColors.getBackgroundColor(), SWT.NORMAL,
 				DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
 		return token;
@@ -196,7 +197,7 @@ public class PythonCodeScanner extends RuleBasedScanner {
 	
 	private static IToken getDocometreReservedWordsTextAttributeToken() {
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.RED),
-				DocometreApplication.getColor(DocometreApplication.WHITE), SWT.NORMAL,
+				ThemeColors.getBackgroundColor(), SWT.NORMAL,
 				DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
 		return token;
@@ -204,7 +205,7 @@ public class PythonCodeScanner extends RuleBasedScanner {
 	
 	private static IToken getMathReservedWordsTextAttributeToken() {
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.MAROON),
-				DocometreApplication.getColor(DocometreApplication.WHITE), SWT.NORMAL,
+				ThemeColors.getBackgroundColor(), SWT.NORMAL,
 				DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
 		return token;
