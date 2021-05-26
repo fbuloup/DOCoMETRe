@@ -154,8 +154,10 @@ public class DeleteResourcesAction extends Action implements ISelectionListener,
 										for (IResource subject : subjects) {
 											if(MathEngineFactory.getMathEngine().isSubjectLoaded(subject)) resources.add(subject);
 										}
-										LoadUnloadSubjectsHandler.getInstance().resetSelection(resources);
-										LoadUnloadSubjectsHandler.getInstance().execute(null);
+										if(LoadUnloadSubjectsHandler.getInstance() != null) {
+											LoadUnloadSubjectsHandler.getInstance().resetSelection(resources);
+											LoadUnloadSubjectsHandler.getInstance().execute(null);
+										}
 										MathEngineFactory.getMathEngine().unload(resource);
 									} catch (ExecutionException e) {
 										Activator.logErrorMessageWithCause(e);

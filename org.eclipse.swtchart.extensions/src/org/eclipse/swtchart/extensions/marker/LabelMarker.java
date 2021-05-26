@@ -58,6 +58,7 @@ public class LabelMarker extends AbstractBaseChartPaintListener implements IBase
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	protected void finalize() throws Throwable {
 

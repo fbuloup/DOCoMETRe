@@ -69,6 +69,7 @@ import org.eclipse.ui.part.PageBook;
  * A page which represents a composite cheat sheet
  */
 
+@SuppressWarnings("deprecation")
 public class CompositeCheatSheetPage extends Page implements ISelectionChangedListener, IMenuContributor {
 
 	public static final String REVIEW_TAG = "__review__"; //$NON-NLS-1$

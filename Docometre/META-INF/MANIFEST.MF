@@ -31,7 +31,7 @@ Require-Bundle: org.eclipse.ui;bundle-version="3.108.0",
  JZY3D;bundle-version="1.0.0",
  PythonController;bundle-version="1.0.0",
  py4j-java;bundle-version="1.0.0"
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: Docometre

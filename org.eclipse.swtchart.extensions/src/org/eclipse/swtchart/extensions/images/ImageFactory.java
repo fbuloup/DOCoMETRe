@@ -30,6 +30,7 @@ public class ImageFactory<T extends ScrollableChart> {
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
 	 */
+	@SuppressWarnings("deprecation")
 	public ImageFactory(Class<T> clazz, int width, int height) throws InstantiationException, IllegalAccessException {
 		//
 		t = clazz.newInstance();

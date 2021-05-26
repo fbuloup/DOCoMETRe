@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
-	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="libs/jogamp-fat.jar" sourcepath="libs/jogamp-fat-java-src.zip"/>
 	<classpathentry exported="true" kind="lib" path="libs/jzy3d-api-1.0.2-maths-io.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jzy3d-api-1.0.2.jar" sourcepath="libs/jzy3d-api-1.0.2-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jzy3d-swt-1.0.2.jar" sourcepath="libs/jzy3d-swt-1.0.2-sources.jar">
@@ -10,6 +10,6 @@
 			<attribute name="javadoc_location" value="jar:platform:/resource/JZY3D/libs/jzy3d-swt-1.0.2-javadoc.jar!/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="libs/jogamp-fat.jar" sourcepath="libs/jogamp-fat-java-src.zip"/>
+	<classpathentry kind="src" path="src/"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
