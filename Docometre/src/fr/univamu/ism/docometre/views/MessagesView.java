@@ -66,13 +66,12 @@ import org.eclipse.ui.progress.WorkbenchJob;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
+import fr.univamu.ism.docometre.ThemeColors;
 
 public class MessagesView extends ViewPart implements ILogListener, IDocumentListener {
 	
-	private static Color NORMAL_COLOR = JFaceResources.getResources().createColor(new RGB(0, 0, 0));
 	private static Color WARNING_COLOR = JFaceResources.getResources().createColor(new RGB(204,102,0));
-	private static Color ERROR_COLOR = JFaceResources.getResources().createColor(new RGB(255, 0, 0));
-	private static Color WHITE_COLOR = JFaceResources.getResources().createColor(new RGB(255, 255, 255));
+	private static Color ERROR_COLOR = JFaceResources.getResources().createColor(new RGB(139, 0, 0));
 	
 	private class ScrollLockAction extends Action {
 		public ScrollLockAction() {
@@ -162,11 +161,12 @@ public class MessagesView extends ViewPart implements ILogListener, IDocumentLis
 				StyleRange styleRange = new StyleRange();
 				styleRange.start = start;
 				styleRange.length = message.length();
-				styleRange.background = WHITE_COLOR;
+				styleRange.background = ThemeColors.getBackgroundColor();
+				
 				if(status.getSeverity() == IStatus.INFO) styleRange.fontStyle = SWT.NORMAL;
 //					if(status.getSeverity() == IStatus.WARNING) styleRange.fontStyle = SWT.BOLD;
 //					if(status.getSeverity() == IStatus.ERROR) styleRange.fontStyle = SWT.BOLD;
-				if(status.getSeverity() == IStatus.INFO) styleRange.foreground = NORMAL_COLOR;
+				if(status.getSeverity() == IStatus.INFO) styleRange.foreground = ThemeColors.getForegroundColor();
 				if(status.getSeverity() == IStatus.WARNING) styleRange.foreground = WARNING_COLOR;
 				if(status.getSeverity() == IStatus.ERROR) styleRange.foreground = ERROR_COLOR;
 				

@@ -25,7 +25,7 @@
          </property>
          <property
                name="cssTheme"
-               value="Docometre.theme">
+               value="org.eclipse.e4.ui.css.theme.e4_classic">
          </property>
          <property
                name="applicationCSSResources"
@@ -68,19 +68,6 @@
                value="plugin_customization.ini">
          </property>
       </product>
-   </extension>
-   <extension
-         point="org.eclipse.e4.ui.css.swt.theme">
-  <theme
-        basestylesheeturi="platform:/plugin/Docometre.theme/css/theme.css"
-        id="Docometre.theme"
-        label="Docometre.theme">
-  </theme>
-  <theme
-        basestylesheeturi="platform:/plugin/Docometre.theme/css/dark_theme.css"
-        id="Docometre.dark_theme"
-        label="Docometre.dark_theme">
-  </theme>
    </extension>
    
    

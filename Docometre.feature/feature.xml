@@ -1492,13 +1492,20 @@ jurisdiction, by the more diligent Party.
          version="0.0.0"/>
 
    <plugin
-         id="Docometre.theme"
+         id="JZY3D"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.ui.themes"
          download-size="0"
          install-size="0"
          version="0.0.0"/>
 
    <plugin
-         id="JZY3D"
+         id="org.eclipse.e4.ui.css.swt.theme"
          download-size="0"
          install-size="0"
          version="0.0.0"

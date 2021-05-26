@@ -56,6 +56,7 @@ import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.swt.SWT;
 
 import fr.univamu.ism.docometre.DocometreApplication;
+import fr.univamu.ism.docometre.ThemeColors;
 
 public class ADBasicSourceViewerConfiguration extends SourceViewerConfiguration {
 	
@@ -100,10 +101,9 @@ public class ADBasicSourceViewerConfiguration extends SourceViewerConfiguration 
 		presentationReconciler.setDamager(defaultDamagerRepairer, ADBasicRulesPartitionScanner.PAR_FPAR);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, ADBasicRulesPartitionScanner.PAR_FPAR);
 		
-		//
 		RuleBasedScanner defaultScanner = new RuleBasedScanner();
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLUE),
-													DocometreApplication.getColor(DocometreApplication.WHITE), 
+													ThemeColors.getBackgroundColor(), 
 													SWT.NORMAL,
 													DocometreApplication.getFont(DocometreApplication.COURIER_NEW));
 		IToken token = new Token(attribute);

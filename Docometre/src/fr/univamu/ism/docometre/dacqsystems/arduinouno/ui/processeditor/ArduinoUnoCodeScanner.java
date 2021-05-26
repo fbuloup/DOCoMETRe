@@ -55,6 +55,7 @@ import org.eclipse.jface.text.rules.WordRule;
 import org.eclipse.swt.SWT;
 
 import fr.univamu.ism.docometre.DocometreApplication;
+import fr.univamu.ism.docometre.ThemeColors;
 import fr.univamu.ism.docometre.editors.WordsDetector;
 
 public class ArduinoUnoCodeScanner extends RuleBasedScanner {
@@ -70,7 +71,7 @@ public class ArduinoUnoCodeScanner extends RuleBasedScanner {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
 		List<IRule> rules = new ArrayList<IRule>(0);
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLUE), 
-													DocometreApplication.getColor(DocometreApplication.WHITE), 
+													ThemeColors.getBackgroundColor(), 
 													SWT.NORMAL, 
 													DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
@@ -85,7 +86,7 @@ public class ArduinoUnoCodeScanner extends RuleBasedScanner {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
 		List<IRule> rules = new ArrayList<IRule>(0);
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.ORANGE), 
-													DocometreApplication.getColor(DocometreApplication.WHITE), 
+													ThemeColors.getBackgroundColor(), 
 													SWT.NORMAL, 
 													DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
@@ -100,7 +101,7 @@ public class ArduinoUnoCodeScanner extends RuleBasedScanner {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
 		List<IRule> rules = new ArrayList<IRule>(0);
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.RED), 
-													DocometreApplication.getColor(DocometreApplication.WHITE), 
+													ThemeColors.getBackgroundColor(), 
 													SWT.NORMAL, 
 													DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
@@ -115,7 +116,7 @@ public class ArduinoUnoCodeScanner extends RuleBasedScanner {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
 		List<IRule> rules = new ArrayList<IRule>(0);
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.MAROON), 
-													DocometreApplication.getColor(DocometreApplication.WHITE), 
+													ThemeColors.getBackgroundColor(), 
 													SWT.NORMAL, 
 													DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
@@ -130,7 +131,7 @@ public class ArduinoUnoCodeScanner extends RuleBasedScanner {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
 		List<IRule> rules = new ArrayList<IRule>(0);
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.GREEN), 
-													DocometreApplication.getColor(DocometreApplication.WHITE), 
+													ThemeColors.getBackgroundColor(), 
 													SWT.NORMAL, 
 													DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
