@@ -28,7 +28,6 @@ import org.eclipse.ui.internal.cheatsheets.views.CheatSheetManager;
 import org.eclipse.ui.internal.provisional.cheatsheets.ICompositeCheatSheet;
 import org.eclipse.ui.internal.provisional.cheatsheets.ICompositeCheatSheetTask;
 
-@SuppressWarnings("deprecation")
 public class CompositeCheatSheetModel extends Observable implements ICompositeCheatSheet, ICheatSheet{
 
 	private String name;
