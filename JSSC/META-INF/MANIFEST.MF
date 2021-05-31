@@ -3,25 +3,31 @@ Bundle-ManifestVersion: 2
 Bundle-Name: JSSC
 Bundle-SymbolicName: JSSC;singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Comment: Eclipse-BundleShape: dir
 Export-Package: jssc,
- libs.linux,
- libs.mac_os_x,
- libs.solaris,
- libs.windows
-Bundle-ClassPath: jssc-2.8.0.jar,
+ natives.linux_32,
+ natives.linux_64,
+ natives.linux_arm,
+ natives.linux_arm64,
+ natives.linux_ppc,
+ natives.osx_64,
+ natives.sunos_32,
+ natives.sunos_64,
+ natives.windows_32,
+ natives.windows_64
+Bundle-ClassPath: jssc-2.9.2.jar,
  .
 Bundle-NativeCode: 
- natives/mac_os_x/libjSSC-2.8_x86_64.jnilib; 
+ natives/V292/osx_64/libjssc.dylib; 
  osname=macosx; processor=x86_64,
- natives/windows/jSSC-2.8_x86.dll; 
+ natives/V292/windows_32/jssc.dll; 
  osname=win32; processor=x86,
- natives/windows/jSSC-2.8_x86_64.dll; 
+ natives/V292/windows_64/jssc.dll; 
  osname=win32; processor=x86_64,
- natives/linux/libjSSC-2.8_x86.so; 
+ natives/V292/linux_32/libjssc.so; 
  osname=linux; processor=x86,
- natives/linux/libjSSC-2.8_x86_64.so; 
+ natives/V292/linux_64/libjssc.so; 
  osname=linux; processor=x86_64, *
 Automatic-Module-Name: JSSC
-Bundle-Vendor: Scream3r
+Bundle-Vendor: https://github.com/java-native/jssc
