@@ -135,11 +135,11 @@
 		
 		<module>../JZY3D</module>
 		<module>
-			../../../Documents/ECLIPSE_WORKSPACES/DOCOMETRE/org.eclipse.nebula.visualization.widgets
+			../org.eclipse.nebula.visualization.widgets
 		</module>
 		
 		<module>
-			../../../Documents/ECLIPSE_WORKSPACES/DOCOMETRE/org.eclipse.nebula.visualization.xygraph
+			../org.eclipse.nebula.visualization.xygraph
 		</module>
 	</modules>
 </project>
