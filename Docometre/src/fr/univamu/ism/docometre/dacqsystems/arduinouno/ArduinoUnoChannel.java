@@ -215,9 +215,8 @@ public class ArduinoUnoChannel extends Channel {
 					IResource fileResource = process.getOutputFolder().findMember(file.getName());
 					ResourceProperties.setTypePersistentProperty(fileResource, ResourceType.SAMPLES.toString());
 				}
-				
-				
 			}
+			if(displayBuffer != null) displayBuffer.clear();
 		} catch (IOException | CoreException e) {
 			Logger.getLogger(Process.class).error("Exception", e);
 		}
