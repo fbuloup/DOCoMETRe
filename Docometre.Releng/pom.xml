@@ -134,5 +134,12 @@
 		<module>../Docometre.theme</module>
 		
 		<module>../JZY3D</module>
+		<module>
+			../../../Documents/ECLIPSE_WORKSPACES/DOCOMETRE/org.eclipse.nebula.visualization.widgets
+		</module>
+		
+		<module>
+			../../../Documents/ECLIPSE_WORKSPACES/DOCOMETRE/org.eclipse.nebula.visualization.xygraph
+		</module>
 	</modules>
 </project>

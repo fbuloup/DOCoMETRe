@@ -59,7 +59,8 @@ public final class OscilloCurveConfigurationProperties extends Property {
 		OscilloCurveConfiguration newOscilloCurveConfiguration = new OscilloCurveConfiguration(oscilloCurveConfiguration.getChannel());
 		CurveConfigurationProperties.clone(oscilloCurveConfiguration, newOscilloCurveConfiguration);
 		newOscilloCurveConfiguration.setProperty(CHANNEL_NAME, new String(oscilloCurveConfiguration.getProperty(CHANNEL_NAME)));
-		newOscilloCurveConfiguration.setProperty(DISPLAY_CURRENT_VALUES, new String(oscilloCurveConfiguration.getProperty(DISPLAY_CURRENT_VALUES)));
+		newOscilloCurveConfiguration.setProperty(DISPLAY_CURRENT_VALUES, "false");
+		if(oscilloCurveConfiguration.getProperty(DISPLAY_CURRENT_VALUES) != null) newOscilloCurveConfiguration.setProperty(DISPLAY_CURRENT_VALUES, new String(oscilloCurveConfiguration.getProperty(DISPLAY_CURRENT_VALUES)));
 		return newOscilloCurveConfiguration;
 	}
 	

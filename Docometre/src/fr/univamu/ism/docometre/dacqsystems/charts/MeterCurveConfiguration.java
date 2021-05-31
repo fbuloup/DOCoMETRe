@@ -44,27 +44,31 @@ package fr.univamu.ism.docometre.dacqsystems.charts;
 import java.io.IOException;
 import java.nio.FloatBuffer;
 
+import org.eclipse.draw2d.Figure;
+import org.eclipse.draw2d.LightweightSystem;
+import org.eclipse.nebula.visualization.widgets.figures.GaugeFigure;
+import org.eclipse.nebula.visualization.widgets.figures.TankFigure;
+import org.eclipse.ui.PlatformUI;
+
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelObserver;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.Property;
 import fr.univamu.ism.docometre.dacqsystems.PropertyObserver;
-import fr.univamu.ism.rtswtchart.RTSWTOscilloSerie;
 
-public class OscilloCurveConfiguration extends CurveConfiguration implements PropertyObserver, ChannelObserver, OneChannelCurve {
+public class MeterCurveConfiguration extends CurveConfiguration implements PropertyObserver, ChannelObserver, OneChannelCurve {
 
 	private static final long serialVersionUID = 1L;
 	
 	private Channel channel;
-	
-	transient private RTSWTOscilloSerie oscilloSerie;
-	transient double sampleFrequency;
-	transient private double previousTime = 0;
 
-	public OscilloCurveConfiguration(Channel channel) {
+	private transient Figure oneChannelFigure;
+	private transient LightweightSystem lws;
+
+	public MeterCurveConfiguration(Channel channel) {
 		this.channel = channel;
-		OscilloCurveConfigurationProperties.populateProperties(this);
+		MeterCurveConfigurationProperties.populateProperties(this);
 		initializeObservers();
 	}
 	
@@ -75,14 +79,13 @@ public class OscilloCurveConfiguration extends CurveConfiguration implements Pro
 	
 	@Override
 	public Object clone() throws CloneNotSupportedException {
-		return OscilloCurveConfigurationProperties.clone(this);
+		return MeterCurveConfigurationProperties.clone(this);
 	}
 	
 	@Override
 	public void initializeObservers() {
 		channel.addObserver((PropertyObserver)this);
 		channel.addChannelObserver((ChannelObserver)this);
-		sampleFrequency = Double.parseDouble(channel.getProperty(ChannelProperties.SAMPLE_FREQUENCY));
 	}
 	
 //	@Override
@@ -102,15 +105,6 @@ public class OscilloCurveConfiguration extends CurveConfiguration implements Pro
 				notifyObservers(ChartConfigurationProperties.UNTRANSFERED_CHANNEL, null, channel);
 			}
 		}
-		
-		if(property == ChannelProperties.SAMPLE_FREQUENCY && element == channel) {
-			sampleFrequency = Double.parseDouble(channel.getProperty(ChannelProperties.SAMPLE_FREQUENCY));
-		}
-//		if(property == ChannelProperties.REMOVE && element == oldValue) {
-//			chartConfiguration.removeCurveConfiguration(this);
-////			setProperty(OscilloCurveConfigurationProperties.CHANNEL_NAME, "");
-//			notifyObservers(property, newValue, oldValue);
-//		}
 	}
 	
 	// Override in order to initialize observers 
@@ -123,15 +117,18 @@ public class OscilloCurveConfiguration extends CurveConfiguration implements Pro
 	public boolean mustBeRemoved(Object object) {
 		return object == channel;
 	}
-
-	public void setSerie(RTSWTOscilloSerie oscilloSerie) {
-		this.oscilloSerie = oscilloSerie;
-		previousTime = 0;
+	
+	public void setChart(Figure oneChannelFigure) {
+		this.oneChannelFigure = oneChannelFigure;
 	}
-
+	
+	public void setLigthWeightSystem(LightweightSystem lws) {
+		this.lws = lws;
+	}
+	
 	@Override
 	public void update(FloatBuffer floatBuffer, String channelID) {
-		if(oscilloSerie != null /*&& oscilloSerie.getId().equals(channelID)*/) {
+		if(oneChannelFigure != null) {
 			floatBuffer.flip();
 			float[] values = new float[floatBuffer.remaining()];
 			floatBuffer.get(values);
@@ -140,12 +137,17 @@ public class OscilloCurveConfiguration extends CurveConfiguration implements Pro
 				doubleValues[i] = (double) floatBuffer.get(i);
 			}
 			if(values.length > 0) {
-				Double[] timeValues = new  Double[values.length];
-				for (int i = 0; i < timeValues.length; i++) {
-					timeValues[i] = previousTime;
-					previousTime = timeValues[i] + 1f/sampleFrequency;
-				}
-				oscilloSerie.addPoints(timeValues, doubleValues);
+				PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+					@Override
+					public void run() {
+						if(!((MeterChartConfiguration)chartConfiguration).isVisible()) {
+							((MeterChartConfiguration)chartConfiguration).setVisible(true);
+						}
+						if(oneChannelFigure instanceof GaugeFigure)	((GaugeFigure)oneChannelFigure).setValue(doubleValues[doubleValues.length - 1]);
+						if(oneChannelFigure instanceof TankFigure)	((TankFigure)oneChannelFigure).setValue(doubleValues[doubleValues.length - 1]);
+						lws.getUpdateManager().performUpdate();
+					}
+				});
 			}
 		}
 	}

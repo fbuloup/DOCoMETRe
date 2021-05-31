@@ -393,7 +393,9 @@ public class ChartsConfigurationPage extends ModulePage {
 		}
 		tableViewer.getTable().setVisible(true);
 		if(currentSelectedChartConfiguration instanceof OscilloChartConfiguration) createOscilloCurvesSection();			
-		if(currentSelectedChartConfiguration instanceof XYChartConfiguration) createXYCurvesSection();			
+		if(currentSelectedChartConfiguration instanceof XYChartConfiguration) createXYCurvesSection();
+		if(currentSelectedChartConfiguration instanceof MeterChartConfiguration) createMeterCurveSection();			
+		
 		tableConfigurationContainer.layout(true);
 	}
 
@@ -664,6 +666,50 @@ public class ChartsConfigurationPage extends ModulePage {
 		tableViewer.setContentProvider(new ArrayContentProvider());
 		tableViewer.setInput(currentSelectedChartConfiguration.getCurvesConfiguration());
 		
+	}
+	
+	private void createMeterCurveSection() {
+		TableColumnLayout  curvesTableColumnLayout = (TableColumnLayout) tableConfigurationContainer.getLayout();
+		TableViewerColumn channelNameTableViewerColumn = createColumn(MeterCurveConfigurationProperties.CHANNEL_NAME.getTooltip(), curvesTableColumnLayout, MeterCurveConfigurationProperties.CHANNEL_NAME, 175, 0);
+		channelNameTableViewerColumn.setEditingSupport(null);
+		channelNameTableViewerColumn.setLabelProvider(new CellLabelProvider() {
+			@Override
+			public void update(ViewerCell cell) {
+				Object element = cell.getElement();
+				if(!(element instanceof MeterCurveConfiguration)) return;
+				MeterCurveConfiguration curve = (MeterCurveConfiguration)element;
+				cell.setText(curve.getProperty(MeterCurveConfigurationProperties.CHANNEL_NAME));
+			}
+		});
+		
+		TableViewerColumn curveDisplayValueTableViewerColumn = createColumn(MeterCurveConfigurationProperties.DISPLAY_CURRENT_VALUES.getTooltip(), curvesTableColumnLayout, MeterCurveConfigurationProperties.DISPLAY_CURRENT_VALUES, defaultColumnWidth + 100, 4);
+		curveDisplayValueTableViewerColumn.setLabelProvider(new ColumnLabelProvider() {
+			@Override
+			public String getText(Object element) {
+				if(!(element instanceof MeterCurveConfiguration)) return "";
+				MeterCurveConfiguration curve = (MeterCurveConfiguration)element;
+				String value = curve.getProperty(MeterCurveConfigurationProperties.DISPLAY_CURRENT_VALUES);
+				return value == null ? "false":value;
+			}
+			
+			@Override
+			public Image getImage(Object element) {
+				if(!(element instanceof MeterCurveConfiguration)) return null;
+				MeterCurveConfiguration curve = (MeterCurveConfiguration)element;
+				String value = "false";
+				value = curve.getProperty(MeterCurveConfigurationProperties.DISPLAY_CURRENT_VALUES);
+				return "true".equals(value) ? ModulePage.checkedImage : ModulePage.uncheckedImage;
+			}
+		});
+		
+		configureSorter(new CurvesComparator(), tableViewer.getTable().getColumn(0));
+		tableViewer.setContentProvider(new ArrayContentProvider());
+		tableViewer.setInput(currentSelectedChartConfiguration.getCurvesConfiguration());
+		
+//		CurveConfiguration[] curvesConfigurations = currentSelectedChartConfiguration.getCurvesConfiguration();
+//		for (CurveConfiguration curveConfiguration : curvesConfigurations) {
+//			curveConfiguration.initializeObservers();
+//		}
 	}
 
 }

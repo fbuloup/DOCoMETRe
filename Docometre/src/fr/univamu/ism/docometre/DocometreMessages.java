@@ -368,6 +368,31 @@ public final class DocometreMessages extends NLS {
 	public static String OscilloChartLabel;
 	public static String ScrollChartLabel;
 	public static String XYChartLabel;
+	public static String GaugeChartLabel;
+	public static String TankChartLabel;
+	
+	
+	public static String rangeMaxAmplitude_Title;
+	public static String rangeMaxAmplitude_Tooltip;
+	public static String rangeMinAmplitude_Title;
+	public static String rangeMinAmplitude_Tooltip;
+	public static String ShowLow_Title;
+	public static String ShowLow_Tooltip;
+	public static String ShowLowLow_Title;
+	public static String ShowLowLow_Tooltip;
+	public static String ShowHigh_Title;
+	public static String ShowHigh_Tooltip;
+	public static String ShowHighHigh_Title;
+	public static String ShowHighHigh_Tooltip;;
+	public static String LevelLow_Title;
+	public static String LevelLow_Tooltip;
+	public static String LevelLowLow_Title;
+	public static String LevelLowLow_Tooltip;
+	public static String LevelHigh_Title;
+	public static String LevelHigh_Tooltip;
+	public static String LevelHighHigh_Title;
+	public static String LevelHighHigh_Tooltip;
+	
 	public static String ChartsConfigurationSection_Title;
 	public static String ChartsConfigurationSectionDescription;
 	public static String DeleteChartsToolItem_Tooltip; 

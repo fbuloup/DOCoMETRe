@@ -42,28 +42,33 @@
 package fr.univamu.ism.docometre.dacqsystems.charts;
 
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.dacqsystems.Property;
 
-public enum ChartTypes {
+public final class MeterCurveConfigurationProperties extends Property {
+	
+	public static final MeterCurveConfigurationProperties CHANNEL_NAME = new MeterCurveConfigurationProperties("MeterCurveConfigurationProperties.CHANNEL_NAME", DocometreMessages.ChannelName_Label, DocometreMessages.ChannelName_Tooltip, "");
+	public static final MeterCurveConfigurationProperties DISPLAY_CURRENT_VALUES = new MeterCurveConfigurationProperties("MeterCurveConfigurationProperties.DISPLAY_CURRENT_VALUES", DocometreMessages.DisplayValuesCurves_Title, DocometreMessages.DisplayValuesCurves_Tooltip, "^(true|false)$", "true:false");
+	
+	public static void populateProperties(MeterCurveConfiguration meterCurveConfiguration){
+		CurveConfigurationProperties.populateProperties(meterCurveConfiguration);
+		meterCurveConfiguration.setProperty(CHANNEL_NAME, "Select Channel");
+		meterCurveConfiguration.setProperty(DISPLAY_CURRENT_VALUES, "false");
+	}
 
-	OSCILLO_CHART(DocometreMessages.OscilloChartLabel),
-	XY_CHART(DocometreMessages.XYChartLabel),
-	GAUGE_CHART(DocometreMessages.GaugeChartLabel),
-	TANK_CHART(DocometreMessages.TankChartLabel);
-	
-	private String label;
-	
-	private ChartTypes(String label) {
-		this.label = label;
+	public static MeterCurveConfiguration clone(MeterCurveConfiguration meterCurveConfiguration) {
+		MeterCurveConfiguration newMeterCurveConfiguration = new MeterCurveConfiguration(meterCurveConfiguration.getChannel());
+		CurveConfigurationProperties.clone(meterCurveConfiguration, newMeterCurveConfiguration);
+		newMeterCurveConfiguration.setProperty(CHANNEL_NAME, new String(meterCurveConfiguration.getProperty(CHANNEL_NAME)));
+		newMeterCurveConfiguration.setProperty(DISPLAY_CURRENT_VALUES, new String(meterCurveConfiguration.getProperty(DISPLAY_CURRENT_VALUES)));
+		return newMeterCurveConfiguration;
 	}
 	
-	public String getLabel() {
-		return label;
+	private MeterCurveConfigurationProperties(String key, String label, String tooltip, String regExp) {
+		super(key, label, tooltip, regExp);
 	}
 	
-	@Override
-	public String toString() {
-		return getLabel();
+	private MeterCurveConfigurationProperties(String key, String label, String tooltip, String regExp, String availableValues) {
+		super(key, label, tooltip, regExp, availableValues);
 	}
-	
 
 }
