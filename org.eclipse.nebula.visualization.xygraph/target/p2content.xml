@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<units size='1'>
+  <unit id='org.eclipse.nebula.visualization.xygraph' version='1.0.0.202105310900' singleton='false' generation='2'>
+    <update id='org.eclipse.nebula.visualization.xygraph' range='[0.0.0,1.0.0.202105310900)' severity='0'/>
+    <properties size='5'>
+      <property name='org.eclipse.equinox.p2.name' value='Nebula Visualization XY Graph'/>
+      <property name='org.eclipse.equinox.p2.provider' value='Eclipse.org'/>
+      <property name='maven-groupId' value='org.eclipse.nebula.visualization.xygraph'/>
+      <property name='maven-artifactId' value='org.eclipse.nebula.visualization.xygraph'/>
+      <property name='maven-version' value='1.0.0-SNAPSHOT'/>
+    </properties>
+    <provides size='11'>
+      <provided namespace='org.eclipse.equinox.p2.iu' name='org.eclipse.nebula.visualization.xygraph' version='1.0.0.202105310900'/>
+      <provided namespace='osgi.bundle' name='org.eclipse.nebula.visualization.xygraph' version='1.0.0.202105310900'/>
+      <provided namespace='java.package' name='org.eclipse.nebula.visualization.internal.xygraph.toolbar' version='0.0.0'/>
+      <provided namespace='java.package' name='org.eclipse.nebula.visualization.internal.xygraph.undo' version='0.0.0'/>
+      <provided namespace='java.package' name='org.eclipse.nebula.visualization.xygraph.dataprovider' version='0.0.0'/>
+      <provided namespace='java.package' name='org.eclipse.nebula.visualization.xygraph.figures' version='0.0.0'/>
+      <provided namespace='java.package' name='org.eclipse.nebula.visualization.xygraph.linearscale' version='0.0.0'/>
+      <provided namespace='java.package' name='org.eclipse.nebula.visualization.xygraph.styleprovider' version='0.0.0'/>
+      <provided namespace='java.package' name='org.eclipse.nebula.visualization.xygraph.util' version='0.0.0'/>
+      <provided namespace='osgi.identity' name='org.eclipse.nebula.visualization.xygraph' version='1.0.0.202105310900'>
+        <properties size='1'>
+          <property name='type' value='osgi.bundle'/>
+        </properties>
+      </provided>
+      <provided namespace='org.eclipse.equinox.p2.eclipse.type' name='bundle' version='1.0.0'/>
+    </provides>
+    <requires size='5'>
+      <required namespace='osgi.bundle' name='org.eclipse.swt' range='0.0.0'/>
+      <required namespace='osgi.bundle' name='org.eclipse.draw2d' range='0.0.0'/>
+      <required namespace='osgi.bundle' name='org.eclipse.jface' range='0.0.0'/>
+      <required namespace='osgi.bundle' name='org.eclipse.core.runtime' range='0.0.0'/>
+      <requiredProperties namespace='osgi.ee' match='(&amp;(osgi.ee=JavaSE)(version=1.8))'/>
+    </requires>
+    <artifacts size='1'>
+      <artifact classifier='osgi.bundle' id='org.eclipse.nebula.visualization.xygraph' version='1.0.0.202105310900'/>
+    </artifacts>
+    <touchpoint id='org.eclipse.equinox.p2.osgi' version='1.0.0'/>
+    <touchpointData size='1'>
+      <instructions size='1'>
+        <instruction key='manifest'>
+          Bundle-SymbolicName: org.eclipse.nebula.visualization.xygraph&#xA;Bundle-Version: 1.0.0.202105310900&#xA;
+        </instruction>
+      </instructions>
+    </touchpointData>
+  </unit>
+</units>

@@ -1,0 +1,840 @@
+Automatic-Module-Name: org.eclipse.nebula.visualization.xygraph
+Manifest-Version: 1.0
+Bundle-SymbolicName: org.eclipse.nebula.visualization.xygraph
+Export-Package: org.eclipse.nebula.visualization.internal.xygraph.tool
+ bar,org.eclipse.nebula.visualization.internal.xygraph.undo,org.eclips
+ e.nebula.visualization.xygraph.dataprovider,org.eclipse.nebula.visual
+ ization.xygraph.figures,org.eclipse.nebula.visualization.xygraph.line
+ arscale,org.eclipse.nebula.visualization.xygraph.styleprovider,org.ec
+ lipse.nebula.visualization.xygraph.util
+Bundle-Name: Nebula Visualization XY Graph
+Bundle-Version: 1.0.0.qualifier
+Require-Bundle: org.eclipse.swt,org.eclipse.draw2d,org.eclipse.jface,o
+ rg.eclipse.core.runtime
+Bundle-ManifestVersion: 2
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Eclipse-SourceReferences: scm:git:https://git.eclipse.org/r/p/nebula/o
+ rg.eclipse.nebula;path="widgets/visualization/org.eclipse.nebula.visu
+ alization.xygraph";commitId=257222bde16642b7668c465209a55fbf2629dc1a
+Bundle-Vendor: Eclipse.org
+Build-Jdk-Spec: 11
+Created-By: Maven Archiver 3.5.0
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/Annotation$Poin
+ ter.class
+SHA-256-Digest: 9I/8htYZhlRQTDzmR3aMGN4a57f9nsRK+YHnztX966s=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/toolbar/AxisCo
+ nfigPage$5.class
+SHA-256-Digest: aVeeQOhKFp09VC8Z6TW3V20KGaGk4tZserBHeAH6mZs=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/MouseArrow.
+ png
+SHA-256-Digest: 1lc1d8rCddEnQx08nVA9O0X2+t3KAhpFKqsBnCwFsFY=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/ZoomInVertC
+ ursor.png
+SHA-256-Digest: g95igINGLwSwn5Y2tSFaJk7vpJoFGu5qDZ877vN4YhI=
+
+Name: org/eclipse/nebula/visualization/xygraph/styleprovider/BooleanSt
+ yleProvider.class
+SHA-256-Digest: vo3vsqg5knjzYU1v+vUlV5Xg8l8J89sJVlsDoyfUayc=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/undo/TraceMeme
+ nto.class
+SHA-256-Digest: g/XV+gm2cK+OyrsSNYsApvjrbktbQaHUGBkFt4BHwCI=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/ZoomOutCurs
+ or.png
+SHA-256-Digest: wwnat1is/me2X8USTK5rpEub2HHLAn30t9Rkemp6Ga8=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/XYGraphFlags.cl
+ ass
+SHA-256-Digest: n/hTN9sTfOTbn9SsnFdE+19YR8Z/24ydRh+Lc1c9xQs=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/undo/SizeLimit
+ edStack.class
+SHA-256-Digest: IS2A3E86fCV56EVTtPQh8Qfe+6fZrT0B0OsmKZQDpYk=
+
+Name: org/eclipse/nebula/visualization/xygraph/examples/ComprehensiveE
+ xample$1$1.class
+SHA-256-Digest: 64O4plVN75mj7XYzQoodP8Z/1fQKVra0933mEKv7/DA=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/Trace$BaseLine.
+ class
+SHA-256-Digest: capmks1B4nvXLZA03vErP4/lRdOdBDvUsg4lL3jQ8co=
+
+Name: org/eclipse/nebula/visualization/xygraph/linearscale/ITicksProvi
+ der.class
+SHA-256-Digest: GwIiDM8hqgYg4cX1TlELt2qEgSQphQ29y+DRs7W564E=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/CircleAnnotatio
+ n.class
+SHA-256-Digest: EcwGplqi2LbwIyUKaYRMY0zDJIq9ZSsXXqT0XgJgeVM=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/toolbar/Annota
+ tionConfigPage$3.class
+SHA-256-Digest: kxDZifaOS1kBYHOJTm/p33W+UtaHuxuTGUI2c6A9WG4=
+
+Name: org/eclipse/nebula/visualization/xygraph/examples/StaircaseExamp
+ le.class
+SHA-256-Digest: 1xi/Er+amtY2CRnpNMmqu5IMasuGAPRgIY8K+lzeLuE=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/undo/Operation
+ sManager.class
+SHA-256-Digest: rx9Jpgszg0xJ4R+afuSjSRMuAdyWVqZHA5VaNoVKyfg=
+
+Name: org/eclipse/nebula/visualization/xygraph/examples/XYGraphTest2$1
+ .class
+SHA-256-Digest: y0x5pNVfGS/Xh03W/FM1WU46rVdbydTYgF8xT/KZn5E=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/Panning.png
+SHA-256-Digest: 4l/yWRhad4WQB1UdwkjROLA1ZI+PCw47UjMVq79jNbk=
+
+Name: org/eclipse/nebula/visualization/xygraph/styleprovider/IPointSty
+ leProvider.class
+SHA-256-Digest: tnhCmcFUbp4ulGE5MMm2HT54Q94itQaE15tS+HtnMlg=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/XYGraphToolbar$
+ 11.class
+SHA-256-Digest: xgFEB3rGk+Gxm23rZk8IMlVOASExKvGdkq8SgLAA70w=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/XYGraphToolbar$
+ 9.class
+SHA-256-Digest: D/SaUQpFqq0KkLwBnN1MXxwmXtGx8c3wPwrQyISWP58=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/toolbar/XYGrap
+ hConfigDialog$3.class
+SHA-256-Digest: GThVETQbuHkbEea2oTfu0uhZ6J8/FG5fTwSbAdwffZ0=
+
+Name: org/eclipse/nebula/visualization/xygraph/dataprovider/CircularBu
+ ffer$1.class
+SHA-256-Digest: P+CnUqdv1Wr0qMLNU9TuMlLobYhFHj3wxLTKKTGaOdA=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/toolbar/XYGrap
+ hConfigDialog$4.class
+SHA-256-Digest: 5K26xCwS6nkhsBy98rp9+sHUPU0Utmia7lR/qMf7lqo=
+
+Name: org/eclipse/nebula/visualization/xygraph/examples/SimpleExample.
+ class
+SHA-256-Digest: Ro8NtuQBe6n7Sm+VRxvXQLA+yq0lKRbd5/p/v119HPk=
+
+Name: org/eclipse/nebula/visualization/xygraph/linearscale/Range.class
+SHA-256-Digest: kzgT5Wqx/KO9nMcDyBvjAfT7ZOtSUz9YBESXONKIaCg=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/undo/XYGraphCo
+ nfigCommand.class
+SHA-256-Digest: 28pFG90o2FlnmYl86Vz7LhzxWevmZphGfH0O1v6XTKg=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/ZoomOut.png
+SHA-256-Digest: 3KWBXTujb7dtnCkJJRxm7LdbRaM6qoMHW16SROI5gSQ=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/IXYGraph.class
+SHA-256-Digest: 2m074HGjSwtD6+YTe4BERvAbvGyOa3ggAwfFGx6h9R8=
+
+Name: org/eclipse/nebula/visualization/xygraph/linearscale/LinearScale
+ Ticks2.class
+SHA-256-Digest: PP30RyRdo80wZELL+xOruO5JL/T7Fq671IXR3k+tN/o=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/warning.png
+SHA-256-Digest: AR9OM9hrRIB4or1WtwYHcLLAeehqrStymKsNshZ1jzQ=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/Declaration
+ .txt
+SHA-256-Digest: LRxyNtAaHip3yirYxTarRjbdunRVFUNGVpZRCka19h8=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/ZoomInHoriz
+ Cursor.png
+SHA-256-Digest: YjlGKLQWV8jgzU55q4Hf35a91bBhQpWGjF0fHdT2Xik=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/ZoomOutHori
+ zCursor.png
+SHA-256-Digest: kNTu8+dKDs62VA+8N3D4XCVeaNHUCtsFYrKSZ0ddjPg=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/toolbar/Double
+ InputText.class
+SHA-256-Digest: hB4JpE3mmRMrlkSTxW1uk7An4G1+9hN4iNScsnMXkEw=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/toolbar/AxisCo
+ nfigPage$4.class
+SHA-256-Digest: SgVq2E5I1ptlxK2LUZV2TAxgqGbnJZ/mbaCoYSU215I=
+
+Name: org/eclipse/nebula/visualization/xygraph/examples/SimpleToolbarA
+ rmedXYGraphExample.class
+SHA-256-Digest: 6Dz9lqLlJTbrASBmCYmCuyZVXXB+yCPeo+CjGGbNwgU=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/CrossAnnotation
+ .class
+SHA-256-Digest: /nUDmtdPyyilcDnL/7dwSTH72KCD9EjTOleK/wfszA4=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/IAnnotationLabe
+ lProvider.class
+SHA-256-Digest: CnDmTYSHLq4w1AQ755ZgSo0Wva+/PkRN9N8y+QzuoE8=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/toolbar/TraceC
+ onfigPage$1.class
+SHA-256-Digest: 4TS6SqnnXZdAAg0MkF7Sil1P2NDnpF4H+GLdY6q3MI8=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/XYGraphToolbar$
+ 10.class
+SHA-256-Digest: b6wYpEAyTpfA7KKlKXaTmGyLv+FkXfAZ6AnwyoItl3M=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/Annotation$1.cl
+ ass
+SHA-256-Digest: B9el6e5Z5A5faMPyJW8AO2NM28lmhgxnMF6KqCga8VE=
+
+Name: org/eclipse/nebula/visualization/xygraph/dataprovider/IMetaData.
+ class
+SHA-256-Digest: oIKVicbW/msu18l/FROLBceWK3mWKgGKUxkLAbaRiu8=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/toolbar/GraphC
+ onfigPage.class
+SHA-256-Digest: yhoiJuvIT+DnO47OqVSiZ7BtP5V6pU7p1Wlh7SpBbj4=
+
+Name: org/eclipse/nebula/visualization/xygraph/linearscale/AbstractSca
+ le.class
+SHA-256-Digest: asSoZNQaokXMMhbeiIj7yXhBZXRevsmjR9wZMxf2nuc=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/ZoomInCurso
+ rOnXAxis.png
+SHA-256-Digest: NOTC8v1Wrreu6UUPpfsDt8RwWVhcMA0XFzIgjaLufdA=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/XYGraphToolbar$
+ 5.class
+SHA-256-Digest: QjtD0nARI8TRNMQo6Cce08RNZZJKFi3ChPjRC+f4Wsg=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/XYGraphToolbar.
+ class
+SHA-256-Digest: igWv6w3arNezSuBaRKHKkHvUmXTTeTC5JbMMtHF/Hhk=
+
+Name: org/eclipse/nebula/visualization/xygraph/dataprovider/CircularBu
+ fferDataProvider.class
+SHA-256-Digest: fDOqDC4gRXqTw8pPUtbynXbDoZhNLaHOQf/1o2ybfLQ=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/Redo_Gray.p
+ ng
+SHA-256-Digest: eXV/r2BI2ZkP0m1HdMLAhNWIdd51t9xqGu/7vY27qfE=
+
+Name: org/eclipse/nebula/visualization/xygraph/dataprovider/AbstractDa
+ taProvider.class
+SHA-256-Digest: P0ym9T8HD3QU1DZdqkPOZe4BsYr1MHpJYnKCTNpuya4=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/toolbar/XYGrap
+ hConfigDialog$2.class
+SHA-256-Digest: y5GcyEOJ1291/uMmFYDLJkIjUcFzML4YRRqJZJhqVJs=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/IAxisListener.c
+ lass
+SHA-256-Digest: 2IlXLTF1expd2bdyU0Xb+gibOBgjF9Yt50h14uTBrRM=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/toolbar/Annota
+ tionConfigPage$2.class
+SHA-256-Digest: ajQqFfKsvdJUJWFlcpc1hNzKOzlrVTWxI8r0tnESLGY=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/ZoomOutVert
+ .png
+SHA-256-Digest: CUdkunh65bgzqzum3RLwKYvkcBj73Owm1GyR63kXqIQ=
+
+Name: org/eclipse/nebula/visualization/xygraph/examples/XYGraphTest2$2
+ .class
+SHA-256-Digest: fmwPiaaiFQqbv9d9dlpe7dS21BJM6d0u1qm5OQHmjOE=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/Log10.class
+SHA-256-Digest: GdoDQ7XxVEmcp3AHIm0DpfSzoihhGnUBuG3X/IyNAi8=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/DAxesFactory.cl
+ ass
+SHA-256-Digest: 0lYHrAl9bbUWTUb1u8+qfY8Z4IoN48QFhvLwSpFdv6M=
+
+Name: org/eclipse/nebula/visualization/xygraph/linearscale/AbstractSca
+ le$LabelSide.class
+SHA-256-Digest: Xn8kbkVz5MbVvGv7b8ovz3MSRU24SPj7nmmPJtks5Nw=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/ZoomOutVert
+ Cursor.png
+SHA-256-Digest: I8d3D0quH8aLZNNOfjLbAUjqvx92Pq8/1YbR+fVEZTY=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/toolbar/TraceC
+ onfigPage.class
+SHA-256-Digest: Y8Cq2ChsiL4uKyfUfISi4rgCD3Lb3Vj13deH1IbRr24=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/PlotArea$PanSta
+ tus.class
+SHA-256-Digest: kTE6VVkGZi2mGTi8lCm2iiwrBO9r0xVsNTxZSDA4zug=
+
+Name: org/eclipse/nebula/visualization/xygraph/linearscale/TickFactory
+ $TickFormatting.class
+SHA-256-Digest: qpbfKj1F0/9s2htt/uDUPxDACDaKU606v/pvs6TfzkA=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/undo/MovingAnn
+ otationLabelCommand.class
+SHA-256-Digest: orq5RroAwulZ/DfGgcl5cHR0oqXM+Eekl1ZqfSaPcP0=
+
+Name: org/eclipse/nebula/visualization/xygraph/dataprovider/CircularBu
+ fferDataProvider$1.class
+SHA-256-Digest: 1GYZ9eUMkNWKN93pNsYnPJgenAp+ZKLyo1ARb1sxelY=
+
+Name: org/eclipse/nebula/visualization/xygraph/linearscale/LinearScale
+ .class
+SHA-256-Digest: f17oG1xXL6V0DOCVG0nYl3f1CCk9Zy1yp4vjFQu2H2g=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/VerticalZoo
+ mCursorOnYAxis.png
+SHA-256-Digest: +iW+qdoJPJdWpo1+gaYeNSD4Pz/Z6bzopyybngP+V3U=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/Annotation$Info
+ LabelDragger.class
+SHA-256-Digest: Gs6ywPN0M4/ux+XhcomI+r9C9LXXzDiSI++v1O6LOJg=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/PanningCurs
+ or.png
+SHA-256-Digest: 0xMAhcMMdjnhp/2bE81/2gUpRVHtCBFSFaV/sEdU/mo=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/Legend.class
+SHA-256-Digest: aoL5IKjpY9DwZ+MhUOYuV+uPkG52r0MPBnd/kmccAfA=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/XYGraphToolbar$
+ 2.class
+SHA-256-Digest: QGnms6/OyrER+Losu+TBHOv69uPfymh/0hgPaS0Gxxc=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/Undo_Gray.p
+ ng
+SHA-256-Digest: 1sYA9Vl65xtW0i8EISTI+tXrNITuFrTp4gXojtcdmr8=
+
+Name: org/eclipse/nebula/visualization/xygraph/dataprovider/IDataProvi
+ derListener.class
+SHA-256-Digest: tHt/Jw/A6eh8I1Q8Ty2lmKaWpr3PUNBB7RDQOqfia+w=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/undo/RemoveAnn
+ otationCommand.class
+SHA-256-Digest: n7U3feRqtgX3HBN7fBt2GXalOobB4xdvORRjim7UUcw=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/SingleSourceHelper
+ 2.class
+SHA-256-Digest: s/Y2SlQ+gAgv8pmhHkfM07cmiytErmDqd49GpERCmTo=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/toolbar/ITrace
+ ConfigPage.class
+SHA-256-Digest: ZjhQ9fRmJgYOOaYmoCw9tZznIeOMauvJCmf07oZollE=
+
+Name: org/eclipse/nebula/visualization/xygraph/Messages.class
+SHA-256-Digest: jEmG3Ta2VnfYa1TnTQhECItlrM8Yt0O5P2jCnS0dJDg=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/Add_Annotat
+ ion.png
+SHA-256-Digest: 0xhQ3h7ybhBmopfrAYeX/wmw6KiWGPjyEUn5UlpjObo=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/NoRepeatsPoints
+ List.class
+SHA-256-Digest: V8uQcQ+FgkdxYMkjArOTa03LZTZ6SGFYNbiWTSmZ2JU=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/toolbar/XYGrap
+ hConfigDialog$1.class
+SHA-256-Digest: oo1+f0J9hCwdTxocsumMuNAe4bvr1ja1Y9SeMVsVSwc=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/XYGraphToolbar$
+ 12.class
+SHA-256-Digest: nRMjvVGdsMJClG/5uwtrijSCPIP7deE6KwxerCDtgIg=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/GraphicsUtil.class
+SHA-256-Digest: iWmQX6FeCe5C2y80IvC6ETYI3ZFV4kgzKIMSlXsi8RY=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/XYGraphToolbar$
+ 3.class
+SHA-256-Digest: WnA95AORZQuPYhVqsAWpl7wXuX2CPOPv90HYFrn9uQY=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/undo/XYGraphMe
+ mentoUtil.class
+SHA-256-Digest: HeVvrKhrNKL1I6YMG43nX4yVX/KgOaEArlvyXA9mWUQ=
+
+Name: org/eclipse/nebula/visualization/xygraph/linearscale/LinearScale
+ TickLabels2.class
+SHA-256-Digest: v64gkIBvpGwm1HrVYp95rhbceuR34XCnXpWd7V/UOiE=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/undo/SaveState
+ Command.class
+SHA-256-Digest: WMKhFD7KROlN9smfGuzLjjbkX0Legh3eFSmRfPUFiBg=
+
+Name: org/eclipse/nebula/visualization/xygraph/linearscale/LinearScale
+ Ticks.class
+SHA-256-Digest: 2Fwn65Cf8YoULZCPJEtXJslMo4/pxbkdGks5HsH5KUk=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/undo/MovingAnn
+ otationCommand.class
+SHA-256-Digest: /2VxOTo/EtmYMs9ycZ4WRI2xqOMzzI5UzcuJ4RI8hkg=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/Axis$AxisMouseL
+ istener$1.class
+SHA-256-Digest: NDburpgQyr3aGg6nGTDeL1OJO6j9Vv6SE4CRSP7HhD0=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/XYGraphToolbar$
+ 13.class
+SHA-256-Digest: RhuALxGjc4j9fPdWKmhBTJjC2xgTvTiV9IJ6YpFKWhA=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/Grab.png
+SHA-256-Digest: HL1EtdFyM1vzEB5QSMJDE7nRdpNpcA9KMv7GmO/CA8E=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/SingleSourceHelper
+ Impl.class
+SHA-256-Digest: NStCmQcHew6u1c26fgQ3hp2IB7AhqOx1/H7U4JWjwy0=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/Annotation$Anno
+ tationDragger.class
+SHA-256-Digest: vybJgwTvvBWcOa/qmU4fLwubm4kcAECmBRnoGrAvTCQ=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/toolbar/AxisCo
+ nfigPage$1.class
+SHA-256-Digest: QXIClqUG9Sl1w7NU4oX5QJ+FX8gyb6KbzhUW1e/RFEk=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/Annotation$Curs
+ orLineStyle.class
+SHA-256-Digest: 5ybjjKUNL664rDk3Y+lS96gUIGtLzDXSfhwG5uR4rN0=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/VerticalZoo
+ mCursor.png
+SHA-256-Digest: B1Wgs3CoGCHzd8qZYZGCZWd13ZRqDC8cs7l0Tij/br8=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/Trace.class
+SHA-256-Digest: GMAIJBmA3lx3JgUFwWamXcjWoxqECQWJPQ7OBE5Jwo4=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/XYGraphToolbar$
+ 4.class
+SHA-256-Digest: mxyA9kJmYnZ+ZMCVpTUgoicZ5O6RoST9SEu8LCROUMo=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/PanningCurs
+ orOnAxis.png
+SHA-256-Digest: Z/fgKkj63sqfKA0MLw34jypal+DWXCuyXN0zKFzmjoY=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/Grabbing.pn
+ g
+SHA-256-Digest: WTi/IiYJG0CK0wx+vK0oKYSi4Ci1QI75BHHs6yPRMc8=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/RubberbandZ
+ oomCursor.png
+SHA-256-Digest: 7YKBma6L8EASJyY4kxYu7e3d3F7HoHwg+Zjht7FsOEc=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/ZoomInHoriz
+ .png
+SHA-256-Digest: zBLmI4Cq/uDn+oy1hGj9OfggkkcjS8Lhm6J7xGoOaHo=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/Trace$ErrorBarT
+ ype.class
+SHA-256-Digest: 2xuFpZH/z29RMGR9ZY1n149zDVjoYaytxts9v2G1qBg=
+
+Name: org/eclipse/nebula/visualization/xygraph/dataprovider/CircularBu
+ fferDataProvider$UpdateMode.class
+SHA-256-Digest: qf4e418o2TxF8t67NtA+WzqP+tDXjUCYhTKjs4H8mKA=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/undo/Annotatio
+ nMemento.class
+SHA-256-Digest: karjBrPfk3607w5fqMsVR4cc5+Ozuhxq9XiheTuu70M=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/ZoomOutHori
+ z.png
+SHA-256-Digest: ADAhpeTI7MH1zyLcqnZ9brB8bTGMRD3e0F8mgYrgGxI=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/toolbar/AxisCo
+ nfigPage$2.class
+SHA-256-Digest: f+hojYWqoHsizimScAceAbihSFBwwI4DeojV0x3+CC0=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/Preferences.class
+SHA-256-Digest: GtKLw/0Jtvgq8uOAFe4YGb4KvmdNED9n/ouEBxe2RFw=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/Trace$TraceType
+ .class
+SHA-256-Digest: Aw+m1rNCZxJxAxEurFLdoAuMWVCGkvLG5zY7PLIbqE0=
+
+Name: org/eclipse/nebula/visualization/xygraph/dataprovider/CircularBu
+ fferDataProvider$PlotMode.class
+SHA-256-Digest: WZlKLe8R7DHEq2LuuLX08AAVK9O8qL47saWlhatiYf8=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/Trace$PointStyl
+ e.class
+SHA-256-Digest: oATyOr4y9747loefNR0uz0+ON4ce01oBmRyAQUws1QA=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/XYGraphMediaFactor
+ y$1.class
+SHA-256-Digest: w1ORAmRRMQWahLbsyhstijvWdGAE4C4TDrtAb8/OcLs=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/XYGraph.class
+SHA-256-Digest: g9QcpEe4rlWxuaVHYIfmvZO93HAhWwL87Pn7LmbOxbU=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/RubberbandZ
+ oom.png
+SHA-256-Digest: m0MEFRKqq9ZHSFrW5K51eNRqNBTqmpJVGYbi23On+lQ=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/DAxis$1.class
+SHA-256-Digest: tCkAkBFT69op6aThewpxINBKLDUmf4G+9YGX2Mu1Zug=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/ZoomType.class
+SHA-256-Digest: q6h3AYrypT6Hw0wcn9QwOcZ+alrUQKyZ1shTmVqd+pc=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/GrabbingOnA
+ xis.png
+SHA-256-Digest: DUjeXmYr78NCVZoKxd/EEFb57t8SsU7ZRGHyDWkPv/s=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/XYGraphToolbar$
+ 6.class
+SHA-256-Digest: wTUSgb00Pgk30th5JeFomBzyqysLiN6FYM/0a13AQHo=
+
+Name: org/eclipse/nebula/visualization/xygraph/examples/BarChartExampl
+ e.class
+SHA-256-Digest: +F/EtKWYeoEU71t9pILurHOPC2emny0HkoRCDzbvxN0=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/camera.png
+SHA-256-Digest: RSLH2IIzrZf49IQpRlWCICD1d2SgN+Qzt0CzjahP6IM=
+
+Name: org/eclipse/nebula/visualization/xygraph/linearscale/LinearScale
+ TickMarks2.class
+SHA-256-Digest: 1/4kKIzqU+UkTh6XDp92tsucs5ol151sZxRkA/rD7xI=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/ZoomInCurso
+ rOnYAxis.png
+SHA-256-Digest: G9MNYxVPaM3GNMyyeFjKs01WAc8Qbn6jWklPOcgcX4g=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/ToolbarArmedXYG
+ raph.class
+SHA-256-Digest: 0uMtQka+BqKS9D28LFP1Sx8T4DnCJ/1uj26jP+5Rgvw=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/Annotation.clas
+ s
+SHA-256-Digest: XYyiOtiSy4cFy3NVOjHzE+1wBhd78hBr46VLuVtcWTw=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/PlotArea.class
+SHA-256-Digest: brA09bUhcBjESe5ggSB2ocGJ+n38qTICDMMwwlVdqEo=
+
+Name: org/eclipse/nebula/visualization/xygraph/linearscale/Tick.class
+SHA-256-Digest: ddc1b4RDhJs94ccQSvZAjYXHMN2rcPU3VwNCep8BPDs=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/toolbar/AddAnn
+ otationDialog.class
+SHA-256-Digest: 5tbTHdbhqZHeZeS1p84IIBBvW155DEkoSF266JdnZ7E=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/toolbar/TraceC
+ onfigPage$2.class
+SHA-256-Digest: P+GsXDrF/+i/UrannLDi3k9ExwLrQUNCD4HwMv1yfo4=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/toolbar/AxisCo
+ nfigPage$3.class
+SHA-256-Digest: 0xmmHasaHMfSPmxaXCx1/AlGXWNo0buojns3RMpoolI=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/AutoScale.p
+ ng
+SHA-256-Digest: yyLBgn7OCeS8k+O4cdxWYa+MWwpqwW8peAvqy8D582g=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/PlotArea$PlotMo
+ useListener$1.class
+SHA-256-Digest: nD/o+qboRKzttesGVpJJ6FAz5lpQ9ZqQ6A+YJVL6RVU=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/undo/XYGraphMe
+ mento.class
+SHA-256-Digest: 68HBZMM7WyGauQtj7BCnR7YpE04StGjgDrMnoeo5pJc=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/Configure.p
+ ng
+SHA-256-Digest: 86EwkU1zva/OofiHYJUpuFokxqOAZ9gUUsw4ASG47Tk=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/ZoomInCurso
+ r.png
+SHA-256-Digest: lpPtzAFqNOAyEyXIdaRiKNA+DyFhlTO6O1zmeEIQ23k=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/Legend$1.class
+SHA-256-Digest: OpAEEGotw0NTOOn+mEKCaeo31GRB4dTVu24WJe0N/bo=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/undo/IOperatio
+ nsManagerListener.class
+SHA-256-Digest: ZuihLgXgHC28apbLeEuXznGV5CNSQA6DbozIBRfMzF8=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/toolbar/Annota
+ tionConfigPage$1.class
+SHA-256-Digest: 6L8MEvpXLjFaUt2QlyeUd5N8OY8ZliaO6sQ3wYPK62E=
+
+Name: org/eclipse/nebula/visualization/xygraph/dataprovider/ClippedCir
+ cularBufferDataProvider.class
+SHA-256-Digest: dxWAAT+LJ9CcKyMOpmYO/aTx68nGvHgpKSSiYYG0N2Y=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/SWTConstants.class
+SHA-256-Digest: ghFb28QVWBumvEaYCn3euUw/4AP4GnFLSfILTtUt7rY=
+
+Name: org/eclipse/nebula/visualization/xygraph/linearscale/LinearScale
+ $Orientation.class
+SHA-256-Digest: BQ5VncWojsNWeFv9lrc6UZg7ZpgQW0T40rsM14XZyxk=
+
+Name: org/eclipse/nebula/visualization/xygraph/examples/ComprehensiveE
+ xample.class
+SHA-256-Digest: Yqq4aAEJ2umCGJM5Hby4tVG/VVEAA1JszcucTp91Gtc=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/Axis.class
+SHA-256-Digest: bsUgaetaKcXbXpSZCpR1x0JkCY1vkNQH8l9TRTvX2nI=
+
+Name: org/eclipse/nebula/visualization/xygraph/linearscale/LinearScale
+ dMarker.class
+SHA-256-Digest: 0YwE57B39KyxHt3pCHDsrLIvffLk3CS5LrNPBxiqKe4=
+
+Name: org/eclipse/nebula/visualization/xygraph/examples/XYGraphTest2$3
+ .class
+SHA-256-Digest: rrrkdqU/iTVoNp073zBlHqvEPeb+xqGuKjPQ9IjESp4=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/Del_Annotat
+ ion.png
+SHA-256-Digest: DaEq5r4tOuKLOJRXREBMTLQ6CWyvdv81MWtTIg8ivOQ=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/ZoomOutCurs
+ orOnXAxis.png
+SHA-256-Digest: YPTmNQmpeojoGfltXG14NfV5wE/0AQf0weH8N49pfFk=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/Redo.png
+SHA-256-Digest: a5o+ununqNCtdVcoLN5zp2PYefpJWrxoGU8vT6r+Qqg=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/XYGraphToolbar$
+ 1.class
+SHA-256-Digest: pbgMQkYMVasQBY3LW2WaZcoWcWaY8Z9bXa/sXufn2CY=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/XYGraphToolbar$
+ 7.class
+SHA-256-Digest: lsjnojnTTTEKTLEYzAGhs2IlkpM3gywil+lQyh6a6K8=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/utils/LargeNum
+ berUtils.class
+SHA-256-Digest: keFzNR/xisgYtIV/4I9gfw3bBFifBXCxAmwladomiIk=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/DAxis.class
+SHA-256-Digest: P/7cmrjHhVybac09E8d669T5evFlatjAy4thMJvaJgM=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/HorizontalZ
+ oomCursor.png
+SHA-256-Digest: +T9gIm7eu6W/sMWa953d58WBPgfVHrbl00NtpNRl2uw=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/ImplementationLoad
+ er.class
+SHA-256-Digest: BHrmmLvalpTXGwmaXutdwKN+ftbubJyp61+EDjCoSzc=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/toolbar/GraphC
+ onfigPage$1.class
+SHA-256-Digest: mGN32EFpS8h5k9BZC/EKUjgu/7QpSwQoT9JjNN1qF7A=
+
+Name: org/eclipse/nebula/visualization/xygraph/examples/ComprehensiveE
+ xample$1.class
+SHA-256-Digest: IIDJlRx3XojHLB9NW0qWwwTQj9yYMg31xBOmgIg2jL0=
+
+Name: META-INF/maven/org.eclipse.nebula/org.eclipse.nebula.visualizati
+ on.xygraph/pom.xml
+SHA-256-Digest: ftNpgWaOE0XexchZUCjyXsKzw3pwPwMWTGxectTmemw=
+
+Name: org/eclipse/nebula/visualization/xygraph/linearscale/LinearScale
+ TickLabels.class
+SHA-256-Digest: xSMTRHb4nazWzBZ1zOQquu06+X4FGY0xD0M7BnQHe5s=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/toolbar/AxisCo
+ nfigPage.class
+SHA-256-Digest: /iwbeTM9Khsiyh6KNM/gMKGNRh7V4ffk61yusGgeZ2c=
+
+Name: org/eclipse/nebula/visualization/xygraph/dataprovider/ISample.cl
+ ass
+SHA-256-Digest: 4en39rEmsRFbkCQzAkJILix1J+KAbhr4Lae4zYwNgsI=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/PlotArea$PlotMo
+ useListener.class
+SHA-256-Digest: vk0TL1MpQI28hPmJQt+7honKwL0jJqyMdv5t8M0kIPQ=
+
+Name: org/eclipse/nebula/visualization/xygraph/styleprovider/BasePoint
+ StyleProvider.class
+SHA-256-Digest: u9pQkHFv+ECJRBiR59eCTZTbyoCTRXt9XPZTFfju4LI=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/XYGraphToolbar$
+ 8.class
+SHA-256-Digest: 2ZJhocwOJxteAhYRtZK8gpA0KdTOo+Oa5DWItvYwZ84=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/DefaultAxesFact
+ ory.class
+SHA-256-Digest: TfgqPauKEtDqHOVL1GTEUz/ctAWMqZ9oz8dAgozisJw=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/toolbar/XYGrap
+ hConfigDialog.class
+SHA-256-Digest: FAK+468VstslnZWiMHWVLdrG0vrmygR9AKxjPCROdUw=
+
+Name: org/eclipse/nebula/visualization/xygraph/linearscale/IScaleProvi
+ der.class
+SHA-256-Digest: mz8J4QdtHy6P6HqznBuaYeFmyuqXs4fNiNSdxWh6r7Q=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/VerticalZoo
+ m.png
+SHA-256-Digest: Ze0Q/6eFtruWO2+857Kw8PHeveggg2qmyhP9QkC/IZA=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/IAnnotationList
+ ener.class
+SHA-256-Digest: 7v+SCUBgRvehwciGAdBbifGEJFAkKDQQBWBzr/zfe/c=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/undo/AddAnnota
+ tionCommand.class
+SHA-256-Digest: EOXsIZnyaUBSszHlajUAuQcjYhGu3As+uHd2RhxAy6U=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/HorizontalZ
+ oomCursorOnXAxis.png
+SHA-256-Digest: fJLB8JfA9FTua/F4cSo9mQrZse37LNIskBSW6zDV7+s=
+
+Name: org/eclipse/nebula/visualization/xygraph/examples/XYGraphTest2.c
+ lass
+SHA-256-Digest: 8vnmlPn4GdUwhDzHER9UsD9qTB1yh2sJAE01MU7Od/Q=
+
+Name: org/eclipse/nebula/visualization/xygraph/messages.properties
+SHA-256-Digest: m2lS7dBXv+NlzhnM3yHBYUBR7xSt3xNFgYZkghNs4SA=
+
+Name: org/eclipse/nebula/visualization/xygraph/dataprovider/Sample.cla
+ ss
+SHA-256-Digest: CGNV9/fsW1RU8vCUnS2/w8WeOh2djhl/h0g3XS+nNNQ=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/stagger.png
+SHA-256-Digest: nR/HTAMChh4g0zkbwdBLXkRNK2+liA9FYdqXSaAGmdE=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/ShowLegend.
+ png
+SHA-256-Digest: cn20NurwFOUtTduXhO2rQAhOc5dsyixwSMEqDIHNAak=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/undo/AxisMemen
+ to.class
+SHA-256-Digest: +ocEMsCn1aXygemWwpaH5WfhdnI0mDi43jcgK+BnvZc=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/undo/ZoomComma
+ nd.class
+SHA-256-Digest: D+ls8BVVnnpviaiZNsLzxZlnkzbxrcqYOp2fBTx5Kak=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/XYGraphToolbar$
+ ToolbarSeparator.class
+SHA-256-Digest: 5vT2RsGKXAK/6Ynfq5jEV2W9KI7vtzOzt7R9I1ffk3c=
+
+Name: org/eclipse/nebula/visualization/xygraph/examples/ComprehensiveE
+ xample$4.class
+SHA-256-Digest: vX/FcJC1FJ8w2WPb3k3QkxfLDt6hNLY9xS3N+rkTpkU=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/toolbar/Remove
+ AnnotationDialog.class
+SHA-256-Digest: rSeL/nnL4CbhLT979bWxfEtGo1aUdVTGQIdphE/4gBg=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/ZoomOutCurs
+ orOnYAxis.png
+SHA-256-Digest: ZUdP1Zqyb9CXRWDhrJcTMq6dMuoqvJ6K+OKVV8rNaL0=
+
+Name: org/eclipse/nebula/visualization/xygraph/examples/GraphDemo.clas
+ s
+SHA-256-Digest: 2e+PpPGdxYiTZejm8e+7UMHYe09/e+TlCWR3p8yK54M=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/toolbar/AxisCo
+ nfigPage$6.class
+SHA-256-Digest: eJFpKZPkHHnqL8DQmsoSyICUmL59lOe12L0h7o5inxk=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/HorizontalZ
+ oom.png
+SHA-256-Digest: eHPjzSDDvt5izf/BO2MZ72icbFe7LZKiJQITac9tYPQ=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/toolbar/Grayab
+ leButton.class
+SHA-256-Digest: Xl6qzhJyInZCOZx6nX/2lzC5MZCFmO4zmfUoAmRCpZU=
+
+Name: org/eclipse/nebula/visualization/xygraph/dataprovider/IDataProvi
+ der.class
+SHA-256-Digest: PW6fc4wiUYiPTEQvEYr9wAK3fIZF1OhiUAgzDqJV6tI=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/Axis$AxisMouseL
+ istener.class
+SHA-256-Digest: LO9tJoDLPh3xLDXt82jBhbl11B1kxBXe3koT5spg+rs=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/Undo.png
+SHA-256-Digest: lSMccJjVJ4x+xikDgiX4Q7N+P4lbe4sLXyaj3RK3azY=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/toolbar/Double
+ InputText$1.class
+SHA-256-Digest: kMBB3J102Q8kU9Rb994jK5xtk5erb8L9bHwM/Ns9c+Q=
+
+Name: org/eclipse/nebula/visualization/xygraph/examples/ComprehensiveE
+ xample$3.class
+SHA-256-Digest: IUkm7oQ1R37r0qFbijUJ6gNgcypPVnsOE4RrH62fjxQ=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/toolbar/Annota
+ tionConfigPage.class
+SHA-256-Digest: upWXzHjKpUHPVHFFagLa6XD5MS1YdU00xnJ6RLdRjyM=
+
+Name: org/eclipse/nebula/visualization/xygraph/styleprovider/StringSty
+ leProvider.class
+SHA-256-Digest: ZRba2+YKthSt9QT8027Ll8dkZNQ/XuHO0dmYelryvrg=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/IAxesFactory.cl
+ ass
+SHA-256-Digest: gNbvWM9MfyuJkNsec2vg8bKJKekMZcntol0bxO+ZVPY=
+
+Name: org/eclipse/nebula/visualization/xygraph/linearscale/LinearScale
+ dMarker$MarkerProperties.class
+SHA-256-Digest: xadz1bRaqFYDe0Sm/CRerbCpG6AxuOL3s/3qlB5N9a0=
+
+Name: org/eclipse/nebula/visualization/xygraph/linearscale/LinearScale
+ TickMarks.class
+SHA-256-Digest: lCq4ARZBks/apYMZT6RAs3PX8zzEUMw1gp9uGUxX3QA=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/Grid.class
+SHA-256-Digest: 9rovF0+GAA5Vrc5+4RIVh3Af5BGIhrmzxozyHBrnwaA=
+
+Name: about.html
+SHA-256-Digest: AnTMch8Mwf9UA6rZjxKRcvnoulguYwoA8E9JDlq10xU=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/undo/AxisPanOr
+ ZoomCommand.class
+SHA-256-Digest: LX60AhLEGe3FViHpXS5LAC7szx5l1a2ILhPDuDSJI08=
+
+Name: org/eclipse/nebula/visualization/xygraph/styleprovider/DoubleSty
+ leProvider.class
+SHA-256-Digest: Jm9/XccUmFRRnrlkZV0hHc/57ZZb7EYThmK9IUn7IFU=
+
+Name: org/eclipse/nebula/visualization/xygraph/dataprovider/CircularBu
+ ffer.class
+SHA-256-Digest: dunKuluGBTdfbVtdh9rFnoI9HDJPzIGK58v8Vbm2VVo=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/toolbar/GraphC
+ onfigPage$2.class
+SHA-256-Digest: TPdkVD2QcawzpoCUmfe0jS9Sv/jnxDXOc24m2JS1mro=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/ZoomInVert.
+ png
+SHA-256-Digest: NxTeItx2VRBkDB1MJKG53zXA5B5asxbsWiAqm2QKa8E=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/undo/IUndoable
+ Command.class
+SHA-256-Digest: F4LZg9wB96eQ/42eSXCpeG6eGIa7HHJVgmQSJjhCW4A=
+
+Name: org/eclipse/nebula/visualization/xygraph/examples/ComprehensiveE
+ xample$2.class
+SHA-256-Digest: 03DKtZdysBT5wNpbFdBxgAh6+ucvTTdS0YBhO1xFa54=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/SingleSourceHelper
+ .class
+SHA-256-Digest: FU/gtNaXuBfu+biJbZ6tVTUs0087GgVh4otKnCr5vAs=
+
+Name: org/eclipse/nebula/visualization/xygraph/examples/LargeNumberOfT
+ racesAnnotationsAxes.class
+SHA-256-Digest: WC9tcbJpFLL8US9oEXm49QOcfp+ZFpKcBKY2ijhd7nI=
+
+Name: org/eclipse/nebula/visualization/internal/xygraph/toolbar/Wrappa
+ bleToolbarLayout.class
+SHA-256-Digest: TRuAHKDVMbmnCuEiH5uPSi83m0SY+2yUmOuMjBaZgHM=
+
+Name: org/eclipse/nebula/visualization/xygraph/figures/ITraceListener.
+ class
+SHA-256-Digest: Td086BqPKFavSbAsSCn113JFFWTSverzKUuvUZdLGpU=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/XYGraphMediaFactor
+ y.class
+SHA-256-Digest: 7uy2K8dyoxKLWqZqAZbYQ54j2sTNSnON1VWc+gk8XK4=
+
+Name: META-INF/maven/org.eclipse.nebula/org.eclipse.nebula.visualizati
+ on.xygraph/pom.properties
+SHA-256-Digest: 4sso3I7abnd4LsHjS3cuyLNK6dfQDFTuygAdUjpUj7Q=
+
+Name: org/eclipse/nebula/visualization/xygraph/linearscale/TickFactory
+ .class
+SHA-256-Digest: IY9pUVHym/WYYwQIPBX56aa4r5LG5zG7p0+6FUWCZjk=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/ZoomIn.png
+SHA-256-Digest: jV+JR8aDiULResg9whNbGDfS7t3hnbZbeEEi5GTiNJA=
+
+Name: org/eclipse/nebula/visualization/xygraph/util/images/rescale.png
+SHA-256-Digest: 1ZSCKXYwIunk/kMsuDaPUNwhyb31S3vJHSFAL1V+IFg=
+
