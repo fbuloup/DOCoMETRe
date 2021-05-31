@@ -256,6 +256,10 @@ public class Activator extends AbstractUIPlugin {
 		IEditorReference[] editorReferences = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
 		for (int i = 0; i < editorReferences.length; i++) {
 			try {
+				if(!(editorReferences[i].getEditorInput() instanceof ResourceEditorInput)) {
+					if(editorReferences[i].getEditor(false) != null) editorReferences[i].getEditor(false).getSite().getPage().closeEditor(editorReferences[i].getEditor(false), false);
+					continue;
+				}
 				ResourceEditorInput resourceEditorInput = ((ResourceEditorInput)editorReferences[i].getEditorInput());
 				if(resourceEditorInput.isEditing(object)) {
 					if(resourceEditorInput.removeEditedObject(object)) {
