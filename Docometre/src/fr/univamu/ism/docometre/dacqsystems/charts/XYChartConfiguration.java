@@ -86,7 +86,6 @@ public class XYChartConfiguration extends ChartConfiguration {
 
 	@Override
 	public void update(FloatBuffer floatBuffer, String channelID) {
-		System.out.println(channelID);
 	}
 
 	@Override
