@@ -6,7 +6,19 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-05-20
+      -- 2021-06-01
+ADDED :
+* XY Chart Editor enhancement
+* XY Chart Editor persistence
+* Support for horizontal reference in OScillo. Chart
+* Use Eclipse Theme
+* Upgrade to Java 11
+* Upgrade JSSC
+* Support for Tank and Gauge Charts
+FIXED :
+* Fix NPE bug (when platform was brutally closed and reopening while editors was opened)
+* Control decoration bad behavior in resources creation wizard (show/hide)
+-- 2021-05-20
 ADDED : Nothing
 FIXED :
 * Bug With base front cuts in XY Chart editor
