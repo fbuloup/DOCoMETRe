@@ -436,12 +436,15 @@ public final class RTSWTOscilloChart extends RTSWTChart {
 				if (currentPostion == -1) continue;
 				chartAreaGLContext.getGL().getGL2().glBegin(GL2.GL_LINE_STRIP);
 				int D = showLegend && legendPosition == SWT.TOP ? getLegendHeight() : 0;
-				for (int j = 0; j < 2 * (currentPostion + 1); j += 2)
-					chartAreaGLContext.getGL().getGL2().glVertex2i(points[j] + getLeftAxisWidth() + 1, D + points[j + 1]);
+				for (int j = 0; j < 2 * (currentPostion + 1); j += 2) {
+					if(j < points.length - 1) chartAreaGLContext.getGL().getGL2().glVertex2i(points[j] + getLeftAxisWidth() + 1, D + points[j + 1]);
+				}
+					
 				chartAreaGLContext.getGL().getGL2().glEnd();
 				chartAreaGLContext.getGL().getGL2().glBegin(GL2.GL_LINE_STRIP);
-				for (int j = 2 * (currentPostion + 1); j < points.length; j += 2)
-					chartAreaGLContext.getGL().getGL2().glVertex2i(points[j] + getLeftAxisWidth() + 1, D + points[j + 1]);
+				for (int j = 2 * (currentPostion + 1); j < points.length; j += 2) {
+					if(j < points.length - 1) chartAreaGLContext.getGL().getGL2().glVertex2i(points[j] + getLeftAxisWidth() + 1, D + points[j + 1]);
+				}
 				chartAreaGLContext.getGL().getGL2().glEnd();
 				serie.setModified(false);
 			}
