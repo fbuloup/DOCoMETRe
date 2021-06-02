@@ -6,7 +6,12 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-06-01
+      -- 2021-06-02
+ADDED :
+* Add custom functions for ISM chair command
+FIXED :
+* Fix IOOBE in RTSWTChartOscillo
+-- 2021-06-01
 ADDED :
 * XY Chart Editor enhancement
 * XY Chart Editor persistence
@@ -16,8 +21,10 @@ ADDED :
 * Upgrade JSSC
 * Support for Tank and Gauge Charts
 FIXED :
-* Fix NPE bug (when platform was brutally closed and reopening while editors was opened)
-* Control decoration bad behavior in resources creation wizard (show/hide)
+* Fix NPE bug (when platform was brutally closed and reopening
+while editors was opened)
+* Control decoration bad behavior in resources creation wizard
+(show/hide)
 -- 2021-05-20
 ADDED : Nothing
 FIXED :
