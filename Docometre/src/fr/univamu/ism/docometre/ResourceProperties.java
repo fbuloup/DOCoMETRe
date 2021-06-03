@@ -490,6 +490,7 @@ public final class ResourceProperties {
 
 	
 	public static void writeResourcePropertiesToPropertiesFile(IResource resource, Properties properties, String keyName) {
+		System.out.println("ResourceProperties.writeResourcePropertiesToPropertiesFile : " + keyName + " for " + resource.getLocation().toOSString());
 		if(ResourceProperties.getTypePersistentProperty(resource) != null) properties.put(keyName + SEPARATOR + TYPE_QN.getLocalName(), ResourceProperties.getTypePersistentProperty(resource));
 		if(ResourceProperties.getDescriptionPersistentProperty(resource) != null) properties.put(keyName + SEPARATOR + DESCRIPTION_QN.getLocalName(), ResourceProperties.getDescriptionPersistentProperty(resource));
 		if(ResourceType.isDACQConfiguration(resource)) properties.put(keyName + SEPARATOR + SYSTEM_QN.getLocalName(), ResourceProperties.getSystemPersistentProperty(resource));
