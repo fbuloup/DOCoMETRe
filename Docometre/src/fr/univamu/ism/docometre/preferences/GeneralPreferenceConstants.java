@@ -74,6 +74,7 @@ public class GeneralPreferenceConstants {
 	
 	public static final String ARDUINO_DELAY_TIME_AFTER_SERIAL_PRINT = "ARDUINO_DELAY_TIME_AFTER_SERIAL_PRINT";
 	
-	
+	public static final String REDIRECT_STD_ERR_OUT_TO_FILE = "REDIRECT_STD_ERR_OUT_TO_FILE";
+	public static final String STD_ERR_OUT_FILE = "STD_ERR_OUT_FILE";
 	
 }

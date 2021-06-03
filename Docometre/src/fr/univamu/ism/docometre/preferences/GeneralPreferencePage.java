@@ -46,6 +46,7 @@ import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.FillLayout;
@@ -127,6 +128,31 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
 		
 		BooleanFieldEditor showMarkerFileEditor = new BooleanFieldEditor(GeneralPreferenceConstants.SHOW_MARKER, DocometreMessages.SHOW_MARKER, chartOptionsGroup);
 		addField(showMarkerFileEditor);
+		
+		Group redirectOutErrOptionsGroup = new Group(getFieldEditorParent(), SWT.NONE);
+		redirectOutErrOptionsGroup.setText("Redirect standard and error output to file (Restart for changes to take effect)");
+		redirectOutErrOptionsGroup.setLayout(new FillLayout(SWT.HORIZONTAL));
+		redirectOutErrOptionsGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1));
+		
+		BooleanFieldEditor redirectOption = new BooleanFieldEditor(GeneralPreferenceConstants.REDIRECT_STD_ERR_OUT_TO_FILE, "redirect", redirectOutErrOptionsGroup);
+		addField(redirectOption);
+		FileFieldEditor redirectFile = new FileFieldEditor(GeneralPreferenceConstants.STD_ERR_OUT_FILE, "File absolute path",true, FileFieldEditor.VALIDATE_ON_KEY_STROKE ,redirectOutErrOptionsGroup);
+		addField(redirectFile);
+		redirectFile.setEnabled(getPreferenceStore().getBoolean(GeneralPreferenceConstants.REDIRECT_STD_ERR_OUT_TO_FILE), redirectOutErrOptionsGroup); 
+		((Button)redirectOption.getDescriptionControl(redirectOutErrOptionsGroup)).addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				redirectFile.setEnabled(redirectOption.getBooleanValue(), redirectOutErrOptionsGroup); 
+				if(!redirectOption.getBooleanValue()) {
+					setErrorMessage(null);
+				}
+				else {
+					String value = redirectFile.getStringValue();
+					redirectFile.setStringValue("");
+					redirectFile.setStringValue(value);
+				}
+			}
+		});
 		
 	}
 	
