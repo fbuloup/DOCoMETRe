@@ -1579,6 +1579,69 @@
                      value="TRIAL">
                </parameter>
             </command>
+            <command
+                  commandId="SetTypeCommand"
+                  label="%LogType.label"
+                  style="radio">
+               <parameter
+                     name="Docometre.type.parameter"
+                     value="LOG">
+               </parameter>
+            </command>
+            <command
+                  commandId="SetTypeCommand"
+                  label="%SamplesType.label"
+                  style="radio">
+               <parameter
+                     name="Docometre.type.parameter"
+                     value="SAMPLES">
+               </parameter>
+            </command>
+            <command
+                  commandId="SetTypeCommand"
+                  label="%ParametersType.label"
+                  style="radio">
+               <parameter
+                     name="Docometre.type.parameter"
+                     value="PARAMETERS">
+               </parameter>
+            </command>
+            <command
+                  commandId="SetTypeCommand"
+                  label="%ADWType.label"
+                  style="radio">
+               <parameter
+                     name="Docometre.type.parameter"
+                     value="ADW_DATA_FILE">
+               </parameter>
+            </command>
+            <command
+                  commandId="SetTypeCommand"
+                  label="%DataProcessingType.label"
+                  style="radio">
+               <parameter
+                     name="Docometre.type.parameter"
+                     value="DATA_PROCESSING">
+               </parameter>
+            </command>
+            <command
+                  commandId="SetTypeCommand"
+                  label="%BatchDataProcessingType.label"
+                  style="radio">
+               <parameter
+                     name="Docometre.type.parameter"
+                     value="BATCH_DATA_PROCESSING">
+               </parameter>
+            </command>
+            <command
+                  commandId="SetTypeCommand"
+                  label="%XYChartType.label"
+                  style="radio">
+               <parameter
+                     name="Docometre.type.parameter"
+                     value="XYCHART">
+               </parameter>
+            </command>
          </menu>
          <command
                commandId="EditSessionAction"
