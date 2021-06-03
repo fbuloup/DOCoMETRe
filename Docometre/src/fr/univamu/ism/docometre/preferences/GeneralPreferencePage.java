@@ -163,7 +163,7 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
 		Font font = redirectInfosLabel.getFont();
 		FontData[] fontData = font.getFontData();
 		if(fontData[0] != null) {
-			fontData[0].style = SWT.BOLD;
+			fontData[0].setStyle(SWT.BOLD);
 			font = new Font(PlatformUI.getWorkbench().getDisplay(), fontData[0]);
 			redirectInfosLabel.setFont(font);
 		}
