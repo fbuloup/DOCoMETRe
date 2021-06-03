@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-06-03
+      -- 2021-06-03 - Bis
+ADDED : Nothing
+FIXED :
+* use font style setter instead of direct field access (Maven build failed)
+-- 2021-06-03
 ADDED :
 * Handle Standard and Error outputs redirection to file
 * Extend &quot;Set type&quot; Experiment View context menu to all types
