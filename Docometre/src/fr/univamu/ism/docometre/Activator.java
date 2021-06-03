@@ -41,8 +41,6 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre;
 
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -72,7 +70,6 @@ import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.processeditor.ArduinoU
 import fr.univamu.ism.docometre.editors.DataEditor;
 import fr.univamu.ism.docometre.editors.PartNameRefresher;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
-import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 import fr.univamu.ism.process.ScriptSegment;
 
 /*
@@ -109,22 +106,6 @@ public class Activator extends AbstractUIPlugin {
 	 * The constructor
 	 */
 	public Activator() {
-		try {
-			if(getPreferenceStore().getBoolean(GeneralPreferenceConstants.REDIRECT_STD_ERR_OUT_TO_FILE)) {
-				String filePath = getPreferenceStore().getString(GeneralPreferenceConstants.STD_ERR_OUT_FILE);
-				System.out.println("Redirect std and err outputs to file : " + filePath);
-				PrintStream pst = new PrintStream(filePath);
-				System.setOut(pst);
-				System.setErr(pst);
-				SimpleDateFormat now = new SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault());
-				System.out.println("This is std and err log file of DOCoMETRe session : " + now.format(new Date()));
-			}
-			
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}  
-		
-		
 	}
 	
 	public String getVersion() {

@@ -41,6 +41,13 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -83,6 +90,26 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 		preferenceManager.remove( "org.eclipse.equinox.security.ui.category" ); //$NON-NLS-1$
 		preferenceManager.remove( "org.eclipse.equinox.security.ui.storage" ); //$NON-NLS-1$
 		preferenceManager.remove( "org.eclipse.help.ui.browsersPreferencePage" ); //$NON-NLS-1$
+		
+		try {
+			if(Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.REDIRECT_STD_ERR_OUT_TO_FILE)) {
+				String filePath = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.STD_ERR_OUT_FILE);
+				File consoleFile = new File(filePath);
+				if(consoleFile.exists()) consoleFile.delete();
+				if(consoleFile.createNewFile()) {
+					System.out.println("Redirect std and err outputs to file : " + filePath);
+					PrintStream pst = new PrintStream(filePath);
+					System.setOut(pst);
+					System.setErr(pst);
+					SimpleDateFormat now = new SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault());
+					System.out.println("This is std and err log file for DOCoMETRe session : " + now.format(new Date()));
+				}
+			}	
+		
+		} catch (IOException e) {
+			e.printStackTrace();
+		}  
+		
 	}
 	
 	
