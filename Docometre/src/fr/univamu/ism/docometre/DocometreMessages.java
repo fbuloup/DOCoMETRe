@@ -469,6 +469,12 @@ public final class DocometreMessages extends NLS {
 	public static String SHOW_CURSOR;
 	public static String SHOW_MARKER;
 	
+	/* Redirect console preferences */
+	public static String REDIRECT_GROUP_TITLE;
+	public static String REDIRECT_BUTTON_TITLE;
+	public static String REDIRECT_FILE_ABSOLUTE_PATH;
+	public static String REDIRECT_LABEL_TITLE;
+	
 	/* Acquire perspective toolbar */
 	public static String ItemToRun_Label;
 	public static String RunAction_Tooltip;

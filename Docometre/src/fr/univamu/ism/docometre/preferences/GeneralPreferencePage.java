@@ -49,12 +49,16 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ChooseWorkspaceData;
@@ -130,13 +134,13 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
 		addField(showMarkerFileEditor);
 		
 		Group redirectOutErrOptionsGroup = new Group(getFieldEditorParent(), SWT.NONE);
-		redirectOutErrOptionsGroup.setText("Redirect standard and error output to file (Restart for changes to take effect)");
+		redirectOutErrOptionsGroup.setText(DocometreMessages.REDIRECT_GROUP_TITLE);
 		redirectOutErrOptionsGroup.setLayout(new FillLayout(SWT.HORIZONTAL));
 		redirectOutErrOptionsGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1));
 		
-		BooleanFieldEditor redirectOption = new BooleanFieldEditor(GeneralPreferenceConstants.REDIRECT_STD_ERR_OUT_TO_FILE, "redirect", redirectOutErrOptionsGroup);
+		BooleanFieldEditor redirectOption = new BooleanFieldEditor(GeneralPreferenceConstants.REDIRECT_STD_ERR_OUT_TO_FILE, DocometreMessages.REDIRECT_BUTTON_TITLE, redirectOutErrOptionsGroup);
 		addField(redirectOption);
-		FileFieldEditor redirectFile = new FileFieldEditor(GeneralPreferenceConstants.STD_ERR_OUT_FILE, "File absolute path",true, FileFieldEditor.VALIDATE_ON_KEY_STROKE ,redirectOutErrOptionsGroup);
+		FileFieldEditor redirectFile = new FileFieldEditor(GeneralPreferenceConstants.STD_ERR_OUT_FILE, DocometreMessages.REDIRECT_FILE_ABSOLUTE_PATH, true, FileFieldEditor.VALIDATE_ON_KEY_STROKE ,redirectOutErrOptionsGroup);
 		addField(redirectFile);
 		redirectFile.setEnabled(getPreferenceStore().getBoolean(GeneralPreferenceConstants.REDIRECT_STD_ERR_OUT_TO_FILE), redirectOutErrOptionsGroup); 
 		((Button)redirectOption.getDescriptionControl(redirectOutErrOptionsGroup)).addSelectionListener(new SelectionAdapter() {
@@ -153,9 +157,15 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
 				}
 			}
 		});
-		
+		Label redirectInfosLabel = new Label(redirectOutErrOptionsGroup, SWT.NORMAL);
+		redirectInfosLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1));
+		redirectInfosLabel.setText(DocometreMessages.REDIRECT_LABEL_TITLE);
+		Font font = redirectInfosLabel.getFont();
+		FontData[] fontData = font.getFontData();
+		if(fontData[0] != null) {
+			fontData[0].style = SWT.BOLD;
+			font = new Font(PlatformUI.getWorkbench().getDisplay(), fontData[0]);
+			redirectInfosLabel.setFont(font);
+		}
 	}
-	
-	
-
 }
