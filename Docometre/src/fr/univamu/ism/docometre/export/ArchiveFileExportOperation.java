@@ -75,7 +75,7 @@ public class ArchiveFileExportOperation implements IRunnableWithProgress {
 	private IFileExporter exporter;
 	private String destinationFilename;
 	private IProgressMonitor monitor;
-	private List<? extends IResource> resourcesToExport;
+	private List<IResource> resourcesToExport;
 	private IResource resource;
 	private List<IStatus> errorTable = new ArrayList<>(1); // IStatus
 	private boolean useCompression = true;
@@ -93,7 +93,7 @@ public class ArchiveFileExportOperation implements IRunnableWithProgress {
 	 *	@param resources java.util.Vector
 	 *	@param filename java.lang.String
 	 */
-	public ArchiveFileExportOperation(List<? extends IResource> resources, String filename) {
+	public ArchiveFileExportOperation(List<IResource> resources, String filename) {
 		super();
 
 		// Eliminate redundancies in list of resources being exported
@@ -419,5 +419,9 @@ public class ArchiveFileExportOperation implements IRunnableWithProgress {
 	 */
 	public void setIncludeLinkedResources(boolean value) {
 		resolveLinks = value;
+	}
+
+	public void addResource(IResource propertiesFile) {
+		resourcesToExport.add(propertiesFile);
 	}
 }

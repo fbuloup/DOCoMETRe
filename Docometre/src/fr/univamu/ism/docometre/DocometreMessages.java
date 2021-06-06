@@ -743,6 +743,11 @@ public final class DocometreMessages extends NLS {
 	public static String ExportExperimentTaskTitle;
 	public static String createPropertiesFile;
 	public static String WritingProperties;
+	public static String ExportOnlySelectedSubjectTitle;
+	public static String ExportWithDataTitle;
+	public static String PleaseSelectAnExperimentMessage;
+	public static String PleaseSelectADestinationMessage;
+	public static String DestinationAlreadyExistsMessage ;
 	
 	//
 	public static String UndoneTrials;

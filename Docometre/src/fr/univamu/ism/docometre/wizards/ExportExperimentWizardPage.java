@@ -54,12 +54,17 @@ import org.eclipse.swt.widgets.Text;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
+import fr.univamu.ism.docometre.ResourceProperties;
+import fr.univamu.ism.docometre.ResourceType;
 
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Group;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -73,9 +78,11 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.graphics.Image;
@@ -87,6 +94,9 @@ public class ExportExperimentWizardPage extends WizardPage {
 	private IProject experiment;
 	private String destination;
 	private boolean includeData = true;
+	private boolean exportOnlySelectedSubjects;
+	protected IStructuredSelection selectedSubjects;
+	private ListViewer subjectsListViewer;
 	
 	private static class ViewerLabelProvider extends LabelProvider {
 		public Image getImage(Object element) {
@@ -102,6 +112,17 @@ public class ExportExperimentWizardPage extends WizardPage {
 	private static class ContentProvider implements IStructuredContentProvider {
 		public Object[] getElements(Object inputElement) {
 			if(inputElement instanceof IWorkspaceRoot) return ((IWorkspaceRoot)inputElement).getProjects();
+			return new Object[0];
+		}
+		public void dispose() {
+		}
+		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+		}
+	}
+	
+	private static class SubjectsContentProvider implements IStructuredContentProvider {
+		public Object[] getElements(Object inputElement) {
+			if(inputElement instanceof IProject) return ResourceProperties.getAllTypedResources(ResourceType.SUBJECT, (IContainer) inputElement, null);
 			return new Object[0];
 		}
 		public void dispose() {
@@ -138,6 +159,7 @@ public class ExportExperimentWizardPage extends WizardPage {
 			@Override
 			public void selectionChanged(SelectionChangedEvent event) {
 				experiment = (IProject)((StructuredSelection)exportProjectComboViewer.getSelection()).getFirstElement();
+				if(exportOnlySelectedSubjects) subjectsListViewer.setInput(experiment);
 				validate();
 			}
 		});
@@ -176,7 +198,7 @@ public class ExportExperimentWizardPage extends WizardPage {
 		Group optionsGroup = new Group(container, SWT.NONE);
 		optionsGroup.setText(DocometreMessages.OptionsGroupLabel);
 		optionsGroup.setLayout(new GridLayout(1, false));
-		optionsGroup.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, true, 3, 1));
+		optionsGroup.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 3, 1));
 		
 		Button exportAsZipRadioButton = new Button(optionsGroup, SWT.RADIO);
 		exportAsZipRadioButton.setSelection(true);
@@ -204,7 +226,7 @@ public class ExportExperimentWizardPage extends WizardPage {
 		});
 		
 		Button exportWithDataButton = new Button(optionsGroup, SWT.CHECK);
-		exportWithDataButton.setText("Export with data");
+		exportWithDataButton.setText(DocometreMessages.ExportWithDataTitle);
 		exportWithDataButton.setSelection(true);
 		exportWithDataButton.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -215,16 +237,45 @@ public class ExportExperimentWizardPage extends WizardPage {
 		
 		exportProjectComboViewer.setInput(ResourcesPlugin.getWorkspace().getRoot());
 		
+		Button exportOnlySelectedSubjectsButton = new Button(container, SWT.CHECK);
+		exportOnlySelectedSubjectsButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				exportOnlySelectedSubjects = exportOnlySelectedSubjectsButton.getSelection();
+				if(exportOnlySelectedSubjects && experiment != null) subjectsListViewer.setInput(experiment);
+				else if (!exportOnlySelectedSubjects) subjectsListViewer.setInput(null);
+			}
+		});
+		exportOnlySelectedSubjectsButton.setText(DocometreMessages.ExportOnlySelectedSubjectTitle);
+		exportOnlySelectedSubjectsButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1));
+		subjectsListViewer = new ListViewer(container);
+		subjectsListViewer.getList().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 3, 1));
+		subjectsListViewer.setLabelProvider(new LabelProvider() {
+			@Override
+			public String getText(Object element) {
+				if(element instanceof IResource) return ((IResource)element).getName();
+				return super.getText(element);
+			}
+		});
+		subjectsListViewer.setContentProvider(new SubjectsContentProvider());
+		subjectsListViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+			@Override
+			public void selectionChanged(SelectionChangedEvent event) {
+				selectedSubjects = (IStructuredSelection) subjectsListViewer.getSelection();
+			}
+		});
+		
 	}
 	
 	public boolean validate() {
 		setErrorMessage(null);
-		if(experiment == null) setErrorMessage("Please select an experiment");
-		else if(destination == null) setErrorMessage("Please select a destination file");
+		if(experiment == null) setErrorMessage(DocometreMessages.PleaseSelectAnExperimentMessage);
+		else if(destination == null) setErrorMessage(DocometreMessages.PleaseSelectADestinationMessage);
 		else {
 			File destinationFile = new File(destination);
-			if(destinationFile.exists()) setErrorMessage("Destination already exists"); 
+			if(destinationFile.exists()) setErrorMessage(DocometreMessages.DestinationAlreadyExistsMessage); 
 		}
+		setPageComplete(getErrorMessage() == null);
 		return getErrorMessage() == null;
 	}
 
@@ -246,6 +297,17 @@ public class ExportExperimentWizardPage extends WizardPage {
 	
 	public boolean isIncludeData() {
 		return includeData;
+	}
+	
+	public boolean isOnlyExportSubjects() {
+		return exportOnlySelectedSubjects;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public List<IResource> getSelectedSubjects() {
+		ArrayList<IResource> elements = new ArrayList<>();
+		elements.addAll(selectedSubjects.toList());
+		return elements;
 	}
 	
 }

@@ -92,6 +92,38 @@ public final class ExperimentPropertiesFileCreator {
 				}
 		}
 	}
+	
+	public static IFile createPropertiesFile(IProject experiment, IResource[] resources, IPath destinationPath, SubMonitor subMonitor, boolean includeData) {
+		FileOutputStream fileOutputStream = null;
+		try {
+			IFile propertiesFile = experiment.getFile(destinationPath.removeFileExtension().lastSegment() + ".properties");
+			IPath path = propertiesFile.getLocation();
+			fileOutputStream = new FileOutputStream(path.toOSString());
+			toRootDirectory =  destinationPath.removeFileExtension().lastSegment();
+			fromRootDirectory = experiment.getName();
+			Properties properties = new Properties();
+			
+			for (IResource resource : resources) {
+				writePropertiesRecursively(resource, properties, includeData, subMonitor);
+			}
+			
+			properties.store(new OutputStreamWriter(fileOutputStream, "UTF-8"), null);
+			propertiesFile.refreshLocal(IResource.DEPTH_INFINITE, null);
+			return propertiesFile;
+		} catch (IOException | CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+			return null;
+		} finally {
+			if(fileOutputStream != null)
+				try {
+					fileOutputStream.close();
+				} catch (IOException e) {
+					Activator.logErrorMessageWithCause(e);
+					e.printStackTrace();
+				}
+		}
+	}
 
 	private static void writePropertiesRecursively(IResource resource, Properties properties, boolean includeData, SubMonitor subMonitor) throws CoreException {
 		subMonitor.subTask(NLS.bind(DocometreMessages.WritingProperties, resource.getFullPath().toOSString()));
