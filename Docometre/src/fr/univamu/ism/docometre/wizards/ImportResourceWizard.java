@@ -108,6 +108,7 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 	@Override
 	public boolean performFinish() {
 		ITreeSelection selection = importResourceWizardPage.getSelection();
+		ResourceType resourceType = importResourceWizardPage.getResourceType();
 		Object[] elements = selection.toArray();
 		for (Object element : elements) {
 			File file = (File)element;
@@ -138,44 +139,76 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 					}
 				} else if(file.getName().endsWith(".zip") || file.getName().endsWith(".tar")) {
 					try {
-						// Import experiment 
+						// Import experiment or subjects
 						getContainer().run(true, false, new IRunnableWithProgress() {
 							@Override
 							public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 								try {
-									String experimentName = file.getName().replaceAll(".zip$", "").replaceAll(".tar$", "");
-									
-									int nbFilesToExtract = getNbFiles(file);
-									int nbPropertiesEntriesToApply = getNbProperties(file, experimentName, rootPath);
-									
-									SubMonitor subMonitor = SubMonitor.convert(monitor, DocometreMessages.ImportingExperimentFromCompressedFile, nbFilesToExtract + nbPropertiesEntriesToApply + 2);
+									if(resourceType.equals(ResourceType.EXPERIMENT)) {
+										String experimentName = file.getName().replaceAll(".zip$", "").replaceAll(".tar$", "");
+										
+										int nbFilesToExtract = getNbFiles(file);
+										int nbPropertiesEntriesToApply = getNbProperties(file, experimentName, rootPath);
+										
+										SubMonitor subMonitor = SubMonitor.convert(monitor, DocometreMessages.ImportingExperimentFromCompressedFile, nbFilesToExtract + nbPropertiesEntriesToApply + 2);
 
-									subMonitor.subTask(DocometreMessages.CreatingNewExperimentInWorkspace);
-									IProject newExperiment = ResourcesPlugin.getWorkspace().getRoot().getProject(experimentName);
-									newExperiment.create(null);
-									newExperiment.open(null);
-									subMonitor.worked(1);
+										subMonitor.subTask(DocometreMessages.CreatingNewExperimentInWorkspace);
+										IProject newExperiment = ResourcesPlugin.getWorkspace().getRoot().getProject(experimentName);
+										newExperiment.create(null);
+										newExperiment.open(null);
+										subMonitor.worked(1);
+										
+										unzip(file.getAbsolutePath(), rootPath, subMonitor);
+										
+										subMonitor.subTask(DocometreMessages.RefreshingWorkspace);
+										newExperiment.getParent().refreshLocal(IResource.DEPTH_INFINITE, null);
+										subMonitor.worked(1);
+										
+										String propertiesFileFullPath = newExperiment.getFile(newExperiment.getName() + ".properties").getLocation().toOSString();
+										
+										readAndApplyPersitentProperties(newExperiment, subMonitor, nbPropertiesEntriesToApply, propertiesFileFullPath);
+										IFile propertiesFile = newExperiment.getFile(newExperiment.getName() + ".properties");
+										if(propertiesFile != null) propertiesFile.delete(true, null);
+										
+										subMonitor.subTask(DocometreMessages.RefreshingWorkspace);
+										newExperiment.getParent().refreshLocal(IResource.DEPTH_INFINITE, null);
+										subMonitor.worked(1);
+										
+										subMonitor.subTask(DocometreMessages.AddingProjectToBuilderAndRefreshingExperiment);
+										DocometreBuilder.addProject(newExperiment);
+										ExperimentsView.refresh(newExperiment.getParent(), new IResource[]{newExperiment});
+										
+										subMonitor.done();
+										monitor.done();
+									} else if(resourceType.equals(ResourceType.SUBJECT)) {
+										// TODO
+										
+//										IProject experiment = (IProject) parentResource;
+//										String fromExperimentName = file.getName().replaceAll(".zip$", "").replaceAll(".tar$", "");
+//										int nbFilesToExtract = getNbFiles(file);
+//										int nbPropertiesEntriesToApply = getNbProperties(file, fromExperimentName, rootPath);
+//										System.out.println(nbFilesToExtract);
+//										System.out.println(nbPropertiesEntriesToApply);
+//										
+//										
+//										SubMonitor subMonitor = SubMonitor.convert(monitor, DocometreMessages.ImportingExperimentFromCompressedFile, nbFilesToExtract + nbPropertiesEntriesToApply + 2);
+//										
+//										unzip(file.getAbsolutePath(), parentResource.getLocation().toOSString(), subMonitor);
+//										
+//										subMonitor.subTask(DocometreMessages.RefreshingWorkspace);
+//										parentResource.refreshLocal(IResource.DEPTH_INFINITE, null);
+//										subMonitor.worked(1);
+//										
+//										
+//										String propertiesFileFullPath = experiment.getFile(fromExperimentName + ".properties").getLocation().toOSString();
+//										
+//										readAndApplyPersitentProperties(experiment, subMonitor, nbPropertiesEntriesToApply, propertiesFileFullPath);
+//										IFile propertiesFile = experiment.getFile(fromExperimentName + ".properties");
+//										if(propertiesFile != null) propertiesFile.delete(true, null);
+										
+									}
 									
-									unzip(file.getAbsolutePath(), rootPath, subMonitor);
 									
-									subMonitor.subTask(DocometreMessages.RefreshingWorkspace);
-									newExperiment.getParent().refreshLocal(IResource.DEPTH_INFINITE, null);
-									subMonitor.worked(1);
-									
-									readAndApplyPersitentProperties(newExperiment, subMonitor, nbPropertiesEntriesToApply);
-									IFile propertiesFile = newExperiment.getFile(newExperiment.getName() + ".properties");
-									if(propertiesFile != null) propertiesFile.delete(true, null);
-									
-									subMonitor.subTask(DocometreMessages.RefreshingWorkspace);
-									newExperiment.getParent().refreshLocal(IResource.DEPTH_INFINITE, null);
-									subMonitor.worked(1);
-									
-									subMonitor.subTask(DocometreMessages.AddingProjectToBuilderAndRefreshingExperiment);
-									DocometreBuilder.addProject(newExperiment);
-									ExperimentsView.refresh(newExperiment.getParent(), new IResource[]{newExperiment});
-									
-									subMonitor.done();
-									monitor.done();
 								} catch (CoreException e) {
 									Activator.getLogErrorMessageWithCause(e);
 									e.printStackTrace();
@@ -277,9 +310,9 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 		return 0;
 	}
 
-	private void readAndApplyPersitentProperties(IProject newExperiment, SubMonitor subMonitor, int nbProperties) {
+	private void readAndApplyPersitentProperties(IProject newExperiment, SubMonitor subMonitor, int nbProperties, String propertiesFileFullPath) {
 		try {
-			String propertiesFileFullPath = newExperiment.getFile(newExperiment.getName() + ".properties").getLocation().toOSString();
+//			String propertiesFileFullPath = newExperiment.getFile(newExperiment.getName() + ".properties").getLocation().toOSString();
 			FileInputStream fileInputStream = new FileInputStream(propertiesFileFullPath);
 			InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, "UTF-8");
 			Properties properties = new Properties();

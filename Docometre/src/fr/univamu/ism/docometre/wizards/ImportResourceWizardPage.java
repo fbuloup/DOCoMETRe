@@ -79,6 +79,7 @@ import fr.univamu.ism.docometre.ResourceType;
 public class ImportResourceWizardPage extends WizardPage {
 
 	private TreeViewer resourceTreeViewer;
+	private ResourceType selectedResourceType;
 
 	private class ValidatFiles implements FilenameFilter {
 		
@@ -113,7 +114,7 @@ public class ImportResourceWizardPage extends WizardPage {
 		
 		private boolean validateFile(File file, String name) {
 			boolean valid = false;
-			if(selection == ResourceType.EXPERIMENT) {
+			if(selection == ResourceType.EXPERIMENT || selection == ResourceType.SUBJECT) {
 				valid = name.matches("^[a-zA-Z][a-zA-Z0-9_]*.zip$") || name.matches("^[a-zA-Z][a-zA-Z0-9_]*.tar$");
 			} else {
 				String extension = Activator.daqFileExtension;
@@ -163,15 +164,18 @@ public class ImportResourceWizardPage extends WizardPage {
 				if(element == ResourceType.PROCESS) return DocometreMessages.NewProcessAction_Text;
 				if(element == ResourceType.EXPERIMENT) return DocometreMessages.NewExperimentAction_Text + " (*.zip, *.tar)";
 				if(element == ResourceType.ADW_DATA_FILE) return DocometreMessages.NewSubjectFromADWDataFileLabel;
+				if(element == ResourceType.SUBJECT) return DocometreMessages.Subjects + " (*.zip, *.tar)";
 				return super.getText(element);
 			}
 		});
 		if(!ImportResourceWizard.getSelectedResource().equals(ResourcesPlugin.getWorkspace().getRoot())) {
-			resourceTypeComboViewer.setInput(new Object[] {ResourceType.DACQ_CONFIGURATION, ResourceType.PROCESS, ResourceType.EXPERIMENT, ResourceType.ADW_DATA_FILE});
-			resourceTypeComboViewer.setSelection(new StructuredSelection(ResourceType.DACQ_CONFIGURATION));
+			resourceTypeComboViewer.setInput(new Object[] {ResourceType.SUBJECT, ResourceType.ADW_DATA_FILE, ResourceType.DACQ_CONFIGURATION, ResourceType.PROCESS});
+			resourceTypeComboViewer.setSelection(new StructuredSelection(ResourceType.SUBJECT));
+			selectedResourceType = ResourceType.SUBJECT;
 		} else {
 			resourceTypeComboViewer.setInput(new Object[] {ResourceType.EXPERIMENT});
 			resourceTypeComboViewer.setSelection(new StructuredSelection(ResourceType.EXPERIMENT));
+			selectedResourceType = ResourceType.EXPERIMENT;
 		}
 		
 		
@@ -281,6 +285,7 @@ public class ImportResourceWizardPage extends WizardPage {
 					destinationResourceText.setEnabled(false);
 					destinationResourceText.setText("/");
 				}
+				selectedResourceType = (ResourceType) resourceTypeComboViewer.getStructuredSelection().getFirstElement();
 			}
 		});
 		
@@ -310,6 +315,10 @@ public class ImportResourceWizardPage extends WizardPage {
 		return resourceTreeViewer.getStructuredSelection();
 	}
 	
+	
+	public ResourceType getResourceType() {
+		return selectedResourceType;
+	}
 	
 
 }
