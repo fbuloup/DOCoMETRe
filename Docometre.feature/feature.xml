@@ -6,10 +6,18 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-06-03 - Bis
+      -- 2021-06-07
+Added :
+* Support to export only selected subjects from an experiment
+* Support to import only selected exported subjects (Step 1)
+Fixed :
+* Bug in displaying Markers : X and Y axis where swapped
+* Add Debug Messages to experiment exportation
+-- 2021-06-03 - Bis
 ADDED : Nothing
 FIXED :
-* use font style setter instead of direct field access (Maven build failed)
+* use font style setter instead of direct field access (Maven
+build failed)
 -- 2021-06-03
 ADDED :
 * Handle Standard and Error outputs redirection to file
