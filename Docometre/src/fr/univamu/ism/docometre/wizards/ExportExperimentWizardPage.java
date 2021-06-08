@@ -264,6 +264,10 @@ public class ExportExperimentWizardPage extends WizardPage {
 				selectedSubjects = (IStructuredSelection) subjectsListViewer.getSelection();
 			}
 		});
+		Label warningLabel = new Label(container, SWT.WRAP);
+		warningLabel.setLayoutData(new GridData(SWT.CENTER, SWT.FILL, true, false, 3, 1));
+		warningLabel.setForeground(getShell().getDisplay().getSystemColor(SWT.COLOR_RED));
+		warningLabel.setText(DocometreMessages.ExportWarningMessage);
 		
 	}
 	
@@ -306,7 +310,7 @@ public class ExportExperimentWizardPage extends WizardPage {
 	@SuppressWarnings("unchecked")
 	public List<IResource> getSelectedSubjects() {
 		ArrayList<IResource> elements = new ArrayList<>();
-		elements.addAll(selectedSubjects.toList());
+		if(selectedSubjects != null) elements.addAll(selectedSubjects.toList());
 		return elements;
 	}
 	

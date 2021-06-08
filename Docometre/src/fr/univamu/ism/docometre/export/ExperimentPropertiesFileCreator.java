@@ -65,6 +65,14 @@ public final class ExperimentPropertiesFileCreator {
 	private static String toRootDirectory;
 	private static String fromRootDirectory;
 
+	/**
+	 * This method create a properties file for exported experiment
+	 * @param experiment
+	 * @param destinationPath
+	 * @param subMonitor
+	 * @param includeData whether data files must be included
+	 * @return
+	 */
 	public static IFile createPropertiesFile(IProject experiment, IPath destinationPath, SubMonitor subMonitor, boolean includeData) {
 		FileOutputStream fileOutputStream = null;
 		try {
@@ -74,6 +82,7 @@ public final class ExperimentPropertiesFileCreator {
 			toRootDirectory =  destinationPath.removeFileExtension().lastSegment();
 			fromRootDirectory = experiment.getName();
 			Properties properties = new Properties();
+			properties.put("OnlySubjects", "false");
 			writePropertiesRecursively(experiment, properties, includeData, subMonitor);
 			properties.store(new OutputStreamWriter(fileOutputStream, "UTF-8"), null);
 			propertiesFile.refreshLocal(IResource.DEPTH_INFINITE, null);
@@ -93,6 +102,15 @@ public final class ExperimentPropertiesFileCreator {
 		}
 	}
 	
+	/**
+	 * This method create a properties file for exported subjects
+	 * @param experiment
+	 * @param resources
+	 * @param destinationPath
+	 * @param subMonitor
+	 * @param includeData
+	 * @return
+	 */
 	public static IFile createPropertiesFile(IProject experiment, IResource[] resources, IPath destinationPath, SubMonitor subMonitor, boolean includeData) {
 		FileOutputStream fileOutputStream = null;
 		try {
@@ -102,11 +120,10 @@ public final class ExperimentPropertiesFileCreator {
 			toRootDirectory =  destinationPath.removeFileExtension().lastSegment();
 			fromRootDirectory = experiment.getName();
 			Properties properties = new Properties();
-			
+			properties.put("OnlySubjects", "true");
 			for (IResource resource : resources) {
 				writePropertiesRecursively(resource, properties, includeData, subMonitor);
 			}
-			
 			properties.store(new OutputStreamWriter(fileOutputStream, "UTF-8"), null);
 			propertiesFile.refreshLocal(IResource.DEPTH_INFINITE, null);
 			return propertiesFile;
@@ -125,6 +142,14 @@ public final class ExperimentPropertiesFileCreator {
 		}
 	}
 
+	/**
+	 * Helper method to write properties recursively
+	 * @param resource
+	 * @param properties
+	 * @param includeData
+	 * @param subMonitor
+	 * @throws CoreException
+	 */
 	private static void writePropertiesRecursively(IResource resource, Properties properties, boolean includeData, SubMonitor subMonitor) throws CoreException {
 		subMonitor.subTask(NLS.bind(DocometreMessages.WritingProperties, resource.getFullPath().toOSString()));
 		String keyName =  resource.getFullPath().toPortableString().replaceFirst(fromRootDirectory, toRootDirectory);

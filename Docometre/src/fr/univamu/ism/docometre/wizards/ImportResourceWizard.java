@@ -51,8 +51,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
@@ -69,6 +73,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeSelection;
@@ -145,7 +150,22 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 							public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 								try {
 									if(resourceType.equals(ResourceType.EXPERIMENT)) {
+										// Import experiment
+										
+										// Get experiment name
 										String experimentName = file.getName().replaceAll(".zip$", "").replaceAll(".tar$", "");
+										
+										//Check if an experiment with same name already exists
+										if(ResourcesPlugin.getWorkspace().getRoot().findMember(experimentName) != null) {
+											getShell().getDisplay().syncExec(new Runnable() {
+												@Override
+												public void run() {
+													String message = NLS.bind(DocometreMessages.ImportErrorMessage, experimentName);
+													MessageDialog.openError(getShell(), DocometreMessages.ImportErrorDialogTitle, message);
+												}
+											});
+											return;
+										}
 										
 										int nbFilesToExtract = getNbFiles(file);
 										int nbPropertiesEntriesToApply = getNbProperties(file, experimentName, rootPath);
@@ -181,30 +201,64 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 										subMonitor.done();
 										monitor.done();
 									} else if(resourceType.equals(ResourceType.SUBJECT)) {
-										// TODO
+										IProject experiment = (IProject) parentResource;
+										String fromExperimentName = file.getName().replaceAll(".zip$", "").replaceAll(".tar$", "");
+										int nbFilesToExtract = getNbFiles(file);
+										int nbPropertiesEntriesToApply = getNbProperties(file, fromExperimentName, rootPath);
 										
-//										IProject experiment = (IProject) parentResource;
-//										String fromExperimentName = file.getName().replaceAll(".zip$", "").replaceAll(".tar$", "");
-//										int nbFilesToExtract = getNbFiles(file);
-//										int nbPropertiesEntriesToApply = getNbProperties(file, fromExperimentName, rootPath);
-//										System.out.println(nbFilesToExtract);
-//										System.out.println(nbPropertiesEntriesToApply);
-//										
-//										
-//										SubMonitor subMonitor = SubMonitor.convert(monitor, DocometreMessages.ImportingExperimentFromCompressedFile, nbFilesToExtract + nbPropertiesEntriesToApply + 2);
-//										
-//										unzip(file.getAbsolutePath(), parentResource.getLocation().toOSString(), subMonitor);
-//										
-//										subMonitor.subTask(DocometreMessages.RefreshingWorkspace);
-//										parentResource.refreshLocal(IResource.DEPTH_INFINITE, null);
-//										subMonitor.worked(1);
-//										
-//										
-//										String propertiesFileFullPath = experiment.getFile(fromExperimentName + ".properties").getLocation().toOSString();
-//										
-//										readAndApplyPersitentProperties(experiment, subMonitor, nbPropertiesEntriesToApply, propertiesFileFullPath);
-//										IFile propertiesFile = experiment.getFile(fromExperimentName + ".properties");
-//										if(propertiesFile != null) propertiesFile.delete(true, null);
+										SubMonitor subMonitor = SubMonitor.convert(monitor, DocometreMessages.ImportingExperimentFromCompressedFile, nbFilesToExtract + nbPropertiesEntriesToApply + 2);
+										
+										// Extract to temporary folder
+										String destinationFolder =  parentResource.getLocation().toPortableString();
+										String id = String.valueOf(System.currentTimeMillis());
+										String temporaryFolder =  destinationFolder + "/" + "Temp_" + id;
+										unzip(file.getAbsolutePath(), temporaryFolder, subMonitor);
+										
+										Stream<Path> stream = null;
+										String propertiesFileFullPath = null;
+										try {
+											// Move subjects folder to experiment folder
+											stream = Files.walk(Paths.get(temporaryFolder), 2);
+											List<Path> subjectsStream = stream.filter(folder -> Files.isDirectory(folder)).collect(Collectors.toList());
+											for (Path path : subjectsStream) {
+												if(Paths.get(temporaryFolder).getNameCount() + 2 == path.getNameCount()) {
+													Files.move(path, Paths.get(destinationFolder + "/" + path.getName(path.getNameCount() - 1).toString()));
+												}
+												
+											}
+											// Move properties file to experiment folder
+											stream.close();
+											stream = Files.walk(Paths.get(temporaryFolder), 2);
+											List<Path> propertiesStream = stream.filter(folder -> !Files.isDirectory(folder)).collect(Collectors.toList());
+											for (Path path : propertiesStream) {
+												if(Paths.get(temporaryFolder).getNameCount() + 2 == path.getNameCount()) {
+													propertiesFileFullPath = destinationFolder + "/"+ path.getName(path.getNameCount() - 1).toString();
+													Files.move(path, Paths.get(propertiesFileFullPath));
+												}
+												
+											}
+											// Delete temp folder
+											Files.walk(Paths.get(temporaryFolder)).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+										} catch (IOException e) {
+											Activator.logErrorMessageWithCause(e);
+											e.printStackTrace();
+										} finally {
+											if(stream != null) stream.close();
+										}
+										
+										subMonitor.subTask(DocometreMessages.RefreshingWorkspace);
+										parentResource.refreshLocal(IResource.DEPTH_INFINITE, null);
+										subMonitor.worked(1);
+										
+										readAndApplyPersitentProperties(experiment, subMonitor, nbPropertiesEntriesToApply, propertiesFileFullPath);
+										String[] propertiesFileFullPathSegments = propertiesFileFullPath.split("/");
+										IFile propertiesFile = experiment.getFile(propertiesFileFullPathSegments[propertiesFileFullPathSegments.length - 1]);
+										if(propertiesFile != null) propertiesFile.delete(true, null);
+										
+										subMonitor.subTask(DocometreMessages.RefreshingWorkspace);
+										parentResource.refreshLocal(IResource.DEPTH_INFINITE, null);
+										ExperimentsView.refresh(parentResource, null);
+										subMonitor.worked(1);
 										
 									}
 									
@@ -272,7 +326,7 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 	        ZipInputStream zis = new ZipInputStream(fis);
 	        ZipEntry ze = zis.getNextEntry();
 	        while(ze != null) {
-	        	if(ze.getName().equals(experimentName  + "/" + experimentName + ".properties")) {
+	        	if(ze.getName().endsWith(".properties")) {
 	        		extractFile(zis, ze, rootPath + File.separator + "temp.properties");
 	        		File temporaryPropertiesFile = new File(rootPath + File.separator + "temp.properties");
 	        		FileInputStream fileInputStream = new FileInputStream(temporaryPropertiesFile);
@@ -320,11 +374,13 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 			Set<Object> keys = properties.keySet();
 			int numProperty = 1;
 			for (Object key : keys) {
+				if(key.equals("OnlySubjects")) continue;
 				String value = (String) properties.get(key);
 				String[] keyArray = key.toString().split(ResourceProperties.SEPARATOR);
 				if(Platform.getOS().equals(Platform.OS_MACOSX)) {
 					keyArray[0] = keyArray[0].replace("\\", "/");
 					value = value.replace("\\", "/");
+					
 				}
 				if(Platform.getOS().equals(Platform.OS_WIN32)) {
 					keyArray[0] = keyArray[0].replace("/", "\\");
@@ -334,6 +390,9 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 					keyArray[0] = keyArray[0].replace("\\", "/");
 					value = value.replace("\\", "/");
 				}
+				keyArray[0] = keyArray[0].replaceAll("^/\\w+/", "/" + newExperiment.getName() + "/");
+				value = value.replaceAll("^/\\w+/", "/" + newExperiment.getName() + "/");
+				
 				IPath resourcePath = org.eclipse.core.runtime.Path.fromOSString(keyArray[0]);
 				String resourceFullPath = newExperiment.getParent().getLocation().toOSString() + File.separator + keyArray[0];
 				File resourceFile = new File(resourceFullPath);

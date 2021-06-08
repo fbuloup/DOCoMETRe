@@ -241,6 +241,8 @@ public final class DocometreMessages extends NLS {
 	public static String AddingProjectToBuilderAndRefreshingExperiment;
 	public static String ApplyingProperty;
 	public static String UnzippingFile;
+	public static String ImportErrorMessage;
+	public static String ImportErrorDialogTitle;
 	
 	/*New Folder Page*/
 	public static String NewFolderWizard_PageName;
@@ -747,7 +749,8 @@ public final class DocometreMessages extends NLS {
 	public static String ExportWithDataTitle;
 	public static String PleaseSelectAnExperimentMessage;
 	public static String PleaseSelectADestinationMessage;
-	public static String DestinationAlreadyExistsMessage ;
+	public static String DestinationAlreadyExistsMessage;
+	public static String ExportWarningMessage;
 	
 	//
 	public static String UndoneTrials;
