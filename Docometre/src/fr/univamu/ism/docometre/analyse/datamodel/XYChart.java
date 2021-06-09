@@ -56,6 +56,7 @@ public class XYChart extends AbstractElement {
 	private String yAxisGridStyle;
 	private RGB xAxisGridColor;
 	private RGB yAxisGridColor;
+	private boolean useSameColorForSameCategory;
 	
 	public XYChart() {
 		seriesIDs = new HashSet<>();
@@ -76,6 +77,7 @@ public class XYChart extends AbstractElement {
 		yAxisColor = new RGB(255,  255,  255);
 		xAxisVisible = true;
 		yAxisVisible = true;
+		useSameColorForSameCategory = true;
 	}
 	
 	@Override
@@ -175,6 +177,14 @@ public class XYChart extends AbstractElement {
 		setyMax(yMax);
 	}
 	
+	public boolean isUseSameColorForSameCategory() {
+		return useSameColorForSameCategory;
+	}
+
+	public void setUseSameColorForSameCategory(boolean useSameColorForSameCategory) {
+		this.useSameColorForSameCategory = useSameColorForSameCategory;
+	}
+
 	public String[] getSeriesIDsPrefixes() {
 		return seriesIDs.toArray(new String[seriesIDs.size()]);
 	}

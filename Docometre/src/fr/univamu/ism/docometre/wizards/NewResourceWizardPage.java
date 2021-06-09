@@ -213,9 +213,12 @@ public abstract class NewResourceWizardPage extends WizardPage implements IWizar
 				}
 			}
 		}
-		getControl().setRedraw(true);
-		getControl().redraw();
-		getControl().update();
+		if(getControl() != null && !getControl().isDisposed()) {
+			getControl().setRedraw(true);
+			getControl().redraw();
+			getControl().update();
+		}
+		
 	}
 	
 	public String getResourceName() {

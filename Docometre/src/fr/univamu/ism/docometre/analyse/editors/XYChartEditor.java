@@ -11,6 +11,7 @@ import java.util.stream.IntStream;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.util.LocalSelectionTransfer;
@@ -64,9 +65,12 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.GetResourceLabelDelegate;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ObjectsController;
+import fr.univamu.ism.docometre.ResourceProperties;
+import fr.univamu.ism.docometre.analyse.MathEngine;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
+import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
 import fr.univamu.ism.docometre.analyse.datamodel.XYChart;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 
@@ -86,6 +90,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 	private boolean dirty;
 	private Button autoScaleButton;
 	private Group scaleValuesGroup;
+	private Button useSameColorButton;
 
 	public XYChartEditor() {
 	}
@@ -482,6 +487,19 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 			}
 		});
 		
+		useSameColorButton = new Button(bottomContainer2, SWT.CHECK | SWT.WRAP);
+		useSameColorButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		useSameColorButton.setText(DocometreMessages.UseSameColorForSameCategory);
+		useSameColorButton.setSelection(xyChartData.isUseSameColorForSameCategory());
+		useSameColorButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				xyChartData.setUseSameColorForSameCategory(useSameColorButton.getSelection());
+				updateSeriesColorsHandler();
+				setDirty(true);
+			}
+		});
+		
 		container.setSashWidth(5);
 		container.setWeights(new int[] {80, 20});
 		
@@ -489,6 +507,37 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		trialsListViewer.setSelection(new StructuredSelection(xyChartData.getSelectedTrialsNumbers()));
 		setDirty(false);
 
+	}
+	
+	protected void updateSeriesColorsHandler() {
+		MathEngine mathEngine = MathEngineFactory.getMathEngine();
+		boolean sameColor = xyChartData.isUseSameColorForSameCategory();
+		String[] seriesIDs = getSeriesIDs();
+		ArrayList<String> categories = new ArrayList<>();
+		byte i = 0; 
+		for (String seriesID : seriesIDs) {
+			ISeries series = chart.getSeriesSet().getSeries(seriesID);
+			if(sameColor) {
+				try {
+					int seriesIDTrial = Integer.parseInt(seriesID.split("\\.")[seriesID.split("\\.").length - 1]); 
+					String fullYChannelName = seriesID.split("\\(")[0];
+					String fullSubjectName = fullYChannelName.replaceAll("\\.\\w+$", "");
+					IResource subject = ((IContainer)SelectedExprimentContributionItem.selectedExperiment).findMember(fullSubjectName.split("\\.")[1]);
+					ChannelsContainer channelsContainer = (ChannelsContainer)subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
+					Channel channel = channelsContainer.getChannelFromName(fullYChannelName);
+					String category = mathEngine.getCategoryForTrialNumber(channel, seriesIDTrial);
+					if(categories.indexOf(category) == -1) categories.add(category);
+					((ILineSeries)series).setLineColor(ColorUtil.getColor((byte) categories.indexOf(category)));
+				} catch (CoreException e) {
+					Activator.logErrorMessageWithCause(e);
+					e.printStackTrace();
+				}
+			} else {
+				((ILineSeries)series).setLineColor(ColorUtil.getColor(i));
+				i++;
+			}
+		}
+		chart.redraw();
 	}
 	
 	private void refreshTrialsListFrontEndCuts() {
@@ -614,7 +663,9 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 			String[] segments = aSeries.getId().split("\\.");
 			trials.add(Integer.parseInt(segments[segments.length - 1]));
 		}
-		return trials;
+		ArrayList<Integer> trialsList = new ArrayList<>(trials);
+		Collections.sort(trialsList);
+		return new HashSet<>(trialsList);
 	}
 	
 	private void removeSeriesFromChart(Integer trialNumber) {
@@ -648,12 +699,13 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 			series.setLineWidth(3);
 		}
 		// refresh Series Colors
-		ISeries[] seriesList = chart.getSeriesSet().getSeries();
-		byte i = 0;
-		for (ISeries series : seriesList) {
-			((ILineSeries)series).setLineColor(ColorUtil.getColor(i));
-			i++;
-		}
+		updateSeriesColorsHandler();
+//		ISeries[] seriesList = chart.getSeriesSet().getSeries();
+//		byte i = 0;
+//		for (ISeries series : seriesList) {
+//			((ILineSeries)series).setLineColor(ColorUtil.getColor(i));
+//			i++;
+//		}
 	}
 	
 	private boolean chartHasAlreadyThisTrial(Integer trialNumber) {

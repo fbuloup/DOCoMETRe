@@ -9,6 +9,9 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -48,8 +51,12 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ColorUtil;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
+import fr.univamu.ism.docometre.ResourceProperties;
+import fr.univamu.ism.docometre.analyse.MathEngine;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
+import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
+import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
 
 public class SignalContainerEditor extends Composite implements ISelectionChangedListener, TrialNavigator, IMarkersManager {
 	
@@ -73,6 +80,7 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 	private Label endCutLabelValue;
 	private Label samplesNumberLabelValue;
 	private Label durationLabelValue;
+	private Button useSameColorButton;
 
 	public SignalContainerEditor(Composite parent, int style, ChannelEditor channelEditor) {
 		super(parent, style);
@@ -483,7 +491,61 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		nbTrials = MathEngineFactory.getMathEngine().getTrialsNumber(channelEditor.getChannel());
 		ChannelEditorWidgetsFactory.createLabel(infosGroup, DocometreMessages.TrialsNumberLabel2, SWT.LEFT, false);
 		ChannelEditorWidgetsFactory.createLabel(infosGroup, Integer.toString(nbTrials), SWT.LEFT, true);
+		
+		useSameColorButton = new Button(infosGroup, SWT.CHECK | SWT.WRAP);
+		useSameColorButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		useSameColorButton.setText(DocometreMessages.UseSameColorForSameCategory);
+		useSameColorButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				updateSeriesColorsHandler();
+			}
+		});
 	}
+	
+	private String[] getSeriesIDs() {
+		ISeries[] series = chart.getSeriesSet().getSeries();
+		Set<String> ids = new HashSet<>();
+		for (ISeries iSeries : series) {
+			String id = iSeries.getId();
+//			id = id.replaceAll("\\.\\d+$", "");
+			ids.add(id);
+		}
+		return ids.toArray(new String[ids.size()]);
+	}
+
+	protected void updateSeriesColorsHandler() {
+		MathEngine mathEngine = MathEngineFactory.getMathEngine();
+		boolean sameColor = useSameColorButton.getSelection();
+		String[] seriesIDs = getSeriesIDs();
+		ArrayList<String> categories = new ArrayList<>();
+		byte i = 0; 
+		for (String seriesID : seriesIDs) {
+			ISeries series = chart.getSeriesSet().getSeries(seriesID);
+			if(sameColor) {
+				try {
+					int seriesIDTrial = Integer.parseInt(seriesID.split("\\.")[seriesID.split("\\.").length - 1]); 
+					String fullChannelName = seriesID.replaceAll("\\.\\d+$", "");
+					String fullSubjectName = fullChannelName.replaceAll("\\.\\w+$", "");
+					IResource subject = ((IContainer)SelectedExprimentContributionItem.selectedExperiment).findMember(fullSubjectName.split("\\.")[1]);
+					ChannelsContainer channelsContainer = (ChannelsContainer)subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
+					Channel channel = channelsContainer.getChannelFromName(fullChannelName);
+					String category = mathEngine.getCategoryForTrialNumber(channel, seriesIDTrial);
+					if(categories.indexOf(category) == -1) categories.add(category);
+					((ILineSeries)series).setLineColor(ColorUtil.getColor((byte) categories.indexOf(category)));
+				} catch (CoreException e) {
+					Activator.logErrorMessageWithCause(e);
+					e.printStackTrace();
+				}
+			} else {
+				((ILineSeries)series).setLineColor(ColorUtil.getColor(i));
+				i++;
+			}
+		}
+		chart.redraw();
+		
+	}
+
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -530,18 +592,19 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		series.setYSeries(yValues);
 		series.setAntialias(SWT.ON);
 		series.setSymbolType(PlotSymbolType.NONE);
-		Byte index = getSeriesIndex(series);
-		series.setLineColor(ColorUtil.getColor(index));
+//		Byte index = getSeriesIndex(series);
+//		series.setLineColor(ColorUtil.getColor(index));
 		series.setLineWidth(3);
+		updateSeriesColorsHandler();
 	}
 	
-	private Byte getSeriesIndex(ILineSeries series) {
-		ISeries[] seriesArray = chart.getSeriesSet().getSeries();
-		for (int i = 0; i < seriesArray.length; i++) {
-			if(series == seriesArray[i]) return (byte) i;
-		}
-		return 0;
-	}
+//	private Byte getSeriesIndex(ILineSeries series) {
+//		ISeries[] seriesArray = chart.getSeriesSet().getSeries();
+//		for (int i = 0; i < seriesArray.length; i++) {
+//			if(series == seriesArray[i]) return (byte) i;
+//		}
+//		return 0;
+//	}
 	
 	private Set<Integer> getTrialsInChart() {
 		Set<Integer> trials = new HashSet<Integer>();

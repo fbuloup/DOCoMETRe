@@ -52,7 +52,7 @@ public final class ChannelEditorWidgetsFactory {
 	}
 	
 	public static Group createGroup(Composite parent, String title) {
-		Group group = new Group(parent, SWT.BORDER);
+		Group group = new Group(parent, SWT.NONE);
 		group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		group.setText(title);
 		return group;

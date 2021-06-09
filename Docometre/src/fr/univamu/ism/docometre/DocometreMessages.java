@@ -470,6 +470,7 @@ public final class DocometreMessages extends NLS {
 	/* Charts preference */
 	public static String SHOW_CURSOR;
 	public static String SHOW_MARKER;
+	public static String UseSameColorForSameCategory;
 	
 	/* Redirect console preferences */
 	public static String REDIRECT_GROUP_TITLE;
