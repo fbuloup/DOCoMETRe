@@ -6,7 +6,12 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-06-09
+      -- 2021-06-10
+Added :
+* Add small margin width in XY Chart right composites
+Fixed :
+* Remove spinner parent set focus to prevent button selection
+-- 2021-06-09
 Added :
 * Use same color form same category trials (Time and XY charts)
 Fixed :
