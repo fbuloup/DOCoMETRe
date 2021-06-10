@@ -223,7 +223,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		Composite container2 = new Composite(container, SWT.NONE);
 		GridLayout gl = new GridLayout();
 		gl.marginHeight = 0;
-		gl.marginWidth = 0;
+		gl.marginWidth = 2;
 		gl.verticalSpacing = 1;
 		container2.setLayout(gl);
 		container2.setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
@@ -600,7 +600,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 
 	@Override
 	public void setFocus() {
-		container.setFocus();
+		chart.setFocus();
 	}
 
 	@SuppressWarnings("unchecked")
