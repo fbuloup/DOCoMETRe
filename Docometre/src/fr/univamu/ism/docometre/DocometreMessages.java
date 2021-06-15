@@ -471,6 +471,7 @@ public final class DocometreMessages extends NLS {
 	public static String SHOW_CURSOR;
 	public static String SHOW_MARKER;
 	public static String UseSameColorForSameCategory;
+	public static String Categories;
 	
 	/* Redirect console preferences */
 	public static String REDIRECT_GROUP_TITLE;

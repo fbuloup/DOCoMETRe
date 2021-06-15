@@ -1,6 +1,5 @@
 package fr.univamu.ism.docometre.analyse.editors;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -13,7 +12,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelection;
@@ -25,6 +23,8 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DropTarget;
@@ -56,14 +56,12 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.part.EditorPart;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ColorUtil;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.GetResourceLabelDelegate;
-import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.analyse.MathEngine;
@@ -91,6 +89,8 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 	private Button autoScaleButton;
 	private Group scaleValuesGroup;
 	private Button useSameColorButton;
+	
+	
 
 	public XYChartEditor() {
 	}
@@ -222,89 +222,23 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		
 		Composite container2 = new Composite(container, SWT.NONE);
 		GridLayout gl = new GridLayout();
-		gl.marginHeight = 0;
-		gl.marginWidth = 0;
+		gl.marginHeight = 1;
+		gl.marginWidth = 1;
 		gl.verticalSpacing = 1;
 		container2.setLayout(gl);
 		container2.setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		
-		Composite addRemoveButtonsContainer = new Composite(container2, SWT.NONE);
-		addRemoveButtonsContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		addRemoveButtonsContainer.setLayout(new GridLayout(2, true));
-		GridLayout gl2 = (GridLayout) addRemoveButtonsContainer.getLayout();
-		gl2.marginHeight = 1;
-		gl2.marginWidth = 1;
-		Button addButton = new Button(addRemoveButtonsContainer, SWT.FLAT);
-		addButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		addButton.setImage(Activator.getImage(IImageKeys.ADD_ICON));
-		addButton.setToolTipText(DocometreMessages.AddNewCurveToolTip);
-		addButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				if(!MathEngineFactory.getMathEngine().isStarted()) return;
-				String[] loadedSubjects = MathEngineFactory.getMathEngine().getLoadedSubjects();
-				Set<Channel> signals = new HashSet<>();
-				for (String loadedSubject : loadedSubjects) {
-					IResource subject = ((IContainer)SelectedExprimentContributionItem.selectedExperiment).findMember(loadedSubject.split("\\.")[1]);
-					signals.addAll(Arrays.asList(MathEngineFactory.getMathEngine().getSignals(subject)));
-				}
-				ElementListSelectionDialog elementListSelectionDialog = new ElementListSelectionDialog(getSite().getShell(), new LabelProvider() {
-					@Override
-					public String getText(Object element) {
-						return ((Channel)element).getFullName();
-					}
-				});
-				elementListSelectionDialog.setMultipleSelection(false);
-				elementListSelectionDialog.setElements(signals.toArray(new Channel[signals.size()]));
-				elementListSelectionDialog.setTitle(DocometreMessages.XAxisSelectionDialogTitle);
-				elementListSelectionDialog.setMessage(DocometreMessages.XAxisSelectionDialogMessage);
-				if(elementListSelectionDialog.open() == Dialog.OK) {
-					Object[] selection = elementListSelectionDialog.getResult();
-					Channel xSignal = (Channel) selection[0];
-					elementListSelectionDialog.setTitle(DocometreMessages.YAxisSelectionDialogTitle);
-					elementListSelectionDialog.setMessage(DocometreMessages.YAxisSelectionDialogMessage);
-					if(elementListSelectionDialog.open() == Dialog.OK) {
-						selection = elementListSelectionDialog.getResult();
-						Channel ySignal = (Channel) selection[0];
-						xyChartData.addCurve(xSignal, ySignal);
-						refreshTrialsListFrontEndCuts();
-						setDirty(true);
-					}
-				}
-			}
-		});
-		Button removeButton = new Button(addRemoveButtonsContainer, SWT.FLAT);
-		removeButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		removeButton.setImage(Activator.getImage(IImageKeys.REMOVE_ICON));
-		removeButton.setToolTipText(DocometreMessages.RemoveCurveToolTip);
-		removeButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				if(!MathEngineFactory.getMathEngine().isStarted()) return;
-				ElementListSelectionDialog elementListSelectionDialog = new ElementListSelectionDialog(getSite().getShell(), new LabelProvider());
-				elementListSelectionDialog.setTitle(DocometreMessages.CurvesSelectionDialogTitle);
-				elementListSelectionDialog.setMessage(DocometreMessages.CurvesSelectionDialogMessage);
-				elementListSelectionDialog.setMultipleSelection(true);
-				elementListSelectionDialog.setElements(xyChartData.getSeriesIDsPrefixes());
-				if(elementListSelectionDialog.open() == Dialog.OK) {
-					String[] selection = Arrays.asList(elementListSelectionDialog.getResult()).toArray(new String[elementListSelectionDialog.getResult().length]);
-					String[] seriesIDs = getSeriesIDs();
-					for (String seriesID : seriesIDs) {
-						for (String item : selection) {
-							if(seriesID.startsWith(item)) {
-								chart.removeSeries(seriesID);
-								xyChartData.removeCurve(item);
-							}
-						}
-					}
-					chart.redraw();
-					refreshTrialsListFrontEndCuts();
-					setDirty(true);
-				}
-			}
-		});
+		CTabFolder trialsCategoriesTabFolder = new CTabFolder(container2, SWT.BOTTOM | SWT.FLAT | SWT.BORDER | SWT.MULTI);
+		trialsCategoriesTabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
-		trialsListViewer = new ListViewer(container2, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
+		CTabItem trialsTabItem = new CTabItem(trialsCategoriesTabFolder, SWT.BORDER);
+		trialsTabItem.setText(DocometreMessages.TrialsGroupLabel);
+		
+		CTabItem categoriesTabItem = new CTabItem(trialsCategoriesTabFolder, SWT.BORDER);
+		categoriesTabItem.setText(DocometreMessages.Categories);
+		
+		
+		trialsListViewer = new ListViewer(trialsCategoriesTabFolder, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 		trialsListViewer.getList().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		trialsListViewer.setContentProvider(new ArrayContentProvider());
 		trialsListViewer.setLabelProvider(new LabelProvider() {
@@ -315,6 +249,10 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 			}
 		});
 		trialsListViewer.addSelectionChangedListener(this);
+		trialsTabItem.setControl(trialsListViewer.getList());
+		trialsCategoriesTabFolder.setSelection(trialsTabItem);
+		
+		
 		
 		// Graphical Front End cuts
 		Group frontEndCutValuesGroup = new Group(container2, SWT.NONE);
@@ -399,11 +337,11 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		gl.numColumns = 3;
 		gl.marginHeight = 0;
 		gl.marginWidth = 0;
-		gl.marginBottom = 5;
-		gl.marginRight = 5;
+		gl.marginBottom = 0;
+		gl.marginRight = 0;
 		bottomContainer.setLayout(gl);
 		
-		Button showMarkersButton = new Button(bottomContainer, SWT.CHECK);
+		Button showMarkersButton = new Button(bottomContainer, SWT.CHECK | SWT.WRAP);
 		showMarkersButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		showMarkersButton.setText(DocometreMessages.ShowMarkersTitle);
 		showMarkersButton.setSelection(xyChartData.isShowMarkers());
@@ -444,7 +382,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 			}
 		});
 		
-		Button showMarkersLabelsButton = new Button(bottomContainer, SWT.CHECK);
+		Button showMarkersLabelsButton = new Button(bottomContainer, SWT.CHECK | SWT.WRAP);
 		showMarkersLabelsButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
 		showMarkersLabelsButton.setText(DocometreMessages.ShowMarkersLabelsTitle);
 		showMarkersLabelsButton.setSelection(xyChartData.isShowMarkersLabels());
@@ -468,7 +406,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		gl.marginRight = 5;
 		bottomContainer2.setLayout(gl);
 		
-		autoScaleButton = new Button(bottomContainer2, SWT.CHECK);
+		autoScaleButton = new Button(bottomContainer2, SWT.CHECK | SWT.WRAP);
 		autoScaleButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
 		autoScaleButton.setText(DocometreMessages.AutoScale_Title);
 		autoScaleButton.setSelection(xyChartData.isAutoScale());
@@ -540,7 +478,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		chart.redraw();
 	}
 	
-	private void refreshTrialsListFrontEndCuts() {
+	protected void refreshTrialsListFrontEndCuts() {
 		if(xyChartData.getNbCurves() == 0) {
 			trialsListViewer.setInput(null);
 			return;
@@ -577,7 +515,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 
 	}
 	
-	private String[] getSeriesIDs() {
+	protected String[] getSeriesIDs() {
 		ISeries[] series = chart.getSeriesSet().getSeries();
 		Set<String> ids = new HashSet<>();
 		for (ISeries iSeries : series) {
