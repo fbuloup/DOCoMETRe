@@ -52,7 +52,6 @@ public class FrontEndCutsHandler extends SelectionAdapter implements TraverseLis
 					xyChartEditor.updateFrontEndCutsChartHandler();
 				}
 			}
-			spinner.getParent().getParent().setFocus();
 			xyChartEditor.setDirty(true);
 		}
 	}

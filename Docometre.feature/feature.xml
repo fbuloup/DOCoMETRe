@@ -6,7 +6,17 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-06-07
+      -- 2021-06-10
+Added :
+* Add small margin width in XY Chart right composites
+Fixed :
+* Remove spinner parent set focus to prevent button selection
+-- 2021-06-09
+Added :
+* Use same color form same category trials (Time and XY charts)
+Fixed :
+* Bugs on Import/Export experiment and subjects wizards 
+-- 2021-06-07
 Added :
 * Support to export only selected subjects from an experiment
 * Support to import only selected exported subjects (Step 1)
