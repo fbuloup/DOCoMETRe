@@ -113,6 +113,7 @@ public class NewXYChartHandler implements IHandler, ISelectionListener {
 					 Object selectedObject = ((IStructuredSelection) selection).getFirstElement();
 					 boolean isSubject =  ResourceType.isSubject((IResource) selectedObject);
 					 if(((IResource) selectedObject) instanceof IFolder && !isSubject ) parentResource = (IContainer) selectedObject;
+					 else parentResource = ((IResource) selectedObject).getParent();
 				 }
 			}
 		}
