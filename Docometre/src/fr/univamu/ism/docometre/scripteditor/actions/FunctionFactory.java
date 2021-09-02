@@ -148,6 +148,7 @@ public final class FunctionFactory {
 				return value != null && ("YES".equalsIgnoreCase(value.trim()) || "1".equals(value.trim()));
 			}
 		});
+		if(files != null) Arrays.sort(files);
 		return files==null?new String[0]:files;
 	}
 
