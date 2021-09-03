@@ -46,7 +46,11 @@ import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 
@@ -148,8 +152,19 @@ public final class FunctionFactory {
 				return value != null && ("YES".equalsIgnoreCase(value.trim()) || "1".equals(value.trim()));
 			}
 		});
-		if(files != null) Arrays.sort(files);
-		return files==null?new String[0]:files;
+		if(files != null) {
+			String[] menuTitles = new String[files.length];
+			int index = 0;
+			for (String customerFunction : files) {
+				menuTitles[index] = FunctionFactory.getProperty(context, CustomerFunction.CUSTOMER_FUNCTIONS_PATH + customerFunction, FunctionFactory.MENU_TITLE);
+				index++;
+			}
+			final List<String> stringListCopy = Arrays.asList(files);
+		    ArrayList<String> sortedList = new ArrayList<String>(stringListCopy);
+		    Collections.sort(sortedList, Comparator.comparing(s -> menuTitles[stringListCopy.indexOf(s)]));
+			return sortedList.toArray(new String[sortedList.size()]);
+		}
+		return new String[0];
 	}
 
 	public static boolean isCustomerFunction(Object context, String functionName) {
