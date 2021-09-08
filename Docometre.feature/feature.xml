@@ -6,7 +6,12 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-09-02
+      -- 2021-09-08
+ADDED : 
+* Sort customer functions enhancement
+FIXED :
+* Remove .gitignore from ADwin CUSTOMER_FUNCTIONS
+-- 2021-09-02
 Added :
 * Sort customer functions
 Fixed : Nothing
