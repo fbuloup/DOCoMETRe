@@ -1,7 +1,7 @@
-MENU_TITLE = Butterworth low pass filter
-DESCRIPTION = Butterworth low pass filter
-MENU_TITLE_FR = Filtre passe bas de Butterworth
-DESCRIPTION_FR = Filtre passe bas de Butterworth
+MENU_TITLE = Butterworth high pass filter
+DESCRIPTION = Butterworth high pass filter
+MENU_TITLE_FR = Filtre passe haut de Butterworth
+DESCRIPTION_FR = Filtre passe haut de Butterworth
 # Now start specific matlab function 
 
 #%Enter your comments here
@@ -37,7 +37,7 @@ DESCRIPTION_FR = Filtre passe bas de Butterworth
 #%endAnalyseHeader
 
 
-FUNCTION_CODE = % Compute low pass Butterworth filter\n\
+FUNCTION_CODE = % Compute high pass Butterworth filter\n\
 % Create filtered signal\n\
 SignalSizes = size(inputSignal.Values); % SignalSizes(1) : trials number - SignalSizes(2) : samples number\n\
 outputSignal.Values = zeros(SignalSizes(1), SignalSizes(2));\n\
@@ -53,11 +53,11 @@ outputSignal.EndCut = inputSignal.EndCut;\n\
 % Compute filtering\n\
 nyquistFrequency = 0.5 * inputSignal.SampleFrequency; % Nyquist frequency is half sample frequency\n\
 normalizedCutOffFrequency = cutOffFrequency / nyquistFrequency;\n\
-[num, den] = butter(order, normalizedCutOffFrequency);\n\
+[num, den] = butter(order, normalizedCutOffFrequency, 'high');\n\
 outputSignal.Values(trialsList, :) = filtfilt(num, den, inputSignal.Values(trialsList, :)')';\n\
 clear num den nyquistFrequency normalizedCutOffFrequency SignalSizes trialNumber;\n\
 if (~exist('createdOrModifiedChannels'))\n\
-\tcreatedOrModifiedChannels = {'outputSignal'};\n\
+createdOrModifiedChannels = {'outputSignal'};\n\
 else\n\
-\tcreatedOrModifiedChannels = [createdOrModifiedChannels; 'outputSignal'];\n\
+createdOrModifiedChannels = [createdOrModifiedChannels; 'outputSignal'];\n\
 end\n\
