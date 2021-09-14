@@ -348,7 +348,7 @@ public class DefaultADWinSystemPreferencePage extends PreferencePage implements 
 		IPreferenceStore preferenceStore = getPreferenceStore();
 		preferenceStore.putValue(ADWinDACQConfigurationProperties.ADBASIC_COMPILER.getKey(), adwinDAQConfiguration.getProperty(ADWinDACQConfigurationProperties.ADBASIC_COMPILER));
 		preferenceStore.putValue(ADWinDACQConfigurationProperties.BTL_FILE.getKey(), adwinDAQConfiguration.getProperty(ADWinDACQConfigurationProperties.BTL_FILE));
-		preferenceStore.putValue(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), adwinDAQConfiguration.getProperty(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH));
+//		preferenceStore.putValue(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), adwinDAQConfiguration.getProperty(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH));
 		preferenceStore.putValue(ADWinDACQConfigurationProperties.ADBASIC_VERSION.getKey(), adwinDAQConfiguration.getProperty(ADWinDACQConfigurationProperties.ADBASIC_VERSION));
 		preferenceStore.putValue(ADWinDACQConfigurationProperties.TCPIP_SERVER_DEVICE_NUMBER.getKey(), adwinDAQConfiguration.getProperty(ADWinDACQConfigurationProperties.TCPIP_SERVER_DEVICE_NUMBER));
 		preferenceStore.putValue(ADWinDACQConfigurationProperties.IP_ADDRESS.getKey(), adwinDAQConfiguration.getProperty(ADWinDACQConfigurationProperties.IP_ADDRESS));

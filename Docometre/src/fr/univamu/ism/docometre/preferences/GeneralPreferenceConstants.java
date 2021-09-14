@@ -46,6 +46,7 @@ package fr.univamu.ism.docometre.preferences;
  */
 public class GeneralPreferenceConstants {
 
+	public static final String FIRST_LAUNCH = "FIRST_LAUNCH";
 	public static final String PREF_UNDO_LIMIT = "PREF_UNDO_LIMIT";
 	public static final String PREF_CONFIRM_UNDO = "PREF_CONFIRM_UNDO";
 	public static final String SHOW_WORKSPACE_SELECTION_DIALOG = "SHOW_WORKSPACE_SELECTION_DIALOG";

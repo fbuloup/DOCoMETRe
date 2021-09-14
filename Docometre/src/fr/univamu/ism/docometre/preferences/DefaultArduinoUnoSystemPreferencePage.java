@@ -103,7 +103,7 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.AVRDUDE_PATH.getKey(), arduinoUnoDACQConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.AVRDUDE_PATH));
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH.getKey(), arduinoUnoDACQConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH));
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.BAUD_RATE.getKey(), arduinoUnoDACQConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.BAUD_RATE));
-		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), arduinoUnoDACQConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH));
+//		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), arduinoUnoDACQConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH));
 		preferenceStore.putValue(DEFAULT_ARDUINO_UNO_SYSTEM_PREFERENCE_INITIALIZED, "true");
 	}
 	

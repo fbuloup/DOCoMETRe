@@ -52,7 +52,10 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.preferences.DefaultScope;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
@@ -63,6 +66,8 @@ import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfigurationProperties;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfigurationProperties;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
 public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
@@ -110,9 +115,26 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 			e.printStackTrace();
 		}  
 		
+		if(!Boolean.getBoolean("DEV")) {
+			// We are not in dev mode
+			// Get first launch flag
+			IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
+			boolean firstLaunch = !preferenceStore.contains(GeneralPreferenceConstants.FIRST_LAUNCH) || preferenceStore.getBoolean(GeneralPreferenceConstants.FIRST_LAUNCH);
+			if(firstLaunch) {
+				System.out.println("This is first launch");
+				// Set prefs at first launch
+				IEclipsePreferences defaults = DefaultScope.INSTANCE.getNode(Activator.PLUGIN_ID);
+				System.out.println("Setting prefs for LIBRARIES_ABSOLUTE_PATH, MATLAB_SCRIPT_LOCATION etc.");
+				preferenceStore.putValue(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), defaults.get(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), ""));
+				preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(),  defaults.get(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), ""));
+				preferenceStore.putValue(GeneralPreferenceConstants.MATLAB_SCRIPT_LOCATION, defaults.get(GeneralPreferenceConstants.MATLAB_SCRIPT_LOCATION, ""));
+				preferenceStore.putValue(GeneralPreferenceConstants.PYTHON_SCRIPT_LOCATION, defaults.get(GeneralPreferenceConstants.PYTHON_SCRIPT_LOCATION, ""));
+				preferenceStore.putValue(GeneralPreferenceConstants.FIRST_LAUNCH, "false");
+				
+			}
+		}
+		
 	}
-	
-	
 	
 	@Override
 	public boolean preShutdown() {

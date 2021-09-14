@@ -41,12 +41,17 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.preferences;
 
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ChooseWorkspaceData;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfigurationProperties;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfigurationProperties;
 
 public class PreferencesInitializer extends AbstractPreferenceInitializer {
 
@@ -85,6 +90,23 @@ public class PreferencesInitializer extends AbstractPreferenceInitializer {
 		
 		defaults.putBoolean(GeneralPreferenceConstants.REDIRECT_STD_ERR_OUT_TO_FILE, false);
 		defaults.put(GeneralPreferenceConstants.STD_ERR_OUT_FILE, "");
+		
+		String runtimeFolder = System.getProperty("user.dir");
+		IPath path = Path.fromOSString(runtimeFolder);
+		if(Platform.OS_MACOSX.equals(Platform.getOS())) {
+			path = path.removeLastSegments(1).append("Eclipse");
+		}
+		if(Platform.OS_WIN32.equals(Platform.getOS())) {
+			// TODO
+		}
+		if(Platform.OS_LINUX.equals(Platform.getOS())) {
+			// TODO
+		}
+		defaults.put(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), path.append("ADWinIncludeFiles").toOSString());
+		defaults.put(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(),  path.append("ArduinoUnoFunctions").toOSString());
+		defaults.put(GeneralPreferenceConstants.MATLAB_SCRIPT_LOCATION, path.append("MatlabFunctions").toOSString());
+		defaults.put(GeneralPreferenceConstants.PYTHON_SCRIPT_LOCATION, path.append("PythonFunctions").toOSString());
+		
 	}
 
 }
