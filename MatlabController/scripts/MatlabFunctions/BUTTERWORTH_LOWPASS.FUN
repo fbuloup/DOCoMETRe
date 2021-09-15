@@ -39,8 +39,8 @@ DESCRIPTION_FR = Filtre passe bas de Butterworth
 
 FUNCTION_CODE = % Compute low pass Butterworth filter\n\
 % Create filtered signal\n\
-SignalSizes = size(inputSignal.Values); % SignalSizes(1) : trials number - SignalSizes(2) : samples number\n\
-outputSignal.Values = zeros(SignalSizes(1), SignalSizes(2));\n\
+signalSizes = size(inputSignal.Values); % signalSizes(1) : trials number - signalSizes(2) : samples number\n\
+outputSignal.Values = zeros(signalSizes(1), signalSizes(2));\n\
 outputSignal.NbSamples = inputSignal.NbSamples;\n\
 outputSignal.isSignal = 1;\n\
 outputSignal.isCategory = 0;\n\
@@ -55,7 +55,7 @@ nyquistFrequency = 0.5 * inputSignal.SampleFrequency; % Nyquist frequency is hal
 normalizedCutOffFrequency = cutOffFrequency / nyquistFrequency;\n\
 [num, den] = butter(order, normalizedCutOffFrequency);\n\
 outputSignal.Values(trialsList, :) = filtfilt(num, den, inputSignal.Values(trialsList, :)')';\n\
-clear num den nyquistFrequency normalizedCutOffFrequency SignalSizes trialNumber;\n\
+clear num den nyquistFrequency normalizedCutOffFrequency signalSizes trialNumber;\n\
 if (~exist('createdOrModifiedChannels'))\n\
 \tcreatedOrModifiedChannels = {'outputSignal'};\n\
 else\n\
