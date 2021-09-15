@@ -6,7 +6,12 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-09-08
+      -- 2021-09-15
+ADDED : 
+* Butt. high pass, front &amp; end cut, Derivate, front &amp; end cut from marker to Matlab engine
+* Managing some prefs. values at first App. launch
+FIXED : Nothing
+-- 2021-09-08
 ADDED : 
 * Sort customer functions enhancement
 FIXED :
