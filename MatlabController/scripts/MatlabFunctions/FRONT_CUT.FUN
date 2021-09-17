@@ -5,7 +5,7 @@ MENU_TITLE_FR = Modifier "l'avant coupe"
 DESCRIPTION_FR = Cette fonction modifie "l'avant coupe" du signal sélectionné.\n\
 L'avant coupe est une durée, en secondes, au début du signal qui ne doit pas être montrée dans un graphe.
 
-# Now start specific python function
+# Now start specific matlab function
 FUNCTION_CODE = # Change front cut\n\
 value =floor(frontCut*inputSignal.SampleFrequency);
 inputSignal.FrontCut(TrialsList) = value;

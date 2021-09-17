@@ -3,7 +3,7 @@ DESCRIPTION = This function modify front cut value of selected signal from marke
 MENU_TITLE_FR = Modifier "l'Avant coupe" à partir d'un marqueur
 DESCRIPTION_FR = Cette fonction modifie "l'Avant coupe" du signal sélectionné à partir d'un marqueur.
 
-# Now start specific python function 
+# Now start specific matlab function 
 FUNCTION_CODE = # Compute Front Cut from marker\n\
 for trialNumber = trialsList\n\
 	\ttrialIndices = find(inputMarker.Values(:,1) == TrialNumber);\n\

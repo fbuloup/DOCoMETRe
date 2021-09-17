@@ -3,7 +3,7 @@ DESCRIPTION = Compute derivative using diff
 MENU_TITLE_FR = Dérivée
 DESCRIPTION_FR = Calcul de la dérivé en utilisant diff
 
-# Now start specific python function 
+# Now start specific matlab function 
 FUNCTION_CODE = # Compute Derivative\n\
 % Create derivative signal\n\
 SignalSizes = size(inputSignal.Values); % SignalSizes(1) : trials number - SignalSizes(2) : samples number\n\

@@ -54,6 +54,6 @@ if compute:\n\
 		\t\tdocometre.experiments["createdOrModifiedChannels"] = docometre.experiments["createdOrModifiedChannels"] + ":inputSignal";\n\
 else:\n\
 	\tif "ErrorMessages" in docometre.experiments.keys():\n\
-		\t\tdocometre.experiments["ErrorMessages"] = docometre.experiments["ErrorMessages"] + "|" + datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S:%f')[:-3] + " - From Maximum function -> A Marker with this label already exists : markersGroupLabel";\n\
+		\t\tdocometre.experiments["ErrorMessages"] = docometre.experiments["ErrorMessages"] + "|" + datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S:%f')[:-3] + " - From Transfert Markers group function -> A Marker with this label already exists : markersGroupLabel";\n\
 	\telse:\n\
-		\t\tdocometre.experiments["ErrorMessages"] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S:%f')[:-3] + " - From Maximum function -> A Marker with this label already exists : markersGroupLabel (inputSignal)";\n\
+		\t\tdocometre.experiments["ErrorMessages"] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S:%f')[:-3] + " - From Transfert Markers group function -> A Marker with this label already exists : markersGroupLabel (inputSignal)";\n\

@@ -3,9 +3,9 @@ DESCRIPTION = Mark maximum amplitude
 MENU_TITLE_FR = Maximum
 DESCRIPTION_FR = Marque l'amplitude maximale
 
-# Now start specific python function 
+# Now start specific matlab function 
 FUNCTION_CODE = % Compute Maximum marker\n\
-signalSizes = size(inputSignal1.Values); % signalSizes(1) : trials number - signalSizes(2) : samples number\n\
+signalSizes = size(inputSignal.Values); % signalSizes(1) : trials number - signalSizes(2) : samples number\n\
 compute = true;\n\
 NbMarkersGroups = 0;\n\
 # Check if markers Group already exists\n\
@@ -64,8 +64,8 @@ if compute\n\
 		\t\t% if both indices exist\n\
 		\t\tif(~isempty(fromIndex) && ~isempty(toIndex))\n\
 			\t\t\t% Convert from and to in samples number\n\
-			\t\t\tfromIndex = floor(fromValues(fromIndex(1))(2) * sampleFrequency);\n\
-			\t\t\ttoIndex = floor(toValues(toIndex(1))(2) * sampleFrequency);\n\
+			\t\t\tfromIndex = floor(fromValues(fromIndex(1),2) * sampleFrequency);\n\
+			\t\t\ttoIndex = floor(toValues(toIndex(1),2) * sampleFrequency);\n\
 			\t\t\t% Compute max between from and to index\n\
 			\t\t\t[maxValue, maxIndex] = max(inputSignal.Values(trialNumber, fromIndex:toIndex));\n\
 			\t\t\tmaxMarkerTime = (fromIndex + maxIndex)/sampleFrequency;\n\

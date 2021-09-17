@@ -3,7 +3,7 @@ DESCRIPTION = This function modify end cut value of selected signal from marker.
 MENU_TITLE_FR = Modifier "l'Après coupe" à partir d'un marqueur
 DESCRIPTION_FR = Cette fonction modifie "l'Après coupe" du signal sélectionné à partir d'un marqueur.
 
-# Now start specific python function 
+# Now start specific matlab function 
 FUNCTION_CODE = # Compute Front Cut from marker\n\
 for trialNumber = trialsList\n\
 	\ttrialIndices = find(inputMarker.Values(:,1) == TrialNumber);\n\

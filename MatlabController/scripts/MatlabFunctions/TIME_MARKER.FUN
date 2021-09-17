@@ -3,7 +3,7 @@ DESCRIPTION = Mark input signal at specific time value
 MENU_TITLE_FR = Marqueur temporel
 DESCRIPTION_FR = Marque le signal d'entrée à un valeur temporelle spécifique
 
-# Now start specific python function 
+# Now start specific matlab function 
 FUNCTION_CODE = % Compute Time marker\n\
 % Create new output markers group\n\
 inputSignal.NbMarkersGroups = inputSignal.NbMarkersGroups + 1;\n\

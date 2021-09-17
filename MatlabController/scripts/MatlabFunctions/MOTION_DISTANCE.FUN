@@ -3,7 +3,7 @@ DESCRIPTION = Compute motion distance
 MENU_TITLE_FR = Distance de mouvement
 DESCRIPTION_FR = Calcule la distance du mouvement
 
-# Now start specific python function 
+# Now start specific matlab function 
 FUNCTION_CODE = % Compute Motion Distance\n\
 % Get signals input values\n\
 values1 = inputSignal1.Values;\n\

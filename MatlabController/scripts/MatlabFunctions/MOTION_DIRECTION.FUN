@@ -5,7 +5,7 @@ MENU_TITLE_FR = Direction du mouvement
 DESCRIPTION_FR = Cette fonction calcule la direction du mouvement entre deux marqueurs. Cette direction est calculée\n\
 pour chaque point de la courbe formée par les deux signaux d'entrée et par rapport au marqueur d'origine.  
 
-# Now start specific python function 
+# Now start specific matlab function 
 FUNCTION_CODE = % Compute Motion Direction\n\
 # Compute result angles in degree or radian\n\
 resultInDegree = resultInDegreeValue\n\
