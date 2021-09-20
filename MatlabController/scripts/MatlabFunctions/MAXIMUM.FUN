@@ -64,12 +64,12 @@ if compute\n\
 		\t\t% if both indices exist\n\
 		\t\tif(~isempty(fromIndex) && ~isempty(toIndex))\n\
 			\t\t\t% Convert from and to in samples number\n\
-			\t\t\tfromIndex = floor(fromValues(fromIndex(1),2) * inputSignal.SampleFrequency);\n\
-			\t\t\ttoIndex = floor(toValues(toIndex(1),2) * inputSignal.SampleFrequency);\n\
+			\t\t\tfromIndex = floor(fromValues(fromIndex(1),2) * inputSignal.SampleFrequency + 1);\n\
+			\t\t\ttoIndex = floor(toValues(toIndex(1),2) * inputSignal.SampleFrequency + 1);\n\
 			\t\t\t% Compute max between from and to index\n\
 			\t\t\t[maxValue, maxIndex] = max(inputSignal.Values(trialNumber, fromIndex:toIndex));\n\
-			\t\t\tmaxMarkerTime = (fromIndex + maxIndex)/inputSignal.SampleFrequency;\n\
-			\t\t\tinputSignal.MarkersGroup_markersGroupLabel_Values = [inputSignal.MarkersGroup_markersGroupLabel_Values; trialNumber+1, maxMarkerTime, maxValue];\n\
+			\t\t\tmaxMarkerTime = (fromIndex + maxIndex - 2)/inputSignal.SampleFrequency;\n\
+			\t\t\tinputSignal.MarkersGroup_markersGroupLabel_Values = [inputSignal.MarkersGroup_markersGroupLabel_Values; trialNumber, maxMarkerTime, maxValue];\n\
 		\t\tend\n\
 	\tend\n\
 	\tif (~exist('createdOrModifiedChannels'))\n\
