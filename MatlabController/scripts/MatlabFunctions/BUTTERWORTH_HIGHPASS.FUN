@@ -26,5 +26,5 @@ clear num den nyquistFrequency normalizedCutOffFrequency signalSizes trialNumber
 if (~exist('createdOrModifiedChannels'))\n\
 createdOrModifiedChannels = {'outputSignal'};\n\
 else\n\
-createdOrModifiedChannels = [createdOrModifiedChannels; 'outputSignal'];\n\
+createdOrModifiedChannels = [createdOrModifiedChannels; {'outputSignal'}];\n\
 end\n\

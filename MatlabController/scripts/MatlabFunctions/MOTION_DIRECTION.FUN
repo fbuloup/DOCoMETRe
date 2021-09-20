@@ -24,32 +24,32 @@ outputSignal.NbFeatures = 0;\n\
 outputSignal.SampleFrequency = inputSignal1.SampleFrequency;\n\
 outputSignal.FrontCut = inputSignal1.FrontCut;\n\
 outputSignal.EndCut = inputSignal1.EndCut;\n\
-% Convert sample frequency to float\n\
-% sampleFrequency = float(sampleFrequency);\n\
 % Get from and to values\n\
 if "From_Beginning" == "inputMarker1":\n\
-	\tfromValues = zeros((signalSizes[1],3));\n\
-	\tfromValues[:,1] = [trialsList] + 1;\n\
-	\tfromValues[:,3] = values1[:,1];\n\
-else:\n\
+	\tfromValues = zeros(signalSizes(1),3);\n\
+	\tfromValues(:,1) = trialsList;\n\
+	\tfromValues(:,3) = values1(:,1);\n\
+else\n\
 	\tfromValues = inputMarker1_Values;\n\
-if "To_End" == "inputMarker2":\n\
-	\ttoValues = zeros((signalSizes[1],3));\n\
-	\ttoValues[:,1] = [trialsList] + 1;\n\
-	\ttoValues[:,2] = nbSamples/sampleFrequency;\n\
-	\ttoValues[:,3] = nbSamples;\n\
-else:\n\
+end\n\
+if "To_End" == "inputMarker2"\n\
+	\ttoValues = zeros(signalSizes(1),3);\n\
+	\ttoValues(:,1) = trialsList;\n\
+	\ttoValues(:,2) = outputSignal.NbSamples/outputSignal.SampleFrequency;\n\
+	\ttoValues(:,3) = outputSignal.NbSamples;\n\
+else\n\
 	\ttoValues = inputMarker2_Values;\n\
+end\n\
 % Loop over trials	\n\
 for trialNumber = trialsList\n\
 	\t% Get from and to index in from and to values for trialNumber\n\
-	\tfromIndex = find(fromValues[:,1] == (trialNumber+1));\n\
-	\ttoIndex = find(toValues[:,1] == (trialNumber+1));\n\
+	\tfromIndex = find(fromValues(:,1) == trialNumber);\n\
+	\ttoIndex = find(toValues(:,1) == trialNumber);\n\
 	\t% if both indices exist\n\
 	\tif(~isempty(fromIndex) && ~isempty(toIndex))\n\
 		\t\t% Convert from and to in samples number\n\
-		\t\tfromIndex = floor(fromValues[fromIndex[1]][2] * sampleFrequency);\n\
-		\t\ttoIndex = floor(toValues[toIndex[1]][2] * sampleFrequency) + 1;\n\
+		\t\tfromIndex = floor(fromValues(fromIndex(1),2) * outputSignal.SampleFrequency) + 1;\n\
+		\t\ttoIndex = floor(toValues(toIndex(1),2) * outputSignal.SampleFrequency) + 2;\n\
 		\t\t% Origine coordinates\n\
 		\t\tx0 = values1(trialNumber,fromIndex);\n\
 		\t\ty0 = values2(trialNumber,fromIndex);\n\
@@ -60,20 +60,25 @@ for trialNumber = trialsList\n\
 			\t\t\tdy = values2(trialNumber, index) - y0;\n\
 			\t\t\t% Compute angle\n\
 			\t\t\ttheta =  acos(dx/sqrt(dx^2 + dy^2));\n\
-			\t\t\tif (dx<0) and (dy>0) : \n\
+			\t\t\tif (dx<0) && (dy>0)\n\
 				\t\t\t\ttheta = -theta + pi/2;\n\
-			\t\t\telif (dx<0) and (dy<0) : \n\
+			\t\t\telse if (dx<0) and (dy<0)\n\
 				\t\t\t\ttheta = -theta + pi/2;\n\
-			\t\t\telif (dx>0) and (dy>0) : \n\
+			\t\t\telse if (dx>0) and (dy>0)\n\
 				\t\t\t\ttheta = pi/2 - theta;\n\
-			\t\t\telif (dx>0) and (dy<0) : \n\
+			\t\t\telse if (dx>0) and (dy<0) \n\
 				\t\t\t\ttheta = pi/2 - theta;\n\
+			\t\t\tend\n\
 			\t\t\tif resultInDegree\n\
 				\t\t\t\ttheta = theta*180/pi;\n\
+			\t\t\tend\n\
 			\t\t\toutputSignal.Values(trialNumber, index) = theta;\n\
+		\t\tend\n\
+	\tend\n\
+end\n\
 clear fromIndex toIndex fromValues toValues dx dy trialNumber values1 values2 theta\n\
 if (~exist('createdOrModifiedChannels'))\n\
 \tcreatedOrModifiedChannels = {'outputSignal'};\n\
 else\n\
-\tcreatedOrModifiedChannels = [createdOrModifiedChannels; 'outputSignal'];\n\
+\tcreatedOrModifiedChannels = [createdOrModifiedChannels; {'outputSignal'}];\n\
 end\n\

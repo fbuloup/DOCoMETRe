@@ -6,11 +6,12 @@ DESCRIPTION_FR = Cette fonction modifie "l'avant coupe" du signal sélectionné.
 L'avant coupe est une durée, en secondes, au début du signal qui ne doit pas être montrée dans un graphe.
 
 # Now start specific matlab function
-FUNCTION_CODE = # Change front cut\n\
-value =floor(frontCut*inputSignal.SampleFrequency);
-inputSignal.FrontCut(TrialsList) = value;
+FUNCTION_CODE = % Change front cut\n\
+value =floor(frontCut*inputSignal.SampleFrequency);\n\
+inputSignal.FrontCut(trialsList) = value;\n\
+clear value;\n\
 if (~exist('createdOrModifiedChannels'))\n\
 \tcreatedOrModifiedChannels = {'inputSignal'};\n\
 else\n\
-\tcreatedOrModifiedChannels = [createdOrModifiedChannels; 'inputSignal'];\n\
+\tcreatedOrModifiedChannels = [createdOrModifiedChannels; {'inputSignal'}];\n\
 end\n\

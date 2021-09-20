@@ -15,5 +15,5 @@ end\n\
 if (~exist('createdOrModifiedChannels'))\n\
 \tcreatedOrModifiedChannels = {'inputSignal'};\n\
 else\n\
-\tcreatedOrModifiedChannels = [createdOrModifiedChannels; 'inputSignal'];\n\
+\tcreatedOrModifiedChannels = [createdOrModifiedChannels; {'inputSignal'}];\n\
 end\n\
