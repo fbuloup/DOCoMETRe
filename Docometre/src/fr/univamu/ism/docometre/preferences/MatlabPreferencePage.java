@@ -31,7 +31,7 @@ public class MatlabPreferencePage extends FieldEditorPreferencePage implements I
 		FileFieldEditor matlabLocationFieldEditor = new FolderPathFieldEditor(GeneralPreferenceConstants.MATLAB_LOCATION, DocometreMessages.MatlabEngineLocation, getFieldEditorParent());
 		addField(matlabLocationFieldEditor);
 		
-		DirectoryFieldEditor matlabScriptsLocationFieldEditor = new DirectoryFieldEditor(GeneralPreferenceConstants.MATLAB_SCRIPT_LOCATION, DocometreMessages.MatlabEngineScriptLocation, getFieldEditorParent());
+		DirectoryFieldEditor matlabScriptsLocationFieldEditor = new DirectoryFieldEditor(GeneralPreferenceConstants.MATLAB_SCRIPTS_LOCATION, DocometreMessages.MatlabEngineScriptLocation, getFieldEditorParent());
 		addField(matlabScriptsLocationFieldEditor);
 	}
 

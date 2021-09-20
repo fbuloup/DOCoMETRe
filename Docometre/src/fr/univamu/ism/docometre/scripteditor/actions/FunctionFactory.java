@@ -115,8 +115,8 @@ public final class FunctionFactory {
 		if(context instanceof Script) {
 			String functionsAbsolutePath = "";
 			String mathEngine = Activator.getDefault().getPreferenceStore().getString(MathEnginePreferencesConstants.MATH_ENGINE);
-			if(MathEnginePreferencesConstants.MATH_ENGINE_MATLAB.equals(mathEngine)) functionsAbsolutePath =  Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.MATLAB_SCRIPT_LOCATION);
-			if(MathEnginePreferencesConstants.MATH_ENGINE_PYTHON.equals(mathEngine)) functionsAbsolutePath =  Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.PYTHON_SCRIPT_LOCATION);
+			if(MathEnginePreferencesConstants.MATH_ENGINE_MATLAB.equals(mathEngine)) functionsAbsolutePath =  Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.MATLAB_SCRIPTS_LOCATION);
+			if(MathEnginePreferencesConstants.MATH_ENGINE_PYTHON.equals(mathEngine)) functionsAbsolutePath =  Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.PYTHON_SCRIPTS_LOCATION);
 			Path path = new Path(functionsAbsolutePath);
 			String suffix = "";
 			if(MathEnginePreferencesConstants.MATH_ENGINE_MATLAB.equals(mathEngine)) suffix = "MatlabFunctions";

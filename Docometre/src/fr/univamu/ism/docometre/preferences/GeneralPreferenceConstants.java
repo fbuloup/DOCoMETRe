@@ -64,11 +64,11 @@ public class GeneralPreferenceConstants {
 	public static final String SHOW_MATLAB_WINDOW = "SHOW_MATLAB_WINDOW";
 	public static final String MATLAB_LOCATION = "MATLAB_LOCATION";
 	public static final String MATLAB_TIME_OUT = "MATLAB_TIME_OUT";
-	public static final String MATLAB_SCRIPT_LOCATION = "MATLAB_SCRIPT_LOCATION";
+	public static final String MATLAB_SCRIPTS_LOCATION = "MATLAB_SCRIPTS_LOCATION";
 	
 	public static final String PYTHON_LOCATION = "PYTHON_LOCATION";
 	public static final String PYTHON_TIME_OUT = "PYTHON_TIME_OUT";
-	public static final String PYTHON_SCRIPT_LOCATION = "PYTHON_SCRIPT_LOCATION";
+	public static final String PYTHON_SCRIPTS_LOCATION = "PYTHON_SCRIPTS_LOCATION";
 	
 	public static final String SHOW_CURSOR = "SHOW_CURSOR";
 	public static final String SHOW_MARKER = "SHOW_MARKER";

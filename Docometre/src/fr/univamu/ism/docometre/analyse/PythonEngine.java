@@ -52,7 +52,7 @@ public class PythonEngine implements MathEngine {
 		Activator.logInfoMessage(DocometreMessages.MathEngineStarting, PythonController.class);
 		
 		String pythonLocation = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.PYTHON_LOCATION);
-		String pythonScriptsLocation = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.PYTHON_SCRIPT_LOCATION);
+		String pythonScriptsLocation = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.PYTHON_SCRIPTS_LOCATION);
 		int timeOut = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.PYTHON_TIME_OUT);
 
 		Job startPythonInnerJob = new Job(DocometreMessages.WaitingForMathEngine) {

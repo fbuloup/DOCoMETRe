@@ -28,7 +28,7 @@ public class PythonPreferencePage extends FieldEditorPreferencePage implements I
 		FileFieldEditor pythonLocationFieldEditor = new FolderPathFieldEditor(GeneralPreferenceConstants.PYTHON_LOCATION, DocometreMessages.PythonEngineLocation, getFieldEditorParent());
 		addField(pythonLocationFieldEditor);
 		
-		DirectoryFieldEditor pythonScriptsLocationFieldEditor = new DirectoryFieldEditor(GeneralPreferenceConstants.PYTHON_SCRIPT_LOCATION, DocometreMessages.PythonEngineScriptLocation, getFieldEditorParent());
+		DirectoryFieldEditor pythonScriptsLocationFieldEditor = new DirectoryFieldEditor(GeneralPreferenceConstants.PYTHON_SCRIPTS_LOCATION, DocometreMessages.PythonEngineScriptLocation, getFieldEditorParent());
 		addField(pythonScriptsLocationFieldEditor);
 	}
 

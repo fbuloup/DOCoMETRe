@@ -127,8 +127,8 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 				System.out.println("Setting prefs for LIBRARIES_ABSOLUTE_PATH, MATLAB_SCRIPT_LOCATION etc.");
 				preferenceStore.putValue(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), defaults.get(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), ""));
 				preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(),  defaults.get(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), ""));
-				preferenceStore.putValue(GeneralPreferenceConstants.MATLAB_SCRIPT_LOCATION, defaults.get(GeneralPreferenceConstants.MATLAB_SCRIPT_LOCATION, ""));
-				preferenceStore.putValue(GeneralPreferenceConstants.PYTHON_SCRIPT_LOCATION, defaults.get(GeneralPreferenceConstants.PYTHON_SCRIPT_LOCATION, ""));
+				preferenceStore.putValue(GeneralPreferenceConstants.MATLAB_SCRIPTS_LOCATION, defaults.get(GeneralPreferenceConstants.MATLAB_SCRIPTS_LOCATION, ""));
+				preferenceStore.putValue(GeneralPreferenceConstants.PYTHON_SCRIPTS_LOCATION, defaults.get(GeneralPreferenceConstants.PYTHON_SCRIPTS_LOCATION, ""));
 				preferenceStore.putValue(GeneralPreferenceConstants.FIRST_LAUNCH, "false");
 				
 			}

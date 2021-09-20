@@ -75,11 +75,11 @@ public class PreferencesInitializer extends AbstractPreferenceInitializer {
 		
 		defaults.putBoolean(GeneralPreferenceConstants.SHOW_MATLAB_WINDOW, false);
 		defaults.put(GeneralPreferenceConstants.MATLAB_LOCATION, "");
-		defaults.put(GeneralPreferenceConstants.MATLAB_SCRIPT_LOCATION, "");
+		defaults.put(GeneralPreferenceConstants.MATLAB_SCRIPTS_LOCATION, "");
 		defaults.putInt(GeneralPreferenceConstants.MATLAB_TIME_OUT, 180);
 		
 		defaults.put(GeneralPreferenceConstants.PYTHON_LOCATION, "");
-		defaults.put(GeneralPreferenceConstants.PYTHON_SCRIPT_LOCATION, "");
+		defaults.put(GeneralPreferenceConstants.PYTHON_SCRIPTS_LOCATION, "");
 		defaults.putInt(GeneralPreferenceConstants.PYTHON_TIME_OUT, 15);
 		
 		defaults.putBoolean(GeneralPreferenceConstants.SHOW_CURSOR, false);
@@ -104,8 +104,8 @@ public class PreferencesInitializer extends AbstractPreferenceInitializer {
 		}
 		defaults.put(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), path.append("ADWinIncludeFiles").toOSString());
 		defaults.put(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(),  path.append("ArduinoUnoFunctions").toOSString());
-		defaults.put(GeneralPreferenceConstants.MATLAB_SCRIPT_LOCATION, path.append("MatlabFunctions").toOSString());
-		defaults.put(GeneralPreferenceConstants.PYTHON_SCRIPT_LOCATION, path.append("PythonFunctions").toOSString());
+		defaults.put(GeneralPreferenceConstants.MATLAB_SCRIPTS_LOCATION, path.append("MatlabFunctions").toOSString());
+		defaults.put(GeneralPreferenceConstants.PYTHON_SCRIPTS_LOCATION, path.append("PythonFunctions").toOSString());
 		
 	}
 
