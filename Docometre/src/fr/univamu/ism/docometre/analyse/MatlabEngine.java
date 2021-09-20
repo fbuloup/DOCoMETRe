@@ -13,8 +13,10 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -47,7 +49,9 @@ public final class MatlabEngine implements MathEngine {
 		Activator.logInfoMessage(DocometreMessages.MathEngineStarting, MatlabController.class);
 		
 		String matlabLocation = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.MATLAB_LOCATION);
-		String matlabScriptsLocation = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.MATLAB_SCRIPT_LOCATION);
+		String matlabScriptsLocation = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.MATLAB_SCRIPTS_LOCATION);
+		final IPath matlabFunctionsLocation = Path.fromOSString(matlabScriptsLocation).removeLastSegments(1).append("MatlabFunctions");
+		
 		int timeOut = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.MATLAB_TIME_OUT);
 		boolean showWindow = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.SHOW_MATLAB_WINDOW);
 		
@@ -56,7 +60,7 @@ public final class MatlabEngine implements MathEngine {
 			protected IStatus run(IProgressMonitor monitor) {
 				IStatus status = Status.OK_STATUS;
 				try {
-					matlabController.startMatlab(showWindow, timeOut, matlabLocation, matlabScriptsLocation);
+					matlabController.startMatlab(showWindow, timeOut, matlabLocation, matlabScriptsLocation, matlabFunctionsLocation.toOSString());
 				} catch (Exception e) {
 					e.printStackTrace();
 					Activator.logErrorMessageWithCause(e);
@@ -266,6 +270,7 @@ public final class MatlabEngine implements MathEngine {
 				valuesString = stringBuffer.toString();
 				
 				String cmd = experimentName + "." + subjectName + " = loadData('DOCOMETRE', '" + dataFilesList + "', " + keysString + ", " + valuesString + ")";
+				System.out.println(cmd);
 				matlabController.eval(cmd);
 				
 			}
@@ -739,7 +744,7 @@ public final class MatlabEngine implements MathEngine {
 		command = variable + " = evalc('" + command + "');";
 		runScript(command);
 		Object value = matlabController.getVariable(variable);
-		runScript("clear " + variable + ";");;
+		runScript("clear " + variable + ";");
 		return value.toString();
 	}
 

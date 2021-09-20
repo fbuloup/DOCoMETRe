@@ -62,7 +62,7 @@ public final class MatlabController {
 	private MatlabController() {
 	}
 	
-	public void startMatlab(boolean showWindow, int timeOut, String matlabLocation, String matlabScriptsLocation) throws Exception {
+	public void startMatlab(boolean showWindow, int timeOut, String matlabLocation, String matlabScriptsLocation,  String matlabFunctionsLocation) throws Exception {
 		
 		if(matlabProxy != null) return;
 		
@@ -84,6 +84,7 @@ public final class MatlabController {
 			matlabProxy = matlabProxyFactory.getProxy();
 			if(matlabProxy.isExistingSession()) matlabProxy.eval("clear all;");
 			if(matlabScriptsLocation != null && !matlabScriptsLocation.equals("")) matlabProxy.eval("addpath('" + matlabScriptsLocation + "');");
+			if(matlabFunctionsLocation != null && !matlabFunctionsLocation.equals("")) matlabProxy.eval("addpath('" + matlabFunctionsLocation + "');");
 			
 		} finally {
 			// Return to current class loader 
