@@ -391,7 +391,7 @@ public final class MatlabEngine implements MathEngine {
 		try {
 			String variableName = "yValues_" + (new Date()).getTime();
 			int frontCut = getFrontCut(signal, trialNumber) + 1;
-			int endCut = getEndCut(signal, trialNumber) - 1;
+			int endCut = getEndCut(signal, trialNumber);
 			String varCmd = getFullPath(signal) + ".Values(" + trialNumber + "," + frontCut + ":" + endCut + ");";
 			String cmd = variableName + " = " + varCmd;
 			matlabController.eval(cmd);

@@ -87,7 +87,7 @@ function subject = loadDataDocometre(dataFilesList, varargin)
         sizeData = sizeData(2);
         
         eval(['subject.', channelName, '.NbSamples(',trialNumber ,') = ', num2str(sizeData),';']);
-        eval(['subject.', channelName, '.EndCut(',trialNumber ,') = ', num2str(sizeData + 1),';']);
+        eval(['subject.', channelName, '.EndCut(',trialNumber ,') = ', num2str(sizeData),';']);
         eval(['subject.', channelName, '.FrontCut(',trialNumber ,') = 0;']);
         eval([channelNameValues, '(', trialNumber, ', 1:', num2str(sizeData),') = data;']);
     end
