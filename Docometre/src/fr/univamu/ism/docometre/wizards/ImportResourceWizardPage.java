@@ -120,6 +120,7 @@ public class ImportResourceWizardPage extends WizardPage {
 				String extension = Activator.daqFileExtension;
 				if(selection == ResourceType.PROCESS) extension = Activator.processFileExtension;
 				if(selection == ResourceType.ADW_DATA_FILE) extension = Activator.adwFileExtension;
+				if(selection == ResourceType.DATA_PROCESSING) extension = Activator.dataProcessingFileExtension;
 				valid = name.matches("^[a-zA-Z][a-zA-Z0-9_]*" + extension + "$");
 			}
 			return valid;
@@ -165,11 +166,12 @@ public class ImportResourceWizardPage extends WizardPage {
 				if(element == ResourceType.EXPERIMENT) return DocometreMessages.NewExperimentAction_Text + " (*.zip, *.tar)";
 				if(element == ResourceType.ADW_DATA_FILE) return DocometreMessages.NewSubjectFromADWDataFileLabel;
 				if(element == ResourceType.SUBJECT) return DocometreMessages.Subjects + " (*.zip, *.tar)";
+				if(element == ResourceType.DATA_PROCESSING) return DocometreMessages.DataProcessingTitle;
 				return super.getText(element);
 			}
 		});
 		if(!ImportResourceWizard.getSelectedResource().equals(ResourcesPlugin.getWorkspace().getRoot())) {
-			resourceTypeComboViewer.setInput(new Object[] {ResourceType.SUBJECT, ResourceType.ADW_DATA_FILE, ResourceType.DACQ_CONFIGURATION, ResourceType.PROCESS});
+			resourceTypeComboViewer.setInput(new Object[] {ResourceType.SUBJECT, ResourceType.ADW_DATA_FILE, ResourceType.DACQ_CONFIGURATION, ResourceType.PROCESS, ResourceType.DATA_PROCESSING});
 			resourceTypeComboViewer.setSelection(new StructuredSelection(ResourceType.SUBJECT));
 			selectedResourceType = ResourceType.SUBJECT;
 		} else {
@@ -245,7 +247,8 @@ public class ImportResourceWizardPage extends WizardPage {
 			public String getText(Object element) {
 				if(!(element instanceof File)) return null;
 				if(((File)element).isDirectory()) return ((File)element).getName();
-				return ((File)element).getName().replaceAll(Activator.daqFileExtension + "$", "").replaceAll(Activator.processFileExtension + "$", "");
+				String label = ((File)element).getName().replaceAll(Activator.daqFileExtension + "$", "").replaceAll(Activator.processFileExtension + "$", "");
+				return label.replaceAll(Activator.dataProcessingFileExtension + "$", "");
 			}
 			@Override
 			public Image getImage(Object element) {
@@ -255,6 +258,7 @@ public class ImportResourceWizardPage extends WizardPage {
 				if(file.getName().endsWith(Activator.processFileExtension)) return Activator.getImageDescriptor(IImageKeys.PROCESS_ICON).createImage();
 				if(file.getName().endsWith(".zip") || file.getName().endsWith("*.tar")) return Activator.getImageDescriptor(IImageKeys.ZIP).createImage();
 				if(file.getName().endsWith(Activator.adwFileExtension)) return Activator.getImageDescriptor(IImageKeys.SAMPLES_ICON).createImage();
+				if(file.getName().endsWith(Activator.dataProcessingFileExtension)) return Activator.getImageDescriptor(IImageKeys.DATA_PROCESSING_ICON).createImage();
 				return  Activator.getImageDescriptor(IImageKeys.FOLDER_ICON).createImage();
 			}
 		});

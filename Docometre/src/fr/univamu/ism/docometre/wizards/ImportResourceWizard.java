@@ -277,7 +277,7 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 						e.printStackTrace();
 					}
 				} else {
-					// Import process or dacq file
+					// Import process or dacq file or data processing file
 					Path newPath = Paths.get(rootPath + parentResource.getFullPath().toOSString() + File.separator + file.getName());
 					Path originalPath = file.toPath();
 					if(!originalPath.startsWith(rootPath)) {
@@ -296,6 +296,9 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 							}
 							if(file.getName().endsWith(Activator.processFileExtension)) {
 								ResourceProperties.setTypePersistentProperty(newFile, ResourceType.PROCESS.toString());
+							}
+							if(file.getName().endsWith(Activator.dataProcessingFileExtension)) {
+								ResourceProperties.setTypePersistentProperty(newFile, ResourceType.DATA_PROCESSING.toString());
 							}
 							ObjectsController.removeHandle(object);
 							ExperimentsView.refresh(parentResource, new IResource[]{newFile});

@@ -243,6 +243,7 @@ public final class DocometreMessages extends NLS {
 	public static String UnzippingFile;
 	public static String ImportErrorMessage;
 	public static String ImportErrorDialogTitle;
+	public static String DataProcessingTitle;
 	
 	/*New Folder Page*/
 	public static String NewFolderWizard_PageName;
