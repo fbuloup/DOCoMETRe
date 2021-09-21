@@ -31,7 +31,7 @@ for trialNumber = trialsList\n\
 	end\n\
 end\n\
 if (~exist('createdOrModifiedChannels'))\n\
-	\tcreatedOrModifiedChannels = {inputSignal};\n\
+	\tcreatedOrModifiedChannels = {'inputSignal'};\n\
 else\n\
-	\tcreatedOrModifiedChannels = [createdOrModifiedChannels; {"inputSignal"}];\n\
+	\tcreatedOrModifiedChannels = [createdOrModifiedChannels; {'inputSignal'}];\n\
 end\n\

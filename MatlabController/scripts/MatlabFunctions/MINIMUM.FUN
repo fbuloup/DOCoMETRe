@@ -7,12 +7,12 @@ DESCRIPTION_FR = Marque l'amplitude minimale
 FUNCTION_CODE = % Compute Minimum marker\n\
 signalSizes = size(inputSignal.Values); % signalSizes(1) : trials number - signalSizes(2) : samples number\n\
 compute = true;\n\
-NbMarkersGroups = 0;\n\
+nbMarkersGroups = 0;\n\
 % Check if markers Group already exists\n\
-if isfield(inputSignal, "NbMarkersGroups")\n\
+if isfield(inputSignal, 'NbMarkersGroups')\n\
 	\tnbMarkersGroups = inputSignal.NbMarkersGroups;\n\
 	\tfor markersGroupNumber = 1:nbMarkersGroups\n\
-		\t\tif inputSignal.MarkersGroupsLabels(markersGroupNumber) == "markersGroupLabel":\n\
+		\t\tif inputSignal.MarkersGroupsLabels(markersGroupNumber) == "markersGroupLabel"\n\
 			\t\t\tcompute = false;\n\
 			\t\t\tbreak;\n\
 		\t\tend\n\
@@ -71,9 +71,9 @@ if compute\n\
 			\t\t\tminMarkerTime = (fromIndex + minIndex)/sampleFrequency;\n\
 			\t\t\tinputSignal.MarkersGroup_markersGroupLabel_Values = [inputSignal.MarkersGroup_markersGroupLabel_Values; trialNumber+1, minMarkerTime, minValue];\n\
 	\tif (~exist('createdOrModifiedChannels'))\n\
-		\t\tcreatedOrModifiedChannels = {inputSignal};\n\
+		\t\tcreatedOrModifiedChannels = {'inputSignal'};\n\
 	\telse\n\
-		\t\tcreatedOrModifiedChannels = [createdOrModifiedChannels; {"inputSignal"}];\n\
+		\t\tcreatedOrModifiedChannels = [createdOrModifiedChannels; {'inputSignal'}];\n\
 	\tend\n\
 else\n\
 	\tif(exist('ErrorMessages'))\n\

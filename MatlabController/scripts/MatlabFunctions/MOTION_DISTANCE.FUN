@@ -57,7 +57,7 @@ for trialNumber = trialsList\n\
 		\t\toutputSignal.Values(trialNumber, fromIndex:toIndex) = cumsum(outputSignal.Values(trialNumber, fromIndex:toIndex));\n\
 	\tend\n\
 end\n\
-clear fromIndex toIndex fromValues toValues dx2 dy2 trialNumber values1 values2\n\
+clear fromIndex toIndex fromValues toValues dx2 dy2 trialNumber values1 values2 signalSizes\n\
 if (~exist('createdOrModifiedChannels'))\n\
 \tcreatedOrModifiedChannels = {'outputSignal'};\n\
 else\n\

@@ -48,9 +48,9 @@ if compute\n\
 		\t\tend\n\
 	\tend\n\	
 	\tif (~exist('createdOrModifiedChannels'))\n\
-		\t\tcreatedOrModifiedChannels = {inputSignal};\n\
+		\t\tcreatedOrModifiedChannels = {'inputSignal'};\n\
 	\telse\n\
-		\t\tcreatedOrModifiedChannels = [createdOrModifiedChannels; {"inputSignal"}];\n\
+		\t\tcreatedOrModifiedChannels = [createdOrModifiedChannels; {'inputSignal'}];\n\
 	\tend\n\
 else\n\
 	\tif(exist('ErrorMessages'))\n\

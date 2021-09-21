@@ -9,7 +9,7 @@ signalSizes = size(inputSignal.Values); % signalSizes(1) : trials number - signa
 compute = true;\n\
 nbMarkersGroups = 0;\n\
 % Check if markers Group already exists\n\
-if isfield(inputSignal, "NbMarkersGroups")\n\
+if isfield(inputSignal, 'NbMarkersGroups')\n\
 	\tnbMarkersGroups = inputSignal.NbMarkersGroups;\n\
 	\tfor markersGroupNumber = 1:nbMarkersGroups\n\
 		\t\tif inputSignal.MarkersGroupsLabels(markersGroupNumber) == "markersGroupLabel"\n\
