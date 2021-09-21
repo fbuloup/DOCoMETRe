@@ -262,7 +262,8 @@ public class MotionDirection extends GenericFunction {
 		String inputMarker2 = getProperty(inputMarker2Key, "");
 		String outputSignal = inputSignal1 + getProperty(outputSignalSuffixKey, "MDir");
 		String resultInDegreeValue = getProperty(resultInDegreeValueKey, "false");
-		resultInDegreeValue = "true".equals(resultInDegreeValue) ? "True" : "False";
+		if(MathEngineFactory.isPython()) resultInDegreeValue = "true".equals(resultInDegreeValue) ? "True" : "False";
+		else resultInDegreeValue = "true".equals(resultInDegreeValue) ? "true" : "false";
 
 		code = code.replaceAll(trialsListKey, trialsList).replaceAll(inputSignal1Key, inputSignal1).replaceAll(inputSignal2Key, inputSignal2);
 		code = code.replaceAll(inputMarker1Key, inputMarker1).replaceAll(inputMarker2Key, inputMarker2).replaceAll(outputSignalSuffixKey, outputSignal);
