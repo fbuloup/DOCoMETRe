@@ -7,8 +7,8 @@ pour chaque point de la courbe formée par les deux signaux d'entrée et par rap
 
 # Now start specific matlab function 
 FUNCTION_CODE = % Compute Motion Direction\n\
-# Compute result angles in degree or radian\n\
-resultInDegree = resultInDegreeValue\n\
+% Compute result angles in degree or radian\n\
+resultInDegree = resultInDegreeValue;\n\
 % Get signals input values\n\
 values1 = inputSignal1.Values;\n\
 values2 = inputSignal2.Values;\n\
@@ -25,7 +25,7 @@ outputSignal.SampleFrequency = inputSignal1.SampleFrequency;\n\
 outputSignal.FrontCut = inputSignal1.FrontCut;\n\
 outputSignal.EndCut = inputSignal1.EndCut;\n\
 % Get from and to values\n\
-if "From_Beginning" == "inputMarker1":\n\
+if "From_Beginning" == "inputMarker1"\n\
 	\tfromValues = zeros(signalSizes(1),3);\n\
 	\tfromValues(:,1) = trialsList;\n\
 	\tfromValues(:,3) = values1(:,1);\n\
@@ -62,11 +62,11 @@ for trialNumber = trialsList\n\
 			\t\t\ttheta =  acos(dx/sqrt(dx^2 + dy^2));\n\
 			\t\t\tif (dx<0) && (dy>0)\n\
 				\t\t\t\ttheta = -theta + pi/2;\n\
-			\t\t\telse if (dx<0) and (dy<0)\n\
+			\t\t\telseif (dx<0) && (dy<0)\n\
 				\t\t\t\ttheta = -theta + pi/2;\n\
-			\t\t\telse if (dx>0) and (dy>0)\n\
+			\t\t\telseif (dx>0) && (dy>0)\n\
 				\t\t\t\ttheta = pi/2 - theta;\n\
-			\t\t\telse if (dx>0) and (dy<0) \n\
+			\t\t\telseif (dx>0) && (dy<0) \n\
 				\t\t\t\ttheta = pi/2 - theta;\n\
 			\t\t\tend\n\
 			\t\t\tif resultInDegree\n\
@@ -76,7 +76,7 @@ for trialNumber = trialsList\n\
 		\t\tend\n\
 	\tend\n\
 end\n\
-clear fromIndex toIndex fromValues toValues dx dy trialNumber values1 values2 theta\n\
+clear fromIndex toIndex fromValues toValues dx dy trialNumber values1 values2 theta index resultInDegree signalSizes x0 y0\n\
 if (~exist('createdOrModifiedChannels'))\n\
 \tcreatedOrModifiedChannels = {'outputSignal'};\n\
 else\n\
