@@ -5,33 +5,55 @@ DESCRIPTION_FR = Marque le signal d'entrée à un valeur temporelle spécifique
 
 # Now start specific matlab function 
 FUNCTION_CODE = % Compute Time marker\n\
-% Create new output markers group\n\
-inputSignal.NbMarkersGroups = inputSignal.NbMarkersGroups + 1;\n\
-if inputSignal.NbMarkersGroups == 1\n\
-	\tinputSignal.MarkersGroupsLabels = "markersGroupLabel";\n\
+signalSizes = size(inputSignal.Values); % signalSizes(1) : trials number - signalSizes(2) : samples number\n\
+compute = true;\n\
+nbMarkersGroups = 0;\n\
+% Check if markers Group already exists\n\
+if isfield(inputSignal, 'NbMarkersGroups')\n\
+	\tnbMarkersGroups = inputSignal.NbMarkersGroups;\n\
+	\tfor markersGroupNumber = 1:nbMarkersGroups\n\
+		\t\tif inputSignal.MarkersGroupsLabels(markersGroupNumber) == "markersGroupLabel"\n\
+			\t\t\tcompute = false;\n\
+			\t\t\tbreak;\n\
+		\t\tend\n\
+	\tend\n\
+end\n\
+if compute\n\
+	\t% Create new output markers group\n\
+	\tinputSignal.NbMarkersGroups = inputSignal.NbMarkersGroups + 1;\n\
+	\tif inputSignal.NbMarkersGroups == 1\n\
+		\t\tinputSignal.MarkersGroupsLabels = "markersGroupLabel";\n\
+	\telse\n\
+		\t\tinputSignal.MarkersGroupsLabels = [inputSignal.MarkersGroupsLabels ; "markersGroupLabel"];\n\
+	\tend\n\
+	\tinputSignal.MarkersGroup_markersGroupLabel_Values = [];\n\
+	\t% Get sample frequency\n\
+	\tsampleFrequency = inputSignal.SampleFrequency;\n\
+	\t% Get end cut values\n\
+	\tendCutValues = inputSignal.EndCut;\n\
+	\t% Loop over trials list\n\
+	\tfor trialNumber = trialsList\n\
+		\t\tindex = round(timeMarkerValue*sampleFrequency+1);\n\
+		\t\tendCut = endCutValues(trialNumber);\n\
+		\t\tif endCut >= index \n\
+			\t\t\tnewTime = (index-1)/sampleFrequency;\n\
+			\t\t\tinputSignal.MarkersGroup_markersGroupLabel_Values = [inputSignal.MarkersGroup_markersGroupLabel_Values; trialNumber+1, newTime, inputSignal.Values(trialNumber,index)];\n\
+		\t\telseif markLastSample == True\n\
+			\t\t\tnewTime = (endCutValues(TrialNumber) - 1)/sampleFrequency;\n\
+			\t\t\tnewIndex = endCutValues(TrialNumber) - 1;\n\
+			\t\t\tinputSignal.MarkersGroup_markersGroupLabel_Values = [inputSignal.MarkersGroup_markersGroupLabel_Values; trialNumber+1, newTime, inputSignal.Values(trialNumber,index)];\n\
+		\t\tend\n\
+	\tend\n\
+	\tif (~exist('createdOrModifiedChannels'))\n\
+		\t\tcreatedOrModifiedChannels = {'inputSignal'};\n\
+	\telse\n\
+		\t\tcreatedOrModifiedChannels = [createdOrModifiedChannels; {'inputSignal'}];\n\
+	\tend\n\
 else\n\
-	\tinputSignal.MarkersGroupsLabels = [inputSignal.MarkersGroupsLabels ; "markersGroupLabel"];\n\
+	\tif(exist('ErrorMessages'))\n\
+		\t\tErrorMessages = [ErrorMessages, {[datestr(now,'HH:MM:SS.FFF'), ' - From Time Marker function -> A Marker with this label already exists : markersGroupLabel']}];\n\
+	\telse\n\
+		\t\tErrorMessages = {[datestr(now,'HH:MM:SS.FFF'), ' - From Time Marker function -> A Marker with this label already exists : markersGroupLabel (inputSignal)']};\n\
+	\tend\n\
 end\n\
-inputSignal.MarkersGroup_markersGroupLabel_Values = [];\n\
-% Get sample frequency\n\
-sampleFrequency = inputSignal.SampleFrequency;\n\
-% Get end cut values\n\
-endCutValues = inputSignal.EndCut;\n\
-% Loop over trials list\n\
-for trialNumber = trialsList\n\
-	\tindex = round(timeMarkerValue*sampleFrequency+1);\n\
-	\tendCut = endCutValues(trialNumber);\n\
-	\tif endCut >= index \n\
-		\t\tnewTime = (index-1)/sampleFrequency;\n\
-		\t\tinputSignal.MarkersGroup_markersGroupLabel_Values = [inputSignal.MarkersGroup_markersGroupLabel_Values; trialNumber+1, newTime, inputSignal.Values(trialNumber,index)];\n\
-	\telseif markLastSample == True\n\
-		\t\tnewTime = (endCutValues[TrialNumber] - 1)/sampleFrequency;\n\
-		\t\tnewIndex = endCutValues[TrialNumber] - 1;\n\
-		\t\tinputSignal.MarkersGroup_markersGroupLabel_Values = [inputSignal.MarkersGroup_markersGroupLabel_Values; trialNumber+1, newTime, inputSignal.Values(trialNumber,index)];\n\
-	end\n\
-end\n\
-if (~exist('createdOrModifiedChannels'))\n\
-	\tcreatedOrModifiedChannels = {'inputSignal'};\n\
-else\n\
-	\tcreatedOrModifiedChannels = [createdOrModifiedChannels; {'inputSignal'}];\n\
-end\n\
+clear compute endCut endCutValues index markersGroupNumber nbMarkersGroups newTime sampleFrequency signalSizes trialNumber\n\
