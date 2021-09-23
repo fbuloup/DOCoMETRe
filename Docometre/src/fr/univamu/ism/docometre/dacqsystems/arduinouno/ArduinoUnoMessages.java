@@ -81,6 +81,7 @@ public class ArduinoUnoMessages extends NLS {
 	public static String ANALOG_INPUT;
 	public static String ANALOG_OUTPUT;
 	public static String DIO;
+	public static String ADS1115;
 	public static String UNKNOWN;
 	
 	/*
@@ -156,7 +157,13 @@ public class ArduinoUnoMessages extends NLS {
 	 * Refresh device selection dialog
 	 */
 	public static String Refresh;
-	
+
+	/*
+	 * AD1115 module 
+	 */
+	public static String address_label;
+	public static String address_tooltip;
+
 	static {
 		NLS.initializeMessages(BUNDLE_NAME, ArduinoUnoMessages.class);
 	}

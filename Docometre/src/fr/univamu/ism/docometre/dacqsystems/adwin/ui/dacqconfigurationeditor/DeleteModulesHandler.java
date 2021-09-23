@@ -41,6 +41,8 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.adwin.ui.dacqconfigurationeditor;
 
+import java.util.ArrayList;
+
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.IOperationHistory;
 import org.eclipse.core.commands.operations.IUndoContext;
@@ -56,6 +58,10 @@ import org.eclipse.ui.PlatformUI;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinMessages;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnInModule;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnOutModule;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfiguration;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDigInOutModule;
 
 public class DeleteModulesHandler extends SelectionAdapter implements ISelectionChangedListener {
 	
@@ -75,6 +81,15 @@ public class DeleteModulesHandler extends SelectionAdapter implements ISelection
 		@Override
 		public void widgetSelected(SelectionEvent event) {
 			if(selectedModules == null) return;
+			if(daqConfiguration instanceof ArduinoUnoDACQConfiguration) {
+				ArrayList<Object> modules = new ArrayList<>();
+				Object[] modulesArray = selectedModules.toArray();
+				for (Object module : modulesArray) {
+					boolean keep = !((module instanceof ArduinoUnoAnInModule) || (module instanceof ArduinoUnoAnOutModule) || (module instanceof ArduinoUnoDigInOutModule));
+					if(keep) modules.add(module);
+				}
+				selectedModules = new StructuredSelection(modules.toArray());
+			}
 			if(!selectedModules.isEmpty()) {
 				if(MessageDialog.openQuestion(shell, ADWinMessages.DeleteModuleDialog_Title, ADWinMessages.DeleteModuleDialog_Message)) {
 					try {

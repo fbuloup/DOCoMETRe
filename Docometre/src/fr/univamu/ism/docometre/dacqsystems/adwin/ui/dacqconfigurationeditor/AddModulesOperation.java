@@ -53,26 +53,30 @@ import org.eclipse.core.runtime.Status;
 
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.Module;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinModulesList;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfiguration;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoModulesList;
 
 public class AddModulesOperation extends AbstractOperation {
 
-	private DACQConfiguration daqConfiguration;
-	private ArrayList<ADWinModulesList> selectedADWinModulesList;
+	private DACQConfiguration dacqConfiguration;
+	private ArrayList<Object> selectedModulesList;
 	private ArrayList<Module> createdModules;
 
-	public AddModulesOperation(String label, DACQConfiguration daqConfiguration, ArrayList<ADWinModulesList> selectedADWinModulesList, IUndoContext undoContext) {
+	public AddModulesOperation(String label, DACQConfiguration daqConfiguration, ArrayList<Object> selectedModulesList, IUndoContext undoContext) {
 		super(label);
-		this.selectedADWinModulesList = selectedADWinModulesList;
-		this.daqConfiguration = daqConfiguration;
+		this.selectedModulesList = selectedModulesList;
+		this.dacqConfiguration = daqConfiguration;
 		addContext(undoContext);
 	}
 
 	@Override
 	public IStatus execute(IProgressMonitor monitor, IAdaptable info) throws ExecutionException {
 		createdModules = new ArrayList<Module>();
-		for (ADWinModulesList adwinModule : selectedADWinModulesList) {
-			createdModules.add(ADWinModulesList.createModule(adwinModule, daqConfiguration));
+		for (Object module : selectedModulesList) {
+			if(dacqConfiguration instanceof ADWinDACQConfiguration) createdModules.add(ADWinModulesList.createModule((ADWinModulesList)module, dacqConfiguration));
+			if(dacqConfiguration instanceof ArduinoUnoDACQConfiguration) createdModules.add(ArduinoUnoModulesList.createModule((ArduinoUnoModulesList)module, dacqConfiguration));
 		}
 		return Status.OK_STATUS;
 	}
@@ -85,7 +89,7 @@ public class AddModulesOperation extends AbstractOperation {
 	@Override
 	public IStatus undo(IProgressMonitor monitor, IAdaptable info) throws ExecutionException {
 		for (Module module : createdModules) {
-			daqConfiguration.removeModule(module);
+			dacqConfiguration.removeModule(module);
 		}
 		return Status.OK_STATUS;
 	}

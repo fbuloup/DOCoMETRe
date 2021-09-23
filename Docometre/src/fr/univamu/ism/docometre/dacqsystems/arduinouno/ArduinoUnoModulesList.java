@@ -51,10 +51,11 @@ public enum ArduinoUnoModulesList {
 	
 	ANALOG_INPUT,
 	ANALOG_OUTPUT,
-	DIO;
+	DIO,
+	ADS1115;
 	
 	public static ArduinoUnoModulesList[] getModules() {
-		return new ArduinoUnoModulesList[] {ANALOG_INPUT, ANALOG_OUTPUT, DIO};
+		return new ArduinoUnoModulesList[] {/*ANALOG_INPUT, ANALOG_OUTPUT, DIO,*/ ADS1115};
 	}
 	
 	public static String getDescription(ArduinoUnoModulesList arduinoModulesList) {
@@ -65,6 +66,8 @@ public enum ArduinoUnoModulesList {
 			return ArduinoUnoMessages.ANALOG_OUTPUT;
 		case DIO:
 			return ArduinoUnoMessages.DIO;
+		case ADS1115:
+			return ArduinoUnoMessages.ADS1115;
 		default:
 			return ArduinoUnoMessages.UNKNOWN;
 		}
@@ -78,6 +81,8 @@ public enum ArduinoUnoModulesList {
 			return null;//ADWinAnOutModule.class.getCanonicalName();
 		case DIO:
 			return null;//ADWinDigInOutModule.class.getCanonicalName();
+		case ADS1115:
+			return ADS1115Module.class.getCanonicalName();
 		default:
 			return "";
 		}
@@ -87,6 +92,7 @@ public enum ArduinoUnoModulesList {
 		if(module instanceof ArduinoUnoAnInModule) return ArduinoUnoMessages.ANALOG_INPUT;
 		if(module instanceof ArduinoUnoAnOutModule) return ArduinoUnoMessages.ANALOG_OUTPUT;
 		if(module instanceof ArduinoUnoDigInOutModule) return ArduinoUnoMessages.DIO;
+		if(module instanceof ADS1115Module) return ArduinoUnoMessages.ADS1115;
 		return ArduinoUnoMessages.UNKNOWN;
 		
 	}
@@ -102,6 +108,9 @@ public enum ArduinoUnoModulesList {
 			break;
 		case DIO:
 			module = null;//new ADWinDigInOutModule(configuration);
+			break;
+		case ADS1115:
+			module = new ADS1115Module(configuration);
 			break;
 		default:
 			return null;

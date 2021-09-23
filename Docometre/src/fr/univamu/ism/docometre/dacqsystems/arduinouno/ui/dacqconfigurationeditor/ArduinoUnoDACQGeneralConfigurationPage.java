@@ -79,7 +79,11 @@ import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.PartListenerAdapter;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.Property;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinMessages;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ui.dacqconfigurationeditor.AddModuleHandler;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ui.dacqconfigurationeditor.DeleteModulesHandler;
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
+import fr.univamu.ism.docometre.dacqsystems.DACQConfigurationProperties;
 import fr.univamu.ism.docometre.dacqsystems.FrequencyInputValidator;
 import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyHandler;
 import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyOperation;
@@ -245,11 +249,17 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 		/*
 		 * Section 2 : modules configuration
 		 */
-		createTableConfigurationSection(false, false, false, false);
+		createTableConfigurationSection(true, false, false, false);
 		tableConfigurationSection.setText(ArduinoUnoMessages.ModuleConfigurationSection_Title);
 		tableConfigurationSection.setDescription(ArduinoUnoMessages.ModulesConfigurationSectionDescription);
 		
+		deleteToolItem.setToolTipText(ADWinMessages.DeleteModule_Tooltip);
+		DeleteModulesHandler deleteModulesHandler = new DeleteModulesHandler(getSite().getShell(), dacqConfiguration, ((ResourceEditor)getEditor()).getUndoContext()); 
+		tableViewer.addSelectionChangedListener(deleteModulesHandler);
+		deleteToolItem.addSelectionListener(deleteModulesHandler);
 		
+		addToolItem.setToolTipText(ADWinMessages.AddModule_Tooltip);
+		addToolItem.addSelectionListener(new AddModuleHandler(getSite().getShell(), (ResourceEditor)getEditor()));
 		
 		TableColumnLayout  modulesTableColumnLayout = (TableColumnLayout) tableConfigurationContainer.getLayout();
 		Property moduleTypeColumnTitleProperty = new Property("", (String) ArduinoUnoMessages.ModuleType_ColumnTitle, "" ,"") {
@@ -325,6 +335,18 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 				updateWidget(deviceBaudRateCombo, (ArduinoUnoDACQConfigurationProperties)property);
 			if(property == ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY)
 				updateWidget(globalFrequencyHyperlink, (ArduinoUnoDACQConfigurationProperties)property);
+		}
+		if(property instanceof DACQConfigurationProperties) {
+			if(property == DACQConfigurationProperties.UPDATE_MODULE) {
+				tableViewer.setInput(dacqConfiguration.getModules());
+				tableConfigurationSectionPart.markDirty();
+				if(newValue != null) {
+					((Module)newValue).addObserver(this);
+				} else if(oldValue != null) {
+					((Module)oldValue).removeObserver(this);
+				}
+			}
+			if(property == DACQConfigurationProperties.CHARTS_LAYOUT_COLUMNS_NUMBER);
 		}
 	}
 	
