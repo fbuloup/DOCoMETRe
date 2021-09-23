@@ -6,9 +6,14 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-09-15
+      -- 2021-09-22
 ADDED : 
-* Butt. high pass, front &amp; end cut, Derivate, front &amp; end cut from marker to Matlab engine
+* All Python DSP functions have been ported to Matlab
+FIXED : Nothing
+-- 2021-09-15
+ADDED : 
+* Butt. high pass, front &amp; end cut, Derivate, front &amp; end cut
+from marker to Matlab engine
 * Managing some prefs. values at first App. launch
 FIXED : Nothing
 -- 2021-09-08
