@@ -82,7 +82,7 @@ public enum ArduinoUnoModulesList {
 		case DIO:
 			return null;//ADWinDigInOutModule.class.getCanonicalName();
 		case ADS1115:
-			return ADS1115Module.class.getCanonicalName();
+			return ArduinoUnoADS1115Module.class.getCanonicalName();
 		default:
 			return "";
 		}
@@ -92,7 +92,7 @@ public enum ArduinoUnoModulesList {
 		if(module instanceof ArduinoUnoAnInModule) return ArduinoUnoMessages.ANALOG_INPUT;
 		if(module instanceof ArduinoUnoAnOutModule) return ArduinoUnoMessages.ANALOG_OUTPUT;
 		if(module instanceof ArduinoUnoDigInOutModule) return ArduinoUnoMessages.DIO;
-		if(module instanceof ADS1115Module) return ArduinoUnoMessages.ADS1115;
+		if(module instanceof ArduinoUnoADS1115Module) return ArduinoUnoMessages.ADS1115;
 		return ArduinoUnoMessages.UNKNOWN;
 		
 	}
@@ -110,7 +110,7 @@ public enum ArduinoUnoModulesList {
 			module = null;//new ADWinDigInOutModule(configuration);
 			break;
 		case ADS1115:
-			module = new ADS1115Module(configuration);
+			module = new ArduinoUnoADS1115Module(configuration);
 			break;
 		default:
 			return null;

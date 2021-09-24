@@ -6,11 +6,11 @@ import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.Property;
 
-public class ADS1115Module extends Module {
+public class ArduinoUnoADS1115Module extends Module {
 	
-	public ADS1115Module(DACQConfiguration dacqConfiguration) {
+	public ArduinoUnoADS1115Module(DACQConfiguration dacqConfiguration) {
 		super(dacqConfiguration);
-		ADS1115ModuleProperties.populateProperties(this);
+		ArduinoUnoADS1115ModuleProperties.populateProperties(this);
 	}
 
 	public static final long serialVersionUID = AbstractElement.serialVersionUID;
