@@ -41,6 +41,7 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.dacqconfigurationeditor;
 
+import org.eclipse.ui.IWorkbenchPartConstants;
 import org.eclipse.ui.forms.editor.FormEditor;
 
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
@@ -48,8 +49,10 @@ import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.Property;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoModulesList;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoADS1115ModuleProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfiguration;
 import fr.univamu.ism.docometre.editors.ModulePage;
+import fr.univamu.ism.docometre.editors.ResourceEditor;
 
 public class ArduinoUnoModulePage extends ModulePage {
 
@@ -65,10 +68,10 @@ public class ArduinoUnoModulePage extends ModulePage {
 			else if(tableViewer != null) tableViewer.setInput(((ArduinoUnoDACQConfiguration)dacqConfiguration).getVariables());
 			if(tableConfigurationSectionPart != null) tableConfigurationSectionPart.markDirty();
 		}
-//		if(property == ADWinDACQConfigurationProperties.UPDATE_VARIABLE) {
-//			if(module == null) tableViewer.setInput(((ADWinDACQConfiguration)dacqConfiguration).getVariables());
+		if(property == ArduinoUnoADS1115ModuleProperties.ADDRESS) {
+			((ResourceEditor)getEditor()).updateTitle(getIndex(), getPageTitle());
 //			if(tableConfigurationSectionPart != null) tableConfigurationSectionPart.markDirty();
-//		}
+		}
 		if(property instanceof ChannelProperties) {
 			if(tableConfigurationSectionPart != null) tableConfigurationSectionPart.markDirty();
 		}
@@ -77,7 +80,9 @@ public class ArduinoUnoModulePage extends ModulePage {
 
 	@Override
 	public String getPageTitle() {
+		firePropertyChange(IWorkbenchPartConstants.PROP_PART_NAME);
 		return ArduinoUnoModulesList.getDescription(module);
+		
 	}
 
 }

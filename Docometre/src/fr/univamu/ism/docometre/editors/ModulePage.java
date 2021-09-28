@@ -488,4 +488,5 @@ public abstract class ModulePage extends FormPage implements PropertyObserver {
 	public Button[] getSelectAllButtons() {
 		return new Button[] {selectAll_T_Button, selectAll_AT_Button, selectAll_R_Button};
 	}
-}
+	
+ }

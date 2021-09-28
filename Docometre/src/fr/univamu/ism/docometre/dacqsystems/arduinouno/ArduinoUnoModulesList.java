@@ -44,6 +44,8 @@ package fr.univamu.ism.docometre.dacqsystems.arduinouno;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
+import org.eclipse.osgi.util.NLS;
+
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 
@@ -54,8 +56,9 @@ public enum ArduinoUnoModulesList {
 	DIO,
 	ADS1115;
 	
-	public static ArduinoUnoModulesList[] getModules() {
-		return new ArduinoUnoModulesList[] {/*ANALOG_INPUT, ANALOG_OUTPUT, DIO,*/ ADS1115};
+	public static ArduinoUnoModulesList[] getModules(boolean withADS1115) {
+		if(withADS1115) return new ArduinoUnoModulesList[] {ADS1115};
+		return new ArduinoUnoModulesList[] {};
 	}
 	
 	public static String getDescription(ArduinoUnoModulesList arduinoModulesList) {
@@ -67,7 +70,7 @@ public enum ArduinoUnoModulesList {
 		case DIO:
 			return ArduinoUnoMessages.DIO;
 		case ADS1115:
-			return ArduinoUnoMessages.ADS1115;
+			return NLS.bind(ArduinoUnoMessages.ADS1115, "0x4x");
 		default:
 			return ArduinoUnoMessages.UNKNOWN;
 		}
@@ -92,7 +95,11 @@ public enum ArduinoUnoModulesList {
 		if(module instanceof ArduinoUnoAnInModule) return ArduinoUnoMessages.ANALOG_INPUT;
 		if(module instanceof ArduinoUnoAnOutModule) return ArduinoUnoMessages.ANALOG_OUTPUT;
 		if(module instanceof ArduinoUnoDigInOutModule) return ArduinoUnoMessages.DIO;
-		if(module instanceof ArduinoUnoADS1115Module) return ArduinoUnoMessages.ADS1115;
+		if(module instanceof ArduinoUnoADS1115Module) {
+			ArduinoUnoADS1115Module ads1115Module = (ArduinoUnoADS1115Module)module;
+			String address = ads1115Module.getProperty(ArduinoUnoADS1115ModuleProperties.ADDRESS);
+			return NLS.bind(ArduinoUnoMessages.ADS1115, address);
+		}
 		return ArduinoUnoMessages.UNKNOWN;
 		
 	}

@@ -1,5 +1,8 @@
 package fr.univamu.ism.docometre.dacqsystems.arduinouno;
 
+import java.util.ArrayList;
+
+import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.Property;
 
@@ -14,6 +17,20 @@ public final class ArduinoUnoADS1115ModuleProperties extends Property {
 
 	public static void populateProperties(Module module){
 		module.setProperty(ADDRESS, ADDRESS_0X48); 
+		DACQConfiguration dacqConfiguration = module.getDACQConfiguration();
+		if(dacqConfiguration != null) {
+			Module[] modules = dacqConfiguration.getModules();
+			ArrayList<String> usedAddress = new ArrayList<>();
+			for (Module dacqModule : modules) {
+				if(dacqModule instanceof ArduinoUnoADS1115Module && dacqModule != module)  {
+					usedAddress.add(dacqModule.getProperty(ADDRESS));
+				}
+			}
+			if(!usedAddress.contains(ADDRESS_0X48)) module.setProperty(ADDRESS, ADDRESS_0X48); 
+			else if(!usedAddress.contains(ADDRESS_0X49)) module.setProperty(ADDRESS, ADDRESS_0X49); 
+			else if(!usedAddress.contains(ADDRESS_0X4A)) module.setProperty(ADDRESS, ADDRESS_0X4A); 
+			else if(!usedAddress.contains(ADDRESS_0X4B)) module.setProperty(ADDRESS, ADDRESS_0X4B); 
+		}
 	}
 	
 	public static Module cloneModule(Module module) {

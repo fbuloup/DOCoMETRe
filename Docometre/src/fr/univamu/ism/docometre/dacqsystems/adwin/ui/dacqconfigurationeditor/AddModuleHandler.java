@@ -69,9 +69,11 @@ import org.eclipse.ui.PlatformUI;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
+import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinMessages;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinModulesList;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoADS1115Module;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoModulesList;
 import fr.univamu.ism.docometre.editors.ResourceEditor;
@@ -117,7 +119,12 @@ public class AddModuleHandler extends SelectionAdapter implements ISelectionChan
 				}
 			});
 			if(dacqConfiguration instanceof ADWinDACQConfiguration) modulesListViewer.setInput(ADWinModulesList.values());
-			if(dacqConfiguration instanceof ArduinoUnoDACQConfiguration) modulesListViewer.setInput(new Object[] {ArduinoUnoModulesList.ADS1115});
+			if(dacqConfiguration instanceof ArduinoUnoDACQConfiguration) {
+				Module[] modules = dacqConfiguration.getModules();
+				int nbADS1115 = 0;
+				for (Module module : modules) if(module instanceof ArduinoUnoADS1115Module) nbADS1115++;
+				modulesListViewer.setInput(ArduinoUnoModulesList.getModules(nbADS1115 < 4));
+			}
 			modulesListViewer.addSelectionChangedListener(AddModuleHandler.this);
 			
 			modulesListViewer.addDoubleClickListener(new IDoubleClickListener() {

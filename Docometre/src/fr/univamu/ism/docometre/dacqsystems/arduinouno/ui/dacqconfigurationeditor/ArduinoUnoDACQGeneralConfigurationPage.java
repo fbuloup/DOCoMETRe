@@ -89,6 +89,7 @@ import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyHandler;
 import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyOperation;
 import fr.univamu.ism.docometre.dialogs.DialogSelectionHandler;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoModulesList;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoADS1115ModuleProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfigurationProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoMessages;
 import fr.univamu.ism.docometre.editors.ModulePage;
@@ -347,6 +348,11 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 				}
 			}
 			if(property == DACQConfigurationProperties.CHARTS_LAYOUT_COLUMNS_NUMBER);
+		}
+		if(property instanceof ArduinoUnoADS1115ModuleProperties) {
+			if(property == ArduinoUnoADS1115ModuleProperties.ADDRESS) {
+				tableViewer.refresh();
+			}
 		}
 	}
 	
