@@ -14,6 +14,7 @@ public final class ArduinoUnoADS1115ModuleProperties extends Property {
 	public static String ADDRESS_0X49 = "0x49";
 	public static String ADDRESS_0X4A = "0x4A";
 	public static String ADDRESS_0X4B = "0x4B";
+	public static String[] ADDRESSES = new String[] {ADDRESS_0X48, ADDRESS_0X49, ADDRESS_0X4A, ADDRESS_0X4B};
 
 	public static void populateProperties(Module module){
 		module.setProperty(ADDRESS, ADDRESS_0X48); 
