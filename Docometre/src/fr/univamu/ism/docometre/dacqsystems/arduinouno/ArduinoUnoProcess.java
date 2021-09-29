@@ -865,6 +865,7 @@ public class ArduinoUnoProcess extends Process {
 		String cmd = "rmdir /S /Q \"" + outputFolder + File.separator + "Build\"\n";
 		cmd = cmd + "mkdir \"" + outputFolder + File.separator + "Build\"\n";
 		cmd = cmd + "\"" +arduinoUnoCompiler + "\" -hardware=\"" + rootPath + "hardware\" -tools=\"" + rootPath + "hardware\\tools\" -tools=\"" + rootPath + "tools-builder\" -fqbn=arduino:avr:uno -quiet -verbose";
+		cmd = cmd + " -built-in-libraries " + rootPath + "libraries";
 		cmd = cmd + " -build-path=" + outputFolder + File.separator + "Build";
 		cmd = cmd + " -compile " + sketchFilePath;// + " > stdout.txt 2>stderr.txt";
 		fileWriter.write(cmd);
@@ -888,6 +889,7 @@ public class ArduinoUnoProcess extends Process {
 		String cmd = "rm -R -f " + outputFolder + File.separator + "Build\n";
 		cmd = cmd + "mkdir " + outputFolder + File.separator + "Build\n";
 		cmd = cmd + arduinoUnoCompiler + " -hardware=" + rootPath + "hardware/ -tools=" + rootPath + "hardware/tools/ -tools=" + rootPath + "tools-builder/ -fqbn=arduino:avr:uno -quiet -verbose";
+		cmd = cmd + " -built-in-libraries " + rootPath + "libraries";
 		cmd = cmd + " -build-path=" + outputFolder + File.separator + "Build";
 		cmd = cmd + " -compile " + sketchFilePath;// + " > stdout.txt 2>stderr.txt";
 		fileWriter.write(cmd);
@@ -911,6 +913,7 @@ public class ArduinoUnoProcess extends Process {
 		String cmd = "rm -R -f " + outputFolder + File.separator + "Build\n";
 		cmd = cmd + "mkdir " + outputFolder + File.separator + "Build\n";
 		cmd = cmd + arduinoUnoCompiler + " -hardware=" + rootPath + "hardware/ -tools=" + rootPath + "hardware/tools/ -tools=" + rootPath + "tools-builder/ -fqbn=arduino:avr:uno -quiet -verbose";
+		cmd = cmd + " -built-in-libraries " + rootPath + "libraries";
 		cmd = cmd + " -build-path=" + outputFolder + File.separator + "Build";
 		cmd = cmd + " -compile " + sketchFilePath;// + " > stdout.txt 2>stderr.txt";
 		fileWriter.write(cmd);
