@@ -164,6 +164,11 @@ public class ArduinoUnoMessages extends NLS {
 	public static String address_label;
 	public static String address_tooltip;
 	public static String ADS1115Page_PageTitle;
+	public static String mode_tooltip;
+	public static String mode_label;
+	public static String dataRate_tooltip;
+	public static String dataRate_label;
+	public static String ADS1115ModuleExplanations_Text;
 
 	static {
 		NLS.initializeMessages(BUNDLE_NAME, ArduinoUnoMessages.class);

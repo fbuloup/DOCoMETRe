@@ -186,5 +186,12 @@ public class ArduinoUnoDACQConfigurationEditor extends ResourceEditor implements
 			Activator.logErrorMessageWithCause(e);
 		}
 	}
+	
+	@Override
+	protected void pageChange(int newPageIndex) {
+		super.pageChange(newPageIndex);
+		IFormPage currentPage = getPage(getActivePage());
+		if(currentPage instanceof ArduinoUnoADS1115ModulePage) ((ArduinoUnoADS1115ModulePage)currentPage).updateAvailableAddresses();
+	}
 
 }

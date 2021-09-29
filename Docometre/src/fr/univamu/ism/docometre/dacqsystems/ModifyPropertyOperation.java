@@ -57,6 +57,7 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfigurationProperties;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinVariable;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoADS1115Module;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnOutModule;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoChannel;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoChannelProperties;
@@ -136,7 +137,7 @@ public class ModifyPropertyOperation extends AbstractOperation {
 			DACQConfiguration dacqConfiguration = arduinoUnoChannel.getModule().getDACQConfiguration();
 			Module[] modules = dacqConfiguration.getModules();
 			for (Module otherModule : modules) {
-				if(otherModule != module && (otherModule instanceof ArduinoUnoAnOutModule || otherModule instanceof ArduinoUnoDigInOutModule)) {
+				if(otherModule != module && (otherModule instanceof ArduinoUnoAnOutModule || otherModule instanceof ArduinoUnoDigInOutModule) && !(module instanceof ArduinoUnoADS1115Module)) {
 					Channel[] channels = otherModule.getChannels();
 					for (Channel channel : channels) {
 						if(channel.getProperty(ChannelProperties.CHANNEL_NUMBER).equals(channelNumber) && channel.getProperty(ArduinoUnoChannelProperties.USED).equals("true")) {

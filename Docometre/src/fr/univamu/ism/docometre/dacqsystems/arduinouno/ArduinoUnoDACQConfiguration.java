@@ -74,7 +74,7 @@ public class ArduinoUnoDACQConfiguration extends DACQConfiguration implements Pr
 			arduinoUnoChannel.setProperty(ChannelProperties.CHANNEL_NUMBER, String.valueOf(i));
 //			arduinoUnoChannel.setProperty(ChannelProperties.TRANSFER_NUMBER, String.valueOf(i));
 		}
-		// Six potential PWN analog output (when not used as digital input or output)
+		// Six potential PWM analog outputs (when not used as digital input or output)
 		ArduinoUnoAnOutModule arduinoUnoAnOutModule = new ArduinoUnoAnOutModule(this);
 		//int n = 6; // Because six analog input
 		for (int i = 0; i < 6; i++) {
