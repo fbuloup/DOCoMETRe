@@ -615,6 +615,24 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "\t\treturn value;\n";
 			code = code + "}\n";
 			
+			if(((ArduinoUnoDACQConfiguration)getDACQConfiguration()).hasADS1115Module()) {
+				code = code + "unsigned int acquireADS1115AnalogInput(byte inputNumber, unsigned long *lastAcquisitionTime, bool transfert, byte transferNumber, ADS1115 ads1115, int gain) {\n";
+				//code = code + "\t\t//unsigned long dt = micros();\n";
+				code = code + "\t\tads1115.setGain(gain);\n";
+				code = code + "\t\tint value = ads1115.readADC(inputNumber);\n";
+				//code = code + "\t\t//dt = micros() - dt;\n";
+				//code = code + "\t\t//Serial.println(dt);\n";
+				//code = code + "\t\t//serialMessage = String(inputNumber) + \":\" + String(loopTime - *lastAcquisitionTime) + \":\" + String(value);\n";
+				code = code + "\t\tif(transfert) {\n";
+				code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", transferNumber, (loopTime_MS - *lastAcquisitionTime), value);\n";
+				code = code + "\t\t\t\tSerial.println(serialMessage);\n";
+				if(delay > 0)code = code + "\t\t\t\tdelayMicroseconds(" + delay + ");\n";
+				code = code + "\t\t}\n";
+				code = code + "\t\t*lastAcquisitionTime = loopTime_MS;\n";
+				code = code + "\t\treturn value;\n";
+				code = code + "}\n";
+			}
+			
 			code = code + getCurrentProcess().getScript().getInitializeCode(this, ArduinoUnoCodeSegmentProperties.FUNCTION);
 			code = code + getCurrentProcess().getScript().getLoopCode(this, ArduinoUnoCodeSegmentProperties.FUNCTION);
 			code = code + getCurrentProcess().getScript().getFinalizeCode(this, ArduinoUnoCodeSegmentProperties.FUNCTION);

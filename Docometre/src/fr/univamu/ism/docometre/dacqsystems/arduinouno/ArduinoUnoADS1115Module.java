@@ -30,6 +30,8 @@ public class ArduinoUnoADS1115Module extends Module {
 	public String getCodeSegment(Object segment) throws Exception {
 		String code = "";
 		
+		String ADSName = "ADS_" + getProperty(ArduinoUnoADS1115ModuleProperties.ADDRESS);
+		
 		if(segment == ArduinoUnoCodeSegmentProperties.INCLUDE) {
 			if(!libraryAlreadyIncluded) {
 				code = code + "//include library for ADS1115 modules\n";
@@ -37,18 +39,73 @@ public class ArduinoUnoADS1115Module extends Module {
 				libraryAlreadyIncluded = true;
 			}
 			code = code + "//Declare ADS1115 module at " + getProperty(ArduinoUnoADS1115ModuleProperties.ADDRESS) + "\n";
-			code = code + "ADS1115 ADS_" + getProperty(ArduinoUnoADS1115ModuleProperties.ADDRESS) + "(" + getProperty(ArduinoUnoADS1115ModuleProperties.ADDRESS) + ");\n\n";
+			code = code + "ADS1115 " + ADSName + "(" + getProperty(ArduinoUnoADS1115ModuleProperties.ADDRESS) + ");\n\n";
 		}
 		
 		if (segment == ArduinoUnoCodeSegmentProperties.INITIALIZATION) {
 			String mode = getProperty(ArduinoUnoADS1115ModuleProperties.MODE);
 			String dataRate = getProperty(ArduinoUnoADS1115ModuleProperties.DATA_RATE);
 			code = code + "\n\t\t//Initialize ADS1115 module at " + getProperty(ArduinoUnoADS1115ModuleProperties.ADDRESS) + "\n";
-			code = code + "\t\tADS_" + getProperty(ArduinoUnoADS1115ModuleProperties.ADDRESS) + ".begin();\n";
-			code = code + "\t\tADS_" + getProperty(ArduinoUnoADS1115ModuleProperties.ADDRESS) + ".setMode(" + mode + "); // Set mode (0 : continue, 1 : single shot)\n";
-			code = code + "\t\tADS_" + getProperty(ArduinoUnoADS1115ModuleProperties.ADDRESS) + ".setDataRate(" + dataRate + "); // Set speed convertion form 0 (#124ms) to 7 (#2.7ms)\n";
+			code = code + "\t\t" + ADSName + ".begin();\n";
+			code = code + "\t\t" + ADSName + ".setMode(" + mode + "); // Set mode (0 : continue, 1 : single shot)\n";
+			code = code + "\t\t" + ADSName + ".setDataRate(" + dataRate + "); // Set speed convertion form 0 (#124ms) to 7 (#2.7ms)\n";
 			
 		}
+		
+		
+		
+		
+		for (int i = 0; i < getChannelsNumber(); i++) {
+			
+			Channel channel = getChannel(i);
+			
+			String used = channel.getProperty(ArduinoUnoChannelProperties.USED);
+			boolean isUsed = Boolean.valueOf(used);
+			String name = channel.getProperty(ChannelProperties.NAME);
+			String transferNumber = channel.getProperty(ChannelProperties.TRANSFER_NUMBER);
+			String channelNumber = channel.getProperty(ChannelProperties.CHANNEL_NUMBER);
+			String gsfProcess = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY);
+			String transfer = channel.getProperty(ChannelProperties.TRANSFER);
+			float gsfFloat = Float.parseFloat(gsfProcess);	
+			String sfChannel = channel.getProperty(ChannelProperties.SAMPLE_FREQUENCY);
+			float sfFloat = Float.parseFloat(sfChannel);
+			boolean isTransfered = Boolean.valueOf(transfer);
+			int frequencyRatio = (int) (gsfFloat/sfFloat);
+		
+			if (segment == ArduinoUnoCodeSegmentProperties.DECLARATION) {
+				if(isUsed) {
+					code = code + "// ******** ADS1115 Entree analogique : " + name + "\n";
+					code = code + "unsigned int " + name + ";\n";
+					code = code + "byte acquire_" + name + "_index = " + frequencyRatio + ";\n";
+					code = code + "unsigned long lastAcquireTime_" + name + ";\n\n";
+				}
+			}
+			
+			if (segment == ArduinoUnoCodeSegmentProperties.INITIALIZATION) {
+				if(isUsed) {
+					code = code + "\t\tlastAcquireTime_" + name + " = 0;\n";
+				}
+			}
+			
+			if (segment == ArduinoUnoCodeSegmentProperties.ACQUISITION) {
+				if(isUsed) {
+					code = code + "\n\t\t\t\t\t\tif(acquire_" + name + "_index == " + frequencyRatio + ") {\n";
+					code = code + "\t\t\t\t\t\t\tacquire_" + name + "_index = 0;\n";
+					code = code + "\t\t\t\t\t\t\t" + name + " = acquireADS1115AnalogInput(" + channelNumber + ", &lastAcquireTime_" + name + ", " + transfer + ", " + transferNumber + ", " + ADSName + ", 1" +  ");\n";
+					code = code + "\t\t\t\t\t\t}\n";
+					code = code + "\t\t\t\t\t\tacquire_" + name + "_index += 1;\n\n";
+					
+				}
+			}
+			
+			if (segment == ArduinoUnoCodeSegmentProperties.TRANSFER) {
+				if(isTransfered) {
+					
+				}
+			}
+			
+		}
+		
 		
 		return code;
 	}

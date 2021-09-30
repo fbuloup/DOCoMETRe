@@ -235,5 +235,13 @@ public class ArduinoUnoDACQConfiguration extends DACQConfiguration implements Pr
 		Arrays.sort(proposals);
 		return proposals;
 	}
+	
+	public boolean hasADS1115Module() {
+		Module[] modules = getModules();
+		for (Module module : modules) {
+			if(module instanceof ArduinoUnoADS1115Module) return true;
+		}
+		return false;
+	}
 
 }

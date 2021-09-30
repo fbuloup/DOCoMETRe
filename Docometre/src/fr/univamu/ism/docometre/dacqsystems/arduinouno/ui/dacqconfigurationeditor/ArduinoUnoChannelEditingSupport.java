@@ -210,6 +210,14 @@ public class ArduinoUnoChannelEditingSupport extends EditingSupport implements P
 			cellEditor = new TextCellEditor((Composite) viewer.getControl());
 			cellEditor.setValidator(new Validator(ArduinoUnoAnInChannelProperties.AMPLITUDE_MIN.getRegExp()));
 		}
+		if(property == ArduinoUnoAnInChannelProperties.GAIN) {
+			cellEditor = new ComboBoxViewerCellEditor((Composite) viewer.getControl(), SWT.READ_ONLY);
+			((ComboBoxViewerCellEditor)cellEditor).setContentProvider(new ArrayContentProvider());
+			((ComboBoxViewerCellEditor)cellEditor).setLabelProvider(new LabelProvider());
+			((ComboBoxViewerCellEditor)cellEditor).setInput(ArduinoUnoAnInChannelProperties.GAINS);
+			cellEditor.setValidator(new Validator(ArduinoUnoAnInChannelProperties.GAIN.getRegExp()));
+			
+		}
 		/*
 		if(property == ADWinAnOutChannelProperties.STIMULUS) {
 			cellEditor = new CheckboxCellEditor((Composite) viewer.getControl());
@@ -281,7 +289,7 @@ public class ArduinoUnoChannelEditingSupport extends EditingSupport implements P
 
 	@Override
 	protected void setValue(Object element, Object value) {
-		if(!value.toString().equals(getValue(element).toString())) {
+		if((value != null && getValue(element) == null) || !value.toString().equals(getValue(element).toString())) {
 			try {
 				String label = NLS.bind(DocometreMessages.ModifyPropertyOperation_Label, property.getLabel() + " : " + element.toString());
 				IOperationHistory operationHistory = PlatformUI.getWorkbench().getOperationSupport().getOperationHistory();

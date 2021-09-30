@@ -108,6 +108,11 @@ public class ArduinoUnoADS1115ModulePage extends ArduinoUnoModulePage {
 				e2 = in2.getProperty(ArduinoUnoAnInChannelProperties.AMPLITUDE_MIN);
 				result = super.compare(viewer, (String)e1, (String)e2);
 				break;
+			case 12:
+				e1 = in1.getProperty(ArduinoUnoAnInChannelProperties.GAIN);
+				e2 = in2.getProperty(ArduinoUnoAnInChannelProperties.GAIN);
+				result = super.compare(viewer, (String)e1, (String)e2);
+				break;
 			default:
 				break;
 			}
@@ -171,7 +176,7 @@ public class ArduinoUnoADS1115ModulePage extends ArduinoUnoModulePage {
 		createTableConfigurationSection(false, true, false, true);
 		
 		FormText explanationsFormText2 = managedForm.getToolkit().createFormText(explanationsContainer, false);
-		explanationsFormText2.setText(ArduinoUnoMessages.AnInModuleExplanations_Text2, true, false);
+		explanationsFormText2.setText(ArduinoUnoMessages.ADS1115ModuleExplanations_Text2, true, false);
 //		explanationsFormText2.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		
 		TableColumnLayout  channelsTableColumnLayout = (TableColumnLayout) tableConfigurationContainer.getLayout();
@@ -190,6 +195,7 @@ public class ArduinoUnoADS1115ModulePage extends ArduinoUnoModulePage {
 		createColumn(ArduinoUnoAnInChannelProperties.UNIT_MIN.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.UNIT_MIN, defaultColumnWidth, 9);
 		createColumn(ArduinoUnoAnInChannelProperties.AMPLITUDE_MAX.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.AMPLITUDE_MAX, defaultColumnWidth, 10);
 		createColumn(ArduinoUnoAnInChannelProperties.AMPLITUDE_MIN.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.AMPLITUDE_MIN, defaultColumnWidth, 11);
+		createColumn(ArduinoUnoAnInChannelProperties.GAIN.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.GAIN, defaultColumnWidth, 12);
 		tableViewer.setContentProvider(new ArrayContentProvider());
 		tableViewer.setLabelProvider(new ITableLabelProvider() {
 			public void removeListener(ILabelProviderListener listener) {
@@ -228,6 +234,8 @@ public class ArduinoUnoADS1115ModulePage extends ArduinoUnoModulePage {
 					return channel.getProperty(ArduinoUnoAnInChannelProperties.AMPLITUDE_MAX);
 				case 11:
 					return channel.getProperty(ArduinoUnoAnInChannelProperties.AMPLITUDE_MIN);
+				case 12:
+					return channel.getProperty(ArduinoUnoAnInChannelProperties.GAIN);
 				default:
 					return "";
 				}
@@ -286,6 +294,13 @@ public class ArduinoUnoADS1115ModulePage extends ArduinoUnoModulePage {
 			updateWidget(modeCombo, (ArduinoUnoADS1115ModuleProperties)property, true);
 		if(property == ArduinoUnoADS1115ModuleProperties.DATA_RATE)
 			updateWidget(dataRateCombo, (ArduinoUnoADS1115ModuleProperties)property, true);
+		if(property == ArduinoUnoAnInChannelProperties.GAIN) {
+			if(tableViewer != null && tableViewer.getTable() != null && !tableViewer.getTable().isDisposed()) {
+				tableViewer.refresh();
+				tableConfigurationSectionPart.markDirty();
+				
+			}
+		}
 //		if(property instanceof ArduinoUnoADS1115ModuleProperties) {
 //			if(tableViewer != null && tableViewer.getTable() != null && !tableViewer.getTable().isDisposed()) {
 //				tableViewer.refresh();

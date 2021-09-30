@@ -105,6 +105,14 @@ public class ArduinoUnoChannel extends Channel {
 
 	@Override
 	public void addSamples(float[] buffer) {
+		System.out.println(buffer.length);
+		if(module instanceof ArduinoUnoADS1115Module) {
+			float maxVoltage = ArduinoUnoAnInChannelProperties.getMaxVoltageForADS1115Gain(getProperty(ArduinoUnoAnInChannelProperties.GAIN));
+			for (int i = 0; i < buffer.length/2; i++) {
+				int j = 2*i+ 1;
+				buffer[j] = buffer[j]*maxVoltage/32767;
+			}
+		}
 		ByteBuffer byteBuffer = ByteBuffer.allocate(buffer.length*4);
 		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 		floatBuffer = byteBuffer.asFloatBuffer();
@@ -145,7 +153,7 @@ public class ArduinoUnoChannel extends Channel {
 					fileChannel = outputFile.getChannel();
 				}
 			}
-			if(module instanceof ArduinoUnoAnInModule) {
+			if(module instanceof ArduinoUnoAnInModule || module instanceof ArduinoUnoADS1115Module) {
 				isStimulus = false;
 				isTransfered = Boolean.valueOf(getProperty(ChannelProperties.TRANSFER));
 				if(isTransfered) {
