@@ -488,7 +488,7 @@ public class LineSeries extends Series implements ILineSeries {
 		for(int i = 0; i < xseries.length - 1; i++) {
 			int x = xAxis.getPixelCoordinate(xseries[i + 1], xLower, xUpper);
 			int y = yAxis.getPixelCoordinate(yseries[i + 1], yLower, yUpper);
-			if(indexes[i] > frontCut - baseFrontCut && indexes[i] < endCut - baseFrontCut) {
+			if(indexes[i] >= frontCut - baseFrontCut && indexes[i] < endCut - baseFrontCut) {
 				if(x == prevX && i < xseries.length - 2) {
 					if(drawVerticalLine) {
 						// extend vertical line
@@ -565,7 +565,7 @@ public class LineSeries extends Series implements ILineSeries {
 		for(int i = 0; i < xseries.length - 1; i++) {
 			int x = xAxis.getPixelCoordinate(xseries[i + 1], xLower, xUpper);
 			int y = yAxis.getPixelCoordinate(yseries[i + 1], yLower, yUpper);
-			if(indexes[i] > frontCut - baseFrontCut && indexes[i] < endCut - baseFrontCut) {
+			if(indexes[i] >= frontCut - baseFrontCut && indexes[i] < endCut - baseFrontCut) {
 				if(x == prevX && i < xseries.length - 2) {
 					if(drawVerticalLine) {
 						// extend vertical line
