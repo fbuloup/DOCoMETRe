@@ -41,7 +41,6 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor;
 
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.ui.PartInitException;
 
 import fr.univamu.ism.docometre.Activator;
@@ -78,7 +77,7 @@ public class ADWinProcessEditor extends ProcessEditor {
 			pageIndex = addPage(adbasicSourceEditor, getEditorInput());
 			setPageText(pageIndex, DocometreMessages.ADBasicSourceCodeEditorTitle);
 			
-			ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
+//			ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
 			
 			updateTitleImage();
 		} catch (PartInitException e) {

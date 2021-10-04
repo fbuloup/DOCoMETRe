@@ -41,7 +41,6 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.processeditor;
 
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.gef.commands.CommandStack;
 import org.eclipse.ui.PartInitException;
 
@@ -80,7 +79,7 @@ public class ArduinoUnoProcessEditor extends ProcessEditor {
 			pageIndex = addPage(arduinoUnoSourceEditor, getEditorInput());
 			setPageText(pageIndex, DocometreMessages.ArduinoUnoSourceCodeEditorTitle);
 			
-			ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
+//			ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
 		} catch (PartInitException e) {
 			e.printStackTrace();
 			Activator.logErrorMessageWithCause(e);
