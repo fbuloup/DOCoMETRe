@@ -93,6 +93,7 @@ public class CompileProcessAction extends Action implements ISelectionListener, 
 			try {
 				String message = NLS.bind(DocometreMessages.CompileProcessAction_JobMessage, resource.getName().replaceAll(Activator.processFileExtension, ""));
 				monitor.beginTask(message, 3);
+				process.getScript().clearCodeGenerationStatus();
 				process.compile(monitor);
 			} catch (Exception e) {
 				exception = e;
