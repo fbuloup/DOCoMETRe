@@ -73,22 +73,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
         configurer.setShowStatusLine(true);
         configurer.setShowProgressIndicator(true);
         configurer.setShowPerspectiveBar(true);
-        
-//        registerResourceListener(ResourcesPlugin.getWorkspace().getRoot());
     }
-    
-//    private void registerResourceListener(IContainer container) {
-//    	try {
-//			IResource[] resources = container.members();
-//			for (IResource resource : resources) {
-//				if(ResourceType.isProcess(resource)) ResourcesPlugin.getWorkspace().addResourceChangeListener(new ProcessResourceChangeListener((IFile) resource));
-//				if(resource instanceof IContainer) registerResourceListener((IContainer) resource);
-//			}
-//		} catch (CoreException e) {
-//			e.printStackTrace();
-//			Activator.logErrorMessageWithCause(e);
-//		}
-//	}
 
 	@Override
     public void postWindowOpen() {

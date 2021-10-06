@@ -51,8 +51,6 @@ public class ADWinProcessEditor extends ProcessEditor {
 	
 	public static String ID = "Docometre.ADWinProcessEditor";
 	
-	private ADBasicSourceEditor adbasicSourceEditor;
-	
 	@Override
 	protected void createPages() {
 		try {
@@ -73,13 +71,9 @@ public class ADWinProcessEditor extends ProcessEditor {
 			pageIndex = addPage(finalizeSegmentEditor, getEditorInput());
 			setPageText(pageIndex, DocometreMessages.FinalizeSegmentEditorTitle);
 			
-			adbasicSourceEditor = new ADBasicSourceEditor(commandStack, this);
-			pageIndex = addPage(adbasicSourceEditor, getEditorInput());
+			sourceEditor = new ADBasicSourceEditor(commandStack, this);
+			pageIndex = addPage(sourceEditor, getEditorInput());
 			setPageText(pageIndex, DocometreMessages.ADBasicSourceCodeEditorTitle);
-			
-//			ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
-			
-			updateTitleImage();
 		} catch (PartInitException e) {
 			e.printStackTrace();
 			Activator.logErrorMessageWithCause(e);

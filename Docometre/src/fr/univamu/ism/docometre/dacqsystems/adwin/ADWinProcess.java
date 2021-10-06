@@ -74,6 +74,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.program.Program;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 
 import de.adwin.driver.ADwinCommunicationError;
@@ -90,7 +91,9 @@ import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.ModuleBehaviour;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.dacqsystems.functions.FunctionsUtil;
+import fr.univamu.ism.docometre.dacqsystems.ui.ProcessEditor;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ui.dialogs.ParametersDialog;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor.ADWinProcessEditor;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 import fr.univamu.ism.process.Block;
 import fr.univamu.ism.process.ScriptSegment;
@@ -333,17 +336,14 @@ public class ADWinProcess extends Process {
 		progressMonitor.subTask(DocometreMessages.ADWinProcess_GetCompileErrorsMessage);
 		if(errorFile.exists()) {
 			createMarker(IMarker.SEVERITY_ERROR, processResource, errorFile);
-			throw new Exception(DocometreMessages.ADWinProcess_CompileErrorsMessage); 
 		}
 		//Get more general compile errors
 		if(generalErrorfile.exists()) {
 			createMarker(IMarker.SEVERITY_ERROR, processResource, generalErrorfile);
-			throw new Exception(DocometreMessages.ADWinProcess_CompileErrorsMessage); 
 		}
 		//Get compile warnings
 		if(warningFile.exists()) {
 			createMarker(IMarker.SEVERITY_WARNING, processResource, warningFile);
-			throw new Exception(DocometreMessages.ADWinProcess_CompileErrorsMessage); 
 		}
 		
 		if(getScript().getCodeGenerationStatus().length > 0) {
@@ -364,7 +364,31 @@ public class ADWinProcess extends Process {
 			}
 		}
 		
+		PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+			@Override
+			public void run() {
+				IWorkbenchPart editorPart = Activator.getEditor(ADWinProcess.this, ADWinProcessEditor.ID);
+				if(editorPart != null) {
+					((ProcessEditor)editorPart).updateTitleImage();
+					((ProcessEditor)editorPart).pageChanged(null);
+				}
+			}
+		});
+		
 		progressMonitor.worked(1);
+		
+		//Get compile errors
+		if(errorFile.exists()) {
+			throw new Exception(DocometreMessages.ADWinProcess_CompileErrorsMessage); 
+		}
+		//Get more general compile errors
+		if(generalErrorfile.exists()) {
+			throw new Exception(DocometreMessages.ADWinProcess_CompileErrorsMessage); 
+		}
+		//Get compile warnings
+		if(warningFile.exists()) {
+			throw new Exception(DocometreMessages.ADWinProcess_CompileErrorsMessage); 
+		}
 		
 	}
 	

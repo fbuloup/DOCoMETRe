@@ -43,12 +43,6 @@ package fr.univamu.ism.docometre.dacqsystems.ui;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceChangeEvent;
-import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.IResourceDeltaVisitor;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.gef.DefaultEditDomain;
 import org.eclipse.gef.commands.CommandStack;
@@ -99,7 +93,7 @@ import fr.univamu.ism.docometre.preferences.MathEnginePreferencesConstants;
 import fr.univamu.ism.process.Script;
 import fr.univamu.ism.process.ScriptSegmentType;
 
-public class SourceEditor extends EditorPart implements IResourceChangeListener {
+public class SourceEditor extends EditorPart {
 
 	// Colors IDs
 	private static final String COLOR_BLACK = "COLOR_BLACK";
@@ -124,33 +118,6 @@ public class SourceEditor extends EditorPart implements IResourceChangeListener 
 			editDomain = new DefaultEditDomain(this);
 			editDomain.setCommandStack(commandStack);
 		}
-
-	@Override
-	public void resourceChanged(IResourceChangeEvent event) {
-		IResourceDelta delta = event.getDelta();
-		if (delta == null)
-			return;
-		try {
-			delta.accept(new IResourceDeltaVisitor() {
-				@Override
-				public boolean visit(IResourceDelta delta) throws CoreException {
-					PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
-						@Override
-						public void run() {
-							IResource process = ObjectsController.getResourceForObject(getObject());
-							if (delta.getResource().equals(process)) {
-								updateMarkers();
-							}
-						}
-					});
-					return true;
-				}
-			});
-		} catch (CoreException e) {
-			e.printStackTrace();
-			Activator.logErrorMessageWithCause(e);
-		}
-	}
 
 	@Override
 	public void doSave(IProgressMonitor monitor) {
@@ -273,15 +240,12 @@ public class SourceEditor extends EditorPart implements IResourceChangeListener 
 			}
 		});
 
-		ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
-
 		partListenerAdapter = new PartListenerAdapter() {
 			@Override
 			public void partClosed(IWorkbenchPartReference partRef) {
 				if (partRef.getPart(false) == multiPageEditorPart) {
 					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
 							.removePartListener(partListenerAdapter);
-					ResourcesPlugin.getWorkspace().removeResourceChangeListener(SourceEditor.this);
 				}
 			}
 
@@ -331,7 +295,7 @@ public class SourceEditor extends EditorPart implements IResourceChangeListener 
 //			}
 	}
 
-	protected void updateMarkers() {
+	public void updateMarkers() {
 		try {
 			update(getCode());
 			IResource process = ObjectsController.getResourceForObject(getObject());

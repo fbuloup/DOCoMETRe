@@ -54,9 +54,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
@@ -412,27 +410,13 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 	public void resourceChanged(IResourceChangeEvent event) {
 		IResourceDelta delta = event.getDelta();
 		if(delta == null) return;
-		try {
-			delta.accept(new IResourceDeltaVisitor() {
+		if(delta.getResource() != null) 
+			PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
 				@Override
-				public boolean visit(IResourceDelta delta) throws CoreException {
-						PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
-							@Override
-							public void run() {
-								if(delta.getFlags() != 0) {
-									if(delta.getResource() != null) experimentsTreeViewer.refresh(delta.getResource());
-								}
-							}
-						});
-					return true;
+				public void run() {
+					experimentsTreeViewer.refresh(delta.getResource());
 				}
 			});
-		} catch (CoreException e) {
-			e.printStackTrace();
-			Activator.logErrorMessageWithCause(e);
-		}
-		
-		
 	}
 
 	@Override

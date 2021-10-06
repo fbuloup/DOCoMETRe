@@ -41,7 +41,6 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.processeditor;
 
-import org.eclipse.gef.commands.CommandStack;
 import org.eclipse.ui.PartInitException;
 
 import fr.univamu.ism.docometre.Activator;
@@ -51,15 +50,12 @@ import fr.univamu.ism.docometre.dacqsystems.ui.ProcessEditor;
 public class ArduinoUnoProcessEditor extends ProcessEditor {
 	
 	public static String ID = "Docometre.ArduinoUnoProcessEditor";
-	private ArduinoUnoSourceEditor arduinoUnoSourceEditor;
 	
-
 	@Override
 	protected void createPages() {
 		try {
 			super.createPages();
 			
-			CommandStack commandStack = new CommandStack();
 			ArduinoUnoInitializeSegmentEditor initializeSegmentEditor = new ArduinoUnoInitializeSegmentEditor(commandStack);
 			segmentEditors.add(initializeSegmentEditor);
 			int pageIndex = addPage(initializeSegmentEditor, getEditorInput());
@@ -75,11 +71,9 @@ public class ArduinoUnoProcessEditor extends ProcessEditor {
 			pageIndex = addPage(finalizeSegmentEditor, getEditorInput());
 			setPageText(pageIndex, DocometreMessages.EndEditorTitle);
 			
-			arduinoUnoSourceEditor = new ArduinoUnoSourceEditor(commandStack, this);
-			pageIndex = addPage(arduinoUnoSourceEditor, getEditorInput());
+			sourceEditor = new ArduinoUnoSourceEditor(commandStack, this);
+			pageIndex = addPage(sourceEditor, getEditorInput());
 			setPageText(pageIndex, DocometreMessages.ArduinoUnoSourceCodeEditorTitle);
-			
-//			ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
 		} catch (PartInitException e) {
 			e.printStackTrace();
 			Activator.logErrorMessageWithCause(e);

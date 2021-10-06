@@ -57,6 +57,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -275,6 +277,24 @@ public class Activator extends AbstractUIPlugin {
 		}
 	}
 	
+	
+	public static IWorkbenchPart getEditor(Object object, String editorID) {
+		IWorkbenchPart foundWorkbenchPart = null;
+		try {
+			IEditorReference[] editors = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findEditors(null, editorID, IWorkbenchPage.MATCH_ID);
+			for (IEditorReference editorReference : editors) {
+				ResourceEditorInput editorInput = (ResourceEditorInput)editorReference.getEditorInput();
+				if(editorInput.isEditing(object)) {
+					foundWorkbenchPart = editorReference.getPart(false);
+					break;
+				}
+			}
+		} catch (CoreException e) {
+			e.printStackTrace();
+			Activator.logErrorMessageWithCause(e);
+		}
+		return foundWorkbenchPart;
+	}
 	
 	/*
 	 * 

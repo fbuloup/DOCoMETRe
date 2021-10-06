@@ -66,6 +66,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.StatusLineManager;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.WorkbenchWindow;
 
@@ -82,6 +83,8 @@ import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.ModuleBehaviour;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.dacqconfigurationeditor.DeviceSelectionDialog;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.processeditor.ArduinoUnoProcessEditor;
+import fr.univamu.ism.docometre.dacqsystems.ui.ProcessEditor;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 import fr.univamu.ism.process.ScriptSegmentType;
 import jssc.SerialPort;
@@ -814,7 +817,6 @@ public class ArduinoUnoProcess extends Process {
 		progressMonitor.subTask(DocometreMessages.ArduinoUnoProcess_GetCompileErrorsMessage);
 		if (!errorString.equals("")) {
 			createMarker(IMarker.SEVERITY_ERROR, processResource, errorString);
-			throw new Exception(DocometreMessages.ArduinoUnoProcess_CompileErrorsMessage);
 		}
 
 		if (getScript().getCodeGenerationStatus().length > 0) {
@@ -837,10 +839,26 @@ public class ArduinoUnoProcess extends Process {
 				}
 			}
 		}
+		
+		PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+			@Override
+			public void run() {
+				IWorkbenchPart editorPart = Activator.getEditor(ArduinoUnoProcess.this, ArduinoUnoProcessEditor.ID);
+				if(editorPart != null) {
+					((ProcessEditor)editorPart).updateTitleImage();
+					((ProcessEditor)editorPart).pageChanged(null);
+				}
+			}
+		});
+			
 
 		forceUpload = true;
 		
 		progressMonitor.worked(1);
+		
+		if (!errorString.equals("")) {
+			throw new Exception(DocometreMessages.ArduinoUnoProcess_CompileErrorsMessage);
+		}
 		
 		
 	}

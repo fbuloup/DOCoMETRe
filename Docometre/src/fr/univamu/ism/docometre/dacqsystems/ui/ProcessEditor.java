@@ -46,12 +46,6 @@ import java.util.ArrayList;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceChangeEvent;
-import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.IResourceDeltaVisitor;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.gef.commands.CommandStack;
 import org.eclipse.jface.dialogs.IPageChangedListener;
@@ -80,11 +74,12 @@ import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.process.ScriptSegment;
 import fr.univamu.ism.process.ScriptSegmentType;
 
-public class ProcessEditor extends MultiPageEditorPart implements IPageChangedListener, PartNameRefresher, IResourceChangeListener {
+public class ProcessEditor extends MultiPageEditorPart implements IPageChangedListener, PartNameRefresher/*, IResourceChangeListener*/ {
 	
 	protected ArrayList<AbstractScriptSegmentEditor> segmentEditors;
 	private PartListenerAdapter partListenerAdapter;
 	protected CommandStack commandStack;
+	protected SourceEditor sourceEditor;
 	
 	private Process getProcess() {
 		ResourceEditorInput resourceEditorInput = (ResourceEditorInput)getEditorInput();
@@ -110,36 +105,6 @@ public class ProcessEditor extends MultiPageEditorPart implements IPageChangedLi
 		IResource resource = ObjectsController.getResourceForObject(getProcess());
 		setPartName(GetResourceLabelDelegate.getLabel(resource));
 		
-		// Resource listener to handle daq config changes in editor
-		IResourceChangeListener resourceChangeListener = new IResourceChangeListener() {
-			@Override
-			public void resourceChanged(IResourceChangeEvent event) {
-				IResourceDelta delta = event.getDelta();
-				if(delta == null) return;
-				try {
-					delta.accept(new IResourceDeltaVisitor() {
-						@Override
-						public boolean visit(IResourceDelta delta) throws CoreException {
-							IResource currentResource = delta.getResource();
-							Object dacqConfiguration = ObjectsController.getDACQConfiguration(getProcess());
-							IResource dacqConfigurationresource = ObjectsController.getResourceForObject(dacqConfiguration);
-							if(dacqConfigurationresource != null) {
-								if(currentResource.getFullPath().toOSString().equals(dacqConfigurationresource.getFullPath().toOSString())) {
-									PageChangedEvent pageChangedEvent = new PageChangedEvent(ProcessEditor.this, getSelectedPage());
-									ProcessEditor.this.pageChanged(pageChangedEvent);
-								}
-							}
-							return true;
-						}
-					});
-				} catch (CoreException e) {
-					e.printStackTrace();
-					Activator.logErrorMessageWithCause(e);
-				}
-			}
-		};
-		ResourcesPlugin.getWorkspace().addResourceChangeListener(resourceChangeListener);
-		
 		addPageChangedListener(this);
 		
 		partListenerAdapter = new PartListenerAdapter() {
@@ -148,8 +113,6 @@ public class ProcessEditor extends MultiPageEditorPart implements IPageChangedLi
 				if(partRef.getPart(false) == ProcessEditor.this) {
 					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().removePartListener(partListenerAdapter);
 					ProcessEditor.this.removePageChangedListener(ProcessEditor.this);
-					ResourcesPlugin.getWorkspace().removeResourceChangeListener(resourceChangeListener);
-					ResourcesPlugin.getWorkspace().removeResourceChangeListener(ProcessEditor.this);
 				}
 			}
 			
@@ -179,7 +142,6 @@ public class ProcessEditor extends MultiPageEditorPart implements IPageChangedLi
 	protected void createPages() {
 		commandStack = new CommandStack();
 		segmentEditors = new ArrayList<AbstractScriptSegmentEditor>(0);
-		ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
 		updateTitleImage();
 	}
 	
@@ -222,7 +184,7 @@ public class ProcessEditor extends MultiPageEditorPart implements IPageChangedLi
 	@Override
 	public void pageChanged(PageChangedEvent event) {
 		for (AbstractScriptSegmentEditor abstractScriptSegmentEditor : segmentEditors) {
-			if(event.getSelectedPage() == abstractScriptSegmentEditor) abstractScriptSegmentEditor.updatePasteAction();
+			if(getSelectedPage() == abstractScriptSegmentEditor) abstractScriptSegmentEditor.updatePasteAction();
 		}
 	}
 
@@ -234,46 +196,18 @@ public class ProcessEditor extends MultiPageEditorPart implements IPageChangedLi
 		getProcess().resetDACQConfiguration();
 	}
 
-	@Override
-	public void resourceChanged(IResourceChangeEvent event) {
-		IResourceDelta delta = event.getDelta();
-		if(delta == null) return;
-		try {
-			delta.accept(new IResourceDeltaVisitor() {
-				@Override
-				public boolean visit(IResourceDelta delta) throws CoreException {
-//					if ((delta.getFlags() & IResourceDelta.MARKERS) > 0)
-						PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
-							@Override
-							public void run() {
-								IResource process = ObjectsController.getResourceForObject(getProcess());
-								if (delta.getResource().equals(process)) {
-									ProcessEditor.this.updateTitleImage();
-								}
-							}
-						});
-					return true;
-				}
-			});
-		} catch (CoreException e) {
-			e.printStackTrace();
-			Activator.logErrorMessageWithCause(e);
-		}
-		
-	}
-
-	protected void updateTitleImage() {
+	public void updateTitleImage() {
 		try {
 			IResource process = ObjectsController.getResourceForObject(getProcess());
 			int severity = process.findMaxProblemSeverity(DocometreBuilder.MARKER_ID, true, IResource.DEPTH_INFINITE);
 			if(severity == IMarker.SEVERITY_ERROR) setTitleImage(JFaceResources.getImageRegistry().get(IImageKeys.ERROR_DECORATOR));
 			if(severity == IMarker.SEVERITY_WARNING) setTitleImage(JFaceResources.getImageRegistry().get(IImageKeys.WARNING_DECORATOR));
 			if(severity == -1) setTitleImage(JFaceResources.getImageRegistry().get(IImageKeys.PROCESS_ICON));
+			if(sourceEditor != null) sourceEditor.updateMarkers();
 		} catch (Exception e) {
 			e.printStackTrace();
 			Activator.logErrorMessageWithCause(e);
 		}
 		
 	}
-
 }

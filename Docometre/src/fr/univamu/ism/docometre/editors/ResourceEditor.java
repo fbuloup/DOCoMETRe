@@ -73,7 +73,6 @@ public abstract class ResourceEditor extends FormEditor implements PartNameRefre
 		setTitleToolTip(getEditorInput().getToolTipText());
 		undoRedoActionGroup = new UndoRedoActionGroup(getSite(), getUndoContext(), true);
 		undoRedoActionGroup.fillActionBars(getEditorSite().getActionBars());
-//		ResourcesPlugin.getWorkspace().addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
 	}
 	
 	public UndoRedoActionGroup getUndoRedoActionGroup() {
