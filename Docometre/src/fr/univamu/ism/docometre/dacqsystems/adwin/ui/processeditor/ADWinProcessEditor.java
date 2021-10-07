@@ -71,7 +71,7 @@ public class ADWinProcessEditor extends ProcessEditor {
 			pageIndex = addPage(finalizeSegmentEditor, getEditorInput());
 			setPageText(pageIndex, DocometreMessages.FinalizeSegmentEditorTitle);
 			
-			sourceEditor = new ADBasicSourceEditor(commandStack, this);
+			sourceEditor = new ADBasicSourceEditor(this);
 			pageIndex = addPage(sourceEditor, getEditorInput());
 			setPageText(pageIndex, DocometreMessages.ADBasicSourceCodeEditorTitle);
 		} catch (PartInitException e) {

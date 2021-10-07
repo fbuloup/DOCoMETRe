@@ -44,12 +44,6 @@ package fr.univamu.ism.docometre.dacqsystems.ui;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.gef.DefaultEditDomain;
-import org.eclipse.gef.commands.CommandStack;
-import org.eclipse.gef.ui.actions.ActionRegistry;
-import org.eclipse.gef.ui.actions.RedoAction;
-import org.eclipse.gef.ui.actions.UndoAction;
-import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.Position;
@@ -104,19 +98,15 @@ public class SourceEditor extends EditorPart {
 		JFaceResources.getColorRegistry().put(COLOR_DARK_GREY, new RGB(127, 127, 127));
 	}
 
-	private DefaultEditDomain editDomain;
 	private MultiPageEditorPart multiPageEditorPart;
-	private ActionRegistry actionRegistry;
 	protected Document document;
 	protected AnnotationModel annotationModel;
 	private DocometreAnnotationAccesExtension docometreAnnotationAccesExtension;
 	protected SourceViewer sourceViewer;
 	private PartListenerAdapter partListenerAdapter;
 
-	public SourceEditor(CommandStack commandStack, MultiPageEditorPart multiPageEditorPart) {
+	public SourceEditor(MultiPageEditorPart multiPageEditorPart) {
 			this.multiPageEditorPart = multiPageEditorPart;
-			editDomain = new DefaultEditDomain(this);
-			editDomain.setCommandStack(commandStack);
 		}
 
 	@Override
@@ -135,19 +125,6 @@ public class SourceEditor extends EditorPart {
 	public void init(IEditorSite site, IEditorInput input) throws PartInitException {
 		setSite(site);
 		setInput(input);
-
-		actionRegistry = new ActionRegistry();
-
-		IAction action;
-
-		action = new UndoAction(this);
-		actionRegistry.registerAction(action);
-//			getStackActions().add(action.getId());
-
-		action = new RedoAction(this);
-		actionRegistry.registerAction(action);
-//			getStackActions().add(action.getId());
-
 	}
 
 	@Override
@@ -324,16 +301,6 @@ public class SourceEditor extends EditorPart {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T> T getAdapter(Class<T> adapter) {
-		if (adapter == CommandStack.class)
-			return (T) editDomain.getCommandStack();
-		if (adapter == ActionRegistry.class)
-			return (T) actionRegistry;
-		return super.getAdapter(adapter);
-	}
-	
 	@Override
 	public void dispose() {
 		ResourceEditorInput resourceEditorInput = (ResourceEditorInput)getEditorInput();

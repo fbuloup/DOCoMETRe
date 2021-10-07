@@ -89,7 +89,7 @@ public class DataProcessEditor extends MultiPageEditorPart implements PartNameRe
 			int pageIndex = addPage(dataProcessScriptEditor, getEditorInput());
 			setPageText(pageIndex, DocometreMessages.MathEngineEditorTitle);
 			
-			DataProcessScriptSourceEditor scriptSourceEditor = new DataProcessScriptSourceEditor(commandStack, this);
+			DataProcessScriptSourceEditor scriptSourceEditor = new DataProcessScriptSourceEditor(this);
 			pageIndex = addPage(scriptSourceEditor, getEditorInput());
 			setPageText(pageIndex, DocometreMessages.MathEngineSourceCodeEditorTitle);
 		} catch (PartInitException e) {

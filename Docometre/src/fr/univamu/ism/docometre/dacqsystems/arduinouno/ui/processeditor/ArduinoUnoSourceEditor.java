@@ -41,7 +41,6 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.processeditor;
 
-import org.eclipse.gef.commands.CommandStack;
 import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.swt.widgets.Composite;
 
@@ -51,8 +50,8 @@ public class ArduinoUnoSourceEditor extends SourceEditor {
 	
 	public static String ID =  "Docometre.ArduinoUnoSourceEditor";
 	
-	public ArduinoUnoSourceEditor(CommandStack commandStack, ArduinoUnoProcessEditor arduinoUnoProcessEditor) {
-		super(commandStack, arduinoUnoProcessEditor);
+	public ArduinoUnoSourceEditor(ArduinoUnoProcessEditor arduinoUnoProcessEditor) {
+		super(arduinoUnoProcessEditor);
 	}
 
 	@Override

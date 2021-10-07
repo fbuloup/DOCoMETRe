@@ -71,7 +71,7 @@ public class ArduinoUnoProcessEditor extends ProcessEditor {
 			pageIndex = addPage(finalizeSegmentEditor, getEditorInput());
 			setPageText(pageIndex, DocometreMessages.EndEditorTitle);
 			
-			sourceEditor = new ArduinoUnoSourceEditor(commandStack, this);
+			sourceEditor = new ArduinoUnoSourceEditor(this);
 			pageIndex = addPage(sourceEditor, getEditorInput());
 			setPageText(pageIndex, DocometreMessages.ArduinoUnoSourceCodeEditorTitle);
 		} catch (PartInitException e) {

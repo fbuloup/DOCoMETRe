@@ -1,6 +1,5 @@
 package fr.univamu.ism.docometre.analyse.editors;
 
-import org.eclipse.gef.commands.CommandStack;
 import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.swt.widgets.Composite;
 
@@ -14,8 +13,8 @@ import fr.univamu.ism.docometre.preferences.MathEnginePreferencesConstants;
 
 public class DataProcessScriptSourceEditor extends SourceEditor {
 
-	public DataProcessScriptSourceEditor(CommandStack commandStack, DataProcessEditor dataProcessEditor) {
-		super(commandStack, dataProcessEditor);
+	public DataProcessScriptSourceEditor(DataProcessEditor dataProcessEditor) {
+		super(dataProcessEditor);
 	}
 	
 	@Override

@@ -41,7 +41,6 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor;
 
-import org.eclipse.gef.commands.CommandStack;
 import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.swt.widgets.Composite;
 
@@ -51,8 +50,8 @@ public class ADBasicSourceEditor extends SourceEditor {
 	
 	public static String ID =  "Docometre.ADBasicSourceEditor";
 	
-	public ADBasicSourceEditor(CommandStack commandStack, ADWinProcessEditor adwinProcessEditor) {
-		super(commandStack, adwinProcessEditor);
+	public ADBasicSourceEditor(ADWinProcessEditor adwinProcessEditor) {
+		super(adwinProcessEditor);
 	}
 	
 	@Override
