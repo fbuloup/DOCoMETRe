@@ -326,4 +326,8 @@ public class SourceEditor extends EditorPart {
 		return "";
 	}
 
+	public void selectAll() {
+		sourceViewer.getTextWidget().selectAll();
+	}
+
 }

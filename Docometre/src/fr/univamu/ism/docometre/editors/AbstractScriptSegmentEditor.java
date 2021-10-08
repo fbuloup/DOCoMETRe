@@ -75,6 +75,7 @@ import org.eclipse.gef.palette.ToolEntry;
 import org.eclipse.gef.requests.CreationFactory;
 import org.eclipse.gef.ui.actions.ActionRegistry;
 import org.eclipse.gef.ui.actions.GEFActionConstants;
+import org.eclipse.gef.ui.actions.SelectAllAction;
 import org.eclipse.gef.ui.parts.GraphicalEditorWithFlyoutPalette;
 import org.eclipse.gef.ui.parts.GraphicalViewerKeyHandler;
 import org.eclipse.gef.ui.parts.ScrollingGraphicalViewer;
@@ -101,6 +102,7 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ObjectsController;
+import fr.univamu.ism.docometre.dacqsystems.ui.SourceEditor;
 import fr.univamu.ism.docometre.scripteditor.actions.CopyAction;
 import fr.univamu.ism.docometre.scripteditor.actions.DeactivateBlockAction;
 import fr.univamu.ism.docometre.scripteditor.actions.EditBlockAction;
@@ -115,6 +117,22 @@ import fr.univamu.ism.process.ScriptSegment;
 import fr.univamu.ism.process.ScriptSegmentType;
 
 public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFlyoutPalette {
+	
+	class SegmentAndSourceSelectAllAction extends SelectAllAction {
+
+		public SegmentAndSourceSelectAllAction(IWorkbenchPart part) {
+			super(part);
+		}
+		
+		@Override
+		public void run() {
+			MultiPageEditorPart processEditor = ((MultiPageEditorPart) (getSite().getPage().getActiveEditor()));
+			if(processEditor.getSelectedPage() instanceof SourceEditor) {
+				((SourceEditor)processEditor.getSelectedPage()).selectAll();
+			} else super.run();
+		}
+		
+	}
 	
 	class ToggleSnapToGridAction extends Action {
 		
@@ -427,6 +445,9 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 	    
 	    action = (Action) registry.getAction(ActionFactory.REDO.getId());
 	    action.setText(DocometreMessages.Redo);
+	    
+	    action = new SegmentAndSourceSelectAllAction(this);
+		registry.registerAction(action);
 	    
 //		}
 	}
