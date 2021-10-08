@@ -68,6 +68,7 @@ import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.PartListenerAdapter;
 import fr.univamu.ism.docometre.dacqsystems.DocometreBuilder;
 import fr.univamu.ism.docometre.dacqsystems.Process;
+import fr.univamu.ism.docometre.dialogs.FindDialog;
 import fr.univamu.ism.docometre.editors.AbstractScriptSegmentEditor;
 import fr.univamu.ism.docometre.editors.PartNameRefresher;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
@@ -185,6 +186,9 @@ public class ProcessEditor extends MultiPageEditorPart implements IPageChangedLi
 	public void pageChanged(PageChangedEvent event) {
 		for (AbstractScriptSegmentEditor abstractScriptSegmentEditor : segmentEditors) {
 			if(getSelectedPage() == abstractScriptSegmentEditor) abstractScriptSegmentEditor.updatePasteAction();
+		}
+		if(getSelectedPage() instanceof SourceEditor) {
+			FindDialog.getInstance().setTextViewer(((SourceEditor)getSelectedPage()).getSourceViewer());
 		}
 	}
 

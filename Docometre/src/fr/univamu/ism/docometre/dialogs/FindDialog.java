@@ -43,6 +43,7 @@ package fr.univamu.ism.docometre.dialogs;
 
 import java.util.HashMap;
 
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.text.TextViewer;
 import org.eclipse.swt.SWT;
@@ -59,11 +60,15 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IPartListener;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.dacqsystems.ui.ProcessEditor;
+import fr.univamu.ism.docometre.dacqsystems.ui.SourceEditor;
 
-public class FindDialog extends org.eclipse.jface.dialogs.Dialog {
+public class FindDialog extends Dialog implements IPartListener {
 	
 	private static String lastQuery = "";
 	private static Rectangle lastShellBounds = null;
@@ -87,6 +92,7 @@ public class FindDialog extends org.eclipse.jface.dialogs.Dialog {
 	
 	private FindDialog(Shell parentShell) {
 		super(parentShell);
+		
 	}
 	
 	public void resetOffset(TextViewer textViewer, int offset) {
@@ -95,9 +101,16 @@ public class FindDialog extends org.eclipse.jface.dialogs.Dialog {
 	}
 	
 	@Override
+	public int open() {
+		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().addPartListener(this);
+		return super.open();
+	}
+	
+	@Override
 	public boolean close() {
 		findDialog = null;
 		offsets.clear();
+		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().removePartListener(this);
 		return super.close();
 	}
 	
@@ -188,6 +201,37 @@ public class FindDialog extends org.eclipse.jface.dialogs.Dialog {
 				}
 			}
 		});
+	}
+
+	@Override
+	public void partActivated(IWorkbenchPart part) {
+		if(part instanceof ProcessEditor) {
+			if(((ProcessEditor)part).getSelectedPage() instanceof SourceEditor) {
+				FindDialog.getInstance().setTextViewer(((SourceEditor)((ProcessEditor)part).getSelectedPage()).getSourceViewer());
+			}
+		}
+	}
+
+	@Override
+	public void partBroughtToTop(IWorkbenchPart part) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void partClosed(IWorkbenchPart part) {
+	}
+
+	@Override
+	public void partDeactivated(IWorkbenchPart part) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void partOpened(IWorkbenchPart part) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
