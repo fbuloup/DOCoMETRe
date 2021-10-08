@@ -47,6 +47,8 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.text.TextViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Rectangle;
@@ -80,6 +82,7 @@ public class FindDialog extends Dialog implements IPartListener {
 	private Button wholeWordButton;
 	private Button searchBackButton;
 	private Button caseSensitiveButton;
+	private boolean alreadyOpened = false;
 
 	private static FindDialog findDialog;
 	
@@ -102,6 +105,10 @@ public class FindDialog extends Dialog implements IPartListener {
 	
 	@Override
 	public int open() {
+		if(alreadyOpened) {
+			initializeSearchText();
+			return OK;
+		}
 		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().addPartListener(this);
 		return super.open();
 	}
@@ -178,8 +185,17 @@ public class FindDialog extends Dialog implements IPartListener {
 				}
 			}
 		});
-		
+		initializeSearchText();
+	 	alreadyOpened = true;
 		return container;
+	}
+	
+	private void initializeSearchText() {
+		Clipboard clipboard = new Clipboard(PlatformUI.getWorkbench().getDisplay());
+	 	Object text = clipboard.getContents(TextTransfer.getInstance());
+	 	if(text != null) textToFindText.setText((String) text);
+	 	textToFindText.selectAll();
+	 	getShell().forceActive();
 	}
 
 	@Override
