@@ -72,7 +72,7 @@ public class ADWinDigInOutModulePage extends ADWinModulePage {
 			int result = 0;
 			Channel cha1 = (Channel) e1;
 			Channel cha2 = (Channel) e2;
-			switch (columnNumber) {
+			switch (sortingColumnNumber) {
 			case 0:
 				e1 = cha1.getProperty(ChannelProperties.NAME);
 				e2 = cha2.getProperty(ChannelProperties.NAME);

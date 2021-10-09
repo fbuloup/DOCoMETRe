@@ -109,7 +109,7 @@ public class ChartsConfigurationPage extends ModulePage {
 			int result = 0;
 			CurveConfiguration in1 = (CurveConfiguration) e1;
 			CurveConfiguration in2 = (CurveConfiguration) e2;
-			switch (columnNumber) {
+			switch (sortingColumnNumber) {
 			case 0:
 				if(in1 instanceof OscilloCurveConfiguration){
 					e1 = in1.getProperty(OscilloCurveConfigurationProperties.CHANNEL_NAME);

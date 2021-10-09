@@ -72,7 +72,7 @@ public class ArduinoUnoDigInOutModulePage extends ArduinoUnoModulePage {
 			int result = 0;
 			Channel cha1 = (Channel) e1;
 			Channel cha2 = (Channel) e2;
-			switch (columnNumber) {
+			switch (sortingColumnNumber) {
 			case 0:
 				e1 = cha1.getProperty(ArduinoUnoChannelProperties.USED);
 				e2 = cha2.getProperty(ArduinoUnoChannelProperties.USED);

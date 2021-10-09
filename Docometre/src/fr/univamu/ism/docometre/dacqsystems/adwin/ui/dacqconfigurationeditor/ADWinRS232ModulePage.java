@@ -80,7 +80,7 @@ public class ADWinRS232ModulePage extends ADWinModulePage {
 			int result = 0;
 			Channel in1 = (Channel) e1;
 			Channel in2 = (Channel) e2;
-			switch (columnNumber) {
+			switch (sortingColumnNumber) {
 			case 0:
 				e1 = in1.getProperty(ChannelProperties.NAME);
 				e2 = in2.getProperty(ChannelProperties.NAME);

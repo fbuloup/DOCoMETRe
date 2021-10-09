@@ -166,17 +166,17 @@ public class ADwinDACQGeneralConfigurationPage extends ModulePage {
 			super();
 		}
 		public void setSortingColumn(int columnNumber) {
-			if(this.columnNumber == columnNumber) {
+			if(this.sortingColumnNumber == columnNumber) {
 				ascendingDirection = !ascendingDirection;
 			} else {
-				this.columnNumber = columnNumber;
+				this.sortingColumnNumber = columnNumber;
 				ascendingDirection = true;
 			}
 		}
 		@Override
 		public int compare(Viewer viewer, Object e1, Object e2) {
 			int result = 0;
-			switch (columnNumber) {
+			switch (sortingColumnNumber) {
 				case 0: case 2:
 					result = super.compare(viewer, e1, e2);
 					break;

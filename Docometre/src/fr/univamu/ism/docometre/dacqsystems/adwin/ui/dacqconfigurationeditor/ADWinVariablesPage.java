@@ -83,7 +83,7 @@ public class ADWinVariablesPage extends ADWinModulePage {
 			int result = 0;
 			ADWinVariable var1 = (ADWinVariable) e1;
 			ADWinVariable var2 = (ADWinVariable) e2;
-			switch (columnNumber) {
+			switch (sortingColumnNumber) {
 			case 0:
 				e1 = var1.getProperty(ChannelProperties.NAME);
 				e2 = var2.getProperty(ChannelProperties.NAME);

@@ -136,16 +136,16 @@ public abstract class ModulePage extends FormPage implements PropertyObserver {
 	}
 	
 	protected class Comparator extends ViewerComparator {
-		protected int columnNumber;
+		protected int sortingColumnNumber;
 		protected boolean ascendingDirection = true; 
 		public Comparator() {
 			super();
 		}
 		public void setSortingColumn(int columnNumber) {
-			if(this.columnNumber == columnNumber) {
+			if(this.sortingColumnNumber == columnNumber) {
 				ascendingDirection = !ascendingDirection;
 			} else {
-				this.columnNumber = columnNumber;
+				this.sortingColumnNumber = columnNumber;
 				ascendingDirection = true;
 			}
 		}
@@ -421,24 +421,26 @@ public abstract class ModulePage extends FormPage implements PropertyObserver {
 		return hyperlink;
 	}
 	
-	protected TableViewerColumn createColumn(String tooltip, TableColumnLayout variablesTableColumnLayout, Property property, int columnWidth, final int columnNumber) {
+	protected TableViewerColumn createColumn(String tooltip, TableColumnLayout tableColumnLayout, Property property, int columnWidth, final int columnNumber) {
 		final TableViewerColumn viewerColumn = new TableViewerColumn(tableViewer, SWT.NONE);
 		viewerColumn.getColumn().setText(property.getLabel());
 		viewerColumn.getColumn().setToolTipText(tooltip);
 		viewerColumn.getColumn().setMoveable(false);
+		int columnIndex = tableViewer.getTable().indexOf(viewerColumn.getColumn());
+		tableViewer.setData(Integer.toString(columnIndex), columnNumber);
 		viewerColumn.getColumn().addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				Comparator comparator = (Comparator) tableViewer.getComparator();
 				if(comparator != null) {
-					comparator.setSortingColumn(columnNumber);
+					comparator.setSortingColumn(columnIndex);
 					tableViewer.getTable().setSortDirection(comparator.getDirection());
 					tableViewer.getTable().setSortColumn(viewerColumn.getColumn());
 					tableViewer.refresh();
 				}
 			}
 		});
-		variablesTableColumnLayout.setColumnData(viewerColumn.getColumn(), new ColumnPixelData(columnWidth, true, false));
+		tableColumnLayout.setColumnData(viewerColumn.getColumn(), new ColumnPixelData(columnWidth, true, false));
 		
 		if(this instanceof ADwinDACQGeneralConfigurationPage) tableViewer.getTable().setData("module", ADwinDACQGeneralConfigurationPage.PAGE_ID);
 		else if(this instanceof ADWinVariablesPage) tableViewer.getTable().setData("module", ADWinVariablesPage.PAGE_ID);
@@ -448,7 +450,7 @@ public abstract class ModulePage extends FormPage implements PropertyObserver {
 		tableViewer.getTable().setData("tableViewer", tableViewer);
 		editingSupport = ChannelEditingSupportFactory.getEditingSupport(this, tableViewer, property, dacqConfiguration, (ResourceEditor) getEditor());
 		viewerColumn.setEditingSupport(editingSupport);
-		
+
 		return viewerColumn;
 	}
 	
