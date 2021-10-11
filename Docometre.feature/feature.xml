@@ -6,16 +6,22 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-10-11
+      -- 2021-10-11 - Bis
+Added :
+* Disable p2 garbage collector
+FIWED : Nothing
+-- 2021-10-11
 ADDED : 
 * ADS1115 module to Arduino Uno
 * Select all capability to SourceEditor 
 * Improve FindDialog management and behaviour
 * Update Help 
-* Remove Unit, unit and ampli. min and max in analog inputs (Arduino Uno and ADS1115 module)
+* Remove Unit, unit and ampli. min and max in analog inputs (Arduino
+Uno and ADS1115 module)
 FIXED : 
 * Bug on first sample line series drawing (Time and XY Charts)
-* Optimize Resource listeners when process compilation is started (UI responsiveness)
+* Optimize Resource listeners when process compilation is started
+(UI responsiveness)
 -- 2021-09-22
 ADDED : 
 * All Python DSP functions have been ported to Matlab
