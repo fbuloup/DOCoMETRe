@@ -2,6 +2,12 @@
 <?NLS TYPE="org.eclipse.help.toc"?>
 
 <toc label="DOCoMETRe Table of Contents" topic="html/toc.html">
+   <topic label="Data Acquisition">
+      <anchor id="dataacquisition"/>
+   </topic>
+   <topic label="Data Processing">
+      <anchor id="dataprocessing"/>
+   </topic>
    <topic label="Supported DACQ Systems">
       <anchor id="dacqsystems"/>
    </topic>
@@ -9,6 +15,6 @@
       <anchor id="troubleshoots"/>
    </topic>
    <topic label="Advanced Concepts">
-      <anchor id="concepts"/>
+      <anchor id="advancedconcepts"/>
    </topic>
 </toc>

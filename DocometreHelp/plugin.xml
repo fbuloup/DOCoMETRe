@@ -9,10 +9,16 @@
             primary="true">
       </toc>
       <toc
+            file="tocdataacquisition.xml">
+      </toc>
+      <toc
+            file="tocdataprocessing.xml">
+      </toc>
+      <toc
             file="tocdacqsystems.xml">
       </toc>
       <toc
-            file="tocconcepts.xml">
+            file="tocadvancedconcepts.xml">
       </toc>
       <toc
             file="toctroubleshoots.xml">
