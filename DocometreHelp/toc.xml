@@ -2,19 +2,13 @@
 <?NLS TYPE="org.eclipse.help.toc"?>
 
 <toc label="DOCoMETRe Table of Contents" topic="html/toc.html">
+   <topic label="Supported DACQ Systems">
+      <anchor id="dacqsystems"/>
+   </topic>
    <topic label="Troubleshoots">
       <anchor id="troubleshoots"/>
    </topic>
    <topic label="Advanced Concepts">
       <anchor id="concepts"/>
-   </topic>
-   <topic label="Tasks">
-      <anchor id="tasks"/>
-   </topic>
-   <topic label="Reference">
-      <anchor id="reference"/>
-   </topic>
-   <topic label="Samples">
-      <anchor id="samples"/>
    </topic>
 </toc>

@@ -9,19 +9,13 @@
             primary="true">
       </toc>
       <toc
+            file="tocdacqsystems.xml">
+      </toc>
+      <toc
             file="tocconcepts.xml">
       </toc>
       <toc
             file="toctroubleshoots.xml">
-      </toc>
-      <toc
-            file="tocreference.xml">
-      </toc>
-      <toc
-            file="tocsamples.xml">
-      </toc>
-      <toc
-            file="toctasks.xml">
       </toc>
    </extension>
 

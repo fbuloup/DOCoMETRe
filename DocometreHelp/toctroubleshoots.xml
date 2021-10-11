@@ -3,9 +3,7 @@
 
 <toc label="Troubleshoots" link_to="toc.xml#troubleshoots"> 
 	<topic label="With Arduino Uno system"  href="html/troubleshoots/arduinouno.html"> 
-		<topic label="Sub Topic" href="html/troubleshoots/subtopic.html" /> 
 	</topic>
 	<topic label="With ADWin Systems">
-		<topic label="Sub Topic 2" href="html/troubleshoots/subtopic2.html" />
 	</topic> 
 </toc>
