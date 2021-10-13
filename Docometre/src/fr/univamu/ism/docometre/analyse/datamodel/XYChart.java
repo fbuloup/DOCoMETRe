@@ -26,8 +26,8 @@ public class XYChart extends AbstractElement {
 
 	private static final long serialVersionUID = 1L;
 	
-	private transient Map<String, Channel[]> xyChannelsMap;
-	private Set<String> seriesIDs;
+	protected transient Map<String, Channel[]> channelsMap;
+	protected Set<String> seriesIDs;
 	private List<Integer> selectedTrialsNumbers;
 	private double xMax;
 	private double xMin;
@@ -192,28 +192,28 @@ public class XYChart extends AbstractElement {
 	public void addCurve(Channel xChannel, Channel yChannel) {
 		String key = yChannel.getFullName() + "(" + xChannel.getFullName() + ")";
 		seriesIDs.add(key);
-		xyChannelsMap.put(key, new Channel[] {xChannel, yChannel});
+		channelsMap.put(key, new Channel[] {xChannel, yChannel});
 	}
 	
 	public void removeCurve(String key) {
 		seriesIDs.remove(key);
-		xyChannelsMap.remove(key);
+		channelsMap.remove(key);
 	}
 	
 	public int getNbCurves() {
 		return seriesIDs.size();
 	}
 	
-	public Collection<Channel[]> getXYChannels() {
-		return xyChannelsMap.values();
+	public Collection<Channel[]> getChannels() {
+		return channelsMap.values();
 	}
 	
 	public Set<String> getCurvesIDs() {
-		return xyChannelsMap.keySet();
+		return channelsMap.keySet();
 	}
 	
 	public Channel[] getXYChannels(String key) {
-		return xyChannelsMap.get(key);
+		return channelsMap.get(key);
 	}
 
 	public void setSelectedTrialsNumbers(List<Integer> selectedTrialsNumbers) {
@@ -226,8 +226,8 @@ public class XYChart extends AbstractElement {
 	}
 
 	public boolean initialize() {
-		if(xyChannelsMap != null) xyChannelsMap.clear();
-		xyChannelsMap = new HashMap<>();
+		if(channelsMap != null) channelsMap.clear();
+		channelsMap = new HashMap<>();
 		if(!MathEngineFactory.getMathEngine().isStarted()) {
 			Activator.logErrorMessage(DocometreMessages.PleaseStartMathEngineFirst);
 			return false;
@@ -264,7 +264,7 @@ public class XYChart extends AbstractElement {
 					}
 					return false;
 				}
-				xyChannelsMap.put(seriesID, new Channel[] {xChannel, yChannel});
+				channelsMap.put(seriesID, new Channel[] {xChannel, yChannel});
 			} else {
 				if(!MathEngineFactory.getMathEngine().isSubjectLoaded(xSubject)) {
 					String message = NLS.bind(DocometreMessages.SubjectNotLoaded, xSubject.getFullPath());
