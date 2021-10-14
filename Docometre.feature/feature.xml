@@ -6,7 +6,13 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-10-11 - Bis
+      -- 2021-10-14
+Added :
+* Support for 3D chart editor - Step 1 
+* Allow Wine file path pref to be empty
+Fixed :
+* Bug when a channel is suppressed : transfer numbers were not updated
+-- 2021-10-11 - Bis
 Added :
 * Disable p2 garbage collector
 FIWED : Nothing
