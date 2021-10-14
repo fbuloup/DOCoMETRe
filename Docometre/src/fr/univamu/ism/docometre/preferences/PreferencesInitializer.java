@@ -66,7 +66,7 @@ public class PreferencesInitializer extends AbstractPreferenceInitializer {
 		defaults.putBoolean(GeneralPreferenceConstants.PREF_CONFIRM_UNDO, true);
 		defaults.putBoolean(GeneralPreferenceConstants.SHOW_TRADITIONAL_STYLE_TABS, false);
 		defaults.putBoolean(GeneralPreferenceConstants.SHOW_WORKSPACE_SELECTION_DIALOG, ChooseWorkspaceData.getInstance().getShowDialog());
-		defaults.put(GeneralPreferenceConstants.WINE_FULL_PATH, "/Applications/Wine Staging.app/Contents/Resources/wine/bin/wine");
+		defaults.put(GeneralPreferenceConstants.WINE_FULL_PATH, "");//"/Applications/Wine Staging.app/Contents/Resources/wine/bin/wine");
 		
 		defaults.putBoolean(GeneralPreferenceConstants.STOP_TRIAL_NOW, true);
 		defaults.putBoolean(GeneralPreferenceConstants.USE_AS_DEFAULT_DO_NOT_ASK_STOP_TRIAL_NOW, false);
