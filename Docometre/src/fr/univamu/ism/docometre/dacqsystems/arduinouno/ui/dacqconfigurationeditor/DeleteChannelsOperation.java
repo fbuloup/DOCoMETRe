@@ -88,11 +88,13 @@ public class DeleteChannelsOperation extends AbstractOperation  {
 				isVariable = true;
 				ArduinoUnoVariable variable = (ArduinoUnoVariable) channel;
 				daqConfiguration.removeVariable(variable);
+				variable.getDACQConfiguration().updateChannelsTransferNumber();
 			} else {
 				isModuleChannel = true;
 				Module module = channel.getModule();
 				module.removeChannel(channel);
 				modules[i] = module;
+				module.getDACQConfiguration().updateChannelsTransferNumber();
 			}
 		}
 		return Status.OK_STATUS;
@@ -112,6 +114,7 @@ public class DeleteChannelsOperation extends AbstractOperation  {
 			for (Iterator variablesIterator = selectedChannels.iterator(); variablesIterator.hasNext();) {
 				ArduinoUnoVariable variable = (ArduinoUnoVariable) variablesIterator.next();
 				daqConfiguration.addVariable(variable);
+				variable.getDACQConfiguration().updateChannelsTransferNumber();
 			}
 		}
 		if(isModuleChannel) {
@@ -119,6 +122,7 @@ public class DeleteChannelsOperation extends AbstractOperation  {
 				Channel channel = (Channel) selectedChannels.toArray()[i];
 				Module module = modules[i];
 				module.addChannel(channel);
+				module.getDACQConfiguration().updateChannelsTransferNumber();
 			}
 		}
 		return Status.OK_STATUS;
