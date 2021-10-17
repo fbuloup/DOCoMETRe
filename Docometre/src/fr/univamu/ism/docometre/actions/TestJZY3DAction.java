@@ -42,9 +42,8 @@
 package fr.univamu.ism.docometre.actions;
 
 import org.eclipse.jface.action.Action;
-
-import fr.univamu.ism.docometre.Activator;
-import fr.univamu.ism.jzy3d.test.TestJZY3DChart;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.ui.PlatformUI;
 
 public class TestJZY3DAction extends Action {
 	
@@ -59,8 +58,7 @@ public class TestJZY3DAction extends Action {
 	
 	@Override
 	public void run() {
-		TestJZY3DChart.main(new String[]{"-displayLoop", "false"});
-		TestJZY3DChart.getShell().setImage(Activator.getImage("icons/docometre.ico"));
+		MessageDialog.openInformation(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "Information", "This test must be remove in future release !");
 	}
 	
 }

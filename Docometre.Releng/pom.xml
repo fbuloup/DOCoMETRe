@@ -141,5 +141,7 @@
 		<module>
 			../org.eclipse.nebula.visualization.xygraph
 		</module>
+		
+		<module>../orson.charts</module>
 	</modules>
 </project>

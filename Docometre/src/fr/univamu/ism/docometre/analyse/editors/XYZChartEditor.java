@@ -10,16 +10,11 @@ import java.util.stream.IntStream;
 
 import javax.swing.SwingUtilities;
 
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ArrayContentProvider;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -30,15 +25,6 @@ import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.dnd.DND;
-import org.eclipse.swt.dnd.DropTarget;
-import org.eclipse.swt.dnd.DropTargetEvent;
-import org.eclipse.swt.dnd.DropTargetListener;
-import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.events.ControlEvent;
-import org.eclipse.swt.events.ControlListener;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseWheelListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
@@ -46,53 +32,25 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.swtchart.ILineSeries;
-import org.eclipse.swtchart.ISeries;
-import org.eclipse.swtchart.ILineSeries.PlotSymbolType;
-import org.eclipse.swtchart.ISeries.SeriesType;
-import org.eclipse.swtchart.Range;
 import org.eclipse.swtchart.extensions.charts.ChartPropertiesListener;
-import org.eclipse.swtchart.extensions.charts.InteractiveChart;
 import org.eclipse.swtchart.extensions.charts.ZoomListener;
 import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IPartListener;
-import org.eclipse.ui.IPartListener2;
-import org.eclipse.ui.IPerspectiveDescriptor;
-import org.eclipse.ui.IPerspectiveListener;
-import org.eclipse.ui.IPerspectiveListener4;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
 import org.jfree.chart3d.Chart3DPanel;
 
-import fr.univamu.ism.docometre.AcquirePerspective;
-import fr.univamu.ism.docometre.Activator;
-import fr.univamu.ism.docometre.ColorUtil;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.GetResourceLabelDelegate;
 import fr.univamu.ism.docometre.ObjectsController;
-import fr.univamu.ism.docometre.PartListenerAdapter;
-import fr.univamu.ism.docometre.ResourceProperties;
-import fr.univamu.ism.docometre.analyse.MathEngine;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
-import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
-import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
 import fr.univamu.ism.docometre.analyse.datamodel.XYChart;
 import fr.univamu.ism.docometre.analyse.datamodel.XYZChart;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
-import fr.univamu.ism.orson.charts.tests.DemoPanel;
-import fr.univamu.ism.orson.charts.tests.LineChart3DDemo3;
 
 public class XYZChartEditor extends EditorPart implements ISelectionChangedListener, /*IMarkersManager,*/ ZoomListener, TrialsEditor, ChartPropertiesListener {
 	
@@ -101,15 +59,15 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 	private SashForm container;
 	private ListViewer trialsListViewer;
 //	private InteractiveChart chart;
-	private Text xMinText;
-	private Text xMaxText;
-	private Text yMinText;
-	private Text yMaxText;
+//	private Text xMinText;
+//	private Text xMaxText;
+//	private Text yMinText;
+//	private Text yMaxText;
 	private Spinner frontCutSpinner;
 	private Spinner endCutSpinner;
 	private boolean dirty;
 	private Button autoScaleButton;
-	private Group scaleValuesGroup;
+//	private Group scaleValuesGroup;
 	private Button useSameColorButton;
 	private Composite chartContainer;
 	protected Chart3DPanel chart3DPanel;
@@ -703,7 +661,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 //		return false;
 //	}
 	
-	protected void setDirty(boolean dirty) {
+	public void setDirty(boolean dirty) {
 		this.dirty = dirty;
 		firePropertyChange(PROP_DIRTY);
 	}
