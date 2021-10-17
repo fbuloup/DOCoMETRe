@@ -91,6 +91,7 @@ public class ExperimentsLabelProvider implements ILabelProvider {
 		if(ResourceType.isNumpyFile(resource)) return Activator.getImageDescriptor(IImageKeys.NUMPY_ICON_2).createImage();
 		if(ResourceType.isSaveFile(resource)) return Activator.getImageDescriptor(IImageKeys.LOAD_UNLOAD_ICON).createImage();
 		if(ResourceType.isXYChart(resource)) return Activator.getImageDescriptor(IImageKeys.XYChart_ICON).createImage();
+		if(ResourceType.isXYZChart(resource)) return Activator.getImageDescriptor(IImageKeys.XYZChart_ICON).createImage();
 		return Activator.getImageDescriptor("org.eclipse.ui", "icons/full/etool16/help_contents.png").createImage();
 	}
 

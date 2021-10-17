@@ -66,6 +66,7 @@ import fr.univamu.ism.docometre.analyse.editors.ChannelEditor;
 import fr.univamu.ism.docometre.analyse.editors.BatchDataProcessingEditor;
 import fr.univamu.ism.docometre.analyse.editors.DataProcessEditor;
 import fr.univamu.ism.docometre.analyse.editors.XYChartEditor;
+import fr.univamu.ism.docometre.analyse.editors.XYZChartEditor;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ui.dacqconfigurationeditor.ADWinDACQConfigurationEditor;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor.ADWinProcessEditor;
@@ -131,6 +132,8 @@ public class OpenEditorAction extends Action implements ISelectionListener, IWor
 			
 			if(ResourceType.isXYChart(resource)) editorID = XYChartEditor.ID;
 			
+			if(ResourceType.isXYZChart(resource)) editorID = XYZChartEditor.ID;
+			
 			if(ResourceType.isSamples(resource)) openEditor(resource, DataEditor.ID);
 			else if(editorID != null) {
 				Object object = ResourceProperties.getObjectSessionProperty(resource);
@@ -191,6 +194,7 @@ public class OpenEditorAction extends Action implements ISelectionListener, IWor
 						canOpen = canOpen || ResourceType.isDataProcessing((IResource) object);
 						canOpen = canOpen || ResourceType.isBatchDataProcessing((IResource) object);
 						canOpen = canOpen || ResourceType.isXYChart((IResource) object);
+						canOpen = canOpen || ResourceType.isXYZChart((IResource) object);
 						if(canOpen) files.add((IFile) object);
 					}
 				}

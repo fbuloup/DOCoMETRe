@@ -29,12 +29,12 @@ import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 import fr.univamu.ism.docometre.wizards.NewResourceWizard;
 
-public class NewXYChartHandler implements IHandler, ISelectionListener {
+public class NewXYZChartHandler implements IHandler, ISelectionListener {
 	
 	private boolean enabled;
 	private IContainer parentResource;
-	
-	public NewXYChartHandler() {
+
+	public NewXYZChartHandler() {
 		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().addSelectionListener(this);
 		IViewPart view = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(ExperimentsView.ID);
 		if(view != null) selectionChanged(view, view.getSite().getSelectionProvider().getSelection());
@@ -43,7 +43,7 @@ public class NewXYChartHandler implements IHandler, ISelectionListener {
 			if(view != null) selectionChanged(view, view.getSite().getSelectionProvider().getSelection());
 		}
 	}
-
+	
 	@Override
 	public void addHandlerListener(IHandlerListener handlerListener) {
 	}
@@ -55,17 +55,17 @@ public class NewXYChartHandler implements IHandler, ISelectionListener {
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-		NewResourceWizard newResourceWizard = new NewResourceWizard(ResourceType.XYCHART, parentResource, NewResourceWizard.CREATE);
+		NewResourceWizard newResourceWizard = new NewResourceWizard(ResourceType.XYZCHART, parentResource, NewResourceWizard.CREATE);
 		WizardDialog wizardDialog = new WizardDialog(shell, newResourceWizard);
 		if(wizardDialog.open() == Window.OK) {
 			try {
-				final IFile xyChartFile = parentResource.getFile(new Path(newResourceWizard.getResourceName() + Activator.xyChartFileExtension));
-				ObjectsController.serialize(xyChartFile, newResourceWizard.getXYChart());
-				xyChartFile.refreshLocal(IResource.DEPTH_ZERO, null);
-				ResourceProperties.setDescriptionPersistentProperty(xyChartFile, newResourceWizard.getResourceDescription());
-				ResourceProperties.setTypePersistentProperty(xyChartFile, ResourceType.XYCHART.toString());
-				ExperimentsView.refresh(xyChartFile.getParent(), new IResource[]{xyChartFile});
-				SubjectsView.refresh(xyChartFile.getParent(), new IResource[]{xyChartFile});
+				final IFile xyzChartFile = parentResource.getFile(new Path(newResourceWizard.getResourceName() + Activator.xyzChartFileExtension));
+				ObjectsController.serialize(xyzChartFile, newResourceWizard.getXYZChart());
+				xyzChartFile.refreshLocal(IResource.DEPTH_ZERO, null);
+				ResourceProperties.setDescriptionPersistentProperty(xyzChartFile, newResourceWizard.getResourceDescription());
+				ResourceProperties.setTypePersistentProperty(xyzChartFile, ResourceType.XYZCHART.toString());
+				ExperimentsView.refresh(xyzChartFile.getParent(), new IResource[]{xyzChartFile});
+				SubjectsView.refresh(xyzChartFile.getParent(), new IResource[]{xyzChartFile});
 			} catch (CoreException e) {
 				e.printStackTrace();
 				Activator.logErrorMessageWithCause(e);
@@ -112,6 +112,7 @@ public class NewXYChartHandler implements IHandler, ISelectionListener {
 			}
 		}
 		enabled = parentResource != null;
+		
 	}
 
 }

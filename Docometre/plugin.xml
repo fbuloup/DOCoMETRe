@@ -448,6 +448,14 @@
             id="Docometre.XYChartEditor"
             name="XYChartEditor">
       </editor>
+      <editor
+            class="fr.univamu.ism.docometre.analyse.editors.XYZChartEditor"
+            contributorClass="fr.univamu.ism.docometre.analyse.editors.ChannelEditorActionBarContributor"
+            default="false"
+            icon="icons/XYZChartIcon.png"
+            id="Docometre.XYZChartEditor"
+            name="XYZChartEditor">
+      </editor>
    </extension>
    <extension
          point="org.eclipse.ui.decorators">
@@ -644,6 +652,24 @@
                            </reference>
                         </or>
                      </visibleWhen>
+               </command>
+               <command
+                     commandId="NewXYZChartCommand"
+                     icon="icons/XYZChartIcon.png"
+                     label="%NewXYZChartCommand.label"
+                     style="push"
+                     tooltip="%NewXYZChartCommand.tooltip">
+                  <visibleWhen
+                        checkEnabled="false">
+                     <or>
+                        <reference
+                              definitionId="Docometre.DesignPerspectiveSelected">
+                        </reference>
+                        <reference
+                              definitionId="Docometre.AnalysePerspectiveSelected">
+                        </reference>
+                     </or>
+                  </visibleWhen>
                </command>
             </menu>
             <separator
@@ -1330,6 +1356,13 @@
                      style="push"
                      tooltip="%NewXYChartCommand.tooltip">
                </command>
+               <command
+                     commandId="NewXYZChartCommand"
+                     icon="icons/XYZChartIcon.png"
+                     label="%NewXYZChartCommand.label"
+                     style="push"
+                     tooltip="%NewXYZChartCommand.tooltip">
+               </command>
                
                
          </menu>
@@ -1994,6 +2027,19 @@
                </reference>
             </visibleWhen>
          </command>
+         <command
+               commandId="NewXYZChartCommand"
+               icon="icons/XYZChartIcon.png"
+               label="%NewXYZChartCommand.label"
+               style="push"
+               tooltip="%NewXYZChartCommand.tooltip">
+            <visibleWhen
+                  checkEnabled="false">
+               <reference
+                     definitionId="Docometre.DesignPerspectiveSelected">
+               </reference>
+            </visibleWhen>
+         </command>
          <separator
                name="Docometre.separator2"
                visible="true">
@@ -2224,6 +2270,19 @@
                   </reference>
                </visibleWhen>
             </command>
+            <command
+                  commandId="NewXYZChartCommand"
+                  icon="icons/XYZChartIcon.png"
+                  label="%NewXYZChartCommand.label"
+                  style="push"
+                  tooltip="%NewXYZChartCommand.tooltip">
+               <visibleWhen
+                     checkEnabled="false">
+                  <reference
+                        definitionId="Docometre.AnalysePerspectiveSelected">
+                  </reference>
+               </visibleWhen>
+            </command>
             <separator
                   name="Docometre.separator3"
                   visible="true">
@@ -2274,6 +2333,13 @@
                   label="%NewXYChartCommand.label"
                   style="push"
                   tooltip="%NewXYChartCommand.tooltip">
+            </command>
+            <command
+                  commandId="NewXYZChartCommand"
+                  icon="icons/XYZChartIcon.png"
+                  label="%NewXYZChartCommand.label"
+                  style="push"
+                  tooltip="%NewXYZChartCommand.tooltip">
             </command>
          </menu>
          <command
@@ -2653,6 +2719,11 @@
             defaultHandler="fr.univamu.ism.docometre.analyse.handlers.NewXYChartHandler"
             id="NewXYChartCommand"
             name="NewXYChartCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.analyse.handlers.NewXYZChartHandler"
+            id="NewXYZChartCommand"
+            name="NewXYZChartCommand">
       </command>
    </extension>
    <extension

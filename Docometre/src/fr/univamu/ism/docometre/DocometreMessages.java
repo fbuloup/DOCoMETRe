@@ -870,6 +870,10 @@ public final class DocometreMessages extends NLS {
 	public static String PressEnterEndCut;
 	public static String SubjectNotLoaded;
 	
+	// XY Chart
+	public static String NewXYZChartWizard_PageTitle;
+	public static String NewXYZChartWizard_PageMessage;
+	
 	// Data processing editor page editor titles
 	public static String MathEngineEditorTitle;
 	public static String MathEngineSourceCodeEditorTitle;
@@ -961,6 +965,8 @@ public final class DocometreMessages extends NLS {
 	public static String DataExportSignalSubtaskMessage;
 	public static String DataExportErrorOccuredDialogTitle;
 	public static String DataExportErrorOccuredDialogMessage;
+
+	
 
 	
 

@@ -167,7 +167,10 @@ public abstract class NewResourceWizardPage extends WizardPage implements IWizar
 		if(this instanceof NewParametersFileWizardPage) fileExtension = Activator.parametersFileExtension;
 		if(this instanceof NewDataProcessingWizardPage) fileExtension = Activator.dataProcessingFileExtension;
 		if(this instanceof NewBatchDataProcessingWizardPage) fileExtension = Activator.batchDataProcessingFileExtension;
-		if(this instanceof NewXYChartWizardPage) fileExtension = Activator.xyChartFileExtension;
+		if(this instanceof NewXYZChartWizardPage) {
+			if(ResourceType.XYCHART.equals(resourceType)) fileExtension = Activator.xyChartFileExtension;
+			if(ResourceType.XYZCHART.equals(resourceType)) fileExtension = Activator.xyzChartFileExtension;
+		}
 		Pattern pattern = Pattern.compile(regexp);
 		Matcher matcher = pattern.matcher(name);
 		if(!matcher.matches()) {

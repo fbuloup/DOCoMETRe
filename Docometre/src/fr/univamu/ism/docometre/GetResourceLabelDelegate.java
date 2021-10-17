@@ -82,6 +82,7 @@ public class GetResourceLabelDelegate {
 		if(ResourceType.isDataProcessing(resource)) return resource.getName().replaceAll(Activator.dataProcessingFileExtension + "$", "");
 		if(ResourceType.isBatchDataProcessing(resource)) return resource.getName().replaceAll(Activator.batchDataProcessingFileExtension + "$", "");
 		if(ResourceType.isXYChart(resource)) return resource.getName().replaceAll(Activator.xyChartFileExtension + "$", "");
+		if(ResourceType.isXYZChart(resource)) return resource.getName().replaceAll(Activator.xyzChartFileExtension + "$", "");
 		
 		if(ResourceType.isSession(resource) || ResourceType.isSubject(resource)) {
 			double percent = ResourceProperties.getPercentDone(resource);

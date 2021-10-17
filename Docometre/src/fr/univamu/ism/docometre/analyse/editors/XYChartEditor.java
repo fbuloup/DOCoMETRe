@@ -538,7 +538,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 
 	@Override
 	public void setFocus() {
-		chart.setFocus();
+		if(chart != null && !chart.isDisposed()) chart.setFocus();
 	}
 
 	@SuppressWarnings("unchecked")

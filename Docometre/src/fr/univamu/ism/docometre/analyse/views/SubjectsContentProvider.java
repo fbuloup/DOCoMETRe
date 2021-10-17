@@ -42,8 +42,8 @@ public class SubjectsContentProvider implements ITreeContentProvider {
 			if(ResourceType.isDataProcessing(element)) return true;
 			if(ResourceType.isBatchDataProcessing(element)) return true;
 			if(ResourceType.isXYChart(element)) return true;
+			if(ResourceType.isXYZChart(element)) return true;
 			if(!ResourceType.isFolder(element)) return false;
-
 			
 			IResource[] resources = ((IFolder)element).members();
 			boolean addElement = resources.length == 0;

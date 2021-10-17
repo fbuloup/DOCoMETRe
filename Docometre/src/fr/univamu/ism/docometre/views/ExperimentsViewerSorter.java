@@ -58,19 +58,23 @@ public class ExperimentsViewerSorter extends ViewerComparator {
 		if(resource instanceof IProject && !((IProject) resource).isOpen()) return super.category(element);
 		if(ResourceType.isDACQConfiguration(resource)) return 0;
 		if(ResourceType.isProcess(resource)) return 1;
-		if(ResourceType.isDataProcessing(resource)) return 2;
-		if(ResourceType.isFolder(resource)) return 3;
-		if(ResourceType.isProcessTest(resource)) return 4;
-		if(ResourceType.isSubject(resource)) return 5;
-		if(ResourceType.isSession(resource)) return 6;
-		if(ResourceType.isParameters(resource)) return 7;
-		if(ResourceType.isTrial(resource)) return 8;
-		if(ResourceType.isLog(resource)) return 9;
-		if(ResourceType.isSamples(resource)) return 10;
+		if(ResourceType.isBatchDataProcessing(resource)) return 2;
+		if(ResourceType.isDataProcessing(resource)) return 3;
+		if(ResourceType.isXYChart(resource)) return 4;
+		if(ResourceType.isXYZChart(resource)) return 5;
+		if(ResourceType.isFolder(resource)) return 6;
+		if(ResourceType.isProcessTest(resource)) return 7;
+		if(ResourceType.isLog(resource)) return 8;
+		if(ResourceType.isSubject(resource)) return 9;
+		if(ResourceType.isSession(resource)) return 10;
+		if(ResourceType.isParameters(resource)) return 11;
+		if(ResourceType.isTrial(resource)) return 12;
+		if(ResourceType.isLog(resource)) return 13;
+		if(ResourceType.isSamples(resource)) return 14;
 		if(ResourceType.isChannel(resource)) {
-			if(MathEngineFactory.getMathEngine().isSignal(resource)) return 11;
-			if(MathEngineFactory.getMathEngine().isCategory(resource)) return 12;
-			if(MathEngineFactory.getMathEngine().isEvent(resource)) return 13;
+			if(MathEngineFactory.getMathEngine().isSignal(resource)) return 15;
+			if(MathEngineFactory.getMathEngine().isCategory(resource)) return 16;
+			if(MathEngineFactory.getMathEngine().isEvent(resource)) return 17;
 		}
 		return super.category(element);
 	}

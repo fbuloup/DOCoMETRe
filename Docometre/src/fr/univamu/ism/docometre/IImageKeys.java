@@ -198,5 +198,6 @@ public interface IImageKeys {
 	public static final String ENABLE_DISABLE_ICON = "icons/activateDeactivate.png"; //$NON-NLS-1$
 	
 	public static final String XYChart_ICON = "icons/XYChartIcon.png"; //$NON-NLS-1$
+	public static final String XYZChart_ICON = "icons/XYZChartIcon.png"; //$NON-NLS-1$
 	
 }
