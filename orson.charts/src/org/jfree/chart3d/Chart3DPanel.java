@@ -41,6 +41,9 @@ import java.util.EventListener;
 import javax.swing.event.EventListenerList;
 
 import org.jfree.chart3d.data.ItemKey;
+import org.jfree.chart3d.data.Range;
+import org.jfree.chart3d.data.xyz.XYZSeries;
+import org.jfree.chart3d.data.xyz.XYZSeriesCollection;
 import org.jfree.chart3d.graphics3d.Object3D;
 import org.jfree.chart3d.graphics3d.RenderedElement;
 import org.jfree.chart3d.graphics3d.RenderingInfo;
@@ -49,6 +52,7 @@ import org.jfree.chart3d.graphics3d.swing.Panel3D;
 import org.jfree.chart3d.interaction.Chart3DMouseEvent;
 import org.jfree.chart3d.interaction.Chart3DMouseListener;
 import org.jfree.chart3d.internal.Args;
+import org.jfree.chart3d.plot.XYZPlot;
 
 /**
  * A panel designed to display a {@link Chart3D} in a Swing-based desktop
@@ -78,19 +82,25 @@ public class Chart3DPanel extends Panel3D implements Chart3DChangeListener,
     
     /** Storage for registered (chart) mouse listeners. */
     private transient EventListenerList chartMouseListeners;
+    
+    private XYZPlot xyzPlot;
+    private XYZSeriesCollection<String> xyzSeriesCollection;
 
     /**
      * Creates a new chart panel to display the specified chart.
      *
      * @param chart the chart.
      */
-    public Chart3DPanel(Chart3D chart) {
+    @SuppressWarnings("unchecked")
+	public Chart3DPanel(Chart3D chart) {
         super(chart);
         this.chartMouseListeners = new EventListenerList();
         this.chart = chart;
         this.chart.addChangeListener(this);
         addComponentListener(this);
         this.autoFitOnPanelResize = false;
+        xyzPlot = (XYZPlot) chart.getPlot();
+        xyzSeriesCollection = (XYZSeriesCollection) xyzPlot.getDataset();
         registerForTooltips();
     }
 
@@ -270,5 +280,54 @@ public class Chart3DPanel extends Panel3D implements Chart3DChangeListener,
             this.chart.addChangeListener(this);
         }
     }
+
+	public void removeSeries(String seriesID) {
+		int index = xyzSeriesCollection.getSeriesIndex(seriesID);
+		xyzSeriesCollection.remove(index);
+	}
+	
+	public String[] getSeriesIDs() {
+		return xyzSeriesCollection.getSeriesKeys().toArray(new String[xyzSeriesCollection.getSeriesCount()]);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public XYZSeries<String> getSeries(String seriesID) {
+		return xyzSeriesCollection.getSeries(seriesID);
+	}
+
+	public boolean hasSeriesID(String seriesID) {
+		return xyzSeriesCollection.getSeriesIndex(seriesID) != -1;
+	}
+
+	public void addSeries(String seriesID, double[] xValues, double[] yValues, double[] zValues) {
+		XYZSeries<String> xyzSeries = new XYZSeries<>(seriesID);
+		xyzSeries.add(xValues, yValues, zValues);
+		xyzSeriesCollection.add(xyzSeries);
+//		xyzPlot.isAutoAdjustDimensions()
+	}
+	
+	public Range getXRange() {
+		return xyzPlot.getXAxis().getRange();
+	}
+	
+	public Range getYRange() {
+		return xyzPlot.getYAxis().getRange();
+	}
+	
+	public Range getZRange() {
+		return xyzPlot.getZAxis().getRange();
+	}
+	
+	public void setXRange(double min, double max) {
+		xyzPlot.getXAxis().setRange(min, max);
+	}
+	
+	public void setYRange(double min, double max) {
+		xyzPlot.getYAxis().setRange(min, max);
+	}
+	
+	public void setZRange(double min, double max) {
+		xyzPlot.getZAxis().setRange(min, max);
+	}
 
 }

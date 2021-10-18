@@ -14,15 +14,15 @@ import fr.univamu.ism.docometre.analyse.datamodel.XYChart;
 public class FrontEndCutsHandler extends SelectionAdapter implements TraverseListener, MouseWheelListener {
 	
 	private Spinner spinner;
-	private XYChartEditor xyChartEditor;
+	private Chart2D3DBehaviour chartBehaviour;
 	private String key;
 	private XYChart xyChartData;
 
-	public FrontEndCutsHandler(Spinner spinner, XYChartEditor xyChartEditor) {
-		this.xyChartEditor = xyChartEditor;
+	public FrontEndCutsHandler(Spinner spinner, Chart2D3DBehaviour chartBehaviour) {
+		this.chartBehaviour = chartBehaviour;
 		this.spinner = spinner;
 		this.key = (String) spinner.getData();
-		this.xyChartData = xyChartEditor.getXYChartData();
+		this.xyChartData = chartBehaviour.getChartData();
 	}
 
 	@Override
@@ -33,11 +33,11 @@ public class FrontEndCutsHandler extends SelectionAdapter implements TraverseLis
 				int ec = xyChartData.getEndCut();
 				if(fc < ec) {
 					if(spinner.getMinimum() <= fc) {
-						xyChartEditor.updateFrontEndCutsChartHandler();
+						chartBehaviour.updateFrontEndCutsChartHandler();
 					}
 				} else {
 					spinner.setSelection(ec - 1);
-					xyChartEditor.updateFrontEndCutsChartHandler();
+					chartBehaviour.updateFrontEndCutsChartHandler();
 				}
 			}
 			if(key.equals("endCut")) {
@@ -45,14 +45,14 @@ public class FrontEndCutsHandler extends SelectionAdapter implements TraverseLis
 				int fc = xyChartData.getFrontCut();
 				if(ec > fc) {
 					if(spinner.getMaximum() >= ec) {
-						xyChartEditor.updateFrontEndCutsChartHandler();
+						chartBehaviour.updateFrontEndCutsChartHandler();
 					}
 				} else {
 					spinner.setSelection(fc + 1);
-					xyChartEditor.updateFrontEndCutsChartHandler();
+					chartBehaviour.updateFrontEndCutsChartHandler();
 				}
 			}
-			xyChartEditor.setDirty(true);
+			chartBehaviour.setDirty(true);
 		}
 	}
 
@@ -64,16 +64,16 @@ public class FrontEndCutsHandler extends SelectionAdapter implements TraverseLis
 			value2 = xyChartData.getEndCut();
 			if(value1 < value2) {
 				spinner.setSelection(value1);
-				xyChartEditor.updateFrontEndCutsChartHandler();
-				xyChartEditor.setDirty(true);
+				chartBehaviour.updateFrontEndCutsChartHandler();
+				chartBehaviour.setDirty(true);
 			} 
 		}
 		if(key.equals("endCut")) {
 			value2 = xyChartData.getFrontCut();
 			if(value1 > value2) {
 				spinner.setSelection(value1);
-				xyChartEditor.updateFrontEndCutsChartHandler();
-				xyChartEditor.setDirty(true);
+				chartBehaviour.updateFrontEndCutsChartHandler();
+				chartBehaviour.setDirty(true);
 			} 
 		}
 	}
@@ -87,21 +87,21 @@ public class FrontEndCutsHandler extends SelectionAdapter implements TraverseLis
 			value2 = xyChartData.getEndCut();
 			if(value1 < value2) {
 				if(spinner.getMinimum() <= value1) {
-					xyChartEditor.updateFrontEndCutsChartHandler();
+					chartBehaviour.updateFrontEndCutsChartHandler();
 				}
 			} else {
-				xyChartEditor.updateFrontEndCutsChartHandler();
+				chartBehaviour.updateFrontEndCutsChartHandler();
 				spinner.setSelection(value2 - 1);
 			}
 		}
 		if(key.equals("endCut")) {
 			value2 = xyChartData.getFrontCut();
 			if(value1 > value2) {
-				xyChartEditor.updateFrontEndCutsChartHandler();
+				chartBehaviour.updateFrontEndCutsChartHandler();
 			} else spinner.setSelection(value2 + 1);
 		}
 		spinner.getParent().getParent().setFocus();
-		xyChartEditor.setDirty(true);
+		chartBehaviour.setDirty(true);
 	}
 
 }

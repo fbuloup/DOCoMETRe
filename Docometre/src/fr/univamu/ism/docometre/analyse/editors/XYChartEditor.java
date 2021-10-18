@@ -72,7 +72,7 @@ import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
 import fr.univamu.ism.docometre.analyse.datamodel.XYChart;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 
-public class XYChartEditor extends EditorPart implements ISelectionChangedListener, IMarkersManager, ZoomListener, TrialsEditor, ChartPropertiesListener {
+public class XYChartEditor extends EditorPart implements ISelectionChangedListener, IMarkersManager, ZoomListener, TrialsEditor, ChartPropertiesListener, Chart2D3DBehaviour {
 	
 	public static String ID = "Docometre.XYChartEditor";
 	private XYChart xyChartData;
@@ -478,7 +478,8 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		chart.redraw();
 	}
 	
-	protected void refreshTrialsListFrontEndCuts() {
+	@Override
+	public void refreshTrialsListFrontEndCuts() {
 		if(xyChartData.getNbCurves() == 0) {
 			trialsListViewer.setInput(null);
 			return;
@@ -515,7 +516,8 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 
 	}
 	
-	protected String[] getSeriesIDs() {
+	@Override
+	public String[] getSeriesIDs() {
 		ISeries[] series = chart.getSeriesSet().getSeries();
 		Set<String> ids = new HashSet<>();
 		for (ISeries iSeries : series) {
@@ -526,7 +528,8 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		return ids.toArray(new String[ids.size()]);
 	}
 	
-	protected void updateFrontEndCutsChartHandler() {
+	@Override
+	public void updateFrontEndCutsChartHandler() {
 		int value = frontCutSpinner.getSelection();
 		xyChartData.setFrontCut(value);
 		for (ISeries series : chart.getSeriesSet().getSeries()) ((ILineSeries)series).setFrontCut(value);
@@ -654,7 +657,8 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		return false;
 	}
 	
-	protected void setDirty(boolean dirty) {
+	@Override
+	public void setDirty(boolean dirty) {
 		this.dirty = dirty;
 		firePropertyChange(PROP_DIRTY);
 	}
@@ -675,9 +679,9 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		// TODO Nothing
 	}
 
-	public XYChart getXYChartData() {
-		return xyChartData;
-	}
+//	public XYChart getXYChartData() {
+//		return xyChartData;
+//	}
 
 	@Override
 	public void postZoomUpdate() {
@@ -763,6 +767,36 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		xyChartData.setYAxisGridColor(chart.getAxisSet().getYAxis(0).getGrid().getForeground());
 		xyChartData.setYAxisGridStyle(chart.getAxisSet().getYAxis(0).getGrid().getStyle().name());
 		setDirty(true);
+	}
+
+	@Override
+	public XYChart getChartData() {
+		return xyChartData;
+	}
+
+	@Override
+	public void redraw() {
+		chart.redraw();
+	}
+
+	@Override
+	public void updateXAxisRange(double min, double max) {
+		chart.getAxisSet().getXAxis(0).setRange(new Range(min, max));
+	}
+
+	@Override
+	public void updateYAxisRange(double min, double max) {
+		chart.getAxisSet().getYAxis(0).setRange(new Range(min, max));
+	}
+
+	@Override
+	public void updateZAxisRange(double min, double max) {
+		// this not a 3D chart, nothing to do.
+	}
+
+	@Override
+	public void removeSeries(String seriesID) {
+		chart.removeSeries(seriesID);
 	}
 	
 }

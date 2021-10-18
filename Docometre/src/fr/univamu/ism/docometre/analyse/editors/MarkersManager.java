@@ -138,7 +138,7 @@ public final class MarkersManager extends MouseAdapter implements ICustomPaintLi
 	}
 	
 	private void displayXYMarkers(ISeries series, Channel xSignal, Channel ySignal, boolean displayXMarkers, int trialNumber, int frontCut, int endCut, PaintEvent event) {
-		XYChart xyChartData = ((XYChartEditor)containerEditor).getXYChartData();
+		XYChart xyChartData = ((XYChartEditor)containerEditor).getChartData();
 		int delta = xyChartData.getMarkersSize();
 		double sf = MathEngineFactory.getMathEngine().getSampleFrequency(xSignal);
 		String[] markersGroupsLabels = new String[0]; 
@@ -194,7 +194,7 @@ public final class MarkersManager extends MouseAdapter implements ICustomPaintLi
 	}
 	
 	private void paintMarkersForXYChartEditor(PaintEvent event) {
-		XYChart xyChartData = ((XYChartEditor)containerEditor).getXYChartData();
+		XYChart xyChartData = ((XYChartEditor)containerEditor).getChartData();
 		if(!xyChartData.isShowMarkers()) return;
 		for (String seriesID : xyChartData.getSeriesIDsPrefixes()) {
 			Channel[] signals = xyChartData.getXYChannels(seriesID);

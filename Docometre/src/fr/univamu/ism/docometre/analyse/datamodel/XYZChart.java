@@ -178,4 +178,8 @@ public class XYZChart extends XYChart {
 		this.zAxisGridColor = color.getRGB();
 	}
 	
+	public Channel[] getXYZChannels(String key) {
+		return channelsMap.get(key);
+	}
+	
 }

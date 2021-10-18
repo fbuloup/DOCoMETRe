@@ -27,6 +27,7 @@ import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
+import fr.univamu.ism.docometre.analyse.datamodel.XYZChart;
 
 public class ChannelEditorActionBarContributor extends EditorActionBarContributor implements IPerspectiveListener {
 	
@@ -65,7 +66,7 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 				IResource subject = ((IContainer)SelectedExprimentContributionItem.selectedExperiment).findMember(loadedSubject.split("\\.")[1]);
 				signals.addAll(Arrays.asList(MathEngineFactory.getMathEngine().getSignals(subject)));
 			}
-			ElementListSelectionDialog elementListSelectionDialog = new ElementListSelectionDialog(xyChartEditor.getSite().getShell(), new LabelProvider() {
+			ElementListSelectionDialog elementListSelectionDialog = new ElementListSelectionDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), new LabelProvider() {
 				@Override
 				public String getText(Object element) {
 					return ((Channel)element).getFullName();
@@ -83,9 +84,19 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 				if(elementListSelectionDialog.open() == Dialog.OK) {
 					selection = elementListSelectionDialog.getResult();
 					Channel ySignal = (Channel) selection[0];
-					xyChartEditor.getXYChartData().addCurve(xSignal, ySignal);
-					xyChartEditor.refreshTrialsListFrontEndCuts();
-					xyChartEditor.setDirty(true);
+					if(chartEditor instanceof XYChartEditor) {
+						chartEditor.getChartData().addCurve(xSignal, ySignal);
+						chartEditor.refreshTrialsListFrontEndCuts();
+						chartEditor.setDirty(true);
+					} else if(chartEditor instanceof XYZChartEditor) {
+						if(elementListSelectionDialog.open() == Dialog.OK) {
+							selection = elementListSelectionDialog.getResult();
+							Channel zSignal = (Channel) selection[0];
+							((XYZChart)chartEditor.getChartData()).addCurve(xSignal, ySignal, zSignal);
+							chartEditor.refreshTrialsListFrontEndCuts();
+							chartEditor.setDirty(true);
+						}
+					}
 				}
 			}
 		}
@@ -99,25 +110,25 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 		@Override
 		public void run() {
 			if(!MathEngineFactory.getMathEngine().isStarted()) return;
-			ElementListSelectionDialog elementListSelectionDialog = new ElementListSelectionDialog(xyChartEditor.getSite().getShell(), new LabelProvider());
+			ElementListSelectionDialog elementListSelectionDialog = new ElementListSelectionDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), new LabelProvider());
 			elementListSelectionDialog.setTitle(DocometreMessages.CurvesSelectionDialogTitle);
 			elementListSelectionDialog.setMessage(DocometreMessages.CurvesSelectionDialogMessage);
 			elementListSelectionDialog.setMultipleSelection(true);
-			elementListSelectionDialog.setElements(xyChartEditor.getXYChartData().getSeriesIDsPrefixes());
+			elementListSelectionDialog.setElements(chartEditor.getChartData().getSeriesIDsPrefixes());
 			if(elementListSelectionDialog.open() == Dialog.OK) {
 				String[] selection = Arrays.asList(elementListSelectionDialog.getResult()).toArray(new String[elementListSelectionDialog.getResult().length]);
-				String[] seriesIDs = xyChartEditor.getSeriesIDs();
+				String[] seriesIDs = chartEditor.getSeriesIDs();
 				for (String seriesID : seriesIDs) {
 					for (String item : selection) {
 						if(seriesID.startsWith(item)) {
-							xyChartEditor.getChart().removeSeries(seriesID);
-							xyChartEditor.getXYChartData().removeCurve(item);
+							chartEditor.removeSeries(seriesID);
+							chartEditor.getChartData().removeCurve(item);
 						}
 					}
 				}
-				xyChartEditor.getChart().redraw();
-				xyChartEditor.refreshTrialsListFrontEndCuts();
-				xyChartEditor.setDirty(true);
+				chartEditor.redraw();
+				chartEditor.refreshTrialsListFrontEndCuts();
+				chartEditor.setDirty(true);
 			}
 		}
 	}
@@ -126,7 +137,7 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 	private ActionContributionItem previousTrialActionContributionItem;
 	private SubToolBarManager subToolBarManager;
 	private TrialsEditor editor;
-	private XYChartEditor xyChartEditor;
+	private Chart2D3DBehaviour chartEditor;
 	private ActionContributionItem addCurveActionContributionItem;
 	private ActionContributionItem removeCurveActionContributionItem;
 
@@ -157,7 +168,7 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 	@Override
 	public void setActiveEditor(IEditorPart targetEditor) {
 		editor = null;
-		xyChartEditor = null;
+		chartEditor = null;
 		
 		subToolBarManager.setVisible(false);
 		
@@ -173,10 +184,10 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 		nextTrialActionContributionItem.setVisible(true);
 		previousTrialActionContributionItem.setVisible(true);
 		editor = (TrialsEditor) targetEditor;
-		if(editor instanceof XYChartEditor) {
+		if(editor instanceof Chart2D3DBehaviour) {
 			addCurveActionContributionItem.setVisible(true);
 			removeCurveActionContributionItem.setVisible(true);
-			xyChartEditor = (XYChartEditor) targetEditor;
+			chartEditor = (Chart2D3DBehaviour) targetEditor;
 		}
 		
 		subToolBarManager.update(true);

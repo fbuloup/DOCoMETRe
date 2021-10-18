@@ -164,6 +164,25 @@ public class XYZSeries<K extends Comparable<K>> implements Serializable {
     public void add(double x, double y, double z) {
         add(new XYZDataItem(x, y, z));   
     }
+    
+    /**
+     * Adds new array of data items to the series and sends a 
+     * {@link Series3DChangeEvent} to all registered listeners.
+     * 
+     * @param x  the x-values array.
+     * @param y  the y-values array.
+     * @param z  the z-values array.
+     */
+    public void add(double[] x, double[] y, double[] z) {
+    	Args.nullNotPermitted(x, "x");
+    	Args.nullNotPermitted(y, "y");
+    	Args.nullNotPermitted(z, "z");
+    	if(x.length != y.length || x.length != z.length || y.length != z.length) throw new IllegalArgumentException("x, y & z args must have same length");
+    	for (int i = 0; i < x.length; i++) {
+    		this.items.add(new XYZDataItem(x[i], y[i], z[i]));
+		}
+        fireSeriesChanged(); 
+    }
 
     /**
      * Adds a new data item to the series and sends a 

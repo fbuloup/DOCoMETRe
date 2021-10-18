@@ -6,23 +6,20 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.TraverseEvent;
 import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.swtchart.Range;
-import org.eclipse.swtchart.extensions.charts.InteractiveChart;
 
 import fr.univamu.ism.docometre.analyse.datamodel.XYChart;
+import fr.univamu.ism.docometre.analyse.datamodel.XYZChart;
 
 public class RangeHandler implements TraverseListener {
 	
 	private Text rangeText;
 	private XYChart xyChartData;
-	private InteractiveChart chart;
-	private XYChartEditor xyChartEditor;
+	private Chart2D3DBehaviour chartBehaviour;
 
-	public RangeHandler(Text rangeText, XYChartEditor xyChartEditor) {
-		this.xyChartEditor = xyChartEditor;
+	public RangeHandler(Text rangeText, Chart2D3DBehaviour chartBehaviour) {
+		this.chartBehaviour = chartBehaviour;
 		this.rangeText = rangeText;
-		xyChartData = xyChartEditor.getXYChartData();
-		chart = xyChartEditor.getChart();
+		xyChartData = chartBehaviour.getChartData();
 	}
 
 	@Override
@@ -33,7 +30,6 @@ public class RangeHandler implements TraverseListener {
 			if(Pattern.matches("^(-)?\\d+(\\.\\d*)?$", valueString)) {
 				double value1 = Double.parseDouble(rangeText.getText());
 				double value2 = value1;
-				Range range = new Range(value1, value2);
 				if(key.equals("xMin")) {
 					value2 = xyChartData.getxMax();
 					if(value2 <= value1) return;
@@ -54,17 +50,28 @@ public class RangeHandler implements TraverseListener {
 					if(value2 >= value1) return;
 					xyChartData.setyMax(value1);
 				}
+				if(key.equals("zMin")) {
+					value2 = ((XYZChart)xyChartData).getzMax();
+					if(value2 <= value1) return;
+					((XYZChart)xyChartData).setzMin(value1);
+				}
+				if(key.equals("zMax")) {
+					value2 = ((XYZChart)xyChartData).getzMin();
+					if(value2 >= value1) return;
+					((XYZChart)xyChartData).setzMax(value1);
+				}
 				
 				if(key.equals("xMin") || key.equals("xMax")) {
-					range = new Range(xyChartData.getxMin(), xyChartData.getxMax());
-					chart.getAxisSet().getXAxis(0).setRange(range);
+					chartBehaviour.updateXAxisRange(xyChartData.getxMin(), xyChartData.getxMax());
 				}
 				if(key.equals("yMin") || key.equals("yMax")) {
-					range = new Range(xyChartData.getyMin(), xyChartData.getyMax());
-					chart.getAxisSet().getYAxis(0).setRange(range);
+					chartBehaviour.updateYAxisRange(xyChartData.getyMin(), xyChartData.getyMax());
 				}
-				chart.redraw();
-				xyChartEditor.setDirty(true);
+				if(key.equals("zMin") || key.equals("zMax")) {
+					chartBehaviour.updateZAxisRange(((XYZChart)xyChartData).getzMin(), ((XYZChart)xyChartData).getzMax());
+				}
+				chartBehaviour.redraw();
+				chartBehaviour.setDirty(true);
 			} else {
 				if(key.equals("xMin")) rangeText.setText(Double.toString(xyChartData.getxMin()));
 				if(key.equals("xMax")) rangeText.setText(Double.toString(xyChartData.getxMax()));
