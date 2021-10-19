@@ -51,8 +51,8 @@ public class XYZChart extends XYChart {
 	
 	public void setRange(double xMin, double xMax, double yMin, double yMax, double zMin, double zMax) {
 		super.setRange(xMin, xMax, yMin, yMax);
-		setzMin(xMin);
-		setzMax(xMax);
+		setzMin(zMin);
+		setzMax(zMax);
 	}
 	
 	public void addCurve(Channel xChannel, Channel yChannel, Channel zChannel) {

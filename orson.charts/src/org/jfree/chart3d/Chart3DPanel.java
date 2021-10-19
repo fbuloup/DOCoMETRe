@@ -40,10 +40,12 @@ import java.io.ObjectInputStream;
 import java.util.EventListener;
 import javax.swing.event.EventListenerList;
 
+import org.jfree.chart3d.axis.NumberAxis3D;
 import org.jfree.chart3d.data.ItemKey;
 import org.jfree.chart3d.data.Range;
 import org.jfree.chart3d.data.xyz.XYZSeries;
 import org.jfree.chart3d.data.xyz.XYZSeriesCollection;
+import org.jfree.chart3d.graphics2d.Anchor2D;
 import org.jfree.chart3d.graphics3d.Object3D;
 import org.jfree.chart3d.graphics3d.RenderedElement;
 import org.jfree.chart3d.graphics3d.RenderingInfo;
@@ -101,7 +103,14 @@ public class Chart3DPanel extends Panel3D implements Chart3DChangeListener,
         this.autoFitOnPanelResize = false;
         xyzPlot = (XYZPlot) chart.getPlot();
         xyzSeriesCollection = (XYZSeriesCollection) xyzPlot.getDataset();
+        chart.setLegendAnchor(Anchor2D.TOP_CENTER);
+        
+        ((NumberAxis3D)xyzPlot.getXAxis()).setAutoAdjustRange(false);
+        ((NumberAxis3D)xyzPlot.getYAxis()).setAutoAdjustRange(false);
+        ((NumberAxis3D)xyzPlot.getZAxis()).setAutoAdjustRange(false);
+        
         registerForTooltips();
+
     }
 
     /**
@@ -303,7 +312,6 @@ public class Chart3DPanel extends Panel3D implements Chart3DChangeListener,
 		XYZSeries<String> xyzSeries = new XYZSeries<>(seriesID);
 		xyzSeries.add(xValues, yValues, zValues);
 		xyzSeriesCollection.add(xyzSeries);
-//		xyzPlot.isAutoAdjustDimensions()
 	}
 	
 	public Range getXRange() {
@@ -328,6 +336,18 @@ public class Chart3DPanel extends Panel3D implements Chart3DChangeListener,
 	
 	public void setZRange(double min, double max) {
 		xyzPlot.getZAxis().setRange(min, max);
+	}
+
+	public void update() {
+//		Plot3DChangeEvent plot3dChangeEvent = new Plot3DChangeEvent(this, xyzPlot, true);
+//		chart.plotChanged(plot3dChangeEvent);
+		
+	}
+	
+	public void setAutoScale(boolean autoScale) {
+		((NumberAxis3D)xyzPlot.getXAxis()).setAutoAdjustRange(autoScale);
+        ((NumberAxis3D)xyzPlot.getYAxis()).setAutoAdjustRange(autoScale);
+        ((NumberAxis3D)xyzPlot.getZAxis()).setAutoAdjustRange(autoScale);
 	}
 
 }

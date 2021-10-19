@@ -33,6 +33,7 @@
 package org.jfree.chart3d.graphics3d;
 
 import java.awt.Color;
+import java.awt.Stroke;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 
@@ -272,4 +273,8 @@ public class Face {
         }
         return result + "]";
     }
+
+	public Stroke getStroke() {
+		return this.owner.getStroke(this);
+	}
 }

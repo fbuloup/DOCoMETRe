@@ -871,7 +871,6 @@ public class Chart3D implements Drawable3D, ChartElement,
         List<Face> facesInPaintOrder = new ArrayList<>(world.getFaces());
         facesInPaintOrder = this.faceSorter.sort(facesInPaintOrder, eyePts);
         Line2D line = null;
-        Stroke stroke = new BasicStroke(1.0f);
         for (Face f : facesInPaintOrder) {
             // check for the special case where the face is just a line
             if (f.getVertexCount() == 2) {
@@ -883,7 +882,7 @@ public class Chart3D implements Drawable3D, ChartElement,
                 int v1 = f.getVertexIndex(1);
                 line.setLine(pts[v0].getX(), pts[v0].getY(), pts[v1].getX(), 
                         pts[v1].getY());
-                g2.setStroke(stroke);
+                g2.setStroke(f.getStroke());
                 g2.draw(line);
                 continue;
             }
@@ -914,7 +913,7 @@ public class Chart3D implements Drawable3D, ChartElement,
                 if (f instanceof ChartBoxFace 
                         && (this.plot instanceof CategoryPlot3D 
                         || this.plot instanceof XYZPlot)) {
-                    Stroke savedStroke = g2.getStroke();
+                	Stroke savedStroke = g2.getStroke();
                     ChartBoxFace cbf = (ChartBoxFace) f;
                     drawGridlines(g2, cbf, pts);
                     drawMarkers(g2, cbf, pts);

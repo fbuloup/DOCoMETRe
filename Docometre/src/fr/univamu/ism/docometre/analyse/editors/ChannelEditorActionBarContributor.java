@@ -11,6 +11,7 @@ import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.SubToolBarManager;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPerspectiveDescriptor;
@@ -61,6 +62,10 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 		public void run() {
 			if(!MathEngineFactory.getMathEngine().isStarted()) return;
 			String[] loadedSubjects = MathEngineFactory.getMathEngine().getLoadedSubjects();
+			if(loadedSubjects.length == 0) {
+				MessageDialog.openInformation(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "Hey !?", "There is no subjects loaded !");
+				return;
+			}
 			Set<Channel> signals = new HashSet<>();
 			for (String loadedSubject : loadedSubjects) {
 				IResource subject = ((IContainer)SelectedExprimentContributionItem.selectedExperiment).findMember(loadedSubject.split("\\.")[1]);
@@ -89,6 +94,8 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 						chartEditor.refreshTrialsListFrontEndCuts();
 						chartEditor.setDirty(true);
 					} else if(chartEditor instanceof XYZChartEditor) {
+						elementListSelectionDialog.setTitle(DocometreMessages.ZAxisSelectionDialogTitle);
+						elementListSelectionDialog.setMessage(DocometreMessages.ZAxisSelectionDialogMessage);
 						if(elementListSelectionDialog.open() == Dialog.OK) {
 							selection = elementListSelectionDialog.getResult();
 							Channel zSignal = (Channel) selection[0];

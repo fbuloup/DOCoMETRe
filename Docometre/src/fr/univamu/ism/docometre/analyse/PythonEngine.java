@@ -627,6 +627,7 @@ public class PythonEngine implements MathEngine {
 	@Override
 	public String[] getLoadedSubjects() {
 		String loadedSubjects = pythonController.getPythonEntryPoint().getLoadedSubjects();
+		if("".equals(loadedSubjects)) return new String[0];
 		return loadedSubjects.split(":");
 	}
 

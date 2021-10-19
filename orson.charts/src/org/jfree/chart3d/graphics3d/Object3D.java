@@ -32,8 +32,10 @@
 
 package org.jfree.chart3d.graphics3d;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Stroke;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -82,6 +84,9 @@ public class Object3D {
     
     /** The primary color for the object. */
     private Color color;
+    
+    /** The Stroke to draw line */
+    protected Stroke stroke;
     
     /** 
      * A flag that indicates whether or not faces for this object have their
@@ -831,5 +836,12 @@ public class Object3D {
         }
         return labelObj;
     }
+
+	public Stroke getStroke(Face face) {
+		if(stroke == null) {
+			stroke = new BasicStroke(1);
+		}
+		return stroke;
+	}
 
 }

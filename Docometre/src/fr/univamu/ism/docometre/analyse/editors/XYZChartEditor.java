@@ -50,6 +50,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
 import org.jfree.chart3d.Chart3DPanel;
+import org.jfree.chart3d.graphics3d.swing.DisplayPanel3D;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
@@ -127,7 +128,6 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 
 	@Override
 	public void createPartControl(Composite parent) {
-		
 		Composite innerContainer = new Composite(parent, SWT.NONE);
 		innerContainer.setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_BLACK));
 		FillLayout fl = new FillLayout();
@@ -153,11 +153,18 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 			@Override
 			public void run() {
 				chart3DPanel = Orson3DChartFactory.create3DChart();
-                frame.add(chart3DPanel);
+				DisplayPanel3D displayPanel3D = new DisplayPanel3D(chart3DPanel);
+                frame.add(displayPanel3D);
                 frame.pack();
                 frame.setVisible(true);
 			}
 		});
+		
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
 		
 //		chart = new InteractiveChart(container, SWT.NONE);
 //		chart.setBackground(xyzChartData.getBackGroundColor());
@@ -303,7 +310,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 		// Scales
 		scaleValuesGroup = new Group(container2, SWT.NONE);
 		scaleValuesGroup.setText(DocometreMessages.ScaleValueTitle);
-		scaleValuesGroup.setLayout(new GridLayout(6, false));
+		scaleValuesGroup.setLayout(new GridLayout(4, false));
 		scaleValuesGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		scaleValuesGroup.setEnabled(!xyzChartData.isAutoScale());
 		
@@ -349,19 +356,19 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 		zMinLabel.setText("Z min. :");
 		zMinLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
 		zMinText = new Text(scaleValuesGroup, SWT.BORDER);
-		zMinText.setText(Double.toString(xyzChartData.getyMin()));
+		zMinText.setText(Double.toString(xyzChartData.getzMin()));
 		zMinText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		zMinText.setData("zMin");
-		zMinText.addTraverseListener(new RangeHandler(yMinText, this));
+		zMinText.addTraverseListener(new RangeHandler(zMinText, this));
 		zMinText.setToolTipText(DocometreMessages.PressEnter);
 		Label zMaxLabel = new Label(scaleValuesGroup, SWT.NONE);
 		zMaxLabel.setText("Z max. :");
 		zMaxLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
 		zMaxText = new Text(scaleValuesGroup, SWT.BORDER);
-		zMaxText.setText(Double.toString(xyzChartData.getyMax()));
+		zMaxText.setText(Double.toString(xyzChartData.getzMax()));
 		zMaxText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		zMaxText.setData("zMax");
-		zMaxText.addTraverseListener(new RangeHandler(yMaxText, this));
+		zMaxText.addTraverseListener(new RangeHandler(zMaxText, this));
 		zMaxText.setToolTipText(DocometreMessages.PressEnter);
 		
 		Composite bottomContainer = new Composite(container2, SWT.NONE);
@@ -383,7 +390,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 			public void widgetSelected(SelectionEvent e) {
 				boolean showMarkers = showMarkersButton.getSelection();
 				xyzChartData.setShowMarkers(showMarkers);
-				chart3DPanel.repaint();
+				chart3DPanel.update();
 				setDirty(true);
 			}
 		});
@@ -402,7 +409,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 				int value = sizeSpinner.getSelection() + e.count;
 				sizeSpinner.setSelection(value);
 				xyzChartData.setMarkersSize(sizeSpinner.getSelection());
-				chart3DPanel.repaint();
+				chart3DPanel.update();
 				setDirty(true);
 			}
 		});
@@ -410,7 +417,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				xyzChartData.setMarkersSize(sizeSpinner.getSelection());
-				chart3DPanel.repaint();
+				chart3DPanel.update();
 				setDirty(true);
 			}
 		});
@@ -424,7 +431,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 			public void widgetSelected(SelectionEvent e) {
 				boolean showMarkersLabels = showMarkersLabelsButton.getSelection();
 				xyzChartData.setShowMarkersLabels(showMarkersLabels);
-				chart3DPanel.repaint();
+				chart3DPanel.update();
 				setDirty(true);
 			}
 		});
@@ -449,11 +456,12 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 				boolean autoScale = autoScaleButton.getSelection();
 				xyzChartData.setAutoScale(autoScale);
 				scaleValuesGroup.setEnabled(!autoScale); 
-				if(autoScale) {
+//				if(autoScale) {
 //					chart.getAxisSet().adjustRange();
 //					updateRange();
-					chart3DPanel.repaint();
-				}
+//					chart3DPanel.update();
+					chart3DPanel.setAutoScale(autoScale);
+//				}
 				setDirty(true);
 			}
 		});
@@ -508,7 +516,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 //				i++;
 			}
 		}
-		chart3DPanel.repaint();
+		chart3DPanel.update();
 	}
 	
 	@Override
@@ -560,7 +568,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 //			ids.add(id);
 //		}
 //		return ids.toArray(new String[ids.size()]);
-		return new String[0];
+		return chart3DPanel.getSeriesIDs();
 	}
 	
 	@Override
@@ -614,11 +622,13 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 			updateRange();
 		}
 		else {
-			chart3DPanel.setXRange(xyzChartData.getxMin(), xyzChartData.getxMax());
-			chart3DPanel.setYRange(xyzChartData.getyMin(), xyzChartData.getyMax());
-			chart3DPanel.setZRange(xyzChartData.getzMin(), xyzChartData.getzMax());
+			if(chart3DPanel != null) {
+				chart3DPanel.setXRange(xyzChartData.getxMin(), xyzChartData.getxMax());
+				chart3DPanel.setYRange(xyzChartData.getyMin(), xyzChartData.getyMax());
+				chart3DPanel.setZRange(xyzChartData.getzMin(), xyzChartData.getzMax());
+			}
 		}
-		chart3DPanel.repaint();
+		if(chart3DPanel != null) chart3DPanel.update();
 		setDirty(true);
 	}
 	
@@ -813,31 +823,26 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 	@Override
 	public void redraw() {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public void updateXAxisRange(double min, double max) {
-		// TODO Auto-generated method stub
-		
+		chart3DPanel.setXRange(min, max);
 	}
 
 	@Override
 	public void updateYAxisRange(double min, double max) {
-		// TODO Auto-generated method stub
-		
+		chart3DPanel.setYRange(min, max);
 	}
 
 	@Override
 	public void updateZAxisRange(double min, double max) {
-		// TODO Auto-generated method stub
-		
+		chart3DPanel.setZRange(min, max);
 	}
 
 	@Override
 	public void removeSeries(String seriesID) {
-		// TODO Auto-generated method stub
-		
+		chart3DPanel.removeSeries(seriesID);
 	}
 	
 }

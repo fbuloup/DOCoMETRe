@@ -32,6 +32,7 @@
 
 package org.jfree.chart3d.renderer.xyz;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.io.Serializable;
 
@@ -120,11 +121,12 @@ public class LineXYZRenderer extends AbstractXYZRenderer implements XYZRenderer,
                     (float) (line.getEnd().getX() + xOffset), 
                     (float) (line.getEnd().getY() + yOffset), 
                     (float) (line.getEnd().getZ() + zOffset), color);
+            line3D.setStroke(new BasicStroke(2));
             world.add(line3D);
         }
     }
 
-    /**
+	/**
      * Tests this renderer for equality with an arbitrary object.
      * 
      * @param obj  the object ({@code null} permitted).

@@ -33,6 +33,7 @@
 package org.jfree.chart3d.graphics3d;
 
 import java.awt.Color;
+import java.awt.Stroke;
 
 /**
  * A line between two points in 3D space.
@@ -60,4 +61,8 @@ public class LineObject3D extends Object3D {
         addFace(new Face(this, new int[] {0, 1}));
     }
 
+    
+    public void setStroke(Stroke stroke) {
+    	this.stroke = stroke;
+    }
 }
