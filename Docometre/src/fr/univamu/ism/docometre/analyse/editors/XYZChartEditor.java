@@ -50,7 +50,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
 import org.jfree.chart3d.Chart3DPanel;
-import org.jfree.chart3d.graphics3d.swing.DisplayPanel3D;
+import org.jfree.chart3d.graphics3d.ViewPoint3D;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
@@ -72,7 +72,6 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 	private XYZChart xyzChartData;
 	private SashForm container;
 	private ListViewer trialsListViewer;
-//	private InteractiveChart chart;
 	private Text xMinText;
 	private Text xMaxText;
 	private Text yMinText;
@@ -153,8 +152,8 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 			@Override
 			public void run() {
 				chart3DPanel = Orson3DChartFactory.create3DChart();
-				DisplayPanel3D displayPanel3D = new DisplayPanel3D(chart3DPanel);
-                frame.add(displayPanel3D);
+//				DisplayPanel3D displayPanel3D = new DisplayPanel3D(chart3DPanel);
+                frame.add(chart3DPanel);
                 frame.pack();
                 frame.setVisible(true);
 			}
@@ -843,6 +842,61 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 	@Override
 	public void removeSeries(String seriesID) {
 		chart3DPanel.removeSeries(seriesID);
+	}
+
+	public void zoomIn() {
+        double zoomMultiplier = 0.95; 
+		ViewPoint3D viewPt = chart3DPanel.getViewPoint();
+        double minDistance = chart3DPanel.getMinViewingDistance();
+        double maxDistance = minDistance * chart3DPanel.getMaxViewingDistanceMultiplier();
+        double valRho = Math.max(minDistance, Math.min(maxDistance, viewPt.getRho() * zoomMultiplier));
+        chart3DPanel.getViewPoint().setRho(valRho);
+        chart3DPanel.repaint();
+	}
+
+	public void zoomOut() {
+        double zoomMultiplier = 10.0 / 9.5; 
+		ViewPoint3D viewPt = chart3DPanel.getViewPoint();
+        double minDistance = chart3DPanel.getMinViewingDistance();
+        double maxDistance = minDistance * chart3DPanel.getMaxViewingDistanceMultiplier();
+        double valRho = Math.max(minDistance, Math.min(maxDistance, viewPt.getRho() * zoomMultiplier));
+        chart3DPanel.getViewPoint().setRho(valRho);
+        chart3DPanel.repaint();
+	}
+
+	public void zoomToFit() {
+		chart3DPanel.zoomToFit();
+	}
+
+	public void up() {
+		double delta = chart3DPanel.getRotateIncrement();
+		chart3DPanel.getViewPoint().moveUpDown(delta);
+		chart3DPanel.repaint();
+	}
+
+	public void down() {
+		double delta = chart3DPanel.getRotateIncrement();
+		chart3DPanel.getViewPoint().moveUpDown(-delta);
+		chart3DPanel.repaint();
+	}
+
+	public void right() {
+        chart3DPanel.panLeftRight(-chart3DPanel.getPanIncrement());
+	}
+
+	public void left() {
+		chart3DPanel.panLeftRight(chart3DPanel.getPanIncrement());
+		
+	}
+
+	public void turnLeft() {
+        chart3DPanel.getViewPoint().roll(-chart3DPanel.getRollIncrement());
+        chart3DPanel.repaint();
+	}
+
+	public void turnRight() {
+        chart3DPanel.getViewPoint().roll(chart3DPanel.getRollIncrement());
+        chart3DPanel.repaint();
 	}
 	
 }

@@ -71,8 +71,7 @@ import org.jfree.chart3d.plot.XYZPlot;
  * instances of this class.
  */
 @SuppressWarnings("serial")
-public class Chart3DPanel extends Panel3D implements Chart3DChangeListener, 
-        ComponentListener {
+public class Chart3DPanel extends Panel3D implements Chart3DChangeListener, ComponentListener {
 
     /**
      * The chart being rendered.
