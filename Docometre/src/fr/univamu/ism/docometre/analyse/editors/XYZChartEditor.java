@@ -1,7 +1,7 @@
 package fr.univamu.ism.docometre.analyse.editors;
 
 import java.awt.Frame;
-
+import java.awt.event.MouseWheelEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -85,7 +85,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 	private Group scaleValuesGroup;
 	private Button useSameColorButton;
 	private Composite chartContainer;
-	protected Chart3DPanel chart3DPanel;
+	protected volatile Chart3DPanel chart3DPanel;
 
 	public XYZChartEditor() {
 	}
@@ -148,22 +148,26 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 		
 		Frame frame = SWT_AWT.new_Frame(chartContainer);
 		
-		SwingUtilities.invokeLater(new Runnable() {
+		Thread awtThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				chart3DPanel = Orson3DChartFactory.create3DChart();
-//				DisplayPanel3D displayPanel3D = new DisplayPanel3D(chart3DPanel);
                 frame.add(chart3DPanel);
                 frame.pack();
                 frame.setVisible(true);
+                frame.repaint();
+        		frame.validate();
+        		chart3DPanel.addMouseWheelListener(new java.awt.event.MouseWheelListener() {
+					@Override
+					public void mouseWheelMoved(MouseWheelEvent e) {
+						xyzChartData.setViewPoint(chart3DPanel.getViewPoint());
+						setDirty(true);
+					}
+				});
 			}
 		});
 		
-		try {
-			Thread.sleep(500);
-		} catch (InterruptedException e1) {
-			e1.printStackTrace();
-		}
+		SwingUtilities.invokeLater(awtThread);
 		
 //		chart = new InteractiveChart(container, SWT.NONE);
 //		chart.setBackground(xyzChartData.getBackGroundColor());
@@ -455,12 +459,8 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 				boolean autoScale = autoScaleButton.getSelection();
 				xyzChartData.setAutoScale(autoScale);
 				scaleValuesGroup.setEnabled(!autoScale); 
-//				if(autoScale) {
-//					chart.getAxisSet().adjustRange();
-//					updateRange();
-//					chart3DPanel.update();
-					chart3DPanel.setAutoScale(autoScale);
-//				}
+				chart3DPanel.setAutoScale(autoScale);
+				updateRange();
 				setDirty(true);
 			}
 		});
@@ -481,9 +481,23 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 		container.setSashWidth(5);
 		container.setWeights(new int[] {80, 20});
 		
-		refreshTrialsListFrontEndCuts();
-		trialsListViewer.setSelection(new StructuredSelection(xyzChartData.getSelectedTrialsNumbers()));
-		setDirty(false);
+		getSite().getShell().getDisplay().asyncExec(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					awtThread.join();
+					chart3DPanel.setAutoScale(xyzChartData.isAutoScale());
+					System.out.println(xyzChartData.getViewPoint());
+					if(xyzChartData.getViewPoint() != null) chart3DPanel.setViewPoint(xyzChartData.getViewPoint());
+					refreshTrialsListFrontEndCuts();
+					trialsListViewer.setSelection(new StructuredSelection(xyzChartData.getSelectedTrialsNumbers()));
+					setDirty(false);
+				} catch (InterruptedException e) {
+					Activator.logErrorMessageWithCause(e);
+					e.printStackTrace();
+				} 
+			}
+		});
 
 	}
 	
@@ -617,17 +631,14 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 		}
 		
 		if(xyzChartData.isAutoScale()) {
-//			chart.getAxisSet().adjustRange();
 			updateRange();
 		}
 		else {
-			if(chart3DPanel != null) {
-				chart3DPanel.setXRange(xyzChartData.getxMin(), xyzChartData.getxMax());
-				chart3DPanel.setYRange(xyzChartData.getyMin(), xyzChartData.getyMax());
-				chart3DPanel.setZRange(xyzChartData.getzMin(), xyzChartData.getzMax());
-			}
+			chart3DPanel.setXRange(xyzChartData.getxMin(), xyzChartData.getxMax());
+			chart3DPanel.setYRange(xyzChartData.getyMin(), xyzChartData.getyMax());
+			chart3DPanel.setZRange(xyzChartData.getzMin(), xyzChartData.getzMax());
 		}
-		if(chart3DPanel != null) chart3DPanel.update();
+		chart3DPanel.update();
 		setDirty(true);
 	}
 	
@@ -851,7 +862,9 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
         double maxDistance = minDistance * chart3DPanel.getMaxViewingDistanceMultiplier();
         double valRho = Math.max(minDistance, Math.min(maxDistance, viewPt.getRho() * zoomMultiplier));
         chart3DPanel.getViewPoint().setRho(valRho);
-        chart3DPanel.repaint();
+        xyzChartData.setViewPoint(chart3DPanel.getViewPoint());
+        chart3DPanel.update();
+        setDirty(true);
 	}
 
 	public void zoomOut() {
@@ -861,42 +874,62 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
         double maxDistance = minDistance * chart3DPanel.getMaxViewingDistanceMultiplier();
         double valRho = Math.max(minDistance, Math.min(maxDistance, viewPt.getRho() * zoomMultiplier));
         chart3DPanel.getViewPoint().setRho(valRho);
-        chart3DPanel.repaint();
+        xyzChartData.setViewPoint(chart3DPanel.getViewPoint());
+        chart3DPanel.update();
+        setDirty(true);
 	}
 
 	public void zoomToFit() {
 		chart3DPanel.zoomToFit();
+        xyzChartData.setViewPoint(chart3DPanel.getViewPoint());
+		chart3DPanel.update();
+        setDirty(true);
+        System.out.println(chart3DPanel.getViewPoint().toString());
+        System.out.println(chart3DPanel.getMinViewingDistance());
 	}
 
 	public void up() {
 		double delta = chart3DPanel.getRotateIncrement();
 		chart3DPanel.getViewPoint().moveUpDown(delta);
-		chart3DPanel.repaint();
+        xyzChartData.setViewPoint(chart3DPanel.getViewPoint());
+		chart3DPanel.update();
+        setDirty(true);
 	}
 
 	public void down() {
 		double delta = chart3DPanel.getRotateIncrement();
 		chart3DPanel.getViewPoint().moveUpDown(-delta);
-		chart3DPanel.repaint();
+        xyzChartData.setViewPoint(chart3DPanel.getViewPoint());
+		chart3DPanel.update();
+        setDirty(true);
 	}
 
 	public void right() {
         chart3DPanel.panLeftRight(-chart3DPanel.getPanIncrement());
+        xyzChartData.setViewPoint(chart3DPanel.getViewPoint());
+        chart3DPanel.update();
+        setDirty(true);
 	}
 
 	public void left() {
 		chart3DPanel.panLeftRight(chart3DPanel.getPanIncrement());
-		
+        xyzChartData.setViewPoint(chart3DPanel.getViewPoint());
+        chart3DPanel.update();
+        setDirty(true);
 	}
 
 	public void turnLeft() {
         chart3DPanel.getViewPoint().roll(-chart3DPanel.getRollIncrement());
-        chart3DPanel.repaint();
+        xyzChartData.setViewPoint(chart3DPanel.getViewPoint());
+        chart3DPanel.update();
+        setDirty(true);
 	}
 
 	public void turnRight() {
         chart3DPanel.getViewPoint().roll(chart3DPanel.getRollIncrement());
-        chart3DPanel.repaint();
+        xyzChartData.setViewPoint(chart3DPanel.getViewPoint());
+        chart3DPanel.update();
+        setDirty(true);
 	}
 	
 }

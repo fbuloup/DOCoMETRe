@@ -338,15 +338,15 @@ public class Chart3DPanel extends Panel3D implements Chart3DChangeListener, Comp
 	}
 
 	public void update() {
-//		Plot3DChangeEvent plot3dChangeEvent = new Plot3DChangeEvent(this, xyzPlot, true);
-//		chart.plotChanged(plot3dChangeEvent);
-		
+		repaint();
+		validate();
 	}
 	
 	public void setAutoScale(boolean autoScale) {
 		((NumberAxis3D)xyzPlot.getXAxis()).setAutoAdjustRange(autoScale);
         ((NumberAxis3D)xyzPlot.getYAxis()).setAutoAdjustRange(autoScale);
         ((NumberAxis3D)xyzPlot.getZAxis()).setAutoAdjustRange(autoScale);
+        update();
 	}
 
 }

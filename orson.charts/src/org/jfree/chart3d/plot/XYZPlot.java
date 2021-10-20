@@ -680,7 +680,12 @@ public class XYZPlot extends AbstractPlot3D implements Dataset3DChangeListener,
      */
     @Override
     public void axisChanged(Axis3DChangeEvent event) {
-        this.yAxis.configureAsYAxis(this);
+    	if(xAxis == event.getAxis()) 
+    		xAxis.configureAsXAxis(this);
+    	if(yAxis == event.getAxis()) 
+    		yAxis.configureAsYAxis(this);
+    	if(zAxis == event.getAxis()) 
+    		zAxis.configureAsZAxis(this);
         fireChangeEvent(event.requiresWorldUpdate());
     }
 

@@ -9,6 +9,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swtchart.LineStyle;
+import org.jfree.chart3d.graphics3d.ViewPoint3D;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ColorUtil;
@@ -27,10 +28,13 @@ public class XYZChart extends XYChart {
 	private String zAxisGridStyle;
 	private RGB zAxisGridColor;
 	
+	private ViewPoint3D viewPoint;
+	
 	public XYZChart() {
 		super();
 		zMax = 10;
 		zMin = -10;
+		viewPoint = new ViewPoint3D(0, 0, 0, 0);
 	}
 	
 	public double getzMax() {
@@ -47,6 +51,14 @@ public class XYZChart extends XYChart {
 
 	public void setzMin(double zMin) {
 		this.zMin = zMin;
+	}
+	
+	public void setViewPoint(ViewPoint3D viewPoint) {
+		this.viewPoint = viewPoint;
+	}
+	
+	public ViewPoint3D getViewPoint() {
+		return viewPoint;
 	}
 	
 	public void setRange(double xMin, double xMax, double yMin, double yMax, double zMin, double zMax) {
@@ -73,8 +85,8 @@ public class XYZChart extends XYChart {
 			//pro.sub.chann(pro.sub.chann)
 			
 			String zFullChannelName = seriesID.split("\\(")[0];
-			String yFullChannelName = seriesID.split("\\(")[1].split(",")[0];
-			String xFullChannelName = seriesID.split("\\(")[1].split(",")[0].replaceAll("\\)", "");
+			String xFullChannelName = seriesID.split("\\(")[1].split(",")[0];
+			String yFullChannelName = seriesID.split("\\(")[1].split(",")[1].replaceAll("\\)", "");
 			
 			String xProjectName = xFullChannelName.split("\\.")[0];
 			String xSubjectName = xFullChannelName.split("\\.")[1];
