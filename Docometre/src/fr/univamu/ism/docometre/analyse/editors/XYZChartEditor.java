@@ -17,6 +17,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -49,6 +51,7 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
+import org.eclipse.ui.progress.WorkbenchJob;
 import org.jfree.chart3d.Chart3DPanel;
 import org.jfree.chart3d.graphics3d.ViewPoint3D;
 
@@ -481,23 +484,31 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 		container.setSashWidth(5);
 		container.setWeights(new int[] {80, 20});
 		
-		getSite().getShell().getDisplay().asyncExec(new Runnable() {
+		WorkbenchJob workbenchJob = new WorkbenchJob("Wait for 3D chart init.") {
 			@Override
-			public void run() {
+			public IStatus runInUIThread(IProgressMonitor monitor) {
 				try {
-					awtThread.join();
-					chart3DPanel.setAutoScale(xyzChartData.isAutoScale());
-					System.out.println(xyzChartData.getViewPoint());
-					if(xyzChartData.getViewPoint() != null) chart3DPanel.setViewPoint(xyzChartData.getViewPoint());
-					refreshTrialsListFrontEndCuts();
-					trialsListViewer.setSelection(new StructuredSelection(xyzChartData.getSelectedTrialsNumbers()));
-					setDirty(false);
+					while(awtThread.isAlive() && !monitor.isCanceled()) {
+						awtThread.join(300);
+					}
+					if(monitor.isCanceled()) return Status.CANCEL_STATUS;
+					if(!awtThread.isAlive()) {
+						chart3DPanel.setAutoScale(xyzChartData.isAutoScale());
+						if(xyzChartData.getViewPoint() != null) chart3DPanel.setViewPoint(xyzChartData.getViewPoint());
+						refreshTrialsListFrontEndCuts();
+						trialsListViewer.setSelection(new StructuredSelection(xyzChartData.getSelectedTrialsNumbers()));
+						setDirty(false);
+					}
 				} catch (InterruptedException e) {
 					Activator.logErrorMessageWithCause(e);
 					e.printStackTrace();
 				} 
+				return Status.OK_STATUS;
 			}
-		});
+		};
+		
+		workbenchJob.schedule();
+		
 
 	}
 	
@@ -884,8 +895,6 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
         xyzChartData.setViewPoint(chart3DPanel.getViewPoint());
 		chart3DPanel.update();
         setDirty(true);
-        System.out.println(chart3DPanel.getViewPoint().toString());
-        System.out.println(chart3DPanel.getMinViewingDistance());
 	}
 
 	public void up() {
