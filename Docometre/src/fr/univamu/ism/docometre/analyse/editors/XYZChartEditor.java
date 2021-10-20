@@ -484,7 +484,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 		container.setSashWidth(5);
 		container.setWeights(new int[] {80, 20});
 		
-		WorkbenchJob workbenchJob = new WorkbenchJob("Wait for 3D chart init.") {
+		WorkbenchJob workbenchJob = new WorkbenchJob("Waiting for the 3D chart to be initialized...") {
 			@Override
 			public IStatus runInUIThread(IProgressMonitor monitor) {
 				try {
