@@ -142,6 +142,15 @@
 			../org.eclipse.nebula.visualization.xygraph
 		</module>
 		
-		<module>../orson.charts</module>
+		
+		
+		
+		
+		
+		
+		<module>../JMatIO</module>
+		<module>../MigLayoutSwing</module>
+		<module>../OpenCSV</module>
+		<module>../PLY</module>
 	</modules>
 </project>
