@@ -5,6 +5,58 @@ Bundle-SymbolicName: JOGL; singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Comment: Eclipse-BundleShape: dir
+Bundle-ClassPath: jogampall/gluegen-rt.jar,
+ jogampall/gluegen-rt-natives-linux-amd64.jar,
+ jogampall/gluegen-rt-natives-linux-i586.jar,
+ jogampall/gluegen-rt-natives-macosx-universal.jar,
+ jogampall/gluegen-rt-natives-windows-amd64.jar,
+ jogampall/gluegen-rt-natives-windows-i586.jar,
+ jogampall/jogl-all.jar,
+ jogampall/jogl-all-natives-linux-amd64.jar,
+ jogampall/jogl-all-natives-linux-i586.jar,
+ jogampall/jogl-all-natives-macosx-universal.jar,
+ jogampall/jogl-all-natives-windows-amd64.jar,
+ jogampall/jogl-all-natives-windows-i586.jar,
+ .
+Bundle-NativeCode: 
+ natives2/macosx-universal/libgluegen-rt.jnilib; 
+ natives2/macosx-universal/libnativewindow_macosx.jnilib;
+ natives2/macosx-universal/libjogl_desktop.jnilib;
+ natives2/macosx-universal/libnativewindow_awt.jnilib;
+ natives2/macosx-universal/libnewt.jnilib;
+ osname=macosx; processor=x86_64,
+ natives2/windows-i586/gluegen-rt.dll; 
+ natives2/windows-i586/nativewindow_win32.dll;
+ natives2/windows-i586/jogl_desktop.dll;
+ natives2/windows-i586/nativewindow_awt.dll;
+ natives2/windows-i586/newt.dll;
+ osname=win32; processor=x86,
+ natives/windows-amd64/gluegen-rt.dll; 
+ natives/windows-amd64/nativewindow_win32.dll;
+ natives/windows-amd64/jogl_desktop.dll;
+ natives/windows-amd64/nativewindow_awt.dll;
+ natives/windows-amd64/newt.dll;
+ osname=win32; processor=x86_64,
+ natives/linux-i586/libgluegen-rt.so; 
+ natives/linux-i586/libnativewindow_x11.so;
+ natives/linux-i586/libjogl_desktop.so;
+ natives/linux-i586/libnativewindow_awt.so;
+ natives/linux-i586/libnewt.so;
+ osname=linux; processor=x86,
+ natives/linux-amd64/libgluegen-rt.so; 
+ natives/linux-amd64/libnativewindow_x11.so;
+ natives/linux-amd64/libjogl_desktop.so;
+ natives/linux-amd64/libnativewindow_awt.so;
+ natives/linux-amd64/libnewt.so;
+ osname=linux; processor=amd64,
+ natives/linux-amd64/libgluegen-rt.so; 
+ natives/linux-amd64/libnativewindow_x11.so;
+ natives/linux-amd64/libjogl_desktop.so;
+ natives/linux-amd64/libnativewindow_awt.so;
+ natives/linux-amd64/libnewt.so;
+ osname=linux; processor=x86_64, *
+Automatic-Module-Name: JOGL
+Bundle-Vendor: JogAmp
 Export-Package: com.jogamp.common,
  com.jogamp.common.jvm,
  com.jogamp.common.net,
@@ -25,6 +77,7 @@ Export-Package: com.jogamp.common,
  com.jogamp.graph.font,
  com.jogamp.graph.geom,
  com.jogamp.nativewindow,
+ com.jogamp.nativewindow.awt,
  com.jogamp.nativewindow.egl,
  com.jogamp.nativewindow.macosx,
  com.jogamp.nativewindow.swt,
@@ -32,13 +85,18 @@ Export-Package: com.jogamp.common,
  com.jogamp.nativewindow.windows,
  com.jogamp.nativewindow.x11,
  com.jogamp.newt,
+ com.jogamp.newt.awt,
+ com.jogamp.newt.awt.applet,
  com.jogamp.newt.event,
+ com.jogamp.newt.event.awt,
  com.jogamp.newt.opengl,
  com.jogamp.newt.opengl.util,
  com.jogamp.newt.opengl.util.stereo,
+ com.jogamp.newt.swt,
  com.jogamp.newt.util,
  com.jogamp.newt.util.applet,
  com.jogamp.opengl,
+ com.jogamp.opengl.awt,
  com.jogamp.opengl.egl,
  com.jogamp.opengl.fixedfunc,
  com.jogamp.opengl.glu,
@@ -46,8 +104,10 @@ Export-Package: com.jogamp.common,
  com.jogamp.opengl.glu.gl2es1,
  com.jogamp.opengl.math,
  com.jogamp.opengl.math.geom,
+ com.jogamp.opengl.swt,
  com.jogamp.opengl.util,
  com.jogamp.opengl.util.av,
+ com.jogamp.opengl.util.awt,
  com.jogamp.opengl.util.gl2,
  com.jogamp.opengl.util.glsl,
  com.jogamp.opengl.util.glsl.fixedfunc,
@@ -56,7 +116,9 @@ Export-Package: com.jogamp.common,
  com.jogamp.opengl.util.stereo,
  com.jogamp.opengl.util.stereo.generic,
  com.jogamp.opengl.util.texture,
+ com.jogamp.opengl.util.texture.awt,
  com.jogamp.opengl.util.texture.spi,
+ com.jogamp.opengl.util.texture.spi.awt,
  gluegen,
  jogamp.common,
  jogamp.common.jvm,
@@ -75,12 +137,31 @@ Export-Package: com.jogamp.common,
  jogamp.graph.font.typecast.t2,
  jogamp.graph.font.typecast.tt.engine,
  jogamp.graph.geom.plane,
+ jogamp.nativetag.common.linux.amd64,
+ jogamp.nativetag.common.linux.i586,
+ jogamp.nativetag.common.macosx.universal,
+ jogamp.nativetag.common.windows.amd64,
+ jogamp.nativetag.common.windows.i586,
+ jogamp.nativetag.opengl.linux.amd64,
+ jogamp.nativetag.opengl.linux.i586,
+ jogamp.nativetag.opengl.macosx.universal,
+ jogamp.nativetag.opengl.windows.amd64,
+ jogamp.nativetag.opengl.windows.i586,
  jogamp.nativewindow,
+ jogamp.nativewindow.awt,
+ jogamp.nativewindow.jawt,
+ jogamp.nativewindow.jawt.macosx,
+ jogamp.nativewindow.jawt.windows,
+ jogamp.nativewindow.jawt.x11,
  jogamp.nativewindow.macosx,
  jogamp.nativewindow.windows,
  jogamp.nativewindow.x11,
+ jogamp.nativewindow.x11.awt,
  jogamp.newt,
+ jogamp.newt.awt,
+ jogamp.newt.awt.event,
  jogamp.newt.driver,
+ jogamp.newt.driver.awt,
  jogamp.newt.driver.bcm.vc.iv,
  jogamp.newt.driver.linux,
  jogamp.newt.driver.macosx,
@@ -88,7 +169,10 @@ Export-Package: com.jogamp.common,
  jogamp.newt.driver.windows,
  jogamp.newt.driver.x11,
  jogamp.newt.event,
+ jogamp.newt.swt,
+ jogamp.newt.swt.event,
  jogamp.opengl,
+ jogamp.opengl.awt,
  jogamp.opengl.egl,
  jogamp.opengl.es1,
  jogamp.opengl.es3,
@@ -102,45 +186,26 @@ Export-Package: com.jogamp.common,
  jogamp.opengl.glu.registry,
  jogamp.opengl.glu.tessellator,
  jogamp.opengl.macosx.cgl,
+ jogamp.opengl.macosx.cgl.awt,
  jogamp.opengl.openal.av,
+ jogamp.opengl.shader,
  jogamp.opengl.util,
  jogamp.opengl.util.av,
  jogamp.opengl.util.av.impl,
  jogamp.opengl.util.glsl,
  jogamp.opengl.util.glsl.fixedfunc,
+ jogamp.opengl.util.glsl.fixedfunc.shaders,
+ jogamp.opengl.util.glsl.fixedfunc.shaders.bin.nvidia,
  jogamp.opengl.util.jpeg,
  jogamp.opengl.util.pngj,
  jogamp.opengl.util.pngj.chunks,
  jogamp.opengl.util.stereo,
+ jogamp.opengl.util.stereo.shader,
  jogamp.opengl.windows.wgl,
- jogamp.opengl.x11.glx
-Bundle-ClassPath: libs/gluegen-rt.jar,
- libs/jogl-all-noawt.jar,
- .
-Bundle-NativeCode: 
- natives/macosx-universal/libgluegen-rt.jnilib; 
- natives/macosx-universal/libnativewindow_macosx.jnilib;
- natives/macosx-universal/libjogl_desktop.jnilib;
- osname=macosx; processor=x86_64,
- natives/windows-i586/gluegen-rt.dll; 
- natives/windows-i586/nativewindow_win32.dll;
- natives/windows-i586/jogl_desktop.dll;
- osname=win32; processor=x86,
- natives/windows-amd64/gluegen-rt.dll; 
- natives/windows-amd64/nativewindow_win32.dll;
- natives/windows-amd64/jogl_desktop.dll;
- osname=win32; processor=x86_64,
- natives/linux_x86/libgluegen-rt.so; 
- natives/linux_x86/libnativewindow_x11.so;
- natives/linux_x86/libjogl_desktop.so;
- osname=linux; processor=x86,
- natives/linux-amd64/libgluegen-rt.so; 
- natives/linux-amd64/libnativewindow_x11.so;
- natives/linux-amd64/libjogl_desktop.so;
- osname=linux; processor=amd64,
- natives/linux_x86_64/libgluegen-rt.so; 
- natives/linux_x86_64/libnativewindow_x11.so;
- natives/linux_x86_64/libjogl_desktop.so;
- osname=linux; processor=x86_64, *
-Automatic-Module-Name: JOGL
-Bundle-Vendor: JogAmp
+ jogamp.opengl.windows.wgl.awt,
+ jogamp.opengl.x11.glx,
+ jogl.util.data.av,
+ natives,
+ newt.data
+Require-Bundle: org.eclipse.swt;bundle-version="3.116.0",
+ org.eclipse.jface;bundle-version="3.22.100"
