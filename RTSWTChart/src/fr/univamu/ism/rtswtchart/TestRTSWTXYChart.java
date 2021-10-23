@@ -53,6 +53,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
+import com.jogamp.opengl.JoglVersion;
+
 public class TestRTSWTXYChart {
 	
 	private static Random random = new Random();
@@ -100,6 +102,7 @@ public class TestRTSWTXYChart {
 
 	public static void main(String[] args) {
 		
+		System.out.println(JoglVersion.getInstance().toString());
 		boolean displayLoop = true;
 		
 		if(args.length > 0) {
