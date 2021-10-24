@@ -14,23 +14,14 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseWheelListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -42,9 +33,7 @@ import org.eclipse.swtchart.extensions.charts.ChartPropertiesListener;
 import org.eclipse.swtchart.extensions.charts.ZoomListener;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IPartListener;
 import org.eclipse.ui.IPartListener2;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -52,9 +41,6 @@ import org.eclipse.ui.part.EditorPart;
 import org.jzy3d.chart.Chart;
 import org.jzy3d.chart.ChartLauncher;
 import org.jzy3d.chart.Settings;
-import org.jzy3d.chart.controllers.mouse.camera.ICameraMouseController;
-import org.jzy3d.chart.controllers.mouse.camera.NewtCameraMouseController;
-import org.jzy3d.chart.controllers.thread.camera.CameraThreadController;
 import org.jzy3d.chart.factories.CanvasNewtSWT;
 import org.jzy3d.chart.factories.SWTChartFactory;
 import org.jzy3d.colors.Color;
@@ -205,59 +191,42 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 					chart = new SWTChartFactory(chartContainer).newChart();
 					chart.add(surface);
 					ChartLauncher.openChart(chart);
-					ICameraMouseController mouse =  ChartLauncher.configureControllers(chart, "JZY3D", true, true);
+//					ICameraMouseController mouse =  ChartLauncher.configureControllers(chart, "JZY3D", true, true);
 					chartContainer.layout();
-//					Utils.addMouseListener((CanvasNewtSWT) chart.getCanvas());
-//					((CanvasNewtSWT) chart.getCanvas()).addMouseListener(new MouseListener() {
-//						
-//						@Override
-//						public void mouseWheelMoved(com.jogamp.newt.event.MouseEvent e) {
-//							// TODO Auto-generated method stub
-//							
-//						}
-//						
-//						@Override
-//						public void mouseReleased(com.jogamp.newt.event.MouseEvent e) {
-//							// TODO Auto-generated method stub
-//							
-//						}
-//						
-//						@Override
-//						public void mousePressed(com.jogamp.newt.event.MouseEvent e) {
-//							System.out.println("mousePressed");
-//							
-//						}
-//						
-//						@Override
-//						public void mouseMoved(com.jogamp.newt.event.MouseEvent e) {
-//							// TODO Auto-generated method stub
-//							
-//						}
-//						
-//						@Override
-//						public void mouseExited(com.jogamp.newt.event.MouseEvent e) {
-//							// TODO Auto-generated method stub
-//							
-//						}
-//						
-//						@Override
-//						public void mouseEntered(com.jogamp.newt.event.MouseEvent e) {
-//							// TODO Auto-generated method stub
-//							
-//						}
-//						
-//						@Override
-//						public void mouseDragged(com.jogamp.newt.event.MouseEvent e) {
-//							// TODO Auto-generated method stub
-//							
-//						}
-//						
-//						@Override
-//						public void mouseClicked(com.jogamp.newt.event.MouseEvent e) {
-//							// TODO Auto-generated method stub
-//							
-//						}
-//					});
+					((CanvasNewtSWT) chart.getCanvas()).addMouseListener(new MouseListener() {
+						@Override
+						public void mouseWheelMoved(com.jogamp.newt.event.MouseEvent e) {
+							System.out.println("mouseWheelMoved");
+						}
+						@Override
+						public void mouseReleased(com.jogamp.newt.event.MouseEvent e) {
+							System.out.println("mouseReleased");
+						}
+						@Override
+						public void mousePressed(com.jogamp.newt.event.MouseEvent e) {
+							System.out.println("mousePressed");
+						}
+						@Override
+						public void mouseMoved(com.jogamp.newt.event.MouseEvent e) {
+							System.out.println("mouseMoved");
+						}
+						@Override
+						public void mouseExited(com.jogamp.newt.event.MouseEvent e) {
+							System.out.println("mouseExited");
+						}
+						@Override
+						public void mouseEntered(com.jogamp.newt.event.MouseEvent e) {
+							System.out.println("mouseEntered");
+						}
+						@Override
+						public void mouseDragged(com.jogamp.newt.event.MouseEvent e) {
+							System.out.println("mouseDragged");
+						}
+						@Override
+						public void mouseClicked(com.jogamp.newt.event.MouseEvent e) {
+							System.out.println("mouseClicked");
+						}
+					});
 					
 				}
 			}
