@@ -14,14 +14,23 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseWheelListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -171,25 +180,25 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 						chartContainer.layout();
 						return;
 					}
-					Mapper mapper = new Mapper() {
-						@Override
-						public double f(double x, double y) {
-							return x * Math.sin(x * y);
-						}
-					};
-					// Define range and precision for the function to plot
-					Range range = new Range(-3, 3);
-					int steps = 100;
-					// Create the object to represent the function over the given range.
-					final Shape surface = new SurfaceBuilder().orthonormal(new OrthonormalGrid(range, steps, range, steps), mapper);
-					surface.setColorMapper(new ColorMapper(new ColorMapRainbow(), surface.getBounds().getZmin(),
-							surface.getBounds().getZmax(), new Color(1, 1, 1, .5f)));
-					surface.setFaceDisplayed(true);
-					surface.setWireframeDisplayed(false);
-					surface.setLegendDisplayed(false);
+//					Mapper mapper = new Mapper() {
+//						@Override
+//						public double f(double x, double y) {
+//							return x * Math.sin(x * y);
+//						}
+//					};
+//					// Define range and precision for the function to plot
+//					Range range = new Range(-3, 3);
+//					int steps = 100;
+//					// Create the object to represent the function over the given range.
+//					final Shape surface = new SurfaceBuilder().orthonormal(new OrthonormalGrid(range, steps, range, steps), mapper);
+//					surface.setColorMapper(new ColorMapper(new ColorMapRainbow(), surface.getBounds().getZmin(),
+//							surface.getBounds().getZmax(), new Color(1, 1, 1, .5f)));
+//					surface.setFaceDisplayed(true);
+//					surface.setWireframeDisplayed(false);
+//					surface.setLegendDisplayed(false);
 					Settings.getInstance().setHardwareAccelerated(true);
 					chart = new SWTChartFactory(chartContainer).newChart();
-					chart.add(surface);
+//					chart.add(surface);
 					ChartLauncher.openChart(chart);
 //					ICameraMouseController mouse =  ChartLauncher.configureControllers(chart, "JZY3D", true, true);
 					chartContainer.layout();
@@ -315,232 +324,232 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 		gl.verticalSpacing = 1;
 		container2.setLayout(gl);
 		container2.setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
-//		
-//		CTabFolder trialsCategoriesTabFolder = new CTabFolder(container2, SWT.BOTTOM | SWT.FLAT | SWT.BORDER | SWT.MULTI);
-//		trialsCategoriesTabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-//		
-//		CTabItem trialsTabItem = new CTabItem(trialsCategoriesTabFolder, SWT.BORDER);
-//		trialsTabItem.setText(DocometreMessages.TrialsGroupLabel);
-//		
-//		CTabItem categoriesTabItem = new CTabItem(trialsCategoriesTabFolder, SWT.BORDER);
-//		categoriesTabItem.setText(DocometreMessages.Categories);
-//		
-//		
-//		trialsListViewer = new ListViewer(trialsCategoriesTabFolder, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
-//		trialsListViewer.getList().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-//		trialsListViewer.setContentProvider(new ArrayContentProvider());
-//		trialsListViewer.setLabelProvider(new LabelProvider() {
-//			@Override
-//			public String getText(Object element) {
-//				String trial = super.getText(element);
-//				return DocometreMessages.Trial + trial;
-//			}
-//		});
-//		trialsListViewer.addSelectionChangedListener(this);
-//		trialsTabItem.setControl(trialsListViewer.getList());
-//		trialsCategoriesTabFolder.setSelection(trialsTabItem);
-//		
-//		
-//		
-//		// Graphical Front End cuts
-//		Group frontEndCutValuesGroup = new Group(container2, SWT.NONE);
-//		frontEndCutValuesGroup.setText(DocometreMessages.GraphicalCutsTitle);
-//		frontEndCutValuesGroup.setLayout(new GridLayout(2, false));
-//		frontEndCutValuesGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-//		Label frontCutLabel = new Label(frontEndCutValuesGroup, SWT.NONE);
-//		frontCutLabel.setText(DocometreMessages.FrontCutLabel);
-//		frontCutLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
-//		frontCutSpinner = new Spinner(frontEndCutValuesGroup, SWT.BORDER);
-//		frontCutSpinner.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-//		frontCutSpinner.setMaximum(1000000000);
-//		frontCutSpinner.setSelection(xyzChartData.getFrontCut());
-//		frontCutSpinner.setData("frontCut");
-//		FrontEndCutsHandler frontCutHandler = new FrontEndCutsHandler(frontCutSpinner, this);
-//		frontCutSpinner.addMouseWheelListener(frontCutHandler);
-//		frontCutSpinner.addTraverseListener(frontCutHandler);
-//		frontCutSpinner.addSelectionListener(frontCutHandler);
-//		
-//		Label endCutLabel = new Label(frontEndCutValuesGroup, SWT.NONE);
-//		endCutLabel.setText(DocometreMessages.EndCutLabel);
-//		endCutLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
-//		endCutSpinner = new Spinner(frontEndCutValuesGroup, SWT.BORDER);
-//		endCutSpinner.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-//		endCutSpinner.setMaximum(1000000000);
-//		endCutSpinner.setSelection(xyzChartData.getEndCut());
-//		endCutSpinner.setData("endCut");
-//		FrontEndCutsHandler endCutHandler = new FrontEndCutsHandler(endCutSpinner, this);
-//		endCutSpinner.addMouseWheelListener(endCutHandler);
-//		endCutSpinner.addTraverseListener(endCutHandler);
-//		endCutSpinner.addSelectionListener(endCutHandler);
-//		
-//		// Scales
-//		scaleValuesGroup = new Group(container2, SWT.NONE);
-//		scaleValuesGroup.setText(DocometreMessages.ScaleValueTitle);
-//		scaleValuesGroup.setLayout(new GridLayout(4, false));
-//		scaleValuesGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-//		scaleValuesGroup.setEnabled(!xyzChartData.isAutoScale());
-//		
-//		Label xMinLabel = new Label(scaleValuesGroup, SWT.NONE);
-//		xMinLabel.setText("X min. :");
-//		xMinLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-//		xMinText = new Text(scaleValuesGroup, SWT.BORDER);
-//		xMinText.setText(Double.toString(xyzChartData.getxMin()));
-//		xMinText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-//		xMinText.setData("xMin");
-//		xMinText.addTraverseListener(new RangeHandler(xMinText, this));
-//		xMinText.setToolTipText(DocometreMessages.PressEnter);
-//		Label xMaxLabel = new Label(scaleValuesGroup, SWT.NONE);
-//		xMaxLabel.setText("X max. :");
-//		xMaxLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-//		xMaxText = new Text(scaleValuesGroup, SWT.BORDER);
-//		xMaxText.setText(Double.toString(xyzChartData.getxMax()));
-//		xMaxText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-//		xMaxText.setData("xMax");
-//		xMaxText.addTraverseListener(new RangeHandler(xMaxText, this));
-//		xMaxText.setToolTipText(DocometreMessages.PressEnter);
-//
-//		Label yMinLabel = new Label(scaleValuesGroup, SWT.NONE);
-//		yMinLabel.setText("Y min. :");
-//		yMinLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-//		yMinText = new Text(scaleValuesGroup, SWT.BORDER);
-//		yMinText.setText(Double.toString(xyzChartData.getyMin()));
-//		yMinText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-//		yMinText.setData("yMin");
-//		yMinText.addTraverseListener(new RangeHandler(yMinText, this));
-//		yMinText.setToolTipText(DocometreMessages.PressEnter);
-//		Label yMaxLabel = new Label(scaleValuesGroup, SWT.NONE);
-//		yMaxLabel.setText("Y max. :");
-//		yMaxLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-//		yMaxText = new Text(scaleValuesGroup, SWT.BORDER);
-//		yMaxText.setText(Double.toString(xyzChartData.getyMax()));
-//		yMaxText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-//		yMaxText.setData("yMax");
-//		yMaxText.addTraverseListener(new RangeHandler(yMaxText, this));
-//		yMaxText.setToolTipText(DocometreMessages.PressEnter);
-//		
-//		Label zMinLabel = new Label(scaleValuesGroup, SWT.NONE);
-//		zMinLabel.setText("Z min. :");
-//		zMinLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-//		zMinText = new Text(scaleValuesGroup, SWT.BORDER);
-//		zMinText.setText(Double.toString(xyzChartData.getzMin()));
-//		zMinText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-//		zMinText.setData("zMin");
-//		zMinText.addTraverseListener(new RangeHandler(zMinText, this));
-//		zMinText.setToolTipText(DocometreMessages.PressEnter);
-//		Label zMaxLabel = new Label(scaleValuesGroup, SWT.NONE);
-//		zMaxLabel.setText("Z max. :");
-//		zMaxLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-//		zMaxText = new Text(scaleValuesGroup, SWT.BORDER);
-//		zMaxText.setText(Double.toString(xyzChartData.getzMax()));
-//		zMaxText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-//		zMaxText.setData("zMax");
-//		zMaxText.addTraverseListener(new RangeHandler(zMaxText, this));
-//		zMaxText.setToolTipText(DocometreMessages.PressEnter);
-//		
-//		Composite bottomContainer = new Composite(container2, SWT.NONE);
-//		bottomContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-//		gl = new GridLayout();
-//		gl.numColumns = 3;
-//		gl.marginHeight = 0;
-//		gl.marginWidth = 0;
-//		gl.marginBottom = 0;
-//		gl.marginRight = 0;
-//		bottomContainer.setLayout(gl);
-//		
-//		Button showMarkersButton = new Button(bottomContainer, SWT.CHECK | SWT.WRAP);
-//		showMarkersButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-//		showMarkersButton.setText(DocometreMessages.ShowMarkersTitle);
-//		showMarkersButton.setSelection(xyzChartData.isShowMarkers());
-//		showMarkersButton.addSelectionListener(new SelectionAdapter() {
-//			@Override
-//			public void widgetSelected(SelectionEvent e) {
-//				boolean showMarkers = showMarkersButton.getSelection();
-//				xyzChartData.setShowMarkers(showMarkers);
-////				chart3DPanel.update();
-//				setDirty(true);
-//			}
-//		});
-//		
-//		Label sizeLabel = new Label(bottomContainer, SWT.NONE);
-//		sizeLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.VERTICAL_ALIGN_CENTER));
-//		sizeLabel.setText(DocometreMessages.MarkersSizeTitle);
-//		Spinner sizeSpinner = new Spinner(bottomContainer, SWT.BORDER);
-//		sizeSpinner.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-//		sizeSpinner.setMaximum(10);
-//		sizeSpinner.setMinimum(3);
-//		sizeSpinner.setSelection(xyzChartData.getMarkersSize());
-//		sizeSpinner.addMouseWheelListener(new MouseWheelListener() {
-//			@Override
-//			public void mouseScrolled(MouseEvent e) {
-//				int value = sizeSpinner.getSelection() + e.count;
-//				sizeSpinner.setSelection(value);
-//				xyzChartData.setMarkersSize(sizeSpinner.getSelection());
-////				chart3DPanel.update();
-//				setDirty(true);
-//			}
-//		});
-//		sizeSpinner.addSelectionListener(new SelectionAdapter() {
-//			@Override
-//			public void widgetSelected(SelectionEvent e) {
-//				xyzChartData.setMarkersSize(sizeSpinner.getSelection());
-////				chart3DPanel.update();
-//				setDirty(true);
-//			}
-//		});
-//		
-//		Button showMarkersLabelsButton = new Button(bottomContainer, SWT.CHECK | SWT.WRAP);
-//		showMarkersLabelsButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
-//		showMarkersLabelsButton.setText(DocometreMessages.ShowMarkersLabelsTitle);
-//		showMarkersLabelsButton.setSelection(xyzChartData.isShowMarkersLabels());
-//		showMarkersLabelsButton.addSelectionListener(new SelectionAdapter() {
-//			@Override
-//			public void widgetSelected(SelectionEvent e) {
-//				boolean showMarkersLabels = showMarkersLabelsButton.getSelection();
-//				xyzChartData.setShowMarkersLabels(showMarkersLabels);
-////				chart3DPanel.update();
-//				setDirty(true);
-//			}
-//		});
-//		
-//		Composite bottomContainer2 = new Composite(container2, SWT.NONE);
-//		bottomContainer2.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-//		gl = new GridLayout();
-//		gl.numColumns = 1;
-//		gl.marginHeight = 0;
-//		gl.marginWidth = 0;
-//		gl.marginBottom = 5;
-//		gl.marginRight = 5;
-//		bottomContainer2.setLayout(gl);
-//		
-//		autoScaleButton = new Button(bottomContainer2, SWT.CHECK | SWT.WRAP);
-//		autoScaleButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
-//		autoScaleButton.setText(DocometreMessages.AutoScale_Title);
-//		autoScaleButton.setSelection(xyzChartData.isAutoScale());
-//		autoScaleButton.addSelectionListener(new SelectionAdapter() {
-//			@Override
-//			public void widgetSelected(SelectionEvent e) {
-//				boolean autoScale = autoScaleButton.getSelection();
-//				xyzChartData.setAutoScale(autoScale);
-//				scaleValuesGroup.setEnabled(!autoScale); 
-////				chart3DPanel.setAutoScale(autoScale);
-//				updateRange();
-//				setDirty(true);
-//			}
-//		});
-//		
-//		useSameColorButton = new Button(bottomContainer2, SWT.CHECK | SWT.WRAP);
-//		useSameColorButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-//		useSameColorButton.setText(DocometreMessages.UseSameColorForSameCategory);
-//		useSameColorButton.setSelection(xyzChartData.isUseSameColorForSameCategory());
-//		useSameColorButton.addSelectionListener(new SelectionAdapter() {
-//			@Override
-//			public void widgetSelected(SelectionEvent e) {
-//				xyzChartData.setUseSameColorForSameCategory(useSameColorButton.getSelection());
-//				updateSeriesColorsHandler();
-//				setDirty(true);
-//			}
-//		});
-//		
+		
+		CTabFolder trialsCategoriesTabFolder = new CTabFolder(container2, SWT.BOTTOM | SWT.FLAT | SWT.BORDER | SWT.MULTI);
+		trialsCategoriesTabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		
+		CTabItem trialsTabItem = new CTabItem(trialsCategoriesTabFolder, SWT.BORDER);
+		trialsTabItem.setText(DocometreMessages.TrialsGroupLabel);
+		
+		CTabItem categoriesTabItem = new CTabItem(trialsCategoriesTabFolder, SWT.BORDER);
+		categoriesTabItem.setText(DocometreMessages.Categories);
+		
+		
+		trialsListViewer = new ListViewer(trialsCategoriesTabFolder, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
+		trialsListViewer.getList().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		trialsListViewer.setContentProvider(new ArrayContentProvider());
+		trialsListViewer.setLabelProvider(new LabelProvider() {
+			@Override
+			public String getText(Object element) {
+				String trial = super.getText(element);
+				return DocometreMessages.Trial + trial;
+			}
+		});
+		trialsListViewer.addSelectionChangedListener(this);
+		trialsTabItem.setControl(trialsListViewer.getList());
+		trialsCategoriesTabFolder.setSelection(trialsTabItem);
+		
+		
+		
+		// Graphical Front End cuts
+		Group frontEndCutValuesGroup = new Group(container2, SWT.NONE);
+		frontEndCutValuesGroup.setText(DocometreMessages.GraphicalCutsTitle);
+		frontEndCutValuesGroup.setLayout(new GridLayout(2, false));
+		frontEndCutValuesGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		Label frontCutLabel = new Label(frontEndCutValuesGroup, SWT.NONE);
+		frontCutLabel.setText(DocometreMessages.FrontCutLabel);
+		frontCutLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+		frontCutSpinner = new Spinner(frontEndCutValuesGroup, SWT.BORDER);
+		frontCutSpinner.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		frontCutSpinner.setMaximum(1000000000);
+		frontCutSpinner.setSelection(xyzChartData.getFrontCut());
+		frontCutSpinner.setData("frontCut");
+		FrontEndCutsHandler frontCutHandler = new FrontEndCutsHandler(frontCutSpinner, this);
+		frontCutSpinner.addMouseWheelListener(frontCutHandler);
+		frontCutSpinner.addTraverseListener(frontCutHandler);
+		frontCutSpinner.addSelectionListener(frontCutHandler);
+		
+		Label endCutLabel = new Label(frontEndCutValuesGroup, SWT.NONE);
+		endCutLabel.setText(DocometreMessages.EndCutLabel);
+		endCutLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+		endCutSpinner = new Spinner(frontEndCutValuesGroup, SWT.BORDER);
+		endCutSpinner.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		endCutSpinner.setMaximum(1000000000);
+		endCutSpinner.setSelection(xyzChartData.getEndCut());
+		endCutSpinner.setData("endCut");
+		FrontEndCutsHandler endCutHandler = new FrontEndCutsHandler(endCutSpinner, this);
+		endCutSpinner.addMouseWheelListener(endCutHandler);
+		endCutSpinner.addTraverseListener(endCutHandler);
+		endCutSpinner.addSelectionListener(endCutHandler);
+		
+		// Scales
+		scaleValuesGroup = new Group(container2, SWT.NONE);
+		scaleValuesGroup.setText(DocometreMessages.ScaleValueTitle);
+		scaleValuesGroup.setLayout(new GridLayout(4, false));
+		scaleValuesGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		scaleValuesGroup.setEnabled(!xyzChartData.isAutoScale());
+		
+		Label xMinLabel = new Label(scaleValuesGroup, SWT.NONE);
+		xMinLabel.setText("X min. :");
+		xMinLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+		xMinText = new Text(scaleValuesGroup, SWT.BORDER);
+		xMinText.setText(Double.toString(xyzChartData.getxMin()));
+		xMinText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		xMinText.setData("xMin");
+		xMinText.addTraverseListener(new RangeHandler(xMinText, this));
+		xMinText.setToolTipText(DocometreMessages.PressEnter);
+		Label xMaxLabel = new Label(scaleValuesGroup, SWT.NONE);
+		xMaxLabel.setText("X max. :");
+		xMaxLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+		xMaxText = new Text(scaleValuesGroup, SWT.BORDER);
+		xMaxText.setText(Double.toString(xyzChartData.getxMax()));
+		xMaxText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		xMaxText.setData("xMax");
+		xMaxText.addTraverseListener(new RangeHandler(xMaxText, this));
+		xMaxText.setToolTipText(DocometreMessages.PressEnter);
+
+		Label yMinLabel = new Label(scaleValuesGroup, SWT.NONE);
+		yMinLabel.setText("Y min. :");
+		yMinLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+		yMinText = new Text(scaleValuesGroup, SWT.BORDER);
+		yMinText.setText(Double.toString(xyzChartData.getyMin()));
+		yMinText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		yMinText.setData("yMin");
+		yMinText.addTraverseListener(new RangeHandler(yMinText, this));
+		yMinText.setToolTipText(DocometreMessages.PressEnter);
+		Label yMaxLabel = new Label(scaleValuesGroup, SWT.NONE);
+		yMaxLabel.setText("Y max. :");
+		yMaxLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+		yMaxText = new Text(scaleValuesGroup, SWT.BORDER);
+		yMaxText.setText(Double.toString(xyzChartData.getyMax()));
+		yMaxText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		yMaxText.setData("yMax");
+		yMaxText.addTraverseListener(new RangeHandler(yMaxText, this));
+		yMaxText.setToolTipText(DocometreMessages.PressEnter);
+		
+		Label zMinLabel = new Label(scaleValuesGroup, SWT.NONE);
+		zMinLabel.setText("Z min. :");
+		zMinLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+		zMinText = new Text(scaleValuesGroup, SWT.BORDER);
+		zMinText.setText(Double.toString(xyzChartData.getzMin()));
+		zMinText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		zMinText.setData("zMin");
+		zMinText.addTraverseListener(new RangeHandler(zMinText, this));
+		zMinText.setToolTipText(DocometreMessages.PressEnter);
+		Label zMaxLabel = new Label(scaleValuesGroup, SWT.NONE);
+		zMaxLabel.setText("Z max. :");
+		zMaxLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+		zMaxText = new Text(scaleValuesGroup, SWT.BORDER);
+		zMaxText.setText(Double.toString(xyzChartData.getzMax()));
+		zMaxText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		zMaxText.setData("zMax");
+		zMaxText.addTraverseListener(new RangeHandler(zMaxText, this));
+		zMaxText.setToolTipText(DocometreMessages.PressEnter);
+		
+		Composite bottomContainer = new Composite(container2, SWT.NONE);
+		bottomContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		gl = new GridLayout();
+		gl.numColumns = 3;
+		gl.marginHeight = 0;
+		gl.marginWidth = 0;
+		gl.marginBottom = 0;
+		gl.marginRight = 0;
+		bottomContainer.setLayout(gl);
+		
+		Button showMarkersButton = new Button(bottomContainer, SWT.CHECK | SWT.WRAP);
+		showMarkersButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		showMarkersButton.setText(DocometreMessages.ShowMarkersTitle);
+		showMarkersButton.setSelection(xyzChartData.isShowMarkers());
+		showMarkersButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				boolean showMarkers = showMarkersButton.getSelection();
+				xyzChartData.setShowMarkers(showMarkers);
+//				chart3DPanel.update();
+				setDirty(true);
+			}
+		});
+		
+		Label sizeLabel = new Label(bottomContainer, SWT.NONE);
+		sizeLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.VERTICAL_ALIGN_CENTER));
+		sizeLabel.setText(DocometreMessages.MarkersSizeTitle);
+		Spinner sizeSpinner = new Spinner(bottomContainer, SWT.BORDER);
+		sizeSpinner.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		sizeSpinner.setMaximum(10);
+		sizeSpinner.setMinimum(3);
+		sizeSpinner.setSelection(xyzChartData.getMarkersSize());
+		sizeSpinner.addMouseWheelListener(new MouseWheelListener() {
+			@Override
+			public void mouseScrolled(MouseEvent e) {
+				int value = sizeSpinner.getSelection() + e.count;
+				sizeSpinner.setSelection(value);
+				xyzChartData.setMarkersSize(sizeSpinner.getSelection());
+//				chart3DPanel.update();
+				setDirty(true);
+			}
+		});
+		sizeSpinner.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				xyzChartData.setMarkersSize(sizeSpinner.getSelection());
+//				chart3DPanel.update();
+				setDirty(true);
+			}
+		});
+		
+		Button showMarkersLabelsButton = new Button(bottomContainer, SWT.CHECK | SWT.WRAP);
+		showMarkersLabelsButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
+		showMarkersLabelsButton.setText(DocometreMessages.ShowMarkersLabelsTitle);
+		showMarkersLabelsButton.setSelection(xyzChartData.isShowMarkersLabels());
+		showMarkersLabelsButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				boolean showMarkersLabels = showMarkersLabelsButton.getSelection();
+				xyzChartData.setShowMarkersLabels(showMarkersLabels);
+//				chart3DPanel.update();
+				setDirty(true);
+			}
+		});
+		
+		Composite bottomContainer2 = new Composite(container2, SWT.NONE);
+		bottomContainer2.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		gl = new GridLayout();
+		gl.numColumns = 1;
+		gl.marginHeight = 0;
+		gl.marginWidth = 0;
+		gl.marginBottom = 5;
+		gl.marginRight = 5;
+		bottomContainer2.setLayout(gl);
+		
+		autoScaleButton = new Button(bottomContainer2, SWT.CHECK | SWT.WRAP);
+		autoScaleButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
+		autoScaleButton.setText(DocometreMessages.AutoScale_Title);
+		autoScaleButton.setSelection(xyzChartData.isAutoScale());
+		autoScaleButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				boolean autoScale = autoScaleButton.getSelection();
+				xyzChartData.setAutoScale(autoScale);
+				scaleValuesGroup.setEnabled(!autoScale); 
+//				chart3DPanel.setAutoScale(autoScale);
+				updateRange();
+				setDirty(true);
+			}
+		});
+		
+		useSameColorButton = new Button(bottomContainer2, SWT.CHECK | SWT.WRAP);
+		useSameColorButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		useSameColorButton.setText(DocometreMessages.UseSameColorForSameCategory);
+		useSameColorButton.setSelection(xyzChartData.isUseSameColorForSameCategory());
+		useSameColorButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				xyzChartData.setUseSameColorForSameCategory(useSameColorButton.getSelection());
+				updateSeriesColorsHandler();
+				setDirty(true);
+			}
+		});
+		
 		container.setSashWidth(5);
 		container.setWeights(new int[] {80, 20});
 		
