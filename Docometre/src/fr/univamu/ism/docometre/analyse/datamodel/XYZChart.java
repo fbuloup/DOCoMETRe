@@ -9,6 +9,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swtchart.LineStyle;
+import org.jzy3d.maths.Coord3d;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ColorUtil;
@@ -26,6 +27,7 @@ public class XYZChart extends XYChart {
 	private boolean zAxisVisible;
 	private String zAxisGridStyle;
 	private RGB zAxisGridColor;
+	private Coord3d viewPoint;
 	
 	
 	public XYZChart() {
@@ -181,6 +183,14 @@ public class XYZChart extends XYChart {
 	
 	public Channel[] getXYZChannels(String key) {
 		return channelsMap.get(key);
+	}
+	
+	public void setViewPoint(Coord3d viewPoint) {
+		this.viewPoint = viewPoint;
+	}
+	
+	public Coord3d getViewPoint() {
+		return viewPoint;
 	}
 	
 }

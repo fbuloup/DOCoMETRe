@@ -397,6 +397,16 @@ public class LineStrip extends Wireframeable {
       symbolHandler.setSpaceTransformer(spaceTransformer);
     }
   }
+  
+  public void setId(String id) {
+	this.id = id;
+  }
+  
+  public String getId() {
+	return id;
+  }
+  
+  
 
   /**********************************************************************/
 
@@ -416,4 +426,6 @@ public class LineStrip extends Wireframeable {
   protected int stippleFactor = 4;
   protected short stipplePattern = (short) 0xAAAA;
   protected SymbolHandler symbolHandler = null;
+  
+  private String id;
 }
