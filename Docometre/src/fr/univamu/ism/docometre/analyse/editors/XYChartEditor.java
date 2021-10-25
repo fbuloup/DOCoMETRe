@@ -250,8 +250,6 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		trialsTabItem.setControl(trialsListViewer.getList());
 		trialsCategoriesTabFolder.setSelection(trialsTabItem);
 		
-		
-		
 		// Graphical Front End cuts
 		Group frontEndCutValuesGroup = new Group(container2, SWT.NONE);
 		frontEndCutValuesGroup.setText(DocometreMessages.GraphicalCutsTitle);
