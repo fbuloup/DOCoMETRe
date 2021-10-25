@@ -120,17 +120,19 @@ public class LineStrip extends Wireframeable {
     painter.glLineWidth(wireframeWidth);
     painter.glBegin_LineStrip();
 
-    if (wireframeColor == null) {
-      for (Point p : points) {
-        painter.color(p.rgb);
-        painter.vertex(p.xyz, spaceTransformer);
-      }
-    } else {
-      for (Point p : points) {
-        painter.color(wireframeColor);
-        painter.vertex(p.xyz, spaceTransformer);
-      }
-    }
+	if (wireframeColor == null) {
+		for (int i = frontCut - baseFrontCut; i < endCut - baseFrontCut; i++) {
+			Point p = points.get(i);
+			painter.color(p.rgb);
+			painter.vertex(p.xyz, spaceTransformer);
+		}
+	} else {
+		for (int i = frontCut - baseFrontCut; i < endCut - baseFrontCut; i++) {
+			Point p = points.get(i);
+			painter.color(wireframeColor);
+			painter.vertex(p.xyz, spaceTransformer);
+		}
+	}
     painter.glEnd();
 
     if (stipple) {
@@ -144,21 +146,19 @@ public class LineStrip extends Wireframeable {
     }
   }
 
-  public void drawPoints(IPainter painter) {
-    painter.glBegin_Point();
-    painter.glPointSize(wireframeWidth);
+	public void drawPoints(IPainter painter) {
+		painter.glBegin_Point();
+		painter.glPointSize(wireframeWidth);
 
-    for (Point p : points) {
-      if (wireframeColor == null)
-        painter.color(p.rgb);
-      else
-        painter.color(wireframeColor);
+		for (int i = frontCut - baseFrontCut; i < endCut - baseFrontCut; i++) {
+			Point p = points.get(i);
+			if (wireframeColor == null) painter.color(p.rgb);
+			else painter.color(wireframeColor);
+			painter.vertex(p.xyz, spaceTransformer);
+		}
 
-      painter.vertex(p.xyz, spaceTransformer);
-    }
-
-    painter.glEnd();
-  }
+		painter.glEnd();
+	}
 
   /* */
 
@@ -406,7 +406,17 @@ public class LineStrip extends Wireframeable {
 	return id;
   }
   
+  public void setFrontCut(int frontCut) {
+	this.frontCut = frontCut;
+  }
   
+  public void setEndCut(int endCut) {
+	this.endCut = endCut;
+  }
+  
+  public void setBaseFrontCut(int baseFrontCut) {
+	this.baseFrontCut = baseFrontCut;
+}
 
   /**********************************************************************/
 
@@ -428,4 +438,7 @@ public class LineStrip extends Wireframeable {
   protected SymbolHandler symbolHandler = null;
   
   private String id;
+  private int baseFrontCut;
+  private int frontCut;
+  private int endCut;
 }

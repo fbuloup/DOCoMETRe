@@ -89,8 +89,6 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 	private Button autoScaleButton;
 	private Group scaleValuesGroup;
 	private Button useSameColorButton;
-	
-	
 
 	public XYChartEditor() {
 	}
@@ -797,6 +795,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 	@Override
 	public void removeSeries(String seriesID) {
 		chart.removeSeries(seriesID);
+		xyChartData.removeCurve(seriesID);
 	}
 	
 }

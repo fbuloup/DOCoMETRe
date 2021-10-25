@@ -54,20 +54,15 @@ import org.jzy3d.chart.Settings;
 import org.jzy3d.chart.factories.CanvasNewtSWT;
 import org.jzy3d.chart.factories.SWTChartFactory;
 import org.jzy3d.colors.Color;
-import org.jzy3d.colors.ColorMapper;
-import org.jzy3d.colors.colormaps.ColorMapRainbow;
 import org.jzy3d.events.IViewPointChangedListener;
 import org.jzy3d.events.ViewPointChangedEvent;
+import org.jzy3d.maths.BoundingBox3d;
 import org.jzy3d.maths.Coord3d;
 import org.jzy3d.maths.Range;
-import org.jzy3d.plot3d.builder.Mapper;
-import org.jzy3d.plot3d.builder.SurfaceBuilder;
-import org.jzy3d.plot3d.builder.concrete.OrthonormalGrid;
 import org.jzy3d.plot3d.primitives.Drawable;
 import org.jzy3d.plot3d.primitives.LineStrip;
-import org.jzy3d.plot3d.primitives.Point;
-import org.jzy3d.plot3d.primitives.Shape;
 import org.jzy3d.plot3d.rendering.canvas.Quality;
+import org.jzy3d.plot3d.rendering.view.modes.ViewBoundMode;
 
 import com.jogamp.newt.event.MouseListener;
 
@@ -106,7 +101,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 	private Button useSameColorButton;
 	private Composite chartContainer;
 	private Chart chart;
-//	protected volatile Chart3DPanel chart3DPanel;
+	private BoundingBox3d bounds;
 
 	public XYZChartEditor() {
 	}
@@ -161,6 +156,13 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 		chartContainer = new Composite(container, SWT.NORMAL);
 		chartContainer.setLayout(new FillLayout());
 		
+		Settings.getInstance().setHardwareAccelerated(true);
+		chart = SWTChartFactory.chart(chartContainer, Quality.Nicest());
+		chart.getView().setViewPoint(xyzChartData.getViewPoint());
+//		chart.getView().setCameraMode(CameraMode.PERSPECTIVE);
+		chart.getView().addViewPointChangedListener(XYZChartEditor.this);
+		chart.black();
+		ChartLauncher.openChart(chart);
 		
 		getSite().getPage().addPartListener(new IPartListener2() {
 			@Override
@@ -181,7 +183,6 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 						chartContainer.layout();
 						return;
 					}
-					Settings.getInstance().setHardwareAccelerated(true);
 					chart = SWTChartFactory.chart(chartContainer, Quality.Nicest());
 					chart.getView().addViewPointChangedListener(XYZChartEditor.this);
 					chart.black();
@@ -222,7 +223,6 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 							System.out.println("mouseClicked");
 						}
 					});
-					
 				}
 			}
 		});
@@ -451,7 +451,6 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 			public void widgetSelected(SelectionEvent e) {
 				boolean showMarkers = showMarkersButton.getSelection();
 				xyzChartData.setShowMarkers(showMarkers);
-//				chart3DPanel.update();
 				setDirty(true);
 			}
 		});
@@ -470,7 +469,6 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 				int value = sizeSpinner.getSelection() + e.count;
 				sizeSpinner.setSelection(value);
 				xyzChartData.setMarkersSize(sizeSpinner.getSelection());
-//				chart3DPanel.update();
 				setDirty(true);
 			}
 		});
@@ -478,7 +476,6 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				xyzChartData.setMarkersSize(sizeSpinner.getSelection());
-//				chart3DPanel.update();
 				setDirty(true);
 			}
 		});
@@ -492,7 +489,6 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 			public void widgetSelected(SelectionEvent e) {
 				boolean showMarkersLabels = showMarkersLabelsButton.getSelection();
 				xyzChartData.setShowMarkersLabels(showMarkersLabels);
-//				chart3DPanel.update();
 				setDirty(true);
 			}
 		});
@@ -517,8 +513,12 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 				boolean autoScale = autoScaleButton.getSelection();
 				xyzChartData.setAutoScale(autoScale);
 				scaleValuesGroup.setEnabled(!autoScale); 
-//				chart3DPanel.setAutoScale(autoScale);
-				updateRange();
+				if(autoScale) {
+					chart.getView().setBoundMode(ViewBoundMode.AUTO_FIT);
+					updateRange();
+				} else {
+					chart.getView().setBoundMode(ViewBoundMode.MANUAL);
+				}
 				setDirty(true);
 			}
 		});
@@ -539,31 +539,9 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 		container.setSashWidth(5);
 		container.setWeights(new int[] {80, 20});
 		
-//		WorkbenchJob workbenchJob = new WorkbenchJob("Waiting for the 3D chart to be initialized...") {
-//			@Override
-//			public IStatus runInUIThread(IProgressMonitor monitor) {
-//				try {
-//					while(awtThread.isAlive() && !monitor.isCanceled()) {
-//						awtThread.join(300);
-//					}
-//					if(monitor.isCanceled()) return Status.CANCEL_STATUS;
-//					if(!awtThread.isAlive()) {
-//						chart3DPanel.setAutoScale(xyzChartData.isAutoScale());
-//						if(xyzChartData.getViewPoint() != null) chart3DPanel.setViewPoint(xyzChartData.getViewPoint());
-//						refreshTrialsListFrontEndCuts();
-//						trialsListViewer.setSelection(new StructuredSelection(xyzChartData.getSelectedTrialsNumbers()));
-//						setDirty(false);
-//					}
-//				} catch (InterruptedException e) {
-//					Activator.logErrorMessageWithCause(e);
-//					e.printStackTrace();
-//				} 
-//				return Status.OK_STATUS;
-//			}
-//		};
-//		
-//		workbenchJob.schedule();
-		
+		refreshTrialsListFrontEndCuts();
+		trialsListViewer.setSelection(new StructuredSelection(xyzChartData.getSelectedTrialsNumbers()));
+		setDirty(false);
 
 	}
 	
@@ -655,7 +633,6 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 		for (Drawable lineStrip : lineStrips) {
 			String id = ((LineStrip)lineStrip).getId();
 			if(id != null) {
-//				id = id.replaceAll("\\.\\d+$", "");
 				ids.add(id);
 			}
 			
@@ -665,27 +642,27 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 	
 	@Override
 	public void updateFrontEndCutsChartHandler() {
-//		int value = frontCutSpinner.getSelection();
-//		xyzChartData.setFrontCut(value);
-//		for (ISeries series : chart.getSeriesSet().getSeries()) ((ILineSeries)series).setFrontCut(value);
-//		value = endCutSpinner.getSelection();
-//		xyzChartData.setEndCut(value);
-//		for (ISeries series : chart.getSeriesSet().getSeries()) ((ILineSeries)series).setEndCut(value);
-//		chart.redraw();
+		int value = frontCutSpinner.getSelection();
+		xyzChartData.setFrontCut(value);
+		List<Drawable> drawables = chart.getScene().getGraph().getAll();
+		for (Drawable drawable : drawables) ((LineStrip)drawable).setFrontCut(value);
+		value = endCutSpinner.getSelection();
+		xyzChartData.setEndCut(value);
+		for (Drawable drawable : drawables) ((LineStrip)drawable).setEndCut(value);
+		redraw();
 	}
 
 	@Override
 	public void setFocus() {
-//		container.setFocus();
-//		chartContainer.setFocus();
-//		((CanvasNewtSWT)chart.getCanvas()).setFocus();
+		trialsListViewer.getList().setFocus();
 	}
 
 	private void removeAllSeries() {
-//		ISeries[] series = chart.getSeriesSet().getSeries();
-//		for (ISeries aSeries : series) {
-//			chart.getSeriesSet().deleteSeries(aSeries.getId());
-//		}
+		List<Drawable> drawables = chart.getScene().getGraph().getAll();
+		for (int i = 0; i < drawables.size(); i++) {
+			chart.getScene().getGraph().remove(drawables.get(i));
+		}
+		xyzChartData.setSelectedTrialsNumbers(new ArrayList<>(0));
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -715,33 +692,34 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 			updateRange();
 		}
 		else {
-//			chart3DPanel.setXRange(xyzChartData.getxMin(), xyzChartData.getxMax());
-//			chart3DPanel.setYRange(xyzChartData.getyMin(), xyzChartData.getyMax());
-//			chart3DPanel.setZRange(xyzChartData.getzMin(), xyzChartData.getzMax());
+			Range xRange = new Range((float)xyzChartData.getxMin(), (float)xyzChartData.getxMax());
+			Range yRange = new Range((float)xyzChartData.getyMin(), (float)xyzChartData.getyMax());
+			Range zRange = new Range((float)xyzChartData.getzMin(), (float)xyzChartData.getzMax());
+			BoundingBox3d bounds = new BoundingBox3d(xRange, yRange, zRange);
+			chart.getView().getAxis().setAxe(bounds);
+			System.out.println(chart.getView().getAxis().getBounds().toString());
 		}
-//		chart.open();
-//		chart.render();
-//		chartContainer.redraw();
-//		chartContainer.update();
+		redraw();
+		System.out.println(chart.getView().getAxis().getBounds().toString());
 		setDirty(true);
 	}
 	
 	private void updateRange() {
-//		xyzChartData.setxMin(chart3DPanel.getXRange().getMin());
-//		xyzChartData.setxMax(chart3DPanel.getXRange().getMax());
-//		xyzChartData.setyMin(chart3DPanel.getYRange().getMin());
-//		xyzChartData.setyMax(chart3DPanel.getYRange().getMax());
-//		xyzChartData.setzMin(chart3DPanel.getZRange().getMin());
-//		xyzChartData.setzMax(chart3DPanel.getZRange().getMax());
-//		xMinText.setText(Double.toString(chart3DPanel.getXRange().getMin()));
-//		xMaxText.setText(Double.toString(chart3DPanel.getXRange().getMax()));
-//		yMinText.setText(Double.toString(chart3DPanel.getYRange().getMin()));
-//		yMaxText.setText(Double.toString(chart3DPanel.getYRange().getMax()));
-//		zMinText.setText(Double.toString(chart3DPanel.getZRange().getMin()));
-//		zMaxText.setText(Double.toString(chart3DPanel.getZRange().getMax()));
+		chart.getView().updateBoundsForceUpdate(true);
+		BoundingBox3d bounds = chart.getView().getAxis().getBounds();
+		xyzChartData.setxMin(bounds.getXmin());
+		xyzChartData.setxMax(bounds.getXmax());
+		xyzChartData.setyMin(bounds.getYmin());
+		xyzChartData.setyMax(bounds.getYmax());
+		xyzChartData.setzMin(bounds.getZmin());
+		xyzChartData.setzMax(bounds.getZmax());
+		xMinText.setText(Double.toString(bounds.getXmin()));
+		xMaxText.setText(Double.toString(bounds.getXmax()));
+		yMinText.setText(Double.toString(bounds.getYmin()));
+		yMaxText.setText(Double.toString(bounds.getYmax()));
+		zMinText.setText(Double.toString(bounds.getZmin()));
+		zMaxText.setText(Double.toString(bounds.getZmax()));
 	}
-	
-
 	
 	private Set<Integer> getTrialsInChart() {
 		Set<Integer> trials = new HashSet<Integer>();
@@ -762,9 +740,10 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 			List<Drawable> lineStrips = chart.getScene().getGraph().getAll();
 			for (int i = 0; i < lineStrips.size(); i++) {
 				LineStrip lineStrip = (LineStrip) lineStrips.get(i);
-				if(seriesID.equals(((LineStrip)lineStrip).getId())) chart.getScene().getGraph().remove(lineStrip, false);
+				if(seriesID.equals(((LineStrip)lineStrip).getId())) {
+					chart.getScene().getGraph().remove(lineStrip, false);
+				}
 			}
-//			chart3DPanel.removeSeries(seriesID);
 		}
 	}
 	
@@ -794,27 +773,15 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 			trajectory.setFaceDisplayed(true);
 			trajectory.setWireframeDisplayed(false);
 			trajectory.setWireframeWidth(3);
+			int frontCut = xyzChartData.getFrontCut();
+			int endCut = xyzChartData.getEndCut();
+			trajectory.setFrontCut(frontCut);
+			trajectory.setBaseFrontCut(frontCutSpinner.getMinimum());
+			trajectory.setEndCut(endCut);
 			chart.getScene().getGraph().add(trajectory, true);
-			chart.getView().updateBoundsForceUpdate(true);
-			
-//			chart3DPanel.addSeries(seriesID, xValues, yValues, zValues);
-//			int frontCut = xyzChartData.getFrontCut();
-//			int endCut = xyzChartData.getEndCut();
-//			series.setBaseFrontCut(frontCutSpinner.getMinimum());
-//			series.setFrontCut(frontCut);
-//			series.setEndCut(endCut);
-//			series.setAntialias(SWT.ON);
-//			series.setSymbolType(PlotSymbolType.NONE);
-//			series.setLineWidth(3);
 		}
 //		 refresh Series Colors
 		updateSeriesColorsHandler();
-//		ISeries[] seriesList = chart.getSeriesSet().getSeries();
-//		byte i = 0;
-//		for (ISeries series : seriesList) {
-//			((ILineSeries)series).setLineColor(ColorUtil.getColor(i));
-//			i++;
-//		}
 	}
 	
 	private boolean chartHasAlreadyThisTrial(Integer trialNumber) {
@@ -939,27 +906,43 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 
 	@Override
 	public void redraw() {
-		chart.getView().updateBoundsForceUpdate(true); // Is it ok ?
+		chart.render(); // Is it ok ?
 	}
 
 	@Override
 	public void updateXAxisRange(double min, double max) {
-//		chart3DPanel.setXRange(min, max);
+		bounds = chart.getView().getAxis().getBounds();
+		bounds.setXmax((float) max);
+		bounds.setXmin((float) min);
+		chart.getView().getAxis().setAxe(bounds);
 	}
 
 	@Override
 	public void updateYAxisRange(double min, double max) {
-//		chart3DPanel.setYRange(min, max);
+		bounds = chart.getView().getAxis().getBounds();
+		bounds.setYmax((float) max);
+		bounds.setYmin((float) min);
+		chart.getView().getAxis().setAxe(bounds);
 	}
 
 	@Override
 	public void updateZAxisRange(double min, double max) {
-//		chart3DPanel.setZRange(min, max);
+		bounds = chart.getView().getAxis().getBounds();
+		bounds.setZmax((float) max);
+		bounds.setZmin((float) min);
+		chart.getView().getAxis().setAxe(bounds);
+		redraw();
 	}
 
 	@Override
 	public void removeSeries(String seriesID) {
-		removeSeries(seriesID);
+		List<Drawable> lineStrips = chart.getScene().getGraph().getAll();
+		for (int i = 0; i < lineStrips.size(); i++) {
+			LineStrip lineStrip = (LineStrip) lineStrips.get(i);
+			if(seriesID.equals(((LineStrip)lineStrip).getId())) {
+				chart.getScene().getGraph().remove(lineStrip, false);
+			}
+		}
 	}
 
 	public void zoomIn() {
@@ -971,7 +954,11 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 //        chart3DPanel.getViewPoint().setRho(valRho);
 //        xyzChartData.setViewPoint(chart3DPanel.getViewPoint());
 //        chart3DPanel.update();
-//        setDirty(true);
+
+		chart.getView().getCamera().setEye(chart.getView().getCamera().getEye().add(new Coord3d(1, 1, 1)));
+		redraw();
+      setDirty(true);
+				
 	}
 
 	public void zoomOut() {
@@ -983,6 +970,12 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 //        chart3DPanel.getViewPoint().setRho(valRho);
 //        xyzChartData.setViewPoint(chart3DPanel.getViewPoint());
 //        chart3DPanel.update();
+//		Coord3d eye = chart.getView().getCamera().getEye();
+//		Coord3d target = chart.getView().getCamera().getTarget();
+//		Coord3d up = chart.getView().getCamera().getUp();
+//		Coord3d scale = chart.getView().getCamera().getScale().mul(new Coord3d(0.5, 0.5, 0.5));
+//		chart.getView().getCamera().setPosition(eye, target, up, scale);
+//		redraw();
 //        setDirty(true);
 	}
 
