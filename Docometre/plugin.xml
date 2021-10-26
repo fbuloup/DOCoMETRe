@@ -775,12 +775,14 @@
                   name="Docometre.separator2" visible="true">
             </separator>
             <command
-                  commandId="org.eclipse.ui.file.save"
+                  commandId="SaveCommand"
+                  icon="platform:/plugin/org.eclipse.ui/icons/full/etool16/save_edit.png"
                   label="%SaveAction.label"
                   style="push">
             </command>
             <command
-                  commandId="org.eclipse.ui.file.saveAll"
+                  commandId="SaveAllCommand"
+                  icon="platform:/plugin/org.eclipse.ui/icons/full/etool16/saveall_edit.png"
                   id="saveall"
                   label="%SaveAllAction.label"
                   style="push">
@@ -1872,7 +1874,8 @@
          <toolbar
                id="Docometre.DesignCoolBarToolbar">
             <command
-                  commandId="org.eclipse.ui.file.save"
+                  commandId="SaveCommand"
+                  icon="platform:/plugin/org.eclipse.ui/icons/full/etool16/save_edit.png"
                   label="%SaveAction.label"
                   style="push">
                <visibleWhen
@@ -1883,7 +1886,8 @@
                </visibleWhen>
             </command>
             <command
-                  commandId="org.eclipse.ui.file.saveAll"
+                  commandId="SaveAllCommand"
+                  icon="platform:/plugin/org.eclipse.ui/icons/full/etool16/saveall_edit.png"
                   id="saveall"
                   label="%SaveAllAction.label"
                   style="push">
@@ -2158,8 +2162,22 @@
          <toolbar
                id="Docometre.AnalyseCoolBarToolbar">
             <command
-                  commandId="org.eclipse.ui.file.save"
+                  commandId="SaveCommand"
+                  icon="platform:/plugin/org.eclipse.ui/icons/full/etool16/save_edit.png"
                   label="%SaveAction.label"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                  <reference
+                        definitionId="Docometre.AnalysePerspectiveSelected">
+                  </reference>
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="SaveAllCommand"
+                  icon="platform:/plugin/org.eclipse.ui/icons/full/etool16/saveall_edit.png"
+                  id="saveall"
+                  label="%SaveAllAction.label"
                   style="push">
                <visibleWhen
                      checkEnabled="false">
@@ -2724,6 +2742,16 @@
             defaultHandler="fr.univamu.ism.docometre.analyse.handlers.NewXYZChartHandler"
             id="NewXYZChartCommand"
             name="NewXYZChartCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.handlers.SaveHandler"
+            id="SaveCommand"
+            name="SaveCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.handlers.SaveAllHandler"
+            id="SaveAllCommand"
+            name="SaveAllCommand">
       </command>
    </extension>
    <extension

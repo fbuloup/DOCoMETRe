@@ -182,7 +182,6 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 			@Override
 			public void partHidden(IWorkbenchPartReference partRef) {
 				if(partRef.getPart(false) == XYZChartEditor.this) {
-					System.out.println("partHidden " + partRef.getPartName());
 					if(chart != null)/* && chart.getCanvas() != null && !((CanvasNewtSWT) chart.getCanvas()).isDisposed())*/ {
 						chart.dispose();
 						chart = null;
@@ -192,7 +191,6 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 			@Override
 			public void partVisible(IWorkbenchPartReference partRef) {
 				if(partRef.getPart(false) == XYZChartEditor.this) {
-					System.out.println("partVisible " + partRef.getPartName());
 					if(chart != null) {
 						chartContainer.layout();
 						return;
@@ -733,10 +731,8 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 			Range zRange = new Range((float)xyzChartData.getzMin(), (float)xyzChartData.getzMax());
 			BoundingBox3d bounds = new BoundingBox3d(xRange, yRange, zRange);
 			chart.getView().getAxis().setAxe(bounds);
-			System.out.println(chart.getView().getAxis().getBounds().toString());
 		}
 		redraw();
-		System.out.println(chart.getView().getAxis().getBounds().toString());
 		setDirty(true);
 	}
 	
@@ -832,9 +828,6 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 		String[] idSplitted = id.split("\\.");
 		int trialNumber = Integer.parseInt(idSplitted[idSplitted.length - 1]);
 		String seriesID = id.replaceAll("\\.\\d+$", "");
-		System.out.println("Add markers for : " + id);
-		System.out.println("Trial number : " + trialNumber);
-		System.out.println("Series id : " + seriesID);
 		
 		Channel[] channels = xyzChartData.getXYZChannels(seriesID);
 		Channel xChannel = channels[0];
@@ -1163,7 +1156,6 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 	@Override
 	public void mouseExited(com.jogamp.newt.event.MouseEvent e) {
 		System.out.println("mouseExited");
-		((CanvasNewtSWT)chart.getCanvas()).setFocus();
 	}
 	@Override
 	public void mouseEntered(com.jogamp.newt.event.MouseEvent e) {
