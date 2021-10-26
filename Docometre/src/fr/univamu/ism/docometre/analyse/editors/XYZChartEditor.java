@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.IntStream;
 
-
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -59,12 +58,21 @@ import org.jzy3d.events.ViewPointChangedEvent;
 import org.jzy3d.maths.BoundingBox3d;
 import org.jzy3d.maths.Coord3d;
 import org.jzy3d.maths.Range;
+import org.jzy3d.painters.Font;
 import org.jzy3d.plot3d.primitives.Drawable;
 import org.jzy3d.plot3d.primitives.LineStrip;
+import org.jzy3d.plot3d.primitives.Point;
 import org.jzy3d.plot3d.rendering.canvas.Quality;
 import org.jzy3d.plot3d.rendering.view.modes.ViewBoundMode;
+import org.jzy3d.plot3d.text.DrawableTextWrapper;
+import org.jzy3d.plot3d.text.ITextRenderer;
+import org.jzy3d.plot3d.text.align.Horizontal;
+import org.jzy3d.plot3d.text.align.Vertical;
+import org.jzy3d.plot3d.text.renderers.TextBillboardRenderer;
 
+import com.jogamp.newt.Window;
 import com.jogamp.newt.event.MouseListener;
+import com.jogamp.newt.swt.NewtCanvasSWT;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ColorUtil;
@@ -81,7 +89,7 @@ import fr.univamu.ism.docometre.analyse.datamodel.XYChart;
 import fr.univamu.ism.docometre.analyse.datamodel.XYZChart;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 
-public class XYZChartEditor extends EditorPart implements ISelectionChangedListener, /*IMarkersManager,*/ ZoomListener, TrialsEditor, ChartPropertiesListener, Chart2D3DBehaviour, IViewPointChangedListener {
+public class XYZChartEditor extends EditorPart implements ISelectionChangedListener, /*IMarkersManager,*/ ZoomListener, TrialsEditor, ChartPropertiesListener, Chart2D3DBehaviour, IViewPointChangedListener, MouseListener {
 	
 	public static String ID = "Docometre.XYZChartEditor";
 	private XYZChart xyzChartData;
@@ -102,6 +110,11 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 	private Composite chartContainer;
 	private Chart chart;
 	private BoundingBox3d bounds;
+	
+	CanvasNewtSWT canvas;
+	NewtCanvasSWT newtCanvasSWT;
+	Window newtWindow;
+	
 
 	public XYZChartEditor() {
 	}
@@ -144,6 +157,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 	@Override
 	public void createPartControl(Composite parent) {
 		container = new SashForm(parent, SWT.HORIZONTAL);
+		container.setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_BLACK));
 
 		if(!xyzChartData.initialize()) {
 			Label errorLabel = new Label(container, SWT.BORDER);
@@ -159,17 +173,17 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 		Settings.getInstance().setHardwareAccelerated(true);
 		chart = SWTChartFactory.chart(chartContainer, Quality.Nicest());
 		chart.getView().setViewPoint(xyzChartData.getViewPoint());
-//		chart.getView().setCameraMode(CameraMode.PERSPECTIVE);
 		chart.getView().addViewPointChangedListener(XYZChartEditor.this);
 		chart.black();
 		ChartLauncher.openChart(chart);
+		((CanvasNewtSWT) chart.getCanvas()).addMouseListener(this);
 		
 		getSite().getPage().addPartListener(new IPartListener2() {
 			@Override
 			public void partHidden(IWorkbenchPartReference partRef) {
 				if(partRef.getPart(false) == XYZChartEditor.this) {
 					System.out.println("partHidden " + partRef.getPartName());
-					if(chart != null && chart.getCanvas() != null && !((CanvasNewtSWT) chart.getCanvas()).isDisposed()) {
+					if(chart != null)/* && chart.getCanvas() != null && !((CanvasNewtSWT) chart.getCanvas()).isDisposed())*/ {
 						chart.dispose();
 						chart = null;
 					}
@@ -184,45 +198,20 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 						return;
 					}
 					chart = SWTChartFactory.chart(chartContainer, Quality.Nicest());
+					chart.getView().setViewPoint(xyzChartData.getViewPoint());
 					chart.getView().addViewPointChangedListener(XYZChartEditor.this);
 					chart.black();
 					ChartLauncher.openChart(chart);
-//					ICameraMouseController mouse =  ChartLauncher.configureControllers(chart, "JZY3D", true, true);
 					chartContainer.layout();
-					((CanvasNewtSWT) chart.getCanvas()).addMouseListener(new MouseListener() {
-						@Override
-						public void mouseWheelMoved(com.jogamp.newt.event.MouseEvent e) {
-							System.out.println("mouseWheelMoved");
-						}
-						@Override
-						public void mouseReleased(com.jogamp.newt.event.MouseEvent e) {
-							System.out.println("mouseReleased");
-						}
-						@Override
-						public void mousePressed(com.jogamp.newt.event.MouseEvent e) {
-							System.out.println("mousePressed");
-						}
-						@Override
-						public void mouseMoved(com.jogamp.newt.event.MouseEvent e) {
-							System.out.println("mouseMoved");
-						}
-						@Override
-						public void mouseExited(com.jogamp.newt.event.MouseEvent e) {
-							System.out.println("mouseExited");
-						}
-						@Override
-						public void mouseEntered(com.jogamp.newt.event.MouseEvent e) {
-							System.out.println("mouseEntered");
-						}
-						@Override
-						public void mouseDragged(com.jogamp.newt.event.MouseEvent e) {
-							System.out.println("mouseDragged");
-						}
-						@Override
-						public void mouseClicked(com.jogamp.newt.event.MouseEvent e) {
-							System.out.println("mouseClicked");
-						}
-					});
+					boolean wasDirty = XYZChartEditor.this.isDirty();
+					SelectionChangedEvent event = new SelectionChangedEvent(trialsListViewer, trialsListViewer.getSelection());
+					XYZChartEditor.this.selectionChanged(event);
+					if(!wasDirty) XYZChartEditor.this.setDirty(false);
+					((CanvasNewtSWT) chart.getCanvas()).addMouseListener(XYZChartEditor.this);
+					
+					canvas = ((CanvasNewtSWT) chart.getCanvas());
+					newtCanvasSWT = canvas.getCanvas();
+					newtWindow = ((CanvasNewtSWT) chart.getCanvas()).getCanvas().getNEWTChild();
 				}
 			}
 		});
@@ -451,7 +440,17 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 			public void widgetSelected(SelectionEvent e) {
 				boolean showMarkers = showMarkersButton.getSelection();
 				xyzChartData.setShowMarkers(showMarkers);
+				List<Drawable> drawables = chart.getScene().getGraph().getAll();
+				for (Drawable drawable : drawables) {
+					if(drawable instanceof Point) {
+						drawable.setDisplayed(xyzChartData.isShowMarkers());
+					}
+					if(drawable instanceof DrawableTextWrapper) {
+						drawable.setDisplayed(xyzChartData.isShowMarkersLabels() && xyzChartData.isShowMarkers());
+					}
+				}
 				setDirty(true);
+				redraw();
 			}
 		});
 		
@@ -460,7 +459,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 		sizeLabel.setText(DocometreMessages.MarkersSizeTitle);
 		Spinner sizeSpinner = new Spinner(bottomContainer, SWT.BORDER);
 		sizeSpinner.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		sizeSpinner.setMaximum(10);
+		sizeSpinner.setMaximum(1000);
 		sizeSpinner.setMinimum(3);
 		sizeSpinner.setSelection(xyzChartData.getMarkersSize());
 		sizeSpinner.addMouseWheelListener(new MouseWheelListener() {
@@ -469,14 +468,28 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 				int value = sizeSpinner.getSelection() + e.count;
 				sizeSpinner.setSelection(value);
 				xyzChartData.setMarkersSize(sizeSpinner.getSelection());
+				List<Drawable> drawables = chart.getScene().getGraph().getAll();
+				for (Drawable drawable : drawables) {
+					if(drawable instanceof Point) {
+						((Point) drawable).setWidth(xyzChartData.getMarkersSize());
+					}
+				}
 				setDirty(true);
+				redraw();
 			}
 		});
 		sizeSpinner.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				xyzChartData.setMarkersSize(sizeSpinner.getSelection());
+				List<Drawable> drawables = chart.getScene().getGraph().getAll();
+				for (Drawable drawable : drawables) {
+					if(drawable instanceof Point) {
+						((Point) drawable).setWidth(xyzChartData.getMarkersSize());
+					}
+				}
 				setDirty(true);
+				redraw();
 			}
 		});
 		
@@ -489,7 +502,14 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 			public void widgetSelected(SelectionEvent e) {
 				boolean showMarkersLabels = showMarkersLabelsButton.getSelection();
 				xyzChartData.setShowMarkersLabels(showMarkersLabels);
+				List<Drawable> drawables = chart.getScene().getGraph().getAll();
+				for (Drawable drawable : drawables) {
+					if(drawable instanceof DrawableTextWrapper) {
+						drawable.setDisplayed(xyzChartData.isShowMarkers()?xyzChartData.isShowMarkersLabels():false);
+					}
+				}
 				setDirty(true);
+				redraw();
 			}
 		});
 		
@@ -548,6 +568,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 	private LineStrip getLineStripFromID(String id) {
 		List<Drawable> drawables = chart.getScene().getGraph().getAll();
 		for (Drawable drawable : drawables) {
+			if(!(drawable instanceof LineStrip)) continue;
 			if(((LineStrip)drawable).getId().equals(id)) return (LineStrip)drawable;
 		}
 		return null;
@@ -561,6 +582,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 		byte i = 0; 
 		for (String seriesID : seriesIDs) {
 			LineStrip lineStrip = getLineStripFromID(seriesID);
+			org.eclipse.swt.graphics.Color color  = ColorUtil.getColor(i);
 			if(sameColor) {
 				try {
 					int seriesIDTrial = Integer.parseInt(seriesID.split("\\.")[seriesID.split("\\.").length - 1]); 
@@ -571,16 +593,25 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 					Channel channel = channelsContainer.getChannelFromName(fullYChannelName);
 					String category = mathEngine.getCategoryForTrialNumber(channel, seriesIDTrial);
 					if(categories.indexOf(category) == -1) categories.add(category);
-					org.eclipse.swt.graphics.Color color = ColorUtil.getColor((byte) categories.indexOf(category));
+					color = ColorUtil.getColor((byte) categories.indexOf(category));
 					lineStrip.setWireframeColor(new Color(color.getRed(), color.getGreen(), color.getBlue()));
 				} catch (CoreException e) {
 					Activator.logErrorMessageWithCause(e);
 					e.printStackTrace();
 				}
 			} else {
-				org.eclipse.swt.graphics.Color color = ColorUtil.getColor(i);
 				lineStrip.setWireframeColor(new Color(color.getRed(), color.getGreen(), color.getBlue()));
 				i++;
+			}
+			Drawable[] drawables = lineStrip.getMarkersAndLabels();
+			for (Drawable drawable : drawables) {
+				if(drawable instanceof Point) {
+					((Point) drawable).setColor(new Color(color.getRed(), color.getGreen(), color.getBlue()));
+				}
+//				if(drawable instanceof DrawableTextWrapper) {
+//					((DrawableTextWrapper) drawable).setColor(new Color(color.getRed(), color.getGreen(), color.getBlue()));
+//				}
+				
 			}
 		}
 
@@ -618,11 +649,11 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 		message = NLS.bind(DocometreMessages.PressEnterEndCut, baseFrontCut, baseEndCut);
 		endCutSpinner.setToolTipText(message);
 		
-		if(xyzChartData.getFrontCut() == -1 && xyzChartData.getEndCut() == -1) {
+//		if(xyzChartData.getFrontCut() == -1 && xyzChartData.getEndCut() == -1) {
 			xyzChartData.setFrontCut(baseFrontCut);
 			xyzChartData.setEndCut(baseEndCut);
 			endCutSpinner.setSelection(baseEndCut);
-		}
+//		}
 
 	}
 	
@@ -631,6 +662,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 		Set<String> ids = new HashSet<>();
 		List<Drawable> lineStrips = chart.getScene().getGraph().getAll();
 		for (Drawable lineStrip : lineStrips) {
+			if(!(lineStrip instanceof LineStrip)) continue;
 			String id = ((LineStrip)lineStrip).getId();
 			if(id != null) {
 				ids.add(id);
@@ -645,10 +677,14 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 		int value = frontCutSpinner.getSelection();
 		xyzChartData.setFrontCut(value);
 		List<Drawable> drawables = chart.getScene().getGraph().getAll();
-		for (Drawable drawable : drawables) ((LineStrip)drawable).setFrontCut(value);
+		for (Drawable drawable : drawables) {
+			if(drawable instanceof LineStrip) ((LineStrip)drawable).setFrontCut(value);
+		}
 		value = endCutSpinner.getSelection();
 		xyzChartData.setEndCut(value);
-		for (Drawable drawable : drawables) ((LineStrip)drawable).setEndCut(value);
+		for (Drawable drawable : drawables) {
+			if(drawable instanceof LineStrip) ((LineStrip)drawable).setEndCut(value);
+		}
 		redraw();
 	}
 
@@ -739,8 +775,13 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 			seriesID = seriesID + "." + trialNumber;
 			List<Drawable> lineStrips = chart.getScene().getGraph().getAll();
 			for (int i = 0; i < lineStrips.size(); i++) {
+				if(!(lineStrips.get(i) instanceof LineStrip)) continue;
 				LineStrip lineStrip = (LineStrip) lineStrips.get(i);
 				if(seriesID.equals(((LineStrip)lineStrip).getId())) {
+					Drawable[] markers = lineStrip.getMarkersAndLabels();
+					for (Drawable marker : markers) {
+						chart.getScene().getGraph().remove(marker, false);
+					}
 					chart.getScene().getGraph().remove(lineStrip, false);
 				}
 			}
@@ -778,12 +819,75 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 			trajectory.setFrontCut(frontCut);
 			trajectory.setBaseFrontCut(frontCutSpinner.getMinimum());
 			trajectory.setEndCut(endCut);
-			chart.getScene().getGraph().add(trajectory, true);
+			chart.getScene().getGraph().add(trajectory, false);
+			// Add markers
+			addMarkers(trajectory);
 		}
 //		 refresh Series Colors
 		updateSeriesColorsHandler();
 	}
 	
+	private void addMarkers(LineStrip trajectory) {
+		String id = trajectory.getId();
+		String[] idSplitted = id.split("\\.");
+		int trialNumber = Integer.parseInt(idSplitted[idSplitted.length - 1]);
+		String seriesID = id.replaceAll("\\.\\d+$", "");
+		System.out.println("Add markers for : " + id);
+		System.out.println("Trial number : " + trialNumber);
+		System.out.println("Series id : " + seriesID);
+		
+		Channel[] channels = xyzChartData.getXYZChannels(seriesID);
+		Channel xChannel = channels[0];
+		Channel yChannel = channels[1];
+		Channel zChannel = channels[2];
+		
+		double sf = MathEngineFactory.getMathEngine().getSampleFrequency(xChannel);
+		
+		double[] xValues = MathEngineFactory.getMathEngine().getYValuesForSignal(xChannel, trialNumber);
+		int xBaseFrontCut = MathEngineFactory.getMathEngine().getFrontCut(xChannel, trialNumber);
+		
+		double[] yValues = MathEngineFactory.getMathEngine().getYValuesForSignal(yChannel, trialNumber);
+		int yBaseFrontCut = MathEngineFactory.getMathEngine().getFrontCut(yChannel, trialNumber);
+		
+		double[] zValues = MathEngineFactory.getMathEngine().getYValuesForSignal(zChannel, trialNumber);
+		int zBaseFrontCut = MathEngineFactory.getMathEngine().getFrontCut(zChannel, trialNumber);
+
+		addMarkersFromChannel(trajectory, xChannel, trialNumber, sf, xValues, yValues, zValues, xBaseFrontCut, yBaseFrontCut, zBaseFrontCut);
+		addMarkersFromChannel(trajectory, yChannel, trialNumber, sf, xValues, yValues, zValues, xBaseFrontCut, yBaseFrontCut, zBaseFrontCut);
+		addMarkersFromChannel(trajectory, zChannel, trialNumber, sf, xValues, yValues, zValues, xBaseFrontCut, yBaseFrontCut, zBaseFrontCut);
+		
+	}
+	
+	private void addMarkersFromChannel(LineStrip trajectory, Channel channel, int trialNumber, double sf, double[] xValues, double[] yValues, double[] zValues, int xBaseFrontCut, int yBaseFrontCut, int zBaseFrontCut) {
+		// Markers from Channel 
+		String[] markersGroupsLabels = new String[0]; 
+		markersGroupsLabels = MathEngineFactory.getMathEngine().getMarkersGroupsLabels(channel);
+		for (String markersGroupLabel : markersGroupsLabels) {
+			double[][] markers = MathEngineFactory.getMathEngine().getMarkers(markersGroupLabel, channel);
+			for (int i = 0; i < markers.length; i++) {
+				if(((int)markers[i][0]) == trialNumber) {
+					int sampleIndex = (int) (sf * markers[i][1]);
+					double xValue = xValues[sampleIndex - xBaseFrontCut];
+					double yValue = yValues[sampleIndex - yBaseFrontCut];
+					double zValue = zValues[sampleIndex - zBaseFrontCut];
+					Coord3d coord3d = new Coord3d(xValue, yValue, zValue);
+					Point marker = new Point(coord3d);
+					marker.setColor(trajectory.getColor());
+					marker.setWidth(xyzChartData.getMarkersSize());
+					ITextRenderer textRender = new TextBillboardRenderer();
+					DrawableTextWrapper label = new DrawableTextWrapper(markersGroupLabel, coord3d, Color.WHITE, textRender);
+					label.setHalign(Horizontal.RIGHT);
+					label.setValign(Vertical.TOP);
+					label.setDefaultFont(Font.Helvetica_10);
+					label.setSceneOffset(new Coord3d(1000, 1000, 1000));
+					trajectory.addMarkerAndLabel(new Drawable[] {marker, label});
+					chart.getScene().getGraph().add(marker);
+					chart.getScene().getGraph().add(label);
+				}
+			}
+		}
+	}
+
 	private boolean chartHasAlreadyThisTrial(Integer trialNumber) {
 		String[] seriesIDs = getSeriesIDs();
 		for (String seriesID : xyzChartData.getSeriesIDsPrefixes()) {
@@ -936,12 +1040,19 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 
 	@Override
 	public void removeSeries(String seriesID) {
-		List<Drawable> lineStrips = chart.getScene().getGraph().getAll();
-		for (int i = 0; i < lineStrips.size(); i++) {
-			LineStrip lineStrip = (LineStrip) lineStrips.get(i);
-			if(seriesID.equals(((LineStrip)lineStrip).getId())) {
-				chart.getScene().getGraph().remove(lineStrip, false);
+		List<Drawable> drawable = chart.getScene().getGraph().getAll();
+		for (int i = 0; i < drawable.size(); i++) {
+			if(drawable instanceof LineStrip) {
+				LineStrip lineStrip = (LineStrip) drawable.get(i);
+				if(seriesID.equals(((LineStrip)lineStrip).getId())) {
+					Drawable[] markers = lineStrip.getMarkersAndLabels();
+					for (Drawable marker : markers) {
+						chart.getScene().getGraph().remove(marker, false);
+					}
+					chart.getScene().getGraph().remove(lineStrip, false);
+				}
 			}
+			
 		}
 	}
 
@@ -1032,6 +1143,41 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 	public void viewPointChanged(ViewPointChangedEvent e) {
 		xyzChartData.setViewPoint(e.getViewPoint());
         setDirty(true);
+	}
+	
+	@Override
+	public void mouseWheelMoved(com.jogamp.newt.event.MouseEvent e) {
+		System.out.println("mouseWheelMoved");
+	}
+	@Override
+	public void mouseReleased(com.jogamp.newt.event.MouseEvent e) {
+		System.out.println("mouseReleased");
+	}
+	@Override
+	public void mousePressed(com.jogamp.newt.event.MouseEvent e) {
+		System.out.println("mousePressed");
+	}
+	@Override
+	public void mouseMoved(com.jogamp.newt.event.MouseEvent e) {
+	}
+	@Override
+	public void mouseExited(com.jogamp.newt.event.MouseEvent e) {
+		System.out.println("mouseExited");
+		((CanvasNewtSWT)chart.getCanvas()).setFocus();
+	}
+	@Override
+	public void mouseEntered(com.jogamp.newt.event.MouseEvent e) {
+	}
+	@Override
+	public void mouseDragged(com.jogamp.newt.event.MouseEvent e) {
+		System.out.println("mouseDragged");
+		System.out.println(e.isButtonDown(com.jogamp.newt.event.MouseEvent.BUTTON1));
+		System.out.println(e.isButtonDown(com.jogamp.newt.event.MouseEvent.BUTTON2));
+		System.out.println(e.isButtonDown(com.jogamp.newt.event.MouseEvent.BUTTON3));
+	}
+	@Override
+	public void mouseClicked(com.jogamp.newt.event.MouseEvent e) {
+		System.out.println("mouseClicked");
 	}
 	
 }

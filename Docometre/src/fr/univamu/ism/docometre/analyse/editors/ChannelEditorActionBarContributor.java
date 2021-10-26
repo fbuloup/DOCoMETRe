@@ -141,39 +141,6 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 		}
 	}
 
-	private class ZoomInAction extends Action {
-		public ZoomInAction() {
-			super("Zoom In", Activator.getImageDescriptor(IImageKeys.ZOOM_IN2));
-		}
-		
-		@Override
-		public void run() {
-			((XYZChartEditor)chartEditor).zoomIn();
-		}
-	}
-	
-	private class ZoomOutAction extends Action {
-		public ZoomOutAction() {
-			super("Zoom Out", Activator.getImageDescriptor(IImageKeys.ZOOM_OUT2));
-		}
-		
-		@Override
-		public void run() {
-			((XYZChartEditor)chartEditor).zoomOut();
-		}
-	}
-	
-	private class ZoomFitAction extends Action {
-		public ZoomFitAction() {
-			super("Zoom to Fit", Activator.getImageDescriptor(IImageKeys.ZOOM_FIT));
-		}
-		
-		@Override
-		public void run() {
-			((XYZChartEditor)chartEditor).zoomToFit();
-		}
-	}
-	
 	private class UpAction extends Action {
 		public UpAction() {
 			super("Up", Activator.getImageDescriptor(IImageKeys.UP));
@@ -218,27 +185,60 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 		}
 	}
 	
-	private class TurnLeftAction extends Action {
-		public TurnLeftAction() {
-			super("Turn Left", Activator.getImageDescriptor(IImageKeys.TURN_LEFT));
-		}
-		
-		@Override
-		public void run() {
-			((XYZChartEditor)chartEditor).turnLeft();
-		}
-	}
+//	private class ZoomInAction extends Action {
+//	public ZoomInAction() {
+//		super("Zoom In", Activator.getImageDescriptor(IImageKeys.ZOOM_IN2));
+//	}
+//	
+//	@Override
+//	public void run() {
+//		((XYZChartEditor)chartEditor).zoomIn();
+//	}
+//}
+//
+//private class ZoomOutAction extends Action {
+//	public ZoomOutAction() {
+//		super("Zoom Out", Activator.getImageDescriptor(IImageKeys.ZOOM_OUT2));
+//	}
+//	
+//	@Override
+//	public void run() {
+//		((XYZChartEditor)chartEditor).zoomOut();
+//	}
+//}
+//
+//private class ZoomFitAction extends Action {
+//	public ZoomFitAction() {
+//		super("Zoom to Fit", Activator.getImageDescriptor(IImageKeys.ZOOM_FIT));
+//	}
+//	
+//	@Override
+//	public void run() {
+//		((XYZChartEditor)chartEditor).zoomToFit();
+//	}
+//}
 	
-	private class TurnRightAction extends Action {
-		public TurnRightAction() {
-			super("Turn Right", Activator.getImageDescriptor(IImageKeys.TURN_RIGHT));
-		}
-		
-		@Override
-		public void run() {
-			((XYZChartEditor)chartEditor).turnRight();
-		}
-	}
+//	private class TurnLeftAction extends Action {
+//		public TurnLeftAction() {
+//			super("Turn Left", Activator.getImageDescriptor(IImageKeys.TURN_LEFT));
+//		}
+//		
+//		@Override
+//		public void run() {
+//			((XYZChartEditor)chartEditor).turnLeft();
+//		}
+//	}
+//	
+//	private class TurnRightAction extends Action {
+//		public TurnRightAction() {
+//			super("Turn Right", Activator.getImageDescriptor(IImageKeys.TURN_RIGHT));
+//		}
+//		
+//		@Override
+//		public void run() {
+//			((XYZChartEditor)chartEditor).turnRight();
+//		}
+//	}
 	
 	private ActionContributionItem nextTrialActionContributionItem;
 	private ActionContributionItem previousTrialActionContributionItem;
@@ -247,30 +247,30 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 	private Chart2D3DBehaviour chartEditor;
 	private ActionContributionItem addCurveActionContributionItem;
 	private ActionContributionItem removeCurveActionContributionItem;
-	private ActionContributionItem zoomInActionContributionItem;
-	private ActionContributionItem zoomOutActionContributionItem;
-	private ActionContributionItem zoomFitActionContributionItem;
 	private ActionContributionItem upActionContributionItem;
 	private ActionContributionItem downActionContributionItem;
 	private ActionContributionItem leftActionContributionItem;
 	private ActionContributionItem rightActionContributionItem;
-	private ActionContributionItem turnLeftActionContributionItem;
-	private ActionContributionItem turnRightActionContributionItem;
+//	private ActionContributionItem zoomInActionContributionItem;
+//	private ActionContributionItem zoomOutActionContributionItem;
+//	private ActionContributionItem zoomFitActionContributionItem;
+//	private ActionContributionItem turnLeftActionContributionItem;
+//	private ActionContributionItem turnRightActionContributionItem;
 
 	public ChannelEditorActionBarContributor() {
 		nextTrialActionContributionItem = new ActionContributionItem(new NextTrialAction());
 		previousTrialActionContributionItem = new ActionContributionItem(new PreviousTrialAction());
 		addCurveActionContributionItem = new ActionContributionItem(new AddCurveAction());
 		removeCurveActionContributionItem = new ActionContributionItem(new RemoveCurveAction());
-		zoomInActionContributionItem = new ActionContributionItem(new ZoomInAction());
-		zoomOutActionContributionItem = new ActionContributionItem(new ZoomOutAction());
-		zoomFitActionContributionItem = new ActionContributionItem(new ZoomFitAction());
 		upActionContributionItem = new ActionContributionItem(new UpAction());
 		downActionContributionItem = new ActionContributionItem(new DownAction());
 		leftActionContributionItem = new ActionContributionItem(new LeftAction());
 		rightActionContributionItem = new ActionContributionItem(new RightAction());
-		turnLeftActionContributionItem = new ActionContributionItem(new TurnLeftAction());
-		turnRightActionContributionItem = new ActionContributionItem(new TurnRightAction());
+//		zoomInActionContributionItem = new ActionContributionItem(new ZoomInAction());
+//		zoomOutActionContributionItem = new ActionContributionItem(new ZoomOutAction());
+//		zoomFitActionContributionItem = new ActionContributionItem(new ZoomFitAction());
+//		turnLeftActionContributionItem = new ActionContributionItem(new TurnLeftAction());
+//		turnRightActionContributionItem = new ActionContributionItem(new TurnRightAction());
 		
 		PlatformUI.getWorkbench().getActiveWorkbenchWindow().addPerspectiveListener(this);
 	}
@@ -285,15 +285,15 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 		subToolBarManager.add(addCurveActionContributionItem);
 		subToolBarManager.add(removeCurveActionContributionItem);
 		subToolBarManager.add(new Separator());
-		subToolBarManager.add(zoomInActionContributionItem);
-		subToolBarManager.add(zoomOutActionContributionItem);
-		subToolBarManager.add(zoomFitActionContributionItem);
 		subToolBarManager.add(upActionContributionItem);
 		subToolBarManager.add(downActionContributionItem);
 		subToolBarManager.add(leftActionContributionItem);
 		subToolBarManager.add(rightActionContributionItem);
-		subToolBarManager.add(turnLeftActionContributionItem);
-		subToolBarManager.add(turnRightActionContributionItem);
+//		subToolBarManager.add(zoomInActionContributionItem);
+//		subToolBarManager.add(zoomOutActionContributionItem);
+//		subToolBarManager.add(zoomFitActionContributionItem);
+//		subToolBarManager.add(turnLeftActionContributionItem);
+//		subToolBarManager.add(turnRightActionContributionItem);
 		
 	}
 	
@@ -316,15 +316,15 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 		addCurveActionContributionItem.setVisible(false);
 		removeCurveActionContributionItem.setVisible(false);
 		
-		zoomInActionContributionItem.setVisible(false);
-		zoomOutActionContributionItem.setVisible(false);
-		zoomFitActionContributionItem.setVisible(false);
 		upActionContributionItem.setVisible(false);
 		downActionContributionItem.setVisible(false);
 		leftActionContributionItem.setVisible(false);
 		rightActionContributionItem.setVisible(false);
-		turnLeftActionContributionItem.setVisible(false);
-		turnRightActionContributionItem.setVisible(false);
+//		zoomInActionContributionItem.setVisible(false);
+//		zoomOutActionContributionItem.setVisible(false);
+//		zoomFitActionContributionItem.setVisible(false);
+//		turnLeftActionContributionItem.setVisible(false);
+//		turnRightActionContributionItem.setVisible(false);
 		
 		if(!(targetEditor instanceof TrialsEditor)) return;
 		
@@ -341,15 +341,15 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 		}
 		
 		if(editor instanceof XYZChartEditor) {
-			zoomInActionContributionItem.setVisible(true);
-			zoomOutActionContributionItem.setVisible(true);
-			zoomFitActionContributionItem.setVisible(true);
 			upActionContributionItem.setVisible(true);
 			downActionContributionItem.setVisible(true);
 			leftActionContributionItem.setVisible(true);
 			rightActionContributionItem.setVisible(true);
-			turnLeftActionContributionItem.setVisible(true);
-			turnRightActionContributionItem.setVisible(true);
+//			zoomInActionContributionItem.setVisible(true);
+//			zoomOutActionContributionItem.setVisible(true);
+//			zoomFitActionContributionItem.setVisible(true);
+//			turnLeftActionContributionItem.setVisible(true);
+//			turnRightActionContributionItem.setVisible(true);
 		}
 		subToolBarManager.update(true);
 		
@@ -374,15 +374,15 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 		addCurveActionContributionItem.getAction().setEnabled(actionsVisibility);
 		removeCurveActionContributionItem.getAction().setEnabled(actionsVisibility);
 		
-		zoomInActionContributionItem.setVisible(actionsVisibility);
-		zoomOutActionContributionItem.setVisible(actionsVisibility);
-		zoomFitActionContributionItem.setVisible(actionsVisibility);
 		upActionContributionItem.setVisible(actionsVisibility);
 		downActionContributionItem.setVisible(actionsVisibility);
 		leftActionContributionItem.setVisible(actionsVisibility);
 		rightActionContributionItem.setVisible(actionsVisibility);
-		turnLeftActionContributionItem.setVisible(actionsVisibility);
-		turnRightActionContributionItem.setVisible(actionsVisibility);
+//		zoomInActionContributionItem.setVisible(actionsVisibility);
+//		zoomOutActionContributionItem.setVisible(actionsVisibility);
+//		zoomFitActionContributionItem.setVisible(actionsVisibility);
+//		turnLeftActionContributionItem.setVisible(actionsVisibility);
+//		turnRightActionContributionItem.setVisible(actionsVisibility);
 		
 		subToolBarManager.update(true);
 		
