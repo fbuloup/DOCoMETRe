@@ -14,6 +14,8 @@ import org.eclipse.jface.action.SubToolBarManager;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IPerspectiveListener;
@@ -30,6 +32,8 @@ import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.analyse.datamodel.XYZChart;
+import fr.univamu.ism.docometre.analyse.wizard.SelectChannelsWizard;
+import fr.univamu.ism.docometre.analyse.wizard.SelectChannelsWizard.ChannelsNumber;
 
 public class ChannelEditorActionBarContributor extends EditorActionBarContributor implements IPerspectiveListener {
 	
@@ -72,40 +76,29 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 				IResource subject = ((IContainer)SelectedExprimentContributionItem.selectedExperiment).findMember(loadedSubject.split("\\.")[1]);
 				signals.addAll(Arrays.asList(MathEngineFactory.getMathEngine().getSignals(subject)));
 			}
-			ElementListSelectionDialog elementListSelectionDialog = new ElementListSelectionDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), new LabelProvider() {
-				@Override
-				public String getText(Object element) {
-					return ((Channel)element).getFullName();
+			
+			ChannelsNumber channelsNumber = ChannelsNumber.ONE;
+			if(chartEditor instanceof XYChartEditor) channelsNumber = ChannelsNumber.TWO;
+			if(chartEditor instanceof XYZChartEditor) channelsNumber = ChannelsNumber.THREE;
+			SelectChannelsWizard selectChannelsWizard = new SelectChannelsWizard(channelsNumber, signals.toArray(new Channel[signals.size()]));
+			Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+			WizardDialog selectChannelsWizardDialog = new WizardDialog(shell, selectChannelsWizard);
+			if(selectChannelsWizardDialog.open() == Dialog.OK) {
+				Channel[] channels = selectChannelsWizard.getSelectedChannels();
+				Channel xSignal = (Channel) channels[0];
+				Channel ySignal = (Channel) channels[0];
+				Channel zSignal = (Channel) channels[0];
+				if(channelsNumber == ChannelsNumber.TWO) {
+					ySignal = (Channel) channels[1];
+					chartEditor.getChartData().addCurve(xSignal, ySignal);
 				}
-			});
-			elementListSelectionDialog.setMultipleSelection(false);
-			elementListSelectionDialog.setElements(signals.toArray(new Channel[signals.size()]));
-			elementListSelectionDialog.setTitle(DocometreMessages.XAxisSelectionDialogTitle);
-			elementListSelectionDialog.setMessage(DocometreMessages.XAxisSelectionDialogMessage);
-			if(elementListSelectionDialog.open() == Dialog.OK) {
-				Object[] selection = elementListSelectionDialog.getResult();
-				Channel xSignal = (Channel) selection[0];
-				elementListSelectionDialog.setTitle(DocometreMessages.YAxisSelectionDialogTitle);
-				elementListSelectionDialog.setMessage(DocometreMessages.YAxisSelectionDialogMessage);
-				if(elementListSelectionDialog.open() == Dialog.OK) {
-					selection = elementListSelectionDialog.getResult();
-					Channel ySignal = (Channel) selection[0];
-					if(chartEditor instanceof XYChartEditor) {
-						chartEditor.getChartData().addCurve(xSignal, ySignal);
-						chartEditor.refreshTrialsListFrontEndCuts();
-						chartEditor.setDirty(true);
-					} else if(chartEditor instanceof XYZChartEditor) {
-						elementListSelectionDialog.setTitle(DocometreMessages.ZAxisSelectionDialogTitle);
-						elementListSelectionDialog.setMessage(DocometreMessages.ZAxisSelectionDialogMessage);
-						if(elementListSelectionDialog.open() == Dialog.OK) {
-							selection = elementListSelectionDialog.getResult();
-							Channel zSignal = (Channel) selection[0];
-							((XYZChart)chartEditor.getChartData()).addCurve(xSignal, ySignal, zSignal);
-							chartEditor.refreshTrialsListFrontEndCuts();
-							chartEditor.setDirty(true);
-						}
-					}
+				if(channelsNumber == ChannelsNumber.THREE) {
+					ySignal = (Channel) channels[1];
+					zSignal = (Channel) channels[2];
+					((XYZChart)chartEditor.getChartData()).addCurve(xSignal, ySignal, zSignal);
 				}
+				chartEditor.refreshTrialsListFrontEndCuts();
+				chartEditor.setDirty(true);
 			}
 		}
 	}

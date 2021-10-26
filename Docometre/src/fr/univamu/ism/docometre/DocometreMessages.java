@@ -855,12 +855,11 @@ public final class DocometreMessages extends NLS {
 	public static String ApplyTitle;
 	public static String AddNewCurveToolTip;
 	public static String RemoveCurveToolTip;
-	public static String XAxisSelectionDialogTitle;
-	public static String XAxisSelectionDialogMessage;
-	public static String YAxisSelectionDialogTitle;
-	public static String YAxisSelectionDialogMessage;
-	public static String ZAxisSelectionDialogTitle;
-	public static String ZAxisSelectionDialogMessage;
+	public static String AxisSelectionDialogTitle;
+	public static String XAxisSelectionDialogSubTitle;
+	public static String YAxisSelectionDialogSubTitle;
+	public static String ZAxisSelectionDialogSubTitle;
+	public static String AxisSelectionDialogMessage;
 	public static String CurvesSelectionDialogTitle;
 	public static String CurvesSelectionDialogMessage;
 	public static String ShowMarkersLabelsTitle;
