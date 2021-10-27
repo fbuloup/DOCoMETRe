@@ -68,7 +68,7 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 			if(!MathEngineFactory.getMathEngine().isStarted()) return;
 			String[] loadedSubjects = MathEngineFactory.getMathEngine().getLoadedSubjects();
 			if(loadedSubjects.length == 0) {
-				MessageDialog.openInformation(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "Hey !?", "There is no subjects loaded !");
+				MessageDialog.openInformation(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), DocometreMessages.AddCurvesDialog_ShellTitle, DocometreMessages.NoSubjectsLoadedMessage);
 				return;
 			}
 			Set<Channel> signals = new HashSet<>();

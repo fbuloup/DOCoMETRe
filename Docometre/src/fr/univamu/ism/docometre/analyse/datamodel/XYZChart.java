@@ -34,6 +34,7 @@ public class XYZChart extends XYChart {
 		super();
 		zMax = 10;
 		zMin = -10;
+		viewPoint = Coord3d.ORIGIN;
 	}
 	
 	public double getzMax() {

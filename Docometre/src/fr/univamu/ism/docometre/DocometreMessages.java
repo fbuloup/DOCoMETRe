@@ -457,6 +457,7 @@ public final class DocometreMessages extends NLS {
 	public static String DeleteCurvesDialog_Title;
 	public static String DeleteCurvesDialog_Message;
 	public static String AddCurvesDialog_ShellTitle;
+	public static String NoSubjectsLoadedMessage;
 	public static String AddCurvesDialog_Title;
 	public static String AddCurvesDialog_Message;
 	public static String ErrorValueAlreadyUsed;
@@ -966,13 +967,7 @@ public final class DocometreMessages extends NLS {
 	public static String DataExportSignalSubtaskMessage;
 	public static String DataExportErrorOccuredDialogTitle;
 	public static String DataExportErrorOccuredDialogMessage;
-
 	
-
-	
-
-	
-
 //	public static String OrganizeSessionWizardPage_button_1_text;
 //	public static String OrganizeSessionWizardPage_tbtmNewItem_text;
 //	public static String OrganizeSessionWizardPage_tbtmNewItem_1_text;
