@@ -61,7 +61,7 @@ public class XYChart extends AbstractElement {
 	public XYChart() {
 		seriesIDs = new HashSet<>();
 		selectedTrialsNumbers = new ArrayList<>();
-		autoScale = false;
+		autoScale = true;
 		xMax = 10;
 		xMin = -10;
 		yMax = 10;
@@ -198,6 +198,7 @@ public class XYChart extends AbstractElement {
 	public void removeCurve(String key) {
 		seriesIDs.remove(key);
 		channelsMap.remove(key);
+		if(seriesIDs.isEmpty()) selectedTrialsNumbers = new ArrayList<Integer>();
 	}
 	
 	public int getNbCurves() {

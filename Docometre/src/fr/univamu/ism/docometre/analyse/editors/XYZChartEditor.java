@@ -114,6 +114,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 	CanvasNewtSWT canvas;
 	NewtCanvasSWT newtCanvasSWT;
 	Window newtWindow;
+	private Composite container2;
 	
 
 	public XYZChartEditor() {
@@ -157,7 +158,6 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 	@Override
 	public void createPartControl(Composite parent) {
 		container = new SashForm(parent, SWT.HORIZONTAL);
-		container.setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_BLACK));
 
 		if(!xyzChartData.initialize()) {
 			Label errorLabel = new Label(container, SWT.BORDER);
@@ -165,9 +165,10 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 			errorLabel.setForeground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_RED));
 			container.setSashWidth(0);
 			container.setWeights(new int[] {100});
+			container.setFocus();
 			return;
 		}
-		chartContainer = new Composite(container, SWT.NORMAL);
+		chartContainer = new Composite(container, SWT.BORDER);
 		chartContainer.setLayout(new FillLayout());
 		
 		Settings.getInstance().setHardwareAccelerated(true);
@@ -290,7 +291,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 //			}
 //		});
 		
-		Composite container2 = new Composite(container, SWT.NONE);
+		container2 = new Composite(container, SWT.BORDER);
 		GridLayout gl = new GridLayout();
 		gl.marginHeight = 1;
 		gl.marginWidth = 1;
@@ -540,6 +541,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 				setDirty(true);
 			}
 		});
+		autoScaleButton.setEnabled(false);
 		
 		useSameColorButton = new Button(bottomContainer2, SWT.CHECK | SWT.WRAP);
 		useSameColorButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
@@ -554,7 +556,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 			}
 		});
 		
-		container.setSashWidth(5);
+		container.setSashWidth(3);
 		container.setWeights(new int[] {80, 20});
 		
 		refreshTrialsListFrontEndCuts();
@@ -647,11 +649,11 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 		message = NLS.bind(DocometreMessages.PressEnterEndCut, baseFrontCut, baseEndCut);
 		endCutSpinner.setToolTipText(message);
 		
-//		if(xyzChartData.getFrontCut() == -1 && xyzChartData.getEndCut() == -1) {
+		if(xyzChartData.getFrontCut() == -1 && xyzChartData.getEndCut() == -1) {
 			xyzChartData.setFrontCut(baseFrontCut);
 			xyzChartData.setEndCut(baseEndCut);
 			endCutSpinner.setSelection(baseEndCut);
-//		}
+		}
 
 	}
 	
@@ -688,7 +690,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 
 	@Override
 	public void setFocus() {
-		trialsListViewer.getList().setFocus();
+		if(trialsListViewer != null) trialsListViewer.getList().setFocus();
 	}
 
 	private void removeAllSeries() {
@@ -817,13 +819,18 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 			trajectory.setEndCut(endCut);
 			chart.getScene().getGraph().add(trajectory, false);
 			// Add markers
-			addMarkers(trajectory);
+
+			int xBaseFrontCut = MathEngineFactory.getMathEngine().getFrontCut(channels[0], trialNumber);
+			int yBaseFrontCut = MathEngineFactory.getMathEngine().getFrontCut(channels[1], trialNumber);
+			int zBaseFrontCut = MathEngineFactory.getMathEngine().getFrontCut(channels[2], trialNumber);
+			double sf = MathEngineFactory.getMathEngine().getSampleFrequency(channels[0]);
+			addMarkers(trajectory, xValues, yValues, zValues, xBaseFrontCut, yBaseFrontCut, zBaseFrontCut, sf);
 		}
-//		 refresh Series Colors
+		// refresh Series Colors
 		updateSeriesColorsHandler();
 	}
 	
-	private void addMarkers(LineStrip trajectory) {
+	private void addMarkers(LineStrip trajectory, double[] xValues, double[] yValues, double[] zValues, int xBaseFrontCut, int yBaseFrontCut, int zBaseFrontCut, double sf) {
 		String id = trajectory.getId();
 		String[] idSplitted = id.split("\\.");
 		int trialNumber = Integer.parseInt(idSplitted[idSplitted.length - 1]);
@@ -833,17 +840,6 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 		Channel xChannel = channels[0];
 		Channel yChannel = channels[1];
 		Channel zChannel = channels[2];
-		
-		double sf = MathEngineFactory.getMathEngine().getSampleFrequency(xChannel);
-		
-		double[] xValues = MathEngineFactory.getMathEngine().getYValuesForSignal(xChannel, trialNumber);
-		int xBaseFrontCut = MathEngineFactory.getMathEngine().getFrontCut(xChannel, trialNumber);
-		
-		double[] yValues = MathEngineFactory.getMathEngine().getYValuesForSignal(yChannel, trialNumber);
-		int yBaseFrontCut = MathEngineFactory.getMathEngine().getFrontCut(yChannel, trialNumber);
-		
-		double[] zValues = MathEngineFactory.getMathEngine().getYValuesForSignal(zChannel, trialNumber);
-		int zBaseFrontCut = MathEngineFactory.getMathEngine().getFrontCut(zChannel, trialNumber);
 
 		addMarkersFromChannel(trajectory, xChannel, trialNumber, sf, xValues, yValues, zValues, xBaseFrontCut, yBaseFrontCut, zBaseFrontCut);
 		addMarkersFromChannel(trajectory, yChannel, trialNumber, sf, xValues, yValues, zValues, xBaseFrontCut, yBaseFrontCut, zBaseFrontCut);
@@ -1033,10 +1029,10 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 
 	@Override
 	public void removeSeries(String seriesID) {
-		List<Drawable> drawable = chart.getScene().getGraph().getAll();
-		for (int i = 0; i < drawable.size(); i++) {
-			if(drawable instanceof LineStrip) {
-				LineStrip lineStrip = (LineStrip) drawable.get(i);
+		List<Drawable> drawables = chart.getScene().getGraph().getAll();
+		for (int i = 0; i < drawables.size(); i++) {
+			if(drawables.get(i) instanceof LineStrip) {
+				LineStrip lineStrip = (LineStrip) drawables.get(i);
 				if(seriesID.equals(((LineStrip)lineStrip).getId())) {
 					Drawable[] markers = lineStrip.getMarkersAndLabels();
 					for (Drawable marker : markers) {

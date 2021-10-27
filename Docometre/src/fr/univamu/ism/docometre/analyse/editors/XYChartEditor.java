@@ -35,7 +35,6 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseWheelListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -126,12 +125,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 
 	@Override
 	public void createPartControl(Composite parent) {
-		Composite innerContainer = new Composite(parent, SWT.NONE);
-		innerContainer.setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_BLACK));
-		FillLayout fl = new FillLayout();
-		fl.marginHeight = 5;
-		innerContainer.setLayout(fl);
-		container = new SashForm(innerContainer, SWT.HORIZONTAL);
+		container = new SashForm(parent, SWT.HORIZONTAL);
 		
 		if(!xyChartData.initialize()) {
 			Label errorLabel = new Label(container, SWT.BORDER);
@@ -139,13 +133,13 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 			errorLabel.setForeground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_RED));
 			container.setSashWidth(0);
 			container.setWeights(new int[] {100});
+			container.setFocus();
 			return;
 		}
 		
-		chart = new InteractiveChart(container, SWT.NONE);
+		chart = new InteractiveChart(container, SWT.BORDER);
 		chart.setBackground(xyChartData.getBackGroundColor());
 		chart.getPlotArea().setBackground(xyChartData.getPlotAreaBackGroundColor());
-		innerContainer.setBackground(xyChartData.getBackGroundColor());
 		new MarkersManager(this);
 		chart.setShowCursor(false);
 		chart.setShowMarker(false);
@@ -218,7 +212,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 			}
 		});
 		
-		Composite container2 = new Composite(container, SWT.NONE);
+		Composite container2 = new Composite(container, SWT.BORDER);
 		GridLayout gl = new GridLayout();
 		gl.marginHeight = 1;
 		gl.marginWidth = 1;
@@ -434,7 +428,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 			}
 		});
 		
-		container.setSashWidth(5);
+		container.setSashWidth(3);
 		container.setWeights(new int[] {80, 20});
 		
 		refreshTrialsListFrontEndCuts();

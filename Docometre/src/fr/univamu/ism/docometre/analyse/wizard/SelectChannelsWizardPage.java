@@ -1,5 +1,6 @@
 package fr.univamu.ism.docometre.analyse.wizard;
 
+import org.eclipse.core.text.StringMatcher;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -28,7 +29,7 @@ public class SelectChannelsWizardPage extends WizardPage {
 	
 	private Channel selectedChannel;
 	private Channel[] availableChannels;
-	private String filter;
+	private String filter = "";
 	private ListViewer listViewer;
 	private Text filterText;
 
@@ -52,6 +53,7 @@ public class SelectChannelsWizardPage extends WizardPage {
 			public void handleEvent(Event event) {
 				filter = filterText.getText();
 				listViewer.refresh();
+				if(getNextPage() != null) ((SelectChannelsWizardPage)getNextPage()).setFilterText(filter);
 			}
 		});
 		filterText.addKeyListener(new KeyListener() {
@@ -80,8 +82,8 @@ public class SelectChannelsWizardPage extends WizardPage {
 			@Override
 			public boolean select(Viewer viewer, Object parentElement, Object element) {
 				if(filter == null || "".equals(filter)) return true;
-				if(((Channel)element).getName().contains(filter)) return true;
-				return false;
+				StringMatcher stringMatcher = new StringMatcher(filter, false, false);
+				return stringMatcher.match(((Channel)element).getFullName());
 			}
 		});
 		listViewer.getList().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -91,6 +93,7 @@ public class SelectChannelsWizardPage extends WizardPage {
 			@Override
 			public void selectionChanged(SelectionChangedEvent event) {
 				Object[] selection = ((StructuredSelection)listViewer.getSelection()).toArray();
+				selectedChannel = null;
 				if(selection.length == 1) selectedChannel = (Channel) selection[0];
 				getContainer().updateButtons();
 			}
@@ -99,11 +102,7 @@ public class SelectChannelsWizardPage extends WizardPage {
 			@Override
 			public void mouseDoubleClick(MouseEvent e) {
 				getContainer().updateButtons();
-				if(getNextPage() != null) {
-					((SelectChannelsWizardPage)getNextPage()).setFilterText(filter);
-					getContainer().showPage(getNextPage());
-				}
-				else getWizard().performFinish();
+				if(getNextPage() != null) getContainer().showPage(getNextPage());
 			}
 		});
 		setControl(container);
