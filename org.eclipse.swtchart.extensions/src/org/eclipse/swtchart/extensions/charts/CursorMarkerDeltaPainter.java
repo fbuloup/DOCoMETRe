@@ -84,6 +84,8 @@ public class CursorMarkerDeltaPainter implements ICustomPaintListener {
 			}
 		}
 		
+		font.dispose();
+		
 		e.gc.setForeground(oldForegroundColor);
 		e.gc.setFont(oldFont);
 		e.gc.setLineWidth(oldLineWidth);
