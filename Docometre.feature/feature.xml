@@ -1636,4 +1636,24 @@ jurisdiction, by the more diligent Party.
          version="0.0.0"
          unpack="false"/>
 
+   <plugin
+         id="org.eclipse.swt.tools"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.swt.tools.base"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.eclipse.swt.tools.spies"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
 </feature>

@@ -152,5 +152,8 @@
 		<module>../MigLayoutSwing</module>
 		<module>../OpenCSV</module>
 		<module>../PLY</module>
+		<module>../org.eclipse.swt.tools</module>
+		<module>../org.eclipse.swt.tools.base</module>
+		<module>../org.eclipse.swt.tools.spies</module>
 	</modules>
 </project>

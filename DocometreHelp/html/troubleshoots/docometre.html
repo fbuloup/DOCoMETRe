@@ -1,0 +1,237 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+	<title>Main Topic</title>
+</head>
+
+<body>
+<h1>Toubleshoots with DOCoMETRe</h1>
+<h2>How to debug ?</h2>
+
+<p>
+In order to get debugging platform infos, you must follow these steps :</p>
+
+<ol>
+  <li>Create an options file somewhere in your file system</li>
+  <li>Add <b>-debug</b> parameter in <b>DOCoMETRe.ini</b> file</li>
+  <li>Add <b>-Sleak</b> parameter in <b>DOCoMETRe.ini</b> file (optional)</li>
+</ol>
+
+<h3>1. Create options file</h3>
+<p>Create an options files with name <b>options.txt</b> for instance and remember its absolute path.
+This file should contains these options :
+</p>
+<pre>
+org.eclipse.ui/debug=true 
+org.eclipse.ui/trace/graphics=true
+org.eclipse.ui/debug/swtdebugglobal=false
+org.eclipse.ui/trace/dragDrop=false
+org.eclipse.ui/trace/keyBindings=false
+org.eclipse.ui/trace/keyBindings.verbose=false
+org.eclipse.ui/debug/showAllJobs=false
+org.eclipse.ui/debug/job.stale=false
+</pre>
+<p>Depending on what you want to trace/debug, you can toggle either of these options.<br> Note that the option <b>org.eclipse.ui/debug</b> must be true to enable debugging.
+<br>See below a partial list of debugging options.</p>
+
+<h3>2. Modify <b>DOCoMETRe.ini</b> to activate debugging</h3>
+<p>Locate the file <b>DOCoMETRe.ini</b> take a backup and change its content as follow :</p>
+<pre>
+-startup
+../Eclipse/plugins/org.eclipse.equinox.launcher_1.6.100.v20201223-0822.jar
+--launcher.library
+../Eclipse/plugins/org.eclipse.equinox.launcher.cocoa.macosx.x86_64_1.2.100.v20210209-1541
+<b>-debug
+/Users/frank/Desktop/options.txt</b>
+-vmargs
+--add-modules=ALL-SYSTEM
+-Xmx2048m
+-XstartOnFirstThread
+-Dorg.eclipse.swt.internal.carbon.smallFonts
+</pre>
+<p>Note the bold lines : this is what you need to change.<br> 
+Do not change anything else in this file as it could result in errors.<br></p>
+<p style="color:rgba(255,0,0,1);"><b>This is why you should have a carbon copy of the original file before any changes.</b></p>
+
+<h3>3. Modify <b>DOCoMETRe.ini</b> to add Sleak feature</h3>
+<p>Change content of <b>DOCoMETRe.ini</b> file as follow :</p>
+<pre>
+-startup
+../Eclipse/plugins/org.eclipse.equinox.launcher_1.6.100.v20201223-0822.jar
+--launcher.library
+../Eclipse/plugins/org.eclipse.equinox.launcher.cocoa.macosx.x86_64_1.2.100.v20210209-1541
+-debug
+/Users/frank/Desktop/options.txt
+-vmargs
+--add-modules=ALL-SYSTEM
+-Xmx2048m
+-XstartOnFirstThread
+-Dorg.eclipse.swt.internal.carbon.smallFonts
+<b>-DSleak</b>
+</pre>
+<p>Then refresh all perspectives where you want to use Sleak or Spy views.</p>
+
+<p><b><u>Partial list of debugging options :</u></b></p>
+<pre>
+# Debugging options for the org.eclipse.ui plugin.
+
+# Turn on debugging for the org.eclipse.ui plugin.
+org.eclipse.ui/debug=false
+
+# Show all jobs in dialogs and the progress view including the support jobs
+org.eclipse.ui/debug/showAllJobs=false
+
+# Report if a stale job was found
+org.eclipse.ui/debug/job.stale=false
+
+# Report if an image cannot be resolved when it is declared
+org.eclipse.ui/debug/declaredImages=false
+
+# Enable extended SWT debugging of the Device.
+org.eclipse.ui/debug/swtdebug=false
+
+# Enable the global SWT debugging (Device#DEBUG)
+org.eclipse.ui/debug/swtdebugglobal=false
+
+# Enable logging of certain contribution related messages
+org.eclipse.ui/debug/contributions=false
+
+# Enable logging of additional working set messages
+org.eclipse.ui/debug/workingSets=false
+
+# Enable the trace of SWT graphics.
+org.eclipse.ui/trace/graphics=false
+
+# Enable tracing of perspective debugging code
+org.eclipse.ui/trace/perspectives=false
+
+
+## Note that logging of all performance events are controlled by a central flag
+## Turn this flag on to enable tracking of performance events
+## org.eclipse.core.runtime/perf=true
+
+
+# Reports the time to restore the workbench.
+org.eclipse.ui/perf/workbench.restore=30000
+
+# Reports the time to start up the workbench.
+org.eclipse.ui/perf/workbench.start=45000
+
+# Reports the time to activate parts.
+org.eclipse.ui/perf/part.activate=200
+
+# Reports the time to create a part.
+org.eclipse.ui/perf/part.create=800
+
+# Reports the time to initialize a part.
+org.eclipse.ui/perf/part.init=800
+
+# Reports the time to create a part's input
+org.eclipse.ui/perf/part.input=200
+
+# Reports the time to create a part's control
+org.eclipse.ui/perf/part.control=800
+
+# Reports the time to notify part listeners.
+org.eclipse.ui/perf/part.listeners=200
+
+# Reports the time to notify page listeners.
+org.eclipse.ui/perf/page.listeners=200
+
+# Reports the time to create perspectives
+org.eclipse.ui/perf/perspective.create=800
+
+# Reports the time to notify perspective listeners.
+org.eclipse.ui/perf/perspective.listeners=200
+
+# Reports the time to switch perspectives
+org.eclipse.ui/perf/perspective.switch=800
+
+# Reports the time to run UI jobs
+org.eclipse.ui/perf/uijob=200
+
+# Reports the time to determine the content type of a file
+org.eclipse.ui/perf/contentTypes=200
+
+# Reports execution time of early startup participants.
+org.eclipse.ui/perf/earlyStartup=100
+
+# Controls whether the heap status indicator is shown
+org.eclipse.ui/perf/showHeapStatus=true
+
+# Reports all events entering through the common event framework used by the
+# commands architecture.  See ISourceProvider and AbstractSourceProvider.DEBUG.
+org.eclipse.ui/trace/sources=false
+
+# Reports events received and dispatched by the key binding architecture
+org.eclipse.ui/trace/keyBindings=false
+
+# Report every event received by the key binding architecture
+org.eclipse.ui/trace/keyBindings.verbose=false
+
+# Report information about command execution
+org.eclipse.ui/trace/commands=false
+
+# Report every change in the list of contexts.
+org.eclipse.ui/trace/contexts=false
+
+# Track the performance of context decision-making in the workbench.
+org.eclipse.ui/trace/contexts.performance=false
+
+# Report a bit of stack around every change in the list of contexts.
+org.eclipse.ui/trace/contexts.verbose=false
+
+# Report handler conflicts within the workbench
+org.eclipse.ui/trace/handlers=false
+
+# Track the performance of handler decision-making in the workbench.
+org.eclipse.ui/trace/handlers.performance=false
+
+# Report verbose information about changing handlers in the system.
+org.eclipse.ui/trace/handlers.verbose=false
+
+# Restrict the verbose information to a particular command
+org.eclipse.ui/trace/handlers.verbose.commandId=
+
+# Report unexpected (undo) operations history events.
+org.eclipse.ui/trace/operations=false
+
+# Report verbose information about (undo) operations history changes.
+org.eclipse.ui/trace/operations.verbose=false
+
+# Turns on experimental code dealing with the rendering of menus.  This is not
+# guaranteed to provide a working workbench.
+org.eclipse.ui/experimental/menus=false
+
+# Report multi page editor tracing information
+org.eclipse.ui/trace/multipageeditor=false
+
+# Enable logging of events fired from an IWorkbenchPage to an IPartListener
+org.eclipse.ui/listeners/IWorkbenchPage.IPartListener=false
+
+# Enable logging of events fired from an IWorkbenchPage to an IPartListener2
+org.eclipse.ui/listeners/IWorkbenchPage.IPartListener2=false
+
+# Enable logging of events fired from an IWorkbenchPage to an IPropertyChangeListener
+org.eclipse.ui/listeners/IWorkbenchPage.IPropertyChangeListener=false
+
+# Enable logging of events fired from an IWorkbenchPartReference
+org.eclipse.ui/listeners/IWorkbenchPartReference=false
+
+# Enable logging of events fired from an IWorkbenchWindow to an IPerspectiveListener
+org.eclipse.ui/listeners/IWorkbenchWindow.IPerspectiveListener=false
+
+# Enable logging of events fired from an IWorkbenchWindow to an IPartListener
+org.eclipse.ui/listeners/IWorkbenchWindow.IPartListener=false
+
+# Enable logging of events fired from an IWorkbenchWindow to an IPartListener2
+org.eclipse.ui/listeners/IWorkbenchWindow.IPartListener2=false
+
+# Enable logging of events fired from an IWorkbenchWindow to an IPageListener
+org.eclipse.ui/listeners/IWorkbenchWindow.IPageListener=false
+</pre>
+
+</body>
+</html>
