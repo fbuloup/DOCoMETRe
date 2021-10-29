@@ -32,15 +32,58 @@
 	<item title="Add an hardware configuration">
 		<description>
 			Select menu item
-			<b>File &gt; New &gt; DAQ Configuration</b>
+			<b>File &gt; New &gt; DACQ Configuration</b>
 			<br />
 			Enter "
 			<b>ADWinGold</b>
-			" as DAQ configuration name, "
+			" as DACQ configuration name, "
 			<b>ADWinGold hardware configuration</b>
 			" as optional description and select <b>ADWin</b> as configuration, then
 			click
 			<b>Finish</b>
+		</description>
+	</item>
+	<item title="Configure this DACQ Configuration">
+		<description>
+			Open this newly created DACQ file (double click on the file or right click and click on menu item <b>Open</b>)
+			<br />
+			Browse to <b>ADBasicCompiler</b> executable and <b>ADWin9</b> bootloader to specify these absolute paths. Depending on your ADWin System, it could also be <b>ADWinA</b> or <b>ADWinB</b> bootloader.
+			<br/>
+			<b>Libraries Path</b> must point to the <b>ADWinIncludeFiles</b> folder which is in you Docometre installation directory. Configure this absolute path if not already done.
+			<br/>
+			Then select the <b>ADBasic version</b> you have.
+			<br/>
+			If you don't plan to use <b>ADWin TCPIP server</b>, do not modify the TCPIP server number. Change it accordingly to your needs if you plan to access ADWin system over this TCPIP server.
+			<br/>
+			You must then specify ADwin Gold <b>IP address</b> (often something like 192.168.0.x), <b>TCPIP port</b> (generally 6543) and the <b>Device number</b> specified when you installed ADWinGold using ADConfig.
+			<br/>
+			You can left unchanged Time out value to 1s. Select Gold as Device type and I as CPU type. Of course, these two last parameters depend on your hardware systems (ADwinPro/Gold, CPU I/II).
+			<br/>
+			Leave Global frequency to 2KHz.
+			<br/>
+			In <b>Module Configuration Panel</b>, you should at least have one line with an analog inputs module, just specify the correct module revision number and double click on the line or select "Analog inputs #1" panel.
+		</description>
+	</item>
+	<item title="Configure Analog input module">
+		<description>
+			In this panel you will have to configure some global module parameters and some others specific to an analog input.
+			<br />
+			<b>Global module parameters</b><br />
+			Here you will have to select the CAN range : &#177;10V, &#177;5V or [0-10]V.<br />
+			<b>Analog input</b><br />
+			In the <b>Channels Configuration</b> section title bar, click on add icon to add an analog input channel.
+		</description>
+	</item>
+	<item title="Add an Oscillo. Chart">
+		<description>
+		</description>
+	</item>
+	<item title="Create a 10s acquisition process">
+		<description>
+		</description>
+	</item>
+	<item title="Test this process">
+		<description>
 		</description>
 	</item>
 	<item title="Add a subject with a session of ten trials">
