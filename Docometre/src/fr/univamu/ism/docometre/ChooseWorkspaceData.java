@@ -64,8 +64,7 @@ public final class ChooseWorkspaceData {
 	
 	private ChooseWorkspaceData() {
 		workspaceDataProperties = new Properties();
-		try {
-			FileInputStream workspaceDataPropertiesFile = new FileInputStream(propertiesFilePath);
+		try(FileInputStream workspaceDataPropertiesFile = new FileInputStream(propertiesFilePath)) {
 			workspaceDataProperties.load(workspaceDataPropertiesFile);
 			maxRecentWorkspaces = Integer.parseInt((String) workspaceDataProperties.get(GeneralPreferenceConstants.MAX_RECENT_WORKSPACES));
 			showWorkspaceDialog = Boolean.parseBoolean((String) workspaceDataProperties.get(GeneralPreferenceConstants.SHOW_WORKSPACE_SELECTION_DIALOG));
