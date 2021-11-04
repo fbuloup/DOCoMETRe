@@ -10,7 +10,7 @@ import fr.univamu.ism.docometre.views.MessagesView;
 
 public class AnalysePerspective implements IPerspectiveFactory {
 	
-	public static String ID = "Docometre.analyseperspective";
+	public static final String id = "Docometre.analyseperspective";
 
 	@Override
 	public void createInitialLayout(IPageLayout layout) {

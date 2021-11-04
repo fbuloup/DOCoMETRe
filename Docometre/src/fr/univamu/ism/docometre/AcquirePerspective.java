@@ -49,7 +49,7 @@ import fr.univamu.ism.docometre.views.RealTimeChartsView;
 
 public class AcquirePerspective implements IPerspectiveFactory {
 	
-	public static String ID = "Docometre.acquireperspective";
+	public static final String id = "Docometre.acquireperspective";
 	
 	@Override
 	public void createInitialLayout(IPageLayout layout) {

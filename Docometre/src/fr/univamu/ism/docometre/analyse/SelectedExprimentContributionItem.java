@@ -36,7 +36,7 @@ public class SelectedExprimentContributionItem extends StatusLineContributionIte
 	}
 	
 	private void updateLabel(IPerspectiveDescriptor perspective) {
-		if(AnalysePerspective.ID.equals(perspective.getId())) {
+		if(AnalysePerspective.id.equals(perspective.getId())) {
 			if(selectedExperiment != null) ApplicationActionBarAdvisor.selectedExprimentContributionItem.setText(DocometreMessages.Experiment_Label + selectedExperiment.getName());
 		} else ApplicationActionBarAdvisor.selectedExprimentContributionItem.setText("");
 	}

@@ -353,7 +353,7 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 
 	@Override
 	public void perspectiveActivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
-		boolean actionsVisibility = !perspective.getId().equals(AcquirePerspective.ID);
+		boolean actionsVisibility = !perspective.getId().equals(AcquirePerspective.id);
 		
 		nextTrialActionContributionItem.setVisible(actionsVisibility);
 		previousTrialActionContributionItem.setVisible(actionsVisibility);

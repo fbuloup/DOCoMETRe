@@ -103,7 +103,7 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 			@Override
 			public void handleEvent(Event event) {
 				IPerspectiveDescriptor currentPerspective = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getPerspective();
-				boolean checkPerspcetive = currentPerspective.getId().equals(AcquirePerspective.ID);
+				boolean checkPerspcetive = currentPerspective.getId().equals(AcquirePerspective.id);
 				boolean isRunning = ExperimentScheduler.getInstance().isRunning();
 				if(event.keyCode == SWT.ESC) {
 					if(checkPerspcetive && isRunning) RunStopHandler.stop();
@@ -268,7 +268,7 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 
 	@Override
 	public void perspectiveActivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
-		if(perspective.getId().equals(AcquirePerspective.ID)) {
+		if(perspective.getId().equals(AcquirePerspective.id)) {
 			IResource resource = ExperimentsView.currentSelectedResource;
 			updateItemToLaunch(resource);
 			ExperimentScheduler.getInstance().initialize();

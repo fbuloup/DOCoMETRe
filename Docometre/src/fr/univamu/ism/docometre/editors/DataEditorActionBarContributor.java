@@ -260,7 +260,7 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 
 	@Override
 	public void perspectiveActivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
-		boolean actionsVisibility = !perspective.getId().equals(AcquirePerspective.ID);
+		boolean actionsVisibility = !perspective.getId().equals(AcquirePerspective.id);
 		
 		editGraphActionContributionItem.setVisible(actionsVisibility);
 		autoScaleGraphActionContributionItem.setVisible(actionsVisibility);

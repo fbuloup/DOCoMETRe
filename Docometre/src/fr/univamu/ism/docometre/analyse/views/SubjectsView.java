@@ -253,7 +253,7 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 
 	@Override
 	public void perspectiveActivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
-		if(perspective.getId().equals(AnalysePerspective.ID)) updateInput(SelectedExprimentContributionItem.selectedExperiment);
+		if(perspective.getId().equals(AnalysePerspective.id)) updateInput(SelectedExprimentContributionItem.selectedExperiment);
 	}
 
 	@Override

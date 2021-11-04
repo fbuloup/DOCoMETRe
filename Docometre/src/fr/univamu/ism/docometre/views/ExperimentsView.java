@@ -223,7 +223,7 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 //			public boolean select(Viewer viewer, Object parentElement, Object element) {
 //				String currentPerspectiveID = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getPerspective().getId();
 //				boolean isDesignPerspective = currentPerspectiveID.equals(DesignPerspective.ID);
-//				boolean isAcquirePerspective = currentPerspectiveID.equals(AcquirePerspective.ID);
+//				boolean isAcquirePerspective = currentPerspectiveID.equals(AcquirePerspective.id);
 //				if(isDesignPerspective || isAcquirePerspective) return true;
 //				return false;
 //			}
