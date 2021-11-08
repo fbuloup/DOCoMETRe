@@ -112,16 +112,14 @@ public class ArduinoUnoProcess extends Process {
 //	}
 	
 	public static File createSketchFile(IResource processFile, Process process, String sketchFilePath) {
-		try {
+		// Create Sketch file
+		File file = new File(sketchFilePath);
+		file.getParentFile().mkdirs();
+		try(FileWriter fileWriter = new FileWriter(file)) {
 			// Get process code
 			String processCode = process.getCode(null);
-			
-			// Create Sketch file
-			File file = new File(sketchFilePath);
-			file.getParentFile().mkdirs();
-			FileWriter fileWriter = new FileWriter(file);
+			// Write it to file
 			fileWriter.write(processCode);
-			fileWriter.close();
 			return file;
 		} catch (Exception e) {
 			Activator.logErrorMessageWithCause(e);
