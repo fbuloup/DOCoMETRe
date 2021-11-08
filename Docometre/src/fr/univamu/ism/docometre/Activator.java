@@ -88,22 +88,22 @@ public class Activator extends AbstractUIPlugin {
 	private static Activator plugin;
 	
 	// Files extensions definitions
-	public static String daqFileExtension = ".daqconf";
-	public static String processFileExtension = ".process";
-	public static String logFileExtension = ".log";
-	public static String samplesFileExtension = ".samples";
-	public static String parametersFileExtension = ".params";
-	public static String adwFileExtension = ".adw";
-	public static String dataProcessingFileExtension = ".dataprocess";
-	public static String batchDataProcessingFileExtension = ".batchdataprocess";
-	public static String xyChartFileExtension = ".chart";
-	public static String xyzChartFileExtension = ".chart3D";
+	public static final String daqFileExtension = ".daqconf";
+	public static final String processFileExtension = ".process";
+	public static final String logFileExtension = ".log";
+	public static final String samplesFileExtension = ".samples";
+	public static final String parametersFileExtension = ".params";
+	public static final String adwFileExtension = ".adw";
+	public static final String dataProcessingFileExtension = ".dataprocess";
+	public static final String batchDataProcessingFileExtension = ".batchdataprocess";
+	public static final String xyChartFileExtension = ".chart";
+	public static final String xyzChartFileExtension = ".chart3D";
 	
 	// System types
-	public static String ADWIN_SYSTEM = "ADWin";
+	public static final String ADWIN_SYSTEM = "ADWin";
 	//public static String NI_600X_SYSTEM = "NI 600X";
-	public static String ARDUINO_UNO_SYSTEM = "Arduino UNO";
-	public static String[] SYSTEMS = new String[]{ADWIN_SYSTEM, ARDUINO_UNO_SYSTEM/*, NI_600X_SYSTEM*/};
+	public static final String ARDUINO_UNO_SYSTEM = "Arduino UNO";
+	public static final String[] SYSTEMS = new String[]{ADWIN_SYSTEM, ARDUINO_UNO_SYSTEM/*, NI_600X_SYSTEM*/};
 	
 	/*
 	 * The constructor
