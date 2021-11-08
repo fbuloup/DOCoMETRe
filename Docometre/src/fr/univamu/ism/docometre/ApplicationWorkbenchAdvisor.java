@@ -100,7 +100,9 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 			if(Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.REDIRECT_STD_ERR_OUT_TO_FILE)) {
 				String filePath = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.STD_ERR_OUT_FILE);
 				File consoleFile = new File(filePath);
-				if(consoleFile.exists()) consoleFile.delete();
+				boolean deleted = true;
+				if(consoleFile.exists()) deleted = consoleFile.delete();
+				if(!deleted) throw new IOException("Impossible to delete Console file : " + filePath);
 				if(consoleFile.createNewFile()) {
 					System.out.println("Redirect std and err outputs to file : " + filePath);
 					PrintStream pst = new PrintStream(filePath);
