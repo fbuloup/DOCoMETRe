@@ -205,6 +205,7 @@ public abstract class Process extends AbstractElement implements ModuleBehaviour
 		IResource parent = resource;
 		outputFolder = parent;
 		if(ResourceType.isProcess(resource)) {
+			// This is a process test
 			parent = resource.getParent();
 			outputFolder = ((IContainer)parent).findMember("test." + resource.getName().replaceAll(Activator.processFileExtension, ""));
 			if(outputFolder != null) {
@@ -231,7 +232,7 @@ public abstract class Process extends AbstractElement implements ModuleBehaviour
 				outputFolder = ((IContainer)parent).getFolder(new Path("test." + resource.getName().replaceAll(Activator.processFileExtension, "")));
 				((IFolder)outputFolder).create(true, true, null);
 				ResourceProperties.setTypePersistentProperty(outputFolder, ResourceType.PROCESS_TEST.toString());
-				ResourceProperties.setAssociatedProcessProperty(outputFolder, resource.getLocation().toOSString());
+				ResourceProperties.setAssociatedProcessProperty(outputFolder, resource.getFullPath().toOSString());
 //			}
 		}
 		// Clear errors
