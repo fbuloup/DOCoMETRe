@@ -455,7 +455,7 @@ public final class ResourceProperties {
 		if(ResourceType.isProcess(originResource)) {
 			ResourceProperties.setAssociatedDACQConfigurationProperty(detinationResource, ResourceProperties.getAssociatedDACQConfigurationProperty(originResource));
 		}
-		if(ResourceType.isTrial(originResource)) {
+		if(ResourceType.isProcessTest(originResource)) {
 			ResourceProperties.setAssociatedProcessProperty(detinationResource, ResourceProperties.getAssociatedProcessProperty(originResource));
 		}
 	}
