@@ -46,10 +46,9 @@
 	<item title="Configure this DACQ Configuration">
 		<description>
 			Open this newly created DACQ file (double click on the file or right click and click on menu item <b>Open</b>)
-			<br />
 			Browse to <b>ADBasicCompiler</b> executable and <b>ADWin9</b> bootloader to specify these absolute paths. Depending on your ADWin System, it could also be <b>ADWinA</b> or <b>ADWinB</b> bootloader.
 			<br/>
-			<b>Libraries Path</b> must point to the <b>ADWinIncludeFiles</b> folder which is in you Docometre installation directory. Configure this absolute path if not already done.
+			<b>Libraries Path</b> must point to the <b>ADWinIncludeFiles</b> folder which is in your Docometre installation directory. Configure this absolute path if not already done.
 			<br/>
 			Then select the <b>ADBasic version</b> you have.
 			<br/>
@@ -57,57 +56,56 @@
 			<br/>
 			You must then specify ADwin Gold <b>IP address</b> (often something like 192.168.0.x), <b>TCPIP port</b> (generally 6543) and the <b>Device number</b> specified when you installed ADWinGold using ADConfig.
 			<br/>
-			You can left unchanged Time out value to 1s. Select Gold as Device type and I as CPU type. Of course, these two last parameters depend on your hardware systems (ADwinPro/Gold, CPU I/II).
+			You can left unchanged <b>Time out</b> value to 1s. Select Gold as <b>Device type</b> and I as <b>CPU type</b>. Of course, these two last parameters depend on your hardware systems (ADwinPro/Gold, CPU I/II).
 			<br/>
-			Leave Global frequency to 2KHz.
+			Leave <b>Global frequency</b> to 2KHz.
 			<br/>
-			In <b>Module Configuration Panel</b>, you should at least have one line with an analog inputs module, just specify the correct module revision number and double click on the line or select "Analog inputs #1" panel.
+			In <b>Module Configuration Panel</b>, if there no line with an analog input module, click on the plus icon and double click on analog inputs module. Specify the correct module number, usually 1, and module revision and double click on the line or select "Analog inputs #n" corresponding panel.
 		</description>
 	</item>
 	<item title="Configure Analog input module">
 		<description>
 			In this panel you will have to configure some global module parameters and some others specific to an analog input.
-			<br />
-			<b>Global module parameters</b><br />
-			Here you will have to select the CAN range : &#177;10V, &#177;5V or [0-10]V.<br />
-			<b>Analog input</b><br />
-			In the <b>Channels Configuration</b> section title bar, click on add icon to add an analog input channel.
+			<br/>
+			<b>Global module parameters</b><br/>
+			Here you will have to select the CAN range : ±10V, ±5V or [0-10]V. Choose ±10V.<br/>
+			<b>Analog input</b><br/>
+			In the <b>Channels Configuration</b> section title bar, click on add icon to add an analog input channel. Click on <b>Transfer</b>, <b>Auto-T</b>. and <b>Rec.</b> buttons in order to automatically transfer and record this channel. 
+			Now rename channel <b>name</b> to <b>analogInput</b>.
 		</description>
 	</item>
 	<item title="Add an Oscillo. Chart">
 		<description>
+		Select the <b>Charts</b> tab item and click on the add chart button. Select <b>Oscillo. Chart</b> type before click on <b>Ok</b> button.<br/>
+		Click now on the add <b>Curve</b> button in the <b>Curves</b> title bar and double click on the analog input previously created.<br/>
+		Save this data acquisition configuration using menu element <b>File &gt; Save.</b>
 		</description>
 	</item>
 	<item title="Create a 10s acquisition process">
 		<description>
+		Select <b>NewExperiment</b> in experiments view.
+		Select menu item <b>File &gt; New &gt; Process.</b>
+		Enter "<b>NewProcess</b>" as process name, "<b>Ten seconds acquisition process</b>
+			" as optional description and select <b>ADWinGold</b> as associated Dacq. Conf., then click <b>Finish.</b><br/>
+		Open this newly created process file (double click on the file or right click and click on menu item <b>Open</b>).
+		Select <b>Event</b> segment and click on <b>Show palette</b> button on the upper right side of the editor to deploy elements palette.
+		 Click on <b>Functional block creation</b> element then move mouse cursor and click in editor area, this will place an dummy functional block in the event segment.<br/>
+		 In order to create a 10s. acquisition process, simply right click on this newly placed function to open contextual menu.
+		 Then choose <b>Apply</b> menu item and click on <b>Stop process</b> menu item. This will apply <b>Stop process</b> function to the currently selection function and open <b>Stop process</b> function configuration dialog.
+		 Type "Ctrl+Space" in the focused text widget and select the <b>time</b> channel. Select <b>>=</b> item in combobox and enter <b>10</b> in the text widget on the right. Click <b>Ok</b> button and save this process.<br/>
+		 This will normally start a compile job. If it does not, just select <b>NewProcess</b> file in experiments view and click on  <b>File > Compile</b> menu item. Doing so  will force a compile job. At the end of the task, you should normally see a message in the message view telling compilation has succeeded.
 		</description>
 	</item>
 	<item title="Test this process">
 		<description>
+		Select <b>NewProcess</b> file in experiments view and change perspective to <b>Acquisition</b> : click on <b>Acquisition</b> button on the right of the toolbar. 
+		Then click on the start button on the left of the toolbar. This will start <b>NewProcess</b> process showing and recording the transfered analog channel.
 		</description>
 	</item>
-	<item title="Add a subject with a session of ten trials">
+	<item title="Explore acquired data">
 		<description>
-			In the Experiments View, select the created experiment then
-			select menu item
-			<b>File &gt; New &gt; Subject</b>
-			<br />
-			Enter &quot;
-			<b>John_DOE</b>
-			&quot; as subject name and an optional description, then click
-			<b>Finish</b>
-			<br />
-			Select &quot;
-			<b>John_DOE</b>
-			&quot; Subject in the experiment view, then select menu item
-			<b>File &gt; New &gt; Session</b>
-			<br />
-			Enter &quot;
-			<b>Session1</b>
-			&quot; as session name, an optional description and ten as trials
-			number, then click
-			<b>Finish</b>
-			<br />
+			You can now return to <b>Design</b> perspective and notice a new folder named <b>test.NewProcess</b> has appeared. 
+			Just expand this folder to show its content and double click on <b>analogInput</b> file to open default data editor.
 		</description>
 	</item>
 
