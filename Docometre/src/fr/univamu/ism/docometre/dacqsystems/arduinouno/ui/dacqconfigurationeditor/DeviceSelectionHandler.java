@@ -47,7 +47,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-public class DeviceSelectionSelectionHandler extends SelectionAdapter {
+public class DeviceSelectionHandler extends SelectionAdapter {
 	
 //	private class DeviceSelectionDialog extends Dialog {
 //
@@ -103,7 +103,7 @@ public class DeviceSelectionSelectionHandler extends SelectionAdapter {
 	private Text text;
 	private Shell shell;
 	
-	public DeviceSelectionSelectionHandler(Text text, Shell shell) {
+	public DeviceSelectionHandler(Text text, Shell shell) {
 		this.text = text;
 		this.shell = shell;
 		

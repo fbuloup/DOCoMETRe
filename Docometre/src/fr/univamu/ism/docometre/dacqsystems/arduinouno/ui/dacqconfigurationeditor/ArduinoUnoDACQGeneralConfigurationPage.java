@@ -211,7 +211,7 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 		if(Platform.getOS().equals(Platform.OS_WIN32)) devicePathText.addModifyListener(new ModifyPropertyHandler(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH, dacqConfiguration, devicePathText, regExp, DocometreMessages.ArduinoUnoProcess_DevicePathErrorMessage, false, (ResourceEditor)getEditor()));
 		else devicePathText.addModifyListener(new ModifyPropertyHandler(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH, dacqConfiguration, devicePathText, regExp, DocometreMessages.ErrorFileFolderNotValid, true, (ResourceEditor)getEditor()));
 		devicePathText.addModifyListener(getGeneralConfigurationModifyListener());
-		createButton(generalconfigurationContainer, DocometreMessages.Browse, SWT.PUSH, 1, 1).addSelectionListener(new DeviceSelectionSelectionHandler(devicePathText, getSite().getShell()));
+		createButton(generalconfigurationContainer, DocometreMessages.Browse, SWT.PUSH, 1, 1).addSelectionListener(new DeviceSelectionHandler(devicePathText, getSite().getShell()));
 		
 		createLabel(generalconfigurationContainer, ArduinoUnoMessages.DeviceBaudRate_Label, ArduinoUnoMessages.DeviceBaudRate_Tooltip);
 		value = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.BAUD_RATE);
