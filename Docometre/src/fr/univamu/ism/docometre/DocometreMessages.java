@@ -967,6 +967,11 @@ public final class DocometreMessages extends NLS {
 	public static String DataExportSignalSubtaskMessage;
 	public static String DataExportErrorOccuredDialogTitle;
 	public static String DataExportErrorOccuredDialogMessage;
+
+	// Connected IPS gatherer
+	public static String IPsGathererMessage1;
+	public static String IPsGathererMessage2;
+	public static String IPsGathererMessage3;
 	
 //	public static String OrganizeSessionWizardPage_button_1_text;
 //	public static String OrganizeSessionWizardPage_tbtmNewItem_text;

@@ -82,8 +82,9 @@ import fr.univamu.ism.docometre.dacqsystems.DocometreBuilder;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.ModuleBehaviour;
 import fr.univamu.ism.docometre.dacqsystems.Process;
-import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.dacqconfigurationeditor.DeviceSelectionDialog;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.processeditor.ArduinoUnoProcessEditor;
+import fr.univamu.ism.docometre.dacqsystems.ui.DeviceSelectionDialog;
+import fr.univamu.ism.docometre.dacqsystems.ui.DeviceSelectionHandler.DeviceType;
 import fr.univamu.ism.docometre.dacqsystems.ui.ProcessEditor;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 import fr.univamu.ism.process.ScriptSegmentType;
@@ -994,7 +995,7 @@ public class ArduinoUnoProcess extends Process {
 			PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
 				@Override
 				public void run() {
-					DeviceSelectionDialog deviceSelectionDialog = new DeviceSelectionDialog(PlatformUI.getWorkbench().getDisplay().getActiveShell());
+					DeviceSelectionDialog deviceSelectionDialog = new DeviceSelectionDialog(PlatformUI.getWorkbench().getDisplay().getActiveShell(), DeviceType.USB);
 					if(deviceSelectionDialog.open() == Dialog.OK) {
 						devicePath = deviceSelectionDialog.getSelection();
 						getDACQConfiguration().setProperty(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH, devicePath);

@@ -39,7 +39,7 @@
  * Contributors:
  *  - Frank Buloup - frank.buloup@univ-amu.fr - initial API and implementation [25/03/2020]
  ******************************************************************************/
-package fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.dacqconfigurationeditor;
+package fr.univamu.ism.docometre.dacqsystems.ui;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -48,6 +48,11 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 public class DeviceSelectionHandler extends SelectionAdapter {
+	
+	public static enum DeviceType {
+		USB,
+		ETHERNET;
+	}
 	
 //	private class DeviceSelectionDialog extends Dialog {
 //
@@ -102,11 +107,12 @@ public class DeviceSelectionHandler extends SelectionAdapter {
 
 	private Text text;
 	private Shell shell;
+	private DeviceType deviceType;
 	
-	public DeviceSelectionHandler(Text text, Shell shell) {
+	public DeviceSelectionHandler(Text text, Shell shell, DeviceType deviceType) {
 		this.text = text;
 		this.shell = shell;
-		
+		this.deviceType = deviceType;
 	}
 	
 	@Override
@@ -132,7 +138,7 @@ public class DeviceSelectionHandler extends SelectionAdapter {
 //			
 //		} else choices = new String[] {"COM1","COM2","COM3","COM4","COM5","COM6","COM7"};
 		
-		DeviceSelectionDialog deviceSelectionDialog = new DeviceSelectionDialog(shell);
+		DeviceSelectionDialog deviceSelectionDialog = new DeviceSelectionDialog(shell, deviceType);
 		if(deviceSelectionDialog.open() == Dialog.OK) {
 			text.setText(deviceSelectionDialog.getSelection());
 		}

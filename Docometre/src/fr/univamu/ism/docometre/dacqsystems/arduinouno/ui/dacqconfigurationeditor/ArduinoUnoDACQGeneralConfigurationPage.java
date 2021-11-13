@@ -89,6 +89,8 @@ import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyHandler;
 import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyOperation;
 import fr.univamu.ism.docometre.dialogs.DialogSelectionHandler;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoModulesList;
+import fr.univamu.ism.docometre.dacqsystems.ui.DeviceSelectionHandler;
+import fr.univamu.ism.docometre.dacqsystems.ui.DeviceSelectionHandler.DeviceType;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoADS1115ModuleProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfigurationProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoMessages;
@@ -211,7 +213,7 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 		if(Platform.getOS().equals(Platform.OS_WIN32)) devicePathText.addModifyListener(new ModifyPropertyHandler(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH, dacqConfiguration, devicePathText, regExp, DocometreMessages.ArduinoUnoProcess_DevicePathErrorMessage, false, (ResourceEditor)getEditor()));
 		else devicePathText.addModifyListener(new ModifyPropertyHandler(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH, dacqConfiguration, devicePathText, regExp, DocometreMessages.ErrorFileFolderNotValid, true, (ResourceEditor)getEditor()));
 		devicePathText.addModifyListener(getGeneralConfigurationModifyListener());
-		createButton(generalconfigurationContainer, DocometreMessages.Browse, SWT.PUSH, 1, 1).addSelectionListener(new DeviceSelectionHandler(devicePathText, getSite().getShell()));
+		createButton(generalconfigurationContainer, DocometreMessages.Browse, SWT.PUSH, 1, 1).addSelectionListener(new DeviceSelectionHandler(devicePathText, getSite().getShell(), DeviceType.USB));
 		
 		createLabel(generalconfigurationContainer, ArduinoUnoMessages.DeviceBaudRate_Label, ArduinoUnoMessages.DeviceBaudRate_Tooltip);
 		value = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.BAUD_RATE);

@@ -93,6 +93,8 @@ import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinModulesList;
 import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyHandler;
 import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyOperation;
 import fr.univamu.ism.docometre.dacqsystems.adwin.calibration.CalibrateMonitorDialog;
+import fr.univamu.ism.docometre.dacqsystems.ui.DeviceSelectionHandler;
+import fr.univamu.ism.docometre.dacqsystems.ui.DeviceSelectionHandler.DeviceType;
 import fr.univamu.ism.docometre.dialogs.DialogSelectionHandler;
 import fr.univamu.ism.docometre.editors.ModulePage;
 import fr.univamu.ism.docometre.editors.ResourceEditor;
@@ -304,9 +306,10 @@ public class ADwinDACQGeneralConfigurationPage extends ModulePage {
 		createLabel(generalconfigurationContainer, ADWinMessages.IPAddress_Label, ADWinMessages.IPAddress_Tooltip);
 		value = dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.IP_ADDRESS);
 		regExp = ADWinDACQConfigurationProperties.IP_ADDRESS.getRegExp();
-		ipText = createText(generalconfigurationContainer, value, SWT.NONE, 2, 1);
+		ipText = createText(generalconfigurationContainer, value, SWT.NONE, 1, 1);
 		ipText.addModifyListener(new ModifyPropertyHandler(ADWinDACQConfigurationProperties.IP_ADDRESS, dacqConfiguration, ipText, regExp, ADWinMessages.ErrorTCPIPDeviceNotValid, false, (ResourceEditor)getEditor()));
 		ipText.addModifyListener(getGeneralConfigurationModifyListener());
+		createButton(generalconfigurationContainer, DocometreMessages.Browse, SWT.PUSH, 1, 1).addSelectionListener(new DeviceSelectionHandler(ipText, getSite().getShell(), DeviceType.ETHERNET));
 		
 		createLabel(generalconfigurationContainer, ADWinMessages.TCPIPDevicePortNumber_Label, ADWinMessages.TCPIPDevicePortNumber_Tooltip);
 		value = dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.PORT_NUMBER);

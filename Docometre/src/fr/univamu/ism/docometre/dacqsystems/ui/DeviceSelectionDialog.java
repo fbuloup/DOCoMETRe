@@ -39,10 +39,15 @@
  * Contributors:
  *  - Frank Buloup - frank.buloup@univ-amu.fr - initial API and implementation [25/03/2020]
  ******************************************************************************/
-package fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.dacqconfigurationeditor;
+package fr.univamu.ism.docometre.dacqsystems.ui;
 
+import java.lang.reflect.InvocationTargetException;
+
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -52,26 +57,32 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
 
+import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoMessages;
+import fr.univamu.ism.docometre.dacqsystems.ui.DeviceSelectionHandler.DeviceType;
 import jssc.SerialPortList;
 
 public class DeviceSelectionDialog extends Dialog {
 
 	protected IStructuredSelection selection;
 	private ListViewer devicesListViewer;
+	private DeviceType deviceType;
+	protected ConnectedIPsGatherer connectedIPsGatherer;
 
-	public DeviceSelectionDialog(Shell parentShell) {
+	public DeviceSelectionDialog(Shell parentShell, DeviceType deviceType) {
 		super(parentShell);
 		setShellStyle(getShellStyle() | SWT.RESIZE);
+		this.deviceType = deviceType;
 	}
 	
 	@Override
@@ -83,7 +94,6 @@ public class DeviceSelectionDialog extends Dialog {
 		devicesListViewer.getList().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		devicesListViewer.setContentProvider(new ArrayContentProvider());
 		devicesListViewer.setLabelProvider(new LabelProvider());
-		devicesListViewer.setInput(SerialPortList.getPortNames());
 		devicesListViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			@Override
 			public void selectionChanged(SelectionChangedEvent event) {
@@ -98,6 +108,7 @@ public class DeviceSelectionDialog extends Dialog {
 				DeviceSelectionDialog.this.okPressed();
 			}
 		});
+		updateDevices();
 		return container;
 	}
 	
@@ -116,20 +127,39 @@ public class DeviceSelectionDialog extends Dialog {
 	protected void createButtonsForButtonBar(Composite parent) {
 		super.createButtonsForButtonBar(parent);
 		Button refreshButton = createButton(parent, IDialogConstants.PROCEED_ID, ArduinoUnoMessages.Refresh, false);
-		refreshButton.addSelectionListener(new SelectionListener() {
-			@Override
+		refreshButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				devicesListViewer.setInput(SerialPortList.getPortNames());
-			}
-			
-			@Override
-			public void widgetDefaultSelected(SelectionEvent e) {
-				
-			}
+				updateDevices();
+			};
 		});
 	}
 		
-		
+	private void updateDevices() {
+		if(deviceType == DeviceSelectionHandler.DeviceType.USB) devicesListViewer.setInput(SerialPortList.getPortNames());
+		if(deviceType == DeviceSelectionHandler.DeviceType.ETHERNET) {
+			try {
+				ProgressMonitorDialog progressMonitorDialog = new ProgressMonitorDialog(getShell());
+				IRunnableWithProgress runnableWithProgress = new IRunnableWithProgress() {
+					@Override
+					public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+						connectedIPsGatherer = new ConnectedIPsGatherer(1, 254, 1, 10);
+						connectedIPsGatherer.startGathering(monitor);
+						PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+							@Override
+							public void run() {
+								devicesListViewer.setInput(connectedIPsGatherer.getReachableIPs());
+							}
+						});
+					}
+				};
+				progressMonitorDialog.run(true, true, runnableWithProgress);
+			} catch (InvocationTargetException | InterruptedException e) {
+				Activator.logErrorMessageWithCause(e);
+				e.printStackTrace();
+			}
+
+		}
+	}
 		
 		
 }

@@ -65,7 +65,8 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfigurationProperties;
-import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.dacqconfigurationeditor.DeviceSelectionDialog;
+import fr.univamu.ism.docometre.dacqsystems.ui.DeviceSelectionDialog;
+import fr.univamu.ism.docometre.dacqsystems.ui.DeviceSelectionHandler.DeviceType;
 import fr.univamu.ism.docometre.dialogs.DialogSelectionHandler;
 
 public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
@@ -190,7 +191,7 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 		devicePathButton.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				DeviceSelectionDialog deviceSelectionDialog = new DeviceSelectionDialog(getShell());
+				DeviceSelectionDialog deviceSelectionDialog = new DeviceSelectionDialog(getShell(), DeviceType.USB);
 				if(deviceSelectionDialog.open() == Dialog.OK) {
 					devicePathText.setText(deviceSelectionDialog.getSelection());
 				}
