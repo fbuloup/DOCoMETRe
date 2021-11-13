@@ -43,13 +43,13 @@ public class ConnectedIPsGatherer {
 			this.timeOut = timeOut;
 			String os = System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH);
 	        if ((os.contains("mac")) || (os.contains("darwin"))) {
-	        	cmdLine = "ping -c " + count + "  -W " + timeOut + " " + ip;
+	        	cmdLine = "ping -c " + count + " -W " + timeOut + " " + ip;
 	        	isMac = true;
 	        } else if (os.contains("win")) {
-	        	cmdLine = "ping -n " + count + "  -w " + timeOut + " " + ip;
+	        	cmdLine = "ping -n " + count + " -w " + timeOut + " " + ip;
 	        	isWindows = true;
 	        } else if (os.contains("nux")) {
-	        	cmdLine = "fping -c " + count + "  -t" + timeOut + " " + ip;
+	        	cmdLine = "fping -c " + count + " -t" + timeOut + " " + ip;
 	        	isLinux = true;
 	        } 
 		}
