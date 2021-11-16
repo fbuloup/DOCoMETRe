@@ -41,5 +41,14 @@
       <command required="false"
 		serialization="Docometre.cheatsheet.OpenURLHandler(Docometre.cheatsheet.OpenURLHandler.Value=https://www.arduino.cc/en/Guide/Linux)" />
    </item>
+    <item
+         skip="true"
+          title="Portenta Machine Control">
+       <description>
+          If you want to use <b>Portenta Machine Control</b>, you must install its associated library. Click on the link below in order to follow installation instructions.
+       </description>
+        <command required="false"
+		serialization="Docometre.cheatsheet.OpenURLHandler(Docometre.cheatsheet.OpenURLHandler.Value=https://docs.arduino.cc/software/ide-v1/tutorials/getting-started/cores/arduino-mbed_portenta)" />
+    </item>
    
 </cheatsheet>
