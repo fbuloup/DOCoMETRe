@@ -70,7 +70,7 @@ public final class ArduinoUnoDACQConfigurationProperties extends Property {
 		if(Platform.OS_WIN32.equals(Platform.getOS())) daqGeneralConfiguration.setProperty(DEVICE_PATH, "COM3");
 		else daqGeneralConfiguration.setProperty(DEVICE_PATH, "/dev/tty.usb*");
 		daqGeneralConfiguration.setProperty(BAUD_RATE, BAUD_RATE_2000000);
-		daqGeneralConfiguration.setProperty(GLOBAL_FREQUENCY, "500");
+		daqGeneralConfiguration.setProperty(GLOBAL_FREQUENCY, "100");
 		daqGeneralConfiguration.setProperty(LIBRARIES_ABSOLUTE_PATH, "");
 	}
 
