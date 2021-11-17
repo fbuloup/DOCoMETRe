@@ -353,9 +353,6 @@ public class ArduinoUnoProcess extends Process {
 		int delay = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.ARDUINO_DELAY_TIME_AFTER_SERIAL_PRINT);
 		
 		if(segment == ArduinoUnoCodeSegmentProperties.INCLUDE) {
-			code = "// Include for watch dog timer\n";
-			code = code + "#include  <avr/wdt.h>\n";
-			
 			code = code + getCurrentProcess().getScript().getInitializeCode(this, ArduinoUnoCodeSegmentProperties.INCLUDE);
 			code = code + getCurrentProcess().getScript().getLoopCode(this, ArduinoUnoCodeSegmentProperties.INCLUDE);
 			code = code + getCurrentProcess().getScript().getFinalizeCode(this, ArduinoUnoCodeSegmentProperties.INCLUDE) + "\n";
@@ -364,17 +361,17 @@ public class ArduinoUnoProcess extends Process {
 		
 		if(segment == ArduinoUnoCodeSegmentProperties.DEFINE) {
 			code = code + "// Defines for setting and clearing register bits\n";
-			code = code + "// and configure sample clock frequency\n";
+			code = code + "// to configure analog sample clock frequency\n";
 			code = code + "#ifndef cbi\n";
 			code = code + "\t\t#define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))\n";
 			code = code + "#endif\n";
 			code = code + "#ifndef sbi\n";
 			code = code + "\t\t#define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))\n";
 			code = code + "#endif\n\n";
-			code = code + "// Flags to convert double in eng. format string\n";
-			code = code + "#define DTOSTR_ALWAYS_SIGN 0x01\n";
-			code = code + "#define DTOSTR_PLUS_SIGN 0x02\n";
-			code = code + "#define DTOSTR_UPPERCASE 0x04\n";
+			//code = code + "// Flags to convert double in eng. format string\n";
+			//code = code + "#define DTOSTR_ALWAYS_SIGN 0x01\n";
+			//code = code + "#define DTOSTR_PLUS_SIGN 0x02\n";
+			//code = code + "#define DTOSTR_UPPERCASE 0x04\n";
 			code = code + "#define pi PI\n";
 			
 			code = code + getCurrentProcess().getScript().getInitializeCode(this, ArduinoUnoCodeSegmentProperties.DEFINE);
@@ -547,6 +544,7 @@ public class ArduinoUnoProcess extends Process {
 			
 			code = code + "\t\t\t\tif(terminateProcess) {\n";
 			code = code + "\t\t\t\t\t\tfinalize();\n";
+			code = code + "\t\t\t\t\t\texit(0);\n";
 			code = code + "\t\t\t\t}\n";
 			
 			code = code + "\t\t}\n";
@@ -570,14 +568,8 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "\t\twhile (startLoop) {\n";
 			code = code + "\t\t\t\tif(Serial.available()) {\n";
 			code = code + "\t\t\t\t\t\tstartLoop = ((char)Serial.read()) != 's';\n";
-			code = code + "\t\t\t\t}\n";
 			code = code + "\t\t}\n";
-			
-			
-			code = code + "\t\twdt_enable(WDTO_15MS);\n";
-			code = code + "\t\twhile(true) {\n";
-			code = code + "\t\t\t\t// Wait for board to restart\n";
-			code = code + "\t\t}\n";
+			code = code + "}\n\n";
 			code = code + "}\n\n";
 			
 			
