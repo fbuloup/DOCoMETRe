@@ -63,7 +63,7 @@ public class ArduinoUnoCodeScanner extends RuleBasedScanner {
 	private static String[] INCLUDE = {"#include"};
 	private static String[] DEFINE = {"#ifndef", "#ifdef", "#endif"};
 	private static String[] SEGMENTS = {"setup()", "loop()", "finalize()"};
-	public static String[] RESERVED_WORDS = {"for", "while", "do", "void", "auto", "signed", "const", "extern", "register", "unsigned", "int", "float", "char", "double", "long", "break", "return", "continue",
+	public static String[] RESERVED_WORDS = {"double", "for", "while", "do", "void", "auto", "signed", "const", "extern", "register", "unsigned", "int", "float", "char", "double", "long", "break", "return", "continue",
 												"if", "else", "switch", "case", "default", "sizeof", "struct", "typedef", "union", "volatile", "byte", "bool", "sprintf", "Serial", "println", "print", "begin",
 												"available", "read", "micros", "String", "wdt_enable"};
 	

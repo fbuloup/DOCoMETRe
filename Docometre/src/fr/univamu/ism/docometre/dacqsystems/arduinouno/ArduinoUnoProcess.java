@@ -419,10 +419,16 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "// Loop time in microsecond\n";
 			code = code + "unsigned long loopTime_MS;\n";
 			code = code + "// Loop time in second\n";
-			code = code + "float time;\n\n";
-			code = code + "// Start realtime loop when true\n";
+			code = code + "double time;\n\n";
+			code = code + "// currentLoopTime - previousLoopTime\n";
+			code = code + "unsigned long delta;\n";
+			code = code + "// Time shift because of micros()\n";
+			code = code + "unsigned long deviation;\n";
+			code = code + "// Loop index to compute time\n";
+			code = code + "unsigned long timeIndex;\n\n";
+			code = code + "// Start loop when true\n";
 			code = code + "bool startLoop = false;\n\n";
-			code = code + "// Stop realtime loop when true\n";
+			code = code + "// Stop loop when true\n";
 			code = code + "bool terminateProcess = false;\n\n";
 			code = code + "// First loop flag\n";
 			code = code + "bool firstLoop = true;\n\n";
@@ -485,16 +491,20 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "\t\t\t\tcurrentLoopTime = micros();\n";
 			code = code + "\t\t\t\tif(firstLoop) {\n";
 			code = code + "\t\t\t\t\t// Just to be sure start time is zero\n";
-			code = code + "\t\t\t\t\t// (See micro() function doc. 4us or 8us drift)\n";
+			code = code + "\t\t\t\t\t// (See micro() function doc. 4us or 8us shift)\n";
 			code = code + "\t\t\t\t\tstartTime = currentLoopTime;\n";
 			code = code + "\t\t\t\t\tpreviousLoopTime = startTime - loopPeriod;\n";
 			code = code + "\t\t\t\t\tfirstLoop = false;\n";
 			code = code + "\t\t\t\t}\n";
 			
-			code = code + "\t\t\t\tif(currentLoopTime - previousLoopTime >= loopPeriod) {\n";
+			code = code + "\t\t\t\tdelta = currentLoopTime - previousLoopTime;\n";
+			code = code + "\t\t\t\tif(delta >= loopPeriod - deviation) {\n";
+			code = code + "\t\t\t\t\t\tdeviation = delta - loopPeriod;\n";
+			code = code + "\t\t\t\t\t\t// A way to overcompensate this time deviation : not used by default\n";
+			code = code + "\t\t\t\t\t\t//deviation = deviation > 0 ? deviation + 4 : deviation; // Overcompensate right time drift\n";
 			code = code + "\t\t\t\t\t\tloopTime_MS = currentLoopTime - startTime;\n";
-			code = code + "\t\t\t\t\t\ttime = 1.0*loopTime_MS/1000000.0;\n";
-			
+			code = code + "\t\t\t\t\t\ttime = timeIndex*((double)loopPeriod/1000000.0);\n";
+			code = code + "\t\t\t\t\t\ttimeIndex++;\n";
 			
 			code = code + getCurrentProcess().getScript().getInitializeCode(this, ArduinoUnoCodeSegmentProperties.ACQUISITION);
 			code = code + getCurrentProcess().getScript().getLoopCode(this, ArduinoUnoCodeSegmentProperties.ACQUISITION);
@@ -735,8 +745,6 @@ public class ArduinoUnoProcess extends Process {
 				code = code + "\t\t// ******** Début algorithme initialisation\n\n";
 				code = code + getCurrentProcess().getScript().getInitializeCode(this, ScriptSegmentType.INITIALIZE);
 				code = code + "\t\t// ******** Fin algorithme initialisation\n\n";
-				code = code + "\t\tstartTime =  micros();\n";
-				code = code + "\t\tpreviousLoopTime = startTime - loopPeriod;\n\n";
 			}
 			if(segments[i].equals(ArduinoUnoCodeSegmentProperties.TRANSFER)) {
 				// Variables transfer
