@@ -6,12 +6,26 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-10-14
+      -- 2021-11-18
+Added :
+* Support for 3D chart editor
+* Support for debugging tools 
+* Improvement on QuickStart tutorial
+* QuickStartCheatSheet updates
+* IP addresses gatherer for adwin dacq. conf. 
+Fixed :
+* SWT Resource leak : font not disposed (CursorMarkerDeltaPainter.java)
+* Many refactoring
+* Arduino Real time loop enhancement (micros() : 1us (Portenta), 4us (Uno) drift)
+* Remove arduino wdt to stop board : simply use exit(0) instead
+* Change default arduino global frequency to 100Hz
+-- 2021-10-14
 Added :
 * Support for 3D chart editor - Step 1 
 * Allow Wine file path pref to be empty
 Fixed :
-* Bug when a channel is suppressed : transfer numbers were not updated
+* Bug when a channel is suppressed : transfer numbers were not
+updated
 -- 2021-10-11 - Bis
 Added :
 * Disable p2 garbage collector
