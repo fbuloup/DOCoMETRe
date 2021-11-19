@@ -64,21 +64,15 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseMoveListener;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swtchart.IAxis;
 import org.eclipse.swtchart.ILineSeries;
 import org.eclipse.swtchart.ILineSeries.PlotSymbolType;
 import org.eclipse.swtchart.ISeries;
 import org.eclipse.swtchart.ISeries.SeriesType;
 import org.eclipse.swtchart.extensions.charts.InteractiveChart;
-import org.eclipse.swtchart.extensions.charts.Messages;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
@@ -100,7 +94,7 @@ import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfiguration;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
-public class DataEditor extends EditorPart implements PartNameRefresher, MouseMoveListener, PaintListener, Listener/*, MouseListener */{
+public class DataEditor extends EditorPart implements PartNameRefresher, MouseMoveListener {
 	
 	public static String ID = "Docometre.DataEditor";
 	
@@ -190,32 +184,15 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 		chart.getPlotArea().setCursor(new Cursor(PlatformUI.getWorkbench().getDisplay(), SWT.CURSOR_CROSS));
 
 		chart.getPlotArea().addMouseMoveListener(this);
-		chart.getPlotArea().addPaintListener(this);
-		chart.getPlotArea().addListener(SWT.MouseWheel, this);
-		MenuItem menuItem = chart.getMenuItem(null, Messages.ADJUST_AXIS_RANGE);
-		menuItem.addListener(SWT.Selection, this);
-		menuItem = chart.getMenuItem(null, Messages.ADJUST_X_AXIS_RANGE);
-		menuItem.addListener(SWT.Selection, this);
-		menuItem = chart.getMenuItem(null, Messages.ADJUST_Y_AXIS_RANGE);
-		menuItem.addListener(SWT.Selection, this);
-		menuItem = chart.getMenuItem(null, Messages.ZOOMIN);
-		menuItem.addListener(SWT.Selection, this);
-		menuItem = chart.getMenuItem(null, Messages.ZOOMIN_X);
-		menuItem.addListener(SWT.Selection, this);
-		menuItem = chart.getMenuItem(null, Messages.ZOOMIN_Y);
-		menuItem.addListener(SWT.Selection, this);
-		menuItem = chart.getMenuItem(null, Messages.ZOOMOUT);
-		menuItem.addListener(SWT.Selection, this);
-		menuItem = chart.getMenuItem(null, Messages.ZOOMOUT_X);
-		menuItem.addListener(SWT.Selection, this);
-		menuItem = chart.getMenuItem(null, Messages.ZOOMOUT_Y);
-		menuItem.addListener(SWT.Selection, this);
-		chart.getPlotArea().addListener(SWT.Resize, this);
+//		chart.getPlotArea().addPaintListener(this);
+//		chart.getPlotArea().addListener(SWT.MouseWheel, this);
+//
+//		chart.getPlotArea().addListener(SWT.Resize, this);
 //		chart.getPlotArea().addMouseListener(this);
 		
-		// Create trace and add it to graph
+//		// Create trace and add it to graph
 		createTrace(dataFile);
-		
+//		
 		// Allow data to be copied or moved to the drop target
 		int operations = DND.DROP_COPY;
 		DropTarget target = new DropTarget(chart, operations);
@@ -458,95 +435,6 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 	@Override
 	public void mouseMove(MouseEvent event) {
 		updateContribution();
-		
-		
-//		if(currentXMarker != -1) {
-//			NumberFormat nf = NumberFormat.getInstance();
-//			nf.setMaximumFractionDigits(6);
-//			double mx = chart.getAxisSet().getXAxes()[0].getDataCoordinate(currentXMarker);
-//			double my = chart.getAxisSet().getYAxes()[0].getDataCoordinate(currentYMarker);
-//			StringBuilder text = new StringBuilder();
-//			text.append("Marker (");
-//			text.append(nf.format(mx));
-//			text.append(" ; ");
-//			text.append(nf.format(my));
-//			text.append(")");
-//			ApplicationActionBarAdvisor.markerContributionItem.setText(text.toString());
-//			double x = chart.getCurrentX() - mx;
-//			double y = chart.getCurrentY() - my;
-//			text = new StringBuilder();
-//			text.append("\u0394 (");
-//			text.append(nf.format(x));
-//			text.append(" ; ");
-//			text.append(nf.format(y));
-//			text.append(")");
-//			ApplicationActionBarAdvisor.deltaContributionItem.setText(text.toString());
-//			
-//			if(!ApplicationActionBarAdvisor.markerContributionItem.isVisible()) {
-//				ApplicationActionBarAdvisor.markerContributionItem.setVisible(true);
-//				ApplicationActionBarAdvisor.deltaContributionItem.setVisible(true);
-//				ApplicationActionBarAdvisor.cursorContributionItem.getParent().update(true);
-//			}
-//			
-//		}
 	}
-
-	@Override
-	public void paintControl(PaintEvent e) {
-//		Color oldColor = e.gc.getForeground();			
-//		
-//		e.gc.setForeground(RED_COLOR);
-//		// Draw marker
-//		if(currentXMarker != -1) {
-//			e.gc.drawLine(currentXMarker, 0, currentXMarker, currentYMarker - 3);
-//			e.gc.drawLine(currentXMarker, currentYMarker + 3, currentXMarker, chart.getPlotArea().getBounds().height);
-//			e.gc.drawRectangle(currentXMarker - 3, currentYMarker - 3, 6, 6);
-//		}
-//		
-//		e.gc.setForeground(oldColor);
-	}
-	
-	@Override
-	public void handleEvent(Event event) {
-//		mouseEventHandler(event);
-	}
-//	
-//	private void mouseEventHandler(Event event) {
-//		if(!doubleClick) {
-//			currentXMarker = -1;
-//			ApplicationActionBarAdvisor.markerContributionItem.setVisible(false);
-//			ApplicationActionBarAdvisor.deltaContributionItem.setVisible(false);
-//			ApplicationActionBarAdvisor.cursorContributionItem.getParent().update(true);
-//		}
-//		doubleClick = false;
-//		event.x = chart.getCurrentX_Pixel();
-//		MouseEvent mouseEvent = new MouseEvent(event);
-//		mouseMove(mouseEvent);
-//	}
-//	
-//	private void typedEventHandler(TypedEvent typedEvent) {
-//		Event e = new Event();
-//		e.widget = typedEvent.widget;
-//		e.type = SWT.Selection;
-//		mouseEventHandler(e);
-//	}
-//
-//	@Override
-//	public void mouseDoubleClick(MouseEvent e) {
-//		currentXMarker = chart.getCurrentX_Pixel();
-//		currentYMarker = chart.getCurrentY_Pixel();
-//		doubleClick = true;
-//	}
-
-//	@Override
-//	public void mouseDown(MouseEvent e) {
-//	}
-//
-//	@Override
-//	public void mouseUp(MouseEvent e) {
-//		typedEventHandler(e);
-//	}
-
-	
 
 }

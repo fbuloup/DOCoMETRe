@@ -21,6 +21,7 @@ public class CursorMarkerDeltaPainter implements ICustomPaintListener {
 
 	@Override
 	public void paintControl(PaintEvent e) {
+		if(Display.getCurrent().getCursorControl() != chart.getPlotArea()) return;
 		String cursorCoordinates = chart.getCursorCoordinatesString();
 		if(cursorCoordinates == null || "".equals(cursorCoordinates)) return;
 		
