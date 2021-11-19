@@ -1,0 +1,29 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+	<title>Main Topic</title>
+</head>
+
+<body>
+<h1>Timing consideration</h1>
+
+<p>
+With Arduino Uno systems, the real time loop precision is not so good. It means that timing control
+is not so precise as we could expect because a slow but stable time drift is occuring. Main reason comes from the fact that micros()
+instruction takes at less 1<span>&#181;</span>s (see <a href="https://www.arduino.cc/reference/en/language/functions/time/micros/">here</a> for more info) :
+</p>
+<ul>
+  <li>1<span>&#181;</span>s with Portenta family</li>
+  <li>4<span>&#181;</span>s with 16MHz Arduino boards </li>
+  <li>8<span>&#181;</span>s with 8MHz Arduino boards </li>
+</ul>
+<p>
+These values are not so big but for a long time running operation, drift could grow up to more than several milliseconds. If you cannot deal with this timing drift,
+please consider to use Portenta Machine Control or ADWin Systems. I've not been able to see any timing drift with ADWin Systems for real time loop running several minutes.  
+</p>
+
+
+</body>
+</html>

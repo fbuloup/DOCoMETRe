@@ -6,6 +6,8 @@
    </topic> 
 	<topic label="With Arduino Uno system"  href="html/troubleshoots/arduinouno.html"> 
 	</topic>
+ <topic href="html/troubleshoots/timingConsideration.html" label="Timing consideration">
+ </topic>
 	<topic label="With ADWin Systems">
 	</topic> 
 </toc>
