@@ -275,7 +275,7 @@ public class Script implements Serializable {
 	public String getLoopCode(Object context, Object step) throws Exception {
 		Block firstBlock = getFirstLoopBlock();
 		String code = generateCode(firstBlock, null, context, step);
-		return indentCode(context, code, (context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess))?"\t\t\t\t\t\t":"");
+		return indentCode(context, code, (context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess))?"\t\t\t\t":"");
 	}
 	
 	//Finalize phase

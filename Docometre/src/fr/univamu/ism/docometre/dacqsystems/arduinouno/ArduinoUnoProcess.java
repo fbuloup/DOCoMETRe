@@ -476,32 +476,32 @@ public class ArduinoUnoProcess extends Process {
 		if(segment == ArduinoUnoCodeSegmentProperties.ACQUISITION) {
 			
 			code = "}\n\nvoid loop() {\n";
-			code = code + "\t\twhile(true) {\n";
+//			code = code + "\t\twhile(true) {\n";
 			
-			code = code + "\t\t\t\t// If we receive 's'(top) from serial port,\n";
-			code = code + "\t\t\t\t// then force process termination\n";
-			code = code + "\t\t\t\tif(Serial.available()) {\n";
-			code = code + "\t\t\t\t\t\tstartLoop = ((char)Serial.read()) != 's';\n";
-			code = code + "\t\t\t\t\t\tif(!startLoop ) terminateProcess = true;\n";
-			code = code + "\t\t\t\t}\n";
+			code = code + "\t\t// If we receive 's'(top) from serial port,\n";
+			code = code + "\t\t// then force process termination\n";
+			code = code + "\t\tif(Serial.available()) {\n";
+			code = code + "\t\t\t\tstartLoop = ((char)Serial.read()) != 's';\n";
+			code = code + "\t\t\t\tif(!startLoop ) terminateProcess = true;\n";
+			code = code + "\t\t}\n";
 			
-			code = code + "\t\t\t\tcurrentLoopTime = micros();\n";
-			code = code + "\t\t\t\tif(firstLoop) {\n";
-			code = code + "\t\t\t\t\t// Just to be sure start time is zero\n";
-			code = code + "\t\t\t\t\t// (See micro() function doc. 4us or 8us shift)\n";
-			code = code + "\t\t\t\t\tstartTime = currentLoopTime;\n";
-			code = code + "\t\t\t\t\tpreviousLoopTime = startTime - loopPeriod;\n";
-			code = code + "\t\t\t\t\tfirstLoop = false;\n";
-			code = code + "\t\t\t\t}\n";
+			code = code + "\t\tcurrentLoopTime = micros();\n";
+			code = code + "\t\tif(firstLoop) {\n";
+			code = code + "\t\t\t// Just to be sure start time is zero\n";
+			code = code + "\t\t\t// (See micro() function doc. 4us or 8us shift)\n";
+			code = code + "\t\t\tstartTime = currentLoopTime;\n";
+			code = code + "\t\t\tpreviousLoopTime = startTime - loopPeriod;\n";
+			code = code + "\t\t\tfirstLoop = false;\n";
+			code = code + "\t\t}\n";
 			
-			code = code + "\t\t\t\tdelta = currentLoopTime - previousLoopTime;\n";
-			code = code + "\t\t\t\tif(delta >= loopPeriod - deviation) {\n";
-			code = code + "\t\t\t\t\t\tdeviation = delta - loopPeriod;\n";
-			code = code + "\t\t\t\t\t\t// A way to overcompensate this time deviation : not used by default\n";
-			code = code + "\t\t\t\t\t\t//deviation = deviation > 0 ? deviation + 4 : deviation; // Overcompensate right time drift\n";
-			code = code + "\t\t\t\t\t\tloopTime_MS = currentLoopTime - startTime;\n";
-			code = code + "\t\t\t\t\t\ttime = timeIndex*((double)loopPeriod/1000000.0);\n";
-			code = code + "\t\t\t\t\t\ttimeIndex++;\n";
+			code = code + "\t\tdelta = currentLoopTime - previousLoopTime;\n";
+			code = code + "\t\tif(delta >= loopPeriod - deviation) {\n";
+			code = code + "\t\t\t\tdeviation = delta - loopPeriod;\n";
+			code = code + "\t\t\t\t// A way to overcompensate this time deviation : not used by default\n";
+			code = code + "\t\t\t\t//deviation = deviation > 0 ? deviation + 4 : deviation; // Overcompensate right time drift\n";
+			code = code + "\t\t\t\tloopTime_MS = currentLoopTime - startTime;\n";
+			code = code + "\t\t\t\ttime = timeIndex*((double)loopPeriod/1000000.0);\n";
+			code = code + "\t\t\t\ttimeIndex++;\n";
 			
 			code = code + getCurrentProcess().getScript().getInitializeCode(this, ArduinoUnoCodeSegmentProperties.ACQUISITION);
 			code = code + getCurrentProcess().getScript().getLoopCode(this, ArduinoUnoCodeSegmentProperties.ACQUISITION);
@@ -534,20 +534,20 @@ public class ArduinoUnoProcess extends Process {
 		}
 		
 		if(segment == ArduinoUnoCodeSegmentProperties.FINALIZATION) {
-			code = code + "\t\t\t\t\t\tpreviousLoopTime = micros() - currentLoopTime;\n";
-			code = code + "\t\t\t\t\t\tworkload = computeWorkload(previousLoopTime);\n";
-			code = code + "\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, loopTime_MS, workload);\n";
-			code = code + "\t\t\t\t\t\tSerial.println(serialMessage);\n";
-			if(delay > 0) code = code + "\t\t\t\t\t\tdelayMicroseconds(" + delay + ");\n";
-			code = code + "\t\t\t\t\t\tpreviousLoopTime = currentLoopTime;\n";
-			code = code + "\t\t\t\t}\n";
-			
-			code = code + "\t\t\t\tif(terminateProcess) {\n";
-			code = code + "\t\t\t\t\t\tfinalize();\n";
-			code = code + "\t\t\t\t\t\texit(0);\n";
-			code = code + "\t\t\t\t}\n";
-			
+			code = code + "\t\t\t\tpreviousLoopTime = micros() - currentLoopTime;\n";
+			code = code + "\t\t\t\tworkload = computeWorkload(previousLoopTime);\n";
+			code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, loopTime_MS, workload);\n";
+			code = code + "\t\t\t\tSerial.println(serialMessage);\n";
+			if(delay > 0) code = code + "\t\t\t\tdelayMicroseconds(" + delay + ");\n";
+			code = code + "\t\t\t\tpreviousLoopTime = currentLoopTime;\n";
 			code = code + "\t\t}\n";
+			
+			code = code + "\t\tif(terminateProcess) {\n";
+			code = code + "\t\t\t\tfinalize();\n";
+			code = code + "\t\t\t\texit(0);\n";
+			code = code + "\t\t}\n";
+			
+//			code = code + "\t\t}\n";
 			code = code + "}\n\n";
 			
 			code = code + "void finalize() {\n";
@@ -744,9 +744,9 @@ public class ArduinoUnoProcess extends Process {
 			}
 			
 			if (segments[i] == ArduinoUnoCodeSegmentProperties.LOOP){
-				code = code + "\t\t\t\t\t\t// ******** Début algorithme boucle\n\n";
+				code = code + "\t\t\t\t// ******** Début algorithme boucle\n\n";
 				code = code + getCurrentProcess().getScript().getLoopCode(this, ScriptSegmentType.LOOP);
-				code = code + "\n\t\t\t\t\t\t// ******** Fin algorithme boucle\n\n";
+				code = code + "\n\t\t\t\t// ******** Fin algorithme boucle\n\n";
 			}
 			
 //			if (segments[i] == ArduinoUnoCodeSegmentProperties.FINALIZATION){

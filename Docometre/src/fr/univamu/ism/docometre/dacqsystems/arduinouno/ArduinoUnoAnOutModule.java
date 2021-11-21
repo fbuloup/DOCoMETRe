@@ -100,17 +100,17 @@ public class ArduinoUnoAnOutModule extends Module {
 			if (segment == ArduinoUnoCodeSegmentProperties.GENERATION) {
 				
 				if(isUsed) {
-					code = code + "\n\t\t\t\t\t\tif(generate_" + name + "_index == " + frequencyRatio + ") {\n";
-					code = code + "\t\t\t\t\t\t\t\tgenerate_" + name + "_index = 0;\n";
-					code = code + "\t\t\t\t\t\t\t\tanalogWrite(" + channelNumber + ", " + name + ");\n";
+					code = code + "\n\t\t\t\tif(generate_" + name + "_index == " + frequencyRatio + ") {\n";
+					code = code + "\t\t\t\t\t\tgenerate_" + name + "_index = 0;\n";
+					code = code + "\t\t\t\t\t\tanalogWrite(" + channelNumber + ", " + name + ");\n";
 					if(isTransfered) {
-						code = code + "\t\t\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", " + transferNumber + ", (loopTime_MS - lastGenerateTime_" + name + "), " + name + ");\n";
-						code = code + "\t\t\t\t\t\t\t\tSerial.println(serialMessage);\n";
-						if(delay > 0)code = code + "\t\t\t\t\t\t\t\tdelayMicroseconds(" + delay + ");\n";
+						code = code + "\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", " + transferNumber + ", (loopTime_MS - lastGenerateTime_" + name + "), " + name + ");\n";
+						code = code + "\t\t\t\t\t\tSerial.println(serialMessage);\n";
+						if(delay > 0)code = code + "\t\t\t\t\t\tdelayMicroseconds(" + delay + ");\n";
 					}
-					code = code + "\t\t\t\t\t\t\t\tlastGenerateTime_" + name + "= loopTime_MS;\n";
-					code = code + "\t\t\t\t\t\t}\n";
-					code = code + "\t\t\t\t\t\tgenerate_" + name + "_index += 1;\n\n";
+					code = code + "\t\t\t\t\t\tlastGenerateTime_" + name + "= loopTime_MS;\n";
+					code = code + "\t\t\t\t}\n";
+					code = code + "\t\t\t\tgenerate_" + name + "_index += 1;\n\n";
 					
 				}
 			}

@@ -113,17 +113,17 @@ public class ArduinoUnoDigInOutModule extends Module {
 			if (segment == ArduinoUnoCodeSegmentProperties.ACQUISITION) {
 				
 				if(isUsed && (isInput | isInputPullUp)) {
-					code = code + "\n\t\t\t\t\t\tif(acquire_" + name + "_index == " + frequencyRatio + ") {\n";
-					code = code + "\t\t\t\t\t\t\t\tacquire_" + name + "_index = 0;\n";
-					code = code + "\t\t\t\t\t\t\t\t" + name + " = digitalRead(" + channelNumber + ");\n";
+					code = code + "\n\t\t\t\tif(acquire_" + name + "_index == " + frequencyRatio + ") {\n";
+					code = code + "\t\t\t\t\t\tacquire_" + name + "_index = 0;\n";
+					code = code + "\t\t\t\t\t\t" + name + " = digitalRead(" + channelNumber + ");\n";
 					if(isTransfered) {
-						code = code + "\t\t\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", " + transferNumber + ", (loopTime_MS - lastAcquireTime_" + name + "), " + name + ");\n";
-						code = code + "\t\t\t\t\t\t\t\tSerial.println(serialMessage);\n";
-						if(delay > 0) code = code + "\t\t\t\t\t\t\t\tdelayMicroseconds(" + delay + ");\n";
+						code = code + "\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", " + transferNumber + ", (loopTime_MS - lastAcquireTime_" + name + "), " + name + ");\n";
+						code = code + "\t\t\t\t\t\tSerial.println(serialMessage);\n";
+						if(delay > 0) code = code + "\t\t\t\t\t\tdelayMicroseconds(" + delay + ");\n";
 					}
-					code = code + "\t\t\t\t\t\t\t\tlastAcquireTime_" + name + "= loopTime_MS;\n";
-					code = code + "\t\t\t\t\t\t}\n";
-					code = code + "\t\t\t\t\t\tacquire_" + name + "_index += 1;\n\n";
+					code = code + "\t\t\t\t\t\tlastAcquireTime_" + name + "= loopTime_MS;\n";
+					code = code + "\t\t\t\t}\n";
+					code = code + "\t\t\t\tacquire_" + name + "_index += 1;\n\n";
 				}
 				
 			}
@@ -131,17 +131,17 @@ public class ArduinoUnoDigInOutModule extends Module {
 			
 			if (segment == ArduinoUnoCodeSegmentProperties.GENERATION) {
 				if(isUsed && !(isInput | isInputPullUp)) {
-					code = code + "\n\t\t\t\t\t\tif(generate_" + name + "_index == " + frequencyRatio + ") {\n";
-					code = code + "\t\t\t\t\t\t\t\tgenerate_" + name + "_index = 0;\n";
-					code = code + "\t\t\t\t\t\t\t\tdigitalWrite(" + channelNumber + ", " + name + ");\n";
+					code = code + "\n\t\t\t\tif(generate_" + name + "_index == " + frequencyRatio + ") {\n";
+					code = code + "\t\t\t\t\t\tgenerate_" + name + "_index = 0;\n";
+					code = code + "\t\t\t\t\t\tdigitalWrite(" + channelNumber + ", " + name + ");\n";
 					if(isTransfered) {
-						code = code + "\t\t\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", " + transferNumber + ", (loopTime_MS - lastGenerateTime_" + name + "), " + name + ");\n";
-						code = code + "\t\t\t\t\t\t\t\tSerial.println(serialMessage);\n";
-						if(delay > 0) code = code + "\t\t\t\t\t\t\tdelayMicroseconds(" + delay + ");\n";
+						code = code + "\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", " + transferNumber + ", (loopTime_MS - lastGenerateTime_" + name + "), " + name + ");\n";
+						code = code + "\t\t\t\t\t\tSerial.println(serialMessage);\n";
+						if(delay > 0) code = code + "\t\t\t\t\tdelayMicroseconds(" + delay + ");\n";
 					}
-					code = code + "\t\t\t\t\t\t\t\tlastGenerateTime_" + name + "= loopTime_MS;\n";
-					code = code + "\t\t\t\t\t\t}\n";
-					code = code + "\t\t\t\t\t\tgenerate_" + name + "_index += 1;\n\n";
+					code = code + "\t\t\t\t\t\tlastGenerateTime_" + name + "= loopTime_MS;\n";
+					code = code + "\t\t\t\t}\n";
+					code = code + "\t\t\t\tgenerate_" + name + "_index += 1;\n\n";
 					
 				}
 			}

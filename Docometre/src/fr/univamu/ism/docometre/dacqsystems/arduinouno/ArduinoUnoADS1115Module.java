@@ -89,11 +89,11 @@ public class ArduinoUnoADS1115Module extends Module {
 			
 			if (segment == ArduinoUnoCodeSegmentProperties.ACQUISITION) {
 				if(isUsed) {
-					code = code + "\n\t\t\t\t\t\tif(acquire_" + name + "_index == " + frequencyRatio + ") {\n";
-					code = code + "\t\t\t\t\t\t\tacquire_" + name + "_index = 0;\n";
-					code = code + "\t\t\t\t\t\t\t" + name + " = acquireADS1115AnalogInput(" + channelNumber + ", &lastAcquireTime_" + name + ", " + transfer + ", " + transferNumber + ", " + ADSName + ", 1" +  ");\n";
-					code = code + "\t\t\t\t\t\t}\n";
-					code = code + "\t\t\t\t\t\tacquire_" + name + "_index += 1;\n\n";
+					code = code + "\n\t\t\t\tif(acquire_" + name + "_index == " + frequencyRatio + ") {\n";
+					code = code + "\t\t\t\t\tacquire_" + name + "_index = 0;\n";
+					code = code + "\t\t\t\t\t" + name + " = acquireADS1115AnalogInput(" + channelNumber + ", &lastAcquireTime_" + name + ", " + transfer + ", " + transferNumber + ", " + ADSName + ", 1" +  ");\n";
+					code = code + "\t\t\t\t}\n";
+					code = code + "\t\t\t\tacquire_" + name + "_index += 1;\n\n";
 					
 				}
 			}
