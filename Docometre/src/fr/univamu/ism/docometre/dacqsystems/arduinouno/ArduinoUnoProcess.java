@@ -360,18 +360,6 @@ public class ArduinoUnoProcess extends Process {
 		}
 		
 		if(segment == ArduinoUnoCodeSegmentProperties.DEFINE) {
-			code = code + "// Defines for setting and clearing register bits\n";
-			code = code + "// to configure analog sample clock frequency\n";
-			code = code + "#ifndef cbi\n";
-			code = code + "\t\t#define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))\n";
-			code = code + "#endif\n";
-			code = code + "#ifndef sbi\n";
-			code = code + "\t\t#define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))\n";
-			code = code + "#endif\n\n";
-			//code = code + "// Flags to convert double in eng. format string\n";
-			//code = code + "#define DTOSTR_ALWAYS_SIGN 0x01\n";
-			//code = code + "#define DTOSTR_PLUS_SIGN 0x02\n";
-			//code = code + "#define DTOSTR_UPPERCASE 0x04\n";
 			code = code + "#define pi PI\n";
 			
 			code = code + getCurrentProcess().getScript().getInitializeCode(this, ArduinoUnoCodeSegmentProperties.DEFINE);
@@ -417,10 +405,6 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "unsigned long loopTime_MS;\n";
 			code = code + "// Loop time in second\n";
 			code = code + "double time;\n\n";
-			code = code + "// currentLoopTime - previousLoopTime\n";
-			code = code + "unsigned long delta;\n";
-			code = code + "// Time shift because of micros()\n";
-			code = code + "unsigned long deviation;\n";
 			code = code + "// Loop index to compute time\n";
 			code = code + "unsigned long timeIndex;\n\n";
 			code = code + "// Start loop when true\n";
@@ -440,12 +424,20 @@ public class ArduinoUnoProcess extends Process {
 		
 		if(segment == ArduinoUnoCodeSegmentProperties.INITIALIZATION) {
 			code = "void setup() {\n";
-			code = code + "\t\t// Set prescale to 32 for ADC to decrease conversion time\n";
-			code = code + "\t\t// 16MHz/32 = 500kHz - Max Sample freq = 500kHz/13 # 38kHz\n";
-			code = code + "\t\t// Convertion time # 30us\n";
-			code = code + "\t\tsbi(ADCSRA,ADPS2);\n";
-			code = code + "\t\tcbi(ADCSRA,ADPS1);\n";
-			code = code + "\t\tsbi(ADCSRA,ADPS0);\n";
+			code = code + "\t\t// ADC CONFIGURATON\n";
+			code = code + "\t\t// From datasheet at :\n";
+			code = code + "\t\t// https://ww1.microchip.com/downloads/en/DeviceDoc/ATmega48A-PA-88A-PA-168A-PA-328-P-DS-DS40002061B.pdf\n";
+			code = code + "\t\t// One can read at 24.4 p249 :\n";
+			code = code + "\t\t// \"By default, the successive approximation circuitry requires an input clock frequency\n";
+			code = code + "\t\t// between 50kHz and 200kHz to get maximum resolution. If a lower resolution than 10 bits is needed,\n";
+			code = code + "\t\t// the input clock frequency to the ADC can be higher than 200kHz to get a higher sample rate.\"\n";
+			code = code + "\t\t// Following this, prescaler could be set to 8 for ADC to decrease conversion time and keep resolution to maximum.\n";
+			code = code + "\t\t// Because of corsstalk in analog multiplexer, sample frequency must be decreased by a scale factor.\n";
+			code = code + "\t\t// We set prescaler to 16.\n";
+			code = code + "\t\t// 16MHz/16 = 1MHz - Max Sample freq. in theory is = 1MHz/13 # 76.923kHz, convertion time of 13us.\n";
+			code = code + "\t\t// Measured #18.6us which gives a Max Sample freq. of #53kHz\n";
+			code = code + "\t\t// Then ADC is enabled and ADSP[2:0] = 100\n";
+			code = code + "\t\tADCSRA  =  bit (ADEN) | 1*bit (ADPS2) | 0*bit (ADPS1) | 0*bit (ADPS0);\n";
 			String baudRate = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.BAUD_RATE);
 			code = code + "\t\tSerial.begin(" + baudRate + ");\n";
 			code = code + "\t\twhile (!startLoop) {\n";
@@ -453,8 +445,6 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "\t\t\t\t\t\tstartLoop = ((char)Serial.read()) == 'r';\n";
 			code = code + "\t\t\t\t}\n";
 			code = code + "\t\t}\n";
-//			code = code + "\t\tstartTime =  micros();\n";
-//			code = code + "\t\tpreviousLoopTime = startTime - loopPeriod;\n\n";
 			
 			// Variables initialization
 			code = code + VariablesCodeGenerationDelegate.getCode(this, ArduinoUnoCodeSegmentProperties.INITIALIZATION);
@@ -476,7 +466,6 @@ public class ArduinoUnoProcess extends Process {
 		if(segment == ArduinoUnoCodeSegmentProperties.ACQUISITION) {
 			
 			code = "}\n\nvoid loop() {\n";
-//			code = code + "\t\twhile(true) {\n";
 			
 			code = code + "\t\t// If we receive 's'(top) from serial port,\n";
 			code = code + "\t\t// then force process termination\n";
@@ -484,7 +473,6 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "\t\t\t\tstartLoop = ((char)Serial.read()) != 's';\n";
 			code = code + "\t\t\t\tif(!startLoop ) terminateProcess = true;\n";
 			code = code + "\t\t}\n";
-			
 			code = code + "\t\tcurrentLoopTime = micros();\n";
 			code = code + "\t\tif(firstLoop) {\n";
 			code = code + "\t\t\t// Just to be sure start time is zero\n";
@@ -493,12 +481,7 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "\t\t\tpreviousLoopTime = startTime - loopPeriod;\n";
 			code = code + "\t\t\tfirstLoop = false;\n";
 			code = code + "\t\t}\n";
-			
-			code = code + "\t\tdelta = currentLoopTime - previousLoopTime;\n";
-			code = code + "\t\tif(delta >= loopPeriod - deviation) {\n";
-			code = code + "\t\t\t\tdeviation = delta - loopPeriod;\n";
-			code = code + "\t\t\t\t// A way to overcompensate this time deviation : not used by default\n";
-			code = code + "\t\t\t\t//deviation = deviation > 0 ? deviation + 4 : deviation; // Overcompensate right time drift\n";
+			code = code + "\t\tif(currentLoopTime - previousLoopTime >= loopPeriod) {\n";
 			code = code + "\t\t\t\tloopTime_MS = currentLoopTime - startTime;\n";
 			code = code + "\t\t\t\ttime = timeIndex*((double)loopPeriod/1000000.0);\n";
 			code = code + "\t\t\t\ttimeIndex++;\n";

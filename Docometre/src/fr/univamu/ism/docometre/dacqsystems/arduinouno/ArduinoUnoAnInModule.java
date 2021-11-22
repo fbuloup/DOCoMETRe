@@ -61,6 +61,13 @@ public class ArduinoUnoAnInModule extends Module {
 	public String getCodeSegment(Object segment) throws Exception {
 		String code = "";
 		
+		if (segment == ArduinoUnoCodeSegmentProperties.INITIALIZATION) {
+			String analogReference = getProperty(ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE);
+			code = code +  "\t\t// Set analog ref.\n";
+			code = code + "\t\tanalogReference(" + analogReference + ");\n";
+		}
+		
+		
 		for (int i = 0; i < getChannelsNumber(); i++) {
 			
 			Channel channel = getChannel(i);
@@ -77,6 +84,7 @@ public class ArduinoUnoAnInModule extends Module {
 			float sfFloat = Float.parseFloat(sfChannel);
 			boolean isTransfered = Boolean.valueOf(transfer);
 			int frequencyRatio = (int) (gsfFloat/sfFloat);
+			
 		
 			if (segment == ArduinoUnoCodeSegmentProperties.DECLARATION) {
 				if(isUsed) {

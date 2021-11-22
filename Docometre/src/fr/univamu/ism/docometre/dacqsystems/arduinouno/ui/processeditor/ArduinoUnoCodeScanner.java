@@ -65,7 +65,7 @@ public class ArduinoUnoCodeScanner extends RuleBasedScanner {
 	private static String[] SEGMENTS = {"setup()", "loop()", "finalize()"};
 	public static String[] RESERVED_WORDS = {"double", "for", "while", "do", "void", "auto", "signed", "const", "extern", "register", "unsigned", "int", "float", "char", "double", "long", "break", "return", "continue",
 												"if", "else", "switch", "case", "default", "sizeof", "struct", "typedef", "union", "volatile", "byte", "bool", "sprintf", "Serial", "println", "print", "begin",
-												"available", "read", "micros", "String", "wdt_enable", "exit"};
+												"available", "read", "micros", "String", "wdt_enable", "exit", "EXTERNAL", "INTERNAL", "DEFAULT"};
 	
 	public static RuleBasedScanner getIncludeScanner() {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
