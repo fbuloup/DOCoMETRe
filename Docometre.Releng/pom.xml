@@ -7,7 +7,7 @@
 	<packaging>pom</packaging>
 
 	<properties>
-	<tycho.version>1.4.0</tycho.version>
+	<tycho.version>2.3.0</tycho.version>
 	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	<!-- </properties> -->
 
@@ -23,9 +23,9 @@
 
 	<repositories>
 		<repository>
-			<id>2021_03</id>
+			<id>2021_09</id>
 			<layout>p2</layout>
-			<url>https://download.eclipse.org/releases/2021-03/</url>
+			<url>https://download.eclipse.org/releases/2021-09/</url>
 		</repository>
 	</repositories>
 
@@ -155,5 +155,9 @@
 		<module>../org.eclipse.swt.tools</module>
 		<module>../org.eclipse.swt.tools.base</module>
 		<module>../org.eclipse.swt.tools.spies</module>
+
+
+		
+		<module>../javax.servlet</module>
 	</modules>
 </project>

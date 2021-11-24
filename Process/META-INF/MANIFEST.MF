@@ -5,7 +5,7 @@ Bundle-SymbolicName: Process
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: fr.univamu.ism.process.Activator
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: fr.univamu.ism.process,
  fr.univamu.ism.process.tests
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.11.1",

@@ -27,7 +27,7 @@ public class ImplementationLoader {
 				// remove all trailing digits
 				name = name.replaceAll("\\d*$", "");
 			}
-			result = type.getClassLoader().loadClass(name + "Impl").newInstance(); //$NON-NLS-1$
+			result = type.getClassLoader().loadClass(name + "Impl").getDeclaredConstructor().newInstance(); //$NON-NLS-1$
 		} catch (Exception e) {
 
 		}
