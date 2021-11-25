@@ -62,11 +62,10 @@ public class VariablesCodeGenerationDelegate {
 		String  code = "";
 		ArduinoUnoVariable[] variables = ((ArduinoUnoDACQConfiguration)process.getDACQConfiguration()).getVariables();
 		for (ArduinoUnoVariable variable : variables) {
-			String name = variable.getProperty(ChannelProperties.NAME);
+//			String name = variable.getProperty(ChannelProperties.NAME);
 			String transfer = variable.getProperty(ChannelProperties.TRANSFER);
 			boolean isTransfered = Boolean.valueOf(transfer);
 			if(isTransfered) {
-				code = code + "\t\tlastTransferTime_" + name + " = 0;\n";
 			}
 		}
 		return code + "\n";
@@ -94,22 +93,21 @@ public class VariablesCodeGenerationDelegate {
 				code = code + "\t\t\t\t\t\tif(transfer_" + name + " == " + frequencyRatio + ") {\n";
 				
 				if(type.equals(ArduinoUnoVariableProperties.CHAR)) {
-					code = code + "\t\t\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%c\"," + transferNumber + ", (loopTime_MS - lastTransferTime_" + name + "), " + name + ");\n";
+					code = code + "\t\t\t\t\t\t\t\tsprintf(serialMessage, \"%d:%c\"," + transferNumber + ", " + name + ");\n";
 				}
 				if(type.equals(ArduinoUnoVariableProperties.INT) || type.equals(ArduinoUnoVariableProperties.BOOL)) {
-					code = code + "\t\t\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\"," + transferNumber + ", (loopTime_MS - lastTransferTime_" + name + "), " + name + ");\n";
+					code = code + "\t\t\t\t\t\t\t\tsprintf(serialMessage, \"%d:%d\"," + transferNumber + ", " + name + ");\n";
 				}
 				if(type.equals(ArduinoUnoVariableProperties.LONG)) {
-					code = code + "\t\t\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%lu\"," + transferNumber + ", (loopTime_MS - lastTransferTime_" + name + "), " + name + ");\n";
+					code = code + "\t\t\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu\"," + transferNumber + ", " + name + ");\n";
 				}
 				if(type.equals(ArduinoUnoVariableProperties.FLOAT)) {
 					code = code + "\t\t\t\t\t\t\t\tdtostre(" + name + ", temporaryBuffer, 6, DTOSTR_ALWAYS_SIGN + DTOSTR_PLUS_SIGN + DTOSTR_UPPERCASE);\n";
-					code = code + "\t\t\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%s\"," + transferNumber + ", (loopTime_MS - lastTransferTime_" + name + "), temporaryBuffer);\n";
+					code = code + "\t\t\t\t\t\t\t\tsprintf(serialMessage, \"%d:%s\"," + transferNumber + ", temporaryBuffer);\n";
 				}
 				
 				code = code + "\t\t\t\t\t\t\t\tSerial.println(serialMessage);\n";
 				if(delay > 0)code = code + "\t\t\t\t\t\t\t\tdelayMicroseconds(" + delay + ");\n";
-				code = code + "\t\t\t\t\t\t\t\tlastTransferTime_" + name + " = loopTime_MS;\n";
 				code = code + "\t\t\t\t\t\t\t\ttransfer_" + name + " = 0;\n";
 				code = code + "\t\t\t\t\t\t}\n";
 				code = code + "\t\t\t\t\t\ttransfer_" + name + " += 1;\n\n";
@@ -167,7 +165,6 @@ public class VariablesCodeGenerationDelegate {
 					temporaryBufferAlreadyDeclared = true;
 				}
 				code = code + "byte transfer_" + name + " = " + frequencyRatio + ";\n";
-				code = code + "unsigned long lastTransferTime_" + name + ";\n";
 			}
 			
 		}

@@ -87,7 +87,7 @@ public class ArduinoUnoChannel extends Channel {
 	@Override
 	public void notifyChannelObservers() {
 		if(notify && channelObserversList != null && channelObserversList.size() > 0) {
-			displayBuffer.put(floatBuffer.get(1));
+			displayBuffer.put(floatBuffer.get(0));
 			if(displayBuffer.remaining() == 0) {
 				for (int i = 0; i < channelObserversList.size(); i++) channelObserversList.get(i).update(displayBuffer, getID());
 				displayBuffer.clear();

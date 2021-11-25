@@ -90,24 +90,14 @@ import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.ExperimentScheduler;
-import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfiguration;
-import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfiguration;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
 public class DataEditor extends EditorPart implements PartNameRefresher, MouseMoveListener {
 	
 	public static String ID = "Docometre.DataEditor";
 	
-//	private static Color RED_COLOR = PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_RED);
-	
 	private InteractiveChart chart;
 
-//	private int currentXMarker = -1;
-//	private int currentYMarker = -1;
-//	
-//	private boolean doubleClick;
-	
-	
 	public DataEditor() {
 		// TODO Auto-generated constructor stub
 	}
@@ -351,26 +341,14 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 
 	private HashMap<String, double[]> createXYDoubleValues(float[] values, double sf, DACQConfiguration dacqConfiguration) {
 		HashMap<String, double[]> xyValues = new HashMap<>();
-		if(dacqConfiguration instanceof ADWinDACQConfiguration) {
-			double[] yDoubleValues = new double[values.length];
-			double[] xDoubleValues = new double[values.length];
-			for (int i = 0; i < yDoubleValues.length; i++) {
-				yDoubleValues[i] = values[i];
-				xDoubleValues[i] = 1.0 * i / sf;
-			}
-			xyValues.put("X", xDoubleValues);
-			xyValues.put("Y", yDoubleValues);
+		double[] yDoubleValues = new double[values.length];
+		double[] xDoubleValues = new double[values.length];
+		for (int i = 0; i < yDoubleValues.length; i++) {
+			yDoubleValues[i] = values[i];
+			xDoubleValues[i] = 1.0 * i / sf;
 		}
-		if(dacqConfiguration instanceof ArduinoUnoDACQConfiguration) {
-			double[] yDoubleValues = new double[values.length / 2];
-			double[] xDoubleValues = new double[values.length / 2];
-			for (int i = 0; i < yDoubleValues.length; i++) {
-				yDoubleValues[i] = values[2*i+1];
-				xDoubleValues[i] = values[2*i] + (i == 0 ? 0 : xDoubleValues[i-1]);
-			}
-			xyValues.put("X", xDoubleValues);
-			xyValues.put("Y", yDoubleValues);
-		}
+		xyValues.put("X", xDoubleValues);
+		xyValues.put("Y", yDoubleValues);
 		return xyValues;
 	}
 

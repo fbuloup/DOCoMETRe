@@ -100,6 +100,7 @@ public final class RTSWTOscilloSerie extends RTSWTSerie {
 	 * @param nbPixels
 	 */
 	private void addValue(double Y, int nbPixels) {
+		if(yValues.length == 0) return;
 		int width = chart.getWidth() - chart.getLeftAxisWidth();
 		double dx = ((RTSWTOscilloChart)chart).getDx();
 		int localCurrentIndex = 0;

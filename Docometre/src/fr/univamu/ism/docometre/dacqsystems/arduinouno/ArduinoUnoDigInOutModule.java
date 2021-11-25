@@ -90,22 +90,18 @@ public class ArduinoUnoDigInOutModule extends Module {
 					code = code + "// ******** Digital input : " + name + "\n";
 					code = code + "unsigned int " + name + ";\n";
 					code = code + "byte acquire_" + name + "_index = " + frequencyRatio + ";\n";
-					code = code + "unsigned long lastAcquireTime_" + name + ";\n\n";
 				} else if(isUsed && !(isInput | isInputPullUp)) {
 					code = code + "// ******** Digital output : " + name + "\n";
 					code = code + "unsigned int " + name + ";\n";
 					code = code + "byte generate_" + name + "_index = " + frequencyRatio + ";\n";
-					code = code + "unsigned long lastGenerateTime_" + name + ";\n\n";
 				}
 			}
 			
 			if (segment == ArduinoUnoCodeSegmentProperties.INITIALIZATION) {
 				if(isUsed && (isInput | isInputPullUp)) {
-					code = code + "\t\tlastAcquireTime_" + name + " = 0;\n";
 					if(isInput) code = code + "\t\tpinMode(" + channelNumber + ", INPUT);\n";
 					if(isInputPullUp) code = code + "\t\tpinMode(" + channelNumber + ", INPUT_PULLUP);\n";
 				} else if(isUsed && !(isInput | isInputPullUp)) {
-					code = code + "\t\tlastGenerateTime_" + name + " = 0;\n";
 					code = code + "\t\tpinMode(" + channelNumber + ", OUTPUT);\n";
 				}
 			}
@@ -117,11 +113,10 @@ public class ArduinoUnoDigInOutModule extends Module {
 					code = code + "\t\t\t\t\t\tacquire_" + name + "_index = 0;\n";
 					code = code + "\t\t\t\t\t\t" + name + " = digitalRead(" + channelNumber + ");\n";
 					if(isTransfered) {
-						code = code + "\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", " + transferNumber + ", (loopTime_MS - lastAcquireTime_" + name + "), " + name + ");\n";
+						code = code + "\t\t\t\t\t\tsprintf(serialMessage, \"%d:%d\", " + transferNumber + ", " + name + ");\n";
 						code = code + "\t\t\t\t\t\tSerial.println(serialMessage);\n";
 						if(delay > 0) code = code + "\t\t\t\t\t\tdelayMicroseconds(" + delay + ");\n";
 					}
-					code = code + "\t\t\t\t\t\tlastAcquireTime_" + name + "= loopTime_MS;\n";
 					code = code + "\t\t\t\t}\n";
 					code = code + "\t\t\t\tacquire_" + name + "_index += 1;\n\n";
 				}
@@ -135,11 +130,10 @@ public class ArduinoUnoDigInOutModule extends Module {
 					code = code + "\t\t\t\t\t\tgenerate_" + name + "_index = 0;\n";
 					code = code + "\t\t\t\t\t\tdigitalWrite(" + channelNumber + ", " + name + ");\n";
 					if(isTransfered) {
-						code = code + "\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", " + transferNumber + ", (loopTime_MS - lastGenerateTime_" + name + "), " + name + ");\n";
+						code = code + "\t\t\t\t\t\tsprintf(serialMessage, \"%d:%d\", " + transferNumber + ", " + name + ");\n";
 						code = code + "\t\t\t\t\t\tSerial.println(serialMessage);\n";
 						if(delay > 0) code = code + "\t\t\t\t\tdelayMicroseconds(" + delay + ");\n";
 					}
-					code = code + "\t\t\t\t\t\tlastGenerateTime_" + name + "= loopTime_MS;\n";
 					code = code + "\t\t\t\t}\n";
 					code = code + "\t\t\t\tgenerate_" + name + "_index += 1;\n\n";
 					

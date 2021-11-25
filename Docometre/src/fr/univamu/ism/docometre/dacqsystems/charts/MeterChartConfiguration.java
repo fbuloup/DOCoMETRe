@@ -252,11 +252,12 @@ public class MeterChartConfiguration extends ChartConfiguration {
 	}
 	
 	public void setVisible(boolean visible) {
-		meterContainer.setVisible(visible);
+		if(meterContainer != null && !meterContainer.isDisposed())meterContainer.setVisible(visible);
 	}
 	
 	public boolean isVisible() {
-		return meterContainer.isVisible();
+		if(meterContainer != null && !meterContainer.isDisposed()) return meterContainer.isVisible();
+		return false;
 	}
 	
 	@Override

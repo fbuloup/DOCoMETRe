@@ -82,6 +82,7 @@ import fr.univamu.ism.docometre.dacqsystems.DocometreBuilder;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.ModuleBehaviour;
 import fr.univamu.ism.docometre.dacqsystems.Process;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinMessages;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.processeditor.ArduinoUnoProcessEditor;
 import fr.univamu.ism.docometre.dacqsystems.ui.DeviceSelectionDialog;
 import fr.univamu.ism.docometre.dacqsystems.ui.DeviceSelectionHandler.DeviceType;
@@ -94,6 +95,8 @@ import jssc.SerialPortList;
 
 @SuppressWarnings("restriction")
 public class ArduinoUnoProcess extends Process {
+	
+	private transient static double displayTimeRate = 0.1; 
 
 	public transient static final long serialVersionUID = DACQConfiguration.serialVersionUID;
 	public transient static String previousINOHexFilePath = "";
@@ -205,21 +208,60 @@ public class ArduinoUnoProcess extends Process {
 		                    if ( (b == '\r' || b == '\n') && message.length() > 0 && !terminate) {
 		                    	String messageString = message.toString().replaceAll("\\r$", "").replaceAll("\\n", "");
 //		                    	System.out.println(messageString);
+//		                    	appendToEventDiary(messageString);
 		                    	message.setLength(0);
 		                    	String[] segments = messageString.split(":");
 		                    	
-		                    	if(segments.length != 3) continue;
-		                    	try {
-									trsfrNum = Integer.parseInt(segments[0]);
-									time = Float.parseFloat(segments[1])/1000000f; 
-									value = Float.parseFloat(segments[2]);
-								} catch (Exception e) {
-									Activator.logErrorMessageWithCause(e);
-									e.printStackTrace();
-									appendToEventDiary("ERROR at " + time + " : " + e.getMessage());
+			                    if(segments.length != 2 && segments.length != 3) {
+			                    	appendToEventDiary("ERROR : wrong segments number (" + segments.length + " instead of 2 or 3) - Parse message : " + messageString);
+									appendErrorMarkerAtCurrentDiaryLine("ERROR");
 									continue;
-								} 
-	                    		
+			                    }
+			                    	
+		                    	if(segments.length == 2) {
+		                    		try {
+										trsfrNum = Integer.parseInt(segments[0]);
+//											time = Float.parseFloat(segments[1])/1000000f; 
+										value = Float.parseFloat(segments[1]);
+									} catch (Exception e) {
+										Activator.logErrorMessageWithCause(e);
+										e.printStackTrace();
+										appendToEventDiary("ERROR : " + e.getMessage() + " - Parse message : " + messageString);
+										appendErrorMarkerAtCurrentDiaryLine("ERROR");
+										PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+											@Override
+											public void run() {
+												StatusLineManager statusLineManger = ((WorkbenchWindow)PlatformUI.getWorkbench().getActiveWorkbenchWindow()).getStatusLineManager();
+												statusLineManger.setErrorMessage(Activator.getImage(IImageKeys.ERROR_ANNOTATION_ICON), ADWinMessages.ProcessDataLoss_Label);
+											}
+										});
+										continue;
+									} 
+		                    	}
+		                    	
+		                    	if(segments.length == 3) {
+		                    		try {
+										trsfrNum = 0;
+//										System.out.println(segments[1]);
+										time = Float.parseFloat(segments[1])/1000000f; 
+										value = Float.parseFloat(segments[2]);
+									} catch (Exception e) {
+										Activator.logErrorMessageWithCause(e);
+										e.printStackTrace();
+										appendToEventDiary("ERROR : " + e.getMessage() + " - Parse message : " + messageString);
+										appendErrorMarkerAtCurrentDiaryLine("ERROR");
+										PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+											@Override
+											public void run() {
+												StatusLineManager statusLineManger = ((WorkbenchWindow)PlatformUI.getWorkbench().getActiveWorkbenchWindow()).getStatusLineManager();
+												statusLineManger.setErrorMessage(Activator.getImage(IImageKeys.ERROR_ANNOTATION_ICON), ADWinMessages.ProcessDataLoss_Label);
+											}
+										});
+										continue;
+									} 
+		                    	}
+
+		                    		
 		                    	if(trsfrNum == 0) {
 
 		                    		timeAfter = System.currentTimeMillis()/1000d;
@@ -247,7 +289,8 @@ public class ArduinoUnoProcess extends Process {
 		                    	} else {
 		                    		try {
 //			                    		timeBefore = System.currentTimeMillis()/1000d;
-										transferedChannelsOrderedByTransferNumber[trsfrNum - 1].addSamples(new float[] {time, value});
+//										transferedChannelsOrderedByTransferNumber[trsfrNum - 1].addSamples(new float[] {time, value});
+										transferedChannelsOrderedByTransferNumber[trsfrNum - 1].addSamples(new float[] {value});
 //		                    			channelName = transferedChannelsOrderedByTransferNumber[trsfrNum - 1].getProperty(ChannelProperties.NAME);
 										nbSamples[trsfrNum - 1] +=1;
 										transferedChannelsOrderedByTransferNumber[trsfrNum - 1].notifyChannelObservers();
@@ -257,10 +300,19 @@ public class ArduinoUnoProcess extends Process {
 									} catch (Exception e) {
 										Activator.logErrorMessageWithCause(e);
 										e.printStackTrace();
-										appendToEventDiary("ERROR at " + time + " : "+ e.getMessage());
+										appendToEventDiary("ERROR : " + e.getMessage() + " - Parse message : " + messageString);
+										appendErrorMarkerAtCurrentDiaryLine("ERROR");
+										PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+											@Override
+											public void run() {
+												StatusLineManager statusLineManger = ((WorkbenchWindow)PlatformUI.getWorkbench().getActiveWorkbenchWindow()).getStatusLineManager();
+												statusLineManger.setErrorMessage(Activator.getImage(IImageKeys.ERROR_ANNOTATION_ICON), ADWinMessages.ProcessDataLoss_Label);
+											}
+										});
 										continue;
 									}
 		                    	}
+			                    
 		                    } else {
 		                    	if(b == 's') {
 		                    		System.out.println("s recieived");
@@ -373,7 +425,7 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "// Loop frequency in Hz\n";
 			code = code + "const unsigned long loopFrequency = " + gf + ";\n\n";
 			code = code + "// Loop period in microsecond\n";
-			code = code + "const unsigned long loopPeriod = (1000000.0/(1.0*loopFrequency));\n\n";
+			code = code + "const float loopPeriod = (1000000.0/(1.0*loopFrequency));\n\n";
 			code = code + "// Percents of loop period in microsecond to compute workload;\n";
 			code = code + "const unsigned long loopPeriod_05 = (int)(05*1000000.0/(100.0*loopFrequency));\n";
 			code = code + "const unsigned long loopPeriod_10 = (int)(10*1000000.0/(100.0*loopFrequency));\n";
@@ -396,15 +448,17 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "const unsigned long loopPeriod_95 = (int)(95*1000000.0/(100.0*loopFrequency));\n\n";
 			code = code + "// Loop workload\n";
 			code = code + "byte workload;\n\n";
-			code = code + "// Loop start time\n";
-			code = code + "unsigned long startTime;\n\n";
+//			code = code + "// Loop start time\n";
+//			code = code + "unsigned long startTime;\n\n";
 			code = code + "// Variables to run process periodically\n";
 			code = code + "long previousLoopTime;\n";
 			code = code + "unsigned long currentLoopTime;\n\n";
-			code = code + "// Loop time in microsecond\n";
-			code = code + "unsigned long loopTime_MS;\n";
+//			code = code + "// Loop time in microsecond\n";
+//			code = code + "unsigned long loopTime_MS;\n";
 			code = code + "// Loop time in second\n";
 			code = code + "double time;\n\n";
+			code = code + "// Loop time in usecond\n";
+			code = code + "unsigned long timeMicros;\n\n";
 			code = code + "// Loop index to compute time\n";
 			code = code + "unsigned long timeIndex;\n\n";
 			code = code + "// Start loop when true\n";
@@ -413,8 +467,10 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "bool terminateProcess = false;\n\n";
 			code = code + "// First loop flag\n";
 			code = code + "bool firstLoop = true;\n\n";
-			code = code + "//String serialMessage\n";
+			code = code + "// String serialMessage\n";
 			code = code + "char serialMessage[64];\n\n";
+			code = code + "// Index to send time and workload at regular intervall (#200ms)\n";
+			code = code + "byte sendTimeWorkload;\n\n";
 			
 			code = code + getCurrentProcess().getScript().getInitializeCode(this, ArduinoUnoCodeSegmentProperties.DECLARATION);
 			code = code + getCurrentProcess().getScript().getLoopCode(this, ArduinoUnoCodeSegmentProperties.DECLARATION);
@@ -438,6 +494,11 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "\t\t// Measured #18.6us which gives a Max Sample freq. of #53kHz\n";
 			code = code + "\t\t// Then ADC is enabled and ADSP[2:0] = 100\n";
 			code = code + "\t\tADCSRA  =  bit (ADEN) | 1*bit (ADPS2) | 0*bit (ADPS1) | 0*bit (ADPS0);\n";
+			
+			double gf = Double.parseDouble(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY));
+			int value = (int)(displayTimeRate*gf);
+			code = code + "\t\tsendTimeWorkload = " + value + ";\n";
+			
 			String baudRate = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.BAUD_RATE);
 			code = code + "\t\tSerial.begin(" + baudRate + ");\n";
 			code = code + "\t\twhile (!startLoop) {\n";
@@ -475,14 +536,14 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "\t\t}\n";
 			code = code + "\t\tcurrentLoopTime = micros();\n";
 			code = code + "\t\tif(firstLoop) {\n";
-			code = code + "\t\t\t// Just to be sure start time is zero\n";
-			code = code + "\t\t\t// (See micro() function doc. 4us or 8us shift)\n";
-			code = code + "\t\t\tstartTime = currentLoopTime;\n";
-			code = code + "\t\t\tpreviousLoopTime = startTime - loopPeriod;\n";
+//			code = code + "\t\t\t// Just to be sure start time is zero\n";
+//			code = code + "\t\t\t// (See micro() function doc. 4us or 8us shift)\n";
+//			code = code + "\t\t\tstartTime = currentLoopTime;\n";
+			code = code + "\t\t\tpreviousLoopTime = - loopPeriod;\n";
 			code = code + "\t\t\tfirstLoop = false;\n";
 			code = code + "\t\t}\n";
 			code = code + "\t\tif(currentLoopTime - previousLoopTime >= loopPeriod) {\n";
-			code = code + "\t\t\t\tloopTime_MS = currentLoopTime - startTime;\n";
+//			code = code + "\t\t\t\tloopTime_MS = currentLoopTime - startTime;\n";
 			code = code + "\t\t\t\ttime = timeIndex*((double)loopPeriod/1000000.0);\n";
 			code = code + "\t\t\t\ttimeIndex++;\n";
 			
@@ -518,10 +579,24 @@ public class ArduinoUnoProcess extends Process {
 		
 		if(segment == ArduinoUnoCodeSegmentProperties.FINALIZATION) {
 			code = code + "\t\t\t\tpreviousLoopTime = micros() - currentLoopTime;\n";
-			code = code + "\t\t\t\tworkload = computeWorkload(previousLoopTime);\n";
-			code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, loopTime_MS, workload);\n";
-			code = code + "\t\t\t\tSerial.println(serialMessage);\n";
-			if(delay > 0) code = code + "\t\t\t\tdelayMicroseconds(" + delay + ");\n";
+			
+			
+			double gf = Double.parseDouble(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY));
+			int value = (int)(displayTimeRate*gf);
+			
+			code = code + "\t\t\t\tif(sendTimeWorkload == " + value + ") {\n";
+			
+			code = code + "\t\t\t\t\t\tworkload = computeWorkload(previousLoopTime);\n";
+//			code = code + "\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, loopTime_MS, workload);\n";
+//			code = code + "\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, 10000.0 /*(unsigned long)(time*1000000)*/, workload);\n";
+			
+			code = code + "\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, (unsigned long)(time*1000000.0), workload);\n";
+			code = code + "\t\t\t\t\t\tSerial.println(serialMessage);\n";
+			code = code + "\t\t\t\t\t\tsendTimeWorkload = 0;\n";
+			if(delay > 0) code = code + "\t\t\t\t\t\tdelayMicroseconds(" + delay + ");\n";
+			
+			code = code + "\t\t\t\t}\n";
+			code = code + "\t\t\t\tsendTimeWorkload++;\n";
 			code = code + "\t\t\t\tpreviousLoopTime = currentLoopTime;\n";
 			code = code + "\t\t}\n";
 			
@@ -597,23 +672,25 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "\t\tif(computeTime <= loopPeriod) return 100;\n";
 			code = code + "\t\tif(computeTime > loopPeriod) return 200;\n";
 			code = code + "}\n\n";
-			code = code + "unsigned int acquireAnalogInput(byte inputNumber, unsigned long *lastAcquisitionTime, bool transfert, byte transferNumber) {\n";
+			code = code + "unsigned int acquireAnalogInput(byte inputNumber, bool transfert, byte transferNumber) {\n";
 			//code = code + "\t\t//unsigned long dt = micros();\n";
 			code = code + "\t\tint value = analogRead(inputNumber);\n";
 			//code = code + "\t\t//dt = micros() - dt;\n";
 			//code = code + "\t\t//Serial.println(dt);\n";
 			//code = code + "\t\t//serialMessage = String(inputNumber) + \":\" + String(loopTime - *lastAcquisitionTime) + \":\" + String(value);\n";
 			code = code + "\t\tif(transfert) {\n";
-			code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", transferNumber, (loopTime_MS - *lastAcquisitionTime), value);\n";
+//			code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", transferNumber, (loopTime_MS - *lastAcquisitionTime), value);\n";
+			
+			code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%d\", transferNumber, value);\n";
+			
 			code = code + "\t\t\t\tSerial.println(serialMessage);\n";
 			if(delay > 0)code = code + "\t\t\t\tdelayMicroseconds(" + delay + ");\n";
 			code = code + "\t\t}\n";
-			code = code + "\t\t*lastAcquisitionTime = loopTime_MS;\n";
 			code = code + "\t\treturn value;\n";
 			code = code + "}\n";
 			
 			if(((ArduinoUnoDACQConfiguration)getDACQConfiguration()).hasADS1115Module()) {
-				code = code + "unsigned int acquireADS1115AnalogInput(byte inputNumber, unsigned long *lastAcquisitionTime, bool transfert, byte transferNumber, ADS1115 ads1115, int gain) {\n";
+				code = code + "unsigned int acquireADS1115AnalogInput(byte inputNumber, bool transfert, byte transferNumber, ADS1115 ads1115, int gain) {\n";
 				//code = code + "\t\t//unsigned long dt = micros();\n";
 				code = code + "\t\tads1115.setGain(gain);\n";
 				code = code + "\t\tint value = ads1115.readADC(inputNumber);\n";
@@ -621,11 +698,10 @@ public class ArduinoUnoProcess extends Process {
 				//code = code + "\t\t//Serial.println(dt);\n";
 				//code = code + "\t\t//serialMessage = String(inputNumber) + \":\" + String(loopTime - *lastAcquisitionTime) + \":\" + String(value);\n";
 				code = code + "\t\tif(transfert) {\n";
-				code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", transferNumber, (loopTime_MS - *lastAcquisitionTime), value);\n";
+				code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%d\", transferNumber, value);\n";
 				code = code + "\t\t\t\tSerial.println(serialMessage);\n";
 				if(delay > 0)code = code + "\t\t\t\tdelayMicroseconds(" + delay + ");\n";
 				code = code + "\t\t}\n";
-				code = code + "\t\t*lastAcquisitionTime = loopTime_MS;\n";
 				code = code + "\t\treturn value;\n";
 				code = code + "}\n";
 			}
