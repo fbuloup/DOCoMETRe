@@ -3,27 +3,41 @@
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-	<title>Main Topic</title>
+	<title>General consideration on micro-controllers</title>
 </head>
 
 <body>
-<h1>Timing consideration</h1>
+<h1>General consideration on micro-controllers</h1>
 
 <p>
-With Arduino Uno systems, the real time loop precision is not so good. It means that timing control
-is not so precise as we could expect because a slow but stable time drift is occuring. Main reason comes from the fact that micros()
-instruction takes at less 1<span>&#181;</span>s (see <a href="https://www.arduino.cc/reference/en/language/functions/time/micros/">here</a> for more info) :
+With Arduino Uno boards, the real time loop precision is not as good as the Portenta Machine Control or the ADwin systems ones because ATMega328 is driven by a ceramic resonator.
+Crystal resonators are much more stable and the crystal used on Arduino Uno is for ATMega16 which control USB and ICSP buses.
+Moreover timing instructions like <b>micros()</b> are not so precise as we could expect because a slow but sure time drift could occur when playing with these instructions. 
+Main reason comes from the fact that <b>micros()</b> instruction takes at less 4<span>&#181;</span>s :
 </p>
 <ul>
-  <li>1<span>&#181;</span>s with Portenta family</li>
   <li>4<span>&#181;</span>s with 16MHz Arduino boards </li>
   <li>8<span>&#181;</span>s with 8MHz Arduino boards </li>
 </ul>
 <p>
-These values are not so big but for a long time running operation, drift could grow up to more than several milliseconds. If you cannot deal with this timing drift,
-please consider to use Portenta Machine Control or ADWin Systems. I've not been able to see any timing drift with ADWin Systems for real time loop running several minutes.  
+These values are not so big but for a long running operation, drift could grow up to more than several milliseconds if timing is based on these instructions.
+I've not been able to see any timing drift with ADWin Systems for real time loop running several minutes.
+In order to minimize this effect in Docometre with Arduino Uno board, timing is computed from the number of the real time loop event : an index incremented each time the <b>loop()</b> method is called.
+Doing so, the only variability comes from the ceramic resonator. If you cannot deal with this, please consider to use Portenta Machine Control or ADWin Systems.
 </p>
 
+<p>Another bullet point on microcontrollers : they are not Digital Signal Processors and it is a common practice to avoid floating point calculation in order to increase real time speed capability.
+This is why you won't find any calibration tools in Docometre when you work with Arduino Uno. 
+</p>
+
+<p> References :
+</p>
+
+<ul>
+<li><a href="https://content.arduino.cc/assets/UNO-TH_Rev3e_sch.pdf?_gl=1*113ejni*_ga*MTQxMTE1NzcxMy4xNjM3MDU0NzE2*_ga_NEXN8H46L5*MTYzNzg1MzQzMi4xOC4xLjE2Mzc4NTM4MTcuMA..">Arduino Uno schematic</a></li>
+<li><a href="https://www.arduino.cc/reference/en/language/functions/time/micros/"><b>micros()</b> instruction</a></li>
+<li><a href="https://www.arduino.cc/en/pmwiki.php?n=Reference/Float" target="_blank" rel="noopener noreferrer">On the use of float with microcontrollers</a></li>
+</ul>
 
 </body>
 </html>
