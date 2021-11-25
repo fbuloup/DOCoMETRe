@@ -470,7 +470,7 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "// String serialMessage\n";
 			code = code + "char serialMessage[64];\n\n";
 			code = code + "// Index to send time and workload at regular intervall (#200ms)\n";
-			code = code + "byte sendTimeWorkload;\n\n";
+			code = code + "unsigned long sendTimeWorkload;\n\n";
 			
 			code = code + getCurrentProcess().getScript().getInitializeCode(this, ArduinoUnoCodeSegmentProperties.DECLARATION);
 			code = code + getCurrentProcess().getScript().getLoopCode(this, ArduinoUnoCodeSegmentProperties.DECLARATION);
