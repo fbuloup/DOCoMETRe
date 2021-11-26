@@ -453,8 +453,8 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "// Variables to run process periodically\n";
 			code = code + "long previousLoopTime;\n";
 			code = code + "unsigned long currentLoopTime;\n\n";
-//			code = code + "// Loop time in microsecond\n";
-//			code = code + "unsigned long loopTime_MS;\n";
+			code = code + "// Try to compensate time drift\n";
+			code = code + "long delta;\n";
 			code = code + "// Loop time in second\n";
 			code = code + "double time;\n\n";
 			code = code + "// Loop time in usecond\n";
@@ -526,26 +526,17 @@ public class ArduinoUnoProcess extends Process {
 		
 		if(segment == ArduinoUnoCodeSegmentProperties.ACQUISITION) {
 			
-			code = "}\n\nvoid loop() {\n";
-			
+			code = "}\n\nISR(TIMER1_COMPA_vect){\n";
+			code = code + "\t\t// Reset timer 0 for workload computation\n";
+			code = code + "\t\tTCNT0 = 0;\n";
 			code = code + "\t\t// If we receive 's'(top) from serial port,\n";
 			code = code + "\t\t// then force process termination\n";
 			code = code + "\t\tif(Serial.available()) {\n";
 			code = code + "\t\t\t\tstartLoop = ((char)Serial.read()) != 's';\n";
 			code = code + "\t\t\t\tif(!startLoop ) terminateProcess = true;\n";
 			code = code + "\t\t}\n";
-			code = code + "\t\tcurrentLoopTime = micros();\n";
-			code = code + "\t\tif(firstLoop) {\n";
-//			code = code + "\t\t\t// Just to be sure start time is zero\n";
-//			code = code + "\t\t\t// (See micro() function doc. 4us or 8us shift)\n";
-//			code = code + "\t\t\tstartTime = currentLoopTime;\n";
-			code = code + "\t\t\tpreviousLoopTime = - loopPeriod;\n";
-			code = code + "\t\t\tfirstLoop = false;\n";
-			code = code + "\t\t}\n";
-			code = code + "\t\tif(currentLoopTime - previousLoopTime >= loopPeriod) {\n";
-//			code = code + "\t\t\t\tloopTime_MS = currentLoopTime - startTime;\n";
-			code = code + "\t\t\t\ttime = timeIndex*((double)loopPeriod/1000000.0);\n";
-			code = code + "\t\t\t\ttimeIndex++;\n";
+			code = code + "\t\ttime = timeIndex*((double)loopPeriod/1000000.0);\n";
+			code = code + "\t\ttimeIndex++;\n";
 			
 			code = code + getCurrentProcess().getScript().getInitializeCode(this, ArduinoUnoCodeSegmentProperties.ACQUISITION);
 			code = code + getCurrentProcess().getScript().getLoopCode(this, ArduinoUnoCodeSegmentProperties.ACQUISITION);
@@ -578,27 +569,23 @@ public class ArduinoUnoProcess extends Process {
 		}
 		
 		if(segment == ArduinoUnoCodeSegmentProperties.FINALIZATION) {
-			code = code + "\t\t\t\tpreviousLoopTime = micros() - currentLoopTime;\n";
-			
 			
 			double gf = Double.parseDouble(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY));
 			int value = (int)(displayTimeRate*gf);
 			
-			code = code + "\t\t\t\tif(sendTimeWorkload == " + value + ") {\n";
+			code = code + "\t\tif(sendTimeWorkload == " + value + ") {\n";
 			
-			code = code + "\t\t\t\t\t\tworkload = computeWorkload(previousLoopTime);\n";
+			code = code + "\t\t\t\tworkload = computeWorkload(TCNT0*4);\n";
 //			code = code + "\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, loopTime_MS, workload);\n";
 //			code = code + "\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, 10000.0 /*(unsigned long)(time*1000000)*/, workload);\n";
 			
-			code = code + "\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, (unsigned long)(time*1000000.0), workload);\n";
-			code = code + "\t\t\t\t\t\tSerial.println(serialMessage);\n";
-			code = code + "\t\t\t\t\t\tsendTimeWorkload = 0;\n";
-			if(delay > 0) code = code + "\t\t\t\t\t\tdelayMicroseconds(" + delay + ");\n";
+			code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, (unsigned long)(time*1000000.0), workload);\n";
+			code = code + "\t\t\t\tSerial.println(serialMessage);\n";
+			if(delay > 0) code = code + "\t\t\t\tdelayMicroseconds(" + delay + ");\n";
+			code = code + "\t\t\t\tsendTimeWorkload = 0;\n";
 			
-			code = code + "\t\t\t\t}\n";
-			code = code + "\t\t\t\tsendTimeWorkload++;\n";
-			code = code + "\t\t\t\tpreviousLoopTime = currentLoopTime;\n";
 			code = code + "\t\t}\n";
+			code = code + "\t\tsendTimeWorkload++;\n\n";
 			
 			code = code + "\t\tif(terminateProcess) {\n";
 			code = code + "\t\t\t\tfinalize();\n";
@@ -621,13 +608,17 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "\n\t\t// ******** Fin algorithme finalisation\n\n";
 			
 			code = code + "\t\tSerial.println('s');\n";
-			code = code + "\t\tdelay(20);// Just to be sure stop char has been sent\n";
+			if(delay > 0) code = code + "\t\t\t\t\t\tdelayMicroseconds(" + delay + ");\n";
 			code = code + "\t\t// Now wait to receive 's' char before board restart\n";
 			code = code + "\t\twhile (startLoop) {\n";
 			code = code + "\t\t\t\tif(Serial.available()) {\n";
 			code = code + "\t\t\t\t\t\tstartLoop = ((char)Serial.read()) != 's';\n";
-			code = code + "\t\t}\n";
+			code = code + "\t\t\t\t}\n";
+			code = code + "\t\t}\n\n";
 			code = code + "}\n\n";
+
+			code = code + "void loop() {\n";
+			code = code + "\t\t// Nothing to do !\n";
 			code = code + "}\n\n";
 			
 			
@@ -796,6 +787,35 @@ public class ArduinoUnoProcess extends Process {
 				code = code + "\t\t// ******** Début algorithme initialisation\n\n";
 				code = code + getCurrentProcess().getScript().getInitializeCode(this, ScriptSegmentType.INITIALIZE);
 				code = code + "\t\t// ******** Fin algorithme initialisation\n\n";
+				code = code + "\t\t// Disable interrupts\n";
+				code = code + "\t\tcli();\n";
+				code = code + "\t\t// Timer 0 is used to compute workload\n";
+				code = code + "\t\t// As prescaler is set to 64, each count is 4us\n";
+				code = code + "\t\tTCCR0A = 0;\n";
+				code = code + "\t\tTCCR0B = 0;\n";
+				code = code + "\t\tTCNT0 = 0;\n";
+				code = code + "\t\tTCCR0B |= (1 << CS01) | (1 << CS00);\n";
+				double gf = Double.parseDouble(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY));
+				int[] values = computePrescaleAndCmpValues(gf); 
+				code = code + "\t\t// Set timer1 interrupt at " + gf +"Hz\n";
+				code = code + "\t\tTCCR1A = 0;// set entire TCCR2A register to 0\n";
+				code = code + "\t\tTCCR1B = 0;// same for TCCR2B\n";
+				code = code + "\t\tTCNT1  = 0;//initialize counter value to 0\n";
+				code = code + "\t\t// Set compare match register for " + gf + "Hz increments\n";
+				code = code + "\t\tOCR1A = " + values[1] +";// = (16*10^6) / (" + gf + "*" + values[0] + ") - 1 (must be <65535)\n";
+				code = code + "\t\t// CTC mode\n";
+				code = code + "\t\tTCCR1B |= (1 << WGM12);\n";
+				code = code + "\t\t// Set prescaler CS11 and CS10 bits to "+ values[0] +"\n";
+				if(values[0] == 1) code = code + "\t\tTCCR1B |= (1 << CS10);\n";;
+				if(values[0] == 8) code = code + "\t\tTCCR1B |= (1 << CS11);\n";;
+				if(values[0] == 64) code = code + "\t\tTCCR1B |= (1 << CS11) | (1 << CS10);\n";;
+				if(values[0] == 256) code = code + "\t\tTCCR1B |= (1 << CS12);\n";;
+				if(values[0] == 1024) code = code + "\t\tTCCR1B |= (1 << CS12) | (1 << CS10);\n";;
+				code = code + "\t\t// Enable timer compare interrupt\n";
+				code = code + "\t\tTIMSK1 |= (1 << OCIE1A);\n";
+				code = code + "\t\t// Enable interrupts\n";
+				code = code + "\t\tsei();\n";
+				
 			}
 			if(segments[i].equals(ArduinoUnoCodeSegmentProperties.TRANSFER)) {
 				// Variables transfer
@@ -803,9 +823,9 @@ public class ArduinoUnoProcess extends Process {
 			}
 			
 			if (segments[i] == ArduinoUnoCodeSegmentProperties.LOOP){
-				code = code + "\t\t\t\t// ******** Début algorithme boucle\n\n";
+				code = code + "\t\t// ******** Début algorithme boucle\n\n";
 				code = code + getCurrentProcess().getScript().getLoopCode(this, ScriptSegmentType.LOOP);
-				code = code + "\n\t\t\t\t// ******** Fin algorithme boucle\n\n";
+				code = code + "\n\t\t// ******** Fin algorithme boucle\n\n";
 			}
 			
 //			if (segments[i] == ArduinoUnoCodeSegmentProperties.FINALIZATION){
@@ -825,6 +845,23 @@ public class ArduinoUnoProcess extends Process {
 		}
 		
 		return code;
+	}
+	
+	private int[] computePrescaleAndCmpValues(double gf) {
+		double prescaleValue = 0;
+		double cmpValue = 0;
+		for (int i = 0; i < 5; i++) {
+			if(i == 0) prescaleValue = 1;
+			if(i == 1) prescaleValue = 8;
+			if(i == 2) prescaleValue = 64;
+			if(i == 3) prescaleValue = 256;
+			if(i == 4) prescaleValue = 1024;
+			cmpValue = 16000000.0/(prescaleValue*gf) - 1;
+			if ((cmpValue == Math.floor(cmpValue)) && !Double.isInfinite(cmpValue) && cmpValue < 65536) {
+			    return new int[] {(int) prescaleValue, (int) cmpValue};
+			} 
+		}
+		return new int[] {0, 0};
 	}
 
 	@Override

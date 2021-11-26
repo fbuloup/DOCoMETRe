@@ -101,11 +101,11 @@ public class ArduinoUnoAnInModule extends Module {
 			
 			if (segment == ArduinoUnoCodeSegmentProperties.ACQUISITION) {
 				if(isUsed) {
-					code = code + "\n\t\t\t\tif(acquire_" + name + "_index == " + frequencyRatio + ") {\n";
-					code = code + "\t\t\t\t\tacquire_" + name + "_index = 0;\n";
-					code = code + "\t\t\t\t\t" + name + " = acquireAnalogInput(" + channelNumber + ", " + transfer + ", " + transferNumber + ");\n";
-					code = code + "\t\t\t\t}\n";
-					code = code + "\t\t\t\tacquire_" + name + "_index += 1;\n\n";
+					code = code + "\n\t\tif(acquire_" + name + "_index == " + frequencyRatio + ") {\n";
+					code = code + "\t\t\t\tacquire_" + name + "_index = 0;\n";
+					code = code + "\t\t\t\t" + name + " = acquireAnalogInput(" + channelNumber + ", " + transfer + ", " + transferNumber + ");\n";
+					code = code + "\t\t}\n";
+					code = code + "\t\tacquire_" + name + "_index += 1;\n\n";
 					
 				}
 			}
