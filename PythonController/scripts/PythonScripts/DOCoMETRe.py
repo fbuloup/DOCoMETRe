@@ -124,8 +124,8 @@ class DOCoMETRe(object):
 			# Read data
 			data = numpy.fromfile(dataFiles[n], dtype="float32");
 			
-			if system == "Arduino UNO":
-				data = data[1::2];
+			#if system == "Arduino UNO":
+			#	data = data[1::2];
 
 			sizeData = len(data);
 			#if(jvmMode): self.gateway.jvm.System.out.println("sizeData : " + str(sizeData));
@@ -309,11 +309,11 @@ if __name__ == "__main__":
 		
 		loadName = "ReachabilityCoriolis.PreTestFull";
 
-		fileHandle = io.open("./tests/dataFilesList.txt", "r", encoding="utf-8");		
+		fileHandle = io.open("./tests/dataFilesList2.txt", "r", encoding="utf-8");		
 		dataFilesList = fileHandle.read();
 		fileHandle.close();
 		
-		fileHandle = io.open("./tests/sessionsProperties.txt", "r", encoding="utf-8");		
+		fileHandle = io.open("./tests/sessionsProperties2.txt", "r", encoding="utf-8");		
 		sessionPropertiesString = fileHandle.read();
 		sessionProperties = eval(sessionPropertiesString);
 		fileHandle.close();
