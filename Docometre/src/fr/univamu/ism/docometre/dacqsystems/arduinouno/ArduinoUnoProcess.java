@@ -263,7 +263,8 @@ public class ArduinoUnoProcess extends Process {
 
 		                    		
 		                    	if(trsfrNum == 0) {
-
+		                    		realTime = time;
+		                    		workload = value;
 		                    		timeAfter = System.currentTimeMillis()/1000d;
 		                    		if(timeAfter - timeBefore > 1) {
 		                    			String name;
@@ -273,11 +274,10 @@ public class ArduinoUnoProcess extends Process {
 		                    				nb = nbSamples[n];
 		                    				appendToEventDiary(name + " : " + nb);
 										}
+		                    			appendToEventDiary("At : " + formater.format(realTime) + "s - Workload : " + workload);
 			                    		timeBefore = timeAfter;
 		                    		}
-		                    		
-		                    		realTime = time;
-		                    		workload = value;
+									
 			    					PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
 										@Override
 			    						public void run() {
@@ -581,6 +581,7 @@ public class ArduinoUnoProcess extends Process {
 			
 			code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, (unsigned long)(time*1000000.0), workload);\n";
 			code = code + "\t\t\t\tSerial.println(serialMessage);\n";
+			code = code + "\t\t\t\tSerial.flush();\n";
 			if(delay > 0) code = code + "\t\t\t\tdelayMicroseconds(" + delay + ");\n";
 			code = code + "\t\t\t\tsendTimeWorkload = 0;\n";
 			
@@ -608,6 +609,7 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "\n\t\t// ******** Fin algorithme finalisation\n\n";
 			
 			code = code + "\t\tSerial.println('s');\n";
+			code = code + "\t\tSerial.flush();\n";
 			if(delay > 0) code = code + "\t\t\t\t\t\tdelayMicroseconds(" + delay + ");\n";
 			code = code + "\t\t// Now wait to receive 's' char before board restart\n";
 			code = code + "\t\twhile (startLoop) {\n";
@@ -675,6 +677,7 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%d\", transferNumber, value);\n";
 			
 			code = code + "\t\t\t\tSerial.println(serialMessage);\n";
+			code = code + "\t\t\t\tSerial.flush();\n";
 			if(delay > 0)code = code + "\t\t\t\tdelayMicroseconds(" + delay + ");\n";
 			code = code + "\t\t}\n";
 			code = code + "\t\treturn value;\n";
@@ -691,6 +694,7 @@ public class ArduinoUnoProcess extends Process {
 				code = code + "\t\tif(transfert) {\n";
 				code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%d\", transferNumber, value);\n";
 				code = code + "\t\t\t\tSerial.println(serialMessage);\n";
+				code = code + "\t\t\t\tSerial.flush();\n";
 				if(delay > 0)code = code + "\t\t\t\tdelayMicroseconds(" + delay + ");\n";
 				code = code + "\t\t}\n";
 				code = code + "\t\treturn value;\n";
@@ -848,20 +852,45 @@ public class ArduinoUnoProcess extends Process {
 	}
 	
 	private int[] computePrescaleAndCmpValues(double gf) {
+		double[] cmpValues = new double[5];
 		double prescaleValue = 0;
-		double cmpValue = 0;
 		for (int i = 0; i < 5; i++) {
 			if(i == 0) prescaleValue = 1;
 			if(i == 1) prescaleValue = 8;
 			if(i == 2) prescaleValue = 64;
 			if(i == 3) prescaleValue = 256;
 			if(i == 4) prescaleValue = 1024;
-			cmpValue = 16000000.0/(prescaleValue*gf) - 1;
-			if ((cmpValue == Math.floor(cmpValue)) && !Double.isInfinite(cmpValue) && cmpValue < 65536) {
-			    return new int[] {(int) prescaleValue, (int) cmpValue};
-			} 
+			cmpValues[i] = 16000000.0/(prescaleValue*gf) - 1;
+			if ((cmpValues[i] == Math.floor(cmpValues[i])) && !Double.isInfinite(cmpValues[i]) && cmpValues[i] < 65536) {
+			    return new int[] {(int) prescaleValue, (int) cmpValues[i]};
+			} else {
+				
+			}
 		}
-		return new int[] {0, 0};
+		// Default return result from prescaler and counter value with nearest sampling frequency
+		int selectedCmpValue = 0;
+		int selectedPrescaler = 0;
+		if(cmpValues[0] < 65536) {
+			selectedPrescaler = 1;
+			selectedCmpValue = (int) cmpValues[0];
+		} else if(cmpValues[1] < 65536) {
+			selectedPrescaler = 8;
+			selectedPrescaler = (int) cmpValues[1];
+		} else if(cmpValues[2] < 65536) {
+			selectedPrescaler = 64;
+			selectedCmpValue = (int) cmpValues[2];
+		} else if(cmpValues[3] < 65536) {
+			selectedPrescaler = 256;
+			selectedCmpValue = (int) cmpValues[3];
+		} else if(cmpValues[4] < 65536) {
+			selectedPrescaler = 1024;
+			selectedCmpValue = (int) cmpValues[4];
+		} 
+		Activator.logWarningMessage(NLS.bind(ArduinoUnoMessages.gfNotMatchMessage1, gf));
+		double f = 16000000.0/(selectedPrescaler*(selectedCmpValue + 1));
+		Activator.logWarningMessage(NLS.bind(ArduinoUnoMessages.gfNotMatchMessage2, new Object[] {f, selectedPrescaler, selectedCmpValue}));
+		Activator.logWarningMessage(ArduinoUnoMessages.gfNotMatchMessage3);
+		return new int[] {selectedCmpValue,selectedPrescaler};
 	}
 
 	@Override

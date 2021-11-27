@@ -177,7 +177,7 @@ public class Activator extends AbstractUIPlugin {
 	 * Log messages (info, error or warning)
 	 */
 	public static void logErrorMessage(String message) {
-		IStatus status = new Status(IStatus.ERROR, PLUGIN_ID, message);
+		IStatus status = new Status(IStatus.ERROR, "Error", message);
 		getDefault().getLog().log(status);
 	}
 	
@@ -235,7 +235,7 @@ public class Activator extends AbstractUIPlugin {
 	 * Log messages (info, error or warning)
 	 */
 	public static void logWarningMessage(String message) {
-		IStatus status = new Status(IStatus.WARNING, PLUGIN_ID, message);
+		IStatus status = new Status(IStatus.WARNING, "Warning", message);
 		getDefault().getLog().log(status);
 //		if(PlatformUI.isWorkbenchRunning())
 //		MessageDialog.openError(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "WARNING", message);

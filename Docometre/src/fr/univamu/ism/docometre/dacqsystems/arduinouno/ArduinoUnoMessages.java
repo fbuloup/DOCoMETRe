@@ -157,6 +157,13 @@ public class ArduinoUnoMessages extends NLS {
 	 * Refresh device selection dialog
 	 */
 	public static String Refresh;
+	
+	/*
+	 * Global frequency not match
+	 */
+	public static String gfNotMatchMessage1;
+	public static String gfNotMatchMessage2;
+	public static String gfNotMatchMessage3;
 
 	/*
 	 * AD1115 module 
