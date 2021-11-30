@@ -69,9 +69,9 @@ public final class ArduinoUnoAnInChannelProperties extends Property {
 		
 		C'est seulement en mode différentiel que l'on peut mesurer des tensions négatives.
 	*/											
-	public static final ArduinoUnoAnInChannelProperties GAIN = new ArduinoUnoAnInChannelProperties("ArduinoUnoAnInChannelProperties.GAIN", ArduinoUnoMessages.Gain_Label, ArduinoUnoMessages.Gain_Tooltip, "^(0|1|2|4|8|16)$", "0:1:2:4:8:16");
+	public static final ArduinoUnoAnInChannelProperties GAIN = new ArduinoUnoAnInChannelProperties("ArduinoUnoAnInChannelProperties.GAIN", ArduinoUnoMessages.Gain_Label, ArduinoUnoMessages.Gain_Tooltip, "^(2/3|1|2|4|8|16)$", "2/3:1:2:4:8:16");
 	
-	public static String GAIN_0 = "0";
+	public static String GAIN_0 = "2/3";
 	public static String GAIN_1 = "1";
 	public static String GAIN_2 = "2";
 	public static String GAIN_4 = "4";
@@ -84,7 +84,7 @@ public final class ArduinoUnoAnInChannelProperties extends Property {
 		if(GAIN_1.equals(gain)) return (float) 4.096;
 		if(GAIN_2.equals(gain)) return (float) 2.048;
 		if(GAIN_4.equals(gain)) return (float) 1.024;
-		if(GAIN_0.equals(gain)) return (float) 0.512;
+		if(GAIN_8.equals(gain)) return (float) 0.512;
 		if(GAIN_16.equals(gain)) return (float) 0.256;
 		return 0;
 	}
