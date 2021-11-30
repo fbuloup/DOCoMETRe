@@ -498,8 +498,10 @@ public class ArduinoUnoProcess extends Process {
 			double gf = Double.parseDouble(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY));
 			int value = (int)(displayTimeRate*gf);
 			code = code + "\t\tsendTimeWorkload = " + value + ";\n";
-			code = code + "\t\t// Start I2C interface\n";
-			code = code + "\t\tWire.begin();\n";
+			if(((ArduinoUnoDACQConfiguration)getDACQConfiguration()).hasADS1115Module()) {
+				code = code + "\t\t// Start I2C interface\n";
+				code = code + "\t\tWire.begin();\n";
+			}
 			String baudRate = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.BAUD_RATE);
 			code = code + "\t\tSerial.begin(" + baudRate + ");\n";
 			code = code + "\t\twhile (!startLoop) {\n";
