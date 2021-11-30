@@ -498,7 +498,8 @@ public class ArduinoUnoProcess extends Process {
 			double gf = Double.parseDouble(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY));
 			int value = (int)(displayTimeRate*gf);
 			code = code + "\t\tsendTimeWorkload = " + value + ";\n";
-			
+			code = code + "\t\t// Start I2C interface\n";
+			code = code + "\t\tWire.begin();\n";
 			String baudRate = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.BAUD_RATE);
 			code = code + "\t\tSerial.begin(" + baudRate + ");\n";
 			code = code + "\t\twhile (!startLoop) {\n";
@@ -684,20 +685,33 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "}\n";
 			
 			if(((ArduinoUnoDACQConfiguration)getDACQConfiguration()).hasADS1115Module()) {
-				code = code + "unsigned int acquireADS1115AnalogInput(byte inputNumber, bool transfert, byte transferNumber, ADS1115 ads1115, int gain) {\n";
-				//code = code + "\t\t//unsigned long dt = micros();\n";
-				code = code + "\t\tads1115.setGain(gain);\n";
-				code = code + "\t\tint value = ads1115.readADC(inputNumber);\n";
-				//code = code + "\t\t//dt = micros() - dt;\n";
-				//code = code + "\t\t//Serial.println(dt);\n";
-				//code = code + "\t\t//serialMessage = String(inputNumber) + \":\" + String(loopTime - *lastAcquisitionTime) + \":\" + String(value);\n";
+				code = code + "unsigned int acquireADS1115AnalogInput(int moduleAddress, byte inputNumber, byte gain, byte frequency, bool transfert, byte transferNumber) {\n";
+				code = code + "\t\tint wordValue = 0;\n";
+				code = code + "\t\tinterrupts();\n";
+				code = code + "\t\tWire.beginTransmission(moduleAddress);\n";
+				code = code + "\t\tWire.write(0b00000001);\n";
+				code = code + "\t\tbyte message = 0b11 << 6 | inputNumber << 4 | gain << 1 | 1;\n";
+				code = code + "\t\tWire.write(message);\n";
+				code = code + "\t\tmessage = frequency << 5 | 3;\n";
+				code = code + "\t\tWire.write(message);\n";
+				code = code + "\t\tWire.endTransmission(true);\n";
+				code = code + "\t\tWire.beginTransmission(moduleAddress);\n";
+				code = code + "\t\tWire.write(0b00000000);\n";
+				code = code + "\t\tWire.endTransmission(true);\n";
+				code = code + "\t\tWire.requestFrom(moduleAddress, 2, true);\n";
+				code = code + "\t\tif(Wire.available() == 2) {\n";
+				code = code + "\t\t\t\twordValue = Wire.read();\n";
+				code = code + "\t\t\t\twordValue = wordValue << 8 | Wire.read();\n";
+				code = code + "\t\t}\n";
+				code = code + "\t\tWire.endTransmission();\n";
+				code = code + "\t\t noInterrupts();\n";
 				code = code + "\t\tif(transfert) {\n";
-				code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%d\", transferNumber, value);\n";
+				code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%d\", transferNumber, wordValue);\n";
 				code = code + "\t\t\t\tSerial.println(serialMessage);\n";
 				code = code + "\t\t\t\tSerial.flush();\n";
 				if(delay > 0)code = code + "\t\t\t\tdelayMicroseconds(" + delay + ");\n";
 				code = code + "\t\t}\n";
-				code = code + "\t\treturn value;\n";
+				code = code + "\t\treturn wordValue;\n";
 				code = code + "}\n";
 			}
 			
