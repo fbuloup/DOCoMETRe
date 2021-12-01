@@ -577,8 +577,9 @@ public class ArduinoUnoProcess extends Process {
 			int value = (int)(displayTimeRate*gf);
 			
 			code = code + "\t\tif(sendTimeWorkload == " + value + ") {\n";
-			
-			code = code + "\t\t\t\tworkload = computeWorkload(TCNT0*4);\n";
+			int prescaler = computeCounter0Prescaler(gf);
+			double dt = 1/(16000000.0/prescaler)*1000000;
+			code = code + "\t\t\t\tworkload = computeWorkload(TCNT0*" + dt + ");\n";
 //			code = code + "\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, loopTime_MS, workload);\n";
 //			code = code + "\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, 10000.0 /*(unsigned long)(time*1000000)*/, workload);\n";
 			
@@ -810,18 +811,25 @@ public class ArduinoUnoProcess extends Process {
 				code = code + "\t\t// Disable interrupts\n";
 				code = code + "\t\tcli();\n";
 				code = code + "\t\t// Timer 0 is used to compute workload\n";
-				code = code + "\t\t// As prescaler is set to 64, each count is 4us\n";
-				code = code + "\t\tTCCR0A = 0;\n";
-				code = code + "\t\tTCCR0B = 0;\n";
-				code = code + "\t\tTCNT0 = 0;\n";
-				code = code + "\t\tTCCR0B |= (1 << CS01) | (1 << CS00);\n";
 				double gf = Double.parseDouble(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY));
+				int prescaler = computeCounter0Prescaler(gf);
+				double dt = 1/(16000000.0/prescaler)*1000000;
+				code = code + "\t\t// Prescaler is set to " + prescaler + ", each count is " + dt + "us\n";
+				code = code + "\t\t// Prescaler can take 1, 8, 64, 256 or 1024\n";
+				code = code + "\t\t// Prescaler >= 16*10^6/(250*" + gf + ") in order to have max 250 counts in realtime loop\n";
+				code = code + "\t\tTCCR0A = 0;\n";
+				code = code + "\t\tTCNT0 = 0;\n";
+				if(prescaler == 1) code = code + "\t\tTCCR0B = (1 << CS00);\n";
+				if(prescaler == 8) code = code + "\t\tTCCR0B = (1 << CS01);\n";
+				if(prescaler == 64) code = code + "\t\tTCCR0B = (1 << CS01) | (1 << CS00);\n";
+				if(prescaler == 256) code = code + "\t\tTCCR0B = (1 << CS02);\n";
+				if(prescaler == 1024) code = code + "\t\tTCCR0B = (1 << CS02) | (1 << CS00);\n";
 				int[] values = computePrescaleAndCmpValues(gf); 
 				code = code + "\t\t// Set timer1 interrupt at " + gf +"Hz\n";
 				code = code + "\t\tTCCR1A = 0;// set entire TCCR2A register to 0\n";
 				code = code + "\t\tTCCR1B = 0;// same for TCCR2B\n";
 				code = code + "\t\tTCNT1  = 0;//initialize counter value to 0\n";
-				code = code + "\t\t// Set compare match register for " + gf + "Hz increments\n";
+				code = code + "\t\t// Set compare match register for " + gf + "Hz increments : " + values[1] + "\n";
 				code = code + "\t\tOCR1A = " + values[1] +";// = (16*10^6) / (" + gf + "*" + values[0] + ") - 1 (must be <65535)\n";
 				code = code + "\t\t// CTC mode\n";
 				code = code + "\t\tTCCR1B |= (1 << WGM12);\n";
@@ -867,6 +875,15 @@ public class ArduinoUnoProcess extends Process {
 		return code;
 	}
 	
+	private int computeCounter0Prescaler(double gf) {
+		double prescaler = 16000000/(250*gf);
+		if(prescaler <= 1) return 1;
+		else if(prescaler <= 8) return 8;
+		else if(prescaler <= 64) return 64;
+		else if(prescaler <= 256) return 256;
+		return 1024;
+	}
+	
 	private int[] computePrescaleAndCmpValues(double gf) {
 		double[] cmpValues = new double[5];
 		double prescaleValue = 0;
@@ -906,7 +923,7 @@ public class ArduinoUnoProcess extends Process {
 		double f = 16000000.0/(selectedPrescaler*(selectedCmpValue + 1));
 		Activator.logWarningMessage(NLS.bind(ArduinoUnoMessages.gfNotMatchMessage2, new Object[] {f, selectedPrescaler, selectedCmpValue}));
 		Activator.logWarningMessage(ArduinoUnoMessages.gfNotMatchMessage3);
-		return new int[] {selectedCmpValue,selectedPrescaler};
+		return new int[] {selectedPrescaler, selectedCmpValue};
 	}
 
 	@Override
