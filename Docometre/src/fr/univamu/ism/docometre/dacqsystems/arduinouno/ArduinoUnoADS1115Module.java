@@ -93,10 +93,10 @@ public class ArduinoUnoADS1115Module extends Module {
 					String dataRate = getProperty(ArduinoUnoADS1115ModuleProperties.DATA_RATE);
 					String moduleAddress = getProperty(ArduinoUnoADS1115ModuleProperties.ADDRESS);
 					String gain = channel.getProperty(ArduinoUnoAnInChannelProperties.GAIN);
-					if(gain == ArduinoUnoAnInChannelProperties.GAIN_0) gain = "0";
-					if(gain == ArduinoUnoAnInChannelProperties.GAIN_4) gain = "3";
-					if(gain == ArduinoUnoAnInChannelProperties.GAIN_8) gain = "4";
-					if(gain == ArduinoUnoAnInChannelProperties.GAIN_16) gain = "5";
+					if(gain.equals(ArduinoUnoAnInChannelProperties.GAIN_0)) gain = "0";
+					else if(gain.equals(ArduinoUnoAnInChannelProperties.GAIN_4)) gain = "3";
+					else if(gain.equals(ArduinoUnoAnInChannelProperties.GAIN_8)) gain = "4";
+					else if(gain.equals(ArduinoUnoAnInChannelProperties.GAIN_16)) gain = "5";
 					code = code + "\n\t\tif(acquire_" + name + "_index == " + frequencyRatio + ") {\n";
 					code = code + "\t\t\t\tacquire_" + name + "_index = 0;\n";
 					code = code + "\t\t\t\t" + name + " = acquireADS1115AnalogInput(" + moduleAddress + ", " + channelNumber + ", " + gain + ", " + dataRate + ", " + transfer + ", " + transferNumber +  ");\n";
