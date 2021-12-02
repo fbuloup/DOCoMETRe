@@ -688,34 +688,47 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "}\n";
 			
 			if(((ArduinoUnoDACQConfiguration)getDACQConfiguration()).hasADS1115Module()) {
-				code = code + "unsigned int acquireADS1115AnalogInput(int moduleAddress, byte inputNumber, byte gain, byte frequency, bool transfert, byte transferNumber) {\n";
-				code = code + "\t\tint wordValue = 0;\n";
+				code = code + "unsigned int acquireADS1115AnalogInput(ADS1115 ads, byte inputNumber, byte gain, bool transfert, byte transferNumber) {\n";
+				code = code + "\t\tunsigned int value = 0;\n";
+				code = code + "\t\tads.setGain(gain);\n";
 				code = code + "\t\tinterrupts();\n";
-				code = code + "\t\tWire.beginTransmission(moduleAddress);\n";
-				code = code + "\t\tWire.write(0b00000001);\n";
-				code = code + "\t\tbyte message = 0b11 << 6 | inputNumber << 4 | gain << 1 | 1;\n";
-				code = code + "\t\tWire.write(message);\n";
-				code = code + "\t\tmessage = frequency << 5 | 3;\n";
-				code = code + "\t\tWire.write(message);\n";
-				code = code + "\t\tWire.endTransmission(true);\n";
-				code = code + "\t\tWire.beginTransmission(moduleAddress);\n";
-				code = code + "\t\tWire.write(0b00000000);\n";
-				code = code + "\t\tWire.endTransmission(true);\n";
-				code = code + "\t\tWire.requestFrom(moduleAddress, 2, true);\n";
-				code = code + "\t\tif(Wire.available() == 2) {\n";
-				code = code + "\t\t\t\twordValue = Wire.read();\n";
-				code = code + "\t\t\t\twordValue = wordValue << 8 | Wire.read();\n";
-				code = code + "\t\t}\n";
-				code = code + "\t\tWire.endTransmission();\n";
-				code = code + "\t\t noInterrupts();\n";
+				code = code + "\t\tvalue = ads.readADC(inputNumber);\n";
+				code = code + "\t\tnoInterrupts();\n";
 				code = code + "\t\tif(transfert) {\n";
-				code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%d\", transferNumber, wordValue);\n";
+				code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%d\", transferNumber, value);\n";
 				code = code + "\t\t\t\tSerial.println(serialMessage);\n";
 				code = code + "\t\t\t\tSerial.flush();\n";
-				if(delay > 0)code = code + "\t\t\t\tdelayMicroseconds(" + delay + ");\n";
 				code = code + "\t\t}\n";
-				code = code + "\t\treturn wordValue;\n";
+				code = code + "\t\treturn value;\n";
 				code = code + "}\n";
+//				code = code + "unsigned int acquireADS1115AnalogInput(int moduleAddress, byte inputNumber, byte gain, byte frequency, bool transfert, byte transferNumber) {\n";
+//				code = code + "\t\tint wordValue = 0;\n";
+//				code = code + "\t\tinterrupts();\n";
+//				code = code + "\t\tWire.beginTransmission(moduleAddress);\n";
+//				code = code + "\t\tWire.write(0b00000001);\n";
+//				code = code + "\t\tbyte message = 0b11 << 6 | inputNumber << 4 | gain << 1 | 1;\n";
+//				code = code + "\t\tWire.write(message);\n";
+//				code = code + "\t\tmessage = frequency << 5 | 3;\n";
+//				code = code + "\t\tWire.write(message);\n";
+//				code = code + "\t\tWire.endTransmission(true);\n";
+//				code = code + "\t\tWire.beginTransmission(moduleAddress);\n";
+//				code = code + "\t\tWire.write(0b00000000);\n";
+//				code = code + "\t\tWire.endTransmission(true);\n";
+//				code = code + "\t\tWire.requestFrom(moduleAddress, 2, true);\n";
+//				code = code + "\t\tif(Wire.available() == 2) {\n";
+//				code = code + "\t\t\t\twordValue = Wire.read();\n";
+//				code = code + "\t\t\t\twordValue = wordValue << 8 | Wire.read();\n";
+//				code = code + "\t\t}\n";
+//				code = code + "\t\tWire.endTransmission();\n";
+//				code = code + "\t\t noInterrupts();\n";
+//				code = code + "\t\tif(transfert) {\n";
+//				code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%d\", transferNumber, wordValue);\n";
+//				code = code + "\t\t\t\tSerial.println(serialMessage);\n";
+//				code = code + "\t\t\t\tSerial.flush();\n";
+//				if(delay > 0)code = code + "\t\t\t\tdelayMicroseconds(" + delay + ");\n";
+//				code = code + "\t\t}\n";
+//				code = code + "\t\treturn wordValue;\n";
+//				code = code + "}\n";
 			}
 			
 			code = code + getCurrentProcess().getScript().getInitializeCode(this, ArduinoUnoCodeSegmentProperties.FUNCTION);
@@ -908,7 +921,7 @@ public class ArduinoUnoProcess extends Process {
 			selectedCmpValue = (int) cmpValues[0];
 		} else if(cmpValues[1] < 65536) {
 			selectedPrescaler = 8;
-			selectedPrescaler = (int) cmpValues[1];
+			selectedCmpValue = (int) cmpValues[1];
 		} else if(cmpValues[2] < 65536) {
 			selectedPrescaler = 64;
 			selectedCmpValue = (int) cmpValues[2];

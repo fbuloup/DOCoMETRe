@@ -30,31 +30,28 @@ public class ArduinoUnoADS1115Module extends Module {
 	public String getCodeSegment(Object segment) throws Exception {
 		String code = "";
 		
-//		String ADSName = "ADS_" + getProperty(ArduinoUnoADS1115ModuleProperties.ADDRESS);
+		String ADSName = "ADS_" + getProperty(ArduinoUnoADS1115ModuleProperties.ADDRESS);
 		
 		if(segment == ArduinoUnoCodeSegmentProperties.INCLUDE) {
 			if(!libraryAlreadyIncluded) {
 				code = code + "//include library for ADS1115 modules\n";
-				//code = code + "#include \"ADS1X15.h\"\n\n";
-				code = code + "#include <Wire.h>\n\n";
+				code = code + "#include \"ADS1X15.h\"\n\n";
+//				code = code + "#include <Wire.h>\n\n";
 				libraryAlreadyIncluded = true;
 			}
-//			code = code + "//Declare ADS1115 module at " + getProperty(ArduinoUnoADS1115ModuleProperties.ADDRESS) + "\n";
-//			code = code + "ADS1115 " + ADSName + "(" + getProperty(ArduinoUnoADS1115ModuleProperties.ADDRESS) + ");\n\n";
+			code = code + "//Declare ADS1115 module at " + getProperty(ArduinoUnoADS1115ModuleProperties.ADDRESS) + "\n";
+			code = code + "ADS1115 " + ADSName + "(" + getProperty(ArduinoUnoADS1115ModuleProperties.ADDRESS) + ");\n\n";
 		}
 		
 		if (segment == ArduinoUnoCodeSegmentProperties.INITIALIZATION) {
-//			String mode = getProperty(ArduinoUnoADS1115ModuleProperties.MODE);
-//			String dataRate = getProperty(ArduinoUnoADS1115ModuleProperties.DATA_RATE);
-//			code = code + "\n\t\t//Initialize ADS1115 module at " + getProperty(ArduinoUnoADS1115ModuleProperties.ADDRESS) + "\n";
-//			code = code + "\t\t" + ADSName + ".begin();\n";
-//			code = code + "\t\t" + ADSName + ".setMode(" + mode + "); // Set mode (0 : continue, 1 : single shot)\n";
-//			code = code + "\t\t" + ADSName + ".setDataRate(" + dataRate + "); // Set speed convertion form 0 (#124ms) to 7 (#2.7ms)\n";
+			String mode = getProperty(ArduinoUnoADS1115ModuleProperties.MODE);
+			String dataRate = getProperty(ArduinoUnoADS1115ModuleProperties.DATA_RATE);
+			code = code + "\n\t\t//Initialize ADS1115 module at " + getProperty(ArduinoUnoADS1115ModuleProperties.ADDRESS) + "\n";
+			code = code + "\t\t" + ADSName + ".begin();\n";
+			code = code + "\t\t" + ADSName + ".setMode(" + mode + "); // Set mode (0 : continue, 1 : single shot)\n";
+			code = code + "\t\t" + ADSName + ".setDataRate(" + dataRate + "); // Set speed convertion form 0 (#124ms) to 7 (#2.7ms)\n";
 			
 		}
-		
-		
-		
 		
 		for (int i = 0; i < getChannelsNumber(); i++) {
 			
@@ -90,8 +87,8 @@ public class ArduinoUnoADS1115Module extends Module {
 				if(isUsed) {
 
 //					String mode = getProperty(ArduinoUnoADS1115ModuleProperties.MODE);
-					String dataRate = getProperty(ArduinoUnoADS1115ModuleProperties.DATA_RATE);
-					String moduleAddress = getProperty(ArduinoUnoADS1115ModuleProperties.ADDRESS);
+//					String dataRate = getProperty(ArduinoUnoADS1115ModuleProperties.DATA_RATE);
+//					String moduleAddress = getProperty(ArduinoUnoADS1115ModuleProperties.ADDRESS);
 					String gain = channel.getProperty(ArduinoUnoAnInChannelProperties.GAIN);
 					if(gain.equals(ArduinoUnoAnInChannelProperties.GAIN_0)) gain = "0";
 					else if(gain.equals(ArduinoUnoAnInChannelProperties.GAIN_4)) gain = "3";
@@ -99,7 +96,7 @@ public class ArduinoUnoADS1115Module extends Module {
 					else if(gain.equals(ArduinoUnoAnInChannelProperties.GAIN_16)) gain = "5";
 					code = code + "\n\t\tif(acquire_" + name + "_index == " + frequencyRatio + ") {\n";
 					code = code + "\t\t\t\tacquire_" + name + "_index = 0;\n";
-					code = code + "\t\t\t\t" + name + " = acquireADS1115AnalogInput(" + moduleAddress + ", " + channelNumber + ", " + gain + ", " + dataRate + ", " + transfer + ", " + transferNumber +  ");\n";
+					code = code + "\t\t\t\t" + name + " = acquireADS1115AnalogInput(" + ADSName + ", " + channelNumber + ", " + gain + ", " + transfer + ", " + transferNumber +  ");\n";
 					code = code + "\t\t}\n";
 					code = code + "\t\tacquire_" + name + "_index += 1;\n\n";
 					
