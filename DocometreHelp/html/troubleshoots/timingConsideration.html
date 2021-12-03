@@ -10,7 +10,7 @@
 <h1>General consideration on micro-controllers</h1>
 
 <p>
-With Arduino Uno boards, the real time loop precision is not as good as the Portenta Machine Control or the ADwin systems ones because ATMega328 is driven by a ceramic resonator.
+With Arduino Uno boards, the default real time loop precision (the <b>loop()</b> method) is not so good because it is software called and because ATMega328 is driven by a ceramic resonator.
 Crystal resonators are much more stable and the crystal used on Arduino Uno is for ATMega16 which control USB and ICSP buses.
 Moreover timing instructions like <b>micros()</b> are not so precise as we could expect because a slow but sure time drift could occur when playing with these instructions. 
 Main reason comes from the fact that <b>micros()</b> instruction takes at less 4<span>&#181;</span>s :
@@ -22,8 +22,8 @@ Main reason comes from the fact that <b>micros()</b> instruction takes at less 4
 <p>
 These values are not so big but for a long running operation, drift could grow up to more than several milliseconds if timing is based on these instructions.
 I've not been able to see any timing drift with ADWin Systems for real time loop running several minutes.
-In order to minimize this effect in Docometre with Arduino Uno board, timing is computed from the number of the real time loop event : an index incremented each time the <b>loop()</b> method is called.
-Doing so, the only variability comes from the ceramic resonator. If you cannot deal with this, please consider to use Portenta Machine Control or ADWin Systems.
+In order to minimize this effect in Docometre with Arduino Uno board, an interrupt based on timer 1 (16 bits) is used to call a routine for real time loop and timing is computed from the number of this real time loop event : an index is incremented each time the <b>ISR</b> method is called.
+Doing so, the only variability comes from the ceramic resonator. If you cannot deal with this, please consider to use Portenta Machine Control or ADWin Systems. Please note that timer 0 is also used to compute CPU workload.
 </p>
 
 <p>Another bullet point on microcontrollers : they are not Digital Signal Processors and it is a common practice to avoid floating point calculation in order to increase real time speed capability.
