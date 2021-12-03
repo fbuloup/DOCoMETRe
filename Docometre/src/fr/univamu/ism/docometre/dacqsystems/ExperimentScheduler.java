@@ -218,14 +218,14 @@ public class ExperimentScheduler {
 						IStatus status = runProcessJob.getResult();
 						if(status.isOK()) if(!runProcess) {
 							boolean autoValidateTrial =Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.AUTO_VALIDATE_TRIALS);
-							if(autoValidateTrial) ResourceProperties.setTrialState(true, (IFolder) currentTrial);
+							if(autoValidateTrial) ResourceProperties.setTrialState((IFolder) currentTrial, true);
 							else {
 								PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
 									@Override
 									public void run() {
 										ValidateTrialDialog validateTrialDialog = new ValidateTrialDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), currentTrial);
 										if(validateTrialDialog.open() == Window.OK) {
-											ResourceProperties.setTrialState(validateTrialDialog.getValidateTrial(), (IFolder) currentTrial);
+											ResourceProperties.setTrialState( (IFolder) currentTrial, validateTrialDialog.getValidateTrial());
 											redoTrial = validateTrialDialog.getRedoTrial();
 										}
 										

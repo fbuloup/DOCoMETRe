@@ -321,7 +321,7 @@ public final class ResourceProperties {
 	/*
 	 * Set trial execution state
 	 */
-	public static void setTrialState(boolean done, IResource trialFolder) {
+	public static void setTrialState(IResource trialFolder, boolean done) {
 		try {
 			if(done == true) trialFolder.setPersistentProperty(TRIAL_STATE_QN, "done");
 			if(done == false) trialFolder.setPersistentProperty(TRIAL_STATE_QN, "undone");
