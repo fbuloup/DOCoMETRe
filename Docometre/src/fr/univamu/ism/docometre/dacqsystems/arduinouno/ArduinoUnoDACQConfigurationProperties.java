@@ -55,6 +55,7 @@ public final class ArduinoUnoDACQConfigurationProperties extends Property {
 	public static final ArduinoUnoDACQConfigurationProperties BAUD_RATE = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.BAUD_RATE", ArduinoUnoMessages.DeviceBaudRate_Label, ArduinoUnoMessages.DeviceBaudRate_Tooltip, "^(9600|115200|1000000|1500000|2000000)$", "9600:115200:1000000:1500000:2000000");
 	public static final ArduinoUnoDACQConfigurationProperties GLOBAL_FREQUENCY = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY", ArduinoUnoMessages.GlobalFrequency_Label, ArduinoUnoMessages.GlobalFrequency_Tooltip, "(^\\d{1,10}$)");
 	public static final ArduinoUnoDACQConfigurationProperties LIBRARIES_ABSOLUTE_PATH = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH", ArduinoUnoMessages.LibrariesAbsolutePath_Label, ArduinoUnoMessages.LibrariesAbsolutePath_Tooltip, "(.)+");
+	public static final ArduinoUnoDACQConfigurationProperties USER_LIBRARIES_ABSOLUTE_PATH = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH", ArduinoUnoMessages.UserLibrariesAbsolutePath_Label, ArduinoUnoMessages.UserLibrariesAbsolutePath_Tooltip, "(.)+");
 
 	public static String BAUD_RATE_9600 = "9600";
 	public static String BAUD_RATE_115200 = "115200";
@@ -72,6 +73,7 @@ public final class ArduinoUnoDACQConfigurationProperties extends Property {
 		daqGeneralConfiguration.setProperty(BAUD_RATE, BAUD_RATE_2000000);
 		daqGeneralConfiguration.setProperty(GLOBAL_FREQUENCY, "100");
 		daqGeneralConfiguration.setProperty(LIBRARIES_ABSOLUTE_PATH, "");
+		daqGeneralConfiguration.setProperty(USER_LIBRARIES_ABSOLUTE_PATH, "");
 	}
 
 	public static ArduinoUnoDACQConfiguration cloneConfiguration(ArduinoUnoDACQConfiguration daqGeneralConfiguration) {
@@ -82,6 +84,7 @@ public final class ArduinoUnoDACQConfigurationProperties extends Property {
 		clonedGeneralConfiguration.setProperty(BAUD_RATE, new String(daqGeneralConfiguration.getProperty(BAUD_RATE)));
 		clonedGeneralConfiguration.setProperty(GLOBAL_FREQUENCY, new String(daqGeneralConfiguration.getProperty(GLOBAL_FREQUENCY)));
 		clonedGeneralConfiguration.setProperty(LIBRARIES_ABSOLUTE_PATH, new String(daqGeneralConfiguration.getProperty(LIBRARIES_ABSOLUTE_PATH)));
+		clonedGeneralConfiguration.setProperty(USER_LIBRARIES_ABSOLUTE_PATH, new String(daqGeneralConfiguration.getProperty(USER_LIBRARIES_ABSOLUTE_PATH)));
 		return clonedGeneralConfiguration;
 	}
 	

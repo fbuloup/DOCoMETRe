@@ -79,6 +79,7 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 	private Combo baudRateCombo;
 	private Text libraryPathText;
 	private Spinner delayTimeSpinner;
+	private Text userLibraryPathText;
 	
 	public static ArduinoUnoDACQConfiguration getDefaultDACQConfiguration() {
 		IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
@@ -88,6 +89,7 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 		arduinoUnoDACQConfiguration.setProperty(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH, preferenceStore.getString(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH.getKey()));
 		arduinoUnoDACQConfiguration.setProperty(ArduinoUnoDACQConfigurationProperties.BAUD_RATE, preferenceStore.getString(ArduinoUnoDACQConfigurationProperties.BAUD_RATE.getKey()));
 		arduinoUnoDACQConfiguration.setProperty(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH, preferenceStore.getString(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey()));
+		arduinoUnoDACQConfiguration.setProperty(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH, preferenceStore.getString(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getKey()));
 		return arduinoUnoDACQConfiguration;
 	}
 
@@ -115,6 +117,7 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 		performDefaultsPreferencesValues();
 		
 		libraryPathText.setText(getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey()));
+		userLibraryPathText.setText(getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getKey()));
 		builderPathText.setText(getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.BUILDER_PATH.getKey()));
 		avrDUDEPathText.setText(getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.AVRDUDE_PATH.getKey()));
 		devicePathText.setText(getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH.getKey()));
@@ -130,6 +133,7 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH.getKey(), devicePathText.getText());
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.BAUD_RATE.getKey(), baudRateCombo.getText());
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), libraryPathText.getText());
+		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getKey(), userLibraryPathText.getText());
 		preferenceStore.putValue(GeneralPreferenceConstants.ARDUINO_DELAY_TIME_AFTER_SERIAL_PRINT, delayTimeSpinner.getText());
 		return super.performOk();
 	}
@@ -145,14 +149,30 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 		//LIBRARIES_ABSOLUTE_PATH
 		Label libraryPathLabel = new Label(container, SWT.NORMAL);
 		libraryPathLabel.setText(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getLabel());
+		libraryPathLabel.setToolTipText(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getTooltip());
 		GridDataFactory.fillDefaults().align(SWT.RIGHT, SWT.CENTER).applyTo(libraryPathLabel);
 		libraryPathText = new Text(container, SWT.BORDER);
 		libraryPathText.setText(getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey()));
+		libraryPathText.setToolTipText(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getTooltip());
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(libraryPathText);
 		Button browseLibraryPathButton = new Button(container, SWT.FLAT);
 		browseLibraryPathButton.setText("Browse...");
 		browseLibraryPathButton.addSelectionListener(new DialogSelectionHandler(libraryPathText, true, getShell()));
 		GridDataFactory.fillDefaults().applyTo(browseLibraryPathButton);
+		
+		//USER LIBRARIES_ABSOLUTE_PATH
+		Label userLibraryPathLabel = new Label(container, SWT.NORMAL);
+		userLibraryPathLabel.setText(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getLabel());
+		userLibraryPathLabel.setToolTipText(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getTooltip());
+		GridDataFactory.fillDefaults().align(SWT.RIGHT, SWT.CENTER).applyTo(userLibraryPathLabel);
+		userLibraryPathText = new Text(container, SWT.BORDER);
+		userLibraryPathText.setText(getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getKey()));
+		userLibraryPathText.setToolTipText(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getTooltip());
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(userLibraryPathText);
+		Button browseUserLibraryPathButton = new Button(container, SWT.FLAT);
+		browseUserLibraryPathButton.setText("Browse...");
+		browseUserLibraryPathButton.addSelectionListener(new DialogSelectionHandler(userLibraryPathText, true, getShell()));
+		GridDataFactory.fillDefaults().applyTo(browseUserLibraryPathButton);
 		
 		//BUILDER_PATH
 		Label builderPathLabel = new Label(container, SWT.NORMAL);
