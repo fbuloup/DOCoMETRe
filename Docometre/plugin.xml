@@ -1030,6 +1030,10 @@
                   </with>
                </visibleWhen>
             </command>
+            <separator
+                  name="Docometre.separator5"
+                  visible="true">
+            </separator>
             <command
                   commandId="ResetTrialsCommand"
                   icon="icons/reset.gif"
@@ -1090,6 +1094,162 @@
                   </with>
                </visibleWhen>
             </command>
+            <separator
+                  name="Docometre.separator6"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="MarkTrialsDoneCommand"
+                  icon="icons/clear.gif"
+                  label="%MarkTrialsDone.label"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                  <with
+                        variable="selection">
+                     <iterate>
+                        <or>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,TRIAL"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,SESSION"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,SUBJECT"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                        </or>
+                     </iterate>
+                  </with>
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="MarkTrialsUnDoneCommand"
+                  icon="icons/clear.gif"
+                  label="%MarkTrialsUnDone.label"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                  <with
+                        variable="selection">
+                     <iterate>
+                        <or>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,TRIAL"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,SESSION"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,SUBJECT"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                        </or>
+                     </iterate>
+                  </with>
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="MarkTrialsAutoCommand"
+                  icon="icons/clear.gif"
+                  label="%MarkTrialsAuto.label"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                  <with
+                        variable="selection">
+                     <iterate>
+                        <or>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,TRIAL"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,SESSION"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,SUBJECT"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                        </or>
+                     </iterate>
+                  </with>
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="MarkTrialsManualCommand"
+                  icon="icons/clear.gif"
+                  label="%MarkTrialsManual.label"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                  <with
+                        variable="selection">
+                     <iterate>
+                        <or>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,TRIAL"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,SESSION"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,SUBJECT"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                        </or>
+                     </iterate>
+                  </with>
+               </visibleWhen>
+            </command>
+            <separator
+                  name="Docometre.separator7"
+                  visible="true">
+            </separator>
             <command
                   commandId="CleanCommand"
                   icon="icons/clear.gif"
@@ -1702,6 +1862,10 @@
                </with>
             </visibleWhen>
          </command>
+         <separator
+               name="Docometre.separator1"
+               visible="true">
+         </separator>
          <command
                commandId="ResetTrialsCommand"
                icon="icons/reset.gif"
@@ -1763,6 +1927,162 @@
                </with>
             </visibleWhen>
          </command>
+         <separator
+               name="Docometre.separator228"
+               visible="true">
+         </separator>
+         <command
+               commandId="MarkTrialsDoneCommand"
+               icon="icons/reset.gif"
+               label="%MarkTrialsDone.label"
+               style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                  <with
+                        variable="selection">
+                     <iterate>
+                        <or>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,TRIAL"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,SESSION"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,SUBJECT"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                        </or>
+                     </iterate>
+                  </with>
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="MarkTrialsUnDoneCommand"
+                  icon="icons/reset.gif"
+                  label="%MarkTrialsUnDone.label"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                  <with
+                        variable="selection">
+                     <iterate>
+                        <or>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,TRIAL"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,SESSION"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,SUBJECT"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                        </or>
+                     </iterate>
+                  </with>
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="MarkTrialsAutoCommand"
+                  icon="icons/TrialStartMode.gif"
+                  label="%MarkTrialsAuto.label"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                  <with
+                        variable="selection">
+                     <iterate>
+                        <or>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,TRIAL"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,SESSION"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,SUBJECT"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                        </or>
+                     </iterate>
+                  </with>
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="MarkTrialsManualCommand"
+                  icon="icons/TrialStartMode.gif"
+                  label="%MarkTrialsManual.label"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                  <with
+                        variable="selection">
+                     <iterate>
+                        <or>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,TRIAL"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,SESSION"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,SUBJECT"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                        </or>
+                     </iterate>
+                  </with>
+               </visibleWhen>
+            </command>
+            <separator
+                  name="Docometre.separator3"
+                  visible="true">
+            </separator>
          <command
                commandId="CleanCommand"
                icon="icons/clear.gif"
@@ -2753,6 +3073,29 @@
             id="SaveAllCommand"
             name="SaveAllCommand">
       </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.handlers.MarkTrialsDoneHandler"
+            id="MarkTrialsDoneCommand"
+            name="MarkTrialsDoneCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.handlers.MarkTrialsUnDoneHandler"
+            id="MarkTrialsUnDoneCommand"
+            name="MarkTrialsUnDoneCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.handlers.MarkTrialsAutoHandler"
+            id="MarkTrialsAutoCommand"
+            name="MarkTrialsAutoCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.handlers.MarkTrialsManualHandler"
+            id="MarkTrialsManualCommand"
+            name="MarkTrialsManualCommand">
+      </command>
+      
+      
+      
    </extension>
    <extension
          point="org.eclipse.ui.activities">
