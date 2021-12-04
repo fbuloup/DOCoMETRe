@@ -49,14 +49,15 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
 
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
 
+import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
+import fr.univamu.ism.process.Script;
 
 public class ObjectsController {
 	
@@ -178,6 +179,8 @@ public class ObjectsController {
 			is = new FileInputStream(dataFile);
 			ois = new ObjectInputStream(is);
 			object = ois.readObject();
+			if(object instanceof AbstractElement) ((AbstractElement)object).setResource(file);
+			if(object instanceof Script) ((Script)object).setResource(file);
 		} catch (Exception e) {
 			exception = e;
 		} finally {
@@ -201,30 +204,35 @@ public class ObjectsController {
 	 * Get resource for specific object
 	 */
 	public static IResource getResourceForObject(Object object) {
-		try {
-			if(object != null) return getResourceForObject(object, ResourcesPlugin.getWorkspace().getRoot());
-			//else Activator.logWarningMessage("WARNING : searching a 'null' object (getResourceForObject) !");
-		} catch (CoreException e) {
-			e.printStackTrace();
-			Activator.logErrorMessageWithCause(e);
-		}
+		if(object == null) return null;
+		if(object instanceof IResource) return (IResource)object;
+		if(object instanceof AbstractElement) return ((AbstractElement)object).getResource();
+		if(object instanceof Script) return (IResource) ((Script)object).getResource();
 		return null;
+//		try {
+//			if(object != null) return getResourceForObject(object, ResourcesPlugin.getWorkspace().getRoot());
+//			//else Activator.logWarningMessage("WARNING : searching a 'null' object (getResourceForObject) !");
+//		} catch (CoreException e) {
+//			e.printStackTrace();
+//			Activator.logErrorMessageWithCause(e);
+//		}
+//		return null;
 	}
 	
 	/*
 	 * Get resource for specific object in specific resource container
 	 */
-	private static IResource getResourceForObject(Object searchedObject, IResource resource) throws CoreException {
-		IResource foundResource = null;
-		Object object = ResourceProperties.getObjectSessionProperty(resource);
-		if(searchedObject.equals(object)) foundResource = resource;
-		if(foundResource == null && object == null && resource instanceof IContainer) {
-			IResource[] members = ((IContainer)resource).members();
-			for (IResource member : members) {
-				foundResource = getResourceForObject(searchedObject, member);
-				if(foundResource != null) break;
-			}
-		}
-		return foundResource;
-	}
+//	private static IResource getResourceForObject(Object searchedObject, IResource resource) throws CoreException {
+//		IResource foundResource = null;
+//		Object object = ResourceProperties.getObjectSessionProperty(resource);
+//		if(searchedObject.equals(object)) foundResource = resource;
+//		if(foundResource == null && object == null && resource instanceof IContainer) {
+//			IResource[] members = ((IContainer)resource).members();
+//			for (IResource member : members) {
+//				foundResource = getResourceForObject(searchedObject, member);
+//				if(foundResource != null) break;
+//			}
+//		}
+//		return foundResource;
+//	}
 }

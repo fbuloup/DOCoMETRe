@@ -47,6 +47,8 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.eclipse.core.resources.IFile;
+
 import fr.univamu.ism.docometre.Activator;
 
 /**
@@ -65,6 +67,8 @@ public abstract class AbstractElement implements PropertyObservable, Serializabl
 	 * The list of properties observer. No duplicates are allowed.
 	 */
 	protected transient Set<PropertyObserver> propertiesObservers = new LinkedHashSet<PropertyObserver>(0);
+
+	private transient IFile resource;
 	
 	private static transient boolean debuMessages = false;
 	
@@ -139,5 +143,13 @@ public abstract class AbstractElement implements PropertyObservable, Serializabl
 	}
 	
 	public abstract void initializeObservers();
+
+	public void setResource(IFile file) {
+		this.resource= file;
+	}
+	
+	public IFile getResource() {
+		return resource;
+	}
 	
 }

@@ -85,8 +85,15 @@ public class Script implements Serializable {
 	 */
 	private transient ArrayList<BlocksListener> blocksListener = new ArrayList<BlocksListener>(0);
 	
+	/**
+	 * 
+	 */
 	private transient ArrayList<IStatus> codeGenerationStatus = new ArrayList<>(0);
 	
+	/**
+	 * 
+	 */
+	private transient Object resource;
 	/**
 	 * 
 	 */
@@ -104,6 +111,14 @@ public class Script implements Serializable {
 	public Script(String name) {
 		this.name = name;
 		indentCode = true;
+	}
+	
+	public Object getResource() {
+		return resource;
+	}
+	
+	public void setResource(Object resource) {
+		this.resource = resource;
 	}
 	
 	//Getters and setters
