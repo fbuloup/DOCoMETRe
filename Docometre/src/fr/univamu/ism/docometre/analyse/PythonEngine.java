@@ -91,8 +91,8 @@ public class PythonEngine implements MathEngine {
 			monitor.worked((int)(t1 - t0));
 			t0 = t1;
 		}
-		
-		if(startPythonInnerJob.getResult() != null && startPythonInnerJob.getResult().isOK()) Activator.logInfoMessage(DocometreMessages.MathEngineStarted, PythonEngine.class);
+		String message = DocometreMessages.MathEngineStarted + " (Python)";
+		if(startPythonInnerJob.getResult() != null && startPythonInnerJob.getResult().isOK()) Activator.logInfoMessage(message, PythonEngine.class);
 		return Status.OK_STATUS;
 	}
 

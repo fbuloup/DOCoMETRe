@@ -80,10 +80,10 @@ public final class MatlabEngine implements MathEngine {
 		while(startMatlabInnerJob.getState() == Job.RUNNING) {
 			t1 = System.currentTimeMillis();
 			monitor.worked((int)(t1 - t0));
-			t0 = t1;
+		t0 = t1;
 		}
-		
-		if(startMatlabInnerJob.getResult() != null && startMatlabInnerJob.getResult().isOK()) Activator.logInfoMessage(DocometreMessages.MathEngineStarted, MatlabController.class);
+		String message = DocometreMessages.MathEngineStarted + " (Matlab)";
+		if(startMatlabInnerJob.getResult() != null && startMatlabInnerJob.getResult().isOK()) Activator.logInfoMessage(message, MatlabController.class);
 		return startMatlabInnerJob.getResult();
 	}
 
