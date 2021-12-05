@@ -32,6 +32,7 @@ import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
 import fr.univamu.ism.docometre.analyse.datamodel.XYChart;
 import fr.univamu.ism.docometre.analyse.editors.ChannelEditor;
 import fr.univamu.ism.docometre.analyse.editors.XYChartEditor;
+import fr.univamu.ism.docometre.analyse.editors.XYZChartEditor;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.preferences.MathEnginePreferencesConstants;
@@ -101,11 +102,11 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 							e.printStackTrace();
 						}
 					}
-					if(editorReference.getId().equals(XYChartEditor.ID)) {
+					if(editorReference.getId().equals(XYChartEditor.ID) || editorReference.getId().equals(XYZChartEditor.ID)) {
 						try {
 							Object object = ((ResourceEditorInput)editorReference.getEditorInput()).getObject();
 							XYChart xyChart = (XYChart)object;
-							if(xyChart.contains(subject)) {
+							if(xyChart.contains(subject)) { 
 								editorReference.getEditor(false).getSite().getPage().closeEditor(editorReference.getEditor(false), true);
 							}
 						} catch (PartInitException e) {
