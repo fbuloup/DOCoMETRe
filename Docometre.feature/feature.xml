@@ -6,7 +6,15 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-11-19
+      -- 2021-12-06
+ADDED :
+* Improve Arduino Uno management (now use interrupt and improve data transfer, analog inputs and ADS1115 module management)
+* Elements in online help and cheat sheets
+* User libraries Arduino preference path 
+FIXED : 
+* Too long time response with editors (optimize method time response : getResourceForObject())
+* Bug on gain selection for ADS1115 module 
+-- 2021-11-19
 ADDED : Nothing
 FIXED :
 * Fixed a Bug in Cursor and Marker paint control listener 
