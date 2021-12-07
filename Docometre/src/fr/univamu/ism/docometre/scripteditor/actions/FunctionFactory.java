@@ -132,8 +132,10 @@ public final class FunctionFactory {
 		try {
 			Properties properties = new Properties();
 			properties.load(new InputStreamReader(new FileInputStream(path.append(functionFileName).toOSString()), Charset.forName("UTF-8")));
-			if(properties.containsKey(key + countrySuffix)) return properties.getProperty(key + countrySuffix);
-			else return properties.getProperty(key);
+			String property;
+			if(properties.containsKey(key + countrySuffix)) property = properties.getProperty(key + countrySuffix);
+			else property = properties.getProperty(key);
+			return (property == null)?"":property;
 		} catch (Exception e) {
 			e.printStackTrace();
 			Activator.logErrorMessageWithCause(e);
