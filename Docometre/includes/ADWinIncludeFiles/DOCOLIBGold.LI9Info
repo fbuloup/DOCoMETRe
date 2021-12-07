@@ -95,13 +95,3 @@ Lib_Function median(BYREF values[] AS FLOAT, BYVAL nbElements AS INTEGER) As FLO
 
 
 Lib_Function binaryMedian(BYREF values[] AS INTEGER, BYVAL nbElements AS INTEGER) As INTEGER
-
-
-
-
-
-
-
-
-
-Lib_Function binaryMedian(BYREF values[] AS INTEGER, BYVAL nbElements AS INTEGER) As INTEGER

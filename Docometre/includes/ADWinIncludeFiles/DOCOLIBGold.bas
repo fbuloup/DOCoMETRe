@@ -108,14 +108,3 @@ LIB_FUNCTION binaryMedian(BYREF values[] AS INTEGER, BYVAL nbElements AS INTEGER
     binaryMedian = binaryMedian AND values[i]
   UNTIL (i > nbElements)
 LIB_ENDFUNCTION
-
-' Compute median of a binary array
-LIB_FUNCTION binaryMedian(BYREF values[] AS INTEGER, BYVAL nbElements AS INTEGER) AS INTEGER
-  DIM i AS INTEGER 
-  binaryMedian = 1
-  i = 1
-  DO
-    binaryMedian = binaryMedian AND values[i]
-    i = i + 1
-  UNTIL (i > nbElements)
-LIB_ENDFUNCTION
