@@ -304,12 +304,12 @@ public class ADWinProcess extends Process {
 		process.waitFor();
 		
 		String line;
-		BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-		String errorString = "";
-		while((line = error.readLine()) != null){
-			errorString = errorString + line + "\n";
-		}
-		error.close();
+//		BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+//		String errorString = "";
+//		while((line = error.readLine()) != null){
+//			errorString = errorString + line + "\n";
+//		}
+//		error.close();
 //		if(!errorString.equals("")) {
 //			IMarker marker = processResource.createMarker(DocometreBuilder.MARKER_ID);
 //			marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
@@ -319,6 +319,7 @@ public class ADWinProcess extends Process {
 		BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
 		while((line=input.readLine()) != null){
 		    System.out.println("Input : " + line);
+		    Activator.logInfoMessage(line, getClass());
 		}
 		input.close();
 		
@@ -508,20 +509,20 @@ public class ADWinProcess extends Process {
 		String[] adbasicFilePathSplitted = adbasicFilePath.split("\\\\");
 		String errorFileName = adbasicFilePathSplitted[adbasicFilePathSplitted.length - 1].replaceAll("\\.(?i)bas$", ".err");
 		if (getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.ADBASIC_VERSION).equals(ADWinDACQConfigurationProperties.VINF4)) {
-			cmdParams = " /M \"" + adbasicFilePath + "\" /A " + outputFolder + " /SP /P9 > " + errorFileName;
+			cmdParams = " /M \"" + adbasicFilePath + "\" /A " + outputFolder + " /SP /P9 2>" + errorFileName;
 		} else {
 			if (getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.SYSTEM_TYPE).equals(ADWinDACQConfigurationProperties.GOLD)) {
 				if (getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.CPU_TYPE).equals(ADWinDACQConfigurationProperties.I)) {
-					cmdParams = " /M \"" + adbasicFilePath + "\" /A\"" + outputFolder + "\" /SG /P9 > " + errorFileName;
+					cmdParams = " /M \"" + adbasicFilePath + "\" /A\"" + outputFolder + "\" /SG /P9 2>" + errorFileName;
 				} else {
-					cmdParams = " /M \"" + adbasicFilePath + "\" /A\"" + outputFolder + "\" /SGII /P11 > " + errorFileName;
+					cmdParams = " /M \"" + adbasicFilePath + "\" /A\"" + outputFolder + "\" /SGII /P11 2>" + errorFileName;
 				}
 				
 			} else {
 				if (getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.CPU_TYPE).equals(ADWinDACQConfigurationProperties.I)) {
-					cmdParams = cmdParams + " /M \"" + adbasicFilePath + "\" /A\"" + outputFolder + "\" /SP /P9 > " + errorFileName;
+					cmdParams = cmdParams + " /M \"" + adbasicFilePath + "\" /A\"" + outputFolder + "\" /SP /P9 2>" + errorFileName;
 				} else {
-					cmdParams = cmdParams + " /M \"" + adbasicFilePath + "\" /A\"" + outputFolder + "\" /SPII /P11 > " + errorFileName;
+					cmdParams = cmdParams + " /M \"" + adbasicFilePath + "\" /A\"" + outputFolder + "\" /SPII /P11 2>" + errorFileName;
 				}
 			}
 		}
