@@ -362,7 +362,7 @@ public class Script implements Serializable {
 	 */
 	private String generateCode(Block block, Block stopBlock, Object context, Object step) throws NullPointerException {
 		boolean isScriptSegmentType = step == ScriptSegmentType.INITIALIZE || step == ScriptSegmentType.LOOP || step == ScriptSegmentType.FINALIZE;
-		if(!isScriptSegmentType) return "";
+		//if(!isScriptSegmentType) return "";
 		String code = "";
 		if(block == stopBlock) return "";
 		if(block instanceof IfBlock /*&& isScriptSegmentType*/) {
