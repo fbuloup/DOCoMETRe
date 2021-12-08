@@ -6,12 +6,16 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-12-07
+      -- 2021-12-08
+ADDED : Nothing
+FIXED : Build problem (files not deployed !)
+-- 2021-12-07
 ADDED : Nothing
 FIXED : 
 * Get script code generation even if it&apos;s not a script segment
 * Solve blocking compilation condition
-* Remove duplicate binaryMedian lib. function declaration in DocoLib (ADWin)
+* Remove duplicate binaryMedian lib. function declaration in
+DocoLib (ADWin)
 -- 2021-12-06 - Bis
 ADDED :
 * Toggle real time charts view visibility between trials 
