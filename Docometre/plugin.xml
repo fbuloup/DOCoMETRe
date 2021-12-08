@@ -604,7 +604,8 @@
                      commandId="NewBatchDataProcessingCommand"
                      icon="icons/batchDataProcessing.gif"
                      label="%NewBatchDataProcessingCommand.label"
-                     style="push">
+                     style="push"
+                     tooltip="%NewBatchDataProcessingCommand.tooltip">
                   <visibleWhen
                         checkEnabled="false">
                      <or>
@@ -1502,7 +1503,8 @@
                      commandId="NewBatchDataProcessingCommand"
                      icon="icons/batchDataProcessing.gif"
                      label="%NewBatchDataProcessingCommand.label"
-                     style="push">
+                     style="push"
+                     tooltip="%NewBatchDataProcessingCommand.tooltip">
                </command>
                <command
                      commandId="NewFolderAction"
@@ -2317,7 +2319,8 @@
                commandId="NewBatchDataProcessingCommand"
                icon="icons/batchDataProcessing.gif"
                label="%NewBatchDataProcessingCommand.label"
-               style="push">
+               style="push"
+               tooltip="%NewBatchDataProcessingCommand.tooltip">
             <visibleWhen
                   checkEnabled="false">
                <reference
