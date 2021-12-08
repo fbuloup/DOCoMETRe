@@ -34,18 +34,18 @@ public class SubjectsLabelProvider implements ILabelProvider {
 	public Image getImage(Object element) {
 		if(element instanceof IResource) {
 			IResource resource = (IResource)element;
-			if(ResourceType.isSubject(resource)) return Activator.getImageDescriptor(IImageKeys.SUBJECT_ICON).createImage();
+			if(ResourceType.isSubject(resource)) return Activator.getImage(IImageKeys.SUBJECT_ICON);
 			if(ResourceType.isChannel(resource)) {
 				Channel channel = (Channel)element;
-				if(channel.isSignal()) return Activator.getImageDescriptor(IImageKeys.SIGNAL_ICON).createImage();
-				if(channel.isCategory()) return Activator.getImageDescriptor(IImageKeys.CATEGORY_ICON).createImage();
-				if(channel.isEvent()) return Activator.getImageDescriptor(IImageKeys.EVENT_ICON).createImage();
+				if(channel.isSignal()) return Activator.getImage(IImageKeys.SIGNAL_ICON);
+				if(channel.isCategory()) return Activator.getImage(IImageKeys.CATEGORY_ICON);
+				if(channel.isEvent()) return Activator.getImage(IImageKeys.EVENT_ICON);
 			}
-			if(ResourceType.isFolder(resource)) return Activator.getImageDescriptor(IImageKeys.FOLDER_ICON).createImage();
-			if(ResourceType.isDataProcessing(resource)) return Activator.getImageDescriptor(IImageKeys.DATA_PROCESSING_ICON).createImage();
-			if(ResourceType.isBatchDataProcessing(resource)) return Activator.getImageDescriptor(IImageKeys.BATCH_DATA_PROCESSING_ICON).createImage();
-			if(ResourceType.isXYChart(resource)) return Activator.getImageDescriptor(IImageKeys.XYChart_ICON).createImage();
-			if(ResourceType.isXYZChart(resource)) return Activator.getImageDescriptor(IImageKeys.XYZChart_ICON).createImage();
+			if(ResourceType.isFolder(resource)) return Activator.getImage(IImageKeys.FOLDER_ICON);
+			if(ResourceType.isDataProcessing(resource)) return Activator.getImage(IImageKeys.DATA_PROCESSING_ICON);
+			if(ResourceType.isBatchDataProcessing(resource)) return Activator.getImage(IImageKeys.BATCH_DATA_PROCESSING_ICON);
+			if(ResourceType.isXYChart(resource)) return Activator.getImage(IImageKeys.XYChart_ICON);
+			if(ResourceType.isXYZChart(resource)) return Activator.getImage(IImageKeys.XYZChart_ICON);
 		}
 		return null;
 	}
