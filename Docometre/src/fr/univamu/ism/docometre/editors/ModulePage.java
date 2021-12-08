@@ -105,8 +105,8 @@ import fr.univamu.ism.docometre.dacqsystems.charts.ChartsConfigurationPage;
 public abstract class ModulePage extends FormPage implements PropertyObserver {
 
 	public static int defaultColumnWidth = 70;
-	public static Image checkedImage = Activator.getImageDescriptor(IImageKeys.CHECK_BOX_CHECKED_ICON).createImage();
-	public static Image uncheckedImage = Activator.getImageDescriptor(IImageKeys.CHECK_BOX_UNCHECKED_ICON).createImage();
+	public static Image checkedImage = Activator.getImage(IImageKeys.CHECK_BOX_CHECKED_ICON);
+	public static Image uncheckedImage = Activator.getImage(IImageKeys.CHECK_BOX_UNCHECKED_ICON);
 	
 	public class ModuleSectionPart extends SectionPart {
 
@@ -286,7 +286,7 @@ public abstract class ModulePage extends FormPage implements PropertyObserver {
 			//Tool bar
 			ToolBar toolBar = new ToolBar(tableConfigurationSection, SWT.FLAT | SWT.HORIZONTAL);
 			deleteToolItem = new ToolItem(toolBar, SWT.NULL);
-			deleteToolItem.setImage(Activator.getImageDescriptor(ISharedImages.IMG_ETOOL_DELETE).createImage());
+			deleteToolItem.setImage(Activator.getImage(ISharedImages.IMG_ETOOL_DELETE));
 			new ToolItem(toolBar, SWT.SEPARATOR);
 			addToolItem = new ToolItem(toolBar, SWT.NULL);
 			addToolItem.setImage(Activator.getImage(IImageKeys.ADD_ICON));

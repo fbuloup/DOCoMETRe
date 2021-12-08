@@ -78,7 +78,7 @@ public class FunctionalBlockConfigurationDialog extends TitleAreaDialog {
 	protected Control createDialogArea(Composite parent) {
 		setTitle(NLS.bind(DocometreMessages.FunctionConfigurationDialog_Title, function.getTitle(context)));
 		setMessage(NLS.bind(DocometreMessages.FunctionConfigurationDialog_Message, function.getDescription(context)));
-		setTitleImage(Activator.getImageDescriptor(IImageKeys.CONFIGURE_FUNCTION_WIZBAN).createImage());
+		setTitleImage(Activator.getImage(IImageKeys.CONFIGURE_FUNCTION_WIZBAN));
 		
 		Composite container = (Composite) super.createDialogArea(parent);
 		Composite composite = (Composite)function.getGUI(this , container, context);

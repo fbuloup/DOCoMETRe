@@ -156,7 +156,7 @@ public class AddRS232ChannelsDialogHandler extends SelectionAdapter implements I
 		protected Control createDialogArea(Composite parent) {
 			setTitle(ADWinMessages.AddChannelsDialog_Title);
 			setMessage(ADWinMessages.AddChannelsDialog_Message);
-			setTitleImage(Activator.getImageDescriptor(IImageKeys.MODULE_WIZBAN).createImage());
+			setTitleImage(Activator.getImage(IImageKeys.MODULE_WIZBAN));
 			Composite container = (Composite) super.createDialogArea(parent);
 			
 			channelsListViewer = new ListViewer(container);

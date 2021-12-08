@@ -41,22 +41,22 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre;
 
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-import java.util.Optional;
 
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.resource.ResourceLocator;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
@@ -148,10 +148,7 @@ public class Activator extends AbstractUIPlugin {
 	 * plug-in relative path
 	 */
 	public static ImageDescriptor getImageDescriptor(String path) {
-		Optional<ImageDescriptor> option = ResourceLocator.imageDescriptorFromBundle(PLUGIN_ID, path);
-		if(option.isPresent()) return option.get(); 
-		ISharedImages sharedImages = PlatformUI.getWorkbench().getSharedImages();
-		return sharedImages.getImageDescriptor(path);
+		return getImageDescriptor(PLUGIN_ID, path);
 	}
 	
 	/*
@@ -159,10 +156,23 @@ public class Activator extends AbstractUIPlugin {
 	 * plug-in relative path
 	 */
 	public static ImageDescriptor getImageDescriptor(String pluginID, String path) {
-		Optional<ImageDescriptor> option = ResourceLocator.imageDescriptorFromBundle(pluginID, path);
-		if(option.isPresent()) return option.get(); 
-		ISharedImages sharedImages = PlatformUI.getWorkbench().getSharedImages();
-		return sharedImages.getImageDescriptor(path);
+		Bundle bundle = Platform.getBundle(pluginID);
+        URL url = FileLocator.find(bundle, new Path(path), null);
+        ImageDescriptor imageDescriptor = ImageDescriptor.createFromURL(url);
+		return imageDescriptor;
+	}
+	
+	/*
+	 * Return the image for the image file at the given
+	 * plug-in relative path
+	 */
+	public static Image getImage(String pluginID, String path) {
+		Image image = plugin.getImageRegistry().get(path);
+		if(image == null) {
+            ImageDescriptor imageDescriptor = getImageDescriptor(pluginID, path);
+			plugin.getImageRegistry().put(path, imageDescriptor);
+		}
+		return image;
 	}
 	
 	/*
@@ -170,7 +180,7 @@ public class Activator extends AbstractUIPlugin {
 	 * plug-in relative path
 	 */
 	public static Image getImage(String path) {
-		return getImageDescriptor(path).createImage();
+		return getImage(PLUGIN_ID, path);
 	}
 
 	/*

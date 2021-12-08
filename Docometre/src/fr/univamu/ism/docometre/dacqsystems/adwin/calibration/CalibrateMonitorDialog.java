@@ -99,7 +99,7 @@ public class CalibrateMonitorDialog extends TitleAreaDialog {
 		message = NLS.bind(message, IDialogConstants.PROCEED_LABEL);
 		message = message.replaceAll("&", "");
 		setMessage(message, IMessageProvider.INFORMATION);
-		setTitleImage(Activator.getImageDescriptor(IImageKeys.CALIBRATE_MONITOR_WIZBAN).createImage());
+		setTitleImage(Activator.getImage(IImageKeys.CALIBRATE_MONITOR_WIZBAN));
 		getShell().setMaximized(true);
 	}
 	

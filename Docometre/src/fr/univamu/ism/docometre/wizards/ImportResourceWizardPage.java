@@ -254,12 +254,12 @@ public class ImportResourceWizardPage extends WizardPage {
 			public Image getImage(Object element) {
 				if(!(element instanceof File)) return null;
 				File file = (File)element;
-				if(file.getName().endsWith(Activator.daqFileExtension)) return Activator.getImageDescriptor(IImageKeys.DACQ_CONFIGURATION_ICON).createImage();
-				if(file.getName().endsWith(Activator.processFileExtension)) return Activator.getImageDescriptor(IImageKeys.PROCESS_ICON).createImage();
-				if(file.getName().endsWith(".zip") || file.getName().endsWith("*.tar")) return Activator.getImageDescriptor(IImageKeys.ZIP).createImage();
-				if(file.getName().endsWith(Activator.adwFileExtension)) return Activator.getImageDescriptor(IImageKeys.SAMPLES_ICON).createImage();
-				if(file.getName().endsWith(Activator.dataProcessingFileExtension)) return Activator.getImageDescriptor(IImageKeys.DATA_PROCESSING_ICON).createImage();
-				return  Activator.getImageDescriptor(IImageKeys.FOLDER_ICON).createImage();
+				if(file.getName().endsWith(Activator.daqFileExtension)) return Activator.getImage(IImageKeys.DACQ_CONFIGURATION_ICON);
+				if(file.getName().endsWith(Activator.processFileExtension)) return Activator.getImage(IImageKeys.PROCESS_ICON);
+				if(file.getName().endsWith(".zip") || file.getName().endsWith("*.tar")) return Activator.getImage(IImageKeys.ZIP);
+				if(file.getName().endsWith(Activator.adwFileExtension)) return Activator.getImage(IImageKeys.SAMPLES_ICON);
+				if(file.getName().endsWith(Activator.dataProcessingFileExtension)) return Activator.getImage(IImageKeys.DATA_PROCESSING_ICON);
+				return  Activator.getImage(IImageKeys.FOLDER_ICON);
 			}
 		});
 		browseButton.addSelectionListener(new SelectionAdapter() {

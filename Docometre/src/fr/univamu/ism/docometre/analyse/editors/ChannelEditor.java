@@ -50,7 +50,7 @@ public class ChannelEditor extends EditorPart implements TrialsEditor {
 	
 	@Override
 	public Image getTitleImage() {
-		if(channel == null) return Activator.getImageDescriptor("org.eclipse.ui", "icons/full/etool16/help_contents.png").createImage();
+		if(channel == null) return Activator.getImage("org.eclipse.ui", "icons/full/etool16/help_contents.png");
 		if(channel.isCategory()) return Activator.getImage(IImageKeys.CATEGORY_ICON);
 		return Activator.getImage(IImageKeys.SIGNAL_ICON);
 	}

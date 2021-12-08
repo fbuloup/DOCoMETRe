@@ -107,7 +107,7 @@ public class AddCurveDialog extends TitleAreaDialog {
 	protected Control createDialogArea(Composite parent) {
 		setTitle(DocometreMessages.AddCurvesDialog_Title);
 		setMessage(DocometreMessages.AddCurvesDialog_Message);
-		setTitleImage(Activator.getImageDescriptor(IImageKeys.MODULE_WIZBAN).createImage());
+		setTitleImage(Activator.getImage(IImageKeys.MODULE_WIZBAN));
 		Composite container = (Composite) super.createDialogArea(parent);
 		// Create curve configuration depending on its type
 		createCurveConfigurationArea(container);

@@ -115,7 +115,7 @@ public class DefaultADWinSystemPreferencePage extends PreferencePage implements 
 		protected Control createDialogArea(Composite parent) {
 			setTitle(ADWinMessages.AddModuleDialog_Title);
 			setMessage(ADWinMessages.AddModuleDialog_Message);
-			setTitleImage(Activator.getImageDescriptor(IImageKeys.MODULE_WIZBAN).createImage());
+			setTitleImage(Activator.getImage(IImageKeys.MODULE_WIZBAN));
 			Composite container = (Composite) super.createDialogArea(parent);
 			
 			modulesListViewer = new ListViewer(container);

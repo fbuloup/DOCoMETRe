@@ -207,7 +207,7 @@ public class ChartsConfigurationPage extends ModulePage {
 		ToolBar toolBar = new ToolBar(generalConfigurationSection, SWT.FLAT | SWT.HORIZONTAL);
 		deleteChartToolItem = new ToolItem(toolBar, SWT.NULL);
 		deleteChartToolItem.setEnabled(false);
-		deleteChartToolItem.setImage(Activator.getImageDescriptor(ISharedImages.IMG_ETOOL_DELETE).createImage());
+		deleteChartToolItem.setImage(Activator.getImage(ISharedImages.IMG_ETOOL_DELETE));
 		deleteChartToolItem.setToolTipText(DocometreMessages.DeleteChartsToolItem_Tooltip);
 		DeleteChartsHandler deleteChartsHandler = new DeleteChartsHandler(getSite().getShell(), this, dacqConfiguration.getCharts(), ((ResourceEditor)getEditor()).getUndoContext()); 
 		deleteChartToolItem.addSelectionListener(deleteChartsHandler);
