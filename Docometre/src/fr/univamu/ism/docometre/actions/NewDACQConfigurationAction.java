@@ -83,6 +83,7 @@ public class NewDACQConfigurationAction extends Action implements ISelectionList
 		setText(DocometreMessages.NewDACQConfigurationAction_Text);
 		setToolTipText(DocometreMessages.NewDACQConfigurationAction_Tooltip);
 		setImageDescriptor(Activator.getImageDescriptor(IImageKeys.DACQ_CONFIGURATION_ICON));
+		setEnabled(false);
 	}
 	
 	@Override

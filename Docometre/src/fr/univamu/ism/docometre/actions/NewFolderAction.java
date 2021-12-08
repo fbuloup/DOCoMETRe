@@ -83,6 +83,7 @@ public class NewFolderAction extends Action implements ISelectionListener, IWork
 		setText(DocometreMessages.NewFolderAction_Text);
 		setToolTipText(DocometreMessages.NewFolderAction_Tooltip);
 		setImageDescriptor(Activator.getImageDescriptor(IImageKeys.FOLDER_ICON));
+		setEnabled(false);
 	}
 	
 	@Override

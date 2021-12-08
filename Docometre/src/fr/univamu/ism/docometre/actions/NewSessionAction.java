@@ -85,6 +85,7 @@ public class NewSessionAction extends Action implements ISelectionListener, IWor
 		setText(DocometreMessages.NewSessionAction_Text);
 		setToolTipText(DocometreMessages.NewSessionAction_Tooltip);
 		setImageDescriptor(Activator.getImageDescriptor(IImageKeys.SESSION_ICON));
+		setEnabled(false);
 	}
 	
 	public void run() {
