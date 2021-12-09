@@ -220,6 +220,32 @@ public class ObjectsController {
 	}
 	
 	/*
+	 * Set resource for specific object
+	 */
+	public static void setResourceForObject(Object object, IResource resource) {
+		if(object == null) {
+			Exception exception = new Exception("Trying to set resource on null object - Resource : " + resource);
+			Activator.logErrorMessageWithCause(exception);
+			exception.printStackTrace();
+			return;
+		}
+		if(resource == null) {
+			Exception exception = new Exception("Trying to set object on null resource - Object : " + object);
+			Activator.logErrorMessageWithCause(exception);
+			exception.printStackTrace();
+			return;
+		}
+		if(!resource.exists()) {
+			Exception exception = new Exception("Trying to set object on nonexisiting resource. Object : " + object + " - Resource : " + resource);
+			Activator.logErrorMessageWithCause(exception);
+			exception.printStackTrace();
+			return;
+		}
+		if(object instanceof AbstractElement) ((AbstractElement)object).setResource((IFile)resource);
+		if(object instanceof Script) ((Script)object).setResource(resource);
+	}
+	
+	/*
 	 * Get resource for specific object in specific resource container
 	 */
 //	private static IResource getResourceForObject(Object searchedObject, IResource resource) throws CoreException {

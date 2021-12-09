@@ -72,6 +72,7 @@ import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
+import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.editors.PartNameRefresher;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.views.ExperimentsView;
@@ -94,7 +95,7 @@ public class RenameResourceOperation extends AbstractOperation {
 		addContext(undoContext);
 		this.undoContext = undoContext;
 		this.resource = resource;
-		oldName = resource.getName();
+		oldName = resource.getName().replaceAll("\\.\\w*$", ""); // Remove possible extension
 		this.newName = newName;
 		this.refreshUI = refreshUI;
 		this.renameDataFiles = renameDataFiles;
@@ -144,8 +145,12 @@ public class RenameResourceOperation extends AbstractOperation {
 						// Rename resource and get new resource
 						monitor.subTask(DocometreMessages.RenameAndGetNewResourceSubTaskTitle);
 						IContainer parentResource = resource.getParent();
+						Object associatedObject = ResourceProperties.getObjectSessionProperty(resource);
+						// If resource is process, delete build folder
+						if(ResourceType.isProcess(resource)) ((Process)associatedObject).cleanBuild();
 						resource.move(parentResource.getFullPath().append(name + fileExtension), true, monitor);
 						IResource newResource = parentResource.findMember(name + fileExtension);
+						ObjectsController.setResourceForObject(associatedObject, newResource);
 						performNewName = newResource.getFullPath().toOSString();
 						newResource.refreshLocal(IResource.DEPTH_INFINITE, monitor);
 						// Update default DACQ if necessary
@@ -248,28 +253,27 @@ public class RenameResourceOperation extends AbstractOperation {
 				IEditorReference[] editorReferences = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
 				for (int i = 0; i < editorReferences.length; i++) {
 					try {
+						boolean refreshPartName = false;
+						// Get edited object
 						ResourceEditorInput resourceEditorInput = ((ResourceEditorInput)editorReferences[i].getEditorInput());
 						Object object = resourceEditorInput.getObject();
+						// Get edited resource
 						IResource editedResource = ObjectsController.getResourceForObject(object);
-						if(editedResource == null && object instanceof IResource) {
-							if(ResourceType.isLog(newResource) || ResourceType.isParameters(newResource) || ResourceType.isSamples(newResource)) {
-								if(resource.equals(object)) {
-									editedResource = newResource;
-									resourceEditorInput.setObject(newResource);
-								}
-							}
+						
+						// If renamed resource is the edited resource
+						if(newResource.equals(editedResource)) {
+							// Force part name refresh
+							refreshPartName = true;
+							// Update resource editor input if necessary (only the case when object is resource) 
+							if(object instanceof IResource) resourceEditorInput.setObject(newResource);
 						}
-						boolean refreshPartName = false;
-						// Mark this part to be updated if its resource has been renamed
-						if(editedResource != null) {
-							if(editedResource.equals(newResource)) refreshPartName = true;
-							if(ResourceType.isProcess(editedResource)) {
-								// If editor resource is a process, check if associated DACQ file has been renamed
-								String fullPathAssociatedDAQ = ResourceProperties.getAssociatedDACQConfigurationProperty((IFile) editedResource);
-								String fullNewPath = newResource.getFullPath().toOSString();
-								// If yes mark this editor to be refreshed
-								if(fullPathAssociatedDAQ.startsWith(fullNewPath)) refreshPartName = true;
-							}
+						// If edited resource is process and renamed resource is its associated dacq file, force part refresh 
+						if(ResourceType.isProcess(editedResource)) {
+							// If editor resource is a process, check if associated DACQ file has been renamed
+							String fullPathAssociatedDAQ = ResourceProperties.getAssociatedDACQConfigurationProperty((IFile) editedResource);
+							String fullNewPath = newResource.getFullPath().toOSString();
+							// If yes mark this editor to be refreshed
+							if(fullPathAssociatedDAQ.startsWith(fullNewPath)) refreshPartName = true;
 						}
 						if(refreshPartName) ((PartNameRefresher)editorReferences[i].getEditor(false)).refreshPartName();
 					} catch (PartInitException e) {
