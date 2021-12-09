@@ -142,6 +142,11 @@ public abstract class Process extends AbstractElement implements ModuleBehaviour
 	public abstract void compile(IProgressMonitor progressMonitor) throws Exception;
 	
 	/**
+	 * This method clean/remove compile/build files and folders
+	 */
+	public abstract void cleanBuild();
+	
+	/**
 	 * This method can be used as a helper method to prepare the DAQ execution which can be launched by calling method {@link #execute(boolean)}
 	 * @param wait true if the method must wait the end of the process to continue
 	 * @param compile true if a compilation is needed
