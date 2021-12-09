@@ -939,9 +939,37 @@ public class ArduinoUnoProcess extends Process {
 		Activator.logWarningMessage(ArduinoUnoMessages.gfNotMatchMessage3);
 		return new int[] {selectedPrescaler, selectedCmpValue};
 	}
-
+	
+	
+	
+	private void deleteSketchDirectory(File file) {
+		// if the file is directory or not
+		if (file.isDirectory()) {
+			File[] files = file.listFiles();
+			// if the directory contains any file
+			if (files != null) {
+				for (File innerFile : files) {
+					// recursive call if the subdirectory is non-empty
+					deleteSketchDirectory(innerFile);
+				}
+			}
+		}
+		if (file.exists()) if(!file.delete()) Activator.logWarningMessage("Clean build. File " + file + " not deleted !");
+	}
+	
+	@Override
+	public void cleanBuild() {
+		IResource processResource = ObjectsController.getResourceForObject(this);
+		IPath wsPath = new Path(Platform.getInstanceLocation().getURL().getPath());
+		String currentFolder = wsPath.append(processResource.getParent().getFullPath()).toOSString();
+		String outputFolder = currentFolder + File.separator + "BinSource" + File.separator + processResource.getName().replaceAll(Activator.processFileExtension +"$", "");
+		File outputFolderFile = new File(outputFolder);
+		deleteSketchDirectory(outputFolderFile);
+	}
+	
 	@Override
 	public void compile(IProgressMonitor progressMonitor) throws Exception {
+		cleanBuild();
 		IResource processResource = ObjectsController.getResourceForObject(this);
 		IPath wsPath = new Path(Platform.getInstanceLocation().getURL().getPath());
 		String currentFolder = wsPath.append(processResource.getParent().getFullPath()).toOSString();
@@ -992,6 +1020,8 @@ public class ArduinoUnoProcess extends Process {
 		}
 		input.close();
 	    
+		System.out.println("delete markers on" + processResource);
+		
 		processResource.deleteMarkers(null, true, IResource.DEPTH_INFINITE);
 		
 		// Get compile errors

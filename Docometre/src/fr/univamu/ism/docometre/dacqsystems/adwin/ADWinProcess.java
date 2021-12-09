@@ -253,8 +253,25 @@ public class ADWinProcess extends Process {
 		super.appendToEventDiary(event);
 	}
 	
+	private void deleteAdbasicFile(String filePath) {
+		File file = new File(filePath);
+		if (file.exists()) if (!file.delete()) Activator.logWarningMessage("Clean build. File " + file + " not deleted !");
+
+	}
+	
+	@Override
+	public void cleanBuild() {
+		IResource processResource = ObjectsController.getResourceForObject(this);
+		IPath wsPath = new Path(Platform.getInstanceLocation().getURL().getPath());
+		String currentFolder = wsPath.toOSString().replaceAll(File.separator + "$", "") + processResource.getParent().getFullPath().toOSString();
+		String outputFolder = currentFolder + File.separator + "BinSource";
+		String adbasicFilePath = outputFolder + File.separator + processResource.getFullPath().lastSegment().replaceAll(Activator.processFileExtension +"$", ".BAS");
+		deleteAdbasicFile(adbasicFilePath);
+	}
+	
 	@Override
 	public void compile(IProgressMonitor progressMonitor) throws Exception {
+		cleanBuild();
 		if(Platform.getOS().equals(Platform.OS_WIN32)) {
 			Program programEditor = Program.findProgram (".bas");
 			if(programEditor == null) {
@@ -263,7 +280,6 @@ public class ADWinProcess extends Process {
 		}
 		
 		IResource processResource = ObjectsController.getResourceForObject(this);
-		
 		IPath wsPath = new Path(Platform.getInstanceLocation().getURL().getPath());
 		String currentFolder = wsPath.toOSString().replaceAll(File.separator + "$", "") + processResource.getParent().getFullPath().toOSString();
 		String outputFolder = currentFolder + File.separator + "BinSource";
