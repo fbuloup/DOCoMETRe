@@ -6,7 +6,13 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-12-08
+      -- 2021-12-09
+ADDED : 
+* Clean build capability. Called before any compilation, renamed or deleted process resource
+FIXED :
+* Resource leaks on images management
+* Update editors when process is renamed or deleted
+-- 2021-12-08
 ADDED : Nothing
 FIXED : Build problem (files not deployed !)
 -- 2021-12-07
