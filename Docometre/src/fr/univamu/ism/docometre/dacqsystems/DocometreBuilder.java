@@ -111,6 +111,7 @@ public class DocometreBuilder extends IncrementalProjectBuilder {
 		IResourceDelta[] affectedChildren = delta.getAffectedChildren();
 		for (IResourceDelta resourceDelta : affectedChildren) {
 			IResource resource  = resourceDelta.getResource();
+			if(!resource.exists()) continue;
 			int deltaKind = resourceDelta.getKind();
 			if(deltaKind == IResourceDelta.REMOVED) {
 				// Check if it is a process from file extension to remove compiled files
