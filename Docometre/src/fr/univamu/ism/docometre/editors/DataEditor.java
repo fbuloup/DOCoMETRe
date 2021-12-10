@@ -64,7 +64,6 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseMoveListener;
-import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swtchart.IAxis;
@@ -172,8 +171,6 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 		chart.getAxisSet().getXAxes()[0].getTitle().setText("Time (s)");
 		chart.getAxisSet().getYAxes()[0].getTitle().setVisible(false);
 		
-		chart.getPlotArea().setCursor(new Cursor(PlatformUI.getWorkbench().getDisplay(), SWT.CURSOR_CROSS));
-
 		chart.getPlotArea().addMouseMoveListener(this);
 //		chart.getPlotArea().addPaintListener(this);
 //		chart.getPlotArea().addListener(SWT.MouseWheel, this);

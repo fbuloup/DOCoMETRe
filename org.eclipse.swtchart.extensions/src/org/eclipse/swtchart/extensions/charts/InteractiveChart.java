@@ -24,7 +24,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
@@ -36,7 +35,6 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swtchart.Chart;
 import org.eclipse.swtchart.IAxis;
-import org.eclipse.swtchart.IPlotArea;
 import org.eclipse.swtchart.ISeries;
 import org.eclipse.swtchart.IAxis.Direction;
 import org.eclipse.swtchart.Range;
@@ -48,6 +46,7 @@ import org.eclipse.swtchart.extensions.properties.LegendPage;
 import org.eclipse.swtchart.extensions.properties.PropertiesResources;
 import org.eclipse.swtchart.extensions.properties.SeriesLabelPage;
 import org.eclipse.swtchart.extensions.properties.SeriesPage;
+import org.eclipse.swtchart.internal.PlotArea;
 
 /**
  * An interactive chart which provides the following abilities.
@@ -90,7 +89,6 @@ public class InteractiveChart extends Chart implements PaintListener {
 	private boolean doubleClick;
 	
 	private Set<ZoomListener> zoomListeners = new HashSet<>();
-	private Cursor cursor;
 
 	/**
 	 * Constructor.
@@ -126,7 +124,7 @@ public class InteractiveChart extends Chart implements PaintListener {
 	 */
 	private void init() {
 		resources = new PropertiesResources();
-		Composite plot = getPlotArea();
+		PlotArea plot = (PlotArea)getPlotArea();
 		plot.addListener(SWT.Resize, this);
 		plot.addListener(SWT.MouseMove, this);
 		plot.addListener(SWT.MouseDown, this);
@@ -135,10 +133,9 @@ public class InteractiveChart extends Chart implements PaintListener {
 		plot.addListener(SWT.KeyDown, this);
 		plot.addListener(SWT.MouseDoubleClick, this);
 		plot.addPaintListener(this);
+		plot.setCursor(Display.getDefault().getSystemCursor(SWT.CURSOR_CROSS));
 		cursorMarkerDeltaPainter = new CursorMarkerDeltaPainter(this);
-		((IPlotArea)plot).addCustomPaintListener(cursorMarkerDeltaPainter);
-		cursor = new Cursor(Display.getDefault(), SWT.CURSOR_CROSS);
-		getPlotArea().setCursor(cursor);
+		plot.addCustomPaintListener(cursorMarkerDeltaPainter);
 		createMenuItems();
 	}
 	
@@ -302,7 +299,6 @@ public class InteractiveChart extends Chart implements PaintListener {
 	@Override
 	public void dispose() {
 		resources.dispose();
-		cursor.dispose();
 		super.dispose();
 	}
 

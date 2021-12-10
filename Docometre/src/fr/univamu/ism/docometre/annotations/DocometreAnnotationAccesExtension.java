@@ -48,11 +48,11 @@ import org.eclipse.jface.text.source.ImageUtilities;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseMoveListener;
-import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Canvas;
+import org.eclipse.swt.widgets.Display;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.IImageKeys;
@@ -61,7 +61,6 @@ public class DocometreAnnotationAccesExtension implements IAnnotationAccessExten
 		
 		private Image image;
 		private MouseMoveListener mouseMoveListener;
-		private Cursor handCursor;
 		private Rectangle lastPosition;
 		
 		public DocometreAnnotationAccesExtension() {
@@ -81,7 +80,6 @@ public class DocometreAnnotationAccesExtension implements IAnnotationAccessExten
 		public void paint(Annotation annotation, GC gc, Canvas canvas, Rectangle bounds) {
 
 			if(image != null && !image.isDisposed()) image.dispose();
-			if(handCursor == null) handCursor = new Cursor(canvas.getDisplay(), SWT.CURSOR_HAND);
 			
 			switch (annotation.getType()) {
 			case ErrorAnnotation.TYPE_ERROR:
@@ -106,7 +104,7 @@ public class DocometreAnnotationAccesExtension implements IAnnotationAccessExten
 					public void mouseMove(MouseEvent e) {
 						canvas.setCursor(null);
 						if(lastPosition == null) return;
-						if(e.y >= lastPosition.y && e.y <= lastPosition.y + lastPosition.height) canvas.setCursor(handCursor);
+						if(e.y >= lastPosition.y && e.y <= lastPosition.y + lastPosition.height) canvas.setCursor(Display.getDefault().getSystemCursor(SWT.CURSOR_HAND));
 					}
 				};
 				canvas.addMouseMoveListener(mouseMoveListener);
@@ -151,7 +149,6 @@ public class DocometreAnnotationAccesExtension implements IAnnotationAccessExten
 
 		public void dispose() {
 			if(image != null && !image.isDisposed()) image.dispose();
-			if(handCursor != null && !handCursor.isDisposed()) handCursor.dispose();
 		}
 
 		

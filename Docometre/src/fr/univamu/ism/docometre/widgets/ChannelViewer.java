@@ -46,7 +46,6 @@ import java.text.DecimalFormat;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
@@ -142,7 +141,7 @@ public class ChannelViewer extends Composite {
 				stateLabel = new Label(titleComposite, SWT.NONE);
 				stateLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
 				stateLabel.setImage(imageOff);
-				stateLabel.setCursor(new Cursor(getDisplay(), SWT.CURSOR_HAND));
+				stateLabel.setCursor(Display.getDefault().getSystemCursor(SWT.CURSOR_HAND));//new Cursor(getDisplay(), SWT.CURSOR_HAND));
 				stateLabel.addMouseListener(new MouseAdapter() {
 					@Override
 					public void mouseUp(MouseEvent e) {
@@ -180,7 +179,7 @@ public class ChannelViewer extends Composite {
 		showGraphButton.setImage(imageLeft);
 		showGraphButton.setLayoutData(new GridData(SWT.END, SWT.TOP, false, false));
 		
-		showGraphButton.setCursor(new Cursor(getDisplay(), SWT.CURSOR_HAND));
+		showGraphButton.setCursor(Display.getDefault().getSystemCursor(SWT.CURSOR_HAND));//new Cursor(getDisplay(), SWT.CURSOR_HAND));
 		showGraphButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseUp(MouseEvent e) {

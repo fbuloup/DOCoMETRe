@@ -137,10 +137,8 @@ void refreshLabel () {
 	if (regions != 0) string += regions + " Region(s)\n";
 	if (textLayouts != 0) string += textLayouts + " TextLayout(s)\n";
 	if (transforms != 0) string += transforms + " Transform(s)\n";
-	if (string.length () != 0) {
-		string = string.substring (0, string.length () - 1);
-	}
-	label.setText ("".equals(string)?"0 object":string);
+	string += objects.length + " total object(s) (handle(s))";
+	label.setText (string);
 	layout();
 }
 
