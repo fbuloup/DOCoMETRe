@@ -351,7 +351,6 @@ public class Chart extends Composite implements Listener {
 	 */
 	@Override
 	public void dispose() {
-
 		title.dispose();
 		legend.dispose();
 		axisSet.dispose();

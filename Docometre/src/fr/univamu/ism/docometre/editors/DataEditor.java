@@ -140,6 +140,7 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 		ApplicationActionBarAdvisor.markerContributionItem.setVisible(false);
 		ApplicationActionBarAdvisor.deltaContributionItem.setVisible(false);
 		ApplicationActionBarAdvisor.cursorContributionItem.getParent().update(true);
+		chart.dispose();
 		super.dispose();
 	}
 
@@ -226,7 +227,6 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 				 }
 			}
 		});
-			
 		
 	}
 	

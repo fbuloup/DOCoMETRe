@@ -90,6 +90,7 @@ public class InteractiveChart extends Chart implements PaintListener {
 	private boolean doubleClick;
 	
 	private Set<ZoomListener> zoomListeners = new HashSet<>();
+	private Cursor cursor;
 
 	/**
 	 * Constructor.
@@ -136,7 +137,8 @@ public class InteractiveChart extends Chart implements PaintListener {
 		plot.addPaintListener(this);
 		cursorMarkerDeltaPainter = new CursorMarkerDeltaPainter(this);
 		((IPlotArea)plot).addCustomPaintListener(cursorMarkerDeltaPainter);
-		getPlotArea().setCursor(new Cursor(Display.getDefault(), SWT.CURSOR_CROSS));
+		cursor = new Cursor(Display.getDefault(), SWT.CURSOR_CROSS);
+		getPlotArea().setCursor(cursor);
 		createMenuItems();
 	}
 	
@@ -299,9 +301,9 @@ public class InteractiveChart extends Chart implements PaintListener {
 	 */
 	@Override
 	public void dispose() {
-
-		super.dispose();
 		resources.dispose();
+		cursor.dispose();
+		super.dispose();
 	}
 
 	/**
