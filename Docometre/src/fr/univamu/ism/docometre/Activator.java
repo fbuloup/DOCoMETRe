@@ -54,6 +54,8 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
@@ -182,6 +184,14 @@ public class Activator extends AbstractUIPlugin {
 	 */
 	public static Image getImage(String path) {
 		return getImage(PLUGIN_ID, path);
+	}
+	
+	public static Font getBoldFont(String  symbolicName) {
+		return JFaceResources.getFontRegistry().getBold(symbolicName);
+	}
+	
+	public static Font getItalicFont(String  symbolicName) {
+		return JFaceResources.getFontRegistry().getItalic(symbolicName);
 	}
 
 	/*

@@ -47,6 +47,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -56,8 +57,6 @@ import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -126,12 +125,10 @@ public class CalibrateMonitorDialog extends TitleAreaDialog {
 		gl.marginWidth = 0;
 		gl.marginHeight = 0;
 		inputsContainer.setLayout(gl);
-		Label labelInputs = new Label(inputsContainer, SWT.BOLD);
+		Label labelInputs = new Label(inputsContainer, SWT.NORMAL);
 		labelInputs.setText(DocometreMessages.Inputs);
 		labelInputs.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, false));
-		FontData fontData = labelInputs.getFont().getFontData()[0];
-		Font font = new Font(parent.getDisplay(), new FontData(fontData.getName(), fontData.getHeight(), SWT.BOLD));
-		labelInputs.setFont(font);
+		labelInputs.setFont(Activator.getBoldFont(JFaceResources.DEFAULT_FONT));
 		
 		ScrolledComposite outputsScrolledComposite = new ScrolledComposite(container, SWT.V_SCROLL /*| SWT.H_SCROLL*/ | SWT.BORDER);
 		outputsScrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -144,12 +141,10 @@ public class CalibrateMonitorDialog extends TitleAreaDialog {
 		gl.marginWidth = 0;
 		gl.marginHeight = 0;
 		outputsContainer.setLayout(gl);
-		Label labelOutputs = new Label(outputsContainer, SWT.BOLD);
+		Label labelOutputs = new Label(outputsContainer, SWT.NORMAL);
 		labelOutputs.setText(DocometreMessages.Outputs);
 		labelOutputs.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, false));
-		fontData = labelOutputs.getFont().getFontData()[0];
-		font = new Font(parent.getDisplay(), new FontData(fontData.getName(), fontData.getHeight(), SWT.BOLD));
-		labelOutputs.setFont(font);
+		labelOutputs.setFont(Activator.getBoldFont(JFaceResources.DEFAULT_FONT));
 
 		Module[] modules = adwinDACQConfiguration.getModules();
 		

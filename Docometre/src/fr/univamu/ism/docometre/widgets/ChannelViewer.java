@@ -43,11 +43,10 @@ package fr.univamu.ism.docometre.widgets;
 
 import java.text.DecimalFormat;
 
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -129,9 +128,8 @@ public class ChannelViewer extends Composite {
 		Label titleLabel = new Label(titleComposite, SWT.NONE);
 		titleLabel.setText(title);
 		titleLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		FontData fontData = titleLabel.getFont().getFontData()[0];
-		Font font = new Font(getDisplay(), new FontData(fontData.getName(), fontData.getHeight(), SWT.ITALIC | SWT.BOLD));
-		titleLabel.setFont(font);
+		titleLabel.setFont(Activator.getBoldFont(JFaceResources.DEFAULT_FONT));
+		titleLabel.setFont(Activator.getItalicFont(JFaceResources.DEFAULT_FONT));
 		
 		if(!this.input) {
 			if(!this.analog) {
@@ -165,9 +163,7 @@ public class ChannelViewer extends Composite {
 				showCalibratedValuesButton.setLayoutData(new GridData(SWT.END, SWT.FILL, true, false, 13, 1));
 				showCalibratedValuesButton.setText(DocometreMessages.ShowCalibratedValues);
 				// Create calibrate header 
-				CalibrationHeader calibrationHeader = CalibrationFactory.createHeader(titleComposite, channel);
-				addDisposeListener(calibrationHeader);
-				
+				CalibrationFactory.createHeader(titleComposite, channel);
 			}
 			// Analog or digital input
 			valueLabel = new Label(titleComposite, SWT.NONE);
@@ -274,17 +270,6 @@ public class ChannelViewer extends Composite {
 	
 	public Channel getChannel() {
 		return channel;
-	}
-	
-	@Override
-	public void dispose() {
-		imageLeft.dispose();
-		imageDown.dispose();
-		if(!input && !analog) {
-			imageOn.dispose();
-			imageOff.dispose();
-		}
-		super.dispose();
 	}
 
 }
