@@ -11,7 +11,12 @@
 package org.eclipse.swt.tools.internal;
 
 import java.io.*;
+import java.util.Arrays;
 
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.ListViewer;
+import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.*;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.graphics.*;
@@ -27,7 +32,7 @@ import org.eclipse.swt.widgets.*;
  * 
  */
 public class Sleak {
-	List list;
+	ListViewer listViewer;
 	Canvas canvas;
 	Button start, stop, check;
 	Text text;
@@ -91,9 +96,12 @@ public void create (Composite parent) {
 	check.addListener (SWT.Selection, e -> toggleStackTrace ());
 	check.setSelection (false);
 	
-	list = new List (leftContainer, SWT.BORDER | SWT.V_SCROLL);
-	list.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-	list.addListener (SWT.Selection, event -> refreshObject ());
+	listViewer = new ListViewer(leftContainer, SWT.BORDER | SWT.V_SCROLL);
+	listViewer.getList().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+	listViewer.getList().addListener (SWT.Selection, event -> refreshObject ());
+	listViewer.setContentProvider(new ArrayContentProvider());
+	listViewer.setLabelProvider(new LabelProvider());
+	listViewer.setComparator(new ViewerComparator());
 	
 	label = new Label (leftContainer, SWT.BORDER);
 	label.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
@@ -173,12 +181,11 @@ void refreshDifference () {
 	errors = new Error [count];
 	System.arraycopy (diffObjects, 0, objects, 0, count);
 	System.arraycopy (diffErrors, 0, errors, 0, count);
-	list.removeAll ();
+	listViewer.setInput(null);
 	text.setText ("");
 	canvas.redraw ();
-	for (int i=0; i<objects.length; i++) {
-		list.add (objects [i].toString());
-	}
+	
+	listViewer.setInput(objects);
 	refreshLabel ();
 	layout ();
 }
@@ -190,10 +197,9 @@ void toggleStackTrace () {
 
 void paintCanvas (Event event) {
 	canvas.setCursor (null);
-	int index = list.getSelectionIndex ();
-	if (index == -1) return;
+	Object object = listViewer.getStructuredSelection().getFirstElement();
+	if (object == null) return;
 	GC gc = event.gc;
-	Object object = objects [index];
 	if (object instanceof Color) {
 		if (((Color)object).isDisposed ()) return;
 		gc.setBackground ((Color) object);
@@ -265,11 +271,12 @@ void paintCanvas (Event event) {
 }
 
 void refreshObject () {
-	int index = list.getSelectionIndex ();
-	if (index == -1) return;
+	Object object = listViewer.getStructuredSelection().getFirstElement();
+	if (object == null) return;
 	if (check.getSelection ()) {
 		ByteArrayOutputStream stream = new ByteArrayOutputStream ();
 		PrintStream s = new PrintStream (stream);
+		int index = Arrays.binarySearch(objects, object);
 		errors [index].printStackTrace (s);
 		text.setText (stream.toString ());
 		text.setVisible (true);
@@ -291,7 +298,7 @@ void refreshAll () {
 }
 
 void layout () {
-	list.getParent().layout();
+	listViewer.getList().getParent().layout();
 	canvas.layout();
 	text.getParent().layout();
 //	Composite parent = canvas.getParent();
