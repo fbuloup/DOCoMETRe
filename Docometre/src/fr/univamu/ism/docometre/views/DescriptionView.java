@@ -150,6 +150,7 @@ public class DescriptionView extends ViewPart implements ISelectionListener, IPa
 			// Copy image in canvas
 			e.gc.drawImage(image, 0, 0, image.getBounds().width, image.getBounds().height, 1, 0, getClientArea().width - 2, getClientArea().height);
 			image.dispose();
+			gc.dispose();
 			
 			// Draw black round rectangle
 			e.gc.setForeground(JFaceResources.getColorRegistry().get(BORDER_COLOR));
@@ -295,6 +296,18 @@ public class DescriptionView extends ViewPart implements ISelectionListener, IPa
 		String value = ResourceProperties.getDescriptionPersistentProperty(selectedResource);
 		if(value != null ) descriptionStyledText.setText(value);
 		else descriptionStyledText.setText("");
+	}
+
+	public void refreshCompletion() {
+		if(selectedResource == null || !selectedResource.exists()) return;
+		if(completion != null && !completion.isDisposed()) completion.dispose();
+		if(ResourceType.isSubject(selectedResource) || ResourceType.isSession(selectedResource)) {
+			completion = new Completion(parentContainer, SWT.NONE, selectedResource);
+			completion.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+			completion.moveAbove(descriptionStyledText);
+			((GridData)completion.getLayoutData()).heightHint = COMPLETION_HEIGHT;
+		}
+		parentContainer.layout(true);
 	}
 	
 }

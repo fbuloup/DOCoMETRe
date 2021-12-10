@@ -14,6 +14,7 @@ public class MarkTrialsUnDoneHandler extends MarkTrialsHandler {
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		try {
 			MarkTrialsDoneHandler.applyValue(resources, false);
+			MarkTrialsDoneHandler.refreshDescriptionView();
 		} catch (CoreException e) {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
