@@ -247,8 +247,8 @@ public class CustomerFunction extends GenericFunction {
 	
 	private String parseCode(Process process, String keyCode, String code, Object context) {
 		String temporaryCode = FunctionFactory.getProperty(process, functionFileName, keyCode.toUpperCase());
-		if(temporaryCode != null) {
-			temporaryCode = "\nREM Custom Function : " + getName(context) + "\n" + temporaryCode;
+		if(temporaryCode != null && !"".equals(temporaryCode)) {
+			temporaryCode = "\nREM Custom Function : " + getName(context) + "\n\n" + temporaryCode;
 			HashMap<String, String> properties = getProperties();
 			Set<String> propertiesKeys = properties.keySet();
 			String hashCode = String.valueOf(hashCode());
@@ -260,7 +260,7 @@ public class CustomerFunction extends GenericFunction {
 				temporaryCode = temporaryCode.replaceAll(propertyKeyRegExp, propertyValue);
 			}
 		}
-		return (temporaryCode != null) ? code + temporaryCode + "\n\n" : code;
+		return (temporaryCode != null && !"".equals(temporaryCode)) ? code + temporaryCode + "\n\n" : code;
 	}
 	
 	@Override
