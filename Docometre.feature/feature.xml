@@ -6,9 +6,16 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-12-09
+      ADDED :
+* Update description view when trials states change
+* Missing space in selected resource label
+* Improve Sleak view presentation
+FIXED :
+* Resource leaks with data editor 
+-- 2021-12-09
 ADDED : 
-* Clean build capability. Called before any compilation, renamed or deleted process resource
+* Clean build capability. Called before any compilation, renamed
+or deleted process resource
 FIXED :
 * Resource leaks on images management
 * Update editors when process is renamed or deleted
