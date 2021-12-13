@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-12-13 - Bis
+      -- 2021-12-13 - Ter
+ADDED : Nothing
+FIXED :
+* Regression in workbench shared images
+-- 2021-12-13 - Bis
 ADDED :
 * Marquee tools in process editors with fr translations
 FIXED : Nothing
