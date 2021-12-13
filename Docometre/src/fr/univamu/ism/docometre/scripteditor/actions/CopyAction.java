@@ -46,9 +46,9 @@ import java.util.List;
 import org.eclipse.gef.ui.actions.SelectionAction;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionFactory;
 
+import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.scripteditor.commands.CopyCommand;
 import fr.univamu.ism.docometre.scripteditor.editparts.BlockEditPart;
@@ -64,7 +64,7 @@ public class CopyAction extends SelectionAction {
 	protected void init() {
 		super.init();
 		setText(DocometreMessages.CopyAction_Text);
-		setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_COPY));
+		setImageDescriptor(Activator.getSharedImageDescriptor(ISharedImages.IMG_TOOL_COPY));
 		setId(ActionFactory.COPY.getId());
 	}
 

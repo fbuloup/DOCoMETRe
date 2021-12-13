@@ -86,9 +86,8 @@ public class PasteResourcesAction extends Action implements ISelectionListener, 
 		this.copyResourcesAction = copyResourcesAction;
 		setText(DocometreMessages.PasteAction_Text);
         setToolTipText(DocometreMessages.PasteAction_Text);
-        ISharedImages sharedImages = window.getWorkbench().getSharedImages();
-        setImageDescriptor(sharedImages.getImageDescriptor(ISharedImages.IMG_TOOL_PASTE));
-        setDisabledImageDescriptor(sharedImages.getImageDescriptor(ISharedImages.IMG_TOOL_PASTE_DISABLED));
+        setImageDescriptor(Activator.getSharedImageDescriptor(ISharedImages.IMG_TOOL_PASTE)); 
+        setDisabledImageDescriptor(Activator.getSharedImageDescriptor(ISharedImages.IMG_TOOL_PASTE_DISABLED)); 
 	}
 	
 	@Override

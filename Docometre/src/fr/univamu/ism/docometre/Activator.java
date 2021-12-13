@@ -59,6 +59,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
@@ -176,6 +177,24 @@ public class Activator extends AbstractUIPlugin {
 			image = plugin.getImageRegistry().get(path);
 		}
 		return image;
+	}
+	
+	/*
+	 * Return the shared image for the image file at the given
+	 * plug-in relative path
+	 */
+	public static Image getSharedImage(String path) {
+		ISharedImages sharedImages = PlatformUI.getWorkbench().getSharedImages();
+		return sharedImages.getImage(path);
+	}
+	
+	/*
+	 * Return the shared image descriptor for the image file at the given
+	 * plug-in relative path
+	 */
+	public static ImageDescriptor getSharedImageDescriptor(String path) {
+		ISharedImages sharedImages = PlatformUI.getWorkbench().getSharedImages();
+		return sharedImages.getImageDescriptor(path);
 	}
 	
 	/*

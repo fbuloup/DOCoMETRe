@@ -286,7 +286,7 @@ public abstract class ModulePage extends FormPage implements PropertyObserver {
 			//Tool bar
 			ToolBar toolBar = new ToolBar(tableConfigurationSection, SWT.FLAT | SWT.HORIZONTAL);
 			deleteToolItem = new ToolItem(toolBar, SWT.NULL);
-			deleteToolItem.setImage(Activator.getImage(ISharedImages.IMG_ETOOL_DELETE));
+			deleteToolItem.setImage(Activator.getSharedImage(ISharedImages.IMG_ETOOL_DELETE));
 			new ToolItem(toolBar, SWT.SEPARATOR);
 			addToolItem = new ToolItem(toolBar, SWT.NULL);
 			addToolItem.setImage(Activator.getImage(IImageKeys.ADD_ICON));

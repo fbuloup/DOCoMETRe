@@ -88,14 +88,9 @@ public class DocometreAnnotationAccesExtension implements IAnnotationAccessExten
 			case WarningAnnotation.TYPE_WARNING:
 				image = Activator.getImage(IImageKeys.WARNING_ANNOTATION_ICON);
 				break;
-			// case TYPE_WARN:
-			// image =
-			// PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJS_WARN_TSK);
-			// break;
-			// case TYPE_INFO:
-			// image = PlatformUI.getWorkbench().getSharedImages()
-			// .getImage(ISharedImages.IMG_OBJS_INFO_TSK);
-			// break;
+			default :
+				Activator.getSharedImage("icons/full/etool16/help_contents.png"); // this is IWorkbenchGraphicConstants.IMG_ETOOL_HELP_CONTENTS from org.eclipse.ui
+				break;
 			}
 			
 			if(mouseMoveListener == null) {

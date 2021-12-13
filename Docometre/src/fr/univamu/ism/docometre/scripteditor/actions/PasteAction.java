@@ -48,9 +48,9 @@ import org.eclipse.gef.ui.actions.Clipboard;
 import org.eclipse.gef.ui.actions.SelectionAction;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionFactory;
 
+import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.scripteditor.commands.PasteCommand;
 import fr.univamu.ism.process.Block;
@@ -71,7 +71,7 @@ public class PasteAction extends SelectionAction {
 	protected void init() {
 		super.init();
 		setText(DocometreMessages.PasteAction_Text);
-		setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_PASTE));
+		setImageDescriptor(Activator.getSharedImageDescriptor(ISharedImages.IMG_TOOL_PASTE));
 		setId(ActionFactory.PASTE.getId());
 	}
 	

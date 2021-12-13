@@ -209,7 +209,7 @@ public final class ExpressionFunction extends GenericFunction {
 		
 		deleteButton.setLayoutData(new GridData());
 		deleteButton.setEnabled(false);
-		deleteButton.setImage(Activator.getImage(ISharedImages.IMG_TOOL_DELETE));
+		deleteButton.setImage(Activator.getSharedImage(ISharedImages.IMG_TOOL_DELETE));
 		deleteButton.setToolTipText(DocometreMessages.DeleteAction_Text);
 		deleteButton.addSelectionListener(new SelectionAdapter() {
 			@Override

@@ -95,9 +95,8 @@ public class DeleteResourcesAction extends Action implements ISelectionListener,
 		setEnabled(false);
 		setText(DocometreMessages.DeleteAction_Text);
 		setToolTipText(DocometreMessages.DeleteAction_Text);
-        ISharedImages sharedImages = window.getWorkbench().getSharedImages();
-        setImageDescriptor(sharedImages.getImageDescriptor(ISharedImages.IMG_TOOL_DELETE));
-        setDisabledImageDescriptor(sharedImages.getImageDescriptor(ISharedImages.IMG_TOOL_DELETE_DISABLED));
+        setImageDescriptor(Activator.getSharedImageDescriptor(ISharedImages.IMG_TOOL_DELETE));
+        setDisabledImageDescriptor(Activator.getSharedImageDescriptor(ISharedImages.IMG_TOOL_DELETE_DISABLED));
 	}
 
 	@Override

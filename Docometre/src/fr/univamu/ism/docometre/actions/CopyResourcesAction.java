@@ -74,9 +74,8 @@ public class CopyResourcesAction extends Action implements ISelectionListener, I
 		setEnabled(false);
 		setText(DocometreMessages.CopyAction_Text);
 		setToolTipText(DocometreMessages.CopyAction_Text);
-        ISharedImages sharedImages = window.getWorkbench().getSharedImages();
-        setImageDescriptor(sharedImages.getImageDescriptor(ISharedImages.IMG_TOOL_COPY));
-        setDisabledImageDescriptor(sharedImages.getImageDescriptor(ISharedImages.IMG_TOOL_COPY_DISABLED));
+        setImageDescriptor(Activator.getSharedImageDescriptor(ISharedImages.IMG_TOOL_COPY)); 
+        setDisabledImageDescriptor(Activator.getSharedImageDescriptor(ISharedImages.IMG_TOOL_COPY_DISABLED));
 	}
 	
 	@Override
