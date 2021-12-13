@@ -73,6 +73,7 @@ import org.eclipse.gef.palette.PaletteToolbar;
 import org.eclipse.gef.palette.PanningSelectionToolEntry;
 import org.eclipse.gef.palette.ToolEntry;
 import org.eclipse.gef.requests.CreationFactory;
+import org.eclipse.gef.tools.MarqueeSelectionTool;
 import org.eclipse.gef.ui.actions.ActionRegistry;
 import org.eclipse.gef.ui.actions.GEFActionConstants;
 import org.eclipse.gef.ui.actions.SelectAllAction;
@@ -503,8 +504,21 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 		ToolEntry panningTool = new PanningSelectionToolEntry();
 		paletteToolbar.add(panningTool);
 
-		ToolEntry marqueeTool = new MarqueeToolEntry();
-		paletteToolbar.add(marqueeTool);
+		ToolEntry marqueeTouchedNodesTool = new MarqueeToolEntry();
+		marqueeTouchedNodesTool.setToolProperty(MarqueeSelectionTool.PROPERTY_MARQUEE_BEHAVIOR, MarqueeSelectionTool.BEHAVIOR_NODES_TOUCHED);
+		paletteToolbar.add(marqueeTouchedNodesTool);
+		
+		ToolEntry marqueeContainedNodesTool = new MarqueeToolEntry();
+		marqueeContainedNodesTool.setToolProperty(MarqueeSelectionTool.PROPERTY_MARQUEE_BEHAVIOR, MarqueeSelectionTool.BEHAVIOR_NODES_CONTAINED);
+		paletteToolbar.add(marqueeContainedNodesTool);
+		
+		ToolEntry marqueeTouchedConnectionsTool = new MarqueeToolEntry();
+		marqueeTouchedConnectionsTool.setToolProperty(MarqueeSelectionTool.PROPERTY_MARQUEE_BEHAVIOR, MarqueeSelectionTool.BEHAVIOR_CONNECTIONS_TOUCHED);
+		paletteToolbar.add(marqueeTouchedConnectionsTool);
+		
+		ToolEntry marqueeContainedConnectionsTool = new MarqueeToolEntry();
+		marqueeContainedConnectionsTool.setToolProperty(MarqueeSelectionTool.PROPERTY_MARQUEE_BEHAVIOR, MarqueeSelectionTool.BEHAVIOR_CONNECTIONS_CONTAINED);
+		paletteToolbar.add(marqueeContainedConnectionsTool);
 		
 		scriptEditorPalette.add(paletteToolbar);
 		scriptEditorPalette.setDefaultEntry(panningTool);
