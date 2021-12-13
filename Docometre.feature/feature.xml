@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-12-13
+      -- 2021-12-13 - Bis
+ADDED :
+* Marquee tools in process editors with fr translations
+FIXED : Nothing
+-- 2021-12-13
 ADDED :
 * Update description view when trials states change
 * Missing space in selected resource label
