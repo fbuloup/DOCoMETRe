@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2021-12-13 - Ter
+      -- 2021-12-14
+ADDED : Nothing
+FIXED :
+* Remove comment code for customer function when segment is empty
+-- 2021-12-13 - Ter
 ADDED : Nothing
 FIXED :
 * Regression in workbench shared images
