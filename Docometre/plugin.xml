@@ -788,6 +788,16 @@
                   label="%SaveAllAction.label"
                   style="push">
             </command>
+            <command
+                  commandId="org.eclipse.ui.edit.rename"
+                  label="%Rename.label"
+                  style="push">
+            </command>
+            <command
+                  commandId="org.eclipse.ui.file.refresh"
+                  label="%Refresh.label"
+                  style="push">
+            </command>
             <separator
                   name="Docometre.separator4"
                   visible="true">
@@ -889,16 +899,6 @@
                   commandId="EditDescriptionAction"
                   icon="icons/editDescription.gif"
                   label="%EditDescriptionAction.label"
-                  style="push">
-            </command>
-            <command
-                  commandId="org.eclipse.ui.edit.rename"
-                  label="%Rename.label"
-                  style="push">
-            </command>
-            <command
-                  commandId="org.eclipse.ui.file.refresh"
-                  label="%Refresh.label"
                   style="push">
             </command>
             <menu
@@ -1346,6 +1346,20 @@
                      label="%ShowSubjectsViewCommand.label"
                      style="push">
                </command>
+               <separator
+                     name="Docometre.separator1"
+                     visible="true">
+               </separator>
+               <command
+                     commandId="TestOpenGLAction"
+                     label="Test OpenGL View"
+                     style="push">
+               </command>
+               <command
+                     commandId="TestJZY3DAction"
+                     label="Test JZY3D View"
+                     style="push">
+               </command>
             </menu>
             <command
                   commandId="org.eclipse.ui.window.preferences"
@@ -1364,16 +1378,6 @@
                      </systemTest>
                   </or>
                </visibleWhen>
-            </command>
-            <command
-                  commandId="TestOpenGLAction"
-                  label="Test OpenGL Charts..."
-                  style="push">
-            </command>
-            <command
-                  commandId="TestJZY3DAction"
-                  label="Test JZY3D Charts..."
-                  style="push">
             </command>
             <command
                   commandId="StartStopMathEngineCommand"
