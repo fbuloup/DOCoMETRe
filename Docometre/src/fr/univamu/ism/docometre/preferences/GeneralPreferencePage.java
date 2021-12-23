@@ -78,9 +78,13 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
 
 	@Override
 	protected void createFieldEditors() {
-		IntegerFieldEditor camerasImageWidthFieldEditor = new IntegerFieldEditor(GeneralPreferenceConstants.PREF_UNDO_LIMIT,
+		IntegerFieldEditor undoLimitFieldEditor = new IntegerFieldEditor(GeneralPreferenceConstants.PREF_UNDO_LIMIT,
 				DocometreMessages.GeneralPreferences_UndoLimit, getFieldEditorParent(), 4);
-		addField(camerasImageWidthFieldEditor);
+		addField(undoLimitFieldEditor);
+		
+		BooleanFieldEditor xmlSerializationFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.XML_SERIALIZATION,
+				DocometreMessages.GeneralPreferences_XMLSerialization, getFieldEditorParent());
+		addField(xmlSerializationFieldEditor);
 
 		BooleanFieldEditor confirmUndoFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.PREF_CONFIRM_UNDO,
 				DocometreMessages.GeneralPreferences_ConfirmUndo, getFieldEditorParent());

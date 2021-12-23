@@ -41,13 +41,19 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStreamWriter;
 import java.util.HashMap;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -55,18 +61,45 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
 
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.AnyTypePermission;
+
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
+import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 import fr.univamu.ism.process.Script;
 
 public class ObjectsController {
 	
 	private static boolean debug = true;
+	private static XStream xStream;
 	
 	/*
 	 * Hash map containing deserialized objects and nb handles per object
 	 */
 	private static HashMap<Object, Integer> objectHandles = new HashMap<Object, Integer>();
+	
+	private static XStream getXStream() {
+		if(xStream == null) {
+			xStream = new XStream();
+			xStream.addPermission(AnyTypePermission.ANY);
+			xStream.setMode(XStream.ID_REFERENCES);
+		}
+		return xStream;
+	}
+	
+	private static boolean isXML(String filePath) {
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader(filePath));
+		    String line = reader.readLine();
+		    reader.close();
+			return Pattern.matches("<\\?xml\\s+version\\s*=\\s*\"1\\.0\"\\s+encoding\\s*=\\s*\"[^\"]+\"\\s*\\?>", line);
+		} catch (IOException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return false;
+	}
 	
 	private static void debug(Object object, int nbHandles) {
 		if(debug) {
@@ -137,21 +170,39 @@ public class ObjectsController {
 			Activator.logErrorMessage("ERROR : you are trying to serialize a null object !");
 			return;
 		}
+		boolean xmlFormat = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.XML_SERIALIZATION);
 		String filePath = file.getLocation().toOSString();
 		FileOutputStream fos = null;
         ObjectOutputStream oos = null;
+        BufferedOutputStream bos = null;
+    	OutputStreamWriter osw = null;
         Exception exception = null;
 		try {
             fos = new FileOutputStream(filePath);
-            oos = new ObjectOutputStream(fos);
-            oos.writeObject(object);
+            if(xmlFormat) {
+            	System.out.println("Serialize to xml file");
+            	bos = new BufferedOutputStream(fos);
+            	osw = new OutputStreamWriter(bos, "UTF-8");
+            	osw.write("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
+            	getXStream().toXML(object, osw);
+            } else {
+            	oos = new ObjectOutputStream(fos);
+                oos.writeObject(object);
+            }
             file.refreshLocal(IResource.DEPTH_ZERO, null);
         } catch (IOException | CoreException e) {
             exception = e;
         } finally {
             try {
-            	oos.flush();
-				oos.close();
+            	if(xmlFormat) {
+            		bos.flush();
+            		osw.flush();
+            		bos.close();
+            		osw.close();
+            	} else {
+            		oos.flush();
+    				oos.close();
+            	}
 	            fos.close();
 			} catch (Exception e) {
 	           if(exception == null) exception = e;
@@ -174,18 +225,29 @@ public class ObjectsController {
 		if(!dataFile.exists()) return null;
 		FileInputStream is = null;
 		ObjectInputStream ois = null;
+		BufferedInputStream bis = null;
 		Exception exception = null;
 		try {
 			is = new FileInputStream(dataFile);
-			ois = new ObjectInputStream(is);
-			object = ois.readObject();
+			if(isXML(file.getLocation().toOSString())) {
+            	System.out.println("Deserialize from xml file");
+				bis = new BufferedInputStream(is);
+				object = getXStream().fromXML(bis);
+			} else {
+				ois = new ObjectInputStream(is);
+				object = ois.readObject();
+			}
 			if(object instanceof AbstractElement) ((AbstractElement)object).setResource(file);
 			if(object instanceof Script) ((Script)object).setResource(file);
 		} catch (Exception e) {
 			exception = e;
 		} finally {
 			try {
-				ois.close();
+				if(isXML(file.getLocation().toOSString())) {
+					bis.close();
+				} else {
+					ois.close();
+				}
 				is.close();
 			} catch (Exception e) {
 				if(exception == null) exception = e;

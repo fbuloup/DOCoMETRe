@@ -84,6 +84,8 @@ public class PreferencesInitializer extends AbstractPreferenceInitializer {
 		
 		defaults.putBoolean(GeneralPreferenceConstants.SHOW_CURSOR, false);
 		defaults.putBoolean(GeneralPreferenceConstants.SHOW_MARKER, false);
+
+		defaults.putBoolean(GeneralPreferenceConstants.XML_SERIALIZATION, false);
 		
 		defaults.put(MathEnginePreferencesConstants.MATH_ENGINE, MathEnginePreferencesConstants.MATH_ENGINE_MATLAB);
 		defaults.putBoolean(MathEnginePreferencesConstants.ALWAYS_LOAD_FROM_SAVED_DATA, false);

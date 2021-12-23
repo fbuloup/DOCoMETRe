@@ -74,11 +74,11 @@ public final class DocometreMessages extends NLS {
 	/*Preferences*/
 	public static String GeneralPreferences_Description;
 	public static String GeneralPreferences_UndoLimit;
+	public static String GeneralPreferences_XMLSerialization;
 	public static String GeneralPreferences_ConfirmUndo;
 	public static String GeneralPreferences_ShowWorkspaceDialog;
 	public static String GeneralPreferences_ShowTraditionalTabs;
 	public static String GeneralPreferences_WineFileLocation;
-	
 	
 	public static String RootPreferencePage_Label;
 	public static String DefaultADWinSystemPreference_Description;
