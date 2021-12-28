@@ -3,4 +3,6 @@
 # DOCoMETRe
 This is an old version of DOCoMETRe repo. Please follow this link for an up to date release.
 
-[//]: # See [wiki](https://github.com/TeamICSTECHNOS/DOCoMETRe) for more details
+<!---
+See [wiki](https://github.com/TeamICSTECHNOS/DOCoMETRe) for more details
+-->
