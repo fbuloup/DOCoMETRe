@@ -41,15 +41,18 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre;
 
+import java.io.File;
 import java.net.URL;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.service.datalocation.Location;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
@@ -101,19 +104,33 @@ public class DocometreApplication implements IApplication {
 		colorRegistry.put(ORANGE, new RGB(255, 102, 0));
 		colorRegistry.put(MAROON, new RGB(122, 0, 0));
 		
-		ChooseWorkspaceData chooseWorkspaceData = ChooseWorkspaceData.getInstance();
-		String workspace = chooseWorkspaceData.getSelection();
-		if(workspace == null || workspace.equals("")) chooseWorkspaceData.setShowDialog(true);
-		if(chooseWorkspaceData.getShowDialog()) {
-			ChooseWorkspaceDialog chooseWorkspaceDialog = new ChooseWorkspaceDialog(chooseWorkspaceData);
-			if(chooseWorkspaceDialog.open() == Window.CANCEL) return IApplication.EXIT_OK;
-			chooseWorkspaceData.save();
+		boolean workspaceOK = false;
+		String workspace = "";
+		while(!workspaceOK) {
+			workspaceOK = true;
+			ChooseWorkspaceData chooseWorkspaceData = ChooseWorkspaceData.getInstance();
 			workspace = chooseWorkspaceData.getSelection();
-		} 
-		
-		if(workspace == null || workspace.equals("")) {
-			Activator.logInfoMessage("Error : workspace folder has not been specified !", DocometreApplication.class);
-			return IApplication.EXIT_OK;
+			if(workspace == null || workspace.equals("")) chooseWorkspaceData.setShowDialog(true);
+			if(chooseWorkspaceData.getShowDialog()) {
+				ChooseWorkspaceDialog chooseWorkspaceDialog = new ChooseWorkspaceDialog(chooseWorkspaceData);
+				if(chooseWorkspaceDialog.open() == Window.CANCEL) return IApplication.EXIT_OK;
+				chooseWorkspaceData.save();
+				workspace = chooseWorkspaceData.getSelection();
+			} 
+			
+			if(workspace == null || workspace.equals("")) {
+				MessageDialog.openError(display.getActiveShell(), DocometreMessages.Error, DocometreMessages.WorkspaceNotSpecified);
+				Activator.logInfoMessage(DocometreMessages.WorkspaceNotSpecified, DocometreApplication.class);
+				workspaceOK = false;
+			}
+			
+			File lockFile = new File(workspace + File.separator + ".metadata" + File.separator +".lock");
+			if(lockFile.exists()) {
+				String message = NLS.bind(DocometreMessages.WorkspaceAlreadyUsed, workspace);
+				MessageDialog.openError(display.getActiveShell(), DocometreMessages.Error, message);
+				Activator.logErrorMessage(message);
+				workspaceOK = false;
+			}
 		}
 		
 		Location instanceLocation = Platform.getInstanceLocation();

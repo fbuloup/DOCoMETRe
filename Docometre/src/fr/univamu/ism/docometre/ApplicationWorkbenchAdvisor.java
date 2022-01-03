@@ -50,6 +50,7 @@ import java.util.Locale;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.preferences.DefaultScope;
@@ -152,6 +153,12 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 					}
 				});
 				return false;
+			} else {
+				IPath workspaceLocation = ResourcesPlugin.getWorkspace().getRoot().getLocation();
+				IPath lockPath = workspaceLocation.append(".metadata").append(".lock");
+				if(lockPath.toFile().exists()) {
+					lockPath.toFile().delete();
+				}
 			}
 		} catch (CoreException e) {
 			e.printStackTrace();
