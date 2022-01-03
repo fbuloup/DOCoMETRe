@@ -53,6 +53,8 @@ public final class DocometreMessages extends NLS {
 	public static String OperationCanceledByUser;
 	public static String WorkspaceAlreadyUsed;
 	public static String WorkspaceNotSpecified;
+	public static String LaunchNewDocometreInstance;
+	public static String CantLaunchNewDocometreInstance;
 
 	/*Experiment View*/
 	public static String ExperimentsViewTitle;

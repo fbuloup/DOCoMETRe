@@ -833,6 +833,19 @@
                   tooltip="%RestartAction.tooltip">
             </command>
             <command
+                  commandId="LaunchNewDocometreSessionCommand"
+                  label="%LaunchNewDocometreSessionCommand.label"
+                  style="push"
+                  tooltip="%LaunchNewDocometreSessionCommand.tooltip">
+               <visibleWhen
+                     checkEnabled="false">
+                  <systemTest
+                        property="osgi.os"
+                        value="macosx">
+                  </systemTest>
+               </visibleWhen>
+            </command>
+            <command
                   commandId="org.eclipse.ui.file.exit"
                   label="%ExitAction.label"
                   style="push">
@@ -3099,6 +3112,11 @@
             defaultHandler="fr.univamu.ism.docometre.handlers.MarkTrialsManualHandler"
             id="MarkTrialsManualCommand"
             name="MarkTrialsManualCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.handlers.LaunchNewDocometreSessionHandler"
+            id="LaunchNewDocometreSessionCommand"
+            name="LaunchNewDocometreSessionCommand">
       </command>
       
       
