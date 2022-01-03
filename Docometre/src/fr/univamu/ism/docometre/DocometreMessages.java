@@ -55,6 +55,8 @@ public final class DocometreMessages extends NLS {
 	public static String WorkspaceNotSpecified;
 	public static String LaunchNewDocometreInstance;
 	public static String CantLaunchNewDocometreInstance;
+	public static String UnableDeleteLockerFile;
+	public static String UnableCreateLockerFile;
 
 	/*Experiment View*/
 	public static String ExperimentsViewTitle;

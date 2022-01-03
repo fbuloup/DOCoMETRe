@@ -155,9 +155,9 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 				return false;
 			} else {
 				IPath workspaceLocation = ResourcesPlugin.getWorkspace().getRoot().getLocation();
-				IPath lockPath = workspaceLocation.append(".metadata").append(".lock");
+				IPath lockPath = workspaceLocation.append(".metadata").append("workspace.locker");
 				if(lockPath.toFile().exists()) {
-					lockPath.toFile().delete();
+					if(!lockPath.toFile().delete()) MessageDialog.openError(shell, DocometreMessages.Error, DocometreMessages.UnableDeleteLockerFile);
 				}
 			}
 		} catch (CoreException e) {

@@ -124,14 +124,17 @@ public class DocometreApplication implements IApplication {
 				workspaceOK = false;
 			}
 			
-			File lockFile = new File(workspace + File.separator + ".metadata" + File.separator +".lock");
-			if(lockFile.exists()) {
+			File workspaceLocker = new File(workspace + File.separator + ".metadata" + File.separator +"workspace.locker");
+			if(workspaceLocker.exists()) {
 				String message = NLS.bind(DocometreMessages.WorkspaceAlreadyUsed, workspace);
 				MessageDialog.openError(display.getActiveShell(), DocometreMessages.Error, message);
 				Activator.logErrorMessage(message);
 				workspaceOK = false;
 			}
 		}
+		
+		File workspaceLocker = new File(workspace + File.separator + ".metadata" + File.separator +"workspace.locker");
+		if(!workspaceLocker.createNewFile()) MessageDialog.openError(display.getActiveShell(), DocometreMessages.Error,  DocometreMessages.UnableCreateLockerFile);
 		
 		Location instanceLocation = Platform.getInstanceLocation();
 		instanceLocation.release();
