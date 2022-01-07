@@ -133,7 +133,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 				preferenceStore.putValue(GeneralPreferenceConstants.MATLAB_SCRIPTS_LOCATION, defaults.get(GeneralPreferenceConstants.MATLAB_SCRIPTS_LOCATION, ""));
 				preferenceStore.putValue(GeneralPreferenceConstants.PYTHON_SCRIPTS_LOCATION, defaults.get(GeneralPreferenceConstants.PYTHON_SCRIPTS_LOCATION, ""));
 				preferenceStore.putValue(GeneralPreferenceConstants.FIRST_LAUNCH, "false");
-				
+				getWorkbenchConfigurer().getWorkbench().getActiveWorkbenchWindow().getShell().setMaximized(true);
 			}
 		}
 		
