@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-01-07
+      -- 2022-01-07 - Bis
+ADDED :
+* Set workbench window maximized at first launch
+FIXED : Nothing
+-- 2022-01-07
 ADDED : Nothing
 FIXED :
 * Bug at start up when &quot;.medata&quot; folder does not exist
