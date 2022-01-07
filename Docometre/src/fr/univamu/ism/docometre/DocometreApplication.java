@@ -67,6 +67,8 @@ import org.eclipse.ui.PlatformUI;
  */
 public class DocometreApplication implements IApplication {
 	
+	public static final Integer EXIT_ERROR = Integer.valueOf(1);
+	
 	public static String COURIER_NEW = "COURIER_NEW";
 	public static String COURIER_NEW_BOLD = "COURIER_NEW_BOLD";
 	
@@ -130,6 +132,14 @@ public class DocometreApplication implements IApplication {
 				MessageDialog.openError(display.getActiveShell(), DocometreMessages.Error, message);
 				Activator.logErrorMessage(message);
 				workspaceOK = false;
+			}
+		}
+		
+		File metadataFolder = new File(workspace + File.separator + ".metadata" + File.separator);
+		if(!metadataFolder.exists()) {
+			if(!metadataFolder.mkdirs()) {
+				MessageDialog.openError(display.getActiveShell(), DocometreMessages.Error,  DocometreMessages.UnableCreateMetadataFolder);
+				return EXIT_ERROR;
 			}
 		}
 		
