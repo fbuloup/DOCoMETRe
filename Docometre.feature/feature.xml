@@ -6,12 +6,18 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-01-06
+      -- 2022-01-07
+ADDED : Nothing
+FIXED :
+* Bug at start up when &quot;.medata&quot; folder does not exist
+-- 2022-01-06
 ADDED :
 * Add support for XML serialization using XStream library
 * Set default serialization to XML
-* Use workspace locker file to prevent several session to open same workspace
-* It is now possible to start a new Docometre Session on Mac OS X
+* Use workspace locker file to prevent several session to open
+same workspace
+* It is now possible to start a new Docometre Session on Mac
+OS X
 FIXED : Nothing
 -- 2021-12-20
 ADDED : 
