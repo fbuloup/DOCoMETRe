@@ -78,17 +78,13 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
 
 	@Override
 	protected void createFieldEditors() {
-		IntegerFieldEditor undoLimitFieldEditor = new IntegerFieldEditor(GeneralPreferenceConstants.PREF_UNDO_LIMIT,
-				DocometreMessages.GeneralPreferences_UndoLimit, getFieldEditorParent(), 4);
-		addField(undoLimitFieldEditor);
+		BooleanFieldEditor showTraditionalTabsFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.SHOW_TRADITIONAL_STYLE_TABS,
+				DocometreMessages.GeneralPreferences_ShowTraditionalTabs, getFieldEditorParent());
+		addField(showTraditionalTabsFieldEditor);
 		
 		BooleanFieldEditor xmlSerializationFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.XML_SERIALIZATION,
 				DocometreMessages.GeneralPreferences_XMLSerialization, getFieldEditorParent());
 		addField(xmlSerializationFieldEditor);
-
-		BooleanFieldEditor confirmUndoFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.PREF_CONFIRM_UNDO,
-				DocometreMessages.GeneralPreferences_ConfirmUndo, getFieldEditorParent());
-		addField(confirmUndoFieldEditor);
 		
 		BooleanFieldEditor showWorkspaceDialogFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.SHOW_WORKSPACE_SELECTION_DIALOG,
 				DocometreMessages.GeneralPreferences_ShowWorkspaceDialog, getFieldEditorParent());
@@ -102,32 +98,47 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
 		});
 		addField(showWorkspaceDialogFieldEditor);
 		
-		BooleanFieldEditor showTraditionalTabsFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.SHOW_TRADITIONAL_STYLE_TABS,
-				DocometreMessages.GeneralPreferences_ShowTraditionalTabs, getFieldEditorParent());
-		addField(showTraditionalTabsFieldEditor);
+		IntegerFieldEditor undoLimitFieldEditor = new IntegerFieldEditor(GeneralPreferenceConstants.PREF_UNDO_LIMIT,
+				DocometreMessages.GeneralPreferences_UndoLimit, getFieldEditorParent());
+		undoLimitFieldEditor.setValidRange(0, 1000);
+		addField(undoLimitFieldEditor);
+
+		BooleanFieldEditor confirmUndoFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.PREF_CONFIRM_UNDO,
+				DocometreMessages.GeneralPreferences_ConfirmUndo, getFieldEditorParent());
+		addField(confirmUndoFieldEditor);
+		
+		Group wineGroup = new Group(getFieldEditorParent(), SWT.NONE);
+		wineGroup.setText("WineHQ (MacOSX, Linux)");
+		wineGroup.setLayout(new FillLayout(SWT.HORIZONTAL));
+		wineGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1));
 		
 		// WINE_FULL_PATH
-		FileFieldEditor wineFileFieldEditor = new FolderPathFieldEditor(GeneralPreferenceConstants.WINE_FULL_PATH, DocometreMessages.GeneralPreferences_WineFileLocation, getFieldEditorParent());
+		FileFieldEditor wineFileFieldEditor = new FolderPathFieldEditor(GeneralPreferenceConstants.WINE_FULL_PATH, DocometreMessages.GeneralPreferences_WineFileLocation, wineGroup);
 		addField(wineFileFieldEditor);
 		
+		Group trialsGroup = new Group(getFieldEditorParent(), SWT.NONE);
+		trialsGroup.setText(DocometreMessages.TrialsParameters);
+		trialsGroup.setLayout(new FillLayout(SWT.HORIZONTAL));
+		trialsGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1));
+		
 		BooleanFieldEditor stopTrialNowFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.STOP_TRIAL_NOW,
-				DocometreMessages.StopTrialImmediatlyWhenAsked, getFieldEditorParent());
+				DocometreMessages.StopTrialImmediatlyWhenAsked, trialsGroup);
 		addField(stopTrialNowFieldEditor);
 		
 		BooleanFieldEditor askForTrialEndingFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.USE_AS_DEFAULT_DO_NOT_ASK_STOP_TRIAL_NOW,
-				DocometreMessages.StopTrialDontAsk, getFieldEditorParent());
+				DocometreMessages.StopTrialDontAsk, trialsGroup);
 		addField(askForTrialEndingFieldEditor);
 		
 		BooleanFieldEditor autoTrialValidation = new BooleanFieldEditor(GeneralPreferenceConstants.AUTO_VALIDATE_TRIALS,
-				DocometreMessages.AutoValidateTrial, getFieldEditorParent());
+				DocometreMessages.AutoValidateTrial, trialsGroup);
 		addField(autoTrialValidation);
 		
 		BooleanFieldEditor autoTrialStartingFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.AUTO_START_TRIALS,
-				DocometreMessages.AutoStartTrial, getFieldEditorParent());
+				DocometreMessages.AutoStartTrial, trialsGroup);
 		addField(autoTrialStartingFieldEditor);
 		
 		Group chartOptionsGroup = new Group(getFieldEditorParent(), SWT.NONE);
-		chartOptionsGroup.setText("Charts options");
+		chartOptionsGroup.setText(DocometreMessages.Charts2DOptions);
 		chartOptionsGroup.setLayout(new FillLayout(SWT.HORIZONTAL));
 		chartOptionsGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1));
 		

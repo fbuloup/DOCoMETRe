@@ -233,12 +233,6 @@
       </page>
       <page
             category="Docometre.SystemsPreferencePage"
-            class="fr.univamu.ism.docometre.preferences.DefaultNISystemPreferencePage"
-            id="Docometre.DefaultNISystem"
-            name="%PrefPage_DefaultNISystem">
-      </page>
-      <page
-            category="Docometre.SystemsPreferencePage"
             class="fr.univamu.ism.docometre.preferences.DefaultArduinoUnoSystemPreferencePage"
             id="Docometre.DefaultArduinoUnoSystem"
             name="%PrefPage_DefaultArduinoUnoSystem">
