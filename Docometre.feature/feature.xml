@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-01-11 - Bis
+      -- 2022-01-11 - Ter
+ADDED : Nothing
+FIXED : 
+* Wrong default location for Matlab and Python Scripts
+-- 2022-01-11 - Bis
 ADDED :
 * Update preferences (again!)
 FIXED : Nothing
