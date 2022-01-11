@@ -78,9 +78,9 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
 
 	@Override
 	protected void createFieldEditors() {
-		BooleanFieldEditor showTraditionalTabsFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.SHOW_TRADITIONAL_STYLE_TABS,
-				DocometreMessages.GeneralPreferences_ShowTraditionalTabs, getFieldEditorParent());
-		addField(showTraditionalTabsFieldEditor);
+//		BooleanFieldEditor showTraditionalTabsFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.SHOW_TRADITIONAL_STYLE_TABS,
+//				DocometreMessages.GeneralPreferences_ShowTraditionalTabs, getFieldEditorParent());
+//		addField(showTraditionalTabsFieldEditor);
 		
 		BooleanFieldEditor xmlSerializationFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.XML_SERIALIZATION,
 				DocometreMessages.GeneralPreferences_XMLSerialization, getFieldEditorParent());
