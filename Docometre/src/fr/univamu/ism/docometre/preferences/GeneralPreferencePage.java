@@ -56,6 +56,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.PlatformUI;
@@ -63,6 +64,7 @@ import org.eclipse.ui.PlatformUI;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ChooseWorkspaceData;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.editors.DataEditor;
 
 public class GeneralPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 	
@@ -182,5 +184,21 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
 			font = new Font(PlatformUI.getWorkbench().getDisplay(), fontData[0]);
 			redirectInfosLabel.setFont(font);
 		}
+	}
+	
+	@Override
+	public boolean performOk() {
+		boolean returnValue = super.performOk();
+		boolean showCursor = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.SHOW_CURSOR);
+		boolean showMarker = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.SHOW_MARKER);
+		IEditorReference[] editorReferences = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
+		for (IEditorReference editorReference : editorReferences) {
+			if(DataEditor.ID.equals(editorReference.getId())) {
+				DataEditor dataEditor = (DataEditor)editorReference.getEditor(false);
+				dataEditor.setShowCursor(showCursor);
+				dataEditor.setShowMarker(showMarker);
+			}
+		}
+		return returnValue;
 	}
 }

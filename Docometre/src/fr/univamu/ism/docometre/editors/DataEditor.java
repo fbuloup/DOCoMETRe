@@ -143,6 +143,14 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 		super.dispose();
 	}
 
+	public void setShowCursor(boolean value) {
+		chart.setShowCursor(value);
+	}
+	
+	public void setShowMarker(boolean value) {
+		chart.setShowMarker(value);
+	}
+	
 	@Override
 	public void createPartControl(Composite parent) {
 			
