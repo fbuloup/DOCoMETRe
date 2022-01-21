@@ -118,6 +118,8 @@ public class NewDACQConfigurationWizardPage extends NewResourceWizardPage {
 	
 	protected void modifyHandler() {
 		/*Check if a system configuration has been selected*/
+		setPageComplete(true);
+		super.modifyHandler();
 		if(configurationCombo != null) {
 			defaultDAQ = defaultButton.getSelection();
 			if(configurationCombo.getSelectionIndex() == -1) {
@@ -125,11 +127,10 @@ public class NewDACQConfigurationWizardPage extends NewResourceWizardPage {
 				controlDecoration2.show();
 				setPageComplete(false);
 			} else {
-				setErrorMessage(null);
+				if(isPageComplete()) setErrorMessage(null);
 				controlDecoration2.hide();
 				system = configurationCombo.getText();
 			}
-			super.modifyHandler();
 		}
 	}
 	
