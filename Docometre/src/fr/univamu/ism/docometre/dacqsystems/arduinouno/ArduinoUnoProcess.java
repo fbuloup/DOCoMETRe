@@ -1113,6 +1113,9 @@ public class ArduinoUnoProcess extends Process {
 		cmd = cmd + "mkdir \"" + outputFolder + File.separator + "Build\"\n";
 		cmd = cmd + "\"" +arduinoUnoCompiler + "\" -hardware=\"" + rootPath + "hardware\" -tools=\"" + rootPath + "hardware\\tools\" -tools=\"" + rootPath + "tools-builder\" -fqbn=arduino:avr:uno -quiet -verbose";
 		cmd = cmd + " -built-in-libraries " + rootPath + "libraries";
+		IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
+		String userLibrariesPath = preferenceStore.getString(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getKey());
+		if(userLibrariesPath != null && !"".equals(userLibrariesPath)) cmd = cmd + " -libraries " + userLibrariesPath;
 		cmd = cmd + " -build-path=" + outputFolder + File.separator + "Build";
 		cmd = cmd + " -compile " + sketchFilePath;// + " > stdout.txt 2>stderr.txt";
 		fileWriter.write(cmd);
@@ -1164,6 +1167,9 @@ public class ArduinoUnoProcess extends Process {
 		cmd = cmd + "mkdir " + outputFolder + File.separator + "Build\n";
 		cmd = cmd + arduinoUnoCompiler + " -hardware=" + rootPath + "hardware/ -tools=" + rootPath + "hardware/tools/ -tools=" + rootPath + "tools-builder/ -fqbn=arduino:avr:uno -quiet -verbose";
 		cmd = cmd + " -built-in-libraries " + rootPath + "libraries";
+		IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
+		String userLibrariesPath = preferenceStore.getString(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getKey());
+		if(userLibrariesPath != null && !"".equals(userLibrariesPath)) cmd = cmd + " -libraries " + userLibrariesPath;
 		cmd = cmd + " -build-path=" + outputFolder + File.separator + "Build";
 		cmd = cmd + " -compile " + sketchFilePath;// + " > stdout.txt 2>stderr.txt";
 		fileWriter.write(cmd);
