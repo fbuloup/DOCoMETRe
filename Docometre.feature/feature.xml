@@ -6,7 +6,16 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-01-11 - Ter
+      -- 2022-01-21
+ADDED : 
+* Internationalization for ADwin
+* Apply &quot;show Cursor/Marker&quot; immediately to all Signal Editors
+FIXED : 
+* Add user library support for Arduino Uno on Linux and Windows
+Plat.
+* Message correction when compilation has succeeded
+* Proper management of the page&apos;s validity 
+-- 2022-01-11 - Ter
 ADDED : Nothing
 FIXED : 
 * Wrong default location for Matlab and Python Scripts
