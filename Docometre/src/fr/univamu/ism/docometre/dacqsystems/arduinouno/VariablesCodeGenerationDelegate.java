@@ -89,28 +89,28 @@ public class VariablesCodeGenerationDelegate {
 			if(isTransfered) {
 				String type = variable.getProperty(ArduinoUnoVariableProperties.TYPE);
 				
-				code = code + "\t\t\t\t\t\t// Transfer " + name + "\n";
-				code = code + "\t\t\t\t\t\tif(transfer_" + name + " == " + frequencyRatio + ") {\n";
+				code = code + "\t\t// Transfer " + name + "\n";
+				code = code + "\t\tif(transfer_" + name + " == " + frequencyRatio + ") {\n";
 				
 				if(type.equals(ArduinoUnoVariableProperties.CHAR)) {
-					code = code + "\t\t\t\t\t\t\t\tsprintf(serialMessage, \"%d:%c\"," + transferNumber + ", " + name + ");\n";
+					code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%c\"," + transferNumber + ", " + name + ");\n";
 				}
 				if(type.equals(ArduinoUnoVariableProperties.INT) || type.equals(ArduinoUnoVariableProperties.BOOL)) {
-					code = code + "\t\t\t\t\t\t\t\tsprintf(serialMessage, \"%d:%d\"," + transferNumber + ", " + name + ");\n";
+					code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%d\"," + transferNumber + ", " + name + ");\n";
 				}
 				if(type.equals(ArduinoUnoVariableProperties.LONG)) {
-					code = code + "\t\t\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu\"," + transferNumber + ", " + name + ");\n";
+					code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%lu\"," + transferNumber + ", " + name + ");\n";
 				}
 				if(type.equals(ArduinoUnoVariableProperties.FLOAT)) {
-					code = code + "\t\t\t\t\t\t\t\tdtostre(" + name + ", temporaryBuffer, 6, DTOSTR_ALWAYS_SIGN + DTOSTR_PLUS_SIGN + DTOSTR_UPPERCASE);\n";
-					code = code + "\t\t\t\t\t\t\t\tsprintf(serialMessage, \"%d:%s\"," + transferNumber + ", temporaryBuffer);\n";
+					code = code + "\t\t\t\tdtostre(" + name + ", temporaryBuffer, 6, DTOSTR_ALWAYS_SIGN + DTOSTR_PLUS_SIGN + DTOSTR_UPPERCASE);\n";
+					code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%s\"," + transferNumber + ", temporaryBuffer);\n";
 				}
 				
-				code = code + "\t\t\t\t\t\t\t\tSerial.println(serialMessage);\n";
-				if(delay > 0)code = code + "\t\t\t\t\t\t\t\tdelayMicroseconds(" + delay + ");\n";
-				code = code + "\t\t\t\t\t\t\t\ttransfer_" + name + " = 0;\n";
-				code = code + "\t\t\t\t\t\t}\n";
-				code = code + "\t\t\t\t\t\ttransfer_" + name + " += 1;\n\n";
+				code = code + "\t\t\t\tSerial.println(serialMessage);\n";
+				if(delay > 0)code = code + "\t\t\t\tdelayMicroseconds(" + delay + ");\n";
+				code = code + "\t\t\t\ttransfer_" + name + " = 0;\n";
+				code = code + "\t\t}\n";
+				code = code + "\t\ttransfer_" + name + " += 1;\n\n";
 			}
 			
 		}
