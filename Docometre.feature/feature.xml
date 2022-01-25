@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-01-21
+      -- 2022-01-25
+ADDED : Nothing
+FIXED :
+* Bad indentation for variables transfer code (Arduino)
+-- 2022-01-21
 ADDED : 
 * Internationalization for ADwin
 * Apply &quot;show Cursor/Marker&quot; immediately to all Signal Editors
