@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-01-25
+      -- 2022-01-26
+ADDED : Nothing
+FIXED :
+* Build message internationalization
+-- 2022-01-25
 ADDED : Nothing
 FIXED :
 * Bad indentation for variables transfer code (Arduino)
