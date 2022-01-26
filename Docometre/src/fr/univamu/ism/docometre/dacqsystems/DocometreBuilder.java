@@ -105,7 +105,7 @@ public class DocometreBuilder extends IncrementalProjectBuilder {
 		HashSet<IFile> processesToBuild = new HashSet<>();
 		IResourceDelta delta = getDelta(getProject());
 		if(delta == null) {
-			Activator.logWarningMessage("Delta is null for build !");
+			Activator.logWarningMessage(DocometreMessages.NothingToBuild);
 			return null;
 		}
 		IResourceDelta[] affectedChildren = delta.getAffectedChildren();
@@ -182,7 +182,10 @@ public class DocometreBuilder extends IncrementalProjectBuilder {
 		try {
 			if(checkCanceled(monitor)) return;
 			if(compile) process.compile(monitor);
-			else throw new Exception("No associated DACQ File for process " + resource.getFullPath());
+			else {
+				String message = NLS.bind(DocometreMessages.NoDACQFileAssociatedToProcess, resource.getFullPath());
+				throw new Exception(message);
+			}
 			monitor.worked(1);
 			if(checkCanceled(monitor)) return;
 		} catch (Exception e) {

@@ -812,6 +812,10 @@ public final class DocometreMessages extends NLS {
 	
 	public static String PleaseStartMathEngineFirst;
 	
+	// Builder
+	public static String NothingToBuild;
+	public static String NoDACQFileAssociatedToProcess;
+	
 	// Channel Editor
 	public static String MarkersGroupTitle;
 	public static String GroupNameLabel;
