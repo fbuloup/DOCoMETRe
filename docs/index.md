@@ -6,7 +6,7 @@ If you need more informations on DOCoMETRe, please check this [overview](http://
 
 Need more details on installation procedure ? Follow this [link](http://www.ism.univ-amu.fr/buloup/documents/DOCoMETRe/Installation.pdf).
 
-Videos tutorials ? Follow this [one](https://www.youtube.com/watch?v=BV_56Ztva1I&list=PLToTNXU9fy6WKUKD1BgPlpn-ONyaHg7vn).
+Videos tutorials ? It's [here](https://www.youtube.com/watch?v=BV_56Ztva1I&list=PLToTNXU9fy6WKUKD1BgPlpn-ONyaHg7vn).
 
 To download DOCoMETRe, please follow the link related to your platform :
 
