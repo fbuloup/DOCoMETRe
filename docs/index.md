@@ -1,4 +1,4 @@
-Welcome to the DOCoMETRe wiki !
+## Welcome to the DOCoMETRe wiki !
 
 If you need more details on installation procedure, please follow this [link](https://www.overleaf.com/read/zkzbrhjgycjs). Need more informations on DOCoMETRe ? Check this [overview](https://www.overleaf.com/read/wnbgvgfdcyxf) !
 
