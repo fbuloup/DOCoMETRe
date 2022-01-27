@@ -1,9 +1,12 @@
 Welcome to the DOCoMETRe wiki !
 
-This software can be useful if you want to acquire signals based on ADwin or Arduino Uno devices. It can also be helpfull to visualise and analyse acquired signals (e.g. filtering, points marking or features computation).
+This software can be useful if you want to acquire signals based on ADwin or Arduino Uno devices. It can also be helpful to visualise and analyse acquired signals (e.g. filtering, points marking or features computation).
+
 If you need more informations on DOCoMETRe, please check this [overview](https://www.overleaf.com/read/wnbgvgfdcyxf) !
+
 Need more details on installation procedure ? Follow this [link](https://www.overleaf.com/read/zkzbrhjgycjs).
-Videos tutorials ? [Here](https://www.youtube.com/watch?v=BV_56Ztva1I&list=PLToTNXU9fy6WKUKD1BgPlpn-ONyaHg7vn).
+
+Videos tutorials ? Follow this [one](https://www.youtube.com/watch?v=BV_56Ztva1I&list=PLToTNXU9fy6WKUKD1BgPlpn-ONyaHg7vn).
 
 To download DOCoMETRe, please follow the link related to your platform :
 
