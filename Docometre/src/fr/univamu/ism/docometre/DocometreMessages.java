@@ -709,6 +709,14 @@ public final class DocometreMessages extends NLS {
 	public static String IsNotAValidValue;
 	public static String CustomerFunctionsMenuLabel;
 	
+	// ADwin pref page
+	public static String ADWinUserLibrariesAbsolutePath_Label;
+	public static String ADWinUserLibrariesAbsolutePath_Tooltip;
+	
+	// Arduino pref page
+	public static String ArduinoUserLibrariesAbsolutePath_Label;
+	public static String ArduinoUserLibrariesAbsolutePath_Tooltip;
+	
 	// Math Engine
 	public static String MathEngineStartStop;
 	public static String MathEngineStarting;
@@ -731,12 +739,14 @@ public final class DocometreMessages extends NLS {
 	public static String MatlabEngineShowMatlabWindow;
 	public static String MatlabEngineTimeOut;
 	public static String MatlabEngineScriptLocation;
+	public static String MatlabEngineUserScriptLocation;
 	public static String MatlabEngineLocation;
 	
 	// Python preferences 
 	public static String PythonPreferences_Description;
 	public static String PythonEngineTimeOut;
 	public static String PythonEngineScriptLocation;
+	public static String PythonEngineUserScriptLocation;
 	public static String PythonEngineLocation;
 	
 	// Export to zip or tar

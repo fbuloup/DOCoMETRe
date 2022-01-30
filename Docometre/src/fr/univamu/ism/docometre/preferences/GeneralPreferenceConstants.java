@@ -68,10 +68,15 @@ public class GeneralPreferenceConstants {
 	public static final String MATLAB_LOCATION = "MATLAB_LOCATION";
 	public static final String MATLAB_TIME_OUT = "MATLAB_TIME_OUT";
 	public static final String MATLAB_SCRIPTS_LOCATION = "MATLAB_SCRIPTS_LOCATION";
+	public static final String MATLAB_USER_SCRIPTS_LOCATION = "MATLAB_USER_SCRIPTS_LOCATION";
 	
 	public static final String PYTHON_LOCATION = "PYTHON_LOCATION";
 	public static final String PYTHON_TIME_OUT = "PYTHON_TIME_OUT";
 	public static final String PYTHON_SCRIPTS_LOCATION = "PYTHON_SCRIPTS_LOCATION";
+	public static final String PYTHON_USER_SCRIPTS_LOCATION = "PYTHON_USER_SCRIPTS_LOCATION";
+	
+	public static final String ADWIN_USER_LIBRARIES_ABSOLUTE_PATH = "ADWIN_USER_LIBRARIES_ABSOLUTE_PATH";
+	public static final String ARDUINO_USER_LIBRARIES_ABSOLUTE_PATH = "ARDUINO_USER_LIBRARIES_ABSOLUTE_PATH";
 	
 	public static final String SHOW_CURSOR = "SHOW_CURSOR";
 	public static final String SHOW_MARKER = "SHOW_MARKER";

@@ -44,6 +44,11 @@ package fr.univamu.ism.docometre.dacqsystems.adwin;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfigurationProperties;
 import fr.univamu.ism.docometre.dacqsystems.Property;
+
+import org.eclipse.core.runtime.preferences.DefaultScope;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+
+import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 
 public final class ADWinDACQConfigurationProperties extends Property {
@@ -51,10 +56,10 @@ public final class ADWinDACQConfigurationProperties extends Property {
 //	UPDATE_VARIABLE("", "", ""),
 	public static final ADWinDACQConfigurationProperties ADBASIC_COMPILER = new ADWinDACQConfigurationProperties("ADWinDACQConfigurationProperties.ADBASIC_COMPILER", ADWinMessages.ADBasicCompilerPath_Label, ADWinMessages.ADBasicCompilerPath_Tooltip, "(.)+");
 	public static final ADWinDACQConfigurationProperties BTL_FILE = new ADWinDACQConfigurationProperties("ADWinDACQConfigurationProperties.BTL_FILE", ADWinMessages.BootloaderPath_Label, ADWinMessages.BootloaderPath_Tooltip, "(.)+");
-	public static final ADWinDACQConfigurationProperties IP_ADDRESS = new ADWinDACQConfigurationProperties("ADWinDACQConfigurationProperties.IP_ADDRESS", ADWinMessages.IPAddress_Label, "", "\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}" );
-	public static final ADWinDACQConfigurationProperties DEVICE_NUMBER = new ADWinDACQConfigurationProperties("ADWinDACQConfigurationProperties.DEVICE_NUMBER", ADWinMessages.DeviceNumber_Label, "", "\\d+");
-	public static final ADWinDACQConfigurationProperties TCPIP_SERVER_DEVICE_NUMBER = new ADWinDACQConfigurationProperties("ADWinDACQConfigurationProperties.TCPIP_SERVER_DEVICE_NUMBER", ADWinMessages.TCPIPServerDeviceNumber_Label, "", "\\d+");
-	public static final ADWinDACQConfigurationProperties PORT_NUMBER = new ADWinDACQConfigurationProperties("ADWinDACQConfigurationProperties.PORT_NUMBER", ADWinMessages.TCPIPDevicePortNumber_Label, "", "\\d{1,5}");
+	public static final ADWinDACQConfigurationProperties IP_ADDRESS = new ADWinDACQConfigurationProperties("ADWinDACQConfigurationProperties.IP_ADDRESS", ADWinMessages.IPAddress_Label, ADWinMessages.IPAddress_Tooltip, "\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}" );
+	public static final ADWinDACQConfigurationProperties DEVICE_NUMBER = new ADWinDACQConfigurationProperties("ADWinDACQConfigurationProperties.DEVICE_NUMBER", ADWinMessages.DeviceNumber_Label, ADWinMessages.DeviceNumber_Tooltip, "\\d+");
+	public static final ADWinDACQConfigurationProperties TCPIP_SERVER_DEVICE_NUMBER = new ADWinDACQConfigurationProperties("ADWinDACQConfigurationProperties.TCPIP_SERVER_DEVICE_NUMBER", ADWinMessages.TCPIPServerDeviceNumber_Label, ADWinMessages.TCPIPServerDeviceNumber_Tooltip, "\\d+");
+	public static final ADWinDACQConfigurationProperties PORT_NUMBER = new ADWinDACQConfigurationProperties("ADWinDACQConfigurationProperties.PORT_NUMBER", ADWinMessages.TCPIPDevicePortNumber_Label, ADWinMessages.TCPIPDevicePortNumber_Tooltip, "\\d{1,5}");
 	public static final ADWinDACQConfigurationProperties TIME_OUT = new ADWinDACQConfigurationProperties("ADWinDACQConfigurationProperties.TIME_OUT", ADWinMessages.TimeOut_Label, ADWinMessages.TimeOut_Tooltip, "\\d+");
 	public static final ADWinDACQConfigurationProperties SYSTEM_TYPE = new ADWinDACQConfigurationProperties("ADWinDACQConfigurationProperties.SYSTEM_TYPE", ADWinMessages.SytemType_Label, ADWinMessages.SystemType_Tooltip, "^(Gold|Pro)$", "Gold:Pro");
 	public static final ADWinDACQConfigurationProperties CPU_TYPE = new ADWinDACQConfigurationProperties("ADWinDACQConfigurationProperties.CPU_TYPE", ADWinMessages.CPUType_Label, ADWinMessages.CPUType_Tooltip, "^(I|II)$", "I:II");
@@ -73,6 +78,7 @@ public final class ADWinDACQConfigurationProperties extends Property {
 	public static String[] CPUTypes = new String[] { I, II };
 
 	public static void populateProperties(DACQConfiguration daqGeneralConfiguration) {
+		IEclipsePreferences defaults = DefaultScope.INSTANCE.getNode(Activator.PLUGIN_ID);
 		DACQConfigurationProperties.populateProperties(daqGeneralConfiguration);
 		daqGeneralConfiguration.setProperty(ADBASIC_COMPILER, "C:\\ADwin\\ADbasic\\ADbasicCompiler.exe");
 		daqGeneralConfiguration.setProperty(BTL_FILE, "C:\\ADwin\\adwin9.btl");
@@ -85,7 +91,7 @@ public final class ADWinDACQConfigurationProperties extends Property {
 		daqGeneralConfiguration.setProperty(CPU_TYPE, "I");
 		daqGeneralConfiguration.setProperty(ADBASIC_VERSION, ">=5");
 		daqGeneralConfiguration.setProperty(GLOBAL_FREQUENCY, "2000");
-		daqGeneralConfiguration.setProperty(LIBRARIES_ABSOLUTE_PATH, "");
+		daqGeneralConfiguration.setProperty(LIBRARIES_ABSOLUTE_PATH, defaults.get(LIBRARIES_ABSOLUTE_PATH.getKey(), ""));
 	}
 
 	public static ADWinDACQConfiguration cloneConfiguration(ADWinDACQConfiguration daqGeneralConfiguration) {

@@ -47,6 +47,8 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.osgi.framework.Bundle;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ChooseWorkspaceData;
@@ -62,6 +64,7 @@ public class PreferencesInitializer extends AbstractPreferenceInitializer {
 	@Override
 	public void initializeDefaultPreferences() {
 		IEclipsePreferences defaults = DefaultScope.INSTANCE.getNode(Activator.PLUGIN_ID);
+		IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
 		defaults.put(GeneralPreferenceConstants.PREF_UNDO_LIMIT, "10");
 		defaults.putBoolean(GeneralPreferenceConstants.PREF_CONFIRM_UNDO, true);
 		defaults.putBoolean(GeneralPreferenceConstants.SHOW_TRADITIONAL_STYLE_TABS, false);
@@ -93,21 +96,33 @@ public class PreferencesInitializer extends AbstractPreferenceInitializer {
 		defaults.putBoolean(GeneralPreferenceConstants.REDIRECT_STD_ERR_OUT_TO_FILE, false);
 		defaults.put(GeneralPreferenceConstants.STD_ERR_OUT_FILE, "");
 		
+		
+		Bundle bundle = Platform.getBundle("Libraries");
+		String librariesPath = "Libraries_" + bundle.getVersion();
+		if(Boolean.getBoolean("DEV")) librariesPath = "Libraries";
 		String runtimeFolder = System.getProperty("user.dir");
 		IPath path = Path.fromOSString(runtimeFolder);
-		if(Platform.OS_MACOSX.equals(Platform.getOS())) {
-			path = path.removeLastSegments(1).append("Eclipse");
+		if(Boolean.getBoolean("DEV")) path = path.append(librariesPath);
+		else {
+			if(Platform.OS_MACOSX.equals(Platform.getOS())) {
+				path = path.removeLastSegments(1).append("Eclipse").append("plugins").append(librariesPath);
+			}
+			if(Platform.OS_WIN32.equals(Platform.getOS())) {
+				path = path.append("plugins").append(librariesPath);;
+			}
+			if(Platform.OS_LINUX.equals(Platform.getOS())) {
+				path = path.append("plugins").append(librariesPath);;
+			}
 		}
-		if(Platform.OS_WIN32.equals(Platform.getOS())) {
-			// TODO
-		}
-		if(Platform.OS_LINUX.equals(Platform.getOS())) {
-			// TODO
-		}
+		path = path.append("includes");
 		defaults.put(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), path.append("ADWinIncludeFiles").toOSString());
+		preferenceStore.putValue(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), path.append("ADWinIncludeFiles").toOSString());
 		defaults.put(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(),  path.append("ArduinoUnoFunctions").toOSString());
+		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(),  path.append("ArduinoUnoFunctions").toOSString());
 		defaults.put(GeneralPreferenceConstants.MATLAB_SCRIPTS_LOCATION, path.append("MatlabScripts").toOSString());
+		preferenceStore.putValue(GeneralPreferenceConstants.MATLAB_SCRIPTS_LOCATION, path.append("MatlabScripts").toOSString());
 		defaults.put(GeneralPreferenceConstants.PYTHON_SCRIPTS_LOCATION, path.append("PythonScripts").toOSString());
+		preferenceStore.putValue(GeneralPreferenceConstants.PYTHON_SCRIPTS_LOCATION, path.append("PythonScripts").toOSString());
 		
 	}
 

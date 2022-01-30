@@ -42,7 +42,10 @@
 package fr.univamu.ism.docometre.dacqsystems.arduinouno;
 
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.preferences.DefaultScope;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 
+import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfigurationProperties;
 import fr.univamu.ism.docometre.dacqsystems.Property;
@@ -65,6 +68,7 @@ public final class ArduinoUnoDACQConfigurationProperties extends Property {
 	public static String[] BAUD_RATES = new String[] { BAUD_RATE_9600, BAUD_RATE_115200, BAUD_RATE_1000000, BAUD_RATE_1500000, BAUD_RATE_2000000 };
 	
 	public static void populateProperties(DACQConfiguration daqGeneralConfiguration) {
+		IEclipsePreferences defaults = DefaultScope.INSTANCE.getNode(Activator.PLUGIN_ID);
 		DACQConfigurationProperties.populateProperties(daqGeneralConfiguration);
 		daqGeneralConfiguration.setProperty(BUILDER_PATH, "");
 		daqGeneralConfiguration.setProperty(AVRDUDE_PATH, "");
@@ -72,7 +76,7 @@ public final class ArduinoUnoDACQConfigurationProperties extends Property {
 		else daqGeneralConfiguration.setProperty(DEVICE_PATH, "/dev/tty.usb*");
 		daqGeneralConfiguration.setProperty(BAUD_RATE, BAUD_RATE_2000000);
 		daqGeneralConfiguration.setProperty(GLOBAL_FREQUENCY, "100");
-		daqGeneralConfiguration.setProperty(LIBRARIES_ABSOLUTE_PATH, "");
+		daqGeneralConfiguration.setProperty(LIBRARIES_ABSOLUTE_PATH, defaults.get(LIBRARIES_ABSOLUTE_PATH.getKey(), ""));
 		daqGeneralConfiguration.setProperty(USER_LIBRARIES_ABSOLUTE_PATH, "");
 	}
 

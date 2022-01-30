@@ -68,6 +68,8 @@ import fr.univamu.ism.docometre.editors.DataEditor;
 
 public class GeneralPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 	
+	private Font font;
+
 	public GeneralPreferencePage() {
 		super(GRID);
 	}
@@ -177,13 +179,19 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
 		Label redirectInfosLabel = new Label(redirectOutErrOptionsGroup, SWT.NORMAL);
 		redirectInfosLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1));
 		redirectInfosLabel.setText(DocometreMessages.REDIRECT_LABEL_TITLE);
-		Font font = redirectInfosLabel.getFont();
+		font = redirectInfosLabel.getFont();
 		FontData[] fontData = font.getFontData();
 		if(fontData[0] != null) {
 			fontData[0].setStyle(SWT.BOLD);
 			font = new Font(PlatformUI.getWorkbench().getDisplay(), fontData[0]);
 			redirectInfosLabel.setFont(font);
 		}
+	}
+	
+	@Override
+	public void dispose() {
+		super.dispose();
+		font.dispose();
 	}
 	
 	@Override

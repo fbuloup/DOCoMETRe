@@ -4,6 +4,10 @@ import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.jface.preference.IntegerFieldEditor;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
@@ -25,11 +29,24 @@ public class PythonPreferencePage extends FieldEditorPreferencePage implements I
 		IntegerFieldEditor pythonTimeOutFieldEditor = new IntegerFieldEditor(GeneralPreferenceConstants.PYTHON_TIME_OUT, DocometreMessages.PythonEngineTimeOut, getFieldEditorParent());
 		addField(pythonTimeOutFieldEditor);
 		
-		FileFieldEditor pythonLocationFieldEditor = new FolderPathFieldEditor(GeneralPreferenceConstants.PYTHON_LOCATION, DocometreMessages.PythonEngineLocation, getFieldEditorParent());
+		Composite container = getFieldEditorParent();
+		container.setLayout(new GridLayout(3,false));
+		// PYTHON_LOCATION
+		FileFieldEditor pythonLocationFieldEditor = new FolderPathFieldEditor(GeneralPreferenceConstants.PYTHON_LOCATION, DocometreMessages.PythonEngineLocation, container);
+		pythonLocationFieldEditor.getLabelControl(container).setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
 		addField(pythonLocationFieldEditor);
-		
-		DirectoryFieldEditor pythonScriptsLocationFieldEditor = new DirectoryFieldEditor(GeneralPreferenceConstants.PYTHON_SCRIPTS_LOCATION, DocometreMessages.PythonEngineScriptLocation, getFieldEditorParent());
+
+		// PYTHON_SCRIPTS_LOCATION
+		DirectoryFieldEditor pythonScriptsLocationFieldEditor = new DirectoryFieldEditor(GeneralPreferenceConstants.PYTHON_SCRIPTS_LOCATION, DocometreMessages.PythonEngineScriptLocation, container);
+		pythonScriptsLocationFieldEditor.getLabelControl(container).setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+		pythonScriptsLocationFieldEditor.setEnabled(false, container);
 		addField(pythonScriptsLocationFieldEditor);
+		
+		// PYTHON_USER_SCRIPTS_LOCATION
+		DirectoryFieldEditor pythonUserScriptsLocationFieldEditor = new DirectoryFieldEditor(GeneralPreferenceConstants.PYTHON_USER_SCRIPTS_LOCATION, DocometreMessages.PythonEngineUserScriptLocation, container);
+		pythonUserScriptsLocationFieldEditor.getLabelControl(container).setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+		pythonUserScriptsLocationFieldEditor.setEnabled(false, container);
+		addField(pythonUserScriptsLocationFieldEditor);
 	}
 
 }

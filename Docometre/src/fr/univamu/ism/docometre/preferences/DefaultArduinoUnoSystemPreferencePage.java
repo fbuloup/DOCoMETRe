@@ -80,6 +80,7 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 	private Text libraryPathText;
 	private Spinner delayTimeSpinner;
 	private Text userLibraryPathText;
+	private Text docoUserLibrariesAbsolutePathText;
 	
 	public static ArduinoUnoDACQConfiguration getDefaultDACQConfiguration() {
 		IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
@@ -106,7 +107,7 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.AVRDUDE_PATH.getKey(), arduinoUnoDACQConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.AVRDUDE_PATH));
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH.getKey(), arduinoUnoDACQConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH));
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.BAUD_RATE.getKey(), arduinoUnoDACQConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.BAUD_RATE));
-//		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), arduinoUnoDACQConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH));
+		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), arduinoUnoDACQConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH));
 		preferenceStore.putValue(DEFAULT_ARDUINO_UNO_SYSTEM_PREFERENCE_INITIALIZED, "true");
 	}
 	
@@ -154,10 +155,12 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 		libraryPathText = new Text(container, SWT.BORDER);
 		libraryPathText.setText(getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey()));
 		libraryPathText.setToolTipText(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getTooltip());
+		libraryPathText.setEditable(false);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(libraryPathText);
 		Button browseLibraryPathButton = new Button(container, SWT.FLAT);
 		browseLibraryPathButton.setText("Browse...");
 		browseLibraryPathButton.addSelectionListener(new DialogSelectionHandler(libraryPathText, true, getShell()));
+		browseLibraryPathButton.setEnabled(false);
 		GridDataFactory.fillDefaults().applyTo(browseLibraryPathButton);
 		
 		//USER LIBRARIES_ABSOLUTE_PATH
@@ -173,6 +176,22 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 		browseUserLibraryPathButton.setText("Browse...");
 		browseUserLibraryPathButton.addSelectionListener(new DialogSelectionHandler(userLibraryPathText, true, getShell()));
 		GridDataFactory.fillDefaults().applyTo(browseUserLibraryPathButton);
+		
+		// ARDUINO_USER_LIBRARIES_ABSOLUTE_PATH 
+		Label docoUserLibrariesAbsolutePathLabel = new Label(container, SWT.NORMAL);
+		docoUserLibrariesAbsolutePathLabel.setText(DocometreMessages.ArduinoUserLibrariesAbsolutePath_Label);
+		docoUserLibrariesAbsolutePathLabel.setToolTipText(DocometreMessages.ArduinoUserLibrariesAbsolutePath_Tooltip);
+		GridDataFactory.fillDefaults().align(SWT.RIGHT, SWT.CENTER).applyTo(docoUserLibrariesAbsolutePathLabel);
+		docoUserLibrariesAbsolutePathText = new Text(container, SWT.BORDER);
+		docoUserLibrariesAbsolutePathText.setText(getPreferenceStore().getString(GeneralPreferenceConstants.ARDUINO_USER_LIBRARIES_ABSOLUTE_PATH));
+		docoUserLibrariesAbsolutePathText.setToolTipText(DocometreMessages.ArduinoUserLibrariesAbsolutePath_Tooltip);
+		docoUserLibrariesAbsolutePathText.setEditable(false);
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(docoUserLibrariesAbsolutePathText);
+		Button browseDocoUserLibrariesAbsolutePathButton = new Button(container, SWT.FLAT);
+		browseDocoUserLibrariesAbsolutePathButton.setEnabled(false);
+		browseDocoUserLibrariesAbsolutePathButton.setText("Browse...");
+		browseDocoUserLibrariesAbsolutePathButton.addSelectionListener(new DialogSelectionHandler(docoUserLibrariesAbsolutePathText, true, getShell()));
+		GridDataFactory.fillDefaults().applyTo(browseDocoUserLibrariesAbsolutePathButton);
 		
 		//BUILDER_PATH
 		Label builderPathLabel = new Label(container, SWT.NORMAL);
