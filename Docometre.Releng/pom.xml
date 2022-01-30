@@ -157,7 +157,9 @@
 		<module>../org.eclipse.swt.tools.spies</module>
 
 
+
+
 		
-		
+		<module>../Libraries</module>
 	</modules>
 </project>
