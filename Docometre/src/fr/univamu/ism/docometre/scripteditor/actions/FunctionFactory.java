@@ -56,6 +56,8 @@ import java.util.Properties;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.preferences.DefaultScope;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.action.IMenuManager;
 
 import fr.univamu.ism.docometre.Activator;
@@ -99,12 +101,18 @@ public final class FunctionFactory {
 	}
 	
 	public static Path computeAbsolutePath(Object context) {
+		// Now we get libraries path from default preferences not from dacq. conf.
+		IEclipsePreferences defaults = DefaultScope.INSTANCE.getNode(Activator.PLUGIN_ID);
 		if(context instanceof Process) {
 			Process process = (Process)context;
 			DACQConfiguration dacqConfiguration = process.getDACQConfiguration();
 			String functionsAbsolutePath = "";
-			if(dacqConfiguration instanceof ADWinDACQConfiguration) functionsAbsolutePath = dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH);
-			if(dacqConfiguration instanceof ArduinoUnoDACQConfiguration) functionsAbsolutePath = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH);
+			if(dacqConfiguration instanceof ADWinDACQConfiguration) 
+				functionsAbsolutePath = defaults.get(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), "");
+//				functionsAbsolutePath = dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH);
+			if(dacqConfiguration instanceof ArduinoUnoDACQConfiguration) 
+				functionsAbsolutePath = defaults.get(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), "");
+//				functionsAbsolutePath = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH);
 			Path path = new Path(functionsAbsolutePath);
 			String suffix = "";
 			if (process instanceof ADWinProcess) suffix = "ADWinFunctions";
@@ -115,8 +123,12 @@ public final class FunctionFactory {
 		if(context instanceof Script) {
 			String functionsAbsolutePath = "";
 			String mathEngine = Activator.getDefault().getPreferenceStore().getString(MathEnginePreferencesConstants.MATH_ENGINE);
-			if(MathEnginePreferencesConstants.MATH_ENGINE_MATLAB.equals(mathEngine)) functionsAbsolutePath =  Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.MATLAB_SCRIPTS_LOCATION);
-			if(MathEnginePreferencesConstants.MATH_ENGINE_PYTHON.equals(mathEngine)) functionsAbsolutePath =  Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.PYTHON_SCRIPTS_LOCATION);
+			if(MathEnginePreferencesConstants.MATH_ENGINE_MATLAB.equals(mathEngine)) 
+				functionsAbsolutePath =  defaults.get(GeneralPreferenceConstants.MATLAB_SCRIPTS_LOCATION, "");
+//				functionsAbsolutePath =  Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.MATLAB_SCRIPTS_LOCATION);
+			if(MathEnginePreferencesConstants.MATH_ENGINE_PYTHON.equals(mathEngine)) 
+				functionsAbsolutePath =  defaults.get(GeneralPreferenceConstants.PYTHON_SCRIPTS_LOCATION, "");
+//				functionsAbsolutePath =  Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.PYTHON_SCRIPTS_LOCATION);
 			Path path = new Path(functionsAbsolutePath);
 			String suffix = "";
 			if(MathEnginePreferencesConstants.MATH_ENGINE_MATLAB.equals(mathEngine)) suffix = "MatlabFunctions";
