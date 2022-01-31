@@ -1,3 +1,6 @@
+# This is a custom/user function example
+# You can use it as inspiration to create
+# your own functions
 MENU_TITLE = Linear Mapping Value
 DESCRIPTION = Map value x from [a, b] to y in [c, d], linearly
 MENU_TITLE_FR = Transformation linéaire  de valeur

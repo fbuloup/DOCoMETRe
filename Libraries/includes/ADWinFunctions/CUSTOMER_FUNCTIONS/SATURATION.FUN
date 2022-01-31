@@ -1,13 +1,13 @@
+# This is a custom/user function example
+# You can use it as inspiration to create
+# your own functions
 ﻿MENU_TITLE = Saturation
 DESCRIPTION = Saturation
 MENU_TITLE_FR = Saturation
 DESCRIPTION_FR = Saturation
 # It'a user function if USER_FUNCTION key exists 
-
 # and its value is 1 or YES or yes or YeS...
-
 USER_FUNCTION = YES 
-
 PARAMETERS_NUMBER = 4
 PARAMETER_1 = NAME = input, TYPE = TEXT:^(?!\s*$).+, LABEL = "Input :",\
 LABEL_FR = "Entrée :"
