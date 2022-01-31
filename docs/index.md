@@ -10,7 +10,7 @@ Videos tutorials ? It's [here](https://www.youtube.com/watch?v=BV_56Ztva1I&list=
 
 To download DOCoMETRe, please follow the link related to your platform :
 
-* [Linux64](http://www.ism.univ-amu.fr/buloup/documents/DOCoMETRe/DocometreProduct-linux.gtk.x86_64.zip)
+* [Linux64](http://www.ism.univ-amu.fr/buloup/documents/DOCoMETRe/DocometreProduct-linux.gtk.x86_64.zip) (tested with Ubuntu 18.04.2 LTS)
 * [MacOSX](http://www.ism.univ-amu.fr/buloup/documents/DOCoMETRe/DocometreProduct-macosx.cocoa.x86_64.zip)
 * [Win64](http://www.ism.univ-amu.fr/buloup/documents/DOCoMETRe/DocometreProduct-win32.win32.x86_64.zip)
 
