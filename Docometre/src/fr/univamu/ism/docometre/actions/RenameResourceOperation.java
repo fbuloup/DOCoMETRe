@@ -146,11 +146,18 @@ public class RenameResourceOperation extends AbstractOperation {
 						monitor.subTask(DocometreMessages.RenameAndGetNewResourceSubTaskTitle);
 						IContainer parentResource = resource.getParent();
 						Object associatedObject = ResourceProperties.getObjectSessionProperty(resource);
+						// if associatedObject is null, we must try to deserialize resource
+						boolean removeHandle = false;
+						if(associatedObject == null && resource instanceof IFile) {
+							associatedObject = ObjectsController.deserialize((IFile)resource);
+							removeHandle = true;
+						}
 						// If resource is process, delete build folder
-						if(ResourceType.isProcess(resource)) ((Process)associatedObject).cleanBuild();
+						if(associatedObject != null && ResourceType.isProcess(resource)) ((Process)associatedObject).cleanBuild();
 						resource.move(parentResource.getFullPath().append(name + fileExtension), true, monitor);
 						IResource newResource = parentResource.findMember(name + fileExtension);
-						ObjectsController.setResourceForObject(associatedObject, newResource);
+						if(associatedObject != null) ObjectsController.setResourceForObject(associatedObject, newResource);
+						if(removeHandle && associatedObject != null) ObjectsController.removeHandle(associatedObject);
 						performNewName = newResource.getFullPath().toOSString();
 						newResource.refreshLocal(IResource.DEPTH_INFINITE, monitor);
 						// Update default DACQ if necessary
