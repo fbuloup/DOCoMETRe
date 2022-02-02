@@ -80,6 +80,8 @@ public final class ADWinFunctionsMenuFactory {
 															  MedianFilterFunction.functionFileName,
 															  BinaryMedianFilterFunction.functionFileName,
 															  SEPARATOR,
+															  StimulusFunction.functionFileName,
+															  SEPARATOR,
 															  SUBMENU_JVL};
 	
 	public static String[] ADWinFunctionsClasses = new String[] {AnalogInputFunction.class.getName(), 
@@ -103,6 +105,7 @@ public final class ADWinFunctionsMenuFactory {
 															    MedianFilterFunction.class.getName(),
 															    BinaryMedianFilterFunction.class.getName(),
 															    null,
+															    StimulusFunction.class.getName(),
 															    null};
 	
 	

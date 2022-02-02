@@ -204,6 +204,22 @@ public class ADWinDACQConfiguration extends DACQConfiguration implements Propert
 		return proposals;
 	}
 	
+	public String[] getOutputsProposalImpl(boolean removeStrings, boolean removeFloats, boolean removeIntegers) {
+		HashSet<String> proposalHashSet = new HashSet<>();
+		ADWinVariable[] variables = getVariables();
+		for (ADWinVariable variable : variables) {
+			String type = variable.getProperty(ADWinVariableProperties.TYPE);
+			if(!removeStrings && ADWinVariableProperties.STRING.equalsIgnoreCase(type)) proposalHashSet.add(variable.getProperty(ChannelProperties.NAME));
+			if(!removeFloats && ADWinVariableProperties.FLOAT.equalsIgnoreCase(type)) proposalHashSet.add(variable.getProperty(ChannelProperties.NAME));
+			if(!removeIntegers && ADWinVariableProperties.INT.equalsIgnoreCase(type)) proposalHashSet.add(variable.getProperty(ChannelProperties.NAME));
+		}
+		String[] proposal = super.getProposal();
+		proposalHashSet.addAll(Arrays.asList(proposal));
+		String[] proposals = proposalHashSet.toArray(new String[proposalHashSet.size()]);
+		Arrays.sort(proposals);
+		return proposals;
+	}
+	
 	@Override
 	public String[] getProposal() {
 		return getProposalImpl(false, false, false);

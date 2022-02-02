@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IResource;
@@ -66,6 +67,8 @@ import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.dacqsystems.Property;
+import fr.univamu.ism.docometre.dacqsystems.functions.StimulusFunction;
+import fr.univamu.ism.process.Block;
 
 public class ADWinChannel extends Channel {
 
@@ -198,9 +201,19 @@ public class ADWinChannel extends Channel {
 			
 			
 			if(isStimulus) {
-				fileName = fileName + ".values";
-				inputFile = new FileInputStream(directoryName + File.separator + fileName);
-				fileChannel = inputFile.getChannel();
+				List<Block> blocks = process.getLoopBlocksContainer().getBlocks();
+				for (Block block : blocks) {
+					if(block instanceof StimulusFunction) {
+						String output = ((StimulusFunction)block).getProperties().get(StimulusFunction.outputKey);
+						if(getProperty(ChannelProperties.NAME).equals(output)) {
+							fileName = ((StimulusFunction)block).getProperties().get(StimulusFunction.absolutePathToFileKey);
+							inputFile = new FileInputStream(fileName);
+							fileChannel = inputFile.getChannel();
+							break;
+						}
+					}
+				}
+				
 			}
 			else if(isTransfered) {
 				fileName = fileName + ".samples";

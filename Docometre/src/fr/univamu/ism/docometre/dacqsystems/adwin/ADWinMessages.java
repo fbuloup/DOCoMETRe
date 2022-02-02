@@ -150,6 +150,12 @@ public class ADWinMessages extends NLS {
 	public static String AddOutput_Tooltip;
 	public static String AnOutModuleExplanations_Text;
 	public static String AnOutModuleExplanations_Text2;
+	
+	/*
+	 * Stimulus label and tooltip
+	 */
+	public static String Stimulus_Path_Label;
+	public static String Stimulus_Path_Tooltip;
 
 	/*
 	 * DIO form page
