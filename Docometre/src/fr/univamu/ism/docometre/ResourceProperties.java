@@ -506,6 +506,12 @@ public final class ResourceProperties {
 			properties.put(keyName + SEPARATOR + USE_SESSION_NAME_AS_FIRST_SUFFIX_IN_DATA_FILES_NAMES_QN.getLocalName(), String.valueOf(ResourceProperties.useSessionNameInDataFilesNamesAsFirstSuffix(resource)));
 			properties.put(keyName + SEPARATOR + USE_TRIAL_NUMBER_AS_SECOND_SUFFIX_IN_DATA_FILES_NAMES_QN.getLocalName(), String.valueOf(ResourceProperties.useTrialNumberInDataFilesNamesAsSecondSuffix(resource)));
 		}
+		if(ResourceType.isLog(resource)) {
+			String system = ResourceProperties.getSystemPersistentProperty(resource);
+			if(system != null) {
+				properties.put(keyName + SEPARATOR + SYSTEM_QN.getLocalName(), system);
+			}
+		}
 	}
 	
 	/////////////////////////////////////////////////////////////////////////////
