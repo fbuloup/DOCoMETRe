@@ -153,6 +153,7 @@ public final class ADWinFunctionsMenuFactory {
 				String menuTooltip = FunctionFactory.getProperty(process, CustomerFunction.CUSTOMER_FUNCTIONS_PATH + customerFunction, FunctionFactory.DESCRIPTION);
 				if(menuTitle != null && menuTooltip != null) {
 					AssignFunctionAction assignFunctionAction = new AssignFunctionAction(scriptSegmentEditor, blockEditPart, menuTitle, menuTooltip, customerFunction);
+					assignFunctionAction.setLazyEnablementCalculation(false);
 					customerFunctionsMenuManager.add(assignFunctionAction);
 				}
 			}

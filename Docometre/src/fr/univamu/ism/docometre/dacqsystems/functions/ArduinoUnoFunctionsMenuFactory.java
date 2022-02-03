@@ -92,6 +92,7 @@ public class ArduinoUnoFunctionsMenuFactory {
 				if (menuTitle != null && menuTooltip != null) {
 					AssignFunctionAction assignFunctionAction = new AssignFunctionAction(scriptSegmentEditor,
 							blockEditPart, menuTitle, menuTooltip, ArduinoUnoFunctionsClasses[i]);
+					assignFunctionAction.setLazyEnablementCalculation(false);
 					functionMenuManager.add(assignFunctionAction);
 				}
 			}
@@ -107,6 +108,7 @@ public class ArduinoUnoFunctionsMenuFactory {
 				String menuTooltip = FunctionFactory.getProperty(process, CustomerFunction.CUSTOMER_FUNCTIONS_PATH + customerFunction, FunctionFactory.DESCRIPTION);
 				if (menuTitle != null && menuTooltip != null) {
 					AssignFunctionAction assignFunctionAction = new AssignFunctionAction(scriptSegmentEditor, blockEditPart, menuTitle, menuTooltip, customerFunction);
+					assignFunctionAction.setLazyEnablementCalculation(false);
 					customerFunctionsMenuManager.add(assignFunctionAction);
 				}
 			}
