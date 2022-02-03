@@ -47,6 +47,7 @@ import org.eclipse.jface.action.Separator;
 
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.dacqsystems.Process;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor.ADWinInitializeSegmentEditor;
 import fr.univamu.ism.docometre.editors.AbstractScriptSegmentEditor;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.scripteditor.actions.AssignFunctionAction;
@@ -135,6 +136,8 @@ public final class ADWinFunctionsMenuFactory {
 				String menuTooltip = FunctionFactory.getProperty(process, functionFilePath, FunctionFactory.DESCRIPTION);
 				if(menuTitle != null && menuTooltip != null) {
 					AssignFunctionAction assignFunctionAction = new AssignFunctionAction(scriptSegmentEditor, blockEditPart, menuTitle, menuTooltip, ADWinFunctionsClasses[i]);
+					assignFunctionAction.setLazyEnablementCalculation(false);
+					if(ADWinFunctionsClasses[i].equals(StimulusFunction.class.getName())) assignFunctionAction.setEnabled(scriptSegmentEditor instanceof ADWinInitializeSegmentEditor);
 					functionMenuManager.add(assignFunctionAction);
 				}
 			}
