@@ -130,16 +130,16 @@ public class ADWinAnOutModule extends Module {
 			
 			if (segment==ADWinCodeSegmentProperties.RECOVERY){
 				if (isStimuli){
-					code = code + "\nIF (TRANSFERT_" + name + " = " + frequencyRatio + ") THEN\n";
-					code = code + "\tTRANSFERT_" + name + " = 0\n";
-					code = code + "\tIF (FIFO_FULL(" +  transferNumber + ") = 0) THEN\n";
-					code = code + "\t\tPAR_" +  transferNumber + " = PAR_" +  transferNumber + " + 1\n";
-					code = code + "\t\tFIFO_CLEAR(" +  transferNumber + ")\n";
-					code = code + "\tELSE\n";
-					code = code + "\t\t" + name + " = " + name + "_TAB\n";
-					code = code + "\tENDIF\n";
-					code = code + "ENDIF\n";
-					code = code + "INC(TRANSFERT_" + name + ")\n";
+//					code = code + "\nIF (TRANSFERT_" + name + " = " + frequencyRatio + ") THEN\n";
+//					code = code + "\tTRANSFERT_" + name + " = 0\n";
+//					code = code + "\tIF (FIFO_FULL(" +  transferNumber + ") = 0) THEN\n";
+//					code = code + "\t\tPAR_" +  transferNumber + " = PAR_" +  transferNumber + " + 1\n";
+//					code = code + "\t\tFIFO_CLEAR(" +  transferNumber + ")\n";
+//					code = code + "\tELSE\n";
+//					code = code + "\t\t" + name + " = " + name + "_TAB\n";
+//					code = code + "\tENDIF\n";
+//					code = code + "ENDIF\n";
+//					code = code + "INC(TRANSFERT_" + name + ")\n";
 				}	
 			}
 			

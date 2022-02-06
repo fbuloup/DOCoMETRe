@@ -72,7 +72,6 @@ import fr.univamu.ism.process.ScriptSegment;
 import fr.univamu.ism.process.SizeAndLocationListener;
 import fr.univamu.ism.docometre.scripteditor.figures.BlockFigure;
 import fr.univamu.ism.docometre.scripteditor.actions.EditBlockAction;
-import fr.univamu.ism.docometre.dacqsystems.functions.StimulusFunction;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.scripteditor.actions.AssignFunctionAction;
 import fr.univamu.ism.docometre.scripteditor.actions.DeactivateBlockAction;
@@ -263,12 +262,12 @@ public class BlockEditPart extends AbstractGraphicalEditPart implements SizeAndL
 				CreateConnectionCommand createConnectionCommand = (CreateConnectionCommand) request.getStartCommand();
 				if(createConnectionCommand.isValidTarget(getModel())) {
 					
-					// If current model is a Stimulus (target)
-					if(getModel() instanceof StimulusFunction)
-						// And source is not a Stimulus
-						if(!(((BlockEditPart)request.getSourceEditPart()).getModel() instanceof StimulusFunction))
-							// do not allow connection
-							return null;
+//					// If current model is a Stimulus (target)
+//					if(getModel() instanceof StimulusFunction)
+//						// And source is not a Stimulus
+//						if(!(((BlockEditPart)request.getSourceEditPart()).getModel() instanceof StimulusFunction))
+//							// do not allow connection
+//							return null;
 					
 					createConnectionCommand.setTarget(getModel());
 //					updateBlocks();

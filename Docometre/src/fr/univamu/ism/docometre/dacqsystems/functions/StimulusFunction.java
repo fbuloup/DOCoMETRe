@@ -62,9 +62,12 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.dacqsystems.Channel;
+import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfiguration;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfigurationProperties;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinProcess;
 import fr.univamu.ism.docometre.dialogs.DialogSelectionHandler;
 import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
@@ -80,6 +83,8 @@ public class StimulusFunction extends GenericFunction {
 	
 	public static final String absolutePathToFileKey = "absolutePathToFile";
 	public static final String outputKey = "output";
+	public static final String frequencyRatioKey = "frequencyRatio";
+	public static final String transferNumberKey = "transferNumber";
 	
 	private transient TitleAreaDialog titleAreaDialog;
 	
@@ -175,13 +180,29 @@ public class StimulusFunction extends GenericFunction {
 		Process process = (Process) context;
 		
 		if(process instanceof ADWinProcess) {
-			String output = getProperty(outputKey, "");
-			String absolutePathToFile = getProperty(absolutePathToFileKey, "");
 			if(step == ScriptSegmentType.INITIALIZE || step == ScriptSegmentType.LOOP || step == ScriptSegmentType.FINALIZE) {
+				
+				String output = getProperty(outputKey, "");
+				String transferNumber = "0";
+				DACQConfiguration dacqConfiguration = process.getDACQConfiguration();
+				float globalFrequency = Float.parseFloat(dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.GLOBAL_FREQUENCY));
+				float frequency = globalFrequency;
+				Channel[] channels = dacqConfiguration.getChannels();
+				for (Channel channel : channels) {
+					if(channel.getProperty(ChannelProperties.NAME).equals(output)) {
+						frequency = Float.parseFloat(channel.getProperty(ChannelProperties.SAMPLE_FREQUENCY));
+						transferNumber = channel.getProperty(ChannelProperties.TRANSFER_NUMBER);
+					}
+				}
+				int frequencyRatio = (int)(globalFrequency / frequency);
+				String absolutePathToFile = getProperty(absolutePathToFileKey, "");
+				
 				code = code + "\nREM Stimulus Function\n\n";
 				String key = FUNCTION_CODE;
 				String temporaryCode = FunctionFactory.getProperty(process, functionFileName, key.toUpperCase());
-				code = code + temporaryCode.replaceAll(outputKey, output).replaceAll(absolutePathToFileKey, absolutePathToFile);
+				code = temporaryCode.replaceAll(outputKey, output).replaceAll(absolutePathToFileKey, absolutePathToFile);
+				code = code.replaceAll(frequencyRatioKey, String.valueOf(frequencyRatio));
+				code = code.replaceAll(transferNumberKey, transferNumber);
 				code = code + "\n\n";
 			}
 		}

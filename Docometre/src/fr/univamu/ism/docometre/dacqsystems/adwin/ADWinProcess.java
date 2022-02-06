@@ -783,7 +783,7 @@ public class ADWinProcess extends Process {
 		}
 		
 		if (segment == ADWinCodeSegmentProperties.RECOVERY){
-			code = "\nREM ******** Debut recuperation données du PC (Stimuli)\n";
+//			code = "\nREM ******** Debut recuperation données du PC (Stimuli)\n";
 			
 			code = code + getCurrentProcess().getScript().getInitializeCode(this, ADWinCodeSegmentProperties.RECOVERY);
 			code = code + getCurrentProcess().getScript().getLoopCode(this, ADWinCodeSegmentProperties.RECOVERY);
@@ -792,7 +792,7 @@ public class ADWinProcess extends Process {
 		}
 		
 		if (segment == ADWinCodeSegmentProperties.TRANSFER){
-			code = "\nREM ******** Fin recuperation données du PC (Stimuli)\n\n";
+//			code = "\nREM ******** Fin recuperation données du PC (Stimuli)\n\n";
 			code = code + "REM ******** Debut autotransfert donnees vers PC\n";
 			
 			code = code + getCurrentProcess().getScript().getInitializeCode(this, ADWinCodeSegmentProperties.TRANSFER);
