@@ -62,6 +62,7 @@ public final class ADWinFunctionsMenuFactory {
 	
 	public static String[] ADWinFunctionsFiles = new String[] {AnalogInputFunction.functionFileName, 
 															  AnalogOutputFunction.functionFileName, 
+															  AnalogWaitFunction.functionFileName, 
 															  SEPARATOR,
 															  DigitalInputFunction.functionFileName,
 															  DigitalOutputFunction.functionFileName,
@@ -87,6 +88,7 @@ public final class ADWinFunctionsMenuFactory {
 	
 	public static String[] ADWinFunctionsClasses = new String[] {AnalogInputFunction.class.getName(), 
 															    AnalogOutputFunction.class.getName(),
+															    AnalogWaitFunction.class.getName(),
 															    null,
 															    DigitalInputFunction.class.getName(),
 															    DigitalOutputFunction.class.getName(),
@@ -169,6 +171,7 @@ public final class ADWinFunctionsMenuFactory {
 				String menuTooltip = FunctionFactory.getProperty(process, jvlFunctionFile, FunctionFactory.DESCRIPTION);
 				if(menuTitle != null && menuTooltip != null) {
 					AssignFunctionAction assignFunctionAction = new AssignFunctionAction(scriptSegmentEditor, blockEditPart, menuTitle, menuTooltip, JVLFunctionsClasses[i]);
+					assignFunctionAction.setLazyEnablementCalculation(false);
 					subMenuManager.add(assignFunctionAction);
 				}
 				i++;
