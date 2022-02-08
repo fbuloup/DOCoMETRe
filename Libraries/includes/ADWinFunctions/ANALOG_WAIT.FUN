@@ -1,7 +1,7 @@
-MENU_TITLE = Acquire analog input
-DESCRIPTION = Acquire analog input asynchronously (immediate)
-MENU_TITLE_FR = Acquérir une entrée analogique
-DESCRIPTION_FR = Acquière la valeur courante de l'entrée analogique de manière asynchrone (immédiat)
+MENU_TITLE = Analog Wait
+DESCRIPTION = Wait for an analog input to go through a given value
+MENU_TITLE_FR = Attente analogique
+DESCRIPTION_FR = Attendre qu'une entrée analogique passe une valeur donnée
 # Several segments are available in ADBascic code :
 # HEADER, INCLUDE, DECLARATION, INITIALIZATION, ACQUISITION, RECOVERY, TRANSFER, EVENT, GENERATION and FINISH
 # The ADBasic function code you need to add in any segments INITIALIZATION, EVENT or FINISH may require contributions to any other segment.
@@ -11,11 +11,18 @@ DESCRIPTION_FR = Acquière la valeur courante de l'entrée analogique de manièr
 # Finally the property keys FUNCTION_CODE (and optionally FUNCTION_CODE_SYSTEMTYPE_CPUTYPE) contain the effective ADBasic function code which will be added to
 # any of segments INITIALIZATION, EVENT or FINISH depending on the actual function position.
 # Take care of the fact that each key must be upper case !
-FUNCTION_CODE_PRO_I = REM Analog Wait function\n\
-DO\n\
+FUNCTION_CODE_PRO_I = DO\n\
 	NOP\n\
 UNTIL (Call_AnIn(moduleNumber, channelNumber, gain, ampMin, ampMax, unitMin, unitMax) comparator channelValue) 
 
-FUNCTION_CODE_PRO_II = channelName = Call_AnIn(moduleNumber, channelNumber, gain, ampMin, ampMax, unitMin, unitMax)
-FUNCTION_CODE_GOLD_I = channelName = Call_AnIn(channelNumber, gain, ampMin, ampMax, unitMin, unitMax)
-FUNCTION_CODE_GOLD_II = channelName = Call_AnIn(channelNumber, gain, ampMin, ampMax, unitMin, unitMax)
+FUNCTION_CODE_PRO_II = DO\n\
+	NOP\n\
+UNTIL (Call_AnIn(moduleNumber, channelNumber, gain, ampMin, ampMax, unitMin, unitMax) comparator channelValue)
+
+FUNCTION_CODE_GOLD_I = DO\n\
+	NOP\n\
+UNTIL (Call_AnIn(channelNumber, gain, ampMin, ampMax, unitMin, unitMax) comparator channelValue)  
+
+FUNCTION_CODE_GOLD_II = DO\n\
+	NOP\n\
+UNTIL (Call_AnIn(channelNumber, gain, ampMin, ampMax, unitMin, unitMax) comparator channelValue)  

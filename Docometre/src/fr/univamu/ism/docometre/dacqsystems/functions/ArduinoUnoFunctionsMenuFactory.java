@@ -47,6 +47,7 @@ import org.eclipse.jface.action.Separator;
 
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.dacqsystems.Process;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.processeditor.ArduinoUnoInitializeSegmentEditor;
 import fr.univamu.ism.docometre.editors.AbstractScriptSegmentEditor;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.scripteditor.actions.AssignFunctionAction;
@@ -59,6 +60,7 @@ public class ArduinoUnoFunctionsMenuFactory {
 	private static String CUSTOMER_FUNCTIONS_MENU = "CUSTOMER_FUNCTIONS_MENU";
 	
 	public static String[] ArduinoUnoFunctionsFiles = new String[] {AnalogInputFunction.functionFileName, 
+																	AnalogWaitFunction.functionFileName,
 		    														SEPARATOR,
 																	DigitalOutputFunction.functionFileName,
 																	DigitalInputFunction.functionFileName,
@@ -68,6 +70,7 @@ public class ArduinoUnoFunctionsMenuFactory {
 																    TerminateProcessFunction.functionFileName};
 	
 	public static String[] ArduinoUnoFunctionsClasses = new String[] {AnalogInputFunction.class.getName(),
+																	  AnalogWaitFunction.class.getName(),
 																	  null,
 																	  DigitalOutputFunction.class.getName(),
 																	  DigitalInputFunction.class.getName(),
@@ -93,6 +96,7 @@ public class ArduinoUnoFunctionsMenuFactory {
 					AssignFunctionAction assignFunctionAction = new AssignFunctionAction(scriptSegmentEditor,
 							blockEditPart, menuTitle, menuTooltip, ArduinoUnoFunctionsClasses[i]);
 					assignFunctionAction.setLazyEnablementCalculation(false);
+					if(ArduinoUnoFunctionsClasses[i].equals(AnalogWaitFunction.class.getName())) assignFunctionAction.setEnabled(scriptSegmentEditor instanceof ArduinoUnoInitializeSegmentEditor);
 					functionMenuManager.add(assignFunctionAction);
 				}
 			}

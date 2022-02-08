@@ -61,11 +61,14 @@ import org.eclipse.swt.widgets.Text;
 
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
+import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.Process;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinAnInChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinAnInModule;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfigurationProperties;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinModuleProperties;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinProcess;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnInModule;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoProcess;
@@ -82,6 +85,13 @@ public final class AnalogWaitFunction extends GenericFunction {
 	private static final String channelNameKey = "channelName";
 	private static final String comparatorKey = "comparator";
 	private static final String channelValueKey = "channelValue";
+	private static final String moduleNumberKey = "moduleNumber";
+	private static final String channelNumberKey = "channelNumber";
+	private static final String gainKey = "gain";
+	private static final String ampMinKey = "ampMin";
+	private static final String ampMaxKey = "ampMax";
+	private static final String unitMinKey = "unitMin";
+	private static final String unitMaxKey = "unitMax";
 	
 	private String channelName;
 	private String channelValue;
@@ -140,7 +150,7 @@ public final class AnalogWaitFunction extends GenericFunction {
 		comparatorValueViewer.setContentProvider(new ArrayContentProvider());
 		comparatorValueViewer.setLabelProvider(new LabelProvider());
 		comparatorValueViewer.setComparator(new ViewerComparator());
-		comparatorValueViewer.setInput(new String[] {"=", ">=", "<=", ">", "<"});
+		comparatorValueViewer.setInput(new String[] {"<", "<=", ">=", ">"});
 		comparator = getProperty(comparatorKey, "");
 		comparatorValueViewer.getCombo().select(comparatorValueViewer.getCombo().indexOf(comparator));
 		comparatorValueViewer.addSelectionChangedListener(new ISelectionChangedListener() {
@@ -193,8 +203,39 @@ public final class AnalogWaitFunction extends GenericFunction {
 				channelValue  = getProperty(channelValueKey, "");
 				comparator  = getProperty(comparatorKey, "");
 				
-				temporaryCode = temporaryCode.replaceAll(channelNameKey, channelName).replaceAll(channelValueKey, channelValue).replaceAll(comparatorKey, comparator);
-				code = code + temporaryCode + "\n\n";
+				Module[] modules = dacqConfiguration.getModules();
+				ADWinAnInModule foundModule = null;
+				Channel foundChannel = null;
+				for (Module module : modules) {
+					if(module instanceof ADWinAnInModule) {
+						ADWinAnInModule adwinAnInModule = (ADWinAnInModule) module;
+						Channel[] channels = adwinAnInModule.getChannels();
+						for (Channel channel : channels) {
+							 String localChannelName = channel.getProperty(ChannelProperties.NAME);
+							 if(channelName.equals(localChannelName)) {
+								 foundModule = adwinAnInModule;
+								 foundChannel = channel;
+								 break;
+							 }
+						}
+					}
+				}
+				if(foundModule != null && foundChannel != null) {
+					String gain = foundChannel.getProperty(ADWinAnInChannelProperties.GAIN);
+					String unitMax = foundChannel.getProperty(ADWinAnInChannelProperties.UNIT_MAX);
+					String unitMin = foundChannel.getProperty(ADWinAnInChannelProperties.UNIT_MIN);
+					String channelNumber = foundChannel.getProperty(ChannelProperties.CHANNEL_NUMBER);
+					String ampMax = foundChannel.getProperty(ADWinAnInChannelProperties.AMPLITUDE_MAX);
+					String ampMin = foundChannel.getProperty(ADWinAnInChannelProperties.AMPLITUDE_MIN);
+					String moduleNumber = foundModule.getProperty(ADWinModuleProperties.MODULE_NUMBER);
+					temporaryCode = temporaryCode.replaceAll(channelNameKey, channelName).replaceAll(gainKey, gain).replaceAll(unitMaxKey, unitMax).replaceAll(unitMinKey, unitMin);
+					temporaryCode = temporaryCode.replaceAll(channelNumberKey, channelNumber).replaceAll(ampMaxKey, ampMax).replaceAll(ampMinKey, ampMin).replaceAll(moduleNumberKey, moduleNumber);
+					temporaryCode = temporaryCode.replaceAll(channelValueKey, channelValue).replaceAll(comparatorKey, comparator);
+					code = code + temporaryCode + "\n\n";
+				}
+				
+				
+				
 			}
 		}
 		if(process instanceof ArduinoUnoProcess) {
@@ -209,9 +250,29 @@ public final class AnalogWaitFunction extends GenericFunction {
 				channelValue  = getProperty(channelValueKey, "");
 				comparator  = getProperty(comparatorKey, "");
 				
-				temporaryCode = UNO_DEFAULT_INDENT + temporaryCode.replaceAll(channelNameKey, channelName).replaceAll(channelValueKey, channelValue).replaceAll(comparatorKey, comparator);
-				code = code + temporaryCode + "\n\n";
-				
+				Module[] modules = dacqConfiguration.getModules();
+				ArduinoUnoAnInModule foundModule = null;
+				Channel foundChannel = null;
+				for (Module module : modules) {
+					if(module instanceof ArduinoUnoAnInModule) {
+						ArduinoUnoAnInModule arduinoAnInModule = (ArduinoUnoAnInModule) module;
+						Channel[] channels = arduinoAnInModule.getChannels();
+						for (Channel channel : channels) {
+							 String localChannelName = channel.getProperty(ChannelProperties.NAME);
+							 if(channelName.equals(localChannelName)) {
+								 foundModule = arduinoAnInModule;
+								 foundChannel = channel;
+								 break;
+							 }
+						}
+					}
+				}
+				if(foundModule != null && foundChannel != null) {
+					String channelNumber = foundChannel.getProperty(ChannelProperties.CHANNEL_NUMBER);
+					temporaryCode = UNO_DEFAULT_INDENT + temporaryCode.replaceAll(channelNameKey, channelName).replaceAll(channelNumberKey, channelNumber);
+					temporaryCode = temporaryCode.replaceAll(channelValueKey, channelValue).replaceAll(comparatorKey, comparator);
+					code = code + temporaryCode + "\n";
+				}
 			}
 		}
 		return code;
