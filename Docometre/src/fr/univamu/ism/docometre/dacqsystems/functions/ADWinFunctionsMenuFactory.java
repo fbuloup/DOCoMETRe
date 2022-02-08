@@ -85,6 +85,7 @@ public final class ADWinFunctionsMenuFactory {
 															  BinaryMedianFilterFunction.functionFileName,
 															  SEPARATOR,
 															  StimulusFunction.functionFileName,
+															  TransferFunction.functionFileName,
 															  SEPARATOR,
 															  SUBMENU_JVL};
 	
@@ -112,6 +113,7 @@ public final class ADWinFunctionsMenuFactory {
 															    BinaryMedianFilterFunction.class.getName(),
 															    null,
 															    StimulusFunction.class.getName(),
+															    TransferFunction.class.getName(),
 															    null};
 	
 	
@@ -145,6 +147,7 @@ public final class ADWinFunctionsMenuFactory {
 					if(ADWinFunctionsClasses[i].equals(StimulusFunction.class.getName())) assignFunctionAction.setEnabled(scriptSegmentEditor instanceof ADWinEventSegmentEditor);
 					if(ADWinFunctionsClasses[i].equals(AnalogWaitFunction.class.getName())) assignFunctionAction.setEnabled(scriptSegmentEditor instanceof ADWinInitializeSegmentEditor);
 					if(ADWinFunctionsClasses[i].equals(DigitalWaitFunction.class.getName())) assignFunctionAction.setEnabled(scriptSegmentEditor instanceof ADWinInitializeSegmentEditor);
+					if(ADWinFunctionsClasses[i].equals(TransferFunction.class.getName())) assignFunctionAction.setEnabled(scriptSegmentEditor instanceof ADWinEventSegmentEditor);
 					functionMenuManager.add(assignFunctionAction);
 				}
 			}
