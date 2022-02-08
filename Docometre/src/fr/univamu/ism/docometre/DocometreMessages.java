@@ -996,6 +996,10 @@ public final class DocometreMessages extends NLS {
 	public static String IPsGathererMessage2;
 	public static String IPsGathererMessage3;
 	
+	// Stimulus function
+	public static String PathToFileLabel;
+	public static String PathToFileTootip;
+	
 //	public static String OrganizeSessionWizardPage_button_1_text;
 //	public static String OrganizeSessionWizardPage_tbtmNewItem_text;
 //	public static String OrganizeSessionWizardPage_tbtmNewItem_1_text;

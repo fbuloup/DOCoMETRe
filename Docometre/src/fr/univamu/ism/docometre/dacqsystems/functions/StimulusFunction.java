@@ -108,7 +108,8 @@ public class StimulusFunction extends GenericFunction {
 		
 		Label fileLabel = new Label(paramContainer, SWT.NORMAL);
 		fileLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-		fileLabel.setText("Path to file :");
+		fileLabel.setText(DocometreMessages.PathToFileLabel);
+		fileLabel.setToolTipText(DocometreMessages.PathToFileTootip);
 		
 		Text pathText = new Text(paramContainer, SWT.READ_ONLY | SWT.BORDER);
 		pathText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
@@ -122,12 +123,12 @@ public class StimulusFunction extends GenericFunction {
 		
 		Button browseButton = new Button(paramContainer, SWT.FLAT);
 		browseButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
-		browseButton.setText("Browse...");
+		browseButton.setText(DocometreMessages.Browse);
 		browseButton.addSelectionListener(new DialogSelectionHandler(pathText, false, PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell()));
 		
 		Label channelLabel = new Label(paramContainer, SWT.NORMAL);
 		channelLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-		channelLabel.setText("Channel :");
+		channelLabel.setText(DocometreMessages.ChannelName_Label);
 		
 		ComboViewer channelComboViewer = new ComboViewer(paramContainer, SWT.BORDER | SWT.READ_ONLY);
 		channelComboViewer.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
