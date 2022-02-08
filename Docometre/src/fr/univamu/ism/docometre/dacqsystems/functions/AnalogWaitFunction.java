@@ -42,7 +42,6 @@
 package fr.univamu.ism.docometre.dacqsystems.functions;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
@@ -71,6 +70,7 @@ import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfigurationProperti
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinModuleProperties;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinProcess;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnInModule;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoProcess;
 import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
 import fr.univamu.ism.process.Block;
@@ -111,7 +111,7 @@ public final class AnalogWaitFunction extends GenericFunction {
 		paramContainer.setLayout(new GridLayout(2, false));
 		
 		Label inputLabel = new Label(paramContainer, SWT.NORMAL);
-		inputLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+		inputLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
 		inputLabel.setText(DocometreMessages.SelectedAnalogInputLabel);
 		
 		ComboViewer channelComboViewer = new ComboViewer(paramContainer);
@@ -126,7 +126,15 @@ public final class AnalogWaitFunction extends GenericFunction {
 		Module[] modules = adwinDacqConfiguration.getModules();
 		for (Module module : modules) {
 			if(module instanceof ADWinAnInModule || module instanceof ArduinoUnoAnInModule) {
-				channels.addAll(Arrays.asList(module.getChannels()));
+				Channel[] allChannels = module.getChannels();
+				for (Channel channel : allChannels) {
+					boolean addChannel = true;
+					if(module instanceof ArduinoUnoAnInModule) {
+						addChannel = channel.getProperty(ArduinoUnoChannelProperties.USED).equals("true");
+					}
+					if(addChannel) channels.add(channel);
+				}
+				
 			}
 		}
 		
@@ -143,7 +151,7 @@ public final class AnalogWaitFunction extends GenericFunction {
 		channelComboViewer.getCombo().select(channelComboViewer.getCombo().indexOf(channelName));
 		
 		Label comparatorLabel = new Label(paramContainer, SWT.NORMAL);
-		comparatorLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+		comparatorLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
 		comparatorLabel.setText("Comparateur :");
 		ComboViewer comparatorValueViewer = new ComboViewer(paramContainer);
 		comparatorValueViewer.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
@@ -162,8 +170,8 @@ public final class AnalogWaitFunction extends GenericFunction {
 		});
 		
 		Label channelValueLabel = new Label(paramContainer, SWT.NORMAL);
-		channelValueLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-		channelValueLabel.setText("Value :");
+		channelValueLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+		channelValueLabel.setText(DocometreMessages.ValueLabel);
 		
 		Text channelValueText = new Text(paramContainer, SWT.BORDER);
 		channelValueText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
