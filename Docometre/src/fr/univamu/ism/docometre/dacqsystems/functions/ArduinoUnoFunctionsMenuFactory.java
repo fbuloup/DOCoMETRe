@@ -61,6 +61,7 @@ public class ArduinoUnoFunctionsMenuFactory {
 	
 	public static String[] ArduinoUnoFunctionsFiles = new String[] {AnalogInputFunction.functionFileName, 
 																	AnalogWaitFunction.functionFileName,
+																	DigitalWaitFunction.functionFileName,
 		    														SEPARATOR,
 																	DigitalOutputFunction.functionFileName,
 																	DigitalInputFunction.functionFileName,
@@ -71,6 +72,7 @@ public class ArduinoUnoFunctionsMenuFactory {
 	
 	public static String[] ArduinoUnoFunctionsClasses = new String[] {AnalogInputFunction.class.getName(),
 																	  AnalogWaitFunction.class.getName(),
+																	  DigitalWaitFunction.class.getName(),
 																	  null,
 																	  DigitalOutputFunction.class.getName(),
 																	  DigitalInputFunction.class.getName(),
@@ -97,6 +99,7 @@ public class ArduinoUnoFunctionsMenuFactory {
 							blockEditPart, menuTitle, menuTooltip, ArduinoUnoFunctionsClasses[i]);
 					assignFunctionAction.setLazyEnablementCalculation(false);
 					if(ArduinoUnoFunctionsClasses[i].equals(AnalogWaitFunction.class.getName())) assignFunctionAction.setEnabled(scriptSegmentEditor instanceof ArduinoUnoInitializeSegmentEditor);
+					if(ArduinoUnoFunctionsClasses[i].equals(DigitalWaitFunction.class.getName())) assignFunctionAction.setEnabled(scriptSegmentEditor instanceof ArduinoUnoInitializeSegmentEditor);
 					functionMenuManager.add(assignFunctionAction);
 				}
 			}

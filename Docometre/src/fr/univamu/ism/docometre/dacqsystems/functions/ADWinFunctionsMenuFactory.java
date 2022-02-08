@@ -67,6 +67,7 @@ public final class ADWinFunctionsMenuFactory {
 															  SEPARATOR,
 															  DigitalInputFunction.functionFileName,
 															  DigitalOutputFunction.functionFileName,
+															  DigitalWaitFunction.functionFileName,
 															  SEPARATOR,
 															  ByteSerialOutputFunction.functionFileName,
 															  SerialOutputFunction.functionFileName,
@@ -93,6 +94,7 @@ public final class ADWinFunctionsMenuFactory {
 															    null,
 															    DigitalInputFunction.class.getName(),
 															    DigitalOutputFunction.class.getName(),
+															    DigitalWaitFunction.class.getName(),
 															    null,
 															    ByteSerialOutputFunction.class.getName(),
 															    SerialOutputFunction.class.getName(),
@@ -142,6 +144,7 @@ public final class ADWinFunctionsMenuFactory {
 					assignFunctionAction.setLazyEnablementCalculation(false);
 					if(ADWinFunctionsClasses[i].equals(StimulusFunction.class.getName())) assignFunctionAction.setEnabled(scriptSegmentEditor instanceof ADWinEventSegmentEditor);
 					if(ADWinFunctionsClasses[i].equals(AnalogWaitFunction.class.getName())) assignFunctionAction.setEnabled(scriptSegmentEditor instanceof ADWinInitializeSegmentEditor);
+					if(ADWinFunctionsClasses[i].equals(DigitalWaitFunction.class.getName())) assignFunctionAction.setEnabled(scriptSegmentEditor instanceof ADWinInitializeSegmentEditor);
 					functionMenuManager.add(assignFunctionAction);
 				}
 			}
