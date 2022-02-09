@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-02-9
+      -- 2022-02-9 - Bis
+ADDED : Nothing
+FIXED :
+* Initialize time to zero (ADwin and Uno)
+-- 2022-02-9
 ADDED :
 * Adwin/Arduino/Python/Matlab files are now in Libraries plug-in
 * Header comments to user functions (ADwin and Arduino Uno)
@@ -14,10 +18,13 @@ ADDED :
 * Analog and Digital Wait functions
 * Transfert function
 FIXED :
-* Libraries path now comes from default pref. not from dacq. conf.
+* Libraries path now comes from default pref. not from dacq.
+conf.
 * ADwin, Arduino Uno, Matlab and Python preferences changes
-* Bug when a resource is renamed and not opened : must deserialize it
-* When exporting experiment, sytem type was lost for Log files. This property is now written in properties file
+* Bug when a resource is renamed and not opened : must deserialize
+it
+* When exporting experiment, sytem type was lost for Log files.
+This property is now written in properties file
 -- 2022-01-26
 ADDED : Nothing
 FIXED :
