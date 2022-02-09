@@ -275,42 +275,45 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 					e1.printStackTrace();
 				}
 			}
+			
+			double sf = 1;
+			
 			if(processFile == null) {
-				Activator.logErrorMessage("Unabled to find associated process file !");
-				return;
+				Activator.logWarningMessage("Unabled to find associated process file ! Sampling frequency will be set to 1Hz.");
 			}
-			IResource dacqConfigurationFile = ResourceProperties.getAssociatedDACQConfiguration(processFile);
-			Object object = ResourceProperties.getObjectSessionProperty(dacqConfigurationFile);
-			if(object == null) {
-				dacqConfiguration = (DACQConfiguration) ObjectsController.deserialize((IFile) dacqConfigurationFile);
-				ResourceProperties.setObjectSessionProperty(dacqConfigurationFile, dacqConfiguration);
-				ObjectsController.addHandle(dacqConfiguration);
-				removeDACQHandle = true;
-			} else dacqConfiguration = (DACQConfiguration) object;
-			String channelNameToFind = dataFile.getName().replaceAll(Activator.samplesFileExtension, "");
 			
-			// Compute data file name to remove prefix and suffix
-			IContainer session = dataFile.getParent().getParent();
-			boolean usePrefix = ResourceProperties.getDataFilesNamesPrefix(session) == null ? false : true;
-			if(usePrefix) channelNameToFind = channelNameToFind.split(ExperimentScheduler.dataFilePathNameSeparator_RegExpSplitter)[1];
-			else channelNameToFind = channelNameToFind.split(ExperimentScheduler.dataFilePathNameSeparator_RegExpSplitter)[0];
-			
-			Channel[] channels = dacqConfiguration.getChannels();
-			Channel channelFound = null;
-			for (Channel channel : channels) {
-				String channelName = channel.getProperty(ChannelProperties.NAME);
-				if(channelName.equals(channelNameToFind)) {
-					channelFound = channel;
-					break;
+			if(processFile != null) {
+				IResource dacqConfigurationFile = ResourceProperties.getAssociatedDACQConfiguration(processFile);
+				Object object = ResourceProperties.getObjectSessionProperty(dacqConfigurationFile);
+				if(object == null) {
+					dacqConfiguration = (DACQConfiguration) ObjectsController.deserialize((IFile) dacqConfigurationFile);
+					ResourceProperties.setObjectSessionProperty(dacqConfigurationFile, dacqConfiguration);
+					ObjectsController.addHandle(dacqConfiguration);
+					removeDACQHandle = true;
+				} else dacqConfiguration = (DACQConfiguration) object;
+				String channelNameToFind = dataFile.getName().replaceAll(Activator.samplesFileExtension, "");
+				
+				// Compute data file name to remove prefix and suffix
+				IContainer session = dataFile.getParent().getParent();
+				boolean usePrefix = ResourceProperties.getDataFilesNamesPrefix(session) == null ? false : true;
+				if(usePrefix) channelNameToFind = channelNameToFind.split(ExperimentScheduler.dataFilePathNameSeparator_RegExpSplitter)[1];
+				else channelNameToFind = channelNameToFind.split(ExperimentScheduler.dataFilePathNameSeparator_RegExpSplitter)[0];
+				
+				Channel[] channels = dacqConfiguration.getChannels();
+				Channel channelFound = null;
+				for (Channel channel : channels) {
+					String channelName = channel.getProperty(ChannelProperties.NAME);
+					if(channelName.equals(channelNameToFind)) {
+						channelFound = channel;
+						break;
+					}
 				}
-			}
-			if(removeDACQHandle) ObjectsController.removeHandle(dacqConfiguration);
-			if(channelFound == null) {
-				Activator.logErrorMessage("Unabled to find channel : " + channelNameToFind);
-				return;
+				if(removeDACQHandle) ObjectsController.removeHandle(dacqConfiguration);
+				if(channelFound == null) {
+					Activator.logWarningMessage("Unabled to find channel : " + channelNameToFind + "! Sampling frequency will be set to 1Hz.");
+				} else sf = Double.parseDouble(channelFound.getProperty(ChannelProperties.SAMPLE_FREQUENCY));
 			}
 			
-			double sf = Double.parseDouble(channelFound.getProperty(ChannelProperties.SAMPLE_FREQUENCY));
 			
 			HashMap<String, double[]> xyValues  = createXYDoubleValues(values, sf, dacqConfiguration);
 			// Create X and Y data arrays
