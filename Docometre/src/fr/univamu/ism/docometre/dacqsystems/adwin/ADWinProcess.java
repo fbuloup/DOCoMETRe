@@ -759,6 +759,7 @@ public class ADWinProcess extends Process {
 			else if(cpuType.equals(ADWinDACQConfigurationProperties.II)) code = code + "GLOBALDELAY = 10^9/(FEG*3.3)\n";
 			code = code + "INDEX = 0\n";
 			code = code + "TERMINATE_PROCESS = 0\n";
+			code = code + "time = 0\n";
 			
 			
 			code = code + getCurrentProcess().getScript().getInitializeCode(this, ADWinCodeSegmentProperties.INITIALIZATION);
