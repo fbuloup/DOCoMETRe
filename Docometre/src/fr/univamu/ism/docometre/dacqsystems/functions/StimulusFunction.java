@@ -109,7 +109,7 @@ public class StimulusFunction extends GenericFunction {
 		Label fileLabel = new Label(paramContainer, SWT.NORMAL);
 		fileLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
 		fileLabel.setText(DocometreMessages.PathToFileLabel);
-		fileLabel.setToolTipText(DocometreMessages.PathToFileTootip);
+		fileLabel.setToolTipText(DocometreMessages.PathToFileTooltip);
 		
 		Text pathText = new Text(paramContainer, SWT.READ_ONLY | SWT.BORDER);
 		pathText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));

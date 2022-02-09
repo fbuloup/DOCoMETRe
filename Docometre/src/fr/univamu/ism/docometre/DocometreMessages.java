@@ -998,7 +998,7 @@ public final class DocometreMessages extends NLS {
 	
 	// Stimulus function
 	public static String PathToFileLabel;
-	public static String PathToFileTootip;
+	public static String PathToFileTooltip;
 	
 //	public static String OrganizeSessionWizardPage_button_1_text;
 //	public static String OrganizeSessionWizardPage_tbtmNewItem_text;
