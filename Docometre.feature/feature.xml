@@ -6,7 +6,12 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-02-9 - Bis
+      -- 2022-02-10
+ADDED : 
+* Sample frequency dialog when data editor do not find one
+FIXED :
+* Bug in Stimulus initialization 
+-- 2022-02-9 - Bis
 ADDED : Nothing
 FIXED :
 * Initialize time to zero (ADwin and Uno)
