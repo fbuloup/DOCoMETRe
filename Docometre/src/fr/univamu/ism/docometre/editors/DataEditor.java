@@ -55,6 +55,10 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IInputValidator;
+import org.eclipse.jface.dialogs.InputDialog;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DropTarget;
@@ -81,6 +85,7 @@ import org.eclipse.ui.part.EditorPart;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ApplicationActionBarAdvisor;
 import fr.univamu.ism.docometre.ColorUtil;
+import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.GetResourceLabelDelegate;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
@@ -250,6 +255,10 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 			FloatBuffer floatBuffer = byteBuffer.asFloatBuffer();
 			float[] values = new float[floatBuffer.capacity()];
 			floatBuffer.get(values);
+			
+			String message = NLS.bind(DocometreMessages.NumberSamplesReadMessage, values.length);
+			Activator.logInfoMessage(message, getClass());
+			
 			// Get sample frequency
 			boolean removeDACQHandle = false;
 			IContainer container = dataFile.getParent();
@@ -276,11 +285,8 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 				}
 			}
 			
-			double sf = 1;
-			
-			if(processFile == null) {
-				Activator.logWarningMessage("Unabled to find associated process file ! Sampling frequency will be set to 1Hz.");
-			}
+			double sf = -1;
+			String channelNameToFind = dataFile.getName().replaceAll(Activator.samplesFileExtension, "");
 			
 			if(processFile != null) {
 				IResource dacqConfigurationFile = ResourceProperties.getAssociatedDACQConfiguration(processFile);
@@ -291,7 +297,7 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 					ObjectsController.addHandle(dacqConfiguration);
 					removeDACQHandle = true;
 				} else dacqConfiguration = (DACQConfiguration) object;
-				String channelNameToFind = dataFile.getName().replaceAll(Activator.samplesFileExtension, "");
+				
 				
 				// Compute data file name to remove prefix and suffix
 				IContainer session = dataFile.getParent().getParent();
@@ -309,11 +315,14 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 					}
 				}
 				if(removeDACQHandle) ObjectsController.removeHandle(dacqConfiguration);
-				if(channelFound == null) {
-					Activator.logWarningMessage("Unabled to find channel : " + channelNameToFind + "! Sampling frequency will be set to 1Hz.");
-				} else sf = Double.parseDouble(channelFound.getProperty(ChannelProperties.SAMPLE_FREQUENCY));
+				if(channelFound != null) sf = Double.parseDouble(channelFound.getProperty(ChannelProperties.SAMPLE_FREQUENCY));
 			}
 			
+			if(sf == -1) {
+				message = NLS.bind(DocometreMessages.SampleFrequencyDialogMessage, channelNameToFind);
+				Activator.logWarningMessage(message);
+				sf = getSampleFrequencyDialog();
+			}
 			
 			HashMap<String, double[]> xyValues  = createXYDoubleValues(values, sf, dacqConfiguration);
 			// Create X and Y data arrays
@@ -337,6 +346,22 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 			e.printStackTrace();
 		}
 		
+	}
+	
+	private double getSampleFrequencyDialog() {
+		double sf = 1;
+		IInputValidator inputValidator = new IInputValidator() {
+			@Override
+			public String isValid(String newText) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+		};
+		InputDialog inputDialog = new InputDialog(getSite().getShell(), DocometreMessages.SampleFrequencyDialogTitle, DocometreMessages.SampleFrequencyDialogLabel, "1", inputValidator);
+		if(inputDialog.open() == Dialog.OK) {
+			sf = Double.parseDouble(inputDialog.getValue());
+		}
+		return sf;
 	}
 	
 	private Byte getSeriesIndex(ILineSeries series) {

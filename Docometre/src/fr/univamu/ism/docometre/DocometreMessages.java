@@ -1000,6 +1000,12 @@ public final class DocometreMessages extends NLS {
 	public static String PathToFileLabel;
 	public static String PathToFileTooltip;
 	
+	// Data Editor
+	public static String SampleFrequencyDialogTitle;
+	public static String SampleFrequencyDialogLabel;
+	public static String SampleFrequencyDialogMessage;
+	public static String NumberSamplesReadMessage;
+	
 //	public static String OrganizeSessionWizardPage_button_1_text;
 //	public static String OrganizeSessionWizardPage_tbtmNewItem_text;
 //	public static String OrganizeSessionWizardPage_tbtmNewItem_1_text;
