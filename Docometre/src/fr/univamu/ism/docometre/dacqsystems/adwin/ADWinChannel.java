@@ -58,6 +58,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 
+import de.adwin.driver.ADwinCommunicationError;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
@@ -163,6 +164,15 @@ public class ADWinChannel extends Channel {
 				if(fileName != null) {
 					inputFile = new FileInputStream(fileName);
 					fileChannel = inputFile.getChannel();
+					int bs = Integer.parseInt(getProperty(ChannelProperties.BUFFER_SIZE));
+					float[] samples = getSamples(bs);
+					try {
+						((ADWinDACQConfiguration)process.getDACQConfiguration()).getADwinDevice().Fifo_Clear(getTransferNumber());
+						((ADWinDACQConfiguration)process.getDACQConfiguration()).getADwinDevice().SetFifo_Float(getTransferNumber(), samples, bs);
+					} catch (ADwinCommunicationError e) {
+						Activator.logErrorMessageWithCause(e);
+						e.printStackTrace();
+					}
 				}
 			} else if(isTransfered) {
 				fileName = fileName + ".samples";

@@ -120,6 +120,7 @@ public class ADWinAnOutModule extends Module {
 				code = code + "\nGeneration_" + name + " = " + frequencyRatio + "\'******** init generation " + name + "\n";
 				if (isStimuli){
 					code = code + "TRANSFERT_" + name + " = " + frequencyRatio + "\n";
+					code = code + "PAR_" + transferNumber + " = 0\n";
 				}
 				if (!isStimuli && isTransfered){
 					code = code + "TRANSFERT_" + name + " = " + frequencyRatio + "\n";

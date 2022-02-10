@@ -227,9 +227,11 @@ public class ADWinDigInOutModule extends Module {
 					if (!isStimuli && isTransfered){
 						code = code + "TRANSFERT_" + name + " = " + frequencyRatio + "\n";
 						code = code + "FIFO_CLEAR(" + transferNumber + ")\n";
+						code = code + "PAR_" + transferNumber + " = 0\n";
 					}
 					if(isStimuli) {
 						code = code + "TRANSFERT_" + name + " = " + frequencyRatio + "\n";
+						code = code + "PAR_" + transferNumber + " = 0\n";
 					}
 				}
 			}
