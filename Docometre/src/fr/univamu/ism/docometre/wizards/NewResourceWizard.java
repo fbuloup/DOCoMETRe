@@ -44,6 +44,8 @@ package fr.univamu.ism.docometre.wizards;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.jface.dialogs.IPageChangedListener;
+import org.eclipse.jface.dialogs.PageChangedEvent;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
@@ -58,7 +60,7 @@ import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.process.Script;
 
-public class NewResourceWizard extends Wizard implements INewWizard {
+public class NewResourceWizard extends Wizard implements INewWizard, IPageChangedListener {
 	
 	public static int CREATE = 1;
 	public static int MODIFY = 2;
@@ -69,6 +71,7 @@ public class NewResourceWizard extends Wizard implements INewWizard {
 	private int mode;
 	// Must not be null when modifying resource
 	private IResource resource;
+	private OrganizeSessionWizardPage organizeSessionWizardPage;
 
 	public NewResourceWizard(ResourceType resourceType, IContainer parentResource, int mode) {
 		this.resourceType = resourceType;
@@ -115,7 +118,8 @@ public class NewResourceWizard extends Wizard implements INewWizard {
 		if(resourceType.equals(ResourceType.XYZCHART)) newResourceWizardPage = new NewXYZChartWizardPage(ResourceType.XYZCHART);
 		addPage(newResourceWizardPage);
 		if(resourceType.equals(ResourceType.SESSION)) {
-			addPage(new OrganizeSessionWizardPage());
+			organizeSessionWizardPage = new OrganizeSessionWizardPage();
+			addPage(organizeSessionWizardPage);
 		}
 	}
 
@@ -213,6 +217,14 @@ public class NewResourceWizard extends Wizard implements INewWizard {
 	
 	public Object getXYZChart() {
 		return new XYZChart();
+	}
+
+	@Override
+	public void pageChanged(PageChangedEvent event) {
+		if(event.getSelectedPage() == organizeSessionWizardPage) {
+			organizeSessionWizardPage.updateFocus();
+		}
+		
 	}
 	
  	

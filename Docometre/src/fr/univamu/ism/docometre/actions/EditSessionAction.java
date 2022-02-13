@@ -92,6 +92,7 @@ public class EditSessionAction extends Action implements ISelectionListener, IWo
 		NewResourceWizard newResourceWizard = new NewResourceWizard(ResourceType.SESSION, session.getParent(), NewResourceWizard.MODIFY);
 		newResourceWizard.setResource(session);
 		WizardDialog wizardDialog = new WizardDialog(shell, newResourceWizard);
+		wizardDialog.addPageChangedListener(newResourceWizard);
 		if(wizardDialog.open() == Window.OK) {
 			try {
 				ResourceProperties.setDataFilesNamesPrefix(session, newResourceWizard.getPrefix());

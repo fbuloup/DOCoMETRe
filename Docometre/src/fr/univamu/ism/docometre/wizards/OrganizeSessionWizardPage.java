@@ -128,6 +128,9 @@ public class OrganizeSessionWizardPage extends WizardPage {
 	private HashMap<Integer, IResource> resultAssociation = new HashMap<Integer, IResource>();
 	private Random random;
 	private ListViewer resultListViewer;
+	private CTabFolder selectDistributionMethodTabFolder;
+	private CTabItem selectedTrialsTabItem;
+	private CTabItem packTrialsTabItem;
 
 	public OrganizeSessionWizardPage() {
 		super(PageName);
@@ -279,11 +282,13 @@ public class OrganizeSessionWizardPage extends WizardPage {
 		gl_rightContainer.horizontalSpacing = 0;
 		rightContainer.setLayout(gl_rightContainer);
 		
-		CTabFolder selectDistributionMethodTabFolder = new CTabFolder(rightContainer, SWT.BORDER);
-		selectDistributionMethodTabFolder.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		
+		selectDistributionMethodTabFolder = new CTabFolder(rightContainer, SWT.TOP | SWT.BORDER);
+		selectDistributionMethodTabFolder.setBorderVisible(true);
+		selectDistributionMethodTabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 		selectDistributionMethodTabFolder.setSelectionBackground(Display.getCurrent().getSystemColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND_GRADIENT));
 		
-		CTabItem selectedTrialsTabItem = new CTabItem(selectDistributionMethodTabFolder, SWT.NONE);
+		selectedTrialsTabItem = new CTabItem(selectDistributionMethodTabFolder, SWT.NONE);
 		selectedTrialsTabItem.setText(DocometreMessages.OrganizeSessionWizardPage_selectedTrialsTabItem);
 		
 		Composite selectedTrialsContainer = new Composite(selectDistributionMethodTabFolder, SWT.NONE);
@@ -342,10 +347,10 @@ public class OrganizeSessionWizardPage extends WizardPage {
 		randomDistributionButton1.addSelectionListener(selectionAdapter);
 		randomDistributionButton2.addSelectionListener(selectionAdapter);
 		
-		CTabItem packTrialsTabItem = new CTabItem(selectDistributionMethodTabFolder, SWT.NONE);
+		packTrialsTabItem = new CTabItem(selectDistributionMethodTabFolder, SWT.NONE);
 		packTrialsTabItem.setText(DocometreMessages.OrganizeSessionWizardPage_packTrialsTabItem);
 		
-		Composite packTrialsContainer = new Composite(selectDistributionMethodTabFolder, SWT.NONE);
+		Composite packTrialsContainer = new Composite(selectDistributionMethodTabFolder, SWT.BORDER);
 		packTrialsTabItem.setControl(packTrialsContainer);
 		packTrialsContainer.setLayout(new GridLayout(2, false));
 		
@@ -462,6 +467,8 @@ public class OrganizeSessionWizardPage extends WizardPage {
 		});
 		resultListViewer.setInput(resultAssociation);
 	}
+	
+	
 
 	private void addProcessesHandler(Object[] selection) {
 		removeAddProcesses(true, selection);
@@ -810,6 +817,12 @@ public class OrganizeSessionWizardPage extends WizardPage {
 
 	public HashMap<Integer, IResource> getResultAssociation() {
 		return resultAssociation;
+	}
+
+	public void updateFocus() {
+		// Workaround to avoid bad items display (OS X)
+		selectDistributionMethodTabFolder.setSelection(packTrialsTabItem);
+		selectDistributionMethodTabFolder.setSelection(selectedTrialsTabItem);
 	}
 	
 }

@@ -92,6 +92,7 @@ public class NewSessionAction extends Action implements ISelectionListener, IWor
 		Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
 		NewResourceWizard newResourceWizard = new NewResourceWizard(ResourceType.SESSION, resource, NewResourceWizard.CREATE);
 		WizardDialog wizardDialog = new WizardDialog(shell, newResourceWizard);
+		wizardDialog.addPageChangedListener(newResourceWizard);
 		if(wizardDialog.open() == Window.OK) {
 			try {
 				IFolder session = resource.getFolder(new Path(newResourceWizard.getResourceName()));
