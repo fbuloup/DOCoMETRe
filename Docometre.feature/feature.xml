@@ -6,7 +6,12 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-02-10
+      -- 2022-02-21
+ADDED :
+* Update Acknowlegements
+FIXED :
+* Bad display on New/Edit Session Wizard
+-- 2022-02-10
 ADDED : 
 * Sample frequency dialog when data editor do not find one
 FIXED :
