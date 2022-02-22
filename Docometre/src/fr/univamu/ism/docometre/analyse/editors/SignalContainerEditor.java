@@ -464,7 +464,7 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		int frontCut = MathEngineFactory.getMathEngine().getFrontCut(channelEditor.getChannel(), trialSelectionSpinner.getSelection());
 		int endCut =  MathEngineFactory.getMathEngine().getEndCut(channelEditor.getChannel(), trialSelectionSpinner.getSelection());
 		double sf = MathEngineFactory.getMathEngine().getSampleFrequency(channelEditor.getChannel());
-		double duration = 1f*samplesNumber/sf;
+		double duration = 1f*(samplesNumber-1)/sf;
 		frontCutLabelValue.setText(Integer.toString(frontCut));
 		endCutLabelValue.setText(Integer.toString(endCut));
 		samplesNumberLabelValue.setText(Integer.toString(samplesNumber));
