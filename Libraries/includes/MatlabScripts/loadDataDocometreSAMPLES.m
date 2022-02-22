@@ -78,9 +78,6 @@ function subject = loadDataDocometre(dataFilesList, varargin)
         fileHandle = fopen(dataFiles{n}, 'r');
         data = fread(fileHandle, 'float32')';       
         fclose(fileHandle);
-        if(strcmp(system, 'Arduino UNO'))
-            data = data(2:2:end);
-        end
         
         channelNameValues = ['subject.', channelName, '.Values'];
         sizeData = size(data);
