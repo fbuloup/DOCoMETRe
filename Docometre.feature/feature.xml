@@ -6,7 +6,12 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-02-21
+      -- 2022-02-23
+ADDED : Nothing
+FIXED :
+* Time values are no longer in samples files (Arduino Uno)
+* Error in duration computation (Signal Editor)
+-- 2022-02-21
 ADDED :
 * Update Acknowlegements
 FIXED :
