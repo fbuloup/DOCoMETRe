@@ -211,12 +211,12 @@ public class PythonEngine implements MathEngine {
 		if(ResourceType.isSubject(resource)) {
 			String experimentName = resource.getFullPath().segment(0);
 			String subjectName = resource.getFullPath().segment(1);
-			String prefixKey = experimentName + "\\." + subjectName;
+			String prefixKey = experimentName + "\\." + subjectName + "\\.";
 			pythonController.getPythonEntryPoint().unload(prefixKey);
 		}
 		if(ResourceType.isExperiment(resource)) {
 			String experimentName = resource.getFullPath().segment(0);
-			String prefixKey = experimentName;
+			String prefixKey = experimentName + "\\.";
 			pythonController.getPythonEntryPoint().unload(prefixKey);
 		}
 	}
