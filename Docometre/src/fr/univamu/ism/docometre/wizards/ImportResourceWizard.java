@@ -45,12 +45,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
@@ -78,6 +80,7 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.osgi.signedcontent.InvalidContentException;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWizard;
@@ -87,6 +90,7 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.TrialStartMode;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.dacqsystems.DocometreBuilder;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfiguration;
@@ -276,7 +280,7 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 						Activator.logErrorMessageWithCause(e);
 						e.printStackTrace();
 					}
-				} else {
+				} else if(file.getName().endsWith(Activator.daqFileExtension) || file.getName().endsWith(Activator.processFileExtension) || file.getName().endsWith(Activator.dataProcessingFileExtension)) {
 					// Import process or dacq file or data processing file
 					Path newPath = Paths.get(rootPath + parentResource.getFullPath().toOSString() + File.separator + file.getName());
 					Path originalPath = file.toPath();
@@ -308,9 +312,72 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 							Activator.logErrorMessageWithCause(e);
 						}
 					} else {
-						
 						Activator.logWarningMessage(NLS.bind(DocometreMessages.ImportResourceWizardErrorMessage1, file.getAbsolutePath()));
 						Activator.logWarningMessage(DocometreMessages.ImportResourceWizardErrorMessage2);
+					}
+				} else if(file.getName().endsWith(".ini") || file.getName().endsWith(".txt") || file.getName().endsWith(".properties")) {
+					// Open properties file
+					try {
+						ArrayList<IFolder> newSessions = new ArrayList<>();
+						InputStream sessionsInputStream = new FileInputStream(file);
+						Properties sessionsProperties = new Properties();
+						sessionsProperties.load(sessionsInputStream);
+						int numSession = 1;
+						// Try to read "session1.name" key
+						for (String sessionName = sessionsProperties.getProperty("session" + numSession + ".name"); sessionName != null; ) {
+							IResource resource = parentResource.findMember(sessionName);
+							// Check this resource does not exist
+							if(sessionName.matches("^[a-zA-Z][a-zA-Z0-9_]*$") && resource == null) {
+								try {
+									// Add session
+									IFolder newSession = parentResource.getFolder(new org.eclipse.core.runtime.Path(sessionName));
+									newSession.create(true, true, null);
+									newSessions.add(newSession);
+									ResourceProperties.setTypePersistentProperty(newSession, ResourceType.SESSION.toString());
+									// Read trials keys
+									int numTrial = 1;
+									for (String trialKey = sessionsProperties.getProperty("session" + numSession + ".trial" + numTrial); trialKey != null; ) {
+										// Add Trial
+										String[] values = trialKey.split(":");
+										String manualAuto = values.length > 0 ? TrialStartMode.getStartMode(values[0]).getKey():TrialStartMode.MANUAL.getKey();
+										String process = values.length > 1 ? values[1]:null;
+										if(process != null) process = process.endsWith(Activator.processFileExtension) ? process : process + Activator.processFileExtension;
+										String trialName = DocometreMessages.NewResourceWizard_DefaultTrialName.replaceAll("N", "") + numTrial;
+										IFolder newTrial = newSession.getFolder(new org.eclipse.core.runtime.Path(trialName));
+										newTrial.create(true, true, null);
+										ResourceProperties.setTypePersistentProperty(newTrial, ResourceType.TRIAL.toString());
+										ResourceProperties.setTrialStartMode(newTrial, TrialStartMode.getStartMode(manualAuto));
+										ResourceProperties.setAssociatedProcessProperty(newTrial, process);
+										numTrial++;
+										trialKey = sessionsProperties.getProperty("session" + numSession + ".trial" + numTrial);
+									}
+								} catch (CoreException e) {
+									Activator.logErrorMessageWithCause(e);
+									e.printStackTrace();
+								}
+								
+							} else {
+								if(!sessionName.matches("^[a-zA-Z][a-zA-Z0-9_]*$")) {
+									String message = NLS.bind(DocometreMessages.ImportResourceWizardErrorMessage7, sessionName);
+									Activator.logErrorMessage(message);
+								} else {
+									String message = NLS.bind(DocometreMessages.ImportResourceWizardErrorMessage4, sessionName);
+									Activator.logErrorMessage(message);
+								}
+							}
+							numSession++;
+							sessionName = sessionsProperties.getProperty("session" + numSession + ".name");
+						}
+						if(numSession == 1) {
+							Throwable throwable = new Throwable(DocometreMessages.ImportResourceWizardErrorMessage5);
+							String message = NLS.bind(DocometreMessages.ImportResourceWizardErrorMessage6, file.getAbsolutePath());
+							throw new InvalidContentException(message, throwable);
+						} else {
+							ExperimentsView.refresh(parentResource, newSessions.toArray(new IResource[newSessions.size()]));
+						}
+					} catch (IOException e) {
+						e.printStackTrace();
+						Activator.logErrorMessageWithCause(e);
 					}
 				}
 			 

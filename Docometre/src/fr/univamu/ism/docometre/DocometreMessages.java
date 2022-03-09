@@ -253,6 +253,11 @@ public final class DocometreMessages extends NLS {
 	public static String ImportErrorMessage;
 	public static String ImportErrorDialogTitle;
 	public static String DataProcessingTitle;
+	public static String Sessions_Label;
+	public static String ImportResourceWizardErrorMessage4;
+	public static String ImportResourceWizardErrorMessage5;
+	public static String ImportResourceWizardErrorMessage6;
+	public static String ImportResourceWizardErrorMessage7;
 	
 	/*New Folder Page*/
 	public static String NewFolderWizard_PageName;

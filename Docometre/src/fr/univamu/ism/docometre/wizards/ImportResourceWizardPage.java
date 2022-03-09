@@ -116,6 +116,8 @@ public class ImportResourceWizardPage extends WizardPage {
 			boolean valid = false;
 			if(selection == ResourceType.EXPERIMENT || selection == ResourceType.SUBJECT) {
 				valid = name.matches("^[a-zA-Z][a-zA-Z0-9_]*.zip$") || name.matches("^[a-zA-Z][a-zA-Z0-9_]*.tar$");
+			} if(selection == ResourceType.SESSION ) {
+				valid = name.matches("^[a-zA-Z][a-zA-Z0-9_]*.txt$") || name.matches("^[a-zA-Z][a-zA-Z0-9_]*.ini$") || name.matches("^[a-zA-Z][a-zA-Z0-9_]*.properties$") ;
 			} else {
 				String extension = Activator.daqFileExtension;
 				if(selection == ResourceType.PROCESS) extension = Activator.processFileExtension;
@@ -167,11 +169,12 @@ public class ImportResourceWizardPage extends WizardPage {
 				if(element == ResourceType.ADW_DATA_FILE) return DocometreMessages.NewSubjectFromADWDataFileLabel;
 				if(element == ResourceType.SUBJECT) return DocometreMessages.Subjects + " (*.zip, *.tar)";
 				if(element == ResourceType.DATA_PROCESSING) return DocometreMessages.DataProcessingTitle;
+				if(element == ResourceType.SESSION) return DocometreMessages.Sessions_Label;
 				return super.getText(element);
 			}
 		});
 		if(!ImportResourceWizard.getSelectedResource().equals(ResourcesPlugin.getWorkspace().getRoot())) {
-			resourceTypeComboViewer.setInput(new Object[] {ResourceType.SUBJECT, ResourceType.ADW_DATA_FILE, ResourceType.DACQ_CONFIGURATION, ResourceType.PROCESS, ResourceType.DATA_PROCESSING});
+			resourceTypeComboViewer.setInput(new Object[] {ResourceType.SUBJECT, ResourceType.ADW_DATA_FILE, ResourceType.DACQ_CONFIGURATION, ResourceType.PROCESS, ResourceType.DATA_PROCESSING, ResourceType.SESSION});
 			resourceTypeComboViewer.setSelection(new StructuredSelection(ResourceType.SUBJECT));
 			selectedResourceType = ResourceType.SUBJECT;
 		} else {
@@ -258,6 +261,11 @@ public class ImportResourceWizardPage extends WizardPage {
 				if(file.getName().endsWith(Activator.processFileExtension)) return Activator.getImage(IImageKeys.PROCESS_ICON);
 				if(file.getName().endsWith(".zip") || file.getName().endsWith("*.tar")) return Activator.getImage(IImageKeys.ZIP);
 				if(file.getName().endsWith(Activator.adwFileExtension)) return Activator.getImage(IImageKeys.SAMPLES_ICON);
+				if(file.getName().endsWith(Activator.dataProcessingFileExtension)) return Activator.getImage(IImageKeys.DATA_PROCESSING_ICON);
+				boolean sessionsConfigurationFile = file.getName().endsWith(".txt");
+				sessionsConfigurationFile |= file.getName().endsWith(".ini");
+				sessionsConfigurationFile |= file.getName().endsWith(".properties");
+				if(sessionsConfigurationFile) return Activator.getImage(IImageKeys.SESSION_ICON);
 				if(file.getName().endsWith(Activator.dataProcessingFileExtension)) return Activator.getImage(IImageKeys.DATA_PROCESSING_ICON);
 				return  Activator.getImage(IImageKeys.FOLDER_ICON);
 			}

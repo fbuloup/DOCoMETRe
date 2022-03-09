@@ -63,7 +63,7 @@ public enum TrialStartMode {
 	}
 
 	public static TrialStartMode getStartMode(String startMode) {
-		return AUTO.getKey().equals(startMode)?AUTO:MANUAL;
+		return AUTO.getKey().equalsIgnoreCase(startMode)?AUTO:MANUAL;
 	}
 
 }
