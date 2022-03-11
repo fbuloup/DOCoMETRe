@@ -87,17 +87,22 @@ public class ExperimentsViewerSorter extends ViewerComparator {
 			if(resource1 instanceof IProject && !((IProject) resource1).isOpen()) return super.compare(viewer, e1, e2);
 			if(resource2 instanceof IProject && !((IProject) resource2).isOpen()) return super.compare(viewer, e1, e2);
 			if(ResourceType.areResourcesSameType(resource1, resource2)) {
-				if(resource1.getName().matches("^.*\\d+$") && resource2.getName().matches("^.*\\d+$")) return compare(resource1, resource2);
+				if(resource1.getName().matches("^.*\\d+$") && resource2.getName().matches("^.*\\d+$")) {
+					long number = compare(resource1, resource2);
+					if(number > Integer.MAX_VALUE) number = Integer.MAX_VALUE;
+					if(number < Integer.MIN_VALUE) number = Integer.MIN_VALUE;
+					return (int)number;
+				}
 			}
 		}
 		return super.compare(viewer, e1, e2);
 	}
 	
-	private int compare(IResource resource1, IResource resource2) {
+	private long compare(IResource resource1, IResource resource2) {
 		String prefix = resource1.getName().replaceAll("\\d+$", "");
-		int number1 = Integer.parseInt(resource1.getName().replaceAll(prefix, ""));
+		long number1 = Long.parseLong(resource1.getName().replaceAll(prefix, ""));
 		prefix = resource2.getName().replaceAll("\\d+$", "");
-		int number2 = Integer.parseInt(resource2.getName().replaceAll(prefix, ""));
+		long number2 = Long.parseLong(resource2.getName().replaceAll(prefix, ""));
 		return number1 - number2;
 	}
 
