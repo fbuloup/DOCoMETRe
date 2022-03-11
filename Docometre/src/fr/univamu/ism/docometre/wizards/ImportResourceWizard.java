@@ -243,26 +243,27 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 											}
 											// Delete temp folder
 											Files.walk(Paths.get(temporaryFolder)).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+											
+											subMonitor.subTask(DocometreMessages.RefreshingWorkspace);
+											parentResource.refreshLocal(IResource.DEPTH_INFINITE, null);
+											subMonitor.worked(1);
+											
+											readAndApplyPersitentProperties(experiment, subMonitor, nbPropertiesEntriesToApply, propertiesFileFullPath);
+											String[] propertiesFileFullPathSegments = propertiesFileFullPath.split("/");
+											IFile propertiesFile = experiment.getFile(propertiesFileFullPathSegments[propertiesFileFullPathSegments.length - 1]);
+											if(propertiesFile != null) propertiesFile.delete(true, null);
+											
+											
 										} catch (IOException e) {
 											Activator.logErrorMessageWithCause(e);
 											e.printStackTrace();
 										} finally {
 											if(stream != null) stream.close();
+											subMonitor.subTask(DocometreMessages.RefreshingWorkspace);
+											parentResource.refreshLocal(IResource.DEPTH_INFINITE, null);
+											ExperimentsView.refresh(parentResource, null);
+											subMonitor.worked(1);
 										}
-										
-										subMonitor.subTask(DocometreMessages.RefreshingWorkspace);
-										parentResource.refreshLocal(IResource.DEPTH_INFINITE, null);
-										subMonitor.worked(1);
-										
-										readAndApplyPersitentProperties(experiment, subMonitor, nbPropertiesEntriesToApply, propertiesFileFullPath);
-										String[] propertiesFileFullPathSegments = propertiesFileFullPath.split("/");
-										IFile propertiesFile = experiment.getFile(propertiesFileFullPathSegments[propertiesFileFullPathSegments.length - 1]);
-										if(propertiesFile != null) propertiesFile.delete(true, null);
-										
-										subMonitor.subTask(DocometreMessages.RefreshingWorkspace);
-										parentResource.refreshLocal(IResource.DEPTH_INFINITE, null);
-										ExperimentsView.refresh(parentResource, null);
-										subMonitor.worked(1);
 										
 									}
 									
