@@ -119,7 +119,7 @@ public class ImportResourceWizardPage extends WizardPage {
 				valid = name.matches("^[a-zA-Z][a-zA-Z0-9_]*.zip$") || name.matches("^[a-zA-Z][a-zA-Z0-9_]*.tar$");
 			} if(selection == ResourceType.SESSION ) {
 				valid = name.matches("^[a-zA-Z][a-zA-Z0-9_]*.txt$") || name.matches("^[a-zA-Z][a-zA-Z0-9_]*.ini$") || name.matches("^[a-zA-Z][a-zA-Z0-9_]*.properties$") ;
-			} else {
+			} else if(selection == ResourceType.PROCESS || selection == ResourceType.ADW_DATA_FILE || selection == ResourceType.DATA_PROCESSING) {
 				String extension = Activator.daqFileExtension;
 				if(selection == ResourceType.PROCESS) extension = Activator.processFileExtension;
 				if(selection == ResourceType.ADW_DATA_FILE) extension = Activator.adwFileExtension;
