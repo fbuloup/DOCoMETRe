@@ -4,4 +4,6 @@
  <toc label="Advanced Concepts" link_to="toc.xml#advancedconcepts"> 
  	<topic label="How to create my own function ?"  href="html/advancedconcepts/maintopic.html"> 
  	</topic>
+  <topic href="html/advancedconcepts/fileformatsessionimportation.html" label="What is file format for sessions importation ?">
+  </topic>
  </toc>
