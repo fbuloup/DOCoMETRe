@@ -249,7 +249,7 @@ public class Activator extends AbstractUIPlugin {
 	}
 	
 	private static void getMultiCauseMessages(StringBuffer message, Throwable throwable) {
-		if(throwable.getMessage() != null) message.append(throwable.getMessage() + "\n");
+		if(throwable.getMessage() != null) message.append(throwable.toString() + "\n");
 		if(throwable.getCause() != null) getMultiCauseMessages(message, throwable.getCause());
 	}
 	
@@ -258,7 +258,7 @@ public class Activator extends AbstractUIPlugin {
 		if(exception instanceof CoreException) {
 			getMultiStatusMessages(message, ((CoreException) exception).getStatus());
 		} else {
-			if(exception.getMessage() != null) message.append(exception.getMessage() + "\n");
+			if(exception.getMessage() != null) message.append(exception.toString() + "\n");
 			if(exception.getCause() !=  null ) getMultiCauseMessages(message, exception.getCause());
 		}
 		
