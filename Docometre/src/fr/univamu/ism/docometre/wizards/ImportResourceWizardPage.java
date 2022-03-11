@@ -44,6 +44,7 @@ package fr.univamu.ism.docometre.wizards;
 import java.io.File;
 import java.io.FilenameFilter;
 
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
@@ -173,16 +174,7 @@ public class ImportResourceWizardPage extends WizardPage {
 				return super.getText(element);
 			}
 		});
-		if(!ImportResourceWizard.getSelectedResource().equals(ResourcesPlugin.getWorkspace().getRoot())) {
-			resourceTypeComboViewer.setInput(new Object[] {ResourceType.SUBJECT, ResourceType.ADW_DATA_FILE, ResourceType.DACQ_CONFIGURATION, ResourceType.PROCESS, ResourceType.DATA_PROCESSING, ResourceType.SESSION});
-			resourceTypeComboViewer.setSelection(new StructuredSelection(ResourceType.SUBJECT));
-			selectedResourceType = ResourceType.SUBJECT;
-		} else {
-			resourceTypeComboViewer.setInput(new Object[] {ResourceType.EXPERIMENT});
-			resourceTypeComboViewer.setSelection(new StructuredSelection(ResourceType.EXPERIMENT));
-			selectedResourceType = ResourceType.EXPERIMENT;
-		}
-		
+		setInput(resourceTypeComboViewer);
 		
 		// Parent folder 
 		Label parentFolderLabel = new Label(container, SWT.NORMAL);
@@ -323,6 +315,34 @@ public class ImportResourceWizardPage extends WizardPage {
 
 	}
 	
+	private void setInput(ComboViewer resourceTypeComboViewer) {
+		IResource parentSelectedResource = ImportResourceWizard.getSelectedResource();
+		
+		if(ResourceType.isExperiment(parentSelectedResource)) {
+			resourceTypeComboViewer.setInput(new Object[] {ResourceType.SUBJECT, ResourceType.ADW_DATA_FILE, ResourceType.DACQ_CONFIGURATION, ResourceType.PROCESS, ResourceType.DATA_PROCESSING});
+			resourceTypeComboViewer.setSelection(new StructuredSelection(ResourceType.SUBJECT));
+			selectedResourceType = ResourceType.SUBJECT;
+		}
+		
+		if(ResourceType.isFolder(parentSelectedResource)) {
+			resourceTypeComboViewer.setInput(new Object[] {ResourceType.ADW_DATA_FILE, ResourceType.DACQ_CONFIGURATION, ResourceType.PROCESS, ResourceType.DATA_PROCESSING});
+			resourceTypeComboViewer.setSelection(new StructuredSelection(ResourceType.ADW_DATA_FILE));
+			selectedResourceType = ResourceType.ADW_DATA_FILE;
+		}
+		
+		if(ResourceType.isSubject(parentSelectedResource)) {
+			resourceTypeComboViewer.setInput(new Object[] {ResourceType.SESSION});
+			resourceTypeComboViewer.setSelection(new StructuredSelection(ResourceType.SESSION));
+			selectedResourceType = ResourceType.SESSION;
+		}
+		
+		if(parentSelectedResource.equals(ResourcesPlugin.getWorkspace().getRoot())) {
+			resourceTypeComboViewer.setInput(new Object[] {ResourceType.EXPERIMENT});
+			resourceTypeComboViewer.setSelection(new StructuredSelection(ResourceType.EXPERIMENT));
+			selectedResourceType = ResourceType.EXPERIMENT;
+		}
+	}
+
 	public ITreeSelection getSelection() {
 		return resourceTreeViewer.getStructuredSelection();
 	}

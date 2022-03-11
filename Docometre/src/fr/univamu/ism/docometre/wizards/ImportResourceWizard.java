@@ -559,7 +559,7 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 		parentResource = ResourcesPlugin.getWorkspace().getRoot();
 		if(!selection.isEmpty()) {
 			IResource tempResource = (IResource) selection.getFirstElement();
-			if(!(tempResource instanceof IContainer)) parentResource = tempResource.getParent();
+			if(!(tempResource instanceof IContainer) || ResourceType.isProcessTest(tempResource)) parentResource = tempResource.getParent();
 			else parentResource = (IContainer) tempResource;
 		}
 	}

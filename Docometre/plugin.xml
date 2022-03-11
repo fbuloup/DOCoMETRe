@@ -2180,6 +2180,13 @@
                                  property="org.eclipse.core.resources.persistentProperty">
                            </test>
                         </adapt>
+                        <adapt
+                              type="org.eclipse.core.resources.IResource">
+                           <test
+                                 args="Docometre.type,SUBJECT"
+                                 property="org.eclipse.core.resources.persistentProperty">
+                           </test>
+                        </adapt>
                      </or>
                   </iterate>
                </with>
