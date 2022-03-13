@@ -1,0 +1,199 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"> 
+
+ <html>
+ <head>
+ 	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ 	<title>How to create my own dacq. user function ?</title>
+ </head>
+
+ <body>
+ <h1>How to create my own dacq. user function ?</h1>
+ <p>
+ When you realize you are often using the same functions structure among several parts of a given process or in 
+ several processes, it's probably time to apply the "Don't Repeat Yourself" principle !
+ </p>
+ <p>
+ In order to apply this principle in DOCoMETRe, you must follow these steps :
+  </p> 
+ <ol>
+ 	<li>Write and test the code you want to factorise as a dacq. function</li>
+ 	<li>Identify function parameters. These parameters will constitute the dialog box proposed to configure the function in DOCoMETRe.</li>
+ 	<li>Write function text file. You will have to follow specific rules.</li>
+ 	<li>Place this text file in user library folder</li>
+ </ol>
+ 
+ <p>
+ As an example to illustrate these steps, we will create a digital square function generator for the Arduino Uno. This example can easily be transposed to
+ an ADWin system.
+ </p>
+
+<h3>1. Write and test your code</h3>
+<p>Two parameters will be used : the period and the duty cycle. It is assumed the initial state during duty cycle is always level one.</p>
+<p>For the purpose of the function test, we will use two variables declaration. These declarations wont be mandatory with DOCoMETRe.</p>
+<pre>
+float period = ...; // Period (s.) of the digital square wave
+float dutyCycle = ...; // Time, as a percentage of the period, spent in the high state during the period
+</pre>
+<p>The integer number of periods that have elapsed since the beginning is calculated using the predefined variable <i>time</i> which 
+represents the time in the real time loop. With DOCoMETRe, this time variable is automatically managed. Time value is then compared 
+to the desired cyclic ratio to properly set output value level. Similarly, output variable will be managed for you in DOCoMETRe as you will select
+output defined in data acquisition configuration file.</p>
+<pre>
+if(time - ((int)(time/period))*period < dutyCycle) {
+	output = 1;
+} else {
+	output = 0;
+}
+</pre>
+	<p>
+		You could finally get this simple test code below for this function
+		generator. As mentioned previously, <i>time</i> variable will be
+		managed for you with DOCoMETRe and you wont have to declare it, simply
+		use it. But for the purpose of this function test, you have to manage
+		it. It is the same case for <i>output</i> variable : in this function
+		test code, you have to declare it and generate its associate output, e.g. at
+		pin 3, but you wont have to do so with DOCoMETRe.
+	</p>
+
+	<pre>
+float time; 
+float period = 1; // Period (s.) of the digital square wave
+float dutyCycle = .5; // Time, as a percentage of the period, spent in the high state during the period
+int output;
+
+void setup() {
+ 	pinMode(3, OUTPUT); // Set pin 3 as output
+}
+
+void loop() {
+	time = millis()/1000.0;
+ 	if(time - ((int)(time/period))*period < dutyCycle) {
+		output = 1;
+	} else {
+		output = 0;
+	}
+	digitalWrite(3, output); // Generate output
+}
+</pre>
+
+<h3>2. Identify function parameters</h3>
+<p>Once your function has been validated, you can identify core code and extract parameters.</p>
+<p>For this example, here is the core code :</p>
+<pre>
+if(time - ((int)(time/period))*period < dutyCycle) {
+	output = 1;
+} else {
+	output = 0;
+}
+</pre>
+<p>And here are the parameters : <i>period</i>, <i>dutyCycle</i> and <i>output</i>.</p>
+<p>Let's write the associated function text file !</p>
+<h3>3. Write function text file</h3>
+<p>This text file is a properties/values file. Just have a look <a href="https://en.wikipedia.org/wiki/.properties" target="_blank" rel="noopener noreferrer">here</a>
+ if you need more informations on properties files. In this text file you will have to specify :</p> 
+<ol>
+	<li>a menu title</li>
+	<li>a menu description</li>
+	<li>it is a user function</li>
+	<li>the number of parameters</li>
+	<li>the descriptions of each parameter</li>
+	<li>the core code</li>
+</ol>
+<h4>3.1 Menu title</h4>
+You must give a value to the key MENU_TITLE :
+<pre>
+MENU_TITLE = Square wave generator
+</pre>
+If you want to provide other languages, you can suffix this key with a country code. For instance :
+<pre>
+MENU_TITLE_FR = Générateur de signal carré
+MENU_TITLE_ES = Generador de señale cuadrada
+MENU_TITLE_DE = Quadratsignalgenerator
+</pre>
+Default language for MENU_TITLE is english.
+
+<h4>3.2 Menu description</h4>
+DESCRIPTION key will be use to provide a tool tip and it works in the same way :
+<pre>
+DESCRIPTION = You can set the period and duty cycle of the generated signal
+DESCRIPTION_FR = Vous pouvez régler la période et le rapport cyclique du signal généré
+DESCRIPTION_ES = Puede ajustar el periodo y el ciclo de trabajo de la señal generada
+DESCRIPTION_DE = Sie können die Periode und das Tastverhältnis des erzeugten Signals einstellen
+</pre>
+
+<h4>3.3 User function flag</h4>
+A user function must always contains this key/value property :
+<pre>
+USER_FUNCTION = YES
+</pre>
+
+<h4>3.4 Parameters descriptions</h4>
+This key must take the number of parameters value. In our example it will take the value of 2 :
+<pre>PARAMETERS_NUMBER = 3</pre>
+
+<h4>3.5 Parameters descriptions</h4>
+Now each parameter must be described. Here the key/value pair is more elaborate : the value of the PARAMETER_N
+key contains other key/value pairs. The NAME key must take the parameter name identified in step 2. The TYPE key 
+contains the type of the created GUI widget. You can provide an associated regular expression in order to restrict 
+user input. In this case you must separate widget type and regular expression with a colon. A label must be
+provided. It will be placed in front of the widget as information. All inner key/value pairs must be comma separated.
+<br><br>
+Here is what can be used in our example :
+
+<pre>
+PARAMETER_1 = NAME = period, TYPE = TEXT:^[0-9]+\.?[0-9]*$, LABEL = "Signal period (s.) :",\
+LABEL_FR = "Période du signal (s.) :"
+PARAMETER_2 = NAME = dutyCycle, TYPE = TEXT:^[0]\.[0-9]*$, LABEL = "Duty cycle (%) :",\
+LABEL_FR = "Rapport cyclique (%) :"
+PARAMETER_1 = NAME = output, TYPE = TEXT:^(?!\s*$).+$, LABEL = "Put generated signal in :",\
+LABEL_FR = "Mettre la valeur générée dans :"
+</pre>
+For now only TEXT type can be used as widget. 
+<br><br>
+You can omit the regular expression and only provide the type key like this : 
+<pre>
+PARAMETER_N = NAME = name, TYPE = TEXT, LABEL = "...
+</pre>
+But in this case, user will be able to enter any value and it could be error prone.
+<h4>3.6 Core code</h4>
+Finally a value for FUNCTION_CODE key must be provided. Its value has been identified in step 2 :
+<pre>
+FUNCTION_CODE = if(time - ((int)(time/period))*period < dutyCycle) {\n\
+	output = 1;\n\
+} else {\n\
+	output = 0;\n\
+}
+</pre>
+This function code will be parsed and paste in segment where it has been placed (INITIALIZATION, LOOP or FINALIZE segment).
+
+<h3>4. Create and place this text file in user library folder</h3>
+Resulting text file content will look like this :
+ <pre>
+MENU_TITLE = Square wave generator
+MENU_TITLE_FR = Générateur de signal carré
+DESCRIPTION = You can set the period and duty cycle of the generated signal
+DESCRIPTION_FR = Vous pouvez régler la période et le rapport cyclique du signal généré
+USER_FUNCTION = YES
+PARAMETERS_NUMBER = 3
+PARAMETER_1 = NAME = period, TYPE = TEXT:^[0-9]+\.?[0-9]*$, LABEL = "Signal period (s.) :",\
+LABEL_FR = "Période du signal (s.) :"
+PARAMETER_2 = NAME = dutyCycle, TYPE = TEXT:^[0]\.[0-9]*$, LABEL = "Duty cycle (%) :",\
+LABEL_FR = "Rapport cyclique (%) :"
+PARAMETER_3 = NAME = output, TYPE = TEXT:^(?!\s*$).+$, LABEL = "Put generated signal in :",\
+LABEL_FR = "Mettre la valeur générée dans :"
+FUNCTION_CODE = if(time - ((int)(time/period))*period < dutyCycle) {\n\
+	output = 1;\n\
+} else {\n\
+	output = 0;\n\
+}
+ </pre>
+ Place this key/value pairs in a text file named "SQUARE_WAVE_GENERATOR.FUN". 
+ 
+ <p style="color:rgba(255,0,0,1);"><b>Note the file extension must be ".FUN"</b></p>
+ 
+ Now you can save this file in the user library function folder. You can have a look at all predefined function in Libraries plugin under 
+ Eclipse/plugins folder : you will find all Arduino an ADWin functions in includes/ArduinoUnoFunctions and includes/ADWinFunctions. 
+  <p style="color:rgba(255,0,0,1);"><b>Please don't modify any of these predefined files and don't place your custom functions in any if these folders or any of their subfolders as 
+ they will be removed during next application update.</b></p>
+ </body>
+ </html>
