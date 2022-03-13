@@ -136,6 +136,7 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), libraryPathText.getText());
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getKey(), userLibraryPathText.getText());
 		preferenceStore.putValue(GeneralPreferenceConstants.ARDUINO_DELAY_TIME_AFTER_SERIAL_PRINT, delayTimeSpinner.getText());
+		preferenceStore.putValue(GeneralPreferenceConstants.ARDUINO_USER_LIBRARIES_ABSOLUTE_PATH, docoUserLibrariesAbsolutePathText.getText());
 		return super.performOk();
 	}
 
@@ -188,7 +189,7 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 		docoUserLibrariesAbsolutePathText.setEditable(false);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(docoUserLibrariesAbsolutePathText);
 		Button browseDocoUserLibrariesAbsolutePathButton = new Button(container, SWT.FLAT);
-		browseDocoUserLibrariesAbsolutePathButton.setEnabled(false);
+		browseDocoUserLibrariesAbsolutePathButton.setEnabled(true);
 		browseDocoUserLibrariesAbsolutePathButton.setText("Browse...");
 		browseDocoUserLibrariesAbsolutePathButton.addSelectionListener(new DialogSelectionHandler(docoUserLibrariesAbsolutePathText, true, getShell()));
 		GridDataFactory.fillDefaults().applyTo(browseDocoUserLibrariesAbsolutePathButton);

@@ -398,6 +398,7 @@ public class DefaultADWinSystemPreferencePage extends PreferencePage implements 
 		preferenceStore.putValue(ADWinDACQConfigurationProperties.SYSTEM_TYPE.getKey(), systemTypeCombo.getText());
 		preferenceStore.putValue(ADWinDACQConfigurationProperties.CPU_TYPE.getKey(), cpuTypeCombo.getText());
 		preferenceStore.putValue(ADWinDACQConfigurationProperties.GLOBAL_FREQUENCY.getKey(), globalFrequencyText.getText());
+		preferenceStore.putValue(GeneralPreferenceConstants.ADWIN_USER_LIBRARIES_ABSOLUTE_PATH, userLibrariesAbsolutePathText.getText());
 		preferenceStore.putValue("DEFAULT_MODULES", createModuleInfosString());
 		return super.performOk();
 	}
@@ -463,7 +464,7 @@ public class DefaultADWinSystemPreferencePage extends PreferencePage implements 
 		userLibrariesAbsolutePathText.setEditable(false);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(userLibrariesAbsolutePathText);
 		Button browseUserLibrariesAbsolutePathButton = new Button(container, SWT.FLAT);
-		browseUserLibrariesAbsolutePathButton.setEnabled(false);
+		browseUserLibrariesAbsolutePathButton.setEnabled(true);
 		browseUserLibrariesAbsolutePathButton.setText("Browse...");
 		browseUserLibrariesAbsolutePathButton.addSelectionListener(new DialogSelectionHandler(userLibrariesAbsolutePathText, true, getShell()));
 		GridDataFactory.fillDefaults().applyTo(browseUserLibrariesAbsolutePathButton);
