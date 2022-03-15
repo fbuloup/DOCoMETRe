@@ -41,7 +41,6 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.functions;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -72,12 +71,16 @@ import org.eclipse.swt.widgets.Text;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.Process;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfigurationProperties;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinProcess;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoProcess;
 import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
+import fr.univamu.ism.process.Script;
 import fr.univamu.ism.process.ScriptSegmentType;
 
 public class CustomerFunction extends GenericFunction {
@@ -88,7 +91,6 @@ public class CustomerFunction extends GenericFunction {
 	private static final String LABEL = "LABEL";
 	private static final String CONTROL_DECORATION = "CONTROL_DECORATION";
 	
-	public static final String CUSTOMER_FUNCTIONS_PATH = "CUSTOMER_FUNCTIONS" + File.separator;
 	private static final String countrySuffix = "_" + Locale.getDefault().getCountry();
 	private static final String PARAMETERS_NUMBER_KEY = "PARAMETERS_NUMBER";
 	private static final String PARAMETER_KEY = "PARAMETER_";
@@ -107,7 +109,7 @@ public class CustomerFunction extends GenericFunction {
 	}
 	
 	public void setFunctionFileName(String functionFileName) {
-		this.functionFileName = CUSTOMER_FUNCTIONS_PATH + functionFileName;
+		this.functionFileName = functionFileName;
 	}
 	
 	@Override
@@ -125,12 +127,14 @@ public class CustomerFunction extends GenericFunction {
 		Composite container  = (Composite) parent;
 		Composite paramContainer = new Composite(container, SWT.BORDER);
 		paramContainer.setLayout(new GridLayout(2, false));
+		GridLayout gl = (GridLayout) paramContainer.getLayout();
+		gl.horizontalSpacing = 15;
 		
 		try {
-			String nbParamsString =  FunctionFactory.getProperty(process, functionFileName, PARAMETERS_NUMBER_KEY);
+			String nbParamsString =  FunctionFactory.getProperty(process, functionFileName, PARAMETERS_NUMBER_KEY, true);
 			int nbParams = Integer.valueOf(nbParamsString);
 			for (int i = 1; i <= nbParams; i++) {
-				String parameterDefinition = FunctionFactory.getProperty(process, functionFileName, PARAMETER_KEY + String.valueOf(i));
+				String parameterDefinition = FunctionFactory.getProperty(process, functionFileName, PARAMETER_KEY + String.valueOf(i), true);
 				if(!parameterDefinition.equals("")) {
 					Properties properties = new Properties();
 					String[] parameterSegments = parameterDefinition.split(",");
@@ -246,9 +250,19 @@ public class CustomerFunction extends GenericFunction {
 	}
 	
 	private String parseCode(Process process, String keyCode, String code, Object context) {
-		String temporaryCode = FunctionFactory.getProperty(process, functionFileName, keyCode.toUpperCase());
+		String temporaryCode = FunctionFactory.getProperty(process, functionFileName, keyCode.toUpperCase(), true);
 		if(temporaryCode != null && !"".equals(temporaryCode)) {
-			temporaryCode = "\nREM Custom Function : " + getName(context) + "\n\n" + temporaryCode;
+			String comment = "\n";
+			if(context instanceof Process) {
+				DACQConfiguration dacqConfiguration = process.getDACQConfiguration();
+				if(dacqConfiguration instanceof ADWinDACQConfiguration) comment += "REM";
+				if(dacqConfiguration instanceof ArduinoUnoDACQConfiguration) comment += "//";
+			}
+			if(context instanceof Script) { 
+				if(MathEngineFactory.isMatlab()) comment += "%";
+				if(MathEngineFactory.isPython()) comment += "#";
+			}
+			temporaryCode = comment + " Customer Function : " + getName(context) + "\n\n" + temporaryCode;
 			HashMap<String, String> properties = getProperties();
 			Set<String> propertiesKeys = properties.keySet();
 			String hashCode = String.valueOf(hashCode());
@@ -292,6 +306,18 @@ public class CustomerFunction extends GenericFunction {
 			code = parseCode(process, key.toUpperCase(), code, context);
 		}
 		return code;
+	}
+	
+	@Override
+	public String getTitle(Object process) {
+		if(!(process instanceof Process || process instanceof Script)) return "";
+		return FunctionFactory.getProperty(process, getFunctionFileName(), FunctionFactory.MENU_TITLE, true);
+	}
+	
+	@Override
+	public String getDescription(Object process) {
+		if(!(process instanceof Process || process instanceof Script)) return "";
+		return FunctionFactory.getProperty(process, getFunctionFileName(), FunctionFactory.DESCRIPTION, true);
 	}
 	
 

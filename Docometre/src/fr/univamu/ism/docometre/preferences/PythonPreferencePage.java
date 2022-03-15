@@ -86,7 +86,6 @@ public class PythonPreferencePage extends FieldEditorPreferencePage implements I
 		// PYTHON_USER_SCRIPTS_LOCATION
 		DirectoryFieldEditor pythonUserScriptsLocationFieldEditor = new DirectoryFieldEditor(GeneralPreferenceConstants.PYTHON_USER_SCRIPTS_LOCATION, DocometreMessages.PythonEngineUserScriptLocation, container);
 		pythonUserScriptsLocationFieldEditor.getLabelControl(container).setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-		pythonUserScriptsLocationFieldEditor.setEnabled(false, container);
 		addField(pythonUserScriptsLocationFieldEditor);
 	}
 

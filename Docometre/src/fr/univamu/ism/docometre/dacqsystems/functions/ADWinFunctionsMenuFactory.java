@@ -159,8 +159,8 @@ public final class ADWinFunctionsMenuFactory {
 			functionMenuManager.add(new Separator());
 			MenuManager customerFunctionsMenuManager = new MenuManager(DocometreMessages.CustomerFunctionsMenuLabel, CUSTOMER_FUNCTIONS_MENU);
 			for (String customerFunction : customerFunctions) {
-				String menuTitle = FunctionFactory.getProperty(process, CustomerFunction.CUSTOMER_FUNCTIONS_PATH + customerFunction, FunctionFactory.MENU_TITLE);
-				String menuTooltip = FunctionFactory.getProperty(process, CustomerFunction.CUSTOMER_FUNCTIONS_PATH + customerFunction, FunctionFactory.DESCRIPTION);
+				String menuTitle = FunctionFactory.getProperty(process, customerFunction, FunctionFactory.MENU_TITLE, true);
+				String menuTooltip = FunctionFactory.getProperty(process, customerFunction, FunctionFactory.DESCRIPTION, true);
 				if(menuTitle != null && menuTooltip != null) {
 					AssignFunctionAction assignFunctionAction = new AssignFunctionAction(scriptSegmentEditor, blockEditPart, menuTitle, menuTooltip, customerFunction);
 					assignFunctionAction.setLazyEnablementCalculation(false);

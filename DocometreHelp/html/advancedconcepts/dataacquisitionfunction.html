@@ -24,8 +24,11 @@
  
  <p>
  As an example to illustrate these steps, we will create a digital square function generator for the Arduino Uno. This example can easily be transposed to
- an ADWin system.
+ an ADWin system. Please note that you can get user function examples in subfolder <i>CUSTOMER_FUNCTIONS</i> of the Libraries plugin :
  </p>
+
+ Eclipse/plugins/Libraries_Version/includes/ADWinFunctions/CUSTOMER_FUNCTIONS<br> 
+ Eclipse/plugins/Libraries_Version/includes/ArduinoUnoFunctions/CUSTOMER_FUNCTIONS
 
 <h3>1. Write and test your code</h3>
 <p>Two parameters will be used : the period and the duty cycle. It is assumed the initial state during duty cycle is always level one.</p>
@@ -128,7 +131,7 @@ USER_FUNCTION = YES
 </pre>
 
 <h4>3.4 Parameters descriptions</h4>
-This key must take the number of parameters value. In our example it will take the value of 2 :
+This key must take the number of parameters value. In our example it will take the value of 3 :
 <pre>PARAMETERS_NUMBER = 3</pre>
 
 <h4>3.5 Parameters descriptions</h4>
@@ -167,7 +170,7 @@ FUNCTION_CODE = if(time - ((int)(time/period))*period < dutyCycle) {\n\
 This function code will be parsed and paste in segment where it has been placed (INITIALIZATION, LOOP or FINALIZE segment).
 
 <h3>4. Create and place this text file in user library folder</h3>
-Resulting text file content will look like this :
+Resulting text file content will look like this (with correct code indentation) :
  <pre>
 MENU_TITLE = Square wave generator
 MENU_TITLE_FR = Générateur de signal carré
@@ -181,10 +184,13 @@ PARAMETER_2 = NAME = dutyCycle, TYPE = TEXT:^[0]\.[0-9]*$, LABEL = "Duty cycle (
 LABEL_FR = "Rapport cyclique (%) :"
 PARAMETER_3 = NAME = output, TYPE = TEXT:^(?!\s*$).+$, LABEL = "Put generated signal in :",\
 LABEL_FR = "Mettre la valeur générée dans :"
-FUNCTION_CODE = if(time - ((int)(time/period))*period < dutyCycle) {\n\
-	output = 1;\n\
-} else {\n\
-	output = 0;\n\
+FUNCTION_CODE = if(time - ((int)(time/period))*period < dutyCycle)\n\
+{\n\
+\toutput = 1;\n\
+}\n\
+else\n\ 
+{\n\
+\toutput = 0;\n\
 }
  </pre>
  Place this key/value pairs in a text file named "SQUARE_WAVE_GENERATOR.FUN". 

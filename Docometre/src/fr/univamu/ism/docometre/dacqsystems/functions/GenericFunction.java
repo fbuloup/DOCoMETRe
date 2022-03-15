@@ -117,13 +117,13 @@ public class GenericFunction extends Function {
 	@Override
 	public String getTitle(Object process) {
 		if(!(process instanceof Process || process instanceof Script)) return "";
-		return FunctionFactory.getProperty(process, getFunctionFileName(), FunctionFactory.MENU_TITLE);
+		return FunctionFactory.getProperty(process, getFunctionFileName(), FunctionFactory.MENU_TITLE, false);
 	}
 	
 	@Override
 	public String getDescription(Object process) {
 		if(!(process instanceof Process || process instanceof Script)) return "";
-		return FunctionFactory.getProperty(process, getFunctionFileName(), FunctionFactory.DESCRIPTION);
+		return FunctionFactory.getProperty(process, getFunctionFileName(), FunctionFactory.DESCRIPTION, false);
 	}
 	
 }

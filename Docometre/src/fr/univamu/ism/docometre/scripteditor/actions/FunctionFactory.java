@@ -59,6 +59,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.preference.IPreferenceStore;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.analyse.functions.MatlabEngineFunctionsMenuFactory;
@@ -73,7 +74,6 @@ import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfigurati
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfigurationProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoProcess;
 import fr.univamu.ism.docometre.dacqsystems.functions.ArduinoUnoFunctionsMenuFactory;
-import fr.univamu.ism.docometre.dacqsystems.functions.CustomerFunction;
 import fr.univamu.ism.docometre.editors.AbstractScriptSegmentEditor;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
@@ -100,19 +100,14 @@ public final class FunctionFactory {
 		}
 	}
 	
-	public static Path computeAbsolutePath(Object context) {
-		// Now we get libraries path from default preferences not from dacq. conf.
+	private static Path computeAbsolutePath(Object context) {
 		IEclipsePreferences defaults = DefaultScope.INSTANCE.getNode(Activator.PLUGIN_ID);
 		if(context instanceof Process) {
 			Process process = (Process)context;
 			DACQConfiguration dacqConfiguration = process.getDACQConfiguration();
 			String functionsAbsolutePath = "";
-			if(dacqConfiguration instanceof ADWinDACQConfiguration) 
-				functionsAbsolutePath = defaults.get(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), "");
-//				functionsAbsolutePath = dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH);
-			if(dacqConfiguration instanceof ArduinoUnoDACQConfiguration) 
-				functionsAbsolutePath = defaults.get(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), "");
-//				functionsAbsolutePath = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH);
+			if(dacqConfiguration instanceof ADWinDACQConfiguration) functionsAbsolutePath = defaults.get(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), "");
+			if(dacqConfiguration instanceof ArduinoUnoDACQConfiguration) functionsAbsolutePath = defaults.get(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), "");
 			Path path = new Path(functionsAbsolutePath);
 			String suffix = "";
 			if (process instanceof ADWinProcess) suffix = "ADWinFunctions";
@@ -123,12 +118,8 @@ public final class FunctionFactory {
 		if(context instanceof Script) {
 			String functionsAbsolutePath = "";
 			String mathEngine = Activator.getDefault().getPreferenceStore().getString(MathEnginePreferencesConstants.MATH_ENGINE);
-			if(MathEnginePreferencesConstants.MATH_ENGINE_MATLAB.equals(mathEngine)) 
-				functionsAbsolutePath =  defaults.get(GeneralPreferenceConstants.MATLAB_SCRIPTS_LOCATION, "");
-//				functionsAbsolutePath =  Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.MATLAB_SCRIPTS_LOCATION);
-			if(MathEnginePreferencesConstants.MATH_ENGINE_PYTHON.equals(mathEngine)) 
-				functionsAbsolutePath =  defaults.get(GeneralPreferenceConstants.PYTHON_SCRIPTS_LOCATION, "");
-//				functionsAbsolutePath =  Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.PYTHON_SCRIPTS_LOCATION);
+			if(MathEnginePreferencesConstants.MATH_ENGINE_MATLAB.equals(mathEngine)) functionsAbsolutePath =  defaults.get(GeneralPreferenceConstants.MATLAB_SCRIPTS_LOCATION, "");
+			if(MathEnginePreferencesConstants.MATH_ENGINE_PYTHON.equals(mathEngine)) functionsAbsolutePath =  defaults.get(GeneralPreferenceConstants.PYTHON_SCRIPTS_LOCATION, "");
 			Path path = new Path(functionsAbsolutePath);
 			String suffix = "";
 			if(MathEnginePreferencesConstants.MATH_ENGINE_MATLAB.equals(mathEngine)) suffix = "MatlabFunctions";
@@ -138,9 +129,42 @@ public final class FunctionFactory {
 		}
 		return null;
 	}
-
+	
+	private static Path computeAbsolutePathForCustomerFunction(Object context) {
+		IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
+		if(context instanceof Process) {
+			Process process = (Process)context;
+			DACQConfiguration dacqConfiguration = process.getDACQConfiguration();
+			String functionsAbsolutePath = "";
+			if(dacqConfiguration instanceof ADWinDACQConfiguration) functionsAbsolutePath = preferenceStore.getString(GeneralPreferenceConstants.ADWIN_USER_LIBRARIES_ABSOLUTE_PATH);
+			if(dacqConfiguration instanceof ArduinoUnoDACQConfiguration) functionsAbsolutePath = preferenceStore.getString(GeneralPreferenceConstants.ARDUINO_USER_LIBRARIES_ABSOLUTE_PATH);
+			Path path = new Path(functionsAbsolutePath);
+			return path;
+		}
+		if(context instanceof Script) {
+			String functionsAbsolutePath = "";
+			String mathEngine = Activator.getDefault().getPreferenceStore().getString(MathEnginePreferencesConstants.MATH_ENGINE);
+			if(MathEnginePreferencesConstants.MATH_ENGINE_MATLAB.equals(mathEngine)) functionsAbsolutePath =  preferenceStore.getString(GeneralPreferenceConstants.MATLAB_USER_SCRIPTS_LOCATION);
+			if(MathEnginePreferencesConstants.MATH_ENGINE_PYTHON.equals(mathEngine)) functionsAbsolutePath =  preferenceStore.getString(GeneralPreferenceConstants.PYTHON_USER_SCRIPTS_LOCATION);
+			Path path = new Path(functionsAbsolutePath);
+			return path;
+		}
+		return null;
+	}
+	
+	public static Path computeAbsolutePath(Object context, boolean customerFunction) {
+		Path path;
+		if(!customerFunction) path = computeAbsolutePath(context);
+		else path = computeAbsolutePathForCustomerFunction(context);
+		return path;
+	}
+	
 	public static String getProperty(Object context, String functionFileName, String key) {
-		Path path = computeAbsolutePath(context);
+		return getProperty(context, functionFileName, key, false);
+	}
+
+	public static String getProperty(Object context, String functionFileName, String key, boolean customerFunction) {
+		Path path = computeAbsolutePath(context, customerFunction);
 		try {
 			Properties properties = new Properties();
 			properties.load(new InputStreamReader(new FileInputStream(path.append(functionFileName).toOSString()), Charset.forName("UTF-8")));
@@ -156,13 +180,12 @@ public final class FunctionFactory {
 	}
 	
 	public static String[] getCustomerFunctions(Object context) {
-		IPath path = computeAbsolutePath(context);
-		path = path.append(CustomerFunction.CUSTOMER_FUNCTIONS_PATH);
+		IPath path = computeAbsolutePath(context, true);
 		File functionsFilesFolder = new File(path.toOSString());
 		String[] files = functionsFilesFolder.list(new FilenameFilter() {
 			@Override
 			public boolean accept(File file, String name) {
-				String value = getProperty(context, CustomerFunction.CUSTOMER_FUNCTIONS_PATH + name, USER_FUNCTION_KEY);
+				String value = getProperty(context, name, USER_FUNCTION_KEY, true);
 				return value != null && ("YES".equalsIgnoreCase(value.trim()) || "1".equals(value.trim()));
 			}
 		});
@@ -170,7 +193,7 @@ public final class FunctionFactory {
 			String[] menuTitles = new String[files.length];
 			int index = 0;
 			for (String customerFunction : files) {
-				menuTitles[index] = FunctionFactory.getProperty(context, CustomerFunction.CUSTOMER_FUNCTIONS_PATH + customerFunction, FunctionFactory.MENU_TITLE);
+				menuTitles[index] = FunctionFactory.getProperty(context, customerFunction, FunctionFactory.MENU_TITLE, true);
 				index++;
 			}
 			final List<String> stringListCopy = Arrays.asList(files);

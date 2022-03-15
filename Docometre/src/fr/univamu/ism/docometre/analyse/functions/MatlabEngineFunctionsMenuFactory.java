@@ -46,7 +46,6 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 
 import fr.univamu.ism.docometre.DocometreMessages;
-import fr.univamu.ism.docometre.dacqsystems.functions.CustomerFunction;
 import fr.univamu.ism.docometre.editors.AbstractScriptSegmentEditor;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.scripteditor.actions.AssignFunctionAction;
@@ -134,6 +133,7 @@ public class MatlabEngineFunctionsMenuFactory {
 				if (menuTitle != null && menuTooltip != null) {
 					AssignFunctionAction assignFunctionAction = new AssignFunctionAction(scriptSegmentEditor,
 							blockEditPart, menuTitle, menuTooltip, MatlabEngineFunctionsClasses[i]);
+					assignFunctionAction.setLazyEnablementCalculation(false);
 					functionMenuManager.add(assignFunctionAction);
 				}
 			}
@@ -145,10 +145,11 @@ public class MatlabEngineFunctionsMenuFactory {
 			functionMenuManager.add(new Separator());
 			MenuManager customerFunctionsMenuManager = new MenuManager(DocometreMessages.CustomerFunctionsMenuLabel, CUSTOMER_FUNCTIONS_MENU);
 			for (String customerFunction : customerFunctions) {
-				String menuTitle = FunctionFactory.getProperty(context, CustomerFunction.CUSTOMER_FUNCTIONS_PATH + customerFunction, FunctionFactory.MENU_TITLE);
-				String menuTooltip = FunctionFactory.getProperty(context, CustomerFunction.CUSTOMER_FUNCTIONS_PATH + customerFunction, FunctionFactory.DESCRIPTION);
+				String menuTitle = FunctionFactory.getProperty(context, customerFunction, FunctionFactory.MENU_TITLE, true);
+				String menuTooltip = FunctionFactory.getProperty(context, customerFunction, FunctionFactory.DESCRIPTION, true);
 				if (menuTitle != null && menuTooltip != null) {
 					AssignFunctionAction assignFunctionAction = new AssignFunctionAction(scriptSegmentEditor, blockEditPart, menuTitle, menuTooltip, customerFunction);
+					assignFunctionAction.setLazyEnablementCalculation(false);
 					customerFunctionsMenuManager.add(assignFunctionAction);
 				}
 			}
@@ -189,6 +190,7 @@ public class MatlabEngineFunctionsMenuFactory {
 					String menuTooltip = FunctionFactory.getProperty(context, file, FunctionFactory.DESCRIPTION);
 					if(menuTitle != null && menuTooltip != null) {
 						AssignFunctionAction assignFunctionAction = new AssignFunctionAction(scriptSegmentEditor, blockEditPart, menuTitle, menuTooltip, classes[i]);
+						assignFunctionAction.setLazyEnablementCalculation(false);
 						menuManager.add(assignFunctionAction);
 					}
 				}
