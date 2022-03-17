@@ -188,12 +188,14 @@ FUNCTION_CODE = if(time - ((int)(time/period))*period < dutyCycle)\n\
 {\n\
 \toutput = 1;\n\
 }\n\
-else\n\ 
+else\n\
 {\n\
 \toutput = 0;\n\
 }
  </pre>
- Place this key/value pairs in a text file named "SQUARE_WAVE_GENERATOR.FUN". 
+ Place this key/value pairs in a text file named "SQUARE_WAVE_GENERATOR.FUN".
+ 
+ <p style="color:rgba(255,0,0,1);"><b>Do not put any extra char after backslash because file content after this backslash wont be parsed.</b></p> 
  
  <p style="color:rgba(255,0,0,1);"><b>Note the file extension must be ".FUN"</b></p>
  
