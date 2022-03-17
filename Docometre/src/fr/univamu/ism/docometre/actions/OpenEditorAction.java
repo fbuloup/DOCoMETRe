@@ -72,6 +72,7 @@ import fr.univamu.ism.docometre.dacqsystems.adwin.ui.dacqconfigurationeditor.ADW
 import fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor.ADWinProcessEditor;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.dacqconfigurationeditor.ArduinoUnoDACQConfigurationEditor;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.processeditor.ArduinoUnoProcessEditor;
+import fr.univamu.ism.docometre.editors.CustomerFunctionEditor;
 import fr.univamu.ism.docometre.editors.DataEditor;
 import fr.univamu.ism.docometre.editors.DiaryEditor;
 import fr.univamu.ism.docometre.editors.ParametersEditor;
@@ -134,6 +135,8 @@ public class OpenEditorAction extends Action implements ISelectionListener, IWor
 			
 			if(ResourceType.isXYZChart(resource)) editorID = XYZChartEditor.ID;
 			
+			if(ResourceType.isCustomerFunction(resource)) openEditor(resource, CustomerFunctionEditor.ID);
+			
 			if(ResourceType.isSamples(resource)) openEditor(resource, DataEditor.ID);
 			else if(editorID != null) {
 				Object object = ResourceProperties.getObjectSessionProperty(resource);
@@ -195,6 +198,7 @@ public class OpenEditorAction extends Action implements ISelectionListener, IWor
 						canOpen = canOpen || ResourceType.isBatchDataProcessing((IResource) object);
 						canOpen = canOpen || ResourceType.isXYChart((IResource) object);
 						canOpen = canOpen || ResourceType.isXYZChart((IResource) object);
+						canOpen = canOpen || ResourceType.isCustomerFunction((IResource) object);
 						if(canOpen) files.add((IFile) object);
 					}
 				}

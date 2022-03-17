@@ -199,14 +199,16 @@ public interface IImageKeys {
 	
 	public static final String XYChart_ICON = "icons/XYChartIcon.png"; //$NON-NLS-1$
 	public static final String XYZChart_ICON = "icons/XYZChartIcon.png"; //$NON-NLS-1$
-	public static final String ZOOM_IN2 = "icons/zoomIn.png";
-	public static final String ZOOM_OUT2 = "icons/zoomOut.png";
-	public static final String ZOOM_FIT = "icons/zoomFit.png";
-	public static final String UP = "icons/up.png";
-	public static final String DOWN = "icons/down2.png";
-	public static final String RIGHT = "icons/right.png";
-	public static final String LEFT = "icons/left2.png";
-	public static final String TURN_LEFT = "icons/turnLeft.png";
-	public static final String TURN_RIGHT = "icons/turnRight.png";
+	public static final String ZOOM_IN2 = "icons/zoomIn.png"; //$NON-NLS-1$
+	public static final String ZOOM_OUT2 = "icons/zoomOut.png"; //$NON-NLS-1$
+	public static final String ZOOM_FIT = "icons/zoomFit.png"; //$NON-NLS-1$
+	public static final String UP = "icons/up.png"; //$NON-NLS-1$
+	public static final String DOWN = "icons/down2.png"; //$NON-NLS-1$
+	public static final String RIGHT = "icons/right.png"; //$NON-NLS-1$
+	public static final String LEFT = "icons/left2.png"; //$NON-NLS-1$
+	public static final String TURN_LEFT = "icons/turnLeft.png"; //$NON-NLS-1$
+	public static final String TURN_RIGHT = "icons/turnRight.png"; //$NON-NLS-1$
+	
+	public static final String CUSTOMER_FUNCTION_ICON = "icons/customerFunction.png"; //$NON-NLS-1$
 	
 }

@@ -63,7 +63,8 @@ public enum ResourceType {
 	DATA_PROCESSING("DATA_PROCESSING"),
 	BATCH_DATA_PROCESSING("BATCH_DATA_PROCESSING"),
 	XYCHART("XYCHART"),
-	XYZCHART("XYZCHART");
+	XYZCHART("XYZCHART"),
+	CUSTOMER_FUNCTION("CUSTOMER_FUNCTION");
 
 	private String name = "";
 
@@ -95,6 +96,7 @@ public enum ResourceType {
 		if(typeValue.equals(BATCH_DATA_PROCESSING.toString())) return BATCH_DATA_PROCESSING;
 		if(typeValue.equals(XYCHART.toString())) return XYCHART;
 		if(typeValue.equals(XYZCHART.toString())) return XYZCHART;
+		if(typeValue.equals(CUSTOMER_FUNCTION.toString())) return CUSTOMER_FUNCTION;
 		return ANY;
 	}
 	
@@ -164,6 +166,10 @@ public enum ResourceType {
 	
 	public static boolean isXYZChart(IResource resource) {
 		return check(resource, XYZCHART);
+	}
+	
+	public static boolean isCustomerFunction(IResource resource) {
+		return check(resource, CUSTOMER_FUNCTION);
 	}
 	
 	public static boolean isAnyTest(IResource resource) {

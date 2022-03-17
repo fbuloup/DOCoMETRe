@@ -101,6 +101,7 @@ public class Activator extends AbstractUIPlugin {
 	public static final String batchDataProcessingFileExtension = ".batchdataprocess";
 	public static final String xyChartFileExtension = ".chart";
 	public static final String xyzChartFileExtension = ".chart3D";
+	public static final String customerFunctionFileExtension = ".FUN";
 	
 	// System types
 	public static final String ADWIN_SYSTEM = "ADWin";

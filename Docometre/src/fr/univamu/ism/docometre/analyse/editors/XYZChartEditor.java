@@ -133,6 +133,7 @@ import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 public class XYZChartEditor extends EditorPart implements ISelectionChangedListener, /*IMarkersManager,*/ ZoomListener, TrialsEditor, ChartPropertiesListener, Chart2D3DBehaviour, IViewPointChangedListener, MouseListener {
 	
 	public static String ID = "Docometre.XYZChartEditor";
+	
 	private XYZChart xyzChartData;
 	private SashForm container;
 	private ListViewer trialsListViewer;

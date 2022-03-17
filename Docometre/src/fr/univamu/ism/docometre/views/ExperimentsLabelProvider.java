@@ -92,6 +92,7 @@ public class ExperimentsLabelProvider implements ILabelProvider {
 		if(ResourceType.isSaveFile(resource)) return Activator.getImage(IImageKeys.LOAD_UNLOAD_ICON);
 		if(ResourceType.isXYChart(resource)) return Activator.getImage(IImageKeys.XYChart_ICON);
 		if(ResourceType.isXYZChart(resource)) return Activator.getImage(IImageKeys.XYZChart_ICON);
+		if(ResourceType.isCustomerFunction(resource)) return Activator.getImage(IImageKeys.CUSTOMER_FUNCTION_ICON);
 		return Activator.getSharedImage("icons/full/etool16/help_contents.png"); // this is IWorkbenchGraphicConstants.IMG_ETOOL_HELP_CONTENTS from org.eclipse.ui
 	}
 
