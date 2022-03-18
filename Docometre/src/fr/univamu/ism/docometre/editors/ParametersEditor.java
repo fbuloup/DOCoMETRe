@@ -49,12 +49,13 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 
-import org.eclipse.core.commands.operations.ObjectUndoContext;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.ITextListener;
+import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.jface.text.TextEvent;
 import org.eclipse.jface.text.TextViewerUndoManager;
 import org.eclipse.jface.text.source.CompositeRuler;
@@ -71,7 +72,6 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.operations.UndoRedoActionGroup;
 import org.eclipse.ui.part.EditorPart;
 
 import fr.univamu.ism.docometre.Activator;
@@ -84,19 +84,10 @@ public class ParametersEditor extends EditorPart implements PartNameRefresher {
 	
 	public static String ID = "Docometre.ParametersEditor";
 	
-	private ObjectUndoContext resourceEditorUndoContext;
-	private UndoRedoActionGroup undoRedoActionGroup;
 	private SourceViewer sourceViewer;
 	private boolean dirty;
 	private Document document;
 	private PartListenerAdapter partListenerAdapter;
-	
-	public ObjectUndoContext getUndoContext() {
-		IResource resource = ((IResource)((ResourceEditorInput)getEditorInput()).getObject());
-		String fullName = resource.getFullPath().toOSString();
-		if(resourceEditorUndoContext == null) resourceEditorUndoContext = new ObjectUndoContext(this, "ResourceEditorUndoContext_" + fullName);
-		return resourceEditorUndoContext;
-	}
 	
 	public ParametersEditor() {
 	}
@@ -106,8 +97,7 @@ public class ParametersEditor extends EditorPart implements PartNameRefresher {
 		try {
 			IResource paramsFile = ((IResource)((ResourceEditorInput)getEditorInput()).getObject());
 			Files.write(Paths.get(paramsFile.getLocationURI()), document.get().getBytes(), StandardOpenOption.TRUNCATE_EXISTING , StandardOpenOption.WRITE);
-			dirty = false;
-			firePropertyChange(PROP_DIRTY);
+			setDirty(false);
 		} catch (IOException e) {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
@@ -134,6 +124,11 @@ public class ParametersEditor extends EditorPart implements PartNameRefresher {
 	@Override
 	public boolean isSaveAsAllowed() {
 		return false;
+	}
+	
+	private void setDirty(boolean dirty) {
+		this.dirty = dirty;
+		firePropertyChange(PROP_DIRTY);
 	}
 
 	@Override
@@ -162,14 +157,12 @@ public class ParametersEditor extends EditorPart implements PartNameRefresher {
 			TextViewerUndoManager textViewerUndoManager = new TextViewerUndoManager(Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.PREF_UNDO_LIMIT));
 			sourceViewer.setUndoManager(textViewerUndoManager);
 			textViewerUndoManager.connect(sourceViewer);
-			undoRedoActionGroup = new UndoRedoActionGroup(getSite(), textViewerUndoManager.getUndoContext(), true);
-			undoRedoActionGroup.fillActionBars(getEditorSite().getActionBars());
+//			textViewerUndoManager.reset();
 			
 			sourceViewer.addTextListener(new ITextListener() {
 				@Override
 				public void textChanged(TextEvent event) {
-					dirty = true;
-					firePropertyChange(PROP_DIRTY);
+					setDirty(true);
 				}
 			});
 			
@@ -183,7 +176,26 @@ public class ParametersEditor extends EditorPart implements PartNameRefresher {
 					if(((event.stateMask & SWT.MOD1) == SWT.MOD1) && event.keyCode == 'f') {
 						FindDialog.getInstance().setTextViewer(sourceViewer);
 						FindDialog.getInstance().open();
+					} else if(isRedoKeyPress(event)) {
+						sourceViewer.doOperation(ITextOperationTarget.REDO);
+					} else if(isUndoKeyPress(event)) {
+						sourceViewer.doOperation(ITextOperationTarget.UNDO);
 					}
+				}
+				
+				private boolean isRedoKeyPress(KeyEvent e) {
+					boolean redo = false;
+					if(Platform.getOS().equals(Platform.OS_MACOSX)) {
+						boolean stateMask = ((e.stateMask & (SWT.MOD1 | SWT.SHIFT)) == (SWT.MOD1 | SWT.SHIFT));
+						redo = stateMask && ((e.keyCode == 'z') || (e.keyCode == 'Z'));
+					} else redo = ((e.stateMask & SWT.MOD1) == SWT.MOD1) && ((e.keyCode == 'y') || (e.keyCode == 'Y'));
+					return redo;
+				}
+
+				private boolean isUndoKeyPress(KeyEvent e) {
+					boolean stateMask = (e.stateMask & SWT.MOD1) == SWT.MOD1;
+					boolean undo = stateMask && ((e.keyCode == 'z') || (e.keyCode == 'Z'));
+					return undo;
 				}
 			});
 			sourceViewer.getTextWidget().addCaretListener(new CaretListener() {
@@ -217,7 +229,7 @@ public class ParametersEditor extends EditorPart implements PartNameRefresher {
 			};
 			PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().addPartListener(partListenerAdapter);
 			
-			
+			sourceViewer.getTextWidget().setCaretOffset(document.getLength());
 			
 		} catch (IOException e) {
 			e.printStackTrace();
