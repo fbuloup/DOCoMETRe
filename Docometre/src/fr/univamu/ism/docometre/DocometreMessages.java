@@ -1011,32 +1011,17 @@ public final class DocometreMessages extends NLS {
 	public static String SampleFrequencyDialogMessage;
 	public static String NumberSamplesReadMessage;
 	
-//	public static String OrganizeSessionWizardPage_button_1_text;
-//	public static String OrganizeSessionWizardPage_tbtmNewItem_text;
-//	public static String OrganizeSessionWizardPage_tbtmNewItem_1_text;
-//	public static String OrganizeSessionWizardPage_tbtmNewItem_2_text;
-//	public static String OrganizeSessionWizardPage_tbtmNewItem_3_text;
-//	public static String OrganizeSessionWizardPage_grpHjklgljkgl_text;
-//	public static String OrganizeSessionWizardPage_tbtmNewItem_text;
-//	public static String OrganizeSessionWizardPage_tbtmNewItem_1_text;
-//	public static String OrganizeSessionWizardPage_btnNewButton_text;
-//	public static String OrganizeSessionWizardPage_btnNewButton_1_text;
-//	public static String OrganizeSessionWizardPage_btnNewButton_2_text;
-//	public static String OrganizeSessionWizardPage_btnNewButton_3_text;
-//	public static String OrganizeSessionWizardPage_tbtmRpartirParSletion_text;
-//	public static String OrganizeSessionWizardPage_tbtmRpartirParPaquet_text;
-//	public static String OrganizeSessionWizardPage_lblNewLabel_text;
-//	public static String OrganizeSessionWizardPage_lblNewLabel_text;
-//	public static String OrganizeSessionWizardPage_text_text;
-//	public static String OrganizeSessionWizardPage_group_text;
-//	public static String OrganizeSessionWizardPage_btnRadioButton_text;
-//	public static String OrganizeSessionWizardPage_btnRadioButton_text;
-//	public static String OrganizeSessionWizardPage_btnRadioButton_1_text;
-//	public static String OrganizeSessionWizardPage_lblNewLabel_1_text;
-//	public static String OrganizeSessionWizardPage_text_1_text;
-//	public static String OrganizeSessionWizardPage_group_1_text;
-//	public static String OrganizeSessionWizardPage_btnRadioButton_2_text;
-//	public static String OrganizeSessionWizardPage_btnRadioButton_3_text;
+	// Customer Function editor
+	public static String menuTitleDescription;
+	public static String descriptionDescription;
+	public static String userFunctionDescription;
+	public static String parameterNumberDescription;
+	public static String parameterNDescription;
+	public static String functionCodeDescription;
+	public static String nameDescription;
+	public static String typeDescription;
+	public static String textTypeDescription;
+	public static String labelDescription;
 			
 	static {
 		// load message values from bundle file
