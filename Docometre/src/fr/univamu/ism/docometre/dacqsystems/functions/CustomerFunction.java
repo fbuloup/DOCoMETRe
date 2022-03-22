@@ -188,13 +188,13 @@ public class CustomerFunction extends GenericFunction {
 			textParametersArray.add(text);
 			text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 			text.setData(key);
-			text.setText(getProperty(key, initialValue));
 			text.addModifyListener(new ModifyListener() {
 				@Override
 				public void modifyText(ModifyEvent event) {
 					getTransientProperties().put((String)text.getData(), text.getText());
 				}
 			});
+			text.setText(getProperty(key, initialValue));
 			ControlDecoration textCD = new ControlDecoration(text, SWT.TOP | SWT.LEFT);
 			textCD.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_CONTENT_PROPOSAL).getImage());
 			textCD.setDescriptionText(DocometreMessages.UseCtrlSpaceProposal);
@@ -229,7 +229,7 @@ public class CustomerFunction extends GenericFunction {
 		titleAreaDialog.setErrorMessage(null);
 		for (Text textParameter : textParametersArray) {
 			Object regExp = textParameter.getData("REGEXP");
-			Object textControlDecoration = textParameter.getData("CONTROL_DECORATION");
+			Object textControlDecoration = textParameter.getData(CONTROL_DECORATION);
 			if(textControlDecoration != null) {
 				((ControlDecoration)textControlDecoration).hide();
 				((ControlDecoration)textControlDecoration).dispose();
