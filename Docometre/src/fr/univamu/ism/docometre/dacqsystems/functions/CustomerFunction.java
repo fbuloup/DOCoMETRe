@@ -176,13 +176,19 @@ public class CustomerFunction extends GenericFunction {
 		Label parameterLabel = new Label(paramContainer, SWT.NORMAL);
 		parameterLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
 		parameterLabel.setText(label);
-		if("TEXT".equalsIgnoreCase(typeRegExp[0])) {
+		
+		if(typeRegExp[0] != null && typeRegExp[0].matches("^TEXT(\\[.*\\])?$")) {
+			String initialValue = "";
+			initialValue = typeRegExp[0].replaceAll("TEXT", "");
+			initialValue = initialValue.replaceAll("\\[", "");
+			initialValue = initialValue.replaceAll("\\]", "");
+			initialValue = initialValue.replaceAll("\"", "");
 			Text text = new Text(paramContainer, SWT.BORDER);
 			text.setData(LABEL, parameterLabel);
 			textParametersArray.add(text);
 			text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 			text.setData(key);
-			text.setText(getProperty(key, ""));
+			text.setText(getProperty(key, initialValue));
 			text.addModifyListener(new ModifyListener() {
 				@Override
 				public void modifyText(ModifyEvent event) {

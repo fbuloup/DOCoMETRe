@@ -203,5 +203,32 @@ else\n\
  Eclipse/plugins folder : you will find all Arduino an ADWin functions in includes/ArduinoUnoFunctions and includes/ADWinFunctions. 
   <p style="color:rgba(255,0,0,1);"><b>Please don't modify any of these predefined files and don't place your custom functions in any if these folders or any of their subfolders as 
  they will be removed during next application update.</b></p>
+ 
+ You can provide initial values for parameters specifying these values near parameter type definitions : TYPE["initialValue"] or TYPE[initialValue]. 
+ Here is resulting file using parameter initial values for this square wave function (period of ten seconds and duty cycle of 25%) :
+ 
+ <pre>
+MENU_TITLE = Square wave generator
+MENU_TITLE_FR = Générateur de signal carré
+DESCRIPTION = You can set the period and duty cycle of the generated signal
+DESCRIPTION_FR = Vous pouvez régler la période et le rapport cyclique du signal généré
+USER_FUNCTION = YES
+PARAMETERS_NUMBER = 3
+PARAMETER_1 = NAME = period, TYPE = TEXT[10]:^[0-9]+\.?[0-9]*$, LABEL = "Signal period (s.) :",\
+LABEL_FR = "Période du signal (s.) :"
+PARAMETER_2 = NAME = dutyCycle, TYPE = TEXT[0.25]:^[0]\.[0-9]*$, LABEL = "Duty cycle (%) :",\
+LABEL_FR = "Rapport cyclique (%) :"
+PARAMETER_3 = NAME = output, TYPE = TEXT:^(?!\s*$).+$, LABEL = "Put generated signal in :",\
+LABEL_FR = "Mettre la valeur générée dans :"
+FUNCTION_CODE = if(time - ((int)(time/period))*period < dutyCycle)\n\
+{\n\
+\toutput = 1;\n\
+}\n\
+else\n\
+{\n\
+\toutput = 0;\n\
+}
+ </pre>
+ 
  </body>
  </html>
