@@ -182,7 +182,8 @@ public class CustomerFunction extends GenericFunction {
 			initialValue = typeRegExp[0].replaceAll("TEXT", "");
 			initialValue = initialValue.replaceAll("\\[", "");
 			initialValue = initialValue.replaceAll("\\]", "");
-			initialValue = initialValue.replaceAll("\"", "");
+			initialValue = initialValue.replaceAll("^\"", "");
+			initialValue = initialValue.replaceAll("\"$", "");
 			Text text = new Text(paramContainer, SWT.BORDER);
 			text.setData(LABEL, parameterLabel);
 			textParametersArray.add(text);
