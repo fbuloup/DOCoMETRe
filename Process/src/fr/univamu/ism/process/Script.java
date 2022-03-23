@@ -236,7 +236,11 @@ public class Script implements Serializable {
 	public String getInitializeCode(Object context, Object step) throws Exception {
 		Block firstBlock = getFirstInitializeBlock();
 		String code = generateCode(firstBlock, null, context, step);
-		return indentCode(context, code, (context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess))?"\t\t":"");
+		String initialIndent = "";
+		if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess)) {
+			if(!"DECLARATION".equals(step.toString())) initialIndent = "\t\t";
+		}
+		return indentCode(context, code, initialIndent);
 	}
 	
 	//Loop phase
@@ -290,7 +294,11 @@ public class Script implements Serializable {
 	public String getLoopCode(Object context, Object step) throws Exception {
 		Block firstBlock = getFirstLoopBlock();
 		String code = generateCode(firstBlock, null, context, step);
-		return indentCode(context, code, (context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess))?"\t\t":"");
+		String initialIndent = "";
+		if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess)) {
+			if(!"DECLARATION".equals(step.toString())) initialIndent = "\t\t";
+		}
+		return indentCode(context, code, initialIndent);
 	}
 	
 	//Finalize phase
@@ -351,7 +359,12 @@ public class Script implements Serializable {
 	public String getFinalizeCode(Object context, Object step) throws Exception {
 		Block firstBlock = getFirstFinalizeBlock();
 		String code = generateCode(firstBlock, null, context, step);
-		return indentCode(context, code, (context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess))?"\t\t":"");
+		String initialIndent = "";
+		if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess)) {
+			if(!"DECLARATION".equals(step.toString())) initialIndent = "\t\t";
+		}
+//		initialIndent =  step.equals(ArduinounoCodeSegmentProperties.DECLARATION)? initialIndent: "";
+		return indentCode(context, code, initialIndent);
 	}
 	
 	/**

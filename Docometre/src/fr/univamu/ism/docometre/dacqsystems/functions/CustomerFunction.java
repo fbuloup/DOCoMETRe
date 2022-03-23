@@ -80,6 +80,7 @@ import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinProcess;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoProcess;
 import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
+import fr.univamu.ism.process.Block;
 import fr.univamu.ism.process.Script;
 import fr.univamu.ism.process.ScriptSegmentType;
 
@@ -269,7 +270,7 @@ public class CustomerFunction extends GenericFunction {
 				if(MathEngineFactory.isMatlab()) comment += "%";
 				if(MathEngineFactory.isPython()) comment += "#";
 			}
-			temporaryCode = comment + " Customer Function : " + getName(context) + "\n\n" + temporaryCode;
+			temporaryCode = comment + " Customer Function : " + getName(context) + "\n" + temporaryCode;
 			HashMap<String, String> properties = getProperties();
 			Set<String> propertiesKeys = properties.keySet();
 			String hashCode = String.valueOf(hashCode());
@@ -327,5 +328,14 @@ public class CustomerFunction extends GenericFunction {
 		return FunctionFactory.getProperty(process, getFunctionFileName(), FunctionFactory.DESCRIPTION, true);
 	}
 	
-
+	
+	@Override
+	public Block clone() {
+		CustomerFunction function = new CustomerFunction();
+		function.functionFileName = functionFileName;
+		clone(function);
+		return function;
+	}
+	
+	
 }
