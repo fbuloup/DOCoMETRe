@@ -11,8 +11,10 @@ import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextListener;
 import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.jface.text.IUndoManager;
@@ -149,6 +151,15 @@ public class CustomerFunctionEditor extends EditorPart implements PartNameRefres
 						sourceViewer.doOperation(ITextOperationTarget.REDO);
 					} else if(isUndoKeyPress(event)) {
 						sourceViewer.doOperation(ITextOperationTarget.UNDO);
+					} else if(((event.stateMask & SWT.MOD1) == SWT.MOD1) && event.keyCode == 'd') {
+						try {
+							IRegion region = document.getLineInformationOfOffset(sourceViewer.getSelectedRange().x);
+							if(region.getOffset() > 0) document.replace(region.getOffset() - 1, region.getLength() + 1, "");
+							else document.replace(region.getOffset(), region.getLength() + 1, "");
+						} catch (BadLocationException e) {
+							e.printStackTrace();
+							Activator.logErrorMessageWithCause(e);
+						}
 					}
 				}
 				
