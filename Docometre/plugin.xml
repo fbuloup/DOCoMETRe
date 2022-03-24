@@ -673,6 +673,24 @@
                      </or>
                   </visibleWhen>
                </command>
+               <command
+                     commandId="NewCustomFunctionCommand"
+                     icon="icons/customerFunction.png"
+                     label="%NewCustomFunctionCommand.label"
+                     style="push"
+                     tooltip="%NewCustomFunctionCommand.tooltip">
+                  <visibleWhen
+                        checkEnabled="false">
+                     <or>
+                        <reference
+                              definitionId="Docometre.DesignPerspectiveSelected">
+                        </reference>
+                        <reference
+                              definitionId="Docometre.AnalysePerspectiveSelected">
+                        </reference>
+                     </or>
+                  </visibleWhen>
+               </command>
             </menu>
             <separator
                   name="Docometre.separator1" visible="true">
@@ -1617,6 +1635,13 @@
                      style="push"
                      tooltip="%NewXYZChartCommand.tooltip">
                </command>
+               <command
+                     commandId="NewCustomFunctionCommand"
+                     icon="icons/customerFunction.png"
+                     label="%NewCustomFunctionCommand.label"
+                     style="push"
+                     tooltip="%NewCustomFunctionCommand.tooltip">
+               </command>
                
                
          </menu>
@@ -2473,6 +2498,19 @@
                </reference>
             </visibleWhen>
          </command>
+         <command
+               commandId="NewCustomFunctionCommand"
+               icon="icons/customerFunction.png"
+               label="%NewCustomFunctionCommand.label"
+               style="push"
+               tooltip="%NewCustomFunctionCommand.tooltip">
+            <visibleWhen
+                  checkEnabled="false">
+               <reference
+                     definitionId="Docometre.DesignPerspectiveSelected">
+               </reference>
+            </visibleWhen>
+         </command>
          <separator
                name="Docometre.separator2"
                visible="true">
@@ -2723,6 +2761,19 @@
                   label="%NewXYZChartCommand.label"
                   style="push"
                   tooltip="%NewXYZChartCommand.tooltip">
+               <visibleWhen
+                     checkEnabled="false">
+                  <reference
+                        definitionId="Docometre.AnalysePerspectiveSelected">
+                  </reference>
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="NewCustomFunctionCommand"
+                  icon="icons/customerFunction.png"
+                  label="%NewCustomFunctionCommand.label"
+                  style="push"
+                  tooltip="%NewCustomFunctionCommand.tooltip">
                <visibleWhen
                      checkEnabled="false">
                   <reference
@@ -2988,6 +3039,11 @@
       <command
             id="NewFolderAction"
             name="NewFolderAction">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.handlers.NewCustomFunctionHandler"
+            id="NewCustomFunctionCommand"
+            name="NewCustomFunctionCommand">
       </command>
       <command
             id="ShowExperimentsViewAction"

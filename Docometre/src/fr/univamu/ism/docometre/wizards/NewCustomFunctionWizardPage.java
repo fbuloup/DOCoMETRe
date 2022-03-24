@@ -48,9 +48,9 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ResourceType;
 
-public class NewSubjectWizardPage extends NewResourceWizardPage {
+public class NewCustomFunctionWizardPage extends NewResourceWizardPage {
 
-	protected NewSubjectWizardPage() {
+	protected NewCustomFunctionWizardPage(ResourceType chartType) {
 		super(DocometreMessages.NewCustomFunctionWizard_PageName, ResourceType.CUSTOMER_FUNCTION);
 		setTitle(DocometreMessages.NewCustomFunctionWizard_PageTitle);
 		setMessage(DocometreMessages.NewCustomFunctionWizard_PageMessage);

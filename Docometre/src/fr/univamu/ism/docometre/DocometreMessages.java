@@ -274,6 +274,11 @@ public final class DocometreMessages extends NLS {
 	public static String NewParametersFileWizard_PageName;
 	public static String NewParametersFileWizard_PageTitle;
 	public static String NewParametersFileWizard_PageMessage;
+	
+	/*New Custom function Page*/
+	public static String NewCustomFunctionWizard_PageName;
+	public static String NewCustomFunctionWizard_PageTitle;
+	public static String NewCustomFunctionWizard_PageMessage;
 
 	/*Workspace Dialog*/
 	public static String ChooseWorkspaceDialog_dialogTitle;

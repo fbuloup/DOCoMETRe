@@ -116,6 +116,7 @@ public class NewResourceWizard extends Wizard implements INewWizard, IPageChange
 		if(resourceType.equals(ResourceType.BATCH_DATA_PROCESSING)) newResourceWizardPage = new NewBatchDataProcessingWizardPage();
 		if(resourceType.equals(ResourceType.XYCHART)) newResourceWizardPage = new NewXYZChartWizardPage(ResourceType.XYCHART);
 		if(resourceType.equals(ResourceType.XYZCHART)) newResourceWizardPage = new NewXYZChartWizardPage(ResourceType.XYZCHART);
+		if(resourceType.equals(ResourceType.CUSTOMER_FUNCTION)) newResourceWizardPage = new NewCustomFunctionWizardPage(ResourceType.CUSTOMER_FUNCTION);
 		addPage(newResourceWizardPage);
 		if(resourceType.equals(ResourceType.SESSION)) {
 			organizeSessionWizardPage = new OrganizeSessionWizardPage();
