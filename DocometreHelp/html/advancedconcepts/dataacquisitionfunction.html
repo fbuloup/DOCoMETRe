@@ -151,7 +151,7 @@ LABEL_FR = "Rapport cyclique (%) :"
 PARAMETER_1 = NAME = output, TYPE = TEXT:^(?!\s*$).+$, LABEL = "Put generated signal in :",\
 LABEL_FR = "Mettre la valeur générée dans :"
 </pre>
-For now only TEXT type can be used as widget. 
+For now TEXT, FILE, FOLDER and COMBO types can be used as widgets. See <a href="#widgetTypes">bellow</a> for details.
 <br><br>
 You can omit the regular expression and only provide the type key like this : 
 <pre>
@@ -228,6 +228,34 @@ else\n\
 {\n\
 \toutput = 0;\n\
 }
+ </pre>
+ 
+ <h2><a id="widgetTypes">Available widgets</a></h2>
+ <h3>TEXT widget</h3>
+ A general user input widget. You can provide a default initial value and/or a regular expression to check user input. 
+ <pre>
+ TYPE = TEXT
+ TYPE = TEXT[0.25] # Or TEXT["0.25"]
+ TYPE = TEXT[0.25]:^[0-9]+\.?[0-9]*$
+ TYPE = TEXT:^[0-9]+\.?[0-9]*$
+ </pre>
+ <h3>FILE widget</h3>
+ A file-oriented user input widget. The user will be able to browse the file system to select a specific file. You can provide this widget for direct editing.
+ <pre>
+ TYPE = FILE
+ TYPE = FILE:EDITABLE
+ </pre>
+ <h3>FOLDER widget</h3>
+ Same as previous widget except it is folder-oriented.
+ <pre>
+ TYPE = FOLDER
+ TYPE = FOLDER:EDITABLE
+ </pre>
+ <h3>COMBO widget</h3>
+ This widget offers the user to select a specific value among a predefined list. You must always provide an initial value.
+ <pre>
+ TYPE = COMBO[valueB]:(valueA; valueB; valueC)
+ TYPE = COMBO["Third value"]:("First value"; "Second value"; "Third value") # If you need to deal with text
  </pre>
  
  </body>

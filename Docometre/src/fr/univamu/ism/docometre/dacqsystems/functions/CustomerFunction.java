@@ -61,13 +61,20 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.ShellAdapter;
 import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
@@ -145,7 +152,7 @@ public class CustomerFunction extends GenericFunction {
 						properties.put(keyValue[0].trim(), keyValue[1].trim());
 					}
 					// Create parameter
-					createParamterWidget(paramContainer, properties, process);
+					createParameterWidget(paramContainer, properties, process);
 				}
 			}
 		} catch (NumberFormatException e) {
@@ -166,8 +173,129 @@ public class CustomerFunction extends GenericFunction {
 		
 		return paramContainer;
 	}
+	
+	private void createTextWidget(String type, String regExp, Composite paramContainer, Label parameterLabel, String key, Process process) {
+		String initialValue = "";
+		initialValue = type.replaceAll("TEXT", "");
+		initialValue = initialValue.replaceAll("\\[", "");
+		initialValue = initialValue.replaceAll("\\]", "");
+		initialValue = initialValue.strip();
+		initialValue = initialValue.replaceAll("^\"", "");
+		initialValue = initialValue.replaceAll("\"$", "");
+		Text text = new Text(paramContainer, SWT.BORDER);
+		text.setData(LABEL, parameterLabel);
+		textParametersArray.add(text);
+		text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		text.setData(key);
+		text.addModifyListener(new ModifyListener() {
+			@Override
+			public void modifyText(ModifyEvent event) {
+				getTransientProperties().put((String)text.getData(), text.getText());
+			}
+		});
+		text.setText(getProperty(key, initialValue));
+		ControlDecoration textCD = new ControlDecoration(text, SWT.TOP | SWT.LEFT);
+		textCD.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_CONTENT_PROPOSAL).getImage());
+		textCD.setDescriptionText(DocometreMessages.UseCtrlSpaceProposal);
+		textCD.setShowOnlyOnFocus(true);
+		textCD.setMarginWidth(5);
+		try {
+			DACQConfiguration dacqConfiguration = process.getDACQConfiguration();
+			KeyStroke keyStroke = KeyStroke.getInstance("CTRL+SPACE");
+			DocometreContentProposalProvider proposalProvider = new DocometreContentProposalProvider(dacqConfiguration.getProposal(), text);
+			proposalProvider.setFiltering(true);
+			ContentProposalAdapter leftProposalAdapter = new ContentProposalAdapter(text, new TextContentAdapter(), proposalProvider, keyStroke, null);
+			leftProposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_INSERT);
+			leftProposalAdapter.addContentProposalListener(proposalProvider);
+		} catch (ParseException e) {
+			e.printStackTrace();
+			Activator.logErrorMessageWithCause(e);
+		}
+		if(!"".equals(regExp)) {
+			text.setData(REGEXP, regExp);
+			text.addModifyListener(new ModifyListener() {
+				@Override
+				public void modifyText(ModifyEvent event) {
+					validateParametersInputs();
+				}
+			});
+		}
+	}
+	
+	private void createFileOrFolderWidget(String fileOrFolder, boolean editable, Composite paramContainer, Label parameterLabel, String key, Process process) {
+		Composite innerContainer = new Composite(paramContainer, SWT.NORMAL);
+		innerContainer.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		GridLayout gl = new GridLayout(2, false);
+		gl.marginHeight = 0;
+		gl.marginWidth = 0;
+		innerContainer.setLayout(gl);
+		
+		Text text = new Text(innerContainer, SWT.BORDER);
+		text.setEditable(editable);
+		text.setData(LABEL, parameterLabel);
+		textParametersArray.add(text);
+		text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		text.setData(key);
+		text.addModifyListener(new ModifyListener() {
+			@Override
+			public void modifyText(ModifyEvent event) {
+				getTransientProperties().put((String)text.getData(), text.getText());
+			}
+		});
+		text.setText(getProperty(key, ""));
+		
+		Button browseButton = new Button(innerContainer, SWT.FLAT);
+		browseButton.setText(DocometreMessages.Browse);
+		browseButton.setData(fileOrFolder);
+		browseButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+		browseButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				String fileOrFolder = (String) browseButton.getData();
+				if("FILE".equals(fileOrFolder)) {
+					FileDialog fileDialog = new FileDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+					String filePath = fileDialog.open();
+					if(filePath != null) text.setText(filePath);
+				}
+				if("FOLDER".equals(fileOrFolder)) {
+					DirectoryDialog directoryDialog = new DirectoryDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+					String directoryPath = directoryDialog.open();
+					if(directoryPath != null) text.setText(directoryPath);
+				}
+			}
+		});
+	}
+	
+	private void createComboWidget(String type, String values, Composite paramContainer, Label parameterLabel, String key, Process process) {
+		String initialValue = "";
+		initialValue = type.replaceAll("COMBO", "");
+		initialValue = initialValue.replaceAll("\\[", "");
+		initialValue = initialValue.replaceAll("\\]", "");
+		initialValue = initialValue.strip();
+		initialValue = initialValue.replaceAll("^\"", "");
+		initialValue = initialValue.replaceAll("\"$", "");
+		initialValue = getProperty(key, initialValue);
+		String[] arrayValues = values.replaceAll("^\\(", "").replaceAll("\\)$", "").split(";");
+		for (int i = 0; i < arrayValues.length; i++) {
+			arrayValues[i] = arrayValues[i].strip();
+			arrayValues[i] = arrayValues[i].replaceAll("^\"", "");
+			arrayValues[i] = arrayValues[i].replaceAll("\"$", "");
+		}
+		Combo combo = new Combo(paramContainer, SWT.BORDER | SWT.READ_ONLY);
+		combo.setData(LABEL, parameterLabel);
+		combo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		combo.setData(key);
+		combo.addModifyListener(new ModifyListener() {
+			@Override
+			public void modifyText(ModifyEvent event) {
+				getTransientProperties().put((String)combo.getData(), combo.getText());
+			}
+		});
+		combo.setItems(arrayValues);
+		combo.select(combo.indexOf(initialValue));
+	}
 
-	private void createParamterWidget(Composite paramContainer, Properties properties, Process process) {
+	private void createParameterWidget(Composite paramContainer, Properties properties, Process process) {
 		String label = getProperty(properties, LABEL_KEY);
 		label = label.replaceAll("^\"", "");
 		label = label.replaceAll("\"$", "");
@@ -178,55 +306,27 @@ public class CustomerFunction extends GenericFunction {
 		parameterLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
 		parameterLabel.setText(label);
 		
-		if(typeRegExp[0] != null && typeRegExp[0].matches("^TEXT(\\[.*\\])?$")) {
-			String initialValue = "";
-			initialValue = typeRegExp[0].replaceAll("TEXT", "");
-			initialValue = initialValue.replaceAll("\\[", "");
-			initialValue = initialValue.replaceAll("\\]", "");
-			initialValue = initialValue.replaceAll("^\"", "");
-			initialValue = initialValue.replaceAll("\"$", "");
-			Text text = new Text(paramContainer, SWT.BORDER);
-			text.setData(LABEL, parameterLabel);
-			textParametersArray.add(text);
-			text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-			text.setData(key);
-			text.addModifyListener(new ModifyListener() {
-				@Override
-				public void modifyText(ModifyEvent event) {
-					getTransientProperties().put((String)text.getData(), text.getText());
-				}
-			});
-			text.setText(getProperty(key, initialValue));
-			ControlDecoration textCD = new ControlDecoration(text, SWT.TOP | SWT.LEFT);
-			textCD.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_CONTENT_PROPOSAL).getImage());
-			textCD.setDescriptionText(DocometreMessages.UseCtrlSpaceProposal);
-			textCD.setShowOnlyOnFocus(true);
-			textCD.setMarginWidth(5);
-			try {
-				DACQConfiguration dacqConfiguration = process.getDACQConfiguration();
-				KeyStroke keyStroke = KeyStroke.getInstance("CTRL+SPACE");
-				DocometreContentProposalProvider proposalProvider = new DocometreContentProposalProvider(dacqConfiguration.getProposal(), text);
-				proposalProvider.setFiltering(true);
-				ContentProposalAdapter leftProposalAdapter = new ContentProposalAdapter(text, new TextContentAdapter(), proposalProvider, keyStroke, null);
-				leftProposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_INSERT);
-				leftProposalAdapter.addContentProposalListener(proposalProvider);
-			} catch (ParseException e) {
-				e.printStackTrace();
-				Activator.logErrorMessageWithCause(e);
-			}
-			if(typeRegExp.length > 1 ) {
-				text.setData(REGEXP, typeRegExp[1]);
-				text.addModifyListener(new ModifyListener() {
-					@Override
-					public void modifyText(ModifyEvent event) {
-						validateParametersInputs();
-					}
-				});
-			}
+		if(typeRegExp[0] != null && typeRegExp[0].matches("^TEXT(\\[.*\\])?$"))
+			createTextWidget(typeRegExp[0], typeRegExp.length>1?typeRegExp[1]:"", paramContainer, parameterLabel, key, process);
+		
+		if(typeRegExp[0] != null && typeRegExp[0].matches("^FILE$")) {
+			boolean editable = false;
+			if(typeRegExp.length > 1) editable = "EDITABLE".equalsIgnoreCase(typeRegExp[1]);
+			createFileOrFolderWidget("FILE", editable, paramContainer, parameterLabel, key, process);
+		}
+			
+		
+		if(typeRegExp[0] != null && typeRegExp[0].matches("^FOLDER$")) {
+			boolean editable = false;
+			if(typeRegExp.length > 1) editable = "EDITABLE".equalsIgnoreCase(typeRegExp[1]);
+			createFileOrFolderWidget("FOLDER", editable, paramContainer, parameterLabel, key, process);
 		}
 		
+		if(typeRegExp[0] != null && typeRegExp[0].matches("^COMBO(\\[.+\\]){1}$"))
+			if(typeRegExp[1] != null && typeRegExp[1].matches("^\\(.+\\)$"))
+			createComboWidget(typeRegExp[0], typeRegExp[1], paramContainer, parameterLabel, key, process);
 	}
-	
+
 	private void validateParametersInputs() {
 		titleAreaDialog.setErrorMessage(null);
 		for (Text textParameter : textParametersArray) {
