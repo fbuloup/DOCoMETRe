@@ -129,8 +129,8 @@ public class CustomerFunction extends GenericFunction {
 	public Object getGUI(Object titleAreaDialog, Object parent, Object context) {
 		this.titleAreaDialog = (TitleAreaDialog) titleAreaDialog;
 		textParametersArray = new ArrayList<Text>(0);
-		if(!(context instanceof Process)) return null;
-		Process process = (Process)context;
+		if(!(context instanceof Process || context instanceof Script)) return null;
+		//Process process = (Process)context;
 		
 		Composite container  = (Composite) parent;
 		Composite paramContainer = new Composite(container, SWT.BORDER);
@@ -139,10 +139,10 @@ public class CustomerFunction extends GenericFunction {
 		gl.horizontalSpacing = 15;
 		
 		try {
-			String nbParamsString =  FunctionFactory.getProperty(process, functionFileName, PARAMETERS_NUMBER_KEY, true);
+			String nbParamsString =  FunctionFactory.getProperty(context, functionFileName, PARAMETERS_NUMBER_KEY, true);
 			int nbParams = Integer.valueOf(nbParamsString);
 			for (int i = 1; i <= nbParams; i++) {
-				String parameterDefinition = FunctionFactory.getProperty(process, functionFileName, PARAMETER_KEY + String.valueOf(i), true);
+				String parameterDefinition = FunctionFactory.getProperty(context, functionFileName, PARAMETER_KEY + String.valueOf(i), true);
 				if(!parameterDefinition.equals("")) {
 					Properties properties = new Properties();
 					String[] parameterSegments = parameterDefinition.split(",");
@@ -152,7 +152,7 @@ public class CustomerFunction extends GenericFunction {
 						properties.put(keyValue[0].trim(), keyValue[1].trim());
 					}
 					// Create parameter
-					createParameterWidget(paramContainer, properties, process);
+					createParameterWidget(paramContainer, properties, context);
 				}
 			}
 		} catch (NumberFormatException e) {
@@ -174,7 +174,7 @@ public class CustomerFunction extends GenericFunction {
 		return paramContainer;
 	}
 	
-	private void createTextWidget(String type, String regExp, Composite paramContainer, Label parameterLabel, String key, Process process) {
+	private void createTextWidget(String type, String regExp, Composite paramContainer, Label parameterLabel, String key, Object context) {
 		String initialValue = "";
 		initialValue = type.replaceAll("TEXT", "");
 		initialValue = initialValue.replaceAll("\\[", "");
@@ -199,18 +199,21 @@ public class CustomerFunction extends GenericFunction {
 		textCD.setDescriptionText(DocometreMessages.UseCtrlSpaceProposal);
 		textCD.setShowOnlyOnFocus(true);
 		textCD.setMarginWidth(5);
-		try {
-			DACQConfiguration dacqConfiguration = process.getDACQConfiguration();
-			KeyStroke keyStroke = KeyStroke.getInstance("CTRL+SPACE");
-			DocometreContentProposalProvider proposalProvider = new DocometreContentProposalProvider(dacqConfiguration.getProposal(), text);
-			proposalProvider.setFiltering(true);
-			ContentProposalAdapter leftProposalAdapter = new ContentProposalAdapter(text, new TextContentAdapter(), proposalProvider, keyStroke, null);
-			leftProposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_INSERT);
-			leftProposalAdapter.addContentProposalListener(proposalProvider);
-		} catch (ParseException e) {
-			e.printStackTrace();
-			Activator.logErrorMessageWithCause(e);
+		if(context instanceof Process) {
+			try {
+				DACQConfiguration dacqConfiguration = ((Process)context).getDACQConfiguration();
+				KeyStroke keyStroke = KeyStroke.getInstance("CTRL+SPACE");
+				DocometreContentProposalProvider proposalProvider = new DocometreContentProposalProvider(dacqConfiguration.getProposal(), text);
+				proposalProvider.setFiltering(true);
+				ContentProposalAdapter leftProposalAdapter = new ContentProposalAdapter(text, new TextContentAdapter(), proposalProvider, keyStroke, null);
+				leftProposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_INSERT);
+				leftProposalAdapter.addContentProposalListener(proposalProvider);
+			} catch (ParseException e) {
+				e.printStackTrace();
+				Activator.logErrorMessageWithCause(e);
+			}
 		}
+		
 		if(!"".equals(regExp)) {
 			text.setData(REGEXP, regExp);
 			text.addModifyListener(new ModifyListener() {
@@ -222,7 +225,7 @@ public class CustomerFunction extends GenericFunction {
 		}
 	}
 	
-	private void createFileOrFolderWidget(String fileOrFolder, boolean editable, Composite paramContainer, Label parameterLabel, String key, Process process) {
+	private void createFileOrFolderWidget(String fileOrFolder, boolean editable, Composite paramContainer, Label parameterLabel, String key, Object context) {
 		Composite innerContainer = new Composite(paramContainer, SWT.NORMAL);
 		innerContainer.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		GridLayout gl = new GridLayout(2, false);
@@ -266,7 +269,7 @@ public class CustomerFunction extends GenericFunction {
 		});
 	}
 	
-	private void createComboWidget(String type, String values, Composite paramContainer, Label parameterLabel, String key, Process process) {
+	private void createComboWidget(String type, String values, Composite paramContainer, Label parameterLabel, String key, Object context) {
 		String initialValue = "";
 		initialValue = type.replaceAll("COMBO", "");
 		initialValue = initialValue.replaceAll("\\[", "");
@@ -295,7 +298,7 @@ public class CustomerFunction extends GenericFunction {
 		combo.select(combo.indexOf(initialValue));
 	}
 
-	private void createParameterWidget(Composite paramContainer, Properties properties, Process process) {
+	private void createParameterWidget(Composite paramContainer, Properties properties, Object context) {
 		String label = getProperty(properties, LABEL_KEY);
 		label = label.replaceAll("^\"", "");
 		label = label.replaceAll("\"$", "");
@@ -307,24 +310,24 @@ public class CustomerFunction extends GenericFunction {
 		parameterLabel.setText(label);
 		
 		if(typeRegExp[0] != null && typeRegExp[0].matches("^TEXT(\\[.*\\])?$"))
-			createTextWidget(typeRegExp[0], typeRegExp.length>1?typeRegExp[1]:"", paramContainer, parameterLabel, key, process);
+			createTextWidget(typeRegExp[0], typeRegExp.length>1?typeRegExp[1]:"", paramContainer, parameterLabel, key, context);
 		
 		if(typeRegExp[0] != null && typeRegExp[0].matches("^FILE$")) {
 			boolean editable = false;
 			if(typeRegExp.length > 1) editable = "EDITABLE".equalsIgnoreCase(typeRegExp[1]);
-			createFileOrFolderWidget("FILE", editable, paramContainer, parameterLabel, key, process);
+			createFileOrFolderWidget("FILE", editable, paramContainer, parameterLabel, key, context);
 		}
 			
 		
 		if(typeRegExp[0] != null && typeRegExp[0].matches("^FOLDER$")) {
 			boolean editable = false;
 			if(typeRegExp.length > 1) editable = "EDITABLE".equalsIgnoreCase(typeRegExp[1]);
-			createFileOrFolderWidget("FOLDER", editable, paramContainer, parameterLabel, key, process);
+			createFileOrFolderWidget("FOLDER", editable, paramContainer, parameterLabel, key, context);
 		}
 		
 		if(typeRegExp[0] != null && typeRegExp[0].matches("^COMBO(\\[.+\\]){1}$"))
 			if(typeRegExp[1] != null && typeRegExp[1].matches("^\\(.+\\)$"))
-			createComboWidget(typeRegExp[0], typeRegExp[1], paramContainer, parameterLabel, key, process);
+			createComboWidget(typeRegExp[0], typeRegExp[1], paramContainer, parameterLabel, key, context);
 	}
 
 	private void validateParametersInputs() {
@@ -357,12 +360,12 @@ public class CustomerFunction extends GenericFunction {
 		}
 	}
 	
-	private String parseCode(Process process, String keyCode, String code, Object context) {
-		String temporaryCode = FunctionFactory.getProperty(process, functionFileName, keyCode.toUpperCase(), true);
+	private String parseCode(Object context, String keyCode, String code) {
+		String temporaryCode = FunctionFactory.getProperty(context, functionFileName, keyCode.toUpperCase(), true);
 		if(temporaryCode != null && !"".equals(temporaryCode)) {
 			String comment = "\n";
 			if(context instanceof Process) {
-				DACQConfiguration dacqConfiguration = process.getDACQConfiguration();
+				DACQConfiguration dacqConfiguration = ((Process)context).getDACQConfiguration();
 				if(dacqConfiguration instanceof ADWinDACQConfiguration) comment += "REM";
 				if(dacqConfiguration instanceof ArduinoUnoDACQConfiguration) comment += "//";
 			}
@@ -389,29 +392,34 @@ public class CustomerFunction extends GenericFunction {
 	public String getCode(Object context, Object step) {
 		if(!isActivated()) return GenericFunction.getCommentedCode(this, context);
 		String code = "";
-		Process process = (Process) context;
-		DACQConfiguration dacqConfiguration =  process.getDACQConfiguration();
-		if(process instanceof ADWinProcess) {
-			String systemType = dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.SYSTEM_TYPE);
-			String cpuType = dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.CPU_TYPE);
-			String key = step.toString().toUpperCase();
-			if(step == ScriptSegmentType.INITIALIZE || step == ScriptSegmentType.LOOP || step == ScriptSegmentType.FINALIZE) {
-				key = FUNCTION_CODE;
-			} 
-			// Get any source code on generic key
-			code = parseCode(process, key, code, context);
-			// Get any source code on specific key 
-			key = key + "_" + systemType + "_" + cpuType;
-			code = parseCode(process, key.toUpperCase(), code, context);
-			
+		if(context instanceof Process) {
+			Process process = (Process) context;
+			DACQConfiguration dacqConfiguration =  process.getDACQConfiguration();
+			if(process instanceof ADWinProcess) {
+				String systemType = dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.SYSTEM_TYPE);
+				String cpuType = dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.CPU_TYPE);
+				String key = step.toString().toUpperCase();
+				if(step == ScriptSegmentType.INITIALIZE || step == ScriptSegmentType.LOOP || step == ScriptSegmentType.FINALIZE) {
+					key = FUNCTION_CODE;
+				} 
+				// Get any source code on generic key
+				code = parseCode(process, key, code);
+				// Get any source code on specific key 
+				key = key + "_" + systemType + "_" + cpuType;
+				code = parseCode(process, key.toUpperCase(), code);
+				
+			}
+			if(process instanceof ArduinoUnoProcess) {
+				// Get any source code on generic key
+				String key = step.toString().toUpperCase();
+				if(step == ScriptSegmentType.INITIALIZE || step == ScriptSegmentType.LOOP || step == ScriptSegmentType.FINALIZE) {
+					key = FUNCTION_CODE;
+				} 
+				code = parseCode(process, key.toUpperCase(), code);
+			}
 		}
-		if(process instanceof ArduinoUnoProcess) {
-			// Get any source code on generic key
-			String key = step.toString().toUpperCase();
-			if(step == ScriptSegmentType.INITIALIZE || step == ScriptSegmentType.LOOP || step == ScriptSegmentType.FINALIZE) {
-				key = FUNCTION_CODE;
-			} 
-			code = parseCode(process, key.toUpperCase(), code, context);
+		if(context instanceof Script) {
+			code = parseCode(context, FUNCTION_CODE.toUpperCase(), code);
 		}
 		return code;
 	}
