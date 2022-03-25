@@ -1026,6 +1026,16 @@ public final class DocometreMessages extends NLS {
 	public static String nameDescription;
 	public static String typeDescription;
 	public static String textTypeDescription;
+	public static String text2TypeDescription;
+	public static String text3TypeDescription;
+	public static String text4TypeDescription;
+	public static String text5TypeDescription;
+	public static String text6TypeDescription;
+	public static String folderTypeDescription;
+	public static String folder2TypeDescription;
+	public static String fileTypeDescription;
+	public static String file2TypeDescription;
+	public static String comboTypeDescription;
 	public static String labelDescription;
 			
 	static {
