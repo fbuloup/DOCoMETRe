@@ -6,7 +6,18 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-02-23
+      -- 2022-03-25
+ADDED : 
+* Protocol importation feature (Issue #10)
+* Import resource enhancement
+* Error message enhancement 
+* Help pages enhancement
+* Change about dialog text 
+* Support for custom/user function
+FIXED :
+* Bug where subject with almost same name are unloaded (Python)
+* Bug on files validation when importing subjects or experiments
+-- 2022-02-23
 ADDED : Nothing
 FIXED :
 * Time values are no longer in samples files (Arduino Uno)
