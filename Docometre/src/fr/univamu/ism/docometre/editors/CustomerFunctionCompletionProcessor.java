@@ -28,10 +28,10 @@ public class CustomerFunctionCompletionProcessor extends TemplateCompletionProce
 		Template type = new CustomerFunctionTemplate("TYPE", DocometreMessages.typeDescription, 1);
 		Template text = new CustomerFunctionTemplate("TEXT", DocometreMessages.textTypeDescription, 1);
 		Template text2 = new CustomerFunctionTemplate("TEXT with init.", DocometreMessages.text2TypeDescription, "TEXT[placeInitValueHere]", 1);
-		Template text3 = new CustomerFunctionTemplate("TEXT integer numbers", DocometreMessages.text3TypeDescription, "TEXT[0]:[+-]?(\\d+)", 1);
-		Template text4 = new CustomerFunctionTemplate("TEXT positive integer numbers", DocometreMessages.text4TypeDescription, "TEXT[0]:[+]?(\\d+)", 1);
-		Template text5 = new CustomerFunctionTemplate("TEXT real numbers", DocometreMessages.text5TypeDescription, "TEXT[0.0]:[+-]?(\\d+\\.?\\d*|\\d*\\.\\d+)", 1);
-		Template text6 = new CustomerFunctionTemplate("TEXT positive real numbers", DocometreMessages.text6TypeDescription, "TEXT[0.0]:[+]?(\\d+\\.?\\d*|\\d*\\.\\d+)", 1);
+		Template text3 = new CustomerFunctionTemplate("TEXT integer numbers", DocometreMessages.text3TypeDescription, "TEXT[0]:[+-]?(\\\\d+)", 1);
+		Template text4 = new CustomerFunctionTemplate("TEXT positive integer numbers", DocometreMessages.text4TypeDescription, "TEXT[0]:[+]?(\\\\d+)", 1);
+		Template text5 = new CustomerFunctionTemplate("TEXT real numbers", DocometreMessages.text5TypeDescription, "TEXT[0.0]:[+-]?(\\\\d+\\\\.?\\\\d*|\\\\d*\\\\.\\\\d+)", 1);
+		Template text6 = new CustomerFunctionTemplate("TEXT positive real numbers", DocometreMessages.text6TypeDescription, "TEXT[0.0]:[+]?(\\\\d+\\\\.?\\\\d*|\\\\d*\\\\.\\\\d+)", 1);
 		Template folder = new CustomerFunctionTemplate("FOLDER", DocometreMessages.folderTypeDescription, "FOLDER", 1);
 		Template folder2 = new CustomerFunctionTemplate("FOLDER Editable", DocometreMessages.folder2TypeDescription, "FOLDER:EDITABLE", 1);
 		Template file = new CustomerFunctionTemplate("FILE", DocometreMessages.fileTypeDescription, "FILE", 1);
