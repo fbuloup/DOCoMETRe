@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"> 
+
+ <html>
+ <head>
+ 	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ 	<title>Can I use ADwin systems with Mac OS ?</title>
+ </head>
+
+ <body>
+ <h1>Can I use ADwin systems with Mac OS ?</h1>
+ <p>
+ Yes you can ! But the solution depends on your Mac OS version.
+ </p>
+ <h2>Before Mac OS 10.15</h2>
+ <p>In this case you can simply follow the cheat sheet on "Adbasic installation [Mac OS X]". The solution is based on WineHQ.</p>
+ <h2>Since Mac OS 10.15</h2>
+ <p>
+ In this case the solution is unfortunately more complicated. Since Mac OS 10.15, most of 32 bits applications cannot be launched.
+ As WineHQ is a 32 bits App., it is not more possible to use it. The solution is based on docker containers : a docker container is
+ started and accessed to compile adbasic source codes. This docker container is based on an Ubuntu image modified in order to contain
+ ADwin software.
+ </p>
+ 
+ <p> If you want to apply this solution, you must follow these steps :
+ </p>
+ 
+ <ul>
+ <li>First download and install Docker Desktop</li>
+ <li>Then download and install Ubuntu-Adwin docker image</li>
+</ul>
+
+<h3>1. Docker Desktop</h3>
+You can download Docker Desktop from <a href="https://www.docker.com/products/docker-desktop/" target="_blank">here</a>. Once downloaded, double click on 
+the docker.dmg file and copy/past the application where you want. Then you can start it from this location, please wait a moment before 
+going to the next step as it can take a while to start Docker daemon.
+
+<br><br>
+
+
+<h3>2. Ubuntu-Adwin docker image</h3>
+You can download this Docker image (adwin.tar) from <a href="http://www.ism.univmed.fr/buloup/documents/adwin.tar" target="_blank">here</a>. Once downloaded, open a terminal
+and type this command (replacing /path/to/ by the correct path to the downloaded adwin.tar file) :
+<pre>
+docker load --input /path/to/adwin.tar
+</pre>
+
+And that's it ! Docker daemon and adwin docker image are installed, this have to be done only once.  
+
+
+<p style="color:rgba(255,0,0,1);"><b>But please note that this application (Docker daemon) will have to be launched any time you want to compile an Adbasic process.</b></p> 
+ 
+
+<h2>How to create this Adwin-Docker image ?</h2>
+First run this command in terminal :
+<pre>
+docker create ubuntu
+</pre>
+It will download the ubuntu latest image and create a docker container with name adwin.
+<br><br>
+Then run command below to start this container in interactive mode : 
+<pre>
+docker run -it --name adwin ubuntu
+</pre>
+You can now copy/create the bash script below in the root folder of the running container :
+<pre>
+mkdir /opt/adwin
+cd /opt/adwin
+read -p "Please copy ADwin-linux_W.X.YY.ZZ.tar.gz in /opt/adwin then press enter : docker cp ADwin-linux_W.X.YY.ZZ.tar.gz adwin:/opt/adwin "
+apt-get update
+echo ">>>>>>>>>>>>>>>>>>> Install cmake"
+DEBIAN_FRONTEND=noninteractive apt-get install -y cmake
+echo ">>>>>>>>>>>>>>>>>>> Install build-essential"
+apt-get install -y build-essential
+echo ">>>>>>>>>>>>>>>>>>> Install flex"
+apt-get install -y flex
+echo ">>>>>>>>>>>>>>>>>>> Install bison"
+apt-get install -y bison
+dpkg --add-architecture i386
+apt-get update
+echo ">>>>>>>>>>>>>>>>>>> Install wine32"
+apt-get install -y wine32
+echo ">>>>>>>>>>>>>>>>>>> untar ADwin-linux"
+tar -xvf ADwin-linux_6.0.30.00.tar.gz
+cd ADwin-linux_6.0.30.00
+echo ">>>>>>>>>>>>>>>>>>> untar adwin-compiler"
+tar -xvf adwin-compiler-6.0.30.tar.gz
+echo ">>>>>>>>>>>>>>>>>>> untar adwin-lib"
+tar -xvf adwin-lib-6.1.1.tar.gz
+cd adwin-lib-6.1.1
+echo ">>>>>>>>>>>>>>>>>>> Build adconfig"
+mkdir build
+cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=/opt/adwin
+cmake --build .
+make install
+echo ">>>>>>>>>>>>>>>>>>> Export path"
+export ADWINDIR=/opt/adwin
+export PATH=$PATH:$ADWINDIR/bin:$ADWINDIR/sbin
+export MANPATH=$MANPATH:$ADWINDIR/man
+echo ">>>>>>>>>>>>>>>>>>> Add device with adconfig"
+adconfig add 0x1 TYPE net IP 192.168.0.10
+echo ">>>>>>>>>>>>>>>>>>> Copy binaries"
+mkdir /opt/adwin/bin
+cp /opt/adwin/ADwin-linux_6.0.30.00/adwin-compiler-6.0.30/bin/* /opt/adwin/bin
+echo ">>>>>>>>>>>>>>>>>>> Add Licencekey"
+/opt/adwin/bin/adwin-license licence_number
+</pre> 
+You can make a copy from host to container using this command in terminal :
+<pre>
+docker cp /path/to/thisScript.sh adwin:/
+</pre>
+Run this script from the container terminal and upon its completion, run these commands in host terminal (do not stop
+the adwin container) : 
+<pre>
+docker commit adwin
+docker tag 3008e93cfbe4 ubuntu:adwin
+docker save --output adwin.tar ubuntu:adwin
+</pre>
+It will commit changes from adwin container, creating a new image. Then it will tag this new image ubuntu:adwin.
+3008e93cfbe4 must be replaced by your container ID. And it finally save this new image in adwin.tar file.
+ </body>
+ 
+ </html>
