@@ -58,6 +58,7 @@ public class GeneralPreferenceConstants {
 	public static final String SELECTED_WORKSPACE = "SELECTED_WORKSPACE";
 	public static final String SHOW_TRADITIONAL_STYLE_TABS = "SHOW_TRADITIONAL_STYLE_TABS";
 	public static final String WINE_FULL_PATH = "WINE_FULL_PATH";
+	public static final String USE_DOCKER = "USE_DOCKER";
 	
 	public static final String STOP_TRIAL_NOW = "STOP_TRIAL_NOW";
 	public static final String USE_AS_DEFAULT_DO_NOT_ASK_STOP_TRIAL_NOW = "USE_AS_DEFAULT_DO_NOT_ASK_STOP_TRIAL_NOW";

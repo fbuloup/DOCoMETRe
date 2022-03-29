@@ -112,9 +112,13 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
 		addField(confirmUndoFieldEditor);
 		
 		Group wineGroup = new Group(getFieldEditorParent(), SWT.NONE);
-		wineGroup.setText("WineHQ (MacOSX, Linux)");
+		wineGroup.setText("Docker - WineHQ (MacOSX, Linux)");
 		wineGroup.setLayout(new FillLayout(SWT.HORIZONTAL));
 		wineGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1));
+		
+		// WINE_FULL_PATH
+		BooleanFieldEditor useDockerBooleanFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.USE_DOCKER, DocometreMessages.GeneralPreferences_UseDocker, wineGroup);
+		addField(useDockerBooleanFieldEditor);
 		
 		// WINE_FULL_PATH
 		FileFieldEditor wineFileFieldEditor = new FolderPathFieldEditor(GeneralPreferenceConstants.WINE_FULL_PATH, DocometreMessages.GeneralPreferences_WineFileLocation, wineGroup);
