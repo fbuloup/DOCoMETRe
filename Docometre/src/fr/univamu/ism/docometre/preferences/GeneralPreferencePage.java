@@ -112,7 +112,7 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
 		addField(confirmUndoFieldEditor);
 		
 		Group wineGroup = new Group(getFieldEditorParent(), SWT.NONE);
-		wineGroup.setText("Docker - WineHQ (MacOSX, Linux)");
+		wineGroup.setText(DocometreMessages.GeneralPreferences_WineDocker);// "");
 		wineGroup.setLayout(new FillLayout(SWT.HORIZONTAL));
 		wineGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1));
 		
