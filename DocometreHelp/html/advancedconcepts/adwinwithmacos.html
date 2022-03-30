@@ -9,37 +9,40 @@
  <body>
  <h1>Can I use ADwin systems with Mac OS ?</h1>
  <p>
- Yes you can ! But the solution depends on your Mac OS version.
+ Yes you can ! But the solution depends on your Mac OS version. Two alternatives exist : the first one is based on <b>WineHQ</b> and the other
+ one is based on <b>Docker container</b>. If your Mac OS version is less than 10.15, you could use any of these alternatives. Otherwise only
+ the second alternative can be used.
  </p>
- <h2>Before Mac OS 10.15</h2>
- <p>In this case you can simply follow the cheat sheet on "Adbasic installation [Mac OS X]". The solution is based on WineHQ.</p>
- <h2>Since Mac OS 10.15</h2>
+ <h2>The WineHQ solution</h2>
+ <p>This alternative cannot be used under Mac OS 10.15 or more.</p>
+ <p>In this case you can simply follow the "Adbasic installation [Mac OS X]" cheat sheet.</p>
+ <h2>The Docker Container solution</h2>
+ <p>This alternative can be used with any Mac OS version.</p>
  <p>
- In this case the solution is unfortunately more complicated. Since Mac OS 10.15, most of 32 bits applications cannot be launched.
- As WineHQ is a 32 bits App., it is not more possible to use it. The solution is based on docker containers : a docker container is
- started and accessed to compile adbasic source codes. This docker container is based on an Ubuntu image modified in order to contain
- ADwin software.
+ Since Mac OS 10.15, most of 32 bits applications cannot be launched.
+ As <b>WineHQ</b> still relies on 32 bits App., at the moment (march 2022), it is not more possible to use it. The solution is based on a <b>Docker Container</b> : a docker container is
+ started and accessed to compile adbasic source codes. This docker container is based on a modified Ubuntu image where ADwin software has been installed.
  </p>
  
  <p> If you want to apply this solution, you must follow these steps :
  </p>
  
  <ul>
- <li>First download and install Docker Desktop</li>
- <li>Then download and install Ubuntu-Adwin docker image</li>
+ <li>First download and install <b>Docker Desktop</b></li>
+ <li>Then download and install Ubuntu-Adwin <b>docker image</b></li>
 </ul>
 
 <h3>1. Docker Desktop</h3>
-You can download Docker Desktop from <a href="https://www.docker.com/products/docker-desktop/" target="_blank">here</a>. Once downloaded, double click on 
-the docker.dmg file and copy/past the application where you want. Then you can start it from this location, please wait a moment before 
-going to the next step as it can take a while to start Docker daemon.
+You can download <b>Docker Desktop</b> from <a href="https://www.docker.com/products/docker-desktop/" target="_blank">here</a>. Once downloaded, double click on 
+the <b><i>docker.dmg</i></b> file and copy/past the application where you want. Then you can start it from this location, please wait a moment before 
+going to the next step as it can take a while to start <b>Docker daemon</b>.
 
 <br><br>
 
 
 <h3>2. Ubuntu-Adwin docker image</h3>
-You can download this Docker image (adwin.tar) from <a href="http://www.ism.univmed.fr/buloup/documents/adwin.tar" target="_blank">here</a>. Once downloaded, open a terminal
-and type this command (replacing /path/to/ by the correct path to the downloaded adwin.tar file) :
+You can download this <b>Docker image</b> (<b><i>adwin.tar</i></b>) from <a href="http://www.ism.univmed.fr/buloup/documents/adwin.tar" target="_blank">here</a>. Once downloaded, open a terminal
+and type this command (replacing <b><i>/path/to/</i></b> by the correct path to the downloaded <b><i>adwin.tar</i></b> file) :
 <pre>
 docker load --input /path/to/adwin.tar
 </pre>
@@ -50,14 +53,14 @@ And that's it ! Docker daemon and adwin docker image are installed, this have to
 <p style="color:rgba(255,0,0,1);"><b>But please note that this application (Docker daemon) will have to be launched any time you want to compile an Adbasic process.</b></p> 
  
 
-<h2>How to create this Adwin-Docker image ?</h2>
+<h2>How to create this Adwin Docker image ?</h2>
 First run this command in terminal :
 <pre>
 docker create ubuntu
 </pre>
-It will download the ubuntu latest image and create a docker container with name adwin.
+It will download the ubuntu latest image to your computer.
 <br><br>
-Then run command below to start this container in interactive mode : 
+Then run command below to start a container nammed <b>adwin</b> in interactive mode  : 
 <pre>
 docker run -it --name adwin ubuntu
 </pre>
@@ -110,14 +113,14 @@ You can make a copy from host to container using this command in terminal :
 docker cp /path/to/thisScript.sh adwin:/
 </pre>
 Run this script from the container terminal and upon its completion, run these commands in host terminal (do not stop
-the adwin container) : 
+the <b>adwin</b> container) : 
 <pre>
 docker commit adwin
 docker tag 3008e93cfbe4 ubuntu:adwin
 docker save --output adwin.tar ubuntu:adwin
 </pre>
-It will commit changes from adwin container, creating a new image. Then it will tag this new image ubuntu:adwin.
-3008e93cfbe4 must be replaced by your container ID. And it finally save this new image in adwin.tar file.
+It will commit changes from <b>adwin</b> container, creating a new image. Then it will tag this new image <b>ubuntu:adwin</b>.
+3008e93cfbe4 must be replaced by your container ID. And it finally save this new image in <b><i>adwin.tar</i></b> file.
  </body>
  
  </html>
