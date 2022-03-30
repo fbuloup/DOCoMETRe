@@ -317,32 +317,50 @@ public class ADWinProcess extends Process {
 		progressMonitor.worked(1);
 		
 		java.lang.Process process = Runtime.getRuntime().exec(cmdLine);
-		process.waitFor();
 		
 		String line;
-//		BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-//		String errorString = "";
-//		while((line = error.readLine()) != null){
-//			errorString = errorString + line + "\n";
-//		}
-//		error.close();
-//		if(!errorString.equals("")) {
-//			IMarker marker = processResource.createMarker(DocometreBuilder.MARKER_ID);
-//			marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-//			marker.setAttribute(IMarker.MESSAGE, errorString);
-//			throw new Exception(DocometreMessages.ADWinProcess_CompileErrorsMessage + "\n" + errorString); 
-//		}
+//			BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+//			String errorString = "";
+//			while((line = error.readLine()) != null){
+//				errorString = errorString + line + "\n";
+//			}
+//			error.close();
+//			if(!errorString.equals("")) {
+//				IMarker marker = processResource.createMarker(DocometreBuilder.MARKER_ID);
+//				marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+//				marker.setAttribute(IMarker.MESSAGE, errorString);
+//				throw new Exception(DocometreMessages.ADWinProcess_CompileErrorsMessage + "\n" + errorString); 
+//			}
+		boolean useDocker = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_DOCKER);
+		boolean firstLine = true;
 		BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
 		while((line=input.readLine()) != null){
-		    System.out.println("Input : " + line);
-		    Activator.logInfoMessage(line, getClass());
+			if(useDocker && firstLine) line += " (docker container ID)";
+		    if(!"adwin".equals(line)) {
+		    	System.out.println("Input : " + line);
+			    Activator.logInfoMessage(line, getClass());
+		    }
+		    firstLine = false;
 		}
 		input.close();
 		
-//		ProcessBuilder processBuilder = new ProcessBuilder(cmdLine);
-//		processBuilder.inheritIO();
-//		processBuilder.directory(outputFolderFile);
-//		processBuilder.start().waitFor();
+		boolean processError = false;
+		input = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+		while((line=input.readLine()) != null){
+			if(!line.contains("0 error(s), 0 warning(s)")) {
+				System.err.println("Error : " + line);
+			    Activator.logErrorMessage(line);
+			    processError = true;
+			}
+		}
+		input.close();
+		process.waitFor();
+		
+//			ProcessBuilder processBuilder = new ProcessBuilder(cmdLine);
+//			processBuilder.inheritIO();
+//			processBuilder.directory(outputFolderFile);
+//			processBuilder.start().waitFor();
+		
 		
 		progressMonitor.worked(1);
 		
@@ -393,6 +411,10 @@ public class ADWinProcess extends Process {
 		});
 		
 		progressMonitor.worked(1);
+		
+		if(processError) {
+			throw new Exception(DocometreMessages.ADWinProcess_CompileErrorsMessage); 
+		}
 		
 		//Get compile errors
 		if(errorFile.exists()) {
@@ -458,16 +480,6 @@ public class ADWinProcess extends Process {
 	}
 	
 	private String createOSXCompileProcess(String currentFolder, String outputFolder, String adbasicCompiler, String adbasicFilePath) throws IOException, InterruptedException {
-		// Replace all spaces by "\ " in adbasicfilePath
-		String[] fullPathSplitted = adbasicFilePath.split("\\s");
-		adbasicFilePath = "";
-		for (int i = 0; i < fullPathSplitted.length; i++) {
-			adbasicFilePath = adbasicFilePath + fullPathSplitted[i];
-			if(i < fullPathSplitted.length - 1) adbasicFilePath = adbasicFilePath + "\\" + " ";
-		}
-		// Replace "/" by "\" and add Z: drive (wine) 
-		adbasicFilePath = processPathForMacOSX(adbasicFilePath);
-		outputFolder = processPathForMacOSX(outputFolder);
 		
 		// We need to create a bash file in order to launch ADBasic with wine
 		// Bash file path
@@ -476,27 +488,55 @@ public class ADWinProcess extends Process {
 		final File bashFile = new File(bashFilePath);
 		if(bashFile.exists()) bashFile.delete();
 		FileWriter fileWriter = new FileWriter(bashFile);
-		// Populate this file with command string
-		// Get wine full path from preferences
-		String wineFullPath = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.WINE_FULL_PATH);
-		// Replace all spaces by "\ "
-		fullPathSplitted = wineFullPath.split("\\s");
-		wineFullPath = "";
-		for (int i = 0; i < fullPathSplitted.length; i++) {
-			wineFullPath = wineFullPath + fullPathSplitted[i];
-			if(i < fullPathSplitted.length - 1) wineFullPath = wineFullPath + "\\" + " ";
+		
+		boolean useDocker = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_DOCKER);
+
+		if(!useDocker) {
+			// Replace all spaces by "\ " in adbasicfilePath
+			String[] fullPathSplitted = adbasicFilePath.split("\\s");
+			adbasicFilePath = "";
+			for (int i = 0; i < fullPathSplitted.length; i++) {
+				adbasicFilePath = adbasicFilePath + fullPathSplitted[i];
+				if(i < fullPathSplitted.length - 1) adbasicFilePath = adbasicFilePath + "\\" + " ";
+			}
+			// Replace "/" by "\" and add Z: drive (wine) 
+			adbasicFilePath = processPathForMacOSX(adbasicFilePath);
+			outputFolder = processPathForMacOSX(outputFolder);
+		
+			// Populate this file with command string
+			// Get wine full path from preferences
+			String wineFullPath = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.WINE_FULL_PATH);
+			// Replace all spaces by "\ "
+			fullPathSplitted = wineFullPath.split("\\s");
+			wineFullPath = "";
+			for (int i = 0; i < fullPathSplitted.length; i++) {
+				wineFullPath = wineFullPath + fullPathSplitted[i];
+				if(i < fullPathSplitted.length - 1) wineFullPath = wineFullPath + "\\" + " ";
+			}
+			// Replace all spaces by "\ " form adbasicCompiler
+			fullPathSplitted = adbasicCompiler.split("\\s");
+			adbasicCompiler = "";
+			for (int i = 0; i < fullPathSplitted.length; i++) {
+				adbasicCompiler = adbasicCompiler + fullPathSplitted[i];
+				if(i < fullPathSplitted.length - 1) adbasicCompiler = adbasicCompiler + "\\" + " ";
+			}
+			String cmd = wineFullPath + " \"" + adbasicCompiler + "\"";
+			cmd = cmd + getCommandLineParameters(outputFolder, adbasicFilePath);
+			fileWriter.write(cmd);
+			fileWriter.close();
+		} else {
+			String librariesPath = getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH);
+			IPath adbasicPath = Path.fromOSString(adbasicFilePath);
+			String volume1 = " -v " + adbasicPath.removeLastSegments(1).toPortableString() + ":" + adbasicPath.removeLastSegments(1).toPortableString() + ":rw";
+			String volume2 = " -v " + librariesPath + ":" + librariesPath + ":ro";
+			String cmd = "/usr/local/bin/docker run -w " + adbasicPath.removeLastSegments(1).toPortableString() + " -di" + volume1 + volume2 + " --name adwin ubuntu:adwin";
+			cmd += "\n/usr/local/bin/docker exec adwin /opt/adwin/bin/adbasic " + adbasicPath.lastSegment() + getCommandLineParameters(outputFolder, adbasicFilePath);
+			cmd += "\n/usr/local/bin/docker stop -t 1 adwin";
+			cmd += "\n/usr/local/bin/docker rm adwin";
+			fileWriter.write(cmd);
+			fileWriter.close();
 		}
-		// Replace all spaces by "\ " form adbasicCompiler
-		fullPathSplitted = adbasicCompiler.split("\\s");
-		adbasicCompiler = "";
-		for (int i = 0; i < fullPathSplitted.length; i++) {
-			adbasicCompiler = adbasicCompiler + fullPathSplitted[i];
-			if(i < fullPathSplitted.length - 1) adbasicCompiler = adbasicCompiler + "\\" + " ";
-		}
-		String cmd = wineFullPath + " \"" + adbasicCompiler + "\"";
-		cmd = cmd + getCommandLineParameters(outputFolder, adbasicFilePath);
-		fileWriter.write(cmd);
-		fileWriter.close();
+		
 		// This bash file must be executable 
 		java.lang.Process process = Runtime.getRuntime().exec("chmod 777 " + bashFilePath);
 		process.waitFor();
@@ -522,27 +562,50 @@ public class ADWinProcess extends Process {
 
 	private String getCommandLineParameters(String outputFolder, String adbasicFilePath) {
 		String cmdParams = "";
-		String[] adbasicFilePathSplitted = adbasicFilePath.split("\\\\");
-		String errorFileName = adbasicFilePathSplitted[adbasicFilePathSplitted.length - 1].replaceAll("\\.(?i)bas$", ".err");
-		if (getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.ADBASIC_VERSION).equals(ADWinDACQConfigurationProperties.VINF4)) {
-			cmdParams = " /M \"" + adbasicFilePath + "\" /A " + outputFolder + " /SP /P9 2>" + errorFileName;
-		} else {
-			if (getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.SYSTEM_TYPE).equals(ADWinDACQConfigurationProperties.GOLD)) {
-				if (getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.CPU_TYPE).equals(ADWinDACQConfigurationProperties.I)) {
-					cmdParams = " /M \"" + adbasicFilePath + "\" /A\"" + outputFolder + "\" /SG /P9 2>" + errorFileName;
-				} else {
-					cmdParams = " /M \"" + adbasicFilePath + "\" /A\"" + outputFolder + "\" /SGII /P11 2>" + errorFileName;
-				}
-				
+		boolean useDocker = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_DOCKER);
+		if(!useDocker) {
+			String[] adbasicFilePathSplitted = adbasicFilePath.split("\\\\");
+			String errorFileName = adbasicFilePathSplitted[adbasicFilePathSplitted.length - 1].replaceAll("\\.(?i)bas$", ".err");
+			if (getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.ADBASIC_VERSION).equals(ADWinDACQConfigurationProperties.VINF4)) {
+				cmdParams = " /M \"" + adbasicFilePath + "\" /A " + outputFolder + " /SP /P9 2>" + errorFileName;
 			} else {
-				if (getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.CPU_TYPE).equals(ADWinDACQConfigurationProperties.I)) {
-					cmdParams = cmdParams + " /M \"" + adbasicFilePath + "\" /A\"" + outputFolder + "\" /SP /P9 2>" + errorFileName;
+				if (getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.SYSTEM_TYPE).equals(ADWinDACQConfigurationProperties.GOLD)) {
+					if (getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.CPU_TYPE).equals(ADWinDACQConfigurationProperties.I)) {
+						cmdParams = " /M \"" + adbasicFilePath + "\" /A\"" + outputFolder + "\" /SG /P9 2>" + errorFileName;
+					} else {
+						cmdParams = " /M \"" + adbasicFilePath + "\" /A\"" + outputFolder + "\" /SGII /P11 2>" + errorFileName;
+					}
+					
 				} else {
-					cmdParams = cmdParams + " /M \"" + adbasicFilePath + "\" /A\"" + outputFolder + "\" /SPII /P11 2>" + errorFileName;
+					if (getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.CPU_TYPE).equals(ADWinDACQConfigurationProperties.I)) {
+						cmdParams = cmdParams + " /M \"" + adbasicFilePath + "\" /A\"" + outputFolder + "\" /SP /P9 2>" + errorFileName;
+					} else {
+						cmdParams = cmdParams + " /M \"" + adbasicFilePath + "\" /A\"" + outputFolder + "\" /SPII /P11 2>" + errorFileName;
+					}
 				}
 			}
+			return cmdParams;
+		} else {
+			if (getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.ADBASIC_VERSION).equals(ADWinDACQConfigurationProperties.VINF4)) {
+				cmdParams = " /M /SP /P9";
+			} else {
+				if (getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.SYSTEM_TYPE).equals(ADWinDACQConfigurationProperties.GOLD)) {
+					if (getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.CPU_TYPE).equals(ADWinDACQConfigurationProperties.I)) {
+						cmdParams = " /M /SG /P9";
+					} else {
+						cmdParams = " /M /SGII /P11";
+					}
+					
+				} else {
+					if (getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.CPU_TYPE).equals(ADWinDACQConfigurationProperties.I)) {
+						cmdParams = " /M /SP /P9";
+					} else {
+						cmdParams = " /M /SPII /P11";
+					}
+				}
+			}
+			return cmdParams;
 		}
-		return cmdParams;
 	}
 	
 	@Override
@@ -625,7 +688,8 @@ public class ADWinProcess extends Process {
 	}
 	
 	public static String processPathForMacOSX(String path) {
-		if(Platform.getOS().equals(Platform.OS_MACOSX)) {
+		boolean useDocker = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_DOCKER);
+		if(Platform.getOS().equals(Platform.OS_MACOSX) && !useDocker) {
 			// Replace all spaces by "/" in adbasicfilePath by "\"
 			String[] pathSplitted = path.split("/");
 			path = "";
