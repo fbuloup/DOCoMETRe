@@ -47,6 +47,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.ui.ISharedImages;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.GetResourceLabelDelegate;
@@ -93,7 +94,7 @@ public class ExperimentsLabelProvider implements ILabelProvider {
 		if(ResourceType.isXYChart(resource)) return Activator.getImage(IImageKeys.XYChart_ICON);
 		if(ResourceType.isXYZChart(resource)) return Activator.getImage(IImageKeys.XYZChart_ICON);
 		if(ResourceType.isCustomerFunction(resource)) return Activator.getImage(IImageKeys.CUSTOMER_FUNCTION_ICON);
-		return Activator.getSharedImage("icons/full/etool16/help_contents.png"); // this is IWorkbenchGraphicConstants.IMG_ETOOL_HELP_CONTENTS from org.eclipse.ui
+		return Activator.getSharedImage(ISharedImages.IMG_LCL_LINKTO_HELP);//"icons/full/etool16/help_contents.png"); // this is IWorkbenchGraphicConstants.IMG_ETOOL_HELP_CONTENTS from org.eclipse.ui
 	}
 
 	public String getText(Object element) {
