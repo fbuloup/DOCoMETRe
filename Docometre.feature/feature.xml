@@ -6,7 +6,10 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-03-31
+      -- 2022-04-04
+ADDED : Proper icon for unknown resource type 
+FIXED : nothing
+-- 2022-03-31
 ADDED : 
 * Support for user function to Math Engines
 * Support for Docker (Adwin on Mac OS 10.15 and more)
