@@ -102,8 +102,13 @@ public class ADWinRS232Module extends Module {
 			if(nbStopBits.equals(ADWinRS232ModuleProperties.STOPBIT_2)) nbStopBits = "1";
 			
 			if(systemType.equals(ADWinDACQConfigurationProperties.PRO)) {
-				code = code + "REM RS_RESET(" + moduleNumber + ") ' Reset is allowed only once on a module !\n";
+				code = code + "RS_RESET(" + moduleNumber + ") ' Reset is allowed only once on a module !\n";
 				code = code + "RS_INIT(" + moduleNumber + ", " + interfaceNumber + ", " + baudRate + ", " + parity + ", " + nbDataBits + ", " + nbStopBits + ", " + flowControl  + ")";
+			}
+			
+			if(systemType.equals(ADWinDACQConfigurationProperties.GOLD)) {
+				code = code + "RS_RESET() ' Reset is allowed only once on a module !\n";
+				code = code + "RS_INIT(" + interfaceNumber + ", " + baudRate + ", " + parity + ", " + nbDataBits + ", " + nbStopBits + ", " + flowControl  + ")";
 			}
 			
 		}	
