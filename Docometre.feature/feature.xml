@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-04-22
+      -- 2022-04-22 - Bis
+ADDED : nothing
+FIXED : 
+* RS_RESET and RS_INIT was not done on RS232 interface for ADwin gold
+-- 2022-04-22
 ADDED : nothing
 FIXED : 
 * Return code for comment blocks must be empty string not null
