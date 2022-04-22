@@ -60,7 +60,7 @@ public class Comment extends Block {
 	
 	@Override
 	public String getCode(Object context, Object step) {
-		return null;
+		return "";
 	}
 	
 	public String getComment() {
