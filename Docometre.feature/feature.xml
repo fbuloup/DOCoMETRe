@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-04-04
+      -- 2022-04-22
+ADDED : nothing
+FIXED : 
+* Return code for comment blocks must be empty string not null
+-- 2022-04-04
 ADDED : Proper icon for unknown resource type 
 FIXED : nothing
 -- 2022-03-31
