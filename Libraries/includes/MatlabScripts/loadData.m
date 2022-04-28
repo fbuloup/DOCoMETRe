@@ -25,8 +25,8 @@ switch experimentType
     	evalin('base',[subjectFullName ' = subjectName;']);
     	evalin('base','clear subjectName;');
     	
-    case 'TEXT_FILE_1'
-    	loadDataTextFile1(experimentName,localSubjectName, dataFilesList);
+    case 'OPTITRACK_TYPE_1'
+    	subject = loadDataOptitrackType1(dataFilesList);
     
     otherwise
 	    returnCode = 1;
