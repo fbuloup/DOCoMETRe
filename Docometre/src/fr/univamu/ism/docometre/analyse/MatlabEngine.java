@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -290,29 +291,38 @@ public final class MatlabEngine implements MathEngine {
 				
 			} else {
 				String dataFilesList = Analyse.getDataFiles(subject);
-				//String dataFilesList = (String)subject.getSessionProperty(ResourceProperties.DATA_FILES_LIST_QN);
-
-				Map<String, String> sessionsProperties = Analyse.getSessionsInformations(subject);
 				
-				Set<String> keys = sessionsProperties.keySet();
-				Collection<String> values = sessionsProperties.values();
-				
-				String keysString = String.join("','", keys);
-				String valuesString = String.join("','", values);
+				boolean isOptitrack = Analyse.isOptitrack(dataFilesList.split(";"), (IContainer) subject);
+				if(isOptitrack) {
+					// If all data files are OPTITRACK_TYPE_1
+					String cmd = experimentName + "." + subjectName + " = loadData('OPTITRACK_TYPE_1', '" + dataFilesList + "')";
+					System.out.println(cmd);
+					matlabController.eval(cmd);
+				} else {
+					//String dataFilesList = (String)subject.getSessionProperty(ResourceProperties.DATA_FILES_LIST_QN);
 
-				StringBuffer stringBuffer = new StringBuffer(keysString);
-				stringBuffer.append("'}");
-				stringBuffer.insert(0, "{'");
-				keysString = stringBuffer.toString();
+					Map<String, String> sessionsProperties = Analyse.getSessionsInformations(subject);
+					
+					Set<String> keys = sessionsProperties.keySet();
+					Collection<String> values = sessionsProperties.values();
+					
+					String keysString = String.join("','", keys);
+					String valuesString = String.join("','", values);
 
-				stringBuffer = new StringBuffer(valuesString);
-				stringBuffer.append("'}");
-				stringBuffer.insert(0, "{'");
-				valuesString = stringBuffer.toString();
-				
-				String cmd = experimentName + "." + subjectName + " = loadData('DOCOMETRE', '" + dataFilesList + "', " + keysString + ", " + valuesString + ")";
-				System.out.println(cmd);
-				matlabController.eval(cmd);
+					StringBuffer stringBuffer = new StringBuffer(keysString);
+					stringBuffer.append("'}");
+					stringBuffer.insert(0, "{'");
+					keysString = stringBuffer.toString();
+
+					stringBuffer = new StringBuffer(valuesString);
+					stringBuffer.append("'}");
+					stringBuffer.insert(0, "{'");
+					valuesString = stringBuffer.toString();
+					
+					String cmd = experimentName + "." + subjectName + " = loadData('DOCOMETRE', '" + dataFilesList + "', " + keysString + ", " + valuesString + ")";
+					System.out.println(cmd);
+					matlabController.eval(cmd);
+				}
 				
 			}
 			

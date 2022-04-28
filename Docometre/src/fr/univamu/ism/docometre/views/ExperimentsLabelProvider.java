@@ -85,6 +85,7 @@ public class ExperimentsLabelProvider implements ILabelProvider {
 		if(ResourceType.isLog(resource)) return Activator.getImage(IImageKeys.DIARY_ICON);
 		if(ResourceType.isSamples(resource)) return Activator.getImage(IImageKeys.SAMPLES_ICON);
 		if(ResourceType.isADWDataFile(resource)) return Activator.getImage(IImageKeys.SAMPLES_ICON);
+		if(ResourceType.isOptitrack_Type_1(resource)) return Activator.getImage(IImageKeys.SAMPLES_ICON);
 		if(ResourceType.isParameters(resource)) return Activator.getImage(IImageKeys.PARAMETERS_FILE_ICON);
 		if(ResourceType.isProcessTest(resource)) return Activator.getImage(IImageKeys.FOLDER_ICON);
 		if(ResourceType.isDataProcessing(resource)) return Activator.getImage(IImageKeys.DATA_PROCESSING_ICON);

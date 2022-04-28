@@ -64,7 +64,8 @@ public enum ResourceType {
 	BATCH_DATA_PROCESSING("BATCH_DATA_PROCESSING"),
 	XYCHART("XYCHART"),
 	XYZCHART("XYZCHART"),
-	CUSTOMER_FUNCTION("CUSTOMER_FUNCTION");
+	CUSTOMER_FUNCTION("CUSTOMER_FUNCTION"),
+	OPTITRACK_TYPE_1("OPTITRACK_TYPE_1");
 
 	private String name = "";
 
@@ -97,6 +98,7 @@ public enum ResourceType {
 		if(typeValue.equals(XYCHART.toString())) return XYCHART;
 		if(typeValue.equals(XYZCHART.toString())) return XYZCHART;
 		if(typeValue.equals(CUSTOMER_FUNCTION.toString())) return CUSTOMER_FUNCTION;
+		if(typeValue.equals(OPTITRACK_TYPE_1.toString())) return OPTITRACK_TYPE_1;
 		return ANY;
 	}
 	
@@ -172,6 +174,10 @@ public enum ResourceType {
 		return check(resource, CUSTOMER_FUNCTION);
 	}
 	
+	public static boolean isOptitrack_Type_1(IResource resource) {
+		return check(resource, OPTITRACK_TYPE_1);
+	}
+	
 	public static boolean isAnyTest(IResource resource) {
 	return check(resource, ANY);
 	}
@@ -203,7 +209,8 @@ public enum ResourceType {
 
 	public static boolean isDataFile(IResource resource) {
 		boolean isDataFile = ResourceType.isADWDataFile(resource) || ResourceType.isSamples(resource); 
-		isDataFile = isDataFile ||ResourceType.isSaveFile(resource) || ResourceType.isNumpyFile(resource);
+		isDataFile = isDataFile || ResourceType.isSaveFile(resource) || ResourceType.isNumpyFile(resource);
+		isDataFile = isDataFile || ResourceType.isOptitrack_Type_1(resource);
 		return isDataFile;
 	}
 	

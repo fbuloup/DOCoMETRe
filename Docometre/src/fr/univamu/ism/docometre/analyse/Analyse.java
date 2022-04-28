@@ -85,7 +85,7 @@ public final class Analyse {
 	private static void getData(IContainer resource, List<String> dataFilesList) throws CoreException {
 		IResource[] members = resource.members();
 		for (IResource member : members) {
-			if(ResourceType.isADWDataFile(member) || ResourceType.isSamples(member)) {
+			if(ResourceType.isADWDataFile(member) || ResourceType.isSamples(member) || ResourceType.isOptitrack_Type_1(member)) {
 				dataFilesList.add(member.getLocation().toOSString());
 			}
 			if(ResourceType.isSession(member) || ResourceType.isTrial(member)) getData((IContainer)member, dataFilesList);
@@ -165,5 +165,15 @@ public final class Analyse {
 		}
 		return values;
 		
+	}
+	
+	public static boolean isOptitrack(String[] dataFiles, IContainer subject) {
+		boolean response = dataFiles.length > 0;
+		for (String dataFile : dataFiles) {
+			dataFile = dataFile.replaceAll(subject.getLocation().toOSString(), "");
+			IResource resource = subject.findMember(dataFile);
+			response = response && ResourceType.isDataFile(resource);
+		}
+		return response;
 	}
 }

@@ -1076,6 +1076,15 @@
                </command>
                <command
                      commandId="SetTypeCommand"
+                     label="%OptitrackType1.label"
+                     style="radio">
+                  <parameter
+                        name="Docometre.type.parameter"
+                        value="OPTITRACK_TYPE_1">
+                  </parameter>
+               </command>
+               <command
+                     commandId="SetTypeCommand"
                      label="%DataProcessingType.label"
                      style="radio">
                   <parameter
@@ -1925,6 +1934,15 @@
                <parameter
                      name="Docometre.type.parameter"
                      value="ADW_DATA_FILE">
+               </parameter>
+            </command>
+            <command
+                  commandId="SetTypeCommand"
+                  label="%OptitrackType1.label"
+                  style="radio">
+               <parameter
+                     name="Docometre.type.parameter"
+                     value="OPTITRACK_TYPE_1">
                </parameter>
             </command>
             <command
