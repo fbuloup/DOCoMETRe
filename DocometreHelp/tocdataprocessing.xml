@@ -4,4 +4,6 @@
  <toc label="Data Acquisition Concepts" link_to="toc.xml#dataprocessing"> 
  	<topic label="Introduction"  href="html/dataprocessing/maintopic.html"> 
  	</topic>
+  <topic href="html/dataprocessing/optitrackcsvfiles.html" label="Optitrack CSV Files">
+  </topic>
  </toc>
