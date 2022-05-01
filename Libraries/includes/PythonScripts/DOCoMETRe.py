@@ -27,6 +27,8 @@ class DOCoMETRe(object):
 	def loadData(self, dataType, loadName, dataFilesList, sessionsProperties):
 		if(dataType == "DOCOMETRE"):
 			self.loadDataDocometre(loadName, dataFilesList, sessionsProperties);
+		elif(dataType == "OPTITRACK_TYPE_1"):
+			self.loadDataOptitrackType1(loadName, dataFilesList);
 		else:
 			pass;
 
@@ -41,6 +43,112 @@ class DOCoMETRe(object):
 		else:
 			if(jvmMode): self.gateway.jvm.System.out.println("Data files format not hanled with Python");
 
+	def loadDataOptitrackType1(self, loadName, dataFilesAbsolutePath):
+		if(jvmMode): self.gateway.jvm.System.out.println("In loadDataOptitrackType1");
+		
+		createdCategories = dict();
+		createdChannelsNames = list();
+		channelNames = list();
+		nbSamples = 0;
+		firstTime = True;
+		
+		files = dataFilesAbsolutePath.split(";");
+		nbFiles = len(files);
+		nbTrials = nbFiles;
+		
+		for n in range(0, nbFiles):
+			fileName = os.path.basename(files[n]);
+			fileName = os.path.splitext(fileName)[0];
+			
+			fileNameSplitted = fileName.split("_");
+			criteria = fileNameSplitted[1];    
+			
+			if criteria in createdCategories:
+				trialsList = createdCategories[criteria];
+				append = False;
+				
+				if isinstance(trialsList, numpy.ndarray):
+					if n+1 not in trialsList:
+						append = True;
+				
+				if append:
+					trialsList = numpy.append(trialsList, n+1);
+				
+			else:
+				trialsList = numpy.array(n+1);
+			
+			createdCategories[criteria] = trialsList;
+
+			fid = open(files[n], "r");
+			line = fid.readline();
+			tempValue = line.split(",");
+			nbSamples = max(nbSamples, int(tempValue[1]));
+			
+			if firstTime:
+				firstTime = False;
+				line = fid.readline();
+				line = fid.readline();
+				tempValue = line.split(",");
+				sampleFrequency = float(tempValue[1]);
+				line = fid.readline();
+				line = fid.readline();
+				line = fid.readline();
+				tempValue = line.split(',');
+				for p in range(0, len(tempValue)):
+					tempValue2 = tempValue[p];
+					if tempValue2 != "Time" and tempValue2 != "" and tempValue2 != "\n":
+							channelNames.append(tempValue2 + "_X");
+							channelNames.append(tempValue2 + "_Y");
+							channelNames.append(tempValue2 + "_Z");
+			
+			fid.close();
+		
+		for trialNumber in range(1, nbTrials+1):
+			data = numpy.loadtxt(files[trialNumber-1], delimiter=',', skiprows=8);
+			data = numpy.delete(data, 0, axis = 1);
+			
+			fid = open(files[trialNumber-1], "r");
+			line = fid.readline();
+			tempValue = line.split(",");
+			localNBSamples = int(tempValue[1]);
+			fid.close();
+			
+			numChannel = 0;
+			for channelName in channelNames:
+				if channelName not in createdChannelsNames:
+					self.experiments[loadName + "." + channelName + "." + "SampleFrequency"] = sampleFrequency;
+					self.experiments[loadName + "." + channelName + "." + "isSignal"] = "1";
+					self.experiments[loadName + "." + channelName + "." + "isCategory"] = "0";
+					self.experiments[loadName + "." + channelName + "." + "isEvent"] = "0";
+					self.experiments[loadName + "." + channelName + "." + "NbFeatures"] = "0";
+					self.experiments[loadName + "." + channelName + "." + "NbMarkersGroups"] = "0";
+					self.experiments[loadName + "." + channelName + "." + "Values"] = numpy.zeros((nbTrials, nbSamples));
+					self.experiments[loadName + "." + channelName + "." + "NbSamples"] = numpy.zeros(nbTrials);
+					self.experiments[loadName + "." + channelName + "." + "FrontCut"] = numpy.zeros(nbTrials);
+					self.experiments[loadName + "." + channelName + "." + "EndCut"] = numpy.zeros(nbTrials);
+					createdChannelsNames.append(channelName);
+			
+				sizeData = len(data[:,numChannel]);
+				key = loadName + "." + channelName + ".NbSamples";
+				self.experiments[key][trialNumber - 1] = localNBSamples;
+				key = loadName + "." + channelName + ".EndCut";
+				self.experiments[key][trialNumber - 1] = localNBSamples;
+				values = self.experiments[loadName + "." + channelName + ".Values"];
+				values[trialNumber - 1][0:sizeData] = data[:, numChannel];
+				numChannel+=1;
+			
+		n = 1;
+		for criteria in createdCategories:
+			values = createdCategories[criteria];
+			self.experiments[loadName + ".Category" + str(n) + ".Criteria"] = criteria;
+			self.experiments[loadName + ".Category" + str(n) + ".TrialsList"] = values;
+			self.experiments[loadName + ".Category" + str(n) + ".isSignal"] = "0";
+			self.experiments[loadName + ".Category" + str(n) + ".isCategory"] = "1";
+			self.experiments[loadName + ".Category" + str(n) + ".isEvent"] = "0";
+			n+=1;
+			
+			
+				
 	def loadDataDocometreSAMPLES(self, loadName, dataFilesList, sessionsProperties):
 		if(jvmMode): self.gateway.jvm.System.out.println("In loadDataDocometreSAMPLES");
 		# if(jvmMode): self.gateway.jvm.System.out.println(sessionsProperties)

@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -230,9 +231,15 @@ public class PythonEngine implements MathEngine {
 				String loadName = getFullPath(subject);
 				String dataFilesList = Analyse.getDataFiles(subject);
 				//String dataFilesList = (String)subject.getSessionProperty(ResourceProperties.DATA_FILES_LIST_QN);
-				Map<String, String> sessionsProperties = Analyse.getSessionsInformations(subject);
+				boolean isOptitrack = Analyse.isOptitrack(dataFilesList.split(";"), (IContainer) subject);
+				if(isOptitrack) {
+					// If all data files are OPTITRACK_TYPE_1
+					pythonController.getPythonEntryPoint().loadData("OPTITRACK_TYPE_1", loadName, dataFilesList, null);
+				} else {
+					Map<String, String> sessionsProperties = Analyse.getSessionsInformations(subject);
+					pythonController.getPythonEntryPoint().loadData("DOCOMETRE", loadName, dataFilesList, sessionsProperties);
+				}
 				
-				pythonController.getPythonEntryPoint().loadData("DOCOMETRE", loadName, dataFilesList, sessionsProperties);
 			}
 			
 
