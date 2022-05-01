@@ -296,7 +296,6 @@ public final class MatlabEngine implements MathEngine {
 				if(isOptitrack) {
 					// If all data files are OPTITRACK_TYPE_1
 					String cmd = experimentName + "." + subjectName + " = loadData('OPTITRACK_TYPE_1', '" + dataFilesList + "')";
-					System.out.println(cmd);
 					matlabController.eval(cmd);
 				} else {
 					//String dataFilesList = (String)subject.getSessionProperty(ResourceProperties.DATA_FILES_LIST_QN);
