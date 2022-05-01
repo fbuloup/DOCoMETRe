@@ -93,7 +93,9 @@ public class SelectChannelsWizard extends Wizard {
 		selectedChannels[0] = firstChannelPage.getChannel();
 		if(channelsNumber == ChannelsNumber.TWO || channelsNumber == ChannelsNumber.THREE) selectedChannels[1] = secondChannelPage.getChannel();
 		if(channelsNumber == ChannelsNumber.THREE) selectedChannels[2] = thirdChannelPage.getChannel();
-		return selectedChannels[0] != null && selectedChannels[1] != null && selectedChannels[2] != null;
+		if(channelsNumber == ChannelsNumber.THREE) return selectedChannels[0] != null && selectedChannels[1] != null && selectedChannels[2] != null;
+		if(channelsNumber == ChannelsNumber.TWO) return selectedChannels[0] != null && selectedChannels[1] != null;
+		return selectedChannels[0] != null;
 	}
 	
 	public Channel[] getSelectedChannels() {
