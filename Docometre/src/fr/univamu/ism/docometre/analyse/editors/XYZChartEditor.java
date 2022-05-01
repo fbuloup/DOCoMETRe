@@ -472,7 +472,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 		gl.marginRight = 0;
 		bottomContainer.setLayout(gl);
 		
-		Button showMarkersButton = new Button(bottomContainer, SWT.CHECK | SWT.WRAP);
+		Button showMarkersButton = new Button(bottomContainer, SWT.CHECK);
 		showMarkersButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		showMarkersButton.setText(DocometreMessages.ShowMarkersTitle);
 		showMarkersButton.setSelection(xyzChartData.isShowMarkers());
@@ -534,7 +534,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 			}
 		});
 		
-		Button showMarkersLabelsButton = new Button(bottomContainer, SWT.CHECK | SWT.WRAP);
+		Button showMarkersLabelsButton = new Button(bottomContainer, SWT.CHECK);
 		showMarkersLabelsButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
 		showMarkersLabelsButton.setText(DocometreMessages.ShowMarkersLabelsTitle);
 		showMarkersLabelsButton.setSelection(xyzChartData.isShowMarkersLabels());
@@ -675,8 +675,8 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 			Channel yChannel = xyzChannel[1];
 //			Channel zChannel = xyzChannel[2];
 			nbTrials = Math.max(MathEngineFactory.getMathEngine().getTrialsNumber(xChannel), nbTrials);
-			baseFrontCut = Math.min(MathEngineFactory.getMathEngine().getFrontCut(xChannel, 0), baseFrontCut);
-			baseEndCut = Math.max(MathEngineFactory.getMathEngine().getEndCut(yChannel, 0), baseEndCut);
+			baseFrontCut = Math.min(MathEngineFactory.getMathEngine().getFrontCut(xChannel, 1), baseFrontCut);
+			baseEndCut = Math.max(MathEngineFactory.getMathEngine().getEndCut(yChannel, 1), baseEndCut);
 		}
 		Integer[] trials = IntStream.rangeClosed(1, nbTrials).boxed().toArray(Integer[]::new);
 		trialsListViewer.setInput(trials);
