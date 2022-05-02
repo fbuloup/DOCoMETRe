@@ -6,10 +6,17 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-04-22 - Bis
+      -- 2022-05-02
+ADDED :
+* Support for Optitrack CSV data files with Markers only. Matlab and Python.
+FIXED : 
+* Wrong button style (SWT) in 2D and 3D charts
+* Bug in SelectChannelsWizard in perform finish 
+-- 2022-04-22 - Bis
 ADDED : nothing
 FIXED : 
-* RS_RESET and RS_INIT was not done on RS232 interface for ADwin gold
+* RS_RESET and RS_INIT was not done on RS232 interface for ADwin
+gold
 -- 2022-04-22
 ADDED : nothing
 FIXED : 
