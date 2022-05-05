@@ -234,6 +234,7 @@ public class PythonEngine implements MathEngine {
 				boolean isOptitrack = Analyse.isOptitrack(dataFilesList.split(";"), (IContainer) subject);
 				if(isOptitrack) {
 					// If all data files are OPTITRACK_TYPE_1
+					System.out.println("OPTITRACK_TYPE_1 : " + loadName + " : " + dataFilesList);
 					pythonController.getPythonEntryPoint().loadData("OPTITRACK_TYPE_1", loadName, dataFilesList, null);
 				} else {
 					Map<String, String> sessionsProperties = Analyse.getSessionsInformations(subject);
