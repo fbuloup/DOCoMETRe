@@ -50,6 +50,7 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.Platform;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ObjectsController;
@@ -170,7 +171,10 @@ public final class Analyse {
 	public static boolean isOptitrack(String[] dataFiles, IContainer subject) {
 		boolean response = dataFiles.length > 0;
 		for (String dataFile : dataFiles) {
-			dataFile = dataFile.replaceAll(subject.getLocation().toOSString(), "");
+			if(Platform.getOS().equals(Platform.OS_WIN32)) {
+				String path = subject.getLocation().toOSString().replaceAll("\\", "\\\\");
+				dataFile = dataFile.replaceAll(path, "");
+			} else dataFile = dataFile.replaceAll(subject.getLocation().toOSString(), "");
 			IResource resource = subject.findMember(dataFile);
 			response = response && ResourceType.isDataFile(resource);
 		}
