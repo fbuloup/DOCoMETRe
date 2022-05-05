@@ -6,7 +6,10 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-05-05
+      -- 2022-05-05 - Bis
+FIXED :
+* Bug on replacing back slash on windows
+-- 2022-05-05
 ADDED :
 * Find peaks function
 -- 2022-05-02
