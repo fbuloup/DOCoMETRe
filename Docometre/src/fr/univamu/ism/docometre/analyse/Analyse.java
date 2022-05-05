@@ -172,8 +172,10 @@ public final class Analyse {
 		boolean response = dataFiles.length > 0;
 		for (String dataFile : dataFiles) {
 			if(Platform.getOS().equals(Platform.OS_WIN32)) {
-				String path = subject.getLocation().toOSString().replaceAll("\\", "\\\\");
+				dataFile = dataFile.replaceAll("\\\\", "/");
+				String path = subject.getLocation().toPortableString();
 				dataFile = dataFile.replaceAll(path, "");
+				dataFile  = dataFile.replaceAll("/", "\\\\");
 			} else dataFile = dataFile.replaceAll(subject.getLocation().toOSString(), "");
 			IResource resource = subject.findMember(dataFile);
 			response = response && ResourceType.isDataFile(resource);
