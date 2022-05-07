@@ -185,11 +185,13 @@ public class ProcessEditor extends MultiPageEditorPart implements IPageChangedLi
 	@Override
 	public void pageChanged(PageChangedEvent event) {
 		for (AbstractScriptSegmentEditor abstractScriptSegmentEditor : segmentEditors) {
-			if(getSelectedPage() == abstractScriptSegmentEditor) abstractScriptSegmentEditor.updatePasteAction();
+			if(event.getSelectedPage() == abstractScriptSegmentEditor) abstractScriptSegmentEditor.updatePasteAction();
 		}
-		if(getSelectedPage() instanceof SourceEditor) {
-			FindDialog.getInstance().setTextViewer(((SourceEditor)getSelectedPage()).getSourceViewer());
+		if(event.getSelectedPage() == sourceEditor) {
+			FindDialog.getInstance().setTextViewer(sourceEditor.getSourceViewer());
 		}
+		if(event.getSelectedPage() == sourceEditor) 
+			sourceEditor.update(sourceEditor.getCode());
 	}
 
 	@Override

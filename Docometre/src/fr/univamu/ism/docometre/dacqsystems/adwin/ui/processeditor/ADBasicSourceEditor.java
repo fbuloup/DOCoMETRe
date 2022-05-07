@@ -67,7 +67,7 @@ public class ADBasicSourceEditor extends SourceEditor {
 	
 	
 	@Override
-	protected void update(String code) {
+	public void update(String code) {
 		code = code.replaceAll("^'<ADbasic Header.*\n(.*\n)*'<Header End>\n","");
 //		code = code.replaceAll("^(\n)*", "");
 //		code = "\n" + code;

@@ -263,7 +263,7 @@ public class SourceEditor extends EditorPart {
 		sourceViewer.getTextWidget().setFocus();
 	}
 
-	protected void update(String code) {
+	public void update(String code) {
 //			System.out.println("update document...");
 		sourceViewer.getDocument().set(code);
 //			for (int i = 0; i < sourceViewer.getDocument().getLength(); i++) {
@@ -309,7 +309,7 @@ public class SourceEditor extends EditorPart {
 		super.dispose();
 	}
 	
-	private String getCode() {
+	public String getCode() {
 			try {
 				if(getObject() instanceof Process) return ((Process)getObject()).getCode(null);
 				if(getObject() instanceof Script) {

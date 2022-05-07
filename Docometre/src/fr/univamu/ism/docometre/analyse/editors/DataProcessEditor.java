@@ -66,15 +66,14 @@ import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.process.Script;
 import fr.univamu.ism.process.ScriptSegmentType;
 
-public class DataProcessEditor extends MultiPageEditorPart implements PartNameRefresher {
+public class DataProcessEditor extends MultiPageEditorPart implements PartNameRefresher, IPageChangedListener {
 	
 	public static String ID = "Docometre.DataProcessEditor";
 	
 	private CommandStack commandStack;
-
 	private DataProcessScriptEditor dataProcessScriptEditor;
-
 	private PartListenerAdapter partListenerAdapter;
+	private DataProcessScriptSourceEditor dataProcessScriptSourceEditor;
 	
 	@Override
 	public void init(IEditorSite site, IEditorInput input) throws PartInitException {
@@ -109,6 +108,8 @@ public class DataProcessEditor extends MultiPageEditorPart implements PartNameRe
 				update(partRef);
 			}
 		});
+		
+		addPageChangedListener(this);
 			
 	}
 	
@@ -130,8 +131,8 @@ public class DataProcessEditor extends MultiPageEditorPart implements PartNameRe
 			int pageIndex = addPage(dataProcessScriptEditor, getEditorInput());
 			setPageText(pageIndex, DocometreMessages.MathEngineEditorTitle);
 			
-			DataProcessScriptSourceEditor scriptSourceEditor = new DataProcessScriptSourceEditor(this);
-			pageIndex = addPage(scriptSourceEditor, getEditorInput());
+			dataProcessScriptSourceEditor = new DataProcessScriptSourceEditor(this);
+			pageIndex = addPage(dataProcessScriptSourceEditor, getEditorInput());
 			setPageText(pageIndex, DocometreMessages.MathEngineSourceCodeEditorTitle);
 		} catch (PartInitException e) {
 			Activator.getLogErrorMessageWithCause(e);
@@ -188,6 +189,13 @@ public class DataProcessEditor extends MultiPageEditorPart implements PartNameRe
 
 	public void activateSegmentProcessEditor() {
 		 if(getActivePage() != 0) setActivePage(0);
+	}
+
+	@Override
+	public void pageChanged(PageChangedEvent event) {
+		if(event.getSelectedPage() == dataProcessScriptSourceEditor) {
+			dataProcessScriptSourceEditor.update(dataProcessScriptSourceEditor.getCode());
+		}
 	}
 
 }
