@@ -64,6 +64,7 @@ import org.eclipse.ui.PlatformUI;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ChooseWorkspaceData;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.analyse.editors.ChannelEditor;
 import fr.univamu.ism.docometre.editors.DataEditor;
 
 public class GeneralPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
@@ -205,10 +206,17 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
 		boolean showMarker = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.SHOW_MARKER);
 		IEditorReference[] editorReferences = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
 		for (IEditorReference editorReference : editorReferences) {
-			if(DataEditor.ID.equals(editorReference.getId())) {
+			boolean update = DataEditor.ID.equals(editorReference.getId());
+			if(update) {
 				DataEditor dataEditor = (DataEditor)editorReference.getEditor(false);
 				dataEditor.setShowCursor(showCursor);
 				dataEditor.setShowMarker(showMarker);
+			}
+			update = ChannelEditor.ID.equals(editorReference.getId());
+			if(update) {
+				ChannelEditor channelEditor = (ChannelEditor)editorReference.getEditor(false);
+				channelEditor.setShowCursor(showCursor);
+				channelEditor.setShowMarker(showMarker);
 			}
 		}
 		return returnValue;

@@ -1039,6 +1039,14 @@ public final class DocometreMessages extends NLS {
 	public static String file2TypeDescription;
 	public static String comboTypeDescription;
 	public static String labelDescription;
+	
+	// Markers Manager
+	public static String activateShowCursorMessage;
+
+	public static String heightLabel;
+	public static String thresholdLabel;
+	public static String distanceLabel;
+	public static String prominenceLabel;
 			
 	static {
 		// load message values from bundle file
