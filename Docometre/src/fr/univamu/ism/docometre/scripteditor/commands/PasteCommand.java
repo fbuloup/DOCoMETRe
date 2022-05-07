@@ -68,6 +68,8 @@ public class PasteCommand extends Command {
 //		System.out.print("Add cloned blocks to current script : ");
 //		System.out.println(scriptSegment.getScriptSegmentType().toString());
 		for (Block block : clonedBlocks) {
+			block.setY(block.getY() + 10);
+			block.setX(block.getX() + 10);
 			block.setScript(scriptSegment.getScript());
 			if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.INITIALIZE)) scriptSegment.getScript().addInitializeBlock(block);
 			if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.LOOP)) scriptSegment.getScript().addLoopBlock(block);
