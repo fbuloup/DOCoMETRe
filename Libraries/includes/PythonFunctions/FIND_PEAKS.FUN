@@ -6,6 +6,7 @@ DESCRIPTION_FR = Marque tous les pics
 # Now start specific python function 
 FUNCTION_CODE = # Compute Maximum marker\n\
 import numpy;\n\
+import scipy;\n\
 from datetime import datetime;\n\
 signalSizes = docometre.experiments['inputSignal.Values'].shape;\n\
 nbSamples = docometre.experiments['inputSignal.NbSamples'];\n\

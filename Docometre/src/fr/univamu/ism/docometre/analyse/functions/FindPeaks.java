@@ -247,7 +247,7 @@ public class FindPeaks extends GenericFunction {
 		// Height
 		Label heightLabel = new Label(paramContainer, SWT.NONE);
 		heightLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-		heightLabel.setText("Height :");
+		heightLabel.setText(DocometreMessages.heightLabel);
 		Text heightText = new Text(paramContainer, SWT.BORDER);
 		heightText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		value  = getProperty(heightKey, "None");
@@ -262,7 +262,7 @@ public class FindPeaks extends GenericFunction {
 		// Threshold
 		Label thresholdLabel = new Label(paramContainer, SWT.NONE);
 		thresholdLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-		thresholdLabel.setText("Threshold :");
+		thresholdLabel.setText(DocometreMessages.thresholdLabel);
 		Text thresholdText = new Text(paramContainer, SWT.BORDER);
 		thresholdText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		value  = getProperty(thresholdKey, "None");
@@ -277,7 +277,7 @@ public class FindPeaks extends GenericFunction {
 		// Distance
 		Label distanceLabel = new Label(paramContainer, SWT.NONE);
 		distanceLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-		distanceLabel.setText("Distance :");
+		distanceLabel.setText(DocometreMessages.distanceLabel);
 		Text distanceText = new Text(paramContainer, SWT.BORDER);
 		distanceText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		value  = getProperty(distanceKey, "None");
@@ -292,7 +292,7 @@ public class FindPeaks extends GenericFunction {
 		// Prominence
 		Label prominenceLabel = new Label(paramContainer, SWT.NONE);
 		prominenceLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-		prominenceLabel.setText("Prominence :");
+		prominenceLabel.setText(DocometreMessages.prominenceLabel);
 		Text prominenceText = new Text(paramContainer, SWT.BORDER);
 		prominenceText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		value  = getProperty(prominenceKey, "None");
