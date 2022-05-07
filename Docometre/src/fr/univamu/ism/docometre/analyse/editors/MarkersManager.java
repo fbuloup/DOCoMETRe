@@ -61,6 +61,7 @@ import org.eclipse.swtchart.ISeries;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreApplication;
+import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
@@ -111,7 +112,7 @@ public final class MarkersManager extends MouseAdapter implements ICustomPaintLi
 					Activator.logErrorMessageWithCause(e);
 					e.printStackTrace();
 				}
-			}
+			} else Activator.logWarningMessage(DocometreMessages.activateShowCursorMessage);
 		}
 	}
 
