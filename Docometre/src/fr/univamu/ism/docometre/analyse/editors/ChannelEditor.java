@@ -144,5 +144,13 @@ public class ChannelEditor extends EditorPart implements TrialsEditor {
 			((SignalContainerEditor)container).update();
 		}
 	}
+
+	public void setShowCursor(boolean showCursor) {
+		if(container instanceof SignalContainerEditor) ((SignalContainerEditor)container).getChart().setShowCursor(showCursor);
+	}
+
+	public void setShowMarker(boolean showMarker) {
+		if(container instanceof SignalContainerEditor) ((SignalContainerEditor)container).getChart().setShowMarker(showMarker);
+	}
 	
 }

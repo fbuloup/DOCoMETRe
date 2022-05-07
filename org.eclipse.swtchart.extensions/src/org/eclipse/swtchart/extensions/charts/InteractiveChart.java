@@ -432,6 +432,7 @@ public class InteractiveChart extends Chart implements PaintListener {
 	}
 	
 	private int handleMouseDoubleClick(Event event) {
+		if(!isShowCursor()) return -1;
 		doubleClick = true;
 		currentXMarker_Pixel = getCurrentX_Pixel();
 		currentYMarker_Pixel = getCurrentY_Pixel();
