@@ -52,6 +52,9 @@ import fr.univamu.ism.process.ScriptSegmentType;
 
 public class PasteCommand extends Command {
 	
+	private static ArrayList<Block> lastClonedBlocks;
+	private static int nbRepast = 0;
+	
 	private ArrayList<Block> clonedBlocks;
 	private ScriptSegment scriptSegment;
 
@@ -61,6 +64,18 @@ public class PasteCommand extends Command {
 		ArrayList<Block> blocks = (ArrayList<Block>) Clipboard.getDefault().getContents();
 		clonedBlocks = fr.univamu.ism.process.Activator.clone(blocks);
 		this.scriptSegment = scriptSegment;
+		boolean repast = true;
+		for (Block block : blocks) {
+			if(lastClonedBlocks != null) repast= repast && lastClonedBlocks.contains(block);
+		}
+		repast = repast && lastClonedBlocks != null;
+		if(!repast) {
+			nbRepast = 0;
+			if(lastClonedBlocks != null) lastClonedBlocks.clear();
+			else lastClonedBlocks = new ArrayList<>();
+			lastClonedBlocks.addAll(blocks);
+		} else nbRepast++;
+		
 	}
 	
 	@Override
@@ -68,8 +83,8 @@ public class PasteCommand extends Command {
 //		System.out.print("Add cloned blocks to current script : ");
 //		System.out.println(scriptSegment.getScriptSegmentType().toString());
 		for (Block block : clonedBlocks) {
-			block.setY(block.getY() + 10);
-			block.setX(block.getX() + 10);
+			block.setY(block.getY() + 30*(nbRepast+1));
+			block.setX(block.getX() + 30*(nbRepast+1));
 			block.setScript(scriptSegment.getScript());
 			if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.INITIALIZE)) scriptSegment.getScript().addInitializeBlock(block);
 			if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.LOOP)) scriptSegment.getScript().addLoopBlock(block);
