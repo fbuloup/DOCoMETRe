@@ -321,15 +321,38 @@ public class FindPeaks extends GenericFunction {
 		String inputSignal1 = getProperty(inputSignalKey, "");
 		String inputMarker1 = getProperty(inputMarker1Key, "");
 		String inputMarker2 = getProperty(inputMarker2Key, "");
-		String markersGroupLabel = getProperty(markersGroupLabelKey, "Maximum");
-		String height = "height=" + getProperty(heightKey, "None");
-		String threshold = "threshold=" + getProperty(thresholdKey, "None");
-		String distance = "distance=" + getProperty(distanceKey, "None");
-		String prominence = "prominence=" + getProperty(prominenceKey, "None");
+		String markersGroupLabel = getProperty(markersGroupLabelKey, "Maxima");
 		
-		code = code.replaceAll(trialsListKey, trialsList).replaceAll(inputSignalKey, inputSignal1).replaceAll(heightKey, height).replace(distanceKey, distance);
-		code = code.replaceAll(thresholdKey, threshold).replaceAll(prominenceKey, prominence);
+		code = code.replaceAll(trialsListKey, trialsList).replaceAll(inputSignalKey, inputSignal1);
 		code = code.replaceAll(inputMarker1Key, inputMarker1).replaceAll(inputMarker2Key, inputMarker2).replaceAll(markersGroupLabelKey, markersGroupLabel);
+		
+		String height = "";
+		String threshold = "";
+		String distance = "";
+		String prominence = "";
+		if(MathEngineFactory.isPython()) {
+			height = "height=" + getProperty(heightKey, "None");
+			threshold = "threshold=" + getProperty(thresholdKey, "None");
+			distance = "distance=" + getProperty(distanceKey, "None");
+			prominence = "prominence=" + getProperty(prominenceKey, "None");
+			code = code.replaceAll(heightKey, height).replace(distanceKey, distance).replaceAll(thresholdKey, threshold).replaceAll(prominenceKey, prominence);
+		}
+		if(MathEngineFactory.isMatlab()) {
+			if(getProperty(heightKey, "None").equals("None")) height = "";
+			else height = "'MinPeakHeight'," + getProperty(heightKey, "0");
+			if(getProperty(thresholdKey, "None").equals("None")) threshold = "";
+			else threshold = ",'Threshold'," + getProperty(thresholdKey, "0");
+			if(getProperty(distanceKey, "None").equals("None")) distance = "";
+			else distance = ",'MinPeakDistance'," + getProperty(distanceKey, "0");
+			if(getProperty(prominenceKey, "None").equals("None")) prominence = "";
+			else prominence = ",'MinPeakProminence'," + getProperty(prominenceKey, "1");
+			String value = "," + height + threshold + distance + prominence;
+			value = value.equals(",")?"":value;
+			String key = ", height, threshold, distance, prominence";
+			code = code.replaceAll(key, value);
+			code = code.replaceAll(",,", ",");
+			
+		}
 		
 		return code + "\n";
 	}

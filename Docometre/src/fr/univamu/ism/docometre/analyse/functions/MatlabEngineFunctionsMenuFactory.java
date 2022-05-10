@@ -66,16 +66,16 @@ public class MatlabEngineFunctionsMenuFactory {
 	public static String[] MatlabEngineFunctionsClasses = new String[] {null, null, null, null};
 	
 	public static String[] SignalsFunctionsFiles = new String[] {SUBMENU_FILTERING, SEPARATOR, FrontCut.functionFileName, EndCut.functionFileName, FrontCutFromMarker.functionFileName ,EndCutFromMarker.functionFileName, SEPARATOR, 
-																	MotionDistance.functionFileName, MotionDirection.functionFileName, SEPARATOR, Derivative.functionFileName};
+																	MotionDistance.functionFileName, MotionDirection.functionFileName, SEPARATOR, AbsoluteValue.functionFileName, SEPARATOR, Derivative.functionFileName};
 	public static String[] SignalsFunctionsClasses = new String[] {null, null, FrontCut.class.getName(), EndCut.class.getName(), FrontCutFromMarker.class.getName() ,EndCutFromMarker.class.getName(), null, 
-																	MotionDistance.class.getName(), MotionDirection.class.getName(), null, Derivative.class.getName()};
+																	MotionDistance.class.getName(), MotionDirection.class.getName(), null, AbsoluteValue.class.getName(), null, Derivative.class.getName()};
 	
 	public static String[] FilteringFunctionsFiles = new String[] {ButterworthLowPass.functionFileName, ButterworthHighPass.functionFileName};
 	public static String[] FilteringFunctionsClasses = new String[] {ButterworthLowPass.class.getName(), ButterworthHighPass.class.getName()};
 	
-	public static String[] MarkersFunctionsFiles = new String[] {TimeMarker.functionFileName, Maximum.functionFileName, Minimum.functionFileName, FindAmplitudeBackward.functionFileName, FindAmplitudeForward.functionFileName,
+	public static String[] MarkersFunctionsFiles = new String[] {TimeMarker.functionFileName, Maximum.functionFileName, Minimum.functionFileName, FindPeaks.functionFileName, FindPeaks_Minima.functionFileName, FindAmplitudeBackward.functionFileName, FindAmplitudeForward.functionFileName,
 																	TransferMarkersGroup.functionFileName};
-	public static String[] MarkersFunctionsClasses = new String[] {TimeMarker.class.getName(), Maximum.class.getName(), Minimum.class.getName(), FindAmplitudeBackward.class.getName(), FindAmplitudeForward.class.getName(),
+	public static String[] MarkersFunctionsClasses = new String[] {TimeMarker.class.getName(), Maximum.class.getName(), Minimum.class.getName(), FindPeaks.class.getName(), FindPeaks_Minima.class.getName(), FindAmplitudeBackward.class.getName(), FindAmplitudeForward.class.getName(),
 																	TransferMarkersGroup.class.getName()};
 	
 	public static String[] FeaturesFunctionsFiles = new String[] {Mean.functionFileName};

@@ -1,10 +1,10 @@
 MENU_TITLE = Maxima
 DESCRIPTION = Mark all peaks
-MENU_TITLE_FR = Maximums
+MENU_TITLE_FR = Maxima
 DESCRIPTION_FR = Marque tous les pics
 
 # Now start specific python function 
-FUNCTION_CODE = # Compute Maximum marker\n\
+FUNCTION_CODE = # Compute find peaks\n\
 import numpy;\n\
 import scipy;\n\
 from datetime import datetime;\n\

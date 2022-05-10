@@ -4,7 +4,7 @@ MENU_TITLE_FR = Minima
 DESCRIPTION_FR = Marque tous les minima
 
 # Now start specific python function 
-FUNCTION_CODE = # Compute Maximum marker\n\
+FUNCTION_CODE = # Compute find peaks\n\
 import numpy;\n\
 import scipy;\n\
 from datetime import datetime;\n\
