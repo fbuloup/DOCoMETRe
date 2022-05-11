@@ -6,7 +6,17 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-05-05 - Ter
+      -- 2022-05-11
+ADDED :
+* Matlab functions : find peaks (max and min) and absolute value
+* Python functions : find peaks min
+* Display message when trying to add marker whereas cursor is not active
+* Update source viewers automatically
+* Update show cursor property in opened editors
+* Shifting of the blocks during paste
+FIXED :
+* Add forgotten &quot;import scipy&quot; in FIND_PEAKS python function
+-- 2022-05-05 - Ter
 FIXED :
 * Bug on replacing back slash on windows (tested before !)
 -- 2022-05-05 - Bis
