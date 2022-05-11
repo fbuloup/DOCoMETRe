@@ -50,6 +50,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchPart;
@@ -81,6 +83,10 @@ public class CopyResourcesAction extends Action implements ISelectionListener, I
 	@Override
 	public void run() {
 		try {
+			// Clear system clipboard
+			Clipboard clipboard = new Clipboard(Display.getCurrent());
+			clipboard.clearContents();
+			clipboard.dispose();
 			// Remove from selected resources those which are children of the others
 			ArrayList<IResource> cleanedResources = new ArrayList<IResource>(0);
 			// First path to get all selected containers
