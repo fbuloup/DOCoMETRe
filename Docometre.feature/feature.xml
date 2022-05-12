@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-05-11 - Bis
+      -- 2022-05-12
+ADDED :
+* Support for code source editor in epxressions function
+FIXED : Nothing
+-- 2022-05-11 - Bis
 ADDED :
 * Add support for external paste files
 FIXED : Nothing
