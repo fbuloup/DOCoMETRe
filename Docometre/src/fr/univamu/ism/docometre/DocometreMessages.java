@@ -1047,6 +1047,9 @@ public final class DocometreMessages extends NLS {
 	public static String thresholdLabel;
 	public static String distanceLabel;
 	public static String prominenceLabel;
+	
+	public static String expressionsListTitle;
+	public static String sourceCodeTitle;
 			
 	static {
 		// load message values from bundle file

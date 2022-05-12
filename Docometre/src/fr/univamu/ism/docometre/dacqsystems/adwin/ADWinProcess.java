@@ -72,6 +72,8 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IPageChangeProvider;
+import org.eclipse.jface.dialogs.PageChangedEvent;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.program.Program;
 import org.eclipse.ui.IWorkbenchPart;
@@ -405,7 +407,8 @@ public class ADWinProcess extends Process {
 				IWorkbenchPart editorPart = Activator.getEditor(ADWinProcess.this, ADWinProcessEditor.ID);
 				if(editorPart != null) {
 					((ProcessEditor)editorPart).updateTitleImage();
-					((ProcessEditor)editorPart).pageChanged(null);
+					PageChangedEvent event = new PageChangedEvent((IPageChangeProvider) editorPart, ((ProcessEditor)editorPart));
+					((ProcessEditor)editorPart).pageChanged(event);
 				}
 			}
 		});

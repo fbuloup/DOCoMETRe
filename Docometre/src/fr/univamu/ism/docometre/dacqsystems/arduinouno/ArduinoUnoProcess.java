@@ -65,6 +65,8 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.StatusLineManager;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IPageChangeProvider;
+import org.eclipse.jface.dialogs.PageChangedEvent;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IWorkbenchPart;
@@ -1058,7 +1060,8 @@ public class ArduinoUnoProcess extends Process {
 				IWorkbenchPart editorPart = Activator.getEditor(ArduinoUnoProcess.this, ArduinoUnoProcessEditor.ID);
 				if(editorPart != null) {
 					((ProcessEditor)editorPart).updateTitleImage();
-					((ProcessEditor)editorPart).pageChanged(null);
+					PageChangedEvent event = new PageChangedEvent((IPageChangeProvider) editorPart, ((ProcessEditor)editorPart));
+					((ProcessEditor)editorPart).pageChanged(event);
 				}
 			}
 		});
