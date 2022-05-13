@@ -36,7 +36,7 @@ if compute\n\
 	\t% Get from and to values\n\
 	\tif "From_Beginning" == "inputMarker1"\n\
 		\t\tfromValues = zeros(signalSizes(1),3);\n\
-		\t\tfromValues(:,1) = trialsList + 1;\n\
+		\t\tfromValues(:,1) = trialsList;\n\
 		\t\tfromValues(:,3) = values(:,1);\n\
 	\telse\n\
 		\t\tif(endsWith("inputMarker1",".FrontCut"))\n\
