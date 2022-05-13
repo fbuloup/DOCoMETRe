@@ -81,6 +81,7 @@ public class GeneralPreferenceConstants {
 	
 	public static final String SHOW_CURSOR = "SHOW_CURSOR";
 	public static final String SHOW_MARKER = "SHOW_MARKER";
+	public static final String SYNCHRONIZE_CHARTS_WHEN_TRIAL_CHANGE = "SYNCHRONIZE_CHARTS_WHEN_TRIAL_CHANGE";
 	
 	public static final String ARDUINO_DELAY_TIME_AFTER_SERIAL_PRINT = "ARDUINO_DELAY_TIME_AFTER_SERIAL_PRINT";
 	

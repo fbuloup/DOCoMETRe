@@ -88,6 +88,7 @@ public class PreferencesInitializer extends AbstractPreferenceInitializer {
 		
 		defaults.putBoolean(GeneralPreferenceConstants.SHOW_CURSOR, false);
 		defaults.putBoolean(GeneralPreferenceConstants.SHOW_MARKER, false);
+		defaults.putBoolean(GeneralPreferenceConstants.SYNCHRONIZE_CHARTS_WHEN_TRIAL_CHANGE, true);
 
 		defaults.putBoolean(GeneralPreferenceConstants.XML_SERIALIZATION, true);
 		

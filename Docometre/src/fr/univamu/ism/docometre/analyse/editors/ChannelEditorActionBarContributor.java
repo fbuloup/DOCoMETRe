@@ -58,6 +58,7 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IPerspectiveListener;
 import org.eclipse.ui.IWorkbenchPage;
@@ -75,6 +76,7 @@ import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.analyse.datamodel.XYZChart;
 import fr.univamu.ism.docometre.analyse.wizard.SelectChannelsWizard;
 import fr.univamu.ism.docometre.analyse.wizard.SelectChannelsWizard.ChannelsNumber;
+import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
 public class ChannelEditorActionBarContributor extends EditorActionBarContributor implements IPerspectiveListener {
 	
@@ -85,7 +87,14 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 		
 		@Override
 		public void run() {
-			editor.gotoNextTrial();
+			boolean synchronize = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.SYNCHRONIZE_CHARTS_WHEN_TRIAL_CHANGE);
+			if(!synchronize) editor.gotoNextTrial();
+			else {
+				IEditorReference[] editorsRef = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
+				for (IEditorReference editorReference : editorsRef) {
+					if(editorReference.getEditor(false) instanceof TrialsEditor) ((TrialsEditor)editorReference.getEditor(false)).gotoNextTrial();
+				}
+			}
 		}
 	}
 	
@@ -95,7 +104,14 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 		}
 		@Override
 		public void run() {
-			editor.gotoPreviousTrial();
+			boolean synchronize = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.SYNCHRONIZE_CHARTS_WHEN_TRIAL_CHANGE);
+			if(!synchronize) editor.gotoPreviousTrial();
+			else {
+				IEditorReference[] editorsRef = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
+				for (IEditorReference editorReference : editorsRef) {
+					if(editorReference.getEditor(false) instanceof TrialsEditor) ((TrialsEditor)editorReference.getEditor(false)).gotoPreviousTrial();
+				}
+			}
 		}
 	}
 	

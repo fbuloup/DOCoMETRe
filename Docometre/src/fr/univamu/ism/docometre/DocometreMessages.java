@@ -1050,6 +1050,8 @@ public final class DocometreMessages extends NLS {
 	
 	public static String expressionsListTitle;
 	public static String sourceCodeTitle;
+
+	public static String synchronizeChartWhenTrialChange;
 			
 	static {
 		// load message values from bundle file

@@ -157,6 +157,9 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
 		BooleanFieldEditor showMarkerFileEditor = new BooleanFieldEditor(GeneralPreferenceConstants.SHOW_MARKER, DocometreMessages.SHOW_MARKER, chartOptionsGroup);
 		addField(showMarkerFileEditor);
 		
+		BooleanFieldEditor synchronizeChartsFileEditor = new BooleanFieldEditor(GeneralPreferenceConstants.SYNCHRONIZE_CHARTS_WHEN_TRIAL_CHANGE, DocometreMessages.synchronizeChartWhenTrialChange, chartOptionsGroup);
+		addField(synchronizeChartsFileEditor);
+		
 		Group redirectOutErrOptionsGroup = new Group(getFieldEditorParent(), SWT.NONE);
 		redirectOutErrOptionsGroup.setText(DocometreMessages.REDIRECT_GROUP_TITLE);
 		redirectOutErrOptionsGroup.setLayout(new FillLayout(SWT.HORIZONTAL));
