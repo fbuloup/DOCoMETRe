@@ -42,6 +42,7 @@
 package fr.univamu.ism.docometre.analyse.editors;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -244,7 +245,8 @@ public class CategoryContainerEditor extends Composite implements ISelectionChan
 	@Override
 	public void gotoNextTrial() {
 		List<Integer> selectedTrialsNumbers = trialsListViewer.getStructuredSelection().toList();
-		int maxTrialNumber = trialsListViewer.getList().getItemCount();
+		Integer[] trialsNumbers = (Integer[]) trialsListViewer.getInput();
+		int maxTrialNumber = Collections.max(Arrays.asList(trialsNumbers));
 		if(selectedTrialsNumbers.isEmpty()) {
 			if(maxTrialNumber >= 1) {
 				List<Integer> newSelection = new ArrayList<Integer>();
@@ -268,7 +270,8 @@ public class CategoryContainerEditor extends Composite implements ISelectionChan
 	@Override
 	public void gotoPreviousTrial() {
 		List<Integer> selectedTrialsNumbers = trialsListViewer.getStructuredSelection().toList();
-		int maxTrialNumber = trialsListViewer.getList().getItemCount();
+		Integer[] trialsNumbers = (Integer[]) trialsListViewer.getInput();
+		int maxTrialNumber = Collections.max(Arrays.asList(trialsNumbers));
 		if(selectedTrialsNumbers.isEmpty()) {
 			if(maxTrialNumber >= 1) {
 				List<Integer> newSelection = new ArrayList<Integer>();
