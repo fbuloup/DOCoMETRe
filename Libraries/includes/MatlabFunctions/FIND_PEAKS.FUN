@@ -75,7 +75,7 @@ if compute\n\
 			\t\t\t[peakValues maxIndices] = findpeaks(values(trialNumber, fromIndex:toIndex), height, threshold, distance, prominence);\n\
 			\t\t\tfor n = 1:length(maxIndices)\n\
 			\t\t\t\tpeakValue = peakValues(n);\n\
-			\t\t\t\tpeakMarkerTime = (fromIndex + maxIndices(n))/sampleFrequency;\n\
+			\t\t\t\tpeakMarkerTime = (fromIndex + maxIndices(n) - 2)/sampleFrequency;\n\
 			\t\t\t\tfpMarkersValues = [fpMarkersValues; trialNumber, peakMarkerTime, peakValue];\n\
 			\t\t\tend\n\
 		\t\tend\n\
