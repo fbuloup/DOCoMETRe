@@ -8,7 +8,7 @@ L'avant coupe est une durée, en secondes, au début du signal qui ne doit pas �
 # Now start specific matlab function
 FUNCTION_CODE = % Change front cut\n\
 value =floor(frontCut*inputSignal.SampleFrequency);\n\
-inputSignal.FrontCut(trialsList) = value;\n\
+inputSignal.FrontCut([trialsList]) = value;\n\
 clear value;\n\
 if (~exist('createdOrModifiedChannels'))\n\
 \tcreatedOrModifiedChannels = {'inputSignal'};\n\

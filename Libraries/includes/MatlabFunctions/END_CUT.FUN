@@ -8,7 +8,7 @@ L'après coupe est une durée, en secondes, en fin de signal qui ne doit pas êt
 # Now start specific matlab function
 FUNCTION_CODE = % Change end cut\n\
 value =floor(endCut*inputSignal.SampleFrequency);\n\
-inputSignal.EndCut(trialsList) = value;\n\
+inputSignal.EndCut([trialsList]) = value;\n\
 clear value;\n\
 if (~exist('createdOrModifiedChannels'))\n\
 \tcreatedOrModifiedChannels = {'inputSignal'};\n\
