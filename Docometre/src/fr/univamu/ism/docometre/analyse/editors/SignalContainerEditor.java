@@ -98,6 +98,7 @@ import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
+import fr.univamu.ism.docometre.analyse.handlers.UpdateWorkbenchDelegate;
 
 public class SignalContainerEditor extends Composite implements ISelectionChangedListener, TrialNavigator, IMarkersManager {
 	
@@ -122,6 +123,7 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 	private Label samplesNumberLabelValue;
 	private Label durationLabelValue;
 	private Button useSameColorButton;
+	private ComboViewer markersGroupsComboViewer;
 
 	public SignalContainerEditor(Composite parent, int style, ChannelEditor channelEditor) {
 		super(parent, style);
@@ -210,7 +212,7 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		gl.marginHeight = 0;
 		gl.marginWidth = 0;
 		deleteAddMarkersGroupContainer.setLayout(gl);
-		ComboViewer markersGroupsComboViewer = ChannelEditorWidgetsFactory.createCombo(deleteAddMarkersGroupContainer, SWT.FILL, true);
+		markersGroupsComboViewer = ChannelEditorWidgetsFactory.createCombo(deleteAddMarkersGroupContainer, SWT.FILL, true);
 		Button deleteMarkersGroupButton = new Button(deleteAddMarkersGroupContainer, SWT.FLAT);
 		deleteMarkersGroupButton.setImage(Activator.getImage(IImageKeys.DELETE_ICON));
 		deleteMarkersGroupButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
@@ -225,7 +227,7 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 						MathEngineFactory.getMathEngine().deleteMarkersGroup(markersGroupNumber, channelEditor.getChannel());
 						MathEngineFactory.getMathEngine().setUpdateChannelsCache(channelEditor.getChannel().getSubject(), true);
 						markersGroupsComboViewer.refresh();
-						chart.redraw();
+						UpdateWorkbenchDelegate.updateCharts();
 					}
 				}
 			}
@@ -358,7 +360,7 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 					markersGroupsComboViewer.refresh();
 					updateMarkersGroup(markersGroupLabel);
 					MathEngineFactory.getMathEngine().setUpdateChannelsCache(channelEditor.getChannel().getSubject(), true);
-					getChart().redraw();
+					UpdateWorkbenchDelegate.updateCharts();
 				}
 			}
 		});
@@ -726,8 +728,12 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 	}
 	
 	public void update() {
+		markersGroupsComboViewer.refresh();
 		markersGroupComboViewer.refresh();
 		featuresComboViewer.refresh();
+		chart.redraw();
+//		markersGroupComboViewer.setInput(channelEditor.getChannel());
+//		featuresComboViewer.setInput(channelEditor.getChannel());
 	}
 	
 }

@@ -46,7 +46,6 @@ import java.util.ArrayList;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.osgi.util.NLS;
 
@@ -57,10 +56,7 @@ import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.datamodel.BatchDataProcessing;
 import fr.univamu.ism.docometre.analyse.datamodel.BatchDataProcessingItem;
-import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
-import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.preferences.MathEnginePreferencesConstants;
-import fr.univamu.ism.docometre.views.ExperimentsView;
 import fr.univamu.ism.process.Script;
 import fr.univamu.ism.process.ScriptSegmentType;
 
@@ -133,19 +129,7 @@ public final class RunBatchDataProcessingDelegate {
 				monitor.subTask(message);
 				code = MathEngineFactory.getMathEngine().refactor(code, subjectResource);
 				MathEngineFactory.getMathEngine().runScript(code);
-				// Set subject as modified
-				IResource[] modifiedSubjects = MathEngineFactory.getMathEngine().getCreatedOrModifiedSubjects();
-				ResourceProperties.setSubjectModified(modifiedSubjects[0], true);// modifiedSubjects[0] must be equals to subjectResource
-				// Update channels cache
-				try {
-					if(modifiedSubjects[0].getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) != null && modifiedSubjects[0].getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) instanceof ChannelsContainer) {
-						ChannelsContainer channelsContainer = (ChannelsContainer)modifiedSubjects[0].getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
-						channelsContainer.setUpdateChannelsCache(true);
-					}
-				} catch (CoreException e) {
-					Activator.logErrorMessageWithCause(e);
-					e.printStackTrace();
-				} 
+				UpdateWorkbenchDelegate.update();
 				if(monitor.isCanceled()) return true;
 				// Save subject if auto unload
 				if(batchDataProcessing.unloadSubject() && checkUnload) {
@@ -162,12 +146,6 @@ public final class RunBatchDataProcessingDelegate {
 				}
 			} 
 		}
-		// Update GUI
-		for (IResource subjectResource : subjectsResource) {
-			ExperimentsView.refresh(subjectResource, null);
-			SubjectsView.refresh(subjectResource, null);
-		}
-		
 		return false;
 	}
 

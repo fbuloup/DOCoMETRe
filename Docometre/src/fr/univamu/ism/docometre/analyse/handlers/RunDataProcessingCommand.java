@@ -50,15 +50,12 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.osgi.util.NLS;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
@@ -71,13 +68,10 @@ import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.datamodel.BatchDataProcessing;
-import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
 import fr.univamu.ism.docometre.analyse.editors.BatchDataProcessingEditor;
-import fr.univamu.ism.docometre.analyse.editors.ChannelEditor;
 import fr.univamu.ism.docometre.analyse.editors.DataProcessEditor;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
-import fr.univamu.ism.docometre.views.ExperimentsView;
 import fr.univamu.ism.process.Script;
 import fr.univamu.ism.process.ScriptSegmentType;
 
@@ -121,6 +115,7 @@ public class RunDataProcessingCommand extends AbstractHandler implements ISelect
 								String code = script.getLoopCode(object, ScriptSegmentType.LOOP);
 								MathEngineFactory.getMathEngine().runScript(code);
 								monitor.done();
+								UpdateWorkbenchDelegate.update();
 							} catch (Exception e) {
 								Activator.logErrorMessageWithCause(e);
 								e.printStackTrace();
@@ -151,31 +146,7 @@ public class RunDataProcessingCommand extends AbstractHandler implements ISelect
 				} 
 			}
 			if(removeHandle) ObjectsController.removeHandle(object);
-			modifiedSubjects = MathEngineFactory.getMathEngine().getCreatedOrModifiedSubjects();
-			for (IResource modifiedSubject : modifiedSubjects) {
-				ResourceProperties.setSubjectModified(modifiedSubject, true);
-				try {
-					if(modifiedSubject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) != null && modifiedSubject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) instanceof ChannelsContainer) {
-						ChannelsContainer channelsContainer = (ChannelsContainer)modifiedSubject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
-						channelsContainer.setUpdateChannelsCache(true);
-					}
-				} catch (CoreException e) {
-					Activator.logErrorMessageWithCause(e);
-					e.printStackTrace();
-				} finally {
-					ExperimentsView.refresh(modifiedSubject, null);
-					SubjectsView.refresh(modifiedSubject, null);
-				}
-			}
-			if(modifiedSubjects.length > 0) {
-				IEditorReference[] editorsRefs = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
-				for (IEditorReference editorRef : editorsRefs) {
-					IEditorPart editor = editorRef.getEditor(false);
-					if(editor instanceof ChannelEditor) {
-						((ChannelEditor)editor).update();
-					}
-				}
-			}
+			
 			if(cancel) break;
 		}
 
