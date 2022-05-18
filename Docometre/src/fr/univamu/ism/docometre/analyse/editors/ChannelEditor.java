@@ -74,7 +74,6 @@ public class ChannelEditor extends EditorPart implements TrialsEditor {
 	@Override
 	public void doSaveAs() {
 		// TODO Auto-generated method stub
-
 	}
 	
 	protected Channel getChannel() {

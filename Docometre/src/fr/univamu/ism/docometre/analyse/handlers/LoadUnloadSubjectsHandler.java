@@ -204,13 +204,13 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 			if(cancel) break;
 		}
 		for (IResource subject : selectedSubjects) {
-			ExperimentsView.refresh(subject, null);
-			SubjectsView.refresh(subject, null);
 			try {
 				if(subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) != null && subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) instanceof ChannelsContainer) {
 					ChannelsContainer channelsContainer = (ChannelsContainer)subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
 					channelsContainer.setUpdateChannelsCache(true);
 				}
+			ExperimentsView.refresh(subject, null);
+			SubjectsView.refresh(subject, null);
 			} catch (CoreException e) {
 				Activator.logErrorMessageWithCause(e);
 				e.printStackTrace();
