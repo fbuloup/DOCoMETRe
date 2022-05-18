@@ -302,6 +302,11 @@ class DOCoMETRe(object):
 				file.write('\n');
 				file.write('int(' + str(value) + ')');
 				file.write('\n');
+			elif isinstance(value, float):
+				file.write(newKey);
+				file.write('\n');
+				file.write('float(' + str(value) + ')');
+				file.write('\n');
 			elif isinstance(value, numpy.ndarray):
 				fileName =  'data_' + str(ndArrayFileNumber) + '.numpy';
 				ndArrayFileNumber = ndArrayFileNumber + 1;
@@ -344,6 +349,8 @@ class DOCoMETRe(object):
 				if(value.startswith('str(')):
 					subject[key] = eval(value);
 				elif(value.startswith('int(')):
+					subject[key] = eval(value);
+				elif(value.startswith('float(')):
 					subject[key] = eval(value);
 				elif(value.startswith('numpy.ndarray:')):
 					fileName = value.replace('numpy.ndarray:', '');
