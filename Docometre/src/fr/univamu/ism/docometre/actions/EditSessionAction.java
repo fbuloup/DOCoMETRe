@@ -136,9 +136,11 @@ public class EditSessionAction extends Action implements ISelectionListener, IWo
 	@Override
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
 		setEnabled(false);
-		if(((IStructuredSelection) selection).getFirstElement() instanceof IContainer) {
-			resource = (IContainer)((IStructuredSelection) selection).getFirstElement();
-			setEnabled(ResourceType.isSession(resource));
+		if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
+			if(((IStructuredSelection) selection).getFirstElement() instanceof IContainer) {
+				resource = (IContainer)((IStructuredSelection) selection).getFirstElement();
+				setEnabled(ResourceType.isSession(resource));
+			}
 		}
 	}
 

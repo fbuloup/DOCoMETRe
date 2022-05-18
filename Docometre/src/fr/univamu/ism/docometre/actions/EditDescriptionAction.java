@@ -123,7 +123,7 @@ public class EditDescriptionAction extends Action implements ISelectionListener,
 	@Override
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
 		setEnabled(false);
-		if (!selection.isEmpty()) {
+		if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
 			Object element = ((IStructuredSelection)selection).getFirstElement();
 			if(!(element instanceof IResource)) return;
 			setEnabled(true);

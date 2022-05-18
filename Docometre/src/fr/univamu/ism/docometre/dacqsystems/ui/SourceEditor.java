@@ -250,6 +250,8 @@ public class SourceEditor extends EditorPart {
 		}
 
 		updateMarkers();
+		
+		getSite().setSelectionProvider(sourceViewer);
 
 	}
 
