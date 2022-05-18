@@ -367,7 +367,7 @@ public class BatchDataProcessingEditor extends EditorPart implements PartNameRef
 		unloadSubjectButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				boolean checked = loadSubjectButton.getSelection();
+				boolean checked = unloadSubjectButton.getSelection();
 				getBatchDataProcessing().setProperty(BatchDataProcessingProperties.AUTO_UNLOAD_SUBJECT, checked?"true":"false");
 				setDirty(true);
 			}
