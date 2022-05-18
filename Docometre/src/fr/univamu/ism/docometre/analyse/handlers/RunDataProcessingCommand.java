@@ -67,11 +67,13 @@ import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
+import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
 import fr.univamu.ism.docometre.analyse.datamodel.BatchDataProcessing;
 import fr.univamu.ism.docometre.analyse.editors.BatchDataProcessingEditor;
 import fr.univamu.ism.docometre.analyse.editors.DataProcessEditor;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
+import fr.univamu.ism.docometre.views.ExperimentsView;
 import fr.univamu.ism.process.Script;
 import fr.univamu.ism.process.ScriptSegmentType;
 
@@ -138,6 +140,7 @@ public class RunDataProcessingCommand extends AbstractHandler implements ISelect
 							monitor.beginTask(message, IProgressMonitor.UNKNOWN);
 							cancel = RunBatchDataProcessingDelegate.run((BatchDataProcessing) object, monitor);
 							monitor.done();
+							UpdateWorkbenchDelegate.update();
 						}
 					});
 				} catch (InterruptedException | InvocationTargetException e) {
@@ -146,14 +149,14 @@ public class RunDataProcessingCommand extends AbstractHandler implements ISelect
 				} 
 			}
 			if(removeHandle) ObjectsController.removeHandle(object);
-			
 			if(cancel) break;
 		}
 
 		// Get back potential error messages
 		String errorMessages =  MathEngineFactory.getMathEngine().getErrorMessages();
 		if(errorMessages != null) Activator.logErrorMessage(errorMessages);
-		
+		ExperimentsView.refresh(SelectedExprimentContributionItem.selectedExperiment, null);
+		SubjectsView.refresh(SelectedExprimentContributionItem.selectedExperiment, null);
 		return null;
 	}
 
