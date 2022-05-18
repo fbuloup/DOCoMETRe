@@ -69,33 +69,35 @@ if compute\n\
 		\t\ttoIndex = find(toValues(:,1) == trialNumber);\n\
 		\t\t% if both indices exist\n\
 		\t\tif(~isempty(fromIndex) && ~isempty(toIndex))\n\
-			\t\t\t% Convert from and to in samples number\n\
-			\t\t\tfromIndex = floor(fromValues(fromIndex(1),2) * sampleFrequency) + 1;\n\
-			\t\t\ttoIndex = floor(toValues(toIndex(1),2) * sampleFrequency) + 1;\n\
-			\t\t\tcurrentIndex = fromIndex + 1;\n\
-			\t\t\tpreviousValue =  values(trialNumber, fromIndex);\n\
-			\t\t\tfafFound = 0;\n\
-			\t\t\twhile currentIndex <= toIndex\n\
-				\t\t\t\tcurrentValue = values(trialNumber, currentIndex);\n\
-				\t\t\t\tif currentValue >= amplitude && previousValue < amplitude\n\
-					\t\t\t\t\tfafFound = 1;\n\
-				\t\t\t\tend\n\
-				\t\t\t\tif currentValue <= amplitude && previousValue > amplitude\n\
-					\t\t\t\t\tfafFound = 1;\n\
-				\t\t\t\tend\n\
-				\t\t\t\tif fafFound == 1\n\
-					\t\t\t\t\tdCurrent = abs(currentValue - amplitude);\n\
-					\t\t\t\t\tdPrevious = abs(previousValue - amplitude);\n\
-					\t\t\t\t\tif dCurrent > dPrevious\n\
-						\t\t\t\t\t\tfafMarkersValues = [fafMarkersValues; trialNumber, (currentIndex+1)/sampleFrequency, previousValue];\n\
-						\t\t\t\t\t\tbreak;\n\
-					\t\t\t\t\telse\n\
-						\t\t\t\t\t\tfafMarkersValues = [fafMarkersValues; trialNumber, currentIndex/sampleFrequency, currentValue];\n\
-						\t\t\t\t\t\tbreak;\n\
+			\t\t\tfor markerNumber = 1:length(fromIndex)\n\
+				\t\t\t\t% Convert from and to in samples number\n\
+				\t\t\t\tfromIndexMarker = floor(fromValues(fromIndex(markerNumber),2) * sampleFrequency) + 1;\n\
+				\t\t\t\ttoIndexMarker = floor(toValues(toIndex(1),2) * sampleFrequency) + 1;\n\
+				\t\t\t\tcurrentIndex = fromIndexMarker + 1;\n\
+				\t\t\t\tpreviousValue =  values(trialNumber, fromIndexMarker);\n\
+				\t\t\t\tfafFound = 0;\n\
+				\t\t\t\twhile currentIndex <= toIndexMarker\n\
+					\t\t\t\t\tcurrentValue = values(trialNumber, currentIndex);\n\
+					\t\t\t\t\tif currentValue >= amplitude && previousValue < amplitude\n\
+						\t\t\t\t\t\tfafFound = 1;\n\
 					\t\t\t\t\tend\n\
+					\t\t\t\t\tif currentValue <= amplitude && previousValue > amplitude\n\
+						\t\t\t\t\t\tfafFound = 1;\n\
+					\t\t\t\t\tend\n\
+					\t\t\t\t\tif fafFound == 1\n\
+						\t\t\t\t\t\tdCurrent = abs(currentValue - amplitude);\n\
+						\t\t\t\t\t\tdPrevious = abs(previousValue - amplitude);\n\
+						\t\t\t\t\t\tif dCurrent > dPrevious\n\
+							\t\t\t\t\t\t\tfafMarkersValues = [fafMarkersValues; trialNumber, currentIndex/sampleFrequency, previousValue];\n\
+							\t\t\t\t\t\t\tbreak;\n\
+						\t\t\t\t\t\telse\n\
+							\t\t\t\t\t\t\tfafMarkersValues = [fafMarkersValues; trialNumber, (currentIndex-1)/sampleFrequency, currentValue];\n\
+							\t\t\t\t\t\t\tbreak;\n\
+						\t\t\t\t\t\tend\n\
+					\t\t\t\t\tend\n\
+					\t\t\t\t\tcurrentIndex = currentIndex + 1;\n\
+					\t\t\t\t\tpreviousValue = currentValue;\n\
 				\t\t\t\tend\n\
-				\t\t\t\tcurrentIndex = currentIndex + 1;\n\
-				\t\t\t\tpreviousValue = currentValue;\n\
 			\t\t\tend\n\
 		\t\tend\n\
 	\tend\n\
@@ -105,7 +107,9 @@ if compute\n\
 	\telse\n\
 		\t\tcreatedOrModifiedChannels = [createdOrModifiedChannels; {'inputSignal'}];\n\
 	\tend\n\
-	\tclear markersGroupNumber compute currentIndex currentValue dCurrent dPrevious fabFound fromIndex fromValues nbMarkersGroups previousValue sampleFrequency signalSizes toIndex toValues trialNumber values fabMarkersValues fafFound fafMarkersValues\n\
+	\tclear markersGroupNumber compute currentIndex currentValue dCurrent dPrevious fabFound fromIndex fromValues nbMarkersGroups\n\
+	\tclear previousValue sampleFrequency signalSizes toIndex toValues trialNumber values fabMarkersValues fafFound fafMarkersValues\n\
+	\tclear markerNumber fromIndexMarker toIndexMarker\n\
 else\n\
 	\tif(exist('ErrorMessages'))\n\
 		\t\tErrorMessages = [ErrorMessages, {[datestr(now,'HH:MM:SS.FFF'), ' - From Find Amplitude Forward function -> A Marker with this label already exists : markersGroupLabel']}];\n\

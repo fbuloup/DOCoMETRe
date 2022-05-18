@@ -64,29 +64,30 @@ if compute:\n\
 		\t\ttoIndex = numpy.where(toValues[:,0] == (trialNumber+1))[0];\n\
 		\t\t# if both indices exist\n\
 		\t\tif(fromIndex.size > 0 and toIndex.size > 0):\n\
-			\t\t\t# Convert from and to in samples number\n\
-			\t\t\tfromIndex = int(fromValues[fromIndex[0]][1] * sampleFrequency);\n\
-			\t\t\ttoIndex = int(toValues[toIndex[0]][1] * sampleFrequency);\n\
-			\t\t\tcurrentIndex = toIndex - 1;\n\
-			\t\t\tpreviousValue =  values[trialNumber, toIndex];\n\
-			\t\t\tfabFound = 0;\n\
-			\t\t\twhile currentIndex >= fromIndex:\n\
-				\t\t\t\tcurrentValue = values[trialNumber, currentIndex];\n\
-				\t\t\t\tif currentValue >= amplitude and previousValue < amplitude :\n\
-					\t\t\t\t\tfabFound = 1;\n\
-				\t\t\t\tif currentValue <= amplitude and previousValue > amplitude :\n\
-					\t\t\t\t\tfabFound = 1;\n\
-				\t\t\t\tif fabFound == 1:\n\
-					\t\t\t\t\tdCurrent = abs(currentValue - amplitude);\n\
-					\t\t\t\t\tdPrevious = abs(previousValue - amplitude);\n\
-					\t\t\t\t\tif dCurrent > dPrevious :\n\
-						\t\t\t\t\t\tfabMarkersValues = numpy.append(fabMarkersValues, [[trialNumber+1, (currentIndex+1)/sampleFrequency, previousValue]], axis = 0);\n\
-						\t\t\t\t\t\tbreak;\n\
-					\t\t\t\t\telse:\n\
-						\t\t\t\t\t\tfabMarkersValues = numpy.append(fabMarkersValues, [[trialNumber+1, currentIndex/sampleFrequency, currentValue]], axis = 0);\n\
-						\t\t\t\t\t\tbreak;\n\
-				\t\t\t\tcurrentIndex = currentIndex - 1;\n\
-				\t\t\t\tpreviousValue = currentValue;\n\
+			\t\t\tfor markerNumber in range(0, toIndex.size):\n\
+				\t\t\t\t# Convert from and to in samples number\n\
+				\t\t\t\tfromIndexMarker = int(fromValues[fromIndex[0]][1] * sampleFrequency);\n\
+				\t\t\t\ttoIndexMarker = int(toValues[toIndex[markerNumber]][1] * sampleFrequency);\n\
+				\t\t\t\tcurrentIndex = toIndexMarker - 1;\n\
+				\t\t\t\tpreviousValue =  values[trialNumber, toIndexMarker];\n\
+				\t\t\t\tfabFound = 0;\n\
+				\t\t\t\twhile currentIndex >= fromIndexMarker:\n\
+					\t\t\t\t\tcurrentValue = values[trialNumber, currentIndex];\n\
+					\t\t\t\t\tif currentValue >= amplitude and previousValue < amplitude :\n\
+						\t\t\t\t\t\tfabFound = 1;\n\
+					\t\t\t\t\tif currentValue <= amplitude and previousValue > amplitude :\n\
+						\t\t\t\t\t\tfabFound = 1;\n\
+					\t\t\t\t\tif fabFound == 1:\n\
+						\t\t\t\t\t\tdCurrent = abs(currentValue - amplitude);\n\
+						\t\t\t\t\t\tdPrevious = abs(previousValue - amplitude);\n\
+						\t\t\t\t\t\tif dCurrent > dPrevious :\n\
+							\t\t\t\t\t\t\tfabMarkersValues = numpy.append(fabMarkersValues, [[trialNumber+1, (currentIndex+1)/sampleFrequency, previousValue]], axis = 0);\n\
+							\t\t\t\t\t\t\tbreak;\n\
+						\t\t\t\t\t\telse:\n\
+							\t\t\t\t\t\t\tfabMarkersValues = numpy.append(fabMarkersValues, [[trialNumber+1, currentIndex/sampleFrequency, currentValue]], axis = 0);\n\
+							\t\t\t\t\t\t\tbreak;\n\
+					\t\t\t\t\tcurrentIndex = currentIndex - 1;\n\
+					\t\t\t\t\tpreviousValue = currentValue;\n\
 	\tdocometre.experiments["inputSignal.MarkersGroup_markersGroupLabel_Values"] = fabMarkersValues;\n\
 	\tif not("createdOrModifiedChannels" in docometre.experiments.keys()):\n\
 		\t\tdocometre.experiments["createdOrModifiedChannels"] = "inputSignal";\n\

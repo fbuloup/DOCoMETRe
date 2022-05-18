@@ -167,7 +167,7 @@ public class FindAmplitudeBackward extends GenericFunction {
 		// Input Marker 1 : from
 		Label inputMarker1Label = new Label(paramContainer, SWT.NONE);
 		inputMarker1Label.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-		inputMarker1Label.setText(FunctionsMessages.FromMarkerLabel);
+		inputMarker1Label.setText(FunctionsMessages.fabFromMarkerLabel);
 		ComboViewer inputMarker1ComboViewer = new ComboViewer(paramContainer, SWT.BORDER);
 		inputMarker1ComboViewer.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		value  = getProperty(inputMarker1Key, "");
@@ -193,7 +193,7 @@ public class FindAmplitudeBackward extends GenericFunction {
 		// Input Marker 2 : to
 		Label inputMarker2Label = new Label(paramContainer, SWT.NONE);
 		inputMarker2Label.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-		inputMarker2Label.setText(FunctionsMessages.ToMarkerLabel);
+		inputMarker2Label.setText(FunctionsMessages.fabToMarkerLabel);
 		ComboViewer inputMarker2ComboViewer = new ComboViewer(paramContainer, SWT.BORDER);
 		inputMarker2ComboViewer.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		value  = getProperty(inputMarker2Key, "");
