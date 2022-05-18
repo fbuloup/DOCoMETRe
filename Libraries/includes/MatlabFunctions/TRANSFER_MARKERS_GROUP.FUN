@@ -38,16 +38,19 @@ if compute\n\
 		\t\tfromIndex = find(fromValues(:,1) == trialNumber);\n\
 		\t\t% if index exists\n\
 		\t\tif(~isempty(fromIndex))\n\
-			\t\t\t% Get time maker\n\
-			\t\t\ttrsfrTimeValue = fromValues(fromIndex(1),2);\n\
-			\t\t\t% Convert from in samples number\n\
-			\t\t\tfromIndex = floor(trsfrTimeValue * sampleFrequency);\n\
-			\t\t\t% Get amplitude marker value\n\
-			\t\t\ttrsfrValue = inputSignal.Values(trialNumber, fromIndex);\n\
-			\t\t\tinputSignal.MarkersGroup_markersGroupLabel_Values = [inputSignal.MarkersGroup_markersGroupLabel_Values; trialNumber, trsfrTimeValue, trsfrValue];\n\
+			\t\t\tfor markerNumber = 1:length(fromIndex)\n\
+				\t\t\t\t% Get time maker\n\
+				\t\t\t\ttrsfrTimeValue = fromValues(fromIndex(markerNumber),2);\n\
+				\t\t\t\t% Convert from in samples number\n\
+				\t\t\t\tmarkerTimeIndex = floor(trsfrTimeValue * sampleFrequency);\n\
+				\t\t\t\t% Get amplitude marker value\n\
+				\t\t\t\ttrsfrValue = inputSignal.Values(trialNumber, markerTimeIndex);\n\
+				\t\t\t\tinputSignal.MarkersGroup_markersGroupLabel_Values = [inputSignal.MarkersGroup_markersGroupLabel_Values; trialNumber, trsfrTimeValue, trsfrValue];\n\
+			\t\t\tend\n\
 		\t\tend\n\
 	\tend\n\
 	\tclear compute fromIndex fromValues markersGroupNumber nbMarkersGroups sampleFrequency trialNumber signalSizes trsfrTimeValue trsfrValue;\n\
+	\tclear markerTimeIndex markerNumber \n\
 	\tif (~exist('createdOrModifiedChannels'))\n\
 		\t\tcreatedOrModifiedChannels = {'inputSignal'};\n\
 	\telse\n\

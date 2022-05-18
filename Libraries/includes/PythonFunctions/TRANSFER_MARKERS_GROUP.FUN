@@ -40,13 +40,14 @@ if compute:\n\
 		\t\tfromIndex = numpy.where(fromValues[:,0] == (trialNumber+1))[0];\n\
 		\t\t# if index exists\n\
 		\t\tif(fromIndex.size > 0):\n\
-			\t\t\t# Get time maker\n\
-			\t\t\ttrsfrTimeValue = fromValues[fromIndex[0]][1];\n\
-			\t\t\t# Convert from in samples number\n\
-			\t\t\tfromIndex = int(trsfrTimeValue * sampleFrequency);\n\
-			\t\t\t# Get amplitude marker value\n\
-			\t\t\ttrsfrValue = values[trialNumber, fromIndex];\n\
-			\t\t\ttrsfrMarkersValues = numpy.append(trsfrMarkersValues, [[trialNumber+1, trsfrTimeValue, trsfrValue]], axis = 0);\n\
+			\t\t\tfor markerNumber in numpy.r_[0:fromIndex.size]:\n\
+				\t\t\t\t# Get time maker\n\
+				\t\t\t\ttrsfrTimeValue = fromValues[fromIndex[markerNumber]][1];\n\
+				\t\t\t\t# Convert from in samples number\n\
+				\t\t\t\tmarkerTimeIndex = int(trsfrTimeValue * sampleFrequency);\n\
+				\t\t\t\t# Get amplitude marker value\n\
+				\t\t\t\ttrsfrValue = values[trialNumber, markerTimeIndex];\n\
+				\t\t\t\ttrsfrMarkersValues = numpy.append(trsfrMarkersValues, [[trialNumber+1, trsfrTimeValue, trsfrValue]], axis = 0);\n\
 	\tdocometre.experiments["inputSignal.MarkersGroup_markersGroupLabel_Values"] = trsfrMarkersValues;\n\
 	\tif not("createdOrModifiedChannels" in docometre.experiments.keys()):\n\
 		\t\tdocometre.experiments["createdOrModifiedChannels"] = "inputSignal";\n\
