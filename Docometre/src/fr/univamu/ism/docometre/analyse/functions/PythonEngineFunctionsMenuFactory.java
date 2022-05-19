@@ -61,9 +61,10 @@ public class PythonEngineFunctionsMenuFactory {
 	private static String SUBMENU_FEATURES = "SUBMENU_FEATURES";
 	private static String SUBMENU_EVENTS = "SUBMENU_EVENTS";
 	private static String SUBMENU_FILTERING = "SUBMENU_FILTERING";
+	private static String SUBMENU_EXPORT = "SUBMENU_EXPORT";
 	
-	public static String[] PythonEngineFunctionsFiles = new String[] {SUBMENU_SIGNALS, SUBMENU_MARKERS, SUBMENU_FEATURES, SUBMENU_EVENTS};
-	public static String[] PythonEngineFunctionsClasses = new String[] {null, null, null, null};
+	public static String[] PythonEngineFunctionsFiles = new String[] {SUBMENU_SIGNALS, SUBMENU_MARKERS, SUBMENU_FEATURES, SUBMENU_EVENTS, SUBMENU_EXPORT};
+	public static String[] PythonEngineFunctionsClasses = new String[] {null, null, null, null, null};
 	
 	public static String[] SignalsFunctionsFiles = new String[] {SUBMENU_FILTERING, SEPARATOR, FrontCut.functionFileName, EndCut.functionFileName, FrontCutFromMarker.functionFileName ,EndCutFromMarker.functionFileName, SEPARATOR, 
 																	MotionDistance.functionFileName, MotionDirection.functionFileName, SEPARATOR, AbsoluteValue.functionFileName, SEPARATOR, Derivative.functionFileName};
@@ -83,6 +84,9 @@ public class PythonEngineFunctionsMenuFactory {
 	
 	public static String[] EventsFunctionsFiles = new String[] {};
 	public static String[] EventsFunctionsClasses = new String[] {};
+	
+	public static String[] ExportFunctionsFiles = new String[] {ExportMarkers.functionFileName};
+	public static String[] ExportFunctionsClasses = new String[] {ExportMarkers.class.getName()};
 	
 //	public static String[] PythonEngineFunctionsFiles = new String[] {ButterworthLowPass.functionFileName, 
 //		    														SEPARATOR,
@@ -126,6 +130,10 @@ public class PythonEngineFunctionsMenuFactory {
 				MenuManager subMenuManager = new MenuManager(FunctionsMessages.Events, SUBMENU_EVENTS);
 				populateSubMenu(subMenuManager, context, scriptSegmentEditor, blockEditPart);
 				functionMenuManager.add(subMenuManager);
+			} else if(functionFilePath.equals(SUBMENU_EXPORT)) {
+				MenuManager subMenuManager = new MenuManager(FunctionsMessages.Export, SUBMENU_EXPORT);
+				populateSubMenu(subMenuManager, context, scriptSegmentEditor, blockEditPart);
+				functionMenuManager.add(subMenuManager);	
 			} else {
 				String menuTitle = FunctionFactory.getProperty(context, functionFilePath, FunctionFactory.MENU_TITLE);
 				String menuTooltip = FunctionFactory.getProperty(context, functionFilePath, FunctionFactory.DESCRIPTION);
@@ -175,6 +183,9 @@ public class PythonEngineFunctionsMenuFactory {
 		}
 		if(subMenuManager.getId().equals(SUBMENU_EVENTS)) {
 			createSubmenuActions(subMenuManager, EventsFunctionsFiles, EventsFunctionsClasses, context, scriptSegmentEditor, blockEditPart);
+		}
+		if(subMenuManager.getId().equals(SUBMENU_EXPORT)) {
+			createSubmenuActions(subMenuManager, ExportFunctionsFiles, ExportFunctionsClasses, context, scriptSegmentEditor, blockEditPart);
 		}
 	}
 	

@@ -74,30 +74,30 @@ public final class RunBatchDataProcessingDelegate {
 			}
 		}
 		if(monitor.isCanceled()) return true;
-		// Generate global script
-		monitor.subTask(DocometreMessages.GenerateGlobalScriptLabel);
-		String code = "";
-		for (IResource resource : processesResource) {
-			boolean removeHandle = false;
-			Object object = ResourceProperties.getObjectSessionProperty(resource);
-			if(object == null) {
-				object = ObjectsController.deserialize((IFile)resource);
-				ResourceProperties.setObjectSessionProperty(resource, object);
-				ObjectsController.addHandle(object);
-				removeHandle = true;
-			}
-			if(object instanceof Script) {
-				try {
-					Script script = (Script)object;
-					code = code + script.getLoopCode(object, ScriptSegmentType.LOOP) + "\n";
-				} catch (Exception e) {
-					Activator.logErrorMessageWithCause(e);
-					e.printStackTrace();
-				}
-			}
-			if(removeHandle) ObjectsController.removeHandle(object);
-		}
-		if(monitor.isCanceled()) return true;
+//		// Generate global script
+//		monitor.subTask(DocometreMessages.GenerateGlobalScriptLabel);
+//		String code = "";
+//		for (IResource resource : processesResource) {
+//			boolean removeHandle = false;
+//			Object object = ResourceProperties.getObjectSessionProperty(resource);
+//			if(object == null) {
+//				object = ObjectsController.deserialize((IFile)resource);
+//				ResourceProperties.setObjectSessionProperty(resource, object);
+//				ObjectsController.addHandle(object);
+//				removeHandle = true;
+//			}
+//			if(object instanceof Script) {
+//				try {
+//					Script script = (Script)object;
+//					code = code + script.getLoopCode(object, ScriptSegmentType.LOOP) + "\n";
+//				} catch (Exception e) {
+//					Activator.logErrorMessageWithCause(e);
+//					e.printStackTrace();
+//				}
+//			}
+//			if(removeHandle) ObjectsController.removeHandle(object);
+//		}
+//		if(monitor.isCanceled()) return true;
 		// Get all subjects
 		monitor.subTask(DocometreMessages.GetAllSubjectsLabel);
 		BatchDataProcessingItem[] subjects = batchDataProcessing.getSubjects();
@@ -124,10 +124,39 @@ public final class RunBatchDataProcessingDelegate {
 			}
 			if(monitor.isCanceled()) return true;
 			if(loaded) {
+				
+				
+				// Generate global script
+				monitor.subTask(DocometreMessages.GenerateGlobalScriptLabel);
+				String code = "";
+				for (IResource resource : processesResource) {
+					boolean removeHandle = false;
+					Object object = ResourceProperties.getObjectSessionProperty(resource);
+					if(object == null) {
+						object = ObjectsController.deserialize((IFile)resource);
+						ResourceProperties.setObjectSessionProperty(resource, object);
+						ObjectsController.addHandle(object);
+						removeHandle = true;
+					}
+					if(object instanceof Script) {
+						try {
+							Script script = (Script)object;
+							code = code + script.getLoopCode(object, ScriptSegmentType.LOOP) + "\n";
+						} catch (Exception e) {
+							Activator.logErrorMessageWithCause(e);
+							e.printStackTrace();
+						}
+					}
+					if(removeHandle) ObjectsController.removeHandle(object);
+				}
+				if(monitor.isCanceled()) return true;
+				
+				
 				// Run global script on current subject
 				String message = NLS.bind(DocometreMessages.ProcessingLabel, subjectResource.getName());
 				monitor.subTask(message);
 				code = MathEngineFactory.getMathEngine().refactor(code, subjectResource);
+				System.out.println(code);
 				MathEngineFactory.getMathEngine().runScript(code);
 				UpdateWorkbenchDelegate.update();
 				if(monitor.isCanceled()) return true;

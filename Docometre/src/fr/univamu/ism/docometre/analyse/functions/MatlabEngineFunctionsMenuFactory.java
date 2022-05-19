@@ -61,9 +61,10 @@ public class MatlabEngineFunctionsMenuFactory {
 	private static String SUBMENU_FEATURES = "SUBMENU_FEATURES";
 	private static String SUBMENU_EVENTS = "SUBMENU_EVENTS";
 	private static String SUBMENU_FILTERING = "SUBMENU_FILTERING";
+	private static String SUBMENU_EXPORT = "SUBMENU_EXPORT";
 	
-	public static String[] MatlabEngineFunctionsFiles = new String[] {SUBMENU_SIGNALS, SUBMENU_MARKERS, SUBMENU_FEATURES, SUBMENU_EVENTS};
-	public static String[] MatlabEngineFunctionsClasses = new String[] {null, null, null, null};
+	public static String[] MatlabEngineFunctionsFiles = new String[] {SUBMENU_SIGNALS, SUBMENU_MARKERS, SUBMENU_FEATURES, SUBMENU_EVENTS, SUBMENU_EXPORT};
+	public static String[] MatlabEngineFunctionsClasses = new String[] {null, null, null, null, null};
 	
 	public static String[] SignalsFunctionsFiles = new String[] {SUBMENU_FILTERING, SEPARATOR, FrontCut.functionFileName, EndCut.functionFileName, FrontCutFromMarker.functionFileName ,EndCutFromMarker.functionFileName, SEPARATOR, 
 																	MotionDistance.functionFileName, MotionDirection.functionFileName, SEPARATOR, AbsoluteValue.functionFileName, SEPARATOR, Derivative.functionFileName};
@@ -83,6 +84,9 @@ public class MatlabEngineFunctionsMenuFactory {
 	
 	public static String[] EventsFunctionsFiles = new String[] {};
 	public static String[] EventsFunctionsClasses = new String[] {};
+	
+	public static String[] ExportFunctionsFiles = new String[] {ExportMarkers.functionFileName};
+	public static String[] ExportFunctionsClasses = new String[] {ExportMarkers.class.getName()};
 	
 //	public static String[] MatlabEngineFunctionsFiles = new String[] {ButterworthLowPass.functionFileName, 
 //		    														SEPARATOR,
@@ -125,6 +129,10 @@ public class MatlabEngineFunctionsMenuFactory {
 				functionMenuManager.add(subMenuManager);
 			} else if(functionFilePath.equals(SUBMENU_EVENTS)) {
 				MenuManager subMenuManager = new MenuManager(FunctionsMessages.Events, SUBMENU_EVENTS);
+				populateSubMenu(subMenuManager, context, scriptSegmentEditor, blockEditPart);
+				functionMenuManager.add(subMenuManager);
+			} else if(functionFilePath.equals(SUBMENU_EXPORT)) {
+				MenuManager subMenuManager = new MenuManager(FunctionsMessages.Export, SUBMENU_EXPORT);
 				populateSubMenu(subMenuManager, context, scriptSegmentEditor, blockEditPart);
 				functionMenuManager.add(subMenuManager);
 			} else {
@@ -176,6 +184,9 @@ public class MatlabEngineFunctionsMenuFactory {
 		}
 		if(subMenuManager.getId().equals(SUBMENU_EVENTS)) {
 			createSubmenuActions(subMenuManager, EventsFunctionsFiles, EventsFunctionsClasses, context, scriptSegmentEditor, blockEditPart);
+		}
+		if(subMenuManager.getId().equals(SUBMENU_EXPORT)) {
+			createSubmenuActions(subMenuManager, ExportFunctionsFiles, ExportFunctionsClasses, context, scriptSegmentEditor, blockEditPart);
 		}
 	}
 	

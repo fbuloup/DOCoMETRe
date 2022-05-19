@@ -54,6 +54,7 @@ public class FunctionsMessages extends NLS {
 	public static String Features;
 	public static String Events;
 	public static String Filtering;
+	public static String Export;
 
 	public static String TrialsList;
 	
@@ -90,8 +91,12 @@ public class FunctionsMessages extends NLS {
 	public static String fabToMarkerLabel;
 	public static String fafFromMarkerLabel;
 	public static String fafToMarkerLabel;
-
 	
+	// Export markers
+	public static String SelectAll;
+	public static String UnselectAll;
+	public static String FilterLabel;
+	public static String SeparatorLabel;
 	
 	static {
 		// load message values from bundle file
