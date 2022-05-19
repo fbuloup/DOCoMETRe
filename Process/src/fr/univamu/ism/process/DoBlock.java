@@ -105,7 +105,7 @@ public class DoBlock extends ConditionalBlock {
 	 * @return the code
 	 */
 	@Override
-	public String getCode(Object context, Object step) {
+	public String getCode(Object context, Object step, Object...objects) {
 		if(step == ScriptSegmentType.INITIALIZE || step == ScriptSegmentType.LOOP || step == ScriptSegmentType.FINALIZE) {
 			if(context.getClass().getSimpleName().equals(Activator.ADWinProcess))
 				return "UNTIL (" + getLeftOperand() + Operator.getOperatorForADBasic(getOperator()) + getRightOperand() + ")\n";

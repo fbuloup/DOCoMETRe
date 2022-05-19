@@ -233,7 +233,7 @@ public static final String functionFileName = "LONG_SERIAL_OUTPUT.FUN";
 	
 	
 	@Override
-	public String getCode(Object context, Object step) {
+	public String getCode(Object context, Object step, Object...objects) {
 		if(!isActivated()) return GenericFunction.getCommentedCode(this, context);
 		String code = "";
 		Process process = (Process) context;

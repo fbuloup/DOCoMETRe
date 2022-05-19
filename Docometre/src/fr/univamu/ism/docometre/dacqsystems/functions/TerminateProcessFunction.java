@@ -112,7 +112,7 @@ public final class TerminateProcessFunction  extends GenericFunction implements 
 	}
 	
 	@Override
-	public String getCode(Object context, Object step) {
+	public String getCode(Object context, Object step, Object...objects) {
 		if(!isActivated()) return GenericFunction.getCommentedCode(this, context);
 		String code = "";
 		Process process = (Process) context;

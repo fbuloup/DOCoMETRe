@@ -129,7 +129,7 @@ public class IfBlock extends ConditionalBlock {
 	 * @return the code
 	 */
 	@Override
-	public String getCode(Object context, Object step) {
+	public String getCode(Object context, Object step, Object...objects) {
 		if(step == ScriptSegmentType.INITIALIZE || step == ScriptSegmentType.LOOP || step == ScriptSegmentType.FINALIZE) {
 			String contextSimpleName = context.getClass().getSimpleName();
 			if(contextSimpleName.equals(Activator.ArduinoUnoProcess)) {

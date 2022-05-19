@@ -149,7 +149,7 @@ public static final String functionFileName = "DIGITAL_INPUT.FUN";
 	}
 	
 	@Override
-	public String getCode(Object context, Object step) {
+	public String getCode(Object context, Object step, Object...objects) {
 		if(!isActivated()) return GenericFunction.getCommentedCode(this, context);
 		String code = "";
 		Process process = (Process) context;

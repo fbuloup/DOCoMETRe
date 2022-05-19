@@ -116,7 +116,7 @@ public class Function extends Block {
 	 * @return the code
 	 */
 	@Override
-	public String getCode(Object context, Object step) {
+	public String getCode(Object context, Object step, Object...objects) {
 		if(step == ScriptSegmentType.INITIALIZE || step == ScriptSegmentType.LOOP || step == ScriptSegmentType.FINALIZE) {
 			if(context.getClass().getSimpleName().equals(Activator.ADWinProcess))
 				return "\nREM Function " + getName(context) + "\n\n";

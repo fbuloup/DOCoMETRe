@@ -367,7 +367,7 @@ public abstract class Block implements Serializable {
 	 * as the generated code depends on the concrete type of the block
 	 * @return the code
 	 */
-	public abstract String getCode(Object context, Object step);
+	public abstract String getCode(Object context, Object step, Object...objects);
 
 	/**
 	 * Helper method that return size and location as a draw2D rectangle

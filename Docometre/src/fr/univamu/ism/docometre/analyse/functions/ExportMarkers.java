@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
@@ -222,8 +223,25 @@ public class ExportMarkers extends GenericFunction {
 	}
 	
 	@Override
-	public String getCode(Object context, Object step) {
+	public String getCode(Object context, Object step, Object...objects) {
 		if(!isActivated()) return GenericFunction.getCommentedCode(this, context);
+		
+		boolean execute = true;
+		if(objects == null) execute = false;
+		if(objects[0] == null) execute = false;
+		if(!(objects[0] instanceof IResource)) execute = false;
+		if(!ResourceType.isSubject(((IResource)objects[0]))) execute = false;
+		
+		if(!execute) {
+			if(MathEngineFactory.isMatlab()) return "% Error in ExportMarkers function : subject is not provide";
+			if(MathEngineFactory.isPython()) return "# Error in ExportMarkers function : subject is not provide";
+		}
+		
+		IResource currentSubject = (IResource)objects[0];
+		String projectNameRegExp = currentSubject.getProject().getName();
+		String subjectNameRegExp = currentSubject.getName();
+		String replaceRegExp = projectNameRegExp + "\\.\\w+\\.";
+		String replaceByRegExp = projectNameRegExp + "." + subjectNameRegExp +".";
 		
 		String code = "";
 
@@ -245,11 +263,13 @@ public class ExportMarkers extends GenericFunction {
 				code = code + "import numpy;\n";
 				code = code + "# Delete existing files\n";
 				for (String fileName : filesNames) {
+					fileName = fileName.replaceAll(replaceRegExp, replaceByRegExp);
 					code = code + "if os.path.exists('" + fileName + "'):\n";
 					code = code + "\tos.remove('" + fileName + "');\n";
 				}
 				code = code + "# Create and add categories to files\n";
 				for (String fileName : filesNames) {
+					fileName = fileName.replaceAll(replaceRegExp, replaceByRegExp);
 					code = code + "with open('" + fileName + "', 'w', encoding='utf-8') as dataFile:\n";
 					String[] fileNameSplitted = fileName.split("\\.");
 					String subjectName = fileNameSplitted[fileNameSplitted.length - 3];
@@ -267,12 +287,14 @@ public class ExportMarkers extends GenericFunction {
 				}
 				code = code + "# Append data\n";
 				for (String marker : markers) {
+					marker = marker.replaceAll(replaceRegExp, replaceByRegExp);
 					String[] segments = marker.split("\\.");
 					String fileName = destination + segments[0] + "." + segments[1] + ".markers.csv";
-					Channel channel = MathEngineFactory.getMathEngine().getChannelFromName(experiment, marker);
-					code = code + "# " + channel.getName().split("_")[1] + "\n";
+					//Channel channel = MathEngineFactory.getMathEngine().getChannelFromName(experiment, marker);
+					String[] markerSplitted = marker.split("_");
+					code = code + "# " + markerSplitted[markerSplitted.length - 1] + "\n";
 					code = code + "with open('" + fileName + "', 'a', encoding='utf-8') as dataFile:\n";
-					code = code + "\tdataFile.write('MarkerLabel;" + channel.getName().split("_")[1] + "');\n";
+					code = code + "\tdataFile.write('MarkerLabel;" + markerSplitted[markerSplitted.length - 1] + "');\n";
 					code = code + "\tdataFile.write('\\n');\n";
 					code = code + "\tnumpy.savetxt(dataFile, docometre.experiments['" + marker + "_Values'], delimiter=\"" + separator + "\")" + ";\n";
 				}
@@ -291,6 +313,7 @@ public class ExportMarkers extends GenericFunction {
 				}
 				code = code + "% Create and add categories to files (delete files if exists)\n";
 				for (String fileName : filesNames) {
+					fileName = fileName.replaceAll(replaceRegExp, replaceByRegExp);
 					code = code + "dataFile = fopen('" + fileName + "','w' , 'n', 'UTF-8');\n";
 					String[] fileNameSplitted = fileName.split("\\.");
 					String subjectName = fileNameSplitted[fileNameSplitted.length - 3];
@@ -309,12 +332,13 @@ public class ExportMarkers extends GenericFunction {
 				}
 				code = code + "% Append data\n";
 				for (String marker : markers) {
+					marker = marker.replaceAll(replaceRegExp, replaceByRegExp);
 					String[] segments = marker.split("\\.");
 					String fileName = destination + segments[0] + "." + segments[1] + ".markers.csv";
-					Channel channel = MathEngineFactory.getMathEngine().getChannelFromName(experiment, marker);
-					code = code + "% " + channel.getName().split("_")[1] + "\n";
+					String[] markerSplitted = marker.split("_");
+					code = code + "% " + markerSplitted[markerSplitted.length - 1] + "\n";
 					code = code + "dataFile = fopen('" + fileName + "', 'a', 'n', 'UTF-8');\n";
-					code = code + "fprintf(dataFile, 'MarkerLabel;" + channel.getName().split("_")[1] + "');\n";
+					code = code + "fprintf(dataFile, 'MarkerLabel;" + markerSplitted[markerSplitted.length - 1] + "');\n";
 					code = code + "fprintf(dataFile, '\\n');\n";
 					code = code + "fclose(dataFile);\n";
 					code = code + "dlmwrite('" + fileName + "', " + marker + "_Values ,'delimiter', ';', '-append');\n";
