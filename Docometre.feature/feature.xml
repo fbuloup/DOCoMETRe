@@ -6,7 +6,17 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-05-12
+      -- 2022-05-20
+ADDED :
+* Export Markers function (Matlab and Python)
+FIXED :
+* Float type was not handled when loading/saving subject (Python)
+* Properly update workbench when data is processed
+* Take multiple markers in account in Faf, Fab functions (Matlab,Python)
+* In batch data processing, save/unload subject is now taken in account
+* Transfert function : now all markers are transferred
+* Set Selection provider in Source Viewer (Copy from source viewer is now working !) 
+-- 2022-05-12
 ADDED :
 * Support for code source editor in epxressions function
 FIXED : Nothing
