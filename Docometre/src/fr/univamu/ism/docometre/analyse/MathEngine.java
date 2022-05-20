@@ -330,8 +330,13 @@ public interface MathEngine {
 	default String refactor(String code, IResource subjectResource) {
 		String projectName = subjectResource.getProject().getName();
 		String subjectName = subjectResource.getName();
+		// Replace all Exp.SubjectA. by Exp.SubjectB.
 		String replaceRegExp = projectName + "\\.\\w+\\.";
 		String replaceBy = projectName + "." + subjectName +".";
+		code = code.replaceAll(replaceRegExp, replaceBy);
+		// Replace all Exp.SubjectA by Exp.SubjectB
+		replaceRegExp = projectName + "\\.\\w+";
+		replaceBy = projectName + "." + subjectName;
 		code = code.replaceAll(replaceRegExp, replaceBy);
 		return code;
 	}

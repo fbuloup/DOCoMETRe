@@ -275,7 +275,8 @@ public final class MatlabEngine implements MathEngine {
 				PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
 					@Override
 					public void run() {
-						MatlabEngine.this.loadFromSavedFile = !MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), DocometreMessages.LoadSubjectFromRawDataDialog_Title, DocometreMessages.LoadSubjectFromRawDataDialog_Message);
+						String message = NLS.bind(DocometreMessages.LoadSubjectFromRawDataDialog_Message, subject.getFullPath().toPortableString());
+						MatlabEngine.this.loadFromSavedFile = !MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), DocometreMessages.LoadSubjectFromRawDataDialog_Title, message);
 					}
 				});
 				

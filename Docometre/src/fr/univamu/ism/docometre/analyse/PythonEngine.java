@@ -219,7 +219,8 @@ public class PythonEngine implements MathEngine {
 				PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
 					@Override
 					public void run() {
-						PythonEngine.this.loadFromSavedFile = !MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), DocometreMessages.LoadSubjectFromRawDataDialog_Title, DocometreMessages.LoadSubjectFromRawDataDialog_Message);
+						String message = NLS.bind(DocometreMessages.LoadSubjectFromRawDataDialog_Message, subject.getFullPath().toPortableString());
+						PythonEngine.this.loadFromSavedFile = !MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), DocometreMessages.LoadSubjectFromRawDataDialog_Title, message);
 					}
 				});
 				
