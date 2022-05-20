@@ -2,13 +2,10 @@ package fr.univamu.ism.docometre.analyse.functions;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
@@ -33,12 +30,12 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.DocometreMessages;
-import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.analyse.editors.ChannelsContentProvider;
 import fr.univamu.ism.docometre.dacqsystems.functions.GenericFunction;
+import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
 import fr.univamu.ism.process.Block;
 import fr.univamu.ism.process.Script;
 
@@ -49,8 +46,11 @@ public class ExportMarkers extends GenericFunction {
 	public static final String functionFileName = "EXPORT_MARKERS.FUN";
 
 	private static final String markersListKey = "markersList";
-	private static final String separatorKey = "separator";
+	private static final String dividerKey = "divider";
 	private static final String destinationKey = "destination";
+	private static final String fullPathFileNameKey = "fullPathFileName";
+	private static final String fullSubjectNameKey = "fullSubjectName";
+	private static final String cellExpressionKey = "cellExpression";
 
 	private CheckboxTableViewer markersCheckboxTableViewer;
 	
@@ -154,11 +154,11 @@ public class ExportMarkers extends GenericFunction {
 		Combo separatorCombo = new Combo(separatorContainer, SWT.BORDER);
 		separatorCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		separatorCombo.setItems(new String[] {";", ",", ":", "/", "-"});
-		separatorCombo.setText(getProperty(separatorKey, ";"));
+		separatorCombo.setText(getProperty(dividerKey, ";"));
 		separatorCombo.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
-				getTransientProperties().put(separatorKey, separatorCombo.getText());
+				getTransientProperties().put(dividerKey, separatorCombo.getText());
 			}
 		});
 		
@@ -167,7 +167,7 @@ public class ExportMarkers extends GenericFunction {
 		destinationFolderContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 		
 		Label destinationFolderLabel = new Label(destinationFolderContainer, SWT.NORMAL);
-		destinationFolderLabel.setText("Desitnation : ");
+		destinationFolderLabel.setText("Destination : ");
 		destinationFolderLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		
 		Text destinationFolderText = new Text(destinationFolderContainer, SWT.BORDER | SWT.READ_ONLY);
@@ -226,125 +226,44 @@ public class ExportMarkers extends GenericFunction {
 	public String getCode(Object context, Object step, Object...objects) {
 		if(!isActivated()) return GenericFunction.getCommentedCode(this, context);
 		
-		boolean execute = true;
-		if(objects == null) execute = false;
-		if(objects[0] == null) execute = false;
-		if(!(objects[0] instanceof IResource)) execute = false;
-		if(!ResourceType.isSubject(((IResource)objects[0]))) execute = false;
+		String code = FunctionFactory.getProperty(context, functionFileName, FUNCTION_CODE);
 		
-		if(!execute) {
-			if(MathEngineFactory.isMatlab()) return "% Error in ExportMarkers function : subject is not provide";
-			if(MathEngineFactory.isPython()) return "# Error in ExportMarkers function : subject is not provide";
-		}
-		
-		IResource currentSubject = (IResource)objects[0];
-		String projectNameRegExp = currentSubject.getProject().getName();
-		String subjectNameRegExp = currentSubject.getName();
-		String replaceRegExp = projectNameRegExp + "\\.\\w+\\.";
-		String replaceByRegExp = projectNameRegExp + "." + subjectNameRegExp +".";
-		
-		String code = "";
-
 		String markersList = getProperty(markersListKey, "");
-		String separator = getProperty(separatorKey, ";");
-		String destination = getProperty(destinationKey, ";") + File.separator;
+		String divider = getProperty(dividerKey, ";");
+		String destination = getProperty(destinationKey, "") + File.separator;
 		
-		if(MathEngineFactory.isPython()) {
-			if(!"".equals(markersList)) {
-				IContainer experiment = (IContainer) SelectedExprimentContributionItem.selectedExperiment;
-				String[] markers = markersList.split(";");
-				Set<String> filesNames = new HashSet<>();
-				for (String marker : markers) {
-					String[] segments = marker.split("\\.");
-					String fileName = destination + segments[0] + "." + segments[1] + ".markers.csv";
-					filesNames.add(fileName);
-				}
-				code = code + "import os;\n";
-				code = code + "import numpy;\n";
-				code = code + "# Delete existing files\n";
-				for (String fileName : filesNames) {
-					fileName = fileName.replaceAll(replaceRegExp, replaceByRegExp);
-					code = code + "if os.path.exists('" + fileName + "'):\n";
-					code = code + "\tos.remove('" + fileName + "');\n";
-				}
-				code = code + "# Create and add categories to files\n";
-				for (String fileName : filesNames) {
-					fileName = fileName.replaceAll(replaceRegExp, replaceByRegExp);
-					code = code + "with open('" + fileName + "', 'w', encoding='utf-8') as dataFile:\n";
-					String[] fileNameSplitted = fileName.split("\\.");
-					String subjectName = fileNameSplitted[fileNameSplitted.length - 3];
-					IResource subject = experiment.findMember(subjectName);
-					Channel[] categories = MathEngineFactory.getMathEngine().getCategories(subject);
-					for (Channel channel : categories) {
-						String criteria = MathEngineFactory.getMathEngine().getCriteriaForCategory(channel);
-						Integer[] trialsList = MathEngineFactory.getMathEngine().getTrialsListForCategory(channel);
-						int[] trialsListInt = Arrays.asList(trialsList).stream().mapToInt(Integer::intValue).toArray();
-						String[] strArray = Arrays.stream(trialsListInt).mapToObj(String::valueOf).toArray(String[]::new);
-						String trialsListString = String.join(";", strArray);
-						code = code + "\tdataFile.write('" + criteria + ";" + trialsListString + "');\n";
-						code = code + "\tdataFile.write('\\n');\n";
-					}
-				}
-				code = code + "# Append data\n";
-				for (String marker : markers) {
-					marker = marker.replaceAll(replaceRegExp, replaceByRegExp);
-					String[] segments = marker.split("\\.");
-					String fileName = destination + segments[0] + "." + segments[1] + ".markers.csv";
-					//Channel channel = MathEngineFactory.getMathEngine().getChannelFromName(experiment, marker);
-					String[] markerSplitted = marker.split("_");
-					code = code + "# " + markerSplitted[markerSplitted.length - 1] + "\n";
-					code = code + "with open('" + fileName + "', 'a', encoding='utf-8') as dataFile:\n";
-					code = code + "\tdataFile.write('MarkerLabel;" + markerSplitted[markerSplitted.length - 1] + "');\n";
-					code = code + "\tdataFile.write('\\n');\n";
-					code = code + "\tnumpy.savetxt(dataFile, docometre.experiments['" + marker + "_Values'], delimiter=\"" + separator + "\")" + ";\n";
-				}
-			} else code = "# Nothing to export !";
+		String[] markers = markersList.split(";");
+		Set<String> filesNames = new HashSet<>();
+		Set<String> subjectsNames = new HashSet<>();
+		for (String marker : markers) {
+			String[] segments = marker.split("\\.");
+			String fileName = destination + segments[0] + "." + segments[1] + ".markers.csv";
+			filesNames.add(fileName);
+			subjectsNames.add(segments[0] + "." + segments[1]);
 		}
 		
-		if(MathEngineFactory.isMatlab()) {
-			if(!"".equals(markersList)) {
-				IContainer experiment = (IContainer) SelectedExprimentContributionItem.selectedExperiment;
-				String[] markers = markersList.split(";");
-				Set<String> filesNames = new HashSet<>();
-				for (String marker : markers) {
-					String[] segments = marker.split("\\.");
-					String fileName = destination + segments[0] + "." + segments[1] + ".markers.csv";
-					filesNames.add(fileName);
-				}
-				code = code + "% Create and add categories to files (delete files if exists)\n";
-				for (String fileName : filesNames) {
-					fileName = fileName.replaceAll(replaceRegExp, replaceByRegExp);
-					code = code + "dataFile = fopen('" + fileName + "','w' , 'n', 'UTF-8');\n";
-					String[] fileNameSplitted = fileName.split("\\.");
-					String subjectName = fileNameSplitted[fileNameSplitted.length - 3];
-					IResource subject = experiment.findMember(subjectName);
-					Channel[] categories = MathEngineFactory.getMathEngine().getCategories(subject);
-					for (Channel channel : categories) {
-						String criteria = MathEngineFactory.getMathEngine().getCriteriaForCategory(channel);
-						Integer[] trialsList = MathEngineFactory.getMathEngine().getTrialsListForCategory(channel);
-						int[] trialsListInt = Arrays.asList(trialsList).stream().mapToInt(Integer::intValue).toArray();
-						String[] strArray = Arrays.stream(trialsListInt).mapToObj(String::valueOf).toArray(String[]::new);
-						String trialsListString = String.join(";", strArray);
-						code = code + "fprintf(dataFile, '" + criteria + ";" + trialsListString + "');\n";
-						code = code + "fprintf(dataFile, '\\n');\n";
-					}
-					code = code + "fclose(dataFile);\n";
-				}
-				code = code + "% Append data\n";
-				for (String marker : markers) {
-					marker = marker.replaceAll(replaceRegExp, replaceByRegExp);
-					String[] segments = marker.split("\\.");
-					String fileName = destination + segments[0] + "." + segments[1] + ".markers.csv";
-					String[] markerSplitted = marker.split("_");
-					code = code + "% " + markerSplitted[markerSplitted.length - 1] + "\n";
-					code = code + "dataFile = fopen('" + fileName + "', 'a', 'n', 'UTF-8');\n";
-					code = code + "fprintf(dataFile, 'MarkerLabel;" + markerSplitted[markerSplitted.length - 1] + "');\n";
-					code = code + "fprintf(dataFile, '\\n');\n";
-					code = code + "fclose(dataFile);\n";
-					code = code + "dlmwrite('" + fileName + "', " + marker + "_Values ,'delimiter', ';', '-append');\n";
-				}
-			} else code = "% Nothing to export !";
-		} 
+		if(filesNames.size() == 0) {
+			if(MathEngineFactory.isMatlab()) return "% Nothing to export !";
+			if(MathEngineFactory.isPython()) return "# Nothing to export !";
+		}
+		
+		if(filesNames.size() > 1) {
+			if(MathEngineFactory.isMatlab()) return "% Export error : cannot export more than one subject ! " + String.join(", ", markers);
+			if(MathEngineFactory.isPython()) return "# Export error : cannot export more than one subject ! " + String.join(", ", markers);
+		}
+		
+		String fileName = filesNames.toArray(new String[filesNames.size()])[0];
+		String fullSubjectName = subjectsNames.toArray(new String[subjectsNames.size()])[0];
+		
+		String cellExpression = "";
+		if(MathEngineFactory.isMatlab()) cellExpression = "{'" + String.join("','", markers) + "'}";
+		if(MathEngineFactory.isPython()) cellExpression = "['" + String.join("','", markers) + "']";
+		
+		code  = code.replaceAll(fullPathFileNameKey, fileName);
+		code  = code.replaceAll(fullSubjectNameKey, fullSubjectName);
+		code  = code.replaceAll(cellExpressionKey, cellExpression);
+		code  = code.replaceAll(dividerKey, divider);
+		
 		return code + "\n";
 	}
 	
