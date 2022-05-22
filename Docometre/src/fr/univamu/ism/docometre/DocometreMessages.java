@@ -1052,6 +1052,9 @@ public final class DocometreMessages extends NLS {
 	public static String sourceCodeTitle;
 
 	public static String synchronizeChartWhenTrialChange;
+
+	public static String MarkersNumberInSelectedTrial;
+	public static String MarkersNumberInSelectedTrialToolTip;
 			
 	static {
 		// load message values from bundle file

@@ -280,6 +280,9 @@ public class Title implements ITitle, PaintListener {
 		if(!defaultFont.isDisposed()) {
 			defaultFont.dispose();
 		}
+		if(font != null && !font.isDisposed()) {
+			font.dispose();
+		}
 		if(!textLayout.isDisposed()) {
 			textLayout.dispose();
 		}

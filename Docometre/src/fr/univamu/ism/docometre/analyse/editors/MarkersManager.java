@@ -72,11 +72,21 @@ public final class MarkersManager extends MouseAdapter implements ICustomPaintLi
 
 	private IMarkersManager containerEditor; 
 	private String markersGroupLabel;
+	private double[] selectedMarker;
 
 	public MarkersManager(IMarkersManager containerEditor) {
 		this.containerEditor = containerEditor;
 		containerEditor.getChart().getPlotArea().addMouseListener(this);
 		((IPlotArea)containerEditor.getChart().getPlotArea()).addCustomPaintListener(this);
+	}
+	
+	public void setSelectedMarker(double[] selectedMarker) {
+		this.selectedMarker = selectedMarker;
+	}
+	
+	private boolean isEqualToSelectedMarker(double[] marker) {
+		if(selectedMarker == null) return false;
+		return (selectedMarker[0] == marker[0]) && (selectedMarker[1] == marker[1]) && (selectedMarker[2] == marker[2]);
 	}
 	
 	@Override
@@ -142,6 +152,8 @@ public final class MarkersManager extends MouseAdapter implements ICustomPaintLi
 								for (int i = 0; i < markers.length; i++) {
 									if(((int)markers[i][0]) == trialNumber) {
 										
+										boolean isSelectedMarker =  isEqualToSelectedMarker(markers[i]);
+										
 										int index = containerEditor.getChart().getAxisSet().getXAxes()[0].getPixelCoordinate(markers[i][1]) + 1;
 										
 										Color oldForegroundColor = event.gc.getForeground();
@@ -149,7 +161,7 @@ public final class MarkersManager extends MouseAdapter implements ICustomPaintLi
 										int oldLineStyle = event.gc.getLineStyle();
 										event.gc.setForeground(((ILineSeries)series).getLineColor());
 										event.gc.setLineWidth(3);
-										event.gc.setLineStyle(SWT.LINE_DOT);
+										event.gc.setLineStyle(isSelectedMarker?SWT.LINE_SOLID:SWT.LINE_DOT);
 										event.gc.drawLine(index, 0, index, containerEditor.getChart().getPlotArea().getClientArea().height);
 										event.gc.drawText(markersGroupLabel, index + 3, containerEditor.getChart().getPlotArea().getClientArea().height - 15);
 										event.gc.setForeground(oldForegroundColor);
@@ -161,7 +173,7 @@ public final class MarkersManager extends MouseAdapter implements ICustomPaintLi
 										W2 += ChartLayout.MARGIN;
 										gc.setForeground(((ILineSeries)series).getLineColor());
 										gc.setLineWidth(3);
-										gc.setLineStyle(SWT.LINE_DOT);
+										gc.setLineStyle(isSelectedMarker?SWT.LINE_SOLID:SWT.LINE_DOT);
 										gc.drawLine(index + W2, 0, index + W2, containerEditor.getChart().getPlotArea().getClientArea().height + 15);
 										gc.dispose();
 										
