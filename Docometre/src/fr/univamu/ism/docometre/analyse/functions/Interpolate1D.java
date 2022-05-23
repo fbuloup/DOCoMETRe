@@ -177,7 +177,7 @@ public class Interpolate1D extends GenericFunction {
 		outputSignalSuffixLabel.setText(FunctionsMessages.OutputSignalSuffixLabel);
 		Text outputSignalSuffixText = new Text(paramContainer, SWT.BORDER);
 		outputSignalSuffixText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		value  = getProperty(outputSignalSuffixKey, "Deriv");
+		value  = getProperty(outputSignalSuffixKey, "Interp");
 		outputSignalSuffixText.setText(value);
 		outputSignalSuffixText.addModifyListener(new ModifyListener() {
 			@Override
@@ -252,7 +252,7 @@ public class Interpolate1D extends GenericFunction {
 		String trialsList = getProperty(trialsListKey, "");
 		trialsList = FunctionsHelper.createTrialsListHelper(trialsList);
 		String inputSignal = getProperty(inputSignalKey, "");
-		String outputSignal = inputSignal + getProperty(outputSignalSuffixKey, "Deriv");
+		String outputSignal = inputSignal + getProperty(outputSignalSuffixKey, "Interp");
 		String tMin = getProperty(tMinKey, "0");
 		String tMax = getProperty(tMaxKey, "0");
 		String method = getProperty(methodKey, methods[0]);
