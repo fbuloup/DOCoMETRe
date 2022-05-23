@@ -98,6 +98,13 @@ public class FunctionsMessages extends NLS {
 	public static String FilterLabel;
 	public static String SeparatorLabel;
 	
+	// Interpolate 1D
+	public static String tMinLabel;
+	public static String tMaxLabel;
+	public static String methodLabel;
+	public static String tMinLabelTooltip;
+	public static String tMaxLabelTooltip;
+	
 	static {
 		// load message values from bundle file
 		String bn = BUNDLE_NAME;
