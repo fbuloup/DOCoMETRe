@@ -134,8 +134,17 @@ public class PythonEngine implements MathEngine {
 			t0 = t1;
 		}
 		String message = DocometreMessages.MathEngineStarted + " (Python)";
-		if(startPythonInnerJob.getResult() != null && startPythonInnerJob.getResult().isOK()) Activator.logInfoMessage(message, PythonEngine.class);
+		if(startPythonInnerJob.getResult() != null && startPythonInnerJob.getResult().isOK()) {
+			Activator.logInfoMessage(getPythonVersion(), PythonController.class);
+			Activator.logInfoMessage(message, PythonEngine.class);
+		}
 		return Status.OK_STATUS;
+	}
+	
+	private String getPythonVersion() {
+		pythonController.getPythonEntryPoint().runScript("from platform import python_version; docometre.experiments['pythonVersion'] = python_version();");
+		String response = "Python version : " + pythonController.getPythonEntryPoint().evaluate("docometre.experiments['pythonVersion']");
+		return response;
 	}
 
 	@Override
@@ -172,7 +181,8 @@ public class PythonEngine implements MathEngine {
 			t0 = t1;
 		}
 		
-		if(stopPythonInnerJob.getResult() != null && stopPythonInnerJob.getResult().isOK())  Activator.logInfoMessage(DocometreMessages.MathEngineStopped, PythonController.class);
+		if(stopPythonInnerJob.getResult() != null && stopPythonInnerJob.getResult().isOK()) Activator.logInfoMessage(DocometreMessages.MathEngineStopped, PythonController.class);
+
 		return Status.OK_STATUS;
 	}
 

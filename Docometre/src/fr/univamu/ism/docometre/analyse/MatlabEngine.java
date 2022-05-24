@@ -125,8 +125,27 @@ public final class MatlabEngine implements MathEngine {
 		t0 = t1;
 		}
 		String message = DocometreMessages.MathEngineStarted + " (Matlab)";
-		if(startMatlabInnerJob.getResult() != null && startMatlabInnerJob.getResult().isOK()) Activator.logInfoMessage(message, MatlabController.class);
+		if(startMatlabInnerJob.getResult() != null && startMatlabInnerJob.getResult().isOK()) {
+			Activator.logInfoMessage(getMatlabVersion(), MatlabController.class);
+			Activator.logInfoMessage(message, MatlabController.class);
+		}
 		return startMatlabInnerJob.getResult();
+	}
+	
+	private String getMatlabVersion() {
+		try {
+			Object[] responses = matlabController.returningEval("version", 1);
+			Object response = responses[0];
+			if(response instanceof String) {
+				String message = "Matlab version : " + response.toString();
+				return message;
+			}
+			
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return "";
 	}
 
 	@Override
