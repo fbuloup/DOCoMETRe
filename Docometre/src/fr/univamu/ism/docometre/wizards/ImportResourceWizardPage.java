@@ -319,9 +319,9 @@ public class ImportResourceWizardPage extends WizardPage {
 		IResource parentSelectedResource = ImportResourceWizard.getSelectedResource();
 		
 		if(ResourceType.isExperiment(parentSelectedResource)) {
-			resourceTypeComboViewer.setInput(new Object[] {ResourceType.SUBJECT, ResourceType.ADW_DATA_FILE, ResourceType.DACQ_CONFIGURATION, ResourceType.PROCESS, ResourceType.DATA_PROCESSING});
-			resourceTypeComboViewer.setSelection(new StructuredSelection(ResourceType.SUBJECT));
-			selectedResourceType = ResourceType.SUBJECT;
+			resourceTypeComboViewer.setInput(new Object[] {/*ResourceType.SUBJECT,*/ ResourceType.ADW_DATA_FILE, ResourceType.DACQ_CONFIGURATION, ResourceType.PROCESS, ResourceType.DATA_PROCESSING});
+			resourceTypeComboViewer.setSelection(new StructuredSelection(ResourceType.ADW_DATA_FILE));
+			selectedResourceType = ResourceType.ADW_DATA_FILE;
 		}
 		
 		if(ResourceType.isFolder(parentSelectedResource)) {
