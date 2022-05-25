@@ -1,6 +1,6 @@
 MENU_TITLE = Motion Distance
 DESCRIPTION = Compute motion distance
-MENU_TITLE_FR = Distance de mouvement
+MENU_TITLE_FR = Distance du mouvement
 DESCRIPTION_FR = Calcule la distance du mouvement
 
 # Now start specific matlab function 
