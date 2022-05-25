@@ -1004,6 +1004,42 @@
                </command>
                <command
                      commandId="SetTypeCommand"
+                     label="%DACQConfigurationType.label"
+                     style="radio">
+                  <parameter
+                        name="Docometre.type.parameter"
+                        value="DACQ_CONFIGURATION">
+                  </parameter>
+               </command>
+               <command
+                     commandId="SetTypeCommand"
+                     label="%DACQProcessingType.label"
+                     style="radio">
+                  <parameter
+                        name="Docometre.type.parameter"
+                        value="PROCESS">
+                  </parameter>
+               </command>
+               <command
+                     commandId="SetTypeCommand"
+                     label="%DataProcessingType.label"
+                     style="radio">
+                  <parameter
+                        name="Docometre.type.parameter"
+                        value="DATA_PROCESSING">
+                  </parameter>
+               </command>
+               <command
+                     commandId="SetTypeCommand"
+                     label="%BatchDataProcessingType.label"
+                     style="radio">
+                  <parameter
+                        name="Docometre.type.parameter"
+                        value="BATCH_DATA_PROCESSING">
+                  </parameter>
+               </command>
+               <command
+                     commandId="SetTypeCommand"
                      label="%ProcessTestType.label"
                      style="radio">
                   <parameter
@@ -1081,24 +1117,6 @@
                   <parameter
                         name="Docometre.type.parameter"
                         value="OPTITRACK_TYPE_1">
-                  </parameter>
-               </command>
-               <command
-                     commandId="SetTypeCommand"
-                     label="%DataProcessingType.label"
-                     style="radio">
-                  <parameter
-                        name="Docometre.type.parameter"
-                        value="DATA_PROCESSING">
-                  </parameter>
-               </command>
-               <command
-                     commandId="SetTypeCommand"
-                     label="%BatchDataProcessingType.label"
-                     style="radio">
-                  <parameter
-                        name="Docometre.type.parameter"
-                        value="BATCH_DATA_PROCESSING">
                   </parameter>
                </command>
                <command
@@ -1866,6 +1884,42 @@
             </command>
             <command
                   commandId="SetTypeCommand"
+                  label="%DACQConfigurationType.label"
+                  style="radio">
+               <parameter
+                     name="Docometre.type.parameter"
+                     value="DACQ_CONFIGURATION">
+               </parameter>
+            </command>
+            <command
+                  commandId="SetTypeCommand"
+                  label="%DACQProcessingType.label"
+                  style="radio">
+               <parameter
+                     name="Docometre.type.parameter"
+                     value="PROCESS">
+               </parameter>
+            </command>
+            <command
+                  commandId="SetTypeCommand"
+                  label="%DataProcessingType.label"
+                  style="radio">
+               <parameter
+                     name="Docometre.type.parameter"
+                     value="DATA_PROCESSING">
+               </parameter>
+            </command>
+            <command
+                  commandId="SetTypeCommand"
+                  label="%BatchDataProcessingType.label"
+                  style="radio">
+               <parameter
+                     name="Docometre.type.parameter"
+                     value="BATCH_DATA_PROCESSING">
+               </parameter>
+            </command>
+            <command
+                  commandId="SetTypeCommand"
                   label="%ProcessTestType.label"
                   style="radio">
                <parameter
@@ -1943,24 +1997,6 @@
                <parameter
                      name="Docometre.type.parameter"
                      value="OPTITRACK_TYPE_1">
-               </parameter>
-            </command>
-            <command
-                  commandId="SetTypeCommand"
-                  label="%DataProcessingType.label"
-                  style="radio">
-               <parameter
-                     name="Docometre.type.parameter"
-                     value="DATA_PROCESSING">
-               </parameter>
-            </command>
-            <command
-                  commandId="SetTypeCommand"
-                  label="%BatchDataProcessingType.label"
-                  style="radio">
-               <parameter
-                     name="Docometre.type.parameter"
-                     value="BATCH_DATA_PROCESSING">
                </parameter>
             </command>
             <command
