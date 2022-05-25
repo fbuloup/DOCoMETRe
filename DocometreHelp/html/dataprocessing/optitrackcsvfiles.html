@@ -9,7 +9,8 @@
  <body>
  <h1>Optitrack CSV Data Files</h1>
 
-For now only Optitrack CSV Data Files with Markers are supported. Such a file <b>MUST</b> look like this example :
+For now only Optitrack CSV Data Files with Markers are supported. It is called <b>Optitrack Type 1</b> in DOCoMETRe. 
+Such a file <b>MUST</b> look like this example :
 
 <pre>
 Frame number,19021
@@ -34,6 +35,11 @@ s,mm,mm,mm,mm,mm,mm,mm,mm,mm,mm,mm,mm,mm,mm,mm
 0.044,355.177,202.523,401.739,14.1472,134.426,435.344,-259.657,137.749,468.613,-255.505,323.963,650.814,-249.255,213.344,648.972
 ...
 </pre>
+
+Files organization must look like image capture below. It does not exist automatic importation procedure and you must create each subject in DOCoMETRe (S02, S03 etc.) and then copy/paste
+each folder (SXXD and SXXNB) in corresponding subject (e.g. S02D and S02NB in subject S02). Then you must assign <b>Session</b> type to all pasted
+folders and <b>Optitrack type 1</b> type to all data files (S02_D_1.csv, S02_D_2.csv, S02_D_3.csv etc.).
+<img src="image1.png" alt="Optitrack CSV files organization" style="width:380px;height:500px;margin-left:auto;margin-right:auto;display:block;margin-top:20px;">
 
  </body>
  </html>
