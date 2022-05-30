@@ -40,6 +40,7 @@
  *  - Frank Buloup - frank.buloup@univ-amu.fr - initial API and implementation [25/03/2020]
  ******************************************************************************/
 package fr.univamu.ism.docometre.analyse.editors;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -152,6 +153,9 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 	private Button useSameColorButton;
 	private ListViewer categoriesListViewer;
 	private CategoriesChangeListener categoriesChangeListener;
+	private CTabFolder trialsCategoriesTabFolder;
+	private CTabItem trialsTabItem;
+	private CTabItem categoriesTabItem;
 
 	public XYChartEditor() {
 	}
@@ -284,18 +288,26 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		container2.setLayout(gl);
 		container2.setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		
-		CTabFolder trialsCategoriesTabFolder = new CTabFolder(container2, SWT.BOTTOM | SWT.FLAT | SWT.BORDER | SWT.MULTI);
+		trialsCategoriesTabFolder = new CTabFolder(container2, SWT.BOTTOM | SWT.FLAT | SWT.BORDER | SWT.MULTI);
 		trialsCategoriesTabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
-		CTabItem trialsTabItem = new CTabItem(trialsCategoriesTabFolder, SWT.BORDER);
+		trialsTabItem = new CTabItem(trialsCategoriesTabFolder, SWT.BORDER);
 		trialsTabItem.setText(DocometreMessages.TrialsGroupLabel);
 		
-		CTabItem categoriesTabItem = new CTabItem(trialsCategoriesTabFolder, SWT.BORDER);
+		categoriesTabItem = new CTabItem(trialsCategoriesTabFolder, SWT.BORDER);
 		categoriesTabItem.setText(DocometreMessages.Categories);
 		
 		createTrialsTabItem(trialsCategoriesTabFolder, trialsTabItem, container2);
 		
 		createCategoriesTabItem(trialsCategoriesTabFolder, categoriesTabItem, container2);
+		
+		trialsCategoriesTabFolder.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if(trialsTabItem == trialsCategoriesTabFolder.getSelection()) categoriesListViewer.removeSelectionChangedListener(categoriesChangeListener);
+				else categoriesListViewer.addSelectionChangedListener(categoriesChangeListener);
+			}
+		});
 		
 
 	}
@@ -325,7 +337,6 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 			allCategories.addAll(Arrays.asList(categories));
 		}
 		categoriesChangeListener  = new CategoriesChangeListener();
-		categoriesListViewer.addSelectionChangedListener(categoriesChangeListener);
 //		categoriesListViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 //			@Override
 //			public void selectionChanged(SelectionChangedEvent event) {
@@ -450,7 +461,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		bottomContainer.setLayout(gl);
 		
 		Button showMarkersButton = new Button(bottomContainer, SWT.CHECK);
-		showMarkersButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		showMarkersButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
 		showMarkersButton.setText(DocometreMessages.ShowMarkersTitle);
 		showMarkersButton.setSelection(xyChartData.isShowMarkers());
 		showMarkersButton.addSelectionListener(new SelectionAdapter() {
@@ -514,7 +525,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		gl.marginRight = 5;
 		bottomContainer2.setLayout(gl);
 		
-		autoScaleButton = new Button(bottomContainer2, SWT.CHECK | SWT.WRAP);
+		autoScaleButton = new Button(bottomContainer2, SWT.CHECK);
 		autoScaleButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
 		autoScaleButton.setText(DocometreMessages.AutoScale_Title);
 		autoScaleButton.setSelection(xyChartData.isAutoScale());
@@ -533,10 +544,11 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 			}
 		});
 		
-		useSameColorButton = new Button(bottomContainer2, SWT.CHECK | SWT.WRAP);
-		useSameColorButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		useSameColorButton = new Button(bottomContainer2, SWT.CHECK);
+		useSameColorButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
 		useSameColorButton.setText(DocometreMessages.UseSameColorForSameCategory);
 		useSameColorButton.setSelection(xyChartData.isUseSameColorForSameCategory());
+		useSameColorButton.setToolTipText(DocometreMessages.UseSameColorForSameCategory);
 		useSameColorButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -547,7 +559,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		});
 		
 		container.setSashWidth(3);
-		container.setWeights(new int[] {80, 20});
+		container.setWeights(new int[] {75, 25});
 		
 		refreshTrialsListFrontEndCuts();
 		trialsListViewer.setSelection(new StructuredSelection(xyChartData.getSelectedTrialsNumbers()));
@@ -655,6 +667,10 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 	@SuppressWarnings("unchecked")
 	@Override
 	public void selectionChanged(SelectionChangedEvent event) {
+		if(trialsCategoriesTabFolder.getSelection() == trialsTabItem && categoriesListViewer != null) {
+			categoriesListViewer.setSelection(StructuredSelection.EMPTY);
+			categoriesListViewer.refresh();
+		}
 		if(trialsListViewer.getStructuredSelection().isEmpty()) {
 			removeAllSeries();
 		} else {
@@ -685,6 +701,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		}
 		chart.redraw();
 		setDirty(true);
+		trialsListViewer.refresh();
 	}
 	
 	private void updateRange() {
