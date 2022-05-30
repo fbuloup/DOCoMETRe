@@ -41,6 +41,7 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.analyse.editors;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -62,6 +63,7 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
@@ -115,6 +117,25 @@ import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 public class XYChartEditor extends EditorPart implements ISelectionChangedListener, IMarkersManager, ZoomListener, TrialsEditor, ChartPropertiesListener, Chart2D3DBehaviour {
 	
 	public static String ID = "Docometre.XYChartEditor";
+	
+	
+	private class CategoriesChangeListener implements ISelectionChangedListener {
+		@Override
+		public void selectionChanged(SelectionChangedEvent event) {
+			HashSet<Integer> trialsToSelect = new HashSet<>();
+			IStructuredSelection structuredSelection = (IStructuredSelection) categoriesListViewer.getSelection();
+			Object[] selections = structuredSelection.toArray();
+			for (Object selection : selections) {
+				Channel category = (Channel)selection;
+				Integer[] trials = MathEngineFactory.getMathEngine().getTrialsListForCategory(category);
+				trialsToSelect.addAll(Arrays.asList(trials));
+			}
+			IStructuredSelection selection = new StructuredSelection(trialsToSelect.toArray());
+			trialsListViewer.setSelection(selection);
+		}
+		
+	}
+	
 	private XYChart xyChartData;
 	private SashForm container;
 	private ListViewer trialsListViewer;
@@ -129,6 +150,8 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 	private Button autoScaleButton;
 	private Group scaleValuesGroup;
 	private Button useSameColorButton;
+	private ListViewer categoriesListViewer;
+	private CategoriesChangeListener categoriesChangeListener;
 
 	public XYChartEditor() {
 	}
@@ -270,6 +293,60 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		CTabItem categoriesTabItem = new CTabItem(trialsCategoriesTabFolder, SWT.BORDER);
 		categoriesTabItem.setText(DocometreMessages.Categories);
 		
+		createTrialsTabItem(trialsCategoriesTabFolder, trialsTabItem, container2);
+		
+		createCategoriesTabItem(trialsCategoriesTabFolder, categoriesTabItem, container2);
+		
+
+	}
+	
+	private void createCategoriesTabItem(CTabFolder trialsCategoriesTabFolder, CTabItem categoriesTabItem, Composite container2) {
+		categoriesListViewer = new ListViewer(trialsCategoriesTabFolder, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
+		categoriesListViewer.getList().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		categoriesListViewer.setContentProvider(new ArrayContentProvider());
+		categoriesListViewer.setLabelProvider(new LabelProvider() {
+			@Override
+			public String getText(Object element) {
+				if(!(element instanceof Channel)) return "??";
+				Channel channel = (Channel)element;
+				Integer[] trialsList = MathEngineFactory.getMathEngine().getTrialsListForCategory(channel);
+				String trialsListString = Arrays.toString(trialsList);
+				return element.toString() + " " + trialsListString;
+			}
+		});
+		categoriesListViewer.setComparator(new ViewerComparator());
+		String[] seriesIDs = getSeriesIDs();
+		HashSet<Channel> allCategories = new HashSet<Channel>();
+		for (String seriesID : seriesIDs) {
+			String fullYChannelName = seriesID.split("\\(")[0];
+			String fullSubjectName = fullYChannelName.replaceAll("\\.\\w+$", "");
+			IResource subject = ((IContainer)SelectedExprimentContributionItem.selectedExperiment).findMember(fullSubjectName.split("\\.")[1]);
+			Channel[] categories = MathEngineFactory.getMathEngine().getCategories(subject);
+			allCategories.addAll(Arrays.asList(categories));
+		}
+		categoriesChangeListener  = new CategoriesChangeListener();
+		categoriesListViewer.addSelectionChangedListener(categoriesChangeListener);
+//		categoriesListViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+//			@Override
+//			public void selectionChanged(SelectionChangedEvent event) {
+//				HashSet<Integer> trialsToSelect = new HashSet<>();
+//				IStructuredSelection structuredSelection = (IStructuredSelection) categoriesListViewer.getSelection();
+//				Object[] selections = structuredSelection.toArray();
+//				for (Object selection : selections) {
+//					Channel category = (Channel)selection;
+//					Integer[] trials = MathEngineFactory.getMathEngine().getTrialsListForCategory(category);
+//					trialsToSelect.addAll(Arrays.asList(trials));
+//				}
+//				IStructuredSelection selection = new StructuredSelection(trialsToSelect.toArray());
+//				trialsListViewer.setSelection(selection);
+//			}
+//		});
+		categoriesListViewer.setInput(allCategories.toArray());
+		categoriesTabItem.setControl(categoriesListViewer.getList());
+		
+	}
+	
+	private void createTrialsTabItem(CTabFolder trialsCategoriesTabFolder, CTabItem trialsTabItem, Composite container2) {
 		
 		trialsListViewer = new ListViewer(trialsCategoriesTabFolder, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 		trialsListViewer.getList().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -364,7 +441,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		
 		Composite bottomContainer = new Composite(container2, SWT.NONE);
 		bottomContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		gl = new GridLayout();
+		GridLayout gl = new GridLayout();
 		gl.numColumns = 3;
 		gl.marginHeight = 0;
 		gl.marginWidth = 0;
@@ -475,7 +552,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		refreshTrialsListFrontEndCuts();
 		trialsListViewer.setSelection(new StructuredSelection(xyChartData.getSelectedTrialsNumbers()));
 		setDirty(false);
-
+		
 	}
 	
 	protected void updateSeriesColorsHandler() {
