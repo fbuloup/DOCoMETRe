@@ -178,7 +178,7 @@ public final class Analyse {
 				dataFile  = dataFile.replaceAll("/", "\\\\");
 			} else dataFile = dataFile.replaceAll(subject.getLocation().toOSString(), "");
 			IResource resource = subject.findMember(dataFile);
-			response = response && ResourceType.isDataFile(resource);
+			response = response && ResourceType.isOptitrack_Type_1(resource);
 		}
 		return response;
 	}
