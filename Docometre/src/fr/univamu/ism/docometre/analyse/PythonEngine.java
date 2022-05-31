@@ -61,6 +61,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -84,6 +85,8 @@ public class PythonEngine implements MathEngine {
 	private PythonController pythonController;
 	
 	private boolean loadFromSavedFile;
+
+	private String pythonLocation;
 	
 	public PythonEngine() {
 		pythonController = PythonController.getInstance();
@@ -93,9 +96,14 @@ public class PythonEngine implements MathEngine {
 	public IStatus startEngine(IProgressMonitor monitor) {
 		Activator.logInfoMessage(DocometreMessages.MathEngineStarting, PythonController.class);
 		
-		String pythonLocation = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.PYTHON_LOCATION);
+		pythonLocation = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.PYTHON_LOCATION);
 		String pythonScriptsLocation = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.PYTHON_SCRIPTS_LOCATION);
 		int timeOut = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.PYTHON_TIME_OUT);
+		
+		if("".equals(pythonLocation)) {
+			if(Platform.getOS().equals(Platform.OS_WIN32)) pythonLocation = "py";
+			else pythonLocation = "python";
+		}
 
 		Job startPythonInnerJob = new Job(DocometreMessages.WaitingForMathEngine) {
 			@Override
