@@ -154,7 +154,10 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 			@Override
 			public String getText(Object element) {
 				String trial = super.getText(element);
-				return DocometreMessages.Trial + trial;
+				String category = "";
+				Channel signal = channelEditor.getChannel();
+				category = MathEngineFactory.getMathEngine().getCategoryForTrialNumber(signal, Integer.parseInt(trial));
+				return DocometreMessages.Trial + trial + ("".equals(category)?"":" [" + category + "]");
 			}
 		});
 		trialsListViewer.setInput(trials);

@@ -273,7 +273,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 						Channel xSignal = (Channel)items[0];
 						Channel ySignal = (Channel)items[1];
 						xyChartData.addCurve(xSignal, ySignal);
-						refreshTrialsListFrontEndCuts();
+						refreshTrialsListFrontEndCutsCategories();
 						setDirty(true);
 					}
 				 }
@@ -327,36 +327,29 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 			}
 		});
 		categoriesListViewer.setComparator(new ViewerComparator());
-		String[] seriesIDs = getSeriesIDs();
+		categoriesChangeListener  = new CategoriesChangeListener();
+		categoriesTabItem.setControl(categoriesListViewer.getList());
+		
+		updateCategories();
+		
+	}
+	
+	private void updateCategories() {
+		if(categoriesListViewer == null) return;
+		Object[] channelsTuple = xyChartData.getChannels().toArray();
 		HashSet<Channel> allCategories = new HashSet<Channel>();
-		for (String seriesID : seriesIDs) {
-			String fullYChannelName = seriesID.split("\\(")[0];
-			String fullSubjectName = fullYChannelName.replaceAll("\\.\\w+$", "");
+		for (Object channelTuple : channelsTuple) {
+			if(!(channelTuple instanceof Channel[])) continue;
+			Channel[] channels = (Channel[])channelTuple;
+			String fullXChannelName = channels[0].getFullName();//seriesID.split("\\(")[0];
+			String fullSubjectName = fullXChannelName.replaceAll("\\.\\w+$", "");
 			IResource subject = ((IContainer)SelectedExprimentContributionItem.selectedExperiment).findMember(fullSubjectName.split("\\.")[1]);
 			Channel[] categories = MathEngineFactory.getMathEngine().getCategories(subject);
 			allCategories.addAll(Arrays.asList(categories));
 		}
-		categoriesChangeListener  = new CategoriesChangeListener();
-//		categoriesListViewer.addSelectionChangedListener(new ISelectionChangedListener() {
-//			@Override
-//			public void selectionChanged(SelectionChangedEvent event) {
-//				HashSet<Integer> trialsToSelect = new HashSet<>();
-//				IStructuredSelection structuredSelection = (IStructuredSelection) categoriesListViewer.getSelection();
-//				Object[] selections = structuredSelection.toArray();
-//				for (Object selection : selections) {
-//					Channel category = (Channel)selection;
-//					Integer[] trials = MathEngineFactory.getMathEngine().getTrialsListForCategory(category);
-//					trialsToSelect.addAll(Arrays.asList(trials));
-//				}
-//				IStructuredSelection selection = new StructuredSelection(trialsToSelect.toArray());
-//				trialsListViewer.setSelection(selection);
-//			}
-//		});
 		categoriesListViewer.setInput(allCategories.toArray());
-		categoriesTabItem.setControl(categoriesListViewer.getList());
-		
 	}
-	
+
 	private void createTrialsTabItem(CTabFolder trialsCategoriesTabFolder, CTabItem trialsTabItem, Composite container2) {
 		
 		trialsListViewer = new ListViewer(trialsCategoriesTabFolder, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
@@ -366,7 +359,14 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 			@Override
 			public String getText(Object element) {
 				String trial = super.getText(element);
-				return DocometreMessages.Trial + trial;
+				String category = "";
+				Set<String> keys = xyChartData.getCurvesIDs();
+				for (String key : keys) {
+					Channel[] channels = xyChartData.getXYChannels(key);
+					category = MathEngineFactory.getMathEngine().getCategoryForTrialNumber(channels[0], Integer.parseInt(trial));
+					break;
+				}
+				return DocometreMessages.Trial + trial + ("".equals(category)?"":" [" + category + "]");
 			}
 		});
 		trialsListViewer.addSelectionChangedListener(this);
@@ -561,7 +561,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		container.setSashWidth(3);
 		container.setWeights(new int[] {75, 25});
 		
-		refreshTrialsListFrontEndCuts();
+		refreshTrialsListFrontEndCutsCategories();
 		trialsListViewer.setSelection(new StructuredSelection(xyChartData.getSelectedTrialsNumbers()));
 		setDirty(false);
 		
@@ -599,7 +599,8 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 	}
 	
 	@Override
-	public void refreshTrialsListFrontEndCuts() {
+	public void refreshTrialsListFrontEndCutsCategories() {
+		updateCategories();
 		if(xyChartData.getNbCurves() == 0) {
 			trialsListViewer.setInput(null);
 			return;
@@ -633,6 +634,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 			xyChartData.setEndCut(baseEndCut);
 			endCutSpinner.setSelection(baseEndCut);
 		}
+		
 
 	}
 	

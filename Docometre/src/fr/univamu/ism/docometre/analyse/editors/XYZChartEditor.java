@@ -57,10 +57,12 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
@@ -134,6 +136,23 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 	
 	public static String ID = "Docometre.XYZChartEditor";
 	
+	private class CategoriesChangeListener implements ISelectionChangedListener {
+		@Override
+		public void selectionChanged(SelectionChangedEvent event) {
+			HashSet<Integer> trialsToSelect = new HashSet<>();
+			IStructuredSelection structuredSelection = (IStructuredSelection) categoriesListViewer.getSelection();
+			Object[] selections = structuredSelection.toArray();
+			for (Object selection : selections) {
+				Channel category = (Channel)selection;
+				Integer[] trials = MathEngineFactory.getMathEngine().getTrialsListForCategory(category);
+				trialsToSelect.addAll(Arrays.asList(trials));
+			}
+			IStructuredSelection selection = new StructuredSelection(trialsToSelect.toArray());
+			trialsListViewer.setSelection(selection);
+		}
+		
+	}
+	
 	private XYZChart xyzChartData;
 	private SashForm container;
 	private ListViewer trialsListViewer;
@@ -152,11 +171,20 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 	private Composite chartContainer;
 	private Chart chart;
 	private BoundingBox3d bounds;
+	private CategoriesChangeListener categoriesChangeListener;
 	
 	CanvasNewtSWT canvas;
 	NewtCanvasSWT newtCanvasSWT;
 	Window newtWindow;
-	private Composite container2;
+//	private Composite container2;
+
+	private CTabFolder trialsCategoriesTabFolder;
+
+	private CTabItem trialsTabItem;
+
+	private CTabItem categoriesTabItem;
+
+	private ListViewer categoriesListViewer;
 	
 
 	public XYZChartEditor() {
@@ -333,7 +361,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 //			}
 //		});
 		
-		container2 = new Composite(container, SWT.BORDER);
+		Composite container2 = new Composite(container, SWT.BORDER);
 		GridLayout gl = new GridLayout();
 		gl.marginHeight = 1;
 		gl.marginWidth = 1;
@@ -341,16 +369,68 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 		container2.setLayout(gl);
 		container2.setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		
-		CTabFolder trialsCategoriesTabFolder = new CTabFolder(container2, SWT.BOTTOM | SWT.FLAT | SWT.BORDER | SWT.MULTI);
+		trialsCategoriesTabFolder = new CTabFolder(container2, SWT.BOTTOM | SWT.FLAT | SWT.BORDER | SWT.MULTI);
 		trialsCategoriesTabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
-		CTabItem trialsTabItem = new CTabItem(trialsCategoriesTabFolder, SWT.BORDER);
+		trialsTabItem = new CTabItem(trialsCategoriesTabFolder, SWT.BORDER);
 		trialsTabItem.setText(DocometreMessages.TrialsGroupLabel);
 		
-		CTabItem categoriesTabItem = new CTabItem(trialsCategoriesTabFolder, SWT.BORDER);
+		categoriesTabItem = new CTabItem(trialsCategoriesTabFolder, SWT.BORDER);
 		categoriesTabItem.setText(DocometreMessages.Categories);
 		
+		createTrialsTabItem(trialsCategoriesTabFolder, trialsTabItem, container2);
 		
+		createCategoriesTabItem(trialsCategoriesTabFolder, categoriesTabItem, container2);
+		
+		trialsCategoriesTabFolder.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if(trialsTabItem == trialsCategoriesTabFolder.getSelection()) categoriesListViewer.removeSelectionChangedListener(categoriesChangeListener);
+				else categoriesListViewer.addSelectionChangedListener(categoriesChangeListener);
+			}
+		});
+
+	}
+	
+	private void createCategoriesTabItem(CTabFolder trialsCategoriesTabFolder, CTabItem categoriesTabItem, Composite container2) {
+		categoriesListViewer = new ListViewer(trialsCategoriesTabFolder, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
+		categoriesListViewer.getList().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		categoriesListViewer.setContentProvider(new ArrayContentProvider());
+		categoriesListViewer.setLabelProvider(new LabelProvider() {
+			@Override
+			public String getText(Object element) {
+				if(!(element instanceof Channel)) return "??";
+				Channel channel = (Channel)element;
+				Integer[] trialsList = MathEngineFactory.getMathEngine().getTrialsListForCategory(channel);
+				String trialsListString = Arrays.toString(trialsList);
+				return element.toString() + " " + trialsListString;
+			}
+		});
+		categoriesListViewer.setComparator(new ViewerComparator());
+		categoriesChangeListener  = new CategoriesChangeListener();
+		categoriesTabItem.setControl(categoriesListViewer.getList());
+		
+		updateCategories();
+		
+	}
+	
+	private void updateCategories() {
+		if(categoriesListViewer == null) return;
+		Object[] channelsTuple = xyzChartData.getChannels().toArray();
+		HashSet<Channel> allCategories = new HashSet<Channel>();
+		for (Object channelTuple : channelsTuple) {
+			if(!(channelTuple instanceof Channel[])) continue;
+			Channel[] channels = (Channel[])channelTuple;
+			String fullXChannelName = channels[0].getFullName();//seriesID.split("\\(")[0];
+			String fullSubjectName = fullXChannelName.replaceAll("\\.\\w+$", "");
+			IResource subject = ((IContainer)SelectedExprimentContributionItem.selectedExperiment).findMember(fullSubjectName.split("\\.")[1]);
+			Channel[] categories = MathEngineFactory.getMathEngine().getCategories(subject);
+			allCategories.addAll(Arrays.asList(categories));
+		}
+		categoriesListViewer.setInput(allCategories.toArray());
+	}
+
+	private void createTrialsTabItem(CTabFolder trialsCategoriesTabFolder, CTabItem trialsTabItem, Composite container2) {
 		trialsListViewer = new ListViewer(trialsCategoriesTabFolder, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 		trialsListViewer.getList().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		trialsListViewer.setContentProvider(new ArrayContentProvider());
@@ -358,7 +438,14 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 			@Override
 			public String getText(Object element) {
 				String trial = super.getText(element);
-				return DocometreMessages.Trial + trial;
+				String category = "";
+				Set<String> keys = xyzChartData.getCurvesIDs();
+				for (String key : keys) {
+					Channel[] channels = xyzChartData.getXYChannels(key);
+					category = MathEngineFactory.getMathEngine().getCategoryForTrialNumber(channels[0], Integer.parseInt(trial));
+					break;
+				}
+				return DocometreMessages.Trial + trial + ("".equals(category)?"":" [" + category + "]");
 			}
 		});
 		trialsListViewer.addSelectionChangedListener(this);
@@ -464,7 +551,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 		
 		Composite bottomContainer = new Composite(container2, SWT.NONE);
 		bottomContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		gl = new GridLayout();
+		GridLayout gl = new GridLayout();
 		gl.numColumns = 3;
 		gl.marginHeight = 0;
 		gl.marginWidth = 0;
@@ -601,12 +688,11 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 		container.setSashWidth(3);
 		container.setWeights(new int[] {80, 20});
 		
-		refreshTrialsListFrontEndCuts();
+		refreshTrialsListFrontEndCutsCategories();
 		trialsListViewer.setSelection(new StructuredSelection(xyzChartData.getSelectedTrialsNumbers()));
 		setDirty(false);
-
 	}
-	
+
 	private LineStrip getLineStripFromID(String id) {
 		List<Drawable> drawables = chart.getScene().getGraph().getAll();
 		for (Drawable drawable : drawables) {
@@ -661,7 +747,8 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 	}
 	
 	@Override
-	public void refreshTrialsListFrontEndCuts() {
+	public void refreshTrialsListFrontEndCutsCategories() {
+		updateCategories();
 		if(xyzChartData.getNbCurves() == 0) {
 			trialsListViewer.setInput(null);
 			return;

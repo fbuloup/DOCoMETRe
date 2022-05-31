@@ -154,7 +154,7 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 					zSignal = (Channel) channels[2];
 					((XYZChart)chartEditor.getChartData()).addCurve(xSignal, ySignal, zSignal);
 				}
-				chartEditor.refreshTrialsListFrontEndCuts();
+				chartEditor.refreshTrialsListFrontEndCutsCategories();
 				chartEditor.setDirty(true);
 			}
 		}
@@ -185,7 +185,7 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 					}
 				}
 				chartEditor.redraw();
-				chartEditor.refreshTrialsListFrontEndCuts();
+				chartEditor.refreshTrialsListFrontEndCutsCategories();
 				chartEditor.setDirty(true);
 			}
 		}

@@ -46,7 +46,7 @@ import fr.univamu.ism.docometre.analyse.datamodel.XYChart;
 public interface Chart2D3DBehaviour {
 	
 	void setDirty(boolean dirty);
-	void refreshTrialsListFrontEndCuts();
+	void refreshTrialsListFrontEndCutsCategories();
 	XYChart getChartData();
 	String[] getSeriesIDs();
 	void redraw();
