@@ -6,16 +6,29 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-05-20
+      -- 2022-05-31
+ADDED :
+* Support for marker selection in signal editor
+* Interpolate 1-D function 
+* Duplication signal function
+* Print Math engine version at start up
+* Categories management to 2D and 3D Charts
+* Categories labels near trials numbers in Signal editors
+FIXED :
+* Wrong default suffix interpolate function
+* Check if it&apos;s Optitrack type 1 and not only data files when loading subject to call optitrack loading method
+-- 2022-05-20
 ADDED :
 * Export Markers function (Matlab and Python)
 FIXED :
 * Float type was not handled when loading/saving subject (Python)
 * Properly update workbench when data is processed
 * Take multiple markers in account in Faf, Fab functions (Matlab,Python)
-* In batch data processing, save/unload subject is now taken in account
+* In batch data processing, save/unload subject is now taken
+in account
 * Transfert function : now all markers are transferred
-* Set Selection provider in Source Viewer (Copy from source viewer is now working !) 
+* Set Selection provider in Source Viewer (Copy from source viewer
+is now working !) 
 -- 2022-05-12
 ADDED :
 * Support for code source editor in epxressions function
