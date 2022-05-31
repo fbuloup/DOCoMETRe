@@ -163,9 +163,9 @@ public class RunDataProcessingCommand extends AbstractHandler implements ISelect
 	@Override
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
 		selectedDataProcesses.clear();
-		if(!(selection instanceof StructuredSelection)) return;
-		StructuredSelection structuredSelection = (StructuredSelection)selection;
 		if(part instanceof SubjectsView) {
+			if(!(selection instanceof StructuredSelection)) return;
+			StructuredSelection structuredSelection = (StructuredSelection)selection;
 			for (Object element : structuredSelection) {
 				if(element instanceof IResource) {
 					IResource resource = (IResource)element;
