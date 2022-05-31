@@ -81,6 +81,8 @@ public final class MatlabEngine implements MathEngine {
 	private MatlabController matlabController;
 
 	private boolean loadFromSavedFile;
+
+	private String matlabLocation;
 	
 	public MatlabEngine() {
 		matlabController = MatlabController.getInstance();
@@ -90,9 +92,12 @@ public final class MatlabEngine implements MathEngine {
 	public IStatus startEngine(IProgressMonitor monitor) {
 		Activator.logInfoMessage(DocometreMessages.MathEngineStarting, MatlabController.class);
 		
-		String matlabLocation = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.MATLAB_LOCATION);
+		matlabLocation = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.MATLAB_LOCATION);
 		String matlabScriptsLocation = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.MATLAB_SCRIPTS_LOCATION);
 		final IPath matlabFunctionsLocation = Path.fromOSString(matlabScriptsLocation).removeLastSegments(1).append("MatlabFunctions");
+		
+		// Set default matlab path if empty
+		if("".equals(matlabLocation)) matlabLocation = "matlab";
 		
 		int timeOut = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.MATLAB_TIME_OUT);
 		boolean showWindow = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.SHOW_MATLAB_WINDOW);

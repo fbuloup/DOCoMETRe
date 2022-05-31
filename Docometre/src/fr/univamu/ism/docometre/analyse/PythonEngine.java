@@ -100,6 +100,7 @@ public class PythonEngine implements MathEngine {
 		String pythonScriptsLocation = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.PYTHON_SCRIPTS_LOCATION);
 		int timeOut = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.PYTHON_TIME_OUT);
 		
+		// Set default python path if empty
 		if("".equals(pythonLocation)) {
 			if(Platform.getOS().equals(Platform.OS_WIN32)) pythonLocation = "py";
 			else pythonLocation = "python";
