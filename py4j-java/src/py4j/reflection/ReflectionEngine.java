@@ -220,7 +220,7 @@ public class ReflectionEngine {
 
 		try {
 			field = clazz.getField(name);
-			if (!Modifier.isPublic(field.getModifiers()) && !field.isAccessible()) {
+			if (!Modifier.isPublic(field.getModifiers()) && !field.canAccess(field)) {
 				field = null;
 			}
 		} catch (NoSuchFieldException e) {
