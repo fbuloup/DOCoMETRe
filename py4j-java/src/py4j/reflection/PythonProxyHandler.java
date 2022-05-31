@@ -70,6 +70,7 @@ public class PythonProxyHandler implements InvocationHandler {
 		this.finalizeCommand = GARBAGE_COLLECT_PROXY_COMMAND_NAME + id + "\ne\n";
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	protected void finalize() throws Throwable {
 		try {
