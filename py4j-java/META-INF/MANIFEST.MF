@@ -4,7 +4,7 @@ Bundle-DocURL: http://www.py4j.org
 Bundle-License: The New BSD License
 Bundle-ManifestVersion: 2
 Bundle-Name: py4j-java
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-SymbolicName: py4j-java
 Bundle-Version: 1.0.0.qualifier
 DynamicImport-Package: *
