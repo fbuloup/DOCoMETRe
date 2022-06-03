@@ -136,13 +136,13 @@ public class LineStrip extends Wireframeable {
 		painter.glBegin_LineStrip();
 
 		if (wireframeColor == null) {
-			for (int i = frontCut - baseFrontCut; i < endCut - baseFrontCut; i++) {
+			for (int i = frontCut - baseFrontCut; i < endCut - baseFrontCut && i < points.size(); i++) {
 				Point p = points.get(i);
 				painter.color(p.rgb);
 				painter.vertex(p.xyz, spaceTransformer);
 			}
 		} else {
-			for (int i = frontCut - baseFrontCut; i < endCut - baseFrontCut; i++) {
+			for (int i = frontCut - baseFrontCut; i < endCut - baseFrontCut && i < points.size(); i++) {
 				Point p = points.get(i);
 				painter.color(wireframeColor);
 				painter.vertex(p.xyz, spaceTransformer);
