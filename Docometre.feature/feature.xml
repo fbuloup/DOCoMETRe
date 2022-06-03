@@ -6,7 +6,18 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-05-31
+      -- 2022-06-03
+ADDED :
+* Improve automatic color selection in charts
+* Move to Eclipse 03 2022 release
+FIXED :
+* IOOBException in XYZ charts (End Cut can be greater than points
+size)
+* Change painting order in signals charts
+* Java 11 requirement for Py4j and o.e.ui.cheatsheets
+* Some refactoring for deprecation 
+* Can now run data processing when source tab is selected
+-- 2022-05-31
 ADDED :
 * Support for marker selection in signal editor
 * Interpolate 1-D function 
@@ -16,7 +27,8 @@ ADDED :
 * Categories labels near trials numbers in Signal editors
 FIXED :
 * Wrong default suffix interpolate function
-* Check if it&apos;s Optitrack type 1 and not only data files when loading subject to call optitrack loading method
+* Check if it&apos;s Optitrack type 1 and not only data files when
+loading subject to call optitrack loading method
 -- 2022-05-20
 ADDED :
 * Export Markers function (Matlab and Python)
