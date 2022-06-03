@@ -29,20 +29,12 @@ public class CursorMarkerDeltaPainter implements ICustomPaintListener {
 		Color oldForegroundColor = e.gc.getForeground();
 		int oldLineWidth = e.gc.getLineWidth();
 		
-		// >>> Cursor coordinates text area 
-		Font font = new Font(Display.getCurrent(), "Arial", 14, SWT.BOLD);
-        e.gc.setFont(font);
-		int textWidth = e.gc.textExtent(cursorCoordinates).x;
-		int textHeight = e.gc.textExtent(cursorCoordinates).y;
-		int chartWidth = chart.getPlotArea().getBounds().width;
-		int chartHeight = chart.getPlotArea().getBounds().height;
-		// Erase previous cursor coordinates text area
-		chart.getPlotArea().redraw(chartWidth - previousCursorTextWidth, 0, previousCursorTextWidth, textHeight, true);
-		previousCursorTextWidth = textWidth;
-		// Draw cursor coordinates text
 		Color newColor = (chart.getCurrentSeries() instanceof ILineSeries) ? ((ILineSeries)chart.getCurrentSeries()).getLineColor() : Display.getCurrent().getSystemColor(SWT.COLOR_RED);
 		e.gc.setForeground(newColor);
-		e.gc.drawText(cursorCoordinates, chartWidth - textWidth, 0);
+		int chartHeight = chart.getPlotArea().getBounds().height;
+		int chartWidth = chart.getPlotArea().getBounds().width;
+		Font font = new Font(Display.getCurrent(), "Arial", 14, SWT.BOLD);
+        e.gc.setFont(font);
 		
 		// >>> Cursor area 
 		// Erase previous cursor position area
@@ -58,10 +50,18 @@ public class CursorMarkerDeltaPainter implements ICustomPaintListener {
 		
 		// >>> Marker & delta coordinates text area
 		if(chart.isShowMarker()) {
+			// >>> Marker area
+			// Erase previous ?
+			// Draw marker istelf
+			e.gc.drawLine(chart.getCurrentXMarker_Pixel(), 0, chart.getCurrentXMarker_Pixel(), chart.getCurrentYMarker_Pixel() - 3);
+			e.gc.drawLine(chart.getCurrentXMarker_Pixel(), chart.getCurrentYMarker_Pixel() + 3, chart.getCurrentXMarker_Pixel(), chart.getPlotArea().getBounds().height);
+			e.gc.drawRectangle(chart.getCurrentXMarker_Pixel() - 3, chart.getCurrentYMarker_Pixel() - 3, 6, 6);
+			
 			String markerCoordinates = chart.getMarkerCoordinatesString();
 			String deltaCoordinates = chart.getDeltaCoordinateString();
 			
-			textWidth = e.gc.textExtent(markerCoordinates).x;
+			int textWidth = e.gc.textExtent(markerCoordinates).x;
+			int textHeight = e.gc.textExtent(markerCoordinates).y;
 			// Erase previous marker coordinates text area
 			chart.getPlotArea().redraw(chartWidth - previousMarkerTextWidth, textHeight, previousMarkerTextWidth, textHeight, true);
 			previousMarkerTextWidth = textWidth;
@@ -69,21 +69,22 @@ public class CursorMarkerDeltaPainter implements ICustomPaintListener {
 			e.gc.drawText(markerCoordinates, chartWidth - textWidth, textHeight);
 			
 			textWidth = e.gc.textExtent(deltaCoordinates).x;
+			textHeight = e.gc.textExtent(deltaCoordinates).y;
 			// Erase previous delta coordinates text area
 			chart.getPlotArea().redraw(chartWidth - previousDeltaTextWidth, 2*textHeight, previousDeltaTextWidth, textHeight, true);
 			previousDeltaTextWidth = textWidth;
 			// Draw marker & delta coordinates text
 			e.gc.drawText(deltaCoordinates, chartWidth - textWidth, 2*textHeight);
-			
-			// >>> Marker area
-			// Erase previous ?
-			// Draw marker istelf
-			if(chart.isShowMarker()) {
-				e.gc.drawLine(chart.getCurrentXMarker_Pixel(), 0, chart.getCurrentXMarker_Pixel(), chart.getCurrentYMarker_Pixel() - 3);
-				e.gc.drawLine(chart.getCurrentXMarker_Pixel(), chart.getCurrentYMarker_Pixel() + 3, chart.getCurrentXMarker_Pixel(), chart.getPlotArea().getBounds().height);
-				e.gc.drawRectangle(chart.getCurrentXMarker_Pixel() - 3, chart.getCurrentYMarker_Pixel() - 3, 6, 6);
-			}
 		}
+		
+		// >>> Cursor coordinates text area 
+		// Erase previous cursor coordinates text area
+		int textWidth = e.gc.textExtent(cursorCoordinates).x;
+		int textHeight = e.gc.textExtent(cursorCoordinates).y;
+		chart.getPlotArea().redraw(chartWidth - previousCursorTextWidth, 0, previousCursorTextWidth, textHeight, true);
+		previousCursorTextWidth = textWidth;
+		// Draw cursor coordinates text
+		e.gc.drawText(cursorCoordinates, chartWidth - textWidth, 0);
 		
 		font.dispose();
 		
