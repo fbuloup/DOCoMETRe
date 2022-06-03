@@ -143,10 +143,12 @@ public class CategoryContainerEditor extends Composite implements ISelectionChan
 		// Retrieve selected trials and signals
 		if(trialsListViewer.getStructuredSelection().isEmpty()) {
 			removeAllSeries();
+			chart.redraw();
 			return;
 		}
 		if(signalsListViewer.getStructuredSelection().isEmpty()) {
 			removeAllSeries();
+			chart.redraw();
 			return;
 		}
 		List<Integer> selectedTrialsNumbers = trialsListViewer.getStructuredSelection().toList();
@@ -170,7 +172,7 @@ public class CategoryContainerEditor extends Composite implements ISelectionChan
 			}
 			
 		}
-		
+		updateSeriesColors();
 		chart.getAxisSet().adjustRange();
 		chart.redraw();
 		
@@ -223,15 +225,27 @@ public class CategoryContainerEditor extends Composite implements ISelectionChan
 		series.setYSeries(yValues);
 		series.setAntialias(SWT.ON);
 		series.setSymbolType(PlotSymbolType.NONE);
-		Byte index = getSeriesIndex(series);
-		series.setLineColor(ColorUtil.getColor(index));
 		series.setLineWidth(3);
+	}
+	
+	private void updateSeriesColors() {
+		ISeries[] series = chart.getSeriesSet().getSeries();
+		for (ISeries iSeries : series) {
+			Byte index = getSeriesIndex((ILineSeries) iSeries);
+			((ILineSeries) iSeries).setLineColor(ColorUtil.getColor(index));
+		}
+		
 	}
 	
 	private Byte getSeriesIndex(ILineSeries series) {
 		ISeries[] seriesArray = chart.getSeriesSet().getSeries();
 		for (int i = 0; i < seriesArray.length; i++) {
-			if(series == seriesArray[i]) return (byte) i;
+			if(series == seriesArray[i]) {
+				String[] trialNumberString = seriesArray[i].getId().split("\\.");
+				int trialNumber = Integer.parseInt(trialNumberString[trialNumberString.length - 1]); 
+				int index = trialsListViewer.getStructuredSelection().toList().indexOf(trialNumber);
+				return (byte) index;
+			}
 		}
 		return 0;
 	}
@@ -244,50 +258,61 @@ public class CategoryContainerEditor extends Composite implements ISelectionChan
 	@SuppressWarnings("unchecked")
 	@Override
 	public void gotoNextTrial() {
+		// Get selected trials
 		List<Integer> selectedTrialsNumbers = trialsListViewer.getStructuredSelection().toList();
+		// Get all available trials numbers
 		Integer[] trialsNumbers = (Integer[]) trialsListViewer.getInput();
-		int maxTrialNumber = Collections.max(Arrays.asList(trialsNumbers));
+		// Will contain future selected trials
+		List<Integer> newSelection = new ArrayList<Integer>();
+		// If selection is empty and there is at least one available trial
 		if(selectedTrialsNumbers.isEmpty()) {
-			if(maxTrialNumber >= 1) {
-				List<Integer> newSelection = new ArrayList<Integer>();
-				newSelection.add(1);
+			if(trialsNumbers.length >= 1) {
+				newSelection.add(trialsNumbers[0]);
 				trialsListViewer.setSelection(new StructuredSelection(newSelection), true);
 			}
 			return;
 		}
+		// If selection is not empty, get index of greatest trial
 		int maxSelectedTrialNumber = Collections.max(selectedTrialsNumbers);
-		if(maxSelectedTrialNumber < maxTrialNumber) {
+		int index = Arrays.binarySearch(trialsNumbers, maxSelectedTrialNumber);
+		// If this index is smallest than available trials numbers size
+		if(index < trialsNumbers.length - 1) {
+			// Shift selection
 			for (int i = 0; i < selectedTrialsNumbers.size(); i++) {
-				int trialNumber = selectedTrialsNumbers.get(i);
-				trialNumber++;
-				selectedTrialsNumbers.set(i, trialNumber);
+				index = Arrays.binarySearch(trialsNumbers, selectedTrialsNumbers.get(i));
+				newSelection.add(trialsNumbers[index+1]);
 			}
-			trialsListViewer.setSelection(new StructuredSelection(selectedTrialsNumbers), true);
+			trialsListViewer.setSelection(new StructuredSelection(newSelection), true);
 		}
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public void gotoPreviousTrial() {
+		// Get selected trials
 		List<Integer> selectedTrialsNumbers = trialsListViewer.getStructuredSelection().toList();
+		// Get all available trials numbers
 		Integer[] trialsNumbers = (Integer[]) trialsListViewer.getInput();
-		int maxTrialNumber = Collections.max(Arrays.asList(trialsNumbers));
+		// Will contain future selected trials
+		List<Integer> newSelection = new ArrayList<Integer>();
 		if(selectedTrialsNumbers.isEmpty()) {
-			if(maxTrialNumber >= 1) {
-				List<Integer> newSelection = new ArrayList<Integer>();
-				newSelection.add(maxTrialNumber);
+			if(trialsNumbers.length >= 1) {
+				newSelection.add(trialsNumbers[0]);
 				trialsListViewer.setSelection(new StructuredSelection(newSelection), true);
-				trialsListViewer.getList().showSelection();
 			}
 			return;
 		}
-		if(Collections.min(selectedTrialsNumbers) > 1) {
+		// If selection is not empty, get index of smallest trial
+		int minSelectedTrialNumber = Collections.min(selectedTrialsNumbers);
+		int index = Arrays.binarySearch(trialsNumbers, minSelectedTrialNumber);
+		// If this index is more than zero
+		if(index > 0) {
+			// Shift selection
 			for (int i = 0; i < selectedTrialsNumbers.size(); i++) {
-				int trialNumber = selectedTrialsNumbers.get(i);
-				trialNumber--;
-				selectedTrialsNumbers.set(i, trialNumber);
+				index = Arrays.binarySearch(trialsNumbers, selectedTrialsNumbers.get(i));
+				newSelection.add(trialsNumbers[index-1]);
 			}
-			trialsListViewer.setSelection(new StructuredSelection(selectedTrialsNumbers), true);
+			trialsListViewer.setSelection(new StructuredSelection(newSelection), true);
 		}
 	}
 

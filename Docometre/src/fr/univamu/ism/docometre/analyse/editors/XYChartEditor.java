@@ -572,7 +572,6 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		boolean sameColor = xyChartData.isUseSameColorForSameCategory();
 		String[] seriesIDs = getSeriesIDs();
 		ArrayList<String> categories = new ArrayList<>();
-		byte i = 0; 
 		for (String seriesID : seriesIDs) {
 			ISeries series = chart.getSeriesSet().getSeries(seriesID);
 			if(sameColor) {
@@ -591,11 +590,13 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 					e.printStackTrace();
 				}
 			} else {
-				((ILineSeries)series).setLineColor(ColorUtil.getColor(i));
-				i++;
+				String[] trialNumberString = series.getId().split("\\.");
+				int trialNumber = Integer.parseInt(trialNumberString[trialNumberString.length - 1]); 
+				int index = trialsListViewer.getStructuredSelection().toList().indexOf(trialNumber);
+				((ILineSeries)series).setLineColor(ColorUtil.getColor((byte) index));
 			}
 		}
-		chart.redraw();
+//		chart.redraw();
 	}
 	
 	@Override
@@ -701,9 +702,10 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 			chart.getAxisSet().getXAxes()[0].setRange(new Range(xyChartData.getxMin(), xyChartData.getxMax()));
 			chart.getAxisSet().getYAxes()[0].setRange(new Range(xyChartData.getyMin(), xyChartData.getyMax()));
 		}
+		trialsListViewer.refresh();
+		updateSeriesColorsHandler();
 		chart.redraw();
 		setDirty(true);
-		trialsListViewer.refresh();
 	}
 	
 	private void updateRange() {
@@ -766,8 +768,8 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 			series.setSymbolType(PlotSymbolType.NONE);
 			series.setLineWidth(3);
 		}
-		// refresh Series Colors
-		updateSeriesColorsHandler();
+//		// refresh Series Colors
+//		updateSeriesColorsHandler();
 //		ISeries[] seriesList = chart.getSeriesSet().getSeries();
 //		byte i = 0;
 //		for (ISeries series : seriesList) {

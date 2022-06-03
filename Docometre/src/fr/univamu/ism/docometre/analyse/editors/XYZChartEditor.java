@@ -651,7 +651,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 		gl.marginRight = 5;
 		bottomContainer2.setLayout(gl);
 		
-		autoScaleButton = new Button(bottomContainer2, SWT.CHECK | SWT.WRAP);
+		autoScaleButton = new Button(bottomContainer2, SWT.CHECK);
 		autoScaleButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
 		autoScaleButton.setText(DocometreMessages.AutoScale_Title);
 		autoScaleButton.setSelection(xyzChartData.isAutoScale());
@@ -672,7 +672,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 		});
 		autoScaleButton.setEnabled(false);
 		
-		useSameColorButton = new Button(bottomContainer2, SWT.CHECK | SWT.WRAP);
+		useSameColorButton = new Button(bottomContainer2, SWT.CHECK);
 		useSameColorButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		useSameColorButton.setText(DocometreMessages.UseSameColorForSameCategory);
 		useSameColorButton.setSelection(xyzChartData.isUseSameColorForSameCategory());
@@ -707,10 +707,9 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 		boolean sameColor = xyzChartData.isUseSameColorForSameCategory();
 		String[] seriesIDs = getSeriesIDs();
 		ArrayList<String> categories = new ArrayList<>();
-		byte i = 0; 
 		for (String seriesID : seriesIDs) {
 			LineStrip lineStrip = getLineStripFromID(seriesID);
-			org.eclipse.swt.graphics.Color color  = ColorUtil.getColor(i);
+			org.eclipse.swt.graphics.Color color  = ColorUtil.getColor((byte) 0);
 			if(sameColor) {
 				try {
 					int seriesIDTrial = Integer.parseInt(seriesID.split("\\.")[seriesID.split("\\.").length - 1]); 
@@ -728,8 +727,11 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 					e.printStackTrace();
 				}
 			} else {
+				String[] trialNumberString = seriesID.split("\\.");
+				int trialNumber = Integer.parseInt(trialNumberString[trialNumberString.length - 1]);
+				int index = trialsListViewer.getStructuredSelection().toList().indexOf(trialNumber);
+				color  = ColorUtil.getColor((byte)index);
 				lineStrip.setWireframeColor(new Color(color.getRed(), color.getGreen(), color.getBlue()));
-				i++;
 			}
 			Drawable[] drawables = lineStrip.getMarkersAndLabels();
 			for (Drawable drawable : drawables) {
@@ -823,9 +825,9 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 	}
 
 	private void removeAllSeries() {
-		List<Drawable> drawables = chart.getScene().getGraph().getAll();
-		for (int i = 0; i < drawables.size(); i++) {
-			chart.getScene().getGraph().remove(drawables.get(i));
+		int nbDrawables = chart.getScene().getGraph().getAll().size();
+		for (int i = 0; i < nbDrawables; i++) {
+			chart.getScene().getGraph().remove(chart.getScene().getGraph().getAll().get(0));
 		}
 		xyzChartData.setSelectedTrialsNumbers(new ArrayList<>(0));
 	}

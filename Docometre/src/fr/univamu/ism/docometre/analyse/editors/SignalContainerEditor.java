@@ -602,7 +602,7 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		ChannelEditorWidgetsFactory.createLabel(infosGroup, DocometreMessages.TrialsNumberLabel2, SWT.LEFT, false);
 		ChannelEditorWidgetsFactory.createLabel(infosGroup, Integer.toString(nbTrials), SWT.LEFT, true);
 		
-		useSameColorButton = new Button(infosGroup, SWT.CHECK | SWT.WRAP);
+		useSameColorButton = new Button(infosGroup, SWT.CHECK);
 		useSameColorButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 		useSameColorButton.setText(DocometreMessages.UseSameColorForSameCategory);
 		useSameColorButton.addSelectionListener(new SelectionAdapter() {
@@ -629,7 +629,6 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		boolean sameColor = useSameColorButton.getSelection();
 		String[] seriesIDs = getSeriesIDs();
 		ArrayList<String> categories = new ArrayList<>();
-		byte i = 0; 
 		for (String seriesID : seriesIDs) {
 			ISeries series = chart.getSeriesSet().getSeries(seriesID);
 			if(sameColor) {
@@ -648,8 +647,10 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 					e.printStackTrace();
 				}
 			} else {
-				((ILineSeries)series).setLineColor(ColorUtil.getColor(i));
-				i++;
+				String[] trialNumberString = series.getId().split("\\.");
+				int trialNumber = Integer.parseInt(trialNumberString[trialNumberString.length - 1]);
+				int index = trialsListViewer.getStructuredSelection().toList().indexOf(trialNumber);
+				((ILineSeries)series).setLineColor(ColorUtil.getColor((byte) index));
 			}
 		}
 		chart.redraw();
@@ -678,7 +679,7 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 				}
 			}
 		}
-		
+		updateSeriesColorsHandler();
 		chart.getAxisSet().adjustRange();
 		chart.redraw();
 	}
@@ -705,7 +706,6 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 //		Byte index = getSeriesIndex(series);
 //		series.setLineColor(ColorUtil.getColor(index));
 		series.setLineWidth(3);
-		updateSeriesColorsHandler();
 	}
 	
 //	private Byte getSeriesIndex(ILineSeries series) {
