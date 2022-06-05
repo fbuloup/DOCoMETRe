@@ -262,7 +262,11 @@ class DOCoMETRe(object):
 		return str(eval(expression));
 	
 	def unload(self, fullName):
-		exec("import re;docometre.experiments = {k:v for k,v in docometre.experiments.items() if re.search('^" + fullName + "', k) == None}");
+		code = "import re\n";
+		code = code + "keysToDelete = {key for key in docometre.experiments.keys() if re.match('^" + fullName + "', key) != None}\n"
+		code = code + "for key in keysToDelete:\n";
+		code = code + "\tdocometre.experiments.pop(key)";
+		exec(code);
 		
 	def getChannels(self, subjectFullName):
 		channels = list({k:v for k,v in self.experiments.copy().items() if re.search("^" + subjectFullName + "\.\w+\.isSignal$", k)});
@@ -409,7 +413,8 @@ if __name__ == "__main__":
 		if(sys.argv[1] == "-jvm"):	
 			gateway = ClientServer(java_parameters = JavaParameters(), python_parameters = PythonParameters());	
 			docometre = DOCoMETRe(gateway);
-			gateway.entry_point.setPythonEntryPoint(docometre);
+			D = docometre.experiments;
+			gateway.entry_point.setPythonEntryPoint(docometre);			
 		else:
 			jvmMode = False;
 		
@@ -418,9 +423,9 @@ if __name__ == "__main__":
 		
 	if(not jvmMode):
 		print("We are not in JVM mode");
-		jvmMode = False;
 		
 		docometre = DOCoMETRe(None);
+		D = docometre.experiments;
         
         # Example to find global maximum
 
