@@ -43,7 +43,6 @@ package fr.univamu.ism.docometre.actions;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -201,8 +200,8 @@ public class PasteResourcesAction extends Action implements ISelectionListener, 
 				}
 				copyFromClipboard(folder, files, monitor);
 			} else {
-				java.nio.file.Path src = Paths.get(new URI("file:///" + filePath));
-				java.nio.file.Path dest = Paths.get(new URI("file:///" + destination.toOSString()));
+				java.nio.file.Path src = Paths.get(filePath);
+				java.nio.file.Path dest = Paths.get(destination.toPortableString());
 				Files.copy(src, dest, StandardCopyOption.REPLACE_EXISTING);
 			}
 		}
