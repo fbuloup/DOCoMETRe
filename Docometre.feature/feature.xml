@@ -6,7 +6,12 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-06-03
+      -- 2022-06-07
+ADDED :
+* Shortcut &apos;D&apos; for &apos;docometre.experiments&apos; (Python)
+FIXED :
+* Bad URI exception when paste from clipboard
+-- 2022-06-03
 ADDED :
 * Improve automatic color selection in charts
 * Move to Eclipse 03 2022 release
