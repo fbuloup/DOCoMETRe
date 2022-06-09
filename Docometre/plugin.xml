@@ -33,7 +33,11 @@
          </property>
          <property
                name="aboutText"
-               value="%aboutText">
+               value="DOCoMETRe
+
+Dispositif d&apos;Observation et de Contrôle du Mouvement en Temp Réel
+
+Développement à l&apos;institut des Sciences du Mouvement.">
          </property>
          <property
                name="aboutImage"

@@ -18,6 +18,6 @@ Export-Package: org.apache.log4j,
  org.apache.log4j.spi,
  org.apache.log4j.varia,
  org.apache.log4j.xml
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Automatic-Module-Name: Log4J
 Bundle-Vendor: Apache Log4j

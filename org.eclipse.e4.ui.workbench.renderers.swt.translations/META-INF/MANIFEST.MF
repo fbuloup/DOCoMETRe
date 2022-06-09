@@ -4,7 +4,7 @@ Bundle-Name: SWT Translations
 Bundle-SymbolicName: org.eclipse.e4.ui.workbench.renderers.swt.translations
 Bundle-Version: 1.0.0.qualifier
 Fragment-Host: org.eclipse.e4.ui.workbench.renderers.swt;bundle-version="0.14.100"
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Vendor: Babel Project
 Automatic-Module-Name: org.eclipse.e4.ui.workbench.renderers.swt.translations
 Export-Package: org.eclipse.e4.ui.internal.workbench.renderers.swt;x-internal:=true,

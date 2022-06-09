@@ -4,7 +4,7 @@ Bundle-Name: UI cheatsheets Translations
 Bundle-SymbolicName: org.eclipse.ui.cheatsheets.translations
 Bundle-Version: 1.0.0.qualifier
 Fragment-Host: org.eclipse.ui.cheatsheets;bundle-version="1.0.0"
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Vendor: Babel Project
 Automatic-Module-Name: org.eclipse.ui.cheatsheets.translations
 Export-Package: org.eclipse.ui.internal.cheatsheets;x-internal:=true

@@ -4,7 +4,7 @@ Bundle-Name: p2 ui sdk Translations
 Bundle-SymbolicName: org.eclipse.equinox.p2.ui.sdk.translations
 Bundle-Version: 1.0.0.qualifier
 Fragment-Host: org.eclipse.equinox.p2.ui.sdk;bundle-version="1.0.500"
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Localization: plugin
 Bundle-Vendor: Babel Project
 Automatic-Module-Name: org.eclipse.equinox.p2.ui.sdk.translations

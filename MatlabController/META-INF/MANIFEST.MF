@@ -4,7 +4,7 @@ Bundle-Name: MatlabController
 Bundle-SymbolicName: MatlabController
 Bundle-Version: 1.0.0.qualifier
 Automatic-Module-Name: MatlabController
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: fr.univamu.ism.docometre.matlab
 Require-Bundle: MatlabEngine;bundle-version="1.0.0"
 Bundle-Vendor: ISM

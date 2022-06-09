@@ -4,7 +4,7 @@ Bundle-Name: GEF Translations
 Bundle-SymbolicName: org.eclipse.gef.translations
 Bundle-Version: 1.0.0.qualifier
 Fragment-Host: org.eclipse.gef;bundle-version="3.11.0"
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Vendor: Babel Project
 Automatic-Module-Name: org.eclipse.gef.translations
 Export-Package: org.eclipse.gef.internal;x-internal:=true

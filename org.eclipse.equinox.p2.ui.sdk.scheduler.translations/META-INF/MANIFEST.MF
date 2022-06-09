@@ -4,7 +4,7 @@ Bundle-Name: p2 ui sdk scheduler Translations
 Bundle-SymbolicName: org.eclipse.equinox.p2.ui.sdk.scheduler.translations
 Bundle-Version: 1.0.0.qualifier
 Fragment-Host: org.eclipse.equinox.p2.ui.sdk.scheduler;bundle-version="1.3.100"
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Localization: plugin
 Bundle-Vendor: Babel Project
 Automatic-Module-Name: org.eclipse.equinox.p2.ui.sdk.scheduler.translations

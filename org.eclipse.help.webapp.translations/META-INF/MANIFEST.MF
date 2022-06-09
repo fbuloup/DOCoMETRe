@@ -4,7 +4,7 @@ Bundle-Name: Help Web App Translations
 Bundle-SymbolicName: org.eclipse.help.webapp.translations
 Bundle-Version: 1.0.0.qualifier
 Fragment-Host: org.eclipse.help.webapp;bundle-version="3.9.0"
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Vendor: Babel Project
 Automatic-Module-Name: org.eclipse.help.webapp.translations
 Export-Package: org.eclipse.help.internal.webapp;x-internal:=true

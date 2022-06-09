@@ -4,7 +4,7 @@ Bundle-Name: UI intro universal Translations
 Bundle-SymbolicName: org.eclipse.ui.intro.universal.translations
 Bundle-Version: 1.0.0.qualifier
 Fragment-Host: org.eclipse.ui.intro.universal;bundle-version="3.3.100"
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Vendor: Babel Project
 Automatic-Module-Name: org.eclipse.ui.intro.universal.translations
 Export-Package: org.eclipse.ui.internal.intro.universal;x-internal:=true
