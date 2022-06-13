@@ -820,7 +820,8 @@ public final class MatlabEngine implements MathEngine {
 		runScript(command);
 		Object value = matlabController.getVariable(variable);
 		runScript("clear " + variable + ";");
-		return value.toString();
+		String stringValue = value.toString();
+		return stringValue.replaceAll("<a.*\">", "").replaceAll("</a>", "");
 	}
 
 	@Override
