@@ -8,7 +8,6 @@ import time;
 
 class DOCoMETRe(object):
 
-	#global experiments;
 	global jvmMode;
 
 	def __init__(self, gateway):
@@ -30,7 +29,7 @@ class DOCoMETRe(object):
 		elif(dataType == "OPTITRACK_TYPE_1"):
 			self.loadDataOptitrackType1(loadName, dataFilesList);
 		else:
-			pass;
+			if(jvmMode): self.gateway.jvm.System.out.println("Data files format not hanled with Python");
 
 	def loadDataDocometre(self, loadName, dataFilesList, sessionsProperties):
 		if(jvmMode): self.gateway.jvm.System.out.println("In loadDataDocometre");

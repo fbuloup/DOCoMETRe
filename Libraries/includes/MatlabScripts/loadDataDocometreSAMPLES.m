@@ -1,4 +1,4 @@
-function subject = loadDataDocometre(dataFilesList, varargin)
+function subject = loadDataDocometreSAMPLES(dataFilesList, varargin)
 
     % useFirstSuffix_QN = '_USE_SESSION_NAME_AS_FIRST_SUFFIX_IN_DATA_FILES_NAMES';
     % useSecondSuffix_QN = '_USE_TRIAL_NUMBER_AS_SECOND_SUFFIX_IN_DATA_FILES_NAMES';

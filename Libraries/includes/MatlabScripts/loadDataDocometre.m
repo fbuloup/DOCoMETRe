@@ -1,7 +1,7 @@
 function subject = loadDataDocometre(dataFilesList, varargin) %, options)
       
 if contains(dataFilesList,'.sau,')
-	loadDataDocometreSAU(dataFilesList);
+	% loadDataDocometreSAU(dataFilesList);
 elseif contains(dataFilesList,'.samples;')
     subject = loadDataDocometreSAMPLES(dataFilesList, varargin{1}, varargin{2});
 else
