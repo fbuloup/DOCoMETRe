@@ -12,7 +12,7 @@
 
 <p>Dans le modèle de données d'Analyse, les signaux regroupent toutes les informations échantillonnées régulièrement lors
  d'une expérimentation. Les noms des signaux, c'est à dire les noms des éléments dans la structure de donnée, peuvent être n'importe quelles chaînes
- de caractères si elles répondent aux conventions de nommage de variable de Matlab et Octave. Les informations qui ne sont pas présentes régulièrement durant l'acquisition
+ de caractères si elles répondent aux conventions de nommage de variable de Matlab. Les informations qui ne sont pas présentes régulièrement durant l'acquisition
  sont regroupées dans la classe des évènements. Les noms de ces derniers, les noms des éléments correspondants, doivent également respecter les conventions de nommage de variables.
 </p>
 <p>Pour les signaux, les valeurs des échantillons associés sont contenues dans l'élément <em>Values</em>. Cet élément est une matrice dont chaque ligne
@@ -25,8 +25,8 @@
  de donnée associée et doit également respecter les conventions de nommage. Vous trouverez dans la suite les descriptions détaillées de chacun de ces éléments.
 </p>
 <h2>Les signaux</h2>
-<p>
-<center><img alt="signal" width="430px" height="341px" src="/analyseHelp/images/signals.png"><br><em>Image 1</em></center>
+<p style="text-align:center;">
+<img alt="signals.png" style="width: 50%;height:auto" src="signals.png"><br><em>Image 1</em>
 </p>
 <p>L'image 1 montre la liste des éléments d'un des signaux du sujet de l'expérience de démonstration telle qu'elle est donnée
  par le moteur mathématique (Matlab dans ce cas).
@@ -49,7 +49,7 @@
  tous de la même durée, il faudra combler les essais plus courts que le ou les essais les plus longs par des zéros
  ou éventuellement des NaNs. Dans ce dernier cas, faites attention car les traitements, notamment vectorisés, ne 
  supportent pas directement les NaNs : vous devrez en tenir compte dans vos scripts de traitement (voir le lien
- <a target="_blank" href="http://www.mathworks.fr/fr/help/matlab/matlab_prog/techniques-for-improving-performance.html">suivant</a>).
+ <a target="_blank" href="https://fr.mathworks.com/help/matlab/matlab_prog/techniques-for-improving-performance.html">suivant</a>).
  </p>
 <h3>Les signaux - Les éléments FrontCut et EndCut</h3>
 <p>Ces éléments sont des vecteurs dont le nombre de cellules est égal au nombre d'essais. FrontCut donne l'avant-coupe
@@ -63,24 +63,24 @@
  égale au nombre d'essai. Rappelons que le nombre d'essais est égal au nombre de lignes dans la matrice des valeurs du signal
  (voir l'élément Values ci-dessus).
 </p>
-<h3>Les signaux - Les éléments NbMarkers, MarkerN_Values et MarkerN_Label</h3>
-<p>Ces éléments donnent des renseignements sur les groupes de marqueurs contenus dans le signal. NbMarkers donne le nombre
- de groupes de marqueurs, un groupe de marqueur étant un ensemble de marqeurs de même nature (les marqueurs "max" par exemple).
- MarkerN_Values est une matrice regroupant toutes les informations sur le groupe de marqueurs numéro N. L'image 2 montre un
- exemple simple sur l'expérience de démonstration, le moteur mathématique étant Octave. Cette matrice possède trois colonnes : 
+<h3>Les signaux - Les éléments NbMarkersGroups, MarkersGroup_Label_Values et MarkersGroupsLabels</h3>
+<p>Ces éléments donnent des renseignements sur les groupes de marqueurs contenus dans le signal. NbMarkersGroups donne le nombre
+ de groupes de marqueurs, un groupe de marqueur étant un ensemble de marqueurs de même nature (les marqueurs "max" par exemple).
+ MarkersGroup_Label_Values est une matrice regroupant toutes les informations sur le groupe de marqueurs de label <b>"label"</b>. L'image 2 montre un
+ exemple simple sur l'expérience de démonstration, le moteur mathématique étant Matlab. Cette matrice possède trois colonnes : 
  la première donne le numéro de l'essai, les deuxième et troisième l'instant et l'amplitude de l'échantillon respectivement. 
  Il peut exister des cas où un essai regroupe plusieurs marqueurs de même type à des instants différents. L'amplitude est bien sûr 
- identique à la valeur contenue dans la cellule du même essai, du même instant de la matrice des valeurs du signal. L'élement MarkerN_Label est 
- une chaîne de caractères qui permet de dinstinguer ce groupe de marqueurs des autres ("max" par exemple :-)).  
+ identique à la valeur contenue dans la cellule du même essai, du même instant de la matrice des valeurs du signal. L'élement MarkersGroupsLabels est 
+ una tableau de chaînes de caractères les labels des différents groupes de marqueurs ("max" par exemple :-)).  
 </p>
-<p>
-<center><img alt="markers" width="560px" height="224px" src="/analyseHelp/images/markers.png"><br><em>Image 2</em></center>
+<p style="text-align:center;">
+<img alt="markers.png" style="width: 50%;height:auto" src="markers.png"><br><em>Image 2</em>
 </p>
-<h3>Les signaux - Les éléments NbFields, FieldN_Values et FieldN_Label</h3>
-<p>Les champs sont des informations uniques par essais. Ce peut être, par exemple, la valeur moyenne du signal pour chacun des essais. L'élément
- NbFields donne le nombre de champs présents de le signal correspondant. FieldN_Values, champ numéro N, est un vecteur dont la dimension
- est égale au nombre d'essais : la cellule n est la valeur du champ pour l'essai numéro n. Enfin l'élément FieldN_Label est une
- chaîne de caractères permettant de singulariser le champ. 
+<h3>Les signaux - Les éléments NbFeatures, FeaturesLabels et Features_Label_Values</h3>
+<p>Les caractéristiques sont des informations uniques par essai. Ce peut être, par exemple, la valeur moyenne du signal pour chacun des essais. L'élément
+ NbFeatures donne le nombre de caractéristiques présentes de le signal correspondant. Features_Label_Values, caractéristiques de label <b>Label</b>, est un vecteur dont la dimension
+ est égale au nombre d'essais : la cellule n est la valeur du champ pour l'essai numéro n. Enfin l'élément FeaturesLabels est un tableau de
+ chaînes de caractères permettant de singulariser, labelliser les caractéristiques. 
 </p>
 <h2>Les évènements</h2>
 <p>L'image 3 montre la réponse d'Octave lorsqu'on l'interroge sur un élément de la classe évènement. On retrouve les éléments
@@ -91,27 +91,24 @@
  associée et la dernière la hauteur. La hauteur de l'évènement peut être infini et dans ce cas son amplitude
  est considérée comme non significative (valeur NaN par défaut). Voyez l'image 4 pour une représentation d'un évènement.
 </p>
-<p>
-<center><img alt="events 1" width="610px" height="312px" src="/analyseHelp/images/events.png"><br><em>Image 3</em></center>
+<p style="text-align:center;">
+<img alt="events 1" width="610px" height="312px" src="events.png"><br><em>Image 3</em>
 </p>
-<p>
-<center><img alt="event 2" width="300px" height="225px" src="/analyseHelp/images/event.png"><br><em>Image 4</em></center>
+<p style="text-align:center;">
+<img alt="event 2" width="300px" height="225px" src="event.png"><br><em>Image 4</em>
 </p>
-<h2>Les catégories</h2>
+<h2>Les catégories - Les éléments CategoryN</h2>
 <p>L'image 5 montre la réponse d'Octave lorsqu'on l'interroge sur un élément de la classe des catégories. On retrouve les éléments
  isEvent, isCategory et isSignal déjà commentés pour l'élément de la classe des signaux. Ici c'est isCategory qui est évidement à
  un. On retrouve l'élément nommé Criteria, à comparer aux labels des groupes de marqueurs et des champs. C'est une chaîne de caractères
  permettant de définir la catégorie. Il reste l'élément TrialsList : un vecteur regroupant la liste des essais appartenant à cette catégorie.
 </p>
-<p>
-<center><img alt="categories" width="610px" height="312px" src="/analyseHelp/images/categories.png"><br><em>Image 5</em></center>
+<p style="text-align:center;">
+<img alt="categories.png" style="width: 50%;height:auto" src="categories.png"><br><em>Image 5</em>
 </p>
-<h2>L'élément de commodité "Categories"</h2>
-<p>Cet élément permet de retrouver rapidement le nom de la catégorie associé à un essai donné. C'est en fait l'inverse de la classe des éléments 
-de catégories. Cette dernière donne, pour une catégorie donnée, la liste des essais associés quand l'élément de commodité Categories donne, pour un 
-essai donné, sa catégorie associée.</p>
-
-
-
+<!-- <h2>L'élément de commodité "Categories"</h2> -->
+<!-- <p>Cet élément permet de retrouver rapidement le nom de la catégorie associé à un essai donné. C'est en fait l'inverse de la classe des éléments  -->
+<!-- de catégories. Cette dernière donne, pour une catégorie donnée, la liste des essais associés quand l'élément de commodité Categories donne, pour un  -->
+<!-- essai donné, sa catégorie associée.</p> -->
  </body>
  </html>
