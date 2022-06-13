@@ -962,6 +962,7 @@ public final class MatlabEngine implements MathEngine {
 	@Override
 	public String[] getLoadedSubjects() {
 		try {
+			matlabController.eval("clear ans;");
 			ArrayList<String> loadedSubjects = new ArrayList<>();
 			long timeStamp = (new Date()).getTime();
 			String variablesString = "Var_" + timeStamp;
