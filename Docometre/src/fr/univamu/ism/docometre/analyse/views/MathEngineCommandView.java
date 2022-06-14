@@ -198,7 +198,7 @@ public class MathEngineCommandView extends ViewPart implements IDocumentListener
 				messagesViewer.getTextWidget().append("\n");
 				e.printStackTrace();
 			}
-		} else messagesViewer.getTextWidget().append(DocometreMessages.PleaseStartMathEngineFirst);
+		} else messagesViewer.getTextWidget().append(DocometreMessages.PleaseStartMathEngineFirst + "\n");
 		
 	}
 
