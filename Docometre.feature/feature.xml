@@ -6,13 +6,18 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-06-14
+      -- 2022-06-14 - Bis
+ADDED : Nothing
+FIXED :
+* a bug where it was impossible to save subject
+-- 2022-06-14
 ADDED :
 * Update Help
 * New Trust Pref. Page translation 
 FIXED :
 * Refactoring in Matlab and Python scripts
-* Bug if &quot;ans&quot; variable exists calling &quot;getLoadedSubjects&quot; (Matlab only) 
+* Bug if &quot;ans&quot; variable exists calling &quot;getLoadedSubjects&quot; (Matlab
+only) 
 -- 2022-06-07
 ADDED :
 * Shortcut &apos;D&apos; for &apos;docometre.experiments&apos; (Python)
