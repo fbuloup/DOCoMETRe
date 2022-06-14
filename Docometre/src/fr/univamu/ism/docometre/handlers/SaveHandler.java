@@ -41,38 +41,126 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.handlers;
 
+import java.util.ArrayList;
+
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.commands.ICommandService;
+import org.eclipse.ui.internal.WorkbenchWindow;
 import org.eclipse.ui.progress.WorkbenchJob;
 
+import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.ResourceProperties;
+import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.analyse.MathEngineFactory;
+import fr.univamu.ism.docometre.analyse.views.SubjectsView;
+import fr.univamu.ism.docometre.views.ExperimentsView;
+
+@SuppressWarnings("restriction")
 public class SaveHandler extends AbstractHandler {
+	
+	private ArrayList<Object> selectedElements;
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		WorkbenchJob workbenchJob = new WorkbenchJob("Saving dirty editor.") {
 			@Override
 			public IStatus runInUIThread(IProgressMonitor monitor) {
-				IEditorPart dirtyEditor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-				monitor.beginTask("Please wait...", 1);
-				dirtyEditor.doSave(monitor);
-				monitor.done();
+				try {
+					for (Object element : selectedElements) {
+						if(element instanceof IEditorPart) {
+							IEditorPart dirtyEditor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+							monitor.beginTask("Please wait...", 1);
+							dirtyEditor.doSave(monitor);
+							monitor.done();
+						}
+						if(element instanceof IResource) {
+							IResource subject = (IResource)element;
+							monitor.beginTask(DocometreMessages.SavingSubject + "\"" + subject.getFullPath().toString() + "\". " + DocometreMessages.PleaseWait, IProgressMonitor.UNKNOWN);
+							Activator.logInfoMessage(DocometreMessages.SavingSubject + "\"" + subject.getFullPath().toString() + "\". ", SaveHandler.this.getClass());
+							MathEngineFactory.getMathEngine().saveSubject(subject);
+							subject.setSessionProperty(ResourceProperties.SUBJECT_MODIFIED_QN, false);
+							SubjectsView.refresh(subject, null);
+							ExperimentsView.refresh(subject, null);
+							Activator.logInfoMessage(DocometreMessages.Done, SaveHandler.this.getClass());
+							monitor.done();
+						}
+						if(monitor.isCanceled()) break;
+					}
+					
+					// Check if there are still unsaved elements (previous monitor canceled)
+					boolean enabled = false;
+					for (Object element : selectedElements) {
+							if(element instanceof IResource) {
+								IResource subject = (IResource)element;
+								boolean isLoaded = MathEngineFactory.getMathEngine().isSubjectLoaded((IResource) element);
+								if(isLoaded) enabled = enabled || ResourceProperties.isSubjectModified(subject);
+							}
+							if(element instanceof IEditorPart) {
+								IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+								enabled = enabled || editor.isDirty();
+							}
+					}
+					setBaseEnabled(enabled);
+					
+					// Update toolbar
+					IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+					ICommandService commandService = (ICommandService) window.getService(ICommandService.class);
+					if (commandService != null) commandService.refreshElements("SaveCommand", null);
+					((WorkbenchWindow)window).getActionBars().updateActionBars();
+					
+				} catch (CoreException e) {
+					Activator.logErrorMessageWithCause(e);
+					e.printStackTrace();
+				}
+				
 				return Status.OK_STATUS;
 			}
 		};
 		workbenchJob.schedule();
+		
 		return null;
 	}
 	
 	@Override
 	public boolean isEnabled() {
+		if(selectedElements == null) selectedElements = new ArrayList<>();
+		selectedElements.clear();
+		
+		ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().getSelection();
+		if(selection instanceof StructuredSelection) {
+			StructuredSelection structuredSelection = (StructuredSelection)selection;
+			Object[] elements = structuredSelection.toArray();
+			for (Object element : elements) {
+				if(element instanceof IResource) {
+					if(ResourceType.isSubject((IResource)element)) {
+						boolean isLoaded = MathEngineFactory.getMathEngine().isSubjectLoaded((IResource) element);
+						if(isLoaded) {
+							boolean isModified = ResourceProperties.isSubjectModified((IResource)element);
+							if(isModified) selectedElements.add(element);
+						}
+					}
+				}
+			}
+		}
+		
+		if(selectedElements.size() > 0) return true;
+		
 		IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-		return editor != null && editor.isDirty();
+		if(editor != null && editor.isDirty()) selectedElements.add(editor);
+		return selectedElements.size() > 0;
 	}
 
 }
