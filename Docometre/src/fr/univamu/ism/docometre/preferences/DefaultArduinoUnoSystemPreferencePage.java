@@ -84,6 +84,7 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 	
 	public static ArduinoUnoDACQConfiguration getDefaultDACQConfiguration() {
 		IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
+		if(!preferenceStore.getBoolean(DEFAULT_ARDUINO_UNO_SYSTEM_PREFERENCE_INITIALIZED)) performDefaultsPreferencesValues();
 		ArduinoUnoDACQConfiguration arduinoUnoDACQConfiguration = new ArduinoUnoDACQConfiguration();
 		arduinoUnoDACQConfiguration.setProperty(ArduinoUnoDACQConfigurationProperties.BUILDER_PATH, preferenceStore.getString(ArduinoUnoDACQConfigurationProperties.BUILDER_PATH.getKey()));
 		arduinoUnoDACQConfiguration.setProperty(ArduinoUnoDACQConfigurationProperties.AVRDUDE_PATH, preferenceStore.getString(ArduinoUnoDACQConfigurationProperties.AVRDUDE_PATH.getKey()));
@@ -100,9 +101,9 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 		setDescription(DocometreMessages.DefaultArduinoUnoSystemPreference_Description);
 	}
 	
-	private void performDefaultsPreferencesValues() {
+	private static void performDefaultsPreferencesValues() {
 		ArduinoUnoDACQConfiguration arduinoUnoDACQConfiguration = new ArduinoUnoDACQConfiguration();
-		IPreferenceStore preferenceStore = getPreferenceStore();
+		IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.BUILDER_PATH.getKey(), arduinoUnoDACQConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.BUILDER_PATH));
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.AVRDUDE_PATH.getKey(), arduinoUnoDACQConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.AVRDUDE_PATH));
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH.getKey(), arduinoUnoDACQConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH));

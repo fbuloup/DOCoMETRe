@@ -301,6 +301,7 @@ public class DefaultADWinSystemPreferencePage extends PreferencePage implements 
 	
 	public static ADWinDACQConfiguration getDefaultDACQConfiguration() {
 		IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
+		if(!preferenceStore.getBoolean(DEFAULT_ADWIN_SYSTEM_PREFERENCE_INITIALIZED)) performDefaultsPreferencesValues();
 		ADWinDACQConfiguration adWinDACQConfiguration = new ADWinDACQConfiguration();
 		adWinDACQConfiguration.setProperty(ADWinDACQConfigurationProperties.ADBASIC_COMPILER, preferenceStore.getString(ADWinDACQConfigurationProperties.ADBASIC_COMPILER.getKey()));
 		adWinDACQConfiguration.setProperty(ADWinDACQConfigurationProperties.BTL_FILE, preferenceStore.getString(ADWinDACQConfigurationProperties.BTL_FILE.getKey()));
@@ -344,9 +345,9 @@ public class DefaultADWinSystemPreferencePage extends PreferencePage implements 
 		setDescription(DocometreMessages.DefaultADWinSystemPreference_Description);
 	}
 	
-	private void performDefaultsPreferencesValues() {
+	private static void performDefaultsPreferencesValues() {
 		ADWinDACQConfiguration adwinDAQConfiguration = new ADWinDACQConfiguration();
-		IPreferenceStore preferenceStore = getPreferenceStore();
+		IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
 		preferenceStore.putValue(ADWinDACQConfigurationProperties.ADBASIC_COMPILER.getKey(), adwinDAQConfiguration.getProperty(ADWinDACQConfigurationProperties.ADBASIC_COMPILER));
 		preferenceStore.putValue(ADWinDACQConfigurationProperties.BTL_FILE.getKey(), adwinDAQConfiguration.getProperty(ADWinDACQConfigurationProperties.BTL_FILE));
 		preferenceStore.putValue(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), adwinDAQConfiguration.getProperty(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH));
