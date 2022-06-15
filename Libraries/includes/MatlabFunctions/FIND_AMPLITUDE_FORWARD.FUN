@@ -112,7 +112,7 @@ if compute\n\
 	\tclear markerNumber fromIndexMarker toIndexMarker\n\
 else\n\
 	\tif(exist('ErrorMessages'))\n\
-		\t\tErrorMessages = [ErrorMessages, {[datestr(now,'HH:MM:SS.FFF'), ' - From Find Amplitude Forward function -> A Marker with this label already exists : markersGroupLabel']}];\n\
+		\t\tErrorMessages = [ErrorMessages, {[datestr(now,'HH:MM:SS.FFF'), ' - From Find Amplitude Forward function -> A Marker with this label already exists : markersGroupLabel (inputSignal)']}];\n\
 	\telse\n\
 		\t\tErrorMessages = {[datestr(now,'HH:MM:SS.FFF'), ' - From Find Amplitude Forward function -> A Marker with this label already exists : markersGroupLabel (inputSignal)']};\n\
 	\tend\n\

@@ -90,9 +90,9 @@ if compute\n\
 	\tclear fpMarkersValues maxIndices n peakMarkerTime peakValue peakValues\n\
 else\n\
 	\tif(exist('ErrorMessages'))\n\
-		\t\tErrorMessages = [ErrorMessages, {[datestr(now,'HH:MM:SS.FFF'), ' - From Find Amplitude Forward function -> A Marker with this label already exists : markersGroupLabel']}];\n\
+		\t\tErrorMessages = [ErrorMessages, {[datestr(now,'HH:MM:SS.FFF'), ' - From Find Peaks (Maxima) function -> A Marker with this label already exists : markersGroupLabel (inputSignal)']}];\n\
 	\telse\n\
-		\t\tErrorMessages = {[datestr(now,'HH:MM:SS.FFF'), ' - From Find Amplitude Forward function -> A Marker with this label already exists : markersGroupLabel (inputSignal)']};\n\
+		\t\tErrorMessages = {[datestr(now,'HH:MM:SS.FFF'), ' - From Find Peaks (Maxima) function -> A Marker with this label already exists : markersGroupLabel (inputSignal)']};\n\
 	\tend\n\
 	\tclear compute markersGroupNumber nbMarkersGroups signalSizes\n\
 end\n\

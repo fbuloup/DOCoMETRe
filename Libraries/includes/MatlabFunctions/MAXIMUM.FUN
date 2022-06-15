@@ -79,7 +79,7 @@ if compute\n\
 	\tend\n\
 else\n\
 	\tif(exist('ErrorMessages'))\n\
-		\t\tErrorMessages = [ErrorMessages, {[datestr(now,'HH:MM:SS.FFF'), ' - From Maximum function -> A Marker with this label already exists : markersGroupLabel']}];\n\
+		\t\tErrorMessages = [ErrorMessages, {[datestr(now,'HH:MM:SS.FFF'), ' - From Maximum function -> A Marker with this label already exists : markersGroupLabel (inputSignal)']}];\n\
 	\telse\n\
 		\t\tErrorMessages = {[datestr(now,'HH:MM:SS.FFF'), ' - From Maximum function -> A Marker with this label already exists : markersGroupLabel (inputSignal)']};\n\
 	\tend\n\
