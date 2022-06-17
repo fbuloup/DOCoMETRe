@@ -54,6 +54,9 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.ISelectionListener;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
@@ -69,20 +72,27 @@ import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 
 @SuppressWarnings("restriction")
-public class SaveHandler extends AbstractHandler {
+public class SaveHandler extends AbstractHandler implements ISelectionListener {
 	
-	private ArrayList<Object> selectedElements;
+	private ArrayList<Object> selectedElements = new ArrayList<>();
+	
+	public SaveHandler() {
+		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().addSelectionListener(this);
+		IViewPart subjectsView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(SubjectsView.ID);
+		if(subjectsView != null) selectionChanged(subjectsView, subjectsView.getSite().getSelectionProvider().getSelection());
+		setBaseEnabled(false);
+	}
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		WorkbenchJob workbenchJob = new WorkbenchJob("Saving dirty editor.") {
+		WorkbenchJob workbenchJob = new WorkbenchJob(DocometreMessages.SaveJobName) {
 			@Override
 			public IStatus runInUIThread(IProgressMonitor monitor) {
 				try {
 					for (Object element : selectedElements) {
 						if(element instanceof IEditorPart) {
 							IEditorPart dirtyEditor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-							monitor.beginTask("Please wait...", 1);
+							monitor.beginTask(DocometreMessages.SaveJobEditorTaskName, 1);
 							dirtyEditor.doSave(monitor);
 							monitor.done();
 						}
@@ -99,33 +109,12 @@ public class SaveHandler extends AbstractHandler {
 						}
 						if(monitor.isCanceled()) break;
 					}
-					
-					// Check if there are still unsaved elements (previous monitor canceled)
-					boolean enabled = false;
-					for (Object element : selectedElements) {
-							if(element instanceof IResource) {
-								IResource subject = (IResource)element;
-								boolean isLoaded = MathEngineFactory.getMathEngine().isSubjectLoaded((IResource) element);
-								if(isLoaded) enabled = enabled || ResourceProperties.isSubjectModified(subject);
-							}
-							if(element instanceof IEditorPart) {
-								IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-								enabled = enabled || editor.isDirty();
-							}
-					}
-					setBaseEnabled(enabled);
-					
-					// Update toolbar
-					IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-					ICommandService commandService = (ICommandService) window.getService(ICommandService.class);
-					if (commandService != null) commandService.refreshElements("SaveCommand", null);
-					((WorkbenchWindow)window).getActionBars().updateActionBars();
-					
+					refreshCommand();
 				} catch (CoreException e) {
 					Activator.logErrorMessageWithCause(e);
 					e.printStackTrace();
 				}
-				
+				if(monitor.isCanceled()) return Status.CANCEL_STATUS;
 				return Status.OK_STATUS;
 			}
 		};
@@ -136,12 +125,54 @@ public class SaveHandler extends AbstractHandler {
 	
 	@Override
 	public boolean isEnabled() {
-		if(selectedElements == null) selectedElements = new ArrayList<>();
-		selectedElements.clear();
+		updateSelectedElements();
+		boolean enabled = false;
+		IWorkbenchPart activePart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActivePart();
+		if(activePart instanceof SubjectsView) {
+			for (Object element : selectedElements) {
+				if(element instanceof IResource) {
+					IResource subject = (IResource)element;
+					boolean isLoaded = MathEngineFactory.getMathEngine().isSubjectLoaded((IResource) element);
+					if(isLoaded) enabled = enabled || ResourceProperties.isSubjectModified(subject);
+				}
+			}
+		}
+		if(activePart instanceof IEditorPart) {
+			IEditorPart editor = (IEditorPart) activePart;
+			enabled = enabled || editor.isDirty();
+		}
 		
-		ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().getSelection();
-		if(selection instanceof StructuredSelection) {
-			StructuredSelection structuredSelection = (StructuredSelection)selection;
+		return enabled;
+	}
+	
+	private static void refreshCommand() {
+		PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+			@Override
+			public void run() {
+				IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+			    ICommandService commandService = (ICommandService) window.getService(ICommandService.class);
+			    if (commandService != null) commandService.refreshElements("SaveCommand", null);
+			    ((WorkbenchWindow)window).getActionBars().updateActionBars();
+			}
+		});
+		
+	}
+
+	@Override
+	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
+		updateSelectedElements();
+	}
+	
+	private void updateSelectedElements() {
+		selectedElements.clear();
+		IWorkbenchPart activePart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActivePart();
+		if(activePart instanceof IEditorPart) {
+			IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+			if(editor != null && editor.isDirty()) selectedElements.add(editor);
+		}
+		if(activePart instanceof SubjectsView) {
+			SubjectsView subjectsView = (SubjectsView)activePart;
+			StructuredSelection structuredSelection = (StructuredSelection)subjectsView.getSelection();
 			Object[] elements = structuredSelection.toArray();
 			for (Object element : elements) {
 				if(element instanceof IResource) {
@@ -155,12 +186,6 @@ public class SaveHandler extends AbstractHandler {
 				}
 			}
 		}
-		
-		if(selectedElements.size() > 0) return true;
-		
-		IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-		if(editor != null && editor.isDirty()) selectedElements.add(editor);
-		return selectedElements.size() > 0;
 	}
 
 }

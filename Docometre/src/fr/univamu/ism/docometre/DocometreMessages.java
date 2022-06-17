@@ -1055,6 +1055,13 @@ public final class DocometreMessages extends NLS {
 
 	public static String MarkersNumberInSelectedTrial;
 	public static String MarkersNumberInSelectedTrialToolTip;
+	
+	// Save Save all commands
+	public static String SaveJobName;
+	public static String SaveJobEditorTaskName;
+	public static String SaveAllJobName;
+	public static String SaveAllJobEditorsTaskName;
+	public static String SaveAllJobSubjectsTaskName;
 			
 	static {
 		// load message values from bundle file

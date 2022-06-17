@@ -802,14 +802,16 @@ Développement à l&apos;institut des Sciences du Mouvement.">
                   commandId="SaveCommand"
                   icon="platform:/plugin/org.eclipse.ui/icons/full/etool16/save_edit.png"
                   label="%SaveAction.label"
-                  style="push">
+                  style="push"
+                  tooltip="%SaveAction.label">
             </command>
             <command
                   commandId="SaveAllCommand"
                   icon="platform:/plugin/org.eclipse.ui/icons/full/etool16/saveall_edit.png"
                   id="saveall"
                   label="%SaveAllAction.label"
-                  style="push">
+                  style="push"
+                  tooltip="%SaveAllAction.label">
             </command>
             <command
                   commandId="org.eclipse.ui.edit.rename"
@@ -2388,7 +2390,8 @@ Développement à l&apos;institut des Sciences du Mouvement.">
                   commandId="SaveCommand"
                   icon="platform:/plugin/org.eclipse.ui/icons/full/etool16/save_edit.png"
                   label="%SaveAction.label"
-                  style="push">
+                  style="push"
+                  tooltip="%SaveAction.label">
                <visibleWhen
                      checkEnabled="false">
                   <reference
@@ -2401,7 +2404,8 @@ Développement à l&apos;institut des Sciences du Mouvement.">
                   icon="platform:/plugin/org.eclipse.ui/icons/full/etool16/saveall_edit.png"
                   id="saveall"
                   label="%SaveAllAction.label"
-                  style="push">
+                  style="push"
+                  tooltip="%SaveAllAction.label">
                <visibleWhen
                      checkEnabled="false">
                   <reference
@@ -2690,7 +2694,8 @@ Développement à l&apos;institut des Sciences du Mouvement.">
                   commandId="SaveCommand"
                   icon="platform:/plugin/org.eclipse.ui/icons/full/etool16/save_edit.png"
                   label="%SaveAction.label"
-                  style="push">
+                  style="push"
+                  tooltip="%SaveAction.label">
                <visibleWhen
                      checkEnabled="false">
                   <reference
@@ -2703,7 +2708,8 @@ Développement à l&apos;institut des Sciences du Mouvement.">
                   icon="platform:/plugin/org.eclipse.ui/icons/full/etool16/saveall_edit.png"
                   id="saveall"
                   label="%SaveAllAction.label"
-                  style="push">
+                  style="push"
+                  tooltip="%SaveAllAction.label">
                <visibleWhen
                      checkEnabled="false">
                   <reference
@@ -3343,21 +3349,6 @@ Développement à l&apos;institut des Sciences du Mouvement.">
             activityId="Docometre.Activity"
             pattern=".*/org.eclipse.equinox.p2.ui.sdk.update">
       </activityPatternBinding>
-   </extension>
-   <extension
-         point="org.eclipse.ui.handlers">
-      <handler
-            class="fr.univamu.ism.docometre.analyse.handlers.SaveModifiedSubjectsHandler"
-            commandId="org.eclipse.ui.file.save">
-         <activeWhen>
-            <with
-                  variable="activePartId">
-               <equals
-                     value="Docometre.SubjectsView">
-               </equals>
-            </with>
-         </activeWhen>
-      </handler>
    </extension>
 
 </plugin>
