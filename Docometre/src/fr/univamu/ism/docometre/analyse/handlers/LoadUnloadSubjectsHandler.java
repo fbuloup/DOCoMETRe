@@ -51,12 +51,14 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.SWT;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
@@ -109,8 +111,11 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 			if(loaded) {
 				if(ResourceProperties.isSubjectModified(subject)) {
 					String message = NLS.bind(DocometreMessages.RecordSubjectDialogMessage, loadUnloadName);
-					boolean response = MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), DocometreMessages.RecordSubjectDialogTitle, message);
-					if(response) {
+					int response = MessageDialog.open(MessageDialog.QUESTION_WITH_CANCEL, PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), DocometreMessages.RecordSubjectDialogTitle, message, SWT.SHEET, IDialogConstants.YES_LABEL,
+							IDialogConstants.NO_LABEL,
+							IDialogConstants.CANCEL_LABEL);
+					if(response == 2) continue;
+					if(response == MessageDialog.OK ) {
 						ProgressMonitorDialog progressMonitorDialog = new ProgressMonitorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
 						try {
 							progressMonitorDialog.run(true, false, new IRunnableWithProgress() {
