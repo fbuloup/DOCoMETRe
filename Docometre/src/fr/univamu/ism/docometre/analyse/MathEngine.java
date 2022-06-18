@@ -46,6 +46,8 @@ import java.util.Arrays;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -279,20 +281,45 @@ public interface MathEngine {
 		return isSignalCategoryOrEvent(getFullPath(channel), ".isEvent");
 	}
 	
+	private IResource getSubject(IResource resource, String fullChannelName) {
+		
+		if(fullChannelName == null || "".equals(fullChannelName)) return null;
+		
+		if(resource == null) {
+			// Try to retrieve experiment from full channel name
+			String experimentName = fullChannelName.split("\\.")[0];
+			IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+			resource = root.findMember(experimentName);
+		}
+		
+		if(!(resource instanceof IContainer)) return null;
+		
+		IContainer experiment = (IContainer)resource;
+		
+		String subjectName = fullChannelName.split("\\.")[1];
+		IResource subject = experiment.findMember(subjectName);
+		
+		return subject; 
+	}
+	
 	default Channel getChannelFromName(IResource resource, String fullChannelName) {
 		try {
-			if(!(resource instanceof IContainer)) return null;
-			if(fullChannelName == null || "".equals(fullChannelName)) return null;
 			
 			if(Channel.fromBeginningChannel.getName().equals(fullChannelName)) 
 				return Channel.fromBeginningChannel;
 			else if(Channel.toEndChannel.getName().equals(fullChannelName)) 
 				return Channel.toEndChannel;
 			
-			IContainer experiment = (IContainer)resource;
+			// Get subject from parameters
+			IResource subject = getSubject(resource, fullChannelName);
 			
-			String subjectName = fullChannelName.split("\\.")[1];
-			IResource subject = experiment.findMember(subjectName);
+			if(subject == null) return null; 
+			
+			if(subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) == null) {
+				// If no channels list found, try to get subject from full channel name only
+				subject = getSubject(null, fullChannelName);
+			}
+			
 			if(subject == null) return null; 
 			
 			if(subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) != null && subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) instanceof ChannelsContainer) {
