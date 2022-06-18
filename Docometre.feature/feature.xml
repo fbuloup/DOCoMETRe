@@ -6,7 +6,16 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-06-14 - Bis
+      -- 2022-06-18
+ADDED :
+* Trust Pref. Page translation (continued)
+* It&apos;s now possible to cancel &quot;unload&quot; subject action
+FIXED :
+* Force default systems property values if not already performed
+* Error message refacoring in several Matlab functions
+* Save and Save all commands bad behaviour
+* Retrieve channel from its full name not only from provided experiment
+-- 2022-06-14 - Bis
 ADDED : Nothing
 FIXED :
 * a bug where it was impossible to save subject
