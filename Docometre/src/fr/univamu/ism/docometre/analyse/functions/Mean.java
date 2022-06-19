@@ -134,7 +134,7 @@ public class Mean extends GenericFunction {
 		fromComboViewer.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		value  = getProperty(fromInputSignalKey, "");
 		fromComboViewer.getCombo().setText(value);
-		ChannelsContentProvider channelsContentProviderFromTo = new ChannelsContentProvider(true, false, false, true, false, true, true);
+		ChannelsContentProvider channelsContentProviderFromTo = new ChannelsContentProvider(false, false, false, false, false, true, true);
 		fromComboViewer.setContentProvider(channelsContentProviderFromTo);
 		fromComboViewer.setLabelProvider(FunctionsHelper.createTextProvider());
 		fromComboViewer.setInput(SelectedExprimentContributionItem.selectedExperiment);
@@ -163,7 +163,7 @@ public class Mean extends GenericFunction {
 		toComboViewer.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		value  = getProperty(toInputSignalKey, "");
 		toComboViewer.getCombo().setText(value);
-		toComboViewer.setContentProvider(new ChannelsContentProvider(false, false, false, true, false, true, true));
+		toComboViewer.setContentProvider(new ChannelsContentProvider(false, false, false, false, false, true, true));
 		toComboViewer.setLabelProvider(FunctionsHelper.createTextProvider());
 		toComboViewer.setInput(SelectedExprimentContributionItem.selectedExperiment);
 		channel = MathEngineFactory.getMathEngine().getChannelFromName(SelectedExprimentContributionItem.selectedExperiment, getProperty(toInputSignalKey, ""));
