@@ -37,8 +37,8 @@ if(compute)\n\
 \tend\n\
 \tcolumns = 1:cols;\n\
 \tcolumns = repelem(columns,rows,1);\n\
-\tmask = (fromValues <= columns) & (columns < toValues);\n\
-\tinputSignal.Feature_MEAN_Values = sum(inputSignal.Values,2)./sum(mask, 2);\n\
+\tmask = (fromValues <= columns) & (columns <= toValues);\n\
+\tinputSignal.Feature_MEAN_Values = sum(inputSignal.Values.*mask,2)./sum(mask, 2);\n\
 \tif (~exist('createdOrModifiedChannels'))\n\
 \t\tcreatedOrModifiedChannels = {'inputSignal'};\n\
 \telse\n\
