@@ -1483,6 +1483,13 @@ Développement à l&apos;institut des Sciences du Mouvement.">
                      label="%ShowSubjectsViewCommand.label"
                      style="push">
                </command>
+               <command
+                     commandId="ShowFunctionEditorCommand"
+                     icon="icons/customerFunction.png"
+                     label="%ShowFunctionEditorCommand.Title"
+                     style="push"
+                     tooltip="%ShowFunctionEditorCommand.Title">
+               </command>
                <separator
                      name="Docometre.separator1"
                      visible="true">
@@ -3326,6 +3333,11 @@ Développement à l&apos;institut des Sciences du Mouvement.">
             defaultHandler="fr.univamu.ism.docometre.handlers.LaunchNewDocometreSessionHandler"
             id="LaunchNewDocometreSessionCommand"
             name="LaunchNewDocometreSessionCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.analyse.handlers.ShowFunctionEditorHandler"
+            id="ShowFunctionEditorCommand"
+            name="ShowFunctionEditorCommand">
       </command>
       
       
