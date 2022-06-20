@@ -190,7 +190,10 @@ public class PythonEngine implements MathEngine {
 			t0 = t1;
 		}
 		
-		if(stopPythonInnerJob.getResult() != null && stopPythonInnerJob.getResult().isOK()) Activator.logInfoMessage(DocometreMessages.MathEngineStopped, PythonController.class);
+		if(stopPythonInnerJob.getResult() != null && stopPythonInnerJob.getResult().isOK()) {
+			Activator.logInfoMessage(DocometreMessages.MathEngineStopped, PythonController.class);
+			MathEngineFactory.clear();
+		}
 
 		return Status.OK_STATUS;
 	}

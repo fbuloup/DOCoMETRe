@@ -105,6 +105,7 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 			return null;
 		}
 		cancel = false;
+		boolean cancelModified = false;
 		for (IResource subject : selectedSubjects) {
 			boolean loaded = MathEngineFactory.getMathEngine().isSubjectLoaded(subject);
 			String loadUnloadName = subject.getFullPath().segment(0) + "." + subject.getFullPath().segment(1);
@@ -114,7 +115,10 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 					int response = MessageDialog.open(MessageDialog.QUESTION_WITH_CANCEL, PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), DocometreMessages.RecordSubjectDialogTitle, message, SWT.SHEET, IDialogConstants.YES_LABEL,
 							IDialogConstants.NO_LABEL,
 							IDialogConstants.CANCEL_LABEL);
-					if(response == 2) continue;
+					if(response == 2) {
+						cancelModified = true;
+						continue;
+					}
 					if(response == MessageDialog.OK ) {
 						ProgressMonitorDialog progressMonitorDialog = new ProgressMonitorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
 						try {
@@ -125,6 +129,7 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 									Activator.logInfoMessage(DocometreMessages.SavingSubject + "\"" + subject.getFullPath().toString() + "\". ", LoadUnloadSubjectsHandler.this.getClass());
 									MathEngineFactory.getMathEngine().saveSubject(subject);
 									Activator.logInfoMessage(DocometreMessages.Done, LoadUnloadSubjectsHandler.this.getClass());
+									cancel = monitor.isCanceled();
 									monitor.done();
 								}
 							});
@@ -222,7 +227,7 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 			}
 		}
 		SaveModifiedSubjectsHandler.refresh();
-		return null;
+		return cancel || cancelModified;
 	}
 
 	@Override

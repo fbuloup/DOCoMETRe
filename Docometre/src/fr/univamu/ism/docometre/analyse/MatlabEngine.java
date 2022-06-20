@@ -185,7 +185,10 @@ public final class MatlabEngine implements MathEngine {
 			t0 = t1;
 		}
 		
-		if(stopMatlabInnerJob.getResult() != null && stopMatlabInnerJob.getResult().isOK()) Activator.logInfoMessage(DocometreMessages.MathEngineStopped, MatlabController.class);
+		if(stopMatlabInnerJob.getResult() != null && stopMatlabInnerJob.getResult().isOK()) {
+			Activator.logInfoMessage(DocometreMessages.MathEngineStopped, MatlabController.class);
+			MathEngineFactory.clear();
+		}
 		
 		return stopMatlabInnerJob.getResult();
 	}

@@ -54,6 +54,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -82,6 +83,8 @@ public class StartStopMathEngineHandler extends AbstractHandler implements IElem
 	public static StartStopMathEngineHandler getInstance() {
 		return startStopMathEngineHandler;
 	}
+	
+	private boolean cancelModified;
 	
 	public StartStopMathEngineHandler() {
 		if(startStopMathEngineHandler == null) {
@@ -140,7 +143,7 @@ public class StartStopMathEngineHandler extends AbstractHandler implements IElem
 							try {
 								LoadUnloadSubjectsHandler.getInstance().resetSelection(loadedSubjects);
 								// Launch LoadUnloadSubjectsHandler
-								LoadUnloadSubjectsHandler.getInstance().execute(new ExecutionEvent());
+								cancelModified = (boolean) LoadUnloadSubjectsHandler.getInstance().execute(new ExecutionEvent());
 							} catch (ExecutionException e) {
 								Activator.getLogErrorMessageWithCause(e);
 								e.printStackTrace();
@@ -148,8 +151,11 @@ public class StartStopMathEngineHandler extends AbstractHandler implements IElem
 							
 						}
 					});
-					response = mathEngine.stopEngine(monitor);
-					MathEngineFactory.clear();
+					if(!cancelModified) {
+						response = mathEngine.stopEngine(monitor);
+//						MathEngineFactory.clear();
+					} else response = Status.CANCEL_STATUS;
+					
 				}
 				setBaseEnabled(true);
 				SubjectsView.refresh(null, null);
