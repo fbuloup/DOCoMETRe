@@ -6,6 +6,10 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
-	<classpathentry exported="true" kind="lib" path="matlabcontrol-4.1.0.jar" sourcepath="matlabcontrol-4.1.0"/>
+	<classpathentry exported="true" kind="lib" path="matlabcontrol-4.1.0.jar" sourcepath="matlabcontrol-4.1.0">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/MatlabEngine/matlabcontrol-4.1.0-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
