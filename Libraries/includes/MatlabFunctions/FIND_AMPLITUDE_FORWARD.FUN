@@ -62,7 +62,7 @@ if compute\n\
 		\t\telse\n\
 			\t\t\ttoValues = inputMarker2_Values;\n\
 		\t\tend\n\
-	\t\end\n\
+	\tend\n\
 	\tfor trialNumber = [trialsList]\n\
 		\t\t% Get from and to index in from and to values for trialNumber\n\
 		\t\tfromIndex = find(fromValues(:,1) == trialNumber);\n\
