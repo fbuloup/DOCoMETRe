@@ -4,8 +4,9 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.commands.IHandlerListener;
-import org.eclipse.jface.window.ApplicationWindow;
 import org.eclipse.ui.PlatformUI;
+
+import fr.univamu.ism.docometre.analyse.views.FunctionEditor;
 
 public class ShowFunctionEditorHandler implements IHandler {
 
@@ -23,10 +24,9 @@ public class ShowFunctionEditorHandler implements IHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		ApplicationWindow applicationWindow = new ApplicationWindow(PlatformUI.getWorkbench().getDisplay().getActiveShell());
-		applicationWindow.setBlockOnOpen(true);
-		applicationWindow.open();
-		return null;
+		FunctionEditor functionEditor = new FunctionEditor(PlatformUI.getWorkbench().getDisplay().getActiveShell());
+		functionEditor.setBlockOnOpen(true);
+		return functionEditor.open();
 	}
 
 	@Override

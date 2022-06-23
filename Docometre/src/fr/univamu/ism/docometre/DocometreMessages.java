@@ -48,7 +48,7 @@ import org.eclipse.osgi.util.NLS;
 public final class DocometreMessages extends NLS {
 	
 	private static final String BUNDLE_NAME = "fr.univamu.ism.docometre.messages";//$NON-NLS-1$
-	
+
 	/* General */
 	public static String OperationCanceledByUser;
 	public static String WorkspaceAlreadyUsed;
@@ -1062,6 +1062,18 @@ public final class DocometreMessages extends NLS {
 	public static String SaveAllJobName;
 	public static String SaveAllJobEditorsTaskName;
 	public static String SaveAllJobSubjectsTaskName;
+	
+	// Functions editor
+	public static String FuntionEditorShellTitle;
+	public static String FunctionsListTitle;
+	public static String ADwinFunctions;
+	public static String ADwinUserFunctions;
+	public static String ArduinoUnoFunctions;
+	public static String ArduinoUnoUserFunctions;
+	public static String PythonFunctions;
+	public static String PythonUserFunctions;
+	public static String MatlabFunctions;
+	public static String MatlabUserFunctions;
 			
 	static {
 		// load message values from bundle file
