@@ -210,6 +210,7 @@ public interface IImageKeys {
 	public static final String TURN_RIGHT = "icons/turnRight.png"; //$NON-NLS-1$
 	
 	public static final String CUSTOMER_FUNCTION_ICON = "icons/customerFunction.png"; //$NON-NLS-1$
+	public static final String CUSTOMER_FUNCTION_EDITABLE_ICON = "icons/customerFunctionEditable.png"; //$NON-NLS-1$
 	public static final String MAIN_PROPERTY_ICON = "icons/mainProperty.png"; //$NON-NLS-1$
 	public static final String INNER_PROPERTY_ICON = "icons/innerProperty.png"; //$NON-NLS-1$
 }

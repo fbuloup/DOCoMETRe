@@ -45,9 +45,11 @@ import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfigurationProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfigurationProperties;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
+import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
 
 public class FunctionEditor extends ApplicationWindow {
 	
@@ -187,6 +189,8 @@ public class FunctionEditor extends ApplicationWindow {
 					
 					
 					tabItem.setText(functionsTreeViewer.getTree().getSelection()[0].getText());
+					if(FunctionFactory.isCustomerFunction(path)) tabItem.setImage(Activator.getImage(IImageKeys.CUSTOMER_FUNCTION_EDITABLE_ICON));
+					else tabItem.setImage(Activator.getImage(IImageKeys.CUSTOMER_FUNCTION_ICON));
 					tabItem.setToolTipText(path.toString());
 					tabItem.addDisposeListener(new DisposeListener() {
 						@Override

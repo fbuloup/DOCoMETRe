@@ -179,6 +179,23 @@ public final class FunctionFactory {
 		} 
 	}
 	
+	public static String getProperty(java.nio.file.Path fullPathFunctionFileName, String key) {
+		if(!fullPathFunctionFileName.toFile().exists()) return "";
+		if(fullPathFunctionFileName.toFile().isDirectory()) return "";
+		try {
+			Properties properties = new Properties();
+			properties.load(new InputStreamReader(new FileInputStream(fullPathFunctionFileName.toString()), Charset.forName("UTF-8")));
+			String property;
+			if(properties.containsKey(key + countrySuffix)) property = properties.getProperty(key + countrySuffix);
+			else property = properties.getProperty(key);
+			return (property == null)?"":property;
+		} catch (Exception e) {
+			e.printStackTrace();
+			Activator.logErrorMessageWithCause(e);
+			return e.getMessage();
+		} 
+	}
+	
 	public static String[] getCustomerFunctions(Object context) {
 		IPath path = computeAbsolutePath(context, true);
 		File functionsFilesFolder = new File(path.toOSString());
@@ -208,5 +225,11 @@ public final class FunctionFactory {
 		String[] customerFunctions = getCustomerFunctions(context);
 		return Arrays.asList(customerFunctions).contains(functionName);
 	}
+	
+	public static boolean isCustomerFunction(java.nio.file.Path fullPathFunctionFileName) {
+		String value = getProperty(fullPathFunctionFileName, USER_FUNCTION_KEY);
+		return "YES".equalsIgnoreCase(value.trim()) || "1".equals(value.trim());
+	}
+
 
 }
