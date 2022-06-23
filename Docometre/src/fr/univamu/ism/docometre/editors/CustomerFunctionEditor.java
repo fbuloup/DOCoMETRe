@@ -110,9 +110,11 @@ public class CustomerFunctionEditor extends EditorPart implements PartNameRefres
 			
 			List<String> lines = Files.readAllLines(FileSystems.getDefault().getPath(customerFunction.getLocation().toOSString()), StandardCharsets.UTF_8);
 			StringBuffer content = new StringBuffer();
+			int i = 0;
 			for (String line : lines) {
 				content.append(line);
-				if(!line.equals(lines.get(lines.size() - 1))) content.append("\n");
+				if(i != lines.size() - 1) content.append("\n");
+				i++;
 			}
 			
 			document = new Document();
