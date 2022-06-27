@@ -41,8 +41,10 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.editors;
 
+import java.nio.file.Path;
 import java.util.HashSet;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -53,6 +55,7 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
 
 public class ResourceEditorInput implements IEditorInput {
 
@@ -146,6 +149,21 @@ public class ResourceEditorInput implements IEditorInput {
 		Object[] objects = editedObjects.toArray();
 		for (Object localObject : objects) {
 			if(localObject.equals(object)) return true;
+		}
+		if(this.object instanceof IFile && object instanceof IFile) {
+			IFile localFile = (IFile)this.object;
+			IFile file = (IFile)object;
+			String pathLocalFile = "";
+			if(localFile.getLocation() != null) pathLocalFile = localFile.getLocation().toPortableString();
+			else pathLocalFile = localFile.getFullPath().toPortableString();
+			boolean localFileIsCustomerFunction = FunctionFactory.isCustomerFunction(Path.of(pathLocalFile));
+			String pathFile = "";
+			if(file.getLocation() != null) pathFile = file.getLocation().toPortableString();
+			else pathFile = file.getFullPath().toPortableString();
+			boolean fileIsCustomerFunction = FunctionFactory.isCustomerFunction(Path.of(pathFile));
+			if(localFileIsCustomerFunction && fileIsCustomerFunction) {
+				if(pathLocalFile.equals(pathFile)) return true;
+			}
 		}
 		return false;
 	}

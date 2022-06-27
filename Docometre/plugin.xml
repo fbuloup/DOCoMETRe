@@ -150,6 +150,14 @@ Développement à l&apos;institut des Sciences du Mouvement.">
             name="%MathEngineCommandView_Tilte"
             restorable="true">
       </view>
+      <view
+            allowMultiple="false"
+            class="fr.univamu.ism.docometre.analyse.views.FunctionsView"
+            icon="icons/function.gif"
+            id="Docometre.FunctionsView"
+            name="%FunctionsView_Title"
+            restorable="true">
+      </view>
    </extension>
    <extension
          point="org.eclipse.ui.perspectiveExtensions">
@@ -455,9 +463,9 @@ Développement à l&apos;institut des Sciences du Mouvement.">
             name="XYZChartEditor">
       </editor>
       <editor
-            class="fr.univamu.ism.docometre.editors.CustomerFunctionEditor"
+            class="fr.univamu.ism.docometre.analyse.editors.functioneditor.CustomerFunctionEditor"
             default="false"
-            icon="icons/customerFunction.png"
+            icon="icons/customerFunction.gif"
             id="Docometre.CustomerFunctionEditor"
             name="CustomerFunctionEditor">
       </editor>
@@ -679,7 +687,7 @@ Développement à l&apos;institut des Sciences du Mouvement.">
                </command>
                <command
                      commandId="NewCustomFunctionCommand"
-                     icon="icons/customerFunction.png"
+                     icon="icons/customerFunction.gif"
                      label="%NewCustomFunctionCommand.label"
                      style="push"
                      tooltip="%NewCustomFunctionCommand.tooltip">
@@ -1484,11 +1492,10 @@ Développement à l&apos;institut des Sciences du Mouvement.">
                      style="push">
                </command>
                <command
-                     commandId="ShowFunctionEditorCommand"
-                     icon="icons/customerFunction.png"
-                     label="%ShowFunctionEditorCommand.Title"
-                     style="push"
-                     tooltip="%ShowFunctionEditorCommand.Title">
+                     commandId="ShowFunctionsViewCommand"
+                     icon="icons/function.png"
+                     label="%ShowFunctionsViewCommand.label"
+                     style="push">
                </command>
                <separator
                      name="Docometre.separator1"
@@ -1677,7 +1684,7 @@ Développement à l&apos;institut des Sciences du Mouvement.">
                </command>
                <command
                      commandId="NewCustomFunctionCommand"
-                     icon="icons/customerFunction.png"
+                     icon="icons/customerFunction.gif"
                      label="%NewCustomFunctionCommand.label"
                      style="push"
                      tooltip="%NewCustomFunctionCommand.tooltip">
@@ -2569,7 +2576,7 @@ Développement à l&apos;institut des Sciences du Mouvement.">
          </command>
          <command
                commandId="NewCustomFunctionCommand"
-               icon="icons/customerFunction.png"
+               icon="icons/customerFunction.gif"
                label="%NewCustomFunctionCommand.label"
                style="push"
                tooltip="%NewCustomFunctionCommand.tooltip">
@@ -2841,7 +2848,7 @@ Développement à l&apos;institut des Sciences du Mouvement.">
             </command>
             <command
                   commandId="NewCustomFunctionCommand"
-                  icon="icons/customerFunction.png"
+                  icon="icons/customerFunction.gif"
                   label="%NewCustomFunctionCommand.label"
                   style="push"
                   tooltip="%NewCustomFunctionCommand.tooltip">
@@ -2909,6 +2916,13 @@ Développement à l&apos;institut des Sciences du Mouvement.">
                   label="%NewXYZChartCommand.label"
                   style="push"
                   tooltip="%NewXYZChartCommand.tooltip">
+            </command>
+            <command
+                  commandId="NewCustomFunctionCommand"
+                  icon="icons/customerFunction.gif"
+                  label="%NewCustomFunctionCommand.label"
+                  style="push"
+                  tooltip="%NewCustomFunctionCommand.tooltip">
             </command>
          </menu>
          <command
@@ -3335,9 +3349,9 @@ Développement à l&apos;institut des Sciences du Mouvement.">
             name="LaunchNewDocometreSessionCommand">
       </command>
       <command
-            defaultHandler="fr.univamu.ism.docometre.analyse.handlers.ShowFunctionEditorHandler"
-            id="ShowFunctionEditorCommand"
-            name="ShowFunctionEditorCommand">
+            defaultHandler="fr.univamu.ism.docometre.handlers.ShowFunctionsViewHandler"
+            id="ShowFunctionsViewCommand"
+            name="ShowFunctionsViewCommand">
       </command>
       
       

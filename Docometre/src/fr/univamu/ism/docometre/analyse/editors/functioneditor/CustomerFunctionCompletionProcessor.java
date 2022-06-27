@@ -1,4 +1,4 @@
-package fr.univamu.ism.docometre.editors;
+package fr.univamu.ism.docometre.analyse.editors.functioneditor;
 
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;

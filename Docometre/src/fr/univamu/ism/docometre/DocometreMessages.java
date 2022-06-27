@@ -1074,6 +1074,10 @@ public final class DocometreMessages extends NLS {
 	public static String PythonUserFunctions;
 	public static String MatlabFunctions;
 	public static String MatlabUserFunctions;
+	public static String SaveMenuTitle;
+	public static String SaveAllMenuTitle;
+	public static String SaveMenuTooltip;
+	public static String SaveAllMenuTooltip;
 			
 	static {
 		// load message values from bundle file

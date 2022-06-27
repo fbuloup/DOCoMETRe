@@ -41,8 +41,12 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre;
 
+import java.nio.file.Path;
+
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
+
+import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
 
 public enum ResourceType {
 	
@@ -171,7 +175,14 @@ public enum ResourceType {
 	}
 	
 	public static boolean isCustomerFunction(IResource resource) {
-		return check(resource, CUSTOMER_FUNCTION);
+		boolean value = check(resource, CUSTOMER_FUNCTION);
+		Path path = Path.of(resource.getFullPath().toPortableString());
+		return value || FunctionFactory.isCustomerFunction(path);
+	}
+	
+	public static boolean isFunction(IResource resource) {
+		boolean value = isCustomerFunction(resource);
+		return  value || resource.getName().endsWith(Activator.customerFunctionFileExtension);
 	}
 	
 	public static boolean isOptitrack_Type_1(IResource resource) {
@@ -213,6 +224,8 @@ public enum ResourceType {
 		isDataFile = isDataFile || ResourceType.isOptitrack_Type_1(resource);
 		return isDataFile;
 	}
+
+	
 	
 	
 }

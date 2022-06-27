@@ -41,12 +41,14 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.actions;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -67,12 +69,13 @@ import fr.univamu.ism.docometre.analyse.editors.BatchDataProcessingEditor;
 import fr.univamu.ism.docometre.analyse.editors.DataProcessEditor;
 import fr.univamu.ism.docometre.analyse.editors.XYChartEditor;
 import fr.univamu.ism.docometre.analyse.editors.XYZChartEditor;
+import fr.univamu.ism.docometre.analyse.editors.functioneditor.CustomerFunctionEditor;
+import fr.univamu.ism.docometre.analyse.views.FunctionsView;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ui.dacqconfigurationeditor.ADWinDACQConfigurationEditor;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor.ADWinProcessEditor;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.dacqconfigurationeditor.ArduinoUnoDACQConfigurationEditor;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.processeditor.ArduinoUnoProcessEditor;
-import fr.univamu.ism.docometre.editors.CustomerFunctionEditor;
 import fr.univamu.ism.docometre.editors.DataEditor;
 import fr.univamu.ism.docometre.editors.DiaryEditor;
 import fr.univamu.ism.docometre.editors.ParametersEditor;
@@ -136,6 +139,7 @@ public class OpenEditorAction extends Action implements ISelectionListener, IWor
 			if(ResourceType.isXYZChart(resource)) editorID = XYZChartEditor.ID;
 			
 			if(ResourceType.isCustomerFunction(resource)) openEditor(resource, CustomerFunctionEditor.ID);
+			else if(ResourceType.isFunction(resource)) openEditor(resource, CustomerFunctionEditor.ID);
 			
 			if(ResourceType.isSamples(resource)) openEditor(resource, DataEditor.ID);
 			else if(editorID != null) {
@@ -182,7 +186,7 @@ public class OpenEditorAction extends Action implements ISelectionListener, IWor
 	@Override
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
 		setEnabled(false);
-		if(part instanceof ExperimentsView || part instanceof SubjectsView) {
+		if(part instanceof ExperimentsView || part instanceof SubjectsView || part instanceof FunctionsView) {
 			resources = null;
 			if (selection instanceof IStructuredSelection) {
 				Object[] selectedObjects = ((IStructuredSelection) selection).toArray();
@@ -200,6 +204,11 @@ public class OpenEditorAction extends Action implements ISelectionListener, IWor
 						canOpen = canOpen || ResourceType.isXYZChart((IResource) object);
 						canOpen = canOpen || ResourceType.isCustomerFunction((IResource) object);
 						if(canOpen) files.add((IFile) object);
+					}
+					if(object instanceof Path && part instanceof FunctionsView) {
+						IPath path = org.eclipse.core.runtime.Path.fromOSString(((Path)object).toFile().getAbsolutePath());
+						IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
+						files.add(file);
 					}
 				}
 				if(files.size() > 0) resources = files.toArray(new IResource[files.size()]);

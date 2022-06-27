@@ -19,13 +19,12 @@ public class FunctionsEditorLabelProvider extends LabelProvider {
 		return super.getText(element);
 	}
 
-
 	@Override
 	public Image getImage(Object element) {
 		if(element instanceof Path) {
 			if(FunctionFactory.isCustomerFunction((Path)element))
-			return  Activator.getImage(IImageKeys.CUSTOMER_FUNCTION_EDITABLE_ICON);
-			else return Activator.getImage(IImageKeys.CUSTOMER_FUNCTION_ICON);
+			return  Activator.getImage(IImageKeys.CUSTOMER_FUNCTION_ICON);
+			else return Activator.getImage(IImageKeys.FUNCTION_ICON);
 		}
 		return Activator.getImage(IImageKeys.FOLDER_ICON);
 	}
