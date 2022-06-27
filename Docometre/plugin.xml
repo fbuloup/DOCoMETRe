@@ -1493,7 +1493,7 @@ Développement à l&apos;institut des Sciences du Mouvement.">
                </command>
                <command
                      commandId="ShowFunctionsViewCommand"
-                     icon="icons/function.png"
+                     icon="icons/function.gif"
                      label="%ShowFunctionsViewCommand.label"
                      style="push">
                </command>
