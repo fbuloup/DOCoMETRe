@@ -41,6 +41,8 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.wizards;
 
+import java.nio.file.Path;
+
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -72,10 +74,17 @@ public class NewResourceWizard extends Wizard implements INewWizard, IPageChange
 	// Must not be null when modifying resource
 	private IResource resource;
 	private OrganizeSessionWizardPage organizeSessionWizardPage;
+	private Path parentResourcePath;
 
 	public NewResourceWizard(ResourceType resourceType, IContainer parentResource, int mode) {
 		this.resourceType = resourceType;
 		this.parentResource = parentResource;
+		this.mode = mode; 
+	}
+	
+	public NewResourceWizard(ResourceType resourceType, Path parentResourcePath, int mode) {
+		this.resourceType = resourceType;
+		this.parentResourcePath = parentResourcePath;
 		this.mode = mode; 
 	}
 
@@ -226,6 +235,17 @@ public class NewResourceWizard extends Wizard implements INewWizard, IPageChange
 			organizeSessionWizardPage.updateFocus();
 		}
 		
+	}
+	
+	public boolean findMember(String name) {
+		if(parentResource != null) return parentResource.findMember(name) != null;
+		if(parentResourcePath != null) {
+			String[] files = parentResourcePath.toFile().list();
+			for (String fileName : files) {
+				if(fileName.equalsIgnoreCase(name)) return true;
+			}
+		}
+		return false;
 	}
 	
  	

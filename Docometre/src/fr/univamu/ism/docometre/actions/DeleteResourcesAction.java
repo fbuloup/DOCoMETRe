@@ -76,6 +76,7 @@ import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
 import fr.univamu.ism.docometre.analyse.handlers.LoadUnloadSubjectsHandler;
+import fr.univamu.ism.docometre.analyse.views.FunctionsView;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.editors.PartNameRefresher;
@@ -200,6 +201,7 @@ public class DeleteResourcesAction extends Action implements ISelectionListener,
 								for (IResource parentResourceToRefresh : parentResourcesToRefresh) {
 									ExperimentsView.refresh(parentResourceToRefresh.getProject(), new IResource[]{});
 									SubjectsView.refresh();
+									FunctionsView.refresh();
 								}
 								monitor.worked(1);
 							}

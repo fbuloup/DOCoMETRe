@@ -71,6 +71,7 @@ import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
+import fr.univamu.ism.docometre.analyse.views.FunctionsView;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.editors.PartNameRefresher;
@@ -217,6 +218,7 @@ public class RenameResourceOperation extends AbstractOperation {
 							monitor.subTask(DocometreMessages.RefreshExperimentsSubjectsViewsSubTaskTitle);
 							ExperimentsView.refresh(newResource.getParent(), new IResource[]{newResource});
 							SubjectsView.refresh();
+							FunctionsView.refresh();
 						}
 						
 						renameDataFilesStatus = (Status) Status.OK_STATUS;

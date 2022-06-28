@@ -220,6 +220,9 @@ public class ObjectsController {
 	 * Deserialize object
 	 */
 	public static Object deserialize(IFile file) {
+		boolean doNotDeserialize = ResourceType.isDataFile(file) || ResourceType.isCustomerFunction(file);
+		doNotDeserialize = doNotDeserialize || ResourceType.isLog(file) || ResourceType.isParameters(file);
+		if(doNotDeserialize) return null;
 		Object object = null;
 		File dataFile = new File(file.getLocation().toOSString());
 		if(!dataFile.exists()) return null;

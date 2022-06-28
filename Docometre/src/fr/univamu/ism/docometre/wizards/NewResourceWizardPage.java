@@ -171,6 +171,7 @@ public abstract class NewResourceWizardPage extends WizardPage implements IWizar
 			if(ResourceType.XYCHART.equals(resourceType)) fileExtension = Activator.xyChartFileExtension;
 			if(ResourceType.XYZCHART.equals(resourceType)) fileExtension = Activator.xyzChartFileExtension;
 		}
+		if(this instanceof NewCustomFunctionWizardPage) fileExtension = Activator.customerFunctionFileExtension;
 		Pattern pattern = Pattern.compile(regexp);
 		Matcher matcher = pattern.matcher(name);
 		if(!matcher.matches()) {
@@ -204,7 +205,7 @@ public abstract class NewResourceWizardPage extends WizardPage implements IWizar
 				}
 				
 			} else {
-				if(newResourceWizard.getParentResource().findMember(name + fileExtension) != null) {
+				if(newResourceWizard.findMember(name + fileExtension)) {
 					setErrorMessage(DocometreMessages.NewResourceWizard_ErrorMessage2);
 					controlDecoration.show();
 					setPageComplete(false);

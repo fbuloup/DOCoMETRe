@@ -3041,6 +3041,17 @@ Développement à l&apos;institut des Sciences du Mouvement.">
                style="push">
          </command>
       </menuContribution>
+      <menuContribution
+            allPopups="true"
+            locationURI="popup:Docometre.FunctionsView">
+         <command
+               commandId="NewCustomFunctionCommand"
+               icon="icons/customerFunction.gif"
+               label="%NewCustomFunctionCommand.label"
+               style="push"
+               tooltip="%NewCustomFunctionCommand.tooltip">
+         </command>
+      </menuContribution>
    </extension>
    <extension
          id="DocometreBuilder"

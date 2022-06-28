@@ -126,6 +126,9 @@ public class CustomerFunctionEditor extends EditorPart implements PartNameRefres
 			sourceViewer.setEditable(FunctionFactory.isCustomerFunction(Path.of(customerFunction.getFullPath().toPortableString())));
 		}
 		
+		boolean devMode = Boolean.valueOf(System.getProperty("DEV"));
+		if(devMode) sourceViewer.setEditable(true);
+		
 		document.set(content);
 		sourceViewer.configure(new CustomerFunctionSourceViewerConfiguration());
 		
