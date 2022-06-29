@@ -276,6 +276,13 @@ public class RenameResourceOperation extends AbstractOperation {
 							// Update resource editor input if necessary (only the case when object is resource) 
 							if(object instanceof IResource) resourceEditorInput.setObject(newResource);
 						}
+						//
+						if(object == editedResource && resource.equals(editedResource)) {
+							// Force part name refresh
+							refreshPartName = true;
+							// Update resource editor input if necessary (only the case when object is resource) 
+							if(object instanceof IResource) resourceEditorInput.setObject(newResource);
+						}
 						// If edited resource is process and renamed resource is its associated dacq file, force part refresh 
 						if(ResourceType.isProcess(editedResource)) {
 							// If editor resource is a process, check if associated DACQ file has been renamed

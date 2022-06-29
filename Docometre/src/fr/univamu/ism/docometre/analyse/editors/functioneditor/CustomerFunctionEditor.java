@@ -37,7 +37,7 @@ public class CustomerFunctionEditor extends EditorPart implements PartNameRefres
 	
 	public static String ID = "Docometre.CustomerFunctionEditor";
 	
-	private IFile customerFunction;
+//	private IFile customerFunction;
 	private boolean dirty;
 	private SourceViewer sourceViewer;
 
@@ -53,6 +53,7 @@ public class CustomerFunctionEditor extends EditorPart implements PartNameRefres
 	@Override
 	public void doSave(IProgressMonitor monitor) {
 		try {
+			IFile customerFunction = (IFile) ((ResourceEditorInput)getEditorInput()).getObject();
 			StringBuffer stringBuffer = new StringBuffer();
 			int nbLines = document.getNumberOfLines();
 			for (int i = 0; i < nbLines; i++) {
@@ -88,8 +89,7 @@ public class CustomerFunctionEditor extends EditorPart implements PartNameRefres
 	public void init(IEditorSite site, IEditorInput input) throws PartInitException {
 		setInput(input);
 		setSite(site);
-		customerFunction = (IFile) ((ResourceEditorInput)input).getObject();
-		setPartName(GetResourceLabelDelegate.getLabel(customerFunction));
+		setPartName(GetResourceLabelDelegate.getLabel((IFile) ((ResourceEditorInput)input).getObject()));
 	}
 
 	@Override
@@ -116,6 +116,7 @@ public class CustomerFunctionEditor extends EditorPart implements PartNameRefres
 		sourceViewer.setDocument(document);
 		sourceViewer.setEditable(false);
 		
+		IFile customerFunction = (IFile) ((ResourceEditorInput)getEditorInput()).getObject();
 		String content = "";
 		if(customerFunction.getLocation() != null) {
 			content = CustomerFunctionReader.read(customerFunction.getLocation().toOSString());
@@ -174,9 +175,10 @@ public class CustomerFunctionEditor extends EditorPart implements PartNameRefres
 	
 	@Override
 	public void refreshPartName() {
-		setPartName(GetResourceLabelDelegate.getLabel(customerFunction));
+		setPartName(GetResourceLabelDelegate.getLabel((IFile) ((ResourceEditorInput)getEditorInput()).getObject()));
 		setTitleToolTip(getEditorInput().getToolTipText());
 		firePropertyChange(PROP_TITLE);
+		System.out.println(((ResourceEditorInput)getEditorInput()).getObject());
 	}
  	
 }
