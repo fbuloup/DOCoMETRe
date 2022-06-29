@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -15,6 +16,9 @@ import org.eclipse.jface.text.source.CompositeRuler;
 import org.eclipse.jface.text.source.LineNumberRulerColumn;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
@@ -37,14 +41,11 @@ public class CustomerFunctionEditor extends EditorPart implements PartNameRefres
 	
 	public static String ID = "Docometre.CustomerFunctionEditor";
 	
-//	private IFile customerFunction;
 	private boolean dirty;
 	private SourceViewer sourceViewer;
-
 	private Document document;
-
 	private PartListenerAdapter partListenerAdapter;
-
+	private ArrayList<Font> fontsArrayList = new ArrayList<>();
 
 	public CustomerFunctionEditor() {
 		// TODO Auto-generated constructor stub
@@ -134,6 +135,24 @@ public class CustomerFunctionEditor extends EditorPart implements PartNameRefres
 		sourceViewer.configure(new CustomerFunctionSourceViewerConfiguration());
 		
 		CustomerFunctionSourceViewerListeners.addSourceViewerListeners(sourceViewer, this);
+		// Must add this listener in CustomerFunctionEditor because new fonts must be deleted from CustomerFunctionEditor
+		sourceViewer.getTextWidget().addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent event) {
+				 if(((event.stateMask & SWT.MOD1) == SWT.MOD1) && event.keyCode == '=') {
+					 Font font = sourceViewer.getTextWidget().getFont();
+					 Font newFont = new Font(font.getDevice(), font.getFontData()[0].getName(), font.getFontData()[0].getHeight() + 1, font.getFontData()[0].getStyle());
+					 sourceViewer.getTextWidget().setFont(newFont);
+					 fontsArrayList.add(newFont);
+				 }
+				 if(((event.stateMask & SWT.MOD1) == SWT.MOD1) && event.keyCode == '-') {
+					 Font font = sourceViewer.getTextWidget().getFont();
+					 Font newFont = new Font(font.getDevice(), font.getFontData()[0].getName(), font.getFontData()[0].getHeight() - 1, font.getFontData()[0].getStyle());
+					 sourceViewer.getTextWidget().setFont(newFont);
+					 fontsArrayList.add(newFont);
+				 }
+			}
+		});
 		
 		partListenerAdapter = new PartListenerAdapter() {
 			@Override
@@ -171,6 +190,12 @@ public class CustomerFunctionEditor extends EditorPart implements PartNameRefres
 	@Override
 	public void setFocus() {
 		sourceViewer.getTextWidget().setFocus();
+	}
+	
+	@Override
+	public void dispose() {
+		for (Font font : fontsArrayList) font.dispose();
+		super.dispose();
 	}
 	
 	@Override

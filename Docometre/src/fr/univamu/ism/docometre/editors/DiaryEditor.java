@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -66,8 +67,9 @@ import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CaretEvent;
 import org.eclipse.swt.custom.CaretListener;
+import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
@@ -94,8 +96,8 @@ public class DiaryEditor extends EditorPart implements PartNameRefresher {
 	
 	public static String ID = "Docometre.DiaryEditor";
 	private SourceViewer sourceViewer;
-
 	private PartListenerAdapter partListenerAdapter;
+	private ArrayList<Font> fontsArrayList = new ArrayList<>();
 
 	public DiaryEditor() {
 		// TODO Auto-generated constructor stub
@@ -174,17 +176,25 @@ public class DiaryEditor extends EditorPart implements PartNameRefresher {
 			sourceViewer.getTextWidget().setEditable(false);
 			sourceViewer.setDocument(document, annotationModel, -1, -1);
 			sourceViewer.configure(DiarySourceViewerConfigurationFactory.getSourceViewerConfiguration(diary));
-			sourceViewer.getTextWidget().addKeyListener(new KeyListener() {
-				@Override
-				public void keyReleased(KeyEvent event) {
-				}
-				
+			sourceViewer.getTextWidget().addKeyListener(new KeyAdapter() {
 				@Override
 				public void keyPressed(KeyEvent event) {
 					if(((event.stateMask & SWT.MOD1) == SWT.MOD1) && event.keyCode == 'f') {
 						FindDialog.getInstance().setTextViewer(sourceViewer);
 						FindDialog.getInstance().open();
 					}
+					if(((event.stateMask & SWT.MOD1) == SWT.MOD1) && event.keyCode == '=') {
+						 Font font = sourceViewer.getTextWidget().getFont();
+						 Font newFont = new Font(font.getDevice(), font.getFontData()[0].getName(), font.getFontData()[0].getHeight() + 1, font.getFontData()[0].getStyle());
+						 sourceViewer.getTextWidget().setFont(newFont);
+						 fontsArrayList.add(newFont);
+					 }
+					 if(((event.stateMask & SWT.MOD1) == SWT.MOD1) && event.keyCode == '-') {
+						 Font font = sourceViewer.getTextWidget().getFont();
+						 Font newFont = new Font(font.getDevice(), font.getFontData()[0].getName(), font.getFontData()[0].getHeight() - 1, font.getFontData()[0].getStyle());
+						 sourceViewer.getTextWidget().setFont(newFont);
+						 fontsArrayList.add(newFont);
+					 }
 				}
 			});
 			sourceViewer.getTextWidget().addCaretListener(new CaretListener() {
@@ -277,7 +287,11 @@ public class DiaryEditor extends EditorPart implements PartNameRefresher {
 		}
 	}
 
-	
+	@Override
+	public void dispose() {
+		for (Font font : fontsArrayList) font.dispose();
+		super.dispose();
+	}
 
 	@Override
 	public void setFocus() {

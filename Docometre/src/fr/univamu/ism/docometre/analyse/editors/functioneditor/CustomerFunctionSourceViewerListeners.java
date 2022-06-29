@@ -3,6 +3,7 @@ package fr.univamu.ism.docometre.analyse.editors.functioneditor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITextListener;
 import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.jface.text.TextEvent;
 import org.eclipse.jface.text.source.SourceViewer;
@@ -10,10 +11,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CaretEvent;
 import org.eclipse.swt.custom.CaretListener;
 import org.eclipse.swt.custom.VerifyKeyListener;
+import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.VerifyEvent;
-import org.eclipse.jface.text.ITextListener;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.dialogs.FindDialog;
@@ -24,17 +24,10 @@ public final class CustomerFunctionSourceViewerListeners {
 		functionSourceViewer.addTextListener(new ITextListener() {
 			@Override
 			public void textChanged(TextEvent event) {
-				boolean value = true;
-				Object data = functionSourceViewer.getTextWidget().getData("loading");
-				if(data != null && data instanceof Boolean) value = !((Boolean)data);
-				editor.setDirty(value);
+				editor.setDirty(true);
 			}
 		});
-		functionSourceViewer.getTextWidget().addKeyListener(new KeyListener() {
-			@Override
-			public void keyReleased(KeyEvent event) {
-			}
-			
+		functionSourceViewer.getTextWidget().addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent event) {
 				if(((event.stateMask & SWT.MOD1) == SWT.MOD1) && event.keyCode == 'f') {
@@ -80,17 +73,9 @@ public final class CustomerFunctionSourceViewerListeners {
 		
 		functionSourceViewer.appendVerifyKeyListener(new VerifyKeyListener() {
 		      public void verifyKey(VerifyEvent event) {
-
-		      // Check for Ctrl+Spacebar
 		      if (event.stateMask == SWT.CTRL && event.keyCode == ' ') {
-
-		        // Check if source viewer is able to perform operation
 		        if (functionSourceViewer.canDoOperation(SourceViewer.CONTENTASSIST_PROPOSALS))
-
-		          // Perform operation
 		        	functionSourceViewer.doOperation(SourceViewer.CONTENTASSIST_PROPOSALS);
-
-		        // Veto this key press to avoid further processing
 		        event.doit = false;
 		      }
 		   }

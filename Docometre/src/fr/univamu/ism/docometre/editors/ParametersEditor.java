@@ -47,6 +47,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -64,8 +65,9 @@ import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CaretEvent;
 import org.eclipse.swt.custom.CaretListener;
+import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
@@ -88,6 +90,7 @@ public class ParametersEditor extends EditorPart implements PartNameRefresher {
 	private boolean dirty;
 	private Document document;
 	private PartListenerAdapter partListenerAdapter;
+	private ArrayList<Font> fontsArrayList = new ArrayList<>();
 	
 	public ParametersEditor() {
 	}
@@ -166,11 +169,7 @@ public class ParametersEditor extends EditorPart implements PartNameRefresher {
 				}
 			});
 			
-			sourceViewer.getTextWidget().addKeyListener(new KeyListener() {
-				@Override
-				public void keyReleased(KeyEvent event) {
-				}
-				
+			sourceViewer.getTextWidget().addKeyListener(new KeyAdapter() {
 				@Override
 				public void keyPressed(KeyEvent event) {
 					if(((event.stateMask & SWT.MOD1) == SWT.MOD1) && event.keyCode == 'f') {
@@ -181,6 +180,18 @@ public class ParametersEditor extends EditorPart implements PartNameRefresher {
 					} else if(isUndoKeyPress(event)) {
 						sourceViewer.doOperation(ITextOperationTarget.UNDO);
 					}
+					if(((event.stateMask & SWT.MOD1) == SWT.MOD1) && event.keyCode == '=') {
+						 Font font = sourceViewer.getTextWidget().getFont();
+						 Font newFont = new Font(font.getDevice(), font.getFontData()[0].getName(), font.getFontData()[0].getHeight() + 1, font.getFontData()[0].getStyle());
+						 sourceViewer.getTextWidget().setFont(newFont);
+						 fontsArrayList.add(newFont);
+					 }
+					 if(((event.stateMask & SWT.MOD1) == SWT.MOD1) && event.keyCode == '-') {
+						 Font font = sourceViewer.getTextWidget().getFont();
+						 Font newFont = new Font(font.getDevice(), font.getFontData()[0].getName(), font.getFontData()[0].getHeight() - 1, font.getFontData()[0].getStyle());
+						 sourceViewer.getTextWidget().setFont(newFont);
+						 fontsArrayList.add(newFont);
+					 }
 				}
 				
 				private boolean isRedoKeyPress(KeyEvent e) {
@@ -236,6 +247,12 @@ public class ParametersEditor extends EditorPart implements PartNameRefresher {
 			Activator.logErrorMessageWithCause(e);
 		}
 		
+	}
+	
+	@Override
+	public void dispose() {
+		for (Font font : fontsArrayList) font.dispose();
+		super.dispose();
 	}
 
 	@Override
