@@ -139,13 +139,13 @@ public class CustomerFunctionEditor extends EditorPart implements PartNameRefres
 		sourceViewer.getTextWidget().addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent event) {
-				 if(((event.stateMask & SWT.MOD1) == SWT.MOD1) && event.keyCode == '=') {
+				 if(((event.stateMask & SWT.CTRL) == SWT.CTRL) && (event.keyCode == '=' || event.keyCode == 16777259)) {
 					 Font font = sourceViewer.getTextWidget().getFont();
 					 Font newFont = new Font(font.getDevice(), font.getFontData()[0].getName(), font.getFontData()[0].getHeight() + 1, font.getFontData()[0].getStyle());
 					 sourceViewer.getTextWidget().setFont(newFont);
 					 fontsArrayList.add(newFont);
 				 }
-				 if(((event.stateMask & SWT.MOD1) == SWT.MOD1) && event.keyCode == '-') {
+				 if(((event.stateMask & SWT.CTRL) == SWT.CTRL) && (event.keyCode == '-' || event.keyCode == 16777261)) {
 					 Font font = sourceViewer.getTextWidget().getFont();
 					 Font newFont = new Font(font.getDevice(), font.getFontData()[0].getName(), font.getFontData()[0].getHeight() - 1, font.getFontData()[0].getStyle());
 					 sourceViewer.getTextWidget().setFont(newFont);
