@@ -3,7 +3,6 @@ package fr.univamu.ism.docometre.analyse.editors.functioneditor;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 
@@ -54,7 +53,14 @@ public class CustomerFunctionEditor extends EditorPart implements PartNameRefres
 	@Override
 	public void doSave(IProgressMonitor monitor) {
 		try {
-			IFile customerFunction = (IFile) ((ResourceEditorInput)getEditorInput()).getObject();
+			Object object = ((ResourceEditorInput)getEditorInput()).getObject();
+			Path functionPath = null;
+			if(object instanceof IFile) {
+				IFile customerFunction = (IFile) ((ResourceEditorInput)getEditorInput()).getObject();
+				functionPath = Path.of(customerFunction.getLocation().toOSString());
+			} else functionPath = (Path)object;
+			
+			
 			StringBuffer stringBuffer = new StringBuffer();
 			int nbLines = document.getNumberOfLines();
 			for (int i = 0; i < nbLines; i++) {
@@ -72,8 +78,7 @@ public class CustomerFunctionEditor extends EditorPart implements PartNameRefres
 				}
 			}
 			String text = stringBuffer.toString();
-			if(customerFunction.getLocationURI() == null) Files.write(Paths.get(customerFunction.getFullPath().toPortableString()), text.getBytes(), StandardOpenOption.TRUNCATE_EXISTING , StandardOpenOption.WRITE);
-			else Files.write(Paths.get(customerFunction.getLocationURI()), text.getBytes(), StandardOpenOption.TRUNCATE_EXISTING , StandardOpenOption.WRITE);
+			Files.write(functionPath, text.getBytes(), StandardOpenOption.TRUNCATE_EXISTING , StandardOpenOption.WRITE);
 			setDirty(false);
 		} catch (IOException e) {
 			Activator.logErrorMessageWithCause(e);
