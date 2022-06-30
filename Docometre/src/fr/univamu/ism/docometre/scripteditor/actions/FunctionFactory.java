@@ -230,6 +230,12 @@ public final class FunctionFactory {
 		String value = getProperty(fullPathFunctionFileName, USER_FUNCTION_KEY);
 		return "YES".equalsIgnoreCase(value.trim()) || "1".equals(value.trim());
 	}
+	
+	// It's a function if it contains MENU_TITLE key and its extension is .FUN
+	public static boolean isFunction(java.nio.file.Path fullPathFunctionFileName) {
+		String value = getProperty(fullPathFunctionFileName, MENU_TITLE);
+		return !"".equalsIgnoreCase(value.trim()) && fullPathFunctionFileName.toFile().getAbsolutePath().endsWith(Activator.customerFunctionFileExtension);
+	}
 
 
 }

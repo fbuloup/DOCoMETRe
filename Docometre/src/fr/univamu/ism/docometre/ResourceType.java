@@ -174,15 +174,33 @@ public enum ResourceType {
 		return check(resource, XYZCHART);
 	}
 	
-	public static boolean isCustomerFunction(IResource resource) {
-		boolean value = check(resource, CUSTOMER_FUNCTION);
-		Path path = Path.of(resource.getFullPath().toPortableString());
-		return value || FunctionFactory.isCustomerFunction(path);
+	public static boolean isCustomerFunction(Object resource) {
+		if(resource instanceof IResource) return isCustomerFunction((IResource)resource);
+		else if(resource instanceof Path)return isCustomerFunction((Path)resource);
+		return false;
 	}
 	
-	public static boolean isFunction(IResource resource) {
+	public static boolean isFunction(Object resource) {
+		if(resource instanceof IResource) return isFunction((IResource)resource);
+		else if(resource instanceof Path)return isFunction((Path)resource);
+		return false;
+	}
+	
+	private static boolean isCustomerFunction(IResource resource) {
+		return check(resource, CUSTOMER_FUNCTION);
+	}
+	
+	private static boolean isFunction(IResource resource) {
 		boolean value = isCustomerFunction(resource);
 		return  value || resource.getName().endsWith(Activator.customerFunctionFileExtension);
+	}
+	
+	private static boolean isCustomerFunction(Path resource) {
+		return FunctionFactory.isCustomerFunction(resource);
+	}
+	
+	private static boolean isFunction(Path resource) {
+		return  FunctionFactory.isFunction(resource);
 	}
 	
 	public static boolean isOptitrack_Type_1(IResource resource) {

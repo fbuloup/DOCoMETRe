@@ -159,11 +159,12 @@ public class NewCustomFunctionHandler implements IHandler, ISelectionListener {
 					if(selectedObject instanceof Entry<?, ?>) {
 						Entry<String, java.nio.file.Path> entry = (Entry<String, java.nio.file.Path>) selectedObject;
 						if(entry.getValue().toFile().isDirectory()) {
-							String parentFolderAbsolutePath = entry.getValue().toAbsolutePath().toString();
 							String workspaceRootAbsolutePath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();
-							if(parentFolderAbsolutePath.startsWith(workspaceRootAbsolutePath)) {
-								parentFolderAbsolutePath = parentFolderAbsolutePath.replaceFirst(workspaceRootAbsolutePath, "");
-								parentResource = (IContainer) ResourcesPlugin.getWorkspace().getRoot().findMember(parentFolderAbsolutePath);
+							java.nio.file.Path parentFolderPath = entry.getValue();
+							java.nio.file.Path workspaceRootPath =java.nio.file.Path.of(workspaceRootAbsolutePath);
+							if(parentFolderPath.startsWith(workspaceRootAbsolutePath)) {
+								String relativePath = workspaceRootPath.relativize(parentFolderPath).toString();
+								parentResource = (IContainer) ResourcesPlugin.getWorkspace().getRoot().findMember(relativePath);
 							} else {
 								functionsViewParentResource = entry.getValue();
 							}

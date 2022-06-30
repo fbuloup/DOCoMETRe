@@ -46,16 +46,15 @@ import java.util.HashSet;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
 
 import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.GetResourceLabelDelegate;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceType;
-import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
 
 public class ResourceEditorInput implements IEditorInput {
 
@@ -112,24 +111,20 @@ public class ResourceEditorInput implements IEditorInput {
 		if(ResourceType.isLog(resource)) return Activator.getImageDescriptor(IImageKeys.DIARY_ICON);
 		return null;
 	}
-
-	private IPath getResourceFullPath() {
-		IResource resource = ObjectsController.getResourceForObject(object);
-		if(resource == null && object instanceof IResource) resource = (IResource)object;
-		return resource.getFullPath();
-	}
 	
 	public String getName() {
-		IPath path = getResourceFullPath();
-		if(path == null) return null;
-		return path.lastSegment();
+		if(object instanceof IResource) return GetResourceLabelDelegate.getLabel((IFile)object);
+		if(object instanceof Path) {
+			return ((Path)object).getFileName().toString().replaceAll(Activator.customerFunctionFileExtension, "");
+		}
+		return "?";
 	}
 
 	public String getToolTipText() {
 		if(tooltip != null) return tooltip;
-		IPath path = getResourceFullPath();
-		if(path == null) return null;
-		return path.toOSString();
+		if(object instanceof IResource) ((IFile)object).getFullPath().toOSString();
+		if(object instanceof Path) return ((Path)object).toFile().getAbsolutePath();
+		return "?";
 	}
 	
 	public Object getObject() {
@@ -153,17 +148,19 @@ public class ResourceEditorInput implements IEditorInput {
 		if(this.object instanceof IFile && object instanceof IFile) {
 			IFile localFile = (IFile)this.object;
 			IFile file = (IFile)object;
-			String pathLocalFile = "";
-			if(localFile.getLocation() != null) pathLocalFile = localFile.getLocation().toPortableString();
-			else pathLocalFile = localFile.getFullPath().toPortableString();
-			boolean localFileIsCustomerFunction = FunctionFactory.isCustomerFunction(Path.of(pathLocalFile));
-			String pathFile = "";
-			if(file.getLocation() != null) pathFile = file.getLocation().toPortableString();
-			else pathFile = file.getFullPath().toPortableString();
-			boolean fileIsCustomerFunction = FunctionFactory.isCustomerFunction(Path.of(pathFile));
-			if(localFileIsCustomerFunction && fileIsCustomerFunction) {
-				if(pathLocalFile.equals(pathFile)) return true;
-			}
+			return localFile.getLocation().toOSString().equals(file.getLocation().toOSString());
+		} else if(this.object instanceof IFile && object instanceof Path) {
+			String path = ((IFile)this.object).getLocation().toOSString();
+			String localPath = ((Path)object).toFile().getAbsolutePath();
+			return path.equals(localPath);
+		} else if(this.object instanceof Path && object instanceof IFile) {
+			String localPath = ((IFile)object).getLocation().toOSString();
+			String path = ((Path)this.object).toFile().getAbsolutePath();
+			return path.equals(localPath);
+		} else if(this.object instanceof Path && object instanceof Path) {
+			String localPath = ((Path)object).toFile().getAbsolutePath();
+			String path = ((Path)this.object).toFile().getAbsolutePath();
+			return path.equals(localPath);
 		}
 		return false;
 	}

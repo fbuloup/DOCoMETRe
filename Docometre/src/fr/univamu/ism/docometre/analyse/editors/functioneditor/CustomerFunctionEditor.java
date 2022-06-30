@@ -8,6 +8,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
@@ -28,7 +29,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
 
 import fr.univamu.ism.docometre.Activator;
-import fr.univamu.ism.docometre.GetResourceLabelDelegate;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.PartListenerAdapter;
 import fr.univamu.ism.docometre.ResourceType;
@@ -90,7 +90,7 @@ public class CustomerFunctionEditor extends EditorPart implements PartNameRefres
 	public void init(IEditorSite site, IEditorInput input) throws PartInitException {
 		setInput(input);
 		setSite(site);
-		setPartName(GetResourceLabelDelegate.getLabel((IFile) ((ResourceEditorInput)input).getObject()));
+		setPartName(((ResourceEditorInput)input).getName());
 	}
 
 	@Override
@@ -117,15 +117,15 @@ public class CustomerFunctionEditor extends EditorPart implements PartNameRefres
 		sourceViewer.setDocument(document);
 		sourceViewer.setEditable(false);
 		
-		IFile customerFunction = (IFile) ((ResourceEditorInput)getEditorInput()).getObject();
+		Object customerFunction = ((ResourceEditorInput)getEditorInput()).getObject();
 		String content = "";
-		if(customerFunction.getLocation() != null) {
-			content = CustomerFunctionReader.read(customerFunction.getLocation().toOSString());
-			sourceViewer.setEditable(FunctionFactory.isCustomerFunction(Path.of(customerFunction.getLocation().toPortableString())));
+		if(customerFunction instanceof IResource) {
+			content = CustomerFunctionReader.read( ((IResource)customerFunction).getLocation().toOSString());
+			sourceViewer.setEditable(FunctionFactory.isCustomerFunction(Path.of(((IResource)customerFunction).getLocation().toPortableString())));
 		}
 		else {
-			content = CustomerFunctionReader.read(customerFunction.getFullPath().toPortableString());
-			sourceViewer.setEditable(FunctionFactory.isCustomerFunction(Path.of(customerFunction.getFullPath().toPortableString())));
+			content = CustomerFunctionReader.read(((Path)customerFunction).toFile().getAbsolutePath());
+			sourceViewer.setEditable(FunctionFactory.isCustomerFunction((Path)customerFunction));
 		}
 		
 		boolean devMode = Boolean.valueOf(System.getProperty("DEV"));
@@ -200,7 +200,7 @@ public class CustomerFunctionEditor extends EditorPart implements PartNameRefres
 	
 	@Override
 	public void refreshPartName() {
-		setPartName(GetResourceLabelDelegate.getLabel((IFile) ((ResourceEditorInput)getEditorInput()).getObject()));
+		setPartName(getEditorInput().getName());
 		setTitleToolTip(getEditorInput().getToolTipText());
 		firePropertyChange(PROP_TITLE);
 		System.out.println(((ResourceEditorInput)getEditorInput()).getObject());
