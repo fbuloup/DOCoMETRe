@@ -21,17 +21,25 @@ public class FunctionsEditorTreeContentProvider implements ITreeContentProvider 
 	@SuppressWarnings("unchecked")
 	@Override
 	public Object[] getChildren(Object parentElement) {
-		if(!(parentElement instanceof Entry<?, ?>)) return null;
-		Entry<String, Path> entry = (Entry<String, Path>) parentElement;
-		if(!(entry.getValue() instanceof Path)) return null;
-		Path path = (Path)entry.getValue();
-		String[] filesList = path.toFile().list();
-		if(filesList == null) return null;
-		Path[] filesPath = new Path[filesList.length];
-		for (int i = 0; i < filesPath.length; i++) {
-			filesPath[i] = path.resolve(filesList[i]);
+		Path path = null;
+		if((parentElement instanceof Entry<?, ?>)) {
+			Entry<String, Path> entry = (Entry<String, Path>) parentElement;
+			if(!(entry.getValue() instanceof Path)) return null;
+			path = (Path)entry.getValue();
+		    
+		} else if(parentElement instanceof Path) {
+			if(((Path)parentElement).toFile().isDirectory()) path = (Path)parentElement;
 		}
-	    return filesPath;
+		if(path != null) {
+			String[] filesList = path.toFile().list();
+			if(filesList == null) return null;
+			Path[] filesPath = new Path[filesList.length];
+			for (int i = 0; i < filesPath.length; i++) {
+				filesPath[i] = path.resolve(filesList[i]);
+			}
+		    return filesPath;
+		}
+		return null;
 	}
 
 	@Override
@@ -43,11 +51,16 @@ public class FunctionsEditorTreeContentProvider implements ITreeContentProvider 
 	@SuppressWarnings("unchecked")
 	@Override
 	public boolean hasChildren(Object element) {
-		if(!(element instanceof Entry<?, ?>)) return false;
-		Entry<String, Path> entry = (Entry<String, Path>) element;
-		Path path = (Path)entry.getValue();
-		if(!path.toFile().isDirectory()) return false;
-		return path.toFile().list().length > 0;
+		if(element instanceof Entry<?, ?>) {
+			Entry<String, Path> entry = (Entry<String, Path>) element;
+			Path path = (Path)entry.getValue();
+			if(!path.toFile().isDirectory()) return false;
+			return path.toFile().list().length > 0;
+		} else if(element instanceof Path) {
+			if(!((Path)element).toFile().isDirectory()) return false;
+			return ((Path)element).toFile().list().length > 0;
+		}
+		return false;
 	}
 
 }

@@ -30,6 +30,7 @@ public class FunctionsEditorLabelProvider extends LabelProvider {
 		if(element instanceof Path) {
 			if(FunctionFactory.isCustomerFunction((Path)element))
 			return  Activator.getImage(IImageKeys.CUSTOMER_FUNCTION_ICON);
+			else if(((Path)element).toFile().isDirectory()) return Activator.getImage(IImageKeys.FOLDER_ICON);
 			else return Activator.getImage(IImageKeys.FUNCTION_ICON);
 		}
 		return Activator.getImage(IImageKeys.FOLDER_ICON);
