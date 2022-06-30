@@ -64,7 +64,7 @@ public class ResourceEditorInput implements IEditorInput {
 
 	public ResourceEditorInput(Object object) {
 		this.object = object;
-		if(!(object instanceof IResource)) ObjectsController.addHandle(object);
+		if(!(object instanceof IResource) && !(object instanceof Path)) ObjectsController.addHandle(object);
 		editedObjects = new HashSet<>();
 	}
 	
