@@ -158,6 +158,7 @@ public final class ResourceProperties {
 	 * Return the type of the resource : Experiment, subject etc. See ResourceType class for details
 	 */
 	public static String getTypePersistentProperty(IResource resource) {
+		if(resource == null) return "";
 		try {
 			if(resource.exists()) return resource.getPersistentProperty(TYPE_QN);
 		} catch (CoreException e) {
