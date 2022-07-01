@@ -63,6 +63,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.analyse.views.FunctionsView;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfigurationProperties;
 import fr.univamu.ism.docometre.dacqsystems.ui.DeviceSelectionDialog;
@@ -138,7 +139,9 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getKey(), userLibraryPathText.getText());
 		preferenceStore.putValue(GeneralPreferenceConstants.ARDUINO_DELAY_TIME_AFTER_SERIAL_PRINT, delayTimeSpinner.getText());
 		preferenceStore.putValue(GeneralPreferenceConstants.ARDUINO_USER_LIBRARIES_ABSOLUTE_PATH, docoUserLibrariesAbsolutePathText.getText());
-		return super.performOk();
+		boolean value = super.performOk();
+		FunctionsView.refresh(false);
+		return value;
 	}
 
 	@Override

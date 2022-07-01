@@ -54,6 +54,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.analyse.views.FunctionsView;
 
 public class PythonPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
@@ -87,6 +88,13 @@ public class PythonPreferencePage extends FieldEditorPreferencePage implements I
 		DirectoryFieldEditor pythonUserScriptsLocationFieldEditor = new DirectoryFieldEditor(GeneralPreferenceConstants.PYTHON_USER_SCRIPTS_LOCATION, DocometreMessages.PythonEngineUserScriptLocation, container);
 		pythonUserScriptsLocationFieldEditor.getLabelControl(container).setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
 		addField(pythonUserScriptsLocationFieldEditor);
+	}
+	
+	@Override
+	public boolean performOk() {
+		boolean value = super.performOk();
+		FunctionsView.refresh(false);
+		return value;
 	}
 
 }

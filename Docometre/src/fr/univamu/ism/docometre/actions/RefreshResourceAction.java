@@ -89,7 +89,7 @@ public class RefreshResourceAction extends Action implements ISelectionListener,
 							resource.refreshLocal(IResource.DEPTH_INFINITE, monitor);
 							ExperimentsView.refresh(resource.getParent(), new IResource[]{resource});
 							SubjectsView.refresh(resource.getParent(), new IResource[]{resource});
-							FunctionsView.refresh();
+							FunctionsView.refresh(true);
 						} catch (CoreException e) {
 							e.printStackTrace();
 							Activator.logErrorMessageWithCause(e);

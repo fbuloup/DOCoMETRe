@@ -86,7 +86,7 @@ public class NewCustomFunctionHandler implements IHandler, ISelectionListener {
 						
 						ExperimentsView.refresh(customFunctionFile.getParent(), new IResource[]{customFunctionFile});
 						SubjectsView.refresh(customFunctionFile.getParent(), new IResource[]{customFunctionFile});
-						FunctionsView.refresh();
+						FunctionsView.refresh(true);
 					}
 				} else if(functionsViewParentResource != null) {
 					String fileName = newResourceWizard.getResourceName() + Activator.customerFunctionFileExtension;
@@ -100,7 +100,7 @@ public class NewCustomFunctionHandler implements IHandler, ISelectionListener {
 							e.printStackTrace();
 						}
 					}
-					FunctionsView.refresh();
+					FunctionsView.refresh(true);
 				}
 				
 			} catch (CoreException | IOException e) {

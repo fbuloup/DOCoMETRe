@@ -87,6 +87,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
+import fr.univamu.ism.docometre.analyse.views.FunctionsView;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfigurationProperties;
@@ -401,7 +402,9 @@ public class DefaultADWinSystemPreferencePage extends PreferencePage implements 
 		preferenceStore.putValue(ADWinDACQConfigurationProperties.GLOBAL_FREQUENCY.getKey(), globalFrequencyText.getText());
 		preferenceStore.putValue(GeneralPreferenceConstants.ADWIN_USER_LIBRARIES_ABSOLUTE_PATH, userLibrariesAbsolutePathText.getText());
 		preferenceStore.putValue("DEFAULT_MODULES", createModuleInfosString());
-		return super.performOk();
+		boolean value = super.performOk();
+		FunctionsView.refresh(false);
+		return value;
 	}
 	
 	@Override

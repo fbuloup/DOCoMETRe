@@ -218,7 +218,7 @@ public class RenameResourceOperation extends AbstractOperation {
 							monitor.subTask(DocometreMessages.RefreshExperimentsSubjectsViewsSubTaskTitle);
 							ExperimentsView.refresh(newResource.getParent(), new IResource[]{newResource});
 							SubjectsView.refresh();
-							FunctionsView.refresh();
+							FunctionsView.refresh(true);
 						}
 						
 						renameDataFilesStatus = (Status) Status.OK_STATUS;

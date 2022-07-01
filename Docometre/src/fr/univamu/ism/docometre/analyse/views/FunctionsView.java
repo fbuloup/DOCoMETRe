@@ -34,19 +34,20 @@ public class FunctionsView extends ViewPart {
 	/*
 	 * Refresh Functions view
 	 */
-	public static void refresh() {
+	public static void refresh(boolean onlyRefresh) {
 		Display.getDefault().syncExec(new Runnable() {
 			@Override
 			public void run() {
 				IViewPart functionsView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(FunctionsView.ID);
 				if (functionsView instanceof FunctionsView)// Check null also !
-					((FunctionsView)functionsView).refreshInput();
+					((FunctionsView)functionsView).refreshInput(onlyRefresh);
 			}
 		});
 	}
 	
-	public void refreshInput() {
-		functionsTreeViewer.refresh();
+	public void refreshInput(boolean onlyRefresh) {
+		if(onlyRefresh) functionsTreeViewer.refresh();
+		else functionsTreeViewer.setInput(FunctionsModel.createModel());
 	}
 
 	@Override

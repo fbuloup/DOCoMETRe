@@ -55,6 +55,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.analyse.views.FunctionsView;
 
 public class MatlabPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
@@ -91,6 +92,13 @@ public class MatlabPreferencePage extends FieldEditorPreferencePage implements I
 		DirectoryFieldEditor matlabUserScriptsLocationFieldEditor = new DirectoryFieldEditor(GeneralPreferenceConstants.MATLAB_USER_SCRIPTS_LOCATION, DocometreMessages.MatlabEngineUserScriptLocation, container);
 		matlabUserScriptsLocationFieldEditor.getLabelControl(container).setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
 		addField(matlabUserScriptsLocationFieldEditor);
+	}
+	
+	@Override
+	public boolean performOk() {
+		boolean value = super.performOk();
+		FunctionsView.refresh(false);
+		return value;
 	}
 
 }

@@ -201,7 +201,7 @@ public class DeleteResourcesAction extends Action implements ISelectionListener,
 								for (IResource parentResourceToRefresh : parentResourcesToRefresh) {
 									ExperimentsView.refresh(parentResourceToRefresh.getProject(), new IResource[]{});
 									SubjectsView.refresh();
-									FunctionsView.refresh();
+									FunctionsView.refresh(true);
 								}
 								monitor.worked(1);
 							}
