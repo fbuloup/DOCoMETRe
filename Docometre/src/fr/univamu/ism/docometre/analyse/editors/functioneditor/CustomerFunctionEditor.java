@@ -117,7 +117,8 @@ public class CustomerFunctionEditor extends EditorPart implements PartNameRefres
 	public void createPartControl(Composite parent) {
 		document = new Document();
 		CompositeRuler lineAnnotationRuler = new CompositeRuler();
-		lineAnnotationRuler.addDecorator(0,new LineNumberRulerColumn());
+		LineNumberRulerColumn lineNumberRulerColumn = new LineNumberRulerColumn();
+		lineAnnotationRuler.addDecorator(0, lineNumberRulerColumn);
 		sourceViewer = new SourceViewer(parent, lineAnnotationRuler, null, false, SWT.V_SCROLL | SWT.H_SCROLL);
 		sourceViewer.setDocument(document);
 		sourceViewer.setEditable(false);
@@ -148,12 +149,16 @@ public class CustomerFunctionEditor extends EditorPart implements PartNameRefres
 					 Font font = sourceViewer.getTextWidget().getFont();
 					 Font newFont = new Font(font.getDevice(), font.getFontData()[0].getName(), font.getFontData()[0].getHeight() + 1, font.getFontData()[0].getStyle());
 					 sourceViewer.getTextWidget().setFont(newFont);
+					 lineNumberRulerColumn.setFont(newFont);
+					 sourceViewer.getTextWidget().getParent().layout(true);
 					 fontsArrayList.add(newFont);
 				 }
 				 if(((event.stateMask & SWT.CTRL) == SWT.CTRL) && (event.keyCode == '-' || event.keyCode == 16777261)) {
 					 Font font = sourceViewer.getTextWidget().getFont();
 					 Font newFont = new Font(font.getDevice(), font.getFontData()[0].getName(), font.getFontData()[0].getHeight() - 1, font.getFontData()[0].getStyle());
 					 sourceViewer.getTextWidget().setFont(newFont);
+					 lineNumberRulerColumn.setFont(newFont);
+					 sourceViewer.getTextWidget().getParent().layout(true);
 					 fontsArrayList.add(newFont);
 				 }
 			}
