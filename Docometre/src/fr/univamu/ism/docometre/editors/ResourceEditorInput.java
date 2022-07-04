@@ -55,6 +55,7 @@ import fr.univamu.ism.docometre.GetResourceLabelDelegate;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 
 public class ResourceEditorInput implements IEditorInput {
 
@@ -145,7 +146,11 @@ public class ResourceEditorInput implements IEditorInput {
 		for (Object localObject : objects) {
 			if(localObject.equals(object)) return true;
 		}
-		if(this.object instanceof IFile && object instanceof IFile) {
+		if(this.object instanceof Channel && object instanceof Channel) {
+			Channel localChannel = (Channel)this.object;
+			Channel channel = (Channel)object;
+			return localChannel.equals(channel);
+		} else if(this.object instanceof IFile && object instanceof IFile) {
 			IFile localFile = (IFile)this.object;
 			IFile file = (IFile)object;
 			return localFile.getLocation().toOSString().equals(file.getLocation().toOSString());
