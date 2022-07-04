@@ -165,7 +165,7 @@ public class StartStopMathEngineHandler extends AbstractHandler implements IElem
 		
 		startStopMathEngineJob.setUser(true);
 		startStopMathEngineJob.schedule();
-		return null;
+		return startStopMathEngineJob;
 	}
 	
 	private static void refreshCommand() {

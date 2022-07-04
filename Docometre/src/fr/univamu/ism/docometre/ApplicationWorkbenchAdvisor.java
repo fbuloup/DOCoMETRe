@@ -48,17 +48,23 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceManager;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
@@ -69,11 +75,15 @@ import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfigurationProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfigurationProperties;
+import fr.univamu.ism.docometre.handlers.StartStopMathEngineHandler;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
 public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
-    public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
+    private IStatus jobStatus;
+	private int jobState;
+
+	public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
         return new ApplicationWorkbenchWindowAdvisor(configurer);
     }
 
@@ -142,27 +152,54 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 	@Override
 	public boolean preShutdown() {
 		try {
+			jobStatus = null;
+			jobState = Job.NONE;
+			long dt = 0;
 			IProgressMonitor monitor = new NullProgressMonitor();
 			ResourcesPlugin.getWorkspace().save(true, monitor);
-			final Shell shell = getWorkbenchConfigurer().getWorkbench().getActiveWorkbenchWindow().getShell();
 			if(MathEngineFactory.getMathEngine().isStarted()) {
-				shell.getDisplay().asyncExec(new Runnable() {
+				Job startStopMathEngineJob = (Job) StartStopMathEngineHandler.getInstance().execute(new ExecutionEvent());
+				startStopMathEngineJob.addJobChangeListener(new JobChangeAdapter() {
 					@Override
-					public void run() {
-						MessageDialog.openInformation(shell, DocometreMessages.CloseMathEngineDialogTitle, DocometreMessages.CloseMathEngineDialogMessage);
+					public void running(IJobChangeEvent event) {
+						jobState = Job.RUNNING;
+					}
+					@Override
+					public void done(IJobChangeEvent event) {
+						jobStatus = startStopMathEngineJob.getResult();
 					}
 				});
-				return false;
-			} else {
-				IPath workspaceLocation = ResourcesPlugin.getWorkspace().getRoot().getLocation();
-				IPath lockPath = workspaceLocation.append(".metadata").append("workspace.locker");
-				if(lockPath.toFile().exists()) {
-					if(!lockPath.toFile().delete()) MessageDialog.openError(shell, DocometreMessages.Error, DocometreMessages.UnableDeleteLockerFile);
+				long t0 = System.currentTimeMillis();
+				while (jobStatus == null && dt <= 60000) { // 60s timeout
+					if(jobState != Job.RUNNING) dt = System.currentTimeMillis() - t0;
+					else {
+						t0 = System.currentTimeMillis();
+						dt = 0;
+					}
+					if (!getWorkbenchConfigurer().getWorkbench().getDisplay().readAndDispatch()) {
+						getWorkbenchConfigurer().getWorkbench().getDisplay().sleep();
+					}
 				}
 			}
-		} catch (CoreException e) {
+			
+			if(Status.CANCEL_STATUS.equals(jobStatus) || (jobStatus == null && dt > 60000)) {
+				if(Status.CANCEL_STATUS.equals(jobStatus)) Activator.logInfoMessage("Job \"" + DocometreMessages.MathEngineStartStop + "\" : " + DocometreMessages.OperationCanceledByUser, getClass());
+				if(jobStatus == null && dt > 60000) Activator.logInfoMessage("Job \"" + DocometreMessages.MathEngineStartStop + "\" : " + DocometreMessages.TimedOut, getClass());
+				return false;
+			}
+			
+			IPath workspaceLocation = ResourcesPlugin.getWorkspace().getRoot().getLocation();
+			IPath lockPath = workspaceLocation.append(".metadata").append("workspace.locker");
+			if(lockPath.toFile().exists()) {
+				if(!lockPath.toFile().delete()) MessageDialog.openError(getWorkbenchConfigurer().getWorkbench().getActiveWorkbenchWindow().getShell(), DocometreMessages.Error, DocometreMessages.UnableDeleteLockerFile);
+			}
+			
+			return super.preShutdown();
+			
+		} catch (CoreException | ExecutionException e) {
 			e.printStackTrace();
 		}
-		return super.preShutdown();
+		
+		return false;
 	}
 }

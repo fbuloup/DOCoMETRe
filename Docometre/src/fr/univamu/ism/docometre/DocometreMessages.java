@@ -58,6 +58,7 @@ public final class DocometreMessages extends NLS {
 	public static String UnableDeleteLockerFile;
 	public static String UnableCreateLockerFile;
 	public static String UnableCreateMetadataFolder;
+	public static String TimedOut;
 
 	/*Experiment View*/
 	public static String ExperimentsViewTitle;
