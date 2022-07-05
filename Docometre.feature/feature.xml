@@ -6,7 +6,13 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-07-05
+      -- 2022-07-05 - Bis
+ADDED :
+* Auto select newly added marker in Signal editor
+* Help update for Optitrack type 1 data files 
+* Add support to import subjects from Optitrack type 1 data files 
+FIXED : Nothing
+-- 2022-07-05
 ADDED :
 * Support for functions editor
 * Support for functions view
