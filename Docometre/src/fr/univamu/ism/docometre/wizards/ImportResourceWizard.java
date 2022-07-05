@@ -57,6 +57,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -119,6 +121,30 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 		ITreeSelection selection = importResourceWizardPage.getSelection();
 		ResourceType resourceType = importResourceWizardPage.getResourceType();
 		Object[] elements = selection.toArray();
+		
+		if(resourceType.equals(ResourceType.OPTITRACK_TYPE_1)) {
+			try {
+				getContainer().run(true, true, new IRunnableWithProgress() {
+					@Override
+					public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+						monitor.beginTask(DocometreMessages.ImportResourceWizardOptitrack1Message, elements.length);
+						for (Object element : elements) {
+							File file = (File)element;
+							if(file.isDirectory()) importSubjectsFormOptitrack1(file);
+							monitor.worked(1);
+						}
+						monitor.done();
+					}
+				});
+				parentResource.refreshLocal(IResource.DEPTH_INFINITE, null);
+				ExperimentsView.refresh(parentResource, null);
+			} catch (CoreException | InvocationTargetException | InterruptedException e) {
+				Activator.logErrorMessageWithCause(e);
+				e.printStackTrace();
+			}
+			return true;
+		} 
+		
 		for (Object element : elements) {
 			File file = (File)element;
 			if(!file.isDirectory()) {
@@ -382,13 +408,56 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 					}
 				}
 			 
-			} else {
-				Activator.logWarningMessage(NLS.bind(DocometreMessages.ImportResourceWizardErrorMessage3, file.getAbsolutePath()));
-			}
+			} else Activator.logWarningMessage(NLS.bind(DocometreMessages.ImportResourceWizardErrorMessage3, file.getAbsolutePath()));
 		} 
 		return true;
 	}
 	
+	private void importSubjectsFormOptitrack1(File file) {
+		try {
+			String fileName = file.getName();
+			// Add subject and session
+			Pattern pattern = Pattern.compile("^[a-zA-Z]+[0-9]+");
+			Matcher matcher = pattern.matcher(fileName);
+			while (matcher.find()) {
+				String subjectName = matcher.group();
+				String sessionName = fileName.substring(matcher.end());
+				IResource newSubject = parentResource.findMember(subjectName);
+				if(newSubject == null) {
+					newSubject = parentResource.getFolder(new org.eclipse.core.runtime.Path(subjectName));
+					((IFolder)newSubject).create(true, true, null);
+					ResourceProperties.setTypePersistentProperty(newSubject, ResourceType.SUBJECT.toString());
+				}
+				IResource newSession = ((IFolder)newSubject).findMember(sessionName);
+				if(newSession == null) {
+					newSession = ((IFolder)newSubject).getFolder(new org.eclipse.core.runtime.Path(sessionName));
+					((IFolder)newSession).create(true, true, null);
+					ResourceProperties.setTypePersistentProperty(newSession, ResourceType.SESSION.toString());
+				}
+				// Then copy data file in this new created subject
+				String rootPath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();
+				rootPath = rootPath + parentResource.getFullPath().toOSString() + File.separator + newSubject.getName();
+				rootPath = rootPath + File.separator + newSession.getName();
+				String[] sessionFilesList = file.list();
+				for (String dataFile : sessionFilesList) {
+					Path originalPath = file.toPath().resolve(dataFile);
+					Path newPath = Paths.get(rootPath + File.separator + originalPath.getFileName().toString());
+					Files.copy(originalPath, newPath, StandardCopyOption.REPLACE_EXISTING);
+					IFile newFile = ((IFolder)newSession).getFile(newPath.getFileName().toString());
+					newFile.refreshLocal(IResource.DEPTH_ZERO, null);
+					ResourceProperties.setDescriptionPersistentProperty(newFile, "");
+					ResourceProperties.setTypePersistentProperty(newFile, ResourceType.OPTITRACK_TYPE_1.toString());
+				}
+			}
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		} catch (IOException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+	}
+
 	protected int getNbProperties(File file, String experimentName, String rootPath) {
 		int nbPropertiesEntries = 0;
 		try {

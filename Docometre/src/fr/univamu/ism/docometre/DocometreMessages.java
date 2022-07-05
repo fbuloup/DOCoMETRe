@@ -247,6 +247,8 @@ public final class DocometreMessages extends NLS {
 	public static String ImportResourceWizardErrorMessage2;
 	public static String ImportResourceWizardErrorMessage3;
 	public static String NewSubjectFromADWDataFileLabel;
+	public static String NewSubjectFromOptiTrackDataFileLabel;
+	public static String ImportResourceWizardOptitrack1Message;
 	public static String ImportingExperimentFromCompressedFile;
 	public static String CreatingNewExperimentInWorkspace;
 	public static String RefreshingWorkspace;

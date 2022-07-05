@@ -57,6 +57,7 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.BusyIndicator;
@@ -125,6 +126,8 @@ public class ImportResourceWizardPage extends WizardPage {
 				if(selection == ResourceType.ADW_DATA_FILE) extension = Activator.adwFileExtension;
 				if(selection == ResourceType.DATA_PROCESSING) extension = Activator.dataProcessingFileExtension;
 				valid = name.matches("^[a-zA-Z][a-zA-Z0-9_]*" + extension + "$");
+			} else if(selection == ResourceType.OPTITRACK_TYPE_1) {
+				valid = name.matches("^[a-zA-Z]+[0-9]+[a-zA-Z]+[a-zA-Z0-9_]*$");
 			}
 			return valid;
 		}
@@ -168,6 +171,7 @@ public class ImportResourceWizardPage extends WizardPage {
 				if(element == ResourceType.PROCESS) return DocometreMessages.NewProcessAction_Text;
 				if(element == ResourceType.EXPERIMENT) return DocometreMessages.NewExperimentAction_Text + " (*.zip, *.tar)";
 				if(element == ResourceType.ADW_DATA_FILE) return DocometreMessages.NewSubjectFromADWDataFileLabel;
+				if(element == ResourceType.OPTITRACK_TYPE_1) return DocometreMessages.NewSubjectFromOptiTrackDataFileLabel;
 				if(element == ResourceType.SUBJECT) return DocometreMessages.Subjects + " (*.zip, *.tar)";
 				if(element == ResourceType.DATA_PROCESSING) return DocometreMessages.DataProcessingTitle;
 				if(element == ResourceType.SESSION) return DocometreMessages.Sessions_Label;
@@ -262,6 +266,7 @@ public class ImportResourceWizardPage extends WizardPage {
 				return  Activator.getImage(IImageKeys.FOLDER_ICON);
 			}
 		});
+		resourceTreeViewer.setComparator(new ViewerComparator());
 		browseButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -302,7 +307,12 @@ public class ImportResourceWizardPage extends WizardPage {
 				Object[] elements = selection.toArray();
 				for (Object element : elements) {
 					File file = (File)element;
-					if(!file.isDirectory()) {
+					if(ResourceType.OPTITRACK_TYPE_1.equals(resourceTypeComboViewer.getStructuredSelection().getFirstElement())) {
+						if(file.isDirectory()) {
+							setPageComplete(true);
+							break;
+						}
+					} else if(!file.isDirectory()) {
 						setPageComplete(true);
 						break;
 					}
@@ -319,7 +329,7 @@ public class ImportResourceWizardPage extends WizardPage {
 		IResource parentSelectedResource = ImportResourceWizard.getSelectedResource();
 		
 		if(ResourceType.isExperiment(parentSelectedResource)) {
-			resourceTypeComboViewer.setInput(new Object[] {/*ResourceType.SUBJECT,*/ ResourceType.ADW_DATA_FILE, ResourceType.DACQ_CONFIGURATION, ResourceType.PROCESS, ResourceType.DATA_PROCESSING});
+			resourceTypeComboViewer.setInput(new Object[] {/*ResourceType.SUBJECT,*/ ResourceType.ADW_DATA_FILE, ResourceType.DACQ_CONFIGURATION, ResourceType.PROCESS, ResourceType.DATA_PROCESSING, ResourceType.OPTITRACK_TYPE_1});
 			resourceTypeComboViewer.setSelection(new StructuredSelection(ResourceType.ADW_DATA_FILE));
 			selectedResourceType = ResourceType.ADW_DATA_FILE;
 		}
