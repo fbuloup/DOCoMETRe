@@ -6,7 +6,24 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-06-18
+      -- 2022-07-05
+ADDED :
+* Support for functions editor
+* Support for functions view
+* Font size increase/decrease support in text editors 
+* Stop math engine when App. is closed and action is not canceled
+* Add reportNonDisposed=false JVM argument to docometre.ini file
+FIXED :
+* Bug correction on mean computation (Matlab only)
+* Don&apos;t stop MathEngine if save subject is canceled
+* Bug reading Functions text files
+* NPE in Resource editor input
+* Enable setType menu item only if selected part is experimentView
+* Remove excess backslash in Find amplitude backward and forward
+* Bug when customer function was renamed
+* Bug on user (customer) functions files saving
+* Do not manage Handles for user functions
+-- 2022-06-18
 ADDED :
 * Trust Pref. Page translation (continued)
 * It&apos;s now possible to cancel &quot;unload&quot; subject action
@@ -14,7 +31,8 @@ FIXED :
 * Force default systems property values if not already performed
 * Error message refacoring in several Matlab functions
 * Save and Save all commands bad behaviour
-* Retrieve channel from its full name not only from provided experiment
+* Retrieve channel from its full name not only from provided
+experiment
 -- 2022-06-14 - Bis
 ADDED : Nothing
 FIXED :
