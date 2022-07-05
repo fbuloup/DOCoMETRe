@@ -322,7 +322,7 @@ public class CategoryContainerEditor extends Composite implements ISelectionChan
 	}
 
 	@Override
-	public void updateMarkersGroup(String markersGroupLabel) {
+	public void updateMarkersGroup(String markersGroupLabel, Object... parameters) {
 		// TODO Nothing
 	}
 

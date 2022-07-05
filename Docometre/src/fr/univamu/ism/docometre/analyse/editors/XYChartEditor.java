@@ -804,7 +804,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 	}
 
 	@Override
-	public void updateMarkersGroup(String markersGroupLabel) {
+	public void updateMarkersGroup(String markersGroupLabel, Object... parameters) {
 		// TODO Nothing
 	}
 

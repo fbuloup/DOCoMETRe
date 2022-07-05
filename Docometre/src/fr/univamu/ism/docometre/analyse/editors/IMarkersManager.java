@@ -45,5 +45,5 @@ import org.eclipse.swtchart.extensions.charts.InteractiveChart;
 
 public interface IMarkersManager {
 	InteractiveChart getChart();
-	void updateMarkersGroup(String markersGroupLabel);
+	void updateMarkersGroup(String markersGroupLabel, Object... parameters);
 }

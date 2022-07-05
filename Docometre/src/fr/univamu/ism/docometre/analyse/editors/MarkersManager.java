@@ -112,7 +112,7 @@ public final class MarkersManager extends MouseAdapter implements ICustomPaintLi
 							if(signal != null) {
 								MathEngineFactory.getMathEngine().addMarker(markersGroupLabel, trialNumber, coordinates[0], coordinates[1], signal);
 								channelsContainer.setUpdateChannelsCache(true);
-								containerEditor.updateMarkersGroup(markersGroupLabel);
+								containerEditor.updateMarkersGroup(markersGroupLabel, trialNumber, coordinates[0], coordinates[1]);
 								containerEditor.getChart().redraw();
 							}
 						}

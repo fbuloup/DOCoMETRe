@@ -787,12 +787,26 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		}
 	}
 
-
-	public void updateMarkersGroup(String markersGroupLabel) {
+	public void updateMarkersGroup(String markersGroupLabel, Object... parameters) {
 		markersGroupComboViewer.refresh();
 		markerXValueLabel.setText(DocometreMessages.NotAvailable_Label);
 		markerYValueLabel.setText(DocometreMessages.NotAvailable_Label);
 		labelNbMarkers.setText(DocometreMessages.NotAvailable_Label);
+		if(parameters != null) {
+			if(parameters.length == 3) {
+				int trialNumber = (int)parameters[0]; 
+				double x = (double)parameters[1]; 
+				double y = (double)parameters[2];
+				for(int n = 0; n < markersGroupComboViewer.getCombo().getItemCount(); n++) {
+					double[] element = (double[]) markersGroupComboViewer.getElementAt(n);
+					boolean test = element[0] == trialNumber && element[1] == x && element[2] == y;
+					if(test) {
+						markersGroupComboViewer.setSelection(new StructuredSelection(element));
+						break;
+					}
+				}
+			}
+		}
 	}
 	
 	public void update() {
