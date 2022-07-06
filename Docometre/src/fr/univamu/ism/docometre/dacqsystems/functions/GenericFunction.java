@@ -105,13 +105,13 @@ public class GenericFunction extends Function {
 		
 		Text commentText = new Text((Composite) parent, SWT.BORDER);
 		commentText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, horSpan, 1));
+		commentText.setText(getName(context));
 		commentText.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
 				getTransientProperties().put(Function.commentKey, commentText.getText());
 			}
 		});
-		commentText.setText(getName(context));
 	}
 	
 	@Override
