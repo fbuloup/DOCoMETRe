@@ -52,7 +52,6 @@ import java.util.regex.Pattern;
 
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.bindings.keys.ParseException;
-import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
@@ -86,6 +85,7 @@ import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfigurationProperti
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinProcess;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoProcess;
+import fr.univamu.ism.docometre.dialogs.FunctionalBlockConfigurationDialog;
 import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
 import fr.univamu.ism.process.Block;
 import fr.univamu.ism.process.Script;
@@ -106,7 +106,7 @@ public class CustomerFunction extends GenericFunction {
 	private static final String TYPE_KEY = "TYPE";
 	private static final String LABEL_KEY = "LABEL";
 	
-	transient private TitleAreaDialog titleAreaDialog;
+	transient private FunctionalBlockConfigurationDialog functionalBlockConfigurationDialog;
 	transient private ArrayList<Text> textParametersArray;
 	
 	private String functionFileName;
@@ -126,17 +126,20 @@ public class CustomerFunction extends GenericFunction {
 	}
 	
 	@Override
-	public Object getGUI(Object titleAreaDialog, Object parent, Object context) {
-		this.titleAreaDialog = (TitleAreaDialog) titleAreaDialog;
-		textParametersArray = new ArrayList<Text>(0);
+	public Object getGUI(Object functionalBlockConfigurationDialog, Object parent, Object context) {
 		if(!(context instanceof Process || context instanceof Script)) return null;
-		//Process process = (Process)context;
-		
+		textParametersArray = new ArrayList<Text>(0);
 		Composite container  = (Composite) parent;
-		Composite paramContainer = new Composite(container, SWT.BORDER);
+		Composite paramContainer = new Composite(container, SWT.NORMAL);
+		paramContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		paramContainer.setLayout(new GridLayout(2, false));
-		GridLayout gl = (GridLayout) paramContainer.getLayout();
-		gl.horizontalSpacing = 15;
+		
+		this.functionalBlockConfigurationDialog = (FunctionalBlockConfigurationDialog) functionalBlockConfigurationDialog;
+		
+		if(context instanceof Script)
+			if(!checkPreBuildGUI(this.functionalBlockConfigurationDialog, paramContainer, 2, context)) {
+				return paramContainer;
+			}
 		
 		try {
 			String nbParamsString =  FunctionFactory.getProperty(context, functionFileName, PARAMETERS_NUMBER_KEY, true);
@@ -162,7 +165,7 @@ public class CustomerFunction extends GenericFunction {
 		
 		addCommentField(paramContainer, 1, context);
 		
-		this.titleAreaDialog.getShell().addShellListener(new ShellAdapter() {
+		this.functionalBlockConfigurationDialog.getShell().addShellListener(new ShellAdapter() {
 			@Override
 			public void shellActivated(ShellEvent e) {
 				validateParametersInputs();
@@ -170,8 +173,7 @@ public class CustomerFunction extends GenericFunction {
 		});
 		
 		
-		
-		return paramContainer;
+		return container;
 	}
 	
 	private void createTextWidget(String type, String regExp, Composite paramContainer, Label parameterLabel, String key, Object context) {
@@ -211,6 +213,19 @@ public class CustomerFunction extends GenericFunction {
 			} catch (ParseException e) {
 				e.printStackTrace();
 				Activator.logErrorMessageWithCause(e);
+			}
+		}
+		if(context instanceof Script) {
+			try {
+				KeyStroke keyStroke = KeyStroke.getInstance("CTRL+SPACE");
+				DocometreContentProposalProvider proposalProvider = new DocometreContentProposalProvider(MathEngineFactory.getMathEngine().getProposal(), text);
+				proposalProvider.setFiltering(true);
+				ContentProposalAdapter leftProposalAdapter = new ContentProposalAdapter(text, new TextContentAdapter(), proposalProvider, keyStroke, null);
+				leftProposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_INSERT);
+				leftProposalAdapter.addContentProposalListener(proposalProvider);
+			} catch (ParseException e) {
+				Activator.logErrorMessageWithCause(e);
+				e.printStackTrace();
 			}
 		}
 		
@@ -304,7 +319,15 @@ public class CustomerFunction extends GenericFunction {
 		label = label.replaceAll("\"$", "");
 		String key = getProperty(properties, NAME_KEY);
 		String type = getProperty(properties, TYPE_KEY);
-		String[] typeRegExp = type.split(":");
+		String[] typeRegExp = new String[2];
+		typeRegExp[0] = type;
+		typeRegExp[1] = "";
+		Pattern pattern = Pattern.compile("\\]:\\[");
+		Matcher matcher = pattern.matcher(type);
+		if(matcher.find()) {
+			typeRegExp[0] = type.substring(0, matcher.start()+1);
+			typeRegExp[1] = type.substring(matcher.end()-1, type.length());
+		}
 		Label parameterLabel = new Label(paramContainer, SWT.NORMAL);
 		parameterLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
 		parameterLabel.setText(label);
@@ -331,7 +354,7 @@ public class CustomerFunction extends GenericFunction {
 	}
 
 	private void validateParametersInputs() {
-		titleAreaDialog.setErrorMessage(null);
+		functionalBlockConfigurationDialog.setErrorMessage(null);
 		for (Text textParameter : textParametersArray) {
 			Object regExp = textParameter.getData("REGEXP");
 			Object textControlDecoration = textParameter.getData(CONTROL_DECORATION);
@@ -345,10 +368,10 @@ public class CustomerFunction extends GenericFunction {
 				Matcher matcher = pattern.matcher(textParameter.getText());
 				if(!matcher.matches()) {
 					String errorMessage = NLS.bind(DocometreMessages.IsNotAValidValue, textParameter.getText());
-					if(titleAreaDialog.getErrorMessage() == null) {
+					if(functionalBlockConfigurationDialog.getErrorMessage() == null) {
 						Label label = (Label) textParameter.getData("LABEL");
 						String titleAreaDialogErrorMessage = label.getText() + " " + errorMessage;
-						titleAreaDialog.setErrorMessage(titleAreaDialogErrorMessage);
+						functionalBlockConfigurationDialog.setErrorMessage(titleAreaDialogErrorMessage);
 					}
 					ControlDecoration textCD = new ControlDecoration(textParameter, SWT.BOTTOM | SWT.LEFT);
 					textCD.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_ERROR).getImage());
