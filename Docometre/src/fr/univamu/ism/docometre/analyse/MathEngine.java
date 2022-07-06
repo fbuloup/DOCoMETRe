@@ -41,7 +41,9 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.analyse;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
@@ -380,7 +382,28 @@ public interface MathEngine {
 		return "";
 	}
 	
-	
+	default String[] getProposal() {
+		List<IResource> channels = new ArrayList<IResource>();
+		List<String> proposals = new ArrayList<>();
+		channels.add(Channel.fromBeginningChannel);
+		channels.add(Channel.toEndChannel);
+		String[] loadedSubjects = MathEngineFactory.getMathEngine().getLoadedSubjects();
+		for (String loadedSubject : loadedSubjects) {
+			if("".equals(loadedSubject)) continue;
+			String path = loadedSubject.replaceAll("\\.", "/");
+			IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(path);
+			channels.addAll(Arrays.asList(MathEngineFactory.getMathEngine().getSignals(resource)));
+			channels.addAll(Arrays.asList(MathEngineFactory.getMathEngine().getCategories(resource)));
+			channels.addAll(Arrays.asList(MathEngineFactory.getMathEngine().getEvents(resource)));
+			channels.addAll(Arrays.asList(MathEngineFactory.getMathEngine().getMarkers(resource)));
+			channels.addAll(Arrays.asList(MathEngineFactory.getMathEngine().getFeatures(resource)));
+			channels.addAll(Arrays.asList(MathEngineFactory.getMathEngine().getFrontEndCuts(resource)));
+		}
+		for (IResource channel : channels) {
+			proposals.add(((Channel)channel).getFullName());
+		}
+		return proposals.toArray(new String[proposals.size()]);
+	}
 	
 	
 }
