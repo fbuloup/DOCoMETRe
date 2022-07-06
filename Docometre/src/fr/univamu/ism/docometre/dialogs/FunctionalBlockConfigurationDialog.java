@@ -83,7 +83,6 @@ public class FunctionalBlockConfigurationDialog extends TitleAreaDialog {
 		Composite container = (Composite) super.createDialogArea(parent);
 		Composite composite = (Composite)function.getGUI(this , container, context);
 		if(composite != null) {
-			composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 			// Build the separator line
 			(new Label(container, SWT.HORIZONTAL | SWT.SEPARATOR)).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		}
