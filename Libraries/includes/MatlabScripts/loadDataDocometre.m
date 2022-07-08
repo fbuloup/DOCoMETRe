@@ -70,7 +70,7 @@ if nbTrials > 0
                     fullSignalName = [ 'tempSubject.' signalName ];
                     values = fread(fp,nbData,'float32');
                     signals{currentNumChannel,1}.Values = values';%fread(fp,nbData,'float32');                  
-                    signals{currentNumChannel,1}.FrontCut = 1;                    
+                    signals{currentNumChannel,1}.FrontCut = 0;                    
                     signals{currentNumChannel,1}.NbSamples = nbData;
                     signals{currentNumChannel,1}.EndCut = signals{currentNumChannel,1}.NbSamples;   
                     signals{currentNumChannel,1}.FullSignalName = fullSignalName;      
@@ -147,7 +147,7 @@ if nbTrials > 0
                     nbTrialsToAddString = int2str(nbTrialsToAdd);
                     expression = [fullSignalName,'.Values = [', fullSignalName ,'.Values; zeros(',nbTrialsToAddString,',',nbSamplesString,')];'];
                     eval(expression); 
-                    eval([fullSignalName,'.FrontCut = [', fullSignalName ,'.FrontCut; ones(',nbTrialsToAddString,',1)];']);            
+                    eval([fullSignalName,'.FrontCut = [', fullSignalName ,'.FrontCut; zeros(',nbTrialsToAddString,',1)];']);            
                     eval([fullSignalName,'.EndCut = [', fullSignalName ,'.EndCut; ',nbSamplesString,'*ones(',nbTrialsToAddString,',1)];']);                
                     eval([fullSignalName,'.NbSamples = [', fullSignalName ,'.NbSamples; ', nbSamplesString, '*ones(',nbTrialsToAddString,',1)];']);
                     %DEBUG['add ', nbTrialsToAddString, ' empty trials to ', fullSignalName]
