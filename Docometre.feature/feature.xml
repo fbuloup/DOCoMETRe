@@ -6,11 +6,17 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-07-05 - Bis
+      -- 2022-07-08
+ADDED :
+* Add support for ADW data files to Python Math. engine 
+FIXED :
+* Resolve Bugs on params parsing and wrong dialog layout
+* Wrong Front cut intial value (0 not 1)
+-- 2022-07-05 - Bis
 ADDED :
 * Auto select newly added marker in Signal editor
 * Help update for Optitrack type 1 data files 
-* Add support to import subjects from Optitrack type 1 data files 
+* Add support to import subjects from Optitrack type 1 data files
 FIXED : Nothing
 -- 2022-07-05
 ADDED :
