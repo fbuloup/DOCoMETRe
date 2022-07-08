@@ -5,6 +5,7 @@ import numpy;
 import io;
 import re;
 import time;
+import struct;
 
 class DOCoMETRe(object):
 
@@ -38,9 +39,106 @@ class DOCoMETRe(object):
 		elif ".samples" in dataFilesList:
 			self.loadDataDocometreSAMPLES(loadName, dataFilesList, sessionsProperties);
 		elif ".adw" in dataFilesList:
-			if(jvmMode): self.gateway.jvm.System.out.println("For now, ADW files are not handled with Python");
+			self.loadDataDocometreADW(loadName, dataFilesList);
 		else:
 			if(jvmMode): self.gateway.jvm.System.out.println("Data files format not hanled with Python");
+	
+	def loadDataDocometreADW(self, loadName, dataFilesList):
+		if(jvmMode):
+			self.gateway.jvm.System.out.println("In loadDataDocometreADW");
+			self.gateway.jvm.System.out.println(dataFilesList);
+		
+		file = open(dataFilesList, "rb")
+		
+		# Nb channels
+		nbChannels = struct.unpack('i', file.read(4))[0]
+		channelsNames = self.read_names(file, nbChannels)
+	
+		# Nb sessions
+		nbSessions = struct.unpack('i', file.read(4))[0]
+		sessionsNames = self.read_names(file, nbSessions)
+		
+		# Nb conditions
+		nbConditions = struct.unpack('i', file.read(4))[0]
+		conditionsNames = self.read_names(file, nbConditions)
+		
+		# Nb seq. type
+		nbSeqTypes = struct.unpack('i', file.read(4))[0]
+		seqTypesNames = self.read_names(file, nbSeqTypes)
+		
+		# Nb trials
+		nbTrials = struct.unpack('i', file.read(4))[0]
+		
+		nbTotalCategories = nbSessions*nbConditions*nbSeqTypes
+		
+		criteria = ["" for _ in range(nbTrials)]
+		createdCategories = dict();
+		
+		for currentTrialNumber in range(nbTrials):
+			currentSession = struct.unpack('i', file.read(4))[0]
+			currentCondition = struct.unpack('i', file.read(4))[0]
+			currentSeqType = struct.unpack('i', file.read(4))[0]
+			nbChannelsInTrial = struct.unpack('i', file.read(4))[0]
+			criteria = sessionsNames[currentSession-1] + '_' + seqTypesNames[currentSeqType-1]
+			if criteria in createdCategories:
+			    append = False
+			    trialsList = createdCategories[criteria]
+			    if isinstance(trialsList, numpy.ndarray):
+			        if int(currentTrialNumber) not in trialsList:
+			            append = True
+			    if append:
+			        trialsList = numpy.append(trialsList, currentTrialNumber+1)
+			else:
+			    trialsList = numpy.array(currentTrialNumber+1)
+			createdCategories[criteria] = trialsList
+			if nbChannelsInTrial > 0:
+			    for currentChannelNumber in range(nbChannelsInTrial):
+			        channelNumber = struct.unpack('i', file.read(4))[0] - 1
+			        channelName = channelsNames[channelNumber]
+			        sampleFrequency = struct.unpack('f', file.read(4))[0]
+			        nbSamples = struct.unpack('i', file.read(4))[0]
+			        if nbSamples > 0:
+			            newValues = numpy.fromfile(file, dtype="float32", count=nbSamples)
+			            try:
+			                values = self.experiments[loadName + "." + channelName + "." + "Values"]
+			                self.experiments[loadName + "." + channelName + "." + "Values"][currentTrialNumber][:] = newValues
+			            except KeyError:
+			                self.experiments[loadName + "." + channelName + "." + "Values"] = numpy.zeros((int(nbTrials), int(nbSamples)))
+			                self.experiments[loadName + "." + channelName + "." + "NbSamples"] = nbSamples*numpy.ones(int(nbTrials))
+			                self.experiments[loadName + "." + channelName + "." + "FrontCut"] = numpy.zeros(int(nbTrials))
+			                self.experiments[loadName + "." + channelName + "." + "EndCut"] = nbSamples*numpy.ones(int(nbTrials))
+			                self.experiments[loadName + "." + channelName + "." + "Values"][currentTrialNumber][:] = newValues
+			            self.experiments[loadName + "." + channelName + "." + "isSignal"] = '1'
+			            self.experiments[loadName + "." + channelName + "." + "isCategory"] = '0'
+			            self.experiments[loadName + "." + channelName + "." + "isEvent"] = '0'
+			            self.experiments[loadName + "." + channelName + "." + "NbFeatures"] = '0'
+			            self.experiments[loadName + "." + channelName + "." + "NbMarkersGroups"] = '0'
+			            self.experiments[loadName + "." + channelName + "." + "SampleFrequency"] = sampleFrequency
+			
+		n = 1
+		for criteria in createdCategories:
+		    values = createdCategories[criteria];
+		    self.experiments[loadName + ".Category" + str(n) + ".Criteria"] = criteria
+		    self.experiments[loadName + ".Category" + str(n) + ".TrialsList"] = values
+		    self.experiments[loadName + ".Category" + str(n) + ".isSignal"] = "0"
+		    self.experiments[loadName + ".Category" + str(n) + ".isCategory"] = "1"
+		    self.experiments[loadName + ".Category" + str(n) + ".isEvent"] = "0"
+		    n = n + 1
+		
+		# self.experiments[loadName + ".Criteria.Names"] = criteria
+		
+		file.close()
+	
+	def read_names(self, file_handle, nb_names):
+	    names = ["" for _ in range(nb_names)]
+	    for i in range(nb_names):
+	        char = ""
+	        channel_name = ""
+	        while char != "|":
+	            channel_name = channel_name + char
+	            char = struct.unpack('s', file_handle.read(1))[0].decode("utf-8")
+	        names[i] = channel_name
+	    return names
 
 	def loadDataOptitrackType1(self, loadName, dataFilesAbsolutePath):
 		if(jvmMode): self.gateway.jvm.System.out.println("In loadDataOptitrackType1");
