@@ -261,6 +261,8 @@ public class PythonEngine implements MathEngine {
 					pythonController.getPythonEntryPoint().loadData("OPTITRACK_TYPE_1", loadName, dataFilesList, null);
 				} else {
 					Map<String, String> sessionsProperties = Analyse.getSessionsInformations(subject);
+					System.out.println(loadName);
+					System.out.println(dataFilesList);
 					pythonController.getPythonEntryPoint().loadData("DOCOMETRE", loadName, dataFilesList, sessionsProperties);
 				}
 				
