@@ -329,15 +329,15 @@ public class ImportResourceWizardPage extends WizardPage {
 		IResource parentSelectedResource = ImportResourceWizard.getSelectedResource();
 		
 		if(ResourceType.isExperiment(parentSelectedResource)) {
-			resourceTypeComboViewer.setInput(new Object[] {/*ResourceType.SUBJECT,*/ ResourceType.ADW_DATA_FILE, ResourceType.DACQ_CONFIGURATION, ResourceType.PROCESS, ResourceType.DATA_PROCESSING, ResourceType.OPTITRACK_TYPE_1});
-			resourceTypeComboViewer.setSelection(new StructuredSelection(ResourceType.ADW_DATA_FILE));
-			selectedResourceType = ResourceType.ADW_DATA_FILE;
+			resourceTypeComboViewer.setInput(new Object[] {/*ResourceType.SUBJECT,*/ ResourceType.DACQ_CONFIGURATION, ResourceType.PROCESS, ResourceType.DATA_PROCESSING, ResourceType.ADW_DATA_FILE, ResourceType.OPTITRACK_TYPE_1});
+			resourceTypeComboViewer.setSelection(new StructuredSelection(ResourceType.DACQ_CONFIGURATION));
+			selectedResourceType = ResourceType.DACQ_CONFIGURATION;
 		}
 		
 		if(ResourceType.isFolder(parentSelectedResource)) {
-			resourceTypeComboViewer.setInput(new Object[] {ResourceType.ADW_DATA_FILE, ResourceType.DACQ_CONFIGURATION, ResourceType.PROCESS, ResourceType.DATA_PROCESSING});
-			resourceTypeComboViewer.setSelection(new StructuredSelection(ResourceType.ADW_DATA_FILE));
-			selectedResourceType = ResourceType.ADW_DATA_FILE;
+			resourceTypeComboViewer.setInput(new Object[] {ResourceType.DACQ_CONFIGURATION, ResourceType.PROCESS, ResourceType.DATA_PROCESSING, ResourceType.ADW_DATA_FILE});
+			resourceTypeComboViewer.setSelection(new StructuredSelection(ResourceType.DACQ_CONFIGURATION));
+			selectedResourceType = ResourceType.DACQ_CONFIGURATION;
 		}
 		
 		if(ResourceType.isSubject(parentSelectedResource)) {
