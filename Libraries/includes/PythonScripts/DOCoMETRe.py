@@ -101,6 +101,11 @@ class DOCoMETRe(object):
 			            newValues = numpy.fromfile(file, dtype="float32", count=nbSamples)
 			            try:
 			                values = self.experiments[loadName + "." + channelName + "." + "Values"]
+			                currentNbSamples = values.shape[1]
+			                if(currentNbSamples > nbSamples):
+			                	newValues.resize((1, currentNbSamples), refcheck=False)
+			                elif(currentNbSamples < nbSamples):
+			                	values.resize((nbTrials, nbSamples), refcheck=False)
 			                self.experiments[loadName + "." + channelName + "." + "Values"][currentTrialNumber][:] = newValues
 			            except KeyError:
 			                self.experiments[loadName + "." + channelName + "." + "Values"] = numpy.zeros((int(nbTrials), int(nbSamples)))
