@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-07-08
+      -- 2022-07-11
+ADDED : Nothing
+FIXED :
+* Resize data if trials have not always same number of samples (Python)
+-- 2022-07-08
 ADDED :
 * Add support for ADW data files to Python Math. engine 
 FIXED :
