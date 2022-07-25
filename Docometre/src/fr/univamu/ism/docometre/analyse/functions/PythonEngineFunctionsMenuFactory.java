@@ -67,9 +67,11 @@ public class PythonEngineFunctionsMenuFactory {
 	public static String[] PythonEngineFunctionsClasses = new String[] {null, null, null, null, null};
 	
 	public static String[] SignalsFunctionsFiles = new String[] {SUBMENU_FILTERING, SEPARATOR, FrontCut.functionFileName, EndCut.functionFileName, FrontCutFromMarker.functionFileName ,EndCutFromMarker.functionFileName, SEPARATOR, 
-																	MotionDistance.functionFileName, MotionDirection.functionFileName, SEPARATOR, AbsoluteValue.functionFileName, Derivative.functionFileName, Interpolate1D.functionFileName, Duplicate.functionFileName};
+																	MotionDistance.functionFileName, MotionDirection.functionFileName, SEPARATOR, AbsoluteValue.functionFileName, Derivative.functionFileName, Interpolate1D.functionFileName, Duplicate.functionFileName, SEPARATOR,
+																	ChangeSampleFrequency.functionFileName};
 	public static String[] SignalsFunctionsClasses = new String[] {null, null, FrontCut.class.getName(), EndCut.class.getName(), FrontCutFromMarker.class.getName() ,EndCutFromMarker.class.getName(), null, 
-																	MotionDistance.class.getName(), MotionDirection.class.getName(), null, AbsoluteValue.class.getName(), Derivative.class.getName(), Interpolate1D.class.getName(), Duplicate.class.getName()};
+																	MotionDistance.class.getName(), MotionDirection.class.getName(), null, AbsoluteValue.class.getName(), Derivative.class.getName(), Interpolate1D.class.getName(), Duplicate.class.getName(), null,
+																	ChangeSampleFrequency.class.getName()};
 	
 	public static String[] FilteringFunctionsFiles = new String[] {ButterworthLowPass.functionFileName, ButterworthHighPass.functionFileName};
 	public static String[] FilteringFunctionsClasses = new String[] {ButterworthLowPass.class.getName(), ButterworthHighPass.class.getName()};

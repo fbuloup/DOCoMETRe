@@ -105,6 +105,10 @@ public class FunctionsMessages extends NLS {
 	public static String tMinLabelTooltip;
 	public static String tMaxLabelTooltip;
 	
+	// Change sample frequency
+	public static String InputSignalsLabel;
+	public static String NewSampleFrequencyValueLabel;
+	
 	static {
 		// load message values from bundle file
 		String bn = BUNDLE_NAME;
