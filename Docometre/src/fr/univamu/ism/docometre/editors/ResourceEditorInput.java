@@ -125,6 +125,7 @@ public class ResourceEditorInput implements IEditorInput {
 		if(tooltip != null) return tooltip;
 		if(object instanceof IResource) ((IFile)object).getFullPath().toOSString();
 		if(object instanceof Path) return ((Path)object).toFile().getAbsolutePath();
+		if(object instanceof Channel) return ((Channel)object).getFullName();
 		return "?";
 	}
 	
