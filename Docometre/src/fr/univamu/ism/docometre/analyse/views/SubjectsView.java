@@ -70,10 +70,13 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IPerspectiveListener;
 import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.part.ViewPart;
@@ -128,6 +131,28 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 		subjectsTreeViewer.refresh(parentResource, true);
 		PlatformUI.getWorkbench().getDecoratorManager().update(ExperimentsLabelDecorator.ID);
 		
+	}
+	
+	@Override
+	public void init(IViewSite site, IMemento memento) throws PartInitException {
+		super.init(site, memento);
+		String selectedExperimentPath = memento.getString("selectedExperimentPath");
+		if(selectedExperimentPath != null) {
+			IResource selectedExperiment = ResourcesPlugin.getWorkspace().getRoot().findMember(selectedExperimentPath);
+			if(selectedExperiment != null) {
+				SelectedExprimentContributionItem.selectedExperiment = selectedExperiment;
+			}
+		}
+	}
+	
+	@Override
+	public void saveState(IMemento memento) {
+		super.saveState(memento);
+		IResource selectedExperiment = SelectedExprimentContributionItem.selectedExperiment;
+		if(selectedExperiment != null) {
+			String selectedExperimentPath = selectedExperiment.getFullPath().toPortableString();
+			memento.putString("selectedExperimentPath", selectedExperimentPath);
+		}
 	}
 
 	@Override
