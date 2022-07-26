@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-07-25
+      -- 2022-07-26
+ADDED :
+* Subjects view save state
+FIXED : Nothing
+-- 2022-07-25
 ADDED :
 * Change sample frequency function
 FIXED :
