@@ -44,6 +44,7 @@ package fr.univamu.ism.docometre.views;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -80,11 +81,14 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IPerspectiveListener;
 import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPartReference;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.operations.UndoRedoActionGroup;
@@ -170,6 +174,8 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 	private MenuManager popUpMenuManager;
 	private PartListenerAdapter partListenerAdapter;
 
+	private IMemento memento;
+
 	public ExperimentsView() {
 		experimentsViewUndoContext = new ExperimentsViewUndoContext();
 	}
@@ -188,6 +194,44 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 		});
 	}
 
+	@Override
+	public void init(IViewSite site, IMemento memento) throws PartInitException {
+		super.init(site, memento);
+		this.memento = memento;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public void saveState(IMemento memento) {
+		super.saveState(memento);
+		IStructuredSelection sel = (IStructuredSelection) experimentsTreeViewer.getSelection();
+		if (sel.isEmpty()) return;
+		memento = memento.createChild("tree-selections");
+		Iterator<IResource> iter = sel.iterator();
+		while (iter.hasNext()) {
+			IResource nodeName = iter.next();
+			memento.createChild("selected-nodes", nodeName.getFullPath().toPortableString());
+		}
+	}
+	
+	private void restoreState() {
+		IMemento selectionsMomento = memento.getChild("tree-selections");
+		if (selectionsMomento != null) {
+			IMemento selectedNodes[] = selectionsMomento.getChildren("selected-nodes");
+			if (selectedNodes.length > 0) {
+				ArrayList<IResource> selections = new ArrayList<IResource>(selectedNodes.length);
+				for (int i = 0; i < selectedNodes.length; i++) {
+					String path = selectedNodes[i].getID();
+					if (path != null) {
+						IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(path);
+						if(resource != null) selections.add(resource);
+					}
+				}
+				experimentsTreeViewer.setSelection(new StructuredSelection(selections));
+			}
+		}
+	}
+	
 	@Override
 	public void createPartControl(final Composite parent) {
 		experimentsTreeViewer = new TreeViewer(parent);
@@ -318,7 +362,11 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 			}
 		};
 		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().addPartListener(partListenerAdapter);
+		
+		restoreState();
 	}
+
+	
 
 	private void makePopupMenu() {
 		popUpMenuManager = new MenuManager("ExperimentsViewPopUpMenu");
