@@ -91,6 +91,8 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.widgets.Composite;
@@ -404,6 +406,12 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 				
 			}
 		});
+		getGraphicalViewer().getControl().addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if(e.character == '\u0008' || e.character == '\u007F') getActionRegistry().getAction(ActionFactory.DELETE.getId()).run();
+			}
+		});
 	}
 	
 	@Override
@@ -584,6 +592,7 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 		super.commandStackChanged(event);
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public Object getAdapter(@SuppressWarnings("rawtypes") Class type) {
 		if(type == ZoomManager.class) {
