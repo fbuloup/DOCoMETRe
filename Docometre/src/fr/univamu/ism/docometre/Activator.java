@@ -172,7 +172,8 @@ public class Activator extends AbstractUIPlugin {
 	 */
 	public static Image getImage(String pluginID, String path) {
 		Image image = plugin.getImageRegistry().get(path);
-		if(image == null) {
+		if(image == null || image.isDisposed()) {
+			plugin.getImageRegistry().remove(path);
             ImageDescriptor imageDescriptor = getImageDescriptor(pluginID, path);
 			plugin.getImageRegistry().put(path, imageDescriptor);
 			image = plugin.getImageRegistry().get(path);

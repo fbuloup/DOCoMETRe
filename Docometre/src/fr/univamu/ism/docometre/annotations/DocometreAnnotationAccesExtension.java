@@ -79,7 +79,7 @@ public class DocometreAnnotationAccesExtension implements IAnnotationAccessExten
 		@Override
 		public void paint(Annotation annotation, GC gc, Canvas canvas, Rectangle bounds) {
 
-			if(image != null && !image.isDisposed()) image.dispose();
+			//if(image != null && !image.isDisposed()) image.dispose();
 			
 			switch (annotation.getType()) {
 			case ErrorAnnotation.TYPE_ERROR:

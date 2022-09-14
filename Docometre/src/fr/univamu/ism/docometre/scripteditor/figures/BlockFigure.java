@@ -56,6 +56,7 @@ import org.eclipse.gef.DefaultEditDomain;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 
@@ -184,12 +185,13 @@ public class BlockFigure extends RoundedRectangle {
 		roundedRectangle.setForegroundColor(getColor());
 		
 		fillShape(graphics);
-		if(label.getIcon() != null && !label.getIcon().isDisposed()) label.getIcon().dispose();
+		//if(label.getIcon() != null && !label.getIcon().isDisposed()) label.getIcon().dispose();
 		label.setIcon(null);
 		setToolTipFigure(null);
 		IStatus status = blockEditPart.getModel().getStatus();
 		if(status != null) {
-			label.setIcon(Activator.getImage(IImageKeys.WARNING_ANNOTATION_ICON));
+			Image image = Activator.getImage(IImageKeys.WARNING_ANNOTATION_ICON);
+			if(image != null && !image.isDisposed()) label.setIcon(image);
 			label.setIconAlignment(PositionConstants.LEFT);
 			setToolTipFigure(status.getMessage());
 		}
