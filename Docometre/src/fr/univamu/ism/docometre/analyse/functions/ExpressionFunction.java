@@ -81,15 +81,14 @@ import org.eclipse.ui.ISharedImages;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
-import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
-import fr.univamu.ism.docometre.dacqsystems.Process;
-import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinProcess;
-import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoProcess;
+import fr.univamu.ism.docometre.analyse.MathEngineFactory;
+import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
+import fr.univamu.ism.docometre.analyse.editors.ChannelsContentProvider;
 import fr.univamu.ism.docometre.dacqsystems.functions.DocometreContentProposalProvider;
 import fr.univamu.ism.docometre.dacqsystems.functions.GenericFunction;
 import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
 import fr.univamu.ism.process.Block;
-import fr.univamu.ism.process.ScriptSegmentType;
+import fr.univamu.ism.process.Script;
 
 public final class ExpressionFunction extends GenericFunction {
 	
@@ -110,7 +109,7 @@ public final class ExpressionFunction extends GenericFunction {
 
 	@Override
 	public Object getGUI(Object titleAreaDialog, Object parent, Object context) {
-		if(!(context instanceof Process)) return null;
+		if(!(context instanceof Script)) return null;
 		Composite container  = (Composite) parent;
 		
 		TabFolder tabFolder = new TabFolder(container, SWT.BORDER);
@@ -219,12 +218,10 @@ public final class ExpressionFunction extends GenericFunction {
 		expressionCD.setShowOnlyOnFocus(true);
 		expressionCD.setMarginWidth(5);
 		try {
-			Process process = (Process) context;
-			DACQConfiguration dacqConfiguration = process.getDACQConfiguration();
 			KeyStroke keyStroke = KeyStroke.getInstance("CTRL+SPACE");
-			DocometreContentProposalProvider proposalProvider = new DocometreContentProposalProvider(dacqConfiguration.getProposal(), expressionText);
+			ChannelsContentProvider channelsContentProvider = new ChannelsContentProvider(true, true, true, true, true, true, true);
+			DocometreContentProposalProvider proposalProvider = new DocometreContentProposalProvider(channelsContentProvider.getElements(SelectedExprimentContributionItem.selectedExperiment), expressionText);
 			proposalProvider.setFiltering(true);
-			
 			ContentProposalAdapter leftProposalAdapter = new ContentProposalAdapter(expressionText, new TextContentAdapter(), proposalProvider, keyStroke, null);
 			leftProposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_INSERT);
 			leftProposalAdapter.addContentProposalListener(proposalProvider);
@@ -232,8 +229,6 @@ public final class ExpressionFunction extends GenericFunction {
 			e.printStackTrace();
 			Activator.logErrorMessageWithCause(e);
 		}
-		
-		
 		
 		validateButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		validateButton.setText("Add");
@@ -351,26 +346,16 @@ public final class ExpressionFunction extends GenericFunction {
 	public String getCode(Object context, Object step, Object...objects) {
 		if(!isActivated()) return GenericFunction.getCommentedCode(this, context);
 		String code = "";
-		Process process = (Process) context;
-		if(step == ScriptSegmentType.INITIALIZE || step == ScriptSegmentType.LOOP || step == ScriptSegmentType.FINALIZE) {
-			if(process instanceof ADWinProcess) {
-					code = code + "\nREM Expression Function\n\n";
-					String temporaryCode = FunctionFactory.getProperty(process, functionFileName, FUNCTION_CODE);
-					String expressions  = getProperty(expressionKey, "");
-					temporaryCode = temporaryCode.replaceAll(expressionKey, expressions);
-					code = code + temporaryCode + "\n\n";
-			}
-			if(process instanceof ArduinoUnoProcess) {
-					String indent = (step == ScriptSegmentType.FINALIZE) ? UNO_FINALIZE_INDENT : UNO_DEFAULT_INDENT;
-					code = code + "\n" + indent + "// Expression Function\n";
-					String temporaryCode = FunctionFactory.getProperty(process, functionFileName, FUNCTION_CODE);
-					String expressions  = getProperty(expressionKey, "");
-					expressions = expressions.replaceAll("\n", ";\n" + indent);
-					expressions = expressions + ";";
-					temporaryCode = indent + temporaryCode.replaceAll(expressionKey, expressions);
-					code = code + temporaryCode  + "\n";
-			}
-		}
+		Script process = (Script) context;
+		
+		if(MathEngineFactory.isMatlab()) code = code + "\n% Expression Function\n\n";
+		if(MathEngineFactory.isPython()) code = code + "\n# Expression Function\n\n";
+		
+		String temporaryCode = FunctionFactory.getProperty(process, functionFileName, FUNCTION_CODE);
+		String expressions  = getProperty(expressionKey, "");
+		temporaryCode = temporaryCode.replaceAll(expressionKey, expressions);
+		code = code + temporaryCode + "\n\n";
+		
 		return code;
 	}
 	
