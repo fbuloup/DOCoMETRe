@@ -63,8 +63,8 @@ public class PythonEngineFunctionsMenuFactory {
 	private static String SUBMENU_FILTERING = "SUBMENU_FILTERING";
 	private static String SUBMENU_EXPORT = "SUBMENU_EXPORT";
 	
-	public static String[] PythonEngineFunctionsFiles = new String[] {SUBMENU_SIGNALS, SUBMENU_MARKERS, SUBMENU_FEATURES, SUBMENU_EVENTS, SUBMENU_EXPORT};
-	public static String[] PythonEngineFunctionsClasses = new String[] {null, null, null, null, null};
+	public static String[] PythonEngineFunctionsFiles = new String[] {SUBMENU_SIGNALS, SUBMENU_MARKERS, SUBMENU_FEATURES, SUBMENU_EVENTS, SUBMENU_EXPORT, ExpressionFunction.functionFileName};
+	public static String[] PythonEngineFunctionsClasses = new String[] {null, null, null, null, null, ExpressionFunction.class.getName()};
 	
 	public static String[] SignalsFunctionsFiles = new String[] {SUBMENU_FILTERING, SEPARATOR, FrontCut.functionFileName, EndCut.functionFileName, FrontCutFromMarker.functionFileName ,EndCutFromMarker.functionFileName, SEPARATOR, 
 																	MotionDistance.functionFileName, MotionDirection.functionFileName, SEPARATOR, AbsoluteValue.functionFileName, Derivative.functionFileName, Interpolate1D.functionFileName, Duplicate.functionFileName, SEPARATOR,
