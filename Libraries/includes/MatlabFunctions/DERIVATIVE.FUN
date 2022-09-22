@@ -17,7 +17,7 @@ outputSignal.NbFeatures = 0;\n\
 outputSignal.SampleFrequency = inputSignal.SampleFrequency;\n\
 outputSignal.FrontCut = inputSignal.FrontCut;\n\
 outputSignal.EndCut = inputSignal.EndCut;\n\
-outputSignal.Values(trialsList,:)=[diff(inputSignal.Values(trialsList,:),1,2) zeros(signalSizes(1),1)]*inputSignal.SampleFrequency;\n\
+outputSignal.Values(trialsList,:)=[zeros(signalSizes(1),1) diff(inputSignal.Values(trialsList,:),1,2)]*inputSignal.SampleFrequency;\n\
 clear signalSizes;\n\
 if (~exist('createdOrModifiedChannels'))\n\
 \tcreatedOrModifiedChannels = {'outputSignal'};\n\
