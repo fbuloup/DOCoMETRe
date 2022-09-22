@@ -112,7 +112,7 @@ public final class ExpressionFunction extends GenericFunction {
 		if(!(context instanceof Script)) return null;
 		Composite container  = (Composite) parent;
 		
-		TabFolder tabFolder = new TabFolder(container, SWT.BORDER);
+		TabFolder tabFolder = new TabFolder(container, SWT.NONE);
 		tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		TabItem expressionsTabItem = new TabItem(tabFolder, SWT.BORDER);
 		expressionsTabItem.setText(DocometreMessages.expressionsListTitle);
