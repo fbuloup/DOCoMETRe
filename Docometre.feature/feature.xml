@@ -6,7 +6,13 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-07-26
+      -- 2022-09-26
+ADDED :
+* Expermiments view save state
+* Expression function (Matlab &amp; Python)
+FIXED :
+* Derivative function : add zero at signal beginning not end 
+-- 2022-07-26
 ADDED :
 * Subjects view save state
 FIXED : Nothing
