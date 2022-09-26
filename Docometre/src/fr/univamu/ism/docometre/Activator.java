@@ -251,7 +251,7 @@ public class Activator extends AbstractUIPlugin {
 	}
 	
 	private static void getMultiCauseMessages(StringBuffer message, Throwable throwable) {
-		if(throwable.getMessage() != null) message.append(throwable.toString() + "\n");
+		if(throwable.toString() != null && !"".equals(throwable.toString())) message.append(throwable.toString() + "\n");
 		if(throwable.getCause() != null) getMultiCauseMessages(message, throwable.getCause());
 	}
 	
