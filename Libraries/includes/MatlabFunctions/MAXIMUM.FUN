@@ -45,7 +45,7 @@ if compute\n\
 	\tif "To_End" == "inputMarker2"\n\
 		\t\ttoValues = zeros(signalSizes(1),3);\n\
 		\t\ttoValues(:,1) = trialsList;\n\
-		\t\ttoValues(:,2) = inputSignal.NbSample/inputSignal.SampleFrequency;\n\
+		\t\ttoValues(:,2) = inputSignal.NbSamples/inputSignal.SampleFrequency;\n\
 		\t\ttoValues(:,3) = inputSignal.NbSamples;\n\
 	\telse\n\
 		\t\tif(endsWith("inputMarker2",".EndCut"))\n\
