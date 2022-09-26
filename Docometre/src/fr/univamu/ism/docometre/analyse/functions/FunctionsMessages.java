@@ -108,6 +108,11 @@ public class FunctionsMessages extends NLS {
 	// Change sample frequency
 	public static String InputSignalsLabel;
 	public static String NewSampleFrequencyValueLabel;
+
+	// Threshold function
+	public static String ThresholdLabel;
+	public static String BypassTimeLabel;
+	public static String BypassTimeTooltip;
 	
 	static {
 		// load message values from bundle file

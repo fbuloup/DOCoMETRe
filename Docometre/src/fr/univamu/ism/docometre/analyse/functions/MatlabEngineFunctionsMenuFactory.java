@@ -77,9 +77,9 @@ public class MatlabEngineFunctionsMenuFactory {
 	public static String[] FilteringFunctionsClasses = new String[] {ButterworthLowPass.class.getName(), ButterworthHighPass.class.getName()};
 	
 	public static String[] MarkersFunctionsFiles = new String[] {TimeMarker.functionFileName, Maximum.functionFileName, Minimum.functionFileName, FindPeaks.functionFileName, FindPeaks_Minima.functionFileName, FindAmplitudeBackward.functionFileName, FindAmplitudeForward.functionFileName,
-																	TransferMarkersGroup.functionFileName};
+																	Threshold.functionFileName, TransferMarkersGroup.functionFileName};
 	public static String[] MarkersFunctionsClasses = new String[] {TimeMarker.class.getName(), Maximum.class.getName(), Minimum.class.getName(), FindPeaks.class.getName(), FindPeaks_Minima.class.getName(), FindAmplitudeBackward.class.getName(), FindAmplitudeForward.class.getName(),
-																	TransferMarkersGroup.class.getName()};
+																	Threshold.class.getName(), TransferMarkersGroup.class.getName()};
 	
 	public static String[] FeaturesFunctionsFiles = new String[] {Mean.functionFileName};
 	public static String[] FeaturesFunctionsClasses = new String[] {Mean.class.getName()};
