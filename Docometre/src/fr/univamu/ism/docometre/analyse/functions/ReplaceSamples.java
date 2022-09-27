@@ -93,6 +93,7 @@ public class ReplaceSamples extends GenericFunction {
 	transient private Spinner toIndexSpinner;
 	transient private Spinner replacementIndexSpinner;
 	transient private Channel channel;
+	transient private ComboViewer inputSignalComboViewer;
 	
 	@Override
 	public String getFunctionFileName() {
@@ -143,7 +144,7 @@ public class ReplaceSamples extends GenericFunction {
 		Label inputSignalLabel = new Label(paramContainer, SWT.NONE);
 		inputSignalLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
 		inputSignalLabel.setText(FunctionsMessages.InputSignalLabel);
-		ComboViewer inputSignalComboViewer = new ComboViewer(paramContainer, SWT.BORDER);
+		inputSignalComboViewer = new ComboViewer(paramContainer, SWT.BORDER);
 		inputSignalComboViewer.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		value  = getProperty(inputSignalKey, "");
 		inputSignalComboViewer.getCombo().setText(value);
@@ -301,6 +302,8 @@ public class ReplaceSamples extends GenericFunction {
 	
 	private void updateValues() {
 		int maximumIndex = 3;
+		String channelName = inputSignalComboViewer.getCombo().getText();
+		channel = MathEngineFactory.getMathEngine().getChannelFromName(SelectedExprimentContributionItem.selectedExperiment, channelName);
 		if(channel != null) maximumIndex = MathEngineFactory.getMathEngine().getSamplesNumber(channel, 1);
 		String fromIndexValue  = getProperty(fromIndexKey, "1");
 		String toIndexValue  = getProperty(toIndexKey, "2");
