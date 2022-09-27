@@ -6,12 +6,19 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-09-26
+      -- 2022-09-27
+ADDED :
+* Threshold function (Matlab &amp; Python)
+* Replace samples function (Matlab only)
+FIXED :
+* Improve exception message
+* Bug in Maximum function error (Matlab only)
+-- 2022-09-26
 ADDED :
 * Expermiments view save state
 * Expression function (Matlab &amp; Python)
 FIXED :
-* Derivative function : add zero at signal beginning not end 
+* Derivative function : add zero at signal beginning not end
 -- 2022-07-26
 ADDED :
 * Subjects view save state
