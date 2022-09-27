@@ -113,6 +113,11 @@ public class FunctionsMessages extends NLS {
 	public static String ThresholdLabel;
 	public static String BypassTimeLabel;
 	public static String BypassTimeTooltip;
+
+	// Replace samples function
+	public static String FromIndexLabel;
+	public static String ToIndexLabel;
+	public static String ReplacementIndexLabel;
 	
 	static {
 		// load message values from bundle file
