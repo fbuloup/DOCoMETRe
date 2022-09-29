@@ -873,7 +873,7 @@ public final class DocometreMessages extends NLS {
 	public static String DeleteFeatureDialogTitle;
 	public static String DeleteFeatureDialogMessage;
 	public static String MarkerLabelInvalid;
-	
+	public static String SameColorForSameTrialLabel;
 
 	// Data processing editor wizard
 	public static String NewDataProcessingWizard_PageTitle;
