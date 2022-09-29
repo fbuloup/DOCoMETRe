@@ -265,7 +265,7 @@ public class ReplaceSamples extends GenericFunction {
 		outputSignalSuffixLabel.setText(FunctionsMessages.OutputSignalSuffixLabel);
 		Text outputSignalSuffixText = new Text(paramContainer, SWT.BORDER);
 		outputSignalSuffixText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		value  = getProperty(outputSignalSuffixKey, "Rep");
+		value  = getProperty(outputSignalSuffixKey, "RepSamples");
 		outputSignalSuffixText.setText(value);
 		outputSignalSuffixText.addModifyListener(new ModifyListener() {
 			@Override
@@ -325,7 +325,7 @@ public class ReplaceSamples extends GenericFunction {
 		String fromIndex = getProperty(fromIndexKey, "");
 		String toIndex = getProperty(toIndexKey, "");
 		String replacementIndex = getProperty(replacementIndexKey, "");
-		String outputSignal = inputSignal + getProperty(outputSignalSuffixKey, "MDir");
+		String outputSignal = inputSignal + getProperty(outputSignalSuffixKey, "RepSamples");
 		
 		code = code.replaceAll(trialsListKey, trialsList).replaceAll(inputSignalKey, inputSignal);
 		code = code.replaceAll(fromIndexKey, fromIndex).replaceAll(toIndexKey, toIndex).replaceAll(replacementIndexKey, replacementIndex);
