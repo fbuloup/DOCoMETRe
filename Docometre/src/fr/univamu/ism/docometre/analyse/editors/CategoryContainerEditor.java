@@ -56,8 +56,11 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swtchart.ILineSeries;
 import org.eclipse.swtchart.ISeries;
@@ -77,6 +80,7 @@ public class CategoryContainerEditor extends Composite implements ISelectionChan
 	private ListViewer trialsListViewer;
 	private ChannelEditor channelEditor;
 	private ListViewer signalsListViewer;
+	private boolean sameColor;
 
 	public CategoryContainerEditor(Composite parent, int style, ChannelEditor channelEditor) {
 		super(parent, style);
@@ -102,6 +106,18 @@ public class CategoryContainerEditor extends Composite implements ISelectionChan
 		gl2.verticalSpacing = 0;
 		gl2.marginHeight = 0;
 		gl2.marginWidth = 0;
+		
+		Button sameColorButton = new Button(categoryContainer, SWT.CHECK | SWT.BORDER);
+		sameColorButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		sameColorButton.setText(DocometreMessages.SameColorForSameTrialLabel);
+		sameColorButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				sameColor = sameColorButton.getSelection();
+				updateSeriesColors();
+				chart.redraw();
+			}
+		});
 		
 		ChannelEditorWidgetsFactory.createLabel(categoryContainer, DocometreMessages.CategoryCriteriaLabel, SWT.LEFT, false);
 		String criteria = MathEngineFactory.getMathEngine().getCriteriaForCategory(channelEditor.getChannel());
@@ -239,14 +255,16 @@ public class CategoryContainerEditor extends Composite implements ISelectionChan
 	
 	private Byte getSeriesIndex(ILineSeries series) {
 		ISeries[] seriesArray = chart.getSeriesSet().getSeries();
-		for (int i = 0; i < seriesArray.length; i++) {
-			if(series == seriesArray[i]) {
-				String[] trialNumberString = seriesArray[i].getId().split("\\.");
-				int trialNumber = Integer.parseInt(trialNumberString[trialNumberString.length - 1]); 
-				int index = trialsListViewer.getStructuredSelection().toList().indexOf(trialNumber);
-				return (byte) index;
+		if(sameColor) {
+			for (int i = 0; i < seriesArray.length; i++) {
+				if(series == seriesArray[i]) {
+					String[] trialNumberString = seriesArray[i].getId().split("\\.");
+					int trialNumber = Integer.parseInt(trialNumberString[trialNumberString.length - 1]); 
+					int index = trialsListViewer.getStructuredSelection().toList().indexOf(trialNumber);
+					return (byte) index;
+				}
 			}
-		}
+		} else return (byte) Arrays.asList(seriesArray).indexOf(series);
 		return 0;
 	}
 	
