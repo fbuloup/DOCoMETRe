@@ -6,7 +6,15 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-09-27
+      -- 2022-09-29
+ADDED :
+* Improve replace Samples function initialization
+* Color management for category editor
+FIXED :
+* NPE with memento init. or restore view
+* Wrong function in clone method (ReplaceSamples function)
+* V. and H. scrolls are now available (Expression function)
+-- 2022-09-27
 ADDED :
 * Threshold function (Matlab &amp; Python)
 * Replace samples function (Matlab only)
