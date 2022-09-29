@@ -336,7 +336,7 @@ public class ReplaceSamples extends GenericFunction {
 	
 	@Override
 	public Block clone() {
-		Maximum function = new Maximum();
+		ReplaceSamples function = new ReplaceSamples();
 		super.clone(function);
 		return function;
 	}
