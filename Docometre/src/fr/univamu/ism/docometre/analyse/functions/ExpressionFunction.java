@@ -164,11 +164,11 @@ public final class ExpressionFunction extends GenericFunction {
 	}
 	
 	private Composite createSourceTabItem(TabFolder tabFolder, Object context) {
-		Composite sourceContainer = new Composite(tabFolder, SWT.NORMAL);
-		sourceContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		sourceContainer.setLayout(new GridLayout(1, false));
+//		Composite sourceContainer = new Composite(tabFolder, SWT.NORMAL);
+//		sourceContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+//		sourceContainer.setLayout(new GridLayout(1, false));
 		
-		sourceViewer = new SourceViewer(sourceContainer, null, SWT.BORDER);
+		sourceViewer = new SourceViewer(tabFolder, null, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
 		sourceViewer.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		sourceViewer.setDocument(new Document());
 		
@@ -181,7 +181,7 @@ public final class ExpressionFunction extends GenericFunction {
 			public void documentAboutToBeChanged(DocumentEvent event) {
 			}
 		});
-		return sourceContainer;
+		return sourceViewer.getTextWidget();
 	}
 
 	private Composite createExpressionsTabItem(TabFolder tabFolder, Object context) {
@@ -196,7 +196,7 @@ public final class ExpressionFunction extends GenericFunction {
 		Text expressionText = new Text(expressionsContainer, SWT.BORDER);
 		Button validateButton = new Button(expressionsContainer, SWT.FLAT);
 		Composite expressionsListContainer = new Composite(expressionsContainer, SWT.NORMAL);
-		expressionsListViewer = new ListViewer(expressionsListContainer, SWT.SINGLE | SWT.BORDER);
+		expressionsListViewer = new ListViewer(expressionsListContainer, SWT.SINGLE | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
 		Composite buttonsContainer = new Composite(expressionsListContainer, SWT.NORMAL);
 		Button deleteButton = new Button(buttonsContainer, SWT.FLAT);
 		Button upButton = new Button(buttonsContainer, SWT.FLAT);
