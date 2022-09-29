@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-09-29
+      -- 2022-09-29 - Bis
+ADDED : Nothing
+FIXED :
+* Default suffix for output signal was wrong (ReplaceSamples function)
+-- 2022-09-29
 ADDED :
 * Improve replace Samples function initialization
 * Color management for category editor
