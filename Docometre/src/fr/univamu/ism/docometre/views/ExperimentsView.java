@@ -215,6 +215,7 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 	}
 	
 	private void restoreState() {
+		if(memento == null) return;
 		IMemento selectionsMomento = memento.getChild("tree-selections");
 		if (selectionsMomento != null) {
 			IMemento selectedNodes[] = selectionsMomento.getChildren("selected-nodes");

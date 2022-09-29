@@ -136,11 +136,13 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 	@Override
 	public void init(IViewSite site, IMemento memento) throws PartInitException {
 		super.init(site, memento);
-		String selectedExperimentPath = memento.getString("selectedExperimentPath");
-		if(selectedExperimentPath != null) {
-			IResource selectedExperiment = ResourcesPlugin.getWorkspace().getRoot().findMember(selectedExperimentPath);
-			if(selectedExperiment != null) {
-				SelectedExprimentContributionItem.selectedExperiment = selectedExperiment;
+		if(memento != null) {
+			String selectedExperimentPath = memento.getString("selectedExperimentPath");
+			if(selectedExperimentPath != null) {
+				IResource selectedExperiment = ResourcesPlugin.getWorkspace().getRoot().findMember(selectedExperimentPath);
+				if(selectedExperiment != null) {
+					SelectedExprimentContributionItem.selectedExperiment = selectedExperiment;
+				}
 			}
 		}
 	}
