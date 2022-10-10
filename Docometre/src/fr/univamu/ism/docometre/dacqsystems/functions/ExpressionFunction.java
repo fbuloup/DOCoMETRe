@@ -389,10 +389,5 @@ public final class ExpressionFunction extends GenericFunction {
 		super.clone(function);
 		return function;
 	}
-	
-	@Override
-	public String getDescription(Object process) {
-		return getProperty(expressionKey, "");
-	}
 
 }

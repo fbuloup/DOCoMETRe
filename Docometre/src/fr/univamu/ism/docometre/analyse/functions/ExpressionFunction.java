@@ -377,9 +377,4 @@ public final class ExpressionFunction extends GenericFunction {
 		return function;
 	}
 	
-	@Override
-	public String getDescription(Object process) {
-		return getProperty(expressionKey, "");
-	}
-
 }
