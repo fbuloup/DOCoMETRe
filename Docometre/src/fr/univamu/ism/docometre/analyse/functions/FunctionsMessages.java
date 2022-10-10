@@ -118,6 +118,10 @@ public class FunctionsMessages extends NLS {
 	public static String FromIndexLabel;
 	public static String ToIndexLabel;
 	public static String ReplacementIndexLabel;
+
+	// Remove pulses function
+	public static String DurationLabel;
+	public static String DeltaLabel;
 	
 	static {
 		// load message values from bundle file

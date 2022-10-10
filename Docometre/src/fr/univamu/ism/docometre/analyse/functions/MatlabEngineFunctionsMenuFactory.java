@@ -73,8 +73,8 @@ public class MatlabEngineFunctionsMenuFactory {
 																	MotionDistance.class.getName(), MotionDirection.class.getName(), null, AbsoluteValue.class.getName(), Derivative.class.getName(), Interpolate1D.class.getName(), Duplicate.class.getName(), null, 
 																	ChangeSampleFrequency.class.getName(), ReplaceSamples.class.getName()};
 	
-	public static String[] FilteringFunctionsFiles = new String[] {ButterworthLowPass.functionFileName, ButterworthHighPass.functionFileName};
-	public static String[] FilteringFunctionsClasses = new String[] {ButterworthLowPass.class.getName(), ButterworthHighPass.class.getName()};
+	public static String[] FilteringFunctionsFiles = new String[] {ButterworthLowPass.functionFileName, ButterworthHighPass.functionFileName, SEPARATOR, RemovePulses.functionFileName};
+	public static String[] FilteringFunctionsClasses = new String[] {ButterworthLowPass.class.getName(), ButterworthHighPass.class.getName(), null, RemovePulses.class.getName()};
 	
 	public static String[] MarkersFunctionsFiles = new String[] {TimeMarker.functionFileName, Maximum.functionFileName, Minimum.functionFileName, FindPeaks.functionFileName, FindPeaks_Minima.functionFileName, FindAmplitudeBackward.functionFileName, FindAmplitudeForward.functionFileName,
 																	Threshold.functionFileName, TransferMarkersGroup.functionFileName};
