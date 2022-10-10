@@ -146,7 +146,7 @@ public abstract class NewResourceWizardPage extends WizardPage implements IWizar
 			try {
 				resourceDescriptionText.setEnabled(false);
 				String description = ((NewResourceWizard)getWizard()).getResource().getPersistentProperty(ResourceProperties.DESCRIPTION_QN);
-				resourceDescriptionText.setText(description);
+				resourceDescriptionText.setText(description == null ? "":description);
 			} catch (CoreException e) {
 				e.printStackTrace();
 				Activator.logErrorMessageWithCause(e);
