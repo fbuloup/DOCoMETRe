@@ -41,6 +41,7 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.adwin;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,24 +68,43 @@ public class ADWinRS232Module extends Module {
 	@Override
 	public String getCodeSegment(Object segment) throws Exception {
 		String code = "";
+		
+		String sampleFrequencyString = getProperty(ADWinRS232ModuleProperties.FREQUENCY);
+		String gfString = dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.GLOBAL_FREQUENCY);
+		double gf = Double.parseDouble(gfString);
+		double sf = Double.parseDouble(sampleFrequencyString);
+		int sampleRate = (int) (gf/sf);
+		String systemType = getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.SYSTEM_TYPE);
+		String moduleNumber = getProperty(ADWinModuleProperties.MODULE_NUMBER);
+		String interfaceNumber = getProperty(ADWinRS232ModuleProperties.INTERFACE_NUMBER);
+		
 		if (segment == ADWinCodeSegmentProperties.INCLUDE && !includeSegmentPassed){
 			includeSegmentPassed = true;
-			String systemType = getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.SYSTEM_TYPE);
-//			String cpuType = getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.CPU_TYPE);
 			boolean addInclude = true;
 			Module[] modules = dacqConfiguration.getModules();
 			for (Module module : modules) {
 				if(module instanceof ADWinCANModule) addInclude = false;
 			}
 			if(systemType.equals(ADWinDACQConfigurationProperties.PRO) && addInclude) code = code + "#INCLUDE ADwpEXT.INC\n";
+			
+			if(getProperty(ADWinRS232ModuleProperties.SYSTEM_TYPE).equals(ADWinRS232ModuleProperties.ICE_SYSTEM_TYPE)) {
+				String temp = dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH) + File.separator;
+				if(systemType.equals(ADWinDACQConfigurationProperties.PRO)) temp = temp + "CONVIEEE754SENDICE.INC\n";
+				if(systemType.equals(ADWinDACQConfigurationProperties.GOLD)) temp = temp + "CONVIEEE754SENDICEGold.INC\n";
+				code = code + "#INCLUDE " + temp + "\n";
+			}
 		}	
 		
+		if (segment == ADWinCodeSegmentProperties.DECLARATION){
+			if(getProperty(ADWinRS232ModuleProperties.SYSTEM_TYPE).equals(ADWinRS232ModuleProperties.ICE_SYSTEM_TYPE)) {
+				code = code + "\nREM ******* Variable pour l'envoi des données vers ICE\n";
+				code = code + "DIM SEND_ICE_" + hashCode() + " AS INTEGER\n";
+			}
+		}
+		
 		if (segment == ADWinCodeSegmentProperties.INITIALIZATION){
-			String systemType = getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.SYSTEM_TYPE);
-			String moduleNumber = getProperty(ADWinModuleProperties.MODULE_NUMBER);
 			String baudRate = getProperty(ADWinRS232ModuleProperties.BAUD_RATE);
 			String flowControl = getProperty(ADWinRS232ModuleProperties.FLOW_CONTROL);
-			String interfaceNumber = getProperty(ADWinRS232ModuleProperties.INTERFACE_NUMBER);
 			String nbDataBits = getProperty(ADWinRS232ModuleProperties.NB_DATA_BITS);
 			String nbStopBits = getProperty(ADWinRS232ModuleProperties.NB_STOP_BITS);
 			String parity = getProperty(ADWinRS232ModuleProperties.PARITY);
@@ -111,7 +131,34 @@ public class ADWinRS232Module extends Module {
 				code = code + "RS_INIT(" + interfaceNumber + ", " + baudRate + ", " + parity + ", " + nbDataBits + ", " + nbStopBits + ", " + flowControl  + ")";
 			}
 			
+			if(getProperty(ADWinRS232ModuleProperties.SYSTEM_TYPE).equals(ADWinRS232ModuleProperties.ICE_SYSTEM_TYPE)) {
+				code = code + "\nREM ******* Initialisation variable pour l'envoi des données vers ICE\n";
+				code = code + "SEND_ICE_" + hashCode() + " =  " + (sampleRate) + "\n";
+			}
+			
 		}	
+		if (segment == ADWinCodeSegmentProperties.GENERATION){
+			if(getProperty(ADWinRS232ModuleProperties.SYSTEM_TYPE).equals(ADWinRS232ModuleProperties.ICE_SYSTEM_TYPE)) {
+				code = code + "\nREM Envoi des données vers ICE";
+				code = code + "\n\nIF (SEND_ICE_" + hashCode() + " =  " + (sampleRate) + ") THEN\n";
+				code = code + "\tSEND_ICE_" + hashCode() + " =  0\n";
+				Channel[] channels = getChannels();
+				for (Channel channel : channels) {
+					String trfrNumber = channel.getProperty(ChannelProperties.TRANSFER_NUMBER);
+					String channelName = channel.getProperty(ChannelProperties.NAME);
+					code = code + "\n\tREM Envoi de " + channel.getProperty(ChannelProperties.NAME);
+					if(systemType.equals(ADWinDACQConfigurationProperties.PRO)) {
+						code = code + "\n\tCall_ConvIEEE754SendICE(" + moduleNumber + ", " + interfaceNumber +  ", " + trfrNumber + ", " + channelName + ")";
+					}
+					if(systemType.equals(ADWinDACQConfigurationProperties.GOLD)) {
+						code = code + "\n\tCall_ConvIEEE754SendICE(" + interfaceNumber +  ", " + trfrNumber + ", " + channelName + ")";
+					}
+					
+				}
+				code = code + "\n\nENDIF\n";
+				code = code + "INC(SEND_ICE_" + hashCode() + ")\n";
+			}
+		}
 		
 		return code;
 	}
@@ -124,7 +171,6 @@ public class ADWinRS232Module extends Module {
 
 	@Override
 	public void generation() {
-		// TODO Auto-generated method stub
 		
 	}
 
