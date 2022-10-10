@@ -51,6 +51,7 @@ public final class ADWinVariableProperties extends Property {
 	public static final ADWinVariableProperties PROPAGATE = new ADWinVariableProperties("ADWinVariableProperties.PROPAGATE", ADWinMessages.Propagate_Label, ADWinMessages.Propagate_Tooltip, "^(true|false)$", "true:false");
 	public static final ADWinVariableProperties SIZE = new ADWinVariableProperties("ADWinVariableProperties.SIZE", ADWinMessages.Size_Label, ADWinMessages.Size_Tooltip, "^\\d+$");
 	public static final ADWinVariableProperties TYPE = new ADWinVariableProperties("ADWinVariableProperties.TYPE", ADWinMessages.Type_Label, ADWinMessages.Type_Tooltip, "^float|int|string$", "float:int:string");
+	public static final ADWinVariableProperties STIMULUS = new ADWinVariableProperties("ADWinVariableProperties.STIMULUS", ADWinMessages.AnOut_Stimulus_Label, ADWinMessages.AnOut_Stimulus_Tooltip, "^(true|false)$", "true:false");
 
 	public static final String FLOAT = "float";
 	public static final String INT = "int";
@@ -63,6 +64,7 @@ public final class ADWinVariableProperties extends Property {
 		variable.setProperty(PROPAGATE, "false");
 		variable.setProperty(SIZE, "1");
 		variable.setProperty(TYPE, "float");
+		variable.setProperty(STIMULUS, "false");
 	}
 
 	public static ADWinVariable cloneVariable(ADWinVariable variable) {
@@ -73,6 +75,7 @@ public final class ADWinVariableProperties extends Property {
 		newVariable.setProperty(PROPAGATE, new String(variable.getProperty(PROPAGATE)));
 		newVariable.setProperty(SIZE, new String(variable.getProperty(SIZE)));
 		newVariable.setProperty(TYPE, new String(variable.getProperty(TYPE)));
+		newVariable.setProperty(STIMULUS, new String(variable.getProperty(STIMULUS)));
 		return newVariable;
 	}
 

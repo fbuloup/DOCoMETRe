@@ -191,6 +191,11 @@ public class ADWinChannelEditingSupport extends EditingSupport implements Proper
 			cellEditor.setValidator(new Validator(ADWinVariableProperties.PROPAGATE.getRegExp()));
 		}
 		
+		if(property == ADWinVariableProperties.STIMULUS) {
+			cellEditor = new CheckboxCellEditor((Composite) viewer.getControl());
+			cellEditor.setValidator(new Validator(ADWinVariableProperties.STIMULUS.getRegExp()));
+		}
+		
 		if(property == ADWinAnInChannelProperties.GAIN) {
 			cellEditor = new ComboBoxViewerCellEditor((Composite) viewer.getControl(), SWT.READ_ONLY);
 			((ComboBoxViewerCellEditor)cellEditor).setContentProvider(new ArrayContentProvider());
@@ -266,7 +271,7 @@ public class ADWinChannelEditingSupport extends EditingSupport implements Proper
 		if(!(element instanceof Channel)) return null;
 		if(getCellEditor(element) instanceof CheckboxCellEditor) {
 			String value = ((Channel)element).getProperty(property);
-			return value.equals("true") ? true : false;
+			return "true".equals(value) ? true : false;
 		}
 		return ((Channel)element).getProperty(property);
 	}

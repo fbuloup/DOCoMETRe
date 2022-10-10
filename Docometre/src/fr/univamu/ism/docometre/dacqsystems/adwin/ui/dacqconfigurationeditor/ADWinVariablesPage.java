@@ -139,6 +139,11 @@ public class ADWinVariablesPage extends ADWinModulePage {
 				e2 = var2.getProperty(ADWinVariableProperties.PROPAGATE);
 				result = super.compare(viewer, (String)e1, (String)e2);
 				break;
+			case 11:
+				e1 = var1.getProperty(ADWinVariableProperties.STIMULUS);
+				e2 = var2.getProperty(ADWinVariableProperties.STIMULUS);
+				result = super.compare(viewer, (String)e1, (String)e2);
+				break;
 			default:
 				break;
 			}
@@ -215,6 +220,7 @@ public class ADWinVariablesPage extends ADWinModulePage {
 		createColumn(ADWinVariableProperties.SIZE.getTooltip(), variablesTableColumnLayout, ADWinVariableProperties.SIZE, defaultColumnWidth, 8);
 		createColumn(ADWinVariableProperties.PARAMETER.getTooltip(), variablesTableColumnLayout, ADWinVariableProperties.PARAMETER, defaultColumnWidth, 9);
 		createColumn(ADWinVariableProperties.PROPAGATE.getTooltip(), variablesTableColumnLayout, ADWinVariableProperties.PROPAGATE, defaultColumnWidth, 10);
+		createColumn(ADWinVariableProperties.STIMULUS.getTooltip(), variablesTableColumnLayout, ADWinVariableProperties.STIMULUS, defaultColumnWidth, 11);
 		
 		tableViewer.setContentProvider(new ArrayContentProvider());
 		tableViewer.setLabelProvider(new ITableLabelProvider() {
@@ -252,6 +258,10 @@ public class ADWinVariablesPage extends ADWinModulePage {
 					return channel.getProperty(ADWinVariableProperties.PARAMETER);
 				case 10:
 					return channel.getProperty(ADWinVariableProperties.PROPAGATE);
+				case 11:
+					String isStimulus = channel.getProperty(ADWinVariableProperties.STIMULUS);
+					if(isStimulus == null) return "false";
+					return isStimulus;
 				default:
 					return "";
 				}
@@ -275,6 +285,9 @@ public class ADWinVariablesPage extends ADWinModulePage {
 				case 10:
 					value = channel.getProperty(ADWinVariableProperties.PROPAGATE);
 					return value.equals("true") ? ModulePage.checkedImage : ModulePage.uncheckedImage;
+				case 11:
+					value = channel.getProperty(ADWinVariableProperties.STIMULUS);
+					return "true".equals(value) ? ModulePage.checkedImage : ModulePage.uncheckedImage;
 				default:
 					return null;
 				}
@@ -288,14 +301,16 @@ public class ADWinVariablesPage extends ADWinModulePage {
 	@Override
 	public void update(Property property, Object newValue, Object oldValue, AbstractElement element) {
 		super.update(property, newValue, oldValue, element);
-		if(property == ADWinVariableProperties.PARAMETER || property == ChannelProperties.TRANSFER || property == ChannelProperties.AUTO_TRANSFER) {
+		if(property == ADWinVariableProperties.PARAMETER || property == ChannelProperties.TRANSFER || property == ChannelProperties.AUTO_TRANSFER || property == ADWinVariableProperties.STIMULUS) {
 			ADWinVariable adwinVariable = (ADWinVariable)element;
 			
 			boolean isParameter = "true".equals(adwinVariable.getProperty(ADWinVariableProperties.PARAMETER));
 			boolean isTransfered = "true".equals(adwinVariable.getProperty(ChannelProperties.TRANSFER));
 			boolean isAutoTransfered = "true".equals(adwinVariable.getProperty(ChannelProperties.AUTO_TRANSFER));
-			if(isParameter && isTransfered) adwinVariable.setProperty(ChannelProperties.TRANSFER, "false");
-			if(isParameter && isAutoTransfered) adwinVariable.setProperty(ChannelProperties.AUTO_TRANSFER, "false");
+			boolean isStimulus = "true".equals(adwinVariable.getProperty(ADWinVariableProperties.STIMULUS));
+			if((isParameter || isStimulus) && isTransfered) adwinVariable.setProperty(ChannelProperties.TRANSFER, "false");
+			if((isParameter || isStimulus) && isAutoTransfered) adwinVariable.setProperty(ChannelProperties.AUTO_TRANSFER, "false");
+			if(isParameter && isStimulus) adwinVariable.setProperty(ADWinVariableProperties.STIMULUS, "false");
 			
 			boolean isString = ADWinVariableProperties.STRING.equals(adwinVariable.getProperty(ADWinVariableProperties.TYPE));
 			if(isString && isTransfered) adwinVariable.setProperty(ChannelProperties.TRANSFER, "false");
