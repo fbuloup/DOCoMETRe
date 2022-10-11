@@ -157,7 +157,7 @@ public class StimulusFunction extends GenericFunction {
 				return super.getText(element);
 			}
 		});
-		if(dacqConfiguration instanceof ADWinDACQConfiguration) channelComboViewer.setInput(dacqConfiguration.getOutputsProposal());
+		if(dacqConfiguration instanceof ADWinDACQConfiguration) channelComboViewer.setInput(dacqConfiguration.getStimuliProposal());
 		channelComboViewer.getCombo().addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {

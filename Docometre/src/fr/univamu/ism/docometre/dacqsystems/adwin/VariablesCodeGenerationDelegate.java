@@ -168,12 +168,18 @@ public final class VariablesCodeGenerationDelegate {
 				String transferNumber = variable.getProperty(ChannelProperties.TRANSFER_NUMBER);
 				String transfer = variable.getProperty(ChannelProperties.TRANSFER);
 				String parameter = variable.getProperty(ADWinVariableProperties.PARAMETER);
+				String stimulus = variable.getProperty(ADWinVariableProperties.STIMULUS);
 				boolean isParameter = Boolean.valueOf(parameter);
 				boolean isTransfered = Boolean.valueOf(transfer);
+				boolean isStimulus = Boolean.valueOf(stimulus);
 				String sfVariable = variable.getProperty(ChannelProperties.SAMPLE_FREQUENCY);
 				float sfFloat = Float.parseFloat(sfVariable);
 				int frequencyRatio = (int) (gsfFloat/sfFloat);
-				if(isTransfered && !isParameter){
+				if(isStimulus) {
+					code = code + "TRANSFERT_" + name + " = " + frequencyRatio + "\n";
+					code = code + "PAR_" + transferNumber + " = 0\n";
+				}
+				if(!isStimulus && isTransfered && !isParameter){
 					code = code + "TRANSFERT_" + name + " = " + frequencyRatio + "\n";
 					code = code + "FIFO_CLEAR(" + transferNumber + ")\n";
 					code = code + "PAR_" + transferNumber + " = 0\n";
