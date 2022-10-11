@@ -6,7 +6,13 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-10-11
+      -- 2022-10-11 - Bis
+ADDED :
+* Support for stimuli for ADwin variables - Step 2
+FIXED :
+* Floating point exception when frequency of RS232 module is empty
+* Synchro chars CR+LF were not send when using ICE system
+-- 2022-10-11
 ADDED : 
 * Support for ICE with RS232 module
 * Support for stimuli for ADwin variables (Step 1)
