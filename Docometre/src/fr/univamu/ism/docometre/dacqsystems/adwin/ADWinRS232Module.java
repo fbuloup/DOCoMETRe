@@ -46,6 +46,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.osgi.util.NLS;
+
+import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
@@ -71,12 +74,21 @@ public class ADWinRS232Module extends Module {
 		
 		String sampleFrequencyString = getProperty(ADWinRS232ModuleProperties.FREQUENCY);
 		String gfString = dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.GLOBAL_FREQUENCY);
-		double gf = Double.parseDouble(gfString);
-		double sf = Double.parseDouble(sampleFrequencyString);
-		int sampleRate = (int) (gf/sf);
 		String systemType = getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.SYSTEM_TYPE);
 		String moduleNumber = getProperty(ADWinModuleProperties.MODULE_NUMBER);
 		String interfaceNumber = getProperty(ADWinRS232ModuleProperties.INTERFACE_NUMBER);
+		
+		if(sampleFrequencyString == null || "".equals(sampleFrequencyString)) {
+			String message = ADWinMessages.RS232ModuleFrequencyEmptyErrorMessage;
+			String dacqFilePath = dacqConfiguration.getResource().getFullPath().toOSString();
+			dacqFilePath = dacqFilePath.replaceAll(Activator.daqFileExtension + "$", "");
+			message = NLS.bind(message, moduleNumber, dacqFilePath);
+			throw new Exception(message);
+		}
+		
+		double gf = Double.parseDouble(gfString);
+		double sf = Double.parseDouble(sampleFrequencyString);
+		int sampleRate = (int) (gf/sf);
 		
 		if (segment == ADWinCodeSegmentProperties.INCLUDE && !includeSegmentPassed){
 			includeSegmentPassed = true;

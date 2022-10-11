@@ -319,6 +319,9 @@ public class ADWinMessages extends NLS {
 	public static String ADWinDiary_Approximative_Scanner;
 	public static String ADWinDiary_NoMoreToGenerate_Scanner;
 	
+	// RS232 ADWin module
+	public static String RS232ModuleFrequencyEmptyErrorMessage;
+	
 	static {
 		NLS.initializeMessages(BUNDLE_NAME, ADWinMessages.class);
 	}
