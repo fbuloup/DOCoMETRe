@@ -86,6 +86,9 @@ public class ADWinRS232Module extends Module {
 				if(module instanceof ADWinCANModule) addInclude = false;
 			}
 			if(systemType.equals(ADWinDACQConfigurationProperties.PRO) && addInclude) code = code + "#INCLUDE ADwpEXT.INC\n";
+			if(systemType.equals(ADWinDACQConfigurationProperties.GOLD) && addInclude) {
+				if(ADWinDACQConfigurationProperties.I.equals(getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.CPU_TYPE))) code = code + "#INCLUDE ADWGCAN.Inc\n";
+			}
 			
 			if(getProperty(ADWinRS232ModuleProperties.SYSTEM_TYPE).equals(ADWinRS232ModuleProperties.ICE_SYSTEM_TYPE)) {
 				String temp = dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH) + File.separator;
