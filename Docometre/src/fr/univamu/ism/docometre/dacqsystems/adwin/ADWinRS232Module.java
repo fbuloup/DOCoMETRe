@@ -170,6 +170,14 @@ public class ADWinRS232Module extends Module {
 					}
 					
 				}
+				if(channels.length > 0) {
+					code = code + "\n\n\tREM Envoi de la synchro CR + LF";
+					code = code + "\n\tIF(write_fifo(1,10)=0) THEN";
+					code = code + "\n\t\twrite_fifo(1,13)";
+//					code = code + "\n\t\tIF(write_fifo(1,13)=0) THEN";
+//					code = code + "\n\t\tENDIF";
+					code = code + "\n\tENDIF";
+				}
 				code = code + "\n\nENDIF\n";
 				code = code + "INC(SEND_ICE_" + hashCode() + ")\n";
 			}
