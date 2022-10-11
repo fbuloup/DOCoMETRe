@@ -6,10 +6,20 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-09-29 - Bis
+      -- 2022-10-11
+ADDED : 
+* Support for ICE with RS232 module
+* Support for stimuli for ADwin variables (Step 1)
+* &quot;Remove pulses&quot; function (Maltab @ Python)
+FIXED :
+* Wrong tooltips editors
+* NPE for description property (New/Edit Resource Wizard)
+* Remove code from description (Expression function)
+-- 2022-09-29 - Bis
 ADDED : Nothing
 FIXED :
-* Default suffix for output signal was wrong (ReplaceSamples function)
+* Default suffix for output signal was wrong (ReplaceSamples
+function)
 -- 2022-09-29
 ADDED :
 * Improve replace Samples function initialization
