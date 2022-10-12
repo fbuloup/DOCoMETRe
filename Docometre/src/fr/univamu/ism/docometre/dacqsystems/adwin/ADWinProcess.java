@@ -352,7 +352,7 @@ public class ADWinProcess extends Process {
 			if(!line.contains("0 error(s), 0 warning(s)")) {
 				System.err.println("Error : " + line);
 			    Activator.logErrorMessage(line);
-			    processError = true;
+			    processError = !line.contains(":err:explorer:initialize_display_settings Failed to query current display settings for");
 			}
 		}
 		input.close();
@@ -532,8 +532,12 @@ public class ADWinProcess extends Process {
 			IPath adbasicPath = Path.fromOSString(adbasicFilePath);
 			String volume1 = " -v " + adbasicPath.removeLastSegments(1).toPortableString() + ":" + adbasicPath.removeLastSegments(1).toPortableString() + ":rw";
 			String volume2 = " -v " + librariesPath + ":" + librariesPath + ":ro";
+			String incLibFoldersOptions = " /IP/opt/adwin/ADwin-linux_6.0.30.00/adwin-compiler-6.0.30/share/adbasic/Inc/";
+			incLibFoldersOptions = incLibFoldersOptions +" /LP/opt/adwin/ADwin-linux_6.0.30.00/adwin-compiler-6.0.30/share/adbasic/Lib/";
 			String cmd = "/usr/local/bin/docker run -w " + adbasicPath.removeLastSegments(1).toPortableString() + " -di" + volume1 + volume2 + " --name adwin ubuntu:adwin";
-			cmd += "\n/usr/local/bin/docker exec adwin /opt/adwin/bin/adbasic " + adbasicPath.lastSegment() + getCommandLineParameters(outputFolder, adbasicFilePath);
+			cmd += "\n/usr/local/bin/docker cp /Users/frank/git/DOCoMETRe/Libraries/includes/ADWinIncludeFiles/. adwin:/opt/adwin/ADwin-linux_6.0.30.00/adwin-compiler-6.0.30/share/adbasic/Inc/";
+			cmd += "\n/usr/local/bin/docker cp /Users/frank/git/DOCoMETRe/Libraries/includes/ADWinIncludeFiles/. adwin:/opt/adwin/ADwin-linux_6.0.30.00/adwin-compiler-6.0.30/share/adbasic/Lib/";
+			cmd += "\n/usr/local/bin/docker exec adwin adbasic " + adbasicPath.lastSegment() + getCommandLineParameters(outputFolder, adbasicFilePath) + incLibFoldersOptions;
 			cmd += "\n/usr/local/bin/docker stop -t 1 adwin";
 			cmd += "\n/usr/local/bin/docker rm adwin";
 			fileWriter.write(cmd);
@@ -776,25 +780,46 @@ public class ADWinProcess extends Process {
 			
 			if(systemType.equals(ADWinDACQConfigurationProperties.GOLD) && cpuType.equals(ADWinDACQConfigurationProperties.II)) {
 				if(importStringLibrary) code = code + "IMPORT String.lib\n";
-				code = code + "IMPORT " + processPathForMacOSX(getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH) + File.separator +  "DOCOLIBGoldII.LIB\n");
+				String temp = getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH) + File.separator;
+				boolean useDocker = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_DOCKER);
+				if(useDocker) temp = "";
+				temp = temp + "DOCOLIBGoldII.LIB\n";
+				temp =	ADWinProcess.processPathForMacOSX(temp);
+				code = code + "IMPORT " + temp;
 				code = code + "#INCLUDE ADwinGoldII.INC\n";
 			}
 				
 			if(systemType.equals(ADWinDACQConfigurationProperties.PRO) && cpuType.equals(ADWinDACQConfigurationProperties.I)) {
 				if(importStringLibrary) code = code + "IMPORT String.li9\n";
-				code = code + "IMPORT " + processPathForMacOSX(getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH) + File.separator +  "DOCOLIBPro.LI9\n");
+				String temp = getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH) + File.separator;
+				boolean useDocker = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_DOCKER);
+				if(useDocker) temp = "";
+				temp = temp + "DOCOLIBPro.LI9\n";
+				temp =	ADWinProcess.processPathForMacOSX(temp);
+				code = code + "IMPORT " + temp;
 				code = code + "#INCLUDE ADwinPro.INC\n";
 			}
 				
 			if(systemType.equals(ADWinDACQConfigurationProperties.PRO) && cpuType.equals(ADWinDACQConfigurationProperties.II)) {
 				if(importStringLibrary) code = code + "IMPORT String.lib\n";
-				code = code + "IMPORT " + processPathForMacOSX(getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH) + File.separator +  "DOCOLIBProII.LIB\n");
+				String temp = getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH) + File.separator;
+				boolean useDocker = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_DOCKER);
+				if(useDocker) temp = "";
+				temp = temp + "DOCOLIBProII.LIB\n";
+				temp =	ADWinProcess.processPathForMacOSX(temp);
+				code = code + "IMPORT " + temp;
 				code = code + "#INCLUDE ADwinPro2.INC\n";
 			}
 			
 			if(systemType.equals(ADWinDACQConfigurationProperties.GOLD) && cpuType.equals(ADWinDACQConfigurationProperties.I)) {
 				if(importStringLibrary) code = code + "IMPORT String.li9\n";
-				code = code + "IMPORT " + processPathForMacOSX(getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH) + File.separator +  "DOCOLIBGold.LI9\n");
+				
+				String temp = getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH) + File.separator;
+				boolean useDocker = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_DOCKER);
+				if(useDocker) temp = "";
+				temp = temp + "DOCOLIBGold.LI9\n";
+				temp =	ADWinProcess.processPathForMacOSX(temp);
+				code = code + "IMPORT " + temp;
 			}
 				
 //			code = code + "#INCLUDE " + processPathForMacOSX(getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH) + File.separator +  "DOCOLIB.INC\n");

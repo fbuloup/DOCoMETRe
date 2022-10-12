@@ -43,12 +43,14 @@ package fr.univamu.ism.docometre.dacqsystems.adwin;
 
 import java.io.File;
 
+import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.Property;
+import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
 public class ADWinDigInOutModule extends Module {
 
@@ -181,6 +183,8 @@ public class ADWinDigInOutModule extends Module {
 				if(isInput && !includeSegmentPassedFor_DIGIN){
 					includeSegmentPassedFor_DIGIN = true;
 					String temp = dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH) + File.separator;
+					boolean useDocker = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_DOCKER);
+					if(useDocker) temp = "";
 					temp = temp + "CALLDIGIN" + dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.SYSTEM_TYPE) + suffix + ".INC\n";
 					temp =	ADWinProcess.processPathForMacOSX(temp);
 					code = code + "#INCLUDE " + temp;
@@ -188,6 +192,8 @@ public class ADWinDigInOutModule extends Module {
 				else if(!isInput && !includeSegmentPassedFor_DIGOUT){
 					includeSegmentPassedFor_DIGOUT = true;
 					String temp = dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH) + File.separator;
+					boolean useDocker = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_DOCKER);
+					if(useDocker) temp = "";
 					temp = temp + "CALLDIGOUT" + dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.SYSTEM_TYPE) + suffix + ".INC\n";
 					temp =	ADWinProcess.processPathForMacOSX(temp);
 					code = code + "#INCLUDE " + temp;

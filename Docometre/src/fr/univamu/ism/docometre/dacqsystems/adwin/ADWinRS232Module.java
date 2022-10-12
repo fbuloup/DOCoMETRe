@@ -55,6 +55,7 @@ import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.Property;
+import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
 public class ADWinRS232Module extends Module {
 	
@@ -104,8 +105,11 @@ public class ADWinRS232Module extends Module {
 			
 			if(getProperty(ADWinRS232ModuleProperties.SYSTEM_TYPE).equals(ADWinRS232ModuleProperties.ICE_SYSTEM_TYPE)) {
 				String temp = dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH) + File.separator;
+				boolean useDocker = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_DOCKER);
+				if(useDocker) temp = "";
 				if(systemType.equals(ADWinDACQConfigurationProperties.PRO)) temp = temp + "CONVIEEE754SENDICE.INC\n";
 				if(systemType.equals(ADWinDACQConfigurationProperties.GOLD)) temp = temp + "CONVIEEE754SENDICEGold.INC\n";
+				temp =	ADWinProcess.processPathForMacOSX(temp);
 				code = code + "#INCLUDE " + temp + "\n";
 			}
 		}	
@@ -171,11 +175,20 @@ public class ADWinRS232Module extends Module {
 					
 				}
 				if(channels.length > 0) {
-					code = code + "\n\n\tREM Envoi de la synchro CR + LF";
-					code = code + "\n\tIF(write_fifo(1,10)=0) THEN";
-					code = code + "\n\t\tIF(write_fifo(1,13)=0) THEN";
-					code = code + "\n\t\tENDIF";
-					code = code + "\n\tENDIF";
+					if(systemType.equals(ADWinDACQConfigurationProperties.PRO)) {
+						code = code + "\n\n\tREM Envoi de la synchro CR + LF";
+						code = code + "\n\tIF (write_fifo(" + moduleNumber + "," + interfaceNumber + ",10)=0) THEN";
+						code = code + "\n\t\tIF (write_fifo(" + moduleNumber + "," + interfaceNumber + ",13)=0) THEN";
+						code = code + "\n\t\tENDIF";
+						code = code + "\n\tENDIF";
+					} 
+					if(systemType.equals(ADWinDACQConfigurationProperties.GOLD)) {
+						code = code + "\n\n\tREM Envoi de la synchro CR + LF";
+						code = code + "\n\tIF (write_fifo(" + interfaceNumber + ",10)=0) THEN";
+						code = code + "\n\t\tIF (write_fifo(" + interfaceNumber + ",13)=0) THEN";
+						code = code + "\n\t\tENDIF";
+						code = code + "\n\tENDIF";
+					}
 				}
 				code = code + "\n\nENDIF\n";
 				code = code + "INC(SEND_ICE_" + hashCode() + ")\n";
