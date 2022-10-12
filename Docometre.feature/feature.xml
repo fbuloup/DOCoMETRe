@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-10-12
+      -- 2022-10-12 - Bis
+ADDED : Nothing
+FIXED : 
+* ADBasic compile error (Could not find a SUB with the specified name. write_fifo())
+-- 2022-10-12
 ADDED :
 * Support for stimuli for ADwin variables - Step 3
 FIXED : Nothing
