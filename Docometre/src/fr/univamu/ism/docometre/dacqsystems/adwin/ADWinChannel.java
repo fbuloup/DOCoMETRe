@@ -156,6 +156,9 @@ public class ADWinChannel extends Channel {
 			if(module instanceof ADWinDigInOutModule) {
 				isStimulus = Boolean.valueOf(getProperty(ADWinDigInOutChannelProperties.STIMULUS));
 			}
+			if(this instanceof ADWinVariable) {
+				isStimulus = Boolean.valueOf(getProperty(ADWinVariableProperties.STIMULUS));
+			}
 			
 			if(isStimulus) {
 				fileName = getStimulusFileName(process.getInitializeBlocksContainer());
@@ -244,6 +247,7 @@ public class ADWinChannel extends Channel {
 	public boolean isGenerationAllowed() {
 		if(module instanceof ADWinAnOutModule) return Boolean.valueOf(getProperty(ADWinAnOutChannelProperties.STIMULUS));
 		if(module instanceof ADWinDigInOutModule) return Boolean.valueOf(getProperty(ADWinDigInOutChannelProperties.STIMULUS));
+		if(this instanceof ADWinVariable) return Boolean.valueOf(getProperty(ADWinVariableProperties.STIMULUS));
 		return false;
 	}
 	
@@ -258,6 +262,7 @@ public class ADWinChannel extends Channel {
 		else if(module instanceof ADWinAnOutModule) channel = ADWinAnOutChannelProperties.cloneChannel(this);
 		else if(module instanceof ADWinDigInOutModule) channel = ADWinDigInOutChannelProperties.cloneChannel(this);
 		else if(module instanceof ADWinCANModule) channel = ADWinCANModuleProperties.cloneChannel(this);
+		else if(this instanceof ADWinVariable) channel = ADWinVariableProperties.cloneVariable((ADWinVariable) this);
 		return channel;
 	}
 

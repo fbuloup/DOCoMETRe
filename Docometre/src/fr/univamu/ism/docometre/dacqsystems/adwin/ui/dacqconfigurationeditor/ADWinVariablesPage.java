@@ -41,7 +41,6 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.adwin.ui.dacqconfigurationeditor;
 
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.TableColumnLayout;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
@@ -301,45 +300,87 @@ public class ADWinVariablesPage extends ADWinModulePage {
 	@Override
 	public void update(Property property, Object newValue, Object oldValue, AbstractElement element) {
 		super.update(property, newValue, oldValue, element);
-		if(property == ADWinVariableProperties.PARAMETER || property == ChannelProperties.TRANSFER || property == ChannelProperties.AUTO_TRANSFER || property == ADWinVariableProperties.STIMULUS) {
-			ADWinVariable adwinVariable = (ADWinVariable)element;
-			
-			boolean isParameter = "true".equals(adwinVariable.getProperty(ADWinVariableProperties.PARAMETER));
-			boolean isTransfered = "true".equals(adwinVariable.getProperty(ChannelProperties.TRANSFER));
-			boolean isAutoTransfered = "true".equals(adwinVariable.getProperty(ChannelProperties.AUTO_TRANSFER));
-			boolean isStimulus = "true".equals(adwinVariable.getProperty(ADWinVariableProperties.STIMULUS));
-			if((isParameter || isStimulus) && isTransfered) adwinVariable.setProperty(ChannelProperties.TRANSFER, "false");
-			if((isParameter || isStimulus) && isAutoTransfered) adwinVariable.setProperty(ChannelProperties.AUTO_TRANSFER, "false");
-			if(isParameter && isStimulus) adwinVariable.setProperty(ADWinVariableProperties.STIMULUS, "false");
-			
-			boolean isString = ADWinVariableProperties.STRING.equals(adwinVariable.getProperty(ADWinVariableProperties.TYPE));
-			if(isString && isTransfered) adwinVariable.setProperty(ChannelProperties.TRANSFER, "false");
-			if(isString && isAutoTransfered) adwinVariable.setProperty(ChannelProperties.AUTO_TRANSFER, "false");
-
-			boolean isArray = Integer.parseInt(adwinVariable.getProperty(ADWinVariableProperties.SIZE)) > 1;
-			if(isArray && isTransfered) {
-				adwinVariable.setProperty(ChannelProperties.TRANSFER, "false");
-				MessageDialog.openInformation(getSite().getShell(), DocometreMessages.TransferInfo_MessageTitle, DocometreMessages.TransferInfo_MessageContent); 
-			}
+		
+		ADWinVariable adwinVariable = (ADWinVariable)element;
+		boolean isTransfered = "true".equals(adwinVariable.getProperty(ChannelProperties.TRANSFER));
+		boolean isAutoTransfered = "true".equals(adwinVariable.getProperty(ChannelProperties.AUTO_TRANSFER));
+		boolean isRecorded = "true".equals(adwinVariable.getProperty(ChannelProperties.RECORD));
+		boolean isString = ADWinVariableProperties.STRING.equals(adwinVariable.getProperty(ADWinVariableProperties.TYPE));
+		boolean isArray = Integer.parseInt(adwinVariable.getProperty(ADWinVariableProperties.SIZE)) > 1;
+		boolean isParameter = "true".equals(adwinVariable.getProperty(ADWinVariableProperties.PARAMETER));
+		boolean propagate = "true".equals(adwinVariable.getProperty(ADWinVariableProperties.PROPAGATE));
+		boolean isStimulus = "true".equals(adwinVariable.getProperty(ADWinVariableProperties.STIMULUS));
+		
+		if(property == ChannelProperties.TRANSFER && isTransfered) {
+			adwinVariable.setProperty(ADWinVariableProperties.PARAMETER, "false");
+			adwinVariable.setProperty(ADWinVariableProperties.PROPAGATE, "false");
+			if(isString) adwinVariable.setProperty(ADWinVariableProperties.TYPE, ADWinVariableProperties.FLOAT);
+			if(isArray) adwinVariable.setProperty(ADWinVariableProperties.SIZE, "1");
 		}
-		if(property == ADWinVariableProperties.TYPE) {
-			ADWinVariable adwinVariable = (ADWinVariable)element;
-			
-			boolean isTransfered = "true".equals(adwinVariable.getProperty(ChannelProperties.TRANSFER));
-			boolean isAutoTransfered = "true".equals(adwinVariable.getProperty(ChannelProperties.AUTO_TRANSFER));
-			boolean isString = ADWinVariableProperties.STRING.equals(adwinVariable.getProperty(ADWinVariableProperties.TYPE));
-			if(isString && isTransfered) adwinVariable.setProperty(ChannelProperties.TRANSFER, "false");
-			if(isString && isAutoTransfered) adwinVariable.setProperty(ChannelProperties.AUTO_TRANSFER, "false");
+		
+		if(property == ChannelProperties.TRANSFER && !isTransfered) {
+			adwinVariable.setProperty(ADWinVariableProperties.STIMULUS, "false");
+		}
+		
+		if(property == ChannelProperties.AUTO_TRANSFER && !isTransfered && isAutoTransfered) {
+			adwinVariable.setProperty(ChannelProperties.AUTO_TRANSFER, "false");
+		}
+		
+		if(property == ChannelProperties.AUTO_TRANSFER && isTransfered && isAutoTransfered && isStimulus) {
+			adwinVariable.setProperty(ChannelProperties.AUTO_TRANSFER, "false");
+		}
+		
+		if(property == ChannelProperties.RECORD && !isTransfered && isRecorded) {
+			adwinVariable.setProperty(ChannelProperties.RECORD, "false");
+		}
+		
+		if(property == ChannelProperties.RECORD && isTransfered && isRecorded && isStimulus) {
+			adwinVariable.setProperty(ChannelProperties.RECORD, "false");
+		}
+		
+		if(property == ADWinVariableProperties.TYPE && isString) {
+			adwinVariable.setProperty(ChannelProperties.TRANSFER, "false");
+			adwinVariable.setProperty(ChannelProperties.AUTO_TRANSFER, "false");
+			adwinVariable.setProperty(ADWinVariableProperties.PARAMETER, "false");
+			adwinVariable.setProperty(ADWinVariableProperties.PROPAGATE, "false");
+			adwinVariable.setProperty(ADWinVariableProperties.STIMULUS, "false");
 			((ADWinDACQConfiguration)dacqConfiguration).updateChannelsTransferNumber();
 		}
 		
-		if(property == ADWinVariableProperties.SIZE) {
-			ADWinVariable adwinVariable = (ADWinVariable)element;
-			boolean isTransfered = "true".equals(adwinVariable.getProperty(ChannelProperties.TRANSFER));
-			boolean isAutoTransfered = "true".equals(adwinVariable.getProperty(ChannelProperties.AUTO_TRANSFER));
-			boolean isArray = Integer.parseInt(adwinVariable.getProperty(ADWinVariableProperties.SIZE)) > 1;
-			if(isArray && isTransfered) adwinVariable.setProperty(ChannelProperties.TRANSFER, "false");
-			if(isArray && isAutoTransfered) adwinVariable.setProperty(ChannelProperties.AUTO_TRANSFER, "false");
+		if(property == ADWinVariableProperties.SIZE && isArray) {
+			adwinVariable.setProperty(ChannelProperties.TRANSFER, "false");
+			adwinVariable.setProperty(ChannelProperties.AUTO_TRANSFER, "false");
+			adwinVariable.setProperty(ADWinVariableProperties.PARAMETER, "false");
+			adwinVariable.setProperty(ADWinVariableProperties.PROPAGATE, "false");
+			adwinVariable.setProperty(ADWinVariableProperties.STIMULUS, "false");
+			((ADWinDACQConfiguration)dacqConfiguration).updateChannelsTransferNumber();
+		}
+		
+		if(property == ADWinVariableProperties.PARAMETER && isParameter) {
+			adwinVariable.setProperty(ChannelProperties.TRANSFER, "false");
+			adwinVariable.setProperty(ChannelProperties.AUTO_TRANSFER, "false");
+			adwinVariable.setProperty(ADWinVariableProperties.STIMULUS, "false");
+			if(isString) adwinVariable.setProperty(ADWinVariableProperties.TYPE, ADWinVariableProperties.FLOAT);
+			adwinVariable.setProperty(ADWinVariableProperties.SIZE, "1");
+			((ADWinDACQConfiguration)dacqConfiguration).updateChannelsTransferNumber();
+		}
+		
+		if(property == ADWinVariableProperties.PARAMETER && !isParameter) {
+			adwinVariable.setProperty(ADWinVariableProperties.PROPAGATE, "false");
+		}
+		
+		if(property == ADWinVariableProperties.PROPAGATE && !isParameter && propagate) {
+			adwinVariable.setProperty(ADWinVariableProperties.PROPAGATE, "false");
+		}
+		
+		if(property == ADWinVariableProperties.STIMULUS && isStimulus) {
+			adwinVariable.setProperty(ChannelProperties.TRANSFER, "true");
+			adwinVariable.setProperty(ChannelProperties.AUTO_TRANSFER, "false");
+			adwinVariable.setProperty(ChannelProperties.RECORD, "false");
+			if(isString) adwinVariable.setProperty(ADWinVariableProperties.TYPE, ADWinVariableProperties.FLOAT);
+			adwinVariable.setProperty(ADWinVariableProperties.SIZE, "1");
+			adwinVariable.setProperty(ADWinVariableProperties.PARAMETER, "false");
+			adwinVariable.setProperty(ADWinVariableProperties.PROPAGATE, "false");
 			((ADWinDACQConfiguration)dacqConfiguration).updateChannelsTransferNumber();
 		}
 		
