@@ -6,10 +6,17 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-10-12 - Bis
+      -- 2022-10-13
+ADDED :
+* ADBasic Compilation on OSX using Docker is now working
+* Help updated 
+FIXED : 
+* Class cast and NPE exceptions
+-- 2022-10-12 - Bis
 ADDED : Nothing
 FIXED : 
-* ADBasic compile error (Could not find a SUB with the specified name. write_fifo())
+* ADBasic compile error (Could not find a SUB with the specified
+name. write_fifo())
 -- 2022-10-12
 ADDED :
 * Support for stimuli for ADwin variables - Step 3
