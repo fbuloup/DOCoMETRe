@@ -227,14 +227,20 @@ public class ADWinRS232Module extends Module {
 	public void update(Property property, Object newValue, Object oldValue, AbstractElement element) {
 		if(property == ChannelProperties.NAME &&  backedChannels.contains(element)) {
 			Channel channel = getChannelFromName((String)oldValue);
-			channel.setProperty(ChannelProperties.NAME, element.getProperty(ChannelProperties.NAME));
-			notifyObservers(ChannelProperties.NAME, newValue, oldValue);
+			if(channel != null) {
+				channel.setProperty(ChannelProperties.NAME, element.getProperty(ChannelProperties.NAME));
+				//notifyObservers(ChannelProperties.NAME, newValue, oldValue);
+			}
+			
 		}
 		if(property == ChannelProperties.REMOVE &&  backedChannels.contains(oldValue)) {
 			backedChannels.remove(oldValue);
 			Channel channel = getChannelFromName(((AbstractElement)oldValue).getProperty(ChannelProperties.NAME));
-			removeChannel(channel);
-			notifyObservers(ChannelProperties.REMOVE, newValue, oldValue);
+			if(channel != null) {
+				removeChannel(channel);
+				notifyObservers(ChannelProperties.REMOVE, newValue, oldValue);
+			}
+			
 		}
 	}
 
@@ -247,7 +253,7 @@ public class ADWinRS232Module extends Module {
 	
 	public Channel createChannel(Channel fromChannel, int rs232TransfertNumber) {
 		Channel channel = super.createChannel();
-		backedChannels.add(fromChannel);
+		if(!backedChannels.contains(fromChannel)) backedChannels.add(fromChannel);
 		initializeObservers();
 		channel.setProperty(ChannelProperties.TRANSFER_NUMBER, String.valueOf(rs232TransfertNumber));
 		channel.setProperty(ChannelProperties.NAME, fromChannel.getProperty(ChannelProperties.NAME));
