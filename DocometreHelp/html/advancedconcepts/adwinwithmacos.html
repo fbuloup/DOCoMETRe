@@ -21,7 +21,7 @@
  <p>
  Since Mac OS 10.15, most of 32 bits applications cannot be launched.
  As <b>WineHQ</b> still relies on 32 bits App., at the moment (march 2022), it is not more possible to use it. The solution is based on a <b>Docker Container</b> : a docker container is
- started and accessed to compile adbasic source codes. This docker container is based on a modified Ubuntu image where ADwin software has been installed.
+ started and accessed to compile adbasic source codes. This docker container is created from a modified Ubuntu image where ADwin software has been installed.
  </p>
  
  <p> If you want to apply this solution, you must follow these steps :
@@ -133,7 +133,7 @@ Upon its completion, run these commands in host terminal (do not stop the <b>adw
 <pre>
 docker commit adwin
 docker tag 3008e93cfbe4 ubuntu:adwin
-docker save --output adwin_base.tar ubuntu:adwin
+docker save --output adwin.tar ubuntu:adwin
 </pre>
 It will commit changes from <b>adwin</b> container, creating a new image. Then it will tag this new image <b>ubuntu:adwin</b>.
 3008e93cfbe4 must be replaced by your image ID. You can get this ID by running this command in terminal :
