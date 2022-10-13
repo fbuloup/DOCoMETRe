@@ -299,6 +299,7 @@ public class ADWinRS232ModulePage extends ADWinModulePage {
 				if(selectedChannels.length > 0) {
 					tableViewer.setInput(module.getChannels());
 					tableConfigurationSectionPart.markDirty();
+					tableViewer.refresh();
 				}
 				
 			}

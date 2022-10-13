@@ -229,7 +229,7 @@ public class ADWinRS232Module extends Module {
 			Channel channel = getChannelFromName((String)oldValue);
 			if(channel != null) {
 				channel.setProperty(ChannelProperties.NAME, element.getProperty(ChannelProperties.NAME));
-				//notifyObservers(ChannelProperties.NAME, newValue, oldValue);
+				notifyObservers(ChannelProperties.NAME, newValue, oldValue);
 			}
 			
 		}

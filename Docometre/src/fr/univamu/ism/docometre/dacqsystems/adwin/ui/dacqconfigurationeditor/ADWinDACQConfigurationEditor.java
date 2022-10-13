@@ -41,6 +41,8 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.adwin.ui.dacqconfigurationeditor;
 
+import java.util.ArrayList;
+
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ui.IEditorInput;
@@ -136,14 +138,30 @@ public class ADWinDACQConfigurationEditor extends ResourceEditor implements Prop
 	private void updateModulesPages() {
 		//Remove or create related form page
 		Module[] modules = getDACQConfiguration().getModules(); 
+		ArrayList<Module> modulesObserved = new ArrayList<>();
 		//Loop over modules to create freshly added
 		for (Module localModule : modules) {
 			//Find if localModule is held by an existing form page
 			int id = System.identityHashCode(localModule);
 			IFormPage moduleFormPage = findPage(Integer.toString(id));
 			//If not, create a new form page and assign this module to it
-			if(moduleFormPage == null) createNewFormPage(localModule, id);
+			if(moduleFormPage == null) {
+				createNewFormPage(localModule, id);
+				if(localModule instanceof ADWinRS232Module) {
+					modulesObserved.add(localModule);
+				}
+			}
+			
 		}
+		// All module pages must observe modulesObserved
+		for (Module localModule : modules) {
+			if(!modulesObserved.contains(localModule)) {
+				for (Module moduleObserved : modulesObserved) {
+					localModule.addObserver(moduleObserved);
+				}
+			}
+		}
+		modulesObserved.clear();
 		//Loop over modules form pages
 		//If one of these form pages hold a module that is not contained by the new modules : remove it
 		int i = 0;
@@ -152,8 +170,15 @@ public class ADWinDACQConfigurationEditor extends ResourceEditor implements Prop
 			if(!(page instanceof ADwinDACQGeneralConfigurationPage) && !(page instanceof ADWinVariablesPage) && !(page instanceof ChartsConfigurationPage)) {
 				ModulePage moduleFormPage = (ModulePage)getPage(i);
 				Module localModule = moduleFormPage.getModule();
+				getDACQConfiguration().removeObserver(localModule);
+				getDACQConfiguration().removeObserver(moduleFormPage);
 				if(!getDACQConfiguration().containModule(localModule)) {
 					removePage(i);
+					if(localModule instanceof ADWinRS232Module) {
+						for (Module module : modules) {
+							module.removeObserver(localModule);
+						}
+					}
 					i = 0;
 				} else i++;
 			} else i++;
