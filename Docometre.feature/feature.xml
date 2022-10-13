@@ -6,7 +6,12 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-10-13
+      -- 2022-10-13 - BIS
+ADDED : Nothing
+FIXED : 
+* Remove duplicate backed channels in RS232 modules
+* NPE in RS232 modules
+-- 2022-10-13
 ADDED :
 * ADBasic Compilation on OSX using Docker is now working
 * Help updated 
