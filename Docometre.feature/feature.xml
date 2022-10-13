@@ -6,7 +6,12 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-10-13 - BIS
+      -- 2022-10-13 - TER
+Enhance Modules observers management
+ADDED : Nothing
+FIXED : 
+* Enhance Modules observers management
+-- 2022-10-13 - BIS
 ADDED : Nothing
 FIXED : 
 * Remove duplicate backed channels in RS232 modules
