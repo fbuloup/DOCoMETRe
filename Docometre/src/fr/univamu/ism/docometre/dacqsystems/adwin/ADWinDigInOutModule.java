@@ -85,8 +85,10 @@ public class ADWinDigInOutModule extends Module {
 						if (24<=channelN && channelN<=31) confDioNumber = confDioNumber | 8;
 					}
 				}
-				code = "\nREM ******** Configuration Entrees/Sorties numeriques\n";
-				code = code + "CONF_DIO(" + confDioNumber + ")\n";
+				if(getChannelsNumber() > 0) {
+					code = "\nREM ******** Configuration Entrees/Sorties numeriques\n";
+					code = code + "CONF_DIO(" + confDioNumber + ")\n";
+				}
 			}
 			
 			if(dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.SYSTEM_TYPE).equals(ADWinDACQConfigurationProperties.PRO)){
@@ -115,11 +117,13 @@ public class ADWinDigInOutModule extends Module {
 							}
 						}
 					}
-					int digProg1 = digProg & 65535;
-					int digProg2 = digProg >> 16;
-					code = "\nREM ******** Configuration Entrees/Sorties numeriques\n";
-					code = code + "DIGPROG1(" + getProperty(ADWinModuleProperties.MODULE_NUMBER) + "," + digProg1 + ")\n";
-					code = code + "DIGPROG2(" + getProperty(ADWinModuleProperties.MODULE_NUMBER) + "," + digProg2 + ")\n";
+					if(getChannelsNumber() > 0) {
+						int digProg1 = digProg & 65535;
+						int digProg2 = digProg >> 16;
+						code = "\nREM ******** Configuration Entrees/Sorties numeriques\n";
+						code = code + "DIGPROG1(" + getProperty(ADWinModuleProperties.MODULE_NUMBER) + "," + digProg1 + ")\n";
+						code = code + "DIGPROG2(" + getProperty(ADWinModuleProperties.MODULE_NUMBER) + "," + digProg2 + ")\n";
+					}
 				}
 				
 				if(dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.CPU_TYPE).equals(ADWinDACQConfigurationProperties.II)){
@@ -138,8 +142,10 @@ public class ADWinDigInOutModule extends Module {
 							if (24<=channelN && channelN<=31) digProgNumber = digProgNumber | 8;
 						}
 					}
-					code = "\nREM ******** Configuration Entrees/Sorties numeriques\n";
-					code = code + "P2_DIGPROG(" + getProperty(ADWinModuleProperties.MODULE_NUMBER) + "," + digProgNumber + ")\n";
+					if(getChannelsNumber() > 0) {
+						code = "\nREM ******** Configuration Entrees/Sorties numeriques\n";
+						code = code + "P2_DIGPROG(" + getProperty(ADWinModuleProperties.MODULE_NUMBER) + "," + digProgNumber + ")\n";
+					}
 				}
 			}
 		}
