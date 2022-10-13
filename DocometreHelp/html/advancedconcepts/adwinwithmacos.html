@@ -60,9 +60,9 @@ docker create ubuntu
 </pre>
 It will download the ubuntu latest image to your computer.
 <br><br>
-Then run command below to start a container nammed <b>adwin_base</b> in interactive mode  : 
+Then run command below to start a container nammed <b>adwin</b> in interactive mode  : 
 <pre>
-docker run -it --name adwin_base ubuntu
+docker run -it --name adwin ubuntu
 </pre>
 You can now copy/create the bash script below in the root folder of the running container :
 <pre>
@@ -122,41 +122,44 @@ echo "Done :-) Docker container updated. You can now update and save its image."
 </pre> 
 Let's say this script name file is <b>buildAdwin.sh</b>. You can make a copy from host to container using this command in terminal :
 <pre>
-docker cp /path/to/buildAdwin.sh adwin_base:/
+docker cp /path/to/buildAdwin.sh adwin:/
 </pre>
 Run this script from the container terminal. It will ask to copy ADwin-linux_6.0.30.00.tar.gz to the container in the /opt/adwin folder.
 To do so you can use this command from the host :
 <pre>
-docker cp /path/to/ADwin-linux_6.0.30.00.tar.gz adwin_base:/opt/adwin
+docker cp /path/to/ADwin-linux_6.0.30.00.tar.gz adwin:/opt/adwin
 </pre>
-Upon its completion, run these commands in host terminal (do not stop the <b>adwin_base</b> container) : 
+Upon its completion, run these commands in host terminal (do not stop the <b>adwin</b> container) : 
 <pre>
-docker commit adwin_base
-docker tag 3008e93cfbe4 ubuntu:adwin_base
-docker save --output adwin_base.tar ubuntu:adwin_base
+docker commit adwin
+docker tag 3008e93cfbe4 ubuntu:adwin
+docker save --output adwin_base.tar ubuntu:adwin
 </pre>
-It will commit changes from <b>adwin_base</b> container, creating a new image. Then it will tag this new image <b>ubuntu:adwin_base</b>.
+It will commit changes from <b>adwin</b> container, creating a new image. Then it will tag this new image <b>ubuntu:adwin</b>.
 3008e93cfbe4 must be replaced by your image ID. You can get this ID by running this command in terminal :
 <pre>
 docker images
 </pre>
-And it finally save this new image in <b><i>adwin_base.tar</i></b> file. Now you can stop the <b>adwin_base</b> container and create a dockerfile containing these commands :
-<pre>
-FROM ubuntu:adwin_base
+And it finally save this new image in <b><i>adwin.tar</i></b> file. Now you can stop the <b>adwin</b> container.
 
-ENV ADWINDIR "/opt/adwin"
-ENV ADWININCDIR "${ADWINDIR}/ADwin-linux_6.0.30.00/adwin-compiler-6.0.30/share/adbasic/Inc"
-ENV ADWINLIBDIR "${ADWINDIR}/ADwin-linux_6.0.30.00/adwin-compiler-6.0.30/share/adbasic/Lib"
-ENV PATH "${ADWINDIR}/bin:${ADWINDIR}/sbin:${ADWINLIBDIR}:${ADWININCDIR}:${PATH}"
-</pre>
-It will enhance the base adwin image with updated PATH variable environement. Go to the dockerfile folder and run this command to build the enhanced image :
-<pre>
-docker build -t ubuntu:adwin .
-</pre>
-Finally save the image to adwin.tar file :
-<pre>
-docker save --output adwin.tar ubuntu:adwin
-</pre>
+
+<!--  and create a dockerfile containing these commands : -->
+<!-- <pre> -->
+<!-- FROM ubuntu:adwin_base -->
+
+<!-- ENV ADWINDIR "/opt/adwin" -->
+<!-- ENV ADWININCDIR "${ADWINDIR}/ADwin-linux_6.0.30.00/adwin-compiler-6.0.30/share/adbasic/Inc" -->
+<!-- ENV ADWINLIBDIR "${ADWINDIR}/ADwin-linux_6.0.30.00/adwin-compiler-6.0.30/share/adbasic/Lib" -->
+<!-- ENV PATH "${ADWINDIR}/bin:${ADWINDIR}/sbin:${ADWINLIBDIR}:${ADWININCDIR}:${PATH}" -->
+<!-- </pre> -->
+<!-- It will enhance the base adwin image with updated PATH variable environement. Go to the dockerfile folder and run this command to build the enhanced image : -->
+<!-- <pre> -->
+<!-- docker build -t ubuntu:adwin . -->
+<!-- </pre> -->
+<!-- Finally save the image to adwin.tar file : -->
+<!-- <pre> -->
+<!-- docker save --output adwin.tar ubuntu:adwin -->
+<!-- </pre> -->
 
 </body>
  
