@@ -537,7 +537,7 @@ public class ADWinProcess extends Process {
 			String cmd = "/usr/local/bin/docker run -w " + adbasicPath.removeLastSegments(1).toPortableString() + " -di" + volume1 + volume2 + " --name adwin ubuntu:adwin";
 			cmd += "\n/usr/local/bin/docker cp /Users/frank/git/DOCoMETRe/Libraries/includes/ADWinIncludeFiles/. adwin:/opt/adwin/ADwin-linux_6.0.30.00/adwin-compiler-6.0.30/share/adbasic/Inc/";
 			cmd += "\n/usr/local/bin/docker cp /Users/frank/git/DOCoMETRe/Libraries/includes/ADWinIncludeFiles/. adwin:/opt/adwin/ADwin-linux_6.0.30.00/adwin-compiler-6.0.30/share/adbasic/Lib/";
-			cmd += "\n/usr/local/bin/docker exec adwin adbasic " + adbasicPath.lastSegment() + getCommandLineParameters(outputFolder, adbasicFilePath) + incLibFoldersOptions;
+			cmd += "\n/usr/local/bin/docker exec adwin /opt/adwin/bin/adbasic " + adbasicPath.lastSegment() + getCommandLineParameters(outputFolder, adbasicFilePath) + incLibFoldersOptions;
 			cmd += "\n/usr/local/bin/docker stop -t 1 adwin";
 			cmd += "\n/usr/local/bin/docker rm adwin";
 			fileWriter.write(cmd);
