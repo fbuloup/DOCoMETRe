@@ -385,10 +385,10 @@ public class ADWinVariablesPage extends ADWinModulePage {
 				((ADWinDACQConfiguration)dacqConfiguration).updateChannelsTransferNumber();
 			}
 			
-//			if(property instanceof ADWinVariableProperties) {
+			if(property instanceof ADWinVariableProperties) {
 				tableViewer.refresh();
 				tableConfigurationSectionPart.markDirty();
-//			}
+			}
 		}
 		
 	}
