@@ -256,6 +256,7 @@ public abstract class ModulePage extends FormPage implements PropertyObserver {
 		generalConfigurationSection.setText(DocometreMessages.GeneralConfigurationModuleSection_Title);
 		generalConfigurationSection.setDescription(DocometreMessages.GeneralConfigurationModuleSection_Description);
 		generalConfigurationSection.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		((GridData)generalConfigurationSection.getLayoutData()).widthHint = 50;
 
 		generalconfigurationContainer = managedForm.getToolkit().createComposite(generalConfigurationSection);
 		GridLayout gridLayout = new GridLayout(nbColumns, false);
@@ -278,6 +279,7 @@ public abstract class ModulePage extends FormPage implements PropertyObserver {
 		tableConfigurationSection.setText(DocometreMessages.ChannelsConfigurationModuleSection_Title);
 		tableConfigurationSection.setDescription(DocometreMessages.ChannelsConfigurationModuleSection_Description);
 		tableConfigurationSection.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		((GridData)tableConfigurationSection.getLayoutData()).widthHint = 50;
 		
 		tableConfigurationSectionPart = new ModuleSectionPart(tableConfigurationSection);
 		managedForm.addPart(tableConfigurationSectionPart);
@@ -337,6 +339,7 @@ public abstract class ModulePage extends FormPage implements PropertyObserver {
 		
 		Table channelsTable = managedForm.getToolkit().createTable(tableConfigurationContainer, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION);
 		channelsTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		((GridData)channelsTable.getLayoutData()).widthHint = 50;
 		managedForm.getToolkit().paintBordersFor(channelsTable);
 		channelsTable.setHeaderVisible(true);
 		channelsTable.setLinesVisible(true);
@@ -385,6 +388,7 @@ public abstract class ModulePage extends FormPage implements PropertyObserver {
 	public Text createText(Composite container, String initialValue, int style, int horspan, int vertspan) {
 		Text text = managedForm.getToolkit().createText(container, initialValue, style);
 		text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, horspan, vertspan));
+		((GridData)text.getLayoutData()).widthHint = 50;
 		setModuleData(text);
 		return text;
 	}
@@ -395,6 +399,7 @@ public abstract class ModulePage extends FormPage implements PropertyObserver {
 	public Combo createCombo(Composite container, String[] items, String initialValue, int horspan, int vertspan) {
 		Combo combo = new Combo(container, SWT.READ_ONLY);
 		combo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, horspan, vertspan));
+		((GridData)combo.getLayoutData()).widthHint = 50;
 		combo.setItems(items);
 		combo.select(combo.indexOf(initialValue));
 		setModuleData(combo);
@@ -417,6 +422,7 @@ public abstract class ModulePage extends FormPage implements PropertyObserver {
 	public Hyperlink createHyperlink(Composite container, String initialValue, int horspan, int vertspan) {
 		Hyperlink hyperlink = managedForm.getToolkit().createHyperlink(container, initialValue, SWT.WRAP);
 		hyperlink.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, horspan, vertspan));
+		((GridData)hyperlink.getLayoutData()).widthHint = 50;
 		setModuleData(hyperlink);
 		return hyperlink;
 	}

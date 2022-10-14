@@ -284,7 +284,7 @@ public class ADWinRS232ModulePage extends ADWinModulePage {
 	
 	private void createChannelsConfigurationSection() {
 		// Create channels table
-		createTableConfigurationSection(true, true, true, true);
+		createTableConfigurationSection(true, false, false, false);
 		tableConfigurationSection.setDescription(ADWinMessages.ADWinRS232ChannelsConfigurationModuleSection_Description);
 		
 		deleteToolItem.setToolTipText(ADWinMessages.DeleteChannel_Tooltip);
