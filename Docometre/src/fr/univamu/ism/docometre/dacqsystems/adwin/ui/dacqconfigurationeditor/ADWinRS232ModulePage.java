@@ -122,7 +122,7 @@ public class ADWinRS232ModulePage extends ADWinModulePage {
 		/*
 		 * General configuration section
 		 */
-		createGeneralConfigurationSection(2, false);
+		createGeneralConfigurationSection(2, true);
 		
 		FormText explanationsFormText = managedForm.getToolkit().createFormText(generalconfigurationContainer, false);
 		explanationsFormText.setText(ADWinMessages.ADWinRS232ModuleExplanations_Text, true, false);

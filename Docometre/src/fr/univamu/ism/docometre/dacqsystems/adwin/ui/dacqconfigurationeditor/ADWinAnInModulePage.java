@@ -209,7 +209,7 @@ public class ADWinAnInModulePage extends ADWinModulePage {
 		/*
 		 * General configuration section
 		 */
-		createGeneralConfigurationSection(2, false);
+		createGeneralConfigurationSection(2, true);
 		
 		FormText explanationsFormText = managedForm.getToolkit().createFormText(generalconfigurationContainer, false);
 		explanationsFormText.setText(ADWinMessages.AnInModuleExplanations_Text, true, false);
