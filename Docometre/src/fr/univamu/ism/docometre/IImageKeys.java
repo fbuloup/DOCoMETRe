@@ -213,4 +213,8 @@ public interface IImageKeys {
 	public static final String CUSTOMER_FUNCTION_ICON = "icons/customerFunction.gif"; //$NON-NLS-1$
 	public static final String MAIN_PROPERTY_ICON = "icons/mainProperty.png"; //$NON-NLS-1$
 	public static final String INNER_PROPERTY_ICON = "icons/innerProperty.png"; //$NON-NLS-1$
+	
+	public static final String LINK_TO_EDITOR_ICON = "icons/link_to_editor.png"; //$NON-NLS-1$
+	
+	
 }

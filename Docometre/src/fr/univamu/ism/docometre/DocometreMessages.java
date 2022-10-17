@@ -141,6 +141,7 @@ public final class DocometreMessages extends NLS {
 	public static String OpenAction_ImpossibleToLoadProcessWhenNoAssociatedDAQ;
 	public static String AssociateWithAction_Text;
 	public static String CollapseAllAction_Text;
+	public static String LinkWithEditorAction_Text;
 	public static String CompileProcessAction_Text;
 	public static String CompileProcessAction_JobTitle;
 	public static String CompileProcessAction_JobMessage;

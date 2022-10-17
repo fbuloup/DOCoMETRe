@@ -169,6 +169,21 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 		}
 	}
 	
+	private class LinkWithEditorAction extends Action {
+		
+		public LinkWithEditorAction() {
+			super(DocometreMessages.LinkWithEditorAction_Text, AS_CHECK_BOX);
+			setToolTipText(DocometreMessages.LinkWithEditorAction_Text);
+			setImageDescriptor(Activator.getImageDescriptor(IImageKeys.LINK_TO_EDITOR_ICON));
+		}
+		
+		@Override
+		public void run() {
+			setChecked(!isChecked());
+		}
+		
+	}
+	
 	public static ExperimentsViewUndoContext experimentsViewUndoContext;
 	private TreeViewer experimentsTreeViewer;
 	private MenuManager popUpMenuManager;
@@ -303,6 +318,7 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 		undoRedoActionGroup.fillActionBars(getViewSite().getActionBars());
 		
 		getViewSite().getActionBars().getToolBarManager().add(new CollapsAllAction());
+		getViewSite().getActionBars().getToolBarManager().add(new LinkWithEditorAction());
 		
 		getViewSite().getActionBars().setGlobalActionHandler(ActionFactory.DELETE.getId(), ApplicationActionBarAdvisor.deleteResourcesAction);
 		getViewSite().getActionBars().setGlobalActionHandler(ActionFactory.COPY.getId(), ApplicationActionBarAdvisor.copyResourcesAction);
