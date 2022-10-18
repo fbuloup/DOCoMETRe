@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-10-18
+      -- 2022-10-18 - Bis
+ADDED : Nothing
+FIXED :
+* Add Support for stimuli for ADwin variables - End
+-- 2022-10-18
 ADDED : 
 * Experiments view link with editors
 FIXED :
