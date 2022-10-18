@@ -396,7 +396,7 @@ public class ADWinDigInOutModule extends Module {
 				}
 			}
 		}	*/
-		GenerationDelegate.generate(this, (ADWinProcess) process);
+		GenerationDelegate.generate(null, this, (ADWinProcess) process);
 	}
 	
 	public void reset() {

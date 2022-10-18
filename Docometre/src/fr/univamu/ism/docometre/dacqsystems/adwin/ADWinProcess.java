@@ -1017,6 +1017,8 @@ public class ADWinProcess extends Process {
 	}
 	
 	public void generation(){
+		ADWinVariable[] variables = ((ADWinDACQConfiguration)getDACQConfiguration()).getVariables();
+		GenerationDelegate.generate(variables, null, this);
 		for (int i = 0; i < getDACQConfiguration().getModulesNumber(); i++) {
 			ModuleBehaviour module = getDACQConfiguration().getModule(i);
 			module.generation();

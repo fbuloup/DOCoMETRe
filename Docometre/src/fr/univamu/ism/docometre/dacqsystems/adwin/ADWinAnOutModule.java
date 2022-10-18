@@ -203,7 +203,7 @@ public class ADWinAnOutModule extends Module {
 	}
 	
 	public void generation() {
-		GenerationDelegate.generate(this, (ADWinProcess) process);
+		GenerationDelegate.generate(null, this, (ADWinProcess) process);
 	}
 	
 	/*

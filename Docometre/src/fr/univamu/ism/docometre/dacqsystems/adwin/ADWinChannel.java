@@ -241,7 +241,10 @@ public class ADWinChannel extends Channel {
 	}
 	
 	public boolean isRecoveryAllowed() {
-		return "true".equals(getProperty(ChannelProperties.TRANSFER)) && !Boolean.valueOf(getProperty(ADWinAnOutChannelProperties.STIMULUS));
+		boolean response = "true".equals(getProperty(ChannelProperties.TRANSFER)) && !Boolean.valueOf(getProperty(ADWinAnOutChannelProperties.STIMULUS));
+		response = response && !Boolean.valueOf(getProperty(ADWinDigInOutChannelProperties.STIMULUS));
+		response = response && !Boolean.valueOf(getProperty(ADWinVariableProperties.STIMULUS));
+		return response;
 	}
 	
 	public boolean isGenerationAllowed() {

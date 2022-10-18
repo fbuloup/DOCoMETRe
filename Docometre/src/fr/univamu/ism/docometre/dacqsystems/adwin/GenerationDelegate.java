@@ -50,33 +50,41 @@ import de.adwin.driver.ADwinCommunicationError;
 import de.adwin.driver.ADwinDevice;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.IImageKeys;
+import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 
 @SuppressWarnings("restriction")
 public class GenerationDelegate {
 
-	public static void generate(Module module, ADWinProcess process) {
-		if(!(module.getDACQConfiguration() instanceof ADWinDACQConfiguration)) return;
-		ADWinDACQConfiguration adWinDAQGeneralConfiguration = (ADWinDACQConfiguration) module.getDACQConfiguration();
+	public static void generate(Channel[] channels, Module module, ADWinProcess process) {
+		if(channels != null && module != null) {
+			Activator.logErrorMessage("Cannot generate channels and channels' module at same time !");
+			return;
+		}
+		
+		ADWinDACQConfiguration adWinDAQGeneralConfiguration = (ADWinDACQConfiguration) process.getDACQConfiguration();
 		ADwinDevice adwinDevice = adWinDAQGeneralConfiguration.getADwinDevice();
-		int processNumber = Integer.parseInt(process.getProperty(ADWinProcessProperties.PROCESS_NUMBER));	
-		for (int j = 0; j < module.getChannelsNumber(); j++) {
-			ADWinChannel channel = (ADWinChannel) module.getChannel(j);
-			if(channel.isGenerationAllowed()){
-				int transferNum = channel.getTransferNumber();
+		int processNumber = Integer.parseInt( process.getProperty(ADWinProcessProperties.PROCESS_NUMBER));	
+		
+		if(module != null) channels = module.getChannels();
+		
+		for (Channel channel : channels) {
+			ADWinChannel adwinChannel = (ADWinChannel) channel;
+			if(adwinChannel.isGenerationAllowed()){
+				int transferNum = adwinChannel.getTransferNumber();
 				try {
 					int nbData = adwinDevice.Fifo_Empty(transferNum);
 					if (nbData > 0){
-						float[] data = channel.getSamples(nbData);
+						float[] data = adwinChannel.getSamples(nbData);
 						adwinDevice.SetFifo_Float(transferNum, data, nbData);
 						boolean noMoreData = data.length == 0;
-						process.appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_Generating, new Object[] {transferNum, channel.getProperty(ChannelProperties.NAME), nbData}));
+						process.appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_Generating, new Object[] {transferNum, adwinChannel.getProperty(ChannelProperties.NAME), nbData}));
 						if (!noMoreData) {
 							if(adwinDevice.Get_Par(transferNum) > 0){
 								float real_time = adwinDevice.Get_FPar(processNumber);
 								String realTime = String.valueOf(real_time);
-								process.appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_DataLoss, new Object[] {transferNum, channel.getProperty(ChannelProperties.NAME), realTime}));
+								process.appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_DataLoss, new Object[] {transferNum, adwinChannel.getProperty(ChannelProperties.NAME), realTime}));
 								process.appendErrorMarkerAtCurrentDiaryLine(ADWinMessages.ADWinDiary_TryIncreaseBufferSize);
 								adwinDevice.Set_Par(transferNum,0);
 								PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
@@ -87,7 +95,7 @@ public class GenerationDelegate {
 									}
 								});
 							}
-						} else process.appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_NoMoreToGenerate, channel.getProperty(ChannelProperties.NAME)));
+						} else process.appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_NoMoreToGenerate, adwinChannel.getProperty(ChannelProperties.NAME)));
 					}
 				}catch (ADwinCommunicationError e) {
 					e.printStackTrace();
