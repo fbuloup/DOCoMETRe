@@ -6,7 +6,12 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-10-13 - QUATER
+      -- 2022-10-18
+ADDED : 
+* Experiments view link with editors
+FIXED :
+* Layout management in Module pages 
+-- 2022-10-13 - QUATER
 ADDED : Nothing
 FIXED : 
 * Update help
