@@ -57,17 +57,24 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.SafeRunner;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.util.SafeRunnable;
 import org.eclipse.jface.viewers.DecoratingLabelProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ILabelDecorator;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.ITreeSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.custom.BusyIndicator;
@@ -81,26 +88,33 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IMemento;
+import org.eclipse.ui.IPartListener;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IPerspectiveListener;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.operations.UndoRedoActionGroup;
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.ui.progress.UIJob;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ApplicationActionBarAdvisor;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
+import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.PartListenerAdapter;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.handlers.RunStopHandler;
 
 public class ExperimentsView extends ViewPart implements IResourceChangeListener, IPerspectiveListener {
@@ -169,17 +183,116 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 		}
 	}
 	
-	private class LinkWithEditorAction extends Action {
+	private class LinkWithEditorAction extends Action implements IPartListener, ISelectionChangedListener {
+		
+		private boolean ignoreEditorActivation;
+		private boolean ignoreSelectionChanged;
+		
+		private UIJob activateEditorJob = new UIJob("Link with editor Job - Activate part") {
+			@Override
+			public IStatus runInUIThread(IProgressMonitor monitor) {
+				ITreeSelection treeSelection = (ITreeSelection) ExperimentsView.this.experimentsTreeViewer.getSelection();
+				if(treeSelection != null && !treeSelection.isEmpty()) {
+					Object selectedResource = treeSelection.getFirstElement();
+					ignoreEditorActivation = true;
+					SafeRunner.run(new SafeRunnable() {
+						@Override
+						public void run() throws Exception {
+							IEditorReference[] editorsReferences = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
+							for (IEditorReference editorReference : editorsReferences) {
+								ResourceEditorInput resourceEditorInput = (ResourceEditorInput)editorReference.getEditorInput();
+								Object object  = selectedResource;
+								if(selectedResource instanceof IResource) object = ResourceProperties.getObjectSessionProperty((IResource)selectedResource);
+								if(resourceEditorInput.isEditing(object)) {
+									PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(editorReference.getPart(false));
+									ExperimentsView.this.setFocus();
+									break;
+								}
+							}
+						}
+					});
+					ignoreEditorActivation = false;
+				}
+				return Status.OK_STATUS;
+			}
+		};
+
+		private UIJob updateSelectionJob = new UIJob("Link with editor Job - Update selection") {
+			@Override
+			public IStatus runInUIThread(IProgressMonitor monitor) {
+				SafeRunner.run(new SafeRunnable() {
+					@Override
+					public void run() throws Exception {
+						IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+						if (page != null) {
+							IEditorPart editor = page.getActiveEditor();
+							if (editor != null) {
+								ResourceEditorInput input = (ResourceEditorInput) editor.getEditorInput();
+								IResource newSelectedResource;
+								if(input.getObject() instanceof IResource) newSelectedResource = (IResource) input.getObject();
+								else newSelectedResource = ObjectsController.getResourceForObject(input.getObject());
+								IStructuredSelection newSelection = new StructuredSelection(newSelectedResource);
+								if (!newSelection.isEmpty()) {
+									ignoreSelectionChanged = true;
+									ExperimentsView.this.experimentsTreeViewer.setSelection(newSelection, true);
+									ignoreSelectionChanged = false;
+								}
+								editor.setFocus();
+							}
+						}
+					}
+				});
+				return Status.OK_STATUS;
+			}
+		};
+		
 		
 		public LinkWithEditorAction() {
 			super(DocometreMessages.LinkWithEditorAction_Text, AS_CHECK_BOX);
 			setToolTipText(DocometreMessages.LinkWithEditorAction_Text);
 			setImageDescriptor(Activator.getImageDescriptor(IImageKeys.LINK_TO_EDITOR_ICON));
+			activateEditorJob.setSystem(true);
+			updateSelectionJob.setSystem(true);
 		}
 		
 		@Override
 		public void run() {
-			setChecked(!isChecked());
+			firePropertyChange(CHECKED, isChecked(), !isChecked());
+			if(isChecked()) {
+				ExperimentsView.this.getSite().getPage().addPartListener(this);
+				ExperimentsView.this.experimentsTreeViewer.addSelectionChangedListener(this);
+				updateSelectionJob.schedule(100);
+			} else {
+				ExperimentsView.this.getSite().getPage().removePartListener(this);
+				ExperimentsView.this.experimentsTreeViewer.removeSelectionChangedListener(this);
+			}
+		}
+
+		@Override
+		public void partActivated(IWorkbenchPart part) {
+			if (part instanceof IEditorPart && !ignoreEditorActivation) updateSelectionJob.schedule(100);
+		}
+
+		@Override
+		public void partBroughtToTop(IWorkbenchPart part) {
+			if (part instanceof IEditorPart && !ignoreEditorActivation) updateSelectionJob.schedule(100);
+		}
+
+		@Override
+		public void partClosed(IWorkbenchPart part) {
+		}
+
+		@Override
+		public void partDeactivated(IWorkbenchPart part) {
+		}
+
+		@Override
+		public void partOpened(IWorkbenchPart part) {
+		}
+
+		@Override
+		public void selectionChanged(SelectionChangedEvent event) {
+			if(!ignoreSelectionChanged) activateEditorJob.schedule(100);
 		}
 		
 	}
@@ -326,6 +439,7 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 		getViewSite().getActionBars().setGlobalActionHandler(ActionFactory.RENAME.getId(), ApplicationActionBarAdvisor.renameResourceAction);
 		getViewSite().getActionBars().setGlobalActionHandler(ActionFactory.REFRESH.getId(), ApplicationActionBarAdvisor.refreshResourceAction);
 		makePopupMenu();
+		
 		
 		experimentsTreeViewer.setInput(ResourcesPlugin.getWorkspace().getRoot());
 		experimentsTreeViewer.getTree().addSelectionListener(new SelectionListener() {
