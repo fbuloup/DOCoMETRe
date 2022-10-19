@@ -49,6 +49,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -78,8 +81,11 @@ public class ADWinChannel extends Channel {
 	
 	transient private boolean notify = false;
 	transient private FloatBuffer floatBuffer;
-	transient private long generationIndex = 0;
 	transient private String channelID = "";
+	transient String prefix;
+	transient String suffix;
+	transient long adwinLastPosition;
+	transient long observersLastPosition;
 	
 	public ADWinChannel(Module module) {
 		super(module);
@@ -103,43 +109,45 @@ public class ADWinChannel extends Channel {
 	}
 	
 	public float[] getSamples(int nbData){
-	
 		ByteBuffer byteBuffer = ByteBuffer.allocate(nbData*4);
 		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 		floatBuffer = byteBuffer.asFloatBuffer();
 		notify = true;
-		
 		float[] array = new float[nbData];
-
 		try {
+			// Read data for adwin in array
 			fileChannel.read(byteBuffer);
-			long oldPosition = fileChannel.position();
-			
-			for (int i = 0; i < array.length; i++) {
-				array[i] = floatBuffer.get();
+			for (int i = 0; i < array.length; i++) array[i] = floatBuffer.get();
+			// Read for observers
+			if(adwinLastPosition == -1) {
+				// This is first adwin read.FIFO has been filled and
+				// We do not need to notify as process is not running 
+				observersLastPosition = 0;
+				notify = false;
 			}
-			
-			byteBuffer.rewind();
-			fileChannel.position(generationIndex);
-			fileChannel.read(byteBuffer);
-			if((oldPosition - 4*nbData) != 0)
-			generationIndex = generationIndex + nbData*4;
-			
-			fileChannel.position(oldPosition);
-			
-			
-			
+			// Save last adwin position
+			adwinLastPosition = fileChannel.position(); 
+			if(notify) {
+				//Rewind to observers position
+				fileChannel.position(observersLastPosition);
+				byteBuffer.rewind();
+				fileChannel.read(byteBuffer);
+				observersLastPosition = observersLastPosition + nbData*4;
+				// Reset position to previous position for next adwin read
+				fileChannel.position(adwinLastPosition); 
+			}
 		} catch (IOException e) {
 			Logger.getLogger(Process.class).error("Exception", e);
 		}
-		
 		return array;
-		
 	}
 
 	public void open(Process process, String prefix, String suffix) {
 		try {
-			 
+			adwinLastPosition = -1;
+			observersLastPosition = -1;
+			this.prefix = prefix;
+			this.suffix = suffix;
 			boolean isStimulus = false;
 			boolean isTransfered = false;
 //			boolean isRecorded = false;
@@ -206,26 +214,58 @@ public class ADWinChannel extends Channel {
 	
 	public void close(Process process) {
 		try {
-			if(fileChannel != null) {
-				fileChannel.close();
-				boolean isRecorded = Boolean.valueOf(getProperty(ChannelProperties.RECORD));
-				if(!isRecorded && file != null) {
-					file.delete();
-					IResource fileResource = process.getOutputFolder().findMember(file.getName());
-					if(fileResource != null) fileResource.delete(true, null);
-				}
-				if(isRecorded && file != null) {
-					 try {
-						process.getOutputFolder().refreshLocal(IResource.DEPTH_ONE, null);
-					} catch (CoreException e) {
-						e.printStackTrace();
-						Activator.logErrorMessageWithCause(e);
+			boolean isRecorded = Boolean.valueOf(getProperty(ChannelProperties.RECORD));
+			boolean isStimulus = false;
+					
+			if(module instanceof ADWinAnOutModule) {
+				isStimulus = Boolean.valueOf(getProperty(ADWinAnOutChannelProperties.STIMULUS));
+			}
+			if(module instanceof ADWinDigInOutModule) {
+				isStimulus = Boolean.valueOf(getProperty(ADWinDigInOutChannelProperties.STIMULUS));
+			}
+			if(this instanceof ADWinVariable) {
+				isStimulus = Boolean.valueOf(getProperty(ADWinVariableProperties.STIMULUS));
+			}
+			
+			if(!isStimulus) {
+				if(fileChannel != null) {
+					fileChannel.close();
+					if(!isRecorded && file != null) {
+						file.delete();
+						IResource fileResource = process.getOutputFolder().findMember(file.getName());
+						if(fileResource != null) fileResource.delete(true, null);
 					}
-					IResource fileResource = process.getOutputFolder().findMember(file.getName());
-					ResourceProperties.setTypePersistentProperty(fileResource, ResourceType.SAMPLES.toString());
+					if(isRecorded && file != null) {
+						 try {
+							process.getOutputFolder().refreshLocal(IResource.DEPTH_ONE, null);
+						} catch (CoreException e) {
+							e.printStackTrace();
+							Activator.logErrorMessageWithCause(e);
+						}
+						IResource fileResource = process.getOutputFolder().findMember(file.getName());
+						ResourceProperties.setTypePersistentProperty(fileResource, ResourceType.SAMPLES.toString());
+					}
 				}
-				
-				
+			} else {
+				if(isRecorded) {
+					// This is a recorded stimulus
+					if(fileChannel != null) fileChannel.close();
+					
+					String situmusFileName = getStimulusFileName(process.getInitializeBlocksContainer());
+					if(situmusFileName == null) situmusFileName = getStimulusFileName(process.getLoopBlocksContainer());
+					if(situmusFileName == null) situmusFileName = getStimulusFileName(process.getFinalizeBlocksContainer());
+					
+					String saveFileName = prefix + getProperty(ChannelProperties.NAME) + suffix;
+					saveFileName = saveFileName + ".samples";
+					IPath wsPath = new Path(Platform.getInstanceLocation().getURL().getPath());
+					String directoryName = wsPath.toOSString() + process.getOutputFolder().getFullPath().toOSString();
+					saveFileName = directoryName + File.separator + saveFileName;
+					
+					java.nio.file.Path copied = Paths.get(saveFileName);
+				    java.nio.file.Path originalPath = Paths.get(situmusFileName);
+				    Files.copy(originalPath, copied, StandardCopyOption.REPLACE_EXISTING);
+					
+				}
 			}
 		} catch (IOException | CoreException e) {
 			Logger.getLogger(Process.class).error("Exception", e);
@@ -234,10 +274,11 @@ public class ADWinChannel extends Channel {
 	
 	public void notifyChannelObservers() {
 		if(notify && channelObserversList != null && channelObserversList.size() > 0) {
-			for (int i = 0; i < channelObserversList.size(); i++) channelObserversList.get(i).update(floatBuffer, getID());
+			for (int i = 0; i < channelObserversList.size(); i++) {
+				channelObserversList.get(i).update(floatBuffer, getID());
+ 			}
 			notify = false;
 		}
-			
 	}
 	
 	public boolean isRecoveryAllowed() {
