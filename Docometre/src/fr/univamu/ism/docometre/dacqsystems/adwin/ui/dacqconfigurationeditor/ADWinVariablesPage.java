@@ -335,10 +335,6 @@ public class ADWinVariablesPage extends ADWinModulePage {
 				adwinVariable.setProperty(ChannelProperties.RECORD, "false");
 			}
 			
-			if(property == ChannelProperties.RECORD && isTransfered && isRecorded && isStimulus) {
-				adwinVariable.setProperty(ChannelProperties.RECORD, "false");
-			}
-			
 			if(property == ADWinVariableProperties.TYPE && isString) {
 				adwinVariable.setProperty(ChannelProperties.TRANSFER, "false");
 				adwinVariable.setProperty(ChannelProperties.AUTO_TRANSFER, "false");
@@ -377,7 +373,6 @@ public class ADWinVariablesPage extends ADWinModulePage {
 			if(property == ADWinVariableProperties.STIMULUS && isStimulus) {
 				adwinVariable.setProperty(ChannelProperties.TRANSFER, "true");
 				adwinVariable.setProperty(ChannelProperties.AUTO_TRANSFER, "false");
-				adwinVariable.setProperty(ChannelProperties.RECORD, "false");
 				if(isString) adwinVariable.setProperty(ADWinVariableProperties.TYPE, ADWinVariableProperties.FLOAT);
 				adwinVariable.setProperty(ADWinVariableProperties.SIZE, "1");
 				adwinVariable.setProperty(ADWinVariableProperties.PARAMETER, "false");
