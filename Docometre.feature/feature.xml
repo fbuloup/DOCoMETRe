@@ -6,7 +6,12 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-10-18 - Bis
+      -- 2022-10-20
+ADDED :
+* Stimulus recording and visualization are now allowed
+* Improve script connection router
+FIXED : Nothing
+-- 2022-10-18 - Bis
 ADDED : Nothing
 FIXED :
 * Add Support for stimuli for ADwin variables - End
