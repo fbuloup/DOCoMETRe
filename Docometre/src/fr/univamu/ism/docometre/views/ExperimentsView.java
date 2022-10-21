@@ -304,6 +304,8 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 
 	private IMemento memento;
 
+	private LinkWithEditorAction linkWithEditorAction;
+
 	public ExperimentsView() {
 		experimentsViewUndoContext = new ExperimentsViewUndoContext();
 	}
@@ -334,12 +336,13 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 		super.saveState(memento);
 		IStructuredSelection sel = (IStructuredSelection) experimentsTreeViewer.getSelection();
 		if (sel.isEmpty()) return;
-		memento = memento.createChild("tree-selections");
+		IMemento childMemento = memento.createChild("tree-selections");
 		Iterator<IResource> iter = sel.iterator();
 		while (iter.hasNext()) {
 			IResource nodeName = iter.next();
-			memento.createChild("selected-nodes", nodeName.getFullPath().toPortableString());
+			childMemento.createChild("selected-nodes", nodeName.getFullPath().toPortableString());
 		}
+		memento.putBoolean("LinkWithEditor", linkWithEditorAction.isChecked());
 	}
 	
 	private void restoreState() {
@@ -359,6 +362,10 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 				experimentsTreeViewer.setSelection(new StructuredSelection(selections));
 			}
 		}
+		Boolean linkWithEditor = memento.getBoolean("LinkWithEditor");
+		linkWithEditor = linkWithEditor == null ? false:linkWithEditor;
+		linkWithEditorAction.setChecked(linkWithEditor);
+		linkWithEditorAction.run();
 	}
 	
 	@Override
@@ -431,7 +438,8 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 		undoRedoActionGroup.fillActionBars(getViewSite().getActionBars());
 		
 		getViewSite().getActionBars().getToolBarManager().add(new CollapsAllAction());
-		getViewSite().getActionBars().getToolBarManager().add(new LinkWithEditorAction());
+		linkWithEditorAction = new LinkWithEditorAction();
+		getViewSite().getActionBars().getToolBarManager().add(linkWithEditorAction);
 		
 		getViewSite().getActionBars().setGlobalActionHandler(ActionFactory.DELETE.getId(), ApplicationActionBarAdvisor.deleteResourcesAction);
 		getViewSite().getActionBars().setGlobalActionHandler(ActionFactory.COPY.getId(), ApplicationActionBarAdvisor.copyResourcesAction);
