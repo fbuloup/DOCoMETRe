@@ -6,7 +6,12 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-10-20
+      -- 2022-10-21
+ADDED :
+* Persistence for link with editor action view (Experiments view)
+* Persistence for editors
+FIXED : Nothing 
+-- 2022-10-20
 ADDED :
 * Stimulus recording and visualization are now allowed
 * Improve script connection router
