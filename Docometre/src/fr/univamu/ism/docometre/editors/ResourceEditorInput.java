@@ -48,6 +48,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
 
 import fr.univamu.ism.docometre.Activator;
@@ -57,7 +58,7 @@ import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 
-public class ResourceEditorInput implements IEditorInput {
+public class ResourceEditorInput implements IEditorInput, IPersistableElement {
 
 	private Object object;
 	private String tooltip = null;
@@ -100,10 +101,6 @@ public class ResourceEditorInput implements IEditorInput {
 		return null;
 	}
 
-	public boolean exists() {
-		return (object == null ? false:true);
-	}
-
 	public ImageDescriptor getImageDescriptor() {
 		IResource resource = ObjectsController.getResourceForObject(object);
 		if(resource == null && object instanceof IResource) resource = (IResource)object;
@@ -138,10 +135,6 @@ public class ResourceEditorInput implements IEditorInput {
 		this.object = object;
 	}
 	
-	public IPersistableElement getPersistable() {
-		return null;
-	}
-	
 	public boolean isEditing(Object object) {
 		if(this.object.equals(object)) return true;
 		Object[] objects = editedObjects.toArray();
@@ -170,6 +163,28 @@ public class ResourceEditorInput implements IEditorInput {
 			return path.equals(localPath);
 		}
 		return false;
+	}
+	
+	public boolean exists() {
+		return true;
+	}
+	
+	public IPersistableElement getPersistable() {
+		return this;
+	}
+
+	@Override
+	public void saveState(IMemento memento) {
+		IResource resource = ObjectsController.getResourceForObject(object);
+		if(resource != null) {
+			memento.putString(EditorsPersitenceElementFactory.ResourceFullPath, resource.getFullPath().toPortableString());
+		}
+		
+	}
+
+	@Override
+	public String getFactoryId() {
+		return EditorsPersitenceElementFactory.ID;
 	}
 
 }
