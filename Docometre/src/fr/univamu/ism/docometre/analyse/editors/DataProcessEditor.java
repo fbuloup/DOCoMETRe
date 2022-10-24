@@ -114,6 +114,7 @@ public class DataProcessEditor extends MultiPageEditorPart implements PartNameRe
 	}
 	
 	private void update(IWorkbenchPartReference partRef) {
+		if(partRef == null) return;
 		IWorkbenchPart part = partRef.getPart(false);
 		if(part == DataProcessEditor.this) {
 			if(getSelectedPage() instanceof AbstractScriptSegmentEditor)
