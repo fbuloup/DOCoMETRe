@@ -75,6 +75,7 @@ import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.processeditor.ArduinoU
 import fr.univamu.ism.docometre.editors.DataEditor;
 import fr.univamu.ism.docometre.editors.PartNameRefresher;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
+import fr.univamu.ism.docometre.views.CachedLogger;
 import fr.univamu.ism.process.ScriptSegment;
 
 /*
@@ -129,6 +130,7 @@ public class Activator extends AbstractUIPlugin {
 		super.start(context);
 		plugin = this;			
 		Logger.getRootLogger().getLoggerRepository().resetConfiguration();
+		Activator.getDefault().getLog().addLogListener(CachedLogger.getInstance());
 	}
 
 	/*

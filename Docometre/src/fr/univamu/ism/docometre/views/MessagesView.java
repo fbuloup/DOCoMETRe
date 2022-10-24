@@ -137,6 +137,17 @@ public class MessagesView extends ViewPart implements ILogListener, IDocumentLis
 		messagesViewer.getDocument().addDocumentListener(this);
 		getViewSite().getActionBars().getToolBarManager().add(new ClearConsoleAction());
 		getViewSite().getActionBars().getToolBarManager().add(new ScrollLockAction());
+		PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+			@Override
+			public void run() {
+				Activator.getDefault().getLog().removeLogListener(CachedLogger.getInstance());
+				IStatus cachedStatus = CachedLogger.getInstance().get();
+				while (cachedStatus != null) {
+					putMessage(cachedStatus);
+					cachedStatus = CachedLogger.getInstance().get();
+				}
+			}
+		});
 	}
 
 	@Override
@@ -147,31 +158,9 @@ public class MessagesView extends ViewPart implements ILogListener, IDocumentLis
 	@Override
 	public void logging(IStatus status, String plugin) {
 		PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
-			
 			@Override
 			public void run() {
-				
-				String message = status.getPlugin() + " : " + status.getMessage();
-				int start = messagesViewer.getTextWidget().getCharCount();
-				if(start > 0) {
-					message = "\n" + message;
-				}
-				messagesViewer.getTextWidget().append(message);
-				
-				StyleRange styleRange = new StyleRange();
-				styleRange.start = start;
-				styleRange.length = message.length();
-				styleRange.background = ThemeColors.getBackgroundColor();
-				
-				if(status.getSeverity() == IStatus.INFO) styleRange.fontStyle = SWT.NORMAL;
-//					if(status.getSeverity() == IStatus.WARNING) styleRange.fontStyle = SWT.BOLD;
-//					if(status.getSeverity() == IStatus.ERROR) styleRange.fontStyle = SWT.BOLD;
-				if(status.getSeverity() == IStatus.INFO) styleRange.foreground = ThemeColors.getForegroundColor();
-				if(status.getSeverity() == IStatus.WARNING) styleRange.foreground = WARNING_COLOR;
-				if(status.getSeverity() == IStatus.ERROR) styleRange.foreground = ERROR_COLOR;
-				
-				messagesViewer.getTextWidget().setStyleRange(styleRange);
-				
+				putMessage(status);
 			}
 		});
 		
@@ -185,6 +174,29 @@ public class MessagesView extends ViewPart implements ILogListener, IDocumentLis
 	@Override
 	public void documentChanged(DocumentEvent event) {
 		if(autoScroll) revealJob.schedule(50);
+	}
+	
+	private void putMessage(IStatus status) {
+		String message = status.getPlugin() + " : " + status.getMessage();
+		int start = messagesViewer.getTextWidget().getCharCount();
+		if(start > 0) {
+			message = "\n" + message;
+		}
+		messagesViewer.getTextWidget().append(message);
+		
+		StyleRange styleRange = new StyleRange();
+		styleRange.start = start;
+		styleRange.length = message.length();
+		styleRange.background = ThemeColors.getBackgroundColor();
+		
+		if(status.getSeverity() == IStatus.INFO) styleRange.fontStyle = SWT.NORMAL;
+//			if(status.getSeverity() == IStatus.WARNING) styleRange.fontStyle = SWT.BOLD;
+//			if(status.getSeverity() == IStatus.ERROR) styleRange.fontStyle = SWT.BOLD;
+		if(status.getSeverity() == IStatus.INFO) styleRange.foreground = ThemeColors.getForegroundColor();
+		if(status.getSeverity() == IStatus.WARNING) styleRange.foreground = WARNING_COLOR;
+		if(status.getSeverity() == IStatus.ERROR) styleRange.foreground = ERROR_COLOR;
+		
+		messagesViewer.getTextWidget().setStyleRange(styleRange);
 	}
 
 }

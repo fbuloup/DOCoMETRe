@@ -1082,6 +1082,8 @@ public final class DocometreMessages extends NLS {
 	public static String SaveAllMenuTitle;
 	public static String SaveMenuTooltip;
 	public static String SaveAllMenuTooltip;
+	
+	public static String RuntimeFolder;
 			
 	static {
 		// load message values from bundle file

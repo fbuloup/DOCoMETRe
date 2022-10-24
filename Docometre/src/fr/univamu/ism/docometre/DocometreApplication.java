@@ -90,7 +90,7 @@ public class DocometreApplication implements IApplication {
 	 * IApplicationContext)
 	 */
 	public Object start(IApplicationContext context) throws Exception {
-		Activator.logInfoMessage("Current runtime folder : " + System.getProperty("user.dir"), DocometreApplication.class);
+		Activator.logInfoMessage(DocometreMessages.RuntimeFolder + System.getProperty("user.dir"), DocometreApplication.class);
 		Display display = PlatformUI.createDisplay();
 		
 		fontRegistry = new FontRegistry(display);

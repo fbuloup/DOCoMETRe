@@ -44,8 +44,6 @@ package fr.univamu.ism.docometre;
 import java.util.Locale;
 
 import org.eclipse.core.commands.operations.IOperationHistory;
-import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.application.ActionBarAdvisor;
@@ -81,8 +79,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		PlatformUI.getWorkbench().getOperationSupport().getOperationHistory().setLimit(IOperationHistory.GLOBAL_UNDO_CONTEXT, historyLimit);
 		UndoRedoUserApprover promptingUserApprover = new UndoRedoUserApprover(IOperationHistory.GLOBAL_UNDO_CONTEXT);
 		PlatformUI.getWorkbench().getOperationSupport().getOperationHistory().addOperationApprover(promptingUserApprover);
-		IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
-		Activator.logInfoMessage("Workspace path : " + workspaceRoot.getLocation().toOSString(), ApplicationWorkbenchWindowAdvisor.class);
+		//IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
+		//Activator.logInfoMessage("Workspace path : " + workspaceRoot.getLocation().toOSString(), ApplicationWorkbenchWindowAdvisor.class);
 		System.out.println("Locale : " + Locale.getDefault());
     }
 	
