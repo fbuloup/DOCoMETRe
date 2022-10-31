@@ -67,6 +67,7 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ThemeColors;
+import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
 public class MessagesView extends ViewPart implements ILogListener, IDocumentListener {
 	
@@ -144,6 +145,9 @@ public class MessagesView extends ViewPart implements ILogListener, IDocumentLis
 				IStatus cachedStatus = CachedLogger.getInstance().get();
 				while (cachedStatus != null) {
 					putMessage(cachedStatus);
+					if(Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.REDIRECT_STD_ERR_OUT_TO_FILE)) {
+						System.out.println(cachedStatus.getMessage());
+					}
 					cachedStatus = CachedLogger.getInstance().get();
 				}
 			}

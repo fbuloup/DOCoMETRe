@@ -41,6 +41,12 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 
 import org.eclipse.core.commands.operations.IOperationHistory;
@@ -71,6 +77,22 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
         configurer.setShowStatusLine(true);
         configurer.setShowProgressIndicator(true);
         configurer.setShowPerspectiveBar(true);
+        try {
+			if(Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.REDIRECT_STD_ERR_OUT_TO_FILE)) {
+				String filePath = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.STD_ERR_OUT_FILE);
+				File consoleFile = new File(filePath);
+				FileOutputStream consoleFileOutputStream = new FileOutputStream(consoleFile, true);
+				PrintStream pst = new PrintStream(consoleFileOutputStream, true);
+				System.setOut(pst);
+				System.setErr(pst);
+				SimpleDateFormat now = new SimpleDateFormat("HH:mm:ss.SSS YYYY-MM-dd", Locale.getDefault());
+				// Let these System.outs be !
+				System.out.println("\n****************************************************");
+				System.out.println("This is std and err log file for DOCoMETRe session : " + now.format(new Date()));
+			}	
+		} catch (IOException e) {
+			e.printStackTrace();
+		}  
     }
 
 	@Override
