@@ -69,15 +69,6 @@ public class ADBasicSourceEditor extends SourceEditor {
 	@Override
 	public void update(String code) {
 		code = code.replaceAll("^'<ADbasic Header.*\n(.*\n)*'<Header End>\n","");
-//		code = code.replaceAll("^(\n)*", "");
-//		code = "\n" + code;
-//		System.out.println("update document...");
 		sourceViewer.getDocument().set(code);
-//		for (int i = 0; i < sourceViewer.getDocument().getLength(); i++) {
-//			ITypedRegion typedRegion = sourceViewer.getDocument().getDocumentPartitioner().getPartition(i);			
-//			System.out.println(i + " = " + typedRegion.getType());
-//		}
 	}
-	
-
 }

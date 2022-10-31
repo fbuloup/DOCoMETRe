@@ -266,12 +266,7 @@ public class SourceEditor extends EditorPart {
 	}
 
 	public void update(String code) {
-//			System.out.println("update document...");
 		sourceViewer.getDocument().set(code);
-//			for (int i = 0; i < sourceViewer.getDocument().getLength(); i++) {
-//				ITypedRegion typedRegion = sourceViewer.getDocument().getDocumentPartitioner().getPartition(i);			
-//				System.out.println(i + " = " + typedRegion.getType());
-//			}
 	}
 
 	public void updateMarkers() {

@@ -112,7 +112,6 @@ public class FilteredDerivatorFunction extends GenericFunction {
 		canvas.addPaintListener(new PaintListener() {
 			@Override
 			public void paintControl(PaintEvent e) {
-				System.out.println("Paint event");
 				Image image = Activator.getImage(IImageKeys.FILTERED_DERIVATOR_WIZBAN);
 				double w1 = image.getBounds().width;
 				double h1 = image.getBounds().height;

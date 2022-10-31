@@ -60,7 +60,6 @@ public class PasteCommand extends Command {
 
 	@SuppressWarnings("unchecked")
 	public PasteCommand(ScriptSegment scriptSegment) {
-//		System.out.println("Get blocks from clipboard and clone them...");
 		ArrayList<Block> blocks = (ArrayList<Block>) Clipboard.getDefault().getContents();
 		clonedBlocks = fr.univamu.ism.process.Activator.clone(blocks);
 		this.scriptSegment = scriptSegment;
@@ -80,8 +79,6 @@ public class PasteCommand extends Command {
 	
 	@Override
 	public void execute() {
-//		System.out.print("Add cloned blocks to current script : ");
-//		System.out.println(scriptSegment.getScriptSegmentType().toString());
 		for (Block block : clonedBlocks) {
 			block.setY(block.getY() + 30*(nbRepast+1));
 			block.setX(block.getX() + 30*(nbRepast+1));
@@ -98,7 +95,6 @@ public class PasteCommand extends Command {
 	
 	@Override
 	public void undo() {
-//		System.out.println("Remove cloned blocks from current script...");
 		for (Block block : clonedBlocks) {
 			if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.INITIALIZE)) scriptSegment.getScript().removeInitializeBlock(block);
 			if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.LOOP)) scriptSegment.getScript().removeLoopBlock(block);

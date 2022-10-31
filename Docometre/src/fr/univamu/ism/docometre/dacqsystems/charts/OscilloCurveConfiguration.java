@@ -84,12 +84,6 @@ public class OscilloCurveConfiguration extends CurveConfiguration implements Pro
 		channel.addChannelObserver((ChannelObserver)this);
 		sampleFrequency = Double.parseDouble(channel.getProperty(ChannelProperties.SAMPLE_FREQUENCY));
 	}
-	
-//	@Override
-//	public void clearObservers() {
-//		System.out.println("clearObservers in OscilloCurveConfiguration");
-//		channel.removeObserver(this);
-//	}
 
 	@Override
 	public void update(Property property, Object newValue, Object oldValue, AbstractElement element) {

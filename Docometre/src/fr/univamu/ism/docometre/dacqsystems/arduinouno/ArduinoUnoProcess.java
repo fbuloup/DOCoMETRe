@@ -210,8 +210,6 @@ public class ArduinoUnoProcess extends Process {
 		            	for (byte b: bytes) {
 		                    if ( (b == '\r' || b == '\n') && message.length() > 0 && !terminate) {
 		                    	String messageString = message.toString().replaceAll("\\r$", "").replaceAll("\\n", "");
-//		                    	System.out.println(messageString);
-//		                    	appendToEventDiary(messageString);
 		                    	message.setLength(0);
 		                    	String[] segments = messageString.split(":");
 		                    	
@@ -245,7 +243,6 @@ public class ArduinoUnoProcess extends Process {
 		                    	if(segments.length == 3) {
 		                    		try {
 										trsfrNum = 0;
-//										System.out.println(segments[1]);
 										time = Float.parseFloat(segments[1])/1000000f; 
 										value = Float.parseFloat(segments[2]);
 									} catch (Exception e) {
@@ -318,7 +315,6 @@ public class ArduinoUnoProcess extends Process {
 			                    
 		                    } else {
 		                    	if(b == 's') {
-		                    		System.out.println("s recieived");
 		                    		appendToEventDiary("Received stop 's' char");
 		                    		terminate = true;
 		                    		forceTermination = true;// Just to send s in reply as Arduino is waiting for it.
@@ -327,7 +323,6 @@ public class ArduinoUnoProcess extends Process {
 		                    	else message.append((char)b);
 		                    }
 		            	}
-//		            	System.out.println("*****");
 	    			}
 	    			if(forceTermination) {
 	    				serialPort.writeByte((byte) 's');
@@ -1019,12 +1014,9 @@ public class ArduinoUnoProcess extends Process {
 		BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
 		while((line=input.readLine()) != null){
 			Activator.logInfoMessage(line, ArduinoUnoProcess.class);
-//		    System.out.println("Input : " + line);
 		}
 		input.close();
 	    
-		System.out.println("delete markers on" + processResource);
-		
 		processResource.deleteMarkers(null, true, IResource.DEPTH_INFINITE);
 		
 		// Get compile errors

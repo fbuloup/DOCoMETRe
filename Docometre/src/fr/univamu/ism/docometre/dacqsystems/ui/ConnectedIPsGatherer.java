@@ -115,7 +115,6 @@ public class ConnectedIPsGatherer {
 			} catch (IOException | InterruptedException e) {
 				Activator.logErrorMessage(cmdLine);
 				Activator.logErrorMessageWithCause(e);
-				System.out.println(cmdLine);
 				e.printStackTrace();
 			} finally {
 				terminated = true;

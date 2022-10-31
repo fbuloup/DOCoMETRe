@@ -87,12 +87,6 @@ public class MeterCurveConfiguration extends CurveConfiguration implements Prope
 		channel.addObserver((PropertyObserver)this);
 		channel.addChannelObserver((ChannelObserver)this);
 	}
-	
-//	@Override
-//	public void clearObservers() {
-//		System.out.println("clearObservers in OscilloCurveConfiguration");
-//		channel.removeObserver(this);
-//	}
 
 	@Override
 	public void update(Property property, Object newValue, Object oldValue, AbstractElement element) {

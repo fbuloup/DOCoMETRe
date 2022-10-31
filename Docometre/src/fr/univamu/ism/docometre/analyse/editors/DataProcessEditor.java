@@ -64,7 +64,6 @@ import fr.univamu.ism.docometre.editors.AbstractScriptSegmentEditor;
 import fr.univamu.ism.docometre.editors.PartNameRefresher;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.process.Script;
-import fr.univamu.ism.process.ScriptSegmentType;
 
 public class DataProcessEditor extends MultiPageEditorPart implements PartNameRefresher, IPageChangedListener {
 	
@@ -152,14 +151,6 @@ public class DataProcessEditor extends MultiPageEditorPart implements PartNameRe
 		IResource processFile = ObjectsController.getResourceForObject(object);
 		ObjectsController.serialize((IFile) processFile, object);
 		dataProcessScriptEditor.doSave(monitor);
-		try {
-			Script script = (Script) object;
-			System.out.println(script.getLoopCode(object, ScriptSegmentType.LOOP));
-		} catch (Exception e) {
-			Activator.logErrorMessageWithCause(e);
-			e.printStackTrace();
-		}
-		
 	}
 
 	@Override

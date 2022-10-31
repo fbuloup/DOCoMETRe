@@ -187,7 +187,6 @@ public abstract class Process extends AbstractElement implements ModuleBehaviour
 	private void createErrorMarkers() {
 		try {
 			for (Map.Entry<Integer, String> entry : errorMarkers.entrySet()) {
-//				System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
 				int lineNumber = entry.getKey();
 				String message = entry.getValue();
 				IMarker marker = logFile.createMarker(DocometreBuilder.MARKER_ID);

@@ -81,7 +81,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		PlatformUI.getWorkbench().getOperationSupport().getOperationHistory().addOperationApprover(promptingUserApprover);
 		//IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
 		//Activator.logInfoMessage("Workspace path : " + workspaceRoot.getLocation().toOSString(), ApplicationWorkbenchWindowAdvisor.class);
-		System.out.println("Locale : " + Locale.getDefault());
+		Activator.logInfoMessage("Locale : " + Locale.getDefault(),  ApplicationWorkbenchWindowAdvisor.class);
     }
 	
 }

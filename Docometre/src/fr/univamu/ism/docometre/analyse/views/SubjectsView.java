@@ -275,21 +275,6 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 	public void setFocus() {
 		if(subjectsTreeViewer != null) subjectsTreeViewer.getTree().setFocus();
 	}
-
-//	private void refreshInput(IResourceChangeEvent event) {
-//		if(SelectedExprimentContributionItem.selectedExperiment != null) 
-//			if(event != null && event.getDelta() != null && event.getDelta().findMember(SelectedExprimentContributionItem.selectedExperiment.getFullPath()) == null) return;
-//		if(subjectsTreeViewer != null) 
-//			PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
-//				@Override
-//				public void run() {
-//					System.out.println("selectedExperiment : " + SelectedExprimentContributionItem.selectedExperiment);
-//					if (SelectedExprimentContributionItem.selectedExperiment != null) System.out.println("exist : " + SelectedExprimentContributionItem.selectedExperiment.exists());
-//					if(SelectedExprimentContributionItem.selectedExperiment != null && !SelectedExprimentContributionItem.selectedExperiment.exists()) SelectedExprimentContributionItem.selectedExperiment = null;
-//					updateInput();
-//				}
-//			});
-//	}
 	
 	@Override
 	public void resourceChanged(IResourceChangeEvent event) {

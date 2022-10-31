@@ -469,8 +469,6 @@ public class ADWinCANModule extends Module {
 	@Override
 	public void update(Property property, Object newValue, Object oldValue, AbstractElement element) {
 		// TODO Auto-generated method stub
-		System.out.println(property);
-		
 	}
 
 	@Override

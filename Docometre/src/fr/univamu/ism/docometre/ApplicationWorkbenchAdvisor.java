@@ -115,11 +115,11 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 				if(consoleFile.exists()) deleted = consoleFile.delete();
 				if(!deleted) throw new IOException("Impossible to delete Console file : " + filePath);
 				if(consoleFile.createNewFile()) {
-					System.out.println("Redirect std and err outputs to file : " + filePath);
 					PrintStream pst = new PrintStream(filePath);
 					System.setOut(pst);
 					System.setErr(pst);
-					SimpleDateFormat now = new SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault());
+					SimpleDateFormat now = new SimpleDateFormat("YY.MM.DD HH:mm:ss.SSS", Locale.getDefault());
+					// Let this System.out be !
 					System.out.println("This is std and err log file for DOCoMETRe session : " + now.format(new Date()));
 				}
 			}	
@@ -134,10 +134,9 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 			IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
 			boolean firstLaunch = !preferenceStore.contains(GeneralPreferenceConstants.FIRST_LAUNCH) || preferenceStore.getBoolean(GeneralPreferenceConstants.FIRST_LAUNCH);
 			if(firstLaunch) {
-				System.out.println("This is first launch");
+				Activator.logInfoMessage("This is first launch", getClass());
 				// Set prefs at first launch
 				IEclipsePreferences defaults = DefaultScope.INSTANCE.getNode(Activator.PLUGIN_ID);
-				System.out.println("Setting prefs for LIBRARIES_ABSOLUTE_PATH, MATLAB_SCRIPT_LOCATION etc.");
 				preferenceStore.putValue(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), defaults.get(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), ""));
 				preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(),  defaults.get(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), ""));
 				preferenceStore.putValue(GeneralPreferenceConstants.MATLAB_SCRIPTS_LOCATION, defaults.get(GeneralPreferenceConstants.MATLAB_SCRIPTS_LOCATION, ""));

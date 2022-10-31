@@ -180,7 +180,6 @@ public class ObjectsController {
 		try {
             fos = new FileOutputStream(filePath);
             if(xmlFormat) {
-            	System.out.println("Serialize to xml file");
             	bos = new BufferedOutputStream(fos);
             	osw = new OutputStreamWriter(bos, "UTF-8");
             	osw.write("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
@@ -233,7 +232,6 @@ public class ObjectsController {
 		try {
 			is = new FileInputStream(dataFile);
 			if(isXML(file.getLocation().toOSString())) {
-            	System.out.println("Deserialize from xml file");
 				bis = new BufferedInputStream(is);
 				object = getXStream().fromXML(bis);
 			} else {

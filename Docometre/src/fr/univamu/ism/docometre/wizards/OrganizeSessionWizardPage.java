@@ -501,10 +501,6 @@ public class OrganizeSessionWizardPage extends WizardPage {
 					monitor.beginTask(DocometreMessages.ApplyWait, 100);
 					resultAssociation.clear();
 					selectedProcessesOccurences.clear();
-					System.out.println("distributionMethod : " + distributionMethod);
-					System.out.println("trialsList : " + trialsList);
-					System.out.println("packetSize : " + packetSize);
-
 					monitor.subTask(DocometreMessages.BuildTrialsList);
 					buildTrialsList(monitor);
 					monitor.worked(20);
@@ -618,7 +614,6 @@ public class OrganizeSessionWizardPage extends WizardPage {
 				int selectedProcessNumber = random.nextInt(selectedProcesses.size());
 				Integer occurence = selectedProcessesOccurences.get(selectedProcesses.get(selectedProcessNumber));
 				if(System.currentTimeMillis() - t0 > 500) {
-					System.out.println("Time out at " + index + " - Redo"); 
 					index = 0;
 					t0 = System.currentTimeMillis();
 					resultAssociation.clear();

@@ -128,7 +128,6 @@ public final class RunBatchDataProcessingDelegate {
 				String message = NLS.bind(DocometreMessages.ProcessingLabel, subjectResource.getName());
 				monitor.subTask(message);
 				code = MathEngineFactory.getMathEngine().refactor(code, subjectResource);
-				System.out.println(code);
 				MathEngineFactory.getMathEngine().runScript(code);
 				UpdateWorkbenchDelegate.update();
 				if(monitor.isCanceled()) return true;

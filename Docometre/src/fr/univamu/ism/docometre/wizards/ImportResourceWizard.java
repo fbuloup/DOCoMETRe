@@ -319,7 +319,6 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 							Object object = ObjectsController.deserialize(newFile);
 							ResourceProperties.setObjectSessionProperty(newFile, object);
 							ObjectsController.addHandle(object);
-							System.out.println(object.getClass().getCanonicalName());
 							if(file.getName().endsWith(Activator.daqFileExtension)) {
 								ResourceProperties.setTypePersistentProperty(newFile, ResourceType.DACQ_CONFIGURATION.toString());
 								if(object instanceof ADWinDACQConfiguration) ResourceProperties.setSystemPersistentProperty(newFile, Activator.ADWIN_SYSTEM);

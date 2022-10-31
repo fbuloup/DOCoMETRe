@@ -89,16 +89,8 @@ public class PasteAction extends SelectionAction {
 	@Override
 	public void run() {
 //		getWorkbenchPart().getAdapter(GraphicalViewer.class)
-//		System.out.print("Running paste command for segment " + scriptSegment.getScriptSegmentType());
-//		System.out.println(" from paste action " + this);
 		PasteCommand pasteCommand = new PasteCommand(scriptSegment);
 		commandStack.execute(pasteCommand);
 	}
-	
-//	public void setScriptSegment(ScriptSegment scriptSegment) {
-//		System.out.print("Setting script segment to " + scriptSegment.getScriptSegmentType());
-//		System.out.println(" for paste action " + this);
-//		PasteAction.scriptSegment = scriptSegment;
-//	}
 	
 }

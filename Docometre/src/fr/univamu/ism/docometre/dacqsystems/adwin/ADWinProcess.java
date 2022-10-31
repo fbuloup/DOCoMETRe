@@ -339,7 +339,6 @@ public class ADWinProcess extends Process {
 		while((line=input.readLine()) != null){
 			if(useDocker && firstLine) line += " (docker container ID)";
 		    if(!"adwin".equals(line)) {
-		    	System.out.println("Input : " + line);
 			    Activator.logInfoMessage(line, getClass());
 		    }
 		    firstLine = false;

@@ -213,17 +213,12 @@ public final class MarkersManager extends MouseAdapter implements ICustomPaintLi
 						double[] values = MathEngineFactory.getMathEngine().getYValuesForSignal(ySignal, trialNumber);
 						int baseFrontCut = MathEngineFactory.getMathEngine().getFrontCut(ySignal, trialNumber);
 						yIndex = containerEditor.getChart().getAxisSet().getYAxes()[0].getPixelCoordinate(values[sampleIndex - baseFrontCut]);
-//						System.out.print("xValue : " + markers[i][2] + " / yValue : " + values[sampleIndex - baseFrontCut]);
 					} else {
 						yIndex = containerEditor.getChart().getAxisSet().getYAxes()[0].getPixelCoordinate(markers[i][2]);
 						double[] values = MathEngineFactory.getMathEngine().getYValuesForSignal(xSignal, trialNumber);
 						int baseFrontCut = MathEngineFactory.getMathEngine().getFrontCut(xSignal, trialNumber);
 						xIndex = containerEditor.getChart().getAxisSet().getXAxes()[0].getPixelCoordinate(values[sampleIndex - baseFrontCut]);
-//						System.out.print("xValue : " + values[sampleIndex - baseFrontCut] + " / yValue : " + markers[i][2]);
 					}
-					
-//					System.out.println(" / DisplayxMarker : " + displayXMarkers + " / xIndex : " + xIndex + " / yIndex : " + yIndex + " / Label : " + markersGroupLabel);
-					
 					
 					Color oldForegroundColor = event.gc.getForeground();
 					Color oldBackgroundColor = event.gc.getBackground();

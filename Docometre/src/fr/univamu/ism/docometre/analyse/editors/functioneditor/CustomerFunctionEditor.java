@@ -213,7 +213,6 @@ public class CustomerFunctionEditor extends EditorPart implements PartNameRefres
 		setPartName(getEditorInput().getName());
 		setTitleToolTip(getEditorInput().getToolTipText());
 		firePropertyChange(PROP_TITLE);
-		System.out.println(((ResourceEditorInput)getEditorInput()).getObject());
 	}
  	
 }

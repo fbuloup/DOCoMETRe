@@ -395,15 +395,6 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 				if(scriptSegmentType.equals(ScriptSegmentType.FINALIZE)) scriptSegmentEditPart = (ScriptSegmentEditPart) editPartMap.get(getScript().getFinalizeBlocksContainer());
 //				if(scriptSegmentType.equals(ScriptSegmentType.DATA_PROCESSING)) scriptSegmentEditPart = (ScriptSegmentEditPart) editPartMap.get(getScript().getLoopBlocksContainer());
 				if(((StructuredSelection)scriptSegmentEditPart.getViewer().getSelection()).getFirstElement() instanceof BlockEditPart) editBlockAction.run();
-//				try {
-//					if(scriptSegmentType.equals(ScriptSegmentType.INITIALIZE)) System.out.println(process.getScript().getInitializeCode(process));
-//					if(scriptSegmentType.equals(ScriptSegmentType.LOOP)) System.out.println(process.getScript().getLoopCode(process));
-//					if(scriptSegmentType.equals(ScriptSegmentType.FINALIZE)) System.out.println(process.getScript().getFinalizeCode(process));
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//					Activator.logErrorMessageWithCause(e);
-//				}
-				
 			}
 		});
 		getGraphicalViewer().getControl().addKeyListener(new KeyAdapter() {
@@ -614,7 +605,6 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 	}
 	
 	public void updatePasteAction() {
-//		System.out.println("update PasteAction");
 		ScriptSegment scriptSegment = null;
 		if(scriptSegmentType.equals(ScriptSegmentType.INITIALIZE)) scriptSegment = getScript().getInitializeBlocksContainer();
 		if(scriptSegmentType.equals(ScriptSegmentType.LOOP)) scriptSegment = getScript().getLoopBlocksContainer();

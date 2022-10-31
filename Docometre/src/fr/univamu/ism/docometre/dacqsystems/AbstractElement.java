@@ -91,7 +91,6 @@ public abstract class AbstractElement implements PropertyObservable, Serializabl
 	 */
 	public void removeObserver(PropertyObserver observer) {
 		if(debuMessages) debugMessage("Removing observer : " + observer.getClass().getSimpleName() + " for " + getClass().getSimpleName());
-//		System.out.println(propertiesObservers);
 		if(propertiesObservers != null) propertiesObservers.remove(observer);
 		if(debuMessages) debugMessage("Nb observers : " + ((propertiesObservers != null)?propertiesObservers.size():0) + " for " + getClass().getSimpleName());
 	}

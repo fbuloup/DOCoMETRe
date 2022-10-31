@@ -222,7 +222,6 @@ public class ArchiveFileExportOperation implements IRunnableWithProgress {
 		}
 		
 		if(!includeData) if(ResourceType.isDataFile(exportResource)) return;
-		System.out.println("ArchiveFileExportOperation.exportResource : " + exportResource.getLocation().toOSString());
 
 		if (exportResource.getType() == IResource.FILE) {
 			String destinationName = createDestinationName(leadupDepth, exportResource);

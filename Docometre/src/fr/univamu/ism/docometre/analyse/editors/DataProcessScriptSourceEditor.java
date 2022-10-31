@@ -82,19 +82,6 @@ public class DataProcessScriptSourceEditor extends SourceEditor {
 			sourceViewer.configure(new PythonSourceViewerConfiguration());
 		}
 		
-		
 	}
-	
-//	@Override
-//	protected void update(String code) {
-//		code = code.replaceAll("^(\n)*", "");
-//		code = "\n" + code;
-//		System.out.println("update document...");
-//		sourceViewer.getDocument().set(code);
-//		for (int i = 0; i < sourceViewer.getDocument().getLength(); i++) {
-//			ITypedRegion typedRegion = sourceViewer.getDocument().getDocumentPartitioner().getPartition(i);			
-//			System.out.println(i + " = " + typedRegion.getType());
-//		}
-//	}
 
 }

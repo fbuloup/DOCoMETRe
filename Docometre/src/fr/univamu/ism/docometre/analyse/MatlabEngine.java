@@ -347,7 +347,7 @@ public final class MatlabEngine implements MathEngine {
 					valuesString = stringBuffer.toString();
 					
 					String cmd = experimentName + "." + subjectName + " = loadData('DOCOMETRE', '" + dataFilesList + "', " + keysString + ", " + valuesString + ")";
-					System.out.println(cmd);
+					Activator.logInfoMessage(cmd, getClass());
 					matlabController.eval(cmd);
 				}
 				
