@@ -105,7 +105,8 @@ public class DocometreAnnotationAccesExtension implements IAnnotationAccessExten
 				canvas.addMouseMoveListener(mouseMoveListener);
 			}
 			
-			if (image != null) {
+			
+			if (image != null && gc != null && canvas!= null && !image.isDisposed() && !gc.isDisposed() && !canvas.isDisposed()) {
 				lastPosition = bounds;
 				ImageUtilities.drawImage(image, gc, canvas, bounds, SWT.CENTER, SWT.TOP);
 			}
