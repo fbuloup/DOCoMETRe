@@ -48,6 +48,7 @@ public class GeneralPreferenceConstants {
 
 
 	public static final String XML_SERIALIZATION = "XML_SERIALIZATION";
+	public static final String BUILD_AUTOMATICALLY = "BUILD_AUTOMATICALLY";
 	
 	public static final String FIRST_LAUNCH = "FIRST_LAUNCH";
 	public static final String PREF_UNDO_LIMIT = "PREF_UNDO_LIMIT";

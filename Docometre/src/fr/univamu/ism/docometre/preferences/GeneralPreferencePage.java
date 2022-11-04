@@ -60,12 +60,14 @@ import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.commands.ICommandService;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ChooseWorkspaceData;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.analyse.editors.ChannelEditor;
 import fr.univamu.ism.docometre.editors.DataEditor;
+import fr.univamu.ism.docometre.handlers.AutoBuildHandler;
 
 public class GeneralPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 	
@@ -90,6 +92,10 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
 		BooleanFieldEditor xmlSerializationFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.XML_SERIALIZATION,
 				DocometreMessages.GeneralPreferences_XMLSerialization, getFieldEditorParent());
 		addField(xmlSerializationFieldEditor);
+		
+		BooleanFieldEditor buildAutomaticallyFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.BUILD_AUTOMATICALLY,
+				DocometreMessages.GeneralPreferences_BuildAutomatically, getFieldEditorParent());
+		addField(buildAutomaticallyFieldEditor);
 		
 		BooleanFieldEditor showWorkspaceDialogFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.SHOW_WORKSPACE_SELECTION_DIALOG,
 				DocometreMessages.GeneralPreferences_ShowWorkspaceDialog, getFieldEditorParent());
@@ -205,6 +211,8 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
 	@Override
 	public boolean performOk() {
 		boolean returnValue = super.performOk();
+		ICommandService commandService = (ICommandService) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getService(ICommandService.class);
+		commandService.refreshElements(AutoBuildHandler.ID, null);
 		boolean showCursor = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.SHOW_CURSOR);
 		boolean showMarker = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.SHOW_MARKER);
 		IEditorReference[] editorReferences = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();

@@ -91,6 +91,7 @@ public class PreferencesInitializer extends AbstractPreferenceInitializer {
 		defaults.putBoolean(GeneralPreferenceConstants.SYNCHRONIZE_CHARTS_WHEN_TRIAL_CHANGE, true);
 
 		defaults.putBoolean(GeneralPreferenceConstants.XML_SERIALIZATION, true);
+		defaults.putBoolean(GeneralPreferenceConstants.BUILD_AUTOMATICALLY, true);
 		
 		defaults.put(MathEnginePreferencesConstants.MATH_ENGINE, MathEnginePreferencesConstants.MATH_ENGINE_MATLAB);
 		defaults.putBoolean(MathEnginePreferencesConstants.ALWAYS_LOAD_FROM_SAVED_DATA, false);

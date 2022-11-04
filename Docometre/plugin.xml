@@ -1512,6 +1512,24 @@ Développement à l&apos;institut des Sciences du Mouvement.">
                      style="push">
                </command>
             </menu>
+            <separator
+                  name="Docometre.separator1"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="AutoBuildCommand"
+                  label="%AutoBuildCommand.label"
+                  style="radio">
+            </command>
+            <command
+                  commandId="CompileCommand"
+                  label="%CompileCommand.label"
+                  style="push">
+            </command>
+            <separator
+                  name="Docometre.separator2"
+                  visible="true">
+            </separator>
             <command
                   commandId="org.eclipse.ui.window.preferences"
                   label="%PreferencesAction.label"
@@ -1530,6 +1548,10 @@ Développement à l&apos;institut des Sciences du Mouvement.">
                   </or>
                </visibleWhen>
             </command>
+            <separator
+                  name="Docometre.separator3"
+                  visible="true">
+            </separator>
             <command
                   commandId="StartStopMathEngineCommand"
                   label="Start/Stop Math Engine"
@@ -3363,6 +3385,16 @@ Développement à l&apos;institut des Sciences du Mouvement.">
             defaultHandler="fr.univamu.ism.docometre.handlers.ShowFunctionsViewHandler"
             id="ShowFunctionsViewCommand"
             name="ShowFunctionsViewCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.handlers.AutoBuildHandler"
+            id="AutoBuildCommand"
+            name="AutoBuildCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.handlers.CompileHandler"
+            id="CompileCommand"
+            name="CompileCommand">
       </command>
       
       

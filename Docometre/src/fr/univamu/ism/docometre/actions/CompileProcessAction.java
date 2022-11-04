@@ -127,6 +127,10 @@ public class CompileProcessAction extends Action implements ISelectionListener, 
 		setToolTipText(DocometreMessages.CompileProcessAction_Text);
 	}
 	
+	public void setSelection(IFile[] resources) {
+		this.resources = resources;
+	}
+	
 	@Override
 	public void run() {
 		

@@ -67,6 +67,7 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 
 public class DocometreBuilder extends IncrementalProjectBuilder {
@@ -102,6 +103,10 @@ public class DocometreBuilder extends IncrementalProjectBuilder {
 
 	@Override
 	protected IProject[] build(int kind, Map<String, String> args, IProgressMonitor monitor) throws CoreException {
+		boolean autoBuild = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.BUILD_AUTOMATICALLY);
+		if(!autoBuild) return null;
+		
+		System.out.println("Kind of build : " + kind);
 		HashSet<IFile> processesToBuild = new HashSet<>();
 		IResourceDelta delta = getDelta(getProject());
 		if(delta == null) {
@@ -181,7 +186,10 @@ public class DocometreBuilder extends IncrementalProjectBuilder {
 		Exception exception = null;
 		try {
 			if(checkCanceled(monitor)) return;
-			if(compile) process.compile(monitor);
+			if(compile) {
+				process.getScript().clearCodeGenerationStatus();
+				process.compile(monitor);
+			}
 			else {
 				String message = NLS.bind(DocometreMessages.NoDACQFileAssociatedToProcess, resource.getFullPath());
 				throw new Exception(message);
