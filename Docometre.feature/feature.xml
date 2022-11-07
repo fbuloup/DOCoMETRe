@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-11-04
+      -- 2022-11-07
+ADDED : Nothing
+FIXED :
+* We don&apos;t need to compile data processing processes (Compile Dialog)
+-- 2022-11-04
 ADDED :
 * Support for cached logging before messages view activation
 * Improve Error and Standard log file redirection
