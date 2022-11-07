@@ -1089,9 +1089,6 @@ public final class DocometreMessages extends NLS {
 	public static String CompileDialog_Title;
 	public static String CompileDialog_Message;
 	public static String CompileDialog_ShellTitle;
-	public static String AllProcessesTitle;
-	public static String DacqProcessesTitle;
-	public static String DataProcessesTitle;
 			
 	static {
 		// load message values from bundle file
