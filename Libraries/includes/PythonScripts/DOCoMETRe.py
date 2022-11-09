@@ -84,7 +84,7 @@ class DOCoMETRe(object):
 			    append = False
 			    trialsList = createdCategories[criteria]
 			    if isinstance(trialsList, numpy.ndarray):
-			        if int(currentTrialNumber) not in trialsList:
+			        if int(currentTrialNumber + 1) not in trialsList:
 			            append = True
 			    if append:
 			        trialsList = numpy.append(trialsList, currentTrialNumber+1)
