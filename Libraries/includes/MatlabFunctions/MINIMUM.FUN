@@ -26,16 +26,16 @@ if compute\n\
 	\telse\n\
 		\t\tinputSignal.MarkersGroupsLabels = [inputSignal.MarkersGroupsLabels ; "markersGroupLabel"];\n\
 	\tend\n\
-	inputSignal.MarkersGroup_markersGroupLabel_Values = [];\n\
+	\tinputSignal.MarkersGroup_markersGroupLabel_Values = [];\n\
 	\t% Get from and to values\n\
 	\tif "From_Beginning" == "inputMarker1"\n\
 		\t\tfromValues = zeros(signalSizes(1),3);\n\
-		\t\tfromValues[:,1] = trialsList + 1;\n\
-		\t\tfromValues[:,3] = inputSignal.Values(:,1);\n\
+		\t\tfromValues(:,1) = trialsList;\n\
+		\t\tfromValues(:,3) = inputSignal.Values(:,1);\n\
 	\telse\n\
-		\t\tif(endsWith("inputMarker1",".FrontCut")\n\
+		\t\tif(endsWith("inputMarker1",".FrontCut"))\n\
 			\t\t\tfromValues = zeros(signalSizes(1),3);\n\
-			\t\t\tfromValues(:,1) = trialsList + 1;\n\
+			\t\t\tfromValues(:,1) = trialsList;\n\
 			\t\t\tfromValues(:,2) = inputMarker1 ./ inputSignal.SampleFrequency;\n\
 			\t\t\tfromValues(:,3) = inputSignal.Values(:,1);\n\
 		\t\telse\n\
@@ -44,13 +44,13 @@ if compute\n\
 	\tend\n\
 	\tif "To_End" == "inputMarker2"\n\
 		\t\ttoValues = zeros(signalSizes(1),3);\n\
-		\t\ttoValues(:,1) = trialsList + 1;\n\
+		\t\ttoValues(:,1) = trialsList;\n\
 		\t\ttoValues(:,2) = inputSignal.NbSample/inputSignal.SampleFrequency;\n\
 		\t\ttoValues(:,3) = inputSignal.NbSamples;\n\
 	\telse\n\
-		\t\tif(endsWith("inputMarker2",".EndCut")\n\
+		\t\tif(endsWith("inputMarker2",".EndCut"))\n\
 			\t\t\ttoValues = zeros(signalSizes(1),3);\n\
-			\t\t\ttoValues(:,1) = trialsList + 1;\n\
+			\t\t\ttoValues(:,1) = trialsList;\n\
 			\t\t\ttoValues(:,2) = inputMarker2 ./ inputSignal.SampleFrequency;\n\
 			\t\t\ttoValues(:,3) = inputSignal.Values(:,1);\n\
 		\t\telse\n\
@@ -59,17 +59,19 @@ if compute\n\
 	\tend\n\
 	\tfor trialNumber = trialsList\n\
 		\t\t% Get from and to index in from and to values for trialNumber\n\
-		\t\tfromIndex = find(fromValues(:,1) == (trialNumber+1));\n\
-		\t\ttoIndex = find(toValues(:,1) == (trialNumber+1));\n\
+		\t\tfromIndex = find(fromValues(:,1) == (trialNumber));\n\
+		\t\ttoIndex = find(toValues(:,1) == (trialNumber));\n\
 		\t\t% if both indices exist\n\
 		\t\tif(~isempty(fromIndex) && ~isempty(toIndex))\n\
 			\t\t\t% Convert from and to in samples number\n\
-			\t\t\tfromIndex = floor(fromValues(fromIndex(1))(2) * sampleFrequency);\n\
-			\t\t\ttoIndex = floor(toValues(toIndex(1))(2) * sampleFrequency);\n\
+			\t\t\tfromIndex = floor(fromValues(fromIndex(1),2) * inputSignal.SampleFrequency);\n\
+			\t\t\ttoIndex = floor(toValues(toIndex(1),2) * inputSignal.SampleFrequency);\n\
 			\t\t\t% Compute min between from and to index\n\
 			\t\t\t[minValue, minIndex] = min(inputSignal.Values(trialNumber, fromIndex:toIndex));\n\
-			\t\t\tminMarkerTime = (fromIndex + minIndex)/sampleFrequency;\n\
-			\t\t\tinputSignal.MarkersGroup_markersGroupLabel_Values = [inputSignal.MarkersGroup_markersGroupLabel_Values; trialNumber+1, minMarkerTime, minValue];\n\
+			\t\t\tminMarkerTime = (fromIndex + minIndex - 2)/inputSignal.SampleFrequency;\n\
+			\t\t\tinputSignal.MarkersGroup_markersGroupLabel_Values = [inputSignal.MarkersGroup_markersGroupLabel_Values; trialNumber, minMarkerTime, minValue];\n\
+		\t\tend\n\
+	\tend\n\
 	\tif (~exist('createdOrModifiedChannels'))\n\
 		\t\tcreatedOrModifiedChannels = {'inputSignal'};\n\
 	\telse\n\
@@ -82,5 +84,4 @@ else\n\
 		\t\tErrorMessages = {[datestr(now,'HH:MM:SS.FFF'), ' - From Minimum function -> A Marker with this label already exists : markersGroupLabel (inputSignal)']};\n\
 	\tend\n\
 end\n\
-clear compute signalSizes NbMarkersGroups;\n\
-
+clear compute signalSizes nbMarkersGroups fromIndex fromValues minIndex minMarkerTime minValue nbMarkersGroups toIndex toValues trialNumber markersGroupNumber;\n\
