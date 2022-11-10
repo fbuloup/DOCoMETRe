@@ -45,7 +45,7 @@ for trialNumber = trialsList\n\
 	\tif(~isempty(fromIndex) && ~isempty(toIndex))\n\
 		\t\t% Convert from and to in samples number\n\
 		\t\tfromIndex = floor(fromValues(fromIndex(1),2) * outputSignal.SampleFrequency) + 1;\n\
-		\t\ttoIndex = floor(toValues(toIndex(1),2) * outputSignal.SampleFrequency) + 1;\n\
+		\t\ttoIndex = floor(toValues(toIndex(1),2) * outputSignal.SampleFrequency);\n\
 		\t\t% Init first output signal sample\n\
 		\t\toutputSignal.Values(trialNumber, fromIndex) = 0;\n\
 		\t\t% Compute deltas\n\
