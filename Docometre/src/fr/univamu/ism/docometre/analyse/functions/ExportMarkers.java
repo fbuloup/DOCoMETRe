@@ -52,7 +52,7 @@ public class ExportMarkers extends GenericFunction {
 	private static final String fullSubjectNameKey = "fullSubjectName";
 	private static final String cellExpressionKey = "cellExpression";
 
-	private CheckboxTableViewer markersCheckboxTableViewer;
+	transient private CheckboxTableViewer markersCheckboxTableViewer;
 	
 	@Override
 	public String getFunctionFileName() {
