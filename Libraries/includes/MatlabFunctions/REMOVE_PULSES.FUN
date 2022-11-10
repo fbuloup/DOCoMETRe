@@ -55,7 +55,7 @@ for trialNumber = trialsList\n\
 end\n\
 clear previousValue currentValue lastSampleNumber sampleNumber\n\
 clear xInputValues yInputValues xOutputValues\n\
-clear trialNumber trialValues pulseWidth lastDelta\n\
+clear trialNumber trialValues pulseWidth lastDelta signalSizes\n\
 if (~exist('createdOrModifiedChannels'))\n\
 		createdOrModifiedChannels = {'outputSignal'};\n\
 else\n\
