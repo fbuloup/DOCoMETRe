@@ -97,6 +97,9 @@ public class FunctionsMessages extends NLS {
 	public static String UnselectAll;
 	public static String FilterLabel;
 	public static String SeparatorLabel;
+	public static String Destination;
+	public static String Relative;
+	public static String Absolute;
 	
 	// Interpolate 1D
 	public static String tMinLabel;

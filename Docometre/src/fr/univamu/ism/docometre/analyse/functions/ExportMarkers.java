@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
@@ -24,6 +25,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
@@ -51,6 +53,7 @@ public class ExportMarkers extends GenericFunction {
 	private static final String fullPathFileNameKey = "fullPathFileName";
 	private static final String fullSubjectNameKey = "fullSubjectName";
 	private static final String cellExpressionKey = "cellExpression";
+	private static final String relativePathKey = "relativePath";
 
 	transient private CheckboxTableViewer markersCheckboxTableViewer;
 	
@@ -162,15 +165,38 @@ public class ExportMarkers extends GenericFunction {
 			}
 		});
 		
-		Composite destinationFolderContainer = new Composite(paramContainer, SWT.NORMAL);
-		destinationFolderContainer.setLayout(new GridLayout(3, false));
-		destinationFolderContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		Group group = new Group(paramContainer, SWT.NONE);
+		group.setText(FunctionsMessages.Destination);
+		group.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		group.setLayout(new GridLayout(2, false));
 		
-		Label destinationFolderLabel = new Label(destinationFolderContainer, SWT.NORMAL);
-		destinationFolderLabel.setText("Destination : ");
-		destinationFolderLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+		Composite buttonsContainer2 = new Composite(group, SWT.NORMAL);
+		buttonsContainer2.setLayout(new GridLayout(2, true));
+		buttonsContainer2.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 		
-		Text destinationFolderText = new Text(destinationFolderContainer, SWT.BORDER | SWT.READ_ONLY);
+		boolean relativePath = getProperty(relativePathKey, "true").equals("true") ? true:false;
+		Button workspaceButton = new Button(buttonsContainer2, SWT.CHECK);
+		workspaceButton.setText(FunctionsMessages.Relative);
+		workspaceButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		workspaceButton.setSelection(relativePath);
+		workspaceButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				getTransientProperties().put(relativePathKey, workspaceButton.getSelection()?"true":"false");
+			}
+		});
+		Button fileSystemButton = new Button(buttonsContainer2, SWT.CHECK);
+		fileSystemButton.setText(FunctionsMessages.Absolute);
+		fileSystemButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		fileSystemButton.setSelection(!relativePath);
+		fileSystemButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				getTransientProperties().put(relativePathKey, fileSystemButton.getSelection()?"false":"true");
+			}
+		});
+		
+		Text destinationFolderText = new Text(group, SWT.BORDER | SWT.READ_ONLY);
 		destinationFolderText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		destinationFolderText.setText(getProperty(destinationKey, ""));
 		destinationFolderText.addModifyListener(new ModifyListener() {
@@ -180,13 +206,14 @@ public class ExportMarkers extends GenericFunction {
 			}
 		});
 		
-		Button destinationFolderButton = new Button(destinationFolderContainer, SWT.FLAT);
+		Button destinationFolderButton = new Button(group, SWT.FLAT);
 		destinationFolderButton.setText(DocometreMessages.Browse);
 		destinationFolderButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		destinationFolderButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				DirectoryDialog dd = new DirectoryDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+				dd.setFilterPath(ResourcesPlugin.getWorkspace().getRoot().getFullPath().toPortableString());
 				String response = dd.open();
 				if(response != null) {
 					destinationFolderText.setText(response);
