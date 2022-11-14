@@ -100,6 +100,8 @@ public class FunctionsMessages extends NLS {
 	public static String Destination;
 	public static String Relative;
 	public static String Absolute;
+	public static String DialogMessage;
+	public static String DialogTitle;
 	
 	// Interpolate 1D
 	public static String tMinLabel;

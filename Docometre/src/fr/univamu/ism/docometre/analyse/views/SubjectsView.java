@@ -297,7 +297,7 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 				PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
 					@Override
 					public void run() {
-						subjectsTreeViewer.refresh();
+						if(subjectsTreeViewer.getTree() != null && !subjectsTreeViewer.getTree().isDisposed()) subjectsTreeViewer.refresh();
 					}
 				});
 			}

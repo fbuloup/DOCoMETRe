@@ -6,13 +6,26 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
+import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.ICheckStateListener;
+import org.eclipse.jface.viewers.IDoubleClickListener;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -23,15 +36,19 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 
+import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
@@ -42,6 +59,119 @@ import fr.univamu.ism.process.Block;
 import fr.univamu.ism.process.Script;
 
 public class ExportMarkers extends GenericFunction {
+	
+	private class RelativePathSelectionDialog extends Dialog {
+		
+		IResource selectedDestination;
+
+		protected RelativePathSelectionDialog(Shell parentShell, String initialSelection) {
+			super(parentShell);
+			selectedDestination = ResourcesPlugin.getWorkspace().getRoot().findMember(initialSelection);
+		}
+		
+		public IResource getSelectedDestination() {
+			return selectedDestination;
+		}
+		
+		@Override
+		protected Control createDialogArea(Composite parent) {
+			Composite container = (Composite) super.createDialogArea(parent);
+			TreeViewer foldersTreeViewer = new TreeViewer(container, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
+			foldersTreeViewer.getTree().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+			foldersTreeViewer.setContentProvider(new ITreeContentProvider() {
+				@Override
+				public boolean hasChildren(Object element) {
+					try {
+						if(!(element instanceof IContainer)) return false;
+						IResource[] members = ((IContainer)element).members();
+						for (IResource member : members) {
+							if(ResourceType.isExperiment(member) || ResourceType.isFolder(member)) return true;
+						}
+					} catch (CoreException e) {
+						Activator.logErrorMessageWithCause(e);
+						e.printStackTrace();
+					}
+					return false;
+				}
+				@Override
+				public Object getParent(Object element) {
+					if(element instanceof IResource) return ((IResource)element).getParent();
+					return null;
+				}
+				@Override
+				public Object[] getElements(Object inputElement) {
+					try {
+						ArrayList<IContainer> elements = new ArrayList<IContainer>();
+						if(inputElement == ResourcesPlugin.getWorkspace().getRoot()) {
+							IResource[] members = ResourcesPlugin.getWorkspace().getRoot().members();
+							for (IResource member : members) {
+								if(ResourceType.isExperiment(member) || ResourceType.isFolder(member)) elements.add((IContainer) member);
+							}
+						}
+						return elements.toArray();
+					} catch (CoreException e) {
+						Activator.logErrorMessageWithCause(e);
+						e.printStackTrace();
+					}
+					return new Object[0];
+				}
+				@Override
+				public Object[] getChildren(Object parentElement) {
+					try {
+						ArrayList<IContainer> elements = new ArrayList<IContainer>();
+						if(parentElement instanceof IContainer) {
+							IResource[] members = ((IContainer)parentElement).members();
+							for (IResource member : members) {
+								if(ResourceType.isExperiment(member) || ResourceType.isFolder(member)) elements.add((IContainer) member);
+							}
+						}
+						return elements.toArray();
+					} catch (CoreException e) {
+						Activator.logErrorMessageWithCause(e);
+						e.printStackTrace();
+					}
+					return new Object[0];
+				}
+			});
+			foldersTreeViewer.setLabelProvider(new LabelProvider() {
+				@Override
+				public String getText(Object element) {
+					return ((IContainer)element).getName();
+				}
+			});
+			foldersTreeViewer.setInput(ResourcesPlugin.getWorkspace().getRoot());
+			foldersTreeViewer.addDoubleClickListener(new IDoubleClickListener() {
+				@Override
+				public void doubleClick(DoubleClickEvent event) {
+					buttonPressed(OK);
+				}
+			});
+			foldersTreeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+				@Override
+				public void selectionChanged(SelectionChangedEvent event) {
+					selectedDestination = (IResource) event.getStructuredSelection().getFirstElement();
+				}
+			});
+			foldersTreeViewer.setSelection(new StructuredSelection(selectedDestination));
+			
+			Label messageLabel = new Label(container, SWT.NORMAL);
+			messageLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+			messageLabel.setText(FunctionsMessages.DialogMessage);
+			
+			return container;
+		}
+		@Override
+		protected void configureShell(Shell newShell) {
+			super.configureShell(newShell);
+			newShell.setText(FunctionsMessages.DialogTitle);
+		}
+		
+		@Override
+		protected boolean isResizable() {
+			return true;
+		}
+		
+	}
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -175,7 +305,7 @@ public class ExportMarkers extends GenericFunction {
 		buttonsContainer2.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 		
 		boolean relativePath = getProperty(relativePathKey, "true").equals("true") ? true:false;
-		Button workspaceButton = new Button(buttonsContainer2, SWT.CHECK);
+		Button workspaceButton = new Button(buttonsContainer2, SWT.RADIO);
 		workspaceButton.setText(FunctionsMessages.Relative);
 		workspaceButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		workspaceButton.setSelection(relativePath);
@@ -185,7 +315,7 @@ public class ExportMarkers extends GenericFunction {
 				getTransientProperties().put(relativePathKey, workspaceButton.getSelection()?"true":"false");
 			}
 		});
-		Button fileSystemButton = new Button(buttonsContainer2, SWT.CHECK);
+		Button fileSystemButton = new Button(buttonsContainer2, SWT.RADIO);
 		fileSystemButton.setText(FunctionsMessages.Absolute);
 		fileSystemButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		fileSystemButton.setSelection(!relativePath);
@@ -212,11 +342,20 @@ public class ExportMarkers extends GenericFunction {
 		destinationFolderButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				DirectoryDialog dd = new DirectoryDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
-				dd.setFilterPath(ResourcesPlugin.getWorkspace().getRoot().getFullPath().toPortableString());
-				String response = dd.open();
-				if(response != null) {
-					destinationFolderText.setText(response);
+				boolean relativePath = workspaceButton.getSelection();
+				if(!relativePath) {
+					DirectoryDialog dd = new DirectoryDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+					dd.setFilterPath(ResourcesPlugin.getWorkspace().getRoot().getFullPath().toPortableString());
+					String response = dd.open();
+					if(response != null) {
+						destinationFolderText.setText(response);
+					}
+				} else {
+					RelativePathSelectionDialog relativePathSelectionDialog = new RelativePathSelectionDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), destinationFolderText.getText());
+					if(relativePathSelectionDialog.open() == Window.OK) {
+						IResource selectedDestination = relativePathSelectionDialog.getSelectedDestination();
+						destinationFolderText.setText(selectedDestination.getFullPath().toPortableString());
+					}
 				}
 			}
 		});
@@ -258,6 +397,8 @@ public class ExportMarkers extends GenericFunction {
 		String markersList = getProperty(markersListKey, "");
 		String divider = getProperty(dividerKey, ";");
 		String destination = getProperty(destinationKey, "") + File.separator;
+		boolean relativePath = getProperty(relativePathKey, "true").equals("true") ? true:false;
+		if(relativePath) destination = ResourcesPlugin.getWorkspace().getRoot().getLocation().toPortableString() + destination + "/";
 		
 		String[] markers = markersList.split(";");
 		Set<String> filesNames = new HashSet<>();
