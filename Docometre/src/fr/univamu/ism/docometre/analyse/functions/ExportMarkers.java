@@ -152,7 +152,7 @@ public class ExportMarkers extends GenericFunction {
 					selectedDestination = (IResource) event.getStructuredSelection().getFirstElement();
 				}
 			});
-			foldersTreeViewer.setSelection(new StructuredSelection(selectedDestination));
+			if(selectedDestination != null) foldersTreeViewer.setSelection(new StructuredSelection(selectedDestination));
 			
 			Label messageLabel = new Label(container, SWT.NORMAL);
 			messageLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
