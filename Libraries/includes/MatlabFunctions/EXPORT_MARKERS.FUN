@@ -34,4 +34,7 @@ for n = 1:nbMarkersToExport\n\
     \tfclose(dataFile);\n\
     \tvalues = eval([fullMarkerName, '_Values']);\n\
     \tdlmwrite('fullPathFileName', values ,'delimiter', 'divider', '-append');\n\
-end
+end\n\
+clear criteria dataFile fullMarkerName fullMarkerNameSplitted markerLabel;\n\
+clear markersToExport n nbMarkersToExport numCategory trialsListArray;\n\
+clear trialsListString values;
