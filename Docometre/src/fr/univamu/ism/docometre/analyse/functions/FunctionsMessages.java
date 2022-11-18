@@ -127,6 +127,13 @@ public class FunctionsMessages extends NLS {
 	// Remove pulses function
 	public static String DurationLabel;
 	public static String DeltaLabel;
+
+	// Markers Difference funrtion
+	public static String PlaceFeatureInSignalLabel;
+	public static String Marker1Label;
+	public static String Marker2Label;
+	public static String FeatureLabel;
+	public static String DifferenceLabel;
 	
 	static {
 		// load message values from bundle file

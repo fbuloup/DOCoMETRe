@@ -81,8 +81,8 @@ public class MatlabEngineFunctionsMenuFactory {
 	public static String[] MarkersFunctionsClasses = new String[] {TimeMarker.class.getName(), Maximum.class.getName(), Minimum.class.getName(), FindPeaks.class.getName(), FindPeaks_Minima.class.getName(), FindAmplitudeBackward.class.getName(), FindAmplitudeForward.class.getName(),
 																	Threshold.class.getName(), TransferMarkersGroup.class.getName()};
 	
-	public static String[] FeaturesFunctionsFiles = new String[] {Mean.functionFileName};
-	public static String[] FeaturesFunctionsClasses = new String[] {Mean.class.getName()};
+	public static String[] FeaturesFunctionsFiles = new String[] {Mean.functionFileName, MarkersDifference.functionFileName};
+	public static String[] FeaturesFunctionsClasses = new String[] {Mean.class.getName(), MarkersDifference.class.getName()};
 	
 	public static String[] EventsFunctionsFiles = new String[] {};
 	public static String[] EventsFunctionsClasses = new String[] {};
