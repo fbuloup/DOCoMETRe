@@ -19,9 +19,9 @@ if(isfield(inputSignal, 'NbFeatures'))\n\
 end\n\
 if(compute)\n\
 \tif(NbFeatures == 0)\n\
-\t\tinputSignal.FeaturesLabels = {'MEAN'};\n\
+\t\tinputSignal.FeaturesLabels = "MEAN";\n\
 \telse\n\
-\t\tinputSignal.FeaturesLabels = [inputSignal.FeaturesLabels, {'MEAN'}];\n\
+\t\tinputSignal.FeaturesLabels = [inputSignal.FeaturesLabels; "MEAN"];\n\
 \tend\n\
 \tinputSignal.NbFeatures = NbFeatures + 1;\n\
 \t[rows, cols] = size(inputSignal.Values);\n\
