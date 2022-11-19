@@ -125,6 +125,8 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 	private Button useSameColorButton;
 	private ComboViewer markersGroupsComboViewer;
 	private Label labelNbMarkers;
+	private Button keepScaleButton;
+	private Button showSamplesButton;
 
 	public SignalContainerEditor(Composite parent, int style, ChannelEditor channelEditor) {
 		super(parent, style);
@@ -611,6 +613,27 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 				updateSeriesColorsHandler();
 			}
 		});
+		
+		keepScaleButton = new Button(infosGroup, SWT.CHECK);
+		keepScaleButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		keepScaleButton.setText(DocometreMessages.KeepScaleWhenTrialChange);
+		
+		showSamplesButton = new Button(infosGroup, SWT.CHECK);
+		showSamplesButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		showSamplesButton.setText(DocometreMessages.ShowSamples);
+		showSamplesButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				ISeries[] allSeries = chart.getSeriesSet().getSeries();
+				for (ISeries series : allSeries) {
+					if(showSamplesButton.getSelection()) ((ILineSeries)series).setSymbolType(PlotSymbolType.CIRCLE);
+					else ((ILineSeries)series).setSymbolType(PlotSymbolType.NONE);
+					((ILineSeries)series).setSymbolColor(((ILineSeries)series).getLineColor());
+				}
+				chart.redraw();
+			}
+		});
+		
 	}
 	
 	private String[] getSeriesIDs() {
@@ -652,6 +675,7 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 				int index = trialsListViewer.getStructuredSelection().toList().indexOf(trialNumber);
 				((ILineSeries)series).setLineColor(ColorUtil.getColor((byte) index));
 			}
+			((ILineSeries)series).setSymbolColor(((ILineSeries)series).getLineColor());
 		}
 		chart.redraw();
 		
@@ -680,7 +704,7 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 			}
 		}
 		updateSeriesColorsHandler();
-		chart.getAxisSet().adjustRange();
+		if(!keepScaleButton.getSelection()) chart.getAxisSet().adjustRange();
 		chart.redraw();
 	}
 
@@ -703,6 +727,7 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		series.setYSeries(yValues);
 		series.setAntialias(SWT.ON);
 		series.setSymbolType(PlotSymbolType.NONE);
+		if(showSamplesButton.getSelection()) series.setSymbolType(PlotSymbolType.CIRCLE);
 //		Byte index = getSeriesIndex(series);
 //		series.setLineColor(ColorUtil.getColor(index));
 		series.setLineWidth(3);
