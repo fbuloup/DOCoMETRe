@@ -6,10 +6,27 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-11-07
+      -- 2022-11-19
+ADDED :
+* Export Markers function : add support for relative/absolute dest.
+* Markers difference function (Matlab and Python)
+* Markers difference function set initial selection for difference type
+* Show samples and Keep scale when trials change in signals editors
+FIXED :
+* Bad trial number with Python (indices start form zero with Python)
+* Export Markers function : turn widget field to transient for serialization
+* Motion distance function : index correction
+* Remove pulses function : clear SignalSizes variable
+* Export Markers function : clear several variables
+* Export Markers function : NPE
+* Don&apos;t use cells anymore with features (Matlab)
+* Clear pulses function : message refactoring
+* Find amplitude forward : index bug correction
+-- 2022-11-07
 ADDED : Nothing
 FIXED :
-* We don&apos;t need to compile data processing processes (Compile Dialog)
+* We don&apos;t need to compile data processing processes (Compile
+Dialog)
 -- 2022-11-04
 ADDED :
 * Support for cached logging before messages view activation
