@@ -223,7 +223,7 @@ public class MarkersDifference extends GenericFunction {
 		differenceLabel.setText(FunctionsMessages.DifferenceLabel);
 		ComboViewer differenceComboViewer = new ComboViewer(paramContainer, SWT.BORDER);
 		differenceComboViewer.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		value  = getProperty(differenceKey, "");
+		value  = getProperty(differenceKey, "Time");
 		differenceComboViewer.getCombo().setText(value);
 		differenceComboViewer.setContentProvider(new ArrayContentProvider());
 		differenceComboViewer.setLabelProvider(new LabelProvider());
@@ -235,6 +235,7 @@ public class MarkersDifference extends GenericFunction {
 				getTransientProperties().put(differenceKey, differenceComboViewer.getCombo().getText());
 			}
 		});
+		differenceComboViewer.setSelection(new StructuredSelection(value));
 		
 		// Feature label 
 		Label featureLabelLabel = new Label(paramContainer, SWT.NONE);
