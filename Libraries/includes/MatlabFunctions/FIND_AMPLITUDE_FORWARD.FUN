@@ -88,7 +88,7 @@ if compute\n\
 						\t\t\t\t\t\tdCurrent = abs(currentValue - amplitude);\n\
 						\t\t\t\t\t\tdPrevious = abs(previousValue - amplitude);\n\
 						\t\t\t\t\t\tif dCurrent > dPrevious\n\
-							\t\t\t\t\t\t\tfafMarkersValues = [fafMarkersValues; trialNumber, currentIndex/sampleFrequency, previousValue];\n\
+							\t\t\t\t\t\t\tfafMarkersValues = [fafMarkersValues; trialNumber, (currentIndex-2)/sampleFrequency, previousValue];\n\
 							\t\t\t\t\t\t\tbreak;\n\
 						\t\t\t\t\t\telse\n\
 							\t\t\t\t\t\t\tfafMarkersValues = [fafMarkersValues; trialNumber, (currentIndex-1)/sampleFrequency, currentValue];\n\
