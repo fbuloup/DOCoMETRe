@@ -127,6 +127,7 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 	private Label labelNbMarkers;
 	private Button keepScaleButton;
 	private Button showSamplesButton;
+	private Label sfLabel;
 
 	public SignalContainerEditor(Composite parent, int style, ChannelEditor channelEditor) {
 		super(parent, style);
@@ -598,7 +599,7 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		
 		double sf = MathEngineFactory.getMathEngine().getSampleFrequency(channelEditor.getChannel());
 		ChannelEditorWidgetsFactory.createLabel(infosGroup, DocometreMessages.FrequencyLabel, SWT.LEFT, false);
-		ChannelEditorWidgetsFactory.createLabel(infosGroup, Double.toString(sf), SWT.LEFT, true);
+		sfLabel = ChannelEditorWidgetsFactory.createLabel(infosGroup, Double.toString(sf), SWT.LEFT, true);
 		
 		nbTrials = MathEngineFactory.getMathEngine().getTrialsNumber(channelEditor.getChannel());
 		ChannelEditorWidgetsFactory.createLabel(infosGroup, DocometreMessages.TrialsNumberLabel2, SWT.LEFT, false);
@@ -835,12 +836,34 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 	}
 	
 	public void update() {
+		double sf = MathEngineFactory.getMathEngine().getSampleFrequency(channelEditor.getChannel());
+		sfLabel.setText(Double.toString(sf));
+		updateTrialsValuesHandler();
 		markersGroupsComboViewer.refresh();
 		markersGroupComboViewer.refresh();
 		featuresComboViewer.refresh();
-		chart.redraw();
+		refreshChart();
+//		chart.redraw();
 //		markersGroupComboViewer.setInput(channelEditor.getChannel());
 //		featuresComboViewer.setInput(channelEditor.getChannel());
+	}
+
+
+	@SuppressWarnings("unchecked")
+	private void refreshChart() {
+		List<Integer> selectedTrialsNumbers = trialsListViewer.getStructuredSelection().toList();
+		// Remove series from chart
+		for (Integer trialNumberInChart : selectedTrialsNumbers) {
+			removeSeriesFromChart(trialNumberInChart);
+		}
+			
+		// Add series again
+		for (Integer selectedTrialNumber : selectedTrialsNumbers) {
+			addSeriesToChart(selectedTrialNumber);
+		}
+		updateSeriesColorsHandler();
+		if(!keepScaleButton.getSelection()) chart.getAxisSet().adjustRange();
+		chart.redraw();
 	}
 	
 }
