@@ -66,6 +66,7 @@ public final class RunBatchDataProcessingDelegate {
 		// Get all data processing
 		monitor.subTask(DocometreMessages.GetAllDataProcessingLabel);
 		BatchDataProcessingItem[] processes = batchDataProcessing.getProcesses();
+		if(batchDataProcessing.isRunSingleProcess()) processes = new BatchDataProcessingItem[]{batchDataProcessing.getSelectedProcess()};
 		ArrayList<IResource> processesResource = new ArrayList<>();
 		for (BatchDataProcessingItem batchDataProcessingItem : processes) {
 			if(batchDataProcessingItem.isActivated()) {

@@ -54,9 +54,27 @@ public class BatchDataProcessing extends AbstractElement {
 	
 	private ArrayList<BatchDataProcessingItem> processes = new ArrayList<>();
 	private ArrayList<BatchDataProcessingItem> subjects = new ArrayList<>();
+	private BatchDataProcessingItem selectedProcess;
+	private boolean runSingleProcess;
 	
 	public BatchDataProcessing() {
 		BatchDataProcessingProperties.populateProperties(this);
+	}
+	
+	public BatchDataProcessingItem getSelectedProcess() {
+		return selectedProcess;
+	}
+	
+	public void setSelectedProcess(BatchDataProcessingItem selectedProcess) {
+		this.selectedProcess = selectedProcess;
+	}
+	
+	public boolean isRunSingleProcess() {
+		return runSingleProcess;
+	}
+	
+	public void setRunSingleProcess(boolean runSingleProcess) {
+		this.runSingleProcess = runSingleProcess;
 	}
 
 	@Override

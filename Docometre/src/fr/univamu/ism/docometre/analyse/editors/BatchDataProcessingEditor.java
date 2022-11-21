@@ -41,15 +41,21 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.analyse.editors;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 
 import org.eclipse.core.commands.operations.ObjectUndoContext;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -87,6 +93,8 @@ import fr.univamu.ism.docometre.analyse.datamodel.BatchDataProcessingProperties;
 import fr.univamu.ism.docometre.analyse.datamodel.MoveDownHandler;
 import fr.univamu.ism.docometre.analyse.datamodel.MoveUpHandler;
 import fr.univamu.ism.docometre.analyse.datamodel.RemoveHandler;
+import fr.univamu.ism.docometre.analyse.handlers.RunBatchDataProcessingDelegate;
+import fr.univamu.ism.docometre.analyse.handlers.UpdateWorkbenchDelegate;
 import fr.univamu.ism.docometre.editors.PartNameRefresher;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 
@@ -101,6 +109,8 @@ public class BatchDataProcessingEditor extends EditorPart implements PartNameRef
 	private FormToolkit formToolkit;
 	private ObjectUndoContext resourceEditorUndoContext;
 	private UndoRedoActionGroup undoRedoActionGroup;
+
+	private ToolItem runButton;
 
 	public BatchDataProcessingEditor() {
 		// TODO Auto-generated constructor stub
@@ -210,6 +220,39 @@ public class BatchDataProcessingEditor extends EditorPart implements PartNameRef
 		downButton.setToolTipText(DocometreMessages.Down_Label);
 		downButton.addSelectionListener(new MoveDownHandler(this, ResourceType.DATA_PROCESSING));
 		
+		new ToolItem(toolBar, SWT.SEPARATOR);
+		
+		runButton = new ToolItem(toolBar, SWT.NULL);
+		runButton.setImage(Activator.getImage(IImageKeys.RUN_ICON));
+		runButton.setToolTipText(DocometreMessages.RunSelectedProcess);
+		runButton.setEnabled(false);
+		runButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent event) {
+				ProgressMonitorDialog pmd = new ProgressMonitorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+				try {
+					pmd.run(false, false, new IRunnableWithProgress() {
+						@Override
+						public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+							BatchDataProcessing batchDataProcessing = getBatchDataProcessing();
+							BatchDataProcessingItem batchDataProcessingItem = (BatchDataProcessingItem) processesTableViewer.getStructuredSelection().getFirstElement();
+							String message = NLS.bind(DocometreMessages.RunningScriptLabel, batchDataProcessingItem.getPath().replaceAll(Activator.dataProcessingFileExtension, ""));
+							monitor.beginTask(message, IProgressMonitor.UNKNOWN);
+							batchDataProcessing.setRunSingleProcess(true);
+							batchDataProcessing.setSelectedProcess(batchDataProcessingItem);
+							RunBatchDataProcessingDelegate.run(getBatchDataProcessing(), monitor);
+							batchDataProcessing.setRunSingleProcess(false);
+							monitor.done();
+							UpdateWorkbenchDelegate.update();
+						}
+					});
+				} catch (InterruptedException | InvocationTargetException e) {
+					Activator.logErrorMessageWithCause(e);
+					e.printStackTrace();
+				} 
+			}
+		});
+		
 		parent.setTextClient(toolBar);
 		
 	}
@@ -282,6 +325,12 @@ public class BatchDataProcessingEditor extends EditorPart implements PartNameRef
 			}
 		});
 		processesTableViewer.setInput(getBatchDataProcessing());
+		processesTableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+			@Override
+			public void selectionChanged(SelectionChangedEvent event) {
+				runButton.setEnabled(event.getStructuredSelection().size() == 1);
+			}
+		});
 		
 	}
 	

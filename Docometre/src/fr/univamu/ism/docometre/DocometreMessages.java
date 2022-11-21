@@ -982,6 +982,7 @@ public final class DocometreMessages extends NLS {
 	public static String SavingLabel;
 	public static String UnloadingLabel;
 	public static String RunningScriptLabel;
+	public static String RunSelectedProcess;
 
 	// Close workbench
 	public static String CloseMathEngineDialogTitle;
@@ -1092,7 +1093,7 @@ public final class DocometreMessages extends NLS {
 	// signalContainer
 	public static String KeepScaleWhenTrialChange;
 	public static String ShowSamples;
-			
+
 	static {
 		// load message values from bundle file
 		String bn = BUNDLE_NAME;
