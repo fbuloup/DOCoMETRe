@@ -41,9 +41,9 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.handlers;
 
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -120,7 +120,7 @@ public class StartStopMathEngineHandler extends AbstractHandler implements IElem
 				} else {
 					// Unload subjects :
 					// Get all loaded subjects
-					Set<IResource> loadedSubjects = new HashSet<IResource>(0);
+					List<IResource> loadedSubjects = new ArrayList<IResource>(0);
 					IProject[] experiments = ResourcesPlugin.getWorkspace().getRoot().getProjects();
 					for (IProject experiment : experiments) {
 						try {

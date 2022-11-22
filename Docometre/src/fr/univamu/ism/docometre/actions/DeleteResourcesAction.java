@@ -42,6 +42,7 @@
 package fr.univamu.ism.docometre.actions;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -146,7 +147,7 @@ public class DeleteResourcesAction extends Action implements ISelectionListener,
 									deleteChannel = true;
 								} else if(ResourceType.isSubject(resource) && MathEngineFactory.getMathEngine().isSubjectLoaded(resource)) {
 									try {
-										HashSet<IResource> resources = new HashSet<>();
+										ArrayList<IResource> resources = new ArrayList<>();
 										resources.add(resource);
 										LoadUnloadSubjectsHandler.getInstance().resetSelection(resources);
 										LoadUnloadSubjectsHandler.getInstance().execute(null);
@@ -158,7 +159,7 @@ public class DeleteResourcesAction extends Action implements ISelectionListener,
 								} else if(ResourceType.isExperiment(resource)) {
 									try {
 										IResource[] subjects = ResourceProperties.getAllTypedResources(ResourceType.SUBJECT, (IContainer) resource, null);
-										HashSet<IResource> resources = new HashSet<>();
+										ArrayList<IResource> resources = new ArrayList<>();
 										for (IResource subject : subjects) {
 											if(MathEngineFactory.getMathEngine().isSubjectLoaded(subject)) resources.add(subject);
 										}

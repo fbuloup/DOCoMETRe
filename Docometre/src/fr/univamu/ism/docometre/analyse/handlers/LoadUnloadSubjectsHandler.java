@@ -42,23 +42,34 @@
 package fr.univamu.ism.docometre.analyse.handlers;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.apache.commons.collections4.map.HashedMap;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.osgi.util.NLS;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
@@ -83,7 +94,59 @@ import fr.univamu.ism.docometre.views.ExperimentsView;
 
 public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelectionListener {
 	
-	private Set<IResource> selectedSubjects = new HashSet<IResource>(0);
+	private class SaveSubjectsDialog extends Dialog {
+
+		private HashedMap<IResource, Boolean> mustSaveSubjects;
+
+		protected SaveSubjectsDialog(Shell parentShell, HashedMap<IResource, Boolean> mustSaveSubjects) {
+			super(parentShell);
+			this.mustSaveSubjects = mustSaveSubjects;
+		}
+		
+		@Override
+		protected Control createDialogArea(Composite parent) {
+			Composite container = (Composite) super.createDialogArea(parent);
+			Label label = new Label(container, SWT.NORMAL);
+			label.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+			label.setText(DocometreMessages.SelectSubjectsToSave);
+			CheckboxTableViewer subjectsListViewer = CheckboxTableViewer.newCheckList(container, SWT.NORMAL);
+			subjectsListViewer.setContentProvider(new ArrayContentProvider());
+			subjectsListViewer.setLabelProvider(new LabelProvider());
+			subjectsListViewer.setInput(selectedSubjects.toArray());
+			subjectsListViewer.getTable().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+			subjectsListViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+				@Override
+				public void selectionChanged(SelectionChangedEvent event) {
+					mustSaveSubjects.clear();
+					Object[] selectionArray = subjectsListViewer.getCheckedElements();
+					for (Object subject : selectionArray) {
+						mustSaveSubjects.put((IResource) subject, true);
+					}
+				}
+			});
+			
+			return container;
+		}
+		
+		@Override
+		protected boolean isResizable() {
+			return true;
+		}
+		
+		@Override
+		protected void configureShell(Shell newShell) {
+			super.configureShell(newShell);
+			newShell.setText(DocometreMessages.SelectSubjectsToSaveDialogTitle);
+		}
+		
+		@Override
+		protected void createButtonsForButtonBar(Composite parent) {
+			super.createButtonsForButtonBar(parent);
+			getButton(IDialogConstants.OK_ID).setText(DocometreMessages.Terminate);
+		}
+	}
+	
+	private List<IResource> selectedSubjects = new ArrayList<>();
 	private boolean cancel;
 	private static LoadUnloadSubjectsHandler loadUnloadSubjectsHandler;
 
@@ -106,111 +169,38 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 		}
 		cancel = false;
 		boolean cancelModified = false;
+		HashedMap<IResource, Boolean> mustSaveSubjects = new HashedMap<>(); 
+		for (IResource subject : selectedSubjects) {
+			boolean loaded = MathEngineFactory.getMathEngine().isSubjectLoaded(subject);
+			if(loaded) {
+				boolean modified = ResourceProperties.isSubjectModified(subject);
+				if(modified) mustSaveSubjects.put(subject, false);
+			}
+		}
+		
+		if(mustSaveSubjects.size() > 0) {
+			SaveSubjectsDialog saveSubjectsDialog = new SaveSubjectsDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), mustSaveSubjects);
+			int response = saveSubjectsDialog.open();
+			if(response == Window.CANCEL) {
+				mustSaveSubjects.clear();
+				return true;
+			}
+		}
+		
 		for (IResource subject : selectedSubjects) {
 			boolean loaded = MathEngineFactory.getMathEngine().isSubjectLoaded(subject);
 			String loadUnloadName = subject.getFullPath().segment(0) + "." + subject.getFullPath().segment(1);
 			if(loaded) {
 				if(ResourceProperties.isSubjectModified(subject)) {
-					String message = NLS.bind(DocometreMessages.RecordSubjectDialogMessage, loadUnloadName);
-					int response = MessageDialog.open(MessageDialog.QUESTION_WITH_CANCEL, PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), DocometreMessages.RecordSubjectDialogTitle, message, SWT.SHEET, IDialogConstants.YES_LABEL,
-							IDialogConstants.NO_LABEL,
-							IDialogConstants.CANCEL_LABEL);
-					if(response == 2) {
-						cancelModified = true;
-						continue;
-					}
-					if(response == MessageDialog.OK ) {
-						ProgressMonitorDialog progressMonitorDialog = new ProgressMonitorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
-						try {
-							progressMonitorDialog.run(true, false, new IRunnableWithProgress() {
-								@Override
-								public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-									monitor.beginTask(DocometreMessages.SavingSubject + "\"" + subject.getFullPath().toString() + "\". " + DocometreMessages.PleaseWait, IProgressMonitor.UNKNOWN);
-									Activator.logInfoMessage(DocometreMessages.SavingSubject + "\"" + subject.getFullPath().toString() + "\". ", LoadUnloadSubjectsHandler.this.getClass());
-									MathEngineFactory.getMathEngine().saveSubject(subject);
-									Activator.logInfoMessage(DocometreMessages.Done, LoadUnloadSubjectsHandler.this.getClass());
-									cancel = monitor.isCanceled();
-									monitor.done();
-								}
-							});
-						} catch (InvocationTargetException | InterruptedException e) {
-							Activator.logErrorMessageWithCause(e);
-							e.printStackTrace();
-						}
+					if(mustSaveSubjects.get(subject) != null && mustSaveSubjects.get(subject)) {
+						saveSubject(subject);
 					}
 				}
-				IEditorReference[] editorsReferences = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
-				for (IEditorReference editorReference : editorsReferences) {
-					if(editorReference.getId().equals(ChannelEditor.ID)) {
-						try {
-							Object object = ((ResourceEditorInput)editorReference.getEditorInput()).getObject();
-							Channel channel = (Channel)object;
-							if(channel.getParent().equals(subject)) {
-								editorReference.getEditor(false).getSite().getPage().closeEditor(editorReference.getEditor(false), true);
-							}
-						} catch (PartInitException e) {
-							Activator.logErrorMessageWithCause(e);
-							e.printStackTrace();
-						}
-					}
-					if(editorReference.getId().equals(XYChartEditor.ID) || editorReference.getId().equals(XYZChartEditor.ID)) {
-						try {
-							Object object = ((ResourceEditorInput)editorReference.getEditorInput()).getObject();
-							XYChart xyChart = (XYChart)object;
-							if(xyChart.contains(subject)) { 
-								editorReference.getEditor(false).getSite().getPage().closeEditor(editorReference.getEditor(false), true);
-							}
-						} catch (PartInitException e) {
-							Activator.logErrorMessageWithCause(e);
-							e.printStackTrace();
-						}
-					}
-					
-				}
-				ProgressMonitorDialog progressMonitorDialog = new ProgressMonitorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
-				try {
-					progressMonitorDialog.run(true, selectedSubjects.size()>1, new IRunnableWithProgress() {
-						@Override
-						public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-							try {
-								monitor.beginTask(DocometreMessages.UnloadingSubject + "\"" + loadUnloadName + "\". " + DocometreMessages.PleaseWait, IProgressMonitor.UNKNOWN);
-								Activator.logInfoMessage(DocometreMessages.UnloadingSubject + "\"" + loadUnloadName + "\". ", LoadUnloadSubjectsHandler.this.getClass());
-								MathEngineFactory.getMathEngine().unload(subject);
-								Activator.logInfoMessage(DocometreMessages.Done, LoadUnloadSubjectsHandler.this.getClass());
-								cancel = monitor.isCanceled();
-								monitor.done();
-								subject.setSessionProperty(ResourceProperties.SUBJECT_MODIFIED_QN, false);
-								subject.setSessionProperty(ResourceProperties.CHANNELS_LIST_QN, null);
-							} catch (CoreException e) {
-								Activator.logErrorMessageWithCause(e);
-								e.printStackTrace();
-							}
-						}
-					});
-				} catch (InvocationTargetException | InterruptedException e) {
-					Activator.logErrorMessageWithCause(e);
-					e.printStackTrace();
-				}
-			} else {
-				ProgressMonitorDialog progressMonitorDialog = new ProgressMonitorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
-				try {
-					progressMonitorDialog.run(true, selectedSubjects.size()>1, new IRunnableWithProgress() {
-						@Override
-						public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-							monitor.beginTask(DocometreMessages.LoadingSubject+ "\"" + loadUnloadName + "\". " + DocometreMessages.PleaseWait, IProgressMonitor.UNKNOWN);
-							Activator.logInfoMessage(DocometreMessages.LoadingSubject + "\"" + loadUnloadName + "\". ", LoadUnloadSubjectsHandler.this.getClass());
-							boolean loadFromSavedFile = Activator.getDefault().getPreferenceStore().getBoolean(MathEnginePreferencesConstants.ALWAYS_LOAD_FROM_SAVED_DATA);
-							MathEngineFactory.getMathEngine().load(subject, loadFromSavedFile);
-							Activator.logInfoMessage(DocometreMessages.Done, LoadUnloadSubjectsHandler.this.getClass());
-							cancel = monitor.isCanceled();
-							monitor.done();
-						}
-					});
-				} catch (InvocationTargetException | InterruptedException e) {
-					Activator.logErrorMessageWithCause(e);
-					e.printStackTrace();
-				}
-			}
+				closeEditors(subject);
+				unloadSubject(subject, loadUnloadName);
+			} else loadSubject(subject, loadUnloadName);
+			
+			
 			if(cancel) break;
 		}
 		for (IResource subject : selectedSubjects) {
@@ -244,8 +234,107 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 		setBaseEnabled(selectedSubjects.size() > 0);
 	}
 	
-	public void resetSelection(Set<IResource> selectedSubjects) {
+	public void resetSelection(List<IResource> selectedSubjects) {
 		this.selectedSubjects = selectedSubjects;
+	}
+	
+	private void saveSubject(IResource subject) {
+		ProgressMonitorDialog progressMonitorDialog = new ProgressMonitorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+		try {
+			progressMonitorDialog.run(true, false, new IRunnableWithProgress() {
+				@Override
+				public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+					monitor.beginTask(DocometreMessages.SavingSubject + "\"" + subject.getFullPath().toString() + "\". " + DocometreMessages.PleaseWait, IProgressMonitor.UNKNOWN);
+					Activator.logInfoMessage(DocometreMessages.SavingSubject + "\"" + subject.getFullPath().toString() + "\". ", LoadUnloadSubjectsHandler.this.getClass());
+					MathEngineFactory.getMathEngine().saveSubject(subject);
+					Activator.logInfoMessage(DocometreMessages.Done, LoadUnloadSubjectsHandler.this.getClass());
+					cancel = monitor.isCanceled();
+					monitor.done();
+				}
+			});
+		} catch (InvocationTargetException | InterruptedException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+			cancel = true;
+		}
+	}
+	
+	private void closeEditors(IResource subject) {
+		IEditorReference[] editorsReferences = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
+		for (IEditorReference editorReference : editorsReferences) {
+			if(editorReference.getId().equals(ChannelEditor.ID)) {
+				try {
+					Object object = ((ResourceEditorInput)editorReference.getEditorInput()).getObject();
+					Channel channel = (Channel)object;
+					if(channel.getParent().equals(subject)) {
+						editorReference.getEditor(false).getSite().getPage().closeEditor(editorReference.getEditor(false), true);
+					}
+				} catch (PartInitException e) {
+					Activator.logErrorMessageWithCause(e);
+					e.printStackTrace();
+				}
+			}
+			if(editorReference.getId().equals(XYChartEditor.ID) || editorReference.getId().equals(XYZChartEditor.ID)) {
+				try {
+					Object object = ((ResourceEditorInput)editorReference.getEditorInput()).getObject();
+					XYChart xyChart = (XYChart)object;
+					if(xyChart.contains(subject)) { 
+						editorReference.getEditor(false).getSite().getPage().closeEditor(editorReference.getEditor(false), true);
+					}
+				} catch (PartInitException e) {
+					Activator.logErrorMessageWithCause(e);
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	private void unloadSubject(IResource subject, String loadUnloadName) {
+		ProgressMonitorDialog progressMonitorDialog = new ProgressMonitorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+		try {
+			progressMonitorDialog.run(true, selectedSubjects.size()>1, new IRunnableWithProgress() {
+				@Override
+				public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+					try {
+						monitor.beginTask(DocometreMessages.UnloadingSubject + "\"" + loadUnloadName + "\". " + DocometreMessages.PleaseWait, IProgressMonitor.UNKNOWN);
+						Activator.logInfoMessage(DocometreMessages.UnloadingSubject + "\"" + loadUnloadName + "\". ", LoadUnloadSubjectsHandler.this.getClass());
+						MathEngineFactory.getMathEngine().unload(subject);
+						Activator.logInfoMessage(DocometreMessages.Done, LoadUnloadSubjectsHandler.this.getClass());
+						cancel = monitor.isCanceled();
+						monitor.done();
+						subject.setSessionProperty(ResourceProperties.SUBJECT_MODIFIED_QN, false);
+						subject.setSessionProperty(ResourceProperties.CHANNELS_LIST_QN, null);
+					} catch (CoreException e) {
+						Activator.logErrorMessageWithCause(e);
+						e.printStackTrace();
+					}
+				}
+			});
+		} catch (InvocationTargetException | InterruptedException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+	}
+	
+	private void loadSubject(IResource subject, String loadUnloadName) {
+		ProgressMonitorDialog progressMonitorDialog = new ProgressMonitorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+		try {
+			progressMonitorDialog.run(true, selectedSubjects.size()>1, new IRunnableWithProgress() {
+				@Override
+				public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+					monitor.beginTask(DocometreMessages.LoadingSubject+ "\"" + loadUnloadName + "\". " + DocometreMessages.PleaseWait, IProgressMonitor.UNKNOWN);
+					Activator.logInfoMessage(DocometreMessages.LoadingSubject + "\"" + loadUnloadName + "\". ", LoadUnloadSubjectsHandler.this.getClass());
+					boolean loadFromSavedFile = Activator.getDefault().getPreferenceStore().getBoolean(MathEnginePreferencesConstants.ALWAYS_LOAD_FROM_SAVED_DATA);
+					MathEngineFactory.getMathEngine().load(subject, loadFromSavedFile);
+					Activator.logInfoMessage(DocometreMessages.Done, LoadUnloadSubjectsHandler.this.getClass());
+					cancel = monitor.isCanceled();
+					monitor.done();
+				}
+			});
+		} catch (InvocationTargetException | InterruptedException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
 	}
 	
 }

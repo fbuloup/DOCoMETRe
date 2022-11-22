@@ -1090,9 +1090,15 @@ public final class DocometreMessages extends NLS {
 	public static String CompileDialog_Title;
 	public static String CompileDialog_Message;
 	public static String CompileDialog_ShellTitle;
+
 	// signalContainer
 	public static String KeepScaleWhenTrialChange;
 	public static String ShowSamples;
+
+	// Select subjects to save Dialog
+	public static String SelectSubjectsToSave;
+	public static String SelectSubjectsToSaveDialogTitle;
+	public static String Terminate;
 
 	static {
 		// load message values from bundle file
