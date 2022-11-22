@@ -86,6 +86,7 @@ import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.PartListenerAdapter;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.datamodel.EnableDisableHandler;
+import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.datamodel.AddHandler;
 import fr.univamu.ism.docometre.analyse.datamodel.BatchDataProcessing;
 import fr.univamu.ism.docometre.analyse.datamodel.BatchDataProcessingItem;
@@ -229,6 +230,7 @@ public class BatchDataProcessingEditor extends EditorPart implements PartNameRef
 		runButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent event) {
+				if(!MathEngineFactory.getMathEngine().isStarted()) return;
 				ProgressMonitorDialog pmd = new ProgressMonitorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
 				try {
 					pmd.run(false, false, new IRunnableWithProgress() {
