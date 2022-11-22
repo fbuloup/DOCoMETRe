@@ -84,6 +84,7 @@ public class ObjectsController {
 			xStream = new XStream();
 			xStream.addPermission(AnyTypePermission.ANY);
 			xStream.setMode(XStream.ID_REFERENCES);
+			xStream.ignoreUnknownElements();
 		}
 		return xStream;
 	}
