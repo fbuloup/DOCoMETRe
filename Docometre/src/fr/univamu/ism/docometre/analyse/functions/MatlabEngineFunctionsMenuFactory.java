@@ -87,8 +87,8 @@ public class MatlabEngineFunctionsMenuFactory {
 	public static String[] EventsFunctionsFiles = new String[] {};
 	public static String[] EventsFunctionsClasses = new String[] {};
 	
-	public static String[] ExportFunctionsFiles = new String[] {ExportMarkers.functionFileName};
-	public static String[] ExportFunctionsClasses = new String[] {ExportMarkers.class.getName()};
+	public static String[] ExportFunctionsFiles = new String[] {ExportMarkers.functionFileName, ExportFeatures.functionFileName};
+	public static String[] ExportFunctionsClasses = new String[] {ExportMarkers.class.getName(), ExportFeatures.class.getName()};
 	
 //	public static String[] MatlabEngineFunctionsFiles = new String[] {ButterworthLowPass.functionFileName, 
 //		    														SEPARATOR,
