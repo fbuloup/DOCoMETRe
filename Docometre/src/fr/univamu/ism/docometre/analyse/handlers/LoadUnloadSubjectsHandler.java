@@ -111,7 +111,15 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 			label.setText(DocometreMessages.SelectSubjectsToSave);
 			CheckboxTableViewer subjectsListViewer = CheckboxTableViewer.newCheckList(container, SWT.NORMAL);
 			subjectsListViewer.setContentProvider(new ArrayContentProvider());
-			subjectsListViewer.setLabelProvider(new LabelProvider());
+			subjectsListViewer.setLabelProvider(new LabelProvider() {
+				@Override
+				public String getText(Object element) {
+					if(element instanceof IResource) {
+						return ((IResource)element).getFullPath().toPortableString();
+					}
+					return super.getText(element);
+				}
+			});
 			subjectsListViewer.setInput(selectedSubjects.toArray());
 			subjectsListViewer.getTable().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 			subjectsListViewer.addSelectionChangedListener(new ISelectionChangedListener() {
