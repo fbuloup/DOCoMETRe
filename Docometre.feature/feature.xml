@@ -6,15 +6,28 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-11-19
+      -- 2022-11-23
+ADDED:
+* It is now possible to run single process in Batch data proc. editor
+* Dialog to be able to save several subjects at a time
+* Export features function (Matlab and Python) 
+FIXED :
+* Update signal editor (sample freq., front/end cuts) 
+* Ignore unknown elements in XML files
+* Don&apos;t run batch process if math. engine is not running
+-- 2022-11-19
 ADDED :
-* Export Markers function : add support for relative/absolute dest.
+* Export Markers function : add support for relative/absolute
+dest.
 * Markers difference function (Matlab and Python)
-* Markers difference function set initial selection for difference type
+* Markers difference function set initial selection for difference
+type
 * Show samples and Keep scale when trials change in signals editors
 FIXED :
-* Bad trial number with Python (indices start form zero with Python)
-* Export Markers function : turn widget field to transient for serialization
+* Bad trial number with Python (indices start form zero with
+Python)
+* Export Markers function : turn widget field to transient for
+serialization
 * Motion distance function : index correction
 * Remove pulses function : clear SignalSizes variable
 * Export Markers function : clear several variables
