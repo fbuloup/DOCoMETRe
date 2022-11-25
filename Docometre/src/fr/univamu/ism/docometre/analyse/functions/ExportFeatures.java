@@ -26,6 +26,7 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jface.window.Window;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -54,6 +55,7 @@ import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.analyse.editors.ChannelsContentProvider;
 import fr.univamu.ism.docometre.dacqsystems.functions.GenericFunction;
+import fr.univamu.ism.docometre.dialogs.FunctionalBlockConfigurationDialog;
 import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
 import fr.univamu.ism.process.Block;
 import fr.univamu.ism.process.Script;
@@ -200,6 +202,10 @@ public class ExportFeatures extends GenericFunction {
 		Composite paramContainer = new Composite(container, SWT.NORMAL);
 		paramContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		paramContainer.setLayout(new GridLayout());
+		
+		if(!checkPreBuildGUI((FunctionalBlockConfigurationDialog)titleAreaDialog, paramContainer, 2, context)) {
+			return paramContainer;
+		}
 		
 		Composite filterContainer = new Composite(paramContainer, SWT.NORMAL);
 		filterContainer.setLayout(new GridLayout(2, false));
@@ -365,11 +371,17 @@ public class ExportFeatures extends GenericFunction {
 		String featuresList = getProperty(featuresListKey, "");
 		String[] features = featuresList.split(";");
 		TableItem[] tableItems = featuresCheckboxTableViewer.getTable().getItems();
-		for (TableItem tableItem : tableItems) {
-			for (String feature : features) {
-				boolean checked = tableItem.getText().equals(feature);
+		for (String feature : features) {
+			boolean checked = false;
+			for (TableItem tableItem : tableItems) {
+				checked = tableItem.getText().equals(feature);
 				tableItem.setChecked(checked);
 				if(checked) break;
+			}
+			if(!checked) {
+				String message = NLS.bind(DocometreMessages.ImpossibleToFindChannelTitle, feature);
+				Activator.logErrorMessage(message);
+				((FunctionalBlockConfigurationDialog)titleAreaDialog).setErrorMessage(DocometreMessages.FunctionalBlockConfigurationDialogBlockingMessage);
 			}
 		}
 		featuresCheckboxTableViewer.addCheckStateListener(new ICheckStateListener() {
