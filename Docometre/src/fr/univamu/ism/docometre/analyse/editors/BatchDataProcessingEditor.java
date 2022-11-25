@@ -396,6 +396,7 @@ public class BatchDataProcessingEditor extends EditorPart implements PartNameRef
 		formText.setImage("DOWN", Activator.getImage(IImageKeys.DOWN_ICON));
 		formText.setImage("ENDIS", Activator.getImage(IImageKeys.ENABLE_DISABLE_ICON));
 		formText.setImage("DEACT", Activator.getImage(IImageKeys.DEACTIVATE_ICON));
+		formText.setImage("RUN", Activator.getImage(IImageKeys.RUN_ICON));
 		formText.setText(DocometreMessages.Explanation, true, false);
 		
 		introSection.setClient(formText);

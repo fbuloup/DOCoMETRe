@@ -56,7 +56,9 @@ import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.datamodel.BatchDataProcessing;
 import fr.univamu.ism.docometre.analyse.datamodel.BatchDataProcessingItem;
+import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.preferences.MathEnginePreferencesConstants;
+import fr.univamu.ism.docometre.views.ExperimentsView;
 import fr.univamu.ism.process.Script;
 import fr.univamu.ism.process.ScriptSegmentType;
 
@@ -121,6 +123,8 @@ public final class RunBatchDataProcessingDelegate {
 				boolean loadFromSavedFile = Activator.getDefault().getPreferenceStore().getBoolean(MathEnginePreferencesConstants.ALWAYS_LOAD_FROM_SAVED_DATA);
 				MathEngineFactory.getMathEngine().load(subjectResource, loadFromSavedFile);
 				loaded = MathEngineFactory.getMathEngine().isSubjectLoaded(subjectResource);
+				ExperimentsView.refresh(subjectResource, null);
+				SubjectsView.refresh(subjectResource, null);
 			}
 			if(monitor.isCanceled()) return true;
 			if(loaded) {
