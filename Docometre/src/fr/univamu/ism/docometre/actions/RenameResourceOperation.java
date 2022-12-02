@@ -70,7 +70,10 @@ import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
+import fr.univamu.ism.docometre.analyse.datamodel.BatchDataProcessing;
+import fr.univamu.ism.docometre.analyse.datamodel.BatchDataProcessingItem;
 import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
+import fr.univamu.ism.docometre.analyse.editors.BatchDataProcessingEditor;
 import fr.univamu.ism.docometre.analyse.views.FunctionsView;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.dacqsystems.Process;
@@ -174,6 +177,8 @@ public class RenameResourceOperation extends AbstractOperation {
 							updateTrials(resource, newResource);
 							updateProcessTest(resource, newResource);
 						}
+						if(ResourceType.isDataProcessing(newResource)) updateBatchDataProcessingForProcessOrSubject(resource, newResource, true);
+						if(ResourceType.isSubject(newResource)) updateBatchDataProcessingForProcessOrSubject(resource, newResource, false);
 						// Get editors (dacq configuration and process) to update part names when necessary
 						monitor.subTask(DocometreMessages.UpdateEditorsSubTaskTitle);
 						updateEditorsPartName(resource, newResource);
@@ -212,7 +217,6 @@ public class RenameResourceOperation extends AbstractOperation {
 								}
 							}
 						}
-						
 						if(refreshUI) {
 							// Refresh experiments view for this resource
 							monitor.subTask(DocometreMessages.RefreshExperimentsSubjectsViewsSubTaskTitle);
@@ -299,6 +303,59 @@ public class RenameResourceOperation extends AbstractOperation {
 				}
 			}
 		});
+	}
+	
+	/*
+	 * This method update associated batch data processing when renamed resource (process) is used 
+	 * It also refreshes editors if necessary
+	 */
+	protected void updateBatchDataProcessingForProcessOrSubject(IResource oldResource, IResource newResource, boolean forProcess) {
+		IResource[] dataProcessesResources = ResourceProperties.getAllTypedResources(ResourceType.BATCH_DATA_PROCESSING, newResource.getProject(), null);
+		for (IResource dataProcessingResource : dataProcessesResources) {
+			Object object = ResourceProperties.getObjectSessionProperty(dataProcessingResource);
+			boolean removeHandle = false;
+			if(object == null) {
+				object = ObjectsController.deserialize((IFile) dataProcessingResource);
+				ResourceProperties.setObjectSessionProperty(dataProcessingResource, object);
+				ObjectsController.addHandle(object);
+				removeHandle = true;
+			}
+			BatchDataProcessing batchDataProcessing = (BatchDataProcessing) object;
+			BatchDataProcessingItem[] batchDataProcessingItems = new BatchDataProcessingItem[0];
+			if(forProcess) batchDataProcessingItems = batchDataProcessing.getProcesses();
+			else batchDataProcessingItems = batchDataProcessing.getSubjects();
+			for (BatchDataProcessingItem batchDataProcessingItem : batchDataProcessingItems) {
+				if(oldResource.getFullPath().toPortableString().equals(batchDataProcessingItem.getPath())) {
+					batchDataProcessingItem.setPath(newResource.getFullPath().toPortableString());
+					// Update editor 
+					PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+						@Override
+						public void run() {
+							IEditorReference[] editorReferences = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
+							for (int i = 0; i < editorReferences.length; i++) {
+								ResourceEditorInput resourceEditorInput;
+								try {
+									resourceEditorInput = ((ResourceEditorInput)editorReferences[i].getEditorInput());
+									Object editorObject = resourceEditorInput.getObject();
+									if(editorObject == batchDataProcessing) {
+										if(forProcess) ((BatchDataProcessingEditor)editorReferences[i].getEditor(false)).refreshProcesses();
+										else ((BatchDataProcessingEditor)editorReferences[i].getEditor(false)).refreshSubjects();
+									}
+								} catch (PartInitException e) {
+									Activator.logErrorMessageWithCause(e);
+									e.printStackTrace();
+								}
+							}
+							
+						}
+					});
+				}
+			}
+			if(removeHandle) {
+				ObjectsController.serialize(object);
+				ObjectsController.removeHandle(object);
+			}
+		}
 	}
 	
 	/*

@@ -44,7 +44,6 @@ package fr.univamu.ism.docometre.analyse.datamodel;
 import java.util.ArrayList;
 
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 
@@ -174,11 +173,6 @@ public class BatchDataProcessing extends AbstractElement {
 	}
 	
 	public BatchDataProcessingItem[] getProcesses() {
-		BatchDataProcessingItem[] items = processes.toArray(new BatchDataProcessingItem[processes.size()]);
-		for (BatchDataProcessingItem item : items) {
-			IResource process = ResourcesPlugin.getWorkspace().getRoot().findMember(item.getPath());
-			if(process == null) processes.remove(item);
-		}
 		return processes.toArray(new BatchDataProcessingItem[processes.size()]);
 	}
 	
@@ -270,11 +264,6 @@ public class BatchDataProcessing extends AbstractElement {
 	}
 	
 	public BatchDataProcessingItem[] getSubjects() {
-		BatchDataProcessingItem[] items = subjects.toArray(new BatchDataProcessingItem[subjects.size()]);
-		for (BatchDataProcessingItem item : items) {
-			IResource subject = ResourcesPlugin.getWorkspace().getRoot().findMember(item.getPath());
-			if(subject == null) subjects.remove(item);
-		}
 		return subjects.toArray(new BatchDataProcessingItem[subjects.size()]);
 	}
 
