@@ -47,6 +47,7 @@ import java.util.Arrays;
 import org.eclipse.core.commands.operations.ObjectUndoContext;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -100,6 +101,13 @@ import fr.univamu.ism.docometre.editors.PartNameRefresher;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 
 public class BatchDataProcessingEditor extends EditorPart implements PartNameRefresher  {
+	
+	private class SaveScriptAction extends Action {
+		public SaveScriptAction() {
+			setImageDescriptor(Activator.getImageDescriptor(IImageKeys.SAVE_AS_ICON));
+			setText(DocometreMessages.SaveProcessingScript);
+		}
+	}
 	
 	public static String ID = "Docometre.BatchDataProcessingEditor";
 	
@@ -376,6 +384,9 @@ public class BatchDataProcessingEditor extends EditorPart implements PartNameRef
 		Form form = formToolkit.createForm(parent);
 		formToolkit.decorateFormHeading(form);
 		form.setText(DocometreMessages.OrganizeProcessesAndSubjects);
+		
+		form.getToolBarManager().add(new SaveScriptAction());
+		form.getToolBarManager().update(true);
 		
 		Composite container = form.getBody();
 		container.setLayout(new GridLayout(2, true));

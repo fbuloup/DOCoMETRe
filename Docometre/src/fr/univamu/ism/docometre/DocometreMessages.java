@@ -1100,6 +1100,8 @@ public final class DocometreMessages extends NLS {
 	public static String SelectSubjectsToSaveDialogTitle;
 	public static String Terminate;
 
+	public static String SaveProcessingScript;
+
 	static {
 		// load message values from bundle file
 		String bn = BUNDLE_NAME;

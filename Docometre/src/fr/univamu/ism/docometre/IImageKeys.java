@@ -217,6 +217,7 @@ public interface IImageKeys {
 	public static final String LINK_TO_EDITOR_ICON = "icons/link_to_editor.png"; //$NON-NLS-1$
 	
 	public static final String BUILD_WIZBAN = "icons/build.gif"; //$NON-NLS-1$
+	public static final String SAVE_AS_ICON = "icons/save_as.png"; //$NON-NLS-1$
 	
 	
 }
