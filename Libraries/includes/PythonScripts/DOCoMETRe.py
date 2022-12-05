@@ -531,92 +531,92 @@ if __name__ == "__main__":
         
         # Example to find global maximum
 
-		docometre.loadData("OPTITRACK_TYPE_1", "test.S02", "/Users/frank/Desktop/Demo/test/S02/D/S02_D_1.csv;/Users/frank/Desktop/Demo/test/S02/D/S02_D_2.csv;/Users/frank/Desktop/Demo/test/S02/D/S02_D_3.csv;/Users/frank/Desktop/Demo/test/S02/D/S02_D_4.csv;/Users/frank/Desktop/Demo/test/S02/D/S02_D_5.csv;/Users/frank/Desktop/Demo/test/S02/D/S02_D_6.csv;/Users/frank/Desktop/Demo/test/S02/ND/S02_ND_1.csv;/Users/frank/Desktop/Demo/test/S02/ND/S02_ND_2.csv;/Users/frank/Desktop/Demo/test/S02/ND/S02_ND_3.csv;/Users/frank/Desktop/Demo/test/S02/ND/S02_ND_4.csv;/Users/frank/Desktop/Demo/test/S02/ND/S02_ND_5.csv;/Users/frank/Desktop/Demo/test/S02/ND/S02_ND_6.csv", None);
+		# docometre.loadData("OPTITRACK_TYPE_1", "test.S02", "/Users/frank/Desktop/Demo/test/S02/D/S02_D_1.csv;/Users/frank/Desktop/Demo/test/S02/D/S02_D_2.csv;/Users/frank/Desktop/Demo/test/S02/D/S02_D_3.csv;/Users/frank/Desktop/Demo/test/S02/D/S02_D_4.csv;/Users/frank/Desktop/Demo/test/S02/D/S02_D_5.csv;/Users/frank/Desktop/Demo/test/S02/D/S02_D_6.csv;/Users/frank/Desktop/Demo/test/S02/ND/S02_ND_1.csv;/Users/frank/Desktop/Demo/test/S02/ND/S02_ND_2.csv;/Users/frank/Desktop/Demo/test/S02/ND/S02_ND_3.csv;/Users/frank/Desktop/Demo/test/S02/ND/S02_ND_4.csv;/Users/frank/Desktop/Demo/test/S02/ND/S02_ND_5.csv;/Users/frank/Desktop/Demo/test/S02/ND/S02_ND_6.csv", None);
 
-		import numpy;
-		from datetime import datetime;
-
-		signalSizes = docometre.experiments['test.S02.doigt_Y.Values'].shape;
-		nbSamples = docometre.experiments['test.S02.doigt_Y.NbSamples'];
-		compute = True;
-		NbMarkersGroups = 0;
-		# Check if markers Group already exists
-		if "test.S02.doigt_Y.NbMarkersGroups" in docometre.experiments.keys():
-			nbMarkersGroups = int(docometre.experiments["test.S02.doigt_Y.NbMarkersGroups"]);
-			for markersGroupNumber in range(nbMarkersGroups):
-				if docometre.experiments["test.S02.doigt_Y.MarkersGroupsLabels"][markersGroupNumber] == "Maximum":
-					compute = False;
-					break;
-		if compute:
-			# Get signal input values
-			values = docometre.experiments["test.S02.doigt_Y.Values"];
-			# Create new output markers group
-			nbMarkersGroups = int(nbMarkersGroups) + 1;
-			docometre.experiments["test.S02.doigt_Y.NbMarkersGroups"] = str(nbMarkersGroups);
-			if nbMarkersGroups == 1:
-				expression = docometre.experiments["test.S02.doigt_Y.MarkersGroupsLabels"] = ["Maximum"];
-			else:
-				expression = docometre.experiments["test.S02.doigt_Y.MarkersGroupsLabels"].append("Maximum");
-			docometre.experiments["test.S02.doigt_Y.MarkersGroup_Maximum_Values"] = numpy.zeros((0, 3));
-			maxMarkersValues = docometre.experiments["test.S02.doigt_Y.MarkersGroup_Maximum_Values"];
-			# Convert sample frequency to float
-			sampleFrequency = float(docometre.experiments['test.S02.doigt_Y.SampleFrequency']);
-			# Get from and to values
-			if "From_Beginning" == "From_Beginning":
-				fromValues = numpy.zeros((signalSizes[0], 3));
-				fromValues[:, 0] = numpy.r_[0:12] + 1;
-				fromValues[:, 2] = values[:, 0];
-			else:
-				if ("From_Beginning".endswith(".FrontCut")):
-					fromValues = numpy.zeros((signalSizes[0], 3));
-					fromValues[:, 0] = numpy.r_[0:12] + 1;
-					fromValues[:, 1] = numpy.true_divide(docometre.experiments["From_Beginning"], sampleFrequency);
-					fromValues[:, 2] = values[:, 0];
-				else:
-					fromValues = docometre.experiments["From_Beginning_Values"];
-			if "To_End" == "To_End":
-				toValues = numpy.zeros((signalSizes[0], 3));
-				toValues[:, 0] = numpy.r_[0:12] + 1;
-				toValues[:, 1] = numpy.true_divide(nbSamples, sampleFrequency);
-				toValues[:, 2] = nbSamples;
-			else:
-				if ("To_End".endswith(".EndCut")):
-					toValues = numpy.zeros((signalSizes[0], 3));
-					toValues[:, 0] = numpy.r_[0:12] + 1;
-					toValues[:, 1] = numpy.true_divide(docometre.experiments["To_End"], sampleFrequency);
-					toValues[:, 2] = values[:, 0];
-				else:
-					toValues = docometre.experiments["To_End_Values"];
-			for trialNumber in numpy.r_[0:12]:
-				# Get from and to index in from and to values for trialNumber
-				fromIndex = numpy.where(fromValues[:, 0] == (trialNumber + 1))[0];
-				toIndex = numpy.where(toValues[:, 0] == (trialNumber + 1))[0];
-				# if both indices exist
-				if (fromIndex.size > 0 and toIndex.size > 0):
-					# Convert from and to in samples number
-					fromIndex = int(fromValues[fromIndex[0]][1] * sampleFrequency);
-					toIndex = int(toValues[toIndex[0]][1] * sampleFrequency);
-					# Compute max between from and to index
-					maxValue = values[trialNumber, fromIndex:toIndex].max(axis=0);
-					maxIndex = values[trialNumber, fromIndex:toIndex].argmax(axis=0);
-					maxMarkerTime = (fromIndex + maxIndex) / sampleFrequency;
-					maxMarkersValues = numpy.append(maxMarkersValues, [[trialNumber + 1, maxMarkerTime, maxValue]],
-													axis=0);
-			docometre.experiments["test.S02.doigt_Y.MarkersGroup_Maximum_Values"] = maxMarkersValues;
-			if not ("createdOrModifiedChannels" in docometre.experiments.keys()):
-				docometre.experiments["createdOrModifiedChannels"] = "test.S02.doigt_Y";
-			else:
-				docometre.experiments["createdOrModifiedChannels"] = docometre.experiments[
-																		 "createdOrModifiedChannels"] + ":test.S02.doigt_Y";
-		else:
-			if "ErrorMessages" in docometre.experiments.keys():
-				docometre.experiments["ErrorMessages"] = docometre.experiments[
-															 "ErrorMessages"] + "|" + datetime.utcnow().strftime(
-					'%Y-%m-%d %H:%M:%S:%f')[
-																					  :-3] + " - From Maximum function -> A Marker with this label already exists : Maximum";
-			else:
-				docometre.experiments["ErrorMessages"] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S:%f')[
-														 :-3] + " - From Maximum function -> A Marker with this label already exists : Maximum (test.S02.doigt_Y)";
+		# import numpy;
+		# from datetime import datetime;
+		#
+		# signalSizes = docometre.experiments['test.S02.doigt_Y.Values'].shape;
+		# nbSamples = docometre.experiments['test.S02.doigt_Y.NbSamples'];
+		# compute = True;
+		# NbMarkersGroups = 0;
+		# # Check if markers Group already exists
+		# if "test.S02.doigt_Y.NbMarkersGroups" in docometre.experiments.keys():
+		# 	nbMarkersGroups = int(docometre.experiments["test.S02.doigt_Y.NbMarkersGroups"]);
+		# 	for markersGroupNumber in range(nbMarkersGroups):
+		# 		if docometre.experiments["test.S02.doigt_Y.MarkersGroupsLabels"][markersGroupNumber] == "Maximum":
+		# 			compute = False;
+		# 			break;
+		# if compute:
+		# 	# Get signal input values
+		# 	values = docometre.experiments["test.S02.doigt_Y.Values"];
+		# 	# Create new output markers group
+		# 	nbMarkersGroups = int(nbMarkersGroups) + 1;
+		# 	docometre.experiments["test.S02.doigt_Y.NbMarkersGroups"] = str(nbMarkersGroups);
+		# 	if nbMarkersGroups == 1:
+		# 		expression = docometre.experiments["test.S02.doigt_Y.MarkersGroupsLabels"] = ["Maximum"];
+		# 	else:
+		# 		expression = docometre.experiments["test.S02.doigt_Y.MarkersGroupsLabels"].append("Maximum");
+		# 	docometre.experiments["test.S02.doigt_Y.MarkersGroup_Maximum_Values"] = numpy.zeros((0, 3));
+		# 	maxMarkersValues = docometre.experiments["test.S02.doigt_Y.MarkersGroup_Maximum_Values"];
+		# 	# Convert sample frequency to float
+		# 	sampleFrequency = float(docometre.experiments['test.S02.doigt_Y.SampleFrequency']);
+		# 	# Get from and to values
+		# 	if "From_Beginning" == "From_Beginning":
+		# 		fromValues = numpy.zeros((signalSizes[0], 3));
+		# 		fromValues[:, 0] = numpy.r_[0:12] + 1;
+		# 		fromValues[:, 2] = values[:, 0];
+		# 	else:
+		# 		if ("From_Beginning".endswith(".FrontCut")):
+		# 			fromValues = numpy.zeros((signalSizes[0], 3));
+		# 			fromValues[:, 0] = numpy.r_[0:12] + 1;
+		# 			fromValues[:, 1] = numpy.true_divide(docometre.experiments["From_Beginning"], sampleFrequency);
+		# 			fromValues[:, 2] = values[:, 0];
+		# 		else:
+		# 			fromValues = docometre.experiments["From_Beginning_Values"];
+		# 	if "To_End" == "To_End":
+		# 		toValues = numpy.zeros((signalSizes[0], 3));
+		# 		toValues[:, 0] = numpy.r_[0:12] + 1;
+		# 		toValues[:, 1] = numpy.true_divide(nbSamples, sampleFrequency);
+		# 		toValues[:, 2] = nbSamples;
+		# 	else:
+		# 		if ("To_End".endswith(".EndCut")):
+		# 			toValues = numpy.zeros((signalSizes[0], 3));
+		# 			toValues[:, 0] = numpy.r_[0:12] + 1;
+		# 			toValues[:, 1] = numpy.true_divide(docometre.experiments["To_End"], sampleFrequency);
+		# 			toValues[:, 2] = values[:, 0];
+		# 		else:
+		# 			toValues = docometre.experiments["To_End_Values"];
+		# 	for trialNumber in numpy.r_[0:12]:
+		# 		# Get from and to index in from and to values for trialNumber
+		# 		fromIndex = numpy.where(fromValues[:, 0] == (trialNumber + 1))[0];
+		# 		toIndex = numpy.where(toValues[:, 0] == (trialNumber + 1))[0];
+		# 		# if both indices exist
+		# 		if (fromIndex.size > 0 and toIndex.size > 0):
+		# 			# Convert from and to in samples number
+		# 			fromIndex = int(fromValues[fromIndex[0]][1] * sampleFrequency);
+		# 			toIndex = int(toValues[toIndex[0]][1] * sampleFrequency);
+		# 			# Compute max between from and to index
+		# 			maxValue = values[trialNumber, fromIndex:toIndex].max(axis=0);
+		# 			maxIndex = values[trialNumber, fromIndex:toIndex].argmax(axis=0);
+		# 			maxMarkerTime = (fromIndex + maxIndex) / sampleFrequency;
+		# 			maxMarkersValues = numpy.append(maxMarkersValues, [[trialNumber + 1, maxMarkerTime, maxValue]],
+		# 											axis=0);
+		# 	docometre.experiments["test.S02.doigt_Y.MarkersGroup_Maximum_Values"] = maxMarkersValues;
+		# 	if not ("createdOrModifiedChannels" in docometre.experiments.keys()):
+		# 		docometre.experiments["createdOrModifiedChannels"] = "test.S02.doigt_Y";
+		# 	else:
+		# 		docometre.experiments["createdOrModifiedChannels"] = docometre.experiments[
+		# 																 "createdOrModifiedChannels"] + ":test.S02.doigt_Y";
+		# else:
+		# 	if "ErrorMessages" in docometre.experiments.keys():
+		# 		docometre.experiments["ErrorMessages"] = docometre.experiments[
+		# 													 "ErrorMessages"] + "|" + datetime.utcnow().strftime(
+		# 			'%Y-%m-%d %H:%M:%S:%f')[
+		# 																			  :-3] + " - From Maximum function -> A Marker with this label already exists : Maximum";
+		# 	else:
+		# 		docometre.experiments["ErrorMessages"] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S:%f')[
+		# 												 :-3] + " - From Maximum function -> A Marker with this label already exists : Maximum (test.S02.doigt_Y)";
 
 		# loadName = "ReachabilityCoriolis.PreTestFull";
 		#
