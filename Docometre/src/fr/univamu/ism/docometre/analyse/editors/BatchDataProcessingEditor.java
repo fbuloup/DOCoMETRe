@@ -41,6 +41,7 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.analyse.editors;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
@@ -59,6 +60,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -111,6 +113,7 @@ import fr.univamu.ism.docometre.analyse.handlers.RunBatchDataProcessingDelegate;
 import fr.univamu.ism.docometre.analyse.handlers.UpdateWorkbenchDelegate;
 import fr.univamu.ism.docometre.editors.PartNameRefresher;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
+import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 import fr.univamu.ism.process.Script;
 import fr.univamu.ism.process.ScriptSegmentType;
 
@@ -169,6 +172,16 @@ public class BatchDataProcessingEditor extends EditorPart implements PartNameRef
 					scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommentCharacter() + " Project : " + batchResource.getProject().getName() + "\n";
 					String fullName = batchResource.getFullPath().toOSString();
 					scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommentCharacter() + " Batch data processing file : " + fullName + "\n";
+					if(MathEngineFactory.isPython()) {
+						IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
+						String pythonScriptsPath = preferenceStore.getString(GeneralPreferenceConstants.PYTHON_SCRIPTS_LOCATION);						scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommentCharacter() + " If you want to use this script please start a python interpreter in interactive mode using :\n";
+						scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommentCharacter() + " python -i " + pythonScriptsPath + File.separator + "DOCoMETRe.py\n";
+						scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommentCharacter() + " Then you can run this script file using this command in opened interpreter :\n";
+						scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommentCharacter() + " exec(open(\"" + scriptFileFullPath + "\").read())\n";
+						
+						
+						
+					}
 					for (BatchDataProcessingItem subjectItem : subjectsItems) {
 						if(subjectItem.isActivated()) {
 							String path = subjectItem.getPath();
@@ -186,7 +199,12 @@ public class BatchDataProcessingEditor extends EditorPart implements PartNameRef
 							}
 							scriptCode = scriptCode + MathEngineFactory.getMathEngine().refactor(processesCode, resource);
 							if(batchDataProcessing.unloadSubject()) {
-								
+								try {
+									scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommandLineToUnloadSubject(resource) + "\n";
+								} catch (Exception e) {
+									Activator.logErrorMessageWithCause(e);
+									e.printStackTrace();
+								}
 							}
 						}
 					}

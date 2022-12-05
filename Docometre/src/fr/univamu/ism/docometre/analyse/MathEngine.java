@@ -67,6 +67,7 @@ public interface MathEngine {
 	void addListener(MathEngineListener listener);
 	boolean isSubjectLoaded(IResource subject);
 	String getCommandLineToLoadSubjectFromRawData(IResource subject) throws Exception;
+	String getCommandLineToUnloadSubject(IResource subject) throws Exception;
 	default void load(IResource subject, boolean fromRawData) {
 		try {
 			ChannelsContainer channelsContainer = new ChannelsContainer((IFolder) subject);

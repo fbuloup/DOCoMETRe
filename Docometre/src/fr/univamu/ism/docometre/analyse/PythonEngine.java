@@ -708,7 +708,7 @@ public class PythonEngine implements MathEngine {
 	}
 
 	@Override
-	public String getCommandLineToLoadSubjectFromRawData(IResource subject) {	
+	public String getCommandLineToLoadSubjectFromRawData(IResource subject) throws Exception {	
 		String loadName = getFullPath(subject);
 		String dataFilesList = Analyse.getDataFiles(subject);
 		//String dataFilesList = (String)subject.getSessionProperty(ResourceProperties.DATA_FILES_LIST_QN);
@@ -723,6 +723,23 @@ public class PythonEngine implements MathEngine {
 			sessionsPropertiesString = sessionsPropertiesString.replaceAll(", ", ",\"");
 			return "docometre.loadData(\"DOCOMETRE\", \"" + loadName + "\", \"" + dataFilesList + "\", " + sessionsPropertiesString + ");\n";
 		}
+	}
+
+	@Override
+	public String getCommandLineToUnloadSubject(IResource resource) throws Exception {
+		if(!(ResourceType.isSubject(resource) || ResourceType.isExperiment(resource))) return "";
+		String prefixKey = "";
+		if(ResourceType.isSubject(resource)) {
+			String experimentName = resource.getFullPath().segment(0);
+			String subjectName = resource.getFullPath().segment(1);
+			prefixKey = experimentName + "\\." + subjectName + "\\.";
+			
+		}
+		if(ResourceType.isExperiment(resource)) {
+			String experimentName = resource.getFullPath().segment(0);
+			prefixKey = experimentName + "\\.";
+		}
+		return "docometre.unload(\"" + prefixKey + "\")";
 	}
 
 }

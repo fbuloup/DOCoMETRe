@@ -366,17 +366,20 @@ public final class MatlabEngine implements MathEngine {
 	public void unload(IResource resource) {
 		try {
 			if(!(ResourceType.isSubject(resource) || ResourceType.isExperiment(resource))) return;
-			if(ResourceType.isSubject(resource)) {
-				String experimentName = resource.getFullPath().segment(0);
-				String subjectName = resource.getFullPath().segment(1);
-				String cmd = experimentName + " = rmfield(" + experimentName + ", '" + subjectName + "');";
-				matlabController.eval(cmd);
-			}
-			if(ResourceType.isExperiment(resource)) {
-				String experimentName = resource.getFullPath().segment(0);
-				String cmd = "clear " + experimentName + ";";
-				matlabController.eval(cmd);
-			}
+			String cmd = getCommandLineToUnloadSubject(resource);
+			matlabController.eval(cmd);
+			
+//			if(ResourceType.isSubject(resource)) {
+//				String experimentName = resource.getFullPath().segment(0);
+//				String subjectName = resource.getFullPath().segment(1);
+//				String cmd = experimentName + " = rmfield(" + experimentName + ", '" + subjectName + "');";
+//				matlabController.eval(cmd);
+//			}
+//			if(ResourceType.isExperiment(resource)) {
+//				String experimentName = resource.getFullPath().segment(0);
+//				String cmd = "clear " + experimentName + ";";
+//				matlabController.eval(cmd);
+//			}
 			
 		} catch (Exception e) {
 			Activator.logErrorMessageWithCause(e);
@@ -1037,6 +1040,22 @@ public final class MatlabEngine implements MathEngine {
 			Activator.logInfoMessage(cmd, getClass());
 			return cmd;
 		}
+	}
+
+	@Override
+	public String getCommandLineToUnloadSubject(IResource resource) throws Exception {
+		if(!(ResourceType.isSubject(resource) || ResourceType.isExperiment(resource))) return "";
+		String cmd = "";
+		if(ResourceType.isSubject(resource)) {
+			String experimentName = resource.getFullPath().segment(0);
+			String subjectName = resource.getFullPath().segment(1);
+			cmd = experimentName + " = rmfield(" + experimentName + ", '" + subjectName + "');";
+		}
+		if(ResourceType.isExperiment(resource)) {
+			String experimentName = resource.getFullPath().segment(0);
+			cmd = "clear " + experimentName + ";";
+		}
+		return cmd;
 	}
 
 }
