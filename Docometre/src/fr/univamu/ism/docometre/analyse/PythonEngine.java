@@ -708,8 +708,21 @@ public class PythonEngine implements MathEngine {
 	}
 
 	@Override
-	public String getCommandLineToLoadSubjectFromRawData(IResource subject) {		
-		return "Not supported with Python for now";
+	public String getCommandLineToLoadSubjectFromRawData(IResource subject) {	
+		String loadName = getFullPath(subject);
+		String dataFilesList = Analyse.getDataFiles(subject);
+		//String dataFilesList = (String)subject.getSessionProperty(ResourceProperties.DATA_FILES_LIST_QN);
+		boolean isOptitrack = Analyse.isOptitrack(dataFilesList.split(";"), (IContainer) subject);
+		if(isOptitrack) {
+			// If all data files are OPTITRACK_TYPE_1
+			return "docometre.loadData(\"OPTITRACK_TYPE_1\", \"" + loadName + "\", \"" + dataFilesList + "\", None);";
+		} else {
+			Map<String, String> sessionsProperties = Analyse.getSessionsInformations(subject);
+			String sessionsPropertiesString = sessionsProperties.toString().replaceAll("\\{", "{\"");
+			sessionsPropertiesString = sessionsPropertiesString.replaceAll("=", "\":");
+			sessionsPropertiesString = sessionsPropertiesString.replaceAll(", ", ",\"");
+			return "docometre.loadData(\"DOCOMETRE\", \"" + loadName + "\", \"" + dataFilesList + "\", " + sessionsPropertiesString + ");\n";
+		}
 	}
 
 }

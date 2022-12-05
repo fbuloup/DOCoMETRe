@@ -177,7 +177,12 @@ public class BatchDataProcessingEditor extends EditorPart implements PartNameRef
 							scriptCode = scriptCode + "\n" + MathEngineFactory.getMathEngine().getCommentCharacter() + " -------------> ";
 							scriptCode = scriptCode + " Process subject : " + resource.getName() + "\n";
 							if(batchDataProcessing.loadSubject()) {
-								
+								try {
+									scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommandLineToLoadSubjectFromRawData(resource);
+								} catch (Exception e) {
+									Activator.logErrorMessageWithCause(e);
+									e.printStackTrace();
+								}
 							}
 							scriptCode = scriptCode + MathEngineFactory.getMathEngine().refactor(processesCode, resource);
 							if(batchDataProcessing.unloadSubject()) {
