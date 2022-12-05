@@ -318,39 +318,40 @@ public final class MatlabEngine implements MathEngine {
 				matlabController.eval(cmd);
 				
 			} else {
-				String dataFilesList = Analyse.getDataFiles(subject);
-				
-				boolean isOptitrack = Analyse.isOptitrack(dataFilesList.split(";"), (IContainer) subject);
-				if(isOptitrack) {
-					// If all data files are OPTITRACK_TYPE_1
-					String cmd = experimentName + "." + subjectName + " = loadData('OPTITRACK_TYPE_1', '" + dataFilesList + "')";
-					matlabController.eval(cmd);
-				} else {
-					//String dataFilesList = (String)subject.getSessionProperty(ResourceProperties.DATA_FILES_LIST_QN);
-
-					Map<String, String> sessionsProperties = Analyse.getSessionsInformations(subject);
-					
-					Set<String> keys = sessionsProperties.keySet();
-					Collection<String> values = sessionsProperties.values();
-					
-					String keysString = String.join("','", keys);
-					String valuesString = String.join("','", values);
-
-					StringBuffer stringBuffer = new StringBuffer(keysString);
-					stringBuffer.append("'}");
-					stringBuffer.insert(0, "{'");
-					keysString = stringBuffer.toString();
-
-					stringBuffer = new StringBuffer(valuesString);
-					stringBuffer.append("'}");
-					stringBuffer.insert(0, "{'");
-					valuesString = stringBuffer.toString();
-					
-					String cmd = experimentName + "." + subjectName + " = loadData('DOCOMETRE', '" + dataFilesList + "', " + keysString + ", " + valuesString + ")";
-					Activator.logInfoMessage(cmd, getClass());
-					matlabController.eval(cmd);
-				}
-				
+//				String dataFilesList = Analyse.getDataFiles(subject);
+//				
+//				boolean isOptitrack = Analyse.isOptitrack(dataFilesList.split(";"), (IContainer) subject);
+//				if(isOptitrack) {
+//					// If all data files are OPTITRACK_TYPE_1
+//					String cmd = experimentName + "." + subjectName + " = loadData('OPTITRACK_TYPE_1', '" + dataFilesList + "')";
+//					matlabController.eval(cmd);
+//				} else {
+//					//String dataFilesList = (String)subject.getSessionProperty(ResourceProperties.DATA_FILES_LIST_QN);
+//
+//					Map<String, String> sessionsProperties = Analyse.getSessionsInformations(subject);
+//					
+//					Set<String> keys = sessionsProperties.keySet();
+//					Collection<String> values = sessionsProperties.values();
+//					
+//					String keysString = String.join("','", keys);
+//					String valuesString = String.join("','", values);
+//
+//					StringBuffer stringBuffer = new StringBuffer(keysString);
+//					stringBuffer.append("'}");
+//					stringBuffer.insert(0, "{'");
+//					keysString = stringBuffer.toString();
+//
+//					stringBuffer = new StringBuffer(valuesString);
+//					stringBuffer.append("'}");
+//					stringBuffer.insert(0, "{'");
+//					valuesString = stringBuffer.toString();
+//					
+//					String cmd = experimentName + "." + subjectName + " = loadData('DOCOMETRE', '" + dataFilesList + "', " + keysString + ", " + valuesString + ")";
+//					Activator.logInfoMessage(cmd, getClass());
+//					matlabController.eval(cmd);
+//				}
+				String cmd = getCommandLineToLoadSubjectFromRawData(subject);
+				matlabController.eval(cmd);
 			}
 			
 			MathEngine.super.load(subject, loadFromSavedFile);
@@ -993,6 +994,49 @@ public final class MatlabEngine implements MathEngine {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	@Override
+	public String getCommentCharacter() {
+		return "%";
+	}
+
+	@Override
+	public String getCommandLineToLoadSubjectFromRawData(IResource subject) throws Exception {
+		String experimentName = subject.getFullPath().segment(0);
+		String subjectName = subject.getFullPath().segment(1);
+		
+		String dataFilesList = Analyse.getDataFiles(subject);
+		boolean isOptitrack = Analyse.isOptitrack(dataFilesList.split(";"), (IContainer) subject);
+		if(isOptitrack) {
+			// If all data files are OPTITRACK_TYPE_1
+			String cmd = experimentName + "." + subjectName + " = loadData('OPTITRACK_TYPE_1', '" + dataFilesList + "')";
+			return cmd;
+		} else {
+			//String dataFilesList = (String)subject.getSessionProperty(ResourceProperties.DATA_FILES_LIST_QN);
+
+			Map<String, String> sessionsProperties = Analyse.getSessionsInformations(subject);
+			
+			Set<String> keys = sessionsProperties.keySet();
+			Collection<String> values = sessionsProperties.values();
+			
+			String keysString = String.join("','", keys);
+			String valuesString = String.join("','", values);
+
+			StringBuffer stringBuffer = new StringBuffer(keysString);
+			stringBuffer.append("'}");
+			stringBuffer.insert(0, "{'");
+			keysString = stringBuffer.toString();
+
+			stringBuffer = new StringBuffer(valuesString);
+			stringBuffer.append("'}");
+			stringBuffer.insert(0, "{'");
+			valuesString = stringBuffer.toString();
+			
+			String cmd = experimentName + "." + subjectName + " = loadData('DOCOMETRE', '" + dataFilesList + "', " + keysString + ", " + valuesString + ")";
+			Activator.logInfoMessage(cmd, getClass());
+			return cmd;
+		}
 	}
 
 }

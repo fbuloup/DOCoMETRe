@@ -702,4 +702,14 @@ public class PythonEngine implements MathEngine {
 		return loadedSubjects.split(":");
 	}
 
+	@Override
+	public String getCommentCharacter() {
+		return "#";
+	}
+
+	@Override
+	public String getCommandLineToLoadSubjectFromRawData(IResource subject) {		
+		return "Not supported with Python for now";
+	}
+
 }

@@ -62,9 +62,11 @@ import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
 public interface MathEngine {
 	IStatus startEngine(IProgressMonitor monitor);
 	IStatus stopEngine(IProgressMonitor monitor);
+	String getCommentCharacter();
 	boolean isStarted();
 	void addListener(MathEngineListener listener);
 	boolean isSubjectLoaded(IResource subject);
+	String getCommandLineToLoadSubjectFromRawData(IResource subject) throws Exception;
 	default void load(IResource subject, boolean fromRawData) {
 		try {
 			ChannelsContainer channelsContainer = new ChannelsContainer((IFolder) subject);
