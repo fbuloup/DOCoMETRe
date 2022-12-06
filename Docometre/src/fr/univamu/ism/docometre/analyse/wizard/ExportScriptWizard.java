@@ -148,7 +148,8 @@ public class ExportScriptWizard extends Wizard {
 							scriptCode = scriptCode + " Process subject : " + resource.getName() + "\n";
 							if(batchDataProcessing.loadSubject()) {
 								try {
-									scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommandLineToLoadSubjectFromRawData(resource);
+									scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommentCharacter() + " Load subject\n";
+									scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommandLineToLoadSubjectFromRawData(resource) + "\n";
 								} catch (Exception e) {
 									Activator.logErrorMessageWithCause(e);
 									e.printStackTrace();
@@ -156,7 +157,7 @@ public class ExportScriptWizard extends Wizard {
 							}
 							scriptCode = scriptCode + MathEngineFactory.getMathEngine().refactor(processesCode, resource);
 							if(batchDataProcessing.unloadSubject()) {
-								try {
+								try {scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommentCharacter() + " Unload subject\n";
 									scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommandLineToUnloadSubject(resource) + "\n";
 								} catch (Exception e) {
 									Activator.logErrorMessageWithCause(e);
