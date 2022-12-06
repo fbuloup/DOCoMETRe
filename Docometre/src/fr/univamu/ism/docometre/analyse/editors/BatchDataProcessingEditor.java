@@ -41,32 +41,22 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.analyse.editors;
 
-import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
 
 import org.eclipse.core.commands.operations.ObjectUndoContext;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -76,7 +66,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IEditorInput;
@@ -90,7 +79,6 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.operations.UndoRedoActionGroup;
 import org.eclipse.ui.part.EditorPart;
-import org.eclipse.ui.progress.UIJob;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
@@ -98,7 +86,6 @@ import fr.univamu.ism.docometre.GetResourceLabelDelegate;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.PartListenerAdapter;
-import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.datamodel.EnableDisableHandler;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
@@ -111,11 +98,9 @@ import fr.univamu.ism.docometre.analyse.datamodel.MoveUpHandler;
 import fr.univamu.ism.docometre.analyse.datamodel.RemoveHandler;
 import fr.univamu.ism.docometre.analyse.handlers.RunBatchDataProcessingDelegate;
 import fr.univamu.ism.docometre.analyse.handlers.UpdateWorkbenchDelegate;
+import fr.univamu.ism.docometre.analyse.wizard.ExportScriptWizard;
 import fr.univamu.ism.docometre.editors.PartNameRefresher;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
-import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
-import fr.univamu.ism.process.Script;
-import fr.univamu.ism.process.ScriptSegmentType;
 
 public class BatchDataProcessingEditor extends EditorPart implements PartNameRefresher  {
 	
@@ -124,103 +109,13 @@ public class BatchDataProcessingEditor extends EditorPart implements PartNameRef
 			setImageDescriptor(Activator.getImageDescriptor(IImageKeys.SAVE_AS_ICON));
 			setText(DocometreMessages.SaveProcessingScript);
 		}
-		
 		@Override
 		public void run() {
-			UIJob job = new UIJob(DocometreMessages.SaveBatchProcessingToFile) {				
-				@Override
-				public IStatus runInUIThread(IProgressMonitor monitor) {
-					monitor.subTask(DocometreMessages.GetWholeProcessesScript);
-					FileDialog fileDialog = new FileDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
-					String scriptFileFullPath = fileDialog.open();
-					if(scriptFileFullPath == null) return Status.CANCEL_STATUS;
-					BatchDataProcessing batchDataProcessing = getBatchDataProcessing();
-					BatchDataProcessingItem[] subjectsItems = batchDataProcessing.getSubjects();
-					BatchDataProcessingItem[] processesItems = batchDataProcessing.getProcesses();
-					String processesCode = "";
-					for (BatchDataProcessingItem processeItem : processesItems) {
-						if(processeItem.isActivated()) {
-							String path = processeItem.getPath();
-							IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(path);
-							boolean removeHandle = false;
-							Object object = ResourceProperties.getObjectSessionProperty(resource);
-							if(object == null) {
-								object = ObjectsController.deserialize((IFile)resource);
-								ResourceProperties.setObjectSessionProperty(resource, object);
-								ObjectsController.addHandle(object);
-								removeHandle = true;
-							}
-							if(object instanceof Script) {
-								try {
-									Script script = (Script)object;
-									processesCode = processesCode + script.getLoopCode(object, ScriptSegmentType.LOOP) + "\n";
-								} catch (Exception e) {
-									Activator.logErrorMessageWithCause(e);
-									e.printStackTrace();
-								}
-							}
-							if(removeHandle) ObjectsController.removeHandle(object);
-						}
-					}
-					monitor.subTask(DocometreMessages.GenerateScriptForAllSubjects);
-					Object object = ((ResourceEditorInput)getEditorInput()).getObject();
-					IResource batchResource = ObjectsController.getResourceForObject(object);
-					SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
-					Date date = new Date(System.currentTimeMillis());
-					String scriptCode = MathEngineFactory.getMathEngine().getCommentCharacter() + " Generated script from DOCoMETRe - " + formatter.format(date) + "\n" ;
-					scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommentCharacter() + " Workspace : " + ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString() + "\n";
-					scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommentCharacter() + " Project : " + batchResource.getProject().getName() + "\n";
-					String fullName = batchResource.getFullPath().toOSString();
-					scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommentCharacter() + " Batch data processing file : " + fullName + "\n";
-					if(MathEngineFactory.isPython()) {
-						IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
-						String pythonScriptsPath = preferenceStore.getString(GeneralPreferenceConstants.PYTHON_SCRIPTS_LOCATION);						scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommentCharacter() + " If you want to use this script please start a python interpreter in interactive mode using :\n";
-						scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommentCharacter() + " python -i " + pythonScriptsPath + File.separator + "DOCoMETRe.py\n";
-						scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommentCharacter() + " Then you can run this script file using this command in opened interpreter :\n";
-						scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommentCharacter() + " exec(open(\"" + scriptFileFullPath + "\").read())\n";
-						
-						
-						
-					}
-					for (BatchDataProcessingItem subjectItem : subjectsItems) {
-						if(subjectItem.isActivated()) {
-							String path = subjectItem.getPath();
-							IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(path);
-							if(resource == null) continue;
-							scriptCode = scriptCode + "\n" + MathEngineFactory.getMathEngine().getCommentCharacter() + " -------------> ";
-							scriptCode = scriptCode + " Process subject : " + resource.getName() + "\n";
-							if(batchDataProcessing.loadSubject()) {
-								try {
-									scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommandLineToLoadSubjectFromRawData(resource);
-								} catch (Exception e) {
-									Activator.logErrorMessageWithCause(e);
-									e.printStackTrace();
-								}
-							}
-							scriptCode = scriptCode + MathEngineFactory.getMathEngine().refactor(processesCode, resource);
-							if(batchDataProcessing.unloadSubject()) {
-								try {
-									scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommandLineToUnloadSubject(resource) + "\n";
-								} catch (Exception e) {
-									Activator.logErrorMessageWithCause(e);
-									e.printStackTrace();
-								}
-							}
-						}
-					}
-					try {
-						Files.write(Paths.get(scriptFileFullPath), scriptCode.getBytes());
-						Activator.logInfoMessage(DocometreMessages.ScriptSavedTo + scriptFileFullPath, BatchDataProcessingEditor.this.getClass());
-					} catch (IOException e) {
-						Activator.logErrorMessageWithCause(e);
-						e.printStackTrace();
-					}
-					return Status.OK_STATUS;
-				}
-			};
-			job.setUser(true);
-			job.schedule();
-			
+			Object object = ((ResourceEditorInput)getEditorInput()).getObject();
+			IResource batchResource = ObjectsController.getResourceForObject(object);
+			ExportScriptWizard exportScriptWizard = new ExportScriptWizard(getBatchDataProcessing(), batchResource);
+			WizardDialog wizardDialog = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), exportScriptWizard);
+			wizardDialog.open();
 		}
 	}
 	

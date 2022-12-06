@@ -1104,6 +1104,14 @@ public final class DocometreMessages extends NLS {
 	public static String SelectSubjectsToSave;
 	public static String SelectSubjectsToSaveDialogTitle;
 	public static String Terminate;
+	
+	// ExportScriptWizardPage
+	public static String ExportScriptWizardPageTitle;
+	public static String ExportScriptWizardPageDescription;
+	public static String FileName;
+	public static String ScriptExportError1;
+	public static String ScriptExportError2;
+	public static String SaveScriptFile;
 
 	static {
 		// load message values from bundle file
