@@ -53,6 +53,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -140,6 +141,12 @@ public class ExportScriptWizard extends Wizard {
 						scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommentCharacter() + " Then you can run this script file using this command in opened interpreter :\n";
 						scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommentCharacter() + " exec(open(\"" + exportScriptWizardPage.getScriptFileFullPath() + "\").read())\n";
 					}
+					if(MathEngineFactory.isMatlab()) {
+						String matlabScriptsLocation = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.MATLAB_SCRIPTS_LOCATION);
+						String matlabFunctionsLocation = Path.fromOSString(matlabScriptsLocation).removeLastSegments(1).append("MatlabFunctions").toOSString();
+						scriptCode = scriptCode + "addpath('" + matlabScriptsLocation + "');\n";
+						scriptCode = scriptCode + "addpath('" + matlabFunctionsLocation + "');\n";
+					}
 					for (BatchDataProcessingItem subjectItem : subjectsItems) {
 						if(subjectItem.isActivated()) {
 							String path = subjectItem.getPath();
@@ -149,6 +156,14 @@ public class ExportScriptWizard extends Wizard {
 							scriptCode = scriptCode + " Process subject : " + resource.getName() + "\n";
 							if(batchDataProcessing.loadSubject()) {
 								try {
+									scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommentCharacter() + " Unload subject just to be sure it is not loaded\n";
+									scriptCode = scriptCode + "try\n";
+									scriptCode = scriptCode + "\t" + MathEngineFactory.getMathEngine().getCommandLineToUnloadSubject(resource) + "\n";
+								    scriptCode = scriptCode + "catch exception\n";
+								    scriptCode = scriptCode + "\tif(~strcmp(exception.identifier, 'MATLAB:UndefinedFunction') && ~strcmp(exception.identifier, 'MATLAB:rmfield:InvalidFieldname'))\n";
+								    scriptCode = scriptCode + "\t\trethrow(exception)\n";
+								    scriptCode = scriptCode + "\tend\n";
+								    scriptCode = scriptCode + "end\n";
 									scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommentCharacter() + " Load subject\n";
 									scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommandLineToLoadSubjectFromRawData(resource) + "\n";
 								} catch (Exception e) {
@@ -158,7 +173,8 @@ public class ExportScriptWizard extends Wizard {
 							}
 							scriptCode = scriptCode + MathEngineFactory.getMathEngine().refactor(processesCode, resource);
 							if(batchDataProcessing.unloadSubject()) {
-								try {scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommentCharacter() + " Unload subject\n";
+								try {
+									scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommentCharacter() + " Unload subject\n";
 									scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommandLineToUnloadSubject(resource) + "\n";
 								} catch (Exception e) {
 									Activator.logErrorMessageWithCause(e);
