@@ -43,6 +43,7 @@ package fr.univamu.ism.docometre;
 
 import java.io.File;
 import java.net.URL;
+import java.util.Locale;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
@@ -90,7 +91,8 @@ public class DocometreApplication implements IApplication {
 	 * IApplicationContext)
 	 */
 	public Object start(IApplicationContext context) throws Exception {
-		Activator.logInfoMessage(DocometreMessages.RuntimeFolder + System.getProperty("user.dir"), DocometreApplication.class);
+		Activator.logInfoMessage("Locale : " + Locale.getDefault(),  getClass());
+		Activator.logInfoMessage(DocometreMessages.RuntimeFolder + System.getProperty("user.dir"), getClass());
 		Display display = PlatformUI.createDisplay();
 		
 		fontRegistry = new FontRegistry(display);

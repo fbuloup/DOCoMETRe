@@ -101,9 +101,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		PlatformUI.getWorkbench().getOperationSupport().getOperationHistory().setLimit(IOperationHistory.GLOBAL_UNDO_CONTEXT, historyLimit);
 		UndoRedoUserApprover promptingUserApprover = new UndoRedoUserApprover(IOperationHistory.GLOBAL_UNDO_CONTEXT);
 		PlatformUI.getWorkbench().getOperationSupport().getOperationHistory().addOperationApprover(promptingUserApprover);
-		//IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
-		//Activator.logInfoMessage("Workspace path : " + workspaceRoot.getLocation().toOSString(), ApplicationWorkbenchWindowAdvisor.class);
-		Activator.logInfoMessage("Locale : " + Locale.getDefault(),  ApplicationWorkbenchWindowAdvisor.class);
     }
 	
 }
