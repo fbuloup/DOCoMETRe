@@ -108,8 +108,8 @@ public class ObjectsController {
 			
 			String objectRef = object.getClass().getSimpleName() + "@" + Integer.toHexString(object.hashCode());
 			
-			if(resource == null) Activator.logInfoMessage("Nb Handle : " + nbHandles + " and no more associated resource for object : " + objectRef, ObjectsController.class); 
-			else Activator.logInfoMessage("Nb handle for " + resource.getFullPath().toOSString() + "(" + objectRef + ")" + " : " + nbHandles, ObjectsController.class);
+			if(resource == null) Activator.logInfoMessage("Nb Handle(s) : " + nbHandles + " and no more associated resource for object : " + objectRef, ObjectsController.class); 
+			else Activator.logInfoMessage("Nb handle(s) for " + resource.getFullPath().toOSString() + "(" + objectRef + ")" + " : " + nbHandles, ObjectsController.class);
 		}
 	}
 	
