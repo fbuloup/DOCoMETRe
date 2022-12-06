@@ -156,14 +156,20 @@ public class ExportScriptWizard extends Wizard {
 							scriptCode = scriptCode + " Process subject : " + resource.getName() + "\n";
 							if(batchDataProcessing.loadSubject()) {
 								try {
-									scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommentCharacter() + " Unload subject just to be sure it is not loaded\n";
-									scriptCode = scriptCode + "try\n";
-									scriptCode = scriptCode + "\t" + MathEngineFactory.getMathEngine().getCommandLineToUnloadSubject(resource) + "\n";
-								    scriptCode = scriptCode + "catch exception\n";
-								    scriptCode = scriptCode + "\tif(~strcmp(exception.identifier, 'MATLAB:UndefinedFunction') && ~strcmp(exception.identifier, 'MATLAB:rmfield:InvalidFieldname'))\n";
-								    scriptCode = scriptCode + "\t\trethrow(exception)\n";
-								    scriptCode = scriptCode + "\tend\n";
-								    scriptCode = scriptCode + "end\n";
+									if(MathEngineFactory.isMatlab()) {
+										scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommentCharacter() + " Unload subject just to be sure it is not loaded\n";
+										scriptCode = scriptCode + "try\n";
+										scriptCode = scriptCode + "\t" + MathEngineFactory.getMathEngine().getCommandLineToUnloadSubject(resource) + "\n";
+									    scriptCode = scriptCode + "catch exception\n";
+									    scriptCode = scriptCode + "\tif(~strcmp(exception.identifier, 'MATLAB:UndefinedFunction') && ~strcmp(exception.identifier, 'MATLAB:rmfield:InvalidFieldname'))\n";
+									    scriptCode = scriptCode + "\t\trethrow(exception)\n";
+									    scriptCode = scriptCode + "\tend\n";
+									    scriptCode = scriptCode + "end\n";
+									}
+									if(MathEngineFactory.isPython()) {
+										scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommentCharacter() + " Unload subject just to be sure it is not loaded\n";
+										scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommandLineToUnloadSubject(resource) + "\n";
+									}
 									scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommentCharacter() + " Load subject\n";
 									scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommandLineToLoadSubjectFromRawData(resource) + "\n";
 								} catch (Exception e) {
