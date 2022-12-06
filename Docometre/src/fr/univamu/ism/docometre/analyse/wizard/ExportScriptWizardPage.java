@@ -65,6 +65,8 @@ import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 
 public class ExportScriptWizardPage extends WizardPage {
 	
+	private static String lastFolderPath;
+	
 	private String folderPath;
 	private String fileName;
 	private Text fileNameText;
@@ -98,6 +100,7 @@ public class ExportScriptWizardPage extends WizardPage {
 				checkPageComplete();
 			}
 		});
+		if(lastFolderPath != null && !"".equals(lastFolderPath)) fileDestinationText.setText(lastFolderPath);
 		Button fileButton =  new Button(container, SWT.FLAT);
 		fileButton.setText(DocometreMessages.Browse);
 		fileButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
@@ -128,6 +131,7 @@ public class ExportScriptWizardPage extends WizardPage {
 	private void checkPageComplete() {
 		fileName = fileNameText.getText();
 		folderPath = fileDestinationText.getText();
+		lastFolderPath = folderPath;
 		setErrorMessage(null);
 		setPageComplete(false);
 		if("".equals(folderPath)) {
