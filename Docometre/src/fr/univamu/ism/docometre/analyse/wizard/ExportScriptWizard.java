@@ -79,6 +79,7 @@ public class ExportScriptWizard extends Wizard {
 	public ExportScriptWizard(BatchDataProcessing batchDataProcessing, IResource batchResource) {
 		this.batchDataProcessing = batchDataProcessing;
 		this.batchResource = batchResource;
+		setWindowTitle(DocometreMessages.ExportScriptDialogTitle);
 	}
 
 	@Override

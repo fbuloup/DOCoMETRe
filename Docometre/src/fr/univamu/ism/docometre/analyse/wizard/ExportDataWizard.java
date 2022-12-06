@@ -74,6 +74,10 @@ public class ExportDataWizard extends Wizard {
 	private ExportDataWizardPage exportDataWizardPage;
 	private boolean anErrorOccured = false;
 	
+	public ExportDataWizard() {
+		setWindowTitle(DocometreMessages.ExportDataDialogTitle);
+	}
+	
 	@Override
 	public void addPages() {
 		setNeedsProgressMonitor(true);

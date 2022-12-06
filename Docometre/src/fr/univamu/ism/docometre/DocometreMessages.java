@@ -1013,6 +1013,7 @@ public final class DocometreMessages extends NLS {
 	public static String DataExportSignalSubtaskMessage;
 	public static String DataExportErrorOccuredDialogTitle;
 	public static String DataExportErrorOccuredDialogMessage;
+	public static String ExportDataDialogTitle;
 
 	// Connected IPS gatherer
 	public static String IPsGathererMessage1;
@@ -1112,7 +1113,7 @@ public final class DocometreMessages extends NLS {
 	public static String ScriptExportError1;
 	public static String ScriptExportError2;
 	public static String SaveScriptFile;
-
+	public static String ExportScriptDialogTitle;
 	static {
 		// load message values from bundle file
 		String bn = BUNDLE_NAME;
