@@ -6,9 +6,16 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-11-23
+      -- 2022-12-06
+ADDED :
+* Export batch processing script code to file
+FIXED :
+* Don&apos;t add modified decorator if subject is not loaded
+* Update batch data processing when subject or process is renamed
+-- 2022-11-23
 ADDED:
-* It is now possible to run single process in Batch data proc. editor
+* It is now possible to run single process in Batch data proc.
+editor
 * Dialog to be able to save several subjects at a time
 * Export features function (Matlab and Python) 
 FIXED :
