@@ -105,7 +105,7 @@ public class ExperimentsLabelDecorator implements ILightweightLabelDecorator {
 						if(isLoaded)
 						decoration.addOverlay(Activator.getImageDescriptor(IImageKeys.SUBJECT_LOADED_OVERLAY), IDecoration.TOP_RIGHT);
 						boolean isModified = ResourceProperties.isSubjectModified(resource);
-						if(isModified)
+						if(isLoaded && isModified)
 							decoration.addOverlay(Activator.getImageDescriptor(IImageKeys.MODIFIED_ICON), IDecoration.BOTTOM_RIGHT);
 					}
 					try {
