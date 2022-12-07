@@ -44,17 +44,31 @@ package fr.univamu.ism.docometre.analyse.functions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.bindings.keys.ParseException;
+import org.eclipse.jface.fieldassist.ContentProposal;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.fieldassist.TextContentAdapter;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.DocumentEvent;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentListener;
+import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.contentassist.CompletionProposal;
+import org.eclipse.jface.text.contentassist.ContentAssistant;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
+import org.eclipse.jface.text.contentassist.IContentAssistant;
+import org.eclipse.jface.text.contentassist.IContextInformation;
+import org.eclipse.jface.text.contentassist.IContextInformationValidator;
+import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewer;
+import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -64,10 +78,13 @@ import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -83,6 +100,7 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
+import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.analyse.editors.ChannelsContentProvider;
 import fr.univamu.ism.docometre.dacqsystems.functions.DocometreContentProposalProvider;
 import fr.univamu.ism.docometre.dacqsystems.functions.GenericFunction;
@@ -171,14 +189,113 @@ public final class ExpressionFunction extends GenericFunction {
 	}
 	
 	private Composite createSourceTabItem(TabFolder tabFolder, Object context) {
-//		Composite sourceContainer = new Composite(tabFolder, SWT.NORMAL);
-//		sourceContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-//		sourceContainer.setLayout(new GridLayout(1, false));
 		
 		sourceViewer = new SourceViewer(tabFolder, null, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
 		sourceViewer.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		sourceViewer.setDocument(new Document());
 		
+		IContentAssistProcessor contentAssistProcessor = new IContentAssistProcessor() {
+			
+			public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int documentOffset) {
+				List<ICompletionProposal> proposalsList = new ArrayList<ICompletionProposal>(0);
+				IDocument document = viewer.getDocument();
+				
+				String qualifier = getQualifier(document, documentOffset);
+				computeStructureProposals(viewer,qualifier, documentOffset, proposalsList);
+				ICompletionProposal[] proposals = new ICompletionProposal[proposalsList.size()];
+				proposalsList.toArray(proposals);
+				
+				return proposals;
+			}
+
+			private String getQualifier(IDocument document, int documentOffset) {
+				if(documentOffset == 0) return "";
+				StringBuffer stringBuffer = new StringBuffer();
+				try {
+					char c = document.getChar(--documentOffset);
+					while (!Character.isWhitespace(c)) {
+						stringBuffer.append(c);
+						if(documentOffset > 0) c = document.getChar(--documentOffset);
+						else break;
+					}
+					return stringBuffer.reverse().toString();
+				} catch (BadLocationException e) {
+					e.printStackTrace();
+					Activator.logErrorMessageWithCause(e);
+				} 
+				return "";
+			}
+			
+			private void computeStructureProposals(ITextViewer viewer, String qualifier, int documentOffset, List<ICompletionProposal> proposalsList) {
+				
+				ChannelsContentProvider channelsContentProvider = new ChannelsContentProvider(true, true, true, false, false, false, false);
+				Object[] elements = channelsContentProvider.getElements(SelectedExprimentContributionItem.selectedExperiment);
+				
+				for (int i = 0; i < elements.length; i++) {
+					Channel channel = ((Channel)elements[i]);
+					String keyword = channel.getFullName();
+					Image image = null;
+					if(MathEngineFactory.getMathEngine().isSignal(channel)) image = Activator.getImage(IImageKeys.SIGNAL_ICON);
+					if(MathEngineFactory.getMathEngine().isCategory(channel)) image = Activator.getImage(IImageKeys.CATEGORY_ICON);
+					if(MathEngineFactory.getMathEngine().isEvent(channel)) image = Activator.getImage(IImageKeys.EVENT_ICON);
+					if(keyword.startsWith(qualifier)) {
+						CompletionProposal proposal = new CompletionProposal(keyword,documentOffset - qualifier.length(), qualifier.length(), keyword.length(), image,null,null,null);
+						proposalsList.add(proposal);
+					}
+				}
+				
+				channelsContentProvider = new ChannelsContentProvider(false, false, false, true, true, false, true);
+				elements = channelsContentProvider.getElements(SelectedExprimentContributionItem.selectedExperiment);
+				for (int i = 0; i < elements.length; i++) {
+					Channel channel = ((Channel)elements[i]);
+					String keyword = channel.getFullName();
+					if(keyword.startsWith(qualifier)) {
+						CompletionProposal proposal = new CompletionProposal(keyword,documentOffset - qualifier.length(), qualifier.length(), keyword.length(), null,null,null,null);
+						proposalsList.add(proposal);
+					}
+				}
+			}
+
+			public char[] getCompletionProposalAutoActivationCharacters() {
+				return null;
+			}
+
+			public String getErrorMessage() {
+				return null;
+			}
+
+			public IContextInformation[] computeContextInformation(ITextViewer arg0, int arg1) {
+				return null;
+			}
+
+			public char[] getContextInformationAutoActivationCharacters() {
+				return null;
+			}
+
+			public IContextInformationValidator getContextInformationValidator() {
+				return null;
+			}
+		};
+		SourceViewerConfiguration sourceViewerConfiguration = new SourceViewerConfiguration() {
+			@Override
+			public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
+				ContentAssistant assistant = new ContentAssistant();
+				assistant.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
+				assistant.setContentAssistProcessor(contentAssistProcessor, IDocument.DEFAULT_CONTENT_TYPE);
+				assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);
+				assistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
+				return assistant;
+			}
+		};
+		sourceViewer.configure(sourceViewerConfiguration);
+		sourceViewer.getTextWidget().addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if(((e.stateMask & SWT.CTRL) == SWT.CTRL) && (e.keyCode == 32)) {
+					sourceViewer.doOperation(ISourceViewer.CONTENTASSIST_PROPOSALS);
+				}
+			}
+		});
 		sourceViewer.getDocument().addDocumentListener(new IDocumentListener() {
 			@Override
 			public void documentChanged(DocumentEvent event) {
@@ -227,12 +344,29 @@ public final class ExpressionFunction extends GenericFunction {
 //		expressionCD.setMarginWidth(5);
 		try {
 			KeyStroke keyStroke = KeyStroke.getInstance("CTRL+SPACE");
-			ChannelsContentProvider channelsContentProvider = new ChannelsContentProvider(true, true, true, true, true, true, true);
+			ChannelsContentProvider channelsContentProvider = new ChannelsContentProvider(true, true, true, true, true, false, true);
 			DocometreContentProposalProvider proposalProvider = new DocometreContentProposalProvider(channelsContentProvider.getElements(SelectedExprimentContributionItem.selectedExperiment), expressionText);
 			proposalProvider.setFiltering(true);
-			ContentProposalAdapter leftProposalAdapter = new ContentProposalAdapter(expressionText, new TextContentAdapter(), proposalProvider, keyStroke, null);
-			leftProposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_INSERT);
-			leftProposalAdapter.addContentProposalListener(proposalProvider);
+			ContentProposalAdapter proposalAdapter = new ContentProposalAdapter(expressionText, new TextContentAdapter(), proposalProvider, keyStroke, null);
+			proposalAdapter.setLabelProvider(new LabelProvider() {
+				@Override
+				public String getText(Object element) {
+					return ((ContentProposal)element).getLabel();
+				}
+				@Override
+				public Image getImage(Object element) {
+					String fullChannelName = ((ContentProposal)element).getLabel();
+					Channel channel = MathEngineFactory.getMathEngine().getChannelFromName(null, fullChannelName);
+					if(channel != null) {
+						if(MathEngineFactory.getMathEngine().isSignal(channel)) return Activator.getImage(IImageKeys.SIGNAL_ICON);
+						if(MathEngineFactory.getMathEngine().isCategory(channel)) return Activator.getImage(IImageKeys.CATEGORY_ICON);
+						if(MathEngineFactory.getMathEngine().isEvent(channel)) return Activator.getImage(IImageKeys.EVENT_ICON);
+					}
+					return super.getImage(element);
+				}
+			});
+			proposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_INSERT);
+			proposalAdapter.addContentProposalListener(proposalProvider);
 		} catch (ParseException e) {
 			e.printStackTrace();
 			Activator.logErrorMessageWithCause(e);
