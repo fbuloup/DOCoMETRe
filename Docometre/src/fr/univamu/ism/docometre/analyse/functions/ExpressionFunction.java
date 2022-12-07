@@ -195,6 +195,7 @@ public final class ExpressionFunction extends GenericFunction {
 		Composite expressionsContainer = new Composite(tabFolder, SWT.NORMAL);
 		expressionsContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		expressionsContainer.setLayout(new GridLayout(3, false));
+		((GridLayout)expressionsContainer.getLayout()).horizontalSpacing = 10;
 		
 		Label expressionLabel = new Label(expressionsContainer, SWT.NORMAL);
 		expressionLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
@@ -223,7 +224,7 @@ public final class ExpressionFunction extends GenericFunction {
 		expressionCD.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_CONTENT_PROPOSAL).getImage());
 		expressionCD.setDescriptionText(DocometreMessages.UseCtrlSpaceProposal);
 		expressionCD.setShowOnlyOnFocus(true);
-		expressionCD.setMarginWidth(5);
+//		expressionCD.setMarginWidth(5);
 		try {
 			KeyStroke keyStroke = KeyStroke.getInstance("CTRL+SPACE");
 			ChannelsContentProvider channelsContentProvider = new ChannelsContentProvider(true, true, true, true, true, true, true);
