@@ -86,6 +86,7 @@ import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
 import fr.univamu.ism.docometre.analyse.editors.ChannelsContentProvider;
 import fr.univamu.ism.docometre.dacqsystems.functions.DocometreContentProposalProvider;
 import fr.univamu.ism.docometre.dacqsystems.functions.GenericFunction;
+import fr.univamu.ism.docometre.dialogs.FunctionalBlockConfigurationDialog;
 import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
 import fr.univamu.ism.process.Block;
 import fr.univamu.ism.process.Script;
@@ -99,8 +100,8 @@ public final class ExpressionFunction extends GenericFunction {
 	private static final String expressionKey = "expression";
 
 	private transient ListViewer expressionsListViewer;
-
 	private transient SourceViewer sourceViewer;
+	transient private FunctionalBlockConfigurationDialog functionalBlockConfigurationDialog;
 	
 	@Override
 	public String getFunctionFileName() {
@@ -108,9 +109,15 @@ public final class ExpressionFunction extends GenericFunction {
 	}
 
 	@Override
-	public Object getGUI(Object titleAreaDialog, Object parent, Object context) {
+	public Object getGUI(Object functionalBlockConfigurationDialog, Object parent, Object context) {
 		if(!(context instanceof Script)) return null;
 		Composite container  = (Composite) parent;
+		
+		this.functionalBlockConfigurationDialog = (FunctionalBlockConfigurationDialog) functionalBlockConfigurationDialog;
+		
+		if(!checkPreBuildGUI(this.functionalBlockConfigurationDialog, container, 2, context)) {
+			return container;
+		}
 		
 		TabFolder tabFolder = new TabFolder(container, SWT.NONE);
 		tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
