@@ -87,7 +87,7 @@ public class GenericFunction extends Function {
 		if(context instanceof Script) {
 			if(!MathEngineFactory.getMathEngine().isStarted()) {
 				titleAreaDialog.setErrorMessage(DocometreMessages.PleaseStartMathEngineFirst);
-				Label errorLabel = new Label(container, SWT.BORDER);
+				Label errorLabel = new Label(container, SWT.NORMAL);
 				errorLabel.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true, hIndent, 1));
 				errorLabel.setText(DocometreMessages.PleaseStartMathEngineFirst);
 				return false;
