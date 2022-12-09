@@ -6,12 +6,19 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-12-08
-ADDED :
-* Expression function : add/improve content assistants (Source viewer and expressions)
+      -- 2022-12-09
+ADDED : Nothing
 FIXED :
-* Expression function : increase horizontal Spacing to show decoration icon
-* Expression function : add error message if Math. Engine is not started
+* Clear error message when selection changes (Export Markers and Features functions)
+-- 2022-12-08
+ADDED :
+* Expression function : add/improve content assistants (Source
+viewer and expressions)
+FIXED :
+* Expression function : increase horizontal Spacing to show decoration
+icon
+* Expression function : add error message if Math. Engine is
+not started
 -- 2022-12-06
 ADDED :
 * Export batch processing script code to file
