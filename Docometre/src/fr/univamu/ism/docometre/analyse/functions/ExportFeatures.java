@@ -387,6 +387,7 @@ public class ExportFeatures extends GenericFunction {
 		featuresCheckboxTableViewer.addCheckStateListener(new ICheckStateListener() {
 			@Override
 			public void checkStateChanged(CheckStateChangedEvent event) {
+				((FunctionalBlockConfigurationDialog)titleAreaDialog).setErrorMessage(null);
 				Object[] elements = featuresCheckboxTableViewer.getCheckedElements();
 				ArrayList<String> stringElements = new ArrayList<>();
 				for (Object element : elements) {

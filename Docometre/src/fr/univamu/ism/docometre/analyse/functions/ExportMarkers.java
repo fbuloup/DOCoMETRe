@@ -375,8 +375,10 @@ public class ExportMarkers extends GenericFunction {
 			boolean checked = false;
 			for (TableItem tableItem : tableItems) {
 				checked = tableItem.getText().equals(marker);
-				tableItem.setChecked(checked);
-				if(checked) break;
+				if(checked) {
+					tableItem.setChecked(checked);
+					break;
+				}
 			}
 			if(!checked) {
 				String message = NLS.bind(DocometreMessages.ImpossibleToFindChannelTitle, marker);
@@ -387,6 +389,7 @@ public class ExportMarkers extends GenericFunction {
 		markersCheckboxTableViewer.addCheckStateListener(new ICheckStateListener() {
 			@Override
 			public void checkStateChanged(CheckStateChangedEvent event) {
+				((FunctionalBlockConfigurationDialog)titleAreaDialog).setErrorMessage(null);
 				Object[] elements = markersCheckboxTableViewer.getCheckedElements();
 				ArrayList<String> stringElements = new ArrayList<>();
 				for (Object element : elements) {
@@ -416,10 +419,12 @@ public class ExportMarkers extends GenericFunction {
 		Set<String> filesNames = new HashSet<>();
 		Set<String> subjectsNames = new HashSet<>();
 		for (String marker : markers) {
-			String[] segments = marker.split("\\.");
-			String fileName = destination + segments[0] + "." + segments[1] + ".markers.csv";
-			filesNames.add(fileName);
-			subjectsNames.add(segments[0] + "." + segments[1]);
+			if(!"".equals(marker)) {
+				String[] segments = marker.split("\\.");
+				String fileName = destination + segments[0] + "." + segments[1] + ".markers.csv";
+				filesNames.add(fileName);
+				subjectsNames.add(segments[0] + "." + segments[1]);
+			}
 		}
 		
 		if(filesNames.size() == 0) {
