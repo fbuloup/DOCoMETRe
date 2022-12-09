@@ -6,10 +6,15 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-12-09
+      -- 2022-12-09 - BIS
 ADDED : Nothing
 FIXED :
-* Clear error message when selection changes (Export Markers and Features functions)
+* Index Out Of Bounds exception in Find Amplitude Forward
+-- 2022-12-09
+ADDED : Nothing
+FIXED :
+* Clear error message when selection changes (Export Markers
+and Features functions)
 -- 2022-12-08
 ADDED :
 * Expression function : add/improve content assistants (Source
