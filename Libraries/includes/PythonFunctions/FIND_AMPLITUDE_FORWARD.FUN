@@ -71,7 +71,7 @@ if compute:\n\
 			\t\t\t\tcurrentIndex = fromIndexMarker + 1;\n\
 			\t\t\t\tpreviousValue =  values[trialNumber, fromIndexMarker];\n\
 			\t\t\t\tfafFound = 0;\n\
-			\t\t\t\twhile currentIndex <= toIndexMarker:\n\
+			\t\t\t\twhile currentIndex < toIndexMarker:\n\
 				\t\t\t\t\tcurrentValue = values[trialNumber, currentIndex];\n\
 				\t\t\t\t\tif currentValue >= amplitude and previousValue < amplitude :\n\
 					\t\t\t\t\t\tfafFound = 1;\n\
