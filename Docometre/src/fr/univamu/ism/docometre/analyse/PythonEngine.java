@@ -65,6 +65,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.PlatformUI;
 
@@ -75,6 +76,7 @@ import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
+import fr.univamu.ism.docometre.preferences.MathEnginePreferencesConstants;
 import fr.univamu.ism.docometre.python.PythonController;
 import fr.univamu.ism.docometre.python.PythonEntryPoint;
 
@@ -112,7 +114,10 @@ public class PythonEngine implements MathEngine {
 				IStatus status = Status.OK_STATUS;
 				try {
 					String workspacePath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toPortableString();
-					if(pythonController.startServer(pythonLocation, pythonScriptsLocation, timeOut, monitor)) {
+					IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
+					int javaPort = preferenceStore.getInt(MathEnginePreferencesConstants.PY4J_JAVA_PORT);
+					int pythonPort = preferenceStore.getInt(MathEnginePreferencesConstants.PY4J_PYTHON_PORT);
+					if(pythonController.startServer(pythonLocation, pythonScriptsLocation, timeOut, monitor, javaPort, pythonPort)) {
 						if(!monitor.isCanceled()) {
 							String cmd = "import os;os.chdir('" + workspacePath + "')";
 							pythonController.getPythonEntryPoint().runScript(cmd);

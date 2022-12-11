@@ -88,6 +88,16 @@ public class PythonPreferencePage extends FieldEditorPreferencePage implements I
 		DirectoryFieldEditor pythonUserScriptsLocationFieldEditor = new DirectoryFieldEditor(GeneralPreferenceConstants.PYTHON_USER_SCRIPTS_LOCATION, DocometreMessages.PythonEngineUserScriptLocation, container);
 		pythonUserScriptsLocationFieldEditor.getLabelControl(container).setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
 		addField(pythonUserScriptsLocationFieldEditor);
+		
+		// JAVA_PORT
+		IntegerFieldEditor javaPortFieldEditor = new IntegerFieldEditor(MathEnginePreferencesConstants.PY4J_JAVA_PORT, DocometreMessages.Py4JJavaPortNumber, getFieldEditorParent());
+		javaPortFieldEditor.setValidRange(1024, 49151);
+		addField(javaPortFieldEditor);
+		
+		// PYTHON_PORT
+		IntegerFieldEditor pythonPortFieldEditor = new IntegerFieldEditor(MathEnginePreferencesConstants.PY4J_PYTHON_PORT, DocometreMessages.Py4JPythonPortNumber, getFieldEditorParent());
+		pythonPortFieldEditor.setValidRange(1024, 49151);
+		addField(pythonPortFieldEditor);
 	}
 	
 	@Override

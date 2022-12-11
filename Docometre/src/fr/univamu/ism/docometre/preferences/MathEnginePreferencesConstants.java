@@ -53,4 +53,7 @@ public class MathEnginePreferencesConstants {
 
 	public static final String ALWAYS_LOAD_FROM_SAVED_DATA = "ALWAYS_LOAD_FROM_SAVED_DATA";
 	
+	public static final String PY4J_JAVA_PORT = "PY4J_JAVA_PORT";
+	public static final String PY4J_PYTHON_PORT = "PY4J_PYTHON_PORT";
+	
 }

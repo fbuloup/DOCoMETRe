@@ -765,6 +765,8 @@ public final class DocometreMessages extends NLS {
 	public static String PythonEngineScriptLocation;
 	public static String PythonEngineUserScriptLocation;
 	public static String PythonEngineLocation;
+	public static String Py4JPythonPortNumber;
+	public static String Py4JJavaPortNumber;
 	
 	// Export to zip or tar
 	public static String DataTransfer_errorExporting;

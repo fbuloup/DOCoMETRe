@@ -69,14 +69,16 @@ public final class PythonController  {
 	private PythonController() {
 	}
 	
-	public boolean startServer(String pythonLocation, String pythonScriptsLocation, int timeOut, IProgressMonitor monitor) throws Exception {
+	public boolean startServer(String pythonLocation, String pythonScriptsLocation, int timeOut, IProgressMonitor monitor, int javaPort, int pythonPort) throws Exception {
 		javaEntryPoint = new JavaEntryPoint();
 		ClientServerBuilder clientServerBuilder = new ClientServer.ClientServerBuilder(javaEntryPoint);
+		clientServerBuilder.javaPort(javaPort);
+		clientServerBuilder.pythonPort(pythonPort);
 		clientServerBuilder.autoStartJavaServer(false);
 		server = clientServerBuilder.build();
 		server.getJavaServer().start();
 		
-		pythonProcessBuilder = new ProcessBuilder(pythonLocation, pythonScriptsLocation + File.separator + "DOCoMETRe.py", "-jvm");
+		pythonProcessBuilder = new ProcessBuilder(pythonLocation, pythonScriptsLocation + File.separator + "DOCoMETRe.py", "--jvm", "--javaPort", String.valueOf(javaPort), "--pythonPort", String.valueOf(pythonPort));
 		pythonProcess = pythonProcessBuilder.start();
 		
 		Thread.sleep(1000);
@@ -94,6 +96,7 @@ public final class PythonController  {
 	        String errorMessage;
 	        while ((errorMessage = reader.readLine()) != null) {
 	        	stringBuilder.append(errorMessage);
+	        	stringBuilder.append("\n");
 	        }
 	        reader.close();
 	        Throwable throwable = new Throwable(stringBuilder.toString());

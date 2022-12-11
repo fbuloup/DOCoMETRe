@@ -54,6 +54,7 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ChooseWorkspaceData;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfigurationProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfigurationProperties;
+import py4j.GatewayServer;
 
 public class PreferencesInitializer extends AbstractPreferenceInitializer {
 
@@ -98,7 +99,9 @@ public class PreferencesInitializer extends AbstractPreferenceInitializer {
 		
 		defaults.putBoolean(GeneralPreferenceConstants.REDIRECT_STD_ERR_OUT_TO_FILE, false);
 		defaults.put(GeneralPreferenceConstants.STD_ERR_OUT_FILE, "");
-		
+				
+		defaults.putInt(MathEnginePreferencesConstants.PY4J_JAVA_PORT, GatewayServer.DEFAULT_PORT);
+		defaults.putInt(MathEnginePreferencesConstants.PY4J_PYTHON_PORT, GatewayServer.DEFAULT_PYTHON_PORT);
 		
 		Bundle bundle = Platform.getBundle("Libraries");
 		String librariesPath = "Libraries_" + bundle.getVersion();

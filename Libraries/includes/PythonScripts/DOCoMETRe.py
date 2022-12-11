@@ -6,6 +6,7 @@ import io;
 import re;
 import time;
 import struct;
+import argparse;
 
 class DOCoMETRe(object):
 
@@ -507,21 +508,22 @@ class DOCoMETRe(object):
 if __name__ == "__main__":
 	
 	print("Current working folder : " + os.getcwd());
-	jvmMode = True;
 	
 	#experiments = dict();
+	parser = argparse.ArgumentParser()
+	parser.add_argument("-m", "--jvm", default=False, action='store_true')
+	parser.add_argument("-j", "--javaPort", type=int, required=False, default=25333)
+	parser.add_argument("-p", "--pythonPort", type=int, required=False, default=25334)
+	args = parser.parse_args(sys.argv[1:])
+	print("Args -> JVM mode :", args.jvm, "Java port :", args.javaPort, "Python port :", args.pythonPort)
 	
-	if(len(sys.argv) > 1):
-		if(sys.argv[1] == "-jvm"):	
-			gateway = ClientServer(java_parameters = JavaParameters(), python_parameters = PythonParameters());	
-			docometre = DOCoMETRe(gateway);
-			D = docometre.experiments;
-			gateway.entry_point.setPythonEntryPoint(docometre);			
-		else:
-			jvmMode = False;
-		
-	else:
-		jvmMode = False;
+	jvmMode = args.jvm
+	
+	if(jvmMode):
+		gateway = ClientServer(java_parameters = JavaParameters(port=args.javaPort), python_parameters = PythonParameters(port=args.pythonPort));	
+		docometre = DOCoMETRe(gateway);
+		D = docometre.experiments;
+		gateway.entry_point.setPythonEntryPoint(docometre);			
 		
 	if(not jvmMode):
 		print("We are not in JVM mode");
