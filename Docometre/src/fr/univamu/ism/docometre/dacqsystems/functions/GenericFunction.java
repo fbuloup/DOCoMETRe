@@ -62,6 +62,8 @@ import fr.univamu.ism.process.Script;
 
 public class GenericFunction extends Function {
 	
+	public static String lastTrialsList = "1:10,15,20:25";
+	
 	public static String UNO_DEFAULT_INDENT = "";
 	public static String UNO_FINALIZE_INDENT = "";
 	

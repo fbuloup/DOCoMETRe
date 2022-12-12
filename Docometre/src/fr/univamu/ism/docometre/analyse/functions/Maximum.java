@@ -110,7 +110,7 @@ public class Maximum extends GenericFunction {
 		trialsListLabel.setText(FunctionsMessages.TrialsList);
 		Text trialsListText = new Text(paramContainer, SWT.BORDER);
 		trialsListText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		String value  = getProperty(trialsListKey, "1:10,15,20:25");
+		String value  = getProperty(trialsListKey, GenericFunction.lastTrialsList);
 		trialsListText.setText(value);
 		trialsListText.addModifyListener(new ModifyListener() {
 			@Override
@@ -121,7 +121,10 @@ public class Maximum extends GenericFunction {
 				Pattern pattern = Pattern.compile(regExp);
 				Matcher matcher = pattern.matcher(trialsListText.getText());
 				putValue = matcher.matches();
-				if(putValue) getTransientProperties().put(trialsListKey, trialsListText.getText());
+				if(putValue) {
+					getTransientProperties().put(trialsListKey, trialsListText.getText());
+					GenericFunction.lastTrialsList = trialsListText.getText();
+				}
 				else {
 					String message = NLS.bind(FunctionsMessages.TrialsListNotValidLabel, trialsListText.getText());
 					Maximum.this.functionalBlockConfigurationDialog.setErrorMessage(message);
