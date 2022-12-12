@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-12-09 - BIS
+      -- 2022-12-12
+ADDED :
+* Support for network port numbers management with Python Math. Engine
+FIXED : Nothing
+-- 2022-12-09 - BIS
 ADDED : Nothing
 FIXED :
 * Index Out Of Bounds exception in Find Amplitude Forward 
