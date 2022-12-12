@@ -511,11 +511,11 @@ if __name__ == "__main__":
 	
 	#experiments = dict();
 	parser = argparse.ArgumentParser()
-	parser.add_argument("-m", "--jvm", default=False, action='store_true')
-	parser.add_argument("-j", "--javaPort", type=int, required=False, default=25333)
-	parser.add_argument("-p", "--pythonPort", type=int, required=False, default=25334)
-	args = parser.parse_args(sys.argv[1:])
-	print("Args -> JVM mode :", args.jvm, "Java port :", args.javaPort, "Python port :", args.pythonPort)
+	parser.add_argument("-m", "--jvm", default=False, action="store_true", help = "Specifies the module must be launched with a Java/Python gateway");
+	parser.add_argument("-j", "--javaPort", type=int, required = False, default = 25333, help = "Java/Python gateway's Java port number (an integer ideally in [1024, 49151], default is 25333).");
+	parser.add_argument("-p", "--pythonPort", type=int, required = False, default = 25334, help = "Java/Python gateway's Python port number (an integer ideally in [1024, 49151], default is 25334).");
+	args = parser.parse_args(sys.argv[1:]);
+	print("Args -> JVM mode :", args.jvm, "- Java port :", args.javaPort, "- Python port :", args.pythonPort);
 	
 	jvmMode = args.jvm
 	
@@ -530,6 +530,8 @@ if __name__ == "__main__":
 		
 		docometre = DOCoMETRe(None);
 		D = docometre.experiments;
+		from platform import python_version; 
+		D['pythonVersion'] = python_version();
         
         # Example to find global maximum
 
