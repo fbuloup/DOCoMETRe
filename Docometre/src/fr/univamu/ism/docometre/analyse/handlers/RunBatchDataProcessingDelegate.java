@@ -74,6 +74,7 @@ public final class RunBatchDataProcessingDelegate {
 			if(batchDataProcessingItem.isActivated()) {
 				IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(batchDataProcessingItem.getPath());
 				if(resource != null) processesResource.add(resource);
+				else Activator.logWarningMessage(NLS.bind(DocometreMessages.ErrorFileFolderNotExists, batchDataProcessingItem.getPath()));
 			}
 		}
 		if(monitor.isCanceled()) return true;
