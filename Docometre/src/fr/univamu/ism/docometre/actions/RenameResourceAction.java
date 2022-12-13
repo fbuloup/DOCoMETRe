@@ -136,13 +136,12 @@ public class RenameResourceAction extends Action implements ISelectionListener, 
 
 	}
 	
-	
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
 		setEnabled(false);
 		if (part instanceof ExperimentsView || part instanceof SubjectsView) {
 			if (selection instanceof IStructuredSelection)
 				resource = (IResource) ((IStructuredSelection) selection).getFirstElement();
-			setEnabled(resource != null);
+			setEnabled(resource != null && !ResourceType.isChannel(resource));
 			undoContext = null;
 			if(part instanceof ExperimentsView) undoContext = ExperimentsView.experimentsViewUndoContext;
 			if(part instanceof SubjectsView) undoContext = SubjectsView.subjectsViewUndoContext;
