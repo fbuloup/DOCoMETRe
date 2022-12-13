@@ -58,6 +58,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.osgi.util.NLS;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
@@ -105,24 +106,26 @@ public class ExportScriptWizard extends Wizard {
 						if(processeItem.isActivated()) {
 							String path = processeItem.getPath();
 							IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(path);
-							boolean removeHandle = false;
-							Object object = ResourceProperties.getObjectSessionProperty(resource);
-							if(object == null) {
-								object = ObjectsController.deserialize((IFile)resource);
-								ResourceProperties.setObjectSessionProperty(resource, object);
-								ObjectsController.addHandle(object);
-								removeHandle = true;
-							}
-							if(object instanceof Script) {
-								try {
-									Script script = (Script)object;
-									processesCode = processesCode + script.getLoopCode(object, ScriptSegmentType.LOOP) + "\n";
-								} catch (Exception e) {
-									Activator.logErrorMessageWithCause(e);
-									e.printStackTrace();
+							if(resource != null) {
+								boolean removeHandle = false;
+								Object object = ResourceProperties.getObjectSessionProperty(resource);
+								if(object == null) {
+									object = ObjectsController.deserialize((IFile)resource);
+									ResourceProperties.setObjectSessionProperty(resource, object);
+									ObjectsController.addHandle(object);
+									removeHandle = true;
 								}
-							}
-							if(removeHandle) ObjectsController.removeHandle(object);
+								if(object instanceof Script) {
+									try {
+										Script script = (Script)object;
+										processesCode = processesCode + script.getLoopCode(object, ScriptSegmentType.LOOP) + "\n";
+									} catch (Exception e) {
+										Activator.logErrorMessageWithCause(e);
+										e.printStackTrace();
+									}
+								}
+								if(removeHandle) ObjectsController.removeHandle(object);
+							} else Activator.logWarningMessage(NLS.bind(DocometreMessages.ErrorFileFolderNotExists, path));
 						}
 					}
 					monitor.worked(1);
