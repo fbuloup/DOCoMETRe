@@ -7,9 +7,9 @@
 			<text></text>
 			<text>DOCoMETRe stands for "Dispositif d'Observation et de COntrôle du
 				Mouvement En Temps RéEl"</text>
-			<text>This software must be used associated with a hardware coming from JAGER Gmbh (ADwin Pro or Gold) or an Arduino Uno.
-			Support for Portenta Machine Control and Teens 4.0 is planned.</text>
-			<text>Its aim is to facilitate data acquisition and real time data processing in the context of creating a human movement science experiment.</text>
+			<text>Its aim is to facilitate data acquisition, real time and deferred data processing in the context of creating a human movement science experiment.</text>
+			<text>For data acquisition, this software must be used associated with a hardware coming from JAGER Gmbh (ADwin Pro or Gold) or an Arduino Uno.
+			Support for Portenta Machine Control and Teensy 4.0 is planned.</text>
 			<text>Can you guess it ? The root concept of this software is the Experiment ! An Experiment is basically a container in DOCoMETRe. 
 			So please, start by creating an experiment ! Once you have
 			created an experiment, you can add one or more data acquisition configuration.</text> 
@@ -20,6 +20,7 @@
 			<text>With data acquisition configurations and processes, you can now create one or more subjects. For each subject you can add one or more sessions, a session
 			being a set of trials. Finally, by associating a process to each trial, you can run your experiment with your subjects in order to collect data and answer your 
 			experimental question :-) !</text>
+			<text>Once data have been acquired, it is possible to run deferred analysis like signal conditioning (e.g. filtering) or points marking and features computation.</text>
 			<text>Special thanks to E. ARROU-VIGNOD, Z. MENETRIER, K. PRUD'HOMME and E. VANROME for their contributions to the project.</text>
 			<text>I wish also to thanks J. BLOUIN, C. BOURDIN, T. COYLE, F. DANION, J. DE-GRAAF, P. CHAVET, L. MOUCHNINO, V. NOUGIER, R. SALESSE, F. SARLEGNA, J.L. VERCHER and many more
 			who have supported and/or contributed to the development of DOCoMETRe.</text>
