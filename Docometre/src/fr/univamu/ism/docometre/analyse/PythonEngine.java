@@ -120,7 +120,7 @@ public class PythonEngine implements MathEngine {
 					if(pythonController.startServer(pythonLocation, pythonScriptsLocation, timeOut, monitor, javaPort, pythonPort)) {
 						if(!monitor.isCanceled()) {
 							String cmd = "import os;os.chdir('" + workspacePath + "')";
-							pythonController.getPythonEntryPoint().runScript(cmd);
+							pythonController.getPythonEntryPoint().runScript(cmd, false);
 						}
 					}
 					notifyListeners();
@@ -156,7 +156,7 @@ public class PythonEngine implements MathEngine {
 	}
 	
 	private String getPythonVersion() {
-		pythonController.getPythonEntryPoint().runScript("from platform import python_version; docometre.experiments['pythonVersion'] = python_version();");
+		pythonController.getPythonEntryPoint().runScript("from platform import python_version; docometre.experiments['pythonVersion'] = python_version();", false);
 		String response = "Python version : " + pythonController.getPythonEntryPoint().evaluate("docometre.experiments['pythonVersion']");
 		return response;
 	}
@@ -436,8 +436,8 @@ public class PythonEngine implements MathEngine {
 	}
 
 	@Override
-	public void runScript(String code) {
-		pythonController.getPythonEntryPoint().runScript(code);
+	public void runScript(String code, boolean runInMainThread) {
+		pythonController.getPythonEntryPoint().runScript(code, runInMainThread);
 	}
 
 	@Override
@@ -466,14 +466,14 @@ public class PythonEngine implements MathEngine {
 		String channelName = getFullPath(signal);
 		
 		String expression = "docometre.experiments[\"" + channelName + ".NbMarkersGroups\"] = " + nbMarkersGroups;
-		pythonController.getPythonEntryPoint().runScript(expression);
+		pythonController.getPythonEntryPoint().runScript(expression, false);
 		
 		if(nbMarkersGroups == 1) expression = "docometre.experiments['" + channelName + ".MarkersGroupsLabels'] = ['" + markersGroupLabel + "']";
 		else expression ="docometre.experiments['" + channelName + ".MarkersGroupsLabels'].append('" + markersGroupLabel + "')";
-		pythonController.getPythonEntryPoint().runScript(expression);
+		pythonController.getPythonEntryPoint().runScript(expression, false);
 		
 		expression = "docometre.experiments[\"" + channelName + ".MarkersGroup_"+ markersGroupLabel + "_Values\"] = numpy.zeros((0,3));";
-		pythonController.getPythonEntryPoint().runScript(expression);
+		pythonController.getPythonEntryPoint().runScript(expression, false);
 		signal.setModified(true);
 	}
 
@@ -494,13 +494,13 @@ public class PythonEngine implements MathEngine {
 		
 		// Remove markers group label
 		String expression = "docometre.experiments['" + channelName + ".MarkersGroupsLabels'].pop(" + (markersGroupNumber - 1) + ")";
-		pythonController.getPythonEntryPoint().runScript(expression);
+		pythonController.getPythonEntryPoint().runScript(expression, false);
 		
 		// decrease nb markers groups
 		int nbMarkersGroups = getNbMarkersGroups(signal);
 		nbMarkersGroups--;
 		expression = "docometre.experiments[\"" + channelName + ".NbMarkersGroups\"] = " + nbMarkersGroups;
-		pythonController.getPythonEntryPoint().runScript(expression);
+		pythonController.getPythonEntryPoint().runScript(expression, false);
 		
 		// Remove markers group value
 		String experimentName = signal.getFullPath().segment(0);
@@ -518,7 +518,7 @@ public class PythonEngine implements MathEngine {
 		String valuesString = "[" + trialNumber + "," + xValue + "," + yValue + "]";
 		String expression = "docometre.experiments[\"" + channelName + ".MarkersGroup_" + markersGroupLabel + "_Values\"]";
 		expression = expression + " = numpy.vstack([" + expression + ", " + valuesString + "]);";
-		pythonController.getPythonEntryPoint().runScript(expression);
+		pythonController.getPythonEntryPoint().runScript(expression, false);
 		signal.setModified(true);
 	}
 
@@ -557,7 +557,7 @@ public class PythonEngine implements MathEngine {
 		expression = expression + "index = -1;\n";
 		expression = expression + "if(indexes[0].size > 0):index = indexes[0][0];\n";
 		expression = expression + "if(index > -1):" + x + " = numpy.delete(" + x + ", index, axis=0);";
-		pythonController.getPythonEntryPoint().runScript(expression);
+		pythonController.getPythonEntryPoint().runScript(expression, false);
 		double[][] values = getMarkers(markersGroupLabel, signal);
 		int markersGroupNumber = getMarkersGroupNumber(markersGroupLabel, signal) + 1;
 		if(values.length == 0) deleteMarkersGroup(markersGroupNumber, signal);
@@ -666,13 +666,13 @@ public class PythonEngine implements MathEngine {
 		
 		// Remove feature label
 		String expression = "docometre.experiments['" + channelName + ".FeaturesLabels'].pop(" + (featureNumber - 1) + ")";
-		pythonController.getPythonEntryPoint().runScript(expression);
+		pythonController.getPythonEntryPoint().runScript(expression, false);
 		
 		// decrease nb features
 		int nbFeatures = getNbFeatures(signal);
 		nbFeatures--;
 		expression = "docometre.experiments[\"" + channelName + ".NbFeatures\"] = " + nbFeatures;
-		pythonController.getPythonEntryPoint().runScript(expression);
+		pythonController.getPythonEntryPoint().runScript(expression, false);
 		
 		// Remove feature values
 		String experimentName = signal.getFullPath().segment(0);

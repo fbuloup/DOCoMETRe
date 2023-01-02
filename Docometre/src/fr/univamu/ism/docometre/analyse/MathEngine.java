@@ -100,7 +100,7 @@ public interface MathEngine {
 	int getSamplesNumber(Channel signal, int trialNumber);
 	int getFrontCut(Channel signal, int trialNumber);
 	int getEndCut(Channel signal, int trialNumber);
-	void runScript(String code);
+	void runScript(String code, boolean runInMainThread);
 	void deleteChannel(Channel resource);
 	void saveSubject(IResource subject);
 	String evaluate(String command) throws Exception;

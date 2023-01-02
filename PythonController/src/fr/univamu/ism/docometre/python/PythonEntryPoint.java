@@ -53,7 +53,7 @@ public interface PythonEntryPoint {
 	void unload(Object expression);
 	String getChannels(Object subjectFullName);
 	byte[] getVector(Object expression, Object dataType, Object trialNumber, Object frontCut, Object endCut);
-	void runScript(Object code);
+	void runScript(Object code, Object runInMainThread);
 	void saveSubject(Object subjectFullNameRegExp, Object saveFilesFullPath);
 	void loadSubject(Object saveFilesFullPath);
 	boolean rename(String keyRegExp, String keyReplace);

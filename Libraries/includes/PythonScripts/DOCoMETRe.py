@@ -7,10 +7,13 @@ import re;
 import time;
 import struct;
 import argparse;
+import queue;
+import matplotlib;
 
 class DOCoMETRe(object):
 
 	global jvmMode;
+	global callback_queue;
 
 	def __init__(self, gateway):
 	 	self.gateway = gateway;
@@ -388,9 +391,15 @@ class DOCoMETRe(object):
 		
 		return arrayValues.tobytes();
 	
-	def runScript(self, code):
-		if(jvmMode): gateway.jvm.System.out.println("In runScript : " + code);
-		exec(code);
+	def runScript(self, code, runInMainThread):
+		if(jvmMode): 
+			gateway.jvm.System.out.println("Run script in main thread : " + str(runInMainThread));
+			gateway.jvm.System.out.println("Script code : " + code);
+		if runInMainThread:
+			if(jvmMode): gateway.jvm.System.out.println("Add callback to queue");
+			callback_queue.put(lambda: runScriptMainThread(code))
+		else:
+			exec(code);
 		
 	def saveSubject(self, fullSubjectNameRegExp, dataFilesFullPath):
 		subject = {k:v for k,v in self.experiments.items() if re.search(fullSubjectNameRegExp, k) != None}
@@ -504,6 +513,10 @@ class DOCoMETRe(object):
 		
 	class Java:
 		implements = ["fr.univamu.ism.docometre.python.PythonEntryPoint"]
+		
+def runScriptMainThread(code):
+    if(jvmMode): gateway.jvm.System.out.println("In runScriptMainThread : " + code);
+    exec(code)
 
 if __name__ == "__main__":
 	
@@ -520,10 +533,18 @@ if __name__ == "__main__":
 	jvmMode = args.jvm
 	
 	if(jvmMode):
+		callback_queue = queue.Queue()
 		gateway = ClientServer(java_parameters = JavaParameters(port=args.javaPort), python_parameters = PythonParameters(port=args.pythonPort));	
 		docometre = DOCoMETRe(gateway);
 		D = docometre.experiments;
-		gateway.entry_point.setPythonEntryPoint(docometre);			
+		gateway.entry_point.setPythonEntryPoint(docometre);	
+		while True:
+			try:
+				callback = callback_queue.get(block=False)  # blocks until an item is available
+				callback()		
+				gateway.jvm.System.out.println("Callback called");
+			except queue.Empty:
+				pass
 		
 	if(not jvmMode):
 		print("We are not in JVM mode");
@@ -532,9 +553,35 @@ if __name__ == "__main__":
 		D = docometre.experiments;
 		from platform import python_version; 
 		D['pythonVersion'] = python_version();
-        
-        # Example to find global maximum
 
+		docometre.loadData("DOCOMETRE", "DA.SUJET1", "/Users/frank/Desktop/Demo/DA/SUJET1/SUJET1.adw", None);
+		
+		# Expression Function
+		import matplotlib.pyplot as plt;
+		import numpy as np;
+		values = D["DA.SUJET1.CODAmotion_C1_X.Values"];
+		nbSamples = len(values[1,]);
+		sampleFrequency = D["DA.SUJET1.CODAmotion_C1_X.SampleFrequency"];
+		time = np.r_[0.:nbSamples]/sampleFrequency;
+		plt.plot(time, values[0,:]);
+		plt.plot(time, values[1,:]);
+		plt.ylabel('some numbers');
+		plt.show();
+		
+		# Expression Function
+		# import numpy as np
+		# import matplotlib.pyplot as plt
+		ax = plt.figure().add_subplot(projection='3d')
+		# Prepare arrays x, y, z
+		x = D["DA.SUJET1.CODAmotion_C1_X.Values"];
+		y = D["DA.SUJET1.CODAmotion_C1_Y.Values"];
+		z = D["DA.SUJET1.CODAmotion_C1_Z.Values"];
+		ax.plot(x, y, z)
+		ax.legend()
+		plt.show()
+		
+				
+		
 		# docometre.loadData("OPTITRACK_TYPE_1", "test.S02", "/Users/frank/Desktop/Demo/test/S02/D/S02_D_1.csv;/Users/frank/Desktop/Demo/test/S02/D/S02_D_2.csv;/Users/frank/Desktop/Demo/test/S02/D/S02_D_3.csv;/Users/frank/Desktop/Demo/test/S02/D/S02_D_4.csv;/Users/frank/Desktop/Demo/test/S02/D/S02_D_5.csv;/Users/frank/Desktop/Demo/test/S02/D/S02_D_6.csv;/Users/frank/Desktop/Demo/test/S02/ND/S02_ND_1.csv;/Users/frank/Desktop/Demo/test/S02/ND/S02_ND_2.csv;/Users/frank/Desktop/Demo/test/S02/ND/S02_ND_3.csv;/Users/frank/Desktop/Demo/test/S02/ND/S02_ND_4.csv;/Users/frank/Desktop/Demo/test/S02/ND/S02_ND_5.csv;/Users/frank/Desktop/Demo/test/S02/ND/S02_ND_6.csv", None);
 
 		# import numpy;

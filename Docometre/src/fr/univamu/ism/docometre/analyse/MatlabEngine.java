@@ -557,13 +557,17 @@ public final class MatlabEngine implements MathEngine {
 	}
 
 	@Override
-	public void runScript(String code) {
+	public void runScript(String code, boolean runInMainThread) {
 		try {
 			matlabController.evaluate(code);
 		} catch (Exception e) {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
 		}
+	}
+	
+	private void runScript(String code) {
+		runScript(code, false);
 	}
 
 	@Override
