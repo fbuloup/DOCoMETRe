@@ -86,6 +86,7 @@ import fr.univamu.ism.docometre.GetResourceLabelDelegate;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.PartListenerAdapter;
+import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.datamodel.EnableDisableHandler;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
@@ -98,9 +99,11 @@ import fr.univamu.ism.docometre.analyse.datamodel.MoveUpHandler;
 import fr.univamu.ism.docometre.analyse.datamodel.RemoveHandler;
 import fr.univamu.ism.docometre.analyse.handlers.RunBatchDataProcessingDelegate;
 import fr.univamu.ism.docometre.analyse.handlers.UpdateWorkbenchDelegate;
+import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.analyse.wizard.ExportScriptWizard;
 import fr.univamu.ism.docometre.editors.PartNameRefresher;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
+import fr.univamu.ism.docometre.views.ExperimentsView;
 
 public class BatchDataProcessingEditor extends EditorPart implements PartNameRefresher  {
 	
@@ -131,6 +134,8 @@ public class BatchDataProcessingEditor extends EditorPart implements PartNameRef
 
 	private ToolItem runButton;
 
+	private Button runInMainThreadButton;
+
 	public BatchDataProcessingEditor() {
 		// TODO Auto-generated constructor stub
 	}
@@ -138,6 +143,10 @@ public class BatchDataProcessingEditor extends EditorPart implements PartNameRef
 	@Override
 	public void doSave(IProgressMonitor monitor) {
 		ObjectsController.serialize(getBatchDataProcessing());
+		IResource resource = ObjectsController.getResourceForObject(getBatchDataProcessing());
+		ResourceProperties.setRunInMainThread(resource, runInMainThreadButton.getSelection());
+		SubjectsView.refresh(resource.getParent(), new IResource[] {resource});
+		ExperimentsView.refresh(resource.getParent(), new IResource[] {resource});
 		setDirty(false);
 	}
 
@@ -445,6 +454,18 @@ public class BatchDataProcessingEditor extends EditorPart implements PartNameRef
 				setDirty(true);
 			}
 		});
+		
+		if(MathEngineFactory.isPython()) {
+			runInMainThreadButton = formToolkit.createButton(container, DocometreMessages.RunInMainThreadButtonTitle, SWT.CHECK);
+			runInMainThreadButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+			runInMainThreadButton.setSelection(ResourceProperties.isRunInMainThread(ObjectsController.getResourceForObject(getBatchDataProcessing())));
+			runInMainThreadButton.addSelectionListener(new SelectionAdapter() {
+				@Override
+				public void widgetSelected(SelectionEvent e) {
+					setDirty(true);
+				}
+			});
+		}
 		
 		Section processingSection = formToolkit.createSection(container, Section.DESCRIPTION | Section.TITLE_BAR);
 		processingSection.setText(DocometreMessages.Processes);

@@ -45,6 +45,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.gef.commands.CommandStack;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.IPageChangedListener;
 import org.eclipse.jface.dialogs.PageChangedEvent;
 import org.eclipse.ui.IEditorInput;
@@ -58,11 +60,16 @@ import org.eclipse.ui.part.MultiPageEditorPart;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.GetResourceLabelDelegate;
+import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.PartListenerAdapter;
+import fr.univamu.ism.docometre.ResourceProperties;
+import fr.univamu.ism.docometre.analyse.MathEngineFactory;
+import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.editors.AbstractScriptSegmentEditor;
 import fr.univamu.ism.docometre.editors.PartNameRefresher;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
+import fr.univamu.ism.docometre.views.ExperimentsView;
 import fr.univamu.ism.process.Script;
 
 public class DataProcessEditor extends MultiPageEditorPart implements PartNameRefresher, IPageChangedListener {
@@ -73,6 +80,34 @@ public class DataProcessEditor extends MultiPageEditorPart implements PartNameRe
 	private DataProcessScriptEditor dataProcessScriptEditor;
 	private PartListenerAdapter partListenerAdapter;
 	private DataProcessScriptSourceEditor dataProcessScriptSourceEditor;
+	
+	private class RunInMainThreadAction extends Action {
+		
+		public RunInMainThreadAction() {
+			super("Run in main thread", IAction.AS_CHECK_BOX);
+			Object object = getDataProcessingScript();
+			IResource processFile = ObjectsController.getResourceForObject(object);
+			setId("RunInMainThreadAction_" + processFile.getLocation().toPortableString());
+			setText("Run in main thread");
+			setContentDescription("Run in main thread");
+			setImageDescriptor(Activator.getImageDescriptor(IImageKeys.RUN_IN_MAIN_THREAD_ICON));
+			setChecked(ResourceProperties.isRunInMainThread(processFile));
+		}
+		
+		@Override
+		public void run() {
+			Object object = getDataProcessingScript();
+			IResource processFile = ObjectsController.getResourceForObject(object);
+			boolean runInMainThread = ResourceProperties.isRunInMainThread(processFile);
+			ResourceProperties.setRunInMainThread(processFile, !runInMainThread);
+			SubjectsView.refresh(processFile.getParent(), new IResource[] {processFile});
+			ExperimentsView.refresh(processFile.getParent(), new IResource[] {processFile});
+		}
+		
+	}
+	
+	private RunInMainThreadAction runInMainThreadAction;
+	
 	
 	@Override
 	public void init(IEditorSite site, IEditorInput input) throws PartInitException {
@@ -90,13 +125,24 @@ public class DataProcessEditor extends MultiPageEditorPart implements PartNameRe
 			@Override
 			public void partActivated(IWorkbenchPartReference partRef) {
 				update(partRef);
+				if(partRef.getPart(false) == DataProcessEditor.this && MathEngineFactory.isPython()) {
+					getEditorSite().getActionBars().getToolBarManager().add(runInMainThreadAction);
+					getEditorSite().getActionBars().getToolBarManager().update(true);
+				}
 			}
 			
 			@Override
 			public void partBroughtToTop(IWorkbenchPartReference partRef) {
-				update(partRef);
+				update(partRef);				
 			}
-			
+			@Override
+			public void partDeactivated(IWorkbenchPartReference partRef) {
+				if(partRef.getPart(false) == DataProcessEditor.this && MathEngineFactory.isPython()) {
+					getEditorSite().getActionBars().getToolBarManager().remove(runInMainThreadAction.getId());
+					getEditorSite().getActionBars().getToolBarManager().update(true);
+				}
+				
+			}
 			
 		};
 		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().addPartListener(partListenerAdapter);
@@ -109,6 +155,8 @@ public class DataProcessEditor extends MultiPageEditorPart implements PartNameRe
 		});
 		
 		addPageChangedListener(this);
+		
+		if(MathEngineFactory.isPython()) runInMainThreadAction = new RunInMainThreadAction();
 			
 	}
 	

@@ -53,6 +53,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.QualifiedName;
 
+import fr.univamu.ism.docometre.analyse.MathEngineFactory;
+
 public final class ResourceProperties {
 	
 	/*
@@ -70,6 +72,8 @@ public final class ResourceProperties {
 	public static QualifiedName ASSOCIATED_DACQ_CONFIGURATION_FILE_QN = new QualifiedName(Activator.PLUGIN_ID, "associated.dacq.configuration.file");
 	// Associated process file
 	public static QualifiedName ASSOCIATED_PROCESS_FILE_QN = new QualifiedName(Activator.PLUGIN_ID, "associated.process.file");
+	// Whether a process may run in main thread 
+	public static QualifiedName RUN_IN_MAIN_THREAD_QN =  new QualifiedName(Activator.PLUGIN_ID, "run.in.main.thread");
 	// Trial state : 
 	//    - if trial.state property doesn't exist or is not equal to "done", trial is undone
 	//    - if trial.state property exists and is equal to "done" trial is done !
@@ -304,6 +308,25 @@ public final class ResourceProperties {
 		return null;
 	}
 	
+	public static void setRunInMainThread(IResource process, boolean value) {
+		try {
+			process.setPersistentProperty(RUN_IN_MAIN_THREAD_QN, Boolean.toString(value));
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+	}
+	
+	public static boolean isRunInMainThread(IResource process) {
+		try {
+			String value = process.getPersistentProperty(RUN_IN_MAIN_THREAD_QN);
+			return Boolean.parseBoolean(value) && MathEngineFactory.isPython();
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return false;
+	}
 	/*
 	 * Return trial execution state
 	 */

@@ -990,6 +990,7 @@ public final class DocometreMessages extends NLS {
 	public static String GetWholeProcessesScript;
 	public static String GenerateScriptForAllSubjects;
 	public static String ScriptSavedTo;
+	public static String RunInMainThreadButtonTitle;
 
 	// Close workbench
 	public static String CloseMathEngineDialogTitle;
@@ -1116,6 +1117,7 @@ public final class DocometreMessages extends NLS {
 	public static String ScriptExportError2;
 	public static String SaveScriptFile;
 	public static String ExportScriptDialogTitle;
+
 	static {
 		// load message values from bundle file
 		String bn = BUNDLE_NAME;

@@ -108,6 +108,9 @@ public class ExperimentsLabelDecorator implements ILightweightLabelDecorator {
 						if(isLoaded && isModified)
 							decoration.addOverlay(Activator.getImageDescriptor(IImageKeys.MODIFIED_ICON), IDecoration.BOTTOM_RIGHT);
 					}
+					if((ResourceType.isDataProcessing(resource) || ResourceType.isBatchDataProcessing(resource) ) && ResourceProperties.isRunInMainThread(resource)) {
+						decoration.addOverlay(Activator.getImageDescriptor(IImageKeys.RUN_IN_MAIN_THREAD_ICON_2), IDecoration.TOP_LEFT);
+					}
 					try {
 						int severity = resource.findMaxProblemSeverity(DocometreBuilder.MARKER_ID, true, IResource.DEPTH_INFINITE);
 						if(severity == IMarker.SEVERITY_ERROR) decoration.addOverlay(Activator.getImageDescriptor(IImageKeys.ERROR_ICON), IDecoration.BOTTOM_LEFT);

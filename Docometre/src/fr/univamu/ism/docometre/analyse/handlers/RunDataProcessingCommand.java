@@ -114,8 +114,8 @@ public class RunDataProcessingCommand extends AbstractHandler implements ISelect
 								String message = NLS.bind(DocometreMessages.RunningScriptLabel, dataProcessing.getFullPath().removeFileExtension().lastSegment());
 								monitor.beginTask(message, IProgressMonitor.UNKNOWN);
 								Script script = (Script)object;
-								String code = script.getLoopCode(object, ScriptSegmentType.LOOP);
-								MathEngineFactory.getMathEngine().runScript(code);
+								String code = script.getLoopCode(object, ScriptSegmentType.LOOP);								
+								MathEngineFactory.getMathEngine().runScript(code, ResourceProperties.isRunInMainThread(dataProcessing));
 								monitor.done();
 								UpdateWorkbenchDelegate.update();
 							} catch (Exception e) {

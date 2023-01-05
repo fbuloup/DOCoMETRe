@@ -65,6 +65,7 @@ import fr.univamu.ism.process.ScriptSegmentType;
 public final class RunBatchDataProcessingDelegate {
 	
 	public static boolean run(BatchDataProcessing batchDataProcessing, IProgressMonitor monitor) {
+		
 		// Get all data processing
 		monitor.subTask(DocometreMessages.GetAllDataProcessingLabel);
 		BatchDataProcessingItem[] processes = batchDataProcessing.getProcesses();
@@ -134,7 +135,7 @@ public final class RunBatchDataProcessingDelegate {
 				String message = NLS.bind(DocometreMessages.ProcessingLabel, subjectResource.getName());
 				monitor.subTask(message);
 				code = MathEngineFactory.getMathEngine().refactor(code, subjectResource);
-				MathEngineFactory.getMathEngine().runScript(code);
+				MathEngineFactory.getMathEngine().runScript(code, ResourceProperties.isRunInMainThread(ObjectsController.getResourceForObject(batchDataProcessing)));
 				UpdateWorkbenchDelegate.update();
 				if(monitor.isCanceled()) return true;
 				// Save subject if auto unload
