@@ -991,6 +991,7 @@ public final class DocometreMessages extends NLS {
 	public static String GenerateScriptForAllSubjects;
 	public static String ScriptSavedTo;
 	public static String RunInMainThreadButtonTitle;
+	public static String RunInMainThreadButtonActionTitle;
 
 	// Close workbench
 	public static String CloseMathEngineDialogTitle;

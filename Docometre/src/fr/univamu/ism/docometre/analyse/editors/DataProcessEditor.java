@@ -84,12 +84,12 @@ public class DataProcessEditor extends MultiPageEditorPart implements PartNameRe
 	private class RunInMainThreadAction extends Action {
 		
 		public RunInMainThreadAction() {
-			super("Run in main thread", IAction.AS_CHECK_BOX);
+			super(DocometreMessages.RunInMainThreadButtonActionTitle, IAction.AS_CHECK_BOX);
 			Object object = getDataProcessingScript();
 			IResource processFile = ObjectsController.getResourceForObject(object);
 			setId("RunInMainThreadAction_" + processFile.getLocation().toPortableString());
-			setText("Run in main thread");
-			setContentDescription("Run in main thread");
+			setText(DocometreMessages.RunInMainThreadButtonActionTitle);
+			setToolTipText(DocometreMessages.RunInMainThreadButtonActionTitle);
 			setImageDescriptor(Activator.getImageDescriptor(IImageKeys.RUN_IN_MAIN_THREAD_ICON));
 			setChecked(ResourceProperties.isRunInMainThread(processFile));
 		}
