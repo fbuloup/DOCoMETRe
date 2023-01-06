@@ -6,9 +6,22 @@
       provider-name="ISM">
 
    <description>
-      -- 2022-12-12
+      -- 2023-01-06
 ADDED :
-* Support for network port numbers management with Python Math. Engine
+* Remember last trials list for all functions
+* Add warning message if process resource does not exist (RunBatchDataProcessingDelegate)
+* Change intro text
+* Matplotlib must run in Main thread (Python engine - JVM mode)
+* Block until a callback is available (Python engine - JVM mode)
+FIXED :
+* Channel, 2D and 3D chart editors are not persistent 
+* Dot not try to deserialize if it&apos;s a channel (ObjectsController)
+* Do not enable rename action if selected resource is channel (RenameResourceAction)
+* NPE if process resource does not exist (ExportScriptWizard)
+-- 2022-12-12
+ADDED :
+* Support for network port numbers management with Python Math.
+Engine
 FIXED : Nothing
 -- 2022-12-09 - BIS
 ADDED : Nothing
