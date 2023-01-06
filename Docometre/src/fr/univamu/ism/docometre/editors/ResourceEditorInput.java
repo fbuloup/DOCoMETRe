@@ -57,6 +57,8 @@ import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
+import fr.univamu.ism.docometre.analyse.datamodel.XYChart;
+import fr.univamu.ism.docometre.analyse.datamodel.XYZChart;
 
 public class ResourceEditorInput implements IEditorInput, IPersistableElement {
 
@@ -170,6 +172,9 @@ public class ResourceEditorInput implements IEditorInput, IPersistableElement {
 	}
 	
 	public IPersistableElement getPersistable() {
+		if(object instanceof Channel) return null;
+		if(object instanceof XYChart) return null;
+		if(object instanceof XYZChart) return null;
 		return this;
 	}
 
