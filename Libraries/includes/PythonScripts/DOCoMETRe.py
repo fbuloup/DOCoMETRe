@@ -539,12 +539,9 @@ if __name__ == "__main__":
 		D = docometre.experiments;
 		gateway.entry_point.setPythonEntryPoint(docometre);	
 		while True:
-			try:
-				callback = callback_queue.get(block=False)  # blocks until an item is available
-				callback()		
-				gateway.jvm.System.out.println("Callback called");
-			except queue.Empty:
-				pass
+			callback = callback_queue.get(block=True) # Block until a callback is available
+			callback()		
+			gateway.jvm.System.out.println("Callback called");
 		
 	if(not jvmMode):
 		print("We are not in JVM mode");
