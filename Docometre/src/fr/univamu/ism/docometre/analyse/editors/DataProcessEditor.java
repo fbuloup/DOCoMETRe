@@ -47,8 +47,11 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.gef.commands.CommandStack;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.dialogs.IPageChangedListener;
 import org.eclipse.jface.dialogs.PageChangedEvent;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPart;
@@ -72,7 +75,7 @@ import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 import fr.univamu.ism.process.Script;
 
-public class DataProcessEditor extends MultiPageEditorPart implements PartNameRefresher, IPageChangedListener {
+public class DataProcessEditor extends MultiPageEditorPart implements PartNameRefresher, IPageChangedListener, IPropertyChangeListener {
 	
 	public static String ID = "Docometre.DataProcessEditor";
 	
@@ -107,6 +110,10 @@ public class DataProcessEditor extends MultiPageEditorPart implements PartNameRe
 	}
 	
 	private RunInMainThreadAction runInMainThreadAction;
+
+	public DataProcessEditor() {
+		Activator.getDefault().getPreferenceStore().addPropertyChangeListener(this);
+	}
 	
 	
 	@Override
@@ -125,10 +132,10 @@ public class DataProcessEditor extends MultiPageEditorPart implements PartNameRe
 			@Override
 			public void partActivated(IWorkbenchPartReference partRef) {
 				update(partRef);
-				if(partRef.getPart(false) == DataProcessEditor.this && MathEngineFactory.isPython()) {
+				if(partRef.getPart(false) == DataProcessEditor.this && MathEngineFactory.isPython()) 
 					getEditorSite().getActionBars().getToolBarManager().add(runInMainThreadAction);
-					getEditorSite().getActionBars().getToolBarManager().update(true);
-				}
+				 else getEditorSite().getActionBars().getToolBarManager().remove(runInMainThreadAction.getId());
+				getEditorSite().getActionBars().getToolBarManager().update(true);
 			}
 			
 			@Override
@@ -137,13 +144,9 @@ public class DataProcessEditor extends MultiPageEditorPart implements PartNameRe
 			}
 			@Override
 			public void partDeactivated(IWorkbenchPartReference partRef) {
-				if(partRef.getPart(false) == DataProcessEditor.this && MathEngineFactory.isPython()) {
-					getEditorSite().getActionBars().getToolBarManager().remove(runInMainThreadAction.getId());
-					getEditorSite().getActionBars().getToolBarManager().update(true);
-				}
-				
+				getEditorSite().getActionBars().getToolBarManager().remove(runInMainThreadAction.getId());
+				getEditorSite().getActionBars().getToolBarManager().update(true);
 			}
-			
 		};
 		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().addPartListener(partListenerAdapter);
 		addPageChangedListener(new IPageChangedListener() {
@@ -156,7 +159,7 @@ public class DataProcessEditor extends MultiPageEditorPart implements PartNameRe
 		
 		addPageChangedListener(this);
 		
-		if(MathEngineFactory.isPython()) runInMainThreadAction = new RunInMainThreadAction();
+		runInMainThreadAction = new RunInMainThreadAction();
 			
 	}
 	
@@ -215,8 +218,9 @@ public class DataProcessEditor extends MultiPageEditorPart implements PartNameRe
 	
 	@Override
 	public void dispose() {
-		super.dispose();
 		ObjectsController.removeHandle(getDataProcessingScript());
+		Activator.getDefault().getPreferenceStore().removePropertyChangeListener(this);
+		super.dispose();
 	}
 
 	@Override
@@ -236,6 +240,22 @@ public class DataProcessEditor extends MultiPageEditorPart implements PartNameRe
 		if(event.getSelectedPage() == dataProcessScriptSourceEditor) {
 			dataProcessScriptSourceEditor.update(dataProcessScriptSourceEditor.getCode());
 		}
+	}
+
+	private void updateContributionItem() {
+		IContributionItem action = getEditorSite().getActionBars().getToolBarManager().find(runInMainThreadAction.getId());
+		if(MathEngineFactory.isPython() && action == null) 
+			getEditorSite().getActionBars().getToolBarManager().add(runInMainThreadAction);
+		if(MathEngineFactory.isMatlab() && action != null)  
+			getEditorSite().getActionBars().getToolBarManager().remove(runInMainThreadAction.getId());
+		getEditorSite().getActionBars().getToolBarManager().update(true);
+		getEditorSite().getActionBars().updateActionBars();
+	}
+
+
+	@Override
+	public void propertyChange(PropertyChangeEvent event) {
+		updateContributionItem();
 	}
 
 }

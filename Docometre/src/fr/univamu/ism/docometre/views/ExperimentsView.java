@@ -65,6 +65,8 @@ import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.util.SafeRunnable;
 import org.eclipse.jface.viewers.DecoratingLabelProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
@@ -117,7 +119,7 @@ import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.handlers.RunStopHandler;
 
-public class ExperimentsView extends ViewPart implements IResourceChangeListener, IPerspectiveListener {
+public class ExperimentsView extends ViewPart implements IResourceChangeListener, IPerspectiveListener, IPropertyChangeListener {
 
 	public static String ID = "Docometre.ExperimentsView";
 	
@@ -328,6 +330,7 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 	public void init(IViewSite site, IMemento memento) throws PartInitException {
 		super.init(site, memento);
 		this.memento = memento;
+		Activator.getDefault().getPreferenceStore().addPropertyChangeListener(this);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -615,6 +618,17 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 	public void perspectiveChanged(IWorkbenchPage page, IPerspectiveDescriptor perspective, String changeId) {
 		experimentsTreeViewer.refresh();
 		
+	}
+	
+	@Override
+	public void dispose() {
+		Activator.getDefault().getPreferenceStore().removePropertyChangeListener(this);
+		super.dispose();
+	}
+
+	@Override
+	public void propertyChange(PropertyChangeEvent event) {
+		ExperimentsView.refresh(null, null);
 	}
 
 }

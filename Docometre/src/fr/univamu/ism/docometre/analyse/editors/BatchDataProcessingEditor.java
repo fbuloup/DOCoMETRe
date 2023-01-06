@@ -50,6 +50,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -105,7 +107,7 @@ import fr.univamu.ism.docometre.editors.PartNameRefresher;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 
-public class BatchDataProcessingEditor extends EditorPart implements PartNameRefresher  {
+public class BatchDataProcessingEditor extends EditorPart implements PartNameRefresher, IPropertyChangeListener  {
 	
 	private class SaveScriptAction extends Action {
 		public SaveScriptAction() {
@@ -131,13 +133,11 @@ public class BatchDataProcessingEditor extends EditorPart implements PartNameRef
 	private FormToolkit formToolkit;
 	private ObjectUndoContext resourceEditorUndoContext;
 	private UndoRedoActionGroup undoRedoActionGroup;
-
 	private ToolItem runButton;
-
 	private Button runInMainThreadButton;
 
 	public BatchDataProcessingEditor() {
-		// TODO Auto-generated constructor stub
+		Activator.getDefault().getPreferenceStore().addPropertyChangeListener(this);
 	}
 
 	@Override
@@ -455,17 +455,16 @@ public class BatchDataProcessingEditor extends EditorPart implements PartNameRef
 			}
 		});
 		
-		if(MathEngineFactory.isPython()) {
-			runInMainThreadButton = formToolkit.createButton(container, DocometreMessages.RunInMainThreadButtonTitle, SWT.CHECK);
-			runInMainThreadButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
-			runInMainThreadButton.setSelection(ResourceProperties.isRunInMainThread(ObjectsController.getResourceForObject(getBatchDataProcessing())));
-			runInMainThreadButton.addSelectionListener(new SelectionAdapter() {
-				@Override
-				public void widgetSelected(SelectionEvent e) {
-					setDirty(true);
-				}
-			});
-		}
+		runInMainThreadButton = formToolkit.createButton(container, DocometreMessages.RunInMainThreadButtonTitle, SWT.CHECK);
+		runInMainThreadButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		runInMainThreadButton.setSelection(ResourceProperties.isRunInMainThread(ObjectsController.getResourceForObject(getBatchDataProcessing())));
+		runInMainThreadButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				setDirty(true);
+			}
+		});
+		runInMainThreadButton.setVisible(MathEngineFactory.isPython());
 		
 		Section processingSection = formToolkit.createSection(container, Section.DESCRIPTION | Section.TITLE_BAR);
 		processingSection.setText(DocometreMessages.Processes);
@@ -488,6 +487,7 @@ public class BatchDataProcessingEditor extends EditorPart implements PartNameRef
 	public void dispose() {
 		ObjectsController.removeHandle(getBatchDataProcessing());
 		formToolkit.dispose();
+		Activator.getDefault().getPreferenceStore().removePropertyChangeListener(this);
 		super.dispose();
 	}
 
@@ -524,6 +524,15 @@ public class BatchDataProcessingEditor extends EditorPart implements PartNameRef
 	public void refreshSubjects() {
 		subjectsTableViewer.refresh();
 		setDirty(true);
+	}
+	
+	private void updateUI() {
+		runInMainThreadButton.setVisible(MathEngineFactory.isPython());
+	}
+
+	@Override
+	public void propertyChange(PropertyChangeEvent event) {
+		updateUI();
 	}
 
 }

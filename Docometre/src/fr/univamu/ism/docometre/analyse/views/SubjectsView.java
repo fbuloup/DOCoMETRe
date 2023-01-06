@@ -50,7 +50,9 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.LocalSelectionTransfer;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.DecoratingLabelProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -91,7 +93,7 @@ import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.views.ExperimentsLabelDecorator;
 import fr.univamu.ism.docometre.views.ExperimentsViewerSorter;
 
-public class SubjectsView extends ViewPart implements IResourceChangeListener, IPerspectiveListener {
+public class SubjectsView extends ViewPart implements IResourceChangeListener, IPerspectiveListener, IPropertyChangeListener {
 	
 	public static String ID = "Docometre.SubjectsView";
 
@@ -111,6 +113,7 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 
 	public SubjectsView() {
 		subjectsViewUndoContext = new SubjectsViewUndoContext();
+		Activator.getDefault().getPreferenceStore().addPropertyChangeListener(this);
 	}
 	
 	/*
@@ -230,6 +233,7 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 	public void dispose() {
 		ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
 		PlatformUI.getWorkbench().getActiveWorkbenchWindow().removePerspectiveListener(this);
+		Activator.getDefault().getPreferenceStore().removePropertyChangeListener(this);
 		super.dispose();
 	}
 	
@@ -332,6 +336,11 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 	public IContainer getInput() {
 		if(subjectsTreeViewer != null) return (IContainer) subjectsTreeViewer.getInput();
 		return null;
+	}
+
+	@Override
+	public void propertyChange(PropertyChangeEvent event) {
+		SubjectsView.refresh();
 	}
 	
 }
