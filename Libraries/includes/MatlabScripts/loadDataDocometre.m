@@ -57,7 +57,7 @@ if nbTrials > 0
                 numChannel = fread(fp,1,'int32');
                 sampleFrequency = fread(fp,1,'float32') ;
                 nbData = fread(fp,1,'int32');
-                                                              
+                                                   
                 if nbData >= 0
                     
                     signals{currentNumChannel,1}.isSignal = 1;   
@@ -170,6 +170,7 @@ if nbTrials > 0
                 %pading withi zeros (or last value whithin comments)
                 if(currentValuesSize > signal.NbSamples)
 	                signal.Values = [signal.Values zeros(1,currentValuesSize - signal.NbSamples)];
+                    signal.EndCut = currentValuesSize;
                 end
                 
                 eval([fullSignalName,'.Values = [', fullSignalName ,'.Values;  signal.Values];']);               
