@@ -37,11 +37,11 @@ if compute\n\
 		\t\tendCut = endCutValues(trialNumber);\n\
 		\t\tif endCut >= index \n\
 			\t\t\tnewTime = (index-1)/sampleFrequency;\n\
-			\t\t\tinputSignal.MarkersGroup_markersGroupLabel_Values = [inputSignal.MarkersGroup_markersGroupLabel_Values; trialNumber+1, newTime, inputSignal.Values(trialNumber,index)];\n\
+			\t\t\tinputSignal.MarkersGroup_markersGroupLabel_Values = [inputSignal.MarkersGroup_markersGroupLabel_Values; trialNumber, newTime, inputSignal.Values(trialNumber,index)];\n\
 		\t\telseif markLastSample == True\n\
 			\t\t\tnewTime = (endCutValues(TrialNumber) - 1)/sampleFrequency;\n\
 			\t\t\tnewIndex = endCutValues(TrialNumber) - 1;\n\
-			\t\t\tinputSignal.MarkersGroup_markersGroupLabel_Values = [inputSignal.MarkersGroup_markersGroupLabel_Values; trialNumber+1, newTime, inputSignal.Values(trialNumber,index)];\n\
+			\t\t\tinputSignal.MarkersGroup_markersGroupLabel_Values = [inputSignal.MarkersGroup_markersGroupLabel_Values; trialNumber, newTime, inputSignal.Values(trialNumber,index)];\n\
 		\t\tend\n\
 	\tend\n\
 	\tif (~exist('createdOrModifiedChannels'))\n\
