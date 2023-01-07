@@ -45,7 +45,7 @@ if compute\n\
 	\tif "To_End" == "inputMarker2"\n\
 		\t\ttoValues = zeros(signalSizes(1),3);\n\
 		\t\ttoValues(:,1) = trialsList;\n\
-		\t\ttoValues(:,2) = inputSignal.NbSample/inputSignal.SampleFrequency;\n\
+		\t\ttoValues(:,2) = (inputSignal.NbSamples - 1)/inputSignal.SampleFrequency;\n\
 		\t\ttoValues(:,3) = inputSignal.NbSamples;\n\
 	\telse\n\
 		\t\tif(endsWith("inputMarker2",".EndCut"))\n\
@@ -64,8 +64,8 @@ if compute\n\
 		\t\t% if both indices exist\n\
 		\t\tif(~isempty(fromIndex) && ~isempty(toIndex))\n\
 			\t\t\t% Convert from and to in samples number\n\
-			\t\t\tfromIndex = floor(fromValues(fromIndex(1),2) * inputSignal.SampleFrequency);\n\
-			\t\t\ttoIndex = floor(toValues(toIndex(1),2) * inputSignal.SampleFrequency);\n\
+			\t\t\tfromIndex = floor(fromValues(fromIndex(1),2) * inputSignal.SampleFrequency + 1);\n\
+			\t\t\ttoIndex = floor(toValues(toIndex(1),2) * inputSignal.SampleFrequency + 1);\n\
 			\t\t\t% Compute min between from and to index\n\
 			\t\t\t[minValue, minIndex] = min(inputSignal.Values(trialNumber, fromIndex:toIndex));\n\
 			\t\t\tminMarkerTime = (fromIndex + minIndex - 2)/inputSignal.SampleFrequency;\n\
