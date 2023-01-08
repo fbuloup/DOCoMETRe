@@ -41,6 +41,8 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.handlers;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -48,15 +50,13 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.internal.WorkbenchWindow;
-import org.eclipse.ui.progress.WorkbenchJob;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
@@ -69,55 +69,78 @@ import fr.univamu.ism.docometre.views.ExperimentsView;
 @SuppressWarnings("restriction")
 public class SaveAllHandler extends AbstractHandler {
 	
+	private IWorkbenchPart activePart;
+	private IEditorPart[] dirtyEditors;
+	
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		WorkbenchJob workbenchJob = new WorkbenchJob(DocometreMessages.SaveAllJobName) {
-			@Override
-			public IStatus runInUIThread(IProgressMonitor monitor) {
-				try {
-					IWorkbenchPart activePart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActivePart();
-					if(activePart instanceof IEditorPart) {
-						IEditorPart[] dirtyEditors = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getDirtyEditors();
-						monitor.beginTask(DocometreMessages.SaveAllJobEditorsTaskName, dirtyEditors.length);
-						for (IEditorPart dirtyEditor : dirtyEditors) {
-							dirtyEditor.doSave(monitor);
-							monitor.worked(1);
-							if(monitor.isCanceled()) break;
-						}
-					}
-					if(activePart instanceof SubjectsView) {
-						IResource experiment = SelectedExprimentContributionItem.selectedExperiment;
-						String[] loadedSubjects = MathEngineFactory.getMathEngine().getLoadedSubjects();
-						int nbModifiedSubjects = 0;
-						for (String loadedSubject : loadedSubjects) {
-							IResource subject = ((IContainer)experiment).findMember(loadedSubject.split("\\.")[1]);
-							if(ResourceProperties.isSubjectModified(subject)) nbModifiedSubjects++;
-						}
-						monitor.beginTask(DocometreMessages.SaveAllJobSubjectsTaskName, nbModifiedSubjects);
-						for (String loadedSubject : loadedSubjects) {
-							IResource subject = ((IContainer)experiment).findMember(loadedSubject.split("\\.")[1]);
-							if(ResourceProperties.isSubjectModified(subject)) {
-								MathEngineFactory.getMathEngine().saveSubject(subject);
-								subject.setSessionProperty(ResourceProperties.SUBJECT_MODIFIED_QN, false);
-								SubjectsView.refresh(subject, null);
-								ExperimentsView.refresh(subject, null);
-								Activator.logInfoMessage(DocometreMessages.Done, SaveAllHandler.this.getClass());
-								monitor.worked(1);
+		try {
+			PlatformUI.getWorkbench().getProgressService().busyCursorWhile(new IRunnableWithProgress() {
+				@Override
+				public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+					try {
+						PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+							@Override
+							public void run() {
+								activePart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActivePart();
 							}
-							if(monitor.isCanceled()) break;
+						});
+						// Active part is an editor
+						if(activePart instanceof IEditorPart) {
+							PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+								@Override
+								public void run() {
+									dirtyEditors = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getDirtyEditors();
+								}
+							});
+							monitor.beginTask(DocometreMessages.SaveAllJobEditorsTaskName, dirtyEditors.length);
+							for (IEditorPart dirtyEditor : dirtyEditors) {
+								PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+									@Override
+									public void run() {
+										dirtyEditor.doSave(monitor);
+									}
+								});
+								monitor.worked(1);
+								if(monitor.isCanceled()) break;
+							}
 						}
+						// Active part is SubjectsView or ExperimentsView
+						if(activePart instanceof SubjectsView || activePart instanceof ExperimentsView) {
+							IResource experiment = SelectedExprimentContributionItem.selectedExperiment;
+							String[] loadedSubjects = MathEngineFactory.getMathEngine().getLoadedSubjects();
+							int nbModifiedSubjects = 0;
+							for (String loadedSubject : loadedSubjects) {
+								IResource subject = ((IContainer)experiment).findMember(loadedSubject.split("\\.")[1]);
+								if(ResourceProperties.isSubjectModified(subject)) nbModifiedSubjects++;
+							}
+							monitor.beginTask(DocometreMessages.SaveAllJobSubjectsTaskName, nbModifiedSubjects);
+							for (String loadedSubject : loadedSubjects) {
+								IResource subject = ((IContainer)experiment).findMember(loadedSubject.split("\\.")[1]);
+								if(ResourceProperties.isSubjectModified(subject)) {
+									monitor.subTask(subject.getFullPath().toPortableString());
+									MathEngineFactory.getMathEngine().saveSubject(subject);
+									subject.setSessionProperty(ResourceProperties.SUBJECT_MODIFIED_QN, false);
+									SubjectsView.refresh(subject, null);
+									ExperimentsView.refresh(subject, null);
+									Activator.logInfoMessage(DocometreMessages.Done, SaveAllHandler.this.getClass());
+									monitor.worked(1);
+								}
+								if(monitor.isCanceled()) break;
+							}
+						}
+						monitor.done();
+						refreshCommand();
+					} catch (CoreException e) {
+						Activator.logErrorMessageWithCause(e);
+						e.printStackTrace();
 					}
-					monitor.done();
-					refreshCommand();
-				} catch (CoreException e) {
-					Activator.logErrorMessageWithCause(e);
-					e.printStackTrace();
 				}
-				if(monitor.isCanceled()) return Status.CANCEL_STATUS;
-				return Status.OK_STATUS;
-			}
-		};
-		workbenchJob.schedule();
+			});
+		} catch (InvocationTargetException | InterruptedException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
 		return null;
 	}
 	
@@ -129,7 +152,7 @@ public class SaveAllHandler extends AbstractHandler {
 			IEditorPart[] dirtyEditors = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getDirtyEditors();
 			enabled = dirtyEditors.length > 0;
 		}
-		if(activePart instanceof SubjectsView) {
+		if(activePart instanceof SubjectsView || activePart instanceof ExperimentsView) {
 			IResource experiment = SelectedExprimentContributionItem.selectedExperiment;
 			String[] loadedSubjects = MathEngineFactory.getMathEngine().getLoadedSubjects();
 			for (String loadedSubject : loadedSubjects) {
