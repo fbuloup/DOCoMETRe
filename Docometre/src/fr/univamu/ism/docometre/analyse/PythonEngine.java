@@ -720,13 +720,13 @@ public class PythonEngine implements MathEngine {
 		boolean isOptitrack = Analyse.isOptitrack(dataFilesList.split(";"), (IContainer) subject);
 		if(isOptitrack) {
 			// If all data files are OPTITRACK_TYPE_1
-			return "docometre.loadData(\"OPTITRACK_TYPE_1\", \"" + loadName + "\", \"" + dataFilesList + "\", None);";
+			return "docometre.loadData(\"OPTITRACK_TYPE_1\", \"" + loadName + "\", r\"" + dataFilesList + "\", None);";
 		} else {
 			Map<String, String> sessionsProperties = Analyse.getSessionsInformations(subject);
 			String sessionsPropertiesString = sessionsProperties.toString().replaceAll("\\{", "{\"");
 			sessionsPropertiesString = sessionsPropertiesString.replaceAll("=", "\":");
 			sessionsPropertiesString = sessionsPropertiesString.replaceAll(", ", ",\"");
-			return "docometre.loadData(\"DOCOMETRE\", \"" + loadName + "\", \"" + dataFilesList + "\", " + sessionsPropertiesString + ");\n";
+			return "docometre.loadData(\"DOCOMETRE\", \"" + loadName + "\", r\"" + dataFilesList + "\", " + sessionsPropertiesString + ");\n";
 		}
 	}
 
