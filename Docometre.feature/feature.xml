@@ -6,7 +6,12 @@
       provider-name="ISM">
 
    <description>
-      -- 2023-01-07 - Bis
+      -- 2023-01-09
+ADDED : 
+* Improve export script code (Matlab)
+FIXED : 
+* Syntax error in exported script code (Python)
+-- 2023-01-07 - Bis
 ADDED : Nothing
 FIXED : 
 * Remove test code (Docometre.py)
