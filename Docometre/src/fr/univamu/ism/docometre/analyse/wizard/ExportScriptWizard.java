@@ -142,7 +142,7 @@ public class ExportScriptWizard extends Wizard {
 						String pythonScriptsPath = preferenceStore.getString(GeneralPreferenceConstants.PYTHON_SCRIPTS_LOCATION);						scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommentCharacter() + " If you want to use this script please start a python interpreter in interactive mode using :\n";
 						scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommentCharacter() + " python -i " + pythonScriptsPath + File.separator + "DOCoMETRe.py\n";
 						scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommentCharacter() + " Then you can run this script file using this command in opened interpreter :\n";
-						scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommentCharacter() + " exec(open(\"" + exportScriptWizardPage.getScriptFileFullPath() + "\").read())\n";
+						scriptCode = scriptCode + MathEngineFactory.getMathEngine().getCommentCharacter() + " exec(open(r\"" + exportScriptWizardPage.getScriptFileFullPath() + "\").read())\n";
 					}
 					if(MathEngineFactory.isMatlab()) {
 						String matlabScriptsLocation = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.MATLAB_SCRIPTS_LOCATION);
@@ -167,6 +167,7 @@ public class ExportScriptWizard extends Wizard {
 									    scriptCode = scriptCode + "\tif(~strcmp(exception.identifier, 'MATLAB:UndefinedFunction') && ~strcmp(exception.identifier, 'MATLAB:rmfield:InvalidFieldname'))\n";
 									    scriptCode = scriptCode + "\t\trethrow(exception)\n";
 									    scriptCode = scriptCode + "\tend\n";
+									    scriptCode = scriptCode + "\tclear exception;\n";
 									    scriptCode = scriptCode + "end\n";
 									}
 									if(MathEngineFactory.isPython()) {
