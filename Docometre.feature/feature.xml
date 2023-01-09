@@ -8,11 +8,16 @@
    <description>
       -- 2023-01-07
 ADDED :
+* Report progress with progress service (Save all action)
+FIXED : Nothing
+-- 2023-01-07
+ADDED :
 * Update workbench when Math Engine pref is changed
 FIXED :
 * Wrong index for end value (MAXIMUM.FUN, Matlab)
 * Wrong index for trial number (TIME_MARKER.FUN, Matlab)
-* Wrong End cut value when current values size is bigger (loadDataDocometre, Matlab)
+* Wrong End cut value when current values size is bigger (loadDataDocometre,
+Matlab)
 -- 2023-01-06
 ADDED :
 * Remember last trials list for all functions
