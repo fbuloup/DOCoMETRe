@@ -89,4 +89,9 @@ public class GeneralPreferenceConstants {
 	public static final String REDIRECT_STD_ERR_OUT_TO_FILE = "REDIRECT_STD_ERR_OUT_TO_FILE";
 	public static final String STD_ERR_OUT_FILE = "STD_ERR_OUT_FILE";
 	
+	public static final String WORKSPACE_DIALOG_X_POSITION = "WORKSPACE_DIALOG_X_POSITION";
+	public static final String WORKSPACE_DIALOG_Y_POSITION = "WORKSPACE_DIALOG_Y_POSITION";
+	public static final String WORKSPACE_DIALOG_WIDTH = "WORKSPACE_DIALOG_WIDTH";
+	public static final String WORKSPACE_DIALOG_HEIGHT = "WORKSPACE_DIALOG_HEIGHT";
+	
 }

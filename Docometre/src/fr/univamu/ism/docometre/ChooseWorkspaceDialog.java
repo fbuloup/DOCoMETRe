@@ -112,6 +112,13 @@ public class ChooseWorkspaceDialog extends TitleAreaDialog {
 	protected String getWorkspaceLocation() {
 		return this.text.getText();
 	}
+	
+	@Override
+	public boolean close() {
+		Rectangle bounds = getShell().getBounds();
+		launchData.setWorkspaceDialogPosition(bounds.x, bounds.y, bounds.width, bounds.height);
+		return super.close();
+	}
 
 	private void createWorkspaceBrowseRow(Composite parent) {
 		Composite panel = new Composite(parent, SWT.NONE);
@@ -193,12 +200,16 @@ public class ChooseWorkspaceDialog extends TitleAreaDialog {
 
 	@Override
 	protected Point getInitialLocation(Point initialSize) {
-		Composite parent = getShell().getParent();
-
-		if(parent == null) return super.getInitialLocation(initialSize);
-
-		Monitor monitor = parent.getMonitor();
-		Rectangle monitorBounds = monitor.getClientArea();
+		Rectangle r = launchData.getWorkspaceDialogPosition();
+		Monitor[] monitors = getShell().getDisplay().getMonitors();
+		Monitor currentMonitor = getShell().getDisplay().getPrimaryMonitor();
+		for (int i = 0; i < monitors.length; i++) {
+			if (monitors[i].getBounds().intersects(r)) {
+				currentMonitor = monitors[i];
+			}
+		}
+		
+		Rectangle monitorBounds = currentMonitor.getClientArea();
 		Point centerPoint = Geometry.centerPoint(monitorBounds);
 
 		return new Point(centerPoint.x - initialSize.x / 2, Math.max(monitorBounds.y,
