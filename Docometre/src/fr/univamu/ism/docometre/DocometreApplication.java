@@ -68,7 +68,7 @@ import org.eclipse.ui.PlatformUI;
  */
 public class DocometreApplication implements IApplication {
 	
-	public static final Integer EXIT_ERROR = Integer.valueOf(1);
+	public static final Integer EXIT_ERROR = Integer.valueOf(-1);
 	
 	public static String COURIER_NEW = "COURIER_NEW";
 	public static String COURIER_NEW_BOLD = "COURIER_NEW_BOLD";
@@ -117,8 +117,9 @@ public class DocometreApplication implements IApplication {
 			if(workspace == null || workspace.equals("")) chooseWorkspaceData.setShowDialog(true);
 			if(chooseWorkspaceData.getShowDialog()) {
 				ChooseWorkspaceDialog chooseWorkspaceDialog = new ChooseWorkspaceDialog(chooseWorkspaceData);
-				if(chooseWorkspaceDialog.open() == Window.CANCEL) return IApplication.EXIT_OK;
+				int response = chooseWorkspaceDialog.open();
 				chooseWorkspaceData.save();
+				if(response == Window.CANCEL) return IApplication.EXIT_OK;
 				workspace = chooseWorkspaceData.getSelection();
 			} 
 			
@@ -155,12 +156,13 @@ public class DocometreApplication implements IApplication {
 		
 		try {
 			int returnCode = PlatformUI.createAndRunWorkbench(display, new ApplicationWorkbenchAdvisor());
+			Activator.logInfoMessage("createAndRunWorkbench return code : " + returnCode, getClass());
 			if (returnCode == PlatformUI.RETURN_RESTART)
 				return IApplication.EXIT_RESTART;
 			else
 				return IApplication.EXIT_OK;
 		} finally {
-			display.dispose();
+			//display.dispose();
 		}
 
 	}
