@@ -6,7 +6,15 @@
       provider-name="ISM">
 
    <description>
-      -- 2023-01-09
+      -- 2023-01-13
+ADDED : Nothing
+FIXED : 
+* dispose display at shutdown
+-- 2023-01-09
+ADDED : 
+* Save worksapce dialog data and return exit code
+FIXED : Nothing
+-- 2023-01-09
 ADDED : 
 * Save worksapce dialog data and return exit code
 FIXED : Nothing
