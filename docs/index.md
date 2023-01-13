@@ -11,7 +11,7 @@ Videos tutorials ? It's [here](https://www.youtube.com/watch?v=BV_56Ztva1I&list=
 To download DOCoMETRe, please follow the link related to your platform :
 
 * [Linux64](http://www.ism.univ-amu.fr/buloup/documents/DOCoMETRe/DocometreLinux.zip) (tested with Ubuntu 18.04.2 LTS)
-* [MacOSX](http://www.ism.univ-amu.fr/buloup/documents/DOCoMETRe/Docometre.dmg)
+* [MacOSX - DMG file](http://www.ism.univ-amu.fr/buloup/documents/DOCoMETRe/Docometre.dmg)
 * [MacOSX](http://www.ism.univ-amu.fr/buloup/documents/DOCoMETRe/DocometreMacOS.zip)
 * [Win64](http://www.ism.univ-amu.fr/buloup/documents/DOCoMETRe/DocometreWindows.zip)
 
