@@ -1,11 +1,15 @@
 <project default="D_uploadZIPFiles" name="Deploy DOCoMETRe p2 repository Files To Server">
 
+	<condition property="isMac">
+		<os family="mac" />
+	</condition>
+
 	<!--
 	Add commons-net-3.3-bin.jar to Preferences->Ant->runtime->Ant Home Entries
 	-->
-	
-	<include file = "FtpLoginProperties.xml" as="FtpProperties"/>
-	
+
+	<include file="FtpLoginProperties.xml" as="FtpProperties" />
+
 	<!-- Here is a "FtpLoginProperties.xml" file sample :
 	
 	 <project default="FTP_INPUT" name="FTP INPUT">
@@ -18,6 +22,32 @@
 	</project>
 
 	-->
+
+	<!-- Buid dmg file (mac only!) -->
+	<target name="A1_BuildDMGFile" if="isMac">
+		<delete file="target/products/DOCoMETRe.dmg" />
+		<exec executable="hdiutil" failonerror="true">
+			<arg line="create -srcfolder 'target/products/DocometreProduct/macosx/cocoa/x86_64' -volname 'DOCoMETRe' -fs HFS+ -fsargs '-c c=64,a=16,e=16' -format UDRO 'target/products/DOCoMETRe.dmg'" />
+		</exec>
+	</target>
+	
+	<target name="A2_checkFiles">
+		    <available file="target/products/DocometreProduct-linux.gtk.x86_64.zip" property="linux.present"/>
+			<available file="target/products/DocometreProduct-macosx.cocoa.x86_64.zip" property="mac.present"/>
+			<available file="target/products/DocometreProduct-win32.win32.x86_64.zip" property="windows.present"/>
+		</target>
+
+	<target name="A3_MoveLinuxFile" if="linux.present">
+		<move file="target/products/DocometreProduct-linux.gtk.x86_64.zip" tofile="target/products/DocometreLinux.zip"/>
+	</target>
+	
+	<target name="A4_MoveMacFiles" if="mac.present">
+			<move file="target/products/DocometreProduct-macosx.cocoa.x86_64.zip" tofile="target/products/DocometreMacOS.zip"/>
+		</target>
+	
+	<target name="A5_MoveWindowsFiles" if="windows.present">
+			<move file="target/products/DocometreProduct-win32.win32.x86_64.zip" tofile="target/products/DocometreWindows.zip"/>
+		</target>
 
 	<!-- clear server -->
 	<target name="B_resetFTPFilesFolders" description="Create an empty DOCoMETRe folder" depends="FtpProperties.FTP_INPUT">
@@ -45,8 +75,9 @@
 				<ftp action="mkdir" server="${ftp.ip}" userid="${ftp.login}" password="${ftp.password}" remotedir="${ftp.base.remotedir}Docometre/repository//plugins" /> -->
 	</target>
 
+
 	<!-- Upload to server -->
-	<target name="D_uploadZIPFiles" description="Upload created files to server" depends="B_resetFTPFilesFolders,C_createFoldersStructure">
+	<target name="D_uploadZIPFiles" description="Upload created files to server" depends="A1_BuildDMGFile,A2_checkFiles,A3_MoveLinuxFile,A4_MoveMacFiles,A5_MoveWindowsFiles,B_resetFTPFilesFolders,C_createFoldersStructure">
 
 		<!-- <echo>Uploading linux32</echo> >>>>>>>>>> No more 32 bits releases
 		<ftp server="${ftp.ip}" passive="yes" remotedir="${ftp.base.remotedir}DOCoMETRe" userid="${ftp.login}" password="${ftp.password}" depends="no">
@@ -59,18 +90,19 @@
 
 		<echo>Uploading linux64</echo>
 		<ftp server="${ftp.ip}" passive="no" remotedir="${ftp.base.remotedir}DOCoMETRe" userid="${ftp.login}" password="${ftp.password}" depends="no">
-			<fileset file="target/products/DocometreProduct-linux.gtk.x86_64.zip" />
+			<fileset file="target/products/DocometreLinux.zip" />
 		</ftp>
 		<echo>Uploading mac</echo>
 		<ftp server="${ftp.ip}" passive="no" remotedir="${ftp.base.remotedir}DOCoMETRe" userid="${ftp.login}" password="${ftp.password}" depends="no">
-			<fileset file="target/products/DocometreProduct-macosx.cocoa.x86_64.zip" />
+			<fileset file="target/products/DocometreMacOS.zip" />
+			<fileset file="target/products/DOCoMETRe.dmg" />
 		</ftp>
 		<echo>Uploading win64</echo>
 		<ftp server="${ftp.ip}" passive="no" remotedir="${ftp.base.remotedir}DOCoMETRe" userid="${ftp.login}" password="${ftp.password}" depends="no">
-			<fileset file="target/products/DocometreProduct-win32.win32.x86_64.zip" />
+			<fileset file="target/products/DocometreWindows.zip" />
 		</ftp>
 		<echo>Uploading repository</echo>
-		<ftp server="${ftp.ip}" passive="no" remotedir="${ftp.base.remotedir}DOCoMETRe/repository" userid="${ftp.login}" password="${ftp.password}" depends="no" >
+		<ftp server="${ftp.ip}" passive="no" remotedir="${ftp.base.remotedir}DOCoMETRe/repository" userid="${ftp.login}" password="${ftp.password}" depends="no">
 			<fileset dir="target/repository" />
 		</ftp>
 	</target>
