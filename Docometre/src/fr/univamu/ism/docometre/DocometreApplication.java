@@ -162,7 +162,7 @@ public class DocometreApplication implements IApplication {
 			else
 				return IApplication.EXIT_OK;
 		} finally {
-			//display.dispose();
+			display.dispose();
 		}
 
 	}
