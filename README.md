@@ -3,4 +3,4 @@
 
 # DOCoMETRe
 
-See [wiki](https://github.com/fbuloup/DOCoMETRe/wiki) for more details
+See [wiki](https://github.com/TeamICSTECHNOS/DOCoMETRe/wiki) for more details
