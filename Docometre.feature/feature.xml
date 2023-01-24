@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2023-01-13
+      -- 2023-01-24
+ADDED : Nothing
+FIXED :
+* Update site URL move from univmed to univ-amu
+-- 2023-01-13
 ADDED : Nothing
 FIXED : 
 * dispose display at shutdown
