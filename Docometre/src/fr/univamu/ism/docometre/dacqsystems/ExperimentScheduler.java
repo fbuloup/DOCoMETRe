@@ -473,5 +473,11 @@ public class ExperimentScheduler {
 			}
 		});
 	}
+	
+	public int getCurrentTrialNumber() {
+		if(currentTrial == null) return 0;
+		String trialNumber = currentTrial.getName().split("°")[1];
+		return Integer.parseInt(trialNumber);
+	}
 
 }

@@ -48,7 +48,8 @@ public enum ChartTypes {
 	OSCILLO_CHART(DocometreMessages.OscilloChartLabel),
 	XY_CHART(DocometreMessages.XYChartLabel),
 	GAUGE_CHART(DocometreMessages.GaugeChartLabel),
-	TANK_CHART(DocometreMessages.TankChartLabel);
+	TANK_CHART(DocometreMessages.TankChartLabel),
+	IMAGE_CHART(DocometreMessages.ImageChartLabel);
 	
 	private String label;
 	

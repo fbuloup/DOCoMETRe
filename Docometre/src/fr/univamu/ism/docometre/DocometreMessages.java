@@ -399,7 +399,9 @@ public final class DocometreMessages extends NLS {
 	public static String XYChartLabel;
 	public static String GaugeChartLabel;
 	public static String TankChartLabel;
-	
+	public static String ImageChartLabel;
+	public static String ImageChartFileNameLabel;
+	public static String ImageChartFileNameTooltip;
 	
 	public static String rangeMaxAmplitude_Title;
 	public static String rangeMaxAmplitude_Tooltip;

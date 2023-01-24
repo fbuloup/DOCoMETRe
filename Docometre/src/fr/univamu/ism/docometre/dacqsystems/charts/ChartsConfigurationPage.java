@@ -391,10 +391,12 @@ public class ChartsConfigurationPage extends ModulePage {
 			tableConfigurationContainer.layout(true);
 			return;
 		}
+		tableConfigurationSection.setVisible(true);
 		tableViewer.getTable().setVisible(true);
 		if(currentSelectedChartConfiguration instanceof OscilloChartConfiguration) createOscilloCurvesSection();			
 		if(currentSelectedChartConfiguration instanceof XYChartConfiguration) createXYCurvesSection();
 		if(currentSelectedChartConfiguration instanceof MeterChartConfiguration) createMeterCurveSection();			
+		if(currentSelectedChartConfiguration instanceof ImageChartConfiguration) tableConfigurationSection.setVisible(false);
 		
 		tableConfigurationContainer.layout(true);
 	}

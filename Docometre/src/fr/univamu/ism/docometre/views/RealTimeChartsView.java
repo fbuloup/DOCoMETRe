@@ -300,6 +300,7 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 		((GridLayout)chartsContainer.getLayout()).marginWidth = 0;
 		ChartConfiguration[] chartsConfigurations = dacqConfiguration.getCharts().getChartsConfigurations();
 		for (ChartConfiguration chartConfiguration : chartsConfigurations) {
+			chartsContainer.setData("process", process);
 			chartConfiguration.createChart(chartsContainer);
 		}
 		chartsContainer.setVisible(true);
