@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2023-01-24
+      -- 2023-02-07
+ADDED : Nothing
+FIXED :
+* Remove moduleNumber parameter for Adwin Gold devices (Write FLOAT RS232 function)
+-- 2023-02-06
 ADDED : Nothing
 FIXED :
 * Remove moduleNumber parameter for Adwin Gold devices (Write ASCII chars RS232 function)
