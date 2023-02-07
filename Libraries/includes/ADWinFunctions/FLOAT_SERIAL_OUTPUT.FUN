@@ -46,8 +46,8 @@ STRMID(stringValue_HashCode, currentCharNumber_HashCode, 1, currentChar_HashCode
 dummyResponse_HashCode = WRITE_FIFO(portNumber, ASC(currentChar_HashCode))\n\
 NEXT currentCharNumber_HashCode\n\
 IF (addCRLF_HashCode = 1) THEN\n\
-dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, 13)\n\
-dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, 10)\n\
+dummyResponse_HashCode = WRITE_FIFO(portNumber, 13)\n\
+dummyResponse_HashCode = WRITE_FIFO(portNumber, 10)\n\
 ENDIF
 
 FUNCTION_CODE_GOLD_II = FloToStr(floatValue, stringValue_HashCode)\n\
@@ -56,6 +56,6 @@ STRMID(stringValue_HashCode, currentCharNumber_HashCode, 1, currentChar_HashCode
 dummyResponse_HashCode = WRITE_FIFO(portNumber, ASC(currentChar_HashCode))\n\
 NEXT currentCharNumber_HashCode\n\
 IF (addCRLF_HashCode = 1) THEN\n\
-dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, 13)\n\
-dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, 10)\n\
+dummyResponse_HashCode = WRITE_FIFO(portNumber, 13)\n\
+dummyResponse_HashCode = WRITE_FIFO(portNumber, 10)\n\
 ENDIF
