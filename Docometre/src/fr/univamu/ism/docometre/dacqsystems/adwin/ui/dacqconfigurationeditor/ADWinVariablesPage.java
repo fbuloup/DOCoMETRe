@@ -357,7 +357,7 @@ public class ADWinVariablesPage extends ADWinModulePage {
 				adwinVariable.setProperty(ChannelProperties.TRANSFER, "false");
 				adwinVariable.setProperty(ChannelProperties.AUTO_TRANSFER, "false");
 				adwinVariable.setProperty(ADWinVariableProperties.STIMULUS, "false");
-				if(isString) adwinVariable.setProperty(ADWinVariableProperties.TYPE, ADWinVariableProperties.FLOAT);
+//				if(isString) adwinVariable.setProperty(ADWinVariableProperties.TYPE, ADWinVariableProperties.FLOAT);
 				adwinVariable.setProperty(ADWinVariableProperties.SIZE, "1");
 				((ADWinDACQConfiguration)dacqConfiguration).updateChannelsTransferNumber();
 			}

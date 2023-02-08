@@ -97,14 +97,20 @@ public final class VariablesCodeGenerationDelegate {
 		if(variables.length > 0) {
 			code = code + "\nREM ******** Début déclarations des variables\n\n";
 			int nbParameters = 0;
+			int nbParametersString = 0;
 			for (ADWinVariable variable : variables) {
-				String isParameter = variable.getProperty(ADWinVariableProperties.PARAMETER);
-				if(Boolean.parseBoolean(isParameter)) nbParameters++;
+				if(variable.isParameter() && (variable.isFloat() || variable.isInt())) nbParameters++;
+				if(variable.isParameter() && variable.isString()) nbParametersString++;
 			}
 			if(nbParameters > 0) {
 				code = code + "REM ******** Tableau pour les paramètres\n";
 				code = code + "#DEFINE TAB_PARAM DATA_200\n";
 				code = code + "DIM TAB_PARAM[" + nbParameters + "] AS FLOAT\n\n";
+			}
+			if(nbParametersString > 0) {
+				code = code + "REM ******** Tableau pour les paramètres chaine de charatères\n";
+				code = code + "#DEFINE TAB_PARAM_STRING DATA_199\n";
+				code = code + "DIM TAB_PARAM_STRING[1024] AS STRING\n\n";
 			}
 			for (ADWinVariable variable : variables) {
 				String name = variable.getProperty(ChannelProperties.NAME);
@@ -133,10 +139,17 @@ public final class VariablesCodeGenerationDelegate {
 					}
 					
 				} else {
-					code = code + "REM ******** >>>> Parametre " + name;
-					code = code + (type.equals(ADWinVariableProperties.INT)?", entier":", flottant") + "\n";
-					type = type.equals(ADWinVariableProperties.INT)?"LONG":"FLOAT";
-					code = code + "DIM " + name + " AS " + type +  "\n";
+					if(variable.isFloat() || variable.isInt()) {
+						code = code + "REM ******** >>>> Parametre " + name;
+						code = code + (type.equals(ADWinVariableProperties.INT)?", entier":", flottant") + "\n";
+						type = type.equals(ADWinVariableProperties.INT)?"LONG":"FLOAT";
+						code = code + "DIM " + name + " AS " + type +  "\n";
+					}
+					if(variable.isString()) {
+						code = code + "REM ******** >>>> Parametre chaine de charactères " + name;
+						String value = variable.getProperty(ADWinVariableProperties.SIZE);
+						code = code + "\nDIM " + name + "[" + value + "] AS STRING\n";
+					}
 				}
 			}
 			code = code + "\nREM ******** Fin déclarations des variables\n";
@@ -152,9 +165,10 @@ public final class VariablesCodeGenerationDelegate {
 			float gsfFloat = Float.parseFloat(gsfProcess);	
 			code = code + "\nREM ******** Début initialisation des variables\n\n";
 			ArrayList<ADWinVariable> parameters = new ArrayList<>();
+			ArrayList<ADWinVariable> parametersString = new ArrayList<>();
 			for (ADWinVariable variable : variables) {
-				String isParameter = variable.getProperty(ADWinVariableProperties.PARAMETER);
-				if(Boolean.parseBoolean(isParameter)) parameters.add(variable);
+				if(variable.isParameter() && (variable.isFloat() || variable.isInt())) parameters.add(variable);
+				if(variable.isParameter() && variable.isString()) parametersString.add(variable);
 			}
 			if(parameters.size() > 0) code = code + "REM ******** Initialisation des paramètres\n";
 			int numParam = 0;
@@ -163,6 +177,15 @@ public final class VariablesCodeGenerationDelegate {
 				String name = parameter.getProperty(ChannelProperties.NAME);
 				code = code + name + " = TAB_PARAM[" + numParam + "]\n";
 			}
+			
+			if(parametersString.size() > 0) code = code + "REM ******** Initialisation des paramètres chaine de caractères\nREM .....";
+//			numParam = 0;
+//			for (ADWinVariable parameter : parameters) {
+//				numParam++;
+//				String name = parameter.getProperty(ChannelProperties.NAME);
+//				code = code + name + " = TAB_PARAM[" + numParam + "]\n";
+//			}
+			
 			for (ADWinVariable variable : variables) {
 				String name = variable.getProperty(ChannelProperties.NAME);
 				String transferNumber = variable.getProperty(ChannelProperties.TRANSFER_NUMBER);

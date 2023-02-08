@@ -129,6 +129,7 @@ public class ADWinProcess extends Process {
 	transient private double timeBefore;
 	transient private double timeAfter;
 	transient private LinkedHashMap<ADWinVariable, Float> currentTrialParameters = new LinkedHashMap<>();
+	transient private LinkedHashMap<ADWinVariable, String> currentTrialParametersString = new LinkedHashMap<>();
 	transient private IResource parametersFile;
 	transient private int currentTrialNumber;
 	transient private int response;
@@ -1069,7 +1070,9 @@ public class ADWinProcess extends Process {
 	
 	private void preManageParameters(IResource resource) throws Exception {
 		if(currentTrialParameters == null) currentTrialParameters = new LinkedHashMap<>();
+		if(currentTrialParametersString == null) currentTrialParametersString = new LinkedHashMap<>();
 		currentTrialParameters.clear();
+		currentTrialParametersString.clear();
 		// Init Parameters from params file if resource is a trial
 		if(ResourceType.isTrial(resource)) {
 			// Get trial number from trial name
@@ -1127,7 +1130,10 @@ public class ADWinProcess extends Process {
 							int index = 0;
 							for (String parameterName : parametersNamesArray) {
 								if(parameterName.equalsIgnoreCase(parameter.getProperty(ChannelProperties.NAME))) {
-									currentTrialParameters.put(parameter, Float.parseFloat(parametersValuesArray[index]));
+									if(parameter.getProperty(ADWinVariableProperties.TYPE).equals(ADWinVariableProperties.FLOAT) || parameter.getProperty(ADWinVariableProperties.TYPE).equals(ADWinVariableProperties.INT)) 
+										currentTrialParameters.put(parameter, Float.parseFloat(parametersValuesArray[index]));
+									if(parameter.getProperty(ADWinVariableProperties.TYPE).equals(ADWinVariableProperties.STRING)) 
+										currentTrialParametersString.put(parameter, parametersValuesArray[index]);
 									break;
 								}
 								index++;
@@ -1179,8 +1185,13 @@ public class ADWinProcess extends Process {
 				for (ADWinVariable parameter : parameters) {
 					String value = parameter.getProperty(ADWinVariableProperties.PARAMETER_VALUE);
 					try {
-						float floatValue =  Float.parseFloat(value);
-						currentTrialParameters.put(parameter, floatValue);
+						//float floatValue =  Float.parseFloat(value);
+						//currentTrialParameters.put(parameter, floatValue);
+						if(parameter.getProperty(ADWinVariableProperties.TYPE).equals(ADWinVariableProperties.FLOAT) || parameter.getProperty(ADWinVariableProperties.TYPE).equals(ADWinVariableProperties.INT)) 
+							currentTrialParameters.put(parameter, Float.parseFloat(value));
+						if(parameter.getProperty(ADWinVariableProperties.TYPE).equals(ADWinVariableProperties.STRING)) 
+							currentTrialParametersString.put(parameter, value);
+						
 					} catch (Exception e) {
 						throw e;
 					}
@@ -1220,6 +1231,21 @@ public class ADWinProcess extends Process {
 			}
 			Activator.logInfoMessage("Pushing paramaters to ADWin : " + parametersString, ADWinProcess.class);
 			((ADWinDACQConfiguration)ADWinProcess.this.getDACQConfiguration()).getADwinDevice().SetData_Float(200, data, 1, data.length);
+		}
+		if(currentTrialParametersString.size() > 0) {
+			String data = "";
+			Set<ADWinVariable> keys = currentTrialParametersString.keySet();
+			int i = 0;
+			String parametersString = "";
+			for (ADWinVariable variable : keys) {
+				data = currentTrialParametersString.get(variable);
+				parametersString = parametersString + variable.getProperty(ChannelProperties.NAME) + " = " + data ;
+				data = data + "\n";
+				i++;
+				if(keys.size() > i) parametersString = parametersString + " - ";
+			}
+			Activator.logInfoMessage("Pushing parameters to ADWin (String) : " + parametersString, ADWinProcess.class);
+			((ADWinDACQConfiguration)ADWinProcess.this.getDACQConfiguration()).getADwinDevice().SetData_String(199, data);
 		}
 	}
 	
