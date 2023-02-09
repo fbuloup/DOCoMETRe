@@ -335,10 +335,14 @@ public class ADWinVariablesPage extends ADWinModulePage {
 				adwinVariable.setProperty(ChannelProperties.RECORD, "false");
 			}
 			
+			if(property == ADWinVariableProperties.TYPE && !isString) {
+				if(isArray) adwinVariable.setProperty(ADWinVariableProperties.PARAMETER, "false");
+			}
+			
 			if(property == ADWinVariableProperties.TYPE && isString) {
 				adwinVariable.setProperty(ChannelProperties.TRANSFER, "false");
 				adwinVariable.setProperty(ChannelProperties.AUTO_TRANSFER, "false");
-				adwinVariable.setProperty(ADWinVariableProperties.PARAMETER, "false");
+				//adwinVariable.setProperty(ADWinVariableProperties.PARAMETER, "false");
 				adwinVariable.setProperty(ADWinVariableProperties.PROPAGATE, "false");
 				adwinVariable.setProperty(ADWinVariableProperties.STIMULUS, "false");
 				((ADWinDACQConfiguration)dacqConfiguration).updateChannelsTransferNumber();
@@ -347,7 +351,7 @@ public class ADWinVariablesPage extends ADWinModulePage {
 			if(property == ADWinVariableProperties.SIZE && isArray) {
 				adwinVariable.setProperty(ChannelProperties.TRANSFER, "false");
 				adwinVariable.setProperty(ChannelProperties.AUTO_TRANSFER, "false");
-				adwinVariable.setProperty(ADWinVariableProperties.PARAMETER, "false");
+				//adwinVariable.setProperty(ADWinVariableProperties.PARAMETER, "false");
 				adwinVariable.setProperty(ADWinVariableProperties.PROPAGATE, "false");
 				adwinVariable.setProperty(ADWinVariableProperties.STIMULUS, "false");
 				((ADWinDACQConfiguration)dacqConfiguration).updateChannelsTransferNumber();
@@ -358,7 +362,7 @@ public class ADWinVariablesPage extends ADWinModulePage {
 				adwinVariable.setProperty(ChannelProperties.AUTO_TRANSFER, "false");
 				adwinVariable.setProperty(ADWinVariableProperties.STIMULUS, "false");
 //				if(isString) adwinVariable.setProperty(ADWinVariableProperties.TYPE, ADWinVariableProperties.FLOAT);
-				adwinVariable.setProperty(ADWinVariableProperties.SIZE, "1");
+				if(!isString) adwinVariable.setProperty(ADWinVariableProperties.SIZE, "1");
 				((ADWinDACQConfiguration)dacqConfiguration).updateChannelsTransferNumber();
 			}
 			

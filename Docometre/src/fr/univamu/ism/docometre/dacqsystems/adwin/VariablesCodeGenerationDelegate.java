@@ -110,7 +110,10 @@ public final class VariablesCodeGenerationDelegate {
 			if(nbParametersString > 0) {
 				code = code + "REM ******** Tableau pour les paramètres chaine de charatères\n";
 				code = code + "#DEFINE TAB_PARAM_STRING DATA_199\n";
-				code = code + "DIM TAB_PARAM_STRING[1024] AS STRING\n\n";
+				code = code + "DIM TAB_PARAM_STRING[1024] AS STRING\n";
+				code = code + "DIM index1_" + process.hashCode() + " AS INTEGER\n";
+				code = code + "DIM index2_" + process.hashCode() + " AS INTEGER\n";
+				code = code + "DIM index3_" + process.hashCode() + " AS INTEGER\n\n";
 			}
 			for (ADWinVariable variable : variables) {
 				String name = variable.getProperty(ChannelProperties.NAME);
@@ -178,13 +181,35 @@ public final class VariablesCodeGenerationDelegate {
 				code = code + name + " = TAB_PARAM[" + numParam + "]\n";
 			}
 			
-			if(parametersString.size() > 0) code = code + "REM ******** Initialisation des paramètres chaine de caractères\nREM .....";
-//			numParam = 0;
-//			for (ADWinVariable parameter : parameters) {
-//				numParam++;
-//				String name = parameter.getProperty(ChannelProperties.NAME);
-//				code = code + name + " = TAB_PARAM[" + numParam + "]\n";
-//			}
+			if(parametersString.size() > 0) {
+				code = code + "REM ******** Initialisation des paramètres chaine de caractères\n";
+				code = code + "index2_" + process.hashCode() + " = 2\n";
+				code = code + "index3_" + process.hashCode() + " = 1\n";
+				code = code + "FOR index1_" + process.hashCode() + " = 2 TO strlen(TAB_PARAM_STRING) + 1\n";
+				code = code + "\tIF (TAB_PARAM_STRING[index] = 10) THEN\n";
+				numParam = 1;
+				for (ADWinVariable parameter : parametersString) {
+					String name = parameter.getProperty(ChannelProperties.NAME);
+					code = code + "\t\tIF (index3_" + process.hashCode() + " = " + numParam + ") THEN\n";
+					code = code + "\t\t\t" + name + "[1] = index2_" + process.hashCode() + " - 2\n";
+					code = code + "\t\tENDIF\n";
+					numParam++;
+				}
+				code = code + "\t\tINC(index3_" + process.hashCode() + ")\n";
+				code = code + "\t\tindex2_" + process.hashCode() + " = 2\n";
+				code = code + "\tELSE\n";
+				numParam = 1;
+				for (ADWinVariable parameter : parametersString) {
+					String name = parameter.getProperty(ChannelProperties.NAME);
+					code = code + "\t\tIF (index3_" + process.hashCode() + " = " + numParam + ") THEN\n";
+					code = code + "\t\t\t" + name + "[index2_" + process.hashCode() + "] = TAB_PARAM_STRING[index1_" + process.hashCode() + "]\n";
+					code = code + "\t\tENDIF\n";
+					numParam++;
+				}
+				code = code + "\t\tINC(index2_" + process.hashCode() + ")\n";
+				code = code + "\tENDIF\n";
+				code = code + "NEXT index1_" + process.hashCode() + "\n";
+			}
 			
 			for (ADWinVariable variable : variables) {
 				String name = variable.getProperty(ChannelProperties.NAME);
@@ -219,8 +244,7 @@ public final class VariablesCodeGenerationDelegate {
 		if(variables.length > 0) {
 			ArrayList<ADWinVariable> parameters = new ArrayList<>();
 			for (ADWinVariable variable : variables) {
-				String isParameter = variable.getProperty(ADWinVariableProperties.PARAMETER);
-				if(Boolean.parseBoolean(isParameter)) parameters.add(variable);
+				if(variable.isParameter() && (variable.isFloat() || variable.isInt())) parameters.add(variable);
 			}
 			if(parameters.size() > 0) code = code + "\nREM ******** Début finalisation des variables (propagation des parametres)\n\n";
 			int numParam = 0;
