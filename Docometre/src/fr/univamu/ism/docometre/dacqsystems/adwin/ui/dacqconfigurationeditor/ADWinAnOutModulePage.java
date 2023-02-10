@@ -346,8 +346,8 @@ public class ADWinAnOutModulePage extends ADWinModulePage {
 			}
 		}
 		if(property instanceof ADWinAnOutChannelProperties) {
-			tableViewer.refresh();
-			tableConfigurationSectionPart.markDirty();
+			if(tableViewer != null) tableViewer.refresh();
+			if(tableConfigurationSectionPart != null) tableConfigurationSectionPart.markDirty();
 		}
 	}
 

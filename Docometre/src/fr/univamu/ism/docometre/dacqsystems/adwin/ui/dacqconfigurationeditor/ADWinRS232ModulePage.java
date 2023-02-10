@@ -259,16 +259,11 @@ public class ADWinRS232ModulePage extends ADWinModulePage {
 						updateWidget(flowControlCombo, (ADWinRS232ModuleProperties) property);
 				}
 				if(property instanceof ChannelProperties) {
-					if(property == ChannelProperties.NAME) {
-						tableViewer.setInput(module.getChannels());
-						tableConfigurationSectionPart.markDirty();
+					if(property == ChannelProperties.NAME || property == ChannelProperties.REMOVE) {
+						if(tableViewer != null && tableViewer.getTable() != null && !tableViewer.getTable().isDisposed())
+							tableViewer.setInput(module.getChannels());
+						if(tableConfigurationSectionPart != null) tableConfigurationSectionPart.markDirty();
 					}
-					if(property == ChannelProperties.REMOVE) {
-//						module.removeChannel(oldValue);
-						tableViewer.setInput(module.getChannels());
-						tableConfigurationSectionPart.markDirty();
-					}
-					
 				}
 			}
 			

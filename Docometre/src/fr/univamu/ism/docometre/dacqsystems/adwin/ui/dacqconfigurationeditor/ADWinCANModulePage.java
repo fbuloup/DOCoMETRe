@@ -365,9 +365,7 @@ public class ADWinCANModulePage extends ADWinModulePage {
 			
 		}
 		if(property instanceof ChannelProperties) {
-			if(tableViewer != null && tableViewer.getTable() != null && !tableViewer.getTable().isDisposed()) {
-				tableViewer.refresh();
-			}
+			if(tableViewer != null && tableViewer.getTable() != null && !tableViewer.getTable().isDisposed()) tableViewer.refresh();
 			if(tableConfigurationSectionPart != null) tableConfigurationSectionPart.markDirty();
 		}
 		

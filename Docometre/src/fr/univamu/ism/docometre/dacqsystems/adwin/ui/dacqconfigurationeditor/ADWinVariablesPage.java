@@ -374,6 +374,10 @@ public class ADWinVariablesPage extends ADWinModulePage {
 				adwinVariable.setProperty(ADWinVariableProperties.PROPAGATE, "false");
 			}
 			
+			if(property == ADWinVariableProperties.PROPAGATE && isParameter && propagate && isString) {
+				adwinVariable.setProperty(ADWinVariableProperties.PROPAGATE, "false");
+			}
+			
 			if(property == ADWinVariableProperties.STIMULUS && isStimulus) {
 				adwinVariable.setProperty(ChannelProperties.TRANSFER, "true");
 				adwinVariable.setProperty(ChannelProperties.AUTO_TRANSFER, "false");
@@ -385,8 +389,8 @@ public class ADWinVariablesPage extends ADWinModulePage {
 			}
 			
 			if(property instanceof ADWinVariableProperties) {
-				tableViewer.refresh();
-				tableConfigurationSectionPart.markDirty();
+				if(tableViewer != null && tableViewer.getTable() != null && !tableViewer.getTable().isDisposed()) tableViewer.refresh();
+				if(tableConfigurationSectionPart != null) tableConfigurationSectionPart.markDirty();
 			}
 		}
 		

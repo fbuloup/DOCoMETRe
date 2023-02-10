@@ -393,11 +393,8 @@ public class ADWinAnInModulePage extends ADWinModulePage {
 			
 		}
 		if(property instanceof ADWinAnInChannelProperties) {
-			if(tableViewer != null && tableViewer.getTable() != null && !tableViewer.getTable().isDisposed()) {
-				tableViewer.refresh();
-				tableConfigurationSectionPart.markDirty();
-				
-			}
+			if(tableViewer != null && tableViewer.getTable() != null && !tableViewer.getTable().isDisposed()) tableViewer.refresh();
+			if(tableConfigurationSectionPart != null) tableConfigurationSectionPart.markDirty();
 		}
 		
 	}

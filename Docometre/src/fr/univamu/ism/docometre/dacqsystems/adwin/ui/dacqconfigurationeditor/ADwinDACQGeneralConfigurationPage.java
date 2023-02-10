@@ -489,8 +489,9 @@ public class ADwinDACQGeneralConfigurationPage extends ModulePage {
 		}
 		if(property instanceof DACQConfigurationProperties) {
 			if(property == DACQConfigurationProperties.UPDATE_MODULE) {
-				tableViewer.setInput(dacqConfiguration.getModules());
-				tableConfigurationSectionPart.markDirty();
+				if(tableViewer != null && tableViewer.getTable() != null && !tableViewer.getTable().isDisposed())
+					tableViewer.setInput(dacqConfiguration.getModules());
+				if(tableConfigurationSectionPart != null) tableConfigurationSectionPart.markDirty();
 				if(newValue != null) {
 					((Module)newValue).addObserver(this);
 				} else if(oldValue != null) {
@@ -501,8 +502,10 @@ public class ADwinDACQGeneralConfigurationPage extends ModulePage {
 		}
 		if(property instanceof ADWinModuleProperties) {
 			if(property == ADWinModuleProperties.MODULE_NUMBER || property == ADWinModuleProperties.REVISION) {
-				tableViewer.refresh();
-				tableConfigurationSectionPart.markDirty();
+				if(tableViewer != null) {
+					tableViewer.refresh();
+					tableConfigurationSectionPart.markDirty();
+				}
 			}
 		}
 	}
