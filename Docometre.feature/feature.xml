@@ -6,14 +6,22 @@
       provider-name="ISM">
 
    <description>
-      -- 2023-02-07
+      -- 2023-02-10
+ADDED :
+* Support for string parameters
+FIXED :
+* NPE in adwin dacq configuration pages
+* Bad functions absolute path initialization (Adwin and ArduinoUno)
+-- 2023-02-07
 ADDED : Nothing
 FIXED :
-* Remove moduleNumber parameter for Adwin Gold devices (Write FLOAT RS232 function)
+* Remove moduleNumber parameter for Adwin Gold devices (Write
+FLOAT RS232 function)
 -- 2023-02-06
 ADDED : Nothing
 FIXED :
-* Remove moduleNumber parameter for Adwin Gold devices (Write ASCII chars RS232 function)
+* Remove moduleNumber parameter for Adwin Gold devices (Write
+ASCII chars RS232 function)
 -- 2023-01-24
 ADDED : Nothing
 FIXED :
