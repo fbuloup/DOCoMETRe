@@ -49,6 +49,8 @@ import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.ICellEditorValidator;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.TextCellEditor;
@@ -74,12 +76,24 @@ public class ParametersDialog extends TitleAreaDialog {
 				this.regExp = "(^[+-]?\\d*\\.?\\d*[1-9]+\\d*([eE][-+]?[0-9]+)?$)|(^[+-]?[1-9]+\\d*\\.\\d*([eE][-+]?[0-9]+)?$)";
 			}
 			public String isValid(Object value) {
+				ColumnViewer viewer = getViewer();
+				if(viewer != null) {
+					ISelection selection = viewer.getSelection();
+					if(selection != null) {
+						IStructuredSelection structuredSelection = (IStructuredSelection)selection;
+						Object element = structuredSelection.getFirstElement();
+						if(element instanceof ADWinVariable) {
+							ADWinVariable adWinVariable = (ADWinVariable)element;
+							if(adWinVariable.isString()) return null;
+						}
+					}
+				}
+				
 				if(value == null) return "error";
 				if(value.toString().matches(regExp)) return null;
 				return "error";
 			}
 		}
-		
 
 		private CellEditor cellEditor;
 		
