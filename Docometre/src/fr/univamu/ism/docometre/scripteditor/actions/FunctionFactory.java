@@ -106,8 +106,14 @@ public final class FunctionFactory {
 			Process process = (Process)context;
 			DACQConfiguration dacqConfiguration = process.getDACQConfiguration();
 			String functionsAbsolutePath = "";
-			if(dacqConfiguration instanceof ADWinDACQConfiguration) functionsAbsolutePath = defaults.get(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), "");
-			if(dacqConfiguration instanceof ArduinoUnoDACQConfiguration) functionsAbsolutePath = defaults.get(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), "");
+			if(dacqConfiguration instanceof ADWinDACQConfiguration) {
+				functionsAbsolutePath = dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH);
+				if(functionsAbsolutePath == null) functionsAbsolutePath = defaults.get(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), "");
+			}
+			if(dacqConfiguration instanceof ArduinoUnoDACQConfiguration) {
+				functionsAbsolutePath = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH);
+				if(functionsAbsolutePath == null) functionsAbsolutePath = defaults.get(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), "");
+			}
 			Path path = new Path(functionsAbsolutePath);
 			String suffix = "";
 			if (process instanceof ADWinProcess) suffix = "ADWinFunctions";
