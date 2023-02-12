@@ -118,6 +118,7 @@ public class CustomerFunctionEditor extends EditorPart implements PartNameRefres
 		document = new Document();
 		CompositeRuler lineAnnotationRuler = new CompositeRuler();
 		LineNumberRulerColumn lineNumberRulerColumn = new LineNumberRulerColumn();
+		lineNumberRulerColumn.setForeground(PlatformUI.createDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND));
 		lineAnnotationRuler.addDecorator(0, lineNumberRulerColumn);
 		sourceViewer = new SourceViewer(parent, lineAnnotationRuler, null, false, SWT.V_SCROLL | SWT.H_SCROLL);
 		sourceViewer.setDocument(document);

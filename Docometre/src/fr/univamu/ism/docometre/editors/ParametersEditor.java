@@ -152,7 +152,9 @@ public class ParametersEditor extends EditorPart implements PartNameRefresher {
 			
 			document = new Document();
 			CompositeRuler lineAnnotationRuler = new CompositeRuler();
-			lineAnnotationRuler.addDecorator(0, new LineNumberRulerColumn());
+			LineNumberRulerColumn lineNumberRulerColumn = new LineNumberRulerColumn();
+			lineNumberRulerColumn.setForeground(PlatformUI.createDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND));
+			lineAnnotationRuler.addDecorator(0, lineNumberRulerColumn);
 			sourceViewer = new SourceViewer(parent, lineAnnotationRuler, null, true, SWT.V_SCROLL | SWT.H_SCROLL);
 			sourceViewer.setDocument(document);
 			document.set(content.toString());

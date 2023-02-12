@@ -155,7 +155,7 @@ public class SourceEditor extends EditorPart {
 		lineAnnotationRuler.setModel(annotationModel);
 		// Lines numbers column
 		LineNumberRulerColumn lineNumberRulerColumn = new LineNumberRulerColumn();
-		lineNumberRulerColumn.setForeground(JFaceResources.getColorRegistry().get(COLOR_DARK_GREY));
+		lineNumberRulerColumn.setForeground(PlatformUI.createDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND));
 		lineAnnotationRuler.addDecorator(0, lineNumberRulerColumn);
 		// Annotation column
 		docometreAnnotationAccesExtension = new DocometreAnnotationAccesExtension();

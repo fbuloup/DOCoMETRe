@@ -52,11 +52,16 @@ import org.eclipse.jface.text.rules.MultiLineRule;
 import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinMessages;
 
 public class ADWinDiaryScanner extends RuleBasedScanner {
+	
+	private static Color backgroundColor;
+	private static Color foregroundColor;
 	
 	private static final String HEADER_START = ADWinMessages.ADWinDiary_Header_Start_Scanner;
 	private static final String HEADER_FOOTER_END = ADWinMessages.ADWinDiary_Header_Footer_End_Scanner;
@@ -85,11 +90,13 @@ public class ADWinDiaryScanner extends RuleBasedScanner {
 		rules.add(getFooterScanner_2());
 		rules.add(getNoMoreDataToGenerate());
 		setRules(rules.toArray(new IRule[rules.size()]));
+		backgroundColor = PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
+		foregroundColor = PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND);
 	}
 	
 	public static IRule getTimeBetween2ADWinDialogScanner() {
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLUE), 
-				   									DocometreApplication.getColor(DocometreApplication.WHITE), 
+													backgroundColor, 
 				   									SWT.NORMAL, 
 				   									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
@@ -98,7 +105,7 @@ public class ADWinDiaryScanner extends RuleBasedScanner {
 	
 	public static IRule getRecoveringChannelScanner() {
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.ORANGE), 
-				   									DocometreApplication.getColor(DocometreApplication.WHITE), 
+				backgroundColor, 
 				   									SWT.NORMAL, 
 				   									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
@@ -107,7 +114,7 @@ public class ADWinDiaryScanner extends RuleBasedScanner {
 	
 	public static IRule getRecoveryTimeScanner() {
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.ORANGE), 
-				   									DocometreApplication.getColor(DocometreApplication.WHITE), 
+				   									backgroundColor, 
 				   									SWT.NORMAL, 
 				   									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
@@ -116,7 +123,7 @@ public class ADWinDiaryScanner extends RuleBasedScanner {
 	
 	public static IRule getGeneratingChannelScanner() {
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.GREEN), 
-				   									DocometreApplication.getColor(DocometreApplication.WHITE), 
+				   									backgroundColor, 
 				   									SWT.NORMAL, 
 				   									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
@@ -125,7 +132,7 @@ public class ADWinDiaryScanner extends RuleBasedScanner {
 	
 	public static IRule getGenerationTimeScanner() {
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.GREEN), 
-				   									DocometreApplication.getColor(DocometreApplication.WHITE), 
+				   									backgroundColor, 
 				   									SWT.NORMAL, 
 				   									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
@@ -134,7 +141,7 @@ public class ADWinDiaryScanner extends RuleBasedScanner {
 	
 	public static IRule getDisplayTimeScanner() {
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.MAROON), 
-				   									DocometreApplication.getColor(DocometreApplication.WHITE), 
+				   									backgroundColor, 
 				   									SWT.NORMAL, 
 				   									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
@@ -143,7 +150,7 @@ public class ADWinDiaryScanner extends RuleBasedScanner {
 	
 	public static IRule getDataLossScanner() {
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.RED), 
-				   									DocometreApplication.getColor(DocometreApplication.WHITE), 
+				   									backgroundColor, 
 				   									SWT.NORMAL, 
 				   									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
@@ -151,8 +158,8 @@ public class ADWinDiaryScanner extends RuleBasedScanner {
 	}
 	
 	public static IRule getHeaderScanner() {
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLACK), 
-					DocometreApplication.getColor(DocometreApplication.WHITE), 
+		TextAttribute attribute = new TextAttribute(foregroundColor, 
+					backgroundColor, 
 					SWT.NORMAL, 
 					DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
@@ -160,8 +167,8 @@ public class ADWinDiaryScanner extends RuleBasedScanner {
 	}
 	
 	public static IRule getFooterScanner_1() {
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLACK), 
-					DocometreApplication.getColor(DocometreApplication.WHITE), 
+		TextAttribute attribute = new TextAttribute(foregroundColor, 
+					backgroundColor, 
 					SWT.NORMAL, 
 					DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
@@ -169,8 +176,8 @@ public class ADWinDiaryScanner extends RuleBasedScanner {
 	}
 	
 	public static IRule getFooterScanner_2() {
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLACK), 
-					DocometreApplication.getColor(DocometreApplication.WHITE), 
+		TextAttribute attribute = new TextAttribute(foregroundColor, 
+					backgroundColor, 
 					SWT.NORMAL, 
 					DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
@@ -179,7 +186,7 @@ public class ADWinDiaryScanner extends RuleBasedScanner {
 	
 	public static IRule getNoMoreDataToGenerate() {
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.GREEN), 
-					DocometreApplication.getColor(DocometreApplication.WHITE), 
+					backgroundColor, 
 					SWT.NORMAL, 
 					DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);

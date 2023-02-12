@@ -52,7 +52,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
@@ -91,8 +90,6 @@ import fr.univamu.ism.docometre.dacqsystems.DocometreBuilder;
 import fr.univamu.ism.docometre.dialogs.FindDialog;
 
 public class DiaryEditor extends EditorPart implements PartNameRefresher {
-	
-	private static final String COLOR_DARK_GREY = "COLOR_DARK_GREY";
 	
 	public static String ID = "Docometre.DiaryEditor";
 	private SourceViewer sourceViewer;
@@ -151,7 +148,7 @@ public class DiaryEditor extends EditorPart implements PartNameRefresher {
 			lineAnnotationRuler.setModel(annotationModel);
 			// Lines numbers column
 			LineNumberRulerColumn lineNumberRulerColumn = new LineNumberRulerColumn();
-			lineNumberRulerColumn.setForeground(JFaceResources.getColorRegistry().get(COLOR_DARK_GREY));
+			lineNumberRulerColumn.setForeground(PlatformUI.createDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND));
 			lineAnnotationRuler.addDecorator(0,lineNumberRulerColumn);
 			// Annotation column
 			DocometreAnnotationAccesExtension docometreAnnotationAccesExtension = new DocometreAnnotationAccesExtension();
