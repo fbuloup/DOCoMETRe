@@ -624,7 +624,7 @@ public final class DocometreMessages extends NLS {
 	public static String PortNumberLabel;
 	public static String StringValueLabel;
 	public static String ASCIICodeValueLabel;
-	public static String CRLFValueLabel;
+	public static String LFValueLabel;
 	
 	/* ADwin serial output function */
 	public static String ASCIICodeVariableNameLabel;

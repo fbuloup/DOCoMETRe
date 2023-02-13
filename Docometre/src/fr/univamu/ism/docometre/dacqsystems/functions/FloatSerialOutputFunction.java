@@ -87,7 +87,7 @@ public class FloatSerialOutputFunction extends GenericFunction {
 	private static final String moduleNumberKey = "moduleNumber";
 	private static final String portNumberKey = "portNumber";
 	private static final String floatValueKey = "floatValue";
-	private static final String addCRLFKey = "add_CRLF";
+	private static final String addLFKey = "add_LF";
 	
 	private transient TitleAreaDialog titleAreaDialog;
 	
@@ -214,13 +214,13 @@ public class FloatSerialOutputFunction extends GenericFunction {
 		
 		Button crlfButton = new Button(paramContainer, SWT.CHECK);
 		crlfButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-		crlfButton.setText(DocometreMessages.CRLFValueLabel); 
-		boolean addCRLF  = Boolean.parseBoolean(getProperty(addCRLFKey, "false"));
+		crlfButton.setText(DocometreMessages.LFValueLabel); 
+		boolean addCRLF  = Boolean.parseBoolean(getProperty(addLFKey, "false"));
 		crlfButton.setSelection(addCRLF);
 		crlfButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				getTransientProperties().put(addCRLFKey, String.valueOf(crlfButton.getSelection()));
+				getTransientProperties().put(addLFKey, String.valueOf(crlfButton.getSelection()));
 			}
 		});
 
@@ -252,8 +252,8 @@ public class FloatSerialOutputFunction extends GenericFunction {
 				String temporaryCode = FunctionFactory.getProperty(process, functionFileName, key.toUpperCase());
 				String hashCode = String.valueOf(hashCode());
 				temporaryCode = temporaryCode.replaceAll("HashCode", hashCode);
-				boolean addCRLF = Boolean.parseBoolean(getProperty(addCRLFKey, "false"));
-				code = code + temporaryCode.replaceAll(addCRLFKey, addCRLF?"1":"0");
+				boolean addCRLF = Boolean.parseBoolean(getProperty(addLFKey, "false"));
+				code = code + temporaryCode.replaceAll(addLFKey, addCRLF?"1":"0");
 			}
 			if(step == ScriptSegmentType.INITIALIZE || step == ScriptSegmentType.LOOP || step == ScriptSegmentType.FINALIZE) {
 				// Récupérer la bonne propriété dans le fichier functionFileName en fonction du bon device : Gold ou Pro ET du bon CPU : I ou II

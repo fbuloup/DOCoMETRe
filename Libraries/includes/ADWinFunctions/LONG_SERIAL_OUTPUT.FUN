@@ -16,17 +16,16 @@ DECLARATION = DIM stringValue_HashCode[13] AS STRING\n\
 DIM currentChar_HashCode[1] AS STRING\n\
 DIM currentCharNumber_HashCode AS LONG\n\
 DIM dummyResponse_HashCode AS LONG\n\
-DIM addCRLF_HashCode AS LONG
+DIM addLF_HashCode AS LONG
 
-INITIALIZATION = addCRLF_HashCode = add_CRLF
+INITIALIZATION = addLF_HashCode = add_LF
 
 FUNCTION_CODE_PRO_I = LngToStr(longValue, stringValue_HashCode)\n\
 FOR currentCharNumber_HashCode = 1 TO STRLEN(stringValue_HashCode)\n\
 STRMID(stringValue_HashCode, currentCharNumber_HashCode, 1, currentChar_HashCode)\n\
 dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, ASC(currentChar_HashCode))\n\
 NEXT currentCharNumber_HashCode\n\
-IF (addCRLF_HashCode = 1) THEN\n\
-dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, 13)\n\
+IF (addLF_HashCode = 1) THEN\n\
 dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, 10)\n\
 ENDIF
 
@@ -35,8 +34,7 @@ FOR currentCharNumber_HashCode = 1 TO STRLEN(stringValue_HashCode)\n\
 STRMID(stringValue_HashCode, currentCharNumber_HashCode, 1, currentChar_HashCode)\n\
 dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, ASC(currentChar_HashCode))\n\
 NEXT currentCharNumber_HashCode\n\
-IF (addCRLF_HashCode = 1) THEN\n\
-dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, 13)\n\
+IF (addLF_HashCode = 1) THEN\n\
 dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, 10)\n\
 ENDIF
 
@@ -45,8 +43,7 @@ FOR currentCharNumber_HashCode = 1 TO STRLEN(stringValue_HashCode)\n\
 STRMID(stringValue_HashCode, currentCharNumber_HashCode, 1, currentChar_HashCode)\n\
 dummyResponse_HashCode = WRITE_FIFO(portNumber, ASC(currentChar_HashCode))\n\
 NEXT currentCharNumber_HashCode\n\
-IF (addCRLF_HashCode = 1) THEN\n\
-dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, 13)\n\
+IF (addLF_HashCode = 1) THEN\n\
 dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, 10)\n\
 ENDIF
 
@@ -55,7 +52,6 @@ FOR currentCharNumber_HashCode = 1 TO STRLEN(stringValue_HashCode)\n\
 STRMID(stringValue_HashCode, currentCharNumber_HashCode, 1, currentChar_HashCode)\n\
 dummyResponse_HashCode = WRITE_FIFO(portNumber, ASC(currentChar_HashCode))\n\
 NEXT currentCharNumber_HashCode\n\
-IF (addCRLF_HashCode = 1) THEN\n\
-dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, 13)\n\
+IF (addLF_HashCode = 1) THEN\n\
 dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, 10)\n\
 ENDIF
