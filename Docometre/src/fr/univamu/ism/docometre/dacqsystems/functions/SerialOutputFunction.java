@@ -64,6 +64,8 @@ import org.eclipse.swt.widgets.Text;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.dacqsystems.Channel;
+import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.Process;
@@ -72,6 +74,8 @@ import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfigurationProperti
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinModuleProperties;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinProcess;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinRS232Module;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinVariable;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinVariableProperties;
 import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
 import fr.univamu.ism.process.Block;
 import fr.univamu.ism.process.ScriptSegmentType;
@@ -237,7 +241,23 @@ public class SerialOutputFunction extends GenericFunction {
 				String hashCode = String.valueOf(hashCode());
 				temporaryCode = temporaryCode.replaceAll("HashCode", hashCode);
 				String value = getProperty(asciiStringValueKey, "");
-				code = code + temporaryCode.replaceAll("stringSize", String.valueOf(value.length()));
+				if(!value.startsWith("\"")) {
+					Channel[] variables = process.getDACQConfiguration().getVariables();
+					ADWinVariable adWinVariable = null;
+					boolean found = false;
+					for (Channel variable : variables) {
+						adWinVariable = (ADWinVariable)variable;
+						String channelName = adWinVariable.getProperty(ChannelProperties.NAME);
+						if(value.equals(channelName)) {
+							found = true;
+							break;
+						}
+					}
+					if(found) {
+						String size = adWinVariable.getProperty(ADWinVariableProperties.SIZE);
+						code = code + temporaryCode.replaceAll("stringSize", size);
+					} else Activator.logErrorMessage("Channel " + value + " not found !");
+				} else code = code + temporaryCode.replaceAll("stringSize", String.valueOf(value.length()-2));
 			}
 			if(step == ADWinCodeSegmentProperties.INITIALIZATION) {
 				code = code + "\nREM Serial output function initialization\n";
