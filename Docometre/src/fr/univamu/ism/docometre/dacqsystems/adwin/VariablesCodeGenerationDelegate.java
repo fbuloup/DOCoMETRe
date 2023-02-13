@@ -186,7 +186,7 @@ public final class VariablesCodeGenerationDelegate {
 				code = code + "index2_" + process.hashCode() + " = 2\n";
 				code = code + "index3_" + process.hashCode() + " = 1\n";
 				code = code + "FOR index1_" + process.hashCode() + " = 2 TO strlen(TAB_PARAM_STRING) + 1\n";
-				code = code + "\tIF (TAB_PARAM_STRING[index1_" + process.hashCode() + "] = 58) THEN\n";
+				code = code + "\tIF (TAB_PARAM_STRING[index1_" + process.hashCode() + "] = 10) THEN\n";
 				numParam = 1;
 				for (ADWinVariable parameter : parametersString) {
 					String name = parameter.getProperty(ChannelProperties.NAME);

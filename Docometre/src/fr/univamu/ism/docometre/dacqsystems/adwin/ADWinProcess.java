@@ -1240,7 +1240,7 @@ public class ADWinProcess extends Process {
 			for (ADWinVariable variable : keys) {
 				String dataString = currentTrialParametersString.get(variable);
 				parametersString = parametersString + variable.getProperty(ChannelProperties.NAME) + " = " + dataString ;
-				data = data + dataString + ":";
+				data = data + dataString + "\n";
 				i++;
 				if(keys.size() > i) parametersString = parametersString + " - ";
 			}
@@ -1248,7 +1248,14 @@ public class ADWinProcess extends Process {
 				Activator.logErrorMessage("Error : String parameters is too long (more than 1024 chars) !");
 			else {
 				Activator.logInfoMessage("Pushing parameters to ADWin (String) : " + parametersString, ADWinProcess.class);
-				((ADWinDACQConfiguration)ADWinProcess.this.getDACQConfiguration()).getADwinDevice().SetData_String(199, data);
+				byte[] bytesArray = data.getBytes(StandardCharsets.US_ASCII.name());
+				int[] intsArray = new int[bytesArray.length + 2];
+				intsArray[0] = bytesArray.length;
+				for (int j = 1; j < intsArray.length - 1; j++) {
+					intsArray[j] = bytesArray[j - 1];
+				}
+				((ADWinDACQConfiguration)ADWinProcess.this.getDACQConfiguration()).getADwinDevice().SetData_Long(199, intsArray, 1, intsArray.length);
+				
 			}
 		}
 	}
