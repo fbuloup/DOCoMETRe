@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2023-02-12
+      -- 2023-02-13
+ADDED :
+* Improve serial output functions : now can handle literals and channels
+FIXED : Nothing
+-- 2023-02-12
 ADDED : Nothing
 FIXED : 
 * Support for string parameters (use \n as seprator char)
