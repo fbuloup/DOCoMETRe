@@ -6,9 +6,14 @@
       provider-name="ISM">
 
    <description>
-      -- 2023-02-13
+      -- 2023-02-27
 ADDED :
-* Improve serial output functions : now can handle literals and channels
+* CR and LF options in Serial Output function (ADWin)
+FIXED : Nothing
+-- 2023-02-13
+ADDED :
+* Improve serial output functions : now can handle literals and
+channels
 FIXED : Nothing
 -- 2023-02-12
 ADDED : Nothing
