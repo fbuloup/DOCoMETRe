@@ -250,7 +250,9 @@ public final class DocometreMessages extends NLS {
 	public static String ImportResourceWizardErrorMessage3;
 	public static String NewSubjectFromADWDataFileLabel;
 	public static String NewSubjectFromOptiTrackDataFileLabel;
+	public static String NewSubjectFromColumnDataFile;
 	public static String ImportResourceWizardOptitrack1Message;
+	public static String ImportResourceWizardDataColumnFilesMessage;
 	public static String ImportingExperimentFromCompressedFile;
 	public static String CreatingNewExperimentInWorkspace;
 	public static String RefreshingWorkspace;
@@ -265,6 +267,16 @@ public final class DocometreMessages extends NLS {
 	public static String ImportResourceWizardErrorMessage5;
 	public static String ImportResourceWizardErrorMessage6;
 	public static String ImportResourceWizardErrorMessage7;
+	
+	public static String ConfigureSeparatorTitle;
+	public static String SeparatorForMessage;
+	public static String ConfigureHeaderTitle;
+	public static String ConfigureHeaderMessage;
+	public static String ChannelNameTitle;
+	public static String ChannelFrequencyTitle;
+	public static String ChannelNameMessage;
+	public static String ChannelFrequencyMessage;
+	
 	
 	/*New Folder Page*/
 	public static String NewFolderWizard_PageName;

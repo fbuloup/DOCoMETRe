@@ -41,19 +41,24 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.wizards;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -77,8 +82,11 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.wizard.Wizard;
@@ -87,6 +95,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWizard;
 
+import au.com.bytecode.opencsv.CSVReader;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ObjectsController;
@@ -103,6 +112,10 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 	
 	protected static IContainer parentResource;
 	private ImportResourceWizardPage importResourceWizardPage;
+	private boolean configureHeader;
+	private String separatorChar;
+	private boolean abort;
+	private int columnNumber;
 	
 	@Override
 	public String getWindowTitle() {
@@ -144,6 +157,35 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 			}
 			return true;
 		} 
+		
+		if(resourceType.equals(ResourceType.COLUMN_DATA_FILE)) {
+			try {
+				getContainer().run(true, true, new IRunnableWithProgress() {
+					@Override
+					public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+						int nbFiles = 0;
+						for (Object element : elements) {
+							File file = (File)element;
+							nbFiles += file.list().length;
+						}
+						nbFiles += elements.length;
+						monitor.beginTask(DocometreMessages.ImportResourceWizardDataColumnFilesMessage, nbFiles);
+						for (Object element : elements) {
+							File file = (File)element;
+							if(file.isDirectory()) importSubjectsFormDataColumnFiles(file, monitor);
+							monitor.worked(1);
+						}
+						monitor.done();
+					}
+				});
+				parentResource.refreshLocal(IResource.DEPTH_INFINITE, null);
+				ExperimentsView.refresh(parentResource, null);
+			} catch (CoreException | InvocationTargetException | InterruptedException e) {
+				Activator.logErrorMessageWithCause(e);
+				e.printStackTrace();
+			}
+			return true;
+		}
 		
 		for (Object element : elements) {
 			File file = (File)element;
@@ -455,6 +497,112 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
 		}
+	}
+	
+	private void importSubjectsFormDataColumnFiles(File file, IProgressMonitor monitor) {
+		try {
+			System.out.println("Import : " + file.getAbsolutePath());
+			File[] textFiles = file.listFiles(new FileFilter() {
+				@Override
+				public boolean accept(File pathname) {
+					return pathname.getName().endsWith(".txt");
+				}
+			});
+			abort = false;
+			separatorChar = "\\t";
+			configureHeader = false;		
+			getShell().getDisplay().syncExec(new Runnable() {
+				@Override
+				public void run() {
+					InputDialog inputDialog = new InputDialog(getShell(), DocometreMessages.ConfigureSeparatorTitle, NLS.bind(DocometreMessages.SeparatorForMessage, file.getName()), separatorChar, null);
+					if(inputDialog.open() == Dialog.OK) {
+						separatorChar = inputDialog.getValue().replaceAll("\\\\t", "\t");
+						configureHeader = MessageDialog.openQuestion(getShell(), DocometreMessages.ConfigureHeaderTitle, NLS.bind(DocometreMessages.ConfigureHeaderMessage, file.getName()));
+					} else {
+						configureHeader = false;
+						abort = true;
+					}
+				}
+			});
+			LinkedHashMap<String, String> channelsNameAndFrequency = new LinkedHashMap<>();
+			if(textFiles.length > 0 && configureHeader && !abort) {
+				BufferedReader reader = Files.newBufferedReader(textFiles[0].toPath());
+				CSVReader csvReader  = new CSVReader(reader);
+				List<String[]> values = csvReader.readAll();
+				csvReader.close();
+				String firstLine = values.get(0)[0];
+				String[] firstLineSplitted = firstLine.split(separatorChar);
+				columnNumber = 1;
+				for (int n = 1; n <= firstLineSplitted.length; n++) {
+					columnNumber = n;
+					getShell().getDisplay().syncExec(new Runnable() {
+						@Override
+						public void run() {
+							IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
+							String channelName = preferenceStore.getString("LAST_CHANNEL_NAME_COLUMN_" + columnNumber);
+							String frequency = preferenceStore.getString("LAST_CHANNEL_FREQUENCY_COLUMN_" + columnNumber);
+							InputDialog inputDialog = new InputDialog(getShell(), DocometreMessages.ChannelNameTitle, NLS.bind(DocometreMessages.ChannelNameMessage, columnNumber), channelName, null);
+							if(inputDialog.open() == Dialog.OK) {
+								channelName = inputDialog.getValue();
+								preferenceStore.putValue("LAST_CHANNEL_NAME_COLUMN_" + columnNumber, channelName);
+							} else abort = true;
+							
+							inputDialog = new InputDialog(getShell(), DocometreMessages.ChannelFrequencyTitle, NLS.bind(DocometreMessages.ChannelFrequencyMessage, columnNumber), frequency, null);
+							if(inputDialog.open() == Dialog.OK) {
+								frequency = inputDialog.getValue();
+								preferenceStore.putValue("LAST_CHANNEL_FREQUENCY_COLUMN_" + columnNumber, frequency);
+							} else abort = true;
+							if(!abort) {
+								channelsNameAndFrequency.put(channelName, frequency);
+							}
+						}
+					});
+					if(abort) break;
+				}
+			}
+			if(!abort) {
+				// Create Subject
+				String subjectName = file.getName().replaceAll("\\s+", "_");
+				IResource newSubject = parentResource.findMember(subjectName);
+				if(newSubject == null) {
+					newSubject = parentResource.getFolder(new org.eclipse.core.runtime.Path(subjectName));
+					((IFolder)newSubject).create(true, true, null);
+					ResourceProperties.setTypePersistentProperty(newSubject, ResourceType.SUBJECT.toString());
+				}
+				// Copy all text files adding header if necessary
+				String rootPath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();
+				rootPath = rootPath + parentResource.getFullPath().toOSString() + File.separator + newSubject.getName();
+				String[] textFilesList = file.list();
+				for (String dataFile : textFilesList) {
+					// Create file with header
+					Path originalPath = file.toPath().resolve(dataFile);
+					Path newPath = Paths.get(rootPath + File.separator + originalPath.getFileName().toString());
+					if(configureHeader) {
+						String headerName = "";
+						String headerFrequency = "";
+						for (String name : channelsNameAndFrequency.keySet()) {
+							headerName = headerName + name + separatorChar;
+							headerFrequency = headerFrequency + channelsNameAndFrequency.get(name) + separatorChar;
+						}
+						headerName = headerName.replaceAll(separatorChar + "$", "\n");
+						headerFrequency = headerFrequency.replaceAll(separatorChar + "$", "\n");
+						Files.write(newPath, headerName.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+						Files.write(newPath, headerFrequency.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+					}
+					List<String> lines = Files.readAllLines(originalPath, StandardCharsets.UTF_8);
+					Files.write(newPath, lines, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+					IFile newFile = ((IFolder)newSubject).getFile(newPath.getFileName().toString());
+					newFile.refreshLocal(IResource.DEPTH_ZERO, null);
+					ResourceProperties.setDescriptionPersistentProperty(newFile, "");
+					ResourceProperties.setTypePersistentProperty(newFile, ResourceType.COLUMN_DATA_FILE.toString());
+					monitor.worked(1);
+				}
+			}
+			
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		} 
 	}
 
 	protected int getNbProperties(File file, String experimentName, String rootPath) {

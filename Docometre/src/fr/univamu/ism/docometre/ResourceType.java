@@ -69,7 +69,8 @@ public enum ResourceType {
 	XYCHART("XYCHART"),
 	XYZCHART("XYZCHART"),
 	CUSTOMER_FUNCTION("CUSTOMER_FUNCTION"),
-	OPTITRACK_TYPE_1("OPTITRACK_TYPE_1");
+	OPTITRACK_TYPE_1("OPTITRACK_TYPE_1"),
+	COLUMN_DATA_FILE("COLUMN_DATA_FILE");
 
 	private String name = "";
 
@@ -103,6 +104,7 @@ public enum ResourceType {
 		if(typeValue.equals(XYZCHART.toString())) return XYZCHART;
 		if(typeValue.equals(CUSTOMER_FUNCTION.toString())) return CUSTOMER_FUNCTION;
 		if(typeValue.equals(OPTITRACK_TYPE_1.toString())) return OPTITRACK_TYPE_1;
+		if(typeValue.equals(COLUMN_DATA_FILE.toString())) return COLUMN_DATA_FILE;
 		return ANY;
 	}
 	
@@ -207,6 +209,10 @@ public enum ResourceType {
 		return check(resource, OPTITRACK_TYPE_1);
 	}
 	
+	public static boolean isColumnDataFile(IResource resource) {
+		return check(resource, COLUMN_DATA_FILE);
+	}
+	
 	public static boolean isAnyTest(IResource resource) {
 	return check(resource, ANY);
 	}
@@ -240,6 +246,7 @@ public enum ResourceType {
 		boolean isDataFile = ResourceType.isADWDataFile(resource) || ResourceType.isSamples(resource); 
 		isDataFile = isDataFile || ResourceType.isSaveFile(resource) || ResourceType.isNumpyFile(resource);
 		isDataFile = isDataFile || ResourceType.isOptitrack_Type_1(resource);
+		isDataFile = isDataFile || ResourceType.isColumnDataFile(resource);
 		return isDataFile;
 	}
 

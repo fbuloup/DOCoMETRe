@@ -83,11 +83,11 @@ public class ImportResourceWizardPage extends WizardPage {
 	private TreeViewer resourceTreeViewer;
 	private ResourceType selectedResourceType;
 
-	private class ValidatFiles implements FilenameFilter {
+	private class ValidateFiles implements FilenameFilter {
 		
 		private Object selection;
 
-		public ValidatFiles(Object selection) {
+		public ValidateFiles(Object selection) {
 			this.selection = selection;
 		}
 
@@ -95,6 +95,16 @@ public class ImportResourceWizardPage extends WizardPage {
 		public boolean accept(File dir, String name) {
 			boolean valid = false;
 			File file = new File(dir, name);
+			// If it's a file and we import COLUMN_DATA_FILE, reject
+			if(!file.isDirectory() && selection == ResourceType.COLUMN_DATA_FILE) return false;
+			// If it's directory and we import COLUMN_DATA_FILE accept only if contains txt files
+			if(file.isDirectory() && selection == ResourceType.COLUMN_DATA_FILE) {
+				String[] filesNames = file.list();
+				for (String filesName : filesNames) {
+					if(filesName.endsWith(".txt")) return true;
+				}
+				return false;
+			}
 			// If it's a directory, accept only if it contains process or dacq or ...
 			if(file.isDirectory()) valid = validateFolder(file, name);
 			else valid = validateFile(file, name);
@@ -108,8 +118,8 @@ public class ImportResourceWizardPage extends WizardPage {
 			for (String fileName : filesNames) {
 				File file = new File(folder, fileName);
 				// If it's a directory, accept only if it contains process or dacq or ...
-				if(file.isDirectory()) valid = valid || validateFolder(file, name);
-				else valid = valid || validateFile(file, name);
+				if(file.isDirectory()) valid = valid || validateFolder(file, fileName);
+				else valid = valid || validateFile(file, fileName);
 			}
 			return valid;
 		}
@@ -120,7 +130,7 @@ public class ImportResourceWizardPage extends WizardPage {
 				valid = name.matches("^[a-zA-Z][a-zA-Z0-9_]*.zip$") || name.matches("^[a-zA-Z][a-zA-Z0-9_]*.tar$");
 			} if(selection == ResourceType.SESSION ) {
 				valid = name.matches("^[a-zA-Z][a-zA-Z0-9_]*.txt$") || name.matches("^[a-zA-Z][a-zA-Z0-9_]*.ini$") || name.matches("^[a-zA-Z][a-zA-Z0-9_]*.properties$") ;
-			} else if(selection == ResourceType.PROCESS || selection == ResourceType.ADW_DATA_FILE || selection == ResourceType.DATA_PROCESSING) {
+			} else if(selection == ResourceType.PROCESS || selection == ResourceType.ADW_DATA_FILE || selection == ResourceType.DATA_PROCESSING || selection == ResourceType.DACQ_CONFIGURATION) {
 				String extension = Activator.daqFileExtension;
 				if(selection == ResourceType.PROCESS) extension = Activator.processFileExtension;
 				if(selection == ResourceType.ADW_DATA_FILE) extension = Activator.adwFileExtension;
@@ -128,6 +138,8 @@ public class ImportResourceWizardPage extends WizardPage {
 				valid = name.matches("^[a-zA-Z][a-zA-Z0-9_]*" + extension + "$");
 			} else if(selection == ResourceType.OPTITRACK_TYPE_1) {
 				valid = name.matches("^[a-zA-Z]+[0-9]+[a-zA-Z]+[a-zA-Z0-9_]*$");
+			} else if(selection == ResourceType.COLUMN_DATA_FILE) {
+				valid = name.matches("^[a-zA-Z][a-zA-Z0-9_]*.txt$");
 			}
 			return valid;
 		}
@@ -172,6 +184,7 @@ public class ImportResourceWizardPage extends WizardPage {
 				if(element == ResourceType.EXPERIMENT) return DocometreMessages.NewExperimentAction_Text + " (*.zip, *.tar)";
 				if(element == ResourceType.ADW_DATA_FILE) return DocometreMessages.NewSubjectFromADWDataFileLabel;
 				if(element == ResourceType.OPTITRACK_TYPE_1) return DocometreMessages.NewSubjectFromOptiTrackDataFileLabel;
+				if(element == ResourceType.COLUMN_DATA_FILE) return DocometreMessages.NewSubjectFromColumnDataFile;
 				if(element == ResourceType.SUBJECT) return DocometreMessages.Subjects + " (*.zip, *.tar)";
 				if(element == ResourceType.DATA_PROCESSING) return DocometreMessages.DataProcessingTitle;
 				if(element == ResourceType.SESSION) return DocometreMessages.Sessions_Label;
@@ -203,8 +216,9 @@ public class ImportResourceWizardPage extends WizardPage {
 			@Override
 			public boolean hasChildren(Object element) {
 				if(!(element instanceof File)) return false;
+				if(resourceTypeComboViewer.getStructuredSelection().getFirstElement() == ResourceType.COLUMN_DATA_FILE) return false;
 				File file = (File)element;
-				File[] files = file.listFiles(new ValidatFiles(resourceTypeComboViewer.getStructuredSelection().getFirstElement()));
+				File[] files = file.listFiles(new ValidateFiles(resourceTypeComboViewer.getStructuredSelection().getFirstElement()));
 				return files != null && files.length > 0;
 			}
 			
@@ -218,14 +232,14 @@ public class ImportResourceWizardPage extends WizardPage {
 			public Object[] getElements(Object inputElement) {
 				if(!(inputElement instanceof File)) return new Object[0];
 				File inputFile = (File)inputElement;
-				return inputFile.listFiles(new ValidatFiles(resourceTypeComboViewer.getStructuredSelection().getFirstElement()));
+				return inputFile.listFiles(new ValidateFiles(resourceTypeComboViewer.getStructuredSelection().getFirstElement()));
 			}
 			
 			@Override
 			public Object[] getChildren(Object parentElement) {
 				if(!(parentElement instanceof File)) return new Object[0];
 				File inputFile = (File)parentElement;
-				return inputFile.listFiles(new ValidatFiles(resourceTypeComboViewer.getStructuredSelection().getFirstElement()));
+				return inputFile.listFiles(new ValidateFiles(resourceTypeComboViewer.getStructuredSelection().getFirstElement()));
 			}
 		});
 		resourceTreeViewer.setLabelProvider(new ILabelProvider() {
@@ -258,6 +272,9 @@ public class ImportResourceWizardPage extends WizardPage {
 				if(file.getName().endsWith(".zip") || file.getName().endsWith("*.tar")) return Activator.getImage(IImageKeys.ZIP);
 				if(file.getName().endsWith(Activator.adwFileExtension)) return Activator.getImage(IImageKeys.SAMPLES_ICON);
 				if(file.getName().endsWith(Activator.dataProcessingFileExtension)) return Activator.getImage(IImageKeys.DATA_PROCESSING_ICON);
+//				if(resourceTypeComboViewer.getStructuredSelection().getFirstElement() == ResourceType.COLUMN_DATA_FILE) {
+//					return Activator.getImage(IImageKeys.SUBJECT_ICON);
+//				}
 				boolean sessionsConfigurationFile = file.getName().endsWith(".txt");
 				sessionsConfigurationFile |= file.getName().endsWith(".ini");
 				sessionsConfigurationFile |= file.getName().endsWith(".properties");
@@ -304,10 +321,11 @@ public class ImportResourceWizardPage extends WizardPage {
 			public void selectionChanged(SelectionChangedEvent event) {
 				setPageComplete(false);
 				ITreeSelection selection = resourceTreeViewer.getStructuredSelection();
+				Object selectedType = resourceTypeComboViewer.getStructuredSelection().getFirstElement();
 				Object[] elements = selection.toArray();
 				for (Object element : elements) {
 					File file = (File)element;
-					if(ResourceType.OPTITRACK_TYPE_1.equals(resourceTypeComboViewer.getStructuredSelection().getFirstElement())) {
+					if(ResourceType.OPTITRACK_TYPE_1.equals(selectedType) || ResourceType.COLUMN_DATA_FILE.equals(selectedType)) {
 						if(file.isDirectory()) {
 							setPageComplete(true);
 							break;
@@ -329,7 +347,9 @@ public class ImportResourceWizardPage extends WizardPage {
 		IResource parentSelectedResource = ImportResourceWizard.getSelectedResource();
 		
 		if(ResourceType.isExperiment(parentSelectedResource)) {
-			resourceTypeComboViewer.setInput(new Object[] {/*ResourceType.SUBJECT,*/ ResourceType.DACQ_CONFIGURATION, ResourceType.PROCESS, ResourceType.DATA_PROCESSING, ResourceType.ADW_DATA_FILE, ResourceType.OPTITRACK_TYPE_1});
+			resourceTypeComboViewer.setInput(new Object[] {/*ResourceType.SUBJECT,*/ ResourceType.DACQ_CONFIGURATION, ResourceType.PROCESS, 
+																					 ResourceType.DATA_PROCESSING, ResourceType.ADW_DATA_FILE, 
+																					 ResourceType.OPTITRACK_TYPE_1, ResourceType.COLUMN_DATA_FILE});
 			resourceTypeComboViewer.setSelection(new StructuredSelection(ResourceType.DACQ_CONFIGURATION));
 			selectedResourceType = ResourceType.DACQ_CONFIGURATION;
 		}
