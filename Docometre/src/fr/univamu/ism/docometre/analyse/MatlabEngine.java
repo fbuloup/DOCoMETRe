@@ -1015,7 +1015,11 @@ public final class MatlabEngine implements MathEngine {
 		
 		String dataFilesList = Analyse.getDataFiles(subject);
 		boolean isOptitrack = Analyse.isOptitrack(dataFilesList.split(";"), (IContainer) subject);
-		if(isOptitrack) {
+		boolean isColumnDataFile = Analyse.isColumnDataFile(dataFilesList.split(";"), (IContainer) subject);
+		if(isColumnDataFile) {
+			String cmd = experimentName + "." + subjectName + " = loadData('COLUMN_DATA_FILE', '" + dataFilesList + "')";
+			return cmd;
+		} else if(isOptitrack) {
 			// If all data files are OPTITRACK_TYPE_1
 			String cmd = experimentName + "." + subjectName + " = loadData('OPTITRACK_TYPE_1', '" + dataFilesList + "')";
 			return cmd;

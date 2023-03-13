@@ -41,6 +41,9 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.preferences;
 
+import java.io.IOException;
+
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
@@ -103,32 +106,23 @@ public class PreferencesInitializer extends AbstractPreferenceInitializer {
 		defaults.putInt(MathEnginePreferencesConstants.PY4J_JAVA_PORT, GatewayServer.DEFAULT_PORT);
 		defaults.putInt(MathEnginePreferencesConstants.PY4J_PYTHON_PORT, GatewayServer.DEFAULT_PYTHON_PORT);
 		
-		Bundle bundle = Platform.getBundle("Libraries");
-		String librariesPath = "Libraries_" + bundle.getVersion();
-		if(Boolean.getBoolean("DEV")) librariesPath = "Libraries";
-		String runtimeFolder = System.getProperty("user.dir");
-		IPath path = Path.fromOSString(runtimeFolder);
-		if(Boolean.getBoolean("DEV")) path = path.append(librariesPath);
-		else {
-			if(Platform.OS_MACOSX.equals(Platform.getOS())) {
-				path = path.removeLastSegments(1).append("Eclipse").append("plugins").append(librariesPath);
-			}
-			if(Platform.OS_WIN32.equals(Platform.getOS())) {
-				path = path.append("plugins").append(librariesPath);;
-			}
-			if(Platform.OS_LINUX.equals(Platform.getOS())) {
-				path = path.append("plugins").append(librariesPath);;
-			}
+		try {
+			Bundle bundle = Platform.getBundle("Libraries");
+			IPath path = Path.fromPortableString(FileLocator.getBundleFile(bundle).getAbsolutePath());
+			path = path.append("includes");
+			defaults.put(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), path.append("ADWinIncludeFiles").toOSString());
+			preferenceStore.putValue(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), path.append("ADWinIncludeFiles").toOSString());
+			defaults.put(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(),  path.append("ArduinoUnoFunctions").toOSString());
+			preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(),  path.append("ArduinoUnoFunctions").toOSString());
+			defaults.put(GeneralPreferenceConstants.MATLAB_SCRIPTS_LOCATION, path.append("MatlabScripts").toOSString());
+			preferenceStore.putValue(GeneralPreferenceConstants.MATLAB_SCRIPTS_LOCATION, path.append("MatlabScripts").toOSString());
+			defaults.put(GeneralPreferenceConstants.PYTHON_SCRIPTS_LOCATION, path.append("PythonScripts").toOSString());
+			preferenceStore.putValue(GeneralPreferenceConstants.PYTHON_SCRIPTS_LOCATION, path.append("PythonScripts").toOSString());
+		} catch (IOException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
 		}
-		path = path.append("includes");
-		defaults.put(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), path.append("ADWinIncludeFiles").toOSString());
-		preferenceStore.putValue(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), path.append("ADWinIncludeFiles").toOSString());
-		defaults.put(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(),  path.append("ArduinoUnoFunctions").toOSString());
-		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(),  path.append("ArduinoUnoFunctions").toOSString());
-		defaults.put(GeneralPreferenceConstants.MATLAB_SCRIPTS_LOCATION, path.append("MatlabScripts").toOSString());
-		preferenceStore.putValue(GeneralPreferenceConstants.MATLAB_SCRIPTS_LOCATION, path.append("MatlabScripts").toOSString());
-		defaults.put(GeneralPreferenceConstants.PYTHON_SCRIPTS_LOCATION, path.append("PythonScripts").toOSString());
-		preferenceStore.putValue(GeneralPreferenceConstants.PYTHON_SCRIPTS_LOCATION, path.append("PythonScripts").toOSString());
+
 		
 	}
 
