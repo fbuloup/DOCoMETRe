@@ -72,7 +72,7 @@ import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 public class MessagesView extends ViewPart implements ILogListener, IDocumentListener {
 	
 	private static Color WARNING_COLOR = JFaceResources.getResources().createColor(new RGB(204,102,0));
-	private static Color ERROR_COLOR = JFaceResources.getResources().createColor(new RGB(139, 0, 0));
+	private static Color ERROR_COLOR = JFaceResources.getResources().createColor(new RGB(250, 0, 0));
 	
 	private class ScrollLockAction extends Action {
 		public ScrollLockAction() {
