@@ -46,6 +46,7 @@ import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.jface.preference.IntegerFieldEditor;
+import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -83,8 +84,9 @@ public class MatlabPreferencePage extends FieldEditorPreferencePage implements I
 		addField(matlabLocationFieldEditor);
 		
 		// MATLAB_LICENCE_FILE
-		FileFieldEditor matlabLicenceFieldEditor = new FolderPathFieldEditor(GeneralPreferenceConstants.MATLAB_LICENCE_FILE, DocometreMessages.MatlabLicenceLocation, container);
+		StringFieldEditor matlabLicenceFieldEditor = new StringFieldEditor(GeneralPreferenceConstants.MATLAB_LICENCE_FILE, DocometreMessages.MatlabLicenceLocation, container);
 		matlabLicenceFieldEditor.getLabelControl(container).setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+		matlabLicenceFieldEditor.getTextControl(container).setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 		addField(matlabLicenceFieldEditor);
 		
 		// MATLAB_SCRIPTS_LOCATION
