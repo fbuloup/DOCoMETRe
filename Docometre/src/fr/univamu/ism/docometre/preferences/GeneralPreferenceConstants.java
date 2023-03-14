@@ -71,6 +71,7 @@ public class GeneralPreferenceConstants {
 	public static final String MATLAB_TIME_OUT = "MATLAB_TIME_OUT";
 	public static final String MATLAB_SCRIPTS_LOCATION = "MATLAB_SCRIPTS_LOCATION";
 	public static final String MATLAB_USER_SCRIPTS_LOCATION = "MATLAB_USER_SCRIPTS_LOCATION";
+	public static final String MATLAB_LICENCE_FILE = "MATLAB_LICENCE_FILE";
 	
 	public static final String PYTHON_LOCATION = "PYTHON_LOCATION";
 	public static final String PYTHON_TIME_OUT = "PYTHON_TIME_OUT";

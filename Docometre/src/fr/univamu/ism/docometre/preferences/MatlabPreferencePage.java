@@ -82,6 +82,11 @@ public class MatlabPreferencePage extends FieldEditorPreferencePage implements I
 		matlabLocationFieldEditor.getLabelControl(container).setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
 		addField(matlabLocationFieldEditor);
 		
+		// MATLAB_LICENCE_FILE
+		FileFieldEditor matlabLicenceFieldEditor = new FolderPathFieldEditor(GeneralPreferenceConstants.MATLAB_LICENCE_FILE, DocometreMessages.MatlabLicenceLocation, container);
+		matlabLicenceFieldEditor.getLabelControl(container).setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+		addField(matlabLicenceFieldEditor);
+		
 		// MATLAB_SCRIPTS_LOCATION
 		DirectoryFieldEditor matlabScriptsLocationFieldEditor = new DirectoryFieldEditor(GeneralPreferenceConstants.MATLAB_SCRIPTS_LOCATION, DocometreMessages.MatlabEngineScriptLocation, container);
 		matlabScriptsLocationFieldEditor.getLabelControl(container).setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));

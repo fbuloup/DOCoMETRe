@@ -773,6 +773,7 @@ public final class DocometreMessages extends NLS {
 	public static String MatlabEngineScriptLocation;
 	public static String MatlabEngineUserScriptLocation;
 	public static String MatlabEngineLocation;
+	public static String MatlabLicenceLocation;
 	
 	// Python preferences 
 	public static String PythonPreferences_Description;

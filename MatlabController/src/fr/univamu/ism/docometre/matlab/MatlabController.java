@@ -62,7 +62,7 @@ public final class MatlabController {
 	private MatlabController() {
 	}
 	
-	public void startMatlab(boolean showWindow, int timeOut, String matlabLocation, String matlabScriptsLocation,  String matlabFunctionsLocation) throws Exception {
+	public void startMatlab(boolean showWindow, int timeOut, String matlabLocation, String matlabScriptsLocation,  String matlabFunctionsLocation, String licence) throws Exception {
 		
 		if(matlabProxy != null) return;
 		
@@ -79,6 +79,7 @@ public final class MatlabController {
 			matlabBuilder.setHidden(!showWindow);
 			matlabBuilder.setProxyTimeout(timeOut*1000);
 			if(matlabLocation != null && !matlabLocation.equals("")) matlabBuilder.setMatlabLocation(matlabLocation);
+			if(licence != null && !licence.equals("")) matlabBuilder.setLicenseFile(licence);
 			MatlabProxyFactoryOptions matlabOptions = matlabBuilder.build();
 			MatlabProxyFactory matlabProxyFactory = new MatlabProxyFactory(matlabOptions);
 			matlabProxy = matlabProxyFactory.getProxy();

@@ -102,12 +102,14 @@ public final class MatlabEngine implements MathEngine {
 		int timeOut = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.MATLAB_TIME_OUT);
 		boolean showWindow = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.SHOW_MATLAB_WINDOW);
 		
+		String licence = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.MATLAB_LICENCE_FILE);
+		
 		Job startMatlabInnerJob = new Job(DocometreMessages.WaitingForMathEngine) {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				IStatus status = Status.OK_STATUS;
 				try {
-					matlabController.startMatlab(showWindow, timeOut, matlabLocation, matlabScriptsLocation, matlabFunctionsLocation.toOSString());
+					matlabController.startMatlab(showWindow, timeOut, matlabLocation, matlabScriptsLocation, matlabFunctionsLocation.toOSString(), licence);
 				} catch (Exception e) {
 					e.printStackTrace();
 					Activator.logErrorMessageWithCause(e);
