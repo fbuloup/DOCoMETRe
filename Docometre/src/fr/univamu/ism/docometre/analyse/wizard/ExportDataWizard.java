@@ -223,12 +223,12 @@ public class ExportDataWizard extends Wizard {
 								if(FEATURE_TYPE.equals(exportType)) {
 									// Trial Number; Session Name ;Channel Name; Feature Name; Value; Channel Name; Feature Name; Value; etc.
 									HashMap<Integer, String> currentFeaturesValuesHashMap = currentMFHashMap.get(currentFileWriter);
-									double[] featuresValues = MathEngineFactory.getMathEngine().getFeature(channel.getLabel(), channel.getParentChannel());
+									double[][] featuresValues = MathEngineFactory.getMathEngine().getFeature(channel.getLabel(), channel.getParentChannel());
 									int totalTrials = featuresValues.length;
 									int numTrial = 0;
 									double lastWorks = 0;
 									monitor.subTask(channel.getFullName());
-									for (double value : featuresValues) {
+									for (double[] value : featuresValues) {
 										int trialNumber = numTrial + 1;
 										numTrial++;
 										String featuresLine = currentFeaturesValuesHashMap.get(trialNumber);
@@ -238,7 +238,8 @@ public class ExportDataWizard extends Wizard {
 										}
 										if(!singleFile) featuresLine += separator + channel.getParentChannel().getName();
 										else featuresLine += separator + channel.getParentChannel().getFullName();
-										featuresLine += separator + channel.getLabel() + separator + value;
+										if(value.length == 1) featuresLine += separator + channel.getLabel() + separator + value[0];
+										else featuresLine += separator + channel.getLabel() + separator + Arrays.toString(value);
 										currentFeaturesValuesHashMap.put(trialNumber, featuresLine);
 										double worked = 1.0*numTrial/totalTrials*100 - lastWorks;
 										if(worked >= 1) {

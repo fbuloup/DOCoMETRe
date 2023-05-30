@@ -119,7 +119,7 @@ public interface MathEngine {
 	int getNbFeatures(Channel signal);
 	String getFeatureLabel(int featureNumber, Channel signal);
 	void deleteFeature(int featureNumber, Channel signal);
-	double[] getFeature(String featureLabel, Channel signal);
+	double[][] getFeature(String featureLabel, Channel signal);
 	
 	boolean renameExperiment(String oldName, String newName);
 	boolean renameSubject(String experimentName, String oldSubjectName, String newSubjectName);

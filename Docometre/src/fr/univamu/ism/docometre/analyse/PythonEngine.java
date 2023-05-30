@@ -564,6 +564,74 @@ public class PythonEngine implements MathEngine {
 		signal.setModified(true);
 		
 	}
+	
+	@Override
+	public int getNbFeatures(Channel signal) {
+		String channelName = getFullPath(signal);
+		String expression = "docometre.experiments[\"" + channelName + ".NbFeatures\"]";
+		String NbFeatures = pythonController.getPythonEntryPoint().evaluate(expression);
+		return Integer.parseInt(NbFeatures);
+	}
+
+	@Override
+	public String getFeatureLabel(int featureNumber, Channel signal) {
+		String channelName = getFullPath(signal);
+		String expression = "docometre.experiments['" + channelName + ".FeaturesLabels'][" + (featureNumber-1) + "]";
+		return pythonController.getPythonEntryPoint().evaluate(expression);
+	}
+
+	@Override
+	public void deleteFeature(int featureNumber, Channel signal) {
+		String channelName = getFullPath(signal);
+		
+		// Get feature label
+		String featureLabel = getFeatureLabel(featureNumber, signal);
+		
+		// Remove feature label
+		String expression = "docometre.experiments['" + channelName + ".FeaturesLabels'].pop(" + (featureNumber - 1) + ")";
+		pythonController.getPythonEntryPoint().runScript(expression, false);
+		
+		// decrease nb features
+		int nbFeatures = getNbFeatures(signal);
+		nbFeatures--;
+		expression = "docometre.experiments[\"" + channelName + ".NbFeatures\"] = " + nbFeatures;
+		pythonController.getPythonEntryPoint().runScript(expression, false);
+		
+		// Remove feature values
+		String experimentName = signal.getFullPath().segment(0);
+		String subjectName = signal.getFullPath().segment(1);
+		channelName = signal.getFullPath().segment(2);
+		channelName = experimentName + "\\." + subjectName + "\\." + channelName;
+		expression = channelName + "\\.Feature_" + featureLabel; 
+		pythonController.getPythonEntryPoint().unload(expression);
+		signal.setModified(true);
+		
+	}
+
+	@Override
+	public double[][] getFeature(String featureLabel, Channel signal) {
+		if("".equals(featureLabel)) return new double[0][0];
+		String channelName = getFullPath(signal);
+		String expression = "docometre.experiments[\"" + channelName + ".Feature_" + featureLabel + "_Values\"]";
+		byte[] byteValues = pythonController.getPythonEntryPoint().getVector(expression, PythonEntryPoint.DATA_TYPE_DOUBLE, -1, -1, -1);
+		
+		ByteBuffer byteBuffer = ByteBuffer.wrap(byteValues);
+		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+    	DoubleBuffer doubleBuffer = byteBuffer.asDoubleBuffer();
+    	double[] values = new double[doubleBuffer.capacity()];
+    	doubleBuffer.get(values);
+    	int featureDimension = getFeatureDimension(featureLabel, signal);
+    	double[][] featuresValues = new double[values.length / featureDimension][featureDimension];
+    	if(featureDimension > 1)
+	    	for (int i = 0; i < values.length; i++) {
+	    		featuresValues[i / featureDimension][i % featureDimension] = values[i];
+			}
+    	return featuresValues;
+	}
+
+	private int getFeatureDimension(String featureLabel, Channel signal) {
+		return 1;
+	}
 
 	@Override
 	public void saveSubject(IResource subject) {
@@ -642,64 +710,6 @@ public class PythonEngine implements MathEngine {
 		return null;
 	}
 
-	@Override
-	public int getNbFeatures(Channel signal) {
-		String channelName = getFullPath(signal);
-		String expression = "docometre.experiments[\"" + channelName + ".NbFeatures\"]";
-		String NbFeatures = pythonController.getPythonEntryPoint().evaluate(expression);
-		return Integer.parseInt(NbFeatures);
-	}
-
-	@Override
-	public String getFeatureLabel(int featureNumber, Channel signal) {
-		String channelName = getFullPath(signal);
-		String expression = "docometre.experiments['" + channelName + ".FeaturesLabels'][" + (featureNumber-1) + "]";
-		return pythonController.getPythonEntryPoint().evaluate(expression);
-	}
-
-	@Override
-	public void deleteFeature(int featureNumber, Channel signal) {
-		String channelName = getFullPath(signal);
-		
-		// Get feature label
-		String featureLabel = getFeatureLabel(featureNumber, signal);
-		
-		// Remove feature label
-		String expression = "docometre.experiments['" + channelName + ".FeaturesLabels'].pop(" + (featureNumber - 1) + ")";
-		pythonController.getPythonEntryPoint().runScript(expression, false);
-		
-		// decrease nb features
-		int nbFeatures = getNbFeatures(signal);
-		nbFeatures--;
-		expression = "docometre.experiments[\"" + channelName + ".NbFeatures\"] = " + nbFeatures;
-		pythonController.getPythonEntryPoint().runScript(expression, false);
-		
-		// Remove feature values
-		String experimentName = signal.getFullPath().segment(0);
-		String subjectName = signal.getFullPath().segment(1);
-		channelName = signal.getFullPath().segment(2);
-		channelName = experimentName + "\\." + subjectName + "\\." + channelName;
-		expression = channelName + "\\.Feature_" + featureLabel; 
-		pythonController.getPythonEntryPoint().unload(expression);
-		signal.setModified(true);
-		
-	}
-
-	@Override
-	public double[] getFeature(String featureLabel, Channel signal) {
-		if("".equals(featureLabel)) return new double[0];
-		String channelName = getFullPath(signal);
-		String expression = "docometre.experiments[\"" + channelName + ".Feature_" + featureLabel + "_Values\"]";
-		byte[] byteValues = pythonController.getPythonEntryPoint().getVector(expression, PythonEntryPoint.DATA_TYPE_DOUBLE, -1, -1, -1);
-		
-		ByteBuffer byteBuffer = ByteBuffer.wrap(byteValues);
-		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-    	DoubleBuffer doubleBuffer = byteBuffer.asDoubleBuffer();
-    	double[] values = new double[doubleBuffer.capacity()];
-    	doubleBuffer.get(values);
-    	return values;
-	}
-	
 	@Override
 	public String[] getLoadedSubjects() {
 		String loadedSubjects = pythonController.getPythonEntryPoint().getLoadedSubjects();

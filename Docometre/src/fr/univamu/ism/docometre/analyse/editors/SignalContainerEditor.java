@@ -528,8 +528,12 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		if(!featuresComboViewer.getSelection().isEmpty()) {
 			int trialNumber = trialFeatureSpinner.getSelection();
 			String featureLabel = ((IStructuredSelection)featuresComboViewer.getSelection()).getFirstElement().toString();
-			double[] values = MathEngineFactory.getMathEngine().getFeature(featureLabel, (Channel) featuresComboViewer.getInput());
-			featureValueLabel.setText(String.valueOf(values[trialNumber - 1]));
+			double[][] values = MathEngineFactory.getMathEngine().getFeature(featureLabel, (Channel) featuresComboViewer.getInput());
+			if(values.length > 0) {
+				if(values[0].length == 1) featureValueLabel.setText(String.valueOf(values[trialNumber - 1][0]));
+				else  featureValueLabel.setText(Arrays.toString(values[trialNumber - 1]));
+			}
+			
 		} else {
 			featureValueLabel.setText(DocometreMessages.NotAvailable_Label);
 		}
