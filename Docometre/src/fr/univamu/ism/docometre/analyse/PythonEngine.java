@@ -622,15 +622,23 @@ public class PythonEngine implements MathEngine {
     	doubleBuffer.get(values);
     	int featureDimension = getFeatureDimension(featureLabel, signal);
     	double[][] featuresValues = new double[values.length / featureDimension][featureDimension];
-    	if(featureDimension > 1)
-	    	for (int i = 0; i < values.length; i++) {
-	    		featuresValues[i / featureDimension][i % featureDimension] = values[i];
-			}
+    	for (int i = 0; i < values.length; i++) {
+    		featuresValues[i / featureDimension][i % featureDimension] = values[i];
+		}
     	return featuresValues;
 	}
 
 	private int getFeatureDimension(String featureLabel, Channel signal) {
-		return 1;
+		if("".equals(featureLabel)) return 1;
+		String channelName = getFullPath(signal);
+		String expression = "docometre.experiments[\"" + channelName + ".Feature_" + featureLabel + "_Values\"][0].ndim";
+		String value = pythonController.getPythonEntryPoint().evaluate(expression);
+		int intValue = Integer.parseInt(value);
+		if(intValue == 0) return 1;
+		expression = "len(docometre.experiments[\"" + channelName + ".Feature_" + featureLabel + "_Values\"][0])";
+		value = pythonController.getPythonEntryPoint().evaluate(expression);
+		intValue = Integer.parseInt(value);
+		return intValue;
 	}
 
 	@Override
