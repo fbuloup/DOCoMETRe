@@ -12,4 +12,6 @@
   </topic>
   <topic href="html/advancedconcepts/adwinwithmacos.html" label="Can I use ADwin systems with Mac OS ?">
   </topic>
+  <topic href="html/advancedconcepts/matplotlibfigure.html" label="Is it possible to use python Matplotlib or Matlab figures ?">
+  </topic>
  </toc>
