@@ -62,6 +62,7 @@ public class PythonEngineFunctionsMenuFactory {
 	private static String SUBMENU_EVENTS = "SUBMENU_EVENTS";
 	private static String SUBMENU_FILTERING = "SUBMENU_FILTERING";
 	private static String SUBMENU_EXPORT = "SUBMENU_EXPORT";
+	private static String SUBMENU_COMPLEXITY = "SUBMENU_COMPLEXITY";
 	
 	public static String[] PythonEngineFunctionsFiles = new String[] {SUBMENU_SIGNALS, SUBMENU_MARKERS, SUBMENU_FEATURES, SUBMENU_EVENTS, SUBMENU_EXPORT, ExpressionFunction.functionFileName};
 	public static String[] PythonEngineFunctionsClasses = new String[] {null, null, null, null, null, ExpressionFunction.class.getName()};
@@ -75,6 +76,9 @@ public class PythonEngineFunctionsMenuFactory {
 	
 	public static String[] FilteringFunctionsFiles = new String[] {ButterworthLowPass.functionFileName, ButterworthHighPass.functionFileName, SEPARATOR, RemovePulses.functionFileName};
 	public static String[] FilteringFunctionsClasses = new String[] {ButterworthLowPass.class.getName(), ButterworthHighPass.class.getName(), null, RemovePulses.class.getName()};
+	
+	public static String[] ComplexityFunctionsFiles = new String[] {SampleEntropy.functionFileName};
+	public static String[] ComplexityFunctionsClasses = new String[] {SampleEntropy.class.getName()};
 	
 	public static String[] MarkersFunctionsFiles = new String[] {TimeMarker.functionFileName, Maximum.functionFileName, Minimum.functionFileName, FindPeaks.functionFileName, FindPeaks_Minima.functionFileName, FindAmplitudeBackward.functionFileName, FindAmplitudeForward.functionFileName,
 																	Threshold.functionFileName, TransferMarkersGroup.functionFileName};
@@ -181,7 +185,13 @@ public class PythonEngineFunctionsMenuFactory {
 		}
 
 		if(subMenuManager.getId().equals(SUBMENU_FEATURES)) {
+			MenuManager subSubMenuManager = new MenuManager(FunctionsMessages.Complexity, SUBMENU_COMPLEXITY);
+			populateSubMenu(subSubMenuManager, context, scriptSegmentEditor, blockEditPart);
+			subMenuManager.add(subSubMenuManager);
 			createSubmenuActions(subMenuManager, FeaturesFunctionsFiles, FeaturesFunctionsClasses, context, scriptSegmentEditor, blockEditPart);
+		}
+		if(subMenuManager.getId().equals(SUBMENU_COMPLEXITY)) {
+			createSubmenuActions(subMenuManager, ComplexityFunctionsFiles, ComplexityFunctionsClasses, context, scriptSegmentEditor, blockEditPart);
 		}
 		if(subMenuManager.getId().equals(SUBMENU_EVENTS)) {
 			createSubmenuActions(subMenuManager, EventsFunctionsFiles, EventsFunctionsClasses, context, scriptSegmentEditor, blockEditPart);

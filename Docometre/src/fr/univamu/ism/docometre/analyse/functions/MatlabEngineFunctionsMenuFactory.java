@@ -62,6 +62,7 @@ public class MatlabEngineFunctionsMenuFactory {
 	private static String SUBMENU_EVENTS = "SUBMENU_EVENTS";
 	private static String SUBMENU_FILTERING = "SUBMENU_FILTERING";
 	private static String SUBMENU_EXPORT = "SUBMENU_EXPORT";
+	private static String SUBMENU_COMPLEXITY = "SUBMENU_COMPLEXITY";
 	
 	public static String[] MatlabEngineFunctionsFiles = new String[] {SUBMENU_SIGNALS, SUBMENU_MARKERS, SUBMENU_FEATURES, SUBMENU_EVENTS, SUBMENU_EXPORT, ExpressionFunction.functionFileName};
 	public static String[] MatlabEngineFunctionsClasses = new String[] {null, null, null, null, null, ExpressionFunction.class.getName()};
@@ -76,13 +77,16 @@ public class MatlabEngineFunctionsMenuFactory {
 	public static String[] FilteringFunctionsFiles = new String[] {ButterworthLowPass.functionFileName, ButterworthHighPass.functionFileName, SEPARATOR, RemovePulses.functionFileName};
 	public static String[] FilteringFunctionsClasses = new String[] {ButterworthLowPass.class.getName(), ButterworthHighPass.class.getName(), null, RemovePulses.class.getName()};
 	
+	public static String[] ComplexityFunctionsFiles = new String[] {SampleEntropy.functionFileName};
+	public static String[] ComplexityFunctionsClasses = new String[] {SampleEntropy.class.getName()};
+	
 	public static String[] MarkersFunctionsFiles = new String[] {TimeMarker.functionFileName, Maximum.functionFileName, Minimum.functionFileName, FindPeaks.functionFileName, FindPeaks_Minima.functionFileName, FindAmplitudeBackward.functionFileName, FindAmplitudeForward.functionFileName,
 																	Threshold.functionFileName, TransferMarkersGroup.functionFileName};
 	public static String[] MarkersFunctionsClasses = new String[] {TimeMarker.class.getName(), Maximum.class.getName(), Minimum.class.getName(), FindPeaks.class.getName(), FindPeaks_Minima.class.getName(), FindAmplitudeBackward.class.getName(), FindAmplitudeForward.class.getName(),
 																	Threshold.class.getName(), TransferMarkersGroup.class.getName()};
 	
-	public static String[] FeaturesFunctionsFiles = new String[] {Mean.functionFileName, MarkersDifference.functionFileName};
-	public static String[] FeaturesFunctionsClasses = new String[] {Mean.class.getName(), MarkersDifference.class.getName()};
+	public static String[] FeaturesFunctionsFiles = new String[] {SUBMENU_COMPLEXITY, Mean.functionFileName, MarkersDifference.functionFileName};
+	public static String[] FeaturesFunctionsClasses = new String[] {null, Mean.class.getName(), MarkersDifference.class.getName()};
 	
 	public static String[] EventsFunctionsFiles = new String[] {};
 	public static String[] EventsFunctionsClasses = new String[] {};
@@ -174,6 +178,7 @@ public class MatlabEngineFunctionsMenuFactory {
 			subMenuManager.add(subSubMenuManager);
 			createSubmenuActions(subMenuManager, SignalsFunctionsFiles, SignalsFunctionsClasses, context, scriptSegmentEditor, blockEditPart);
 		}
+
 		if(subMenuManager.getId().equals(SUBMENU_FILTERING)) {
 			createSubmenuActions(subMenuManager, FilteringFunctionsFiles, FilteringFunctionsClasses, context, scriptSegmentEditor, blockEditPart);
 		}
@@ -182,7 +187,13 @@ public class MatlabEngineFunctionsMenuFactory {
 		}
 
 		if(subMenuManager.getId().equals(SUBMENU_FEATURES)) {
+			MenuManager subSubMenuManager = new MenuManager(FunctionsMessages.Complexity, SUBMENU_COMPLEXITY);
+			populateSubMenu(subSubMenuManager, context, scriptSegmentEditor, blockEditPart);
+			subMenuManager.add(subSubMenuManager);
 			createSubmenuActions(subMenuManager, FeaturesFunctionsFiles, FeaturesFunctionsClasses, context, scriptSegmentEditor, blockEditPart);
+		}
+		if(subMenuManager.getId().equals(SUBMENU_COMPLEXITY)) {
+			createSubmenuActions(subMenuManager, ComplexityFunctionsFiles, ComplexityFunctionsClasses, context, scriptSegmentEditor, blockEditPart);
 		}
 		if(subMenuManager.getId().equals(SUBMENU_EVENTS)) {
 			createSubmenuActions(subMenuManager, EventsFunctionsFiles, EventsFunctionsClasses, context, scriptSegmentEditor, blockEditPart);

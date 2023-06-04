@@ -54,6 +54,7 @@ public class FunctionsMessages extends NLS {
 	public static String Features;
 	public static String Events;
 	public static String Filtering;
+	public static String Complexity;
 	public static String Export;
 
 	public static String TrialsList;
