@@ -223,7 +223,7 @@ public class SampleEntropy extends GenericFunction {
 		tauLabel.setText("Time delay :");
 		Text tauText = new Text(paramContainer, SWT.BORDER);
 		tauText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
-		value  = getProperty(timeDelayKey, "");
+		value  = getProperty(timeDelayKey, "1");
 		tauText.setText(value);
 		tauText.addModifyListener(new ModifyListener() {
 			@Override
@@ -277,17 +277,17 @@ public class SampleEntropy extends GenericFunction {
 		logLabel.setText("Logarithm base :");
 		Text logText = new Text(paramContainer, SWT.BORDER);
 		logText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
-		value  = getProperty(logarithmBaseKey, "");
+		value  = getProperty(logarithmBaseKey, "exp(1)");
 		logText.setText(value);
 		logText.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
 				SampleEntropy.this.functionalBlockConfigurationDialog.setErrorMessage(null);
 				boolean putValue = true;
-				String regExp = "^[1-9]\\d*$";
-				Pattern pattern = Pattern.compile(regExp);
-				Matcher matcher = pattern.matcher(logText.getText());
-				putValue = matcher.matches();
+//				String regExp = "^[1-9]\\d*$";
+//				Pattern pattern = Pattern.compile(regExp);
+//				Matcher matcher = pattern.matcher(logText.getText());
+//				putValue = matcher.matches();
 				if(putValue) {
 					getTransientProperties().put(logarithmBaseKey, logText.getText());
 				}
@@ -313,7 +313,7 @@ public class SampleEntropy extends GenericFunction {
 		String fromInputSignal = getProperty(fromInputSignalKey, "");
 		String toInputSignal = getProperty(toInputSignalKey, "");
 		String embeddingDimension = getProperty(embeddingDimensionKey, "4");
-		String timeDelay = getProperty(timeDelayKey, "");
+		String timeDelay = getProperty(timeDelayKey, "1");
 		String radiusDistanceThreshold = getProperty(radiusDistanceThresholdKey, "");
 		String logarithmBase = getProperty(logarithmBaseKey, "");
 		
