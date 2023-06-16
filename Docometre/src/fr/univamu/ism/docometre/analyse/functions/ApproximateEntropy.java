@@ -68,11 +68,11 @@ import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
 import fr.univamu.ism.process.Block;
 import fr.univamu.ism.process.Script;
 
-public class SampleEntropy extends GenericFunction {
+public class ApproximateEntropy extends GenericFunction {
 	
 	private static final long serialVersionUID = 1L;
 	
-	public static final String functionFileName = "SAMPLE_ENTROPY.FUN";
+	public static final String functionFileName = "APPROXIMATE_ENTROPY.FUN";
 	
 	private static final String inputSignalKey = "inputSignal";
 	private static final String inputMarker1Key = "inputMarker1";
@@ -127,7 +127,7 @@ public class SampleEntropy extends GenericFunction {
 		inputSignalComboViewer.getCombo().addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
-				SampleEntropy.this.functionalBlockConfigurationDialog.setErrorMessage(null);
+				ApproximateEntropy.this.functionalBlockConfigurationDialog.setErrorMessage(null);
 				getTransientProperties().put(inputSignalKey, inputSignalComboViewer.getCombo().getText());
 			}
 		});
@@ -156,7 +156,7 @@ public class SampleEntropy extends GenericFunction {
 		fromComboViewer.getCombo().addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
-				SampleEntropy.this.functionalBlockConfigurationDialog.setErrorMessage(null);
+				ApproximateEntropy.this.functionalBlockConfigurationDialog.setErrorMessage(null);
 				getTransientProperties().put(inputMarker1Key, fromComboViewer.getCombo().getText());
 			}
 		});
@@ -184,7 +184,7 @@ public class SampleEntropy extends GenericFunction {
 		toComboViewer.getCombo().addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
-				SampleEntropy.this.functionalBlockConfigurationDialog.setErrorMessage(null);
+				ApproximateEntropy.this.functionalBlockConfigurationDialog.setErrorMessage(null);
 				getTransientProperties().put(inputMarker2Key, toComboViewer.getCombo().getText());
 			}
 		});
@@ -201,7 +201,7 @@ public class SampleEntropy extends GenericFunction {
 		mText.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
-				SampleEntropy.this.functionalBlockConfigurationDialog.setErrorMessage(null);
+				ApproximateEntropy.this.functionalBlockConfigurationDialog.setErrorMessage(null);
 				boolean putValue = true;
 				String regExp = "^[1-9]\\d*$";
 				Pattern pattern = Pattern.compile(regExp);
@@ -212,7 +212,7 @@ public class SampleEntropy extends GenericFunction {
 				}
 				else {
 					String message = NLS.bind(FunctionsMessages.TrialsListNotValidLabel, mText.getText());
-					SampleEntropy.this.functionalBlockConfigurationDialog.setErrorMessage(message);
+					ApproximateEntropy.this.functionalBlockConfigurationDialog.setErrorMessage(message);
 				}
 			}
 		});
@@ -228,7 +228,7 @@ public class SampleEntropy extends GenericFunction {
 		tauText.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
-				SampleEntropy.this.functionalBlockConfigurationDialog.setErrorMessage(null);
+				ApproximateEntropy.this.functionalBlockConfigurationDialog.setErrorMessage(null);
 				boolean putValue = true;
 				String regExp = "^[1-9]\\d*$";
 				Pattern pattern = Pattern.compile(regExp);
@@ -239,7 +239,7 @@ public class SampleEntropy extends GenericFunction {
 				}
 				else {
 					String message = NLS.bind(FunctionsMessages.TrialsListNotValidLabel, tauText.getText());
-					SampleEntropy.this.functionalBlockConfigurationDialog.setErrorMessage(message);
+					ApproximateEntropy.this.functionalBlockConfigurationDialog.setErrorMessage(message);
 				}
 			}
 		});
@@ -255,7 +255,7 @@ public class SampleEntropy extends GenericFunction {
 		radiusText.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
-				SampleEntropy.this.functionalBlockConfigurationDialog.setErrorMessage(null);
+				ApproximateEntropy.this.functionalBlockConfigurationDialog.setErrorMessage(null);
 				boolean putValue = true;
 //				String regExp = "^[1-9]\\d*$";
 //				Pattern pattern = Pattern.compile(regExp);
@@ -266,7 +266,7 @@ public class SampleEntropy extends GenericFunction {
 				}
 				else {
 					String message = NLS.bind(FunctionsMessages.TrialsListNotValidLabel, radiusText.getText());
-					SampleEntropy.this.functionalBlockConfigurationDialog.setErrorMessage(message);
+					ApproximateEntropy.this.functionalBlockConfigurationDialog.setErrorMessage(message);
 				}
 			}
 		});
@@ -282,7 +282,7 @@ public class SampleEntropy extends GenericFunction {
 		logText.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
-				SampleEntropy.this.functionalBlockConfigurationDialog.setErrorMessage(null);
+				ApproximateEntropy.this.functionalBlockConfigurationDialog.setErrorMessage(null);
 				boolean putValue = true;
 //				String regExp = "^[1-9]\\d*$";
 //				Pattern pattern = Pattern.compile(regExp);
@@ -293,7 +293,7 @@ public class SampleEntropy extends GenericFunction {
 				}
 				else {
 					String message = NLS.bind(FunctionsMessages.TrialsListNotValidLabel, logText.getText());
-					SampleEntropy.this.functionalBlockConfigurationDialog.setErrorMessage(message);
+					ApproximateEntropy.this.functionalBlockConfigurationDialog.setErrorMessage(message);
 				}
 			}
 		});
@@ -331,7 +331,7 @@ public class SampleEntropy extends GenericFunction {
 	
 	@Override
 	public Block clone() {
-		SampleEntropy function = new SampleEntropy();
+		ApproximateEntropy function = new ApproximateEntropy();
 		super.clone(function);
 		return function;
 	}

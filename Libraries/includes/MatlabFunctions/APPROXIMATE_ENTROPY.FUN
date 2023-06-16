@@ -1,7 +1,7 @@
-MENU_TITLE = Sample Entropy
-DESCRIPTION = Compute Signal Sample Entropy 
-MENU_TITLE_FR = Entropie d'échantillons
-DESCRIPTION_FR = Calcule l'entropie d'échantillons
+MENU_TITLE = Appoximate Entropy
+DESCRIPTION = Compute Signal approximate Sample Entropy 
+MENU_TITLE_FR = Appoximation de l'Entropie d'échantillons
+DESCRIPTION_FR = Calcule l'Appoximation de l'entropie d'échantillons
 # Now start specific matlab function 
 
 FUNCTION_CODE = % Compute SE feature\n\
@@ -12,7 +12,7 @@ NbFeatures = 0;\n\
 if(isfield(inputSignal, 'NbFeatures'))\n\
 	\tNbFeatures = inputSignal.NbFeatures\n\
 	\tfor featureNumber = 1:inputSignal.NbFeatures\n\
-		\t\tif(strcmp('SE', inputSignal.FeaturesLabels{featureNumber}))\n\
+		\t\tif(strcmp('APEN', inputSignal.FeaturesLabels{featureNumber}))\n\
 			\t\t\tcompute = false;\n\
 			\t\t\tbreak;\n\
 		\t\tend\n\
@@ -20,7 +20,7 @@ if(isfield(inputSignal, 'NbFeatures'))\n\
 end\n\
 if(compute)\n\
 	\tif(NbFeatures == 0)\n\
-		\t\tinputSignal.FeaturesLabels = "SE";\n\
+		\t\tinputSignal.FeaturesLabels = "APEN";\n\
 	\telse\n\
 		\t\tinputSignal.FeaturesLabels = [inputSignal.FeaturesLabels; "SE"];\n\
 	\tend\n\
@@ -61,7 +61,7 @@ if(compute)\n\
 	\t%columns = 1:cols;\n\
 	\t%columns = repelem(columns,rows,1);\n\
 	\t%mask = (fromValues <= columns) & (columns <= toValues);\n\
-	\t%inputSignal.Feature_SE_Values = sum(inputSignal.Values.*mask,2)./sum(mask, 2);\n\
+	\t%inputSignal.Feature_APEN_Values = sum(inputSignal.Values.*mask,2)./sum(mask, 2);\n\
 	\tfor trialNumber = [1:rows]\n\
 		\t\t% Get from and to index in from and to values for trialNumber\n\
 		\t\tfromIndex = find(fromValues(:,1) == trialNumber);\n\
@@ -73,14 +73,14 @@ if(compute)\n\
 			\t\t\ttoIndex = floor(toValues(toIndex(1),2) * sampleFrequency);\n\
 			\t\t\t% Compute max between from and to index\n\
 			\t\t\tif(radiusDistanceThreshold == 0)\n\
-			\t\t\t\tsampleEntropy = SampEn(inputSignal.Values(trialNumber, fromIndex:toIndex), 'm', embeddingDimension, 'tau', timeDelay, 'Logx', logarithmBase);\n\
+			\t\t\t\tsampleEntropy = ApEn(inputSignal.Values(trialNumber, fromIndex:toIndex), 'm', embeddingDimension, 'tau', timeDelay, 'Logx', logarithmBase);\n\
 			\t\t\telse\n\
-			\t\t\t\tsampleEntropy = SampEn(inputSignal.Values(trialNumber, fromIndex:toIndex), 'm', embeddingDimension, 'tau', timeDelay, 'r', radiusDistanceThreshold, 'Logx', logarithmBase);\n\
+			\t\t\t\tsampleEntropy = ApEn(inputSignal.Values(trialNumber, fromIndex:toIndex), 'm', embeddingDimension, 'tau', timeDelay, 'r', radiusDistanceThreshold, 'Logx', logarithmBase);\n\
 			\t\t\tend\n\
 			\t\t\tif(trialNumber == 1)\n\
-			\t\t\t\tinputSignal.Feature_SE_Values = sampleEntropy;\n\
+			\t\t\t\tinputSignal.Feature_APEN_Values = sampleEntropy;\n\
 			\t\t\telse\n\
-			\t\t\t\tinputSignal.Feature_SE_Values(trialNumber, :) = sampleEntropy;\n\
+			\t\t\t\tinputSignal.Feature_APEN_Values(trialNumber, :) = sampleEntropy;\n\
 			\t\t\tend\n\
 		\t\tend\n\
 	\tend\n\
@@ -91,9 +91,9 @@ if(compute)\n\
 	\tend\n\
 else\n\
 	\tif(exist('ErrorMessages'))\n\
-	\t\tErrorMessages = [ErrorMessages, {[datestr(now,'HH:MM:SS.FFF'), ' - From Sample Entropy function -> A feature with this label already exists : SE']}];\n\
+	\t\tErrorMessages = [ErrorMessages, {[datestr(now,'HH:MM:SS.FFF'), ' - From Approximate Sample Entropy function -> A feature with this label already exists : APEN']}];\n\
 	\telse\n\
-	\t\tErrorMessages = {[datestr(now,'HH:MM:SS.FFF'), 'From Sample Entropy function -> A feature with this label already exists : SE']};\n\
+	\t\tErrorMessages = {[datestr(now,'HH:MM:SS.FFF'), 'From Approximate Sample Entropy function -> A feature with this label already exists : APEN']};\n\
 	\tend\n\
 end\n\
 clear compute NbFeatures featureNumber rows cols values fromValues toValues columns mask;\n\
