@@ -45,7 +45,7 @@ class DOCoMETRe(object):
 		elif ".adw" in dataFilesList:
 			self.loadDataDocometreADW(loadName, dataFilesList);
 		else:
-			if(jvmMode): self.gateway.jvm.System.out.println("Data files format not hanled with Python");
+			if(jvmMode): self.gateway.jvm.System.out.println("Data files format not handled with Python");
 	
 	def loadDataDocometreADW(self, loadName, dataFilesList):
 		if(jvmMode):
