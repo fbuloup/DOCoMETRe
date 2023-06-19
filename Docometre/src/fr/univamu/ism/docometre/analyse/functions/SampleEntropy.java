@@ -109,7 +109,7 @@ public class SampleEntropy extends GenericFunction {
 		inputSignalLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
 		inputSignalLabel.setText(FunctionsMessages.InputSignalLabel);
 		
-		ComboViewer inputSignalComboViewer = new ComboViewer(paramContainer, SWT.BORDER);
+		ComboViewer inputSignalComboViewer = new ComboViewer(paramContainer, SWT.BORDER | SWT.READ_ONLY);
 		inputSignalComboViewer.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		String value  = getProperty(inputSignalKey, "");
 		ChannelsContentProvider channelsContentProvider = new ChannelsContentProvider(true, false, false, false, false, false, false);
@@ -138,7 +138,7 @@ public class SampleEntropy extends GenericFunction {
 		fromLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
 		fromLabel.setText(FunctionsMessages.FromLabel);
 		
-		ComboViewer fromComboViewer = new ComboViewer(paramContainer, SWT.BORDER);
+		ComboViewer fromComboViewer = new ComboViewer(paramContainer, SWT.BORDER | SWT.READ_ONLY);
 		fromComboViewer.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		value  = getProperty(inputMarker1Key, "");
 		fromComboViewer.getCombo().setText(value);
@@ -167,7 +167,7 @@ public class SampleEntropy extends GenericFunction {
 		toLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
 		toLabel.setText(FunctionsMessages.ToLabel);
 		
-		ComboViewer toComboViewer = new ComboViewer(paramContainer, SWT.BORDER);
+		ComboViewer toComboViewer = new ComboViewer(paramContainer, SWT.BORDER | SWT.READ_ONLY);
 		toComboViewer.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		value  = getProperty(inputMarker2Key, "");
 		toComboViewer.getCombo().setText(value);
@@ -249,6 +249,7 @@ public class SampleEntropy extends GenericFunction {
 		radiusLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
 		radiusLabel.setText("Radius threshold :");
 		Text radiusText = new Text(paramContainer, SWT.BORDER);
+		radiusText.setToolTipText("Default : 0.2*sd(signal)");
 		radiusText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 		value  = getProperty(radiusDistanceThresholdKey, "default");
 		radiusText.setText(value);
@@ -316,8 +317,9 @@ public class SampleEntropy extends GenericFunction {
 		String timeDelay = getProperty(timeDelayKey, "1");
 		String radiusDistanceThreshold = getProperty(radiusDistanceThresholdKey, "0");
 		if("default".equals(radiusDistanceThreshold)) radiusDistanceThreshold = "0";
-		String logarithmBase = getProperty(logarithmBaseKey, "exp(1)");
-		if("default".equals(logarithmBase)) logarithmBase = "exp(1)";
+		String logarithmBase = getProperty(logarithmBaseKey, MathEngineFactory.isMatlab()?"exp(1)":"math.exp(1)");
+		if("default".equals(logarithmBase) && MathEngineFactory.isMatlab()) logarithmBase = "exp(1)";
+		if("default".equals(logarithmBase) && MathEngineFactory.isPython()) logarithmBase = "math.exp(1)";
 		
 		code = code.replaceAll(inputSignalKey, inputSignal).replaceAll(inputMarker1Key, fromInputSignal).replaceAll(inputMarker2Key, toInputSignal);
 		
