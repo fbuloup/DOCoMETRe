@@ -29,7 +29,7 @@ if compute:\n\
 	\telse:\n\
 		 \t\texpression = docometre.experiments["inputSignal.MarkersGroupsLabels"].append("markersGroupLabel");\n\
 	\tdocometre.experiments["inputSignal.MarkersGroup_markersGroupLabel_Values"] = numpy.zeros((0,3));\n\
-	\tthresholdMarkersValues = docometre.experiments["inputSignal.MarkersGroup_markersGroupLabel_Values"];\n\
+	\tmarkersValues = docometre.experiments["inputSignal.MarkersGroup_markersGroupLabel_Values"];\n\
 	\t# Convert sample frequency to float\n\
 	\tsampleFrequency = float(docometre.experiments['inputSignal.SampleFrequency']);\n\
 	\t# Get from and to values\n\
@@ -69,16 +69,16 @@ if compute:\n\
 			\t\t\ttoIndex = int(toValues[toIndex[0]][1] * sampleFrequency);\n\
 			\t\t\tdetectionAllowed = 1;\n\
 			\t\t\tdetectionTime = -bypassTime;\n\
-			\t\t\tfor i in range(fromIndex,toIndex+1):\n\
-				\t\t\t\tcurrentTime = (i-1)/inputSignal.SampleFrequency;\n\
+			\t\t\tfor i in range(fromIndex,toIndex):\n\
+				\t\t\t\tcurrentTime = (i-1)/sampleFrequency;\n\
 				\t\t\t\tif((detectionAllowed == 1) and ((currentTime - detectionTime) >= bypassTime)):\n\
-					\t\t\t\t\tif(InputSignal1.Values(trialNumber,i) > Threshold):\n\
-						\t\t\t\t\t\tthresholdMarkersValues = numpy.append(thresholdMarkersValues, [[trialNumber+1, maxMarkerTime, maxValue]], axis = 0);\n\
+					\t\t\t\t\tif(values[trialNumber,i] > threshold):\n\
+						\t\t\t\t\t\tmarkersValues = numpy.append(markersValues, [[trialNumber+1, i/sampleFrequency, values[trialNumber,i]]], axis = 0);\n\
 						\t\t\t\t\t\tdetectionAllowed = 0;\n\
 						\t\t\t\t\t\tdetectionTime = currentTime;\n\
-				\t\t\t\tif(inputSignal.Values(trialNumber,i) < threshold):\n\
+				\t\t\t\tif(values[trialNumber,i] < threshold):\n\
 					\t\t\t\t\tdetectionAllowed = 1;\n\
-	\tdocometre.experiments["inputSignal.MarkersGroup_markersGroupLabel_Values"] = thresholdMarkersValues;\n\
+	\tdocometre.experiments["inputSignal.MarkersGroup_markersGroupLabel_Values"] = markersValues;\n\
 	\tif not("createdOrModifiedChannels" in docometre.experiments.keys()):\n\
 		\t\tdocometre.experiments["createdOrModifiedChannels"] = "inputSignal";\n\
 	\telse:\n\
