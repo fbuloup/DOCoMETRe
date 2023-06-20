@@ -6,7 +6,16 @@
       provider-name="ISM">
 
    <description>
-      -- 2023-03-14
+      -- 2023-06-20
+ADDED :
+* Multi dimensional Feature support
+* Update help : how to use figures in expression functions ?
+* Sample entropy and Approximate sample entropy functions
+FIXED :
+* Bug in Threshold Python function
+* Missing break in ChartFactory.java
+* Typo error in DOCoMETRe.py
+-- 2023-03-14
 ADDED :
 * Add licence option to Matlab command line
 FIXED : Nothing
