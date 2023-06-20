@@ -57,6 +57,7 @@ public final class ChartFactory {
 			break;
 		case TANK_CHART:
 			chartConfiguration = new MeterChartConfiguration(ChartTypes.TANK_CHART);
+			break;
 		case IMAGE_CHART:
 			chartConfiguration = new ImageChartConfiguration();
 		default:
