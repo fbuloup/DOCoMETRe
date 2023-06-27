@@ -8,6 +8,10 @@
    <description>
       -- 2023-06-20
 ADDED :
+* CR/LF options to float serial output function (ADWin)
+FIXED : Nothing
+-- 2023-06-20
+ADDED :
 * Multi dimensional Feature support
 * Update help : how to use figures in expression functions ?
 * Sample entropy and Approximate sample entropy functions
