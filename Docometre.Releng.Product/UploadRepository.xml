@@ -1,8 +1,14 @@
 <project default="D_uploadZIPFiles" name="Deploy DOCoMETRe p2 repository Files To Server">
 
-	<condition property="isMac">
+	<condition property="isNotMac" value="false" else="true">
 		<os family="mac" />
 	</condition>
+
+	<condition property="isMac" value="true" else="false">
+		<os family="mac" />
+	</condition>
+
+	<echoproperties/>
 
 	<!--
 	Add commons-net-3.3-bin.jar to Preferences->Ant->runtime->Ant Home Entries
@@ -30,27 +36,36 @@
 			<arg line="create -srcfolder 'target/products/DocometreProduct/macosx/cocoa/x86_64' -volname 'DOCoMETRe' -fs HFS+ -fsargs '-c c=64,a=16,e=16' -format UDRO 'target/products/DOCoMETRe.dmg'" />
 		</exec>
 	</target>
-	
+
 	<target name="A2_checkFiles">
-		    <available file="target/products/DocometreProduct-linux.gtk.x86_64.zip" property="linux.present"/>
-			<available file="target/products/DocometreProduct-macosx.cocoa.x86_64.zip" property="mac.present"/>
-			<available file="target/products/DocometreProduct-win32.win32.x86_64.zip" property="windows.present"/>
-		</target>
+		<available file="target/products/DocometreProduct-linux.gtk.x86_64.zip" property="linux.present"/>
+		<available file="target/products/DocometreProduct-macosx.cocoa.x86_64.zip" property="mac.present"/>
+		<available file="target/products/DocometreProduct-win32.win32.x86_64.zip" property="windows.present"/>
+	</target>
 
 	<target name="A3_MoveLinuxFile" if="linux.present">
 		<move file="target/products/DocometreProduct-linux.gtk.x86_64.zip" tofile="target/products/DocometreLinux.zip"/>
 	</target>
-	
+
 	<target name="A4_MoveMacFiles" if="mac.present">
-			<move file="target/products/DocometreProduct-macosx.cocoa.x86_64.zip" tofile="target/products/DocometreMacOS.zip"/>
-		</target>
-	
+		<move file="target/products/DocometreProduct-macosx.cocoa.x86_64.zip" tofile="target/products/DocometreMacOS.zip"/>
+	</target>
+
 	<target name="A5_MoveWindowsFiles" if="windows.present">
-			<move file="target/products/DocometreProduct-win32.win32.x86_64.zip" tofile="target/products/DocometreWindows.zip"/>
-		</target>
+		<move file="target/products/DocometreProduct-win32.win32.x86_64.zip" tofile="target/products/DocometreWindows.zip"/>
+	</target>
+
+	<target name="A6_saveDMGFile" if="isNotMac" depends="FtpProperties.FTP_INPUT">
+		<echoproperties/>
+		<echo>Save DMG file as we are not on MacOS Host</echo>
+		<ftp action="get" server="${ftp.ip}" userid="${ftp.login}" password="${ftp.password}" remotedir="${ftp.base.remotedir}DOCoMETRe">
+			<fileset file="*.dmg" />
+		</ftp>
+	</target>
 
 	<!-- clear server -->
 	<target name="B_resetFTPFilesFolders" description="Create an empty DOCoMETRe folder" depends="FtpProperties.FTP_INPUT">
+
 		<echo>Remove all files from FTP DOCoMETRe directory</echo>
 		<ftp action="del" server="${ftp.ip}" userid="${ftp.login}" password="${ftp.password}" remotedir="${ftp.base.remotedir}DOCoMETRe">
 			<fileset>
@@ -105,6 +120,15 @@
 		<ftp server="${ftp.ip}" passive="no" remotedir="${ftp.base.remotedir}DOCoMETRe/repository" userid="${ftp.login}" password="${ftp.password}" depends="no">
 			<fileset dir="target/repository" />
 		</ftp>
+	</target>
+
+	<target name="E_loadDMGFile" if="isNotMac" depends="FtpProperties.FTP_INPUT">
+		<echo>Upload DMG file as we are not on MacOS Host</echo>
+		<ftp server="${ftp.ip}" passive="no" remotedir="${ftp.base.remotedir}DOCoMETRe/" userid="${ftp.login}" password="${ftp.password}" depends="no">
+			<fileset file="DOCoMETRe.dmg" />
+		</ftp>
+		<echo>Remove DMG file from local host</echo>
+		<delete file="DOCoMETRe.dmg"/>
 	</target>
 
 </project>
