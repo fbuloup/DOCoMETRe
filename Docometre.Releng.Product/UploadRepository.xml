@@ -1,10 +1,7 @@
 <project default="D_uploadZIPFiles" name="Deploy DOCoMETRe p2 repository Files To Server">
 
-	<condition property="isNotMac" value="false" else="true">
-		<os family="mac" />
-	</condition>
 
-	<condition property="isMac" value="true" else="false">
+	<condition property="isMac">
 		<os family="mac" />
 	</condition>
 
@@ -55,8 +52,7 @@
 		<move file="target/products/DocometreProduct-win32.win32.x86_64.zip" tofile="target/products/DocometreWindows.zip"/>
 	</target>
 
-	<target name="A6_saveDMGFile" if="isNotMac" depends="FtpProperties.FTP_INPUT">
-		<echoproperties/>
+	<target name="A6_saveDMGFile" unless="isMac" depends="FtpProperties.FTP_INPUT">
 		<echo>Save DMG file as we are not on MacOS Host</echo>
 		<ftp action="get" server="${ftp.ip}" userid="${ftp.login}" password="${ftp.password}" remotedir="${ftp.base.remotedir}DOCoMETRe">
 			<fileset file="*.dmg" />
@@ -64,7 +60,7 @@
 	</target>
 
 	<!-- clear server -->
-	<target name="B_resetFTPFilesFolders" description="Create an empty DOCoMETRe folder" depends="FtpProperties.FTP_INPUT">
+	<target name="B_resetFTPFilesFolders" description="Create an empty DOCoMETRe folder" depends="FtpProperties.FTP_INPUT,A6_saveDMGFile">
 
 		<echo>Remove all files from FTP DOCoMETRe directory</echo>
 		<ftp action="del" server="${ftp.ip}" userid="${ftp.login}" password="${ftp.password}" remotedir="${ftp.base.remotedir}DOCoMETRe">
@@ -90,9 +86,18 @@
 				<ftp action="mkdir" server="${ftp.ip}" userid="${ftp.login}" password="${ftp.password}" remotedir="${ftp.base.remotedir}Docometre/repository//plugins" /> -->
 	</target>
 
+	<target name="C2_loadDMGFile" unless="isMac" depends="FtpProperties.FTP_INPUT">
+		<echo>Upload DMG file as we are not on MacOS Host and...</echo>
+		<ftp server="${ftp.ip}" passive="no" remotedir="${ftp.base.remotedir}DOCoMETRe/" userid="${ftp.login}" password="${ftp.password}" depends="no">
+			<fileset file="DOCoMETRe.dmg" />
+		</ftp>
+		<echo>... remove DMG file from local host</echo>
+		<delete file="DOCoMETRe.dmg" />
+	</target>
+
 
 	<!-- Upload to server -->
-	<target name="D_uploadZIPFiles" description="Upload created files to server" depends="A1_BuildDMGFile,A2_checkFiles,A3_MoveLinuxFile,A4_MoveMacFiles,A5_MoveWindowsFiles,B_resetFTPFilesFolders,C_createFoldersStructure">
+	<target name="D_uploadZIPFiles" description="Upload created files to server" depends="A1_BuildDMGFile,A2_checkFiles,A3_MoveLinuxFile,A4_MoveMacFiles,A5_MoveWindowsFiles,B_resetFTPFilesFolders,C_createFoldersStructure,C2_loadDMGFile">
 
 		<!-- <echo>Uploading linux32</echo> >>>>>>>>>> No more 32 bits releases
 		<ftp server="${ftp.ip}" passive="yes" remotedir="${ftp.base.remotedir}DOCoMETRe" userid="${ftp.login}" password="${ftp.password}" depends="no">
@@ -122,13 +127,6 @@
 		</ftp>
 	</target>
 
-	<target name="E_loadDMGFile" if="isNotMac" depends="FtpProperties.FTP_INPUT">
-		<echo>Upload DMG file as we are not on MacOS Host</echo>
-		<ftp server="${ftp.ip}" passive="no" remotedir="${ftp.base.remotedir}DOCoMETRe/" userid="${ftp.login}" password="${ftp.password}" depends="no">
-			<fileset file="DOCoMETRe.dmg" />
-		</ftp>
-		<echo>Remove DMG file from local host</echo>
-		<delete file="DOCoMETRe.dmg"/>
-	</target>
+
 
 </project>
