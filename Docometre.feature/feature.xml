@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2023-06-20
+      -- 2023-07-03
+ADDED :
+* Multiscale Sample Entropy Function (Matlab &amp; Python)
+FIXED : Nothing
+-- 2023-06-20
 ADDED :
 * CR/LF options to float serial output function (ADWin)
 FIXED : Nothing
