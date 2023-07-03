@@ -77,8 +77,8 @@ public class PythonEngineFunctionsMenuFactory {
 	public static String[] FilteringFunctionsFiles = new String[] {ButterworthLowPass.functionFileName, ButterworthHighPass.functionFileName, SEPARATOR, RemovePulses.functionFileName};
 	public static String[] FilteringFunctionsClasses = new String[] {ButterworthLowPass.class.getName(), ButterworthHighPass.class.getName(), null, RemovePulses.class.getName()};
 	
-	public static String[] ComplexityFunctionsFiles = new String[] {SampleEntropy.functionFileName, ApproximateEntropy.functionFileName};
-	public static String[] ComplexityFunctionsClasses = new String[] {SampleEntropy.class.getName(), ApproximateEntropy.class.getName()};
+	public static String[] ComplexityFunctionsFiles = new String[] {SampleEntropy.functionFileName, ApproximateEntropy.functionFileName, MultiscaleSampleEntropy.functionFileName};
+	public static String[] ComplexityFunctionsClasses = new String[] {SampleEntropy.class.getName(), ApproximateEntropy.class.getName(), MultiscaleSampleEntropy.class.getName()};
 	
 	public static String[] MarkersFunctionsFiles = new String[] {TimeMarker.functionFileName, Maximum.functionFileName, Minimum.functionFileName, FindPeaks.functionFileName, FindPeaks_Minima.functionFileName, FindAmplitudeBackward.functionFileName, FindAmplitudeForward.functionFileName,
 																	Threshold.functionFileName, TransferMarkersGroup.functionFileName};
