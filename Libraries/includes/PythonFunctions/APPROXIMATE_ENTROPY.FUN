@@ -1,7 +1,7 @@
-MENU_TITLE = Sample Entropy
-DESCRIPTION = Compute Signal Sample Entropy 
-MENU_TITLE_FR = Entropie d'échantillons
-DESCRIPTION_FR = Calcule l'entropie d'échantillons
+MENU_TITLE = Appoximate Entropy
+DESCRIPTION = Compute Signal approximate Sample Entropy 
+MENU_TITLE_FR = Appoximation de l'Entropie d'échantillons
+DESCRIPTION_FR = Calcule l'Appoximation de l'entropie d'échantillons
 
 # Now start specific python function 
 FUNCTION_CODE = # Compute Sample Entropy feature\n\
