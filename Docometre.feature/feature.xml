@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2023-08-28
+      -- 2023-08-28 - Bis
+ADDED : Nothing
+FIXED :
+* Approximate Entropy function header typo correction
+-- 2023-08-28
 ADDED : Nothing
 FIXED :
 * Update Approximate Entropy python function header 
