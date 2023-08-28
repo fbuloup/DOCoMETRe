@@ -9,7 +9,7 @@
       -- 2023-08-28
 ADDED : Nothing
 FIXED :
-* Update Approximate Entropy python function header
+* Update Approximate Entropy python function header 
 -- 2023-07-03
 ADDED :
 * Multiscale Sample Entropy Function (Matlab &amp; Python)
