@@ -4,5 +4,5 @@ Bundle-Name: Tools
 Bundle-SymbolicName: org.eclipse.swt.tools
 Bundle-Version: 1.0.0.qualifier
 Automatic-Module-Name: org.eclipse.swt.tools
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Require-Bundle: org.eclipse.swt.tools.spies;bundle-version="1.0.0"

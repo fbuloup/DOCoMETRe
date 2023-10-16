@@ -34,7 +34,7 @@ Require-Bundle: org.eclipse.ui;bundle-version="3.108.0",
  JZY3D;bundle-version="1.0.0",
  JOGL;bundle-version="1.0.0",
  OpenCSV;bundle-version="1.0.0"
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: Docometre

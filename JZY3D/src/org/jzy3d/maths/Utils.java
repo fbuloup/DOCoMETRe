@@ -21,7 +21,7 @@ public class Utils {
    * @see String.format
    */
   public static String num2str(char parseMode, double num, int precision) {
-    return String.format("%." + precision + parseMode, new Double(num));
+    return String.format("%." + precision + parseMode, Double.valueOf(num)); 
   }
 
   /**
@@ -29,7 +29,7 @@ public class Utils {
    * precision.
    */
   public static String num2str(char parseMode, double num) {
-    return String.format("%" + parseMode, new Double(num));
+    return String.format("%" + parseMode, Double.valueOf(num));
   }
 
   public static String num2str(double num, int precision) {

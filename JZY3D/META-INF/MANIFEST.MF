@@ -4,7 +4,7 @@ Bundle-Name: JZY3D
 Bundle-SymbolicName: JZY3D;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Automatic-Module-Name: JZY3D
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: JZY3D
 Bundle-ClassPath: .
 Require-Bundle: org.eclipse.swt,

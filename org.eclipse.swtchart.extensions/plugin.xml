@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?eclipse version="3.4"?>
+<?eclipse version="3.0"?>
 <plugin>
-   <extension-point id="org.eclipse.swtchart.extensions.menuitems" name="SWTChart MenuItem Extensions" schema="schema/org.eclipse.swtchart.extensions.menuitems.exsd"/>
+   <extension-point id="org_eclipse_swtchart_extensions_menuitems" name="SWTChart MenuItem Extensions" schema="schema/org.eclipse.swtchart.extensions.menuitems.exsd"/>
 </plugin>

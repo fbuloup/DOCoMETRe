@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="DOCoMETRe" uid="DocometreProduct" id="Docometre.product" application="Docometre.application" version="1.0.0.qualifier" useFeatures="true" includeLaunchers="true">
+<product name="DOCoMETRe" uid="DocometreProduct" id="Docometre.product" application="Docometre.application" version="1.0.0.qualifier" useFeatures="true" includeLaunchers="true" autoIncludeRequirements="true">
 
    <aboutInfo>
       <image path="/Docometre/icons/about.gif"/>
@@ -18,9 +18,12 @@ Développement à l&apos;institut des Sciences du Mouvement.
    </configIni>
 
    <launcherArgs>
-      <vmArgs>-Dorg.eclipse.swt.graphics.Resource.reportNonDisposed=false 
+      <vmArgs>-Xmx2048m
+-Dorg.eclipse.swt.graphics.Resource.reportNonDisposed=false 
 --add-modules=ALL-SYSTEM
--Xmx2048m
+--add-opens=java.base/java.util=ALL-UNNAMED
+--add-opens=java.base/java.lang=ALL-UNNAMED
+--add-opens=java.base/java.lang.invoke=ALL-UNNAMED
       </vmArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
       </vmArgsMac>

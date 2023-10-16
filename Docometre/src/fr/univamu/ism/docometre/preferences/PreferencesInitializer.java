@@ -41,7 +41,8 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.preferences;
 
-import java.io.IOException;
+import java.io.File;
+import java.util.Optional;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
@@ -106,9 +107,10 @@ public class PreferencesInitializer extends AbstractPreferenceInitializer {
 		defaults.putInt(MathEnginePreferencesConstants.PY4J_JAVA_PORT, GatewayServer.DEFAULT_PORT);
 		defaults.putInt(MathEnginePreferencesConstants.PY4J_PYTHON_PORT, GatewayServer.DEFAULT_PYTHON_PORT);
 		
-		try {
-			Bundle bundle = Platform.getBundle("Libraries");
-			IPath path = Path.fromPortableString(FileLocator.getBundleFile(bundle).getAbsolutePath());
+		Bundle bundle = Platform.getBundle("Libraries");
+		Optional<File> files = FileLocator.getBundleFileLocation(bundle);
+		if(files.isPresent()) {
+			IPath path = Path.fromPortableString(files.get().getAbsolutePath());
 			path = path.append("includes");
 			defaults.put(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), path.append("ADWinIncludeFiles").toOSString());
 			preferenceStore.putValue(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), path.append("ADWinIncludeFiles").toOSString());
@@ -118,10 +120,8 @@ public class PreferencesInitializer extends AbstractPreferenceInitializer {
 			preferenceStore.putValue(GeneralPreferenceConstants.MATLAB_SCRIPTS_LOCATION, path.append("MatlabScripts").toOSString());
 			defaults.put(GeneralPreferenceConstants.PYTHON_SCRIPTS_LOCATION, path.append("PythonScripts").toOSString());
 			preferenceStore.putValue(GeneralPreferenceConstants.PYTHON_SCRIPTS_LOCATION, path.append("PythonScripts").toOSString());
-		} catch (IOException e) {
-			Activator.logErrorMessageWithCause(e);
-			e.printStackTrace();
 		}
+			
 
 		
 	}
