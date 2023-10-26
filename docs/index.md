@@ -34,9 +34,9 @@ If you want to use DOCoMETRe, you must first download Java 11 or later from [Ado
 
 You can find direct Oracle JDK 11 links below :
 
-* [Windows 64](http://www.ism.univ-amu.fr/buloup/documents/JAVA/jdk-11.0.11_windows-x64_bin.exe)
-* [Linux Debian 64](http://www.ism.univ-amu.fr/buloup/documents/JAVA/jdk-11.0.11_linux-x64_bin.deb)
-* [Linux RPM 64](http://www.ism.univ-amu.fr/buloup/documents/JAVA/jdk-11.0.11_linux-x64_bin.rpm)
-* [Mac OS](http://www.ism.univ-amu.fr/buloup/documents/JAVA/jdk-11.0.11_osx-x64_bin.dmg)
+* [Windows 64](http://www.ism.univ-amu.fr/buloup/documents/JAVA/jdk-17.0.9_windows-x64_bin.exe)
+* [Linux Debian 64](http://www.ism.univ-amu.fr/buloup/documents/JAVA/jdk-17.0.9_linux-x64_bin.deb)
+* [Linux RPM 64](http://www.ism.univ-amu.fr/buloup/documents/JAVA/jdk-17.0.9_linux-x64_bin.rpm)
+* [Mac OS](http://www.ism.univ-amu.fr/buloup/documents/JAVA/jdk-17.0.9_macosx-x64_bin.dmg)
 
 Hope you will appreciate this software :-)
