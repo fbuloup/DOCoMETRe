@@ -30,9 +30,9 @@ DOCoMETRe stands for "Dispositif d'Observation et de COntrôle du Mouvement En T
 
 Enhanced Arduino Uno with support for [MCP4725](https://www.microchip.com/en-us/product/MCP4725) (DAC 12 bits - I2C), [Portenta Machine Control](https://store.arduino.cc/products/arduino-portenta-machine-control?selectedStore=eu) or [Teensy 4.0](https://www.pjrc.com/store/teensy40.html) support are planned.
 
-If you want to use DOCoMETRe, you must first download Java 11 or later from [AdoptOpenJDK](https://adoptopenjdk.net), [Azul](https://www.azul.com/downloads/?package=jre), [Amazon](https://docs.aws.amazon.com/corretto/index.html), [Liberica](https://bell-sw.com), [OpenJDK](https://openjdk.java.net) or [Oracle](https://www.oracle.com/fr/java/technologies/javase-jdk11-downloads.html).
+If you want to use DOCoMETRe, you must first download Java 17 or later from [AdoptOpenJDK](https://adoptopenjdk.net), [Azul](https://www.azul.com/downloads/?package=jre), [Amazon](https://docs.aws.amazon.com/corretto/index.html), [Liberica](https://bell-sw.com), [OpenJDK](https://openjdk.java.net) or [Oracle](https://www.oracle.com/fr/java/technologies/javase-jdk11-downloads.html).
 
-You can find direct Oracle JDK 11 links below :
+You can find direct Oracle JDK 17 links below :
 
 * [Windows 64](http://www.ism.univ-amu.fr/buloup/documents/JAVA/jdk-17.0.9_windows-x64_bin.exe)
 * [Linux Debian 64](http://www.ism.univ-amu.fr/buloup/documents/JAVA/jdk-17.0.9_linux-x64_bin.deb)
