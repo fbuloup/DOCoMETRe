@@ -74,10 +74,6 @@
 						</environment>
 					</environments>
 					
-					<toolchain>
-						
-					</toolchain>
-
 				</configuration>
 			</plugin>
 
