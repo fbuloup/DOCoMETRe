@@ -6,13 +6,18 @@
       provider-name="ISM">
 
    <description>
-      -- 2023-11-20
+      -- 2023-11-20 - Bis
+ADDED : Nothing
+FIXED :
+* Use &quot;-Dp2.httpRule=allow&quot; in VM command line (New p2 version requires https default)
+-- 2023-11-20
 ADDED :
 * Print main software version and used libraries version  (ADWin)
 * Warning if Dacq. Conf. lib. version differs from main version
 * Update doc (index.md)
 FIXED :
-* Reverse synchro chars output (LF then CR and not CR then LF, ADWin)
+* Reverse synchro chars output (LF then CR and not CR then LF,
+ADWin)
 -- 2023-10-26
 ADDED : update to jdk 17
 FIXED : nothing
