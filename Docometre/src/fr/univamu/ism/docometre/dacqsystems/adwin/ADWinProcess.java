@@ -60,6 +60,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -384,10 +386,20 @@ public class ADWinProcess extends Process {
 			createMarker(IMarker.SEVERITY_WARNING, processResource, warningFile);
 		}
 
-		Bundle docometreBundle = Platform.getBundle("Docometre");
 		Bundle librariesBundle = Platform.getBundle("Libraries");
-		Activator.logInfoMessage("Docometre version : " + docometreBundle.getVersion(), getClass());
 		Activator.logInfoMessage("Libraries version : " + librariesBundle.getVersion(), getClass());
+		ADWinDACQConfiguration dacqConfig = (ADWinDACQConfiguration)getDACQConfiguration();
+		String librariesAbsolutePath = dacqConfig.getProperty(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH);
+		Pattern pattern = Pattern.compile("Libraries_\\d\\.\\d.\\d.\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d");
+		Matcher matcher = pattern.matcher(librariesAbsolutePath);
+		if (matcher.find()) {
+			String usedLibrariesVersion = librariesAbsolutePath.substring(matcher.start(), matcher.end());
+			usedLibrariesVersion = usedLibrariesVersion.replaceAll("Libraries_", "");
+			Activator.logInfoMessage("Libraries version used from Dacq. Conf. : " + usedLibrariesVersion, getClass());
+			
+			if(!usedLibrariesVersion.equals(librariesBundle.getVersion().toString()))
+				createMarker(IMarker.SEVERITY_WARNING, processResource, DocometreMessages.UpdateLibrariesVersion);
+		}
 		
 		if(getScript().getCodeGenerationStatus().length > 0) {
 			IStatus[] statuses = getScript().getCodeGenerationStatus();
@@ -437,6 +449,25 @@ public class ADWinProcess extends Process {
 			throw new Exception(DocometreMessages.ADWinProcess_CompileErrorsMessage); 
 		}
 		
+	}
+	
+	private void createMarker(int severity, IResource processResource, final String message) {
+		PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					if(severity == IMarker.SEVERITY_ERROR) Activator.logErrorMessage(message);
+					if(severity == IMarker.SEVERITY_WARNING) Activator.logWarningMessage(message);
+					IMarker marker = processResource.createMarker(DocometreBuilder.MARKER_ID);
+					marker.setAttribute(IMarker.MESSAGE, message);
+					marker.setAttribute(IMarker.LINE_NUMBER, 1);
+					marker.setAttribute(IMarker.SEVERITY, severity);
+				} catch (CoreException e) {
+					e.printStackTrace();
+					Activator.logErrorMessageWithCause(e);
+				} 
+			}
+		});
 	}
 	
 	private void createMarker(int severity, IResource processResource, final File file) {

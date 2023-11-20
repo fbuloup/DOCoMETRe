@@ -1135,6 +1135,8 @@ public final class DocometreMessages extends NLS {
 	public static String SaveScriptFile;
 	public static String ExportScriptDialogTitle;
 
+	public static String UpdateLibrariesVersion;
+
 	static {
 		// load message values from bundle file
 		String bn = BUNDLE_NAME;
