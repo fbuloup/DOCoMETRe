@@ -16,7 +16,8 @@ DECLARATION = DIM stringValue_HashCode[13] AS STRING\n\
 DIM currentChar_HashCode[1] AS STRING\n\
 DIM currentCharNumber_HashCode AS LONG\n\
 DIM dummyResponse_HashCode AS LONG\n\
-DIM addLF_HashCode AS LONG
+DIM addLF_HashCode AS LONG\n\
+DIM addCR_HashCode AS LONG
 
 INITIALIZATION = addLF_HashCode = add_LF
 
@@ -27,6 +28,9 @@ dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, ASC(currentChar_Ha
 NEXT currentCharNumber_HashCode\n\
 IF (addLF_HashCode = 1) THEN\n\
 dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, 10)\n\
+ENDIF\n\
+IF (addCR_HashCode = 1) THEN\n\
+dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, 13)\n\
 ENDIF
 
 FUNCTION_CODE_PRO_II = LngToStr(longValue, stringValue_HashCode)\n\
@@ -36,6 +40,9 @@ dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, ASC(currentChar_Ha
 NEXT currentCharNumber_HashCode\n\
 IF (addLF_HashCode = 1) THEN\n\
 dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, 10)\n\
+ENDIF\n\
+IF (addCR_HashCode = 1) THEN\n\
+dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, 13)\n\
 ENDIF
 
 FUNCTION_CODE_GOLD_I = LngToStr(longValue, stringValue_HashCode)\n\
@@ -45,6 +52,9 @@ dummyResponse_HashCode = WRITE_FIFO(portNumber, ASC(currentChar_HashCode))\n\
 NEXT currentCharNumber_HashCode\n\
 IF (addLF_HashCode = 1) THEN\n\
 dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, 10)\n\
+ENDIF\n\
+IF (addCR_HashCode = 1) THEN\n\
+dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, 13)\n\
 ENDIF
 
 FUNCTION_CODE_GOLD_II = LngToStr(longValue, stringValue_HashCode)\n\
@@ -54,4 +64,7 @@ dummyResponse_HashCode = WRITE_FIFO(portNumber, ASC(currentChar_HashCode))\n\
 NEXT currentCharNumber_HashCode\n\
 IF (addLF_HashCode = 1) THEN\n\
 dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, 10)\n\
+ENDIF\n\
+IF (addCR_HashCode = 1) THEN\n\
+dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, 13)\n\
 ENDIF

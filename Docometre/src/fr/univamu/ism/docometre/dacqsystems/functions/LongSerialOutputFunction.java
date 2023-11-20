@@ -88,6 +88,7 @@ public static final String functionFileName = "LONG_SERIAL_OUTPUT.FUN";
 	private static final String portNumberKey = "portNumber";
 	private static final String longValueKey = "longValue";
 	private static final String addLFKey = "add_LF";
+	private static final String addCRKey = "add_CR";
 	
 	private transient TitleAreaDialog titleAreaDialog;
 	
@@ -213,15 +214,30 @@ public static final String functionFileName = "LONG_SERIAL_OUTPUT.FUN";
 		Label dummyLabel = new Label(paramContainer, SWT.NONE);
 		dummyLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		
-		Button crlfButton = new Button(paramContainer, SWT.CHECK);
-		crlfButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-		crlfButton.setText(DocometreMessages.LFValueLabel); 
-		boolean addCRLF  = Boolean.parseBoolean(getProperty(addLFKey, "false"));
-		crlfButton.setSelection(addCRLF);
-		crlfButton.addSelectionListener(new SelectionAdapter() {
+		Button lfButton = new Button(paramContainer, SWT.CHECK);
+		lfButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+		lfButton.setText(DocometreMessages.LFValueLabel); 
+		boolean addLF  = Boolean.parseBoolean(getProperty(addLFKey, "false"));
+		lfButton.setSelection(addLF);
+		lfButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				getTransientProperties().put(addLFKey, String.valueOf(crlfButton.getSelection()));
+				getTransientProperties().put(addLFKey, String.valueOf(lfButton.getSelection()));
+			}
+		});
+		
+		Label dummyLabel1 = new Label(paramContainer, SWT.NONE);
+		dummyLabel1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+		
+		Button crButton = new Button(paramContainer, SWT.CHECK);
+		crButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+		crButton.setText(DocometreMessages.CRValueLabel); 
+		boolean addCR  = Boolean.parseBoolean(getProperty(addCRKey, "false"));
+		crButton.setSelection(addCR);
+		crButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				getTransientProperties().put(addCRKey, String.valueOf(crButton.getSelection()));
 			}
 		});
 
@@ -253,8 +269,10 @@ public static final String functionFileName = "LONG_SERIAL_OUTPUT.FUN";
 				String temporaryCode = FunctionFactory.getProperty(process, functionFileName, key.toUpperCase());
 				String hashCode = String.valueOf(hashCode());
 				temporaryCode = temporaryCode.replaceAll("HashCode", hashCode);
-				boolean addCRLF = Boolean.parseBoolean(getProperty(addLFKey, "false"));
-				code = code + temporaryCode.replaceAll(addLFKey, addCRLF?"1":"0");
+				boolean addLF = Boolean.parseBoolean(getProperty(addLFKey, "false"));
+				code = code + temporaryCode.replaceAll(addLFKey, addLF?"1":"0");
+				boolean addCR = Boolean.parseBoolean(getProperty(addCRKey, "false"));
+				code = code + temporaryCode.replaceAll(addCRKey, addCR?"1":"0");
 			}
 			if(step == ScriptSegmentType.INITIALIZE || step == ScriptSegmentType.LOOP || step == ScriptSegmentType.FINALIZE) {
 				// Récupérer la bonne propriété dans le fichier functionFileName en fonction du bon device : Gold ou Pro ET du bon CPU : I ou II

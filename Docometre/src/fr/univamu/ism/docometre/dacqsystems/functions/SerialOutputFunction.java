@@ -205,6 +205,20 @@ public class SerialOutputFunction extends GenericFunction {
 			Activator.logErrorMessageWithCause(e);
 		}
 		
+		Label dummyLabel2 = new Label(paramContainer, SWT.NONE);
+		dummyLabel2.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+		
+		Button lfButton = new Button(paramContainer, SWT.CHECK);
+		lfButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+		lfButton.setText(DocometreMessages.LFValueLabel); 
+		boolean addLF  = Boolean.parseBoolean(getProperty(addLFKey, "false"));
+		lfButton.setSelection(addLF);
+		lfButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				getTransientProperties().put(addLFKey, String.valueOf(lfButton.getSelection()));
+			}
+		});
 		
 		Label dummyLabel1 = new Label(paramContainer, SWT.NONE);
 		dummyLabel1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
@@ -221,21 +235,6 @@ public class SerialOutputFunction extends GenericFunction {
 			}
 		});
 		
-		Label dummyLabel2 = new Label(paramContainer, SWT.NONE);
-		dummyLabel2.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
-		
-		Button lfButton = new Button(paramContainer, SWT.CHECK);
-		lfButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-		lfButton.setText(DocometreMessages.LFValueLabel); 
-		boolean addLF  = Boolean.parseBoolean(getProperty(addLFKey, "false"));
-		lfButton.setSelection(addLF);
-		lfButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				getTransientProperties().put(addLFKey, String.valueOf(lfButton.getSelection()));
-			}
-		});
-
 		addCommentField(paramContainer, 1, context);
 		
 		return paramContainer;

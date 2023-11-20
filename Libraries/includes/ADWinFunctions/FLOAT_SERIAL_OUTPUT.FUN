@@ -27,11 +27,11 @@ FOR currentCharNumber_HashCode = 1 TO STRLEN(stringValue_HashCode)\n\
 STRMID(stringValue_HashCode, currentCharNumber_HashCode, 1, currentChar_HashCode)\n\
 dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, ASC(currentChar_HashCode))\n\
 NEXT currentCharNumber_HashCode\n\
-IF (addCR_HashCode = 1) THEN\n\
-dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, 13)\n\
-ENDIF\n\
 IF (addLF_HashCode = 1) THEN\n\
 dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, 10)\n\
+ENDIF\n\
+IF (addCR_HashCode = 1) THEN\n\
+dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, 13)\n\
 ENDIF
 
 FUNCTION_CODE_PRO_II = FloToStr(floatValue, stringValue_HashCode)\n\
@@ -39,11 +39,11 @@ FOR currentCharNumber_HashCode = 1 TO STRLEN(stringValue_HashCode)\n\
 STRMID(stringValue_HashCode, currentCharNumber_HashCode, 1, currentChar_HashCode)\n\
 dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, ASC(currentChar_HashCode))\n\
 NEXT currentCharNumber_HashCode\n\
-IF (addCR_HashCode = 1) THEN\n\
-dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, 13)\n\
-ENDIF\n\
 IF (addLF_HashCode = 1) THEN\n\
 dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, 10)\n\
+ENDIF\n\
+IF (addCR_HashCode = 1) THEN\n\
+dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, 13)\n\
 ENDIF
 
 FUNCTION_CODE_GOLD_I = FloToStr(floatValue, stringValue_HashCode)\n\
@@ -51,11 +51,11 @@ FOR currentCharNumber_HashCode = 1 TO STRLEN(stringValue_HashCode)\n\
 STRMID(stringValue_HashCode, currentCharNumber_HashCode, 1, currentChar_HashCode)\n\
 dummyResponse_HashCode = WRITE_FIFO(portNumber, ASC(currentChar_HashCode))\n\
 NEXT currentCharNumber_HashCode\n\
-IF (addCR_HashCode = 1) THEN\n\
-dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, 13)\n\
-ENDIF\n\
 IF (addLF_HashCode = 1) THEN\n\
 dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, 10)\n\
+ENDIF\n\
+IF (addCR_HashCode = 1) THEN\n\
+dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, 13)\n\
 ENDIF
 
 FUNCTION_CODE_GOLD_II = FloToStr(floatValue, stringValue_HashCode)\n\
@@ -63,9 +63,9 @@ FOR currentCharNumber_HashCode = 1 TO STRLEN(stringValue_HashCode)\n\
 STRMID(stringValue_HashCode, currentCharNumber_HashCode, 1, currentChar_HashCode)\n\
 dummyResponse_HashCode = WRITE_FIFO(portNumber, ASC(currentChar_HashCode))\n\
 NEXT currentCharNumber_HashCode\n\
-IF (addCR_HashCode = 1) THEN\n\
-dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, 13)\n\
-ENDIF\n\
 IF (addLF_HashCode = 1) THEN\n\
 dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, 10)\n\
+ENDIF\n\
+IF (addCR_HashCode = 1) THEN\n\
+dummyResponse_HashCode = WRITE_FIFO(moduleNumber, portNumber, 13)\n\
 ENDIF
