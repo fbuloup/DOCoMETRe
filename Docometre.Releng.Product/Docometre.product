@@ -19,7 +19,8 @@ Développement à l&apos;institut des Sciences du Mouvement.
 
    <launcherArgs>
       <vmArgs>-Xmx2048m
--Dorg.eclipse.swt.graphics.Resource.reportNonDisposed=false 
+-Dorg.eclipse.swt.graphics.Resource.reportNonDisposed=false
+-Dp2.httpRule=allow
 --add-modules=ALL-SYSTEM
 --add-opens=java.base/java.util=ALL-UNNAMED
 --add-opens=java.base/java.lang=ALL-UNNAMED
