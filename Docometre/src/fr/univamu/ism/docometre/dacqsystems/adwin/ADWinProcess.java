@@ -78,6 +78,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.program.Program;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
+import org.osgi.framework.Bundle;
 
 import de.adwin.driver.ADwinCommunicationError;
 import fr.univamu.ism.docometre.Activator;
@@ -382,6 +383,11 @@ public class ADWinProcess extends Process {
 		if(warningFile.exists()) {
 			createMarker(IMarker.SEVERITY_WARNING, processResource, warningFile);
 		}
+
+		Bundle docometreBundle = Platform.getBundle("Docometre");
+		Bundle librariesBundle = Platform.getBundle("Libraries");
+		Activator.logInfoMessage("Docometre version : " + docometreBundle.getVersion(), getClass());
+		Activator.logInfoMessage("Libraries version : " + librariesBundle.getVersion(), getClass());
 		
 		if(getScript().getCodeGenerationStatus().length > 0) {
 			IStatus[] statuses = getScript().getCodeGenerationStatus();
@@ -393,7 +399,6 @@ public class ADWinProcess extends Process {
 					marker.setAttribute(IMarker.SEVERITY, status.getSeverity()==IStatus.ERROR?IMarker.SEVERITY_ERROR:IMarker.SEVERITY_WARNING);
 					if(marker.getAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR) == IMarker.SEVERITY_ERROR) Activator.logErrorMessage(status.getMessage());
 					if(marker.getAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING) == IMarker.SEVERITY_WARNING) Activator.logWarningMessage(status.getMessage());
-					
 				} catch (CoreException e) {
 					Activator.logErrorMessageWithCause(e);
 					e.printStackTrace();
