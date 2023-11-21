@@ -46,7 +46,11 @@ import java.util.ArrayList;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.IOperationHistory;
 import org.eclipse.core.commands.operations.IUndoContext;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.layout.TableColumnLayout;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -79,9 +83,11 @@ import org.eclipse.ui.forms.widgets.Hyperlink;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
+import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.PartListenerAdapter;
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfigurationProperties;
+import fr.univamu.ism.docometre.dacqsystems.DocometreBuilder;
 import fr.univamu.ism.docometre.dacqsystems.FrequencyInputValidator;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.Property;
@@ -434,6 +440,8 @@ public class ADwinDACQGeneralConfigurationPage extends ModulePage {
 		});
 		configureSorter(new ModulesComparator(), tableViewer.getTable().getColumn(0));
 		tableViewer.setInput(dacqConfiguration.getModules());
+		
+		updateDecorationsControls();
 	}
 	
 	/*
@@ -513,6 +521,31 @@ public class ADwinDACQGeneralConfigurationPage extends ModulePage {
 	@Override
 	public String getPageTitle() {
 		return ADWinMessages.DACQGeneralConfigurationPage_PageTitle;
+	}
+
+	public void updateDecorationsControls() {
+		try {
+			if(getManagedForm() != null) {
+				getManagedForm().getMessageManager().removeAllMessages();
+				IResource dacqConfResource = ObjectsController.getResourceForObject(dacqConfiguration);
+				IMarker[] markers = dacqConfResource.findMarkers(DocometreBuilder.MARKER_ID, true, IResource.DEPTH_INFINITE);
+				for (IMarker marker : markers) {
+					String message = (String) marker.getAttribute(IMarker.MESSAGE);
+					int severity = (int) marker.getAttribute(IMarker.SEVERITY);
+						int type = IMessageProvider.NONE;
+						if(severity == IMarker.SEVERITY_WARNING) type = IMessageProvider.WARNING;
+						if(severity == IMarker.SEVERITY_ERROR) type = IMessageProvider.ERROR;
+						if(severity == IMarker.SEVERITY_INFO) type = IMessageProvider.INFORMATION;
+						getManagedForm().getMessageManager().addMessage(marker, message, null, type, librariesText);
+				}
+			}
+			
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		
+		
 	}
 	
 }

@@ -43,8 +43,12 @@ package fr.univamu.ism.docometre.dacqsystems.adwin.ui.dacqconfigurationeditor;
 
 import java.util.ArrayList;
 
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.viewers.DecorationOverlayIcon;
+import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPartReference;
@@ -56,11 +60,13 @@ import org.eclipse.ui.forms.editor.IFormPage;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.GetResourceLabelDelegate;
+import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.PartListenerAdapter;
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfigurationProperties;
+import fr.univamu.ism.docometre.dacqsystems.DocometreBuilder;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.Property;
 import fr.univamu.ism.docometre.dacqsystems.PropertyObserver;
@@ -90,6 +96,19 @@ public class ADWinDACQConfigurationEditor extends ResourceEditor implements Prop
 		super.init(site, input);
 //		UndoRedoActionGroup undoRedoActionGroup = new UndoRedoActionGroup(site, getUndoContext(), true);
 //		undoRedoActionGroup.fillActionBars(site.getActionBars());
+		
+		if(JFaceResources.getImageRegistry().get(IImageKeys.DACQ_CONFIGURATION_ICON) == null) {
+			JFaceResources.getImageRegistry().put(IImageKeys.DACQ_CONFIGURATION_ICON, Activator.getImage(IImageKeys.DACQ_CONFIGURATION_ICON));
+		}
+		
+		if(JFaceResources.getImageRegistry().get(IImageKeys.ERROR_DECORATOR) == null) {
+			JFaceResources.getImageRegistry().put(IImageKeys.ERROR_DECORATOR, new DecorationOverlayIcon(JFaceResources.getImageRegistry().get(IImageKeys.DACQ_CONFIGURATION_ICON), Activator.getImageDescriptor(IImageKeys.ERROR_ICON), IDecoration.BOTTOM_LEFT));
+		}
+		
+		if(JFaceResources.getImageRegistry().get(IImageKeys.WARNING_DECORATOR) == null) {
+			JFaceResources.getImageRegistry().put(IImageKeys.WARNING_DECORATOR, new DecorationOverlayIcon(JFaceResources.getImageRegistry().get(IImageKeys.DACQ_CONFIGURATION_ICON), Activator.getImageDescriptor(IImageKeys.WARNING_ICON), IDecoration.BOTTOM_LEFT));
+		}
+		
 		IResource resource = ObjectsController.getResourceForObject(getDACQConfiguration());
 		setPartName(GetResourceLabelDelegate.getLabel(resource));
 		getDACQConfiguration().addObserver(this);
@@ -120,6 +139,7 @@ public class ADWinDACQConfigurationEditor extends ResourceEditor implements Prop
 			variablesPage = new ADWinVariablesPage(this);
 			addPage(variablesPage);
 			updateModulesPages();
+			updateTitleImage();
 		} catch (PartInitException e) {
 			e.printStackTrace();
 			Activator.logErrorMessageWithCause(e);
@@ -213,6 +233,21 @@ public class ADWinDACQConfigurationEditor extends ResourceEditor implements Prop
 		for (int i = 0; i < getPageCount(); i++) {
 			((ModulePage)getPage(i)).commit();
 		}
+	}
+	
+	public void updateTitleImage() {
+		try {
+			IResource dacqConfResource = ObjectsController.getResourceForObject(getDACQConfiguration());
+			int severity = dacqConfResource.findMaxProblemSeverity(DocometreBuilder.MARKER_ID, true, IResource.DEPTH_INFINITE);
+			if(severity == IMarker.SEVERITY_ERROR) setTitleImage(JFaceResources.getImageRegistry().get(IImageKeys.ERROR_DECORATOR));
+			if(severity == IMarker.SEVERITY_WARNING) setTitleImage(JFaceResources.getImageRegistry().get(IImageKeys.WARNING_DECORATOR));
+			if(severity == -1) setTitleImage(JFaceResources.getImageRegistry().get(IImageKeys.DACQ_CONFIGURATION_ICON));
+			((ADwinDACQGeneralConfigurationPage)adwinGeneralConfigurationPage).updateDecorationsControls();
+		} catch (Exception e) {
+			e.printStackTrace();
+			Activator.logErrorMessageWithCause(e);
+		}
+		
 	}
 	
 }

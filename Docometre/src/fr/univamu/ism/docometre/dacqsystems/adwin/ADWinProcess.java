@@ -97,6 +97,7 @@ import fr.univamu.ism.docometre.dacqsystems.ModuleBehaviour;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.dacqsystems.functions.FunctionsUtil;
 import fr.univamu.ism.docometre.dacqsystems.ui.ProcessEditor;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ui.dacqconfigurationeditor.ADWinDACQConfigurationEditor;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ui.dialogs.ParametersDialog;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor.ADWinProcessEditor;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
@@ -371,6 +372,9 @@ public class ADWinProcess extends Process {
 		
 		
 		processResource.deleteMarkers(null, true, IResource.DEPTH_INFINITE);
+		ADWinDACQConfiguration dacqConfiguration = (ADWinDACQConfiguration) ObjectsController.getDACQConfiguration(this);
+		IResource dacqConfigurationResource = ObjectsController.getResourceForObject(dacqConfiguration);
+		dacqConfigurationResource.deleteMarkers(null, true, IResource.DEPTH_INFINITE);
 		
 		//Get compile errors
 		progressMonitor.subTask(DocometreMessages.ADWinProcess_GetCompileErrorsMessage);
@@ -387,7 +391,8 @@ public class ADWinProcess extends Process {
 		}
 
 		Bundle librariesBundle = Platform.getBundle("Libraries");
-		Activator.logInfoMessage("Libraries version : " + librariesBundle.getVersion(), getClass());
+		String message = NLS.bind(DocometreMessages.CurrentLibrariesVersion, librariesBundle.getVersion().toString());
+		Activator.logInfoMessage(message, getClass());
 		ADWinDACQConfiguration dacqConfig = (ADWinDACQConfiguration)getDACQConfiguration();
 		String librariesAbsolutePath = dacqConfig.getProperty(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH);
 		Pattern pattern = Pattern.compile("Libraries_\\d\\.\\d.\\d.\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d");
@@ -395,10 +400,14 @@ public class ADWinProcess extends Process {
 		if (matcher.find()) {
 			String usedLibrariesVersion = librariesAbsolutePath.substring(matcher.start(), matcher.end());
 			usedLibrariesVersion = usedLibrariesVersion.replaceAll("Libraries_", "");
-			Activator.logInfoMessage("Libraries version used from Dacq. Conf. : " + usedLibrariesVersion, getClass());
-			
-			if(!usedLibrariesVersion.equals(librariesBundle.getVersion().toString()))
-				createMarker(IMarker.SEVERITY_WARNING, processResource, DocometreMessages.UpdateLibrariesVersion);
+			message = NLS.bind(DocometreMessages.DacqConfLibrariesVersion, usedLibrariesVersion);
+			Activator.logInfoMessage(message, getClass());
+			if(!usedLibrariesVersion.equals(librariesBundle.getVersion().toString())) {
+				Activator.logWarningMessage(DocometreMessages.UpdateLibrariesVersion);
+				IMarker marker = dacqConfigurationResource.createMarker(DocometreBuilder.MARKER_ID);
+				marker.setAttribute(IMarker.MESSAGE, DocometreMessages.UpdateLibrariesVersion);
+				marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
+			}
 		}
 		
 		if(getScript().getCodeGenerationStatus().length > 0) {
@@ -427,6 +436,13 @@ public class ADWinProcess extends Process {
 					PageChangedEvent event = new PageChangedEvent((IPageChangeProvider) editorPart, ((ProcessEditor)editorPart));
 					((ProcessEditor)editorPart).pageChanged(event);
 				}
+				ADWinDACQConfiguration dacqConfiguration = (ADWinDACQConfiguration) ObjectsController.getDACQConfiguration(ADWinProcess.this);
+//				IResource dacqConfigurationResource = ObjectsController.getResourceForObject(dacqConfiguration);
+				editorPart = Activator.getEditor(dacqConfiguration, ADWinDACQConfigurationEditor.ID);
+				if(editorPart != null) {
+					((ADWinDACQConfigurationEditor)editorPart).updateTitleImage();
+				}
+				
 			}
 		});
 		
@@ -451,25 +467,6 @@ public class ADWinProcess extends Process {
 		
 	}
 	
-	private void createMarker(int severity, IResource processResource, final String message) {
-		PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					if(severity == IMarker.SEVERITY_ERROR) Activator.logErrorMessage(message);
-					if(severity == IMarker.SEVERITY_WARNING) Activator.logWarningMessage(message);
-					IMarker marker = processResource.createMarker(DocometreBuilder.MARKER_ID);
-					marker.setAttribute(IMarker.MESSAGE, message);
-					marker.setAttribute(IMarker.LINE_NUMBER, 1);
-					marker.setAttribute(IMarker.SEVERITY, severity);
-				} catch (CoreException e) {
-					e.printStackTrace();
-					Activator.logErrorMessageWithCause(e);
-				} 
-			}
-		});
-	}
-	
 	private void createMarker(int severity, IResource processResource, final File file) {
 		PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
 			@Override
@@ -485,7 +482,7 @@ public class ADWinProcess extends Process {
 						if(line.startsWith("Error:") || line.startsWith("Warning:") || line.startsWith("Error :") || line.startsWith("Warning :")) {
 							try {
 								boolean adbasic4 = getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.ADBASIC_VERSION).equals(ADWinDACQConfigurationProperties.VINF4);
-								String lineNumber = "1";
+								String lineNumber = "";
 								IMarker marker = processResource.createMarker(DocometreBuilder.MARKER_ID);
 								String[] lines = line.split("\\.\\s");
 								line = "";
@@ -502,7 +499,13 @@ public class ADWinProcess extends Process {
 									String[] lineSplitted = line.split(":");				
 									lineNumber = lineSplitted[lineSplitted.length - 1].replaceAll("\\s+","");
 								}
-								marker.setAttribute(IMarker.LINE_NUMBER, Integer.parseInt(lineNumber));
+								
+								try {
+									int lineNumberInteger = Integer.parseInt(lineNumber);
+									marker.setAttribute(IMarker.LINE_NUMBER, lineNumberInteger);
+								} catch (Exception e) {
+									// TODO: Nothing
+								} 
 								marker.setAttribute(IMarker.SEVERITY, severity);
 							} catch (CoreException e) {
 								Activator.logErrorMessageWithCause(e);
