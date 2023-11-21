@@ -6,10 +6,15 @@
       provider-name="ISM">
 
    <description>
-      -- 2023-11-20 - Bis
+      -- 2023-11-21
 ADDED : Nothing
 FIXED :
-* Use &quot;-Dp2.httpRule=allow&quot; in VM command line (New p2 version requires https default)
+* Manage UI Warning if Dacq. Conf. lib. version differs from main version
+-- 2023-11-20 - Bis
+ADDED : Nothing
+FIXED :
+* Use &quot;-Dp2.httpRule=allow&quot; in VM command line (New p2 version
+requires https default)
 -- 2023-11-20
 ADDED :
 * Print main software version and used libraries version  (ADWin)
