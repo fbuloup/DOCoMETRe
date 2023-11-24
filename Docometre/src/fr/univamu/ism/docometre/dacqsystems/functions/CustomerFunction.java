@@ -133,6 +133,8 @@ public class CustomerFunction extends GenericFunction {
 		Composite paramContainer = new Composite(container, SWT.NORMAL);
 		paramContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		paramContainer.setLayout(new GridLayout(2, false));
+		GridLayout gl = (GridLayout)paramContainer.getLayout();
+		gl.horizontalSpacing = 15;
 		
 		this.functionalBlockConfigurationDialog = (FunctionalBlockConfigurationDialog) functionalBlockConfigurationDialog;
 		
@@ -322,14 +324,14 @@ public class CustomerFunction extends GenericFunction {
 		String[] typeRegExp = new String[2];
 		typeRegExp[0] = type;
 		typeRegExp[1] = "";
-		Pattern pattern = Pattern.compile("\\]:\\[");
+		Pattern pattern = Pattern.compile(":");
 		Matcher matcher = pattern.matcher(type);
 		if(matcher.find()) {
-			typeRegExp[0] = type.substring(0, matcher.start()+1);
-			typeRegExp[1] = type.substring(matcher.end()-1, type.length());
+			typeRegExp[0] = type.substring(0, matcher.start());
+			typeRegExp[1] = type.substring(matcher.end(), type.length());
 		}
 		Label parameterLabel = new Label(paramContainer, SWT.NORMAL);
-		parameterLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+		parameterLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
 		parameterLabel.setText(label);
 		
 		if(typeRegExp[0] != null && typeRegExp[0].matches("^TEXT(\\[.*\\])?$"))
