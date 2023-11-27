@@ -111,6 +111,7 @@ public class ConnectedIPsGatherer {
 					if(isWindows) if(outString.contains("Received = 1"))  isReachable = true;
 					if(isLinux) if(outString.contains("1 packets received"))  isReachable = true;
 					if(isMac) if(outString.contains("1 packets received"))  isReachable = true;
+					if(isWindows) if(outString.contains("perdus = 0"))  isReachable = true;
 				}
 			} catch (IOException | InterruptedException e) {
 				Activator.logErrorMessage(cmdLine);
