@@ -6,10 +6,16 @@
       provider-name="ISM">
 
    <description>
-      -- 2023-11-21
+      -- 2023-11-27
 ADDED : Nothing
 FIXED :
-* Manage UI Warning if Dacq. Conf. lib. version differs from main version
+* Custom Library GUI building bug
+* IPs gatherer bug (ADWin general Dacq. Conf.)
+-- 2023-11-21
+ADDED : Nothing
+FIXED :
+* Manage UI Warning if Dacq. Conf. lib. version differs from
+main version
 -- 2023-11-20 - Bis
 ADDED : Nothing
 FIXED :
