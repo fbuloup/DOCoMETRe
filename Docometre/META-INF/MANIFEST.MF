@@ -16,7 +16,6 @@ Require-Bundle: org.eclipse.ui;bundle-version="3.108.0",
  ADWin;bundle-version="1.0.0",
  Log4J;bundle-version="1.0.0",
  Process;bundle-version="1.0.0",
- org.eclipse.gef;bundle-version="3.11.0",
  RTSWTChart;bundle-version="1.0.0",
  org.eclipse.core.jobs,
  org.eclipse.equinox.registry,
@@ -33,7 +32,8 @@ Require-Bundle: org.eclipse.ui;bundle-version="3.108.0",
  org.eclipse.nebula.visualization.xygraph;bundle-version="1.0.0",
  JZY3D;bundle-version="1.0.0",
  JOGL;bundle-version="1.0.0",
- OpenCSV;bundle-version="1.0.0"
+ OpenCSV;bundle-version="1.0.0",
+ org.eclipse.gef;bundle-version="3.16.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Bundle-Localization: OSGI-INF/l10n/bundle
