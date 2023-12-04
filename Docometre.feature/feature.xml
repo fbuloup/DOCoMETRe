@@ -6,7 +6,12 @@
       provider-name="ISM">
 
    <description>
-      -- 2023-11-27
+      -- 2023-12-04
+ADDED : Nothing
+FIXED :
+* Update markers when the selected editor page changes(Process Editor)
+* Call super implementation (ADBasic source editor)
+-- 2023-11-27
 ADDED : 
 * Update GEF plugin
 FIXED : Nothing
