@@ -190,8 +190,8 @@ public class ProcessEditor extends MultiPageEditorPart implements IPageChangedLi
 		if(event.getSelectedPage() == sourceEditor) {
 			FindDialog.getInstance().setTextViewer(sourceEditor.getSourceViewer());
 		}
-		if(event.getSelectedPage() == sourceEditor) 
-			sourceEditor.update(sourceEditor.getCode());
+		if(event.getSelectedPage() == sourceEditor)
+			sourceEditor.updateMarkers();
 	}
 
 	@Override
@@ -209,7 +209,9 @@ public class ProcessEditor extends MultiPageEditorPart implements IPageChangedLi
 			if(severity == IMarker.SEVERITY_ERROR) setTitleImage(JFaceResources.getImageRegistry().get(IImageKeys.ERROR_DECORATOR));
 			if(severity == IMarker.SEVERITY_WARNING) setTitleImage(JFaceResources.getImageRegistry().get(IImageKeys.WARNING_DECORATOR));
 			if(severity == -1) setTitleImage(JFaceResources.getImageRegistry().get(IImageKeys.PROCESS_ICON));
-			if(sourceEditor != null) sourceEditor.updateMarkers();
+			if(sourceEditor != null) {
+				sourceEditor.updateMarkers();
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			Activator.logErrorMessageWithCause(e);
