@@ -6,10 +6,16 @@
       provider-name="ISM">
 
    <description>
-      -- 2023-12-04
+      -- 2023-12-07
+ADDED :
+* Manage line ruler column color in source editor
+* https://teamicstechnos.github.io/DOCoMETRe/ to About box
+FIXED : Nothing
+-- 2023-12-04
 ADDED : Nothing
 FIXED :
-* Update markers when the selected editor page changes(Process Editor)
+* Update markers when the selected editor page changes(Process
+Editor)
 * Call super implementation (ADBasic source editor)
 -- 2023-11-27
 ADDED : 
