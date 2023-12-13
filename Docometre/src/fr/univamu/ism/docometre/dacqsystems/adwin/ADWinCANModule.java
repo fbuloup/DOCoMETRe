@@ -420,6 +420,9 @@ public class ADWinCANModule extends Module {
 		messageObjectID.clear();
 		String messageObject = getProperty(ADWinCANModuleProperties.MESSAGE_OBJECT);
 		String messageID = getProperty(ADWinCANModuleProperties.MESSAGE_ID);
+		
+		if(messageObject == null || messageID == null) return;
+		
 		if(receive || transmit) {
 			String[] messageObjectSplitted = messageObject.split(",");
 			String[] messageIDSplitted = messageID.split(",");
