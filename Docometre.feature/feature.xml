@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2023-12-07
+      -- 2023-12-13
+ADDED : Nothing
+FIXED :
+* NPE in ADWin CAN Module
+-- 2023-12-07
 ADDED :
 * Manage line ruler column color in source editor
 * https://teamicstechnos.github.io/DOCoMETRe/ to About box
