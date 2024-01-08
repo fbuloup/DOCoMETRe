@@ -1017,20 +1017,24 @@ public class ADWinProcess extends Process {
 	
 	@Override
 	public Job execute(String prefix, String suffix) throws Exception {
-		boot();
-		loadProcess();
-		int processNumberInt = Integer.parseInt(getProperty(ADWinProcessProperties.PROCESS_NUMBER));	
-		RealTimeLoopJob realTimeLoopJob = new RealTimeLoopJob(DocometreMessages.RunningProcess);
-		open(this, prefix, suffix);
-		generation();
+		try {
+			boot();
+			loadProcess();
+			int processNumberInt = Integer.parseInt(getProperty(ADWinProcessProperties.PROCESS_NUMBER));	
+			RealTimeLoopJob realTimeLoopJob = new RealTimeLoopJob(DocometreMessages.RunningProcess);
+			open(this, prefix, suffix);
+			generation();
 //		for (int i = 0; i < getDACQConfiguration().getModulesNumber(); i++) {
 //			ModuleBehaviour module = getDACQConfiguration().getModule(i);
 //			module.open(this);
 //			module.generation();
 //		}
-		pushParametersToADWinProcess();
-		((ADWinDACQConfiguration)getDACQConfiguration()).getADwinDevice().Start_Process(processNumberInt);
-		return realTimeLoopJob;
+			pushParametersToADWinProcess();
+			((ADWinDACQConfiguration)getDACQConfiguration()).getADwinDevice().Start_Process(processNumberInt);
+			return realTimeLoopJob;
+		} catch (Exception e) {
+			throw e;
+		}
 	}
 	
 	public float[] getData(int transferNumInt, int nbData) throws ADwinCommunicationError {

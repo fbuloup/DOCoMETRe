@@ -43,6 +43,10 @@ package fr.univamu.ism.docometre.dacqsystems.adwin;
 
 import java.io.File;
 
+import org.eclipse.osgi.util.NLS;
+
+import fr.univamu.ism.docometre.DocometreMessages;
+
 public class LoadProcessDelegate {
 	
 	public static void loadProcess(String binaryFilePath, String processNumber, ADWinDACQConfiguration adwinDacqConfiguration) throws Exception {
@@ -50,10 +54,11 @@ public class LoadProcessDelegate {
 		String cpuType = adwinDacqConfiguration.getProperty(ADWinDACQConfigurationProperties.CPU_TYPE);
 		if (cpuType.contentEquals(ADWinDACQConfigurationProperties.I)) filePath = binaryFilePath + ".t9" + processNumber;
 		if (cpuType.contentEquals(ADWinDACQConfigurationProperties.II)) filePath = binaryFilePath + ".tB" + processNumber;
-		if(filePath != null) {
-			File file = new File(filePath);
+		File file = new File(filePath);
+		if(filePath != null && file.exists()) {
 			adwinDacqConfiguration.getADwinDevice().Load_Process(file.getAbsolutePath());
-		} else throw new Exception("ADBasic binary file \"" + filePath + "\" not found");	
+		} else 
+			throw new Exception(NLS.bind(DocometreMessages.ADBasicBinaryFileNotFound, filePath)  );	
 		
 	}
 	

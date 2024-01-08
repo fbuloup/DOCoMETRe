@@ -161,6 +161,7 @@ public class ExperimentScheduler {
 				
 			} catch (Exception e) {
 				e.printStackTrace();
+				running = false;
 				return new Status(IStatus.ERROR, Activator.PLUGIN_ID, Activator.getLogErrorMessageWithCause(e));
 			} finally {
 				if(removeProcessHandle) {

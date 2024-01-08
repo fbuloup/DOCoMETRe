@@ -1138,6 +1138,9 @@ public final class DocometreMessages extends NLS {
 	public static String UpdateLibrariesVersion;
 	public static String CurrentLibrariesVersion;
 	public static String DacqConfLibrariesVersion;
+	
+	// LoadProcessDelegate
+	public static String ADBasicBinaryFileNotFound;
 
 	static {
 		// load message values from bundle file
