@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2023-12-13
+      -- 2024-01-08
+ADDED :
+* Manage the error when ADBasic binary file for the process is not found
+FIXED : Nothing
+-- 2023-12-13
 ADDED : Nothing
 FIXED :
 * NPE in ADWin CAN Module
