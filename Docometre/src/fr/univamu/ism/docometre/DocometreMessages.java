@@ -638,6 +638,8 @@ public final class DocometreMessages extends NLS {
 	public static String ASCIICodeValueLabel;
 	public static String CRValueLabel;
 	public static String LFValueLabel;
+	public static String CRValueToolTip;
+	public static String LFValueToolTip;
 	
 	/* ADwin serial output function */
 	public static String ASCIICodeVariableNameLabel;
