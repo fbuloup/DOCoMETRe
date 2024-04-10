@@ -6,9 +6,14 @@
       provider-name="ISM">
 
    <description>
-      -- 2024-01-08
+      -- 2024-04-10
+ADDED : Nothing
+FIXED :
+* CR, LF chars must be sent this order : CR then LF and not LF then CR
+-- 2024-01-08
 ADDED :
-* Manage the error when ADBasic binary file for the process is not found
+* Manage the error when ADBasic binary file for the process is
+not found
 FIXED : Nothing
 -- 2023-12-13
 ADDED : Nothing
