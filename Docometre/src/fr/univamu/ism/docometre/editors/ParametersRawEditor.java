@@ -194,13 +194,13 @@ public class ParametersRawEditor extends EditorPart {
 	}
 
 	public void update() {
-		try {
-			readParamsFile();
-			parametersEditor.getDocument().set(content.toString());
-		} catch (IOException e) {
-			Activator.logErrorMessageWithCause(e);
-			e.printStackTrace();
-		}
+//		try {
+//			readParamsFile();
+//			parametersEditor.getDocument().set(content.toString());
+//		} catch (IOException e) {
+//			Activator.logErrorMessageWithCause(e);
+//			e.printStackTrace();
+//		}
 		
 	}
 	

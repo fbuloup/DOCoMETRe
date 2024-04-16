@@ -154,12 +154,11 @@ private ParametersTableEditor parametersTableEditor;
 	@Override
 	public void pageChanged(PageChangedEvent event) {
 		if(event.getSelectedPage() == parametersRawEditor) {
-			System.out.println("parametersRawEditor");
+			boolean isDirty = isDirty();
 			parametersRawEditor.update();
-			setDirty(false);
+			if(!isDirty) setDirty(false);
 		}
 		if(event.getSelectedPage() == parametersTableEditor) {
-			System.out.println("parametersTableEditor");
 			parametersTableEditor.update();
 		}
 	}
