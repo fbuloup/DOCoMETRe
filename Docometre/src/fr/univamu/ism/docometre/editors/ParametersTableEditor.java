@@ -61,6 +61,7 @@ public class ParametersTableEditor extends EditorPart {
 
 		@Override
 		protected void setValue(Object element, Object value) {
+			int nbColumns = ((TableViewer)getViewer()).getTable().getColumnCount();
 			int lineNumber = (int)element;
 			int columnNumber = (int)tableViewerColumn.getColumn().getData();
 			String parameterValue = (String) value;
@@ -69,7 +70,7 @@ public class ParametersTableEditor extends EditorPart {
 				int offset = parametersEditor.getDocument().getLineOffset(lineNumber);
 				String line = parametersEditor.getDocument().get(offset, length);
 				String[] parameters = line.split(";");
-				parameters[columnNumber-1] = parameterValue;
+				parameters[columnNumber-1] = parameterValue + ((nbColumns-1 == columnNumber)?"\n":"");
 				line = String.join(";", parameters);
 				parametersEditor.getDocument().replace(offset, length, line);
 				update();
