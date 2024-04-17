@@ -10,7 +10,11 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
@@ -121,6 +125,65 @@ public class ParametersTableEditor extends EditorPart {
 		parametersTableViewer.getTable().setHeaderVisible(true);
 		parametersTableViewer.getTable().setLinesVisible(true);
 		parametersTableViewer.setContentProvider(ArrayContentProvider.getInstance());
+		
+		// Create context menu
+		Menu menuTable = new Menu(parametersTableViewer.getTable());
+		parametersTableViewer.getTable().setMenu(menuTable);
+
+		// Create menu item
+		MenuItem addLine = new MenuItem(menuTable, SWT.NONE);
+		addLine.setText("Add line");
+		addLine.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent event) {
+				System.out.println("Add line");
+				parametersTableViewer.getTable().getColumnCount();
+				String line = " ;".repeat(parametersTableViewer.getTable().getColumnCount() - 1).replaceAll(";$", "");
+				int[] selectedLinesNumbers = parametersTableViewer.getTable().getSelectionIndices();
+				for (int i = 0; i < selectedLinesNumbers.length; i++) {
+					try {
+						System.out.println(parametersEditor.getDocument().get());
+						int lineNumber = selectedLinesNumbers[i] + 1;
+						int length = parametersEditor.getDocument().getLineLength(lineNumber);
+						int offset = parametersEditor.getDocument().getLineOffset(lineNumber);
+						if(lineNumber == parametersEditor.getDocument().getNumberOfLines() - 1)
+							parametersEditor.getDocument().replace(offset+length, 0, "\n " + line);
+						else 
+							parametersEditor.getDocument().replace(offset+length, 0, line + "\n");
+						System.out.println(parametersEditor.getDocument().get());
+						update();
+					} catch (BadLocationException e) {
+						Activator.logErrorMessageWithCause(e);
+						e.printStackTrace();
+					}
+				}
+			}
+		});
+		MenuItem removeLine = new MenuItem(menuTable, SWT.NONE);
+		removeLine.setText("Remove line");
+		removeLine.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent event) {
+				int[] selectedLinesNumbers = parametersTableViewer.getTable().getSelectionIndices();
+				for (int i = 0; i < selectedLinesNumbers.length; i++) {
+					try {
+						int lineNumber = selectedLinesNumbers[i] + 1;
+						int length = parametersEditor.getDocument().getLineLength(lineNumber);
+						int offset = parametersEditor.getDocument().getLineOffset(lineNumber);
+						parametersEditor.getDocument().replace(offset, length, "");
+						lineNumber = parametersEditor.getDocument().getNumberOfLines() - 1;
+						length = parametersEditor.getDocument().getLineLength(lineNumber);
+						if(length == 0) {
+							parametersEditor.getDocument().set(parametersEditor.getDocument().get().trim());
+						}
+						update();
+					} catch (BadLocationException e) {
+						Activator.logErrorMessageWithCause(e);
+						e.printStackTrace();
+					}
+				}
+			}
+		});
 		
 		update();
 	}
