@@ -11,6 +11,7 @@ import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
@@ -116,12 +117,23 @@ public class ParametersTableEditor extends EditorPart {
 
 	@Override
 	public void createPartControl(Composite parent) {
+		parametersTableViewer = new TableViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
+		parametersTableViewer.getTable().setHeaderVisible(true);
+		parametersTableViewer.getTable().setLinesVisible(true);
+		parametersTableViewer.setContentProvider(ArrayContentProvider.getInstance());
 		
+		update();
+	}
+
+	private void populateTable() {
 		try {
-			parametersTableViewer = new TableViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
-			parametersTableViewer.getTable().setHeaderVisible(true);
-			parametersTableViewer.getTable().setLinesVisible(true);
-			parametersTableViewer.setContentProvider(ArrayContentProvider.getInstance());
+			
+			parametersTableViewer.getTable().removeAll();
+			TableColumn[] tableColumns = parametersTableViewer.getTable().getColumns();
+			for (TableColumn tableColumn : tableColumns) {
+				tableColumn.dispose();
+			}
+			
 			int length = parametersEditor.getDocument().getLineLength(0);
 			String firstLine = parametersEditor.getDocument().get(0, length);
 			String[] parametersString = firstLine.split(";");
@@ -153,7 +165,17 @@ public class ParametersTableEditor extends EditorPart {
 							int offset = parametersEditor.getDocument().getLineOffset(lineNumber);
 							String line = parametersEditor.getDocument().get(offset, length);
 							String[] parameters = line.split(";");
-							parameterValue = parameters[columnNumber-1].trim();
+							if(parameters.length >= columnNumber) 
+								parameterValue = parameters[columnNumber-1].trim();
+							else {
+								for (int j = parameters.length; j < columnNumber; j++) {
+									line += "; ";
+								}
+								line = line.replaceAll("^;", "");
+								parametersEditor.getDocument().replace(offset, length, line);
+								parameterValue = " ";
+							}
+								
 						} catch (BadLocationException e) {
 							Activator.logErrorMessageWithCause(e);
 							e.printStackTrace();
@@ -163,14 +185,11 @@ public class ParametersTableEditor extends EditorPart {
 				});
 				
 			}
-			update();
 		} catch (BadLocationException e) {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
 		}
 		
-		
-
 	}
 
 	@Override
@@ -179,6 +198,7 @@ public class ParametersTableEditor extends EditorPart {
 	}
 
 	public void update() {
+		populateTable();
 		Integer[] linesNumber = new Integer[parametersEditor.getDocument().getNumberOfLines() - 1];
 		for (int i = 0; i < linesNumber.length; i++) {
 			linesNumber[i] = i+1;
