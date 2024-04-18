@@ -1,5 +1,7 @@
 package fr.univamu.ism.docometre.editors;
 
+import java.util.Arrays;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -22,6 +24,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
 
 import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.DocometreMessages;
 
 public class ParametersTableEditor extends EditorPart {
 	
@@ -132,15 +135,15 @@ public class ParametersTableEditor extends EditorPart {
 
 		// Create menu item
 		MenuItem addLine = new MenuItem(menuTable, SWT.NONE);
-		addLine.setText("Add line");
+		addLine.setText(DocometreMessages.AddLines);
 		addLine.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent event) {
-				System.out.println("Add line");
 				parametersTableViewer.getTable().getColumnCount();
 				String line = " ;".repeat(parametersTableViewer.getTable().getColumnCount() - 1).replaceAll(";$", "");
 				int[] selectedLinesNumbers = parametersTableViewer.getTable().getSelectionIndices();
-				for (int i = 0; i < selectedLinesNumbers.length; i++) {
+				Arrays.sort(selectedLinesNumbers);
+				for (int i = selectedLinesNumbers.length - 1; i >= 0; i--) {
 					try {
 						System.out.println(parametersEditor.getDocument().get());
 						int lineNumber = selectedLinesNumbers[i] + 1;
@@ -160,12 +163,13 @@ public class ParametersTableEditor extends EditorPart {
 			}
 		});
 		MenuItem removeLine = new MenuItem(menuTable, SWT.NONE);
-		removeLine.setText("Remove line");
+		removeLine.setText(DocometreMessages.RemoveLines);
 		removeLine.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent event) {
 				int[] selectedLinesNumbers = parametersTableViewer.getTable().getSelectionIndices();
-				for (int i = 0; i < selectedLinesNumbers.length; i++) {
+				Arrays.sort(selectedLinesNumbers);
+				for (int i = selectedLinesNumbers.length - 1; i >= 0; i--) {
 					try {
 						int lineNumber = selectedLinesNumbers[i] + 1;
 						int length = parametersEditor.getDocument().getLineLength(lineNumber);

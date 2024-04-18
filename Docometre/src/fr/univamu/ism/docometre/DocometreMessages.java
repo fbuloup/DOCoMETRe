@@ -1143,6 +1143,10 @@ public final class DocometreMessages extends NLS {
 	
 	// LoadProcessDelegate
 	public static String ADBasicBinaryFileNotFound;
+	
+	// ParametersTableEditor
+	public static String AddLines;
+	public static String RemoveLines;
 
 	static {
 		// load message values from bundle file
