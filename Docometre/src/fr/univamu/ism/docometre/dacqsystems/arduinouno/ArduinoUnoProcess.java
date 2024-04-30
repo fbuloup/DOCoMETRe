@@ -1144,13 +1144,23 @@ public class ArduinoUnoProcess extends Process {
 		String rootPath = arduinoUnoCompiler.replaceAll("arduino-builder", "");
 		String cmd = "rm -R -f " + outputFolder + File.separator + "Build\n";
 		cmd = cmd + "mkdir " + outputFolder + File.separator + "Build\n";
-		cmd = cmd + arduinoUnoCompiler + " -hardware=" + rootPath + "hardware/ -tools=" + rootPath + "hardware/tools/ -tools=" + rootPath + "tools-builder/ -fqbn=arduino:avr:uno -quiet -verbose";
-		cmd = cmd + " -built-in-libraries " + rootPath + "libraries";
-		IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
-		String userLibrariesPath = preferenceStore.getString(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getKey());
-		if(userLibrariesPath != null && !"".equals(userLibrariesPath)) cmd = cmd + " -libraries " + userLibrariesPath;
-		cmd = cmd + " -build-path=" + outputFolder + File.separator + "Build";
-		cmd = cmd + " -compile " + sketchFilePath;// + " > stdout.txt 2>stderr.txt";
+		
+		boolean useCLI = "true".equals(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI))?true:false;
+		if(!useCLI) {
+			cmd = cmd + arduinoUnoCompiler + " -hardware=" + rootPath + "hardware/ -tools=" + rootPath + "hardware/tools/ -tools=" + rootPath + "tools-builder/ -fqbn=arduino:avr:uno -quiet -verbose";
+			cmd = cmd + " -built-in-libraries " + rootPath + "libraries";
+			IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
+			String userLibrariesPath = preferenceStore.getString(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getKey());
+			if(userLibrariesPath != null && !"".equals(userLibrariesPath)) cmd = cmd + " -libraries " + userLibrariesPath;
+			cmd = cmd + " -build-path=" + outputFolder + File.separator + "Build";
+			cmd = cmd + " -compile " + sketchFilePath;// + " > stdout.txt 2>stderr.txt";
+		} else {
+			String arduinoCLIPATH = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH);
+			cmd = cmd + "\"" + arduinoCLIPATH + "\"" + " compile -b arduino:avr:uno --output-dir \"" + outputFolder + File.separator + "Build\" \"" + sketchFilePath + "\"";			
+			String userLibrariesPath = getDACQConfiguration().getProperty((ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH));
+			if(userLibrariesPath != null && !"".equals(userLibrariesPath)) cmd = cmd + " -libraries \"" + userLibrariesPath + "\"";
+		}
+		
 		fileWriter.write(cmd);
 		fileWriter.close();
 		// This bash file must be executable 
@@ -1171,13 +1181,23 @@ public class ArduinoUnoProcess extends Process {
 		String rootPath = arduinoUnoCompiler.replaceAll("arduino-builder", "");
 		String cmd = "rm -R -f " + outputFolder + File.separator + "Build\n";
 		cmd = cmd + "mkdir " + outputFolder + File.separator + "Build\n";
-		cmd = cmd + arduinoUnoCompiler + " -hardware=" + rootPath + "hardware/ -tools=" + rootPath + "hardware/tools/ -tools=" + rootPath + "tools-builder/ -fqbn=arduino:avr:uno -quiet -verbose";
-		cmd = cmd + " -built-in-libraries " + rootPath + "libraries";
-		IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
-		String userLibrariesPath = preferenceStore.getString(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getKey());
-		if(userLibrariesPath != null && !"".equals(userLibrariesPath)) cmd = cmd + " -libraries " + userLibrariesPath;
-		cmd = cmd + " -build-path=" + outputFolder + File.separator + "Build";
-		cmd = cmd + " -compile " + sketchFilePath;// + " > stdout.txt 2>stderr.txt";
+		
+		boolean useCLI = "true".equals(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI))?true:false;
+		if(!useCLI) {
+			cmd = cmd + arduinoUnoCompiler + " -hardware=" + rootPath + "hardware/ -tools=" + rootPath + "hardware/tools/ -tools=" + rootPath + "tools-builder/ -fqbn=arduino:avr:uno -quiet -verbose";
+			cmd = cmd + " -built-in-libraries " + rootPath + "libraries";
+			IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
+			String userLibrariesPath = preferenceStore.getString(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getKey());
+			if(userLibrariesPath != null && !"".equals(userLibrariesPath)) cmd = cmd + " -libraries " + userLibrariesPath;
+			cmd = cmd + " -build-path=" + outputFolder + File.separator + "Build";
+			cmd = cmd + " -compile " + sketchFilePath;// + " > stdout.txt 2>stderr.txt";
+		} else {
+			String arduinoCLIPATH = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH);
+			cmd = cmd + "\"" + arduinoCLIPATH + "\"" + " compile -b arduino:avr:uno --output-dir \"" + outputFolder + File.separator + "Build\" \"" + sketchFilePath + "\"";			
+			String userLibrariesPath = getDACQConfiguration().getProperty((ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH));
+			if(userLibrariesPath != null && !"".equals(userLibrariesPath)) cmd = cmd + " -libraries \"" + userLibrariesPath + "\"";
+		}
+		
 		fileWriter.write(cmd);
 		fileWriter.close();
 		// This bash file must be executable 
