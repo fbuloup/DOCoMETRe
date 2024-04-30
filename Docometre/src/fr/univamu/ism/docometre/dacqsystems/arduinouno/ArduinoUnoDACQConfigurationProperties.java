@@ -54,6 +54,8 @@ public final class ArduinoUnoDACQConfigurationProperties extends Property {
 	
 	public static final ArduinoUnoDACQConfigurationProperties BUILDER_PATH = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.BUILDER_PATH", ArduinoUnoMessages.BuilderPath_Label, ArduinoUnoMessages.BuilderPath_Tooltip, "(.)+");
 	public static final ArduinoUnoDACQConfigurationProperties AVRDUDE_PATH = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.AVRDUDE_PATH", ArduinoUnoMessages.AVRDudePath_Label, ArduinoUnoMessages.AVRDudePath_Tooltip, "(.)+");
+	public static final ArduinoUnoDACQConfigurationProperties ARDUINOCLI_PATH = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH", ArduinoUnoMessages.ArduinoCLIPath_Label, ArduinoUnoMessages.ArduinoCLIPath_Tooltip, "(.)+");
+	public static final ArduinoUnoDACQConfigurationProperties USE_ARDUINOCLI = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI", ArduinoUnoMessages.UseArduinoCLI_Label, ArduinoUnoMessages.UseArduinoCLI_Tooltip, "^(true|false)$", "true:false");	
 	public static final ArduinoUnoDACQConfigurationProperties DEVICE_PATH = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.DEVICE_PATH", ArduinoUnoMessages.DevicePath_Label, ArduinoUnoMessages.DevicePath_Tooltip, Platform.getOS().equals(Platform.OS_WIN32)?"^COM\\d+$":"(.)+");
 	public static final ArduinoUnoDACQConfigurationProperties BAUD_RATE = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.BAUD_RATE", ArduinoUnoMessages.DeviceBaudRate_Label, ArduinoUnoMessages.DeviceBaudRate_Tooltip, "^(9600|115200|1000000|1500000|2000000)$", "9600:115200:1000000:1500000:2000000");
 	public static final ArduinoUnoDACQConfigurationProperties GLOBAL_FREQUENCY = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY", ArduinoUnoMessages.GlobalFrequency_Label, ArduinoUnoMessages.GlobalFrequency_Tooltip, "(^\\d{1,10}$)");
@@ -72,6 +74,8 @@ public final class ArduinoUnoDACQConfigurationProperties extends Property {
 		DACQConfigurationProperties.populateProperties(daqGeneralConfiguration);
 		daqGeneralConfiguration.setProperty(BUILDER_PATH, "");
 		daqGeneralConfiguration.setProperty(AVRDUDE_PATH, "");
+		daqGeneralConfiguration.setProperty(ARDUINOCLI_PATH, "");
+		daqGeneralConfiguration.setProperty(USE_ARDUINOCLI, "no");
 		if(Platform.OS_WIN32.equals(Platform.getOS())) daqGeneralConfiguration.setProperty(DEVICE_PATH, "COM3");
 		else daqGeneralConfiguration.setProperty(DEVICE_PATH, "/dev/tty.usb*");
 		daqGeneralConfiguration.setProperty(BAUD_RATE, BAUD_RATE_2000000);
@@ -84,6 +88,8 @@ public final class ArduinoUnoDACQConfigurationProperties extends Property {
 		ArduinoUnoDACQConfiguration clonedGeneralConfiguration = new ArduinoUnoDACQConfiguration();
 		clonedGeneralConfiguration.setProperty(BUILDER_PATH, new String(daqGeneralConfiguration.getProperty(BUILDER_PATH)));
 		clonedGeneralConfiguration.setProperty(AVRDUDE_PATH, new String(daqGeneralConfiguration.getProperty(AVRDUDE_PATH)));
+		clonedGeneralConfiguration.setProperty(ARDUINOCLI_PATH, new String(daqGeneralConfiguration.getProperty(ARDUINOCLI_PATH)));
+		clonedGeneralConfiguration.setProperty(USE_ARDUINOCLI, new String(daqGeneralConfiguration.getProperty(USE_ARDUINOCLI)));
 		clonedGeneralConfiguration.setProperty(DEVICE_PATH, new String(daqGeneralConfiguration.getProperty(DEVICE_PATH)));
 		clonedGeneralConfiguration.setProperty(BAUD_RATE, new String(daqGeneralConfiguration.getProperty(BAUD_RATE)));
 		clonedGeneralConfiguration.setProperty(GLOBAL_FREQUENCY, new String(daqGeneralConfiguration.getProperty(GLOBAL_FREQUENCY)));

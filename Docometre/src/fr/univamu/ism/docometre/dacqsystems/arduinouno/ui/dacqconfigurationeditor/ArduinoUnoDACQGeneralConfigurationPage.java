@@ -60,7 +60,10 @@ import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Scrollable;
@@ -107,6 +110,7 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 	private Hyperlink globalFrequencyHyperlink;
 	private Text builderPathText;
 	private Text avrDudePathText;
+	private Text arduinoCLIPathText;
 	private Text librariesPathText;
 	
 	private class SetAsDefaultConfigurationAction extends Action {
@@ -124,6 +128,7 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 			values.add(avrDudePathText.getText());
 			values.add(librariesPathText.getText());
 			values.add(globalFrequencyHyperlink.getText());
+			values.add(arduinoCLIPathText.getText());
 			IPreferenceStore preferences = Activator.getDefault().getPreferenceStore();
 			preferences.putValue(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH.getKey(), values.get(0));
 			preferences.putValue(ArduinoUnoDACQConfigurationProperties.BAUD_RATE.getKey(), values.get(1));
@@ -131,6 +136,7 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 			preferences.putValue(ArduinoUnoDACQConfigurationProperties.AVRDUDE_PATH.getKey(), values.get(3));
 			preferences.putValue(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), values.get(4));
 			preferences.putValue(ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY.getKey(), values.get(5));
+			preferences.putValue(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH.getKey(), values.get(6));
 		}
 	}
 
@@ -205,6 +211,31 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 		avrDudePathText.addModifyListener(new ModifyPropertyHandler(ArduinoUnoDACQConfigurationProperties.AVRDUDE_PATH, dacqConfiguration, avrDudePathText, regExp, DocometreMessages.ErrorFileFolderNotValid, true, (ResourceEditor)getEditor()));
 		avrDudePathText.addModifyListener(getGeneralConfigurationModifyListener());
 		createButton(generalconfigurationContainer, DocometreMessages.Browse, SWT.PUSH, 1, 1).addSelectionListener(new DialogSelectionHandler(avrDudePathText, false, getSite().getShell()));
+		
+		value = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI);
+		Button useCLIButton = createButton(generalconfigurationContainer, ArduinoUnoMessages.UseArduinoCLI_Label, SWT.CHECK, 3, 1);
+		useCLIButton.setToolTipText(ArduinoUnoMessages.UseArduinoCLI_Tooltip);
+		useCLIButton.setSelection("true".equals(value)?true:false);
+		
+		createLabel(generalconfigurationContainer, ArduinoUnoMessages.ArduinoCLIPath_Label, ArduinoUnoMessages.ArduinoCLIPath_Tooltip);
+		value = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH);
+		regExp = ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH.getRegExp();
+		arduinoCLIPathText = createText(generalconfigurationContainer, value, SWT.NONE, 1, 1);
+		arduinoCLIPathText.addModifyListener(new ModifyPropertyHandler(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH, dacqConfiguration, arduinoCLIPathText, regExp, DocometreMessages.ErrorFileFolderNotValid, true, (ResourceEditor)getEditor()));
+		arduinoCLIPathText.addModifyListener(getGeneralConfigurationModifyListener());
+		Button browseButton = createButton(generalconfigurationContainer, DocometreMessages.Browse, SWT.PUSH, 1, 1);
+		browseButton.addSelectionListener(new DialogSelectionHandler(arduinoCLIPathText, false, getSite().getShell()));
+		arduinoCLIPathText.setEnabled("true".equals(value)?true:false);
+		browseButton.setEnabled("true".equals(value)?true:false);
+		useCLIButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				dacqConfiguration.setProperty(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI, useCLIButton.getSelection()?"true":"false");
+				arduinoCLIPathText.setEnabled(useCLIButton.getSelection());
+				browseButton.setEnabled(useCLIButton.getSelection());
+				generalConfigurationSectionPart.markDirty();
+			}
+		});
 		
 		createLabel(generalconfigurationContainer, ArduinoUnoMessages.DevicePath_Label, ArduinoUnoMessages.DevicePath_Tooltip);
 		value = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH);

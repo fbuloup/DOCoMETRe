@@ -60,6 +60,10 @@ public class ArduinoUnoMessages extends NLS {
 	public static String BuilderPath_Tooltip;
 	public static String AVRDudePath_Label;
 	public static String AVRDudePath_Tooltip;
+	public static String ArduinoCLIPath_Label;
+	public static String ArduinoCLIPath_Tooltip;
+	public static String UseArduinoCLI_Label;
+	public static String UseArduinoCLI_Tooltip;
 	public static String LibrariesAbsolutePath_Label;
 	public static String LibrariesAbsolutePath_Tooltip;
 	public static String UserLibrariesAbsolutePath_Label;
