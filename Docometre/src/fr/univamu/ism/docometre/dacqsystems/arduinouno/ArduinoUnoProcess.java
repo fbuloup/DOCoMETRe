@@ -1251,27 +1251,35 @@ public class ArduinoUnoProcess extends Process {
 			});
 		}
 		
-		// Load Process with AVRDUDE
-		// Get AVRDude path
+		String cmd = "";
 		IResource processResource = ObjectsController.getResourceForObject(this);
 		String resourcePath = processResource.getParent().getLocation().toOSString() + File.separatorChar + "BinSource" + File.separator + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + File.separator + "Build" + File.separator;
 		String inoHexFilePath = resourcePath + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + ".ino.hex";
-		if(previousINOHexFilePath.equals(inoHexFilePath) && !forceUpload) {
-			appendToEventDiary("Process " + processResource.getFullPath() + " was already loaded\n" );
-			return true;
+		boolean useCLI = "true".equals(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI))?true:false;
+		if(!useCLI) {
+			// Load Process with AVRDUDE
+			// Get AVRDude path
+			if(previousINOHexFilePath.equals(inoHexFilePath) && !forceUpload) {
+				appendToEventDiary("Process " + processResource.getFullPath() + " was already loaded\n" );
+				return true;
+			}
+			
+			forceUpload = false;
+			previousINOHexFilePath = inoHexFilePath;
+			
+			String avrDudePath = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.AVRDUDE_PATH);
+			String confFilePath = "";
+			if(Platform.getOS().equals(Platform.OS_WIN32)) confFilePath = avrDudePath.replaceAll("avrdude.exe$", "");
+			else confFilePath = avrDudePath.replaceAll("avrdude$", "");
+			confFilePath = confFilePath + ".." + File.separator + "etc" + File.separator + "avrdude.conf";
+			if(Platform.getOS().equals(Platform.OS_WIN32)) confFilePath = "\"" + confFilePath + "\"";
+			
+			cmd = avrDudePath + " -C " + confFilePath +  " -p m328p -c arduino -P " + devicePath + " -U flash:w:" + inoHexFilePath + ":i"; 
+		} else {
+			String arduinoCLIPATH = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH);
+			cmd = arduinoCLIPATH + " upload -p " + devicePath + " --fqbn arduino:avr:uno " + inoHexFilePath;
 		}
 		
-		forceUpload = false;
-		previousINOHexFilePath = inoHexFilePath;
-		
-		String avrDudePath = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.AVRDUDE_PATH);
-		String confFilePath = "";
-		if(Platform.getOS().equals(Platform.OS_WIN32)) confFilePath = avrDudePath.replaceAll("avrdude.exe$", "");
-		else confFilePath = avrDudePath.replaceAll("avrdude$", "");
-		confFilePath = confFilePath + ".." + File.separator + "etc" + File.separator + "avrdude.conf";
-		if(Platform.getOS().equals(Platform.OS_WIN32)) confFilePath = "\"" + confFilePath + "\"";
-		
-		String cmd = avrDudePath + " -C " + confFilePath +  " -p m328p -c arduino -P " + devicePath + " -U flash:w:" + inoHexFilePath + ":i"; 
 		
 		try {
 			java.lang.Process processCMD = Runtime.getRuntime().exec(cmd);
