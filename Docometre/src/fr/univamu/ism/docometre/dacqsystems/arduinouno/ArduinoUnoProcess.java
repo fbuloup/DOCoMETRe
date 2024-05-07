@@ -1254,11 +1254,11 @@ public class ArduinoUnoProcess extends Process {
 		String cmd = "";
 		IResource processResource = ObjectsController.getResourceForObject(this);
 		String resourcePath = processResource.getParent().getLocation().toOSString() + File.separatorChar + "BinSource" + File.separator + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + File.separator + "Build" + File.separator;
-		String inoHexFilePath = resourcePath + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + ".ino.hex";
 		boolean useCLI = "true".equals(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI))?true:false;
 		if(!useCLI) {
 			// Load Process with AVRDUDE
 			// Get AVRDude path
+			String inoHexFilePath = resourcePath + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + ".ino.hex";
 			if(previousINOHexFilePath.equals(inoHexFilePath) && !forceUpload) {
 				appendToEventDiary("Process " + processResource.getFullPath() + " was already loaded\n" );
 				return true;
@@ -1276,8 +1276,18 @@ public class ArduinoUnoProcess extends Process {
 			
 			cmd = avrDudePath + " -C " + confFilePath +  " -p m328p -c arduino -P " + devicePath + " -U flash:w:" + inoHexFilePath + ":i"; 
 		} else {
+			String inoHexFilePath = resourcePath + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + ".ino.hex";
+			if(previousINOHexFilePath.equals(inoHexFilePath) && !forceUpload) {
+				appendToEventDiary("Process " + processResource.getFullPath() + " was already loaded\n" );
+				return true;
+			}
+			
+			
+			forceUpload = false;
+			previousINOHexFilePath = inoHexFilePath;
+			
 			String arduinoCLIPATH = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH);
-			cmd = arduinoCLIPATH + " upload -p " + devicePath + " --fqbn arduino:avr:uno " + inoHexFilePath;
+			cmd = arduinoCLIPATH + " upload -p " + devicePath + " --fqbn arduino:avr:uno -i " + inoHexFilePath;
 		}
 		
 		
@@ -1291,8 +1301,12 @@ public class ArduinoUnoProcess extends Process {
 				message = message + line + "\n";
 			}
 			error.close();
+			
 			if(!message.equals("")) Activator.logErrorMessage(message);
-			if(message.contains("error")) return false;
+			if(message.toLowerCase().contains("error")) {
+				forceUpload = true;
+				return false;
+			}
 			appendToEventDiary("Process " + processResource.getFullPath() + " loaded\n" );
 			return true;
 //			message = "";
