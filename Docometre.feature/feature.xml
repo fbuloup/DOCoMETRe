@@ -6,7 +6,13 @@
       provider-name="ISM">
 
    <description>
-      -- 2024-04-18
+      -- 2024-05-16
+ADDED : 
+* Help and comment in parameters file
+* Arduino CLI can now be used
+* Add &quot;Padd with last value&quot; option (Pref.) when loading data
+FIXED : Nothing
+-- 2024-04-18
 ADDED : 
 * Table editor for Parameters editor
 FIXED : Nothing
