@@ -767,6 +767,8 @@ public final class DocometreMessages extends NLS {
 	public static String AlwaysLoadFromSavedData_Tooltip;
 	public static String LoadSubjectFromRawDataDialog_Title;
 	public static String LoadSubjectFromRawDataDialog_Message;
+	public static String PaddWithLastValueRatherThanZero;
+	public static String PaddWithLastValueRatherThanZero_Tooltip;
 	
 	// Matlab preferences 
 	public static String MatlabPreferences_Description;
@@ -1147,7 +1149,7 @@ public final class DocometreMessages extends NLS {
 	// ParametersTableEditor
 	public static String AddLines;
 	public static String RemoveLines;
-
+	
 	static {
 		// load message values from bundle file
 		String bn = BUNDLE_NAME;

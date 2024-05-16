@@ -18,6 +18,7 @@ function subject = loadDataDocometreSAMPLES(dataFilesList, varargin)
     
     maximumSamples = sessionsProperties('MAXIMUM_SAMPLES');
     totalTrialsNumber = sessionsProperties('TOTAL_TRIALS_NUMBER');
+    paddWithLastValue = sessionsProperties('PADD_WITH_LAST_VALUE_RATHER_THAN_ZERO');
     
     for n = 1:nbDataFiles
         
@@ -87,6 +88,9 @@ function subject = loadDataDocometreSAMPLES(dataFilesList, varargin)
         eval(['subject.', channelName, '.EndCut(',trialNumber ,') = ', num2str(sizeData),';']);
         eval(['subject.', channelName, '.FrontCut(',trialNumber ,') = 0;']);
         eval([channelNameValues, '(', trialNumber, ', 1:', num2str(sizeData),') = data;']);
+        if(strcmp(paddWithLastValue, 'true'))
+        	eval([channelNameValues, '(', trialNumber, ', ', num2str(sizeData), ':end) = data(', num2str(sizeData), ');']);
+        end 
     end
 
     n = 1;

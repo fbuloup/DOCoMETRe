@@ -73,6 +73,7 @@ import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
 import fr.univamu.ism.docometre.matlab.MatlabController;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
+import fr.univamu.ism.docometre.preferences.MathEnginePreferencesConstants;
 
 public final class MatlabEngine implements MathEngine {
 	
@@ -1030,6 +1031,8 @@ public final class MatlabEngine implements MathEngine {
 			//String dataFilesList = (String)subject.getSessionProperty(ResourceProperties.DATA_FILES_LIST_QN);
 
 			Map<String, String> sessionsProperties = Analyse.getSessionsInformations(subject);
+			boolean paddWithLastValue = Activator.getDefault().getPreferenceStore().getBoolean(MathEnginePreferencesConstants.PADD_WITH_LAST_VALUE_RATHER_THAN_ZERO);
+			sessionsProperties.put(MathEnginePreferencesConstants.PADD_WITH_LAST_VALUE_RATHER_THAN_ZERO, String.valueOf(paddWithLastValue));
 			
 			Set<String> keys = sessionsProperties.keySet();
 			Collection<String> values = sessionsProperties.values();

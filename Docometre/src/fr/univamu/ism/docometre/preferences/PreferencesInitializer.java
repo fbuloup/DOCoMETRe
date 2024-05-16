@@ -100,6 +100,7 @@ public class PreferencesInitializer extends AbstractPreferenceInitializer {
 		
 		defaults.put(MathEnginePreferencesConstants.MATH_ENGINE, MathEnginePreferencesConstants.MATH_ENGINE_MATLAB);
 		defaults.putBoolean(MathEnginePreferencesConstants.ALWAYS_LOAD_FROM_SAVED_DATA, false);
+		defaults.putBoolean(MathEnginePreferencesConstants.PADD_WITH_LAST_VALUE_RATHER_THAN_ZERO, false);
 		
 		defaults.putBoolean(GeneralPreferenceConstants.REDIRECT_STD_ERR_OUT_TO_FILE, false);
 		defaults.put(GeneralPreferenceConstants.STD_ERR_OUT_FILE, "");

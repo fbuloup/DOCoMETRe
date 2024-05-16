@@ -265,6 +265,9 @@ public class PythonEngine implements MathEngine {
 					pythonController.getPythonEntryPoint().loadData("OPTITRACK_TYPE_1", loadName, dataFilesList, null);
 				} else {
 					Map<String, String> sessionsProperties = Analyse.getSessionsInformations(subject);
+					boolean paddWithLastValue = Activator.getDefault().getPreferenceStore().getBoolean(MathEnginePreferencesConstants.PADD_WITH_LAST_VALUE_RATHER_THAN_ZERO);
+					sessionsProperties.put(MathEnginePreferencesConstants.PADD_WITH_LAST_VALUE_RATHER_THAN_ZERO, String.valueOf(paddWithLastValue));
+					
 					pythonController.getPythonEntryPoint().loadData("DOCOMETRE", loadName, dataFilesList, sessionsProperties);
 				}
 				

@@ -70,6 +70,14 @@ public class MathEnginePrefrencePage extends FieldEditorPreferencePage implement
 				DocometreMessages.AlwaysLoadFromSavedData, getFieldEditorParent());
 		alwaysLoadFromSavedDataFieldEditor.getDescriptionControl(getFieldEditorParent()).setToolTipText(DocometreMessages.AlwaysLoadFromSavedData_Tooltip);
 		addField(alwaysLoadFromSavedDataFieldEditor);
+		
+		BooleanFieldEditor paddWithLastValueFieldEditor = new BooleanFieldEditor(MathEnginePreferencesConstants.PADD_WITH_LAST_VALUE_RATHER_THAN_ZERO,
+				DocometreMessages.PaddWithLastValueRatherThanZero, getFieldEditorParent());
+		alwaysLoadFromSavedDataFieldEditor.getDescriptionControl(getFieldEditorParent()).setToolTipText(DocometreMessages.PaddWithLastValueRatherThanZero_Tooltip);
+		addField(paddWithLastValueFieldEditor);
+		
+		
+		
 	}
 
 }

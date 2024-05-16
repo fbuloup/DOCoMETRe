@@ -270,6 +270,10 @@ class DOCoMETRe(object):
 
 		maximumSamples = sessionsProperties["MAXIMUM_SAMPLES"];
 		totalTrialsNumber = sessionsProperties["TOTAL_TRIALS_NUMBER"];
+		paddWithLastValue = sessionsProperties["PADD_WITH_LAST_VALUE_RATHER_THAN_ZERO"];
+		if(jvmMode):
+			if paddWithLastValue == "true":
+				self.gateway.jvm.System.out.println("Padd empty samples with last value");
 
 		for n in range(0, nbDataFiles):
 			segments = dataFiles[n].split(os.path.sep);
@@ -352,7 +356,9 @@ class DOCoMETRe(object):
 			values = self.experiments[loadName + "." + channelName + ".Values"];
 			#if(jvmMode): self.gateway.jvm.System.out.println("size values : " + str(len(values[int(trialNumber) - 1])));
 			values[int(trialNumber) - 1][0:sizeData] = data;
-
+			if paddWithLastValue == "true":
+				values[int(trialNumber) - 1][sizeData-1:] = data[sizeData-1];
+			
 		n = 1;
 		for criteria in createdCategories:
 			values = createdCategories[criteria];
