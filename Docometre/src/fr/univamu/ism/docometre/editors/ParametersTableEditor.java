@@ -2,6 +2,7 @@ package fr.univamu.ism.docometre.editors;
 
 import java.util.Arrays;
 
+import org.apache.commons.collections4.map.HashedMap;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -28,6 +29,12 @@ import fr.univamu.ism.docometre.DocometreMessages;
 
 public class ParametersTableEditor extends EditorPart {
 	
+	private static String commentLine = "commentLine";
+	private static String parameterLine = "parameterLine";
+	private static String parameterNameLine = "parameterNameLine";
+	
+	private HashedMap<Integer, String> lineType;
+	
 	private class ParameterEditingSupport extends EditingSupport {
 		
 		private TextCellEditor textCellEditor;
@@ -46,6 +53,10 @@ public class ParametersTableEditor extends EditorPart {
 
 		@Override
 		protected boolean canEdit(Object element) {
+			int lineNumber = (int)element;
+			String lineTypeValue = lineType.get(lineNumber);
+			if(commentLine.equals(lineTypeValue)) return false;
+			if(parameterNameLine.equals(lineTypeValue)) return false;
 			return true;
 		}
 
@@ -55,8 +66,8 @@ public class ParametersTableEditor extends EditorPart {
 			int columnNumber = (int)tableViewerColumn.getColumn().getData();
 			String parameterValue = "";
 	    	try {
-				int length = parametersEditor.getDocument().getLineLength(lineNumber);
-				int offset = parametersEditor.getDocument().getLineOffset(lineNumber);
+				int length = parametersEditor.getDocument().getLineLength(lineNumber-1);
+				int offset = parametersEditor.getDocument().getLineOffset(lineNumber-1);
 				String line = parametersEditor.getDocument().get(offset, length);
 				String[] parameters = line.split(";");
 				parameterValue = parameters[columnNumber-1].trim();
@@ -74,8 +85,8 @@ public class ParametersTableEditor extends EditorPart {
 			int columnNumber = (int)tableViewerColumn.getColumn().getData();
 			String parameterValue = (String) value;
 			try {
-				int length = parametersEditor.getDocument().getLineLength(lineNumber);
-				int offset = parametersEditor.getDocument().getLineOffset(lineNumber);
+				int length = parametersEditor.getDocument().getLineLength(lineNumber-1);
+				int offset = parametersEditor.getDocument().getLineOffset(lineNumber-1);
 				String line = parametersEditor.getDocument().get(offset, length);
 				String[] parameters = line.split(";");
 				parameters[columnNumber-1] = parameterValue + ((nbColumns-1 == columnNumber)?"\n":"");
@@ -195,18 +206,35 @@ public class ParametersTableEditor extends EditorPart {
 	private void populateTable() {
 		try {
 			
+			if(lineType != null) lineType.clear();
+			lineType = new HashedMap<>();
+			
 			parametersTableViewer.getTable().removeAll();
 			TableColumn[] tableColumns = parametersTableViewer.getTable().getColumns();
 			for (TableColumn tableColumn : tableColumns) {
 				tableColumn.dispose();
 			}
 			
-			int length = parametersEditor.getDocument().getLineLength(0);
-			String firstLine = parametersEditor.getDocument().get(0, length);
-			String[] parametersString = firstLine.split(";");
-			for (int i = 0; i < parametersString.length; i++) {
-				parametersString[i] = parametersString[i].trim();
+			String[] parametersString = new String[0];
+			boolean search = true;
+			int lineNumber = 0;
+			while (search) {
+				int length = parametersEditor.getDocument().getLineLength(lineNumber);
+				int offset = parametersEditor.getDocument().getLineOffset(lineNumber);
+				String currentLine = parametersEditor.getDocument().get(offset, length);
+				if(!currentLine.startsWith("#")) {
+					search = false;
+					lineType.put(lineNumber+1, parameterNameLine);
+					parametersString = currentLine.split(";");
+					for (int i = 0; i < parametersString.length; i++) {
+						parametersString[i] = parametersString[i].trim();
+					}
+				} else {
+					lineNumber++;
+					if(lineNumber >=  parametersEditor.getDocument().getNumberOfLines()) search = false; 
+				}
 			}
+			
 			TableViewerColumn tableViewerFirstColumn = new TableViewerColumn(parametersTableViewer, SWT.NONE);
 			tableViewerFirstColumn.setLabelProvider(new ColumnLabelProvider() {
 				@Override
@@ -228,10 +256,23 @@ public class ParametersTableEditor extends EditorPart {
 						int columnNumber = (int)tableViewerColumn.getColumn().getData();
 						String parameterValue = "";
 				    	try {
-							int length = parametersEditor.getDocument().getLineLength(lineNumber);
-							int offset = parametersEditor.getDocument().getLineOffset(lineNumber);
+							int length = parametersEditor.getDocument().getLineLength(lineNumber-1);
+							int offset = parametersEditor.getDocument().getLineOffset(lineNumber-1);
 							String line = parametersEditor.getDocument().get(offset, length);
 							String[] parameters = line.split(";");
+							
+							if(parameterNameLine.equals(lineType.get(lineNumber))) {
+								return parameters[columnNumber-1].trim();
+							}
+							
+							if(line.startsWith("#")) {
+								lineType.put(lineNumber, commentLine);
+								if(columnNumber == 1) return line;
+								else return "";
+							}
+							
+							lineType.put(lineNumber, parameterLine);
+							
 							if(parameters.length >= columnNumber) 
 								parameterValue = parameters[columnNumber-1].trim();
 							else {
@@ -266,7 +307,7 @@ public class ParametersTableEditor extends EditorPart {
 
 	public void update() {
 		populateTable();
-		Integer[] linesNumber = new Integer[parametersEditor.getDocument().getNumberOfLines() - 1];
+		Integer[] linesNumber = new Integer[parametersEditor.getDocument().getNumberOfLines()];
 		for (int i = 0; i < linesNumber.length; i++) {
 			linesNumber[i] = i+1;
 		}
