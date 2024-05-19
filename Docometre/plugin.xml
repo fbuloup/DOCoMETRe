@@ -2297,6 +2297,18 @@
                   </with>
                </visibleWhen>
             </command>
+            <command
+                  commandId="ValidateTrialsAutoCommand"
+                  icon="icons/checkboxChecked.gif"
+                  label="%ValidateTrialsAuto.label"
+                  style="push">
+            </command>
+            <command
+                  commandId="ValidateTrialsManualCommand"
+                  icon="icons/checkboxUnchecked.gif"
+                  label="%ValidateTrialsManual.label"
+                  style="push">
+            </command>
             <separator
                   name="Docometre.separator3"
                   visible="true">
@@ -3391,6 +3403,16 @@
             defaultHandler="fr.univamu.ism.docometre.handlers.CompileHandler"
             id="CompileCommand"
             name="CompileCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.handlers.ValidateTrialsManualHandler"
+            id="ValidateTrialsManualCommand"
+            name="ValidateTrialsManualCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.handlers.ValidateTrialsAutoHandler"
+            id="ValidateTrialsAutoCommand"
+            name="ValidateTrialsAutoCommand">
       </command>
       
       

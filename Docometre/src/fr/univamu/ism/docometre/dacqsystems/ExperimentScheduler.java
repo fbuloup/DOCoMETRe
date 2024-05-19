@@ -68,6 +68,7 @@ import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.TrialStartMode;
+import fr.univamu.ism.docometre.TrialValidateMode;
 import fr.univamu.ism.docometre.dialogs.NextTrialDialog;
 import fr.univamu.ism.docometre.dialogs.ValidateTrialDialog;
 import fr.univamu.ism.docometre.handlers.RunStopHandler;
@@ -219,6 +220,7 @@ public class ExperimentScheduler {
 						IStatus status = runProcessJob.getResult();
 						if(status.isOK()) if(!runProcess) {
 							boolean autoValidateTrial =Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.AUTO_VALIDATE_TRIALS);
+							autoValidateTrial = autoValidateTrial || ResourceProperties.getTrialValidateMode(currentTrial).equals(TrialValidateMode.AUTO);
 							if(autoValidateTrial) ResourceProperties.setTrialState((IFolder) currentTrial, true);
 							else {
 								PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {

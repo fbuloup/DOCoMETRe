@@ -78,10 +78,14 @@ public final class ResourceProperties {
 	//    - if trial.state property doesn't exist or is not equal to "done", trial is undone
 	//    - if trial.state property exists and is equal to "done" trial is done !
 	public static QualifiedName TRIAL_STATE_QN = new QualifiedName(Activator.PLUGIN_ID, "trial.state");
-	// Trial state : AUTO or MANUAL
+	// Trial start : AUTO or MANUAL
 	//    - if trial.start.mode property doesn't exist or is not equal to "AUTO", trial start mode is MANUAL
-	//    - if trial.start.mode property exists and is equal to "AUTO" trial is done !
+	//    - if trial.start.mode property exists and is equal to "AUTO" trial is started automatically !
 	public static QualifiedName TRIAL_START_MODE_QN = new QualifiedName(Activator.PLUGIN_ID, "trial.start.mode");
+	// Trial validate : AUTO or MANUAL
+	//    - if trial.validate.mode property doesn't exist or is not equal to "AUTO", trial is validated manually
+	//    - if trial.validate.mode property exists and is equal to "AUTO" trial is validated automatically !
+	public static QualifiedName TRIAL_VALIDATE_MODE_QN = new QualifiedName(Activator.PLUGIN_ID, "trial.validate.mode");
 	// Prefix for data files names, if null, means prefix is not used
 	public static QualifiedName DATA_FILES_NAMES_PREFIX_QN = new QualifiedName(Activator.PLUGIN_ID, "data.files.name.prefix");
 	// First suffix, if null, means first suffix is not used : true or false
@@ -456,6 +460,28 @@ public final class ResourceProperties {
 	public static void setTrialStartMode(IResource resource, TrialStartMode startMode) {
 		try {
 			resource.setPersistentProperty(TRIAL_START_MODE_QN, startMode.getKey());
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+	}
+	
+	public static TrialValidateMode getTrialValidateMode(IResource resource) {
+		try {
+			if(!resource.exists()) return TrialValidateMode.MANUAL;
+			if(!ResourceType.isTrial(resource)) return TrialValidateMode.MANUAL;
+			String validateMode = resource.getPersistentProperty(TRIAL_VALIDATE_MODE_QN);
+			return TrialValidateMode.getValidateMode(validateMode);
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return TrialValidateMode.MANUAL;
+	}
+	
+	public static void setTrialValidateMode(IResource resource, TrialValidateMode validateMode) {
+		try {
+			resource.setPersistentProperty(TRIAL_VALIDATE_MODE_QN, validateMode.getKey());
 		} catch (CoreException e) {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
