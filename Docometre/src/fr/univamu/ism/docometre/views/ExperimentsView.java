@@ -86,10 +86,14 @@ import org.eclipse.swt.dnd.DragSourceEvent;
 import org.eclipse.swt.dnd.DragSourceListener;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IMemento;
@@ -401,6 +405,14 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 				}
 			}
 		});
+		experimentsTreeViewer.getTree().addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent e) {
+				TreeItem item = experimentsTreeViewer.getTree().getItem(new Point(e.x, e.y));
+				if(item == null) experimentsTreeViewer.getTree().setSelection(new TreeItem[0]);
+			}
+		});
+		
 //		experimentsTreeViewer.addFilter(new ViewerFilter() {
 //			@Override
 //			public boolean select(Viewer viewer, Object parentElement, Object element) {
