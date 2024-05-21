@@ -43,6 +43,8 @@ package fr.univamu.ism.docometre.actions;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.AbstractOperation;
@@ -173,7 +175,7 @@ public class RenameResourceOperation extends AbstractOperation {
 						updateProcesses(resource, newResource);
 						// Update all trials and process test resources affected by this path renaming and update experiments view
 						monitor.subTask(DocometreMessages.UpdateAffectedProcessTestsAndTrialsSubTaskTitle);
-						if(ResourceType.isProcess(newResource)) {
+						if(ResourceType.isProcess(newResource) || ResourceType.isExperiment(newResource)) {
 							updateTrials(resource, newResource);
 							updateProcessTest(resource, newResource);
 						}
@@ -369,7 +371,7 @@ public class RenameResourceOperation extends AbstractOperation {
 		for (IResource process : processes) {
 			String fullPathAssociatedDAQ = ResourceProperties.getAssociatedDACQConfigurationProperty((IFile) process);
 			if((fullPathAssociatedDAQ != null) && fullPathAssociatedDAQ.startsWith(fullOldPath)) {
-				String newFullPathAssociatedDAQ = fullPathAssociatedDAQ.replaceAll(fullOldPath, fullNewPath);
+				String newFullPathAssociatedDAQ = fullPathAssociatedDAQ.replaceAll(Pattern.quote(fullOldPath), Matcher.quoteReplacement(fullNewPath));
 				ResourceProperties.setAssociatedDACQConfigurationProperty((IFile) process, newFullPathAssociatedDAQ);
 				ExperimentsView.refresh(process.getParent(), new IResource[]{newResource});
 			}
@@ -386,9 +388,18 @@ public class RenameResourceOperation extends AbstractOperation {
 		IResource[] trials = ResourceProperties.getAllTypedResources(ResourceType.TRIAL, newResource.getProject(), null);
 		for (IResource trial : trials) {
 			String fullPathAssociatedProcess = ResourceProperties.getAssociatedProcessProperty(((IFolder) trial));
-			if((fullPathAssociatedProcess != null) && fullPathAssociatedProcess.equals(fullOldPath)) {
-				ResourceProperties.setAssociatedProcessProperty((IFolder) trial, fullNewPath);
-				ExperimentsView.refresh(trial.getParent(), new IResource[]{newResource});
+			if(ResourceType.isProcess(newResource)) {
+				if((fullPathAssociatedProcess != null) && fullPathAssociatedProcess.equals(fullOldPath)) {
+					ResourceProperties.setAssociatedProcessProperty((IFolder) trial, fullNewPath);
+					ExperimentsView.refresh(trial.getParent(), new IResource[]{newResource});
+				}
+			}
+			if(ResourceType.isExperiment(newResource)) {
+				if((fullPathAssociatedProcess != null) && fullPathAssociatedProcess.startsWith(fullOldPath)) {
+					String newFullPathAssociatedProcess = fullPathAssociatedProcess.replaceAll(Pattern.quote(fullOldPath), Matcher.quoteReplacement(fullNewPath));
+					ResourceProperties.setAssociatedProcessProperty((IFolder) trial, newFullPathAssociatedProcess);
+					ExperimentsView.refresh(trial.getParent(), new IResource[]{newResource});
+				}
 			}
 		}
 	}
