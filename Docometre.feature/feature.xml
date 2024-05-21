@@ -6,7 +6,14 @@
       provider-name="ISM">
 
    <description>
-      -- 2024-05-21
+      -- 2024-05-21 - Bis
+ADDED : 
+* Low and high BLP filter using &apos;filter&apos; function (Matlab &amp; Python)
+* Property type info during Experiment importation
+FIXED : 
+* Allow empty selection in experiment view
+* Bug when renaming experiment : in Process (associated DACQ file path) and trial (associated Process file path) properties
+-- 2024-05-21
 ADDED : 
 * Auto and Manual validation mode to trials
 FIXED : 
