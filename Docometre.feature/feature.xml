@@ -6,7 +6,12 @@
       provider-name="ISM">
 
    <description>
-      -- 2024-05-16
+      -- 2024-05-21
+ADDED : 
+* Auto and Manual validation mode to trials
+FIXED : 
+* Upgrade to handle comments in parameters editor
+-- 2024-05-16
 ADDED : 
 * Help and comment in parameters file
 * Arduino CLI can now be used
