@@ -690,8 +690,8 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 					resource = newExperiment;
 				else if(isFolder) resource = ResourcesPlugin.getWorkspace().getRoot().getFolder(resourcePath);
 				else resource = ResourcesPlugin.getWorkspace().getRoot().getFile(resourcePath);
-
-				String message = NLS.bind(DocometreMessages.ApplyingProperty, new Object[] {numProperty, nbProperties, value, resource.getFullPath().toOSString()});
+				
+				String message = NLS.bind(DocometreMessages.ApplyingProperty, new Object[] {numProperty, nbProperties, value, resource.getFullPath().toOSString(), keyArray[1]});
 				subMonitor.subTask(message);
 				
 				if(resource.exists()) {
