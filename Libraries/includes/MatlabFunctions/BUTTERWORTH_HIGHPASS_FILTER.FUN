@@ -1,7 +1,7 @@
-MENU_TITLE = Butterworth high pass filter (filtfilt)
-DESCRIPTION = As 'filtfilt' function is used, resulting order will be twice the provided one (filtfilt)
-MENU_TITLE_FR = Filtre passe haut de Butterworth (filtfilt)
-DESCRIPTION_FR = Comme la fonction 'filtfilt' est utilisée, l'ordre résultant sera le double de celui fourni (filtfilt)
+MENU_TITLE = Butterworth high pass filter (filter)
+DESCRIPTION = Butterworth high pass filter (filter)
+MENU_TITLE_FR = Filtre passe haut de Butterworth (filter)
+DESCRIPTION_FR = Filtre passe haut de Butterworth (filter)
 
 # Now start specific matlab function 
 FUNCTION_CODE = % Compute high pass Butterworth filter\n\
@@ -21,7 +21,7 @@ outputSignal.EndCut = inputSignal.EndCut;\n\
 nyquistFrequency = 0.5 * inputSignal.SampleFrequency; % Nyquist frequency is half sample frequency\n\
 normalizedCutOffFrequency = cutOffFrequency / nyquistFrequency;\n\
 [num, den] = butter(order, normalizedCutOffFrequency, 'high');\n\
-outputSignal.Values(trialsList, :) = filtfilt(num, den, inputSignal.Values(trialsList, :)')';\n\
+outputSignal.Values(trialsList, :) = filter(num, den, inputSignal.Values(trialsList, :)')';\n\
 clear num den nyquistFrequency normalizedCutOffFrequency signalSizes trialNumber;\n\
 if (~exist('createdOrModifiedChannels'))\n\
 createdOrModifiedChannels = {'outputSignal'};\n\

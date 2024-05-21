@@ -1,7 +1,7 @@
-MENU_TITLE = Butterworth high pass filter (filtfilt)
-DESCRIPTION = As 'filtfilt' function is used, resulting order will be twice the provided one (filtfilt)
-MENU_TITLE_FR = Filtre passe haut de Butterworth (filtfilt)
-DESCRIPTION_FR = Comme la fonction 'filtfilt' est utilisée, l'ordre résultant sera le double de celui fourni (filtfilt)
+MENU_TITLE = Butterworth high pass filter (filter)
+DESCRIPTION = Butterworth high pass filter (filter)
+MENU_TITLE_FR = Filtre passe haut de Butterworth (filter)
+DESCRIPTION_FR = Filtre passe haut de Butterworth (filter)
 
 # Now start specific python function 
 FUNCTION_CODE = # Compute high pass Butterworth filter\n\
@@ -26,7 +26,7 @@ normalizedCutOffFrequency = cutOffFrequency / nyquistFrequency;\n\
 den, num = scipy.signal.butter(order, normalizedCutOffFrequency, 'high', analog = False);\n\
 inputValues = docometre.experiments['inputSignal.Values'];\n\
 outputValues = docometre.experiments['outputSignal.Values'];\n\
-outputValues[numpy.r_[trialsList],:] = scipy.signal.filtfilt(den, num, inputValues[numpy.r_[trialsList],:]);\n\
+outputValues[numpy.r_[trialsList],:] = scipy.signal.lfilt(den, num, inputValues[numpy.r_[trialsList],:]);\n\
 if not('createdOrModifiedChannels' in docometre.experiments.keys()):\n\
 \tdocometre.experiments['createdOrModifiedChannels'] = 'outputSignal';\n\
 else:\n\

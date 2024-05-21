@@ -74,8 +74,8 @@ public class PythonEngineFunctionsMenuFactory {
 																	MotionDistance.class.getName(), MotionDirection.class.getName(), null, AbsoluteValue.class.getName(), Derivative.class.getName(), Interpolate1D.class.getName(), Duplicate.class.getName(), null,
 																	ChangeSampleFrequency.class.getName(), ReplaceSamples.class.getName()};
 	
-	public static String[] FilteringFunctionsFiles = new String[] {ButterworthLowPass.functionFileName, ButterworthHighPass.functionFileName, SEPARATOR, RemovePulses.functionFileName};
-	public static String[] FilteringFunctionsClasses = new String[] {ButterworthLowPass.class.getName(), ButterworthHighPass.class.getName(), null, RemovePulses.class.getName()};
+	public static String[] FilteringFunctionsFiles = new String[] {ButterworthLowPass.functionFileName, ButterworthHighPass.functionFileName, ButterworthLowPass_Filter.functionFileName, ButterworthHighPass_Filter.functionFileName, SEPARATOR, RemovePulses.functionFileName};
+	public static String[] FilteringFunctionsClasses = new String[] {ButterworthLowPass.class.getName(), ButterworthHighPass.class.getName(), ButterworthLowPass_Filter.class.getName(), ButterworthHighPass_Filter.class.getName(), null, RemovePulses.class.getName()};
 	
 	public static String[] ComplexityFunctionsFiles = new String[] {SampleEntropy.functionFileName, ApproximateEntropy.functionFileName, MultiscaleSampleEntropy.functionFileName};
 	public static String[] ComplexityFunctionsClasses = new String[] {SampleEntropy.class.getName(), ApproximateEntropy.class.getName(), MultiscaleSampleEntropy.class.getName()};

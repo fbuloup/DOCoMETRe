@@ -1,10 +1,10 @@
-MENU_TITLE = Butterworth high pass filter (filtfilt)
-DESCRIPTION = As 'filtfilt' function is used, resulting order will be twice the provided one (filtfilt)
-MENU_TITLE_FR = Filtre passe haut de Butterworth (filtfilt)
-DESCRIPTION_FR = Comme la fonction 'filtfilt' est utilisée, l'ordre résultant sera le double de celui fourni (filtfilt)
+MENU_TITLE = Butterworth low pass filter (filter)
+DESCRIPTION = Butterworth low pass filter (filter)
+MENU_TITLE_FR = Filtre passe bas de Butterworth (filter)
+DESCRIPTION_FR = Filtre passe bas de Butterworth (filter)
 
 # Now start specific python function 
-FUNCTION_CODE = # Compute high pass Butterworth filter\n\
+FUNCTION_CODE = # Compute low pass Butterworth filter\n\
 import scipy;\n\
 from scipy import signal;\n\
 import numpy;\n\
@@ -23,10 +23,10 @@ docometre.experiments['outputSignal.SampleFrequency'] = numpy.copy(docometre.exp
 # Compute filtering\n\
 nyquistFrequency = 0.5 * float(docometre.experiments['inputSignal.SampleFrequency']); # Nyquist frequency is half sample frequency\n\
 normalizedCutOffFrequency = cutOffFrequency / nyquistFrequency;\n\
-den, num = scipy.signal.butter(order, normalizedCutOffFrequency, 'high', analog = False);\n\
+den, num = scipy.signal.butter(order, normalizedCutOffFrequency, 'low', analog = False);\n\
 inputValues = docometre.experiments['inputSignal.Values'];\n\
 outputValues = docometre.experiments['outputSignal.Values'];\n\
-outputValues[numpy.r_[trialsList],:] = scipy.signal.filtfilt(den, num, inputValues[numpy.r_[trialsList],:]);\n\
+outputValues[numpy.r_[trialsList],:] = scipy.signal.lfilt(den, num, inputValues[numpy.r_[trialsList],:]);\n\
 if not('createdOrModifiedChannels' in docometre.experiments.keys()):\n\
 \tdocometre.experiments['createdOrModifiedChannels'] = 'outputSignal';\n\
 else:\n\
