@@ -62,6 +62,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -130,6 +131,30 @@ public class RenameResourceOperation extends AbstractOperation {
 				public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 					performOldName = resource.getFullPath().toOSString();
 					performNewName = name;
+					
+					// Close any opened editor if necessary
+					Display.getDefault().syncExec(new Runnable() {
+						@Override
+						public void run() {
+							IEditorReference[] editorReferences = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
+							for (int i = 0; i < editorReferences.length; i++) {
+								try {
+									ResourceEditorInput resourceEditorInput = ((ResourceEditorInput)editorReferences[i].getEditorInput());
+									Object object = resourceEditorInput.getObject();
+									// Get edited resource
+									IResource editedResource = ObjectsController.getResourceForObject(object);
+									String fullResourcePath = editedResource.getFullPath().toOSString();
+									if(fullResourcePath.startsWith(performOldName)) 
+										if(!fullResourcePath.equals(performOldName)) 
+											PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().closeEditor(editorReferences[i].getEditor(false), false);
+								} catch (PartInitException e) {
+									Activator.getLogErrorMessageWithCause(e);
+									e.printStackTrace();
+								}
+							}
+						}
+					});
+					
 					try {
 						String message = NLS.bind(DocometreMessages.RenameRessourceTaskTitle, performOldName, performNewName);
 						monitor.beginTask(message, IProgressMonitor.UNKNOWN);
