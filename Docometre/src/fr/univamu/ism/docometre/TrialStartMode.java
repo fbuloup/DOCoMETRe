@@ -55,7 +55,7 @@ public enum TrialStartMode {
 	}
 	
 	public String toString() {
-		return label;
+		return DocometreMessages.StartPrefix + "." + label;
 	}
 	
 	public String getKey() {

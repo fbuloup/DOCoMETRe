@@ -55,7 +55,7 @@ public enum TrialValidateMode {
 	}
 	
 	public String toString() {
-		return label;
+		return DocometreMessages.ValidatePrefix + "." + label;
 	}
 	
 	public String getKey() {
