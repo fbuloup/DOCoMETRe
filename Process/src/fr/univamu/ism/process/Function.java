@@ -173,6 +173,9 @@ public class Function extends Block {
 	
 	protected String getProperty(String key, String defaultValue) {
 		String value = properties.get(key);
+		if((value == null || "".equals(value)) && !"".equals(defaultValue)) {
+			getTransientProperties().put(key, defaultValue);
+		}
 		return value == null ? defaultValue : value;
 		
 	}
