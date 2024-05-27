@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IContainer;
@@ -444,7 +445,7 @@ public class ExportMarkers extends GenericFunction {
 		if(MathEngineFactory.isMatlab()) cellExpression = "{'" + String.join("','", markers) + "'}";
 		if(MathEngineFactory.isPython()) cellExpression = "['" + String.join("','", markers) + "']";
 		
-		code  = code.replaceAll(fullPathFileNameKey, fileName);
+		code  = code.replaceAll(fullPathFileNameKey, Matcher.quoteReplacement(fileName));
 		code  = code.replaceAll(fullSubjectNameKey, fullSubjectName);
 		code  = code.replaceAll(cellExpressionKey, cellExpression);
 		code  = code.replaceAll(dividerKey, divider);
