@@ -27,12 +27,12 @@ endCutValues = docometre.experiments["inputSignal.EndCut"];\n\
 for trialNumber in numpy.r_[trialsList]:\n\
 	\tindex = round(timeMarkerValue*sampleFrequency+1);\n\
 	\tendCut = endCutValues[trialNumber];\n\
-	\tif endCut >= index :\n\
+	\tif endCut >= index and markLastSample != True :\n\
 		\t\tnewTime = (index-1)/sampleFrequency;\n\
 		\t\ttimeMarkersValues = numpy.append(timeMarkersValues, [[trialNumber+1, newTime, values[trialNumber,index]]], axis = 0);\n\
 	\telif markLastSample == True :\n\
-		\t\tnewTime = (endCutValues[TrialNumber] - 1)/sampleFrequency;\n\
-		\t\tnewIndex = endCutValues[TrialNumber] - 1;\n\
+		\t\tnewTime = (endCutValues[trialNumber] - 1)/sampleFrequency;\n\
+		\t\tnewIndex = int(endCutValues[trialNumber] - 1);\n\
 		\t\ttimeMarkersValues = numpy.append(timeMarkersValues, [[trialNumber+1, newTime, values[trialNumber,newIndex]]], axis = 0);\n\
 docometre.experiments["inputSignal.MarkersGroup_markersGroupLabel_Values"] = timeMarkersValues;\n\
 if not("createdOrModifiedChannels" in docometre.experiments.keys()):\n\

@@ -35,13 +35,13 @@ if compute\n\
 	\tfor trialNumber = trialsList\n\
 		\t\tindex = round(timeMarkerValue*sampleFrequency+1);\n\
 		\t\tendCut = endCutValues(trialNumber);\n\
-		\t\tif endCut >= index \n\
+		\t\tif endCut >= index && markLastSample ~= true\n\
 			\t\t\tnewTime = (index-1)/sampleFrequency;\n\
 			\t\t\tinputSignal.MarkersGroup_markersGroupLabel_Values = [inputSignal.MarkersGroup_markersGroupLabel_Values; trialNumber, newTime, inputSignal.Values(trialNumber,index)];\n\
-		\t\telseif markLastSample == True\n\
-			\t\t\tnewTime = (endCutValues(TrialNumber) - 1)/sampleFrequency;\n\
-			\t\t\tnewIndex = endCutValues(TrialNumber) - 1;\n\
-			\t\t\tinputSignal.MarkersGroup_markersGroupLabel_Values = [inputSignal.MarkersGroup_markersGroupLabel_Values; trialNumber, newTime, inputSignal.Values(trialNumber,index)];\n\
+		\t\telseif markLastSample == true\n\
+			\t\t\tnewTime = (endCutValues(trialNumber) - 1)/sampleFrequency;\n\
+			\t\t\tnewIndex = endCutValues(trialNumber) - 1;\n\
+			\t\t\tinputSignal.MarkersGroup_markersGroupLabel_Values = [inputSignal.MarkersGroup_markersGroupLabel_Values; trialNumber, newTime, inputSignal.Values(trialNumber,newIndex)];\n\
 		\t\tend\n\
 	\tend\n\
 	\tif (~exist('createdOrModifiedChannels'))\n\

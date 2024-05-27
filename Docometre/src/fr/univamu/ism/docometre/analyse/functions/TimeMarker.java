@@ -52,8 +52,11 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
@@ -80,6 +83,7 @@ public class TimeMarker extends GenericFunction {
 	private static final String markersGroupLabelKey = "markersGroupLabel";
 	private static final String timeMarkerValueKey = "timeMarkerValue";
 	private static final String trialsListKey = "trialsList";
+	private static final String markLastSampleKey = "markLastSample";
 	
 	transient private FunctionalBlockConfigurationDialog functionalBlockConfigurationDialog;
 	
@@ -203,7 +207,7 @@ public class TimeMarker extends GenericFunction {
 			public void modifyText(ModifyEvent e) {
 				TimeMarker.this.functionalBlockConfigurationDialog.setErrorMessage(null);
 				boolean putValue = true;
-				String regExp = "\\d+\\.?\\d*";
+				String regExp = "(\\d+\\.?\\d*|Inf)";
 				Pattern pattern = Pattern.compile(regExp);
 				Matcher matcher = pattern.matcher(timeText.getText());
 				putValue = matcher.matches();
@@ -212,6 +216,21 @@ public class TimeMarker extends GenericFunction {
 					String message = NLS.bind(FunctionsMessages.EndCutNotValidLabel, timeText.getText());
 					TimeMarker.this.functionalBlockConfigurationDialog.setErrorMessage(message);
 				}
+			}
+		});
+		
+		// MArk Last sample
+		value  = getProperty(markLastSampleKey, "False");
+		Button markLastSampleButton = new Button(paramContainer, SWT.CHECK);
+		markLastSampleButton.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 2, 1));
+		markLastSampleButton.setText(FunctionsMessages.MarkLastSampleLabel);
+		if("True".equals(value)) markLastSampleButton.setSelection(true);
+		timeText.setEnabled(!markLastSampleButton.getSelection());
+		markLastSampleButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				getTransientProperties().put(markLastSampleKey, markLastSampleButton.getSelection()?"True":"False");
+				timeText.setEnabled(!markLastSampleButton.getSelection());
 			}
 		});
 		
@@ -232,9 +251,12 @@ public class TimeMarker extends GenericFunction {
 		String inputSignal = getProperty(inputSignalKey, "");
 		String timeMarkerValue = getProperty(timeMarkerValueKey, "");
 		String markersGroupLabel = getProperty(markersGroupLabelKey, "");
+		String markLastSample = getProperty(markLastSampleKey, "False");
+		
+		if(MathEngineFactory.isMatlab()) markLastSample = "True".equals(markLastSample)?"true":"false";
 		
 		code = code.replaceAll(trialsListKey, trialsList).replaceAll(inputSignalKey, inputSignal).replaceAll(timeMarkerValueKey, timeMarkerValue);
-		code = code.replaceAll(markersGroupLabelKey, markersGroupLabel);
+		code = code.replaceAll(markersGroupLabelKey, markersGroupLabel).replaceAll(markLastSampleKey, markLastSample);
 		
 		return code + "\n";
 	}

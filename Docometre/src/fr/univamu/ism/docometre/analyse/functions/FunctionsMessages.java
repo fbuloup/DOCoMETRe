@@ -81,6 +81,7 @@ public class FunctionsMessages extends NLS {
 	// TIME_MARKER
 	public static String TimeValueLabel;
 	public static String MarkersGroupLabel;
+	public static String MarkLastSampleLabel;
 
 	// Motion Distance
 	public static String FromMarkerLabel;
