@@ -6,7 +6,12 @@
       provider-name="ISM">
 
    <description>
-      -- 2024-05-25
+      -- 2024-05-27
+ADDED :
+* &quot;Mark last sample&quot; option in time marker function (Python, Matlab)
+FIXED :
+* Python filter function name is not lfilt but lfilter
+-- 2024-05-25
 ADDED : 
 * Prefix to trial start mode and trial validate mode
 FIXED : 
