@@ -6,9 +6,14 @@
       provider-name="ISM">
 
    <description>
-      -- 2024-05-27
+      -- 2024-05-27 - BIS
+ADDED : Nothing
+FIXED :
+* Duplicate &apos;\&apos; in absolute file path before replacement (Export marker function)
+-- 2024-05-27
 ADDED :
-* &quot;Mark last sample&quot; option in time marker function (Python, Matlab)
+* &quot;Mark last sample&quot; option in time marker function (Python,
+Matlab)
 FIXED :
 * Python filter function name is not lfilt but lfilter
 -- 2024-05-25
