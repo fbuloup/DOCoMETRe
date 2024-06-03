@@ -166,5 +166,8 @@
 
 		
 		<module>../Libraries</module>
+		<module>
+			../../../Documents/ECLIPSE_WORKSPACES/DOCOMETRE/NRTSWTChart
+		</module>
 	</modules>
 </project>
