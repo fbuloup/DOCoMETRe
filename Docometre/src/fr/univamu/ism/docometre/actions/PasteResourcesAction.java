@@ -63,6 +63,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.FileTransfer;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.ISharedImages;
@@ -86,8 +87,10 @@ public class PasteResourcesAction extends Action implements ISelectionListener, 
 	private IPath newResourcePath;
 	private boolean copyLogAndDataFiles;
 	private Object clipboardData;
+	private Clipboard clipboard;
 	
 	public PasteResourcesAction(IWorkbenchWindow window, CopyResourcesAction copyResourcesAction) {
+		clipboard = new Clipboard(Display.getCurrent());
 		setId("PasteResourcesAction"); //$NON-NLS-1$
 		this.window = window;
 		window.getSelectionService().addSelectionListener(this);
@@ -116,14 +119,13 @@ public class PasteResourcesAction extends Action implements ISelectionListener, 
 					PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
 						@Override
 						public void run() {
-							Clipboard clipboard = new Clipboard(Display.getCurrent());
 							clipboardData = clipboard.getContents(FileTransfer.getInstance());
-							clipboard.dispose();
-							
+							if(clipboardData == null) clipboardData = clipboard.getContents(TextTransfer.getInstance());
 						}
 					});
 					IResource[] resources = new IResource[0];
-					if(clipboardData != null) {
+					boolean fromDocometre = (clipboardData instanceof String) && CopyResourcesAction.UUID.equals(clipboardData);
+					if(!fromDocometre) {
 						// Copy from clip board if data available
 						if(clipboardData instanceof String[]) {
 							String[] filesPath = (String[])clipboardData;
@@ -250,6 +252,7 @@ public class PasteResourcesAction extends Action implements ISelectionListener, 
 	
 	public void dispose() {
 		window.getSelectionService().removeSelectionListener(this);
+		clipboard.dispose();
 	}
 	
 }

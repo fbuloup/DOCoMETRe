@@ -51,6 +51,8 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.ISharedImages;
@@ -64,12 +66,16 @@ import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 
 public class CopyResourcesAction extends Action implements ISelectionListener, IWorkbenchAction {
+	
+	public static String UUID;
 
 	private IResource[] resources;
 	private IResource[] copiedResources;
 	private IWorkbenchWindow window;
+	private Clipboard clipboard;
 
 	public CopyResourcesAction(IWorkbenchWindow window) {
+		clipboard = new Clipboard(Display.getCurrent());
 		setId("CopyResourcesAction"); //$NON-NLS-1$
 		this.window = window;
 		window.getSelectionService().addSelectionListener(this);
@@ -83,10 +89,6 @@ public class CopyResourcesAction extends Action implements ISelectionListener, I
 	@Override
 	public void run() {
 		try {
-			// Clear system clipboard
-			Clipboard clipboard = new Clipboard(Display.getCurrent());
-			clipboard.clearContents();
-			clipboard.dispose();
 			// Remove from selected resources those which are children of the others
 			ArrayList<IResource> cleanedResources = new ArrayList<IResource>(0);
 			// First path to get all selected containers
@@ -100,6 +102,8 @@ public class CopyResourcesAction extends Action implements ISelectionListener, I
 			cleanedResources.addAll(files);
 			// Convert to array
 			copiedResources = cleanedResources.toArray(new IResource[cleanedResources.size()]);
+			UUID = java.util.UUID.randomUUID().toString();
+			clipboard.setContents(new Object [] {UUID}, new Transfer [] {TextTransfer.getInstance()});
 		} catch (CoreException e) {
 			e.printStackTrace();
 			Activator.logErrorMessageWithCause(e);
@@ -141,6 +145,7 @@ public class CopyResourcesAction extends Action implements ISelectionListener, I
 	
 	public void dispose() {
 		window.getSelectionService().removeSelectionListener(this);
+		clipboard.dispose();
 	}
 	
 	public IResource[] getCopiedResources() {
