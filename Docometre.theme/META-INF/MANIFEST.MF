@@ -1,8 +1,0 @@
-Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
-Bundle-Name: Theme
-Bundle-SymbolicName: Docometre.theme
-Bundle-Version: 1.0.0.qualifier
-Automatic-Module-Name: Docometre.theme
-Bundle-RequiredExecutionEnvironment: JavaSE-11
-Eclipse-BundleShape: dir

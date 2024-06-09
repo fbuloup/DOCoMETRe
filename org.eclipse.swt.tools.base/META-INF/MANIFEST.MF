@@ -1,8 +1,0 @@
-Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
-Bundle-Name: SWT Tools Base
-Bundle-SymbolicName: org.eclipse.swt.tools.base; singleton:=true
-Bundle-Version: 1.0.0.qualifier
-Automatic-Module-Name: org.eclipse.swt.tools.base
-Bundle-RequiredExecutionEnvironment: JavaSE-11
-Bundle-Vendor: Eclipse Foundation

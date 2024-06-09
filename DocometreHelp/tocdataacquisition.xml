@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
- <?NLS TYPE="org.eclipse.help.toc"?>
-
- <toc label="Data Acquisition Concepts" link_to="toc.xml#dataacquisition"> 
- 	<topic label="Introduction"  href="html/dataacquisition/maintopic.html"> 
- 	</topic>
- </toc>
