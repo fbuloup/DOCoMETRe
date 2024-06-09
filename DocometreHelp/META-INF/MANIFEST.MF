@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Help
+Bundle-SymbolicName: DocometreHelp;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: docometre.help.Activator
+Bundle-Vendor: ISM
+Require-Bundle: org.eclipse.core.runtime
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-ActivationPolicy: lazy
+Automatic-Module-Name: DocometreHelp
+Export-Package: docometre.help

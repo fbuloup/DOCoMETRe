@@ -1,0 +1,43 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+	<title>General consideration on micro-controllers</title>
+</head>
+
+<body>
+<h1>General consideration on micro-controllers</h1>
+
+<p>
+With Arduino Uno boards, the default real time loop precision (the <b>loop()</b> method) is not so good because it is software called and because ATMega328 is driven by a ceramic resonator.
+Crystal resonators are much more stable and the crystal used on Arduino Uno is for ATMega16 which control USB and ICSP buses.
+Moreover timing instructions like <b>micros()</b> are not so precise as we could expect because a slow but sure time drift could occur when playing with these instructions. 
+Main reason comes from the fact that <b>micros()</b> instruction takes at less 4<span>&#181;</span>s :
+</p>
+<ul>
+  <li>4<span>&#181;</span>s with 16MHz Arduino boards </li>
+  <li>8<span>&#181;</span>s with 8MHz Arduino boards </li>
+</ul>
+<p>
+These values are not so big but for a long running operation, drift could grow up to more than several milliseconds if timing is based on these instructions.
+I've not been able to see any timing drift with ADWin Systems for real time loop running several minutes.
+In order to minimize this effect in Docometre with Arduino Uno board, an interrupt based on timer 1 (16 bits) is used to call a routine for real time loop and timing is computed from the number of this real time loop event : an index is incremented each time the <b>ISR</b> method is called.
+Doing so, the only variability comes from the ceramic resonator. If you cannot deal with this, please consider to use Portenta Machine Control or ADWin Systems. Please note that timer 0 is also used to compute CPU workload.
+</p>
+
+<p>Another bullet point on microcontrollers : they are not Digital Signal Processors and it is a common practice to avoid floating point calculation in order to increase real time speed capability.
+This is why you won't find any calibration tools in Docometre when you work with Arduino Uno. 
+</p>
+
+<p> References :
+</p>
+
+<ul>
+<li><a href="https://content.arduino.cc/assets/UNO-TH_Rev3e_sch.pdf?_gl=1*113ejni*_ga*MTQxMTE1NzcxMy4xNjM3MDU0NzE2*_ga_NEXN8H46L5*MTYzNzg1MzQzMi4xOC4xLjE2Mzc4NTM4MTcuMA.." target="_blank" rel="noopener noreferrer">Arduino Uno schematic</a></li>
+<li><a href="https://www.arduino.cc/reference/en/language/functions/time/micros/" target="_blank" rel="noopener noreferrer"><b>micros()</b> instruction</a></li>
+<li><a href="https://www.arduino.cc/en/pmwiki.php?n=Reference/Float" target="_blank" rel="noopener noreferrer">On the use of float with microcontrollers</a></li>
+</ul>
+
+</body>
+</html>

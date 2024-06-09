@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Libraries
+Bundle-SymbolicName: Libraries
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: fr.univamu.ism.docometre.libraries.Activator
+Require-Bundle: org.eclipse.core.runtime
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Automatic-Module-Name: Libraries
+Bundle-ActivationPolicy: lazy
+Eclipse-BundleShape: dir
+Export-Package: fr.univamu.ism.docometre.libraries

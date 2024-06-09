@@ -1,0 +1,46 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"> 
+
+ <html>
+ <head>
+ 	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ 	<title>Data Processing</title>
+ </head>
+
+ <body>
+ <h1>ADW Data Files</h1>
+
+<p>
+This data file format comes from previous DOCoMETRe version 2. <br>It is a binary file with headers containing all experiment informations and samples.
+There must be this kind of data file for each subject.<br>
+You can read below a pseudo code which can be used to read such a file :
+</p>
+
+<div style="margin-left:2em">
+Read number of channels (C) (int32 size)<br>
+Read all channels names separated by pipe ('|') character (sequence of characters : C names to read)<br>
+Read number of sessions (S) (int32 size)<br>
+Read Sessions names separated by pipe ('|') character (sequence of characters : S names to read)<br>
+Read number of conditions (Co) (int32 size)<br>
+Read Conditions names separated by pipe ('|') character (sequence of characters : Co names to read)<br>
+Read number of 'sequence type' (St) (int32 size)<br>
+Read 'Sequence type' names separated by pipe ('|') character (sequence of characters : St names to read)<br>
+Read total number of trials (int32 size)<br>
+For each of these trials :<br>
+</div>
+<div style="margin-top:1em"></div>
+<div style="margin-left:4em">
+Read session number (int32 size)<br>
+Read condition number (int32 size)<br>
+Read sequence type number (int32 size)<br>
+Read channels number (int32 size)<br>
+For each channel in this trial :<br>
+</div>
+<div style="margin-top:1em"></div>
+<div style="margin-left:6em">
+Read channel number (int32 size)<br>
+Read sample frequency float32<br>
+Read samples number (N) (int32 size)<br>
+Read samples values (N*float32 size)<br>
+</div>
+ </body>
+ </html>

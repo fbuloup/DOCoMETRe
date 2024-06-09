@@ -1,0 +1,2397 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="Docometre.feature"
+      label="Feature"
+      version="1.0.0.qualifier"
+      provider-name="ISM">
+
+   <description>
+      -- 2024-06-09
+ADDED :
+* JChart2D library
+FIXED : 
+* Bug with copy/paste action
+-- 2024-05-27 - BIS
+ADDED : Nothing
+FIXED :
+* Duplicate &apos;\&apos; in absolute file path before replacement (Export
+marker function)
+-- 2024-05-27
+ADDED :
+* &quot;Mark last sample&quot; option in time marker function (Python,
+Matlab)
+FIXED :
+* Python filter function name is not lfilt but lfilter
+-- 2024-05-25
+ADDED : 
+* Prefix to trial start mode and trial validate mode
+FIXED : 
+* Update transient properties when default property is used
+-- 2024-05-22
+ADDED : Nothing
+FIXED : 
+* Close any Editor when parent resource is renamed
+-- 2024-05-21 - Bis
+ADDED : 
+* Low and high BLP filter using &apos;filter&apos; function (Matlab &amp; Python)
+* Property type info during Experiment importation
+FIXED : 
+* Allow empty selection in experiment view
+* Bug when renaming experiment : in Process (associated DACQ
+file path) and trial (associated Process file path) properties
+-- 2024-05-21
+ADDED : 
+* Auto and Manual validation mode to trials
+FIXED : 
+* Upgrade to handle comments in parameters editor
+-- 2024-05-16
+ADDED : 
+* Help and comment in parameters file
+* Arduino CLI can now be used
+* Add &quot;Padd with last value&quot; option (Pref.) when loading data
+FIXED : Nothing
+-- 2024-04-18
+ADDED : 
+* Table editor for Parameters editor
+FIXED : Nothing
+-- 2024-04-10
+ADDED : Nothing
+FIXED :
+* CR, LF chars must be sent this order : CR then LF and not LF
+then CR
+-- 2024-01-08
+ADDED :
+* Manage the error when ADBasic binary file for the process is
+not found
+FIXED : Nothing
+-- 2023-12-13
+ADDED : Nothing
+FIXED :
+* NPE in ADWin CAN Module
+-- 2023-12-07
+ADDED :
+* Manage line ruler column color in source editor
+* https://teamicstechnos.github.io/DOCoMETRe/ to About box
+FIXED : Nothing
+-- 2023-12-04
+ADDED : Nothing
+FIXED :
+* Update markers when the selected editor page changes(Process
+Editor)
+* Call super implementation (ADBasic source editor)
+-- 2023-11-27
+ADDED : 
+* Update GEF plugin
+FIXED : Nothing
+-- 2023-11-27
+ADDED : Nothing
+FIXED :
+* Custom Library GUI building bug
+* IPs gatherer bug (ADWin general Dacq. Conf.)
+-- 2023-11-21
+ADDED : Nothing
+FIXED :
+* Manage UI Warning if Dacq. Conf. lib. version differs from
+main version
+-- 2023-11-20 - Bis
+ADDED : Nothing
+FIXED :
+* Use &quot;-Dp2.httpRule=allow&quot; in VM command line (New p2 version
+requires https default)
+-- 2023-11-20
+ADDED :
+* Print main software version and used libraries version  (ADWin)
+* Warning if Dacq. Conf. lib. version differs from main version
+* Update doc (index.md)
+FIXED :
+* Reverse synchro chars output (LF then CR and not CR then LF,
+ADWin)
+-- 2023-10-26
+ADDED : update to jdk 17
+FIXED : nothing
+-- 2023-08-28 - Bis
+ADDED : Nothing
+FIXED :
+* Approximate Entropy function header typo correction
+-- 2023-08-28
+ADDED : Nothing
+FIXED :
+* Update Approximate Entropy python function header 
+-- 2023-07-03
+ADDED :
+* Multiscale Sample Entropy Function (Matlab &amp; Python)
+FIXED : Nothing
+-- 2023-06-20
+ADDED :
+* CR/LF options to float serial output function (ADWin)
+FIXED : Nothing
+-- 2023-06-20
+ADDED :
+* Multi dimensional Feature support
+* Update help : how to use figures in expression functions ?
+* Sample entropy and Approximate sample entropy functions
+FIXED :
+* Bug in Threshold Python function
+* Missing break in ChartFactory.java
+* Typo error in DOCoMETRe.py
+-- 2023-03-14
+ADDED :
+* Add licence option to Matlab command line
+FIXED : Nothing
+-- 2023-03-13
+ADDED :
+* Import data from text files organized in column
+* Change message error color
+FIXED : Nothing
+-- 2023-02-27
+ADDED :
+* CR and LF options in Serial Output function (ADWin)
+FIXED : Nothing
+-- 2023-02-13
+ADDED :
+* Improve serial output functions : now can handle literals and
+channels
+FIXED : Nothing
+-- 2023-02-12
+ADDED : Nothing
+FIXED : 
+* Support for string parameters (use \n as seprator char)
+-- 2023-02-10
+ADDED :
+* Support for string parameters
+FIXED :
+* NPE in adwin dacq configuration pages
+* Bad functions absolute path initialization (Adwin and ArduinoUno)
+-- 2023-02-07
+ADDED : Nothing
+FIXED :
+* Remove moduleNumber parameter for Adwin Gold devices (Write
+FLOAT RS232 function)
+-- 2023-02-06
+ADDED : Nothing
+FIXED :
+* Remove moduleNumber parameter for Adwin Gold devices (Write
+ASCII chars RS232 function)
+-- 2023-01-24
+ADDED : Nothing
+FIXED :
+* Update site URL move from univmed to univ-amu
+-- 2023-01-13
+ADDED : Nothing
+FIXED : 
+* dispose display at shutdown
+-- 2023-01-09
+ADDED : 
+* Save worksapce dialog data and return exit code
+FIXED : Nothing
+-- 2023-01-09
+ADDED : 
+* Save worksapce dialog data and return exit code
+FIXED : Nothing
+-- 2023-01-09
+ADDED : 
+* Improve export script code (Matlab)
+FIXED : 
+* Syntax error in exported script code (Python)
+-- 2023-01-07 - Bis
+ADDED : Nothing
+FIXED : 
+* Remove test code (Docometre.py)
+-- 2023-01-07
+ADDED :
+* Report progress with progress service (Save all action)
+FIXED : Nothing
+-- 2023-01-07
+ADDED :
+* Update workbench when Math Engine pref is changed
+FIXED :
+* Wrong index for end value (MAXIMUM.FUN, Matlab)
+* Wrong index for trial number (TIME_MARKER.FUN, Matlab)
+* Wrong End cut value when current values size is bigger (loadDataDocometre,
+Matlab)
+-- 2023-01-06
+ADDED :
+* Remember last trials list for all functions
+* Add warning message if process resource does not exist (RunBatchDataProcessingDelegate)
+* Change intro text
+* Matplotlib must run in Main thread (Python engine - JVM mode)
+* Block until a callback is available (Python engine - JVM mode)
+FIXED :
+* Channel, 2D and 3D chart editors are not persistent 
+* Dot not try to deserialize if it&apos;s a channel (ObjectsController)
+* Do not enable rename action if selected resource is channel
+(RenameResourceAction)
+* NPE if process resource does not exist (ExportScriptWizard)
+-- 2022-12-12
+ADDED :
+* Support for network port numbers management with Python Math.
+Engine
+FIXED : Nothing
+-- 2022-12-09 - BIS
+ADDED : Nothing
+FIXED :
+* Index Out Of Bounds exception in Find Amplitude Forward 
+-- 2022-12-09
+ADDED : Nothing
+FIXED :
+* Clear error message when selection changes (Export Markers
+and Features functions)
+-- 2022-12-08
+ADDED :
+* Expression function : add/improve content assistants (Source
+viewer and expressions)
+FIXED :
+* Expression function : increase horizontal Spacing to show decoration
+icon
+* Expression function : add error message if Math. Engine is
+not started
+-- 2022-12-06
+ADDED :
+* Export batch processing script code to file
+FIXED :
+* Don&apos;t add modified decorator if subject is not loaded
+* Update batch data processing when subject or process is renamed
+-- 2022-11-23
+ADDED:
+* It is now possible to run single process in Batch data proc.
+editor
+* Dialog to be able to save several subjects at a time
+* Export features function (Matlab and Python) 
+FIXED :
+* Update signal editor (sample freq., front/end cuts) 
+* Ignore unknown elements in XML files
+* Don&apos;t run batch process if math. engine is not running
+-- 2022-11-19
+ADDED :
+* Export Markers function : add support for relative/absolute
+dest.
+* Markers difference function (Matlab and Python)
+* Markers difference function set initial selection for difference
+type
+* Show samples and Keep scale when trials change in signals editors
+FIXED :
+* Bad trial number with Python (indices start form zero with
+Python)
+* Export Markers function : turn widget field to transient for
+serialization
+* Motion distance function : index correction
+* Remove pulses function : clear SignalSizes variable
+* Export Markers function : clear several variables
+* Export Markers function : NPE
+* Don&apos;t use cells anymore with features (Matlab)
+* Clear pulses function : message refactoring
+* Find amplitude forward : index bug correction
+-- 2022-11-07
+ADDED : Nothing
+FIXED :
+* We don&apos;t need to compile data processing processes (Compile
+Dialog)
+-- 2022-11-04
+ADDED :
+* Support for cached logging before messages view activation
+* Improve Error and Standard log file redirection
+* Add support for auto/manual build switch
+FIXED :
+* Remove System.out
+* NPE in DataProcessEditor.java
+* Graphic is disposed in DocometreAnnotationAccesExtension.java
+-- 2022-10-21
+ADDED :
+* Persistence for link with editor action view (Experiments view)
+* Persistence for editors
+FIXED : Nothing 
+-- 2022-10-20
+ADDED :
+* Stimulus recording and visualization are now allowed
+* Improve script connection router
+FIXED : Nothing
+-- 2022-10-18 - Bis
+ADDED : Nothing
+FIXED :
+* Add Support for stimuli for ADwin variables - End
+-- 2022-10-18
+ADDED : 
+* Experiments view link with editors
+FIXED :
+* Layout management in Module pages 
+-- 2022-10-13 - QUATER
+ADDED : Nothing
+FIXED : 
+* Update help
+-- 2022-10-13 - TER
+ADDED : Nothing
+FIXED : 
+* Enhance Modules observers management
+-- 2022-10-13 - BIS
+ADDED : Nothing
+FIXED : 
+* Remove duplicate backed channels in RS232 modules
+* NPE in RS232 modules
+-- 2022-10-13
+ADDED :
+* ADBasic Compilation on OSX using Docker is now working
+* Help updated 
+FIXED : 
+* Class cast and NPE exceptions
+-- 2022-10-12 - Bis
+ADDED : Nothing
+FIXED : 
+* ADBasic compile error (Could not find a SUB with the specified
+name. write_fifo())
+-- 2022-10-12
+ADDED :
+* Support for stimuli for ADwin variables - Step 3
+FIXED : Nothing
+-- 2022-10-11 - Bis
+ADDED :
+* Support for stimuli for ADwin variables - Step 2
+FIXED :
+* Floating point exception when frequency of RS232 module is
+empty
+* Synchro chars CR+LF were not send when using ICE system
+-- 2022-10-11
+ADDED : 
+* Support for ICE with RS232 module
+* Support for stimuli for ADwin variables (Step 1)
+* &quot;Remove pulses&quot; function (Maltab @ Python)
+FIXED :
+* Wrong tooltips editors
+* NPE for description property (New/Edit Resource Wizard)
+* Remove code from description (Expression function)
+-- 2022-09-29 - Bis
+ADDED : Nothing
+FIXED :
+* Default suffix for output signal was wrong (ReplaceSamples
+function)
+-- 2022-09-29
+ADDED :
+* Improve replace Samples function initialization
+* Color management for category editor
+FIXED :
+* NPE with memento init. or restore view
+* Wrong function in clone method (ReplaceSamples function)
+* V. and H. scrolls are now available (Expression function)
+-- 2022-09-27
+ADDED :
+* Threshold function (Matlab &amp; Python)
+* Replace samples function (Matlab only)
+FIXED :
+* Improve exception message
+* Bug in Maximum function error (Matlab only)
+-- 2022-09-26
+ADDED :
+* Expermiments view save state
+* Expression function (Matlab &amp; Python)
+FIXED :
+* Derivative function : add zero at signal beginning not end
+-- 2022-07-26
+ADDED :
+* Subjects view save state
+FIXED : Nothing
+-- 2022-07-25
+ADDED :
+* Change sample frequency function
+FIXED :
+* Return proper tool tip for channel editor function
+(Python)
+-- 2022-07-11
+ADDED : Nothing
+FIXED :
+* Resize data if trials have not always same number of samples
+(Python)
+-- 2022-07-08
+ADDED :
+* Add support for ADW data files to Python Math. engine 
+FIXED :
+* Resolve Bugs on params parsing and wrong dialog layout
+* Wrong Front cut intial value (0 not 1)
+-- 2022-07-05 - Bis
+ADDED :
+* Auto select newly added marker in Signal editor
+* Help update for Optitrack type 1 data files 
+* Add support to import subjects from Optitrack type 1 data files
+FIXED : Nothing
+-- 2022-07-05
+ADDED :
+* Support for functions editor
+* Support for functions view
+* Font size increase/decrease support in text editors 
+* Stop math engine when App. is closed and action is not canceled
+* Add reportNonDisposed=false JVM argument to docometre.ini file
+FIXED :
+* Bug correction on mean computation (Matlab only)
+* Don&apos;t stop MathEngine if save subject is canceled
+* Bug reading Functions text files
+* NPE in Resource editor input
+* Enable setType menu item only if selected part is experimentView
+* Remove excess backslash in Find amplitude backward and forward
+* Bug when customer function was renamed
+* Bug on user (customer) functions files saving
+* Do not manage Handles for user functions
+-- 2022-06-18
+ADDED :
+* Trust Pref. Page translation (continued)
+* It&apos;s now possible to cancel &quot;unload&quot; subject action
+FIXED :
+* Force default systems property values if not already performed
+* Error message refacoring in several Matlab functions
+* Save and Save all commands bad behaviour
+* Retrieve channel from its full name not only from provided
+experiment
+-- 2022-06-14 - Bis
+ADDED : Nothing
+FIXED :
+* a bug where it was impossible to save subject
+-- 2022-06-14
+ADDED :
+* Update Help
+* New Trust Pref. Page translation 
+FIXED :
+* Refactoring in Matlab and Python scripts
+* Bug if &quot;ans&quot; variable exists calling &quot;getLoadedSubjects&quot; (Matlab
+only) 
+-- 2022-06-07
+ADDED :
+* Shortcut &apos;D&apos; for &apos;docometre.experiments&apos; (Python)
+FIXED :
+* Bad URI exception when paste from clipboard
+-- 2022-06-03
+ADDED :
+* Improve automatic color selection in charts
+* Move to Eclipse 03 2022 release
+FIXED :
+* IOOBException in XYZ charts (End Cut can be greater than points
+size)
+* Change painting order in signals charts
+* Java 11 requirement for Py4j and o.e.ui.cheatsheets
+* Some refactoring for deprecation 
+* Can now run data processing when source tab is selected
+-- 2022-05-31
+ADDED :
+* Support for marker selection in signal editor
+* Interpolate 1-D function 
+* Duplication signal function
+* Print Math engine version at start up
+* Categories management to 2D and 3D Charts
+* Categories labels near trials numbers in Signal editors
+FIXED :
+* Wrong default suffix interpolate function
+* Check if it&apos;s Optitrack type 1 and not only data files when
+loading subject to call optitrack loading method
+-- 2022-05-20
+ADDED :
+* Export Markers function (Matlab and Python)
+FIXED :
+* Float type was not handled when loading/saving subject (Python)
+* Properly update workbench when data is processed
+* Take multiple markers in account in Faf, Fab functions (Matlab,Python)
+* In batch data processing, save/unload subject is now taken
+in account
+* Transfert function : now all markers are transferred
+* Set Selection provider in Source Viewer (Copy from source viewer
+is now working !) 
+-- 2022-05-12
+ADDED :
+* Support for code source editor in epxressions function
+FIXED : Nothing
+-- 2022-05-11 - Bis
+ADDED :
+* Add support for external paste files
+FIXED : Nothing
+-- 2022-05-11
+ADDED :
+* Matlab functions : find peaks (max and min) and absolute value
+* Python functions : find peaks min
+* Display message when trying to add marker whereas cursor is
+not active
+* Update source viewers automatically
+* Update show cursor property in opened editors
+* Shifting of the blocks during paste
+FIXED :
+* Add forgotten &quot;import scipy&quot; in FIND_PEAKS python function
+-- 2022-05-05 - Ter
+FIXED :
+* Bug on replacing back slash on windows (tested before !)
+-- 2022-05-05 - Bis
+FIXED :
+* Bug on replacing back slash on windows
+-- 2022-05-05
+ADDED :
+* Find peaks function
+-- 2022-05-02
+ADDED :
+* Support for Optitrack CSV data files with Markers only. Matlab
+and Python.
+FIXED : 
+* Wrong button style (SWT) in 2D and 3D charts
+* Bug in SelectChannelsWizard in perform finish 
+-- 2022-04-22 - Bis
+ADDED : nothing
+FIXED : 
+* RS_RESET and RS_INIT was not done on RS232 interface for ADwin
+gold
+-- 2022-04-22
+ADDED : nothing
+FIXED : 
+* Return code for comment blocks must be empty string not null
+-- 2022-04-04
+ADDED : Proper icon for unknown resource type 
+FIXED : nothing
+-- 2022-03-31
+ADDED : 
+* Support for user function to Math Engines
+* Support for Docker (Adwin on Mac OS 10.15 and more)
+FIXED :
+* Need double backslash in reg. exp. parameters (user functions)
+-- 2022-03-25
+ADDED : 
+* Protocol importation feature (Issue #10)
+* Import resource enhancement
+* Error message enhancement 
+* Help pages enhancement
+* Change about dialog text 
+* Support for custom/user function
+FIXED :
+* Bug where subject with almost same name are unloaded (Python)
+* Bug on files validation when importing subjects or experiments
+-- 2022-02-23
+ADDED : Nothing
+FIXED :
+* Time values are no longer in samples files (Arduino Uno)
+* Error in duration computation (Signal Editor)
+-- 2022-02-21
+ADDED :
+* Update Acknowlegements
+FIXED :
+* Bad display on New/Edit Session Wizard
+-- 2022-02-10
+ADDED : 
+* Sample frequency dialog when data editor do not find one
+FIXED :
+* Bug in Stimulus initialization 
+-- 2022-02-9 - Bis
+ADDED : Nothing
+FIXED :
+* Initialize time to zero (ADwin and Uno)
+-- 2022-02-9
+ADDED :
+* Adwin/Arduino/Python/Matlab files are now in Libraries plug-in
+* Header comments to user functions (ADwin and Arduino Uno)
+* Stimulus feature
+* Analog and Digital Wait functions
+* Transfert function
+FIXED :
+* Libraries path now comes from default pref. not from dacq.
+conf.
+* ADwin, Arduino Uno, Matlab and Python preferences changes
+* Bug when a resource is renamed and not opened : must deserialize
+it
+* When exporting experiment, sytem type was lost for Log files.
+This property is now written in properties file
+-- 2022-01-26
+ADDED : Nothing
+FIXED :
+* Build message internationalization
+-- 2022-01-25
+ADDED : Nothing
+FIXED :
+* Bad indentation for variables transfer code (Arduino)
+-- 2022-01-21
+ADDED : 
+* Internationalization for ADwin
+* Apply &quot;show Cursor/Marker&quot; immediately to all Signal Editors
+FIXED : 
+* Add user library support for Arduino Uno on Linux and Windows
+Plat.
+* Message correction when compilation has succeeded
+* Proper management of the page&apos;s validity 
+-- 2022-01-11 - Ter
+ADDED : Nothing
+FIXED : 
+* Wrong default location for Matlab and Python Scripts
+-- 2022-01-11 - Bis
+ADDED :
+* Update preferences (again!)
+FIXED : Nothing
+-- 2022-01-11
+ADDED :
+* Update preferences (again)
+FIXED : Nothing
+-- 2022-01-10
+ADDED :
+* Update preferences 
+FIXED : Nothing
+-- 2022-01-07 - Bis
+ADDED :
+* Set workbench window maximized at first launch
+FIXED : Nothing
+-- 2022-01-07
+ADDED : Nothing
+FIXED :
+* Bug at start up when &quot;.medata&quot; folder does not exist
+-- 2022-01-06
+ADDED :
+* Add support for XML serialization using XStream library
+* Set default serialization to XML
+* Use workspace locker file to prevent several session to open
+same workspace
+* It is now possible to start a new Docometre Session on Mac
+OS X
+FIXED : Nothing
+-- 2021-12-20
+ADDED : 
+* Main menu refactoring
+FIXED :
+* Detach entry in contextual view/editor menu translation 
+-- 2021-12-14
+ADDED : Nothing
+FIXED :
+* Remove comment code for customer function when segment is empty
+-- 2021-12-13 - Ter
+ADDED : Nothing
+FIXED :
+* Regression in workbench shared images
+-- 2021-12-13 - Bis
+ADDED :
+* Marquee tools in process editors with fr translations
+FIXED : Nothing
+-- 2021-12-13
+ADDED :
+* Update description view when trials states change
+* Missing space in selected resource label
+* Improve Sleak view presentation
+FIXED :
+* Resource leaks with data editor 
+-- 2021-12-09
+ADDED : 
+* Clean build capability. Called before any compilation, renamed
+or deleted process resource
+FIXED :
+* Resource leaks on images management
+* Update editors when process is renamed or deleted
+-- 2021-12-08
+ADDED : Nothing
+FIXED : Build problem (files not deployed !)
+-- 2021-12-07
+ADDED : Nothing
+FIXED : 
+* Get script code generation even if it&apos;s not a script segment
+* Solve blocking compilation condition
+* Remove duplicate binaryMedian lib. function declaration in
+DocoLib (ADWin)
+-- 2021-12-06 - Bis
+ADDED :
+* Toggle real time charts view visibility between trials 
+FIXED : 
+* Suppress NLS unused Warning messages
+-- 2021-12-06
+ADDED :
+* Improve Arduino Uno management (now use interrupt and improve
+data transfer, analog inputs and ADS1115 module management)
+* Elements in online help and cheat sheets
+* User libraries Arduino preference path 
+FIXED : 
+* Too long time response with editors (optimize method time response
+: getResourceForObject())
+* Bug on gain selection for ADS1115 module 
+-- 2021-11-19
+ADDED : Nothing
+FIXED :
+* Fixed a Bug in Cursor and Marker paint control listener 
+-- 2021-11-18
+ADDED :
+* Support for 3D chart editor
+* Support for debugging tools 
+* Improvement on QuickStart tutorial
+* QuickStartCheatSheet updates
+* IP addresses gatherer for adwin dacq. conf. 
+FIXED :
+* SWT Resource leak : font not disposed (CursorMarkerDeltaPainter.java)
+* Many refactoring
+* Arduino Real time loop enhancement (micros() : 1us (Portenta),
+4us (Uno) drift)
+* Remove arduino wdt to stop board : simply use exit(0) instead
+* Change default arduino global frequency to 100Hz
+-- 2021-10-14
+ADDED :
+* Support for 3D chart editor - Step 1 
+* Allow Wine file path pref to be empty
+FIXED :
+* Bug when a channel is suppressed : transfer numbers were not
+updated
+-- 2021-10-11 - Bis
+ADDED :
+* Disable p2 garbage collector
+FIXED : Nothing
+-- 2021-10-11
+ADDED : 
+* ADS1115 module to Arduino Uno
+* Select all capability to SourceEditor 
+* Improve FindDialog management and behaviour
+* Update Help 
+* Remove Unit, unit and ampli. min and max in analog inputs (Arduino
+Uno and ADS1115 module)
+FIXED : 
+* Bug on first sample line series drawing (Time and XY Charts)
+* Optimize Resource listeners when process compilation is started
+(UI responsiveness)
+-- 2021-09-22
+ADDED : 
+* All Python DSP functions have been ported to Matlab
+FIXED : Nothing
+-- 2021-09-15
+ADDED : 
+* Butt. high pass, front &amp; end cut, Derivate, front &amp; end cut
+from marker to Matlab engine
+* Managing some prefs. values at first App. launch
+FIXED : Nothing
+-- 2021-09-08
+ADDED : 
+* Sort customer functions enhancement
+FIXED :
+* Remove .gitignore from ADwin CUSTOMER_FUNCTIONS
+-- 2021-09-02
+Added :
+* Sort customer functions
+Fixed : Nothing
+-- 2021-06-10
+Added :
+* Add small margin width in XY Chart right composites
+Fixed :
+* Remove spinner parent set focus to prevent button selection
+-- 2021-06-09
+Added :
+* Use same color form same category trials (Time and XY charts)
+Fixed :
+* Bugs on Import/Export experiment and subjects wizards 
+-- 2021-06-07
+Added :
+* Support to export only selected subjects from an experiment
+* Support to import only selected exported subjects (Step 1)
+Fixed :
+* Bug in displaying Markers : X and Y axis where swapped
+* Add Debug Messages to experiment exportation
+-- 2021-06-03 - Bis
+ADDED : Nothing
+FIXED :
+* use font style setter instead of direct field access (Maven
+build failed)
+-- 2021-06-03
+ADDED :
+* Handle Standard and Error outputs redirection to file
+* Extend &quot;Set type&quot; Experiment View context menu to all types
+FIXED : Nothing
+-- 2021-06-02
+ADDED :
+* Add custom functions for ISM chair command
+FIXED :
+* Fix IOOBE in RTSWTChartOscillo
+-- 2021-06-01
+ADDED :
+* XY Chart Editor enhancement
+* XY Chart Editor persistence
+* Support for horizontal reference in OScillo. Chart
+* Use Eclipse Theme
+* Upgrade to Java 11
+* Upgrade JSSC
+* Support for Tank and Gauge Charts
+FIXED :
+* Fix NPE bug (when platform was brutally closed and reopening
+while editors was opened)
+* Control decoration bad behavior in resources creation wizard
+(show/hide)
+-- 2021-05-20
+ADDED : Nothing
+FIXED :
+* Bug With base front cuts in XY Chart editor
+-- 2021-05-19 - Bis
+ADDED : Nothing
+FIXED :
+* Fix bug with front cut other than zero
+-- 2021-05-19
+ADDED : Nothing
+FIXED :
+* Fix OOBE when front/end cuts are taken in account
+-- 2021-05-18
+ADDED :
+* Support for displaying Markers in XY Chart editor
+* Improve zoom and chart parameters handlers in XY Chart editor
+* Add support for Zoom listeners in interactive chart
+FIXED : Nothing
+-- 2021-05-17
+ADDED :
+* Write Delay value for Arduino Uno in preferences
+* Add support for Range and front/end cuts managements in XY
+Chart
+* XY chart persistence
+FIXED :
+* Check if chart name already exists for chart renaming or creation
+* X, Y were switched in XY Chart !
+-- 2021-05-05
+ADDED :
+* Log error message when Serial Port Exception
+* Add a small delay (10us) after each Serial.println
+FIXED :
+* Retrieve right indexes from data files for Arduino Uno
+* Fix a bug when locale is different from exported locale
+* Use portable string when creating properties file for exportation
+* Use &quot;/&quot; instead of File.separator as it is platform dependent
+* Process one more sample (Motion direction)
+* Copy Front and End Cut in new created signal (Motion Distance)
+-- 2021-05-03
+ADDED :
+* XY Chart Support (Step 1)
+FIXED : Nothing
+-- 2021-05-02
+ADDED :
+* Some enhancement in session wizard pages 
+* Allow &quot;_&quot; char in data and data batch processing file name
+FIXED :
+* Display current value now works properly for Oscillo charts
+* Manage operators for ADBasic, C, Python and Matlab
+-- 2021-04-30
+ADDED :
+* Transfer Markers Group function (Python)
+* Motion Direction function (Python)
+FIXED :
+* Change default suffix in Motion Distance function (Python)
+-- 2021-04-29 - BIS
+FIXED :
+* bug where temporaryBuffer declared several times when floats
+are transfered (Arduino Uno)
+-- 2021-04-29
+ADDED :
+* Find Amplitude backward and forward to python functions
+* Add Front and End cut from marker functions (Python)
+* Add Font and display current value support to Oscillo and XY
+charts
+FIXED :
+* Markers group number was wrong when deleting it (Signal editor)
+* Channel name was wrong when &quot;use prefix&quot; Session property is
+false
+* Some functions titles refactoring
+* Manage some errors when front cut is greater than end cut
+-- 2021-04-27 - BIS
+FIXED :
+* Channel name was wrong when &quot;use prefix&quot; Session property is
+empty
+* Use num.copy to avoid &quot;pointer effect&quot; with numpy array assignment
+-- 2021-04-27
+ADDED :
+* Minimum and Maximum Python functions
+FIXED :
+* Process editor force update
+* TIMER_MARKER function : trialsList was hard coded to 0:417
+!
+-- 2021-04-23
+ADDED :
+* Add Motion Distance function (Python)
+* Add Time Marker function (Python)
+* Add Derivative function (Python)
+FIXED :
+* Use default parameters in functions
+* Add CR to each end python functions (clearly separate each
+functions in script)
+* Update selection service in Subjects View
+-- 2021-04-16
+ADDED :
+* vectorize endcut and frontcut 
+* Set Charts dialog layout modeless
+* Functions menu internationalization
+* Add Front Cut and End Cut functions (python only for now) 
+* Add Butterworth high pass filter to python engine 
+FIXED :
+* ArrayIndexOutOfBoundsException: Index 0 out of bounds for length
+0 (RTSWChartOscillo)
+* JRE and compiler compliance to 1.8 (Theme plugin)
+* Python functions enhancement (remove gateway System.out)
+* Update cache channels when channel is deleted
+* Some enhancement in python functions and code scanner 
+* Managing load/Save/Unload subject with batch processing
+* Bad style in chart options Group preferences
+* Front and End cut where not taken in account in time vector
+creation 
+* Manage bug when path to Docometre.py is wrong 
+-- 2021-04-9
+ADDED :
+Some Console Messages for python controller
+-- 2021-04-7
+ADDED : 
+* Improve description message in Function Configuration Dialog
+* Improve process random spreading (never two same consecutive
+trials)
+* Default python time out from 10 to 15 sec.
+FIXED :
+* Bug when starting Python Engine on Windows (use now portable
+strings)
+* Internationalization : some strings unused some others missing
+* Import Wizard : NPE if folder is empty
+* Import Wizard : Do not apply property if resource does not
+exist
+* Bug on time out evaluation in Python Controller
+-- 2021-03-24
+ADDED :
+* It is now possible to export experiment with or without data
+files
+* Improve export wizard description message
+* Improve export progress monitor
+FIXED :
+* Code generation bug where If and Do blocks where not taken
+in account
+-- 2021-03-19
+ADDED :
+* Export data wizard
+* Support for comment in processes (ADWin, Arduino Uno, Matlab,
+Python)
+* Support for Python syntax coloring editor
+FIXED :
+* Wrong markers group number in MathEngine
+* Channels Container Refactoring
+-- 2021-02-15
+ADDED :
+* Support for features in MathEngine
+* Error management  to MathEngine scripts
+* Mean function
+* Channels choices improvements in functions
+* Cache support for channel management
+Fixed :
+* Bug correction on multiple &quot;#INCLUDE ADWPEXT.INC&quot;
+* NbMarkers and NbFields correction to NbMarkersGroups and NbFeatures
+in data model
+-- 2021-01-25 -- BIS
+FIXED :
+* NPE on monitor cancellation
+ADDED :
+* Show message when channel used by any function cannot be found
+* Batch data processing editor (data model, GUI and Undo/Redo)
+* Ask to stop MathEngine before allowing workbench shutdown
+FIXED :
+* CAN Module page was always marked dirty when opened.
+* Bug correction when a paste resource has file extension
+ADDED :
+* Add Math Engine view
+* Save subject without Exp.Subj prefix - Load adding Exp.Subj
+prefix
+* Add support to handle transmit/receive mode and multiple message
+IDs in CAN module
+* Update Math engine when subject/experiment is loaded and renamed
+* Unload experiment in Math engine when it is deleted
+* Update Exp. and Subj. view once a launched data processing
+has finished
+* Manage indentation for Arduino/ADWin - Matlab/Python
+* Remove blocking error message when configuring function
+pref. 
+* Add support for live Math engine type changes : don&apos;t need
+to restart anymore
+FIXED :
+* Bug correction on retrieving created or modified channels
+* FrontCut &amp; EndCut correction for Matlab Engine
+* Bug correction on numpy data files path
+* Some NPE
+-- 2020-10-21 --
+ADDED :
+* Print custom function label in generated process code
+* Support for Python Engine 
+* Support for markers
+* Support for Modified/Save/Load/Unload subject
+* Allow subject to be loaded from raw or saved data
+* Move default math engine pref. from general pref. to math engine
+pref. 
+* Support for show marker and cursor preferences 
+* Unload subject before stopping math engine
+* When subject is unloaded, close all related editors
+* Ask to record changes before unloading modified subject 
+* Support for previous and next trial in channel editors
+* Use Progress Monitor Dialog to load/unload subjects
+FIXED :
+-- 2020-09-09 -- BIS
+ADDED :
+* Support for comments in parameters files (ADWin)
+-- 2020-09-09 --
+ADDED :
+* Support for SAMPLES Files with Matlab engine
+* Improve category container layout
+FIXED :
+* Bug where not all trials could have been taken in categories
+-- 2020-07-23 --
+ADDED :
+* Improve Math Engines Preferences pages
+* Improve user information when open, delete, import, export
+etc. for long operation
+* Data processing prespective : 
+&gt;&gt;&gt;&gt;&gt; Subjects and channels View
+&gt;&gt;&gt;&gt;&gt; Channels editor (Signals with cursor and Categories)
+&gt;&gt;&gt;&gt;&gt; Data processing editor
+* Support for 3D Chart with JZY3D third library
+* &quot;Associate with&quot; menu item for process test
+* Allow Root workspace refresh (empty selection in view)
+* Support for channel deletion
+* Refresh Subjects view when a data processing had run
+* First data processing : Butterworth matlab lowpass filter
+* Change Eclipse RCP repository to 2020-06
+* Math engine for Matlab
+* Support for ADW file import and loading in Matlab Engine
+* CeCILL-B Licences
+* Organize session
+FIXED :
+* Bug correction when export experiment file name is not the
+same as original one
+* Delete temporary properties file when importing experiment
+* Add ASS. PRO. FILE. for process test folder in properties files
+when exporting experiment
+* Bug on IResource Path on mac os
+* Init. cursor and marker coordinates to empty String to avoid
+NPE (Interactive Chart)
+* Set marker coordinates to nearest sample in series
+* NPE on Clean, Reset Trials and Toggle Trial Start Mode handlers
+-- 2020-03-11 -- 
+ADDED :
+* Improve paste resources action
+* Add error marker in Arduino Diary
+FXED :
+Nothing
+-- 2020-03-05 -- QUATER
+ADDED :
+Nothing
+FIXED :
+* Manage OS dependent Path when importing experiment
+-- 2020-03-05 -- TER
+ADDED :
+Nothing
+FIXED :
+* ADwin preManageParameters : now handle NPE or NFE on parse
+float
+* ADwin preManageParameters : correct parameters logging when
+running trial
+-- 2020-03-05 --
+ADDED :
+* Log parameters values before runnning process test or trial
+FIXED :
+Nothing
+-- 2020-03-04 -- TER
+ADDED :
+Nothing
+FIXED :
+* Bug on Subject without any session (zero trials)
+-- 2020-03-04 -- BIS
+ADDED :
+* Add Binary median filter function for ADWin
+FIXED :
+Nothing
+-- 2020-03-04 --
+ADDED :
+* Change Comment block colors
+FIXED :
+Nothing
+-- 2020-03-02 --
+ADDED :
+* default blue theme
+* Update Welcome/Intro
+* Install Arduino cheatsheet
+* Start Session organisation wizard
+* Default cheatsheets updates
+FIXED :
+Nothing
+-- 2020-02-11 --
+ADDED :
+* Add progress information on subject/session description view
+FIXED :
+Nothing
+-- 2020-02-09 --
+ADDED :
+* Add percent done for Subject/Session in experiment view
+* Initial Pi4j support and Python Controller creation
+* Update several Vendors ID in Manifest files projects
+FIXED :
+* Initialize each CAN module channels&apos;s to zero to avoid random
+first value (ADWin)
+-- 2020-02-05 --
+ADDED :
+* Now handle customer function code generation
+FIXED :
+Nothing
+-- 2020-02-04 --
+ADDED :
+* Refresh selected resources when they are cleaned up
+* Manage undone trials when we are in acquisition mode/perspective
+FIXED :
+* Bug fix on Arduino : port busy on OSX
+-- 2020-02-03 --
+ADDED :
+* Comment block support in process
+* Improve import menu availability
+* Improve experiment description management
+* Support for exporting experiment
+FIXED :
+Nothing
+-- 2020-01-27 --
+ADDED :
+* Customized functions are now handled
+* Start documentation for sutomized function
+* Upgrade to Eclipse 12 2019 platform
+* Matlab Engine and Controller plugins
+* Now possible to change resource type
+* Now possible to change system type on DAcq resource
+* Improve import resource wizard
+FIXED :
+* Chart is flipped vertically on Mac OS when saved as image
+* Bug on objects nb handles management
+* Bug in Byte Serial Input Function (ADWin)
+* Layout correction in JVLMAC141WriteRegisterValueFunction (ADWin)
+* Bug on platform shared Image in Docometre Activator
+* Bug while compiling when no associated DAcq resource is found
+* Default ADWin and Arduino Uno Prefs. are now populated at first
+launch
+-- 2019-12-09 -- QUINQUIES
+ADDED :
+* Add Actual Position to available registers in JVL_MAC141 functions
+FIXED :
+Nothing
+-- 2019-12-09 -- QUATER
+ADDED :
+Nothing
+FIXED :
+* Bug in JVL_MAC141_CHANGE_MODE.FUN
+-- 2019-12-09 -- TER
+ADDED :
+Nothing
+FIXED :
+* Once command sent, wait to read three &quot;11H&quot; values in JVL_MAC141_CHANGE_MODE.FUN
+-- 2019-12-09 -- BIS
+ADDED :
+Nothing
+FIXED :
+* Bug correction in JVL_MAC141_READ_REGISTER_VALUE.FUN
+-- 2019-12-09 --
+ADDED :
+* Add frame processing to compute register value in JVL_MAC141_READ_REGISTER_VALUE.FUN
+FIXED :
+* Once command sent, wait to read three &quot;11H&quot; values in JVL_MAC141_WRITE_REGISTER_VALUE.FUN
+-- 2019-12-02 -- QUATER
+ADDED :
+Nothing
+FIXED :
+* Double &quot;)&quot; bug correction in JVL_MAC141_READ_REGISTER_VALUE.FUN
+-- 2019-12-02 -- TER
+ADDED :
+* Add JVL Mac141 Servo motor read register function (ADWin)
+FIXED :
+Nothing
+-- 2019-12-02 -- BIS
+ADDED :
+Nothing
+FIXED :
+* Print saved register key value in text widget [JVL Mac141 Servo
+motor write register function (ADWin)]
+-- 2019-12-02 --
+ADDED :
+* Add JVL Mac141 Servo motor change mode function (ADWin)
+* Add JVL Mac141 Servo motor write register function (ADWin)
+FIXED :
+* Remove \n at the end of adbasic Header to retrieve proper line
+numbers (erros, warnings)
+-- 2019-11-19 --
+ADDED :
+* Add support for channels in Byte Serial Output function
+(ADWin Pro)
+FIXED :
+Nothing
+-- 2019-11-13 --
+ADDED :
+* Add support for multiple writes in Byte Serial Output function
+(ADWin Pro)
+FIXED :
+Nothing
+-- 2019-11-12 --
+ADDED :
+Nothing
+FIXED :
+* Change ASCII serial functions to Byte serial functions (ADWin
+Pro)
+-- 2019-11-5 BIS --
+ADDED :
+Nothing
+FIXED :
+* Take LongSerialOutputFunction into account in order to add
+String library to ADBasic Code
+-- 2019-11-5 --
+ADDED :
+Nothing
+FIXED :
+* ADWin RS232 proper message and value for integer
+-- 2019-10-15 --
+ADDED :
+* Cheat sheet support
+FIXED :
+Nothing
+-- 2019-10-09 --
+ADDED :
+* Renaming subject, session or trial can now affect data files
+names
+* Allow copy even if resource name already exists using _Copy_n
+suffix
+* Clean action to remove log and data files
+* Close editors, if necessary, when parent resource is deleted
+* Ask for log and data files deletion when resource is paste
+* Update Edition main menu bar with existing menu items
+FIXED :
+* Remove error message when a resource is renamed and previous
+resource no longer exists
+* Add correct suffix in data name example
+* Data files have .sample extension not .sau in data name example
+* Always use trial number as suffix in data files names (Session
+properties)
+* Bug fix when child resource is not a container when renaming
+parent resource
+-- 2019-10-06 --
+ADDED :
+* Redraw only necessary area in data editor
+* Add little square to cursor to show data point in series
+* Remove ata editor Marker when necessary
+* Add cursor, marker and delta status line contribution items
+* Chart menu items internationalization
+* Add chart cursor and marker support to SWT Chart in Data Editor
+FIXED :
+* Nice tooltip data editor
+* Set Workload/Time Contribution item visibility depending on
+perspective ID
+-- 2019-09-30 --
+ADDED :
+* Use SWT Chart for data editors
+FIXED :
+* Fix bug on DACQ handler numbers when compile is started
+* Activate import action only in design perspective
+-- 2019-09-20 BIS --
+ADDED :
+* Version qualifier to main Window
+FIXED :
+* Nothing
+-- 2019-09-20 --
+ADDED :
+* Show and allow changes of channels numbers in Arduino Uno modules
+FIXED :
+* Nothing
+-- 2019-09-16 BIS --
+ADDED :
+* Nothing
+FIXED :
+* Fix bug in Data file Path on Windows
+-- 2019-09-16 --
+ADDED :
+* Nothing
+FIXED :
+* Allow &quot;_&quot; in channels names
+-- 2019-09-13 --
+ADDED :
+* Arduino Digital Input function support
+* Arduino Digital output function support
+FIXED :
+* test equality bug in Arduino process (convert = to == for if
+and do
+blocks)
+* Move startTime init. to the end of init. algo. for arduino
+process
+* Manage code generation and indentation for Arduino
+-- 2019-09-10 --
+ADDED :
+* taking pause key into account for PC
+* taking pause into account for MAC using &quot;CMD + P&quot; 
+* Add specific status line contribution for Workload and time
+informations
+* Add specific status line contribution for pause information
+FIXED :
+* Nothing
+-- 2019-09-09 --
+ADDED :
+* Nothing
+FIXED :
+* Initialize PAR_n to avoid wrong error data loss message (ADWin)
+* No Border for Value Label in Digital Output Function
+-- 2019-09-05 -- TER
+ADDED :
+* Nothing
+FIXED :
+* Add ADwpAD.inc to include files
+-- 2019-09-05 -- BIS
+ADDED :
+* Nothing
+FIXED :
+* Add SE_DIFF directive for ADwinPro in Calibration
+-- 2019-09-05 --
+ADDED :
+* Nothing
+FIXED :
+* Add SE_DIFF directive for ADwinPro
+-- 2019-09-04 --
+ADDED :
+* Update Docometre.feature file (information tab)
+FIXED :
+* Nothing
+-- 2019-09-03 --
+ADDED :
+* Add literal value to Digout function
+* Show text on perspective bar by default
+FIXED :
+* Delete process test folder if exists when a process is tested
+* Replace &quot;_&quot; with &quot;.&quot; in process test folder data files names
+-- 2019-07-22 --
+ADDED :
+* Increase figure tool tip max. width to 1000px
+FIXED :
+* Nothing
+-- 2019-07-19 --
+ADDED :
+* Import wizard (Process and DACQ Conf.)
+FIXED :
+* Copy/Paste bug correction
+* RegExp Bug correction in ADBasic source editor when replacing
+ADbasic Header
+-- 2019-07-10 --
+ADDED :
+* Show error message if next trial has no associated process
+FIXED :
+* Bug correction on reading DIO input value
+-- 2019-06-27 BIS --
+ADDED :
+* Nothing
+FIXED :
+* Fixed bug preventing an adwin dacq configuration creation when
+revision is not specified (default ADwin system) 
+-- 2019-06-27 --
+ADDED :
+* Read initial analog values in calibration dialog
+FIXED :
+* Nothing
+-- 2019-06-26 BIS --
+ADDED :
+* Nothing
+FIXED :
+* Bug on ADWinPro Calibration files (par_9 is returning to 0)
+* Bug on DIO module in/out configuration (Digprog1 and Digprog2)
+-- 2019-06-26 --
+ADDED :
+* Add Revision management to module (Pro DIO Modules)
+FIXED :
+* Nothing
+-- 2019-06-25 --
+ADDED :
+* XY Chart support
+* &quot;Manual&quot; or &quot;Auto&quot; trial start mode support
+* Content proposal enhancement on Functional and Conditional
+blocks
+FIXED :
+* Nothing
+-- 2019-06-10 --
+ADDED :
+* properties.0.name = org.eclipse.equinox.p2.description and
+value in order to provide update information to user
+* This text on Information Docometre.feature page
+FIXED :
+* Nothing
+   </description>
+
+   <copyright url="http://www.cecill.info/licences/Licence_CeCILL_V2.1-en.html">
+      See Licence Agreement
+   </copyright>
+
+   <license url="http://www.cecill.info/licences/Licence_CeCILL_V2.1-en.html">
+      CeCILL FREE SOFTWARE LICENSE AGREEMENT
+
+Version 2.1 dated 2013-06-21
+
+
+    Notice
+
+This Agreement is a Free Software license agreement that is the result
+of discussions between its authors in order to ensure compliance with
+the two main principles guiding its drafting:
+
+  * firstly, compliance with the principles governing the distribution
+    of Free Software: access to source code, broad rights granted to users,
+  * secondly, the election of a governing law, French law, with which it
+    is conformant, both as regards the law of torts and intellectual
+    property law, and the protection that it offers to both authors and
+    holders of the economic rights over software.
+
+The authors of the CeCILL (for Ce[a] C[nrs] I[nria] L[ogiciel] L[ibre]) 
+license are: 
+
+Commissariat à l&apos;énergie atomique et aux énergies alternatives - CEA, a
+public scientific, technical and industrial research establishment,
+having its principal place of business at 25 rue Leblanc, immeuble Le
+Ponant D, 75015 Paris, France.
+
+Centre National de la Recherche Scientifique - CNRS, a public scientific
+and technological establishment, having its principal place of business
+at 3 rue Michel-Ange, 75794 Paris cedex 16, France.
+
+Institut National de Recherche en Informatique et en Automatique -
+Inria, a public scientific and technological establishment, having its
+principal place of business at Domaine de Voluceau, Rocquencourt, BP
+105, 78153 Le Chesnay cedex, France.
+
+
+    Preamble
+
+The purpose of this Free Software license agreement is to grant users
+the right to modify and redistribute the software governed by this
+license within the framework of an open source distribution model.
+
+The exercising of this right is conditional upon certain obligations for
+users so as to preserve this status for all subsequent redistributions.
+
+In consideration of access to the source code and the rights to copy,
+modify and redistribute granted by the license, users are provided only
+with a limited warranty and the software&apos;s author, the holder of the
+economic rights, and the successive licensors only have limited liability.
+
+In this respect, the risks associated with loading, using, modifying
+and/or developing or reproducing the software by the user are brought to
+the user&apos;s attention, given its Free Software status, which may make it
+complicated to use, with the result that its use is reserved for
+developers and experienced professionals having in-depth computer
+knowledge. Users are therefore encouraged to load and test the
+suitability of the software as regards their requirements in conditions
+enabling the security of their systems and/or data to be ensured and,
+more generally, to use and operate it in the same conditions of
+security. This Agreement may be freely reproduced and published,
+provided it is not altered, and that no provisions are either added or
+removed herefrom.
+
+This Agreement may apply to any or all software for which the holder of
+the economic rights decides to submit the use thereof to its provisions.
+
+Frequently asked questions can be found on the official website of the
+CeCILL licenses family (http://www.cecill.info/index.en.html) for any 
+necessary clarification.
+
+
+    Article 1 - DEFINITIONS
+
+For the purpose of this Agreement, when the following expressions
+commence with a capital letter, they shall have the following meaning:
+
+Agreement: means this license agreement, and its possible subsequent
+versions and annexes.
+
+Software: means the software in its Object Code and/or Source Code form
+and, where applicable, its documentation, &quot;as is&quot; when the Licensee
+accepts the Agreement.
+
+Initial Software: means the Software in its Source Code and possibly its
+Object Code form and, where applicable, its documentation, &quot;as is&quot; when
+it is first distributed under the terms and conditions of the Agreement.
+
+Modified Software: means the Software modified by at least one
+Contribution.
+
+Source Code: means all the Software&apos;s instructions and program lines to
+which access is required so as to modify the Software.
+
+Object Code: means the binary files originating from the compilation of
+the Source Code.
+
+Holder: means the holder(s) of the economic rights over the Initial
+Software.
+
+Licensee: means the Software user(s) having accepted the Agreement.
+
+Contributor: means a Licensee having made at least one Contribution.
+
+Licensor: means the Holder, or any other individual or legal entity, who
+distributes the Software under the Agreement.
+
+Contribution: means any or all modifications, corrections, translations,
+adaptations and/or new functions integrated into the Software by any or
+all Contributors, as well as any or all Internal Modules.
+
+Module: means a set of sources files including their documentation that
+enables supplementary functions or services in addition to those offered
+by the Software.
+
+External Module: means any or all Modules, not derived from the
+Software, so that this Module and the Software run in separate address
+spaces, with one calling the other when they are run.
+
+Internal Module: means any or all Module, connected to the Software so
+that they both execute in the same address space.
+
+GNU GPL: means the GNU General Public License version 2 or any
+subsequent version, as published by the Free Software Foundation Inc.
+
+GNU Affero GPL: means the GNU Affero General Public License version 3 or
+any subsequent version, as published by the Free Software Foundation Inc.
+
+EUPL: means the European Union Public License version 1.1 or any
+subsequent version, as published by the European Commission.
+
+Parties: mean both the Licensee and the Licensor.
+
+These expressions may be used both in singular and plural form.
+
+
+    Article 2 - PURPOSE
+
+The purpose of the Agreement is the grant by the Licensor to the
+Licensee of a non-exclusive, transferable and worldwide license for the
+Software as set forth in Article 5 &lt;#scope&gt; hereinafter for the whole
+term of the protection granted by the rights over said Software.
+
+
+    Article 3 - ACCEPTANCE
+
+3.1 The Licensee shall be deemed as having accepted the terms and
+conditions of this Agreement upon the occurrence of the first of the
+following events:
+
+  * (i) loading the Software by any or all means, notably, by
+    downloading from a remote server, or by loading from a physical medium;
+  * (ii) the first time the Licensee exercises any of the rights granted
+    hereunder.
+
+3.2 One copy of the Agreement, containing a notice relating to the
+characteristics of the Software, to the limited warranty, and to the
+fact that its use is restricted to experienced users has been provided
+to the Licensee prior to its acceptance as set forth in Article 3.1
+&lt;#accepting&gt; hereinabove, and the Licensee hereby acknowledges that it
+has read and understood it.
+
+
+    Article 4 - EFFECTIVE DATE AND TERM
+
+
+      4.1 EFFECTIVE DATE
+
+The Agreement shall become effective on the date when it is accepted by
+the Licensee as set forth in Article 3.1 &lt;#accepting&gt;.
+
+
+      4.2 TERM
+
+The Agreement shall remain in force for the entire legal term of
+protection of the economic rights over the Software.
+
+
+    Article 5 - SCOPE OF RIGHTS GRANTED
+
+The Licensor hereby grants to the Licensee, who accepts, the following
+rights over the Software for any or all use, and for the term of the
+Agreement, on the basis of the terms and conditions set forth hereinafter.
+
+Besides, if the Licensor owns or comes to own one or more patents
+protecting all or part of the functions of the Software or of its
+components, the Licensor undertakes not to enforce the rights granted by
+these patents against successive Licensees using, exploiting or
+modifying the Software. If these patents are transferred, the Licensor
+undertakes to have the transferees subscribe to the obligations set
+forth in this paragraph.
+
+
+      5.1 RIGHT OF USE
+
+The Licensee is authorized to use the Software, without any limitation
+as to its fields of application, with it being hereinafter specified
+that this comprises:
+
+ 1. permanent or temporary reproduction of all or part of the Software
+    by any or all means and in any or all form.
+
+ 2. loading, displaying, running, or storing the Software on any or all
+    medium.
+
+ 3. entitlement to observe, study or test its operation so as to
+    determine the ideas and principles behind any or all constituent
+    elements of said Software. This shall apply when the Licensee
+    carries out any or all loading, displaying, running, transmission or
+    storage operation as regards the Software, that it is entitled to
+    carry out hereunder.
+
+
+      5.2 ENTITLEMENT TO MAKE CONTRIBUTIONS
+
+The right to make Contributions includes the right to translate, adapt,
+arrange, or make any or all modifications to the Software, and the right
+to reproduce the resulting software.
+
+The Licensee is authorized to make any or all Contributions to the
+Software provided that it includes an explicit notice that it is the
+author of said Contribution and indicates the date of the creation thereof.
+
+
+      5.3 RIGHT OF DISTRIBUTION
+
+In particular, the right of distribution includes the right to publish,
+transmit and communicate the Software to the general public on any or
+all medium, and by any or all means, and the right to market, either in
+consideration of a fee, or free of charge, one or more copies of the
+Software by any means.
+
+The Licensee is further authorized to distribute copies of the modified
+or unmodified Software to third parties according to the terms and
+conditions set forth hereinafter.
+
+
+        5.3.1 DISTRIBUTION OF SOFTWARE WITHOUT MODIFICATION
+
+The Licensee is authorized to distribute true copies of the Software in
+Source Code or Object Code form, provided that said distribution
+complies with all the provisions of the Agreement and is accompanied by:
+
+ 1. a copy of the Agreement,
+
+ 2. a notice relating to the limitation of both the Licensor&apos;s warranty
+    and liability as set forth in Articles 8 and 9,
+
+and that, in the event that only the Object Code of the Software is
+redistributed, the Licensee allows effective access to the full Source
+Code of the Software for a period of at least three years from the
+distribution of the Software, it being understood that the additional
+acquisition cost of the Source Code shall not exceed the cost of the
+data transfer.
+
+
+        5.3.2 DISTRIBUTION OF MODIFIED SOFTWARE
+
+When the Licensee makes a Contribution to the Software, the terms and
+conditions for the distribution of the resulting Modified Software
+become subject to all the provisions of this Agreement.
+
+The Licensee is authorized to distribute the Modified Software, in
+source code or object code form, provided that said distribution
+complies with all the provisions of the Agreement and is accompanied by:
+
+ 1. a copy of the Agreement,
+
+ 2. a notice relating to the limitation of both the Licensor&apos;s warranty
+    and liability as set forth in Articles 8 and 9,
+
+and, in the event that only the object code of the Modified Software is
+redistributed,
+
+ 3. a note stating the conditions of effective access to the full source
+    code of the Modified Software for a period of at least three years
+    from the distribution of the Modified Software, it being understood
+    that the additional acquisition cost of the source code shall not
+    exceed the cost of the data transfer.
+
+
+        5.3.3 DISTRIBUTION OF EXTERNAL MODULES
+
+When the Licensee has developed an External Module, the terms and
+conditions of this Agreement do not apply to said External Module, that
+may be distributed under a separate license agreement.
+
+
+        5.3.4 COMPATIBILITY WITH OTHER LICENSES
+
+The Licensee can include a code that is subject to the provisions of one
+of the versions of the GNU GPL, GNU Affero GPL and/or EUPL in the
+Modified or unmodified Software, and distribute that entire code under
+the terms of the same version of the GNU GPL, GNU Affero GPL and/or EUPL.
+
+The Licensee can include the Modified or unmodified Software in a code
+that is subject to the provisions of one of the versions of the GNU GPL,
+GNU Affero GPL and/or EUPL and distribute that entire code under the
+terms of the same version of the GNU GPL, GNU Affero GPL and/or EUPL.
+
+
+    Article 6 - INTELLECTUAL PROPERTY
+
+
+      6.1 OVER THE INITIAL SOFTWARE
+
+The Holder owns the economic rights over the Initial Software. Any or
+all use of the Initial Software is subject to compliance with the terms
+and conditions under which the Holder has elected to distribute its work
+and no one shall be entitled to modify the terms and conditions for the
+distribution of said Initial Software.
+
+The Holder undertakes that the Initial Software will remain ruled at
+least by this Agreement, for the duration set forth in Article 4.2 &lt;#term&gt;.
+
+
+      6.2 OVER THE CONTRIBUTIONS
+
+The Licensee who develops a Contribution is the owner of the
+intellectual property rights over this Contribution as defined by
+applicable law.
+
+
+      6.3 OVER THE EXTERNAL MODULES
+
+The Licensee who develops an External Module is the owner of the
+intellectual property rights over this External Module as defined by
+applicable law and is free to choose the type of agreement that shall
+govern its distribution.
+
+
+      6.4 JOINT PROVISIONS
+
+The Licensee expressly undertakes:
+
+ 1. not to remove, or modify, in any manner, the intellectual property
+    notices attached to the Software;
+
+ 2. to reproduce said notices, in an identical manner, in the copies of
+    the Software modified or not.
+
+The Licensee undertakes not to directly or indirectly infringe the
+intellectual property rights on the Software of the Holder and/or
+Contributors, and to take, where applicable, vis-à-vis its staff, any
+and all measures required to ensure respect of said intellectual
+property rights of the Holder and/or Contributors.
+
+
+    Article 7 - RELATED SERVICES
+
+7.1 Under no circumstances shall the Agreement oblige the Licensor to
+provide technical assistance or maintenance services for the Software.
+
+However, the Licensor is entitled to offer this type of services. The
+terms and conditions of such technical assistance, and/or such
+maintenance, shall be set forth in a separate instrument. Only the
+Licensor offering said maintenance and/or technical assistance services
+shall incur liability therefor.
+
+7.2 Similarly, any Licensor is entitled to offer to its licensees, under
+its sole responsibility, a warranty, that shall only be binding upon
+itself, for the redistribution of the Software and/or the Modified
+Software, under terms and conditions that it is free to decide. Said
+warranty, and the financial terms and conditions of its application,
+shall be subject of a separate instrument executed between the Licensor
+and the Licensee.
+
+
+    Article 8 - LIABILITY
+
+8.1 Subject to the provisions of Article 8.2, the Licensee shall be
+entitled to claim compensation for any direct loss it may have suffered
+from the Software as a result of a fault on the part of the relevant
+Licensor, subject to providing evidence thereof.
+
+8.2 The Licensor&apos;s liability is limited to the commitments made under
+this Agreement and shall not be incurred as a result of in particular:
+(i) loss due the Licensee&apos;s total or partial failure to fulfill its
+obligations, (ii) direct or consequential loss that is suffered by the
+Licensee due to the use or performance of the Software, and (iii) more
+generally, any consequential loss. In particular the Parties expressly
+agree that any or all pecuniary or business loss (i.e. loss of data,
+loss of profits, operating loss, loss of customers or orders,
+opportunity cost, any disturbance to business activities) or any or all
+legal proceedings instituted against the Licensee by a third party,
+shall constitute consequential loss and shall not provide entitlement to
+any or all compensation from the Licensor.
+
+
+    Article 9 - WARRANTY
+
+9.1 The Licensee acknowledges that the scientific and technical
+state-of-the-art when the Software was distributed did not enable all
+possible uses to be tested and verified, nor for the presence of
+possible defects to be detected. In this respect, the Licensee&apos;s
+attention has been drawn to the risks associated with loading, using,
+modifying and/or developing and reproducing the Software which are
+reserved for experienced users.
+
+The Licensee shall be responsible for verifying, by any or all means,
+the suitability of the product for its requirements, its good working
+order, and for ensuring that it shall not cause damage to either persons
+or properties.
+
+9.2 The Licensor hereby represents, in good faith, that it is entitled
+to grant all the rights over the Software (including in particular the
+rights set forth in Article 5 &lt;#scope&gt;).
+
+9.3 The Licensee acknowledges that the Software is supplied &quot;as is&quot; by
+the Licensor without any other express or tacit warranty, other than
+that provided for in Article 9.2 &lt;#good-faith&gt; and, in particular,
+without any warranty as to its commercial value, its secured, safe,
+innovative or relevant nature.
+
+Specifically, the Licensor does not warrant that the Software is free
+from any error, that it will operate without interruption, that it will
+be compatible with the Licensee&apos;s own equipment and software
+configuration, nor that it will meet the Licensee&apos;s requirements.
+
+9.4 The Licensor does not either expressly or tacitly warrant that the
+Software does not infringe any third party intellectual property right
+relating to a patent, software or any other property right. Therefore,
+the Licensor disclaims any and all liability towards the Licensee
+arising out of any or all proceedings for infringement that may be
+instituted in respect of the use, modification and redistribution of the
+Software. Nevertheless, should such proceedings be instituted against
+the Licensee, the Licensor shall provide it with technical and legal
+expertise for its defense. Such technical and legal expertise shall be
+decided on a case-by-case basis between the relevant Licensor and the
+Licensee pursuant to a memorandum of understanding. The Licensor
+disclaims any and all liability as regards the Licensee&apos;s use of the
+name of the Software. No warranty is given as regards the existence of
+prior rights over the name of the Software or as regards the existence
+of a trademark.
+
+
+    Article 10 - TERMINATION
+
+10.1 In the event of a breach by the Licensee of its obligations
+hereunder, the Licensor may automatically terminate this Agreement
+thirty (30) days after notice has been sent to the Licensee and has
+remained ineffective.
+
+10.2 A Licensee whose Agreement is terminated shall no longer be
+authorized to use, modify or distribute the Software. However, any
+licenses that it may have granted prior to termination of the Agreement
+shall remain valid subject to their having been granted in compliance
+with the terms and conditions hereof.
+
+
+    Article 11 - MISCELLANEOUS
+
+
+      11.1 EXCUSABLE EVENTS
+
+Neither Party shall be liable for any or all delay, or failure to
+perform the Agreement, that may be attributable to an event of force
+majeure, an act of God or an outside cause, such as defective
+functioning or interruptions of the electricity or telecommunications
+networks, network paralysis following a virus attack, intervention by
+government authorities, natural disasters, water damage, earthquakes,
+fire, explosions, strikes and labor unrest, war, etc.
+
+11.2 Any failure by either Party, on one or more occasions, to invoke
+one or more of the provisions hereof, shall under no circumstances be
+interpreted as being a waiver by the interested Party of its right to
+invoke said provision(s) subsequently.
+
+11.3 The Agreement cancels and replaces any or all previous agreements,
+whether written or oral, between the Parties and having the same
+purpose, and constitutes the entirety of the agreement between said
+Parties concerning said purpose. No supplement or modification to the
+terms and conditions hereof shall be effective as between the Parties
+unless it is made in writing and signed by their duly authorized
+representatives.
+
+11.4 In the event that one or more of the provisions hereof were to
+conflict with a current or future applicable act or legislative text,
+said act or legislative text shall prevail, and the Parties shall make
+the necessary amendments so as to comply with said act or legislative
+text. All other provisions shall remain effective. Similarly, invalidity
+of a provision of the Agreement, for any reason whatsoever, shall not
+cause the Agreement as a whole to be invalid.
+
+
+      11.5 LANGUAGE
+
+The Agreement is drafted in both French and English and both versions
+are deemed authentic.
+
+
+    Article 12 - NEW VERSIONS OF THE AGREEMENT
+
+12.1 Any person is authorized to duplicate and distribute copies of this
+Agreement.
+
+12.2 So as to ensure coherence, the wording of this Agreement is
+protected and may only be modified by the authors of the License, who
+reserve the right to periodically publish updates or new versions of the
+Agreement, each with a separate number. These subsequent versions may
+address new issues encountered by Free Software.
+
+12.3 Any Software distributed under a given version of the Agreement may
+only be subsequently distributed under the same version of the Agreement
+or a subsequent version, subject to the provisions of Article 5.3.4
+&lt;#compatibility&gt;.
+
+
+    Article 13 - GOVERNING LAW AND JURISDICTION
+
+13.1 The Agreement is governed by French law. The Parties agree to
+endeavor to seek an amicable solution to any disagreements or disputes
+that may arise during the performance of the Agreement.
+
+13.2 Failing an amicable solution within two (2) months as from their
+occurrence, and unless emergency proceedings are necessary, the
+disagreements or disputes shall be referred to the Paris Courts having
+jurisdiction, by the more diligent Party.
+   </license>
+
+   <includes
+         id="org.eclipse.rcp"
+         version="0.0.0"/>
+
+   <includes
+         id="org.eclipse.equinox.p2.core.feature"
+         version="0.0.0"/>
+
+   <includes
+         id="org.eclipse.equinox.p2.user.ui"
+         version="0.0.0"/>
+
+   <includes
+         id="org.eclipse.equinox.p2.extras.feature"
+         version="0.0.0"/>
+
+   <includes
+         id="org.eclipse.equinox.p2.rcp.feature"
+         version="0.0.0"/>
+
+   <includes
+         id="org.eclipse.help"
+         version="0.0.0"/>
+
+   <includes
+         id="org.eclipse.emf.common"
+         version="0.0.0"/>
+
+   <includes
+         id="org.eclipse.emf.ecore"
+         version="0.0.0"/>
+
+   <includes
+         id="org.eclipse.ecf.filetransfer.feature"
+         version="0.0.0"/>
+
+   <includes
+         id="org.eclipse.ecf.core.feature"
+         version="0.0.0"/>
+
+   <includes
+         id="org.eclipse.gef"
+         version="0.0.0"/>
+
+   <plugin
+         id="Docometre"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.equinox.concurrent"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.equinox.p2.ui.importexport"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.ui.forms"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="DocometreHelp"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.ui.cheatsheets"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.eclipse.ui.intro"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.ui.intro.universal"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.eclipse.jface.text"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.text"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="ADWin"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="Log4J"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.ui.views"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="Process"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="JOGL"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.core.expressions"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.jface.translations"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.swt.translations"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"/>
+
+   <plugin
+         id="org.eclipse.ui.workbench.translations"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.e4.ui.workbench.renderers.swt.translations"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.equinox.p2.ui.sdk.translations"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.equinox.p2.ui.translations"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.equinox.p2.ui.sdk.scheduler.translations"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.ui.cheatsheets.translations"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.ui.intro.translations"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.ui.intro.universal.translations"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.help.webapp.translations"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.help.base.translations"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.help.ui.translations"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.equinox.p2.operations.translations"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.core.resources"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.core.filesystem"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.ui.intro.quicklinks"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.gef.translations"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="JSSC"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.equinox.event"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.swtchart"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.swtchart.extensions"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="MatlabController"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="MatlabEngine"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="py4j-java"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="PythonController"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.eclipse.ui.themes"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.eclipse.e4.ui.css.swt.theme"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.nebula.visualization.widgets"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.nebula.visualization.xygraph"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="JMatIO"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="MigLayoutSwing"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="OpenCSV"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="PLY"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="JZY3D"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.swt.tools"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.swt.tools.base"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.eclipse.swt.tools.spies"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="com.google.guava"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="jakarta.servlet-api"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="Libraries"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.eclipse.gef"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.draw2d"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="JChart2D"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.swt"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.jface"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>

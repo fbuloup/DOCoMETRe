@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cheatsheet title="Installation d&apos;ADBasic [Windows]">
+	<intro>
+		<description>
+			<b>Bienvenue dans le guide d&apos;installation d&apos;ADBasic sous
+				Windows</b>
+
+			Afin d&apos;utiliser les systèmes vendu par la société JAGER Gmbh,
+			tels que les ADwin Pro ou Gold, il vous faut installer le logiciel
+			ADBasic. Ce logiciel permet de créer et compiler les programmes utilisables par
+			ces systèmes et apporte également un pilote pour dialoguer avec eux.
+			Ce logiciel est fournit par la même société et peut être téléchargé à
+			partir de leur site internet (http://www.adwin.de).
+			Mais son installation dépend du système sur lequel vous souhaitez
+			utiliser DOCoMETRe. Ce guide vous aidera à installer ADBasic sur
+			Windows.
+
+		</description>
+	</intro>
+	<item skip="false" title="Téléchargement d&apos;ADBasic">
+	<description>
+		L&apos;installation sous windows est la plus simple. Copiez-collez le
+		lien suivant dans votre navigateur :
+		<br />
+		<br />
+		<b>https://www.adwin.de/us/download/cdrom.html</b>
+		<br />
+		<br />
+		Ou cliquez sur le bouton ci-dessous pour y aller directement.<br/>
+		Cliquez ensuite sur le lien <b>ADwin software package</b> de la rubrique
+		<b>ADbasic and ADwin Drivers</b> pour lancer le téléchargement.
+	</description>
+	<command required="false"
+		serialization="Docometre.cheatsheet.OpenURLHandler(Docometre.cheatsheet.OpenURLHandler.Value=https://www.adwin.de/us/download/cdrom.html)" />
+</item>
+	<item skip="false" title="Décompression et installation">
+		<description>
+			Lorsque le téléchargement est terminé, décompressez le fichier et
+			lancez le programme <b>Setup.exe</b>. Suivez ensuite les instructions d'installations 
+			données dans la documentation ADWin.
+		</description>
+	</item>
+</cheatsheet>

@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: SWTChart
+Bundle-SymbolicName: org.eclipse.swtchart
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: org.eclipse.swtchart.Activator
+Bundle-Vendor: Eclipse SWTChart
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-ActivationPolicy: lazy
+Export-Package: org.eclipse.swtchart,
+ org.eclipse.swtchart.internal,
+ org.eclipse.swtchart.internal.axis;x-internal:=true,
+ org.eclipse.swtchart.internal.compress,
+ org.eclipse.swtchart.internal.series
+Automatic-Module-Name: org.eclipse.swtchart

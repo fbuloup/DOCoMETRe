@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"> 
+
+ <html>
+ <head>
+ 	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ 	<title>What if I need to declare variable in user function ?</title>
+ </head>
+
+ <body>
+ <h1>What if I need to declare variable in user function ?</h1>
+ One could need to declare variable in user functions. Just check this function definition :
+ <br> <br>
+ "Detect the moment when the analog input crosses a specific magnitude by increasing its value to make the function output change to one"
+ <br> <br>
+ Corresponding core ADBasic function code could be :
+ <pre> 
+ IF previousInput < crossValue AND input > crossValue THEN
+ 	output = 1
+ END
+ previousInput = input
+ </pre>
+ 
+ Here parameters are crossValue, input and output. previousInput must be declared as a variable in generated ADBasic code. <br>
+ This function definition can be implemented using this function text file :
+ 
+ <pre>
+MENU_TITLE = Cross value detector
+MENU_TITLE_FR = Détecteur de valeurs croisées
+DESCRIPTION = Detect the moment when the input crosses a specific magnitude by increasing its value to make the function output change to one
+DESCRIPTION_FR = Détectez le moment où l'entrée franchit une magnitude spécifique en augmentant sa valeur pour que la sortie de fonction passe à un
+USER_FUNCTION = YES
+PARAMETERS_NUMBER = 3
+PARAMETER_1 = NAME = crossValue, TYPE = TEXT[0]:^[0-9]+\.?[0-9]*$, LABEL = "Cross value :", LABEL_FR = "Valeur croisée :"
+PARAMETER_2 = NAME = input, TYPE = TEXT:^(?!\s*$).+$, LABEL = "Input :", LABEL_FR = "Entrée :"
+PARAMETER_3 = NAME = output, TYPE = TEXT:^(?!\s*$).+$, LABEL = "output :", LABEL_FR = "Sortie :"
+# We need to declare previous input value as a variable
+DECLARATION = DIM previousInput AS FLOAT
+# Core function code
+FUNCTION_CODE = IF (previousInput < crossValue AND input > crossValue) THEN\n\
+\toutput = 1\n\
+END\n\
+previousInput = input
+ </pre>
+ <p>
+ But now if I have to use this function more than once in the same process, there will be more than one "previousInput" variable declaration in generated code.
+ This is logical since their values are obviously not the same but since their declared names are identical, the compiler will complain that a variable with same
+ name is already declared.   
+ </p>
+ <p>
+To avoid any variable declaration collision, we will use the "_HashCode" special token placed as suffix in variable declaration. This special token will be replaced
+by a unique identifier during code generation, avoiding any variable declaration collision. Resulting function text file content should look like this :
+ </p>
+
+ <pre>
+MENU_TITLE = Cross value detector
+MENU_TITLE_FR = Détecteur de valeurs croisées
+DESCRIPTION = Detect the moment when the input crosses a specific magnitude by increasing its value to make the function output change to one
+DESCRIPTION_FR = Détectez le moment où l'entrée franchit une magnitude spécifique en augmentant sa valeur pour que la sortie de fonction passe à un
+USER_FUNCTION = YES
+PARAMETERS_NUMBER = 3
+PARAMETER_1 = NAME = crossValue, TYPE = TEXT[0]:^[0-9]+\.?[0-9]*$, LABEL = "Cross value :", LABEL_FR = "Valeur croisée :"
+PARAMETER_2 = NAME = input, TYPE = TEXT:^(?!\s*$).+$, LABEL = "Input :", LABEL_FR = "Entrée :"
+PARAMETER_3 = NAME = output, TYPE = TEXT:^(?!\s*$).+$, LABEL = "output :", LABEL_FR = "Sortie :"
+# We need to declare previous input value as a variable
+DECLARATION = DIM previousInput_HashCode AS FLOAT
+# Core function code
+FUNCTION_CODE = IF (previousInput_HashCode < crossValue AND input > crossValue) THEN\n\
+\toutput = 1\n\
+END\n\
+previousInput_HashCode = input
+ </pre>
+ 
+ </body>
+ </html>

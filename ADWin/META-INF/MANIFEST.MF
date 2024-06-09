@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: ADWin
+Bundle-SymbolicName: ADWin
+Bundle-Version: 1.0.0.qualifier
+Bundle-ClassPath: ADwin-1.2.2.jar
+Export-Package: de.adwin.driver;version="1.0.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-11
+Automatic-Module-Name: ADWin
+Bundle-Vendor: Jaeger
