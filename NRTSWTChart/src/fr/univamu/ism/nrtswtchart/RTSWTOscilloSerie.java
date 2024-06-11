@@ -102,8 +102,7 @@ public class RTSWTOscilloSerie {
 				double dx = rtswtChart.getDx();
 				for (int i = 0; i < x.length; i++) {
 					int nbPixels = (int)((x[i] - lastPointTime) / dx);
-					boolean addPoint = nbPixels > 0;
-					if(addPoint) {
+					if(nbPixels > 0) {
 						addValue(y[i], nbPixels);
 						setModified(true);
 					}
@@ -145,17 +144,16 @@ public class RTSWTOscilloSerie {
 	}
 
 	protected double getyMin() {
-		return Utils.getMin(yValues);
+		return RTSWTChartUtils.getMin(yValues);
 	}
 
 	protected double getyMax() {
-		return Utils.getMax(yValues);
+		return RTSWTChartUtils.getMax(yValues);
 	}
 
 	protected int[] getPointsArrayToDraw() {
 		ArrayList<Integer> pointsArray = new ArrayList<Integer>(0);
-		int height = rtswtChart.getHeight() - rtswtChart.getBottomAxisHeight();
-		height = height - rtswtChart.getLegendHeight();
+		int height = rtswtChart.getHeight() - rtswtChart.getBottomAxisHeight() - rtswtChart.getLegendHeight();
 		double yMin = rtswtChart.getyMin();
 		double dy = rtswtChart.getDy();
 		for (int i = 0; i < yValues.length; i++) {

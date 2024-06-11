@@ -173,22 +173,22 @@ public class RTSWTXYSerie {
 
 	protected double getyMin() {
 		Double[] d = y_XYValues.toArray(new Double[y_XYValues.size()]);
-		return Utils.getMin(d);
+		return RTSWTChartUtils.getMin(d);
 	}
 
 	protected double getyMax() {
 		Double[] d = y_XYValues.toArray(new Double[y_XYValues.size()]);
-		return Utils.getMax(d);
+		return RTSWTChartUtils.getMax(d);
 	}
 
 	protected double getxMin() {
 		Double[] d = x_XYValues.toArray(new Double[x_XYValues.size()]);
-		return Utils.getMin(d);
+		return RTSWTChartUtils.getMin(d);
 	}
 
 	protected double getxMax() {
 		Double[] d = x_XYValues.toArray(new Double[x_XYValues.size()]);
-		return Utils.getMax(d);
+		return RTSWTChartUtils.getMax(d);
 	}
 
 	protected int[] getPointsArrayToDraw() {
