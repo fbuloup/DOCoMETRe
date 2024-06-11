@@ -268,7 +268,7 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 		int fontSize = Integer.parseInt(value);
 		
 		
-		RTSWTOscilloChart rtswtOscilloChart = new RTSWTOscilloChart(chartContainer, SWT.NORMAL, fontName, fontStyle, fontSize);
+		RTSWTOscilloChart rtswtOscilloChart = new RTSWTOscilloChart(chartContainer, SWT.DOUBLE_BUFFERED, fontName, fontStyle, fontSize);
 		rtswtOscilloChart.getChart().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, hSpan, vSpan));
 		rtswtOscilloChart.setShowCurrentValue(displayCurrentValuesChart);
 		rtswtOscilloChart.setAutoScale(autoscale);
