@@ -41,17 +41,12 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.widgets;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Frame;
 import java.text.DecimalFormat;
 
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -66,11 +61,8 @@ import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.calibration.CalibrationFactory;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
-import info.monitorenter.gui.chart.Chart2D;
-import info.monitorenter.gui.chart.ITrace2D;
-import info.monitorenter.gui.chart.IAxis.AxisTitle;
-import info.monitorenter.gui.chart.rangepolicies.RangePolicyUnbounded;
-import info.monitorenter.gui.chart.traces.Trace2DLtd;
+import fr.univamu.ism.nrtswtchart.RTSWTOscilloChart;
+import fr.univamu.ism.nrtswtchart.RTSWTOscilloSerie;
 
 public class ChannelViewer extends Composite {
 	
@@ -78,8 +70,8 @@ public class ChannelViewer extends Composite {
 	private String title;
 	private Label separator;
 	private DecimalFormat decimalFormater;
-	private ITrace2D serie;
-	private Composite chartContainer; 
+	private RTSWTOscilloSerie rtswtOscilloSerie;
+	private RTSWTOscilloChart rtswtOscilloChart; 
 	private boolean firstSample = true;
 	private double initialTime;
 	private Image imageLeft;
@@ -191,7 +183,8 @@ public class ChannelViewer extends Composite {
 					createGraph();
 					showGraphButton.setImage(imageDown);
 				} else {
-					chartContainer.dispose();
+					rtswtOscilloChart.getChart().getParent().dispose();
+//					rtswtOscilloChart.dispose();
 					separator.dispose();
 					showGraphButton.setImage(imageLeft);
 				}
@@ -231,29 +224,19 @@ public class ChannelViewer extends Composite {
 		gl.verticalSpacing = 0;
 		gl.marginHeight = 5;
 		gl.marginWidth = 0;
-		chartContainer = new Composite(container, SWT.EMBEDDED | SWT.NO_BACKGROUND);
-		chartContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-	    Frame frame = SWT_AWT.new_Frame(chartContainer);
-		Chart2D chart = new Chart2D();
-		frame.add(chart);
-		chart.setBackground(new java.awt.Color(chartContainer.getBackground().getRed(), chartContainer.getBackground().getGreen(), chartContainer.getBackground().getBlue()));
-		chart.setForeground(java.awt.Color.BLACK);
-		chart.getAxisX().setPaintGrid(true);
-		chart.getAxisY().setPaintGrid(true);
-		chart.setGridColor(java.awt.Color.BLACK);
-		chart.getAxisY().setRangePolicy(new RangePolicyUnbounded());
-		chart.setPaintLabels(false);
-		chart.getAxisX().setAxisTitle(new AxisTitle(null));
-		chart.getAxisY().setAxisTitle(new AxisTitle(null));	
-		FontData[] fontData = chartContainer.getFont().getFontData();
-		Font font = new Font(fontData[0].getName(), Font.BOLD, 10);
-		chart.setFont(font);
-		double fs = Double.parseDouble(channel.getProperty(ChannelProperties.SAMPLE_FREQUENCY));
-		int nbPoints = (int) (10*fs);
-		ITrace2D serie = new Trace2DLtd(nbPoints); 
-		chart.addTrace(serie);
-		serie.setColor(new Color(Display.getDefault().getSystemColor(SWT.COLOR_DARK_RED).getRed(), Display.getDefault().getSystemColor(SWT.COLOR_DARK_RED).getGreen(), Display.getDefault().getSystemColor(SWT.COLOR_DARK_RED).getBlue()));
 		
+		rtswtOscilloChart = new RTSWTOscilloChart(container, SWT.DOUBLE_BUFFERED, container.getFont().getFontData()[0].getName(), SWT.BOLD, 10);
+		rtswtOscilloChart.setGridLinesColor(Display.getDefault().getSystemColor(SWT.COLOR_WHITE));
+		rtswtOscilloChart.setFontColor(container.getBackground());
+		rtswtOscilloChart.setLegendVisibility(false);
+		rtswtOscilloChart.setAutoScale(true);
+		rtswtOscilloChart.setWindowTimeWidth(10);
+		rtswtOscilloChart.getChart().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		rtswtOscilloSerie = rtswtOscilloChart.createSerie(title, Display.getDefault().getSystemColor(SWT.COLOR_GREEN));
+		
+		GridData gd = (GridData) rtswtOscilloChart.getChart().getLayoutData();
+		gd.heightHint = 150;
+
 		separator = new Label(this, SWT.HORIZONTAL | SWT.SEPARATOR);
 		separator.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 	}
@@ -280,7 +263,7 @@ public class ChannelViewer extends Composite {
 			initialTime = x;
 			firstSample = false;
 		}
-		serie.addPoint(x - initialTime, yComputed);
+		rtswtOscilloSerie.addPoints(new Double[] {x- initialTime}, new Double[] {yComputed});
 	}
 	
 	public Channel getChannel() {

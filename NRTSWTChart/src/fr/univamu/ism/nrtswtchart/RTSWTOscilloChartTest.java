@@ -135,7 +135,12 @@ public class RTSWTOscilloChartTest {
 		rtswtChart.setGridVisibility(true);
 		rtswtChart.setLegendVisibility(true);
 		rtswtChart.setLegendPosition(SWT.BOTTOM);
-		rtswtSerie1 = rtswtChart.createSerie("Serie1", display.getSystemColor(SWT.COLOR_GREEN));
+		
+		rtswtChart.setFontColor(display.getSystemColor(SWT.COLOR_GREEN));
+		rtswtChart.setGridLinesColor(display.getSystemColor(SWT.COLOR_GREEN));
+		
+		
+		rtswtSerie1 = rtswtChart.createSerie("Serie1", display.getSystemColor(SWT.COLOR_WHITE));
 		rtswtSerie2 = rtswtChart.createSerie("Serie2", display.getSystemColor(SWT.COLOR_RED));
 		rtswtSerie3 = rtswtChart.createSerie("Serie3", display.getSystemColor(SWT.COLOR_CYAN));
 		rtswtSerie4 = rtswtChart.createSerie("Serie2", display.getSystemColor(SWT.COLOR_DARK_MAGENTA));
