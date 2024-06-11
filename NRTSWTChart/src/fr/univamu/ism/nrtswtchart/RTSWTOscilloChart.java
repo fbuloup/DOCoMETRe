@@ -202,6 +202,7 @@ public class RTSWTOscilloChart extends ControlAdapter implements PaintListener, 
 
 	private int value;
 	private boolean redrawGrid;
+	protected double doubleValue;
 
 	public RTSWTOscilloChart(Composite parent, int style, String fontName, int chartFontStyle, int chartFontHeight) {
 		chart = new Canvas(parent, style);
@@ -256,7 +257,7 @@ public class RTSWTOscilloChart extends ControlAdapter implements PaintListener, 
 
 		paletteData = new PaletteData(0XFF, 0xFF00, 0xFF0000);
 	}
-
+	
 	public RTSWTOscilloSerie createSerie(String title, Color color) {
 		RTSWTOscilloSerie rtswtSerie = new RTSWTOscilloSerie(this, title, color);
 		rtswtSeries.add(rtswtSerie);
@@ -268,7 +269,13 @@ public class RTSWTOscilloChart extends ControlAdapter implements PaintListener, 
 	}
 
 	protected double getDx() {
-		return windowTimeWidth / (getWidth() - getLeftAxisWidth() - 1);
+//		chart.getDisplay().syncExec(new Runnable() {
+//			@Override
+//			public void run() {
+				doubleValue = windowTimeWidth / (getWidth() - getLeftAxisWidth() - 1);
+//			}
+//		});
+		return doubleValue;
 	}
 
 	protected double getDy() {
@@ -277,22 +284,22 @@ public class RTSWTOscilloChart extends ControlAdapter implements PaintListener, 
 	}
 
 	protected int getWidth() {
-		chart.getDisplay().syncExec(new Runnable() {
-			@Override
-			public void run() {
+//		chart.getDisplay().syncExec(new Runnable() {
+//			@Override
+//			public void run() {
 				value = chart.getClientArea().width;
-			}
-		});
+//			}
+//		});
 		return value;
 	}
 
 	protected int getHeight() {
-		chart.getDisplay().syncExec(new Runnable() {
-			@Override
-			public void run() {
+//		chart.getDisplay().syncExec(new Runnable() {
+//			@Override
+//			public void run() {
 				value = chart.getClientArea().height;
-			}
-		});
+//			}
+//		});
 		return value;
 	}
 
@@ -342,11 +349,11 @@ public class RTSWTOscilloChart extends ControlAdapter implements PaintListener, 
 		return yMax;
 	}
 
-	private void setyMin(double yMin) {
+	public void setyMin(double yMin) {
 		this.yMin = yMin;
 	}
 
-	private void setyMax(double yMax) {
+	public void setyMax(double yMax) {
 		this.yMax = yMax;
 	}
 
@@ -366,7 +373,7 @@ public class RTSWTOscilloChart extends ControlAdapter implements PaintListener, 
 		this.showLegend = showLegend;
 	}
 
-	protected Canvas getChart() {
+	public Canvas getChart() {
 		return chart;
 	}
 
@@ -624,16 +631,16 @@ public class RTSWTOscilloChart extends ControlAdapter implements PaintListener, 
 		}
 		if(redraw) {
 			long t = System.nanoTime();
-			Display.getDefault().syncExec(new Runnable() {
-				@Override
-				public void run() {
+//			Display.getDefault().syncExec(new Runnable() {
+//				@Override
+//				public void run() {
 					if (showGrid && redrawGrid) prepareGrids();
 					if(showCurrentValues) prepareCurrentValues();
 					prepareSeries();
 					getChart().redraw();
 					getChart().update();
-				}
-			});
+//				}
+//			});
 			drawTime.add(System.nanoTime() - t);
 		}
 	}

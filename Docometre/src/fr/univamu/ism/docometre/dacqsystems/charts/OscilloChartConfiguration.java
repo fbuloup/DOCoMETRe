@@ -41,16 +41,16 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.charts;
 
-import java.awt.BasicStroke;
-import java.awt.Font;
-import java.awt.Frame;
+//import java.awt.BasicStroke;
+//import java.awt.Font;
+//import java.awt.Frame;
 import java.nio.FloatBuffer;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -69,13 +69,8 @@ import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyHandler;
 import fr.univamu.ism.docometre.dacqsystems.Property;
 import fr.univamu.ism.docometre.editors.ResourceEditor;
-import info.monitorenter.gui.chart.Chart2D;
-import info.monitorenter.gui.chart.IAxis.AxisTitle;
-import info.monitorenter.gui.chart.ITrace2D;
-import info.monitorenter.gui.chart.rangepolicies.RangePolicyFixedViewport;
-import info.monitorenter.gui.chart.rangepolicies.RangePolicyUnbounded;
-import info.monitorenter.gui.chart.traces.Trace2DLtd;
-import info.monitorenter.util.Range;
+import fr.univamu.ism.nrtswtchart.RTSWTOscilloChart;
+import fr.univamu.ism.nrtswtchart.RTSWTOscilloSerie;
 import fr.univamu.ism.docometre.editors.ModulePage.ModuleSectionPart;
 
 public class OscilloChartConfiguration extends ChartConfiguration {
@@ -240,7 +235,7 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 	}
 
 	@Override
-	public void createChart(Composite chartsContainer) {
+	public void createChart(Composite chartContainer) {
 		// Clean series
 		for (CurveConfiguration curveConfiguration : curvesConfigurations) {
 			OscilloCurveConfiguration oscilloCurveConfiguration = (OscilloCurveConfiguration)curveConfiguration;
@@ -267,82 +262,49 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 		boolean bold = Boolean.parseBoolean(value);
 		value = getProperty(OscilloChartConfigurationProperties.FONT_ITALIC);
 		boolean italic = Boolean.parseBoolean(value);
-		int fontStyle = (bold?Font.BOLD:Font.PLAIN) | (italic?Font.ITALIC:Font.PLAIN);
+		int fontStyle = (bold? SWT.BOLD:SWT.NORMAL) | (italic? SWT.ITALIC: SWT.NORMAL);
 		value = getProperty(OscilloChartConfigurationProperties.FONT_SIZE);
 		if(value == null || "".equals(value)) value = "12";
 		int fontSize = Integer.parseInt(value);
 		
-		Composite chartContainer = new Composite(chartsContainer, SWT.EMBEDDED | SWT.NO_BACKGROUND);
-		chartContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, hSpan, vSpan));
-	    Frame frame = SWT_AWT.new_Frame(chartContainer);
-		Chart2D chart = new Chart2D();
-		frame.add(chart);
-		Font font = new Font(fontName, fontStyle, fontSize);
-		chart.setFont(font);
-		chart.setForeground(java.awt.Color.WHITE);
-		chart.setBackground(java.awt.Color.BLACK);
-		chart.getAxisX().setPaintGrid(true);
-		chart.getAxisY().setPaintGrid(true);
-		chart.setGridColor(java.awt.Color.DARK_GRAY);
-		chart.getAxisX().setAxisTitle(new AxisTitle(null));
-		chart.getAxisY().setAxisTitle(new AxisTitle(null));
 		
-		RangePolicyFixedViewport xRangePolicy = new RangePolicyFixedViewport(new Range(0, timeWidth));
-		chart.getAxisX().setRangePolicy(xRangePolicy);
-		if(autoscale) {
-			chart.getAxisY().setRangePolicy(new RangePolicyUnbounded());
-		} else {
-			RangePolicyFixedViewport yRangePolicy = new RangePolicyFixedViewport(new Range(yMin, yMax));
-			chart.getAxisY().setRangePolicy(yRangePolicy);
-		}
-		
-//		chart.setPaintLabels(false);
+		RTSWTOscilloChart rtswtOscilloChart = new RTSWTOscilloChart(chartContainer, SWT.NORMAL, fontName, fontStyle, fontSize);
+		rtswtOscilloChart.getChart().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, hSpan, vSpan));
+		rtswtOscilloChart.setShowCurrentValue(displayCurrentValuesChart);
+		rtswtOscilloChart.setAutoScale(autoscale);
+		rtswtOscilloChart.setWindowTimeWidth(timeWidth);
+		rtswtOscilloChart.setyMax(yMax);
+		rtswtOscilloChart.setyMin(yMin);
+		rtswtOscilloChart.setGridVisibility(true);
+		rtswtOscilloChart.setLegendVisibility(true);
+		rtswtOscilloChart.setLegendPosition(SWT.BOTTOM);
 		
 		// Create curves
 		for (CurveConfiguration curveConfiguration : curvesConfigurations) {
 			OscilloCurveConfiguration oscilloCurveConfiguration = (OscilloCurveConfiguration)curveConfiguration;
-			Channel channel = oscilloCurveConfiguration.getChannel();
 			String serieID = oscilloCurveConfiguration.getChannel().getID();
-			java.awt.Color serieColor = CurveConfigurationProperties.getAWTColor(oscilloCurveConfiguration);
-			int serieStyle = CurveConfigurationProperties.getStyle(oscilloCurveConfiguration);
-			int serieWidth = Integer.parseInt(oscilloCurveConfiguration.getProperty(CurveConfigurationProperties.WIDTH));
-			
+			Color serieColor = CurveConfigurationProperties.getColor(oscilloCurveConfiguration);
 			value = oscilloCurveConfiguration.getProperty(OscilloCurveConfigurationProperties.DISPLAY_CURRENT_VALUES);
-			boolean displayCurrentValuesTrace = displayCurrentValuesChart || Boolean.parseBoolean(value);
+			boolean displayCurrentValues = displayCurrentValuesChart || Boolean.parseBoolean(value);
+
+//			int serieWidth = Integer.parseInt(oscilloCurveConfiguration.getProperty(CurveConfigurationProperties.WIDTH));
+//			int serieStyle = CurveConfigurationProperties.getStyle(oscilloCurveConfiguration);
+//			BasicStroke stroke = new BasicStroke(serieWidth);
+//			int lineWidth = serieWidth + 13;
+//			int emptyWidth = serieWidth + 3;
+//			if(serieStyle == SWT.LINE_DASH) 
+//				stroke = new BasicStroke(serieWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1.0f, new float[] {lineWidth, emptyWidth}, 0.0f);
+//			if(serieStyle == SWT.LINE_DOT) 
+//				stroke = new BasicStroke(serieWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1.0f, new float[] {emptyWidth, emptyWidth}, 0.0f);
+//			if(serieStyle == SWT.LINE_DASHDOT) 
+//				stroke = new BasicStroke(serieWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1.0f, new float[] {lineWidth, serieWidth, emptyWidth, serieWidth}, 0.0f);
+//			if(serieStyle == SWT.LINE_DASHDOTDOT) 
+//				stroke = new BasicStroke(serieWidth, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 1.0f, new float[] {lineWidth, emptyWidth, emptyWidth, emptyWidth, emptyWidth, emptyWidth}, 0.0f);
 			
-			BasicStroke stroke = new BasicStroke(serieWidth);
-			int lineWidth = serieWidth + 13;
-			int emptyWidth = serieWidth + 3;
-			if(serieStyle == SWT.LINE_DASH) 
-				stroke = new BasicStroke(serieWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1.0f, new float[] {lineWidth, emptyWidth}, 0.0f);
-			if(serieStyle == SWT.LINE_DOT) 
-				stroke = new BasicStroke(serieWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1.0f, new float[] {emptyWidth, emptyWidth}, 0.0f);
-			if(serieStyle == SWT.LINE_DASHDOT) 
-				stroke = new BasicStroke(serieWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1.0f, new float[] {lineWidth, serieWidth, emptyWidth, serieWidth}, 0.0f);
-			if(serieStyle == SWT.LINE_DASHDOTDOT) 
-				stroke = new BasicStroke(serieWidth, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 1.0f, new float[] {lineWidth, emptyWidth, emptyWidth, emptyWidth, emptyWidth, emptyWidth}, 0.0f);
-			double fs = Double.parseDouble(oscilloCurveConfiguration.getChannel().getProperty(ChannelProperties.SAMPLE_FREQUENCY));
-			int nbPoints = (int) (timeWidth*fs);
-			ITrace2D serie = new Trace2DLtd(nbPoints); 
-			((Trace2DLtd)serie).setShowCurrentTraceValue(displayCurrentValuesTrace); 
-			chart.addTrace(serie);
-			oscilloCurveConfiguration.setSerie(serie);
-			serie.setColor(serieColor);
-			serie.setStroke(stroke);
-			value = oscilloCurveConfiguration.getProperty(OscilloCurveConfigurationProperties.DISPLAY_CURRENT_VALUES);
-			boolean displayCurrentValues = Boolean.parseBoolean(value);
-			displayCurrentValues = displayCurrentValuesChart || displayCurrentValues;
-			if(channel instanceof HorizontalReferenceChannel) {
-				HorizontalReferenceChannel horizontalReferenceChannel = (HorizontalReferenceChannel)channel;
-				double horizontalValue = horizontalReferenceChannel.getValue();
-				serie.setName("");
-				serie.addPoint(0, horizontalValue);
-				serie.addPoint(timeWidth, horizontalValue);
-			} else {
-				serie.setName(serieID);
-			}
-//			oscilloSerie.setShowCurrentValue(displayCurrentValues);
-			// Set serie to update in configuration
+			RTSWTOscilloSerie rtswtSerie1 = rtswtOscilloChart.createSerie(serieID, serieColor);
+			rtswtSerie1.setDisplayCurrentValue(displayCurrentValues);
+			
+			oscilloCurveConfiguration.setSerie(rtswtSerie1);
 			
 		}
 	}

@@ -58,6 +58,8 @@ public class RTSWTOscilloSerie {
 	private boolean modified;
 	private String title;
 	private Color color;
+	private boolean displayCurrentValue;
+	
 	/**
 	 * If true, serie will be a simple horizontal line at value specified in yValues[0]
 	 */
@@ -80,6 +82,14 @@ public class RTSWTOscilloSerie {
 			currentIndex = 0;
 			setModified(true);
 		}
+	}
+	
+	public void setDisplayCurrentValue(boolean displayCurrentValue) {
+		this.displayCurrentValue = displayCurrentValue;
+	}
+	
+	public boolean isDisplayCurrentValue() {
+		return displayCurrentValue;
 	}
 
 	protected Color getColor() {
@@ -107,10 +117,9 @@ public class RTSWTOscilloSerie {
 						setModified(true);
 					}
 				}
+				rtswtChart.checkUpdate();
 			}
 		});
-
-		rtswtChart.checkUpdate();
 	}
 
 	protected void reset() {

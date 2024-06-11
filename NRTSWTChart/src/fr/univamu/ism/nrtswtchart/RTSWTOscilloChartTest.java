@@ -129,7 +129,7 @@ public class RTSWTOscilloChartTest {
 		shell.setText("RTSWT Test");
 		shell.setLayout(new FillLayout());
 
-		RTSWTOscilloChart rtswtChart = new RTSWTOscilloChart(shell, SWT.DOUBLE_BUFFERED, null,  SWT.BOLD | SWT.NORMAL, 14);
+		RTSWTOscilloChart rtswtChart = new RTSWTOscilloChart(shell, SWT.NORMAL, null,  SWT.BOLD | SWT.NORMAL, 14);
 		rtswtChart.setWindowTimeWidth(10);
 		rtswtChart.setAutoScale(false);
 		rtswtChart.setGridVisibility(true);

@@ -258,13 +258,7 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 	}
 
 	protected int getHeight() {
-		chart.getDisplay().syncExec(new Runnable() {
-			@Override
-			public void run() {
-				value = chart.getClientArea().height;
-			}
-		});
-		return value;
+		return chart.getClientArea().height;
 	}
 
 	protected int getLeftAxisWidth() {
