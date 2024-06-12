@@ -127,9 +127,10 @@ public class RTSWTXYChartTest {
 		chart.setGridVisibility(true);
 		chart.setLegendPosition(SWT.BOTTOM);
 		chart.setLegendVisibility(false);
+		chart.setHistorySize(1);
 		/* Create two series in this first chart */
-		serie1 = chart.createSerie("serie1", display.getSystemColor(SWT.COLOR_GREEN));
-		serie2 = chart.createSerie("serie2", display.getSystemColor(SWT.COLOR_RED));
+		serie1 = chart.createSerie("serie1", display.getSystemColor(SWT.COLOR_GREEN), 33333);
+		serie2 = chart.createSerie("serie2", display.getSystemColor(SWT.COLOR_RED), 33333);
 
 		/* Open the shell to display charts */
 		shell.open ();
