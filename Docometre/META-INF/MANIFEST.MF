@@ -34,7 +34,6 @@ Require-Bundle: org.eclipse.ui;bundle-version="3.108.0",
  JOGL;bundle-version="1.0.0",
  OpenCSV;bundle-version="1.0.0",
  org.eclipse.gef;bundle-version="3.16.0",
- JChart2D;bundle-version="1.0.0",
  NRTSWTChart;bundle-version="1.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
