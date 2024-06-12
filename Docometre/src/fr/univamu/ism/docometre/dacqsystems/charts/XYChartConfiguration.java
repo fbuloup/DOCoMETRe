@@ -41,16 +41,13 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.charts;
 
-import java.awt.BasicStroke;
-import java.awt.Font;
-import java.awt.Frame;
 import java.nio.FloatBuffer;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -67,13 +64,8 @@ import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyHandler;
 import fr.univamu.ism.docometre.dacqsystems.Property;
 import fr.univamu.ism.docometre.editors.ResourceEditor;
-import info.monitorenter.gui.chart.Chart2D;
-import info.monitorenter.gui.chart.ITrace2D;
-import info.monitorenter.gui.chart.IAxis.AxisTitle;
-import info.monitorenter.gui.chart.rangepolicies.RangePolicyFixedViewport;
-import info.monitorenter.gui.chart.rangepolicies.RangePolicyUnbounded;
-import info.monitorenter.gui.chart.traces.Trace2DSimple;
-import info.monitorenter.util.Range;
+import fr.univamu.ism.nrtswtchart.RTSWTXYChart;
+import fr.univamu.ism.nrtswtchart.RTSWTXYSerie;
 import fr.univamu.ism.docometre.editors.ModulePage.ModuleSectionPart;
 
 public class XYChartConfiguration extends ChartConfiguration {
@@ -218,7 +210,7 @@ public class XYChartConfiguration extends ChartConfiguration {
 	}
 
 	@Override
-	public void createChart(Composite chartsContainer) {
+	public void createChart(Composite chartContainer) {
 		// Clean series
 		for (CurveConfiguration curveConfiguration : curvesConfigurations) {
 			XYCurveConfiguration xyCurveConfiguration = (XYCurveConfiguration)curveConfiguration;
@@ -245,64 +237,46 @@ public class XYChartConfiguration extends ChartConfiguration {
 		boolean bold = Boolean.parseBoolean(value);
 		value = getProperty(XYChartConfigurationProperties.FONT_ITALIC);
 		boolean italic = Boolean.parseBoolean(value);
-		int fontStyle = (bold?Font.BOLD:Font.PLAIN) | (italic?Font.ITALIC:Font.PLAIN);
+		int fontStyle = (bold?SWT.BOLD:SWT.NORMAL) | (italic?SWT.ITALIC:SWT.NORMAL);
 		value = getProperty(XYChartConfigurationProperties.FONT_SIZE);
 		if(value == null || "".equals(value)) value = "12";
 		int fontSize = Integer.parseInt(value);
 		
-		
-		Composite chartContainer = new Composite(chartsContainer, SWT.EMBEDDED | SWT.NO_BACKGROUND);
-		chartContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, hSpan, vSpan));
-	    Frame frame = SWT_AWT.new_Frame(chartContainer);
-		Chart2D chart = new Chart2D();
-		frame.add(chart);
-		Font font = new Font(fontName, fontStyle, fontSize);
-		chart.setFont(font);
-		chart.setForeground(java.awt.Color.WHITE);
-		chart.setBackground(java.awt.Color.BLACK);
-		chart.getAxisX().setPaintGrid(true);
-		chart.getAxisY().setPaintGrid(true);
-		chart.setGridColor(java.awt.Color.DARK_GRAY);
-		chart.getAxisX().setAxisTitle(new AxisTitle(null));
-		chart.getAxisY().setAxisTitle(new AxisTitle(null));
-		
-		if(autoscale) {
-			chart.getAxisX().setRangePolicy(new RangePolicyUnbounded());
-			chart.getAxisY().setRangePolicy(new RangePolicyUnbounded());
-		} else {
-			RangePolicyFixedViewport xRangePolicy = new RangePolicyFixedViewport(new Range(xMin, xMax));
-			RangePolicyFixedViewport yRangePolicy = new RangePolicyFixedViewport(new Range(yMin, yMax));
-			chart.getAxisX().setRangePolicy(xRangePolicy);
-			chart.getAxisY().setRangePolicy(yRangePolicy);
-		}
+		RTSWTXYChart rtswtxyChart = new RTSWTXYChart(chartContainer, SWT.DOUBLE_BUFFERED, fontName, fontStyle, fontSize);
+		rtswtxyChart.getChart().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, hSpan, vSpan));
+		rtswtxyChart.setAutoScale(autoscale);
+		rtswtxyChart.setxMax(xMax);
+		rtswtxyChart.setxMin(xMin);
+		rtswtxyChart.setyMax(yMax);
+		rtswtxyChart.setyMin(yMin);
+		rtswtxyChart.setGridVisibility(true);
+		rtswtxyChart.setLegendVisibility(true);
+		rtswtxyChart.setLegendPosition(SWT.BOTTOM);
 		
 		// Create curves
 		for (CurveConfiguration curveConfiguration : curvesConfigurations) {
 			XYCurveConfiguration xyCurveConfiguration = (XYCurveConfiguration)curveConfiguration;
 			String xSerieID = xyCurveConfiguration.getXChannel().getID();
 			String ySerieID = xyCurveConfiguration.getYChannel().getID();
-			java.awt.Color serieColor = CurveConfigurationProperties.getAWTColor(xyCurveConfiguration);
-			int serieStyle = CurveConfigurationProperties.getStyle(xyCurveConfiguration);
-			int serieWidth = Integer.parseInt(xyCurveConfiguration.getProperty(CurveConfigurationProperties.WIDTH));
+			Color serieColor = CurveConfigurationProperties.getColor(xyCurveConfiguration);
 			
-			BasicStroke stroke = new BasicStroke(serieWidth);
-			int lineWidth = serieWidth + 13;
-			int emptyWidth = serieWidth + 3;
-			if(serieStyle == SWT.LINE_DASH) 
-				stroke = new BasicStroke(serieWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1.0f, new float[] {lineWidth, emptyWidth}, 0.0f);
-			if(serieStyle == SWT.LINE_DOT) 
-				stroke = new BasicStroke(serieWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1.0f, new float[] {emptyWidth, emptyWidth}, 0.0f);
-			if(serieStyle == SWT.LINE_DASHDOT) 
-				stroke = new BasicStroke(serieWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1.0f, new float[] {lineWidth, serieWidth, emptyWidth, serieWidth}, 0.0f);
-			if(serieStyle == SWT.LINE_DASHDOTDOT) 
-				stroke = new BasicStroke(serieWidth, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 1.0f, new float[] {lineWidth, emptyWidth, emptyWidth, emptyWidth, emptyWidth, emptyWidth}, 0.0f);
+//			int serieStyle = CurveConfigurationProperties.getStyle(xyCurveConfiguration);
+//			int serieWidth = Integer.parseInt(xyCurveConfiguration.getProperty(CurveConfigurationProperties.WIDTH));
+//			BasicStroke stroke = new BasicStroke(serieWidth);
+//			int lineWidth = serieWidth + 13;
+//			int emptyWidth = serieWidth + 3;
+//			if(serieStyle == SWT.LINE_DASH) 
+//				stroke = new BasicStroke(serieWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1.0f, new float[] {lineWidth, emptyWidth}, 0.0f);
+//			if(serieStyle == SWT.LINE_DOT) 
+//				stroke = new BasicStroke(serieWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1.0f, new float[] {emptyWidth, emptyWidth}, 0.0f);
+//			if(serieStyle == SWT.LINE_DASHDOT) 
+//				stroke = new BasicStroke(serieWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1.0f, new float[] {lineWidth, serieWidth, emptyWidth, serieWidth}, 0.0f);
+//			if(serieStyle == SWT.LINE_DASHDOTDOT) 
+//				stroke = new BasicStroke(serieWidth, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 1.0f, new float[] {lineWidth, emptyWidth, emptyWidth, emptyWidth, emptyWidth, emptyWidth}, 0.0f);
+	
 			
-			ITrace2D serie = new Trace2DSimple();
-			chart.addTrace(serie);
-			xyCurveConfiguration.setSerie(serie);
-			serie.setColor(serieColor);
-			serie.setStroke(stroke);
-			serie.setName(ySerieID + "(" + xSerieID + ")");
+			RTSWTXYSerie rtswtSerie = rtswtxyChart.createSerie(ySerieID + "(" + xSerieID + ")", serieColor);
+			xyCurveConfiguration.setSerie(rtswtSerie);
 		}
 
 	}

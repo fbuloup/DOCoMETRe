@@ -301,10 +301,10 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 //			if(serieStyle == SWT.LINE_DASHDOTDOT) 
 //				stroke = new BasicStroke(serieWidth, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 1.0f, new float[] {lineWidth, emptyWidth, emptyWidth, emptyWidth, emptyWidth, emptyWidth}, 0.0f);
 			
-			RTSWTOscilloSerie rtswtSerie1 = rtswtOscilloChart.createSerie(serieID, serieColor);
-			rtswtSerie1.setDisplayCurrentValue(displayCurrentValues);
+			RTSWTOscilloSerie rtswtSerie = rtswtOscilloChart.createSerie(serieID, serieColor);
+			rtswtSerie.setDisplayCurrentValue(displayCurrentValues);
 			
-			oscilloCurveConfiguration.setSerie(rtswtSerie1);
+			oscilloCurveConfiguration.setSerie(rtswtSerie);
 			
 		}
 	}

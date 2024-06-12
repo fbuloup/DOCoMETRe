@@ -92,7 +92,7 @@ public class RTSWTXYSerie {
 				for (int i = 0; i < x.length; i++) {
 					int nbPixelsX = Math.abs((int)((x[i] - lastPointX) / dx));
 					int nbPixelsY = Math.abs((int)((y[i] - lastPointY) / dy));
-					if(nbPixelsX > 0 || nbPixelsY > 0 || xValues[0] == Double.NaN) {
+					if(nbPixelsX > 0 || nbPixelsY > 0 || Double.isNaN(xValues[0])) {
 						addValue(x[i], y[i]);
 						setModified(true);
 					}
