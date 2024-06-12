@@ -56,6 +56,7 @@ public final class XYChartConfigurationProperties extends Property {
 	public static final XYChartConfigurationProperties FONT_BOLD = new XYChartConfigurationProperties("XYChartConfigurationProperties.FONT_BOLD", DocometreMessages.Bold_Title, DocometreMessages.Bold_Tooltip, "^(true|false)$", "true:false");
 	public static final XYChartConfigurationProperties FONT_ITALIC = new XYChartConfigurationProperties("XYChartConfigurationProperties.FONT_ITALIC", DocometreMessages.Italic_Title, DocometreMessages.Italic_Tooltip, "^(true|false)$", "true:false");
 	public static final XYChartConfigurationProperties FONT_SIZE = new XYChartConfigurationProperties("XYChartConfigurationProperties.FONT_SIZE", DocometreMessages.Size_Title, DocometreMessages.Size_Tooltip, "^(([1-9][0-9]*)|(0))(?:\\.[0-9]+)?$");
+	public static final XYChartConfigurationProperties HISTORY_SIZE = new XYChartConfigurationProperties("XYChartConfigurationProperties.HISTORY_SIZE", DocometreMessages.HistorySize_Title, DocometreMessages.HistorySize_Tooltip, "^(([1-9][0-9]*)|(0))(?:\\.[0-9]+)?$");
 	
 	public static void populateProperties(XYChartConfiguration xyChartConfiguration){
 		ChartConfigurationProperties.populateProperties(xyChartConfiguration);
@@ -68,6 +69,7 @@ public final class XYChartConfigurationProperties extends Property {
 		xyChartConfiguration.setProperty(FONT_BOLD, "true");
 		xyChartConfiguration.setProperty(FONT_ITALIC, "false");
 		xyChartConfiguration.setProperty(FONT_SIZE, "12");
+		xyChartConfiguration.setProperty(HISTORY_SIZE, "1");
 	}
 
 	public static XYChartConfiguration clone(XYChartConfiguration xyChartConfiguration) {
@@ -82,6 +84,7 @@ public final class XYChartConfigurationProperties extends Property {
 		newXYChartConfiguration.setProperty(FONT_BOLD, new String(xyChartConfiguration.getProperty(FONT_BOLD)));
 		newXYChartConfiguration.setProperty(FONT_ITALIC, new String(xyChartConfiguration.getProperty(FONT_ITALIC)));
 		newXYChartConfiguration.setProperty(FONT_SIZE, new String(xyChartConfiguration.getProperty(FONT_SIZE)));
+		newXYChartConfiguration.setProperty(HISTORY_SIZE, new String(xyChartConfiguration.getProperty(HISTORY_SIZE)));
 		CurveConfiguration[] curveConfigurations = xyChartConfiguration.getCurvesConfiguration();
 		for (CurveConfiguration curveConfiguration : curveConfigurations) {
 			try {

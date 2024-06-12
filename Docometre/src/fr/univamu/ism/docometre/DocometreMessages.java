@@ -469,6 +469,8 @@ public final class DocometreMessages extends NLS {
 	public static String Bold_Tooltip;
 	public static String Italic_Title;
 	public static String Italic_Tooltip;
+	public static String HistorySize_Title;
+	public static String HistorySize_Tooltip;
 
 	public static String xMaxAmplitude_Title;
 	public static String xMaxAmplitude_Tooltip;

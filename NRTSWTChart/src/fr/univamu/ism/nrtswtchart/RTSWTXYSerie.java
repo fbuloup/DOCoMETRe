@@ -53,7 +53,7 @@ public class RTSWTXYSerie {
 	private double[] yValues;
 	private int currentIndex;
 	
-	private int nbPoints = 10000;
+	private int nbHistoryPoints = 100;
 
 	private double lastPointX;
 	private double lastPointY;
@@ -81,6 +81,10 @@ public class RTSWTXYSerie {
 	protected String getTitle() {
 		return title;
 	}
+	
+	public void setNbHistoryPoints(int nbHistoryPoints) {
+		this.nbHistoryPoints = nbHistoryPoints;
+	}
 
 	public void addPoints(final Double[] x, final Double[] y) {
 		Display.getDefault().syncExec(new Runnable() {
@@ -103,9 +107,9 @@ public class RTSWTXYSerie {
 	}
 
 	protected void reset() {
-		xValues = new double[nbPoints];
-		yValues = new double[nbPoints];
-		for(int i = 0; i < nbPoints; i++) {
+		xValues = new double[nbHistoryPoints];
+		yValues = new double[nbHistoryPoints];
+		for(int i = 0; i < nbHistoryPoints; i++) {
 			xValues[i] = Double.NaN;
 			yValues[i] = Double.NaN;
 		}
@@ -116,10 +120,10 @@ public class RTSWTXYSerie {
 	}
 
 	private void addValue(double x, double y) {
-		if(currentIndex >= nbPoints) {
+		if(currentIndex >= nbHistoryPoints) {
 			System.arraycopy(xValues, 1, xValues, 0, xValues.length-1);
 			System.arraycopy(yValues, 1, yValues, 0, yValues.length-1);
-			currentIndex = nbPoints - 1;
+			currentIndex = nbHistoryPoints - 1;
 		}
 		xValues[currentIndex] = x;
 		yValues[currentIndex] = y;
@@ -151,7 +155,7 @@ public class RTSWTXYSerie {
 	protected double getxMax() {
 		return RTSWTChartUtils.getMax(xValues);
 	}
-
+	
 	protected int[] getPointsArrayToDraw() {
 		double xMin = rtswtChart.getxMin();
 		double yMin = rtswtChart.getyMin();

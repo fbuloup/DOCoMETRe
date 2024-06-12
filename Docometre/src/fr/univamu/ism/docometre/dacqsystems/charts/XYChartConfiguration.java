@@ -58,9 +58,11 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.widgets.Hyperlink;
 
+import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.FontUtil;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
+import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyHandler;
 import fr.univamu.ism.docometre.dacqsystems.Property;
 import fr.univamu.ism.docometre.editors.ResourceEditor;
@@ -81,6 +83,7 @@ public class XYChartConfiguration extends ChartConfiguration {
 	transient private Button fontBoldButton;
 	transient private Button fontItalicButton;
 	transient private Text fontSizeText;
+	transient private Text historySizeText;
 
 	public XYChartConfiguration() {
 		super(ChartTypes.XY_CHART);
@@ -164,6 +167,12 @@ public class XYChartConfiguration extends ChartConfiguration {
 		fontSizeText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		fontSizeText.addModifyListener(new ModifyPropertyHandler(XYChartConfigurationProperties.FONT_SIZE, this, fontSizeText, XYChartConfigurationProperties.FONT_SIZE.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
 		
+		page.createLabel(container, DocometreMessages.HistorySize_Title, DocometreMessages.HistorySize_Tooltip);
+		historySizeText = page.createText(container, getProperty(XYChartConfigurationProperties.HISTORY_SIZE), SWT.NONE, 5, 1);
+		historySizeText.addModifyListener(page.getGeneralConfigurationModifyListener());
+		historySizeText.addModifyListener(new ModifyPropertyHandler(XYChartConfigurationProperties.HISTORY_SIZE, this, historySizeText, XYChartConfigurationProperties.HISTORY_SIZE.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		
+		
 	}
 	
 	/*
@@ -207,6 +216,8 @@ public class XYChartConfiguration extends ChartConfiguration {
 			updateWidget(fontCombo, (XYChartConfigurationProperties)property);
 		if(property == XYChartConfigurationProperties.FONT_SIZE)
 			updateWidget(fontSizeText, (XYChartConfigurationProperties)property);
+		if(property == XYChartConfigurationProperties.HISTORY_SIZE)
+			updateWidget(historySizeText, (XYChartConfigurationProperties)property);
 	}
 
 	@Override
@@ -241,6 +252,9 @@ public class XYChartConfiguration extends ChartConfiguration {
 		value = getProperty(XYChartConfigurationProperties.FONT_SIZE);
 		if(value == null || "".equals(value)) value = "12";
 		int fontSize = Integer.parseInt(value);
+		value = getProperty(XYChartConfigurationProperties.HISTORY_SIZE);
+		if(value == null || "".equals(value)) value = "1";
+		double historySize = Double.parseDouble(value);
 		
 		RTSWTXYChart rtswtxyChart = new RTSWTXYChart(chartContainer, SWT.DOUBLE_BUFFERED, fontName, fontStyle, fontSize);
 		rtswtxyChart.getChart().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, hSpan, vSpan));
@@ -252,6 +266,7 @@ public class XYChartConfiguration extends ChartConfiguration {
 		rtswtxyChart.setGridVisibility(true);
 		rtswtxyChart.setLegendVisibility(true);
 		rtswtxyChart.setLegendPosition(SWT.BOTTOM);
+		rtswtxyChart.setHistorySize(historySize);
 		
 		// Create curves
 		for (CurveConfiguration curveConfiguration : curvesConfigurations) {
@@ -259,6 +274,14 @@ public class XYChartConfiguration extends ChartConfiguration {
 			String xSerieID = xyCurveConfiguration.getXChannel().getID();
 			String ySerieID = xyCurveConfiguration.getYChannel().getID();
 			Color serieColor = CurveConfigurationProperties.getColor(xyCurveConfiguration);
+			String sfxString = xyCurveConfiguration.getXChannel().getProperty(ChannelProperties.SAMPLE_FREQUENCY);
+			String sfyString = xyCurveConfiguration.getXChannel().getProperty(ChannelProperties.SAMPLE_FREQUENCY);
+			if(!sfxString.equals(sfyString)) {
+				Activator.logErrorMessage("Sample frequency for channel " + xSerieID + " is " + sfxString + "Hz");
+				Activator.logErrorMessage("Sample frequency for channel " + ySerieID + " is " + sfyString + "Hz");
+				Activator.logErrorMessage("Channels with different sample frequencies cannot be displayed in XY chart !");
+				continue;
+			}
 			
 //			int serieStyle = CurveConfigurationProperties.getStyle(xyCurveConfiguration);
 //			int serieWidth = Integer.parseInt(xyCurveConfiguration.getProperty(CurveConfigurationProperties.WIDTH));
@@ -274,8 +297,8 @@ public class XYChartConfiguration extends ChartConfiguration {
 //			if(serieStyle == SWT.LINE_DASHDOTDOT) 
 //				stroke = new BasicStroke(serieWidth, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 1.0f, new float[] {lineWidth, emptyWidth, emptyWidth, emptyWidth, emptyWidth, emptyWidth}, 0.0f);
 	
-			
-			RTSWTXYSerie rtswtSerie = rtswtxyChart.createSerie(ySerieID + "(" + xSerieID + ")", serieColor);
+			double sfx = Double.parseDouble(sfxString);
+			RTSWTXYSerie rtswtSerie = rtswtxyChart.createSerie(ySerieID + "(" + xSerieID + ")", serieColor, sfx);
 			xyCurveConfiguration.setSerie(rtswtSerie);
 		}
 
