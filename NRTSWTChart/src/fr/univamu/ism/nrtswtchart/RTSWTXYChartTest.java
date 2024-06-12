@@ -77,8 +77,8 @@ public class RTSWTXYChartTest {
 			double time;
 			for (int i = 0; i < y.length; i++) {
 				time = previousTime + i/1000.0;
-				x[i] = 5*Math.sin(2*Math.PI*0.01*time);// + (random.nextDouble() - 0.5)/10;
-				y[i] = 5*Math.sin(2*Math.PI*0.06*time);// + (random.nextDouble() - 0.5)/10;
+				x[i] = 5*Math.sin(2*Math.PI*0.01*time) + (random.nextDouble() - 0.5)/10;
+				y[i] = 5*Math.sin(2*Math.PI*0.06*time) + (random.nextDouble() - 0.5)/10;
 //				x[i] = x[i]*1E200;/* Just to have big big numbers */
 //				y[i] = y[i]*1E200;/* Just to have big big numbers */
 			}
@@ -87,8 +87,8 @@ public class RTSWTXYChartTest {
 			previousTime = saveprevioustime;
 			for (int i = 0; i < y.length; i++) {
 				time = previousTime + i/1000.0;
-				x[i] = 5*Math.sin(2*Math.PI*0.06*time);// + (random.nextDouble() - 0.5)/10;
-				y[i] = 5*Math.sin(2*Math.PI*0.06*time + Math.PI/2);// + (random.nextDouble() - 0.5)/10;
+				x[i] = 5*Math.sin(2*Math.PI*0.06*time) + (random.nextDouble() - 0.5)/10;
+				y[i] = 5*Math.sin(2*Math.PI*0.06*time + Math.PI/2) + (random.nextDouble() - 0.5)/10;
 //				x[i] = x[i]*1E200;/* Just to have big big numbers */
 //				y[i] = y[i]*1E200;/* Just to have big big numbers */
 			}
@@ -124,7 +124,7 @@ public class RTSWTXYChartTest {
 		chart = new RTSWTXYChart(shell, SWT.DOUBLE_BUFFERED, null, SWT.NORMAL, 18);
 		chart.setAutoScale(true);
 		chart.setWaitForAllSeriesToRedraw(true);
-		chart.setGridVisibility(false);
+		chart.setGridVisibility(true);
 		chart.setLegendPosition(SWT.BOTTOM);
 		chart.setLegendVisibility(false);
 		/* Create two series in this first chart */
@@ -136,7 +136,7 @@ public class RTSWTXYChartTest {
 
 		/* Run first timer to generate random data for the first two series */
 		Timer timer1 = new Timer();
-		timer1.schedule(new GenerateData(), 100, 10);
+		timer1.schedule(new GenerateData(), 100, 30);
 
 		/* Run second timer to generate random data for the second two series */
 //		Timer timer2 = new Timer();

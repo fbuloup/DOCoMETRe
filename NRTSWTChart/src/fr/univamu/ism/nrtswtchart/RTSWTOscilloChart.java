@@ -94,10 +94,10 @@ public class RTSWTOscilloChart extends ControlAdapter implements PaintListener, 
 			for (RTSWTOscilloSerie rtswtSerie : series) {
 				rtswtSerie.reset();
 			}
-			computeGrids();
-			prepareLegend();
-			prepareSeries();
-			prepareCurrentValues();
+			prepareGrids();
+//			prepareLegend();
+//			prepareSeries();
+//			prepareCurrentValues();
 		}
 	}
 
@@ -108,10 +108,10 @@ public class RTSWTOscilloChart extends ControlAdapter implements PaintListener, 
 			for (RTSWTOscilloSerie rtswtSerie : series) {
 				rtswtSerie.reset();
 			}
-			computeGrids();
-			prepareLegend();
-			prepareSeries();
-			prepareCurrentValues();
+			prepareGrids();
+//			prepareLegend();
+//			prepareSeries();
+//			prepareCurrentValues();
 		}
 	}
 
@@ -122,10 +122,10 @@ public class RTSWTOscilloChart extends ControlAdapter implements PaintListener, 
 			for (RTSWTOscilloSerie rtswtSerie : series) {
 				rtswtSerie.reset();
 			}
-			computeGrids();
-			prepareLegend();
+			prepareGrids();
+//			prepareLegend();
 			prepareSeries();
-			prepareCurrentValues();
+//			prepareCurrentValues();
 		}
 	}
 
@@ -142,10 +142,10 @@ public class RTSWTOscilloChart extends ControlAdapter implements PaintListener, 
 			for (RTSWTOscilloSerie rtswtSerie : series) {
 				rtswtSerie.reset();
 			}
-			computeGrids();
-			prepareLegend();
-			prepareSeries();
-			prepareCurrentValues();
+			prepareGrids();
+//			prepareLegend();
+//			prepareSeries();
+//			prepareCurrentValues();
 		}
 	}
 
