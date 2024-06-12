@@ -79,8 +79,8 @@ public class RTSWTXYChartTest {
 				time = previousTime + i/1000.0;
 				x[i] = 5*Math.sin(2*Math.PI*0.01*time) + (random.nextDouble() - 0.5)/10;
 				y[i] = 5*Math.sin(2*Math.PI*0.06*time) + (random.nextDouble() - 0.5)/10;
-//				x[i] = x[i]*1E200;/* Just to have big big numbers */
-//				y[i] = y[i]*1E200;/* Just to have big big numbers */
+				x[i] = x[i]*1E200;/* Just to have big big numbers */
+				y[i] = y[i]*1E200;/* Just to have big big numbers */
 			}
 			previousTime = previousTime + nbSamples/1000.0;
 			serie1.addPoints(x, y);
@@ -89,8 +89,8 @@ public class RTSWTXYChartTest {
 				time = previousTime + i/1000.0;
 				x[i] = 5*Math.sin(2*Math.PI*0.06*time) + (random.nextDouble() - 0.5)/10;
 				y[i] = 5*Math.sin(2*Math.PI*0.06*time + Math.PI/2) + (random.nextDouble() - 0.5)/10;
-//				x[i] = x[i]*1E200;/* Just to have big big numbers */
-//				y[i] = y[i]*1E200;/* Just to have big big numbers */
+				x[i] = x[i]*1E200;/* Just to have big big numbers */
+				y[i] = y[i]*1E200;/* Just to have big big numbers */
 			}
 			previousTime = previousTime + nbSamples/1000.0;
 			serie2.addPoints(x, y);
@@ -123,7 +123,7 @@ public class RTSWTXYChartTest {
 		/* Create the first chart */
 		chart = new RTSWTXYChart(shell, SWT.DOUBLE_BUFFERED, null, SWT.NORMAL, 18);
 		chart.setAutoScale(true);
-		chart.setWaitForAllSeriesToRedraw(true);
+		chart.setWaitForAllSeriesToRedraw(false);
 		chart.setGridVisibility(true);
 		chart.setLegendPosition(SWT.BOTTOM);
 		chart.setLegendVisibility(false);

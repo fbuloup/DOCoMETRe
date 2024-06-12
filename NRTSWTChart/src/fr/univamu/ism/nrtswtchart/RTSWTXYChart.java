@@ -81,7 +81,6 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 			legendPositionsTopMenuItem.setSelection(legendPosition == SWT.TOP);
 			autoScaleMenu.setSelection(autoScale);
 			showGridMenu.setSelection(showGrid);
-//			ShowCurrentValuesMenu.setSelection(showCurrentValues);
 		}
 	}
 
@@ -131,12 +130,6 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 		}
 	}
 
-//	private final class ShowCurrentValuesHandler extends SelectionAdapter {
-//		public void widgetSelected(SelectionEvent e) {
-//			showCurrentValues = ((MenuItem) e.widget).getSelection();
-//		}
-//	}
-
 	private final class ShowGridHandler extends SelectionAdapter {
 		public void widgetSelected(SelectionEvent e) {
 			showGrid = ((MenuItem) e.widget).getSelection();
@@ -155,7 +148,6 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 	private MenuItem legendPositionsTopMenuItem;
 	private MenuItem legendPositionsBottomMenuItem;
 	private MenuItem autoScaleMenu;
-//	private MenuItem ShowCurrentValuesMenu;
 	private MenuItem showGridMenu;
 
 	private Canvas chart;
@@ -168,11 +160,9 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 	private Image gridImage;
 	private ImageData seriesImageData;
 	private Image seriesImage;
-//	private ImageData currentValuesImageData;
 	private Image currentValuesImage;
 
 	private DecimalFormat decimalFormatter = new DecimalFormat("0.##E0");
-//	private DecimalFormat decimalFormatterCurrentValues = new DecimalFormat("#0.000000");
 
 	private Color fontColor = Display.getDefault().getSystemColor(SWT.COLOR_WHITE);
 	private Color gridLinesColor = Display.getDefault().getSystemColor(SWT.COLOR_WHITE);
@@ -184,13 +174,11 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 	private double yMax = 10;
 	private double xMin = -10;
 	private double xMax = 10;
-//	private double windowTimeWidth = 1;
 	private boolean waitForAllSeriesToRedraw = false;
 	private boolean autoScale = true;
 	private boolean showLegend = true;
 	private boolean showGrid = true;
 	private boolean redrawGrid;
-//	private boolean showCurrentValues = false;
 	private int legendPosition = SWT.TOP;
 
 	private ArrayList<Integer> verticalGridLinesPositions = new ArrayList<Integer>(0);
@@ -199,7 +187,6 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 	private int leftAxisWidth;
 	private int bottomAxisHeight;
 	private int legendHeight;
-//	private int showCurrentValuesFontHeight;
 
 	private ArrayList<Long> drawTime = new ArrayList<Long>(0);
 
@@ -223,7 +210,6 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 		gc.setFont(chart.getFont());
 		leftAxisWidth = gc.textExtent("-9." + decimalFormatter.getDecimalFormatSymbols().getDecimalSeparator() + "9E-99").x + 10;
 		FontMetrics fontMetrics = gc.getFontMetrics();
-//		showCurrentValuesFontHeight = fontMetrics.getAscent();
 		bottomAxisHeight = fontMetrics.getAscent() + fontMetrics.getDescent();
 		legendHeight = bottomAxisHeight;
 		fontHeight = bottomAxisHeight;
@@ -252,9 +238,6 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 		showGridMenu = new MenuItem(mainMenu, SWT.CHECK);
 		showGridMenu.setText(RTSWTChartMessages.showGrid);
 		showGridMenu.addSelectionListener(new ShowGridHandler());
-//		ShowCurrentValuesMenu =  new MenuItem(mainMenu, SWT.CHECK);
-//		ShowCurrentValuesMenu.setText(RTSWTChartMessages.ShowValues);
-//		ShowCurrentValuesMenu.addSelectionListener(new ShowCurrentValuesHandler());
 		chart.setMenu(mainMenu);
 
 		paletteData = new PaletteData(0XFF, 0xFF00, 0xFF0000);
@@ -302,10 +285,6 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 	public void setShowGrid(boolean showGrid) {
 		this.showGrid = showGrid;
 	}
-
-//	public void setShowCurrentValue(boolean showCurrentValues) {
-//		this.showCurrentValues = showCurrentValues;
-//	}
 
 	private double getAbsoluteyMinValue() {
 		RTSWTXYSerie[] series = getSeries();
@@ -395,10 +374,6 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 		return chart;
 	}
 
-//	public void setWindowTimeWidth(double windowTimeWidth) {
-//		this.windowTimeWidth = windowTimeWidth;
-//	}
-
 	public void setxMin(double xMin) {
 		this.xMin = xMin;
 	}
@@ -442,7 +417,6 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 		prepareGrids();
 		prepareLegend();
 		prepareSeries();
-//		prepareCurrentValues();
 	}
 	
 	@Override
@@ -502,14 +476,13 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 		for (int i = 0; i < verticalGridLinesPositions.size(); i++) {
 			int position = verticalGridLinesPositions.get(i).intValue();
 			position = position + getLeftAxisWidth();
-//			double value = position * (xMax - xMin) / (getWidth() - getLeftAxisWidth() - 1);
 			double value = getxMin() + (position - getLeftAxisWidth())* (getxMax() - getxMin()) / (getWidth() - getLeftAxisWidth() - 1);
 			position = verticalGridLinesPositions.get(i).intValue() + getLeftAxisWidth();
 			String valueString = decimalFormatter.format(value).replaceAll("E0$", "");
 			int valueStringLength = gc.textExtent(valueString).x;
 			int xPosition = position - valueStringLength / 2;
 			if(i == verticalGridLinesPositions.size() - 1) xPosition =  position - valueStringLength;
-			int yPostion = gridImageData.height - getBottomAxisHeight() ;//- ((showLegend && legendPosition == SWT.TOP) ? 0 : showLegend ? getLegendHeight() : 0);
+			int yPostion = gridImageData.height - getBottomAxisHeight() ;
 			gc.setForeground(fontColor);
 			gc.setBackground(backgroundColor);
 			gc.drawString(valueString, xPosition, yPostion);
@@ -525,7 +498,6 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 		int totalLength = 0;
 		for (int i = 0; i < rtswtSeries.size(); i++) {
 			RTSWTXYSerie rtswtSerie = rtswtSeries.get(i);
-//			if(rtswtSerie.isHorizontalReference()) continue;
 			String title = rtswtSerie.getTitle(); 
 			title = rtswtSerie.getTitle() + " -- ";
 			totalLength += gc.textExtent(title).x;
@@ -533,7 +505,6 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 		int lastValueStringLength = 0;
 		for (int i = 0; i < rtswtSeries.size(); i++) {
 			RTSWTXYSerie rtswtSerie = rtswtSeries.get(i);
-//			if(rtswtSerie.isHorizontalReference()) continue;
 			String title = rtswtSerie.getTitle();
 			title = rtswtSerie.getTitle() + " -- ";
 			Color color  = rtswtSerie.getColor();
@@ -573,14 +544,6 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 			int color =  rtswtSerie.getColor().getRed() + (rtswtSerie.getColor().getGreen() << 8) + (rtswtSerie.getColor().getBlue() << 16);
 			rtswtSerie.setModified(false);
 			if(values.length == 0) continue;
-//			if(rtswtSerie.isHorizontalReference()) {
-//				try {
-//					RTSWTChartUtils.plotLine(seriesImageData, 0, values[1], seriesImageData.width - 1, values[1], color);
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//				}
-//				continue;
-//			}
 			if(values.length <= 2) {
 				seriesImageData.setPixel(values[0], values[1], color);
 			} else {
@@ -595,48 +558,6 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 		}
 		seriesImage = new Image(chart.getDisplay(), seriesImageData);
 	}
-	
-//	private void prepareCurrentValues() {
-//		if(currentValuesImage != null && !currentValuesImage.isDisposed()) currentValuesImage.dispose();
-//		currentValuesImageData = new ImageData(10, 10, 24, paletteData);
-//		currentValuesImage = new Image(chart.getDisplay(), currentValuesImageData);
-//		GC gc = new GC(currentValuesImage);
-//		
-//		int imageWidth = 0;
-//		int imageHeight = 0;
-//		ArrayList<String> valuesString = new ArrayList<>();
-//		for (RTSWTOscilloSerie rtswtSerie : rtswtSeries) {
-//			if(rtswtSerie.isHorizontalReference()) continue;
-//			double currentValue = rtswtSerie.getCurrentValue();
-//			String valueString = decimalFormatterCurrentValues.format(currentValue);
-//			valuesString.add(valueString);
-//			int valueStringWidth = gc.textExtent(valueString).x;
-//			int valueStringHeight = gc.textExtent(valueString).y;
-//			imageWidth = Math.max(valueStringWidth, imageWidth);
-//			imageHeight += valueStringHeight;
-//		}
-//		
-//		gc.dispose();
-//		currentValuesImage.dispose();
-//		
-//		currentValuesImageData = new ImageData(imageWidth, imageHeight, 24, paletteData);
-//		currentValuesImage = new Image(chart.getDisplay(), currentValuesImageData);
-//		gc = new GC(currentValuesImage);
-//
-//		int numSerie = 0;
-//		for (RTSWTOscilloSerie rtswtSerie : rtswtSeries) {
-//			if(rtswtSerie.isHorizontalReference()) continue;
-//			String valueString = valuesString.get(numSerie);
-//			int yPosition = showCurrentValuesFontHeight*numSerie;
-//			Color color  = rtswtSerie.getColor();
-//			gc.setForeground(color);
-//			gc.setBackground(backgroundColor);
-//			gc.drawString(valueString, 0, yPosition);
-//			numSerie++;
-//		}
-//		
-//		gc.dispose();
-//	}
 
 	protected void checkUpdate() {
 		RTSWTXYSerie[] series = getSeries();
@@ -674,7 +595,6 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 		if(redraw) {
 			long t = System.nanoTime();
 			if (showGrid && redrawGrid) prepareGrids();
-//			if(showCurrentValues) prepareCurrentValues();
 			prepareSeries();
 			getChart().redraw();
 			getChart().update();
@@ -708,13 +628,6 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 		yHeight = seriesImageData.height;
 		e.gc.drawImage(seriesImage, 0, 0, seriesImageData.width, seriesImageData.height, xLeft, yTop, xWidth, yHeight);
 
-//		if(showCurrentValues) {
-//			xLeft = getWidth() - currentValuesImageData.width;
-//			yTop = (showLegend && legendPosition == SWT.TOP) ? getLegendHeight() : 0;
-//			xWidth = currentValuesImageData.width;
-//			yHeight = currentValuesImageData.height;
-//			e.gc.drawImage(currentValuesImage, 0, 0, currentValuesImageData.width, currentValuesImageData.height, xLeft - 5, yTop + 5, xWidth, yHeight);
-//		}
 	}
 
 }

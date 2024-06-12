@@ -42,8 +42,6 @@
 package fr.univamu.ism.nrtswtchart;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -51,27 +49,14 @@ import org.eclipse.swt.widgets.Display;
 
 public class RTSWTXYSerie {
 	
-	/**
-	 * Values in x axis. 
-	 */
-	protected ArrayList<Double> x_XYValues;
-	/**
-	 * Values in y axis. 
-	 */
-	protected ArrayList<Double> y_XYValues;
+	private double[] xValues;
+	private double[] yValues;
+	private int currentIndex;
+	
+	private int nbPoints = 10000;
 
-	private  ArrayList<Double> x_XYValues_Buffer;
-	private  ArrayList<Double> y_XYValues_Buffer;
-	private  List<Double> xExtractedValues;
-	private  List<Double> yExtractedValues;
-	private Double[] xBuffer;
-	private Double[] yBuffer;
-
-	/**
-	 * Most recent real time values
-	 */
-	private double lastPointX = Double.NEGATIVE_INFINITY;
-	private double lastPointY = Double.NEGATIVE_INFINITY;
+	private double lastPointX;
+	private double lastPointY;
 
 	private RTSWTXYChart rtswtChart;
 	private boolean modified;
@@ -100,69 +85,47 @@ public class RTSWTXYSerie {
 	public void addPoints(final Double[] x, final Double[] y) {
 		Display.getDefault().syncExec(new Runnable() {
 			public void run() {
-				if (y_XYValues == null || x_XYValues == null)
+				if(xValues == null || yValues == null) 
 					reset();
-				if (y.length != 0)
-					y_XYValues_Buffer.addAll(Arrays.asList(y));
-				if (x.length != 0)
-					x_XYValues_Buffer.addAll(Arrays.asList(x));
-				if (y_XYValues_Buffer.size() == 0 || x_XYValues_Buffer.size() == 0)
-					return;
-				int maxIndex = Math.min(y_XYValues_Buffer.size(), x_XYValues_Buffer.size());
-				xExtractedValues = x_XYValues_Buffer.subList(0, maxIndex);
-				yExtractedValues = y_XYValues_Buffer.subList(0, maxIndex);
-				xBuffer = xExtractedValues.toArray(new Double[maxIndex]);
-				yBuffer = yExtractedValues.toArray(new Double[maxIndex]);
-				try {
-					for (int i = 0; i < maxIndex; i++) {
-						x_XYValues_Buffer.remove(0);
-						y_XYValues_Buffer.remove(0);
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-					return;
-				}
 				double dx = rtswtChart.getDx();
 				double dy = rtswtChart.getDy();
-				for (int i = 0; i < xBuffer.length; i++) {
-					int nbPixelsX = Math.abs((int) ((xBuffer[i] - lastPointX) / dx));
-					int nbPixelsY = Math.abs((int) ((yBuffer[i] - lastPointY) / dy));
-					boolean addPoint = nbPixelsX > 0 || nbPixelsY > 0;
-					if (addPoint) {
-						addValue(xBuffer[i], yBuffer[i]);//, nbPixelsX, nbPixelsY);
+				for (int i = 0; i < x.length; i++) {
+					int nbPixelsX = Math.abs((int)((x[i] - lastPointX) / dx));
+					int nbPixelsY = Math.abs((int)((y[i] - lastPointY) / dy));
+					if(nbPixelsX > 0 || nbPixelsY > 0 || xValues[0] == Double.NaN) {
+						addValue(x[i], y[i]);
 						setModified(true);
 					}
 				}
 				rtswtChart.checkUpdate();
 			}
 		});
-		
 	}
 
 	protected void reset() {
-		if(y_XYValues != null) {
-			y_XYValues.clear();
-			y_XYValues_Buffer.clear();
+		xValues = new double[nbPoints];
+		yValues = new double[nbPoints];
+		for(int i = 0; i < nbPoints; i++) {
+			xValues[i] = Double.NaN;
+			yValues[i] = Double.NaN;
 		}
-		if(x_XYValues != null) {
-			x_XYValues.clear();
-			x_XYValues_Buffer.clear();
-		}
-		y_XYValues = new ArrayList<Double>();
-		x_XYValues = new ArrayList<Double>();
-		y_XYValues_Buffer = new ArrayList<Double>();
-		x_XYValues_Buffer = new ArrayList<Double>();
-		lastPointX = Double.NEGATIVE_INFINITY;
-		lastPointY = Double.NEGATIVE_INFINITY;
+		lastPointX = - rtswtChart.getDx();
+		lastPointY = - rtswtChart.getDy();
+		currentIndex = 0;
 		setModified(false);
 	}
 
 	private void addValue(double x, double y) {
-		x_XYValues.add(x);
-		y_XYValues.add(y);
+		if(currentIndex >= nbPoints) {
+			System.arraycopy(xValues, 1, xValues, 0, xValues.length-1);
+			System.arraycopy(yValues, 1, yValues, 0, yValues.length-1);
+			currentIndex = nbPoints - 1;
+		}
+		xValues[currentIndex] = x;
+		yValues[currentIndex] = y;
+		currentIndex ++;
 		lastPointX = x;
 		lastPointY = y;
-		System.out.println(x_XYValues.size());
 	}
 
 	protected boolean getModified() {
@@ -174,23 +137,19 @@ public class RTSWTXYSerie {
 	}
 
 	protected double getyMin() {
-		Double[] d = y_XYValues.toArray(new Double[y_XYValues.size()]);
-		return RTSWTChartUtils.getMin(d);
+		return RTSWTChartUtils.getMin(yValues);
 	}
 
 	protected double getyMax() {
-		Double[] d = y_XYValues.toArray(new Double[y_XYValues.size()]);
-		return RTSWTChartUtils.getMax(d);
+		return RTSWTChartUtils.getMax(yValues);
 	}
 
 	protected double getxMin() {
-		Double[] d = x_XYValues.toArray(new Double[x_XYValues.size()]);
-		return RTSWTChartUtils.getMin(d);
+		return RTSWTChartUtils.getMin(xValues);
 	}
 
 	protected double getxMax() {
-		Double[] d = x_XYValues.toArray(new Double[x_XYValues.size()]);
-		return RTSWTChartUtils.getMax(d);
+		return RTSWTChartUtils.getMax(xValues);
 	}
 
 	protected int[] getPointsArrayToDraw() {
@@ -200,15 +159,14 @@ public class RTSWTXYSerie {
 		double dy = rtswtChart.getDy();
 		ArrayList<Integer> pointsArray = new ArrayList<Integer>(0);
 		int height = rtswtChart.getHeight() - rtswtChart.getBottomAxisHeight() - rtswtChart.getLegendHeight() - 1;
-		int min = Math.min(x_XYValues.size(), y_XYValues.size());
-		for (int i = 0; i < min; i++) {
-			if(Double.compare(x_XYValues.get(i), Double.NaN) != 0 && Double.compare(y_XYValues.get(i), Double.NaN) != 0) {
-				int vx = (int) Math.round((x_XYValues.get(i) - xMin)/dx);
-				int vy = height - (int) Math.round((y_XYValues.get(i) - yMin)/dy);
+		for (int i = 0; i < xValues.length; i++) {
+			if(!Double.isNaN(xValues[i])) {
+				int vx = (int) Math.round((xValues[i] - xMin)/dx);
+				int vy = height - (int) Math.round((yValues[i] - yMin)/dy);
 				pointsArray.add(vx);
 				pointsArray.add(vy);
-			} //else break;
-		} 
+			}
+		}
 		int[] pointsInt = new int[pointsArray.size()];
 		for (int i = 0; i < pointsInt.length; i++) pointsInt[i] = pointsArray.get(i);
 		return pointsInt;
