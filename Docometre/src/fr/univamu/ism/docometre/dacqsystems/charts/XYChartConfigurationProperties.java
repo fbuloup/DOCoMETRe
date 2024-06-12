@@ -67,7 +67,7 @@ public final class XYChartConfigurationProperties extends Property {
 		xyChartConfiguration.setProperty(FONT, FontUtil.getDefaultFontName());
 		xyChartConfiguration.setProperty(FONT_BOLD, "true");
 		xyChartConfiguration.setProperty(FONT_ITALIC, "false");
-		xyChartConfiguration.setProperty(FONT_SIZE, "false");
+		xyChartConfiguration.setProperty(FONT_SIZE, "12");
 	}
 
 	public static XYChartConfiguration clone(XYChartConfiguration xyChartConfiguration) {
