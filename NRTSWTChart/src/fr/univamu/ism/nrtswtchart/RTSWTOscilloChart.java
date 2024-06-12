@@ -414,6 +414,7 @@ public class RTSWTOscilloChart extends ControlAdapter implements PaintListener, 
 		if(seriesImage != null && !seriesImage.isDisposed()) seriesImage.dispose();
 		if(currentValuesImage != null && !currentValuesImage.isDisposed()) currentValuesImage.dispose();
 		chartFont.dispose();
+		chart.getMenu().setVisible(false);
 	}
 	
 	private void computeGrids() {
