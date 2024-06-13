@@ -201,6 +201,8 @@ public final class RTSWTChartUtils {
 	}
 
 	public static void plotLine(ImageData imageData, int x0, int y0, int x1, int y1, int color) {
+		if (x0 >= imageData.width || y0 >= imageData.height || x0 < 0 || y0 < 0) return;
+		if (x1 >= imageData.width || y1 >= imageData.height || x1 < 0 || y1 < 0) return;
 		if(x0 != x1 && y0 != y1) {
 			if (Math.abs(y1 - y0) < Math.abs(x1 - x0)) {
 				if (x0 > x1) plotLineLow(imageData, x1, y1, x0, y0, color);
