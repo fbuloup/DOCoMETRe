@@ -188,7 +188,7 @@ public class RTSWTXYSerie {
 		double dy = rtswtChart.getDy();
 		ArrayList<Integer> pointsArray = new ArrayList<Integer>(0);
 		int height = rtswtChart.getHeight() - 1 - rtswtChart.getBottomAxisHeight() - rtswtChart.getLegendHeight();
-		for (int i = 0; i <= currentIndex; i++) {
+		for (int i = 0; i < currentIndex; i++) {
 			if(i < xValues.length && !Double.isNaN(xValues[i])) {
 				int vx = (int) Math.round((xValues[i] - xMin)/dx);
 				int vy = height - (int) Math.round((yValues[i] - yMin)/dy);
