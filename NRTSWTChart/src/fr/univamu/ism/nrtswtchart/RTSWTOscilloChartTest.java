@@ -126,7 +126,7 @@ public class RTSWTOscilloChartTest {
 		if(display == null) display = new Display();
 		Shell shell = new Shell (display);
 		shell.setMaximized(true);
-		shell.setText("RTSWT Test");
+		shell.setText("RTSWT Oscillo Test");
 		shell.setLayout(new FillLayout());
 
 		RTSWTOscilloChart rtswtChart = new RTSWTOscilloChart(shell, SWT.DOUBLE_BUFFERED, null,  SWT.BOLD | SWT.NORMAL, 14);

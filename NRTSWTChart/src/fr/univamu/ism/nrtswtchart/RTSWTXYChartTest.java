@@ -117,7 +117,7 @@ public class RTSWTXYChartTest {
 		if(display == null) display = new Display();
 		shell = new Shell (display);
 		shell.setMaximized(true);
-		shell.setText("OpenGL RTSWT Test");
+		shell.setText("RTSWTXY Test");
 		shell.setLayout(new FillLayout());
 
 		/* Create the first chart */
