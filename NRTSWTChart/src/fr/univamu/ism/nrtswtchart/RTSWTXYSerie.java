@@ -51,6 +51,8 @@ public class RTSWTXYSerie {
 	
 	private double[] xValues;
 	private double[] yValues;
+	private double[] timeValues;
+	private double lastTime;
 	private int currentIndex;
 	
 	private int nbHistoryPoints = 100;
@@ -82,10 +84,6 @@ public class RTSWTXYSerie {
 		return title;
 	}
 	
-	public void setNbHistoryPoints(int nbHistoryPoints) {
-		this.nbHistoryPoints = nbHistoryPoints;
-	}
-
 	public void addPoints(final Double[] x, final Double[] y) {
 		Display.getDefault().syncExec(new Runnable() {
 			public void run() {
@@ -93,13 +91,16 @@ public class RTSWTXYSerie {
 					reset();
 				double dx = rtswtChart.getDx();
 				double dy = rtswtChart.getDy();
+				int dn = 1;
 				for (int i = 0; i < x.length; i++) {
 					int nbPixelsX = Math.abs((int)((x[i] - lastPointX) / dx));
 					int nbPixelsY = Math.abs((int)((y[i] - lastPointY) / dy));
 					if(nbPixelsX > 0 || nbPixelsY > 0 || Double.isNaN(xValues[0])) {
-						addValue(x[i], y[i]);
+						addValue(x[i], y[i], dn);
 						setModified(true);
+						dn = 0;
 					}
+					dn++;
 				}
 				rtswtChart.checkUpdate();
 			}
@@ -107,29 +108,53 @@ public class RTSWTXYSerie {
 	}
 
 	protected void reset() {
+		nbHistoryPoints = (int)(rtswtChart.getSampleFrequency()*rtswtChart.getHistorySize());
 		xValues = new double[nbHistoryPoints];
 		yValues = new double[nbHistoryPoints];
+		timeValues = new double[nbHistoryPoints];
 		for(int i = 0; i < nbHistoryPoints; i++) {
 			xValues[i] = Double.NaN;
 			yValues[i] = Double.NaN;
+			timeValues[i] = 0;
 		}
 		lastPointX = - rtswtChart.getDx();
 		lastPointY = - rtswtChart.getDy();
 		currentIndex = 0;
+		lastTime = -1/rtswtChart.getSampleFrequency();
 		setModified(false);
 	}
 
-	private void addValue(double x, double y) {
+	private void addValue(double x, double y, int dn) {
+//		System.out.println("Add point with dn : " + dn);
+//		System.out.println("currentIndex before : " + currentIndex + " - nbHistoryPoints : " + nbHistoryPoints);
+		
 		if(currentIndex >= nbHistoryPoints) {
 			System.arraycopy(xValues, 1, xValues, 0, xValues.length-1);
 			System.arraycopy(yValues, 1, yValues, 0, yValues.length-1);
+			System.arraycopy(timeValues, 1, timeValues, 0, timeValues.length-1);
 			currentIndex = nbHistoryPoints - 1;
 		}
+		
 		xValues[currentIndex] = x;
 		yValues[currentIndex] = y;
-		currentIndex ++;
+		timeValues[currentIndex] = lastTime + 1.0*dn/rtswtChart.getSampleFrequency();
+		
+		double dt = timeValues[currentIndex] - timeValues[0];
+		while (dt > rtswtChart.getHistorySize()) {
+			System.arraycopy(xValues, 1, xValues, 0, xValues.length - 1);
+			System.arraycopy(yValues, 1, yValues, 0, yValues.length - 1);
+			System.arraycopy(timeValues, 1, timeValues, 0, timeValues.length - 1);
+			currentIndex = currentIndex - 1;
+			dt = timeValues[currentIndex] - timeValues[0];
+		}
+		
+//		System.out.println("dt : " + dt);
+		
 		lastPointX = x;
 		lastPointY = y;
+		lastTime = timeValues[currentIndex];
+		currentIndex ++;
+//		System.out.println("currentIndex after : " + currentIndex + " - nbHistoryPoints : " + nbHistoryPoints);
 	}
 
 	protected boolean getModified() {
@@ -163,7 +188,7 @@ public class RTSWTXYSerie {
 		double dy = rtswtChart.getDy();
 		ArrayList<Integer> pointsArray = new ArrayList<Integer>(0);
 		int height = rtswtChart.getHeight() - rtswtChart.getBottomAxisHeight() - rtswtChart.getLegendHeight() - 1;
-		for (int i = 0; i < xValues.length; i++) {
+		for (int i = 0; i <= currentIndex; i++) {
 			if(!Double.isNaN(xValues[i])) {
 				int vx = (int) Math.round((xValues[i] - xMin)/dx);
 				int vy = height - (int) Math.round((yValues[i] - yMin)/dy);

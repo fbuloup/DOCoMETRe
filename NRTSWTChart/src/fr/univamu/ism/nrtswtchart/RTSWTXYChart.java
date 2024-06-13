@@ -191,6 +191,7 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 	private ArrayList<Long> drawTime = new ArrayList<Long>(0);
 	
 	private double historySize;
+	private double sampleFrequency;
 
 	public RTSWTXYChart(Composite parent, int style, String fontName, int chartFontStyle, int chartFontHeight) {
 		chart = new Canvas(parent, style);
@@ -245,20 +246,26 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 		paletteData = new PaletteData(0XFF, 0xFF00, 0xFF0000);
 	}
 	
-	public RTSWTXYSerie createSerie(String title, Color color, double sfx) {
+	public RTSWTXYSerie createSerie(String title, Color color) {
 		RTSWTXYSerie rtswtSerie = new RTSWTXYSerie(this, title, color);
 		rtswtSeries.add(rtswtSerie);
-		int nbHistoryPoints = (int)(getHistorySize()*sfx);
-		rtswtSerie.setNbHistoryPoints(nbHistoryPoints);
 		return rtswtSerie;
 	}
 	
-	public void setHistorySize(double historySize) {
-		this.historySize = historySize;
+	public void setSampleFrequency(double sampleFrequency) {
+		this.sampleFrequency = sampleFrequency;
+	}
+	
+	public double getSampleFrequency() {
+		return sampleFrequency;
 	}
 	
 	public double getHistorySize() {
 		return historySize;
+	}
+	
+	public void setHistorySize(double historySize) {
+		this.historySize = historySize;
 	}
 
 	private RTSWTXYSerie[] getSeries() {

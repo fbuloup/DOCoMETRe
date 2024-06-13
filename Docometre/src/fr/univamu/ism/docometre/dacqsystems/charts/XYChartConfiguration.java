@@ -298,7 +298,8 @@ public class XYChartConfiguration extends ChartConfiguration {
 //				stroke = new BasicStroke(serieWidth, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 1.0f, new float[] {lineWidth, emptyWidth, emptyWidth, emptyWidth, emptyWidth, emptyWidth}, 0.0f);
 	
 			double sfx = Double.parseDouble(sfxString);
-			RTSWTXYSerie rtswtSerie = rtswtxyChart.createSerie(ySerieID + "(" + xSerieID + ")", serieColor, sfx);
+			rtswtxyChart.setSampleFrequency(sfx);
+			RTSWTXYSerie rtswtSerie = rtswtxyChart.createSerie(ySerieID + "(" + xSerieID + ")", serieColor);
 			xyCurveConfiguration.setSerie(rtswtSerie);
 		}
 
