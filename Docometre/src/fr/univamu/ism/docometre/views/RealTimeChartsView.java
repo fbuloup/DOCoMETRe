@@ -288,7 +288,6 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 	}
 
 	public void updateCharts(Process process) {
-		chartsContainer.setVisible(false);
 		removeAllCharts();
 		DACQConfiguration dacqConfiguration = process.getDACQConfiguration();
 		String value = dacqConfiguration.getProperty(DACQConfigurationProperties.CHARTS_LAYOUT_COLUMNS_NUMBER);
@@ -303,7 +302,6 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 		for (ChartConfiguration chartConfiguration : chartsConfigurations) {
 			chartConfiguration.createChart(chartsContainer);
 		}
-		chartsContainer.setVisible(true);
 		chartsContainer.requestLayout();
 		chartsContainer.setFocus();
 	}

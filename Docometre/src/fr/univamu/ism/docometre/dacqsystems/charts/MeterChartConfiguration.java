@@ -286,7 +286,6 @@ public class MeterChartConfiguration extends ChartConfiguration {
 		
 		meterCurvesConfigurations[0].setChart(meterFigure);
 		meterCurvesConfigurations[0].setLigthWeightSystem(lws);
-		meterContainer.setVisible(false);
 		
 		lws.setControl(meterContainer);
 		lws.setContents(meterFigure);
