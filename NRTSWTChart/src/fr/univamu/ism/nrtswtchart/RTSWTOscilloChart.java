@@ -195,7 +195,7 @@ public class RTSWTOscilloChart extends ControlAdapter implements PaintListener, 
 	private int leftAxisWidth;
 	private int bottomAxisHeight;
 	private int legendHeight;
-	private int showCurrentValuesFontHeight;
+//	private int showCurrentValuesFontHeight;
 
 	private ArrayList<Long> drawTime = new ArrayList<Long>(0);
 
@@ -219,7 +219,7 @@ public class RTSWTOscilloChart extends ControlAdapter implements PaintListener, 
 		gc.setFont(chart.getFont());
 		leftAxisWidth = gc.textExtent("-9." + decimalFormatter.getDecimalFormatSymbols().getDecimalSeparator() + "9E-99").x + 10;
 		FontMetrics fontMetrics = gc.getFontMetrics();
-		showCurrentValuesFontHeight = fontMetrics.getAscent();
+//		showCurrentValuesFontHeight = fontMetrics.getAscent();
 		bottomAxisHeight = fontMetrics.getAscent() + fontMetrics.getDescent();
 		legendHeight = bottomAxisHeight;
 		fontHeight = bottomAxisHeight;
@@ -529,24 +529,40 @@ public class RTSWTOscilloChart extends ControlAdapter implements PaintListener, 
 		
 		RTSWTOscilloSerie[] series = getSeries();
 		for (RTSWTOscilloSerie rtswtSerie : series) {
+			int thickness = rtswtSerie.getThickness();
 			int[] values = rtswtSerie.getPointsArrayToDraw();
 			int color =  rtswtSerie.getColor().getRed() + (rtswtSerie.getColor().getGreen() << 8) + (rtswtSerie.getColor().getBlue() << 16);
 			rtswtSerie.setModified(false);
 			if(values.length == 0) continue;
+			int dx = 0;
+			int dy = 0;
+			int deltaX = 0;
+			int deltaY = 0;
 			if(rtswtSerie.isHorizontalReference()) {
 				try {
-					RTSWTChartUtils.plotLine(seriesImageData, 0, values[1], seriesImageData.width - 1, values[1], color);
+					for (int t = 1; t <= thickness; t++) {
+						deltaY = (int)Math.pow(-1, t)*(t/2);
+						RTSWTChartUtils.plotLine(seriesImageData, 0, values[1] + deltaY, seriesImageData.width - 1, values[1] + deltaY, color);
+					}
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 				continue;
 			}
-			if(values.length <= 2) {
+			if(values.length == 2) {
 				seriesImageData.setPixel(values[0], values[1], color);
 			} else {
 				for (int i = 0; i < values.length - 2; i += 2) {
 					try {
-						RTSWTChartUtils.plotLine(seriesImageData, values[i], values[i + 1], values[i + 2], values[i + 3], color);
+						for (int t = 1; t <= thickness; t++) {
+							dx = Math.abs(values[i] - values[i+2]);
+							dy = Math.abs(values[i+1] - values[i+3]);
+							dy = dx>=dy?1:0;
+							dx = dy==1?0:1;
+							deltaX = (int)Math.pow(-1, t)*dx*(t/2);
+							deltaY = (int)Math.pow(-1, t)*dy*(t/2);
+							RTSWTChartUtils.plotLine(seriesImageData, values[i] + deltaX, values[i + 1] + deltaY, values[i + 2] + deltaX, values[i + 3] + deltaY, color);
+						}
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -556,7 +572,15 @@ public class RTSWTOscilloChart extends ControlAdapter implements PaintListener, 
 		seriesImage = new Image(chart.getDisplay(), seriesImageData);
 	}
 	
+	private boolean isShowCurrentValues() {
+		boolean doPrepare = showCurrentValues;
+		for (RTSWTOscilloSerie rtswtSerie : rtswtSeries) doPrepare = doPrepare || rtswtSerie.isDisplayCurrentValue();
+		return doPrepare;
+	}
+	
 	private void prepareCurrentValues() {
+		if(!isShowCurrentValues()) return;
+		
 		if(currentValuesImage != null && !currentValuesImage.isDisposed()) currentValuesImage.dispose();
 		currentValuesImageData = new ImageData(10, 10, 24, paletteData);
 		currentValuesImage = new Image(chart.getDisplay(), currentValuesImageData);
@@ -566,11 +590,11 @@ public class RTSWTOscilloChart extends ControlAdapter implements PaintListener, 
 		int imageHeight = 0;
 		ArrayList<String> valuesString = new ArrayList<>();
 		for (RTSWTOscilloSerie rtswtSerie : rtswtSeries) {
-			if(rtswtSerie.isHorizontalReference()) continue;
+			if(!rtswtSerie.isDisplayCurrentValue() && !showCurrentValues) continue;
 			double currentValue = rtswtSerie.getCurrentValue();
 			String valueString = decimalFormatterCurrentValues.format(currentValue);
 			valuesString.add(valueString);
-			int valueStringWidth = gc.textExtent(valueString).x;
+			int valueStringWidth = gc.textExtent((currentValue > 0? "-" : "") + valueString).x;
 			int valueStringHeight = gc.textExtent(valueString).y;
 			imageWidth = Math.max(valueStringWidth, imageWidth);
 			imageHeight += valueStringHeight;
@@ -584,15 +608,16 @@ public class RTSWTOscilloChart extends ControlAdapter implements PaintListener, 
 		gc = new GC(currentValuesImage);
 
 		int numSerie = 0;
+		int yPosition = 0;
 		for (RTSWTOscilloSerie rtswtSerie : rtswtSeries) {
-			if(rtswtSerie.isHorizontalReference()) continue;
+			if(!rtswtSerie.isDisplayCurrentValue() && !showCurrentValues) continue;
 			String valueString = valuesString.get(numSerie);
-			int yPosition = showCurrentValuesFontHeight*numSerie;
-			Color color  = rtswtSerie.getColor();
+			Color color = rtswtSerie.getColor();
 			gc.setForeground(color);
 			gc.setBackground(backgroundColor);
 			gc.drawString(valueString, 0, yPosition);
 			numSerie++;
+			yPosition += gc.textExtent(valueString).y;
 		}
 		
 		gc.dispose();
@@ -622,7 +647,7 @@ public class RTSWTOscilloChart extends ControlAdapter implements PaintListener, 
 		if(redraw) {
 			long t = System.nanoTime();
 			if (showGrid && redrawGrid) prepareGrids();
-			if(showCurrentValues) prepareCurrentValues();
+			prepareCurrentValues();
 			prepareSeries();
 			getChart().redraw();
 			getChart().update();
@@ -656,7 +681,7 @@ public class RTSWTOscilloChart extends ControlAdapter implements PaintListener, 
 		yHeight = seriesImageData.height;
 		e.gc.drawImage(seriesImage, 0, 0, seriesImageData.width, seriesImageData.height, xLeft, yTop, xWidth, yHeight);
 
-		if(showCurrentValues) {
+		if(isShowCurrentValues()) {
 			xLeft = getWidth() - currentValuesImageData.width;
 			yTop = (showLegend && legendPosition == SWT.TOP) ? getLegendHeight() : 0;
 			xWidth = currentValuesImageData.width;

@@ -559,16 +559,29 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 		
 		RTSWTXYSerie[] series = getSeries();
 		for (RTSWTXYSerie rtswtSerie : series) {
+			int thickness = rtswtSerie.getThickness();
 			int[] values = rtswtSerie.getPointsArrayToDraw();
 			int color =  rtswtSerie.getColor().getRed() + (rtswtSerie.getColor().getGreen() << 8) + (rtswtSerie.getColor().getBlue() << 16);
 			rtswtSerie.setModified(false);
 			if(values.length == 0) continue;
-			if(values.length <= 2) {
+			int dx = 0;
+			int dy = 0;
+			int deltaX = 0;
+			int deltaY = 0;
+			if(values.length == 2) {
 				seriesImageData.setPixel(values[0], values[1], color);
 			} else {
 				for (int i = 0; i < values.length - 2; i += 2) {
 					try {
-						RTSWTChartUtils.plotLine(seriesImageData, values[i], values[i + 1], values[i + 2], values[i + 3], color);
+						for (int t = 1; t <= thickness; t++) {
+							dx = Math.abs(values[i] - values[i+2]);
+							dy = Math.abs(values[i+1] - values[i+3]);
+							dy = dx>=dy?1:0;
+							dx = dy==1?0:1;
+							deltaX = (int)Math.pow(-1, t)*dx*(t/2);
+							deltaY = (int)Math.pow(-1, t)*dy*(t/2);
+							RTSWTChartUtils.plotLine(seriesImageData, values[i] + deltaX, values[i + 1] + deltaY, values[i + 2] + deltaX, values[i + 3] + deltaY, color);
+						}
 					} catch (Exception e) {
 						e.printStackTrace();
 					}

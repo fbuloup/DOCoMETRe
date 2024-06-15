@@ -59,6 +59,7 @@ public class RTSWTOscilloSerie {
 	private String title;
 	private Color color;
 	private boolean displayCurrentValue;
+	private int thickness;
 	
 	/**
 	 * If true, serie will be a simple horizontal line at value specified in yValues[0]
@@ -98,6 +99,14 @@ public class RTSWTOscilloSerie {
 
 	protected String getTitle() {
 		return title;
+	}
+
+	public int getThickness() {
+		return thickness;
+	}
+
+	public void setThickness(int thickness) {
+		this.thickness = thickness;
 	}
 
 	public boolean isHorizontalReference() {

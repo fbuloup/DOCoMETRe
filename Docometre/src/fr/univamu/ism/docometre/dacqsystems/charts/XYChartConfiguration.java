@@ -294,6 +294,7 @@ public class XYChartConfiguration extends ChartConfiguration {
 			String xSerieID = xyCurveConfiguration.getXChannel().getID();
 			String ySerieID = xyCurveConfiguration.getYChannel().getID();
 			Color serieColor = CurveConfigurationProperties.getColor(xyCurveConfiguration);
+			int thickness = Integer.parseInt(xyCurveConfiguration.getProperty(CurveConfigurationProperties.WIDTH));
 			String sfxString = xyCurveConfiguration.getXChannel().getProperty(ChannelProperties.SAMPLE_FREQUENCY);
 			String sfyString = xyCurveConfiguration.getXChannel().getProperty(ChannelProperties.SAMPLE_FREQUENCY);
 			if(!sfxString.equals(sfyString)) {
@@ -320,6 +321,7 @@ public class XYChartConfiguration extends ChartConfiguration {
 			double sfx = Double.parseDouble(sfxString);
 			rtswtxyChart.setSampleFrequency(sfx);
 			RTSWTXYSerie rtswtSerie = rtswtxyChart.createSerie(ySerieID + "(" + xSerieID + ")", serieColor);
+			rtswtSerie.setThickness(thickness);
 			xyCurveConfiguration.setSerie(rtswtSerie);
 		}
 

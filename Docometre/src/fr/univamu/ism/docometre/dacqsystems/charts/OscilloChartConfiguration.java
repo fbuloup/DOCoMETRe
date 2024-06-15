@@ -306,6 +306,7 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 			Color serieColor = CurveConfigurationProperties.getColor(oscilloCurveConfiguration);
 			value = oscilloCurveConfiguration.getProperty(OscilloCurveConfigurationProperties.DISPLAY_CURRENT_VALUES);
 			boolean displayCurrentValues = displayCurrentValuesChart || Boolean.parseBoolean(value);
+			int thickness = Integer.parseInt(oscilloCurveConfiguration.getProperty(CurveConfigurationProperties.WIDTH));
 
 //			int serieWidth = Integer.parseInt(oscilloCurveConfiguration.getProperty(CurveConfigurationProperties.WIDTH));
 //			int serieStyle = CurveConfigurationProperties.getStyle(oscilloCurveConfiguration);
@@ -323,6 +324,7 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 			
 			RTSWTOscilloSerie rtswtSerie = rtswtOscilloChart.createSerie(serieID, serieColor);
 			rtswtSerie.setDisplayCurrentValue(displayCurrentValues);
+			rtswtSerie.setThickness(thickness);
 			
 			oscilloCurveConfiguration.setSerie(rtswtSerie);
 			

@@ -64,6 +64,7 @@ public class RTSWTXYSerie {
 	private boolean modified;
 	private String title;
 	private Color color;
+	private int thickness;
 
 	protected RTSWTXYSerie(RTSWTXYChart rtswtChart, String title, Color color) {
 		if(rtswtChart == null) SWT.error(SWT.ERROR_NULL_ARGUMENT);
@@ -82,6 +83,14 @@ public class RTSWTXYSerie {
 
 	protected String getTitle() {
 		return title;
+	}
+	
+	public int getThickness() {
+		return thickness;
+	}
+
+	public void setThickness(int thickness) {
+		this.thickness = thickness;
 	}
 	
 	public void addPoints(final Double[] x, final Double[] y) {
