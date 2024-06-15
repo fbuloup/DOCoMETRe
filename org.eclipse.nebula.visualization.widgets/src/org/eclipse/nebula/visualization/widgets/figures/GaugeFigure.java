@@ -207,6 +207,9 @@ public class GaugeFigure extends AbstractRoundRampedFigure {
 	 * @param needleColor the needleColor to set
 	 */
 	public void setNeedleColor(Color needleColor) {
+		titleLabel.setForegroundColor(needleColor);
+		unitLabel.setForegroundColor(needleColor);
+		valueLabel.setForegroundColor(needleColor);
 		needle.setBackgroundColor(needleColor);
 	}
 	

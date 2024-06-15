@@ -160,6 +160,9 @@ public class TankFigure extends AbstractLinearMarkedFigure {
 	public void setFillColor(Color fillColor) {
 		if(this.fillColor != null && this.fillColor.equals(fillColor))
 			return;
+		titleLabel.setForegroundColor(fillColor);
+		unitLabel.setForegroundColor(fillColor);
+		valueLabel.setForegroundColor(fillColor);
 		this.fillColor = fillColor;
 		repaint();
 	}

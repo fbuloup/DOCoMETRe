@@ -49,6 +49,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.nebula.visualization.widgets.figures.GaugeFigure;
 import org.eclipse.nebula.visualization.widgets.figures.TankFigure;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -83,8 +84,8 @@ public class MeterChartConfiguration extends ChartConfiguration {
 	transient private Text levelHighText;
 	transient private Button showHighHighButton;
 	transient private Text levelHighHighText;
-
 	transient private Canvas meterContainer;
+	transient private Button chartColorButton;
 
 	public MeterChartConfiguration(ChartTypes chartType) {
 		super(chartType);
@@ -156,6 +157,15 @@ public class MeterChartConfiguration extends ChartConfiguration {
 		levelLowLowText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		levelLowLowText.addModifyListener(new ModifyPropertyHandler(MeterChartConfigurationProperties.LEVEL_LOW_LOW, this, levelLowLowText, MeterChartConfigurationProperties.LEVEL_LOW_LOW.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
 		
+		page.createLabel(container, DocometreMessages.Color_Label + " : ", DocometreMessages.Color_Tooltip);
+		Color chartColor = ChartConfigurationProperties.getColor(this, ChartConfigurationProperties.COLOR);
+		chartColorButton = page.createColorDialogButton(container, "...", SWT.PUSH | SWT.FLAT, 1, 1);
+		((GridData)chartColorButton.getLayoutData()).horizontalAlignment = SWT.LEFT;
+		chartColorButton.setToolTipText(DocometreMessages.Color_Tooltip);
+		chartColorButton.setBackground(chartColor);
+		chartColorButton.addSelectionListener(new ModifyPropertyHandler(ChartConfigurationProperties.COLOR, this, chartColorButton, ChartConfigurationProperties.COLOR.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		
+		
 	}
 	
 	/*
@@ -175,10 +185,19 @@ public class MeterChartConfiguration extends ChartConfiguration {
 		widget.setFocus();
 		for (Listener listener : listeners) widget.addListener(SWT.Modify , listener);
 	}
+	
+	private void updateColordialogButton() {
+		Listener[] listeners = chartColorButton.getListeners(SWT.Modify);
+		for (Listener listener : listeners) chartColorButton.removeListener(SWT.Modify, listener);
+		Color chartColor = ChartConfigurationProperties.getColor(this, ChartConfigurationProperties.COLOR);
+		chartColorButton.setBackground(chartColor);
+		for (Listener listener : listeners) chartColorButton.addListener(SWT.Modify , listener);
+	}
 
 	@Override
 	public void update(Property property, Object newValue, Object oldValue) {
-		if(!(property instanceof XYChartConfigurationProperties)) return;
+		boolean validate = (property instanceof MeterChartConfigurationProperties) || (property instanceof ChartConfigurationProperties);
+		if(!validate) return;
 		if(property == MeterChartConfigurationProperties.RANGE_MAX)
 			updateWidget(rangeMaxText, (MeterChartConfigurationProperties)property);
 		if(property == MeterChartConfigurationProperties.RANGE_MIN)
@@ -199,6 +218,8 @@ public class MeterChartConfiguration extends ChartConfiguration {
 			updateWidget(showLowLowButton, (MeterChartConfigurationProperties)property);
 			levelLowLowText.setEnabled(!showLowLowButton.getSelection());
 		}
+		if(property == ChartConfigurationProperties.COLOR)
+			updateColordialogButton();
 	}
 	
 	@Override
@@ -244,6 +265,7 @@ public class MeterChartConfiguration extends ChartConfiguration {
 		double levelLow = Double.parseDouble(value);
 		value = getProperty(MeterChartConfigurationProperties.LEVEL_LOW_LOW);
 		double levelLowLow = Double.parseDouble(value);
+		Color chartColor = ChartConfigurationProperties.getColor(this, ChartConfigurationProperties.COLOR);
 		
 		meterContainer = new Canvas(container, SWT.BORDER);
 		meterContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, hSpan, vSpan));
@@ -266,6 +288,7 @@ public class MeterChartConfiguration extends ChartConfiguration {
 			((GaugeFigure)meterFigure).setHiLevel(levelHigh);
 			meterFigure.setBackgroundColor(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_BLACK));
 			meterFigure.setForegroundColor(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
+			((GaugeFigure)meterFigure).setNeedleColor(chartColor);
 			((GaugeFigure)meterFigure).setTitle(meterCurvesConfigurations[0].getChannel().getID());
 		}
 		if(getChartType().equals(ChartTypes.TANK_CHART)) {
@@ -281,6 +304,7 @@ public class MeterChartConfiguration extends ChartConfiguration {
 			((TankFigure)meterFigure).setHiLevel(levelHigh);
 			meterFigure.setBackgroundColor(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_BLACK));
 			meterFigure.setForegroundColor(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
+			((TankFigure)meterFigure).setFillColor(chartColor);
 			((TankFigure)meterFigure).setTitle(meterCurvesConfigurations[0].getChannel().getID());
 		}
 		
