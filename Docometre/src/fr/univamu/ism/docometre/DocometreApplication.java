@@ -49,8 +49,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.resource.ColorRegistry;
-import org.eclipse.jface.resource.FontRegistry;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.service.datalocation.Location;
 import org.eclipse.osgi.util.NLS;
@@ -81,8 +80,25 @@ public class DocometreApplication implements IApplication {
 	public static String ORANGE = "ORANGE";
 	public static String MAROON = "MAROON";
 	
-	public static FontRegistry fontRegistry;
-	public static ColorRegistry colorRegistry;
+	private static RGB[] rgbs = new RGB[] { 
+			new RGB(0xFF, 0x00, 0x00),
+			new RGB(0x00, 0xFF, 0x00),
+			new RGB(0x00, 0x00, 0xFF),
+			new RGB(0xFF, 0xFF, 0x00),
+			new RGB(0x00, 0xFF, 0xFF),
+			new RGB(0xFF, 0x00, 0xFF),
+			new RGB(0xFF, 0x80, 0x00),
+			new RGB(0x80, 0x80, 0x80),
+			new RGB(0xA0, 0x60, 0x20),
+			new RGB(0x60, 0xA0, 0x20),
+			new RGB(0x20, 0x60, 0xA0),
+			new RGB(0x6D, 0x1D, 0x73),
+			new RGB(0xFF, 0xAA, 0x00),
+			new RGB(0x99, 0x91, 0x26),
+			new RGB(0xFF, 0x80, 0x91),
+			new RGB(0x36, 0xB8, 0xD9)
+		};
+	private static int maxColors = rgbs.length;;
 
 	/*
 	 * (non-Javadoc)
@@ -95,18 +111,21 @@ public class DocometreApplication implements IApplication {
 		Activator.logInfoMessage(DocometreMessages.RuntimeFolder + System.getProperty("user.dir"), getClass());
 		Display display = PlatformUI.createDisplay();
 		
-		fontRegistry = new FontRegistry(display);
-		fontRegistry.put(COURIER_NEW, new FontData[]{ new FontData("Courier New", 12, SWT.NORMAL)});
-		fontRegistry.put(COURIER_NEW_BOLD, new FontData[]{ new FontData("Courier New", 12, SWT.BOLD)});
 		
-		colorRegistry = new ColorRegistry(display);
-		colorRegistry.put(WHITE, new RGB(255, 255, 255));
-		colorRegistry.put(BLACK, new RGB(0, 0, 0));
-		colorRegistry.put(RED, new RGB(202, 0, 42));
-		colorRegistry.put(GREEN, new RGB(61, 119, 91));
-		colorRegistry.put(BLUE, new RGB(0, 0, 255));
-		colorRegistry.put(ORANGE, new RGB(255, 102, 0));
-		colorRegistry.put(MAROON, new RGB(122, 0, 0));
+		JFaceResources.getFontRegistry().put(COURIER_NEW, new FontData[]{ new FontData("Courier New", 12, SWT.NORMAL)});
+		JFaceResources.getFontRegistry().put(COURIER_NEW_BOLD, new FontData[]{ new FontData("Courier New", 12, SWT.BOLD)});
+		
+		JFaceResources.getColorRegistry().put(WHITE, new RGB(255, 255, 255));
+		JFaceResources.getColorRegistry().put(BLACK, new RGB(0, 0, 0));
+		JFaceResources.getColorRegistry().put(RED, new RGB(202, 0, 42));
+		JFaceResources.getColorRegistry().put(GREEN, new RGB(61, 119, 91));
+		JFaceResources.getColorRegistry().put(BLUE, new RGB(0, 0, 255));
+		JFaceResources.getColorRegistry().put(ORANGE, new RGB(255, 102, 0));
+		JFaceResources.getColorRegistry().put(MAROON, new RGB(122, 0, 0));
+		
+		for (int i = 0; i < rgbs.length; i++) {
+			JFaceResources.getColorRegistry().put(String.valueOf(i), rgbs[i]);
+		}
 		
 		boolean workspaceOK = false;
 		String workspace = "";
@@ -187,11 +206,28 @@ public class DocometreApplication implements IApplication {
 		});
 	}
 	
-	public static Color getColor(String colorName) {
-		return colorRegistry.get(colorName);
+	public static Color getColor(Byte index) {
+		if(index < 0) index = 0;
+		index = (byte) (index % maxColors);
+		Color color = JFaceResources.getColorRegistry().get(index.toString());
+		return color;
 	}
 	
-	public static Font getFont(String fontName) {
-		return fontRegistry.get(fontName);
+	public static Color getColor(String colorName) {
+		return JFaceResources.getColorRegistry().get(colorName);
 	}
+	
+	public static Color getColor(RGB rgb) {
+		Color color = JFaceResources.getColorRegistry().get(rgb.toString());
+		if(color == null) {
+			JFaceResources.getColorRegistry().put(rgb.toString(), rgb);
+			color = JFaceResources.getColorRegistry().get(rgb.toString());
+		}
+		return color;
+	}
+
+	public static Font getFont(String fontName) {
+		return JFaceResources.getFontRegistry().get(fontName);
+	}
+	
 }

@@ -84,6 +84,7 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 	transient private Button fontBoldButton;
 	transient private Button fontItalicButton;
 	transient private Text fontSizeText;
+	transient private Button chartColorButton;
 
 	public OscilloChartConfiguration() {
 		super(ChartTypes.OSCILLO_CHART);
@@ -103,26 +104,26 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 	}
 	
 	public void populateChartConfigurationContainer(Composite container, ChartsConfigurationPage page, ModuleSectionPart generalConfigurationSectionPart) {
-		container.setLayout(new GridLayout(6, false));
+		container.setLayout(new GridLayout(7, false));
 		
 		page.createLabel(container, DocometreMessages.TimeWidth_Title, DocometreMessages.TimeWidth_Tooltip);
-		timeWidthText = page.createText(container, getProperty(OscilloChartConfigurationProperties.TIME_WIDTH), SWT.NONE, 5, 1);
+		timeWidthText = page.createText(container, getProperty(OscilloChartConfigurationProperties.TIME_WIDTH), SWT.NONE, 6, 1);
 		timeWidthText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		timeWidthText.addModifyListener(new ModifyPropertyHandler(OscilloChartConfigurationProperties.TIME_WIDTH, this, timeWidthText, OscilloChartConfigurationProperties.TIME_WIDTH.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
 		
-		autoScaleButton = page.createButton(container, DocometreMessages.AutoScale_Title, SWT.CHECK, 6, 1);
+		autoScaleButton = page.createButton(container, DocometreMessages.AutoScale_Title, SWT.CHECK, 7, 1);
 		String value = getProperty(OscilloChartConfigurationProperties.AUTO_SCALE);
 		boolean autoScale = Boolean.valueOf(value);
 		autoScaleButton.setSelection(autoScale);
 		autoScaleButton.addSelectionListener(new ModifyPropertyHandler(OscilloChartConfigurationProperties.AUTO_SCALE, OscilloChartConfiguration.this, autoScaleButton, OscilloChartConfigurationProperties.AUTO_SCALE.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
 		
 		page.createLabel(container, DocometreMessages.MaxAmplitude_Title, DocometreMessages.MaxAmplitude_Tooltip);
-		ampMaxText = page.createText(container, getProperty(OscilloChartConfigurationProperties.Y_MAX), SWT.NONE, 5, 1); 
+		ampMaxText = page.createText(container, getProperty(OscilloChartConfigurationProperties.Y_MAX), SWT.NONE, 6, 1); 
 		ampMaxText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		ampMaxText.addModifyListener(new ModifyPropertyHandler(OscilloChartConfigurationProperties.Y_MAX, this, ampMaxText, OscilloChartConfigurationProperties.Y_MAX.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
 		
 		page.createLabel(container, DocometreMessages.MinAmplitude_Title, DocometreMessages.MinAmplitude_Tooltip);
-		ampMinText = page.createText(container, getProperty(OscilloChartConfigurationProperties.Y_MIN), SWT.NONE, 5, 1); 
+		ampMinText = page.createText(container, getProperty(OscilloChartConfigurationProperties.Y_MIN), SWT.NONE, 6, 1); 
 		ampMinText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		ampMinText.addModifyListener(new ModifyPropertyHandler(OscilloChartConfigurationProperties.Y_MIN, this, ampMinText, OscilloChartConfigurationProperties.Y_MIN.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
 		
@@ -159,6 +160,12 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 		fontSizeText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		fontSizeText.addModifyListener(new ModifyPropertyHandler(OscilloChartConfigurationProperties.FONT_SIZE, this, fontSizeText, OscilloChartConfigurationProperties.FONT_SIZE.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
 		
+		Color chartColor = ChartConfigurationProperties.getColor(this, ChartConfigurationProperties.COLOR);
+		chartColorButton = page.createColorDialogButton(container, "...", SWT.PUSH | SWT.FLAT, 1, 1);
+		chartColorButton.setToolTipText(DocometreMessages.Color_Tooltip);
+		chartColorButton.setBackground(chartColor);
+		chartColorButton.addSelectionListener(new ModifyPropertyHandler(ChartConfigurationProperties.COLOR, this, chartColorButton, ChartConfigurationProperties.COLOR.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		
 		displayCurrentValuesButton = page.createButton(container, DocometreMessages.DisplayValues_Title, SWT.CHECK, 6, 1);
 		value = getProperty(OscilloChartConfigurationProperties.DISPLAY_CURRENT_VALUES);
 		boolean displayCurrentValues = Boolean.valueOf(value);
@@ -184,10 +191,19 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 		widget.setFocus();
 		for (Listener listener : listeners) widget.addListener(SWT.Modify , listener);
 	}
+	
+	private void updateColordialogButton() {
+		Listener[] listeners = chartColorButton.getListeners(SWT.Modify);
+		for (Listener listener : listeners) chartColorButton.removeListener(SWT.Modify, listener);
+		Color chartColor = ChartConfigurationProperties.getColor(this, ChartConfigurationProperties.COLOR);
+		chartColorButton.setBackground(chartColor);
+		for (Listener listener : listeners) chartColorButton.addListener(SWT.Modify , listener);
+	}
 
 	@Override
 	public void update(Property property, Object newValue, Object oldValue) {
-		if(!(property instanceof OscilloChartConfigurationProperties)) return;
+		boolean validate = (property instanceof OscilloChartConfigurationProperties) || (property instanceof ChartConfigurationProperties);
+		if(!validate) return;
 		if(property == OscilloChartConfigurationProperties.AUTO_SCALE) {
 			updateWidget(autoScaleButton, (OscilloChartConfigurationProperties)property);
 			ampMaxText.setEnabled(!autoScaleButton.getSelection());
@@ -206,6 +222,8 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 			updateWidget(fontCombo, (OscilloChartConfigurationProperties)property);
 		if(property == OscilloChartConfigurationProperties.FONT_SIZE)
 			updateWidget(fontSizeText, (OscilloChartConfigurationProperties)property);
+		if(property == ChartConfigurationProperties.COLOR)
+			updateColordialogButton();
 	}
 	
 	public CurveConfiguration[] createCurvesConfiguration(IStructuredSelection selection) {
@@ -266,7 +284,7 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 		value = getProperty(OscilloChartConfigurationProperties.FONT_SIZE);
 		if(value == null || "".equals(value)) value = "12";
 		int fontSize = Integer.parseInt(value);
-		
+		Color chartColor = ChartConfigurationProperties.getColor(this, ChartConfigurationProperties.COLOR);
 		
 		RTSWTOscilloChart rtswtOscilloChart = new RTSWTOscilloChart(chartContainer, SWT.DOUBLE_BUFFERED, fontName, fontStyle, fontSize);
 		rtswtOscilloChart.getChart().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, hSpan, vSpan));
@@ -278,6 +296,8 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 		rtswtOscilloChart.setGridVisibility(true);
 		rtswtOscilloChart.setLegendVisibility(true);
 		rtswtOscilloChart.setLegendPosition(SWT.BOTTOM);
+		rtswtOscilloChart.setGridLinesColor(chartColor);
+		rtswtOscilloChart.setFontColor(chartColor);
 		
 		// Create curves
 		for (CurveConfiguration curveConfiguration : curvesConfigurations) {

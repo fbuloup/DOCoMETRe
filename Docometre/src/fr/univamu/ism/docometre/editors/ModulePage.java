@@ -416,6 +416,14 @@ public abstract class ModulePage extends FormPage implements PropertyObserver {
 		return button;
 	}
 	
+	public Button createColorDialogButton(Composite container, String title, int style, int horspan, int vertspan) {
+		Button button = managedForm.getToolkit().createButton(container, title, style);//SWT.PUSH);
+		button.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, horspan, vertspan));
+		button.setData("isColorDialog", "yes");
+		setModuleData(button);
+		return button;
+	}
+	
 	/*
 	 * Helper method to create hyperlink widget
 	 */

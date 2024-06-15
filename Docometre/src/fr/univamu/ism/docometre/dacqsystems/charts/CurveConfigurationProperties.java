@@ -74,6 +74,7 @@ public final class CurveConfigurationProperties extends Property {
 	
 	public static Color getColor(CurveConfiguration curveConfiguration) {
 		String colorKey = curveConfiguration.getProperty(COLOR);
+		if(colorKey == null) colorKey = "RGB{255,255,255}";
 		Color color = JFaceResources.getColorRegistry().get(colorKey);
 		if(color == null) {
 			String value = colorKey.replaceAll("RGB", "");
@@ -88,26 +89,6 @@ public final class CurveConfigurationProperties extends Property {
 			JFaceResources.getColorRegistry().put(colorKey, new RGB(red, green, blue));
 		}
 		return color;
-	}
-	
-	public static java.awt.Color getAWTColor(CurveConfiguration curveConfiguration) {
-		String colorKey = curveConfiguration.getProperty(COLOR);
-		Color color = JFaceResources.getColorRegistry().get(colorKey);
-		if(color == null) {
-			String value = colorKey.replaceAll("RGB", "");
-			value = value.replaceAll("\\{", "");
-			value = value.replaceAll("\\}", "");
-			value = value.replaceAll("\\s+", "");
-			String[] RGB = value.split(",");
-			int red = Integer.parseInt(RGB[0]);
-			int green = Integer.parseInt(RGB[1]);
-			int blue = Integer.parseInt(RGB[2]);
-			color = new Color(PlatformUI.getWorkbench().getDisplay(), red, green, blue);
-			JFaceResources.getColorRegistry().put(colorKey, new RGB(red, green, blue));
-		}
-		java.awt.Color awtColor = new java.awt.Color(color.getRed(), color.getGreen(), color.getBlue());
-		return awtColor;
-		
 	}
 	
 	public static void populateProperties(CurveConfiguration curveConfiguration){

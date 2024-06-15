@@ -89,7 +89,7 @@ import org.eclipse.swtchart.ISeries.SeriesType;
 import org.eclipse.swtchart.extensions.charts.InteractiveChart;
 
 import fr.univamu.ism.docometre.Activator;
-import fr.univamu.ism.docometre.ColorUtil;
+import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ResourceProperties;
@@ -669,7 +669,7 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 					Channel channel = channelsContainer.getChannelFromName(fullChannelName);
 					String category = mathEngine.getCategoryForTrialNumber(channel, seriesIDTrial);
 					if(categories.indexOf(category) == -1) categories.add(category);
-					((ILineSeries)series).setLineColor(ColorUtil.getColor((byte) categories.indexOf(category)));
+					((ILineSeries)series).setLineColor(DocometreApplication.getColor((byte) categories.indexOf(category)));
 				} catch (CoreException e) {
 					Activator.logErrorMessageWithCause(e);
 					e.printStackTrace();
@@ -678,7 +678,7 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 				String[] trialNumberString = series.getId().split("\\.");
 				int trialNumber = Integer.parseInt(trialNumberString[trialNumberString.length - 1]);
 				int index = trialsListViewer.getStructuredSelection().toList().indexOf(trialNumber);
-				((ILineSeries)series).setLineColor(ColorUtil.getColor((byte) index));
+				((ILineSeries)series).setLineColor(DocometreApplication.getColor((byte) index));
 			}
 			((ILineSeries)series).setSymbolColor(((ILineSeries)series).getLineColor());
 		}

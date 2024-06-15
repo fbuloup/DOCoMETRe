@@ -84,7 +84,7 @@ import org.eclipse.ui.part.EditorPart;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ApplicationActionBarAdvisor;
-import fr.univamu.ism.docometre.ColorUtil;
+import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.GetResourceLabelDelegate;
 import fr.univamu.ism.docometre.ObjectsController;
@@ -335,7 +335,7 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 			lineSeries.setAntialias(SWT.ON);
 			lineSeries.setSymbolType(PlotSymbolType.NONE);
 			Byte index = getSeriesIndex(lineSeries);
-			lineSeries.setLineColor(ColorUtil.getColor(index));
+			lineSeries.setLineColor(DocometreApplication.getColor(index));
 			lineSeries.setLineWidth(3);
 			
 			chart.getAxisSet().adjustRange();

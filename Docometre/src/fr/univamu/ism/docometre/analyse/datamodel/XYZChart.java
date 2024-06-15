@@ -53,7 +53,7 @@ import org.eclipse.swtchart.LineStyle;
 import org.jzy3d.maths.Coord3d;
 
 import fr.univamu.ism.docometre.Activator;
-import fr.univamu.ism.docometre.ColorUtil;
+import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 
@@ -195,7 +195,7 @@ public class XYZChart extends XYChart {
 	
 	public Color getZAxisForeGroundColor() {
 		if(zAxisColor == null) zAxisColor = new RGB(255, 255, 255);
-		return ColorUtil.getColor(zAxisColor);
+		return DocometreApplication.getColor(zAxisColor);
 	}
 	
 	public void setZAxisVisibility(boolean visible) {
@@ -216,7 +216,7 @@ public class XYZChart extends XYChart {
 
 	public Color getZAxisGridColor() {
 		if(zAxisGridColor == null) zAxisGridColor = new RGB(255, 255, 255);
-		return ColorUtil.getColor(zAxisGridColor);
+		return DocometreApplication.getColor(zAxisGridColor);
 	}
 
 	public void setZAxisGridColor(Color color) {

@@ -84,6 +84,7 @@ public class XYChartConfiguration extends ChartConfiguration {
 	transient private Button fontItalicButton;
 	transient private Text fontSizeText;
 	transient private Text historySizeText;
+	transient private Button chartColorButton;
 
 	public XYChartConfiguration() {
 		super(ChartTypes.XY_CHART);
@@ -104,31 +105,31 @@ public class XYChartConfiguration extends ChartConfiguration {
 
 	@Override
 	public void populateChartConfigurationContainer(Composite container, ChartsConfigurationPage page, ModuleSectionPart generalConfigurationSectionPart) {
-		container.setLayout(new GridLayout(6, false));
+		container.setLayout(new GridLayout(7, false));
 		
-		autoScaleButton = page.createButton(container, DocometreMessages.AutoScale_Title, SWT.CHECK, 6, 1);
+		autoScaleButton = page.createButton(container, DocometreMessages.AutoScale_Title, SWT.CHECK, 7, 1);
 		String value = getProperty(XYChartConfigurationProperties.AUTO_SCALE);
 		boolean autoScale = Boolean.valueOf(value);
 		autoScaleButton.setSelection(autoScale);
 		autoScaleButton.addSelectionListener(new ModifyPropertyHandler(XYChartConfigurationProperties.AUTO_SCALE, XYChartConfiguration.this, autoScaleButton, XYChartConfigurationProperties.AUTO_SCALE.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
 		
 		page.createLabel(container, DocometreMessages.xMaxAmplitude_Title, DocometreMessages.xMaxAmplitude_Tooltip);
-		xAmpMaxText = page.createText(container, getProperty(XYChartConfigurationProperties.X_MAX), SWT.NONE, 5, 1); 
+		xAmpMaxText = page.createText(container, getProperty(XYChartConfigurationProperties.X_MAX), SWT.NONE, 6, 1); 
 		xAmpMaxText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		xAmpMaxText.addModifyListener(new ModifyPropertyHandler(XYChartConfigurationProperties.X_MAX, this, xAmpMaxText, XYChartConfigurationProperties.X_MAX.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
 		
 		page.createLabel(container, DocometreMessages.xMinAmplitude_Title, DocometreMessages.xMinAmplitude_Tooltip);
-		xAmpMinText = page.createText(container, getProperty(XYChartConfigurationProperties.X_MIN), SWT.NONE, 5, 1); 
+		xAmpMinText = page.createText(container, getProperty(XYChartConfigurationProperties.X_MIN), SWT.NONE, 6, 1); 
 		xAmpMinText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		xAmpMinText.addModifyListener(new ModifyPropertyHandler(XYChartConfigurationProperties.X_MIN, this, xAmpMinText, XYChartConfigurationProperties.X_MIN.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
 		
 		page.createLabel(container, DocometreMessages.yMaxAmplitude_Title, DocometreMessages.yMaxAmplitude_Tooltip);
-		yAmpMaxText = page.createText(container, getProperty(XYChartConfigurationProperties.Y_MAX), SWT.NONE, 5, 1); 
+		yAmpMaxText = page.createText(container, getProperty(XYChartConfigurationProperties.Y_MAX), SWT.NONE, 6, 1); 
 		yAmpMaxText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		yAmpMaxText.addModifyListener(new ModifyPropertyHandler(XYChartConfigurationProperties.Y_MAX, this, yAmpMaxText, XYChartConfigurationProperties.Y_MAX.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
 		
 		page.createLabel(container, DocometreMessages.yMinAmplitude_Title, DocometreMessages.yMinAmplitude_Tooltip);
-		yAmpMinText = page.createText(container, getProperty(XYChartConfigurationProperties.Y_MIN), SWT.NONE, 5, 1); 
+		yAmpMinText = page.createText(container, getProperty(XYChartConfigurationProperties.Y_MIN), SWT.NONE, 6, 1); 
 		yAmpMinText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		yAmpMinText.addModifyListener(new ModifyPropertyHandler(XYChartConfigurationProperties.Y_MIN, this, yAmpMinText, XYChartConfigurationProperties.Y_MIN.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
 		
@@ -167,11 +168,16 @@ public class XYChartConfiguration extends ChartConfiguration {
 		fontSizeText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		fontSizeText.addModifyListener(new ModifyPropertyHandler(XYChartConfigurationProperties.FONT_SIZE, this, fontSizeText, XYChartConfigurationProperties.FONT_SIZE.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
 		
+		Color chartColor = ChartConfigurationProperties.getColor(this, ChartConfigurationProperties.COLOR);
+		chartColorButton = page.createColorDialogButton(container, "...", SWT.PUSH | SWT.FLAT, 1, 1);
+		chartColorButton.setToolTipText(DocometreMessages.Color_Tooltip);
+		chartColorButton.setBackground(chartColor);
+		chartColorButton.addSelectionListener(new ModifyPropertyHandler(ChartConfigurationProperties.COLOR, this, chartColorButton, ChartConfigurationProperties.COLOR.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		
 		page.createLabel(container, DocometreMessages.HistorySize_Title, DocometreMessages.HistorySize_Tooltip);
-		historySizeText = page.createText(container, getProperty(XYChartConfigurationProperties.HISTORY_SIZE), SWT.NONE, 5, 1);
+		historySizeText = page.createText(container, getProperty(XYChartConfigurationProperties.HISTORY_SIZE), SWT.NONE, 6, 1);
 		historySizeText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		historySizeText.addModifyListener(new ModifyPropertyHandler(XYChartConfigurationProperties.HISTORY_SIZE, this, historySizeText, XYChartConfigurationProperties.HISTORY_SIZE.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
-		
 		
 	}
 	
@@ -192,10 +198,19 @@ public class XYChartConfiguration extends ChartConfiguration {
 		widget.setFocus();
 		for (Listener listener : listeners) widget.addListener(SWT.Modify , listener);
 	}
+	
+	private void updateColordialogButton() {
+		Listener[] listeners = chartColorButton.getListeners(SWT.Modify);
+		for (Listener listener : listeners) chartColorButton.removeListener(SWT.Modify, listener);
+		Color chartColor = ChartConfigurationProperties.getColor(this, ChartConfigurationProperties.COLOR);
+		chartColorButton.setBackground(chartColor);
+		for (Listener listener : listeners) chartColorButton.addListener(SWT.Modify , listener);
+	}
 
 	@Override
 	public void update(Property property, Object newValue, Object oldValue) {
-		if(!(property instanceof XYChartConfigurationProperties)) return;
+		boolean validate = (property instanceof XYChartConfigurationProperties) || (property instanceof ChartConfigurationProperties);
+		if(!validate) return;
 		if(property == XYChartConfigurationProperties.AUTO_SCALE) {
 			updateWidget(autoScaleButton, (XYChartConfigurationProperties)property);
 
@@ -218,6 +233,8 @@ public class XYChartConfiguration extends ChartConfiguration {
 			updateWidget(fontSizeText, (XYChartConfigurationProperties)property);
 		if(property == XYChartConfigurationProperties.HISTORY_SIZE)
 			updateWidget(historySizeText, (XYChartConfigurationProperties)property);
+		if(property == ChartConfigurationProperties.COLOR)
+			updateColordialogButton();
 	}
 
 	@Override
@@ -255,6 +272,7 @@ public class XYChartConfiguration extends ChartConfiguration {
 		value = getProperty(XYChartConfigurationProperties.HISTORY_SIZE);
 		if(value == null || "".equals(value)) value = "1";
 		double historySize = Double.parseDouble(value);
+		Color chartColor = ChartConfigurationProperties.getColor(this, ChartConfigurationProperties.COLOR);
 		
 		RTSWTXYChart rtswtxyChart = new RTSWTXYChart(chartContainer, SWT.DOUBLE_BUFFERED, fontName, fontStyle, fontSize);
 		rtswtxyChart.getChart().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, hSpan, vSpan));
@@ -267,6 +285,8 @@ public class XYChartConfiguration extends ChartConfiguration {
 		rtswtxyChart.setLegendVisibility(true);
 		rtswtxyChart.setLegendPosition(SWT.BOTTOM);
 		rtswtxyChart.setHistorySize(historySize);
+		rtswtxyChart.setGridLinesColor(chartColor);
+		rtswtxyChart.setFontColor(chartColor);
 		
 		// Create curves
 		for (CurveConfiguration curveConfiguration : curvesConfigurations) {

@@ -118,7 +118,7 @@ import com.jogamp.newt.event.MouseListener;
 import com.jogamp.newt.swt.NewtCanvasSWT;
 
 import fr.univamu.ism.docometre.Activator;
-import fr.univamu.ism.docometre.ColorUtil;
+import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.GetResourceLabelDelegate;
 import fr.univamu.ism.docometre.ObjectsController;
@@ -709,7 +709,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 		ArrayList<String> categories = new ArrayList<>();
 		for (String seriesID : seriesIDs) {
 			LineStrip lineStrip = getLineStripFromID(seriesID);
-			org.eclipse.swt.graphics.Color color  = ColorUtil.getColor((byte) 0);
+			org.eclipse.swt.graphics.Color color  = DocometreApplication.getColor((byte) 0);
 			if(sameColor) {
 				try {
 					int seriesIDTrial = Integer.parseInt(seriesID.split("\\.")[seriesID.split("\\.").length - 1]); 
@@ -720,7 +720,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 					Channel channel = channelsContainer.getChannelFromName(fullYChannelName);
 					String category = mathEngine.getCategoryForTrialNumber(channel, seriesIDTrial);
 					if(categories.indexOf(category) == -1) categories.add(category);
-					color = ColorUtil.getColor((byte) categories.indexOf(category));
+					color = DocometreApplication.getColor((byte) categories.indexOf(category));
 					lineStrip.setWireframeColor(new Color(color.getRed(), color.getGreen(), color.getBlue()));
 				} catch (CoreException e) {
 					Activator.logErrorMessageWithCause(e);
@@ -730,7 +730,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 				String[] trialNumberString = seriesID.split("\\.");
 				int trialNumber = Integer.parseInt(trialNumberString[trialNumberString.length - 1]);
 				int index = trialsListViewer.getStructuredSelection().toList().indexOf(trialNumber);
-				color  = ColorUtil.getColor((byte)index);
+				color  = DocometreApplication.getColor((byte)index);
 				lineStrip.setWireframeColor(new Color(color.getRed(), color.getGreen(), color.getBlue()));
 			}
 			Drawable[] drawables = lineStrip.getMarkersAndLabels();

@@ -68,7 +68,7 @@ import org.eclipse.swtchart.ILineSeries.PlotSymbolType;
 import org.eclipse.swtchart.ISeries.SeriesType;
 import org.eclipse.swtchart.extensions.charts.InteractiveChart;
 
-import fr.univamu.ism.docometre.ColorUtil;
+import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
@@ -248,7 +248,7 @@ public class CategoryContainerEditor extends Composite implements ISelectionChan
 		ISeries[] series = chart.getSeriesSet().getSeries();
 		for (ISeries iSeries : series) {
 			Byte index = getSeriesIndex((ILineSeries) iSeries);
-			((ILineSeries) iSeries).setLineColor(ColorUtil.getColor(index));
+			((ILineSeries) iSeries).setLineColor(DocometreApplication.getColor(index));
 		}
 		
 	}

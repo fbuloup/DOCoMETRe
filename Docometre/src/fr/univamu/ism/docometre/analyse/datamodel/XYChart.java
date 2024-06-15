@@ -58,7 +58,7 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swtchart.LineStyle;
 
 import fr.univamu.ism.docometre.Activator;
-import fr.univamu.ism.docometre.ColorUtil;
+import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
@@ -339,7 +339,7 @@ public class XYChart extends AbstractElement {
 	
 	public Color getBackGroundColor() {
 		if(backGroundRGBColor == null) backGroundRGBColor = new RGB(0, 0, 0);
-		return ColorUtil.getColor(backGroundRGBColor);
+		return DocometreApplication.getColor(backGroundRGBColor);
 	}
 
 	public void setPlotAreaBackGroundColor(Color backgroundInPlotArea) {
@@ -348,7 +348,7 @@ public class XYChart extends AbstractElement {
 	
 	public Color getPlotAreaBackGroundColor() {
 		if(plotAreaBackGroundRGBColor == null) plotAreaBackGroundRGBColor = new RGB(0, 0, 0);
-		return ColorUtil.getColor(plotAreaBackGroundRGBColor);
+		return DocometreApplication.getColor(plotAreaBackGroundRGBColor);
 	}
 	
 	public void setLegendBackGroundColor(Color color) {
@@ -357,7 +357,7 @@ public class XYChart extends AbstractElement {
 	
 	public Color getLegendBackGroundColor() {
 		if(legendBackGroundRGBColor == null) legendBackGroundRGBColor = new RGB(0, 0, 0);
-		return ColorUtil.getColor(legendBackGroundRGBColor);
+		return DocometreApplication.getColor(legendBackGroundRGBColor);
 	}
 	
 	public void setLegendForeGroundColor(Color color) {
@@ -366,7 +366,7 @@ public class XYChart extends AbstractElement {
 	
 	public Color getLegendForeGroundColor() {
 		if(legendForeGroundRGBColor == null) legendForeGroundRGBColor = new RGB(255, 255, 255);
-		return ColorUtil.getColor(legendForeGroundRGBColor);
+		return DocometreApplication.getColor(legendForeGroundRGBColor);
 	}
 	
 	public boolean isLegendVisible() {
@@ -383,7 +383,7 @@ public class XYChart extends AbstractElement {
 	
 	public Color getXAxisForeGroundColor() {
 		if(xAxisColor == null) xAxisColor = new RGB(255, 255, 255);
-		return ColorUtil.getColor(xAxisColor);
+		return DocometreApplication.getColor(xAxisColor);
 	}
 	
 	public void setYAxisForeGroundColor(Color color) {
@@ -392,7 +392,7 @@ public class XYChart extends AbstractElement {
 	
 	public Color getYAxisForeGroundColor() {
 		if(yAxisColor == null) yAxisColor = new RGB(255, 255, 255);
-		return ColorUtil.getColor(yAxisColor);
+		return DocometreApplication.getColor(yAxisColor);
 	}
 	
 	public void setXAxisVisibility(boolean visible) {
@@ -421,7 +421,7 @@ public class XYChart extends AbstractElement {
 
 	public Color getXAxisGridColor() {
 		if(xAxisGridColor == null) xAxisGridColor = new RGB(255, 255, 255);
-		return ColorUtil.getColor(xAxisGridColor);
+		return DocometreApplication.getColor(xAxisGridColor);
 	}
 
 	public void setXAxisGridColor(Color color) {
@@ -438,7 +438,7 @@ public class XYChart extends AbstractElement {
 
 	public Color getYAxisGridColor() {
 		if(yAxisGridColor == null) yAxisGridColor = new RGB(255, 255, 255);
-		return ColorUtil.getColor(yAxisGridColor);
+		return DocometreApplication.getColor(yAxisGridColor);
 	}
 
 	public void setYAxisGridColor(Color color) {
