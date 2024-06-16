@@ -495,6 +495,7 @@ public class ArduinoUnoProcess extends Process {
 			
 			double gf = Double.parseDouble(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY));
 			int value = (int)(displayTimeRate*gf);
+			if(value == 0) value = 1;
 			code = code + "\t\tsendTimeWorkload = " + value + ";\n";
 			code = code + "\t\ttime = 0;\n";
 			if(((ArduinoUnoDACQConfiguration)getDACQConfiguration()).hasADS1115Module()) {
@@ -574,6 +575,7 @@ public class ArduinoUnoProcess extends Process {
 			
 			double gf = Double.parseDouble(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY));
 			int value = (int)(displayTimeRate*gf);
+			if(value == 0) value = 1;
 			
 			code = code + "\t\tif(sendTimeWorkload == " + value + ") {\n";
 			int prescaler = computeCounter0Prescaler(gf);
