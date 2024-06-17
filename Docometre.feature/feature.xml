@@ -6,7 +6,18 @@
       provider-name="ISM">
 
    <description>
-      -- 2024-06-09 
+      -- 2024-06-17
+ADDED :
+* NRTSWTChart : use pure SWT charts (time and XY charts) for real time display  (no more OpenGL or JChart2D)
+* Arduino Uno : Changes to handle sample frequencies less than 10Hz
+* NRTSWTXYChart : Series Thickness - Show current values - Draw lines algorithm
+* Real time Meter charts : add fill color
+* Improve global color management (Use exclusively JFace color registry)
+FIXED : 
+* NRTSWTChart - RTSWTXYSerie -  getPointsArrayToDraw() : i must not go up to currentIndex
+* NRTSWTChart - Plotline : x0, y0, x1 and y1 must not be negative and smaller than image dimension
+* NRTSWTChart : force popup menu to be hidden before continuing in dispose event
+-- 2024-06-09 
 ADDED :
 * JChart2D library
 FIXED : 
