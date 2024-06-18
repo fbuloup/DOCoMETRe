@@ -23,9 +23,9 @@
 
 	<repositories>
 		<repository>
-			<id>2023_06</id>
+			<id>2024_06</id>
 			<layout>p2</layout>
-			<url>https://download.eclipse.org/releases/2023-06/</url>
+			<url>https://download.eclipse.org/releases/2024-06/</url>
 		</repository>
 		<repository>
 			<id>GEF Legacy</id>
@@ -132,7 +132,7 @@
 		<module>../org.eclipse.swt.translations</module>
 		<module>../org.eclipse.swtchart</module>
 		<module>../org.eclipse.swtchart.extensions</module>
-		<module>../org.eclipse.ui.cheatsheets</module>
+		
 		<module>../org.eclipse.ui.cheatsheets.translations</module>
 		<module>../org.eclipse.ui.intro.translations</module>
 		<module>../org.eclipse.ui.intro.universal.translations</module>

@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<component name="org.eclipse.ui.cheatsheets_3.5.400.v20190218-1039" version="1.2">
-    <plugin id="org.eclipse.ui.cheatsheets_3.5.400.v20190218-1039"/>
-    <package name="org.eclipse.ui.cheatsheets" visibility="1">
-        <type name="ICheatSheetEvent" restrictions="3"/>
-        <type name="ICheatSheetManager" restrictions="3"/>
-        <type name="ICheatSheetViewer" restrictions="3"/>
-    </package>
-</component>
