@@ -740,6 +740,7 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
             zis.closeEntry();
             zis.close();
             fis.close();
+            zipFile.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
