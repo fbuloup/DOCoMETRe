@@ -413,7 +413,6 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 			}
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	protected void createActions() {
 		super.createActions();
