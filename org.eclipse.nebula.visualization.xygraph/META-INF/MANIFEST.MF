@@ -12,7 +12,7 @@ Bundle-Version: 1.0.0.qualifier
 Require-Bundle: org.eclipse.swt,org.eclipse.draw2d,org.eclipse.jface,o
  rg.eclipse.core.runtime
 Bundle-ManifestVersion: 2
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Eclipse-SourceReferences: scm:git:https://git.eclipse.org/r/p/nebula/o
  rg.eclipse.nebula;path="widgets/visualization/org.eclipse.nebula.visu
  alization.xygraph";commitId=257222bde16642b7668c465209a55fbf2629dc1a

@@ -141,7 +141,7 @@ public class FunctionsMessages extends NLS {
 		// load message values from bundle file
 		String bn = BUNDLE_NAME;
 		Locale locale = Locale.getDefault();
-		if (locale.getLanguage().equals(new Locale("fr").getLanguage())) bn = BUNDLE_NAME + "_fr";
+		if (locale.getLanguage().equals(Locale.of("fr").getLanguage())) bn = BUNDLE_NAME + "_fr";
 		NLS.initializeMessages(bn, FunctionsMessages.class);
 	}
 

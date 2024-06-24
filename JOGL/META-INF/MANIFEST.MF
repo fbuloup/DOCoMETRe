@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: JOGL
 Bundle-SymbolicName: JOGL; singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Comment: Eclipse-BundleShape: dir
 Bundle-ClassPath: jogampall/gluegen-rt.jar,
  jogampall/gluegen-rt-natives-linux-amd64.jar,

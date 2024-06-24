@@ -339,14 +339,14 @@ public abstract class AbstractLinkedList<E> implements List<E> {
         return node.getValue();
     }
 
-    public boolean addFirst(final E o) {
+    public void addFirst(final E o) {
         addNodeAfter(header, o);
-        return true;
+//        return true;
     }
 
-    public boolean addLast(final E o) {
+    public void addLast(final E o) {
         addNodeBefore(header, o);
-        return true;
+//        return true;
     }
 
     public E removeFirst() {

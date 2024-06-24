@@ -170,7 +170,9 @@ public class DocometreApplication implements IApplication {
 		
 		Location instanceLocation = Platform.getInstanceLocation();
 		instanceLocation.release();
-		instanceLocation.set(new URL("file://" + workspace), true);
+		File workspaceFile = new File(workspace);
+		URL workspaceURL = workspaceFile.toURI().toURL();
+		instanceLocation.set(workspaceURL, true);
 		Activator.logInfoMessage(DocometreMessages.CurrentWorkspace + workspace, DocometreApplication.class);
 		
 		try {

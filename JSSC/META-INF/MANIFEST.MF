@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: JSSC
 Bundle-SymbolicName: JSSC;singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Comment: Eclipse-BundleShape: dir
 Export-Package: jssc,
  natives.linux_32,

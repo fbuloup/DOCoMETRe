@@ -70,7 +70,7 @@ public class PythonProxyHandler implements InvocationHandler {
 		this.finalizeCommand = GARBAGE_COLLECT_PROXY_COMMAND_NAME + id + "\ne\n";
 	}
 
-	@SuppressWarnings("deprecation")
+//	@SuppressWarnings("deprecation")
 	@Override
 	protected void finalize() throws Throwable {
 		try {
@@ -80,9 +80,9 @@ public class PythonProxyHandler implements InvocationHandler {
 			}
 		} catch (Exception e) {
 			logger.warning("Python Proxy ID could not send a finalize message: " + this.id);
-		} finally {
-			super.finalize();
-		}
+		} //finally {
+//			super.finalize();
+//		}
 	}
 
 	@Override

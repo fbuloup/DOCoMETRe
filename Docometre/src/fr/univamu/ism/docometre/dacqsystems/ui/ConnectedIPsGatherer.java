@@ -99,7 +99,7 @@ public class ConnectedIPsGatherer {
 		public void run() {
 			try {
 				if(cmdLine != null) {
-					java.lang.Process process = Runtime.getRuntime().exec(cmdLine);
+					java.lang.Process process = Runtime.getRuntime().exec(new String[] {cmdLine});
 					process.waitFor(2*timeOut, TimeUnit.MILLISECONDS);
 					String line;
 					BufferedReader out = new BufferedReader(new InputStreamReader(process.getInputStream()));

@@ -7,5 +7,5 @@ Bundle-ClassPath: jmatio-1.0.jar
 Export-Package: com.jmatio.common,
  com.jmatio.io,
  com.jmatio.types
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: JMatIO
