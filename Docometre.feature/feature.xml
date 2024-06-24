@@ -6,17 +6,31 @@
       provider-name="ISM">
 
    <description>
-      -- 2024-06-17
+      -- 2024-06-24
 ADDED :
-* NRTSWTChart : use pure SWT charts (time and XY charts) for real time display  (no more OpenGL or JChart2D)
-* Arduino Uno : Changes to handle sample frequencies less than 10Hz
-* NRTSWTXYChart : Series Thickness - Show current values - Draw lines algorithm
+* Update to JavaSE21, Tycho 4.0.8 and Eclipse 2024-06
+FIXED :
+* EXPORT Features and Markers : &quot;SyntaxError: (unicode error)
+&apos;unicodeescape&apos; codec can&apos;t decode bytes...&quot; (Python)
+* Resource leak: &apos;zipFile&apos; is never closed (Import Resource)
+-- 2024-06-17
+ADDED :
+* NRTSWTChart : use pure SWT charts (time and XY charts) for
+real time display  (no more OpenGL or JChart2D)
+* Arduino Uno : Changes to handle sample frequencies less than
+10Hz
+* NRTSWTXYChart : Series Thickness - Show current values - Draw
+lines algorithm
 * Real time Meter charts : add fill color
-* Improve global color management (Use exclusively JFace color registry)
+* Improve global color management (Use exclusively JFace color
+registry)
 FIXED : 
-* NRTSWTChart - RTSWTXYSerie -  getPointsArrayToDraw() : i must not go up to currentIndex
-* NRTSWTChart - Plotline : x0, y0, x1 and y1 must not be negative and smaller than image dimension
-* NRTSWTChart : force popup menu to be hidden before continuing in dispose event
+* NRTSWTChart - RTSWTXYSerie -  getPointsArrayToDraw() : i must
+not go up to currentIndex
+* NRTSWTChart - Plotline : x0, y0, x1 and y1 must not be negative
+and smaller than image dimension
+* NRTSWTChart : force popup menu to be hidden before continuing
+in dispose event
 -- 2024-06-09 
 ADDED :
 * JChart2D library
@@ -1971,438 +1985,250 @@ jurisdiction, by the more diligent Party.
 
    <plugin
          id="Docometre"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.equinox.concurrent"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.equinox.p2.ui.importexport"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.ui.forms"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="DocometreHelp"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.ui.cheatsheets"
-         download-size="0"
-         install-size="0"
          version="0.0.0"/>
 
    <plugin
          id="org.eclipse.ui.intro"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.ui.intro.universal"
-         download-size="0"
-         install-size="0"
          version="0.0.0"/>
 
    <plugin
          id="org.eclipse.jface.text"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.text"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="ADWin"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="Log4J"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.ui.views"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="Process"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="JOGL"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.core.expressions"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.jface.translations"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.swt.translations"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.ui.workbench.translations"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.e4.ui.workbench.renderers.swt.translations"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.equinox.p2.ui.sdk.translations"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.equinox.p2.ui.translations"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.equinox.p2.ui.sdk.scheduler.translations"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.ui.cheatsheets.translations"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.ui.intro.translations"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.ui.intro.universal.translations"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.help.webapp.translations"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.help.base.translations"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.help.ui.translations"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.equinox.p2.operations.translations"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.core.resources"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.core.filesystem"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.ui.intro.quicklinks"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.gef.translations"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="JSSC"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.equinox.event"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.swtchart"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.swtchart.extensions"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="MatlabController"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="MatlabEngine"
-         download-size="0"
-         install-size="0"
          version="0.0.0"/>
 
    <plugin
          id="py4j-java"
-         download-size="0"
-         install-size="0"
          version="0.0.0"/>
 
    <plugin
          id="PythonController"
-         download-size="0"
-         install-size="0"
          version="0.0.0"/>
 
    <plugin
          id="org.eclipse.ui.themes"
-         download-size="0"
-         install-size="0"
          version="0.0.0"/>
 
    <plugin
          id="org.eclipse.e4.ui.css.swt.theme"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.nebula.visualization.widgets"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.nebula.visualization.xygraph"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="JMatIO"
-         download-size="0"
-         install-size="0"
          version="0.0.0"/>
 
    <plugin
          id="MigLayoutSwing"
-         download-size="0"
-         install-size="0"
          version="0.0.0"/>
 
    <plugin
          id="OpenCSV"
-         download-size="0"
-         install-size="0"
          version="0.0.0"/>
 
    <plugin
          id="PLY"
-         download-size="0"
-         install-size="0"
          version="0.0.0"/>
 
    <plugin
          id="JZY3D"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.swt.tools"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.swt.tools.base"
-         download-size="0"
-         install-size="0"
          version="0.0.0"/>
 
    <plugin
          id="org.eclipse.swt.tools.spies"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="com.google.guava"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="jakarta.servlet-api"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="Libraries"
-         download-size="0"
-         install-size="0"
          version="0.0.0"/>
 
    <plugin
          id="org.eclipse.gef"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.draw2d"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.swt"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.jface"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="NRTSWTChart"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
 </feature>
