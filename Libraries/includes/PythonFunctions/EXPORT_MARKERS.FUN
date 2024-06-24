@@ -7,7 +7,7 @@ DESCRIPTION_FR = Exporte les marqueurs sélectionnés dans un fichier texte type
 FUNCTION_CODE = # Add categories infos to files (delete files if exist)\n\
 import os;\n\
 import numpy;\n\
-with open('fullPathFileName', 'w', encoding='utf-8') as dataFile:\n\
+with open(r"fullPathFileName", 'w', encoding='utf-8') as dataFile:\n\
 	\tnumCategory = 1;\n\
 	\twhile 'fullSubjectName' + '.Category' + str(numCategory) + '.Criteria' in docometre.experiments.keys():\n\
 		\t\tcriteria = docometre.experiments['fullSubjectName' + '.Category' + str(numCategory) + '.Criteria'];\n\
@@ -27,7 +27,7 @@ for numMarker in range(0, nbMarkersToExport):\n\
 	\tfullMarkerName = markersToExport[numMarker];\n\
     \tfullMarkerNameSplitted = fullMarkerName.split('_');\n\
     \tmarkerLabel = fullMarkerNameSplitted[len(fullMarkerNameSplitted) - 1];\n\
-    \twith open('fullPathFileName', 'a', encoding='utf-8') as dataFile:\n\
+    \twith open(r"fullPathFileName", 'a', encoding='utf-8') as dataFile:\n\
 		\t\tdataFile.write('MarkerLabel' + 'divider' + markerLabel);\n\
 		\t\tdataFile.write('\\n');\n\
 		\t\tnumpy.savetxt(dataFile, docometre.experiments[fullMarkerName + '_Values'], delimiter='divider');
