@@ -73,7 +73,7 @@ public class ParametersDialog extends TitleAreaDialog {
 		private class Validator implements ICellEditorValidator {
 			private String regExp;
 			public Validator() {
-				this.regExp = "(^[+-]?\\d*\\.?\\d*[1-9]+\\d*([eE][-+]?[0-9]+)?$)|(^[+-]?[1-9]+\\d*\\.\\d*([eE][-+]?[0-9]+)?$)";
+				this.regExp = "(^[+-]?\\d*\\.?\\d*[1-9]+\\d*([eE][-+]?[0-9]+)?$)|(^[+-]?[1-9]+\\d*\\.\\d*([eE][-+]?[0-9]+)?|0$)";
 			}
 			public String isValid(Object value) {
 				ColumnViewer viewer = getViewer();
