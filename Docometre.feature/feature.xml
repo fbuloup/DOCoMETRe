@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2024-06-24
+      -- 2024-06-26
+ADDED : Nothing
+FIXED : 
+* &quot;0&quot; was not allowed by regexp (Adwin parameter Dialog)
+-- 2024-06-24
 ADDED :
 * Update to JavaSE21, Tycho 4.0.8 and Eclipse 2024-06
 FIXED :
