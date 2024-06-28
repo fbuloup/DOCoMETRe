@@ -1166,7 +1166,7 @@ public class ArduinoUnoProcess extends Process {
 		fileWriter.write(cmd);
 		fileWriter.close();
 		// This bash file must be executable 
-		java.lang.Process process = Runtime.getRuntime().exec(new String[]{"chmod 777 " + bashFilePath});
+		java.lang.Process process = Runtime.getRuntime().exec(new String[]{"chmod", "777", bashFilePath});
 		process.waitFor();
 		return /*"/bin/sh " +*/ bashFilePath;
 	}
