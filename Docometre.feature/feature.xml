@@ -2235,4 +2235,16 @@ jurisdiction, by the more diligent Party.
          id="NRTSWTChart"
          version="0.0.0"/>
 
+   <plugin
+         id="org.eclipse.ui.console"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.eclipse.ui.console.translation"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.eclipse.ui.workbench.texteditor.translation"
+         version="0.0.0"/>
+
 </feature>
