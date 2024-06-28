@@ -6,7 +6,12 @@
       provider-name="ISM">
 
    <description>
-      -- 2024-06-26
+      -- 2024-06-28
+ADDED :
+* Eclipse standard console
+FIXED :
+* Arduino Uno compiler : &apos;chmod&apos; error
+-- 2024-06-26
 ADDED : Nothing
 FIXED : 
 * &quot;0&quot; was not allowed by regexp (Adwin parameter Dialog)
