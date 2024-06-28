@@ -15,6 +15,7 @@ public class DocometreConsole extends MessageConsole implements ILogListener {
 	
 	private static Color WARNING_COLOR = JFaceResources.getResources().createColor(new RGB(204,102,0));
 	private static Color ERROR_COLOR = JFaceResources.getResources().createColor(new RGB(250, 0, 0));
+	private static Color ERROR_COLOR_DARK = JFaceResources.getResources().createColor(new RGB(225, 69, 69));
 	private static Color INFO_COLOR_DARK = JFaceResources.getResources().createColor(new RGB(255, 255, 255));
 	private static Color INFO_COLOR = JFaceResources.getResources().createColor(new RGB(0, 0, 0));
 	private static String infoColorCodeConsole;
@@ -27,7 +28,7 @@ public class DocometreConsole extends MessageConsole implements ILogListener {
 		if(Display.isSystemDarkTheme()) {
 			infoColorCodeConsole = "\u001b[38;2;" + INFO_COLOR_DARK.getRed() + ";" + INFO_COLOR_DARK.getGreen() + ";" + INFO_COLOR_DARK.getBlue() + "m";
 			warninColorCodeConsole = "\u001b[38;2;" + WARNING_COLOR.getRed() + ";" + WARNING_COLOR.getGreen() + ";" + WARNING_COLOR.getBlue() + "m";
-			errorColorCodeConsole = "\u001b[38;2;" + ERROR_COLOR.getRed() + ";" + ERROR_COLOR.getGreen() + ";" + ERROR_COLOR.getBlue() + "m";
+			errorColorCodeConsole = "\u001b[38;2;" + ERROR_COLOR_DARK.getRed() + ";" + ERROR_COLOR.getGreen() + ";" + ERROR_COLOR.getBlue() + "m";
 		} else {
 			infoColorCodeConsole = "\u001b[38;2;" + INFO_COLOR.getRed() + ";" + INFO_COLOR.getGreen() + ";" + INFO_COLOR.getBlue() + "m";
 			warninColorCodeConsole = "\u001b[38;2;" + WARNING_COLOR.getRed() + ";" + WARNING_COLOR.getGreen() + ";" + WARNING_COLOR.getBlue() + "m";
@@ -37,7 +38,7 @@ public class DocometreConsole extends MessageConsole implements ILogListener {
 
 	@Override
 	public void logging(IStatus status, String plugin) {
-		
+
 		String message = status.getPlugin() + " : " + status.getMessage();
 		
 		if(status.getSeverity() == IStatus.INFO) {
@@ -50,6 +51,12 @@ public class DocometreConsole extends MessageConsole implements ILogListener {
 			Activator.getMessageConsole().newMessageStream().println(errorColorCodeConsole + message);
 		}
 		
+	}
+	
+	@Override
+	protected void dispose() {
+		Activator.getDefault().getLog().removeLogListener(this);
+		super.dispose();
 	}
 
 }
