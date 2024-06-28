@@ -139,5 +139,14 @@
 		<module>../org.eclipse.ui.workbench.translations</module>
 		<module>../py4j-java</module>
 		<module>../NRTSWTChart</module>
+		
+		
+		
+		
+		<module>../org.eclipse.ui.console.translation</module>
+		
+		<module>
+			../org.eclipse.ui.workbench.texteditor.translation
+		</module>
 	</modules>
 </project>
