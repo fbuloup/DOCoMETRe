@@ -16,7 +16,7 @@ public class DocometreConsole extends MessageConsole implements ILogListener {
 	private static Color WARNING_COLOR = JFaceResources.getResources().createColor(new RGB(204,102,0));
 	private static Color ERROR_COLOR = JFaceResources.getResources().createColor(new RGB(250, 0, 0));
 	private static Color INFO_COLOR_DARK = JFaceResources.getResources().createColor(new RGB(255, 255, 255));
-	private static Color INFO_COLOR = JFaceResources.getResources().createColor(new RGB(250, 0, 0));
+	private static Color INFO_COLOR = JFaceResources.getResources().createColor(new RGB(0, 0, 0));
 	private static String infoColorCodeConsole;
 	private static String warninColorCodeConsole;
 	private static String errorColorCodeConsole;
