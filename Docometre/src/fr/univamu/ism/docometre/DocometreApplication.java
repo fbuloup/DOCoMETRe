@@ -43,7 +43,6 @@ package fr.univamu.ism.docometre;
 
 import java.io.File;
 import java.net.URL;
-import java.util.Locale;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
@@ -80,6 +79,8 @@ public class DocometreApplication implements IApplication {
 	public static String ORANGE = "ORANGE";
 	public static String MAROON = "MAROON";
 	
+	public static String WORKSPACE_PATH;
+	
 	private static RGB[] rgbs = new RGB[] { 
 			new RGB(0xFF, 0x00, 0x00),
 			new RGB(0x00, 0xFF, 0x00),
@@ -107,10 +108,7 @@ public class DocometreApplication implements IApplication {
 	 * IApplicationContext)
 	 */
 	public Object start(IApplicationContext context) throws Exception {
-		Activator.logInfoMessage("Locale : " + Locale.getDefault(),  getClass());
-		Activator.logInfoMessage(DocometreMessages.RuntimeFolder + System.getProperty("user.dir"), getClass());
 		Display display = PlatformUI.createDisplay();
-		
 		
 		JFaceResources.getFontRegistry().put(COURIER_NEW, new FontData[]{ new FontData("Courier New", 12, SWT.NORMAL)});
 		JFaceResources.getFontRegistry().put(COURIER_NEW_BOLD, new FontData[]{ new FontData("Courier New", 12, SWT.BOLD)});
@@ -173,8 +171,7 @@ public class DocometreApplication implements IApplication {
 		File workspaceFile = new File(workspace);
 		URL workspaceURL = workspaceFile.toURI().toURL();
 		instanceLocation.set(workspaceURL, true);
-		Activator.logInfoMessage(DocometreMessages.CurrentWorkspace + workspace, DocometreApplication.class);
-		
+		WORKSPACE_PATH = workspace;
 		try {
 			int returnCode = PlatformUI.createAndRunWorkbench(display, new ApplicationWorkbenchAdvisor());
 			Activator.logInfoMessage("createAndRunWorkbench return code : " + returnCode, getClass());

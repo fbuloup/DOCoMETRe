@@ -42,6 +42,7 @@
 package fr.univamu.ism.docometre;
 
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -64,12 +65,17 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.console.ConsolePlugin;
+import org.eclipse.ui.console.IConsole;
+import org.eclipse.ui.console.IConsoleConstants;
+import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Version;
 
 import fr.univamu.ism.docometre.analyse.editors.DataProcessEditor;
+import fr.univamu.ism.docometre.consoles.DocometreConsole;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor.ADWinProcessEditor;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.processeditor.ArduinoUnoProcessEditor;
 import fr.univamu.ism.docometre.editors.DataEditor;
@@ -109,6 +115,8 @@ public class Activator extends AbstractUIPlugin {
 	//public static String NI_600X_SYSTEM = "NI 600X";
 	public static final String ARDUINO_UNO_SYSTEM = "Arduino UNO";
 	public static final String[] SYSTEMS = new String[]{ADWIN_SYSTEM, ARDUINO_UNO_SYSTEM/*, NI_600X_SYSTEM*/};
+	
+	private static MessageConsole messageConsole; 
 	
 	/*
 	 * The constructor
@@ -377,6 +385,18 @@ public class Activator extends AbstractUIPlugin {
 		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell().getDisplay().beep();
 		logErrorMessageWithCause(e);
 		e.printStackTrace();
+	}
+	
+	public static MessageConsole getMessageConsole() {
+		createMessageConsole();
+		return messageConsole;
+	}
+	
+	public static void createMessageConsole() {
+		if (messageConsole == null)  {
+			messageConsole = new DocometreConsole("Messages", IConsoleConstants.MESSAGE_CONSOLE_TYPE, null, StandardCharsets.UTF_16.name(), true);
+			ConsolePlugin.getDefault().getConsoleManager().addConsoles(new IConsole[] { messageConsole });
+		}
 	}
 	
 

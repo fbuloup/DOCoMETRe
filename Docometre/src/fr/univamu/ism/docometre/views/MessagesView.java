@@ -182,11 +182,12 @@ public class MessagesView extends ViewPart implements ILogListener, IDocumentLis
 	
 	private void putMessage(IStatus status) {
 		String message = status.getPlugin() + " : " + status.getMessage();
+		
 		int start = messagesViewer.getTextWidget().getCharCount();
-		if(start > 0) {
-			message = "\n" + message;
-		}
-		messagesViewer.getTextWidget().append(message);
+//		if(start > 0) {
+//			message = "\n" + message;
+//		}
+		messagesViewer.getTextWidget().append(message + "\n");
 		
 		StyleRange styleRange = new StyleRange();
 		styleRange.start = start;
@@ -196,11 +197,13 @@ public class MessagesView extends ViewPart implements ILogListener, IDocumentLis
 		if(status.getSeverity() == IStatus.INFO) styleRange.fontStyle = SWT.NORMAL;
 //			if(status.getSeverity() == IStatus.WARNING) styleRange.fontStyle = SWT.BOLD;
 //			if(status.getSeverity() == IStatus.ERROR) styleRange.fontStyle = SWT.BOLD;
-		if(status.getSeverity() == IStatus.INFO) styleRange.foreground = ThemeColors.getForegroundColor();
+		if(status.getSeverity() == IStatus.INFO) styleRange.foreground = messagesViewer.getTextWidget().getForeground();
 		if(status.getSeverity() == IStatus.WARNING) styleRange.foreground = WARNING_COLOR;
 		if(status.getSeverity() == IStatus.ERROR) styleRange.foreground = ERROR_COLOR;
 		
 		messagesViewer.getTextWidget().setStyleRange(styleRange);
+		
+		
 	}
 
 }
