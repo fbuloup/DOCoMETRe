@@ -57,6 +57,7 @@ import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 
+import fr.univamu.ism.docometre.consoles.DocometreConsole;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
@@ -77,7 +78,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
         configurer.setShowStatusLine(true);
         configurer.setShowProgressIndicator(true);
         configurer.setShowPerspectiveBar(true);
-        Activator.createMessageConsole();
+        DocometreConsole.createInstance();
 		Activator.logInfoMessage(DocometreMessages.CurrentWorkspace + DocometreApplication.WORKSPACE_PATH, DocometreApplication.class);
         Activator.logInfoMessage("Locale : " + Locale.getDefault(),  getClass());
 		Activator.logInfoMessage(DocometreMessages.RuntimeFolder + System.getProperty("user.dir"), getClass());

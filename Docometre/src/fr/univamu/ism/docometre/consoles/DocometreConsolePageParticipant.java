@@ -12,14 +12,12 @@ import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleConstants;
 import org.eclipse.ui.console.IConsolePageParticipant;
 import org.eclipse.ui.internal.console.ConsoleMessages;
-import org.eclipse.ui.internal.console.OpenConsoleAction;
-import org.eclipse.ui.internal.console.PinConsoleAction;
 import org.eclipse.ui.part.IPageBookViewPage;
 import org.eclipse.ui.part.IPageSite;
 
 import fr.univamu.ism.docometre.Activator;
 
-@SuppressWarnings({ "restriction", "unused" })
+@SuppressWarnings({ "restriction" })
 public class DocometreConsolePageParticipant implements IConsolePageParticipant {
 	
 	@Override
@@ -46,19 +44,17 @@ public class DocometreConsolePageParticipant implements IConsolePageParticipant 
 			if(ConsoleMessages.ConsoleDropDownAction_1.equals(currentAction.getToolTipText())) toolBarManager.remove(contributionItems[i]);
 		}
 		actionBars.updateActionBars();
+		Activator.getDefault().getLog().addLogListener(DocometreConsole.getInstance());
 	}
 
 	@Override
 	public void dispose() {
-		// TODO Auto-generated method stub
-		
-
+		Activator.getDefault().getLog().removeLogListener(DocometreConsole.getInstance());
 	}
 
 	@Override
 	public void activated() {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
