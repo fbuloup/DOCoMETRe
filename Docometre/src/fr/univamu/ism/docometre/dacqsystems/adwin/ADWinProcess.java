@@ -323,7 +323,7 @@ public class ADWinProcess extends Process {
 		if(Platform.getOS().equals(Platform.OS_MACOSX)) cmdLine = createOSXCompileProcess(currentFolder, outputFolderCmdLine, adbasicCompiler, adbasicFilePath);
 		progressMonitor.worked(1);
 		
-		java.lang.Process process = Runtime.getRuntime().exec(new String[] {cmdLine});
+		java.lang.Process process = Runtime.getRuntime().exec(cmdLine.split(" "));
 		
 		String line;
 //			BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream()));
@@ -584,7 +584,7 @@ public class ADWinProcess extends Process {
 		}
 		
 		// This bash file must be executable 
-		java.lang.Process process = Runtime.getRuntime().exec(new String[] {"chmod 777 " + bashFilePath});
+		java.lang.Process process = Runtime.getRuntime().exec(new String[] {"chmod", "777", bashFilePath});
 		process.waitFor();
 		return "/bin/sh " + bashFilePath;
 	}
