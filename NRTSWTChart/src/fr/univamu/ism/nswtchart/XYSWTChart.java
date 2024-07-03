@@ -1,0 +1,618 @@
+/*******************************************************************************
+ * Copyright or © or Copr. Institut des Sciences du Mouvement 
+ * (CNRS & Aix Marseille Université)
+ * 
+ * The DOCoMETER Software must be used with a real time data acquisition 
+ * system marketed by ADwin (ADwin Pro and Gold, I and II) or an Arduino 
+ * Uno. This software, created within the Institute of Movement Sciences, 
+ * has been developed to facilitate their use by a "neophyte" public in the 
+ * fields of industrial computing and electronics.  Students, researchers or 
+ * engineers can configure this acquisition system in the best possible 
+ * conditions so that it best meets their experimental needs. 
+ * 
+ * This software is governed by the CeCILL-B license under French law and
+ * abiding by the rules of distribution of free software.  You can  use, 
+ * modify and/ or redistribute the software under the terms of the CeCILL-B
+ * license as circulated by CEA, CNRS and INRIA at the following URL
+ * "http://www.cecill.info". 
+ * 
+ * As a counterpart to the access to the source code and  rights to copy,
+ * modify and redistribute granted by the license, users are provided only
+ * with a limited warranty  and the software's author,  the holder of the
+ * economic rights,  and the successive licensors  have only  limited
+ * liability. 
+ * 
+ * In this respect, the user's attention is drawn to the risks associated
+ * with loading,  using,  modifying and/or developing or reproducing the
+ * software by the user in light of its specific status of free software,
+ * that may mean  that it is complicated to manipulate,  and  that  also
+ * therefore means  that it is reserved for developers  and  experienced
+ * professionals having in-depth computer knowledge. Users are therefore
+ * encouraged to load and test the software's suitability as regards their
+ * requirements in conditions enabling the security of their systems and/or 
+ * data to be ensured and,  more generally, to use and operate it in the 
+ * same conditions as regards security. 
+ * 
+ * The fact that you are presently reading this means that you have had
+ * knowledge of the CeCILL-B license and that you accept its terms.
+ * 
+ * Contributors:
+ *  - Frank Buloup - frank.buloup@univ-amu.fr - initial API and implementation [01/06/2024]
+ ******************************************************************************/
+package fr.univamu.ism.nswtchart;
+
+import java.awt.geom.Point2D;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+
+import org.eclipse.jface.resource.FontDescriptor;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.MenuAdapter;
+import org.eclipse.swt.events.MenuEvent;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.MouseMoveListener;
+import org.eclipse.swt.events.MouseWheelListener;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Cursor;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.widgets.Canvas;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+
+import fr.univamu.ism.nrtswtchart.RTSWTChartMessages;
+
+public class XYSWTChart extends Canvas implements PaintListener, MouseListener, MouseMoveListener, KeyListener, MouseWheelListener {
+	
+	private final class MenuListenerHandler extends MenuAdapter {
+		public void menuShown(MenuEvent e) {
+			showLegendMenuItem.setSelection(showLegend);
+			legendPositionsBottomMenuItem.setSelection(legendPosition == SWT.BOTTOM);
+			legendPositionsTopMenuItem.setSelection(legendPosition == SWT.TOP);
+			showGridMenu.setSelection(showGrid);
+		}
+	}
+
+	private final class LegendPositionHandler extends SelectionAdapter {
+		public void widgetSelected(SelectionEvent e) {
+			if (((MenuItem) e.widget) == legendPositionsBottomMenuItem &&  legendPosition == SWT.TOP) legendPosition = SWT.BOTTOM;
+			if (((MenuItem) e.widget) == legendPositionsTopMenuItem &&  legendPosition == SWT.BOTTOM) legendPosition = SWT.TOP;
+			showLegend = true;
+			redraw();
+			update();
+		}
+	}
+
+	private final class ShowLegendHandler extends SelectionAdapter {
+		public void widgetSelected(SelectionEvent e) {
+			showLegend = ((MenuItem) e.widget).getSelection();
+			redraw();
+			update();
+		}
+	}
+
+	private final class ResetScaleHandler extends SelectionAdapter {
+		public void widgetSelected(SelectionEvent e) {
+			reset();
+			redraw();
+			update();
+		}
+	}
+	
+	private final class ResetXScaleHandler extends SelectionAdapter {
+		public void widgetSelected(SelectionEvent e) {
+			resetX();
+			redraw();
+			update();
+		}
+	}
+	
+	private final class ResetYScaleHandler extends SelectionAdapter {
+		public void widgetSelected(SelectionEvent e) {
+			resetY();
+			redraw();
+			update();
+		}
+	}
+
+	private final class ShowGridHandler extends SelectionAdapter {
+		public void widgetSelected(SelectionEvent e) {
+			showGrid = ((MenuItem) e.widget).getSelection();
+			redraw();
+			update();
+		}
+	}
+	
+	private final class ShowAxisHandler extends SelectionAdapter {
+		public void widgetSelected(SelectionEvent e) {
+			showAxis = ((MenuItem) e.widget).getSelection();
+			redraw();
+			update();
+		}
+	}
+	
+	private MenuItem showLegendMenuItem;
+	private MenuItem legendPositionsTopMenuItem;
+	private MenuItem legendPositionsBottomMenuItem;
+	private MenuItem resetScaleMenu;
+	private MenuItem resetXScaleMenu;
+	private MenuItem resetYScaleMenu;
+	private MenuItem showGridMenu;
+	private MenuItem showAxisMenu;
+	
+	private ArrayList<XYSWTSerie> xyswtSeries = new ArrayList<XYSWTSerie>();
+	private Window window;
+	private int yAxisWidth = 50;
+	private int xAxisHeight = 50;
+	private Color axisColor = Display.getDefault().getSystemColor(SWT.COLOR_DARK_GRAY);
+	private int axisLineWidth = 1;
+	private boolean showLegend = true;
+	private boolean showMarker = true;
+	private boolean showCursor = true;
+	private int legendPosition = SWT.TOP;
+	private int legendHeight = 50;
+	private boolean showGrid = false;
+	private boolean showAxis = true;
+	private Font chartFont;
+	private ArrayList<Integer> verticalGridLinesPositions = new ArrayList<Integer>(0);
+	private ArrayList<Integer> horizontalGridLinesPositions = new ArrayList<Integer>(0);
+	private ArrayList<String> verticalGridLinesLabels = new ArrayList<String>(0);
+	private ArrayList<String> horizontalGridLinesLabels = new ArrayList<String>(0);
+	private DecimalFormat decimalFormatter = new DecimalFormat("0.##E0");
+	private int marginAxis = 4;
+	private boolean zooming;
+	private Window zoomWindow;
+	private int selectedSerie = -1;
+	private Cursor cursor;
+	private Point cursorPosition = new Point(0, 0);
+	private Point crossPosition = new Point(0, 0);
+	
+	public XYSWTChart(Composite parent, int style, String fontName, int chartFontStyle, int chartFontHeight) {
+		super(parent, style);
+		addPaintListener(this);
+		addMouseListener(this);
+		addMouseMoveListener(this);
+		addKeyListener(this);
+		addMouseWheelListener(this);
+		if(fontName == null || "".equals(fontName)) {	
+			FontDescriptor boldDescriptor = FontDescriptor.createFrom(getFont()).setStyle(chartFontStyle).setHeight(chartFontHeight);
+			chartFont = boldDescriptor.createFont(getDisplay());
+		} else {
+			FontData fontData = new FontData(fontName, chartFontHeight, chartFontStyle);
+			chartFont = new Font(getDisplay(), fontData);
+		}
+		setFont(chartFont);
+		
+		Menu mainMenu = new Menu(this);
+		mainMenu.addMenuListener(new MenuListenerHandler());
+		showLegendMenuItem = new MenuItem(mainMenu, SWT.CHECK);
+		showLegendMenuItem.setText(RTSWTChartMessages.ShowLegend);
+		showLegendMenuItem.addSelectionListener(new ShowLegendHandler());
+		MenuItem legendPositionsMenuItem = new MenuItem(mainMenu, SWT.CASCADE);
+		legendPositionsMenuItem.setText(RTSWTChartMessages.LegendPosition);
+		Menu legendPositionsMenu = new Menu(legendPositionsMenuItem);
+		legendPositionsTopMenuItem = new MenuItem(legendPositionsMenu, SWT.CHECK);
+		legendPositionsTopMenuItem.setText(RTSWTChartMessages.Top);
+		legendPositionsBottomMenuItem = new MenuItem(legendPositionsMenu, SWT.CHECK);
+		legendPositionsBottomMenuItem.setText(RTSWTChartMessages.Bottom);
+		LegendPositionHandler legendPositionHandler = new LegendPositionHandler();
+		legendPositionsTopMenuItem.addSelectionListener(legendPositionHandler);
+		legendPositionsBottomMenuItem.addSelectionListener(legendPositionHandler);
+		legendPositionsMenuItem.setMenu(legendPositionsMenu);
+		resetScaleMenu = new MenuItem(mainMenu, SWT.NORMAL);
+		resetScaleMenu.setText(RTSWTChartMessages.ResetScale);
+		resetScaleMenu.addSelectionListener(new ResetScaleHandler());
+		resetXScaleMenu = new MenuItem(mainMenu, SWT.NORMAL);
+		resetXScaleMenu.setText(RTSWTChartMessages.ResetXScale);
+		resetXScaleMenu.addSelectionListener(new ResetXScaleHandler());
+		resetYScaleMenu = new MenuItem(mainMenu, SWT.NORMAL);
+		resetYScaleMenu.setText(RTSWTChartMessages.ResetYScale);
+		resetYScaleMenu.addSelectionListener(new ResetYScaleHandler());
+		showGridMenu = new MenuItem(mainMenu, SWT.CHECK);
+		showGridMenu.setText(RTSWTChartMessages.showGrid);
+		showGridMenu.addSelectionListener(new ShowGridHandler());
+		showAxisMenu = new MenuItem(mainMenu, SWT.CHECK);
+		showAxisMenu.setText(RTSWTChartMessages.showAxis);
+		showAxisMenu.setSelection(showAxis);
+		showAxisMenu.addSelectionListener(new ShowAxisHandler());
+		setMenu(mainMenu);
+		
+		cursor = new Cursor(getDisplay(), SWT.CURSOR_CROSS);
+		setCursor(cursor);
+		
+		GC gc = new GC(this);
+		xAxisHeight = gc.textExtent("1E10").y;
+		gc.dispose();
+		
+	}
+	
+	public void createSerie(double[] xValues, double[] yValues, String title, Color color, int thickness) {
+		XYSWTSerie xyswtSerie = new XYSWTSerie(xValues, yValues, this, title, color, thickness);
+		xyswtSeries.add(xyswtSerie);
+		reset();
+	}
+
+	private void reset() {
+		double xMax = Double.NEGATIVE_INFINITY, yMax = Double.NEGATIVE_INFINITY;
+		double xMin = Double.POSITIVE_INFINITY, yMin = Double.POSITIVE_INFINITY;
+		for (XYSWTSerie xyswtSerie : xyswtSeries) {
+			xMax = Math.max(xyswtSerie.getxMax(), xMax);
+			yMax = Math.max(xyswtSerie.getyMax(), yMax);
+			xMin = Math.min(xyswtSerie.getxMin(), xMin);
+			yMin = Math.min(xyswtSerie.getyMin(), yMin);
+		}
+		window = new Window(xMin, xMax, yMin, yMax);
+	}
+	
+	private void resetX() {
+		double xMax = Double.NEGATIVE_INFINITY;
+		double xMin = Double.POSITIVE_INFINITY;
+		for (XYSWTSerie xyswtSerie : xyswtSeries) {
+			xMax = Math.max(xyswtSerie.getxMax(), xMax);
+			xMin = Math.min(xyswtSerie.getxMin(), xMin);
+		}
+		window = new Window(xMin, xMax, window.getYMin(), window.getYMax());
+	}
+	
+	private void resetY() {
+		double yMax = Double.NEGATIVE_INFINITY;
+		double yMin = Double.POSITIVE_INFINITY;
+		for (XYSWTSerie xyswtSerie : xyswtSeries) {
+			yMax = Math.max(xyswtSerie.getyMax(), yMax);
+			yMin = Math.min(xyswtSerie.getyMin(), yMin);
+		}
+		window = new Window(window.getXMin(), window.getXMax(), yMin, yMax);
+	}
+	
+	protected Window getWindow() {
+		return window;
+	}
+	
+	protected int xValueToPixel(double x) {
+		int xPixel = (int) ((getWidth() - 1 - getYAxisWidth())*(x - getWindow().getXMin())/(getWindow().getXMax() - getWindow().getXMin()));
+		return xPixel + getYAxisWidth();
+	}
+	
+	protected int yValueToPixel(double y) {
+		int yPixel = (int) ((getHeight() - 1 - getXAxisHeight() - getLegendHeight())*(y - getWindow().getYMin())/(getWindow().getYMax() - getWindow().getYMin()));
+		return getHeight() - 1 - yPixel - getXAxisHeight() - (isLegendPositionBottom() ? getLegendHeight() : 0);
+	}
+	
+	protected double xPixelToValue(int xPixel) {
+		double x = xPixel * (getWindow().getXMax() - getWindow().getXMin())/(getWidth() - 1 - getYAxisWidth()) + getWindow().getXMin();
+		return x;
+	}
+	
+	protected double yPixelToValue(int yPixel) {
+		yPixel = -yPixel + (getHeight() - 1 - getXAxisHeight() - getLegendHeight());
+		double y = yPixel * (getWindow().getYMax() - getWindow().getYMin()) / (getHeight() - 1 - getXAxisHeight() - getLegendHeight()) + getWindow().getYMin();
+		return y;
+	}
+
+	@Override
+	public void paintControl(PaintEvent e) {
+		drawLegend(e.gc);
+		if(showAxis || showGrid) computeGrid(e.gc);
+		drawXAxis(e.gc);
+		drawYAxis(e.gc);
+		drawGrid(e.gc);
+		drawSeries(e.gc);
+		if(zooming) drawZoom(e.gc);
+		if(showCursor && selectedSerie >= 0) drawCursor(e.gc);
+	}
+	
+	private void drawCursor(GC gc) {
+		XYSWTSerie xyswtSerie = xyswtSeries.get(selectedSerie);
+		gc.setForeground(xyswtSerie.getColor());
+		gc.drawLine(cursorPosition.x, 0, cursorPosition.x, getHeight() - 1);
+		gc.drawRectangle(new Rectangle(cursorPosition.x - 4, cursorPosition.y - 4, 8, 8));
+	}
+
+	private void drawZoom(GC gc) {
+		gc.setClipping(getBounds());
+		gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_DARK_RED));
+		gc.drawRectangle((int)zoomWindow.getXMin(), (int)zoomWindow.getYMin(), (int)zoomWindow.getWidth(), (int)zoomWindow.getHeight());
+	}
+
+	private void computeGrid(GC gc) {
+		// Horizontal grids
+		yAxisWidth = 0;
+		horizontalGridLinesPositions.clear();
+		horizontalGridLinesLabels.clear();
+		horizontalGridLinesPositions.add(0);
+		horizontalGridLinesPositions.add(getHeight() - getLegendHeight() - getXAxisHeight() - 1);
+		createGridLinesPositions(horizontalGridLinesPositions, horizontalGridLinesPositions.get(0), horizontalGridLinesPositions.get(1), 100);
+		Collections.sort(horizontalGridLinesPositions);
+		for (Integer horizontalGridLinesPosition : horizontalGridLinesPositions) {
+			int position = horizontalGridLinesPosition.intValue();
+			double value = yPixelToValue(position);
+			String valueString = decimalFormatter.format(value).replaceAll("E0$", "");
+			yAxisWidth = Math.max(yAxisWidth, gc.textExtent(valueString).x);
+			horizontalGridLinesLabels.add(valueString);
+		}
+		// Vertical grids
+		xAxisHeight = 0;
+		verticalGridLinesPositions.clear();
+		verticalGridLinesLabels.clear();
+		verticalGridLinesPositions.add(0);
+		verticalGridLinesPositions.add(getWidth() - getYAxisWidth() - 1);
+		createGridLinesPositions(verticalGridLinesPositions, verticalGridLinesPositions.get(0), verticalGridLinesPositions.get(1), 100);
+		Collections.sort(verticalGridLinesPositions);
+		for (Integer verticalGridLinesPosition : verticalGridLinesPositions) {
+			int position = verticalGridLinesPosition.intValue();
+			double value = xPixelToValue(position);
+			String valueString = decimalFormatter.format(value).replaceAll("E0$", "");
+			xAxisHeight = Math.max(xAxisHeight, gc.textExtent(valueString).y);
+			verticalGridLinesLabels.add(valueString);
+		}
+	}
+	
+	private void createGridLinesPositions(ArrayList<Integer> gridLines, int from, int to, int delta) {
+		if(to - from > 2*delta) {
+			int value = (int)Math.rint((double)(from + to) / 2.0);
+			gridLines.add(value);
+			createGridLinesPositions(gridLines, from, value, delta);
+			createGridLinesPositions(gridLines, value, to, delta);
+		}
+	}
+
+	private void drawGrid(GC gc) {
+		if(!showGrid) return;
+		gc.setForeground(axisColor);
+		gc.setLineStyle(SWT.LINE_DASH);
+		for (int i = 0; i < verticalGridLinesPositions.size(); i++) {
+			int xPosition = verticalGridLinesPositions.get(i).intValue() + getYAxisWidth();
+			int yPositionMin = isLegendPositionBottom() ? 0 : getLegendHeight();
+			int yPositionMax = getHeight() - getXAxisHeight() - (isLegendPositionBottom() ? getLegendHeight() : 0);
+			gc.drawLine(xPosition, yPositionMin, xPosition, yPositionMax);
+		}
+		
+		for (int i = 0; i < horizontalGridLinesPositions.size(); i++) {
+			int yPosition = horizontalGridLinesPositions.get(i).intValue() + (isLegendPositionBottom() ? 0 : getLegendHeight());
+			int xPositionMin = getYAxisWidth();
+			int xPositionMax = getWidth() - 1;
+			gc.drawLine(xPositionMin, yPosition, xPositionMax, yPosition);
+		}
+
+		gc.setLineStyle(SWT.LINE_SOLID);
+	}
+
+	private void drawLegend(GC gc) {
+		if(!showLegend) return;
+		int totalLength = 0;
+		legendHeight = 0;
+		for (XYSWTSerie xyswtSerie : xyswtSeries) {
+			String title = xyswtSerie.getTitle() + "___";
+			totalLength += gc.textExtent(title).x;
+			legendHeight =  Math.max(gc.textExtent(title).y, legendHeight);
+		}
+		int Y0 = (isLegendPositionBottom() ? getHeight() - getLegendHeight() : 0);
+		int lastValueStringLength = 0;
+		for (XYSWTSerie xyswtSerie : xyswtSeries) {
+			String title = xyswtSerie.getTitle() + "___";
+			Color color  = xyswtSerie.getColor();
+			int valueStringLength = gc.textExtent(title).x;
+			int xPosition = getWidth() / 2 - totalLength / 2 + lastValueStringLength;
+			gc.setForeground(color);
+			gc.drawString(title, xPosition, Y0);
+			lastValueStringLength += valueStringLength;
+		}
+	}
+
+	private void drawYAxis(GC gc) {
+		if(!showAxis) return;
+		gc.setLineWidth(axisLineWidth);
+		gc.setForeground(axisColor);
+		int Y0 = (isLegendPositionBottom() ? 0 : getLegendHeight());
+		int Y1 = (isLegendPositionBottom() ? getLegendHeight() : 0);
+		gc.drawLine(getYAxisWidth(), Y0, getYAxisWidth(), getHeight() - 1 - getXAxisHeight() - Y1);
+		for (int i = 0; i < horizontalGridLinesPositions.size(); i++) {
+			int position = horizontalGridLinesPositions.get(i).intValue() + (isLegendPositionBottom() ? 0 : getLegendHeight());
+			int valueStringLength = gc.textExtent(horizontalGridLinesLabels.get(i)).x;
+			int xPosition = getYAxisWidth() / 2 - valueStringLength / 2;
+			int yPostion = position - xAxisHeight / 2;
+			if(i == 0 && (!showLegend || (showLegend && isLegendPositionBottom()))) yPostion = position;
+			gc.drawString(horizontalGridLinesLabels.get(i), xPosition, yPostion);
+		}
+	}
+
+	private void drawXAxis(GC gc) {
+		if(!showAxis) return;
+		gc.setLineWidth(axisLineWidth);
+		gc.setForeground(axisColor);
+		int Y0 = (isLegendPositionBottom() ? getLegendHeight() : 0);
+		gc.drawLine(getYAxisWidth(), getHeight() - 1 - getXAxisHeight() - Y0, getWidth() - 1,  getHeight() - 1 - getXAxisHeight() - Y0);
+		for (int i = 0; i < verticalGridLinesPositions.size(); i++) {
+			int position = verticalGridLinesPositions.get(i).intValue() + getYAxisWidth();
+			int valueStringLength = gc.textExtent(verticalGridLinesLabels.get(i)).x;
+			int xPosition = position - valueStringLength / 2;
+			if(i == verticalGridLinesPositions.size() - 1) 
+				xPosition =  position - valueStringLength;
+			int yPostion = getHeight() - getXAxisHeight() + marginAxis/2 - (isLegendPositionBottom() ? getLegendHeight() : 0) ;
+			gc.drawString(verticalGridLinesLabels.get(i), xPosition, yPostion);
+		}
+	}
+
+	private void drawSeries(GC gc) {
+		for (XYSWTSerie xyswtSerie : xyswtSeries) {
+			int[] values = xyswtSerie.getPointsArrayToDraw();
+			int x0 = getYAxisWidth();
+			int y0 = isLegendPositionBottom()?0:getLegendHeight();
+			int w = getWidth() - x0;
+			int h = getHeight() - y0 - getXAxisHeight() - (isLegendPositionBottom()?getLegendHeight():0);
+			gc.setClipping(x0, y0,w, h);
+			gc.setLineWidth(xyswtSerie.getThickness());
+			gc.setForeground(xyswtSerie.getColor());
+			gc.drawPolyline(values);
+		}
+	}
+	
+	protected boolean isLegendPositionBottom() {
+		return legendPosition == SWT.BOTTOM;
+	}
+	
+	protected int getLegendHeight() {
+		if(!showLegend) return 0;
+		return legendHeight;
+	}
+	
+	protected int getYAxisWidth() {
+		if(!showAxis) return 0;
+		return yAxisWidth + marginAxis;
+	}
+	
+	protected int getXAxisHeight() {
+		if(!showAxis) return 0;
+		return xAxisHeight + marginAxis;
+	}
+
+	protected int getWidth() {
+		return getClientArea().width;
+	}
+
+	protected int getHeight() {
+		return getClientArea().height;
+	}
+	
+	@Override
+	public void dispose() {
+		super.dispose();
+		chartFont.dispose();
+		cursor.dispose();
+	}
+
+	@Override
+	public void mouseDoubleClick(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseDown(MouseEvent e) {
+		if(e.button != 1) return;
+		zooming = true;
+		zoomWindow = new Window(e.x, e.y, e.x, e.y);
+	}
+
+	@Override
+	public void mouseUp(MouseEvent e) {
+		if(e.button != 1) return;
+		zooming = false;
+		zoomWindow.setBottomRight(new Point2D.Double(e.x, e.y));
+		if(zoomWindow.areSameConers()) return;
+		zoomWindow.reorder();
+		double xMin = xPixelToValue((int)zoomWindow.getXMin() - getYAxisWidth());
+		double xMax = xPixelToValue((int)zoomWindow.getXMax() - getYAxisWidth());
+		double yMin = yPixelToValue((int)zoomWindow.getYMin() - (isLegendPositionBottom()?0:getLegendHeight()));
+		double yMax = yPixelToValue((int)zoomWindow.getYMax() - (isLegendPositionBottom()?0:getLegendHeight()));
+		window = new Window(xMin, xMax, yMin, yMax);
+		window.reorder();
+		updateCursor();
+		redraw();
+		update();
+	}
+
+	@Override
+	public void mouseMove(MouseEvent e) {
+		if(zooming) {
+			zoomWindow.setBottomRight(new Point2D.Double(e.x, e.y));
+			redraw();
+			update();
+		} else {
+			cursorPosition.x = e.x;
+			cursorPosition.y = e.y;
+			crossPosition.x = e.x;
+			crossPosition.y = e.y;
+			if(showCursor) {
+				updateCursor();
+				redraw();
+				update();
+			}
+//			if(showMarker) {
+//				
+//			}
+		}
+	}
+
+	@Override
+	public void keyPressed(KeyEvent e) {
+		int D = 10;
+		if((e.stateMask & SWT.CTRL) != 0) D = 100;
+		if (e.keyCode == SWT.ARROW_UP) {
+			double dy = (window.getYMax() - window.getYMin())/D;
+			window = new Window(window.getXMin(), window.getXMax(), window.getYMin() + dy, window.getYMax() + dy);
+			updateCursor();
+			redraw();
+			update();
+		} else if (e.keyCode == SWT.ARROW_DOWN) {
+			double dy = (window.getYMax() - window.getYMin())/D;
+			window = new Window(window.getXMin(), window.getXMax(), window.getYMin() - dy, window.getYMax() - dy);
+			updateCursor();
+			redraw();
+			update();
+		} else if (e.keyCode == SWT.ARROW_LEFT) {
+			double dx = (window.getXMax() - window.getXMin())/D;
+			window = new Window(window.getXMin() - dx, window.getXMax() - dx, window.getYMin(), window.getYMax());
+			updateCursor();
+			redraw();
+			update();
+		} else if (e.keyCode == SWT.ARROW_RIGHT) {
+			double dx = (window.getXMax() - window.getXMin())/D;
+			window = new Window(window.getXMin() + dx, window.getXMax() + dx, window.getYMin(), window.getYMax());
+			updateCursor();
+			redraw();
+			update();
+		} else if (e.keyCode == SWT.TAB) {
+			if(!showCursor) return;
+			selectedSerie++;
+			if(selectedSerie >= xyswtSeries.size()) selectedSerie = 0;
+			if(xyswtSeries.size() == 0) selectedSerie = -1;
+			updateCursor();
+			redraw();
+			update();
+		} else if (e.keyCode == SWT.ESC) {
+			selectedSerie = -1;
+			redraw();
+			update();
+		}
+	}
+	
+	private void updateCursor() {
+		if(!showCursor) return;
+		if(selectedSerie == -1) return;
+		double xValue = xPixelToValue(cursorPosition.x - getYAxisWidth());
+		double yValue = xyswtSeries.get(selectedSerie).getYValue(xValue);
+		if(!Double.isNaN(yValue)) cursorPosition.y = yValueToPixel(yValue);
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseScrolled(MouseEvent e) {
+		double xValue = xPixelToValue(crossPosition.x - getYAxisWidth());
+		double yValue = yPixelToValue(crossPosition.y);
+		double dxL = xValue - window.getXMin();
+		double dyB = yValue - window.getYMin();
+		double dxR = xValue - window.getXMin();
+		double dyT = yValue - window.getYMin();
+		// TODO : Zoom !
+	}
+	
+}

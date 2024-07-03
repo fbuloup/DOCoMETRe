@@ -15,6 +15,10 @@ public final class RTSWTChartMessages extends NLS {
 	public static String AutoScale;
 	public static String ShowValues;
 	public static String LegendPosition;
+	public static String ResetScale;
+	public static String ResetXScale;
+	public static String ResetYScale;
+	public static String showAxis;
 
 	static {
 		// load message values from bundle file
