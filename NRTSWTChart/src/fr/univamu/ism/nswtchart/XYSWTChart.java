@@ -532,6 +532,7 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 		super.dispose();
 		chartFont.dispose();
 		cursor.dispose();
+		if(backupImage != null && !backupImage.isDisposed()) backupImage.dispose();
 	}
 
 	@Override
