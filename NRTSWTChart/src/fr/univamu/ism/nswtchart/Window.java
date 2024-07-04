@@ -52,27 +52,27 @@ public class Window {
 		
 		@Override
 		public String toString() {
-			return "xMin : " + topLeft.x + " - yMax : " + topLeft.y + " - xMax : " + bottomRight.x + " - yMin : " + bottomRight.y;
+			return "topLeft.x : " + topLeft.x + " - topLeft.y : " + topLeft.y + " - bottomRight.x : " + bottomRight.x + " - bottomRight.y : " + bottomRight.y;
 		}
-
-		public void reorder() {
-			double xMin = getXMin();
-			double xMax = getXMax();
-			double yMin = getYMin();
-			double yMax = getYMax();
-			if(xMin > xMax) {
-				topLeft.x = xMax;
-				bottomRight.x = xMin;
- 			}
-			if(yMin > yMax) {
-				topLeft.y = yMin;
-				bottomRight.y = yMax;
- 			}
-		}
+//
+//		public void reorder() {
+//			double xMin = getXMin();
+//			double xMax = getXMax();
+//			double yMin = getYMin();
+//			double yMax = getYMax();
+//			if(xMin > xMax) {
+//				topLeft.x = xMax;
+//				bottomRight.x = xMin;
+// 			}
+//			if(yMin > yMax) {
+//				topLeft.y = yMin;
+//				bottomRight.y = yMax;
+// 			}
+//		}
 		
-		public boolean areSameConers() {
-			return topLeft.x == bottomRight.x || topLeft.y == bottomRight.y;
-		}
+//		public boolean areSameCorners() {
+//			return topLeft.x == bottomRight.x || topLeft.y == bottomRight.y;
+//		}
 		
 		public double getDx() {
 			return getXMax() - getXMin();
@@ -82,9 +82,27 @@ public class Window {
 			return getYMax() - getYMin();
 		}
 
-		public void zoom(int count) {
-			// TODO Auto-generated method stub
-			
+		public void zoom(int count, double xValue, double yValue) {
+			if(count > 0) {
+				topLeft.x = (xValue + getXMin())/2;
+				bottomRight.x = (xValue + getXMax())/2;
+				bottomRight.y = (yValue + getYMin())/2;
+				topLeft.y = (yValue + getYMax())/2;
+			} else {
+				topLeft.x = topLeft.x - Math.abs(xValue - getXMin())/2;
+				topLeft.y = topLeft.y + Math.abs(yValue - getYMax())/2;
+				bottomRight.x = bottomRight.x + Math.abs(xValue - getXMax())/2;
+				bottomRight.y = bottomRight.y - Math.abs(yValue - getYMin())/2;
+			}
 		}
-		
+//		
+//		public Window clone() {
+//			Window window = new Window(getXMin(), getXMax(), getYMin(), getYMax());
+//			return window;
+//		}
+//		
+//		public Rectangle getRectangle() {
+//			return new Rectangle((int)topLeft.x, (int)topLeft.y, bottomRight.x - topLeft.x, topLeft.);
+//		}
+//		
 	}

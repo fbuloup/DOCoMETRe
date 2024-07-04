@@ -79,7 +79,7 @@ public class SWTXYChartTest {
 		chart.setBackground(display.getSystemColor(SWT.COLOR_BLACK));
 		
 
-		double fe = 100;
+		double fe = 1000;
 		int D = 16;
 		int NMAX = (int)(D*fe);
 		double[] xValues = new double[NMAX];
