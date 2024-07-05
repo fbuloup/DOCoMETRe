@@ -182,6 +182,7 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 	private Point crossPosition = new Point(0, 0);
 	private Image backupImage;
 	private Rectangle previousZoomWindow;
+	private ClearCursorsThread clearCursorsThread;
 	
 	public XYSWTChart(Composite parent, int style, String fontName, int chartFontStyle, int chartFontHeight) {
 		super(parent, style);
@@ -239,6 +240,9 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 		GC gc = new GC(this);
 		xAxisHeight = gc.textExtent("1E10").y;
 		gc.dispose();
+		
+		clearCursorsThread = new ClearCursorsThread(this);
+		clearCursorsThread.start();
 		
 	}
 	
@@ -530,6 +534,7 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 	@Override
 	public void dispose() {
 		super.dispose();
+		clearCursorsThread.terminate();
 		chartFont.dispose();
 		cursor.dispose();
 		if(backupImage != null && !backupImage.isDisposed()) backupImage.dispose();

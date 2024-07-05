@@ -111,6 +111,7 @@ public class SWTXYChartTest {
 			while (!shell.isDisposed ()) {
 				if (!display.readAndDispatch ()) display.sleep ();
 			}
+			chart.dispose();
 			display.dispose ();
 		}
 
