@@ -330,19 +330,25 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 	}
 
 	private void drawZoom(GC gc) {
+		clearZoom(gc);
+		gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_DARK_RED));
+		gc.drawRectangle(zoomWindow.x, zoomWindow.y, zoomWindow.width, zoomWindow.height);
+		previousZoomWindow = zoomWindow;
+	}
+	
+	private void clearZoom(GC gc) {
 		if(previousZoomWindow != null) {
 			Rectangle orderedWindow = orderWindow(previousZoomWindow);
-			int x0 = orderedWindow.x;
-			int y0 = orderedWindow.y;
-			int w = orderedWindow.width + 50;
-			int h = orderedWindow.height + 50;
+			int x0 = orderedWindow.x - 200;
+			int y0 = orderedWindow.y - 200;
+			if(x0 < 0) x0 = 0;
+			if(y0 < 0) y0 = 0;
+			int w = orderedWindow.width + 400;
+			int h = orderedWindow.height + 400;
 			if(x0 + w > backupImage.getImageData().width) w = backupImage.getImageData().width - x0;
 			if(y0 + h > backupImage.getImageData().height) h = backupImage.getImageData().height - y0;
 			gc.drawImage(backupImage, x0, y0, w, h, x0, y0, w, h);
 		}
-		gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_DARK_RED));
-		gc.drawRectangle(zoomWindow.x, zoomWindow.y, zoomWindow.width, zoomWindow.height);
-		previousZoomWindow = zoomWindow;
 	}
 	
 	private Rectangle orderWindow(Rectangle window) {
@@ -479,8 +485,7 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 			int position = verticalGridLinesPositions.get(i).intValue() + getYAxisWidth();
 			int valueStringLength = gc.textExtent(verticalGridLinesLabels.get(i)).x;
 			int xPosition = position - valueStringLength / 2;
-			if(i == verticalGridLinesPositions.size() - 1) 
-				xPosition =  position - valueStringLength;
+			if(i == verticalGridLinesPositions.size() - 1) xPosition =  position - valueStringLength;
 			int yPostion = getHeight() - getXAxisHeight() + marginAxis/2 - (isLegendPositionBottom() ? getLegendHeight() : 0) ;
 			gc.drawString(verticalGridLinesLabels.get(i), xPosition, yPostion);
 		}
@@ -550,10 +555,12 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 
 	@Override
 	public void mouseUp(MouseEvent e) {
+		if(zooming == false) return;
 		if(e.button != 1) return;
 		zooming = false;
 		zoomWindow.width = e.x - zoomWindow.x;
 		zoomWindow.height = e.y - zoomWindow.y;
+		if(zoomWindow.width == 0 || zoomWindow.height ==0) return;
 		zoomWindow = orderWindow(zoomWindow);
 		double xMin = xPixelToValue(zoomWindow.x - getYAxisWidth());
 		double xMax = xPixelToValue(zoomWindow.x + zoomWindow.width - getYAxisWidth());
@@ -627,16 +634,20 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 			selectedSerie = -1;
 			redrawCursor();
 			previousCursorPosition = null;
+			zooming = false;
+			GC gc = new GC(this);
+			clearZoom(gc);
+			gc.dispose();
 		}
 	}
 	
 	private void redrawCursor() {
 		GC gc = new GC(this);
 		if(previousCursorPosition != null) {
-			int x0 = previousCursorPosition.x - 50;
+			int x0 = previousCursorPosition.x - 200;
 			if(x0 < 0) x0 = 0;
 			int y0 = 0;
-			int w = 100;
+			int w = 400;
 			int h = getHeight();
 			if(x0 + w > getWidth()) w = getWidth() - x0;
 			gc.drawImage(backupImage, x0, y0, w, h, x0, y0, w, h);
