@@ -188,6 +188,7 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 	private Rectangle zoomWindow;
 	private int selectedSerie = -1;
 	private Cursor cursor;
+	private Cursor cursorBusy;
 	private Point cursorPosition = new Point(0, 0);
 	private Point markerPosition;
 	private Point previousCursorPosition;
@@ -254,6 +255,8 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 		
 		cursor = new Cursor(getDisplay(), SWT.CURSOR_CROSS);
 		setCursor(cursor);
+		
+		cursorBusy = new Cursor(getDisplay(), SWT.CURSOR_WAIT);
 		
 		GC gc = new GC(this);
 		xAxisHeight = gc.textExtent("1E10").y;
@@ -334,6 +337,8 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 
 	@Override
 	public void paintControl(PaintEvent e) {
+		setCursor(cursorBusy);
+		
 		drawLegend(e.gc);
 		if(showAxis || showGrid) computeGrid(e.gc);
 		drawXAxis(e.gc);
@@ -343,10 +348,16 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 		
 		if(backupImage != null && !backupImage.isDisposed()) backupImage.dispose();
 		backupImage = new Image(e.display, getBounds());
-		e.gc.copyArea(backupImage, 0, 0);
+		try {
+			e.gc.copyArea(backupImage, 0, 0);
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+		}
 		
 		if(zooming) drawZoom(e.gc);
 		if(showCursor && selectedSerie >= 0) drawCursor(e.gc);
+
+		setCursor(cursor);
 	}
 	
 	private void drawCursor(GC gc) {
@@ -354,16 +365,20 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 		gc.setForeground(xyswtSerie.getColor());
 		gc.drawLine(cursorPosition.x, 0, cursorPosition.x, getHeight() - 1);
 		gc.drawRectangle(new Rectangle(cursorPosition.x - 4, cursorPosition.y - 4, 8, 8));
+		redraw(cursorPosition.x - 4, 0, 8, getHeight() - 1, true);
 		if(markerPosition != null) {
 			gc.drawLine(markerPosition.x, 0, markerPosition.x, getHeight() - 1);
 			gc.drawRectangle(new Rectangle(markerPosition.x - 4, markerPosition.y - 4, 8, 8));
+			redraw(cursorPosition.x - 4, markerPosition.y - 4, 8, 8, true);
 		}
 	}
 
 	private void drawZoom(GC gc) {
 		clearZoom(gc);
+		System.out.println("drawZoom");
 		gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_DARK_RED));
 		gc.drawRectangle(zoomWindow.x, zoomWindow.y, zoomWindow.width, zoomWindow.height);
+		redraw(zoomWindow.x, zoomWindow.y, zoomWindow.width, zoomWindow.height, true);
 		previousZoomWindow = zoomWindow;
 	}
 	
@@ -379,6 +394,7 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 			if(x0 + w > backupImage.getImageData().width) w = backupImage.getImageData().width - x0;
 			if(y0 + h > backupImage.getImageData().height) h = backupImage.getImageData().height - y0;
 			gc.drawImage(backupImage, x0, y0, w, h, x0, y0, w, h);
+			redraw(x0, y0, w, h, true);
 		}
 	}
 	
@@ -568,6 +584,7 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 		super.dispose();
 		chartFont.dispose();
 		cursor.dispose();
+		cursorBusy.dispose();
 		if(backupImage != null && !backupImage.isDisposed()) backupImage.dispose();
 	}
 
@@ -699,6 +716,7 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 			int h = getHeight();
 			if(x0 + w > getWidth()) w = getWidth() - x0;
 			gc.drawImage(backupImage, x0, y0, w, h, x0, y0, w, h);
+			redraw(x0, y0, w, h, true);
 		}
 		if(!showCursor) {
 			gc.dispose();
