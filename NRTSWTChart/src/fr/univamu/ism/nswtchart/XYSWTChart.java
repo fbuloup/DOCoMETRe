@@ -41,6 +41,7 @@
  ******************************************************************************/
 package fr.univamu.ism.nswtchart;
 
+import java.awt.geom.Point2D;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -144,6 +145,16 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 		}
 	}
 	
+	private final class ShowCursorHandler extends SelectionAdapter {
+		public void widgetSelected(SelectionEvent e) {
+			showCursor = ((MenuItem) e.widget).getSelection();
+			selectedSerie = showCursor ? 0 : -1;
+			markerPosition = null;
+			redraw();
+			update();
+		}
+	}
+	
 	private MenuItem showLegendMenuItem;
 	private MenuItem legendPositionsTopMenuItem;
 	private MenuItem legendPositionsBottomMenuItem;
@@ -152,6 +163,7 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 	private MenuItem resetYScaleMenu;
 	private MenuItem showGridMenu;
 	private MenuItem showAxisMenu;
+	private MenuItem showCursorMenu;
 	
 	private ArrayList<XYSWTSerie> xyswtSeries = new ArrayList<XYSWTSerie>();
 	private Window window;
@@ -160,8 +172,7 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 	private Color axisColor = Display.getDefault().getSystemColor(SWT.COLOR_DARK_GRAY);
 	private int axisLineWidth = 1;
 	private boolean showLegend = true;
-	private boolean showMarker = true;
-	private boolean showCursor = true;
+	private boolean showCursor = false;
 	private int legendPosition = SWT.TOP;
 	private int legendHeight = 50;
 	private boolean showGrid = false;
@@ -178,10 +189,13 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 	private int selectedSerie = -1;
 	private Cursor cursor;
 	private Point cursorPosition = new Point(0, 0);
+	private Point markerPosition;
 	private Point previousCursorPosition;
 	private Point crossPosition = new Point(0, 0);
 	private Image backupImage;
 	private Rectangle previousZoomWindow;
+	private ArrayList<CursorMarkerListener> cursorMarkerListeners = new ArrayList<CursorMarkerListener>();
+	
 	
 	public XYSWTChart(Composite parent, int style, String fontName, int chartFontStyle, int chartFontHeight) {
 		super(parent, style);
@@ -231,6 +245,11 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 		showAxisMenu.setText(RTSWTChartMessages.showAxis);
 		showAxisMenu.setSelection(showAxis);
 		showAxisMenu.addSelectionListener(new ShowAxisHandler());
+		showCursorMenu = new MenuItem(mainMenu, SWT.CHECK);
+		showCursorMenu.setText(RTSWTChartMessages.showCursor);
+		showCursorMenu.setSelection(showCursor);
+		showCursorMenu.addSelectionListener(new ShowCursorHandler());
+		
 		setMenu(mainMenu);
 		
 		cursor = new Cursor(getDisplay(), SWT.CURSOR_CROSS);
@@ -240,6 +259,14 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 		xAxisHeight = gc.textExtent("1E10").y;
 		gc.dispose();
 		
+	}
+	
+	public void addCursorMarkerListener(CursorMarkerListener cursorMarkerListener) {
+		if(!cursorMarkerListeners.contains(cursorMarkerListener)) cursorMarkerListeners.add(cursorMarkerListener);
+	}
+	
+	public boolean removeCursorMarkerListener(CursorMarkerListener cursorMarkerListener) {
+		return cursorMarkerListeners.remove(cursorMarkerListener);
 	}
 	
 	public void createSerie(double[] xValues, double[] yValues, String title, Color color, int thickness) {
@@ -327,6 +354,10 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 		gc.setForeground(xyswtSerie.getColor());
 		gc.drawLine(cursorPosition.x, 0, cursorPosition.x, getHeight() - 1);
 		gc.drawRectangle(new Rectangle(cursorPosition.x - 4, cursorPosition.y - 4, 8, 8));
+		if(markerPosition != null) {
+			gc.drawLine(markerPosition.x, 0, markerPosition.x, getHeight() - 1);
+			gc.drawRectangle(new Rectangle(markerPosition.x - 4, markerPosition.y - 4, 8, 8));
+		}
 	}
 
 	private void drawZoom(GC gc) {
@@ -542,7 +573,15 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 
 	@Override
 	public void mouseDoubleClick(MouseEvent e) {
-		// TODO Auto-generated method stub
+		if(showCursor) {
+			double xValue = xPixelToValue(e.x - getYAxisWidth());
+			double yValue = xyswtSeries.get(selectedSerie).getYValue(xValue);
+			if(!Double.isNaN(yValue)) {
+				if(markerPosition == null) markerPosition = new Point(0, 0);
+				markerPosition.y = yValueToPixel(yValue);
+				markerPosition.x = e.x;
+			}
+		}
 		
 	}
 
@@ -589,10 +628,16 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 				updateCursor();
 				redrawCursor();
 			}
-//			if(showMarker) {
-//				
-//			}
+			if(showCursor) notifyCursorMarkerListeners();
 		}
+	}
+
+	private void notifyCursorMarkerListeners() {
+		int y0 = isLegendPositionBottom()?0:getLegendHeight();
+		Point2D.Double cursor = new Point2D.Double(xPixelToValue(cursorPosition.x - getYAxisWidth()), yPixelToValue(cursorPosition.y - y0));
+		Point2D.Double marker = null;
+		if(markerPosition != null) marker = new Point2D.Double(xPixelToValue(markerPosition.x - getYAxisWidth()), yPixelToValue(markerPosition.y - y0));
+		for (CursorMarkerListener cursorMarkerListener : cursorMarkerListeners) cursorMarkerListener.update(cursor, marker);
 	}
 
 	@Override
@@ -632,6 +677,9 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 			redrawCursor();
 		} else if (e.keyCode == SWT.ESC) {
 			selectedSerie = -1;
+			showCursor = false;
+			showCursorMenu.setSelection(false);
+			markerPosition = null;
 			redrawCursor();
 			previousCursorPosition = null;
 			zooming = false;
@@ -682,7 +730,8 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 	@Override
 	public void mouseScrolled(MouseEvent e) {
 		double xValue = xPixelToValue(crossPosition.x - getYAxisWidth());
-		double yValue = yPixelToValue(crossPosition.y);
+		int y0 = isLegendPositionBottom()?0:getLegendHeight();
+		double yValue = yPixelToValue(crossPosition.y - y0);
 		window.zoom(e.count, xValue, yValue);
 		redraw();
 		update();

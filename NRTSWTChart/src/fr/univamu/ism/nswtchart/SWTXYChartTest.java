@@ -42,6 +42,8 @@
 package fr.univamu.ism.nswtchart;
 
 
+import java.awt.geom.Point2D.Double;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
@@ -73,11 +75,20 @@ public class SWTXYChartTest {
 		shell.setMaximized(true);
 		shell.setText("XY SWT Test");
 		shell.setLayout(new FillLayout());
+		
+		CursorMarkerListener cursorMarkerListener = new CursorMarkerListener() {
+			
+			@Override
+			public void update(Double cursor, Double marker) {
+				System.out.println("Cursor : " + cursor.toString());
+				if(marker != null) System.out.println("Marker : " + marker.toString());
+			}
+		};
 
 		/* Create the first chart */
 		XYSWTChart chart = new XYSWTChart(shell, SWT.DOUBLE_BUFFERED, "Arial", SWT.BOLD | SWT.ITALIC, 8);
 		chart.setBackground(display.getSystemColor(SWT.COLOR_BLACK));
-		
+		chart.addCursorMarkerListener(cursorMarkerListener);
 
 		double fe = 1000;
 		int D = 16;
