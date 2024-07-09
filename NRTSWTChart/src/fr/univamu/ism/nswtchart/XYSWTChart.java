@@ -374,8 +374,8 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 	}
 
 	private void drawZoom(GC gc) {
+		gc.setClipping(0, 0, getWidth(), getHeight());
 		clearZoom(gc);
-		System.out.println("drawZoom");
 		gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_DARK_RED));
 		gc.drawRectangle(zoomWindow.x, zoomWindow.y, zoomWindow.width, zoomWindow.height);
 		redraw(zoomWindow.x, zoomWindow.y, zoomWindow.width, zoomWindow.height, true);
