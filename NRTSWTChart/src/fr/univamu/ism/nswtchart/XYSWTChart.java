@@ -150,6 +150,7 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 			showCursor = ((MenuItem) e.widget).getSelection();
 			selectedSerie = showCursor ? 0 : -1;
 			markerPosition = null;
+			cursorPosition = null;
 			redraw();
 			update();
 		}
@@ -337,6 +338,9 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 
 	@Override
 	public void paintControl(PaintEvent e) {
+
+		markerPosition = null;
+		cursorPosition = null;
 		setCursor(cursorBusy);
 		
 		drawLegend(e.gc);
@@ -351,7 +355,6 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 		try {
 			e.gc.copyArea(backupImage, 0, 0);
 		} catch (Exception e1) {
-			// TODO Auto-generated catch block
 		}
 		
 		if(zooming) drawZoom(e.gc);
@@ -361,15 +364,16 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 	}
 	
 	private void drawCursor(GC gc) {
+		if(cursorPosition == null) return;
 		XYSWTSerie xyswtSerie = xyswtSeries.get(selectedSerie);
 		gc.setForeground(xyswtSerie.getColor());
 		gc.drawLine(cursorPosition.x, 0, cursorPosition.x, getHeight() - 1);
 		gc.drawRectangle(new Rectangle(cursorPosition.x - 4, cursorPosition.y - 4, 8, 8));
-		redraw(cursorPosition.x - 4, 0, 8, getHeight() - 1, true);
+		if(SWT.getPlatform().equals("cocoa")) redraw(cursorPosition.x - 4, 0, 8, getHeight() - 1, true);
 		if(markerPosition != null) {
 			gc.drawLine(markerPosition.x, 0, markerPosition.x, getHeight() - 1);
 			gc.drawRectangle(new Rectangle(markerPosition.x - 4, markerPosition.y - 4, 8, 8));
-			redraw(cursorPosition.x - 4, markerPosition.y - 4, 8, 8, true);
+			if(SWT.getPlatform().equals("cocoa")) redraw(cursorPosition.x - 4, markerPosition.y - 4, 8, 8, true);
 		}
 	}
 
@@ -378,7 +382,7 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 		clearZoom(gc);
 		gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_DARK_RED));
 		gc.drawRectangle(zoomWindow.x, zoomWindow.y, zoomWindow.width, zoomWindow.height);
-		redraw(zoomWindow.x, zoomWindow.y, zoomWindow.width, zoomWindow.height, true);
+		if(SWT.getPlatform().equals("cocoa")) redraw(zoomWindow.x, zoomWindow.y, zoomWindow.width, zoomWindow.height, true);
 		previousZoomWindow = zoomWindow;
 	}
 	
@@ -394,7 +398,7 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 			if(x0 + w > backupImage.getImageData().width) w = backupImage.getImageData().width - x0;
 			if(y0 + h > backupImage.getImageData().height) h = backupImage.getImageData().height - y0;
 			gc.drawImage(backupImage, x0, y0, w, h, x0, y0, w, h);
-			redraw(x0, y0, w, h, true);
+			if(SWT.getPlatform().equals("cocoa")) redraw(x0, y0, w, h, true);
 		}
 	}
 	
@@ -637,6 +641,7 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 			drawZoom(gc);
 			gc.dispose();
 		} else {
+			if(cursorPosition == null) cursorPosition = new Point(0, 0);
 			cursorPosition.x = e.x;
 			cursorPosition.y = e.y;
 			crossPosition.x = e.x;
@@ -715,8 +720,10 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 			int w = 400;
 			int h = getHeight();
 			if(x0 + w > getWidth()) w = getWidth() - x0;
-			gc.drawImage(backupImage, x0, y0, w, h, x0, y0, w, h);
-			redraw(x0, y0, w, h, true);
+			if(getBounds().equals(backupImage.getBounds())) {
+				gc.drawImage(backupImage, x0, y0, w, h, x0, y0, w, h);
+				if(SWT.getPlatform().equals("cocoa")) redraw(x0, y0, w, h, true);
+			}
 		}
 		if(!showCursor) {
 			gc.dispose();
@@ -741,8 +748,7 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 
 	@Override
 	public void keyReleased(KeyEvent e) {
-		// TODO Auto-generated method stub
-		
+		// TODO Nothing !
 	}
 
 	@Override
