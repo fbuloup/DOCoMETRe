@@ -50,16 +50,12 @@ import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
-import org.eclipse.swt.events.MenuAdapter;
-import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.MouseWheelListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.Font;
@@ -71,100 +67,8 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.MenuItem;
-
-import fr.univamu.ism.nrtswtchart.RTSWTChartMessages;
 
 public class XYSWTChart extends Canvas implements PaintListener, MouseListener, MouseMoveListener, KeyListener, MouseWheelListener {
-	
-	private final class MenuListenerHandler extends MenuAdapter {
-		public void menuShown(MenuEvent e) {
-			showLegendMenuItem.setSelection(showLegend);
-			legendPositionsBottomMenuItem.setSelection(legendPosition == SWT.BOTTOM);
-			legendPositionsTopMenuItem.setSelection(legendPosition == SWT.TOP);
-			showGridMenu.setSelection(showGrid);
-		}
-	}
-
-	private final class LegendPositionHandler extends SelectionAdapter {
-		public void widgetSelected(SelectionEvent e) {
-			if (((MenuItem) e.widget) == legendPositionsBottomMenuItem &&  legendPosition == SWT.TOP) legendPosition = SWT.BOTTOM;
-			if (((MenuItem) e.widget) == legendPositionsTopMenuItem &&  legendPosition == SWT.BOTTOM) legendPosition = SWT.TOP;
-			showLegend = true;
-			redraw();
-			update();
-		}
-	}
-
-	private final class ShowLegendHandler extends SelectionAdapter {
-		public void widgetSelected(SelectionEvent e) {
-			showLegend = ((MenuItem) e.widget).getSelection();
-			redraw();
-			update();
-		}
-	}
-
-	private final class ResetScaleHandler extends SelectionAdapter {
-		public void widgetSelected(SelectionEvent e) {
-			reset();
-			redraw();
-			update();
-		}
-	}
-	
-	private final class ResetXScaleHandler extends SelectionAdapter {
-		public void widgetSelected(SelectionEvent e) {
-			resetX();
-			redraw();
-			update();
-		}
-	}
-	
-	private final class ResetYScaleHandler extends SelectionAdapter {
-		public void widgetSelected(SelectionEvent e) {
-			resetY();
-			redraw();
-			update();
-		}
-	}
-
-	private final class ShowGridHandler extends SelectionAdapter {
-		public void widgetSelected(SelectionEvent e) {
-			showGrid = ((MenuItem) e.widget).getSelection();
-			redraw();
-			update();
-		}
-	}
-	
-	private final class ShowAxisHandler extends SelectionAdapter {
-		public void widgetSelected(SelectionEvent e) {
-			showAxis = ((MenuItem) e.widget).getSelection();
-			redraw();
-			update();
-		}
-	}
-	
-	private final class ShowCursorHandler extends SelectionAdapter {
-		public void widgetSelected(SelectionEvent e) {
-			showCursor = ((MenuItem) e.widget).getSelection();
-			selectedSerie = showCursor ? 0 : -1;
-			markerPosition = null;
-			cursorPosition = null;
-			redraw();
-			update();
-		}
-	}
-	
-	private MenuItem showLegendMenuItem;
-	private MenuItem legendPositionsTopMenuItem;
-	private MenuItem legendPositionsBottomMenuItem;
-	private MenuItem resetScaleMenu;
-	private MenuItem resetXScaleMenu;
-	private MenuItem resetYScaleMenu;
-	private MenuItem showGridMenu;
-	private MenuItem showAxisMenu;
-	private MenuItem showCursorMenu;
 	
 	private ArrayList<XYSWTSerie> xyswtSeries = new ArrayList<XYSWTSerie>();
 	private Window window;
@@ -197,6 +101,7 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 	private Image backupImage;
 	private Rectangle previousZoomWindow;
 	private ArrayList<CursorMarkerListener> cursorMarkerListeners = new ArrayList<CursorMarkerListener>();
+	private ContextMenu contextMenu;
 	
 	
 	public XYSWTChart(Composite parent, int style, String fontName, int chartFontStyle, int chartFontHeight) {
@@ -215,44 +120,8 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 		}
 		setFont(chartFont);
 		
-		Menu mainMenu = new Menu(this);
-		mainMenu.addMenuListener(new MenuListenerHandler());
-		showLegendMenuItem = new MenuItem(mainMenu, SWT.CHECK);
-		showLegendMenuItem.setText(RTSWTChartMessages.ShowLegend);
-		showLegendMenuItem.addSelectionListener(new ShowLegendHandler());
-		MenuItem legendPositionsMenuItem = new MenuItem(mainMenu, SWT.CASCADE);
-		legendPositionsMenuItem.setText(RTSWTChartMessages.LegendPosition);
-		Menu legendPositionsMenu = new Menu(legendPositionsMenuItem);
-		legendPositionsTopMenuItem = new MenuItem(legendPositionsMenu, SWT.CHECK);
-		legendPositionsTopMenuItem.setText(RTSWTChartMessages.Top);
-		legendPositionsBottomMenuItem = new MenuItem(legendPositionsMenu, SWT.CHECK);
-		legendPositionsBottomMenuItem.setText(RTSWTChartMessages.Bottom);
-		LegendPositionHandler legendPositionHandler = new LegendPositionHandler();
-		legendPositionsTopMenuItem.addSelectionListener(legendPositionHandler);
-		legendPositionsBottomMenuItem.addSelectionListener(legendPositionHandler);
-		legendPositionsMenuItem.setMenu(legendPositionsMenu);
-		resetScaleMenu = new MenuItem(mainMenu, SWT.NORMAL);
-		resetScaleMenu.setText(RTSWTChartMessages.ResetScale);
-		resetScaleMenu.addSelectionListener(new ResetScaleHandler());
-		resetXScaleMenu = new MenuItem(mainMenu, SWT.NORMAL);
-		resetXScaleMenu.setText(RTSWTChartMessages.ResetXScale);
-		resetXScaleMenu.addSelectionListener(new ResetXScaleHandler());
-		resetYScaleMenu = new MenuItem(mainMenu, SWT.NORMAL);
-		resetYScaleMenu.setText(RTSWTChartMessages.ResetYScale);
-		resetYScaleMenu.addSelectionListener(new ResetYScaleHandler());
-		showGridMenu = new MenuItem(mainMenu, SWT.CHECK);
-		showGridMenu.setText(RTSWTChartMessages.showGrid);
-		showGridMenu.addSelectionListener(new ShowGridHandler());
-		showAxisMenu = new MenuItem(mainMenu, SWT.CHECK);
-		showAxisMenu.setText(RTSWTChartMessages.showAxis);
-		showAxisMenu.setSelection(showAxis);
-		showAxisMenu.addSelectionListener(new ShowAxisHandler());
-		showCursorMenu = new MenuItem(mainMenu, SWT.CHECK);
-		showCursorMenu.setText(RTSWTChartMessages.showCursor);
-		showCursorMenu.setSelection(showCursor);
-		showCursorMenu.addSelectionListener(new ShowCursorHandler());
-		
-		setMenu(mainMenu);
+		contextMenu = new ContextMenu(this);
+		setMenu(contextMenu.getMenu());
 		
 		cursor = new Cursor(getDisplay(), SWT.CURSOR_CROSS);
 		setCursor(cursor);
@@ -273,13 +142,41 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 		return cursorMarkerListeners.remove(cursorMarkerListener);
 	}
 	
-	public void createSerie(double[] xValues, double[] yValues, String title, Color color, int thickness) {
-		XYSWTSerie xyswtSerie = new XYSWTSerie(xValues, yValues, this, title, color, thickness);
+	public void createSerie(double[] xValues, double[] yValues, String id, Color color, int thickness) {
+		XYSWTSerie xyswtSerie = new XYSWTSerie(xValues, yValues, this, id, color, thickness);
 		xyswtSeries.add(xyswtSerie);
 		reset();
 	}
+	
+	public void removeSerie(String id) {
+		XYSWTSerie xyswtSerieToRemove = null;
+		for (XYSWTSerie xyswtSerie : xyswtSeries) {
+			if(xyswtSerie.getTitle().equals(id)) {
+				xyswtSerieToRemove = xyswtSerie;
+				break;
+			}
+		}
+		if(xyswtSerieToRemove != null) {
+			xyswtSeries.remove(xyswtSerieToRemove);
+			redraw();
+			update();
+		}
+	}
+	
+	public int getSeriesNumber() {
+		return xyswtSeries.size();
+	}
+	
+	public String getSeriesTooltip() {
+		String toolTip = "";
+		for (int i = 0; i < xyswtSeries.size(); i++) {
+			if(i == xyswtSeries.size() - 1) toolTip += xyswtSeries.get(i).getTitle();
+			else toolTip += xyswtSeries.get(i).getTitle() + "\n";
+		}
+		return toolTip;
+	}
 
-	private void reset() {
+	public void reset() {
 		double xMax = Double.NEGATIVE_INFINITY, yMax = Double.NEGATIVE_INFINITY;
 		double xMin = Double.POSITIVE_INFINITY, yMin = Double.POSITIVE_INFINITY;
 		for (XYSWTSerie xyswtSerie : xyswtSeries) {
@@ -291,7 +188,7 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 		window = new Window(xMin, xMax, yMin, yMax);
 	}
 	
-	private void resetX() {
+	public void resetX() {
 		double xMax = Double.NEGATIVE_INFINITY;
 		double xMin = Double.POSITIVE_INFINITY;
 		for (XYSWTSerie xyswtSerie : xyswtSeries) {
@@ -301,7 +198,7 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 		window = new Window(xMin, xMax, window.getYMin(), window.getYMax());
 	}
 	
-	private void resetY() {
+	public void resetY() {
 		double yMax = Double.NEGATIVE_INFINITY;
 		double yMin = Double.POSITIVE_INFINITY;
 		for (XYSWTSerie xyswtSerie : xyswtSeries) {
@@ -556,7 +453,7 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 		}
 	}
 	
-	protected boolean isLegendPositionBottom() {
+	public boolean isLegendPositionBottom() {
 		return legendPosition == SWT.BOTTOM;
 	}
 	
@@ -700,7 +597,7 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 		} else if (e.keyCode == SWT.ESC) {
 			selectedSerie = -1;
 			showCursor = false;
-			showCursorMenu.setSelection(false);
+			contextMenu.updateShowCursorMenu(false);
 			markerPosition = null;
 			redrawCursor();
 			previousCursorPosition = null;
@@ -761,4 +658,50 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 		update();
 	}
 	
+	public void setShowAxis(boolean showAxis) {
+		this.showAxis = showAxis;
+	}
+	
+	public boolean isShowAxis() {
+		return showAxis;
+	}
+	
+	public void setShowCursor(boolean showCursor) {
+		this.showCursor = showCursor;
+		selectedSerie = showCursor ? 0 : -1;
+		markerPosition = null;
+		cursorPosition = null;
+	}
+	
+	public boolean isShowCursor() {
+		return showCursor;
+	}
+	
+	public void setShowGrid(boolean showGrid) {
+		this.showGrid = showGrid;
+	}
+	
+	public boolean isShowGrid() {
+		return showGrid;
+	}
+	
+	public void setAxisColor(Color axisColor) {
+		this.axisColor = axisColor;
+	}
+	
+	public void setAxisLineWidth(int axisLineWidth) {
+		this.axisLineWidth = axisLineWidth;
+	}
+	
+	public void setShowLegend(boolean showLegend) {
+		this.showLegend = showLegend;
+	}
+	
+	public boolean isShowLegend() {
+		return showLegend;
+	}
+	
+	public void setLegendPosition(int legendPosition) {
+		this.legendPosition = legendPosition;
+	}
 }
