@@ -163,6 +163,10 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 		}
 	}
 	
+	public XYSWTSerie[] getSeries() {
+		return xyswtSeries.toArray(new XYSWTSerie[xyswtSeries.size()]);
+	}
+	
 	public int getSeriesNumber() {
 		return xyswtSeries.size();
 	}
@@ -564,29 +568,13 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 		int D = 10;
 		if((e.stateMask & SWT.CTRL) != 0) D = 100;
 		if (e.keyCode == SWT.ARROW_UP) {
-			double dy = (window.getYMax() - window.getYMin())/D;
-			window = new Window(window.getXMin(), window.getXMax(), window.getYMin() + dy, window.getYMax() + dy);
-			updateCursor();
-			redraw();
-			update();
+			pan(D, SWT.UP);
 		} else if (e.keyCode == SWT.ARROW_DOWN) {
-			double dy = (window.getYMax() - window.getYMin())/D;
-			window = new Window(window.getXMin(), window.getXMax(), window.getYMin() - dy, window.getYMax() - dy);
-			updateCursor();
-			redraw();
-			update();
+			pan(D, SWT.DOWN);
 		} else if (e.keyCode == SWT.ARROW_LEFT) {
-			double dx = (window.getXMax() - window.getXMin())/D;
-			window = new Window(window.getXMin() - dx, window.getXMax() - dx, window.getYMin(), window.getYMax());
-			updateCursor();
-			redraw();
-			update();
+			pan(D, SWT.LEFT);
 		} else if (e.keyCode == SWT.ARROW_RIGHT) {
-			double dx = (window.getXMax() - window.getXMin())/D;
-			window = new Window(window.getXMin() + dx, window.getXMax() + dx, window.getYMin(), window.getYMax());
-			updateCursor();
-			redraw();
-			update();
+			pan(D, SWT.RIGHT);
 		} else if (e.keyCode == SWT.TAB) {
 			if(!showCursor) return;
 			selectedSerie++;
@@ -594,6 +582,7 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 			if(xyswtSeries.size() == 0) selectedSerie = -1;
 			updateCursor();
 			redrawCursor();
+			notifyCursorMarkerListeners();
 		} else if (e.keyCode == SWT.ESC) {
 			selectedSerie = -1;
 			showCursor = false;
@@ -606,6 +595,29 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 			clearZoom(gc);
 			gc.dispose();
 		}
+	}
+	
+	public void pan(int delta, int direction) {
+		if(direction == SWT.UP) {
+			double dy = (window.getYMax() - window.getYMin())/delta;
+			window = new Window(window.getXMin(), window.getXMax(), window.getYMin() + dy, window.getYMax() + dy);
+		}
+		if(direction == SWT.DOWN) {
+			double dy = (window.getYMax() - window.getYMin())/delta;
+			window = new Window(window.getXMin(), window.getXMax(), window.getYMin() - dy, window.getYMax() - dy);
+		}
+		if(direction == SWT.LEFT) {
+			double dx = (window.getXMax() - window.getXMin())/delta;
+			window = new Window(window.getXMin() - dx, window.getXMax() - dx, window.getYMin(), window.getYMax());
+		}
+
+		if(direction == SWT.RIGHT) {
+			double dx = (window.getXMax() - window.getXMin())/delta;
+			window = new Window(window.getXMin() + dx, window.getXMax() + dx, window.getYMin(), window.getYMax());
+		}
+		updateCursor();
+		redraw();
+		update();
 	}
 	
 	private void redrawCursor() {
@@ -638,6 +650,7 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 	private void updateCursor() {
 		if(!showCursor) return;
 		if(selectedSerie == -1) return;
+		if(cursorPosition == null) return;
 		double xValue = xPixelToValue(cursorPosition.x - getYAxisWidth());
 		double yValue = xyswtSeries.get(selectedSerie).getYValue(xValue);
 		if(!Double.isNaN(yValue)) cursorPosition.y = yValueToPixel(yValue);
@@ -650,12 +663,24 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 
 	@Override
 	public void mouseScrolled(MouseEvent e) {
+		zoom(e.count);
+	}
+	
+	public void zoom(int count) {
 		double xValue = xPixelToValue(crossPosition.x - getYAxisWidth());
 		int y0 = isLegendPositionBottom()?0:getLegendHeight();
 		double yValue = yPixelToValue(crossPosition.y - y0);
-		window.zoom(e.count, xValue, yValue);
+		window.zoom(count, xValue, yValue);
 		redraw();
 		update();
+	}
+	
+	public void zoomIn() {
+		zoom(1);
+	}
+	
+	public void zoomOut() {
+		zoom(-1);
 	}
 	
 	public void setShowAxis(boolean showAxis) {
@@ -671,6 +696,11 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 		selectedSerie = showCursor ? 0 : -1;
 		markerPosition = null;
 		cursorPosition = null;
+		notifyCursorMarkerListeners2();
+	}
+	
+	private void notifyCursorMarkerListeners2() {
+		for (CursorMarkerListener cursorMarkerListener : cursorMarkerListeners) cursorMarkerListener.update(showCursor);
 	}
 	
 	public boolean isShowCursor() {
@@ -704,4 +734,5 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 	public void setLegendPosition(int legendPosition) {
 		this.legendPosition = legendPosition;
 	}
+	
 }

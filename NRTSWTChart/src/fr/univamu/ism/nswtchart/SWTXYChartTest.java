@@ -83,6 +83,12 @@ public class SWTXYChartTest {
 				System.out.println("Cursor : " + cursor.toString());
 				if(marker != null) System.out.println("Marker : " + marker.toString());
 			}
+
+			@Override
+			public void update(boolean showCursor) {
+				// TODO Auto-generated method stub
+				
+			}
 		};
 
 		/* Create the first chart */

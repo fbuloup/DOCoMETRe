@@ -80,7 +80,7 @@ public class XYSWTSerie {
 		return color;
 	}
 
-	protected String getTitle() {
+	public String getTitle() {
 		return title;
 	}
 
@@ -110,11 +110,11 @@ public class XYSWTSerie {
 	
 	protected int[] getPointsArrayToDraw() {
 		Point previousPoint = null;
-//		Window window = xyswtChart.getWindow();
+		Window window = xyswtChart.getWindow();
 		ArrayList<Integer> pointsArray = new ArrayList<Integer>(0);
 		boolean addPoint = false;
 		for (int i = 0; i < xValues.length; i++) {
-//			if(window.isInside(xValues[i], yValues[i])) {
+			if(window.isInside(xValues[i], yValues[i])) {
 				int xPixel = xyswtChart.xValueToPixel(xValues[i]);
 				int yPixel = xyswtChart.yValueToPixel(yValues[i]);
 				addPoint = false;
@@ -126,7 +126,7 @@ public class XYSWTSerie {
 					pointsArray.add(xPixel);
 					pointsArray.add(yPixel);
 				}
-//			}
+			}
 		}
 		int[] pointsInt = new int[pointsArray.size()];
 		for (int i = 0; i < pointsInt.length; i++) pointsInt[i] = pointsArray.get(i);
