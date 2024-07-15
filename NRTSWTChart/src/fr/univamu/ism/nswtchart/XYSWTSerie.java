@@ -108,13 +108,20 @@ public class XYSWTSerie {
 		return RTSWTChartUtils.getMax(xValues);
 	}
 	
-	protected int[] getPointsArrayToDraw() {
+	protected ArrayList<int[]> getPointsArrayToDraw() {
 		Point previousPoint = null;
 		Window window = xyswtChart.getWindow();
-		ArrayList<Integer> pointsArray = new ArrayList<Integer>(0);
+		ArrayList<ArrayList<Integer>> allPointsArray = new ArrayList<ArrayList<Integer>>(0);
+		ArrayList<Integer> pointsArray = null;
+		boolean wasInside = false;
 		boolean addPoint = false;
 		for (int i = 0; i < xValues.length; i++) {
 			if(window.isInside(xValues[i], yValues[i])) {
+				if(!wasInside) {
+					pointsArray = new ArrayList<Integer>(0);
+					allPointsArray.add(pointsArray);
+					wasInside = true;
+				}
 				int xPixel = xyswtChart.xValueToPixel(xValues[i]);
 				int yPixel = xyswtChart.yValueToPixel(yValues[i]);
 				addPoint = false;
@@ -126,11 +133,15 @@ public class XYSWTSerie {
 					pointsArray.add(xPixel);
 					pointsArray.add(yPixel);
 				}
-			}
+			} else wasInside = false;
 		}
-		int[] pointsInt = new int[pointsArray.size()];
-		for (int i = 0; i < pointsInt.length; i++) pointsInt[i] = pointsArray.get(i);
-		return pointsInt;
+		ArrayList<int[]> allPointsInt = new ArrayList<int[]>(0);
+		for (ArrayList<Integer> currentPointsArray : allPointsArray) {
+			int[] pointsInt = new int[currentPointsArray.size()];
+			for (int i = 0; i < pointsInt.length; i++) pointsInt[i] = currentPointsArray.get(i);
+			allPointsInt.add(pointsInt);
+		}
+		return allPointsInt;
 	}
 
 	public double getYValue(double xValue) {
