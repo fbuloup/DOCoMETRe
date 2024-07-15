@@ -291,11 +291,11 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 		if(previousZoomWindow != null) {
 			Rectangle orderedWindow = orderWindow(previousZoomWindow);
 			int x0 = orderedWindow.x - 200;
-			int y0 = orderedWindow.y - 200;
+			int y0 = 0;//orderedWindow.y - 200;
 			if(x0 < 0) x0 = 0;
 			if(y0 < 0) y0 = 0;
 			int w = orderedWindow.width + 400;
-			int h = orderedWindow.height + 400;
+			int h = getHeight() + getLegendHeight();//orderedWindow.height + 400;
 			if(x0 + w > backupImage.getImageData().width) w = backupImage.getImageData().width - x0;
 			if(y0 + h > backupImage.getImageData().height) h = backupImage.getImageData().height - y0;
 			gc.drawImage(backupImage, x0, y0, w, h, x0, y0, w, h);
@@ -437,6 +437,7 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 			int position = verticalGridLinesPositions.get(i).intValue() + getYAxisWidth();
 			int valueStringLength = gc.textExtent(verticalGridLinesLabels.get(i)).x;
 			int xPosition = position - valueStringLength / 2;
+			if(i == 0) xPosition =  position;
 			if(i == verticalGridLinesPositions.size() - 1) xPosition =  position - valueStringLength;
 			int yPostion = getHeight() - getXAxisHeight() + marginAxis/2 - (isLegendPositionBottom() ? getLegendHeight() : 0) ;
 			gc.drawString(verticalGridLinesLabels.get(i), xPosition, yPostion);
@@ -445,7 +446,7 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 
 	private void drawSeries(GC gc) {
 		for (XYSWTSerie xyswtSerie : xyswtSeries) {
-			int[] values = xyswtSerie.getPointsArrayToDraw();
+			ArrayList<int[]> allValues = xyswtSerie.getPointsArrayToDraw();
 			int x0 = getYAxisWidth();
 			int y0 = isLegendPositionBottom()?0:getLegendHeight();
 			int w = getWidth() - x0;
@@ -453,7 +454,7 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 			gc.setClipping(x0, y0,w, h);
 			gc.setLineWidth(xyswtSerie.getThickness());
 			gc.setForeground(xyswtSerie.getColor());
-			gc.drawPolyline(values);
+			for (int[] values : allValues) gc.drawPolyline(values);
 		}
 	}
 	
