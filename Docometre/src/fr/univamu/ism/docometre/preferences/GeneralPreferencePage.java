@@ -221,7 +221,7 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
 			if(update) {
 				DataEditor dataEditor = (DataEditor)editorReference.getEditor(false);
 				dataEditor.setShowCursor(showCursor);
-				dataEditor.setShowMarker(showMarker);
+//				dataEditor.setShowMarker(showMarker);
 			}
 			update = ChannelEditor.ID.equals(editorReference.getId());
 			if(update) {

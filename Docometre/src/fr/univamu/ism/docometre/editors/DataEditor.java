@@ -46,6 +46,7 @@ import java.nio.FloatBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.NumberFormat;
 import java.util.HashMap;
 
 import org.eclipse.core.resources.IContainer;
@@ -66,20 +67,11 @@ import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.DropTargetListener;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseMoveListener;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swtchart.IAxis;
-import org.eclipse.swtchart.ILineSeries;
-import org.eclipse.swtchart.ILineSeries.PlotSymbolType;
-import org.eclipse.swtchart.ISeries;
-import org.eclipse.swtchart.ISeries.SeriesType;
-import org.eclipse.swtchart.extensions.charts.InteractiveChart;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
 
 import fr.univamu.ism.docometre.Activator;
@@ -95,12 +87,16 @@ import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.ExperimentScheduler;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
+import fr.univamu.ism.nswtchart.CursorMarkerListener;
+import fr.univamu.ism.nswtchart.XYSWTChart;
+import fr.univamu.ism.nswtchart.XYSWTSerie;
 
-public class DataEditor extends EditorPart implements PartNameRefresher, MouseMoveListener {
+public class DataEditor extends EditorPart implements PartNameRefresher, CursorMarkerListener {
 	
 	public static String ID = "Docometre.DataEditor";
 	
-	private InteractiveChart chart;
+//	private InteractiveChart chart;
+	XYSWTChart chart;
 
 	public DataEditor() {
 		// TODO Auto-generated constructor stub
@@ -151,10 +147,10 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 	public void setShowCursor(boolean value) {
 		chart.setShowCursor(value);
 	}
-	
-	public void setShowMarker(boolean value) {
-		chart.setShowMarker(value);
-	}
+//	
+//	public void setShowMarker(boolean value) {
+//		chart.setShowMarker(value);
+//	}
 	
 	@Override
 	public void createPartControl(Composite parent) {
@@ -163,28 +159,32 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 		IFile dataFile = (IFile) ((ResourceEditorInput) getEditorInput()).getObject();
 		
 		// Create XY graph
-		chart = new InteractiveChart(parent, SWT.BORDER);
+//		chart = new InteractiveChart(parent, SWT.BORDER);
+		FontData fontData = parent.getFont().getFontData()[0];
+		chart = new XYSWTChart(parent, SWT.DOUBLE_BUFFERED,fontData.getName(), fontData.getStyle(), fontData.getHeight());
+		chart.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_BLACK));
+		chart.addCursorMarkerListener(this);
 		boolean showCursor = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.SHOW_CURSOR);
-		boolean showMarker = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.SHOW_MARKER);
+//		boolean showMarker = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.SHOW_MARKER);
 		chart.setShowCursor(showCursor);
-		chart.setShowMarker(showMarker);
-		chart.setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_BLACK));
-		chart.getPlotArea().setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_BLACK));
-		chart.setForeground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
-		IAxis[] axes = chart.getAxisSet().getAxes();
-		for (IAxis axe : axes) {
-			axe.getTick().setForeground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
-		}
-		chart.getLegend().setPosition(SWT.BOTTOM);
-		chart.getLegend().setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_BLACK));
-		chart.getLegend().setForeground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
-		chart.setSelectionRectangleColor(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_RED));
-		chart.getTitle().setVisible(false);
-		chart.getAxisSet().getXAxes()[0].getTitle().setForeground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
-		chart.getAxisSet().getXAxes()[0].getTitle().setText("Time (s)");
-		chart.getAxisSet().getYAxes()[0].getTitle().setVisible(false);
+//		chart.setShowMarker(showMarker);
+//		chart.setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_BLACK));
+//		chart.getPlotArea().setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_BLACK));
+//		chart.setForeground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
+//		IAxis[] axes = chart.getAxisSet().getAxes();
+//		for (IAxis axe : axes) {
+//			axe.getTick().setForeground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
+//		}
+		chart.setLegendPosition(SWT.BOTTOM);
+//		chart.getLegend().setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_BLACK));
+//		chart.getLegend().setForeground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
+//		chart.setSelectionRectangleColor(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_RED));
+//		chart.getTitle().setVisible(false);
+//		chart.getAxisSet().getXAxes()[0].getTitle().setForeground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
+//		chart.getAxisSet().getXAxes()[0].getTitle().setText("Time (s)");
+//		chart.getAxisSet().getYAxes()[0].getTitle().setVisible(false);
 		
-		chart.getPlotArea().addMouseMoveListener(this);
+//		chart.getPlotArea().addMouseMoveListener(this);
 //		chart.getPlotArea().addPaintListener(this);
 //		chart.getPlotArea().addListener(SWT.MouseWheel, this);
 //
@@ -243,8 +243,9 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 	public void removeTrace(Object object) {
 		if(!(object instanceof IFile)) return;
 		IFile dataFile = (IFile)object;
-		chart.getSeriesSet().deleteSeries(dataFile.getFullPath().toOSString());
-		chart.getPlotArea().redraw();
+//		chart.getSeriesSet().deleteSeries(dataFile.getFullPath().toOSString());
+//		chart.getPlotArea().redraw();
+		chart.removeSerie(dataFile.getFullPath().toOSString());
 	}
 	
 	private void createTrace(IFile dataFile) {
@@ -329,16 +330,18 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 			double[] yDoubleValues = xyValues.get("Y");
 			double[] xDoubleValues = xyValues.get("X");
 			
-			ILineSeries lineSeries = (ILineSeries) chart.getSeriesSet().createSeries(SeriesType.LINE, dataFile.getFullPath().toOSString());
-			lineSeries.setXSeries(xDoubleValues);
-			lineSeries.setYSeries(yDoubleValues);
-			lineSeries.setAntialias(SWT.ON);
-			lineSeries.setSymbolType(PlotSymbolType.NONE);
-			Byte index = getSeriesIndex(lineSeries);
-			lineSeries.setLineColor(DocometreApplication.getColor(index));
-			lineSeries.setLineWidth(3);
+//			ILineSeries lineSeries = (ILineSeries) chart.getSeriesSet().createSeries(SeriesType.LINE, dataFile.getFullPath().toOSString());
+//			lineSeries.setXSeries(xDoubleValues);
+//			lineSeries.setYSeries(yDoubleValues);
+//			lineSeries.setAntialias(SWT.ON);
+//			lineSeries.setSymbolType(PlotSymbolType.NONE);
+//			Byte index = getSeriesIndex(lineSeries);
+//			lineSeries.setLineColor(DocometreApplication.getColor((byte) chart.getSeriesNumber()));
+//			lineSeries.setLineWidth(3);
 			
-			chart.getAxisSet().adjustRange();
+			chart.createSerie(xDoubleValues, yDoubleValues, dataFile.getFullPath().toOSString(), DocometreApplication.getColor((byte) chart.getSeriesNumber()), 3);
+			
+//			chart.getAxisSet().adjustRange();
 			
 			refreshPartName();
 		} catch (Exception e) {
@@ -364,13 +367,13 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 		return sf;
 	}
 	
-	private Byte getSeriesIndex(ILineSeries series) {
-		ISeries[] seriesArray = chart.getSeriesSet().getSeries();
-		for (int i = 0; i < seriesArray.length; i++) {
-			if(series == seriesArray[i]) return (byte) i;
-		}
-		return 0;
-	}
+//	private Byte getSeriesIndex(ILineSeries series) {
+//		ISeries[] seriesArray = chart.getSeriesSet().getSeries();
+//		for (int i = 0; i < seriesArray.length; i++) {
+//			if(series == seriesArray[i]) return (byte) i;
+//		}
+//		return 0;
+//	}
 
 	private HashMap<String, double[]> createXYDoubleValues(float[] values, double sf, DACQConfiguration dacqConfiguration) {
 		HashMap<String, double[]> xyValues = new HashMap<>();
@@ -387,10 +390,11 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 
 	@Override
 	public void setFocus() {
-		((Control)chart.getPlotArea()).setFocus();
+//		((Control)chart.getPlotArea()).setFocus();
+		chart.setFocus();
 	}
 	
-	public InteractiveChart getChart() {
+	public XYSWTChart getChart() {
 		return chart;
 	}
 	
@@ -400,13 +404,13 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 		String partName = GetResourceLabelDelegate.getLabel((IResource) object);
 		String toolTip = getEditorInput().getToolTipText();
 		
-		if(chart.getSeriesSet().getSeries().length > 1) {
+		if(chart.getSeries().length > 1) {
 			partName += " (...)";
 			toolTip = "";
-			ISeries[] series = chart.getSeriesSet().getSeries();
+			XYSWTSerie[] series = chart.getSeries();
 			for (int i = 0; i < series.length; i++) {
-				if(i == series.length - 1) toolTip += series[i].getId();
-				else toolTip += series[i].getId() + "\n";
+				if(i == series.length - 1) toolTip += series[i].getTitle();
+				else toolTip += series[i].getTitle() + "\n";
 				
 			}
 			((ResourceEditorInput)getEditorInput()).setTooltip(toolTip);
@@ -416,36 +420,79 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 	}
 	
 	public void updateContribution() {
-		ApplicationActionBarAdvisor.cursorContributionItem.setText(chart.getCursorCoordinatesString());
-		ApplicationActionBarAdvisor.markerContributionItem.setText(chart.getMarkerCoordinatesString());
-		ApplicationActionBarAdvisor.deltaContributionItem.setText(chart.getDeltaCoordinateString());
-		
-
-		if(!ApplicationActionBarAdvisor.cursorContributionItem.isVisible()) {
-			ApplicationActionBarAdvisor.cursorContributionItem.setVisible(true);
-			ApplicationActionBarAdvisor.markerContributionItem.setVisible(true);
-			ApplicationActionBarAdvisor.deltaContributionItem.setVisible(true);
-			ApplicationActionBarAdvisor.cursorContributionItem.getParent().update(true);
-		}
-		
-		if(!ApplicationActionBarAdvisor.markerContributionItem.isVisible() && chart.isShowMarker()) {
-			ApplicationActionBarAdvisor.markerContributionItem.setVisible(true);
-			ApplicationActionBarAdvisor.deltaContributionItem.setVisible(true);
-			ApplicationActionBarAdvisor.cursorContributionItem.getParent().update(true);
-			
-		}
-		
-		if(ApplicationActionBarAdvisor.markerContributionItem.isVisible() && !chart.isShowMarker()) {
-			ApplicationActionBarAdvisor.markerContributionItem.setVisible(false);
-			ApplicationActionBarAdvisor.deltaContributionItem.setVisible(false);
-			ApplicationActionBarAdvisor.cursorContributionItem.getParent().update(true);
-			
-		}
+//		ApplicationActionBarAdvisor.cursorContributionItem.setText(chart.getCursorCoordinatesString());
+//		ApplicationActionBarAdvisor.markerContributionItem.setText(chart.getMarkerCoordinatesString());
+//		ApplicationActionBarAdvisor.deltaContributionItem.setText(chart.getDeltaCoordinateString());
+//		
+//
+//		if(!ApplicationActionBarAdvisor.cursorContributionItem.isVisible()) {
+//			ApplicationActionBarAdvisor.cursorContributionItem.setVisible(true);
+//			ApplicationActionBarAdvisor.markerContributionItem.setVisible(true);
+//			ApplicationActionBarAdvisor.deltaContributionItem.setVisible(true);
+//			ApplicationActionBarAdvisor.cursorContributionItem.getParent().update(true);
+//		}
+//		
+//		if(!ApplicationActionBarAdvisor.markerContributionItem.isVisible() && chart.isShowMarker()) {
+//			ApplicationActionBarAdvisor.markerContributionItem.setVisible(true);
+//			ApplicationActionBarAdvisor.deltaContributionItem.setVisible(true);
+//			ApplicationActionBarAdvisor.cursorContributionItem.getParent().update(true);
+//			
+//		}
+//		
+//		if(ApplicationActionBarAdvisor.markerContributionItem.isVisible() && !chart.isShowMarker()) {
+//			ApplicationActionBarAdvisor.markerContributionItem.setVisible(false);
+//			ApplicationActionBarAdvisor.deltaContributionItem.setVisible(false);
+//			ApplicationActionBarAdvisor.cursorContributionItem.getParent().update(true);
+//			
+//		}
 	}
 
 	@Override
-	public void mouseMove(MouseEvent event) {
-		updateContribution();
+	public void update(java.awt.geom.Point2D.Double cursor, java.awt.geom.Point2D.Double marker) {
+		
+		NumberFormat nf = NumberFormat.getInstance();
+		nf.setMaximumFractionDigits(6);
+		StringBuilder text = new StringBuilder();
+		
+		text.append("Cursor (");
+		text.append(nf.format(cursor.x));
+		text.append(" ; ");
+		text.append(nf.format(cursor.y));
+		text.append(")");
+		
+		ApplicationActionBarAdvisor.cursorContributionItem.setText(text.toString());
+		
+		if(marker != null) {
+			text = new StringBuilder();
+			text.append("Marker (");
+			text.append(nf.format(marker.x));
+			text.append(" ; ");
+			text.append(nf.format(marker.y));
+			text.append(")");
+			
+			ApplicationActionBarAdvisor.markerContributionItem.setText(text.toString());
+			
+			double dx = cursor.x - marker.x;
+			double dy = cursor.y - marker.y;
+			text = new StringBuilder();
+			text.append("\u0394 (");
+			text.append(nf.format(dx));
+			text.append(" ; ");
+			text.append(nf.format(dy));
+			text.append(")");
+			
+			ApplicationActionBarAdvisor.deltaContributionItem.setText(text.toString());
+		}
+		
+	}
+
+	@Override
+	public void update(boolean showCursor) {
+		ApplicationActionBarAdvisor.cursorContributionItem.setVisible(showCursor);
+		ApplicationActionBarAdvisor.markerContributionItem.setVisible(showCursor);
+		ApplicationActionBarAdvisor.deltaContributionItem.setVisible(showCursor);
+		ApplicationActionBarAdvisor.cursorContributionItem.getParent().update(true);
+		
 	}
 
 }

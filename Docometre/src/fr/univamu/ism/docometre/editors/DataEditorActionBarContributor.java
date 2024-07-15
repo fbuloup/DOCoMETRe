@@ -47,8 +47,6 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.SubToolBarManager;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swtchart.extensions.charts.Messages;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IPerspectiveListener;
@@ -62,24 +60,24 @@ import fr.univamu.ism.docometre.IImageKeys;
 
 public class DataEditorActionBarContributor extends EditorActionBarContributor implements IPerspectiveListener {
 	
-	private class EditGraphAction extends Action {
-		public EditGraphAction() {
-			super("Edit chart", Activator.getImageDescriptor(IImageKeys.EDIT_GRAPH_ICON));
-			setToolTipText("Edit chart");
-		}
-		@Override
-		public void run() {
-			if(editor.getChart().getMenuItem(null, Messages.PROPERTIES) != null) {
-				Event event = new Event();
-				event.x = editor.getChart().getCurrentX_Pixel();
-				event.type = SWT.Selection;
-				event.widget = editor.getChart().getMenuItem(null, Messages.PROPERTIES);
-				editor.getChart().handleEvent(event);
-				editor.updateContribution();
-//				editor.mouseUp(new MouseEvent(event));
-			}
-		}
-	}
+//	private class EditGraphAction extends Action {
+//		public EditGraphAction() {
+//			super("Edit chart", Activator.getImageDescriptor(IImageKeys.EDIT_GRAPH_ICON));
+//			setToolTipText("Edit chart");
+//		}
+//		@Override
+//		public void run() {
+//			if(editor.getChart().getMenuItem(null, Messages.PROPERTIES) != null) {
+//				Event event = new Event();
+//				event.x = editor.getChart().getCurrentX_Pixel();
+//				event.type = SWT.Selection;
+//				event.widget = editor.getChart().getMenuItem(null, Messages.PROPERTIES);
+//				editor.getChart().handleEvent(event);
+//				editor.updateContribution();
+////				editor.mouseUp(new MouseEvent(event));
+//			}
+//		}
+//	}
 	
 	private class PanLeftAction extends Action {
 		public PanLeftAction() {
@@ -88,13 +86,7 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 		}
 		@Override
 		public void run() {
-			Event event = new Event();
-			event.x = editor.getChart().getCurrentX_Pixel();
-			event.type = SWT.KeyDown;
-			event.keyCode = SWT.ARROW_LEFT;
-			event.widget = panLeftActionContributionItem.getWidget();
-			editor.getChart().handleEvent(event);
-			editor.updateContribution();
+			editor.getChart().pan(10, SWT.LEFT);
 		}
 	}
 	
@@ -105,13 +97,7 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 		}
 		@Override
 		public void run() {
-			Event event = new Event();
-			event.x = editor.getChart().getCurrentX_Pixel();
-			event.type = SWT.KeyDown;
-			event.keyCode = SWT.ARROW_UP;
-			event.widget = panUpActionContributionItem.getWidget();
-			editor.getChart().handleEvent(event);
-			editor.updateContribution();
+			editor.getChart().pan(10, SWT.UP);
 		}
 	}
 	
@@ -122,13 +108,7 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 		}
 		@Override
 		public void run() {
-			Event event = new Event();
-			event.x = editor.getChart().getCurrentX_Pixel();
-			event.type = SWT.KeyDown;
-			event.keyCode = SWT.ARROW_DOWN;
-			event.widget = panDownActionContributionItem.getWidget();
-			editor.getChart().handleEvent(event);
-			editor.updateContribution();
+			editor.getChart().pan(10, SWT.DOWN);
 		}
 	}
 	
@@ -139,13 +119,7 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 		}
 		@Override
 		public void run() {
-			Event event = new Event();
-			event.x = editor.getChart().getCurrentX_Pixel();
-			event.type = SWT.KeyDown;
-			event.keyCode = SWT.ARROW_RIGHT;
-			event.widget = panRightActionContributionItem.getWidget();
-			editor.getChart().handleEvent(event);
-			editor.updateContribution();
+			editor.getChart().pan(10, SWT.RIGHT);
 		}
 	}
 	
@@ -156,14 +130,7 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 		}
 		@Override
 		public void run() {
-			if(editor.getChart().getMenuItem(null, Messages.ZOOMIN) != null) {
-				Event event = new Event();
-				event.x = editor.getChart().getCurrentX_Pixel();
-				event.type = SWT.Selection;
-				event.widget = editor.getChart().getMenuItem(null, Messages.ZOOMIN);
-				editor.getChart().handleEvent(event);
-				editor.updateContribution();
-			}
+			editor.getChart().zoomIn();
 		}
 	}
 	
@@ -174,14 +141,7 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 		}
 		@Override
 		public void run() {
-			if(editor.getChart().getMenuItem(null, Messages.ZOOMOUT) != null) {
-				Event event = new Event();
-				event.x = editor.getChart().getCurrentX_Pixel();
-				event.type = SWT.Selection;
-				event.widget = editor.getChart().getMenuItem(null, Messages.ZOOMOUT);
-				editor.getChart().handleEvent(event);
-				editor.updateContribution();
-			}
+			editor.getChart().zoomOut();
 		}
 	}
 
@@ -192,19 +152,14 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 		}
 		@Override
 		public void run() {
-			if(editor.getChart().getMenuItem(null, Messages.ADJUST_AXIS_RANGE) != null) {
-				Event event = new Event();
-				event.x = editor.getChart().getCurrentX_Pixel();
-				event.type = SWT.Selection;
-				event.widget = editor.getChart().getMenuItem(null, Messages.ADJUST_AXIS_RANGE);
-				editor.getChart().handleEvent(event);
-				editor.updateContribution();
-			}
+			editor.getChart().reset();
+			editor.getChart().redraw();
+			editor.getChart().update();
 		}
 	}
 	
 	private DataEditor editor;
-	private ActionContributionItem editGraphActionContributionItem;
+//	private ActionContributionItem editGraphActionContributionItem;
 	private ActionContributionItem autoScaleGraphActionContributionItem;
 	private ActionContributionItem zoomInGraphActionContributionItem;
 	private ActionContributionItem zoomOutGraphActionContributionItem;
@@ -215,7 +170,7 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 	private SubToolBarManager subToolBarManager;
 	
 	public DataEditorActionBarContributor() {
-		editGraphActionContributionItem = new ActionContributionItem(new EditGraphAction());
+//		editGraphActionContributionItem = new ActionContributionItem(new EditGraphAction());
 		autoScaleGraphActionContributionItem = new ActionContributionItem(new AutoScaleGraphAction());
 		zoomInGraphActionContributionItem = new ActionContributionItem(new ZoomInGraphAction());
 		zoomOutGraphActionContributionItem = new ActionContributionItem(new ZoomOutGraphAction());
@@ -237,7 +192,7 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 		
 		subToolBarManager = new SubToolBarManager(toolBarManager);
 		
-		subToolBarManager.add(editGraphActionContributionItem);
+//		subToolBarManager.add(editGraphActionContributionItem);
 		subToolBarManager.add(new Separator());
 		subToolBarManager.add(autoScaleGraphActionContributionItem);
 		subToolBarManager.add(new Separator());
@@ -262,7 +217,7 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 	public void perspectiveActivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
 		boolean actionsVisibility = !perspective.getId().equals(AcquirePerspective.id);
 		
-		editGraphActionContributionItem.setVisible(actionsVisibility);
+//		editGraphActionContributionItem.setVisible(actionsVisibility);
 		autoScaleGraphActionContributionItem.setVisible(actionsVisibility);
 		zoomInGraphActionContributionItem.setVisible(actionsVisibility);
 		zoomOutGraphActionContributionItem.setVisible(actionsVisibility);
@@ -273,7 +228,7 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 		
 		subToolBarManager.setVisible(actionsVisibility);
 		
-		editGraphActionContributionItem.getAction().setEnabled(actionsVisibility);
+//		editGraphActionContributionItem.getAction().setEnabled(actionsVisibility);
 		autoScaleGraphActionContributionItem.getAction().setEnabled(actionsVisibility);
 		zoomInGraphActionContributionItem.getAction().setEnabled(actionsVisibility);
 		zoomOutGraphActionContributionItem.getAction().setEnabled(actionsVisibility);
