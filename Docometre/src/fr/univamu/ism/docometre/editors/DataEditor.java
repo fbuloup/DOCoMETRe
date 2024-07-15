@@ -193,6 +193,11 @@ public class DataEditor extends EditorPart implements PartNameRefresher, CursorM
 		
 //		// Create trace and add it to graph
 		createTrace(dataFile);
+		
+		Object[] objects = ((ResourceEditorInput) getEditorInput()).getOtherEditedObjects();
+		for (Object object : objects) {
+			createTrace((IFile) object);
+		}
 //		
 		// Allow data to be copied or moved to the drop target
 		int operations = DND.DROP_COPY;

@@ -102,6 +102,10 @@ public class ResourceEditorInput implements IEditorInput, IPersistableElement {
 	public Object getAdapter(Class adapter) {
 		return null;
 	}
+	
+	public Object[] getOtherEditedObjects() {
+		return editedObjects.toArray();
+	}
 
 	public ImageDescriptor getImageDescriptor() {
 		IResource resource = ObjectsController.getResourceForObject(object);
@@ -185,6 +189,13 @@ public class ResourceEditorInput implements IEditorInput, IPersistableElement {
 			memento.putString(EditorsPersitenceElementFactory.ResourceFullPath, resource.getFullPath().toPortableString());
 		}
 		
+		String otherObjectsString = "";
+		Object[] otherObjects = editedObjects.toArray();
+		for (Object object : otherObjects) {
+			resource = ObjectsController.getResourceForObject(object);
+			if(resource != null) otherObjectsString = otherObjectsString + resource.getFullPath().toPortableString() + ";";
+		}
+		if(!"".equals(otherObjectsString)) memento.putString(EditorsPersitenceElementFactory.otherResourcesFullPath, otherObjectsString);
 	}
 
 	@Override

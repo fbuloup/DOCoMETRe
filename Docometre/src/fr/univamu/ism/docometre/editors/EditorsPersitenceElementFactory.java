@@ -14,6 +14,7 @@ public class EditorsPersitenceElementFactory implements IElementFactory {
 	
 	public static String ID = "Docometre.EditorsPersitenceElementFactory";
 	public static String ResourceFullPath = "ResourceFullPath";
+	public static String otherResourcesFullPath = "otherResourcesFullPath";
 
 	@Override
 	public IAdaptable createElement(IMemento memento) {
@@ -28,6 +29,18 @@ public class EditorsPersitenceElementFactory implements IElementFactory {
 			else object = resource;
 		}
 		ResourceEditorInput resourceEditorInput = new ResourceEditorInput(object);
+		
+		String otherFullPath = memento.getString(otherResourcesFullPath);
+		if(otherFullPath != null && !"".equals(otherFullPath)) {
+			String[] otherFullPathResource = otherFullPath.split(";");
+			for (String resourceString : otherFullPathResource) {
+				if(!"".equals(resourceString)) {
+					resource = ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(resourceString)) ;
+					resourceEditorInput.addEditedObject(resource);
+				}
+			}
+		}
+		
 		return resourceEditorInput;
 	}
 
