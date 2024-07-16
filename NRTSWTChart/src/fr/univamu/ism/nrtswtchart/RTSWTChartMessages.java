@@ -20,6 +20,18 @@ public final class RTSWTChartMessages extends NLS {
 	public static String ResetYScale;
 	public static String showAxis;
 	public static String showCursor;
+	public static String showSamples;
+	public static String SymbolSample;
+	public static String SquareSymbol;
+	public static String RoundSymbol;
+	public static String SymbolSampleSize;
+	public static String Size1;
+	public static String Size2;
+	public static String Size3;
+	public static String Size4;
+	public static String Size5;
+
+	public static String SeriesThickness;
 
 	static {
 		// load message values from bundle file

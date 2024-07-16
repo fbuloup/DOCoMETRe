@@ -9,12 +9,14 @@ import org.eclipse.ui.IMemento;
 
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
+import fr.univamu.ism.nswtchart.Window;
 
 public class EditorsPersitenceElementFactory implements IElementFactory {
 	
 	public static String ID = "Docometre.EditorsPersitenceElementFactory";
 	public static String ResourceFullPath = "ResourceFullPath";
 	public static String otherResourcesFullPath = "otherResourcesFullPath";
+	public static String dataEditorWindow = "dataEditorWindow";
 
 	@Override
 	public IAdaptable createElement(IMemento memento) {
@@ -39,6 +41,12 @@ public class EditorsPersitenceElementFactory implements IElementFactory {
 					resourceEditorInput.addEditedObject(resource);
 				}
 			}
+		}
+		
+		String windowString = memento.getString(dataEditorWindow);
+		if(windowString != null && !"".equals(windowString)) {
+			Window window = Window.fromString(windowString); 
+			resourceEditorInput.setWindow(window);
 		}
 		
 		return resourceEditorInput;

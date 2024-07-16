@@ -48,8 +48,10 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
+import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.GetResourceLabelDelegate;
@@ -59,12 +61,14 @@ import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.analyse.datamodel.XYChart;
 import fr.univamu.ism.docometre.analyse.datamodel.XYZChart;
+import fr.univamu.ism.nswtchart.Window;
 
 public class ResourceEditorInput implements IEditorInput, IPersistableElement {
 
 	private Object object;
 	private String tooltip = null;
 	private HashSet<Object> editedObjects;
+	private Window window;
 
 	public ResourceEditorInput(Object object) {
 		this.object = object;
@@ -88,6 +92,14 @@ public class ResourceEditorInput implements IEditorInput, IPersistableElement {
 			} 
 			return true;
 		} else return editedObjects.remove(object);
+	}
+	
+	public void setWindow(Window window) {
+		this.window = window;
+	}
+	
+	public Window getWindow() {
+		return window;
 	}
 	
 	public boolean canCloseEditor() {
@@ -196,6 +208,12 @@ public class ResourceEditorInput implements IEditorInput, IPersistableElement {
 			if(resource != null) otherObjectsString = otherObjectsString + resource.getFullPath().toPortableString() + ";";
 		}
 		if(!"".equals(otherObjectsString)) memento.putString(EditorsPersitenceElementFactory.otherResourcesFullPath, otherObjectsString);
+		
+		IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findEditor(this);
+		if(editor instanceof DataEditor) {
+			Window window = ((DataEditor)editor).getWindow();
+			memento.putString(EditorsPersitenceElementFactory.dataEditorWindow, window.toString());
+		}
 	}
 
 	@Override

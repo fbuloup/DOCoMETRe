@@ -70,6 +70,9 @@ import org.eclipse.swt.widgets.Display;
 
 public class XYSWTChart extends Canvas implements PaintListener, MouseListener, MouseMoveListener, KeyListener, MouseWheelListener {
 	
+	public static int SQUARE = 0;
+	public static int ROUND = 1;
+	
 	private ArrayList<XYSWTSerie> xyswtSeries = new ArrayList<XYSWTSerie>();
 	private Window window;
 	private int yAxisWidth = 50;
@@ -102,6 +105,10 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 	private Rectangle previousZoomWindow;
 	private ArrayList<CursorMarkerListener> cursorMarkerListeners = new ArrayList<CursorMarkerListener>();
 	private ContextMenu contextMenu;
+	private boolean showSamples;
+	private int sampleSymbol = SQUARE;
+	private int sampleSymbolSize = 1;
+	private int seriesThickness = 1;
 	
 	
 	public XYSWTChart(Composite parent, int style, String fontName, int chartFontStyle, int chartFontHeight) {
@@ -143,7 +150,8 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 	}
 	
 	public void createSerie(double[] xValues, double[] yValues, String id, Color color, int thickness) {
-		XYSWTSerie xyswtSerie = new XYSWTSerie(xValues, yValues, this, id, color, thickness);
+		this.seriesThickness = thickness;
+		XYSWTSerie xyswtSerie = new XYSWTSerie(xValues, yValues, this, id, color);
 		xyswtSeries.add(xyswtSerie);
 		reset();
 	}
@@ -212,8 +220,12 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 		window = new Window(window.getXMin(), window.getXMax(), yMin, yMax);
 	}
 	
-	protected Window getWindow() {
+	public Window getWindow() {
 		return window;
+	}
+	
+	public void setWindow(Window window) {
+		this.window = window;
 	}
 	
 	protected int xValueToPixel(double x) {
@@ -452,9 +464,18 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 			int w = getWidth() - x0;
 			int h = getHeight() - y0 - getXAxisHeight() - (isLegendPositionBottom()?getLegendHeight():0);
 			gc.setClipping(x0, y0,w, h);
-			gc.setLineWidth(xyswtSerie.getThickness());
+			gc.setLineWidth(seriesThickness);
 			gc.setForeground(xyswtSerie.getColor());
-			for (int[] values : allValues) gc.drawPolyline(values);
+			gc.setBackground(xyswtSerie.getColor());
+			for (int[] values : allValues) {
+				gc.drawPolyline(values);
+				if(showSamples) {
+					for(int i = 0; i < values.length - 1; i+=2) {
+						if(isSampleSymbolSquare()) gc.fillRectangle(values[i] - sampleSymbolSize, values[i+1] - sampleSymbolSize, 2*sampleSymbolSize + 1, 2*sampleSymbolSize + 1);
+						else if(isSampleSymbolRound()) gc.fillOval(values[i] - sampleSymbolSize, values[i+1] - sampleSymbolSize, 2*sampleSymbolSize + 1, 2*sampleSymbolSize + 1);
+					}
+				}
+			}
 		}
 	}
 	
@@ -734,6 +755,46 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 	
 	public void setLegendPosition(int legendPosition) {
 		this.legendPosition = legendPosition;
+	}
+
+	public void setShowSamples(boolean showSamples) {
+		this.showSamples = showSamples;
+	}
+	
+	public boolean isShowSamples() {
+		return showSamples;
+	}
+	
+	public void setSampleSymbol(int sampleSymbol) {
+		this.sampleSymbol = sampleSymbol;
+	}
+	
+	public int getSampleSymbol() {
+		return sampleSymbol;
+	}
+
+	public boolean isSampleSymbolSquare() {
+		return sampleSymbol == SQUARE;
+	}
+
+	public boolean isSampleSymbolRound() {
+		return sampleSymbol == ROUND;
+	}
+	
+	public void setSampleSymbolSize(int sampleSymbolSize) {
+		this.sampleSymbolSize = sampleSymbolSize;
+	}
+	
+	public int getSampleSymbolSize() {
+		return sampleSymbolSize;
+	}
+
+	public void setSeriesThickness(int thickness) {
+		this.seriesThickness  = thickness;
+	}
+	
+	public int getSeriesThickness() {
+		return seriesThickness;
 	}
 	
 }

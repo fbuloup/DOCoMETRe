@@ -56,9 +56,9 @@ public class XYSWTSerie {
 	private XYSWTChart xyswtChart;
 	private String title;
 	private Color color;
-	private int thickness;
+//	private int thickness;
 	
-	protected XYSWTSerie(double[] xValues, double[] yValues, XYSWTChart xyswtChart, String title, Color color, int thickness) {
+	protected XYSWTSerie(double[] xValues, double[] yValues, XYSWTChart xyswtChart, String title, Color color) {//, int thickness) {
 		if(xValues == null) SWT.error(SWT.ERROR_NULL_ARGUMENT);
 		if(yValues == null) SWT.error(SWT.ERROR_NULL_ARGUMENT);
 		if(xValues.length != yValues.length) SWT.error(SWT.ERROR_INVALID_ARGUMENT);
@@ -67,13 +67,13 @@ public class XYSWTSerie {
 		if(title.equals("")) SWT.error(SWT.ERROR_INVALID_ARGUMENT);
 		if(color == null) SWT.error(SWT.ERROR_NULL_ARGUMENT);
 		if(color.isDisposed()) SWT.error(SWT.ERROR_INVALID_ARGUMENT);
-		if(thickness <= 0) SWT.error(SWT.ERROR_INVALID_ARGUMENT);
+//		if(thickness <= 0) SWT.error(SWT.ERROR_INVALID_ARGUMENT);
 		this.xValues = xValues;
 		this.yValues = yValues;
 		this.xyswtChart = xyswtChart;
 		this.title = title;
 		this.color = color;
-		this.thickness = thickness;
+//		this.thickness = thickness;
 	}
 
 	protected Color getColor() {
@@ -84,13 +84,13 @@ public class XYSWTSerie {
 		return title;
 	}
 
-	public int getThickness() {
-		return thickness;
-	}
-
-	public void setThickness(int thickness) {
-		this.thickness = thickness;
-	}
+//	public int getThickness() {
+//		return thickness;
+//	}
+//
+//	public void setThickness(int thickness) {
+//		this.thickness = thickness;
+//	}
 
 	protected double getyMin() {
 		return RTSWTChartUtils.getMin(yValues);
@@ -133,7 +133,9 @@ public class XYSWTSerie {
 					pointsArray.add(xPixel);
 					pointsArray.add(yPixel);
 				}
-			} else wasInside = false;
+			} else {
+				wasInside = false;
+			}
 		}
 		ArrayList<int[]> allPointsInt = new ArrayList<int[]>(0);
 		for (ArrayList<Integer> currentPointsArray : allPointsArray) {

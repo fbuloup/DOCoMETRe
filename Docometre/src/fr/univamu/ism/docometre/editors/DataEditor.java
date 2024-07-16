@@ -88,6 +88,7 @@ import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.ExperimentScheduler;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 import fr.univamu.ism.nswtchart.CursorMarkerListener;
+import fr.univamu.ism.nswtchart.Window;
 import fr.univamu.ism.nswtchart.XYSWTChart;
 import fr.univamu.ism.nswtchart.XYSWTSerie;
 
@@ -143,6 +144,10 @@ public class DataEditor extends EditorPart implements PartNameRefresher, CursorM
 		chart.dispose();
 		super.dispose();
 	}
+	
+	public Window getWindow() {
+		return chart.getWindow();
+	}
 
 	public void setShowCursor(boolean value) {
 		chart.setShowCursor(value);
@@ -191,12 +196,21 @@ public class DataEditor extends EditorPart implements PartNameRefresher, CursorM
 //		chart.getPlotArea().addListener(SWT.Resize, this);
 //		chart.getPlotArea().addMouseListener(this);
 		
+		
+		
 //		// Create trace and add it to graph
 		createTrace(dataFile);
 		
 		Object[] objects = ((ResourceEditorInput) getEditorInput()).getOtherEditedObjects();
 		for (Object object : objects) {
 			createTrace((IFile) object);
+		}
+		
+		Window window = ((ResourceEditorInput) getEditorInput()).getWindow();
+		if(window != null) {
+			chart.setWindow(window);
+			chart.redraw();
+			chart.update();
 		}
 //		
 		// Allow data to be copied or moved to the drop target
@@ -344,7 +358,7 @@ public class DataEditor extends EditorPart implements PartNameRefresher, CursorM
 //			lineSeries.setLineColor(DocometreApplication.getColor((byte) chart.getSeriesNumber()));
 //			lineSeries.setLineWidth(3);
 			
-			chart.createSerie(xDoubleValues, yDoubleValues, dataFile.getFullPath().toOSString(), DocometreApplication.getColor((byte) chart.getSeriesNumber()), 3);
+			chart.createSerie(xDoubleValues, yDoubleValues, dataFile.getFullPath().toOSString(), DocometreApplication.getColor((byte) chart.getSeriesNumber()), 1);
 			
 //			chart.getAxisSet().adjustRange();
 			
