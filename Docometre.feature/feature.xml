@@ -6,11 +6,16 @@
       provider-name="ISM">
 
    <description>
-      -- 2024-07-15
+      -- 2025-01-27
+ADDED : Nothing
+FIXED :
+* ADWin IP Gatherer, Windows only, IOException: Cannot run program
+-- 2024-07-15
 ADDED :
 * SWT Chart (static) - Use this library for Data Editor
 FIXED :
-* replace getRuntime().exec(String) by getRuntime().exec(String[]) (ADwin)
+* replace getRuntime().exec(String) by getRuntime().exec(String[])
+(ADwin)
 -- 2024-06-28
 ADDED :
 * Eclipse standard console
