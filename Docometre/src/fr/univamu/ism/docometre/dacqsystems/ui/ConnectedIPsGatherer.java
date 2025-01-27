@@ -70,7 +70,7 @@ public class ConnectedIPsGatherer {
 	
 	private class Pinger extends Thread {
 		
-		private String cmdLine;
+		private String[] cmdLine;
 		private boolean isReachable;
 		private String ip;
 		private long timeOut;
@@ -84,13 +84,14 @@ public class ConnectedIPsGatherer {
 			this.timeOut = timeOut;
 			String os = System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH);
 	        if ((os.contains("mac")) || (os.contains("darwin"))) {
-	        	cmdLine = "ping -c " + count + " -W " + timeOut + " " + ip;
+	        	cmdLine = new String[]{"ping -c " + count + " -W " + timeOut + " " + ip};
 	        	isMac = true;
 	        } else if (os.contains("win")) {
-	        	cmdLine = "ping -n " + count + " -w " + timeOut + " " + ip;
+	        	cmdLine = new String[]{"ping -n " + count + " -w " + timeOut + " " + ip};
+	        	cmdLine = cmdLine[0].split(" ");
 	        	isWindows = true;
 	        } else if (os.contains("nux")) {
-	        	cmdLine = "fping -c " + count + " -t" + timeOut + " " + ip;
+	        	cmdLine = new String[]{"fping -c " + count + " -t" + timeOut + " " + ip};
 	        	isLinux = true;
 	        } 
 		}
@@ -99,7 +100,7 @@ public class ConnectedIPsGatherer {
 		public void run() {
 			try {
 				if(cmdLine != null) {
-					java.lang.Process process = Runtime.getRuntime().exec(new String[] {cmdLine});
+					java.lang.Process process = Runtime.getRuntime().exec(cmdLine);
 					process.waitFor(2*timeOut, TimeUnit.MILLISECONDS);
 					String line;
 					BufferedReader out = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -114,7 +115,7 @@ public class ConnectedIPsGatherer {
 					if(isWindows) if(outString.contains("perdus = 0"))  isReachable = true;
 				}
 			} catch (IOException | InterruptedException e) {
-				Activator.logErrorMessage(cmdLine);
+				Activator.logErrorMessage(String.join(" ", cmdLine));
 				Activator.logErrorMessageWithCause(e);
 				e.printStackTrace();
 			} finally {
