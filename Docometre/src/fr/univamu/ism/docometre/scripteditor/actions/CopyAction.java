@@ -41,6 +41,7 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.scripteditor.actions;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.gef.ui.actions.SelectionAction;
@@ -81,10 +82,16 @@ public class CopyAction extends SelectionAction {
 		return true;
 	}
 	
-	@SuppressWarnings({"unchecked" })
 	@Override
 	public void run() {
-		CopyCommand copyCommand = new CopyCommand(getSelectedObjects());
+		List<Object> objectsList  = getSelectedObjects();
+		List<BlockEditPart> selectedObjects = new ArrayList<BlockEditPart>(0);
+		for (int i = 0; i < objectsList.size(); i++) {
+			if(objectsList.get(i) == null || (objectsList.get(i) instanceof BlockEditPart)) continue;
+			BlockEditPart blockEditPart = (BlockEditPart) objectsList.get(i);
+			selectedObjects.add(blockEditPart);
+		}
+		CopyCommand copyCommand = new CopyCommand(selectedObjects);
 		copyCommand.execute();
 	}
 

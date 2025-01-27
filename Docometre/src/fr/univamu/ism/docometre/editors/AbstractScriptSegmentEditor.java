@@ -53,6 +53,7 @@ import org.eclipse.draw2d.ScalableFreeformLayeredPane;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.ContextMenuProvider;
 import org.eclipse.gef.DefaultEditDomain;
+import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPartViewer;
 import org.eclipse.gef.GraphicalViewer;
 import org.eclipse.gef.MouseWheelHandler;
@@ -387,8 +388,7 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 		getGraphicalViewer().getControl().addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDoubleClick(MouseEvent event) {
-				@SuppressWarnings("unchecked")
-				Map<Object, Object> editPartMap = getGraphicalViewer().getEditPartRegistry();
+				Map<Object, EditPart> editPartMap = getGraphicalViewer().getEditPartRegistry();
 				ScriptSegmentEditPart scriptSegmentEditPart = null;
 				if(scriptSegmentType.equals(ScriptSegmentType.INITIALIZE)) scriptSegmentEditPart = (ScriptSegmentEditPart) editPartMap.get(getScript().getInitializeBlocksContainer());
 				if(scriptSegmentType.equals(ScriptSegmentType.LOOP)) scriptSegmentEditPart = (ScriptSegmentEditPart) editPartMap.get(getScript().getLoopBlocksContainer());
