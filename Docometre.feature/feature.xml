@@ -6,7 +6,12 @@
       provider-name="ISM">
 
    <description>
-      -- 2025-01-27
+      -- 2025-01-29
+ADDED : Nothing
+FIXED :
+* Use generic type to avoid compiler warning (Process Editor)
+* Wrong test correction (Editor Copy action)
+-- 2025-01-27
 ADDED : Nothing
 FIXED :
 * Compiler errors !
