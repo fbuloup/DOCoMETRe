@@ -60,6 +60,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.osgi.util.NLS;
 
 import de.adwin.driver.ADwinCommunicationError;
 import fr.univamu.ism.docometre.Activator;
@@ -251,20 +252,23 @@ public class ADWinChannel extends Channel {
 					// This is a recorded stimulus
 					if(fileChannel != null) fileChannel.close();
 					
-					String situmusFileName = getStimulusFileName(process.getInitializeBlocksContainer());
-					if(situmusFileName == null) situmusFileName = getStimulusFileName(process.getLoopBlocksContainer());
-					if(situmusFileName == null) situmusFileName = getStimulusFileName(process.getFinalizeBlocksContainer());
-					
-					String saveFileName = prefix + getProperty(ChannelProperties.NAME) + suffix;
-					saveFileName = saveFileName + ".samples";
-					IPath wsPath = new Path(Platform.getInstanceLocation().getURL().getPath());
-					String directoryName = wsPath.toOSString() + process.getOutputFolder().getFullPath().toOSString();
-					saveFileName = directoryName + File.separator + saveFileName;
-					
-					java.nio.file.Path copied = Paths.get(saveFileName);
-				    java.nio.file.Path originalPath = Paths.get(situmusFileName);
-				    Files.copy(originalPath, copied, StandardCopyOption.REPLACE_EXISTING);
-					
+					String stimulusFileName = getStimulusFileName(process.getInitializeBlocksContainer());
+					if(stimulusFileName == null) stimulusFileName = getStimulusFileName(process.getLoopBlocksContainer());
+					if(stimulusFileName == null) stimulusFileName = getStimulusFileName(process.getFinalizeBlocksContainer());
+
+					if(stimulusFileName != null) {
+						String saveFileName = prefix + getProperty(ChannelProperties.NAME) + suffix;
+						saveFileName = saveFileName + ".samples";
+						IPath wsPath = new Path(Platform.getInstanceLocation().getURL().getPath());
+						String directoryName = wsPath.toOSString() + process.getOutputFolder().getFullPath().toOSString();
+						saveFileName = directoryName + File.separator + saveFileName;
+						
+						java.nio.file.Path copied = Paths.get(saveFileName);
+					    java.nio.file.Path originalPath = Paths.get(stimulusFileName);
+					    Files.copy(originalPath, copied, StandardCopyOption.REPLACE_EXISTING);
+					} else {
+						Activator.logWarningMessage(NLS.bind(ADWinMessages.ADWinChannel_StimulusFileNotFound, getProperty(ChannelProperties.NAME)));
+					}
 				}
 			}
 		} catch (IOException | CoreException e) {

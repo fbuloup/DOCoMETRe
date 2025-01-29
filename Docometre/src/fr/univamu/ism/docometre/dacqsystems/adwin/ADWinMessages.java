@@ -322,6 +322,9 @@ public class ADWinMessages extends NLS {
 	// RS232 ADWin module
 	public static String RS232ModuleFrequencyEmptyErrorMessage;
 	
+	// ADwinChannel
+	public static String ADWinChannel_StimulusFileNotFound;
+	
 	static {
 		NLS.initializeMessages(BUNDLE_NAME, ADWinMessages.class);
 	}
