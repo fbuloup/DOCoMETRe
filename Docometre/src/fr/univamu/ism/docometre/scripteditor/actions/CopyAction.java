@@ -69,10 +69,9 @@ public class CopyAction extends SelectionAction {
 		setId(ActionFactory.COPY.getId());
 	}
 
-	@SuppressWarnings({ "rawtypes" })
 	@Override
 	protected boolean calculateEnabled() {
-		List objects = getSelectedObjects();
+		List<?> objects = getSelectedObjects();
 		if(objects == null || objects.isEmpty()) return false;
 		for (Object object : objects) {
 			if(!(object instanceof BlockEditPart)) {
@@ -84,10 +83,10 @@ public class CopyAction extends SelectionAction {
 	
 	@Override
 	public void run() {
-		List<Object> objectsList  = getSelectedObjects();
+		List<?> objectsList  = getSelectedObjects();
 		List<BlockEditPart> selectedObjects = new ArrayList<BlockEditPart>(0);
 		for (int i = 0; i < objectsList.size(); i++) {
-			if(objectsList.get(i) == null || (objectsList.get(i) instanceof BlockEditPart)) continue;
+			if(objectsList.get(i) == null || !(objectsList.get(i) instanceof BlockEditPart)) continue;
 			BlockEditPart blockEditPart = (BlockEditPart) objectsList.get(i);
 			selectedObjects.add(blockEditPart);
 		}
