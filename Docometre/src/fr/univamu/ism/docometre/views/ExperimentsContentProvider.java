@@ -73,7 +73,7 @@ public class ExperimentsContentProvider implements ITreeContentProvider {
 			try {
 				if(!((IResource)parentElement).exists()) return null;
 				if(parentElement instanceof IContainer) {
-					if(((IResource)parentElement).exists()) {
+					if(((IResource)parentElement).isAccessible()) {
 						IResource[] resources = ((IContainer)parentElement).members();
 						return processMembers(resources);
 					}
