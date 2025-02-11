@@ -86,6 +86,8 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 	private Text arduinoCLIText;
 	private Button useArduinoCLIButton;
 	private Button browsearduinoCLIButton;
+
+	private Combo revisionCombo;
 	
 	public static ArduinoUnoDACQConfiguration getDefaultDACQConfiguration() {
 		IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
@@ -99,6 +101,7 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 		arduinoUnoDACQConfiguration.setProperty(ArduinoUnoDACQConfigurationProperties.BAUD_RATE, preferenceStore.getString(ArduinoUnoDACQConfigurationProperties.BAUD_RATE.getKey()));
 		arduinoUnoDACQConfiguration.setProperty(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH, preferenceStore.getString(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey()));
 		arduinoUnoDACQConfiguration.setProperty(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH, preferenceStore.getString(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getKey()));
+		arduinoUnoDACQConfiguration.setProperty(ArduinoUnoDACQConfigurationProperties.REVISION, preferenceStore.getString(ArduinoUnoDACQConfigurationProperties.REVISION.getKey()));
 		return arduinoUnoDACQConfiguration;
 	}
 
@@ -118,6 +121,7 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH.getKey(), arduinoUnoDACQConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH));
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.BAUD_RATE.getKey(), arduinoUnoDACQConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.BAUD_RATE));
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), arduinoUnoDACQConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH));
+		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.REVISION.getKey(), arduinoUnoDACQConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION));
 		preferenceStore.putValue(DEFAULT_ARDUINO_UNO_SYSTEM_PREFERENCE_INITIALIZED, "true");
 	}
 	
@@ -136,6 +140,7 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 		useArduinoCLIButton.setSelection(useCLI);
 		arduinoCLIText.setEnabled(useCLI);
 		browsearduinoCLIButton.setEnabled(useCLI);
+		revisionCombo.setText(getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.REVISION.getKey()));
 	}
 	
 	@Override
@@ -151,6 +156,7 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getKey(), userLibraryPathText.getText());
 		preferenceStore.putValue(GeneralPreferenceConstants.ARDUINO_DELAY_TIME_AFTER_SERIAL_PRINT, delayTimeSpinner.getText());
 		preferenceStore.putValue(GeneralPreferenceConstants.ARDUINO_USER_LIBRARIES_ABSOLUTE_PATH, docoUserLibrariesAbsolutePathText.getText());
+		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.REVISION.getKey(), revisionCombo.getText());
 		boolean value = super.performOk();
 		FunctionsView.refresh(false);
 		return value;
@@ -317,6 +323,17 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 				delayTimeSpinner.setSelection(value); 
 			}
 		});
+		
+		// Revision
+		Label revisionLabel = new Label(container, SWT.NORMAL);
+		revisionLabel.setText(ArduinoUnoDACQConfigurationProperties.REVISION.getLabel());
+		GridDataFactory.fillDefaults().align(SWT.RIGHT, SWT.CENTER).applyTo(revisionLabel);
+		revisionCombo = new Combo(container, SWT.READ_ONLY);
+		revisionCombo.setItems(ArduinoUnoDACQConfigurationProperties.REVISIONS);
+		String value = getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.REVISION.getKey());
+		value = value == null ? ArduinoUnoDACQConfigurationProperties.REVISION_R3 : "".equals(value) ? ArduinoUnoDACQConfigurationProperties.REVISION_R3 : value;
+		revisionCombo.setText(value);
+		GridDataFactory.fillDefaults().grab(true, false).span(2, 1).applyTo(revisionCombo);
 		
 		return container;
 	}

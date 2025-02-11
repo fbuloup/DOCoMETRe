@@ -112,6 +112,10 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 	private Text avrDudePathText;
 	private Text arduinoCLIPathText;
 	private Text librariesPathText;
+
+	private Button useCLIButton;
+
+	private Combo revisionCombo;
 	
 	private class SetAsDefaultConfigurationAction extends Action {
 		public SetAsDefaultConfigurationAction() {
@@ -129,6 +133,8 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 			values.add(librariesPathText.getText());
 			values.add(globalFrequencyHyperlink.getText());
 			values.add(arduinoCLIPathText.getText());
+			values.add(useCLIButton.getSelection()?"true":"false");
+			values.add(revisionCombo.getText());
 			IPreferenceStore preferences = Activator.getDefault().getPreferenceStore();
 			preferences.putValue(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH.getKey(), values.get(0));
 			preferences.putValue(ArduinoUnoDACQConfigurationProperties.BAUD_RATE.getKey(), values.get(1));
@@ -137,6 +143,8 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 			preferences.putValue(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), values.get(4));
 			preferences.putValue(ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY.getKey(), values.get(5));
 			preferences.putValue(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH.getKey(), values.get(6));
+			preferences.putValue(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI.getKey(), values.get(7));
+			preferences.putValue(ArduinoUnoDACQConfigurationProperties.REVISION.getKey(), values.get(8));
 		}
 	}
 
@@ -213,7 +221,7 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 		createButton(generalconfigurationContainer, DocometreMessages.Browse, SWT.PUSH, 1, 1).addSelectionListener(new DialogSelectionHandler(avrDudePathText, false, getSite().getShell()));
 		
 		value = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI);
-		Button useCLIButton = createButton(generalconfigurationContainer, ArduinoUnoMessages.UseArduinoCLI_Label, SWT.CHECK, 3, 1);
+		useCLIButton = createButton(generalconfigurationContainer, ArduinoUnoMessages.UseArduinoCLI_Label, SWT.CHECK, 3, 1);
 		useCLIButton.setToolTipText(ArduinoUnoMessages.UseArduinoCLI_Tooltip);
 		useCLIButton.setSelection("true".equals(value)?true:false);
 		
@@ -236,6 +244,14 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 				generalConfigurationSectionPart.markDirty();
 			}
 		});
+		
+		createLabel(generalconfigurationContainer, ArduinoUnoMessages.Revision_Label, ArduinoUnoMessages.Revision_Tooltip);
+		value = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
+		value = value == null ? ArduinoUnoDACQConfigurationProperties.REVISION_R3 : value;
+		regExp = ArduinoUnoDACQConfigurationProperties.REVISION.getRegExp();
+		revisionCombo = createCombo(generalconfigurationContainer, ArduinoUnoDACQConfigurationProperties.REVISIONS, value, 2 , 1);
+		revisionCombo.addModifyListener(new ModifyPropertyHandler(ArduinoUnoDACQConfigurationProperties.REVISION, dacqConfiguration, revisionCombo, regExp, "", false, (ResourceEditor)getEditor()));
+		revisionCombo.addModifyListener(getGeneralConfigurationModifyListener());
 		
 		createLabel(generalconfigurationContainer, ArduinoUnoMessages.DevicePath_Label, ArduinoUnoMessages.DevicePath_Tooltip);
 		value = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH);

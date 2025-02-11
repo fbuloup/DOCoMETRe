@@ -403,7 +403,9 @@ public class ArduinoUnoProcess extends Process {
 		int delay = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.ARDUINO_DELAY_TIME_AFTER_SERIAL_PRINT);
 		
 		if(segment == ArduinoUnoCodeSegmentProperties.INCLUDE) {
-			code = code + "#include <avr/wdt.h>\n";
+			if(ArduinoUnoDACQConfigurationProperties.REVISION_R4.equals(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION)))
+			code = code + "#include \"r_bsp_software_reset.h\"\n";
+			else code = code + "#include <avr/wdt.h>\n";
 			
 			code = code + getCurrentProcess().getScript().getInitializeCode(this, ArduinoUnoCodeSegmentProperties.INCLUDE);
 			code = code + getCurrentProcess().getScript().getLoopCode(this, ArduinoUnoCodeSegmentProperties.INCLUDE);
@@ -542,7 +544,10 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "\t\t\t\tif(Serial.available())\n";
 			code = code + "\t\t\t\t\t\tstartLoop = ((char)Serial.read()) != 's';\n";
 			code = code + "\t\t\t\tif(!startLoop) {\n";
-			code = code + "\t\t\t\t\t\twdt_enable(WDTO_15MS);\n";
+			
+			if(ArduinoUnoDACQConfigurationProperties.REVISION_R4.equals(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION)))
+			code = code + "\t\t\t\t\t\tR_BSP_SoftwareReset();\n";
+			else code = code + "\t\t\t\t\t\twdt_enable(WDTO_15MS);\n";
 			code = code + "\t\t\t\t\t\tstartLoop = true;\n";
 			code = code + "\t\t\t\t}\n";
 			code = code + "\t\t\t\treturn;\n";

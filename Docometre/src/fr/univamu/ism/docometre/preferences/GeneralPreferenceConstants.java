@@ -82,6 +82,7 @@ public class GeneralPreferenceConstants {
 	public static final String ARDUINO_USER_LIBRARIES_ABSOLUTE_PATH = "ARDUINO_USER_LIBRARIES_ABSOLUTE_PATH";
 	public static final String ARDUINO_USE_CLI = "ARDUINO_USE_CLI";
 	public static final String ARDUINO_CLI_ABSOLUTE_PATH = "ARDUINO_CLI_ABSOLUTE_PATH";
+	public static final String ARDUINO_REVISION = "ARDUINO_REVISION";
 	
 	public static final String SHOW_CURSOR = "SHOW_CURSOR";
 	public static final String SHOW_MARKER = "SHOW_MARKER";
