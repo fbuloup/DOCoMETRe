@@ -110,6 +110,7 @@ public class ADWinChannel extends Channel {
 	}
 	
 	public float[] getSamples(int nbData){
+		if(fileChannel == null || !fileChannel.isOpen()) return new float[nbData];
 		ByteBuffer byteBuffer = ByteBuffer.allocate(nbData*4);
 		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 		floatBuffer = byteBuffer.asFloatBuffer();
@@ -185,6 +186,9 @@ public class ADWinChannel extends Channel {
 						Activator.logErrorMessageWithCause(e);
 						e.printStackTrace();
 					}
+				} else {
+					String message = NLS.bind(ADWinMessages.NoStimulusFileFound, getProperty(ChannelProperties.NAME));
+					throw new FileNotFoundException(message);
 				}
 			} else if(isTransfered) {
 				fileName = fileName + ".samples";
@@ -194,7 +198,8 @@ public class ADWinChannel extends Channel {
 			}
 			
 		} catch (FileNotFoundException e) {
-			Logger.getLogger(Process.class).error("Exception", e);
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
 		}
 	}
 	

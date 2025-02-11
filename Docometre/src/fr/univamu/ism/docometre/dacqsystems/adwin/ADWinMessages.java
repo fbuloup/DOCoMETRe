@@ -94,6 +94,7 @@ public class ADWinMessages extends NLS {
 	public static String UNKNOWN;
 	public static String DeleteModule_Tooltip;
 	public static String AddModule_Tooltip;
+	public static String NoStimulusFileFound;
 	
 	// ADD module dialog
 	public static String AddModuleDialog_ShellTitle;
