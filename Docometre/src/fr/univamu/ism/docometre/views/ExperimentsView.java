@@ -142,7 +142,7 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 		public AssociateWithProcessAction(IFolder[] trials, IFile processFile) {
 			this.trials = trials;
 			this.processFile = processFile;
-			setText(processFile.getFullPath().toOSString().replaceAll(Activator.processFileExtension, ""));
+			setText(processFile.getFullPath().toOSString().replaceAll(Activator.processFileExtension + "$", ""));
 		}
 		@Override
 		public void run() {
