@@ -114,6 +114,7 @@ public class ExperimentScheduler {
 				removeProcessHandle = true;
 			}
 			process = (Process) object;
+			int priority = Thread.currentThread().getPriority();
 			try {
 				process.preExecute((trial==null)?processFile:trial);
 				PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
@@ -135,7 +136,6 @@ public class ExperimentScheduler {
 					if(ResourceProperties.useTrialNumberInDataFilesNamesAsSecondSuffix(currentSession)) suffix = suffix  + dataFilePathNameSeparator + "T" + currentTrial.getName().split("°")[1];
 				}
 				
-				int priority = Thread.currentThread().getPriority();
 				Thread.currentThread().setPriority(Thread.NORM_PRIORITY + 1);
 				
 				Job realTimeLoopJob = process.execute(prefix, suffix);
@@ -156,8 +156,8 @@ public class ExperimentScheduler {
 //						monitor.setCanceled(false);
 //					}
 				}
-				Thread.currentThread().setPriority(priority);
-				process.postExecute((trial==null)?processFile:trial);
+//				Thread.currentThread().setPriority(priority);
+//				process.postExecute((trial==null)?processFile:trial);
 //				process.refreshLogFile((trial==null)?processFile:trial);
 				
 			} catch (Exception e) {
@@ -165,9 +165,17 @@ public class ExperimentScheduler {
 				running = false;
 				return new Status(IStatus.ERROR, Activator.PLUGIN_ID, Activator.getLogErrorMessageWithCause(e));
 			} finally {
-				if(removeProcessHandle) {
-					ObjectsController.removeHandle(process.getDACQConfiguration());
-					ObjectsController.removeHandle(process);
+				try {
+					process.postExecute((trial==null)?processFile:trial);
+				} catch (Exception e) {
+					Activator.logErrorMessageWithCause(e);
+					e.printStackTrace();
+				} finally {
+					Thread.currentThread().setPriority(priority);
+					if(removeProcessHandle) {
+						ObjectsController.removeHandle(process.getDACQConfiguration());
+						ObjectsController.removeHandle(process);
+					}
 				}
 			}
 			return returnStatus;

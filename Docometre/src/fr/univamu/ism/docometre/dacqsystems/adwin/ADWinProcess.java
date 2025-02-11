@@ -148,11 +148,12 @@ public class ADWinProcess extends Process {
 		
 		@Override
 		protected IStatus run(IProgressMonitor monitor) {
+			double processBeginTime = 0;
 			try {
 				getThread().setPriority(Thread.MAX_PRIORITY);
 				int processNumberInt = Integer.parseInt(ADWinProcess.this.getProperty(ADWinProcessProperties.PROCESS_NUMBER));	
 				boolean active = ((ADWinDACQConfiguration)ADWinProcess.this.getDACQConfiguration()).getADwinDevice().Process_Status(processNumberInt) == 1;
-				double processBeginTime = System.currentTimeMillis()/1000d;
+				processBeginTime = System.currentTimeMillis()/1000d;
 				String date = new SimpleDateFormat("EEE d MMM yyyy HH:mm:ss", Locale.getDefault()).format(new Date());
 				appendToEventDiary(date);
 				appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_StartingAt,  ObjectsController.getResourceForObject(ADWinProcess.this).getName(), processBeginTime));
@@ -232,6 +233,19 @@ public class ADWinProcess extends Process {
 //					ModuleBehaviour module = ADWinProcess.this.getDACQConfiguration().getModule(i);
 //					module.close();
 //				}
+//				ADWinProcess.this.close();
+//				double processEndTime = System.currentTimeMillis()/1000d;
+//				
+//				if(ObjectsController.getResourceForObject(ADWinProcess.this) != null) {
+//					appendToEventDiary(Activator.NEW_LINE + NLS.bind(ADWinMessages.ADWinDiary_Ending, ObjectsController.getResourceForObject(ADWinProcess.this).getName(), processEndTime));
+//					appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_Approximative, ObjectsController.getResourceForObject(ADWinProcess.this).getName(), (processEndTime-processBeginTime)));
+//				}
+				
+				
+			} catch (ADwinCommunicationError e) {
+				appendToEventDiary(e.getMessage());
+			} finally {
+				// CLOSE
 				ADWinProcess.this.close();
 				double processEndTime = System.currentTimeMillis()/1000d;
 				
@@ -239,10 +253,6 @@ public class ADWinProcess extends Process {
 					appendToEventDiary(Activator.NEW_LINE + NLS.bind(ADWinMessages.ADWinDiary_Ending, ObjectsController.getResourceForObject(ADWinProcess.this).getName(), processEndTime));
 					appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_Approximative, ObjectsController.getResourceForObject(ADWinProcess.this).getName(), (processEndTime-processBeginTime)));
 				}
-				
-				
-			} catch (ADwinCommunicationError e) {
-				appendToEventDiary(e.getMessage());
 			}
 			return Status.OK_STATUS;
 		}
@@ -1033,6 +1043,7 @@ public class ADWinProcess extends Process {
 			((ADWinDACQConfiguration)getDACQConfiguration()).getADwinDevice().Start_Process(processNumberInt);
 			return realTimeLoopJob;
 		} catch (Exception e) {
+			close();
 			throw e;
 		}
 	}
