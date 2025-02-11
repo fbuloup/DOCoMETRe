@@ -403,6 +403,8 @@ public class ArduinoUnoProcess extends Process {
 		int delay = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.ARDUINO_DELAY_TIME_AFTER_SERIAL_PRINT);
 		
 		if(segment == ArduinoUnoCodeSegmentProperties.INCLUDE) {
+			code = code + "#include <avr/wdt.h>\n";
+			
 			code = code + getCurrentProcess().getScript().getInitializeCode(this, ArduinoUnoCodeSegmentProperties.INCLUDE);
 			code = code + getCurrentProcess().getScript().getLoopCode(this, ArduinoUnoCodeSegmentProperties.INCLUDE);
 			code = code + getCurrentProcess().getScript().getFinalizeCode(this, ArduinoUnoCodeSegmentProperties.INCLUDE) + "\n";
@@ -448,23 +450,23 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "byte workload;\n\n";
 //			code = code + "// Loop start time\n";
 //			code = code + "unsigned long startTime;\n\n";
-			code = code + "// Variables to run process periodically\n";
-			code = code + "long previousLoopTime;\n";
-			code = code + "unsigned long currentLoopTime;\n\n";
-			code = code + "// Try to compensate time drift\n";
-			code = code + "long delta;\n";
+//			code = code + "// Variables to run process periodically\n";
+//			code = code + "long previousLoopTime;\n";
+//			code = code + "unsigned long currentLoopTime;\n\n";
+//			code = code + "// Try to compensate time drift\n";
+//			code = code + "long delta;\n";
 			code = code + "// Loop time in second\n";
 			code = code + "double time;\n\n";
-			code = code + "// Loop time in usecond\n";
-			code = code + "unsigned long timeMicros;\n\n";
+//			code = code + "// Loop time in usecond\n";
+//			code = code + "unsigned long timeMicros;\n\n";
 			code = code + "// Loop index to compute time\n";
 			code = code + "unsigned long timeIndex;\n\n";
 			code = code + "// Start loop when true\n";
-			code = code + "bool startLoop = false;\n\n";
+			code = code + "bool startLoop;\n\n";
 			code = code + "// Stop loop when true\n";
-			code = code + "bool terminateProcess = false;\n\n";
-			code = code + "// First loop flag\n";
-			code = code + "bool firstLoop = true;\n\n";
+			code = code + "bool terminateProcess;\n\n";
+//			code = code + "// First loop flag\n";
+//			code = code + "bool firstLoop = true;\n\n";
 			code = code + "// String serialMessage\n";
 			code = code + "char serialMessage[64];\n\n";
 			code = code + "// Index to send time and workload at regular intervall (#200ms)\n";
@@ -497,7 +499,11 @@ public class ArduinoUnoProcess extends Process {
 			int value = (int)(displayTimeRate*gf);
 			if(value == 0) value = 1;
 			code = code + "\t\tsendTimeWorkload = " + value + ";\n";
+			code = code + "\t\tworkload = 0;\n";
 			code = code + "\t\ttime = 0;\n";
+			code = code + "\t\ttimeIndex = 0;\n";
+			code = code + "\t\tterminateProcess = false;\n";
+			code = code + "\t\tstartLoop = false;\n";
 			if(((ArduinoUnoDACQConfiguration)getDACQConfiguration()).hasADS1115Module()) {
 				code = code + "\t\t// Start I2C interface\n";
 				code = code + "\t\tWire.begin();\n";
@@ -530,6 +536,19 @@ public class ArduinoUnoProcess extends Process {
 		if(segment == ArduinoUnoCodeSegmentProperties.ACQUISITION) {
 			
 			code = "}\n\nISR(TIMER1_COMPA_vect){\n";
+			
+			
+			code = code + "\t\tif(terminateProcess) {\n";
+			code = code + "\t\t\t\tif(Serial.available())\n";
+			code = code + "\t\t\t\t\t\tstartLoop = ((char)Serial.read()) != 's';\n";
+			code = code + "\t\t\t\tif(!startLoop) {\n";
+			code = code + "\t\t\t\t\t\twdt_enable(WDTO_15MS);\n";
+			code = code + "\t\t\t\t\t\tstartLoop = true;\n";
+			code = code + "\t\t\t\t}\n";
+			code = code + "\t\t\t\treturn;\n";
+			code = code + "\t\t}\n";
+			
+			
 			code = code + "\t\t// Reset timer 0 for workload computation\n";
 			code = code + "\t\tTCNT0 = 0;\n";
 			code = code + "\t\t// If we receive 's'(top) from serial port,\n";
@@ -595,7 +614,7 @@ public class ArduinoUnoProcess extends Process {
 			
 			code = code + "\t\tif(terminateProcess) {\n";
 			code = code + "\t\t\t\tfinalize();\n";
-			code = code + "\t\t\t\texit(0);\n";
+//			code = code + "\t\t\t\texit(0);\n";
 			code = code + "\t\t}\n";
 			
 //			code = code + "\t\t}\n";
@@ -616,12 +635,12 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "\t\tSerial.println('s');\n";
 			code = code + "\t\tSerial.flush();\n";
 			if(delay > 0) code = code + "\t\t\t\t\t\tdelayMicroseconds(" + delay + ");\n";
-			code = code + "\t\t// Now wait to receive 's' char before board restart\n";
-			code = code + "\t\twhile (startLoop) {\n";
-			code = code + "\t\t\t\tif(Serial.available()) {\n";
-			code = code + "\t\t\t\t\t\tstartLoop = ((char)Serial.read()) != 's';\n";
-			code = code + "\t\t\t\t}\n";
-			code = code + "\t\t}\n\n";
+//			code = code + "\t\t// Now wait to receive 's' char before board restart\n";
+//			code = code + "\t\twhile (startLoop) {\n";
+//			code = code + "\t\t\t\tif(Serial.available()) {\n";
+//			code = code + "\t\t\t\t\t\tstartLoop = ((char)Serial.read()) != 's';\n";
+//			code = code + "\t\t\t\t}\n";
+//			code = code + "\t\t}\n\n";
 			code = code + "}\n\n";
 
 			code = code + "void loop() {\n";
