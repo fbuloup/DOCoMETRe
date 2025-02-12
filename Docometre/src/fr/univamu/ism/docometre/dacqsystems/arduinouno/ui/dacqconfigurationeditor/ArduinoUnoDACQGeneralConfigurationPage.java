@@ -233,8 +233,8 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 		arduinoCLIPathText.addModifyListener(getGeneralConfigurationModifyListener());
 		Button browseButton = createButton(generalconfigurationContainer, DocometreMessages.Browse, SWT.PUSH, 1, 1);
 		browseButton.addSelectionListener(new DialogSelectionHandler(arduinoCLIPathText, false, getSite().getShell()));
-		arduinoCLIPathText.setEnabled("true".equals(value)?true:false);
-		browseButton.setEnabled("true".equals(value)?true:false);
+		arduinoCLIPathText.setEnabled(useCLIButton.getSelection());
+		browseButton.setEnabled(useCLIButton.getSelection());
 		useCLIButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
