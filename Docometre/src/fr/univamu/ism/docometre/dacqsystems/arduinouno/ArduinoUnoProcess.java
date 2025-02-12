@@ -197,9 +197,12 @@ public class ArduinoUnoProcess extends Process {
 			String date = new SimpleDateFormat("EEE d MMM yyyy HH:mm:ss", Locale.getDefault()).format(new Date());
 			appendToEventDiary(date);
 			appendToEventDiary("Starting " + ObjectsController.getResourceForObject(ArduinoUnoProcess.this).getName() + " at " + Double.toString(processBeginTime) + "\n");
-			while(!terminate) {
-				try {
-					
+			
+			try {
+				
+				
+				while(!terminate) {
+						
 					if(monitor.isCanceled()) {
 						forceTermination = true;
 						monitor.setCanceled(false);
@@ -222,7 +225,7 @@ public class ArduinoUnoProcess extends Process {
 		                    	if(segments.length == 2) {
 		                    		try {
 										trsfrNum = Integer.parseInt(segments[0]);
-//											time = Float.parseFloat(segments[1])/1000000f; 
+//												time = Float.parseFloat(segments[1])/1000000f; 
 										value = Float.parseFloat(segments[1]);
 									} catch (Exception e) {
 										Activator.logErrorMessageWithCause(e);
@@ -281,22 +284,22 @@ public class ArduinoUnoProcess extends Process {
 			    					PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
 										@Override
 			    						public void run() {
-//			    							StatusLineManager statusLineManger = ((WorkbenchWindow)PlatformUI.getWorkbench().getActiveWorkbenchWindow()).getStatusLineManager();
-//			    							statusLineManger.setMessage(NLS.bind(DocometreMessages.Workload_Time, workload, formater.format(realTime)));
+//				    							StatusLineManager statusLineManger = ((WorkbenchWindow)PlatformUI.getWorkbench().getActiveWorkbenchWindow()).getStatusLineManager();
+//				    							statusLineManger.setMessage(NLS.bind(DocometreMessages.Workload_Time, workload, formater.format(realTime)));
 			    							ApplicationActionBarAdvisor.workloadTimeContributionItem.setText(NLS.bind(DocometreMessages.Workload_Time, workload, formater.format(realTime)));
 			    						}
 			    					});
 		                    	} else {
 		                    		try {
-//			                    		timeBefore = System.currentTimeMillis()/1000d;
-//										transferedChannelsOrderedByTransferNumber[trsfrNum - 1].addSamples(new float[] {time, value});
+//				                    		timeBefore = System.currentTimeMillis()/1000d;
+//											transferedChannelsOrderedByTransferNumber[trsfrNum - 1].addSamples(new float[] {time, value});
 										transferedChannelsOrderedByTransferNumber[trsfrNum - 1].addSamples(new float[] {value});
-//		                    			channelName = transferedChannelsOrderedByTransferNumber[trsfrNum - 1].getProperty(ChannelProperties.NAME);
+//			                    			channelName = transferedChannelsOrderedByTransferNumber[trsfrNum - 1].getProperty(ChannelProperties.NAME);
 										nbSamples[trsfrNum - 1] +=1;
 										transferedChannelsOrderedByTransferNumber[trsfrNum - 1].notifyChannelObservers();
-//			                    		timeAfter = System.currentTimeMillis()/1000d;
-//			        					appendToEventDiary("Display time : " + (timeAfter - timeBefore));
-//			                    		appendToEventDiary("New sample for channel " + channelName + "  - dt : " + formater.format(time) + "  - Total " + nbSamples[trsfrNum - 1] + " samples");
+//				                    		timeAfter = System.currentTimeMillis()/1000d;
+//				        					appendToEventDiary("Display time : " + (timeAfter - timeBefore));
+//				                    		appendToEventDiary("New sample for channel " + channelName + "  - dt : " + formater.format(time) + "  - Total " + nbSamples[trsfrNum - 1] + " samples");
 									} catch (Exception e) {
 										Activator.logErrorMessageWithCause(e);
 										e.printStackTrace();
@@ -328,40 +331,21 @@ public class ArduinoUnoProcess extends Process {
 	    				serialPort.writeByte((byte) 's');
 	    				forceTermination = false;
 	    			}
-	            }
-	            catch (Exception e1) {
-	            	Activator.logErrorMessageWithCause(e1);
-					double processEndTime = System.currentTimeMillis()/1000d;
-					appendToEventDiary("\nEnd time (s) : " + Double.toString(processEndTime));
-					appendToEventDiary(ObjectsController.getResourceForObject(ArduinoUnoProcess.this).getName() + " duration (s) is about : " + Double.toString(processEndTime - processBeginTime) + "\n");
-					PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
-						@Override
-						public void run() {
-//							StatusLineManager statusLineManger = ((WorkbenchWindow)PlatformUI.getWorkbench().getActiveWorkbenchWindow()).getStatusLineManager();
-//							statusLineManger.setMessage(NLS.bind(DocometreMessages.Workload_Time, "0", formater.format(time)));
-							ApplicationActionBarAdvisor.workloadTimeContributionItem.setText(NLS.bind(DocometreMessages.Workload_Time, "0", formater.format(realTime)));
-						}
-					});
-					try {
-						serialPort.closePort();
-					} catch (SerialPortException e) {
-						Activator.logErrorMessageWithCause(e);
-					}
-					appendToEventDiary("Error in receiving string from port: " + e1.getMessage());
-					appendErrorMarkerAtCurrentDiaryLine("Error in receiving string from port: " + e1.getMessage());
-					PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
-						@Override
-						public void run() {
-							StatusLineManager statusLineManger = ((WorkbenchWindow)PlatformUI.getWorkbench().getActiveWorkbenchWindow()).getStatusLineManager();
-							statusLineManger.setErrorMessage(Activator.getImage(IImageKeys.ERROR_ANNOTATION_ICON), "Error in receiving string from port");
-						}
-					});
-	                return new Status(Status.ERROR, Activator.PLUGIN_ID, "Error in receiving string from port: " + e1.getMessage());
 				}
-			}
-			try {
-				ArduinoUnoProcess.this.close();
-				serialPort.closePort();
+				
+			} catch (Exception e) {
+				Activator.logErrorMessageWithCause(e);							
+				appendToEventDiary("Error in receiving string from port: " + e.getMessage());
+				appendErrorMarkerAtCurrentDiaryLine("Error in receiving string from port: " + e.getMessage());
+				PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+					@Override
+					public void run() {
+						StatusLineManager statusLineManger = ((WorkbenchWindow)PlatformUI.getWorkbench().getActiveWorkbenchWindow()).getStatusLineManager();
+						statusLineManger.setErrorMessage(Activator.getImage(IImageKeys.ERROR_ANNOTATION_ICON), "Error in receiving string from port");
+					}
+				});
+                return new Status(Status.ERROR, Activator.PLUGIN_ID, "Error in receiving string from port: " + e.getMessage());
+			} finally {
 				double processEndTime = System.currentTimeMillis()/1000d;
 				appendToEventDiary("\nEnd time (s) : " + Double.toString(processEndTime));
 				appendToEventDiary(ObjectsController.getResourceForObject(ArduinoUnoProcess.this).getName() + " duration (s) is about : " + Double.toString(processEndTime - processBeginTime) + "\n");
@@ -379,10 +363,46 @@ public class ArduinoUnoProcess extends Process {
 						ApplicationActionBarAdvisor.workloadTimeContributionItem.setText(NLS.bind(DocometreMessages.Workload_Time, "0", formater.format(realTime)));
 					}
 				});
-			} catch (Exception e2) {
-                return new Status(Status.ERROR, Activator.PLUGIN_ID, "Error in receiving string from port: " + e2.getMessage());
-			} 
+				
+				ArduinoUnoProcess.this.close();
+				try {
+					serialPort.closePort();
+				} catch (SerialPortException e) {
+					Activator.logErrorMessageWithCause(e);
+					return new Status(Status.ERROR, Activator.PLUGIN_ID, "Error closing port: " + e.getMessage());
+				}
+			}
 			return Status.OK_STATUS;
+			
+//			try {
+//				ArduinoUnoProcess.this.close();
+//				serialPort.closePort();
+//				double processEndTime = System.currentTimeMillis()/1000d;
+//				appendToEventDiary("\nEnd time (s) : " + Double.toString(processEndTime));
+//				appendToEventDiary(ObjectsController.getResourceForObject(ArduinoUnoProcess.this).getName() + " duration (s) is about : " + Double.toString(processEndTime - processBeginTime) + "\n");
+//				
+//				appendToEventDiary("Total samples for transfered channels :");
+//				for (int i = 0; i < nbSamples.length; i++) {
+//					appendToEventDiary(transferedChannelsOrderedByTransferNumber[i].getProperty(ChannelProperties.NAME) + " : " + nbSamples[i]);
+//				}
+//				
+//				PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+//					@Override
+//					public void run() {
+////						StatusLineManager statusLineManger = ((WorkbenchWindow)PlatformUI.getWorkbench().getActiveWorkbenchWindow()).getStatusLineManager();
+////						statusLineManger.setMessage(NLS.bind(DocometreMessages.Workload_Time, "0", formater.format(time)));
+//						ApplicationActionBarAdvisor.workloadTimeContributionItem.setText(NLS.bind(DocometreMessages.Workload_Time, "0", formater.format(realTime)));
+//					}
+//				});
+//			} catch (Exception e2) {
+//                return new Status(Status.ERROR, Activator.PLUGIN_ID, "Error in receiving string from port: " + e2.getMessage());
+//			} 
+//			return Status.OK_STATUS;
+			
+			
+			
+			
+			
 		}
 		
 		public void forceTermination() {
@@ -404,7 +424,7 @@ public class ArduinoUnoProcess extends Process {
 		
 		if(segment == ArduinoUnoCodeSegmentProperties.INCLUDE) {
 			if(ArduinoUnoDACQConfigurationProperties.REVISION_R4.equals(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION)))
-			code = code + "#include \"r_bsp_software_reset.h\"\n";
+			code = code + "#include <WDT.h>\n";
 			else code = code + "#include <avr/wdt.h>\n";
 			
 			code = code + getCurrentProcess().getScript().getInitializeCode(this, ArduinoUnoCodeSegmentProperties.INCLUDE);
@@ -546,7 +566,7 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "\t\t\t\tif(!startLoop) {\n";
 			
 			if(ArduinoUnoDACQConfigurationProperties.REVISION_R4.equals(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION)))
-			code = code + "\t\t\t\t\t\tR_BSP_SoftwareReset();\n";
+			code = code + "\t\t\t\t\t\tWDT.begin(15);\n";
 			else code = code + "\t\t\t\t\t\twdt_enable(WDTO_15MS);\n";
 			code = code + "\t\t\t\t\t\tstartLoop = true;\n";
 			code = code + "\t\t\t\t}\n";
@@ -1247,15 +1267,22 @@ public class ArduinoUnoProcess extends Process {
 	@Override
 	public Job execute(String prefix, String suffix) throws Exception {
 		// Load process
-		if(loadProcess()) {
-			// Create Job
-			realTimeLoopJob = new RealTimeLoopJob(DocometreMessages.RunningProcess);
-			// Open modules and variables
-			open(this, prefix, suffix);
-			generation();
-			return realTimeLoopJob;
-		} else throw new Exception("Impossible to load process.");
-		
+		boolean processLoaded = false;
+		try {
+			processLoaded = loadProcess();
+			if(processLoaded) {
+				// Create Job
+				realTimeLoopJob = new RealTimeLoopJob(DocometreMessages.RunningProcess);
+				// Open modules and variables
+				open(this, prefix, suffix);
+				generation();
+				return realTimeLoopJob;
+			} else throw new Exception("Impossible to load process.");
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			close();
+		}
 	}
 
 	private boolean loadProcess() throws Exception {
