@@ -1279,9 +1279,8 @@ public class ArduinoUnoProcess extends Process {
 				return realTimeLoopJob;
 			} else throw new Exception("Impossible to load process.");
 		} catch (Exception e) {
-			throw e;
-		} finally {
 			close();
+			throw e;
 		}
 	}
 
