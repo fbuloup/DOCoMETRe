@@ -199,15 +199,11 @@ public class ArduinoUnoProcess extends Process {
 			appendToEventDiary("Starting " + ObjectsController.getResourceForObject(ArduinoUnoProcess.this).getName() + " at " + Double.toString(processBeginTime) + "\n");
 			
 			try {
-				
-				
 				while(!terminate) {
-						
 					if(monitor.isCanceled()) {
 						forceTermination = true;
 						monitor.setCanceled(false);
 					}
-					
 	    			if(serialPort.getInputBufferBytesCount() > 0) {
 	    				byte[] bytes = serialPort.readBytes();
 		            	for (byte b: bytes) {
@@ -225,7 +221,6 @@ public class ArduinoUnoProcess extends Process {
 		                    	if(segments.length == 2) {
 		                    		try {
 										trsfrNum = Integer.parseInt(segments[0]);
-//												time = Float.parseFloat(segments[1])/1000000f; 
 										value = Float.parseFloat(segments[1]);
 									} catch (Exception e) {
 										Activator.logErrorMessageWithCause(e);
@@ -312,7 +307,7 @@ public class ArduinoUnoProcess extends Process {
 												statusLineManger.setErrorMessage(Activator.getImage(IImageKeys.ERROR_ANNOTATION_ICON), ADWinMessages.ProcessDataLoss_Label);
 											}
 										});
-										continue;
+//										continue;
 									}
 		                    	}
 			                    
@@ -322,8 +317,7 @@ public class ArduinoUnoProcess extends Process {
 		                    		terminate = true;
 		                    		forceTermination = true;// Just to send s in reply as Arduino is waiting for it.
 		                    		Thread.sleep(30);// Wait 30ms to be sure Arduino is waiting for 's' char.
-		                    	}
-		                    	else message.append((char)b);
+		                    	} else message.append((char)b);
 		                    }
 		            	}
 	    			}
@@ -335,26 +329,31 @@ public class ArduinoUnoProcess extends Process {
 				
 			} catch (Exception e) {
 				Activator.logErrorMessageWithCause(e);							
-				appendToEventDiary("Error in receiving string from port: " + e.getMessage());
-				appendErrorMarkerAtCurrentDiaryLine("Error in receiving string from port: " + e.getMessage());
+				appendToEventDiary("Error receiving string from port : " + e.getMessage());
+				appendErrorMarkerAtCurrentDiaryLine("Error receiving string from port: " + e.getMessage());
 				PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
 					@Override
 					public void run() {
 						StatusLineManager statusLineManger = ((WorkbenchWindow)PlatformUI.getWorkbench().getActiveWorkbenchWindow()).getStatusLineManager();
-						statusLineManger.setErrorMessage(Activator.getImage(IImageKeys.ERROR_ANNOTATION_ICON), "Error in receiving string from port");
+						statusLineManger.setErrorMessage(Activator.getImage(IImageKeys.ERROR_ANNOTATION_ICON), "Error receiving string from port");
 					}
 				});
-                return new Status(Status.ERROR, Activator.PLUGIN_ID, "Error in receiving string from port: " + e.getMessage());
+                return new Status(Status.ERROR, Activator.PLUGIN_ID, "Error receiving string from port: " + e.getMessage());
 			} finally {
+				ArduinoUnoProcess.this.close();
+				try {
+					serialPort.closePort();
+				} catch (SerialPortException e) {
+					Activator.logErrorMessageWithCause(e);
+					return new Status(Status.ERROR, Activator.PLUGIN_ID, "Error closing port: " + e.getMessage());
+				}
 				double processEndTime = System.currentTimeMillis()/1000d;
 				appendToEventDiary("\nEnd time (s) : " + Double.toString(processEndTime));
 				appendToEventDiary(ObjectsController.getResourceForObject(ArduinoUnoProcess.this).getName() + " duration (s) is about : " + Double.toString(processEndTime - processBeginTime) + "\n");
-				
 				appendToEventDiary("Total samples for transfered channels :");
 				for (int i = 0; i < nbSamples.length; i++) {
 					appendToEventDiary(transferedChannelsOrderedByTransferNumber[i].getProperty(ChannelProperties.NAME) + " : " + nbSamples[i]);
 				}
-				
 				PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
 					@Override
 					public void run() {
@@ -363,45 +362,8 @@ public class ArduinoUnoProcess extends Process {
 						ApplicationActionBarAdvisor.workloadTimeContributionItem.setText(NLS.bind(DocometreMessages.Workload_Time, "0", formater.format(realTime)));
 					}
 				});
-				
-				ArduinoUnoProcess.this.close();
-				try {
-					serialPort.closePort();
-				} catch (SerialPortException e) {
-					Activator.logErrorMessageWithCause(e);
-					return new Status(Status.ERROR, Activator.PLUGIN_ID, "Error closing port: " + e.getMessage());
-				}
 			}
 			return Status.OK_STATUS;
-			
-//			try {
-//				ArduinoUnoProcess.this.close();
-//				serialPort.closePort();
-//				double processEndTime = System.currentTimeMillis()/1000d;
-//				appendToEventDiary("\nEnd time (s) : " + Double.toString(processEndTime));
-//				appendToEventDiary(ObjectsController.getResourceForObject(ArduinoUnoProcess.this).getName() + " duration (s) is about : " + Double.toString(processEndTime - processBeginTime) + "\n");
-//				
-//				appendToEventDiary("Total samples for transfered channels :");
-//				for (int i = 0; i < nbSamples.length; i++) {
-//					appendToEventDiary(transferedChannelsOrderedByTransferNumber[i].getProperty(ChannelProperties.NAME) + " : " + nbSamples[i]);
-//				}
-//				
-//				PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
-//					@Override
-//					public void run() {
-////						StatusLineManager statusLineManger = ((WorkbenchWindow)PlatformUI.getWorkbench().getActiveWorkbenchWindow()).getStatusLineManager();
-////						statusLineManger.setMessage(NLS.bind(DocometreMessages.Workload_Time, "0", formater.format(time)));
-//						ApplicationActionBarAdvisor.workloadTimeContributionItem.setText(NLS.bind(DocometreMessages.Workload_Time, "0", formater.format(realTime)));
-//					}
-//				});
-//			} catch (Exception e2) {
-//                return new Status(Status.ERROR, Activator.PLUGIN_ID, "Error in receiving string from port: " + e2.getMessage());
-//			} 
-//			return Status.OK_STATUS;
-			
-			
-			
-			
 			
 		}
 		
