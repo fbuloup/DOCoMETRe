@@ -172,20 +172,12 @@ public class ADWinProcess extends Process {
 					timeBefore = System.currentTimeMillis()/1000d;
 					
 					//RECOVERY
-//					for (int i = 0; i < ADWinProcess.this.getDACQConfiguration().getModulesNumber(); i++) {
-//						ModuleBehaviour module = ADWinProcess.this.getDACQConfiguration().getModule(i);
-//						module.recovery();
-//					}
 					ADWinProcess.this.recovery();
 					timeAfter = System.currentTimeMillis()/1000d;
 					appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_RecoveryTime, (timeAfter - timeBefore)));
 					
 					timeBefore = System.currentTimeMillis()/1000d;
 					//GENERATION
-//					for (int i = 0; i < ADWinProcess.this.getDACQConfiguration().getModulesNumber(); i++) {
-//						ModuleBehaviour module = ADWinProcess.this.getDACQConfiguration().getModule(i);
-//						module.generation();
-//					}
 					ADWinProcess.this.generation();
 					
 					timeAfter = System.currentTimeMillis()/1000d;
@@ -213,42 +205,23 @@ public class ADWinProcess extends Process {
 						@Override
 						public void run() {
 //							StatusLineManager statusLineManger = ((WorkbenchWindow)PlatformUI.getWorkbench().getActiveWorkbenchWindow()).getStatusLineManager();
-//							statusLineManger.setMessage(NLS.bind(DocometreMessages.Workload_Time, workload, time));
+//							statusLineManger.setMessage(NLS.bind(DocometreMessages.Workload_Time, workload, formater.format(realTime)));
 							ApplicationActionBarAdvisor.workloadTimeContributionItem.setText(NLS.bind(DocometreMessages.Workload_Time, workload, time));
 						}
 					});
 				}
-				
-				PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
-					@Override
-					public void run() {
-//						StatusLineManager statusLineManger = ((WorkbenchWindow)PlatformUI.getWorkbench().getActiveWorkbenchWindow()).getStatusLineManager();
-//						statusLineManger.setMessage(NLS.bind(DocometreMessages.Workload_Time, "0", time));
-						ApplicationActionBarAdvisor.workloadTimeContributionItem.setText(NLS.bind(DocometreMessages.Workload_Time, "0", time));
-					}
-				});
-				
-				// CLOSE
-//				for (int i = 0; i < ADWinProcess.this.getDACQConfiguration().getModulesNumber(); i++) {
-//					ModuleBehaviour module = ADWinProcess.this.getDACQConfiguration().getModule(i);
-//					module.close();
-//				}
-//				ADWinProcess.this.close();
-//				double processEndTime = System.currentTimeMillis()/1000d;
-//				
-//				if(ObjectsController.getResourceForObject(ADWinProcess.this) != null) {
-//					appendToEventDiary(Activator.NEW_LINE + NLS.bind(ADWinMessages.ADWinDiary_Ending, ObjectsController.getResourceForObject(ADWinProcess.this).getName(), processEndTime));
-//					appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_Approximative, ObjectsController.getResourceForObject(ADWinProcess.this).getName(), (processEndTime-processBeginTime)));
-//				}
-				
-				
 			} catch (ADwinCommunicationError e) {
 				appendToEventDiary(e.getMessage());
 			} finally {
 				// CLOSE
 				ADWinProcess.this.close();
+				PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+					@Override
+					public void run() {
+						ApplicationActionBarAdvisor.workloadTimeContributionItem.setText(NLS.bind(DocometreMessages.Workload_Time, "0", time));
+					}
+				});
 				double processEndTime = System.currentTimeMillis()/1000d;
-				
 				if(ObjectsController.getResourceForObject(ADWinProcess.this) != null) {
 					appendToEventDiary(Activator.NEW_LINE + NLS.bind(ADWinMessages.ADWinDiary_Ending, ObjectsController.getResourceForObject(ADWinProcess.this).getName(), processEndTime));
 					appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_Approximative, ObjectsController.getResourceForObject(ADWinProcess.this).getName(), (processEndTime-processBeginTime)));
