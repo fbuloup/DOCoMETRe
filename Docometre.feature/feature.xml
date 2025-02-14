@@ -6,7 +6,19 @@
       provider-name="ISM">
 
    <description>
-      -- 2025-01-29 - Bis
+      -- 2025-02-14
+ADDED :
+* Improve Arduino Uno process code (restart and Watchdog timer)
+* Start support for Arduino Uno R4
+* Small re-factoring (Arduino Uno - ADWin)
+FIXED :
+* Exception raised when project was just created but not opened
+* Rename resource : Reg Exp was wrong as we needed to replace process file ext at name&apos;s end
+* NPE when no stimulus file is defined
+* Diary and data files and test folder were not properly closed when Exc. occurs
+* Process must not be systematically closed (ArduinoUnoProcess.execute())
+* Enable arduino CLI path when use CLI is true (ArduinoUnoDacqConfiguration)
+-- 2025-01-29 - Bis
 ADDED : Nothing
 FIXED :
 * NPE at dacqsystems.adwin.ADWinChannel.close(ADWinChannel.java:265)
