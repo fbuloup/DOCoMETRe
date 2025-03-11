@@ -393,7 +393,7 @@ public class ArduinoUnoProcess extends Process {
 				code = code + "#include \"WDT.h\"\n";
 				code = code + "#include \"FspTimer.h\"\n";
 			}
-			else code = code + "#include <avr/wdt.h>\n";
+			if(isRelease3) code = code + "#include <avr/wdt.h>\n";
 			
 			code = code + getCurrentProcess().getScript().getInitializeCode(this, ArduinoUnoCodeSegmentProperties.INCLUDE);
 			code = code + getCurrentProcess().getScript().getLoopCode(this, ArduinoUnoCodeSegmentProperties.INCLUDE);
@@ -450,7 +450,8 @@ public class ArduinoUnoProcess extends Process {
 //			code = code + "// Try to compensate time drift\n";
 //			code = code + "long delta;\n";
 			code = code + "// Loop time in second\n";
-			code = code + "double time;\n\n";
+			if(isRelease4) code = code + "double rtTime;\n\n";
+			if(isRelease3) code = code + "double time;\n\n";
 //			code = code + "// Loop time in usecond\n";
 //			code = code + "unsigned long timeMicros;\n\n";
 			code = code + "// Loop index to compute time\n";
@@ -498,7 +499,8 @@ public class ArduinoUnoProcess extends Process {
 			if(value == 0) value = 1;
 			code = code + "\t\tsendTimeWorkload = " + value + ";\n";
 			code = code + "\t\tworkload = 0;\n";
-			code = code + "\t\ttime = 0;\n";
+			if(isRelease4) code = code + "\t\trtTime = 0;\n";
+			if(isRelease3) code = code + "\t\ttime = 0;\n";
 			code = code + "\t\ttimeIndex = 0;\n";
 			code = code + "\t\tterminateProcess = false;\n";
 			code = code + "\t\tstartLoop = false;\n";
@@ -534,7 +536,7 @@ public class ArduinoUnoProcess extends Process {
 		if(segment == ArduinoUnoCodeSegmentProperties.ACQUISITION) {
 			
 			if(isRelease3) code = "}\n\nISR(TIMER1_COMPA_vect){\n";
-			if(isRelease4) code = "}\n\nvoid processing(timer_callback_args_t __attribute((unused)) *p_args){\n";
+			if(isRelease4) code = "}\n\nvoid processing(timer_callback_args_t *p_args){\n";
 			
 			
 			code = code + "\t\tif(terminateProcess) {\n";
@@ -552,13 +554,15 @@ public class ArduinoUnoProcess extends Process {
 			
 			code = code + "\t\t// Reset timer 0 for workload computation\n";
 			if(isRelease3) code = code + "\t\tTCNT0 = 0;\n";
+			if(isRelease4) code = code + "\t\tworkload_Timer.reset();\n";
 			code = code + "\t\t// If we receive 's'(top) from serial port,\n";
 			code = code + "\t\t// then force process termination\n";
 			code = code + "\t\tif(Serial.available()) {\n";
 			code = code + "\t\t\t\tstartLoop = ((char)Serial.read()) != 's';\n";
 			code = code + "\t\t\t\tif(!startLoop ) terminateProcess = true;\n";
 			code = code + "\t\t}\n";
-			code = code + "\t\ttime = timeIndex*((double)loopPeriod/1000000.0);\n";
+			if(isRelease4) code = code + "\t\trtTime = timeIndex*((double)loopPeriod/1000000.0);\n";
+			if(isRelease3) code = code + "\t\ttime = timeIndex*((double)loopPeriod/1000000.0);\n";
 			code = code + "\t\ttimeIndex++;\n";
 			
 			code = code + getCurrentProcess().getScript().getInitializeCode(this, ArduinoUnoCodeSegmentProperties.ACQUISITION);
@@ -600,11 +604,13 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "\t\tif(sendTimeWorkload == " + value + ") {\n";
 			int prescaler = computeCounter0Prescaler(gf);
 			double dt = 1/(16000000.0/prescaler)*1000000;
-			code = code + "\t\t\t\tworkload = computeWorkload(TCNT0*" + dt + ");\n";
+			if(isRelease3) code = code + "\t\t\t\tworkload = computeWorkload(TCNT0*" + dt + ");\n";
+			if(isRelease4) code = code + "\t\t\t\tworkload = computeWorkload(1000000.0*workload_Timer.get_counter()/workload_Timer.get_freq_hz());\n";
 //			code = code + "\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, loopTime_MS, workload);\n";
 //			code = code + "\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, 10000.0 /*(unsigned long)(time*1000000)*/, workload);\n";
 			
-			code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, (unsigned long)(time*1000000.0), workload);\n";
+			if(isRelease4) code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, (unsigned long)(rtTime*1000000.0), workload);\n";
+			if(isRelease3) code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, (unsigned long)(time*1000000.0), workload);\n";
 			code = code + "\t\t\t\tSerial.println(serialMessage);\n";
 			code = code + "\t\t\t\tSerial.flush();\n";
 			if(delay > 0) code = code + "\t\t\t\tdelayMicroseconds(" + delay + ");\n";
@@ -889,12 +895,14 @@ public class ArduinoUnoProcess extends Process {
 					
 					String sf = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY);
 					
+					
 					code = code + "\t\tbool realtimeLoop_Timer_Started = true;\n";
-					code = code + "\t\tint8_t timerIndex = FspTimer::get_available_timer(GPT_TIMER);\n";
-					code = code + "\t\tif (timerIndex < 0) timerIndex = FspTimer::get_available_timer(GPT_TIMER, true);\n";
+					code = code + "\t\tuint8_t timerType = GPT_TIMER;\n";
+					code = code + "\t\tint8_t timerIndex = FspTimer::get_available_timer(timerType);\n";
+					code = code + "\t\tif (timerIndex < 0) timerIndex = FspTimer::get_available_timer(timerType, true);\n";
 					code = code + "\t\trealtimeLoop_Timer_Started = (timerIndex >= 0);\n";
 					code = code + "\t\tFspTimer::force_use_of_pwm_reserved_timer();\n";
-					code = code + "\t\trealtimeLoop_Timer_Started = realtimeLoop_Timer_Started && realtimeLoop_Timer.begin(TIMER_MODE_PERIODIC, GPT_TIMER, timerIndex, " + sf + ", 0.0f, processing);\n";
+					code = code + "\t\trealtimeLoop_Timer_Started = realtimeLoop_Timer_Started && realtimeLoop_Timer.begin(TIMER_MODE_PERIODIC, timerType, timerIndex, " + sf + ", 0.0f, processing);\n";
 					code = code + "\t\trealtimeLoop_Timer_Started = realtimeLoop_Timer_Started && realtimeLoop_Timer.setup_overflow_irq();\n";
 					code = code + "\t\trealtimeLoop_Timer_Started = realtimeLoop_Timer_Started && realtimeLoop_Timer.open();\n";
 					code = code + "\t\trealtimeLoop_Timer_Started = realtimeLoop_Timer_Started && realtimeLoop_Timer.start();\n";
@@ -903,12 +911,15 @@ public class ArduinoUnoProcess extends Process {
 					code = code + "\t\t\t\twhile(true);\n";
 					code = code + "\t\t}\n";
 					
+					double sfDouble = Double.parseDouble(sf);
+					sfDouble = sfDouble*250;
+					
 					code = code + "\t\tbool workload_Timer_Started = true;\n";
-					code = code + "\t\ttimerIndex = FspTimer::get_available_timer(GPT_TIMER);\n";
-					code = code + "\t\tif (timerIndex < 0) timerIndex = FspTimer::get_available_timer(GPT_TIMER, true);\n";
+					code = code + "\t\ttimerIndex = FspTimer::get_available_timer(timerType);\n";
+					code = code + "\t\tif (timerIndex < 0) timerIndex = FspTimer::get_available_timer(timerType, true);\n";
 					code = code + "\t\tworkload_Timer_Started = (timerIndex >= 0);\n";
 					code = code + "\t\tFspTimer::force_use_of_pwm_reserved_timer();\n";
-					code = code + "\t\tworkload_Timer_Started = workload_Timer_Started && workload_Timer.begin(TIMER_MODE_PERIODIC, GPT_TIMER, timerIndex, " + sf + ", 0.0f);\n";
+					code = code + "\t\tworkload_Timer_Started = workload_Timer_Started && workload_Timer.begin(TIMER_MODE_PERIODIC, timerType, timerIndex, " + sfDouble + ", 0.0f);\n";
 					code = code + "\t\tworkload_Timer_Started = workload_Timer_Started && workload_Timer.setup_overflow_irq();\n";
 					code = code + "\t\tworkload_Timer_Started = workload_Timer_Started && workload_Timer.open();\n";
 					code = code + "\t\tworkload_Timer_Started = workload_Timer_Started && workload_Timer.start();\n";
