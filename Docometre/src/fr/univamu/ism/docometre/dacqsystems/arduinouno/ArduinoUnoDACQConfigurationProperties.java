@@ -61,7 +61,7 @@ public final class ArduinoUnoDACQConfigurationProperties extends Property {
 	public static final ArduinoUnoDACQConfigurationProperties GLOBAL_FREQUENCY = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY", ArduinoUnoMessages.GlobalFrequency_Label, ArduinoUnoMessages.GlobalFrequency_Tooltip, "(^\\d{1,10}$)");
 	public static final ArduinoUnoDACQConfigurationProperties LIBRARIES_ABSOLUTE_PATH = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH", ArduinoUnoMessages.LibrariesAbsolutePath_Label, ArduinoUnoMessages.LibrariesAbsolutePath_Tooltip, "(.)+");
 	public static final ArduinoUnoDACQConfigurationProperties USER_LIBRARIES_ABSOLUTE_PATH = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH", ArduinoUnoMessages.UserLibrariesAbsolutePath_Label, ArduinoUnoMessages.UserLibrariesAbsolutePath_Tooltip, "(.)+");
-	public static final ArduinoUnoDACQConfigurationProperties REVISION = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.REVISION", ArduinoUnoMessages.Revision_Label, ArduinoUnoMessages.Revision_Tooltip, "^(R3|R4)$", "R3:R4");
+	public static final ArduinoUnoDACQConfigurationProperties REVISION = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.REVISION", ArduinoUnoMessages.Revision_Label, ArduinoUnoMessages.Revision_Tooltip, "^(R3|R4_WIFI)$", "R3:R4_WIFI");
 
 	
 	public static String BAUD_RATE_9600 = "9600";
@@ -71,8 +71,8 @@ public final class ArduinoUnoDACQConfigurationProperties extends Property {
 	public static String BAUD_RATE_2000000 = "2000000";
 	public static String[] BAUD_RATES = new String[] { BAUD_RATE_9600, BAUD_RATE_115200, BAUD_RATE_1000000, BAUD_RATE_1500000, BAUD_RATE_2000000 };
 	public static String REVISION_R3 = "R3";
-	public static String REVISION_R4 = "R4";
-	public static String[] REVISIONS = new String[] { REVISION_R3, REVISION_R4 };
+	public static String REVISION_R4_WIFI = "R4_WIFI";
+	public static String[] REVISIONS = new String[] { REVISION_R3, REVISION_R4_WIFI };
 	
 	public static void populateProperties(DACQConfiguration daqGeneralConfiguration) {
 		IEclipsePreferences defaults = DefaultScope.INSTANCE.getNode(Activator.PLUGIN_ID);
