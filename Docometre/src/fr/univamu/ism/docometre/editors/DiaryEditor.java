@@ -156,7 +156,7 @@ public class DiaryEditor extends EditorPart implements PartNameRefresher {
 			DefaultAnnotationHover defaultAnnotationHover = new DefaultAnnotationHover();
 			arc.setHover(defaultAnnotationHover);
 			arc.addAnnotationType(ErrorAnnotation.TYPE_ERROR);
-			lineAnnotationRuler.addDecorator(0, arc);
+			lineAnnotationRuler.addDecorator(1, arc);
 			
 			// Overview column
 			OverviewRuler overviewRuler = new OverviewRuler(docometreAnnotationAccesExtension, 13, DocometreSharedTextColors.getInstance());
