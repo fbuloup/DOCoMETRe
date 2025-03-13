@@ -57,7 +57,7 @@ import fr.univamu.ism.docometre.dacqsystems.PropertyObserver;
 
 public class ArduinoUnoDACQConfiguration extends DACQConfiguration implements PropertyObserver {
 	
-	protected static String[] defaultProposal = new String[]{"time"};
+	protected static String[] defaultProposal = new String[]{"time", "rtTime"};
 	
 	public static final long serialVersionUID = AbstractElement.serialVersionUID;
 
@@ -219,6 +219,11 @@ public class ArduinoUnoDACQConfiguration extends DACQConfiguration implements Pr
 	public String[] getProposal() {
 		HashSet<String> proposalHashSet = new HashSet<>();
 		proposalHashSet.addAll(Arrays.asList(defaultProposal));
+		String arduinoUnoRelease = getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
+		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
+		boolean isRelease3 = ArduinoUnoDACQConfigurationProperties.REVISION_R3.equals(arduinoUnoRelease);
+		if(isRelease4Wifi) proposalHashSet.remove("time");
+		if(isRelease3) proposalHashSet.remove("rtTime");
 		ArduinoUnoVariable[] variables = getVariables();
 		for (ArduinoUnoVariable arduinoUnoVariable : variables) {
 			proposalHashSet.add(arduinoUnoVariable.getProperty(ChannelProperties.NAME));
