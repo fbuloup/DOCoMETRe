@@ -209,9 +209,6 @@ public class ArduinoUnoProcess extends Process {
 		            	for (byte b: bytes) {
 		                    if ( (b == '\r' || b == '\n') && message.length() > 0 && !terminate) {
 		                    	String messageString = message.toString().replaceAll("\\r$", "").replaceAll("\\n", "");
-		                    	
-		                    	System.out.println(messageString);
-		                    	
 		                    	message.setLength(0);
 		                    	String[] segments = messageString.split(":");
 		                    	
@@ -460,6 +457,8 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "unsigned long timeIndex;\n\n";
 			code = code + "// Start loop when true\n";
 			code = code + "bool startLoop;\n\n";
+			code = code + "// Start WDT when true\n";
+			code = code + "bool startWDT;\n\n";
 			code = code + "// Stop loop when true\n";
 			code = code + "bool terminateProcess;\n\n";
 //			code = code + "// First loop flag\n";
@@ -508,6 +507,7 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "\t\ttimeIndex = 0;\n";
 			code = code + "\t\tterminateProcess = false;\n";
 			code = code + "\t\tstartLoop = false;\n";
+			code = code + "\t\tstartWDT = false;\n";
 			if(((ArduinoUnoDACQConfiguration)getDACQConfiguration()).hasADS1115Module()) {
 				code = code + "\t\t// Start I2C interface\n";
 				code = code + "\t\tWire.begin();\n";
@@ -548,12 +548,12 @@ public class ArduinoUnoProcess extends Process {
 			
 			code = code + "\t\tif(terminateProcess) {\n";
 			code = code + "\t\t\t\tif(Serial.available())\n";
-			code = code + "\t\t\t\t\t\tstartLoop = ((char)Serial.read()) != 's';\n";
-			code = code + "\t\t\t\tif(!startLoop) {\n";
+			code = code + "\t\t\t\t\t\tstartWDT = ((char)Serial.read()) == 's';\n";
+			code = code + "\t\t\t\tif(startWDT) {\n";
 			
 			if(isRelease4Wifi) code = code + "\t\t\t\t\t\tWDT.begin(15);\n";
 			if(isRelease3) code = code + "\t\t\t\t\t\twdt_enable(WDTO_15MS);\n";
-			code = code + "\t\t\t\t\t\tstartLoop = true;\n";
+			code = code + "\t\t\t\t\t\tstartWDT = false;\n";
 			code = code + "\t\t\t\t}\n";
 			code = code + "\t\t\t\treturn;\n";
 			code = code + "\t\t}\n";
@@ -647,7 +647,6 @@ public class ArduinoUnoProcess extends Process {
 			
 			code = code + "void finalize() {\n";
 			
-			
 //			code = code + getCurrentProcess().getScript().getInitializeCode(this, ArduinoUnoCodeSegmentProperties.FINALIZATION);
 //			code = code + getCurrentProcess().getScript().getLoopCode(this, ArduinoUnoCodeSegmentProperties.FINALIZATION);
 //			code = code + getCurrentProcess().getScript().getFinalizeCode(this, ArduinoUnoCodeSegmentProperties.FINALIZATION);
@@ -656,7 +655,12 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "\t\t// ******** Début algorithme finalisation\n\n";
 			code = code + getCurrentProcess().getScript().getFinalizeCode(this, ScriptSegmentType.FINALIZE);
 			code = code + "\n\t\t// ******** Fin algorithme finalisation\n\n";
-			
+			if(isRelease4Wifi) code = code + "\t\tstartLoop = false;\n";
+			if(isRelease3) {
+				code = code + "\t\tSerial.println('s');\n";
+				code = code + "\t\tSerial.flush();\n";
+				if(delay > 0) code = code + "\t\t\t\t\t\tdelayMicroseconds(" + delay + ");\n";
+			}
 //			code = code + "\t\t// Now wait to receive 's' char before board restart\n";
 //			code = code + "\t\twhile (startLoop) {\n";
 //			code = code + "\t\t\t\tif(Serial.available()) {\n";
@@ -674,12 +678,14 @@ public class ArduinoUnoProcess extends Process {
 				code = code + "\t\t\t\tSerial.flush();\n";
 				code = code + "\t\t}\n";
 				code = code + "\t\tif(terminateProcess) {\n";
-				code = code + "\t\t\t\tSerial.println('s');\n";
-				code = code + "\t\t\t\tSerial.flush();\n";
-				if(delay > 0) code = code + "\t\t\t\t\t\tdelayMicroseconds(" + delay + ");\n";
+				
+				code = code + "\t\t\t\tif(!startLoop) {\n";
+				code = code + "\t\t\t\t\t\tSerial.println('s');\n";
+				code = code + "\t\t\t\t\t\tSerial.flush();\n";
+				if(delay > 0) code = code + "\t\t\t\t\t\t\t\tdelayMicroseconds(" + delay + ");\n";
+				code = code + "\t\t\t\t\t\tstartLoop = true;\n";
+			    code = code + "\t\t\t\t}\n";
 				code = code + "\t\t}\n";
-				
-				
 			}
 			code = code + "}\n\n";
 		}
