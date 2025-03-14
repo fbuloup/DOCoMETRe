@@ -495,6 +495,7 @@ public class ArduinoUnoProcess extends Process {
 				code = code + "\t\t// Then ADC is enabled and ADSP[2:0] = 100\n";
 				code = code + "\t\tADCSRA  =  bit (ADEN) | 1*bit (ADPS2) | 0*bit (ADPS1) | 0*bit (ADPS0);\n";
 			}
+			if(isRelease4Wifi) code = code + "\t\tanalogReadResolution(14);\n";
 			
 			
 			double gf = Double.parseDouble(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY));
@@ -1190,11 +1191,6 @@ public class ArduinoUnoProcess extends Process {
 	}
 	
 	private String createWindowsCompileProcess(String currentFolder, String outputFolder, String arduinoUnoCompiler, String sketchFilePath) throws IOException, InterruptedException {
-		
-		String arduinoUnoRelease = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
-		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
-//		boolean isRelease3 = ArduinoUnoDACQConfigurationProperties.REVISION_R3.equals(arduinoUnoRelease);
-		
 		// We need to create a bash file in order to launch Arduino uno's compilation
 		// Bash file path
 		final String bashFilePath = outputFolder + File.separator + "compileSketch.bat";
@@ -1207,9 +1203,15 @@ public class ArduinoUnoProcess extends Process {
 		String cmd = "rmdir /S /Q \"" + outputFolder + File.separator + "Build\"\n";
 		cmd = cmd + "mkdir \"" + outputFolder + File.separator + "Build\"\n";
 		
+		String arduinoUnoRelease = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
+		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
+//		boolean isRelease3 = ArduinoUnoDACQConfigurationProperties.REVISION_R3.equals(arduinoUnoRelease);
+		String fullQualifiedBoardName = "arduino:avr:uno"; //$NON-NLS-N$ default is release 3
+		if(isRelease4Wifi) fullQualifiedBoardName = "arduino:renesas_uno:unor4wifi"; //$NON-NLS-N$ Release 4 Wifi
+		
 		boolean useCLI = "true".equals(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI))?true:false;
 		if(!useCLI) {			
-			cmd = cmd + "\"" +arduinoUnoCompiler + "\" -hardware=\"" + rootPath + "hardware\" -tools=\"" + rootPath + "hardware\\tools\" -tools=\"" + rootPath + "tools-builder\" -fqbn=arduino:avr:uno -quiet -verbose";
+			cmd = cmd + "\"" +arduinoUnoCompiler + "\" -hardware=\"" + rootPath + "hardware\" -tools=\"" + rootPath + "hardware\\tools\" -tools=\"" + rootPath + "tools-builder\" -fqbn=" + fullQualifiedBoardName + " -quiet -verbose";
 			cmd = cmd + " -built-in-libraries=\"" + rootPath + "libraries\"";
 //			IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
 //			String userLibrariesPath = preferenceStore.getString(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getKey());
@@ -1219,8 +1221,7 @@ public class ArduinoUnoProcess extends Process {
 			cmd = cmd + " -compile " + sketchFilePath;// + " > stdout.txt 2>stderr.txt";
 		} else {
 			String arduinoCLIPATH = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH);
-			String fullQualifiedBoardName = "arduino:avr:uno"; //$NON-NLS-N$ default is release 3
-			if(isRelease4Wifi) fullQualifiedBoardName = "arduino:renesas_uno:unor4wifi";
+			
 			cmd = cmd + "\"" + arduinoCLIPATH + "\"" + " compile -b " + fullQualifiedBoardName + " --output-dir \"" + outputFolder + File.separator + "Build\" \"" + sketchFilePath + "\"";			
 			String userLibrariesPath = getDACQConfiguration().getProperty((ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH));
 			if(userLibrariesPath != null && !"".equals(userLibrariesPath)) cmd = cmd + " -libraries \"" + userLibrariesPath + "\"";
@@ -1246,9 +1247,14 @@ public class ArduinoUnoProcess extends Process {
 		String cmd = "rm -R -f " + outputFolder + File.separator + "Build\n";
 		cmd = cmd + "mkdir " + outputFolder + File.separator + "Build\n";
 		
+		String arduinoUnoRelease = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
+		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
+		String fullQualifiedBoardName = "arduino:avr:uno"; //$NON-NLS-N$ default is release 3
+		if(isRelease4Wifi) fullQualifiedBoardName = "arduino:renesas_uno:unor4wifi"; //$NON-NLS-N$ Release 4 Wifi
+		
 		boolean useCLI = "true".equals(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI))?true:false;
 		if(!useCLI) {
-			cmd = cmd + arduinoUnoCompiler + " -hardware=" + rootPath + "hardware/ -tools=" + rootPath + "hardware/tools/ -tools=" + rootPath + "tools-builder/ -fqbn=arduino:avr:uno -quiet -verbose";
+			cmd = cmd + arduinoUnoCompiler + " -hardware=" + rootPath + "hardware/ -tools=" + rootPath + "hardware/tools/ -tools=" + rootPath + "tools-builder/ -fqbn=" + fullQualifiedBoardName + " -quiet -verbose";
 			cmd = cmd + " -built-in-libraries=" + rootPath + "libraries";
 			IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
 			String userLibrariesPath = preferenceStore.getString(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getKey());
@@ -1257,7 +1263,7 @@ public class ArduinoUnoProcess extends Process {
 			cmd = cmd + " -compile " + sketchFilePath;// + " > stdout.txt 2>stderr.txt";
 		} else {
 			String arduinoCLIPATH = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH);
-			cmd = cmd + "\"" + arduinoCLIPATH + "\"" + " compile -b arduino:avr:uno --output-dir \"" + outputFolder + File.separator + "Build\" \"" + sketchFilePath + "\"";			
+			cmd = cmd + "\"" + arduinoCLIPATH + "\"" + " compile -b " + fullQualifiedBoardName + " --output-dir \"" + outputFolder + File.separator + "Build\" \"" + sketchFilePath + "\"";			
 			String userLibrariesPath = getDACQConfiguration().getProperty((ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH));
 			if(userLibrariesPath != null && !"".equals(userLibrariesPath)) cmd = cmd + " -libraries \"" + userLibrariesPath + "\"";
 		}
@@ -1283,9 +1289,14 @@ public class ArduinoUnoProcess extends Process {
 		String cmd = "rm -R -f " + outputFolder + File.separator + "Build\n";
 		cmd = cmd + "mkdir " + outputFolder + File.separator + "Build\n";
 		
+		String arduinoUnoRelease = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
+		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
+		String fullQualifiedBoardName = "arduino:avr:uno"; //$NON-NLS-N$ default is release 3
+		if(isRelease4Wifi) fullQualifiedBoardName = "arduino:renesas_uno:unor4wifi"; //$NON-NLS-N$ Release 4 Wifi
+		
 		boolean useCLI = "true".equals(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI))?true:false;
 		if(!useCLI) {
-			cmd = cmd + arduinoUnoCompiler + " -hardware=" + rootPath + "hardware/ -tools=" + rootPath + "hardware/tools/ -tools=" + rootPath + "tools-builder/ -fqbn=arduino:avr:uno -quiet -verbose";
+			cmd = cmd + arduinoUnoCompiler + " -hardware=" + rootPath + "hardware/ -tools=" + rootPath + "hardware/tools/ -tools=" + rootPath + "tools-builder/ -fqbn=" + fullQualifiedBoardName + " -quiet -verbose";
 			cmd = cmd + " -built-in-libraries=" + rootPath + "libraries";
 			IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
 			String userLibrariesPath = preferenceStore.getString(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getKey());
@@ -1294,7 +1305,7 @@ public class ArduinoUnoProcess extends Process {
 			cmd = cmd + " -compile " + sketchFilePath;// + " > stdout.txt 2>stderr.txt";
 		} else {
 			String arduinoCLIPATH = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH);
-			cmd = cmd + "\"" + arduinoCLIPATH + "\"" + " compile -b arduino:avr:uno --output-dir \"" + outputFolder + File.separator + "Build\" \"" + sketchFilePath + "\"";			
+			cmd = cmd + "\"" + arduinoCLIPATH + "\"" + " compile -b " + fullQualifiedBoardName + " --output-dir \"" + outputFolder + File.separator + "Build\" \"" + sketchFilePath + "\"";			
 			String userLibrariesPath = getDACQConfiguration().getProperty((ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH));
 			if(userLibrariesPath != null && !"".equals(userLibrariesPath)) cmd = cmd + " -libraries \"" + userLibrariesPath + "\"";
 		}
