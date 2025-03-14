@@ -382,12 +382,18 @@ public class ArduinoUnoProcess extends Process {
 	public String getCodeSegment(Object segment) throws Exception {
 		String code = "";
 		
+		String arduinoUnoRelease = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
+		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
+		boolean isRelease3 = ArduinoUnoDACQConfigurationProperties.REVISION_R3.equals(arduinoUnoRelease);
+		
 		int delay = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.ARDUINO_DELAY_TIME_AFTER_SERIAL_PRINT);
 		
 		if(segment == ArduinoUnoCodeSegmentProperties.INCLUDE) {
-			if(ArduinoUnoDACQConfigurationProperties.REVISION_R4.equals(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION)))
-			code = code + "#include <WDT.h>\n";
-			else code = code + "#include <avr/wdt.h>\n";
+			if(isRelease4Wifi) {
+				code = code + "#include \"WDT.h\"\n";
+				code = code + "#include \"FspTimer.h\"\n";
+			}
+			if(isRelease3) code = code + "#include <avr/wdt.h>\n";
 			
 			code = code + getCurrentProcess().getScript().getInitializeCode(this, ArduinoUnoCodeSegmentProperties.INCLUDE);
 			code = code + getCurrentProcess().getScript().getLoopCode(this, ArduinoUnoCodeSegmentProperties.INCLUDE);
@@ -405,6 +411,9 @@ public class ArduinoUnoProcess extends Process {
 		}
 		
 		if(segment == ArduinoUnoCodeSegmentProperties.DECLARATION) {
+			if(isRelease4Wifi) {
+				code = code + "FspTimer realtimeLoop_Timer;\n";
+			}
 			String gf = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY);
 			code = code + "// Loop frequency in Hz\n";
 			code = code + "const unsigned long loopFrequency = " + gf + ";\n\n";
@@ -440,19 +449,24 @@ public class ArduinoUnoProcess extends Process {
 //			code = code + "// Try to compensate time drift\n";
 //			code = code + "long delta;\n";
 			code = code + "// Loop time in second\n";
-			code = code + "double time;\n\n";
+			if(isRelease4Wifi) code = code + "double rtTime;\n\n";
+			if(isRelease3) code = code + "double time;\n\n";
 //			code = code + "// Loop time in usecond\n";
 //			code = code + "unsigned long timeMicros;\n\n";
 			code = code + "// Loop index to compute time\n";
 			code = code + "unsigned long timeIndex;\n\n";
 			code = code + "// Start loop when true\n";
 			code = code + "bool startLoop;\n\n";
+			code = code + "// Start WDT when true\n";
+			code = code + "bool startWDT;\n\n";
 			code = code + "// Stop loop when true\n";
 			code = code + "bool terminateProcess;\n\n";
 //			code = code + "// First loop flag\n";
 //			code = code + "bool firstLoop = true;\n\n";
 			code = code + "// String serialMessage\n";
-			code = code + "char serialMessage[64];\n\n";
+			code = code + "char serialMessage[64];\n";
+			if(isRelease4Wifi) code = code + "String globalSerialMessage;;\n\n";
+			code = code + "\n";
 			code = code + "// Index to send time and workload at regular intervall (#200ms)\n";
 			code = code + "unsigned long sendTimeWorkload;\n\n";
 			
@@ -464,30 +478,37 @@ public class ArduinoUnoProcess extends Process {
 		
 		if(segment == ArduinoUnoCodeSegmentProperties.INITIALIZATION) {
 			code = "void setup() {\n";
-			code = code + "\t\t// ADC CONFIGURATON\n";
-			code = code + "\t\t// From datasheet at :\n";
-			code = code + "\t\t// https://ww1.microchip.com/downloads/en/DeviceDoc/ATmega48A-PA-88A-PA-168A-PA-328-P-DS-DS40002061B.pdf\n";
-			code = code + "\t\t// One can read at 24.4 p249 :\n";
-			code = code + "\t\t// \"By default, the successive approximation circuitry requires an input clock frequency\n";
-			code = code + "\t\t// between 50kHz and 200kHz to get maximum resolution. If a lower resolution than 10 bits is needed,\n";
-			code = code + "\t\t// the input clock frequency to the ADC can be higher than 200kHz to get a higher sample rate.\"\n";
-			code = code + "\t\t// Following this, prescaler could be set to 8 for ADC to decrease conversion time and keep resolution to maximum.\n";
-			code = code + "\t\t// Because of corsstalk in analog multiplexer, sample frequency must be decreased by a scale factor.\n";
-			code = code + "\t\t// We set prescaler to 16.\n";
-			code = code + "\t\t// 16MHz/16 = 1MHz - Max Sample freq. in theory is = 1MHz/13 # 76.923kHz, convertion time of 13us.\n";
-			code = code + "\t\t// Measured #18.6us which gives a Max Sample freq. of #53kHz\n";
-			code = code + "\t\t// Then ADC is enabled and ADSP[2:0] = 100\n";
-			code = code + "\t\tADCSRA  =  bit (ADEN) | 1*bit (ADPS2) | 0*bit (ADPS1) | 0*bit (ADPS0);\n";
+			
+			if(isRelease3) {
+				code = code + "\t\t// ADC CONFIGURATON\n";
+				code = code + "\t\t// From datasheet at :\n";
+				code = code + "\t\t// https://ww1.microchip.com/downloads/en/DeviceDoc/ATmega48A-PA-88A-PA-168A-PA-328-P-DS-DS40002061B.pdf\n";
+				code = code + "\t\t// One can read at 24.4 p249 :\n";
+				code = code + "\t\t// \"By default, the successive approximation circuitry requires an input clock frequency\n";
+				code = code + "\t\t// between 50kHz and 200kHz to get maximum resolution. If a lower resolution than 10 bits is needed,\n";
+				code = code + "\t\t// the input clock frequency to the ADC can be higher than 200kHz to get a higher sample rate.\"\n";
+				code = code + "\t\t// Following this, prescaler could be set to 8 for ADC to decrease conversion time and keep resolution to maximum.\n";
+				code = code + "\t\t// Because of corsstalk in analog multiplexer, sample frequency must be decreased by a scale factor.\n";
+				code = code + "\t\t// We set prescaler to 16.\n";
+				code = code + "\t\t// 16MHz/16 = 1MHz - Max Sample freq. in theory is = 1MHz/13 # 76.923kHz, convertion time of 13us.\n";
+				code = code + "\t\t// Measured #18.6us which gives a Max Sample freq. of #53kHz\n";
+				code = code + "\t\t// Then ADC is enabled and ADSP[2:0] = 100\n";
+				code = code + "\t\tADCSRA  =  bit (ADEN) | 1*bit (ADPS2) | 0*bit (ADPS1) | 0*bit (ADPS0);\n";
+			}
+			if(isRelease4Wifi) code = code + "\t\tanalogReadResolution(14);\n";
+			
 			
 			double gf = Double.parseDouble(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY));
 			int value = (int)(displayTimeRate*gf);
 			if(value == 0) value = 1;
 			code = code + "\t\tsendTimeWorkload = " + value + ";\n";
 			code = code + "\t\tworkload = 0;\n";
-			code = code + "\t\ttime = 0;\n";
+			if(isRelease4Wifi) code = code + "\t\trtTime = 0;\n";
+			if(isRelease3) code = code + "\t\ttime = 0;\n";
 			code = code + "\t\ttimeIndex = 0;\n";
 			code = code + "\t\tterminateProcess = false;\n";
 			code = code + "\t\tstartLoop = false;\n";
+			code = code + "\t\tstartWDT = false;\n";
 			if(((ArduinoUnoDACQConfiguration)getDACQConfiguration()).hasADS1115Module()) {
 				code = code + "\t\t// Start I2C interface\n";
 				code = code + "\t\tWire.begin();\n";
@@ -519,32 +540,38 @@ public class ArduinoUnoProcess extends Process {
 		
 		if(segment == ArduinoUnoCodeSegmentProperties.ACQUISITION) {
 			
-			code = "}\n\nISR(TIMER1_COMPA_vect){\n";
+			if(isRelease3) code = "}\n\nISR(TIMER1_COMPA_vect){\n";
+			if(isRelease4Wifi) {
+				code = "}\n\nvoid processing(timer_callback_args_t *p_args){\n\n";
+				code = code + "\t\tunsigned long dt = micros();\n\n";
+			}
 			
 			
 			code = code + "\t\tif(terminateProcess) {\n";
 			code = code + "\t\t\t\tif(Serial.available())\n";
-			code = code + "\t\t\t\t\t\tstartLoop = ((char)Serial.read()) != 's';\n";
-			code = code + "\t\t\t\tif(!startLoop) {\n";
+			code = code + "\t\t\t\t\t\tstartWDT = ((char)Serial.read()) == 's';\n";
+			code = code + "\t\t\t\tif(startWDT) {\n";
 			
-			if(ArduinoUnoDACQConfigurationProperties.REVISION_R4.equals(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION)))
-			code = code + "\t\t\t\t\t\tWDT.begin(15);\n";
-			else code = code + "\t\t\t\t\t\twdt_enable(WDTO_15MS);\n";
-			code = code + "\t\t\t\t\t\tstartLoop = true;\n";
+			if(isRelease4Wifi) code = code + "\t\t\t\t\t\tWDT.begin(15);\n";
+			if(isRelease3) code = code + "\t\t\t\t\t\twdt_enable(WDTO_15MS);\n";
+			code = code + "\t\t\t\t\t\tstartWDT = false;\n";
 			code = code + "\t\t\t\t}\n";
 			code = code + "\t\t\t\treturn;\n";
 			code = code + "\t\t}\n";
 			
-			
-			code = code + "\t\t// Reset timer 0 for workload computation\n";
-			code = code + "\t\tTCNT0 = 0;\n";
+			if(isRelease3) {
+				code = code + "\t\t// Reset timer 0 for workload computation\n";
+				code = code + "\t\tTCNT0 = 0;\n";
+			}
+		
 			code = code + "\t\t// If we receive 's'(top) from serial port,\n";
 			code = code + "\t\t// then force process termination\n";
 			code = code + "\t\tif(Serial.available()) {\n";
 			code = code + "\t\t\t\tstartLoop = ((char)Serial.read()) != 's';\n";
 			code = code + "\t\t\t\tif(!startLoop ) terminateProcess = true;\n";
 			code = code + "\t\t}\n";
-			code = code + "\t\ttime = timeIndex*((double)loopPeriod/1000000.0);\n";
+			if(isRelease4Wifi) code = code + "\t\trtTime = timeIndex*((double)loopPeriod/1000000.0);\n";
+			if(isRelease3) code = code + "\t\ttime = timeIndex*((double)loopPeriod/1000000.0);\n";
 			code = code + "\t\ttimeIndex++;\n";
 			
 			code = code + getCurrentProcess().getScript().getInitializeCode(this, ArduinoUnoCodeSegmentProperties.ACQUISITION);
@@ -586,13 +613,25 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "\t\tif(sendTimeWorkload == " + value + ") {\n";
 			int prescaler = computeCounter0Prescaler(gf);
 			double dt = 1/(16000000.0/prescaler)*1000000;
-			code = code + "\t\t\t\tworkload = computeWorkload(TCNT0*" + dt + ");\n";
+			if(isRelease3) code = code + "\t\t\t\tworkload = computeWorkload(TCNT0*" + dt + ");\n";
+			if(isRelease4Wifi) {
+				code = code + "\t\t\t\tdt = micros() - dt;\n";
+				code = code + "\t\t\t\tworkload = computeWorkload((unsigned long)dt);\n";
+			}
 //			code = code + "\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, loopTime_MS, workload);\n";
 //			code = code + "\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, 10000.0 /*(unsigned long)(time*1000000)*/, workload);\n";
 			
-			code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, (unsigned long)(time*1000000.0), workload);\n";
-			code = code + "\t\t\t\tSerial.println(serialMessage);\n";
-			code = code + "\t\t\t\tSerial.flush();\n";
+			if(isRelease4Wifi) {
+				code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, (unsigned long)(rtTime*1000000.0), workload);\n";
+				code = code + "\t\t\t\tglobalSerialMessage += serialMessage;\n";
+				code = code + "\t\t\t\tglobalSerialMessage += \"\\n\";\n";
+				
+			}
+			if(isRelease3) {
+				code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, (unsigned long)(time*1000000.0), workload);\n";
+				code = code + "\t\t\t\tSerial.println(serialMessage);\n";
+				code = code + "\t\t\t\tSerial.flush();\n";
+			}
 			if(delay > 0) code = code + "\t\t\t\tdelayMicroseconds(" + delay + ");\n";
 			code = code + "\t\t\t\tsendTimeWorkload = 0;\n";
 			
@@ -609,7 +648,6 @@ public class ArduinoUnoProcess extends Process {
 			
 			code = code + "void finalize() {\n";
 			
-			
 //			code = code + getCurrentProcess().getScript().getInitializeCode(this, ArduinoUnoCodeSegmentProperties.FINALIZATION);
 //			code = code + getCurrentProcess().getScript().getLoopCode(this, ArduinoUnoCodeSegmentProperties.FINALIZATION);
 //			code = code + getCurrentProcess().getScript().getFinalizeCode(this, ArduinoUnoCodeSegmentProperties.FINALIZATION);
@@ -618,10 +656,12 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "\t\t// ******** Début algorithme finalisation\n\n";
 			code = code + getCurrentProcess().getScript().getFinalizeCode(this, ScriptSegmentType.FINALIZE);
 			code = code + "\n\t\t// ******** Fin algorithme finalisation\n\n";
-			
-			code = code + "\t\tSerial.println('s');\n";
-			code = code + "\t\tSerial.flush();\n";
-			if(delay > 0) code = code + "\t\t\t\t\t\tdelayMicroseconds(" + delay + ");\n";
+			if(isRelease4Wifi) code = code + "\t\tstartLoop = false;\n";
+			if(isRelease3) {
+				code = code + "\t\tSerial.println('s');\n";
+				code = code + "\t\tSerial.flush();\n";
+				if(delay > 0) code = code + "\t\t\t\t\t\tdelayMicroseconds(" + delay + ");\n";
+			}
 //			code = code + "\t\t// Now wait to receive 's' char before board restart\n";
 //			code = code + "\t\twhile (startLoop) {\n";
 //			code = code + "\t\t\t\tif(Serial.available()) {\n";
@@ -631,10 +671,24 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "}\n\n";
 
 			code = code + "void loop() {\n";
-			code = code + "\t\t// Nothing to do !\n";
+			if(isRelease3) code = code + "\t\t// Nothing to do !\n";
+			if(isRelease4Wifi) {
+				code = code + "\t\tif(!globalSerialMessage.equals(\"\")) {\n";
+				code = code + "\t\t\t\tSerial.print(globalSerialMessage);\n";
+				code = code + "\t\t\t\tglobalSerialMessage = \"\";\n";
+				code = code + "\t\t\t\tSerial.flush();\n";
+				code = code + "\t\t}\n";
+				code = code + "\t\tif(terminateProcess) {\n";
+				
+				code = code + "\t\t\t\tif(!startLoop) {\n";
+				code = code + "\t\t\t\t\t\tSerial.println('s');\n";
+				code = code + "\t\t\t\t\t\tSerial.flush();\n";
+				if(delay > 0) code = code + "\t\t\t\t\t\t\t\tdelayMicroseconds(" + delay + ");\n";
+				code = code + "\t\t\t\t\t\tstartLoop = true;\n";
+			    code = code + "\t\t\t\t}\n";
+				code = code + "\t\t}\n";
+			}
 			code = code + "}\n\n";
-			
-			
 		}
 		
 		if(segment == ArduinoUnoCodeSegmentProperties.FUNCTION) {
@@ -684,11 +738,15 @@ public class ArduinoUnoProcess extends Process {
 			//code = code + "\t\t//serialMessage = String(inputNumber) + \":\" + String(loopTime - *lastAcquisitionTime) + \":\" + String(value);\n";
 			code = code + "\t\tif(transfert) {\n";
 //			code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", transferNumber, (loopTime_MS - *lastAcquisitionTime), value);\n";
-			
 			code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%d\", transferNumber, value);\n";
-			
-			code = code + "\t\t\t\tSerial.println(serialMessage);\n";
-			code = code + "\t\t\t\tSerial.flush();\n";
+			if(isRelease3) {
+				code = code + "\t\t\t\tSerial.println(serialMessage);\n";
+				code = code + "\t\t\t\tSerial.flush();\n";
+			}
+			if(isRelease4Wifi) {
+				code = code + "\t\t\t\tglobalSerialMessage += serialMessage;\n";
+				code = code + "\t\t\t\tglobalSerialMessage += \"\\n\";\n";
+			}
 			if(delay > 0)code = code + "\t\t\t\tdelayMicroseconds(" + delay + ");\n";
 			code = code + "\t\t}\n";
 			code = code + "\t\treturn value;\n";
@@ -801,6 +859,10 @@ public class ArduinoUnoProcess extends Process {
 	public String getCode(ModuleBehaviour script) throws Exception {
 		getCurrentProcess().getScript().setIndentCode(true);
 		
+		String arduinoUnoRelease = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
+		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
+		boolean isRelease3 = ArduinoUnoDACQConfigurationProperties.REVISION_R3.equals(arduinoUnoRelease);
+		
 		reset();
 		
 		String code = "";
@@ -827,43 +889,63 @@ public class ArduinoUnoProcess extends Process {
 			if(segments[i].equals(ArduinoUnoCodeSegmentProperties.INITIALIZATION)) {
 				code = code + "\t\t// ******** Début algorithme initialisation\n\n";
 				code = code + getCurrentProcess().getScript().getInitializeCode(this, ScriptSegmentType.INITIALIZE);
-				code = code + "\t\t// ******** Fin algorithme initialisation\n\n";
-				code = code + "\t\t// Disable interrupts\n";
-				code = code + "\t\tcli();\n";
-				code = code + "\t\t// Timer 0 is used to compute workload\n";
-				double gf = Double.parseDouble(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY));
-				int prescaler = computeCounter0Prescaler(gf);
-				double dt = 1/(16000000.0/prescaler)*1000000;
-				code = code + "\t\t// Prescaler is set to " + prescaler + ", each count is " + dt + "us\n";
-				code = code + "\t\t// Prescaler can take 1, 8, 64, 256 or 1024\n";
-				code = code + "\t\t// Prescaler >= 16*10^6/(250*" + gf + ") in order to have max 250 counts in realtime loop\n";
-				code = code + "\t\tTCCR0A = 0;\n";
-				code = code + "\t\tTCNT0 = 0;\n";
-				if(prescaler == 1) code = code + "\t\tTCCR0B = (1 << CS00);\n";
-				if(prescaler == 8) code = code + "\t\tTCCR0B = (1 << CS01);\n";
-				if(prescaler == 64) code = code + "\t\tTCCR0B = (1 << CS01) | (1 << CS00);\n";
-				if(prescaler == 256) code = code + "\t\tTCCR0B = (1 << CS02);\n";
-				if(prescaler == 1024) code = code + "\t\tTCCR0B = (1 << CS02) | (1 << CS00);\n";
-				int[] values = computePrescaleAndCmpValues(gf); 
-				code = code + "\t\t// Set timer1 interrupt at " + gf +"Hz\n";
-				code = code + "\t\tTCCR1A = 0;// set entire TCCR2A register to 0\n";
-				code = code + "\t\tTCCR1B = 0;// same for TCCR2B\n";
-				code = code + "\t\tTCNT1  = 0;//initialize counter value to 0\n";
-				code = code + "\t\t// Set compare match register for " + gf + "Hz increments : " + values[1] + "\n";
-				code = code + "\t\tOCR1A = " + values[1] +";// = (16*10^6) / (" + gf + "*" + values[0] + ") - 1 (must be <65535)\n";
-				code = code + "\t\t// CTC mode\n";
-				code = code + "\t\tTCCR1B |= (1 << WGM12);\n";
-				code = code + "\t\t// Set prescaler CS11 and CS10 bits to "+ values[0] +"\n";
-				if(values[0] == 1) code = code + "\t\tTCCR1B |= (1 << CS10);\n";;
-				if(values[0] == 8) code = code + "\t\tTCCR1B |= (1 << CS11);\n";;
-				if(values[0] == 64) code = code + "\t\tTCCR1B |= (1 << CS11) | (1 << CS10);\n";;
-				if(values[0] == 256) code = code + "\t\tTCCR1B |= (1 << CS12);\n";;
-				if(values[0] == 1024) code = code + "\t\tTCCR1B |= (1 << CS12) | (1 << CS10);\n";;
-				code = code + "\t\t// Enable timer compare interrupt\n";
-				code = code + "\t\tTIMSK1 |= (1 << OCIE1A);\n";
-				code = code + "\t\t// Enable interrupts\n";
-				code = code + "\t\tsei();\n";
 				
+				code = code + "\t\t// ******** Fin algorithme initialisation\n\n";
+				
+				if(isRelease3) {
+					code = code + "\t\t// Disable interrupts\n";
+					code = code + "\t\tcli();\n";
+					code = code + "\t\t// Timer 0 is used to compute workload\n";
+					double gf = Double.parseDouble(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY));
+					int prescaler = computeCounter0Prescaler(gf);
+					double dt = 1/(16000000.0/prescaler)*1000000;
+					code = code + "\t\t// Prescaler is set to " + prescaler + ", each count is " + dt + "us\n";
+					code = code + "\t\t// Prescaler can take 1, 8, 64, 256 or 1024\n";
+					code = code + "\t\t// Prescaler >= 16*10^6/(250*" + gf + ") in order to have max 250 counts in realtime loop\n";
+					code = code + "\t\tTCCR0A = 0;\n";
+					code = code + "\t\tTCNT0 = 0;\n";
+					if(prescaler == 1) code = code + "\t\tTCCR0B = (1 << CS00);\n";
+					if(prescaler == 8) code = code + "\t\tTCCR0B = (1 << CS01);\n";
+					if(prescaler == 64) code = code + "\t\tTCCR0B = (1 << CS01) | (1 << CS00);\n";
+					if(prescaler == 256) code = code + "\t\tTCCR0B = (1 << CS02);\n";
+					if(prescaler == 1024) code = code + "\t\tTCCR0B = (1 << CS02) | (1 << CS00);\n";
+					int[] values = computePrescaleAndCmpValues(gf); 
+					code = code + "\t\t// Set timer1 interrupt at " + gf +"Hz\n";
+					code = code + "\t\tTCCR1A = 0;// set entire TCCR2A register to 0\n";
+					code = code + "\t\tTCCR1B = 0;// same for TCCR2B\n";
+					code = code + "\t\tTCNT1  = 0;//initialize counter value to 0\n";
+					code = code + "\t\t// Set compare match register for " + gf + "Hz increments : " + values[1] + "\n";
+					code = code + "\t\tOCR1A = " + values[1] +";// = (16*10^6) / (" + gf + "*" + values[0] + ") - 1 (must be <65535)\n";
+					code = code + "\t\t// CTC mode\n";
+					code = code + "\t\tTCCR1B |= (1 << WGM12);\n";
+					code = code + "\t\t// Set prescaler CS11 and CS10 bits to "+ values[0] +"\n";
+					if(values[0] == 1) code = code + "\t\tTCCR1B |= (1 << CS10);\n";;
+					if(values[0] == 8) code = code + "\t\tTCCR1B |= (1 << CS11);\n";;
+					if(values[0] == 64) code = code + "\t\tTCCR1B |= (1 << CS11) | (1 << CS10);\n";;
+					if(values[0] == 256) code = code + "\t\tTCCR1B |= (1 << CS12);\n";;
+					if(values[0] == 1024) code = code + "\t\tTCCR1B |= (1 << CS12) | (1 << CS10);\n";;
+					code = code + "\t\t// Enable timer compare interrupt\n";
+					code = code + "\t\tTIMSK1 |= (1 << OCIE1A);\n";
+					code = code + "\t\t// Enable interrupts\n";
+					code = code + "\t\tsei();\n";
+				}
+				if(isRelease4Wifi) {
+					String sf = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY);
+					code = code + "\t\tbool realtimeLoop_Timer_Started = true;\n";
+					code = code + "\t\tuint8_t timerType = GPT_TIMER;\n";
+					code = code + "\t\tint8_t timerIndex = FspTimer::get_available_timer(timerType);\n";
+					code = code + "\t\tif (timerIndex < 0) timerIndex = FspTimer::get_available_timer(timerType, true);\n";
+					code = code + "\t\trealtimeLoop_Timer_Started = (timerIndex >= 0);\n";
+					code = code + "\t\tFspTimer::force_use_of_pwm_reserved_timer();\n";
+					code = code + "\t\trealtimeLoop_Timer_Started = realtimeLoop_Timer_Started && realtimeLoop_Timer.begin(TIMER_MODE_PERIODIC, timerType, timerIndex, " + sf + ", 0.0f, processing);\n";
+					code = code + "\t\trealtimeLoop_Timer_Started = realtimeLoop_Timer_Started && realtimeLoop_Timer.setup_overflow_irq();\n";
+					code = code + "\t\trealtimeLoop_Timer_Started = realtimeLoop_Timer_Started && realtimeLoop_Timer.open();\n";
+					code = code + "\t\trealtimeLoop_Timer_Started = realtimeLoop_Timer_Started && realtimeLoop_Timer.start();\n";
+					code = code + "\t\tif(!realtimeLoop_Timer_Started) {\n";
+					code = code + "\t\t\t\tSerial.println(\"Error : unable to start real time loop timer !\");\n";
+					code = code + "\t\t\t\twhile(true);\n";
+					code = code + "\t\t}\n";
+				}
 			}
 			if(segments[i].equals(ArduinoUnoCodeSegmentProperties.TRANSFER)) {
 				// Variables transfer
@@ -1091,8 +1173,13 @@ public class ArduinoUnoProcess extends Process {
 							IMarker marker = processResource.createMarker(DocometreBuilder.MARKER_ID);
 							String[] localLines = line.split(":");
 							marker.setAttribute(IMarker.MESSAGE, localLines[localLines.length - 1]);
+							//boolean useCLI = "true".equals(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI))?true:false;
+							//if(useCLI) marker.setAttribute(IMarker.LINE_NUMBER, Integer.parseInt(localLines[localLines.length - 5]));
+							//else
 							marker.setAttribute(IMarker.LINE_NUMBER, Integer.parseInt(localLines[localLines.length - 4]));
 							marker.setAttribute(IMarker.SEVERITY, severity);
+//							marker.setAttribute(IMarker.CHAR_START, 0);
+//							marker.setAttribute(IMarker.CHAR_END, localLines[localLines.length - 1].length() - 1);
 						} catch (CoreException e) {
 							Activator.logErrorMessageWithCause(e);
 							e.printStackTrace();
@@ -1116,10 +1203,16 @@ public class ArduinoUnoProcess extends Process {
 		String cmd = "rmdir /S /Q \"" + outputFolder + File.separator + "Build\"\n";
 		cmd = cmd + "mkdir \"" + outputFolder + File.separator + "Build\"\n";
 		
+		String arduinoUnoRelease = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
+		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
+//		boolean isRelease3 = ArduinoUnoDACQConfigurationProperties.REVISION_R3.equals(arduinoUnoRelease);
+		String fullQualifiedBoardName = "arduino:avr:uno"; //$NON-NLS-N$ default is release 3
+		if(isRelease4Wifi) fullQualifiedBoardName = "arduino:renesas_uno:unor4wifi"; //$NON-NLS-N$ Release 4 Wifi
+		
 		boolean useCLI = "true".equals(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI))?true:false;
-		if(!useCLI) {
-			cmd = cmd + "\"" +arduinoUnoCompiler + "\" -hardware=\"" + rootPath + "hardware\" -tools=\"" + rootPath + "hardware\\tools\" -tools=\"" + rootPath + "tools-builder\" -fqbn=arduino:avr:uno -quiet -verbose";
-			cmd = cmd + " -built-in-libraries " + rootPath + "libraries";
+		if(!useCLI) {			
+			cmd = cmd + "\"" +arduinoUnoCompiler + "\" -hardware=\"" + rootPath + "hardware\" -tools=\"" + rootPath + "hardware\\tools\" -tools=\"" + rootPath + "tools-builder\" -fqbn=" + fullQualifiedBoardName + " -quiet -verbose";
+			cmd = cmd + " -built-in-libraries=\"" + rootPath + "libraries\"";
 //			IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
 //			String userLibrariesPath = preferenceStore.getString(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getKey());
 			String userLibrariesPath = getDACQConfiguration().getProperty((ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH));
@@ -1128,7 +1221,8 @@ public class ArduinoUnoProcess extends Process {
 			cmd = cmd + " -compile " + sketchFilePath;// + " > stdout.txt 2>stderr.txt";
 		} else {
 			String arduinoCLIPATH = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH);
-			cmd = cmd + "\"" + arduinoCLIPATH + "\"" + " compile -b arduino:avr:uno --output-dir \"" + outputFolder + File.separator + "Build\" \"" + sketchFilePath + "\"";			
+			
+			cmd = cmd + "\"" + arduinoCLIPATH + "\"" + " compile -b " + fullQualifiedBoardName + " --output-dir \"" + outputFolder + File.separator + "Build\" \"" + sketchFilePath + "\"";			
 			String userLibrariesPath = getDACQConfiguration().getProperty((ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH));
 			if(userLibrariesPath != null && !"".equals(userLibrariesPath)) cmd = cmd + " -libraries \"" + userLibrariesPath + "\"";
 		}
@@ -1153,10 +1247,15 @@ public class ArduinoUnoProcess extends Process {
 		String cmd = "rm -R -f " + outputFolder + File.separator + "Build\n";
 		cmd = cmd + "mkdir " + outputFolder + File.separator + "Build\n";
 		
+		String arduinoUnoRelease = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
+		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
+		String fullQualifiedBoardName = "arduino:avr:uno"; //$NON-NLS-N$ default is release 3
+		if(isRelease4Wifi) fullQualifiedBoardName = "arduino:renesas_uno:unor4wifi"; //$NON-NLS-N$ Release 4 Wifi
+		
 		boolean useCLI = "true".equals(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI))?true:false;
 		if(!useCLI) {
-			cmd = cmd + arduinoUnoCompiler + " -hardware=" + rootPath + "hardware/ -tools=" + rootPath + "hardware/tools/ -tools=" + rootPath + "tools-builder/ -fqbn=arduino:avr:uno -quiet -verbose";
-			cmd = cmd + " -built-in-libraries " + rootPath + "libraries";
+			cmd = cmd + arduinoUnoCompiler + " -hardware=" + rootPath + "hardware/ -tools=" + rootPath + "hardware/tools/ -tools=" + rootPath + "tools-builder/ -fqbn=" + fullQualifiedBoardName + " -quiet -verbose";
+			cmd = cmd + " -built-in-libraries=" + rootPath + "libraries";
 			IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
 			String userLibrariesPath = preferenceStore.getString(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getKey());
 			if(userLibrariesPath != null && !"".equals(userLibrariesPath)) cmd = cmd + " -libraries " + userLibrariesPath;
@@ -1164,7 +1263,7 @@ public class ArduinoUnoProcess extends Process {
 			cmd = cmd + " -compile " + sketchFilePath;// + " > stdout.txt 2>stderr.txt";
 		} else {
 			String arduinoCLIPATH = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH);
-			cmd = cmd + "\"" + arduinoCLIPATH + "\"" + " compile -b arduino:avr:uno --output-dir \"" + outputFolder + File.separator + "Build\" \"" + sketchFilePath + "\"";			
+			cmd = cmd + "\"" + arduinoCLIPATH + "\"" + " compile -b " + fullQualifiedBoardName + " --output-dir \"" + outputFolder + File.separator + "Build\" \"" + sketchFilePath + "\"";			
 			String userLibrariesPath = getDACQConfiguration().getProperty((ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH));
 			if(userLibrariesPath != null && !"".equals(userLibrariesPath)) cmd = cmd + " -libraries \"" + userLibrariesPath + "\"";
 		}
@@ -1190,10 +1289,15 @@ public class ArduinoUnoProcess extends Process {
 		String cmd = "rm -R -f " + outputFolder + File.separator + "Build\n";
 		cmd = cmd + "mkdir " + outputFolder + File.separator + "Build\n";
 		
+		String arduinoUnoRelease = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
+		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
+		String fullQualifiedBoardName = "arduino:avr:uno"; //$NON-NLS-N$ default is release 3
+		if(isRelease4Wifi) fullQualifiedBoardName = "arduino:renesas_uno:unor4wifi"; //$NON-NLS-N$ Release 4 Wifi
+		
 		boolean useCLI = "true".equals(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI))?true:false;
 		if(!useCLI) {
-			cmd = cmd + arduinoUnoCompiler + " -hardware=" + rootPath + "hardware/ -tools=" + rootPath + "hardware/tools/ -tools=" + rootPath + "tools-builder/ -fqbn=arduino:avr:uno -quiet -verbose";
-			cmd = cmd + " -built-in-libraries " + rootPath + "libraries";
+			cmd = cmd + arduinoUnoCompiler + " -hardware=" + rootPath + "hardware/ -tools=" + rootPath + "hardware/tools/ -tools=" + rootPath + "tools-builder/ -fqbn=" + fullQualifiedBoardName + " -quiet -verbose";
+			cmd = cmd + " -built-in-libraries=" + rootPath + "libraries";
 			IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
 			String userLibrariesPath = preferenceStore.getString(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getKey());
 			if(userLibrariesPath != null && !"".equals(userLibrariesPath)) cmd = cmd + " -libraries " + userLibrariesPath;
@@ -1201,7 +1305,7 @@ public class ArduinoUnoProcess extends Process {
 			cmd = cmd + " -compile " + sketchFilePath;// + " > stdout.txt 2>stderr.txt";
 		} else {
 			String arduinoCLIPATH = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH);
-			cmd = cmd + "\"" + arduinoCLIPATH + "\"" + " compile -b arduino:avr:uno --output-dir \"" + outputFolder + File.separator + "Build\" \"" + sketchFilePath + "\"";			
+			cmd = cmd + "\"" + arduinoCLIPATH + "\"" + " compile -b " + fullQualifiedBoardName + " --output-dir \"" + outputFolder + File.separator + "Build\" \"" + sketchFilePath + "\"";			
 			String userLibrariesPath = getDACQConfiguration().getProperty((ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH));
 			if(userLibrariesPath != null && !"".equals(userLibrariesPath)) cmd = cmd + " -libraries \"" + userLibrariesPath + "\"";
 		}
@@ -1337,10 +1441,15 @@ public class ArduinoUnoProcess extends Process {
 			if(Platform.getOS().equals(Platform.OS_WIN32)) confFilePath = "\"" + confFilePath + "\"";
 			cmd = avrDudePath + " -C " + confFilePath +  " -p m328p -c arduino -P " + devicePath + " -U flash:w:" + inoHexFilePath + ":i"; 
 		} else {
+			
+			String arduinoUnoRelease = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
+			boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
+			String fullQualifiedBoardName = "arduino:avr:uno";
+			if(isRelease4Wifi) fullQualifiedBoardName = "arduino:renesas_uno:unor4wifi";
 			String inoHexFilePath = resourcePath + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + ".ino.hex";
 			previousINOHexFilePath = inoHexFilePath;
 			String arduinoCLIPATH = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH);
-			cmd = arduinoCLIPATH + " upload -p " + devicePath + " --fqbn arduino:avr:uno -i " + inoHexFilePath;
+			cmd = arduinoCLIPATH + " upload -p " + devicePath + " --fqbn " + fullQualifiedBoardName + " -i " + inoHexFilePath;
 		}
 		forceUpload = false;
 		fileWriter.write(cmd);

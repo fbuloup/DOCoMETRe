@@ -112,9 +112,7 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 	private Text avrDudePathText;
 	private Text arduinoCLIPathText;
 	private Text librariesPathText;
-
 	private Button useCLIButton;
-
 	private Combo revisionCombo;
 	
 	private class SetAsDefaultConfigurationAction extends Action {
@@ -385,6 +383,8 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 				updateWidget(deviceBaudRateCombo, (ArduinoUnoDACQConfigurationProperties)property);
 			if(property == ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY)
 				updateWidget(globalFrequencyHyperlink, (ArduinoUnoDACQConfigurationProperties)property);
+			if(property == ArduinoUnoDACQConfigurationProperties.REVISION)
+				updateWidget(revisionCombo, (ArduinoUnoDACQConfigurationProperties)property);
 		}
 		if(property instanceof DACQConfigurationProperties) {
 			if(property == DACQConfigurationProperties.UPDATE_MODULE) {
