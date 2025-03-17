@@ -52,6 +52,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -59,6 +60,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
@@ -148,6 +150,7 @@ public class ArduinoUnoProcess extends Process {
 		private int trsfrNum;
 		private DecimalFormat formater;
 		private boolean forceTermination;
+		private boolean stopReceived;
 		private double timeBefore;
 		private double timeAfter;
 //		private String channelName;
@@ -314,16 +317,18 @@ public class ArduinoUnoProcess extends Process {
 		                    } else {
 		                    	if(b == 's') {
 		                    		appendToEventDiary("Received stop 's' char");
-		                    		terminate = true;
+		                    		stopReceived = true;
 		                    		forceTermination = true;// Just to send s in reply as Arduino is waiting for it.
-		                    		Thread.sleep(30);// Wait 30ms to be sure Arduino is waiting for 's' char.
 		                    	} else message.append((char)b);
 		                    }
 		            	}
 	    			}
 	    			if(forceTermination) {
+	    				if(!stopReceived) serialPort.writeByte((byte) 's');
+	    				Thread.sleep(30);// Wait 30ms to be sure Arduino is waiting for 's' char to restart
 	    				serialPort.writeByte((byte) 's');
 	    				forceTermination = false;
+	    				terminate = true;
 	    			}
 				}
 				
@@ -1091,7 +1096,13 @@ public class ArduinoUnoProcess extends Process {
 	    
 	    
 	    java.lang.Process process = Runtime.getRuntime().exec(new String[] {cmdLine});
-		process.waitFor();
+	    boolean stillWaiting = true;
+	    while (stillWaiting && !progressMonitor.isCanceled()) {
+	    	stillWaiting = !process.waitFor(1, TimeUnit.SECONDS);						
+		}
+	    if(progressMonitor.isCanceled() && process.isAlive()) 
+	    	process.destroy();
+	    if(progressMonitor.isCanceled()) throw new OperationCanceledException();
 	    
 	    String line;
 		BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream()));

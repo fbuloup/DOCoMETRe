@@ -60,6 +60,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -69,6 +70,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
@@ -343,7 +345,15 @@ public class ADWinProcess extends Process {
 			}
 		}
 		input.close();
-		process.waitFor();
+
+		boolean stillWaiting = true;
+	    while (stillWaiting && !progressMonitor.isCanceled()) {
+	    	stillWaiting = !process.waitFor(1, TimeUnit.SECONDS);						
+		}
+	    if(progressMonitor.isCanceled() && process.isAlive()) 
+	    	process.destroy();
+	    if(progressMonitor.isCanceled()) throw new OperationCanceledException();
+		
 		
 //			ProcessBuilder processBuilder = new ProcessBuilder(cmdLine);
 //			processBuilder.inheritIO();
