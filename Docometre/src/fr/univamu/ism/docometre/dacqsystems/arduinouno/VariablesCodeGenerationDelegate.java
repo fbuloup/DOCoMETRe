@@ -72,6 +72,10 @@ public class VariablesCodeGenerationDelegate {
 	}
 
 	private static String getTransferCode() {
+		String arduinoUnoRelease = ((ArduinoUnoDACQConfiguration)process.getDACQConfiguration()).getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
+		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
+		boolean isRelease3 = ArduinoUnoDACQConfigurationProperties.REVISION_R3.equals(arduinoUnoRelease);
+		
 		String  code = "";
 		int delay = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.ARDUINO_DELAY_TIME_AFTER_SERIAL_PRINT);
 		ArduinoUnoVariable[] variables = ((ArduinoUnoDACQConfiguration)process.getDACQConfiguration()).getVariables();
@@ -106,7 +110,11 @@ public class VariablesCodeGenerationDelegate {
 					code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%s\"," + transferNumber + ", temporaryBuffer);\n";
 				}
 				
-				code = code + "\t\t\t\tSerial.println(serialMessage);\n";
+				if(isRelease3) code = code + "\t\t\t\tSerial.println(serialMessage);\n";
+				if(isRelease4Wifi) {
+					code = code + "\t\t\t\tglobalSerialMessage += serialMessage;\n";
+					code = code + "\t\t\t\tglobalSerialMessage += \"\\n\";\n";
+				}
 				if(delay > 0)code = code + "\t\t\t\tdelayMicroseconds(" + delay + ");\n";
 				code = code + "\t\t\t\ttransfer_" + name + " = 0;\n";
 				code = code + "\t\t}\n";
