@@ -200,7 +200,6 @@ public class ArduinoUnoProcess extends Process {
 			String date = new SimpleDateFormat("EEE d MMM yyyy HH:mm:ss", Locale.getDefault()).format(new Date());
 			appendToEventDiary(date);
 			appendToEventDiary("Starting " + ObjectsController.getResourceForObject(ArduinoUnoProcess.this).getName() + " at " + Double.toString(processBeginTime) + "\n");
-			
 			try {
 				while(!terminate) {
 					if(monitor.isCanceled()) {
@@ -211,7 +210,8 @@ public class ArduinoUnoProcess extends Process {
 	    				byte[] bytes = serialPort.readBytes();
 		            	for (byte b: bytes) {
 		                    if ( (b == '\r' || b == '\n') && message.length() > 0 && !terminate) {
-		                    	String messageString = message.toString().replaceAll("\\r$", "").replaceAll("\\n", "");
+		                    	String messageString = message.toString().replaceAll("\\r", "").replaceAll("\\n", "");
+		                    	if(messageString.length() == 0) continue;
 		                    	message.setLength(0);
 		                    	String[] segments = messageString.split(":");
 		                    	
