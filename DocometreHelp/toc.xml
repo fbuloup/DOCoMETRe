@@ -2,7 +2,7 @@
 <?NLS TYPE="org.eclipse.help.toc"?>
 
 <toc label="DOCoMETRe Table of Contents" topic="html/toc.html">
-   <topic href="html/dataacquisition/dataacquistion.html" label="Data Acquisition">
+   <topic href="html/dataacquisition/dataacquistion.html" label="Data Acquisition and Real Time Systems">
       <anchor id="dataacquisition"/>
    </topic>
    <topic label="Data Processing">
