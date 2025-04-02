@@ -14,4 +14,8 @@
   </topic>
   <topic href="html/advancedconcepts/matplotlibfigure.html" label="Is it possible to use python Matplotlib or Matlab figures ?">
   </topic>
+  <topic href="html/advancedconcepts/datafilewithmatlaborpython.html" label="How to open samples data files with Matlab or Python ?">
+  </topic>
+  <topic href="html/advancedconcepts/parametersfileformat.html" label="What is parameters file format ?">
+  </topic>
  </toc>

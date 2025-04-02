@@ -1,0 +1,26 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"> 
+
+ <html>
+ <head>
+ 	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ 	<title>How to open samples data files with Matlab or Python ?</title>
+ </head>
+
+ <body>
+ <h1>How to open samples data files with Matlab or Python ?</h1>
+ <p>
+ It's possible to open samples data files created by DOCoMETRe. These files are simply binaries files using IEEE754 floating point standard. 
+ </p>
+ <p>You can find below a Matlab code to read this kinf of file :</p>
+ <pre>
+fileHandle = fopen(dataFileName, 'r');
+data = fread(fileHandle, 'float32')';       
+fclose(fileHandle);
+ </pre>
+
+ <p>And below a Python code to read this kind of file using Numpy library :</p>
+ <pre>
+ data = numpy.fromfile(dataFileName, dtype="float32");
+</pre>
+ </body>
+ </html>
