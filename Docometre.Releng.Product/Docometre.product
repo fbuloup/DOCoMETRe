@@ -1,18 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="DOCoMETRe" uid="DocometreProduct" id="Docometre.product" application="Docometre.application" version="1.0.0.qualifier" useFeatures="true" includeLaunchers="true" autoIncludeRequirements="true">
+<product name="DOCoMETRe" uid="DocometreProduct" id="Docometre.product" application="Docometre.application" version="1.0.0.qualifier" type="features" includeLaunchers="true" autoIncludeRequirements="true">
 
    <aboutInfo>
       <image path="/Docometre/icons/about.gif"/>
       <text>
-         DOCoMETRe
+         DOCoMETRe - https://teamicstechnos.github.io/DOCoMETRe/
 
 Dispositif d&apos;Observation et de Contrôle du Mouvement en Temp Réel
 
 Développement à l&apos;institut des Sciences du Mouvement.
-
-https://teamicstechnos.github.io/DOCoMETRe/
       </text>
    </aboutInfo>
 
@@ -46,6 +44,7 @@ https://teamicstechnos.github.io/DOCoMETRe/
          <bmp/>
       </win>
    </launcher>
+
 
    <vm>
    </vm>
@@ -593,9 +592,9 @@ jurisdiction, by the more diligent Party.
       <plugin id="org.eclipse.jface.databinding"/>
       <plugin id="org.eclipse.osgi"/>
       <plugin id="org.eclipse.swt"/>
-      <plugin id="org.eclipse.swt.cocoa.macosx.x86_64" fragment="true"/>
+      <plugin id="org.eclipse.swt.cocoa.macosx.x86_64"/>
       <plugin id="org.eclipse.ui"/>
-      <plugin id="org.eclipse.ui.cocoa" fragment="true"/>
+      <plugin id="org.eclipse.ui.cocoa"/>
       <plugin id="org.eclipse.ui.workbench"/>
    </plugins>
 
