@@ -47,16 +47,20 @@ import fr.univamu.ism.docometre.dacqsystems.Property;
 public final class OscilloCurveConfigurationProperties extends Property {
 	
 	public static final OscilloCurveConfigurationProperties CHANNEL_NAME = new OscilloCurveConfigurationProperties("OscilloCurveConfigurationProperties.CHANNEL_NAME", DocometreMessages.ChannelName_Label, DocometreMessages.ChannelName_Tooltip, "");
+	public static final OscilloCurveConfigurationProperties DISPLAY_CURRENT_VALUES = new OscilloCurveConfigurationProperties("OscilloCurveConfigurationProperties.DISPLAY_CURRENT_VALUES", DocometreMessages.DisplayValuesCurves_Title, DocometreMessages.DisplayValuesCurves_Tooltip, "^(true|false)$", "true:false");
 	
 	public static void populateProperties(OscilloCurveConfiguration oscilloCurveConfiguration){
 		CurveConfigurationProperties.populateProperties(oscilloCurveConfiguration);
 		oscilloCurveConfiguration.setProperty(CHANNEL_NAME, "Select Channel");
+		oscilloCurveConfiguration.setProperty(DISPLAY_CURRENT_VALUES, "false");
 	}
 
 	public static OscilloCurveConfiguration clone(OscilloCurveConfiguration oscilloCurveConfiguration) {
 		OscilloCurveConfiguration newOscilloCurveConfiguration = new OscilloCurveConfiguration(oscilloCurveConfiguration.getChannel());
 		CurveConfigurationProperties.clone(oscilloCurveConfiguration, newOscilloCurveConfiguration);
 		newOscilloCurveConfiguration.setProperty(CHANNEL_NAME, new String(oscilloCurveConfiguration.getProperty(CHANNEL_NAME)));
+		newOscilloCurveConfiguration.setProperty(DISPLAY_CURRENT_VALUES, "false");
+		if(oscilloCurveConfiguration.getProperty(DISPLAY_CURRENT_VALUES) != null) newOscilloCurveConfiguration.setProperty(DISPLAY_CURRENT_VALUES, new String(oscilloCurveConfiguration.getProperty(DISPLAY_CURRENT_VALUES)));
 		return newOscilloCurveConfiguration;
 	}
 	

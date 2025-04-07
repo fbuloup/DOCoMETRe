@@ -91,7 +91,7 @@ public class AssignFunctionAction extends WorkbenchPartAction {
 	
 	@Override
 	protected boolean calculateEnabled() {
-		return true;
+		return isEnabled();
 	}
 
 

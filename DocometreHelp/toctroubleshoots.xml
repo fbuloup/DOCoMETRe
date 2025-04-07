@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?NLS TYPE="org.eclipse.help.toc"?>
 
-<toc label="Troubleshoots" link_to="toc.xml#troubleshoots"> 
+<toc label="Troubleshoots" link_to="toc.xml#troubleshoots">
+   <topic href="/DocometreHelp/html/troubleshoots/docometre.html" label="With DOCoMETRe - How to debug ?">
+   </topic> 
 	<topic label="With Arduino Uno system"  href="html/troubleshoots/arduinouno.html"> 
-		<topic label="Sub Topic" href="html/troubleshoots/subtopic.html" /> 
 	</topic>
+ <topic href="html/troubleshoots/timingConsideration.html" label="Timing consideration">
+ </topic>
 	<topic label="With ADWin Systems">
-		<topic label="Sub Topic 2" href="html/troubleshoots/subtopic2.html" />
 	</topic> 
 </toc>

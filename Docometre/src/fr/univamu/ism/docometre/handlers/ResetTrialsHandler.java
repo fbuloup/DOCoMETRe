@@ -44,7 +44,6 @@ package fr.univamu.ism.docometre.handlers;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.commands.IHandlerListener;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -88,11 +87,6 @@ public class ResetTrialsHandler extends AbstractHandler implements ISelectionLis
 		}
 	}
 
-	@Override
-	public void addHandlerListener(IHandlerListener handlerListener) {
-		// TODO Auto-generated method stub
-
-	}
 
 	@Override
 	public void dispose() {
@@ -107,14 +101,14 @@ public class ResetTrialsHandler extends AbstractHandler implements ISelectionLis
 		ExperimentsView view = (ExperimentsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(ExperimentsView.ID);
 		for (IFolder trialOrSession : trialsOrSessions) {
 			if(ResourceType.isTrial(trialOrSession)) {
-				ResourceProperties.setTrialState(!ResourceProperties.isTrialDone(trialOrSession), trialOrSession);
+				ResourceProperties.setTrialState(trialOrSession, !ResourceProperties.isTrialDone(trialOrSession));
 				view.refreshInput(trialOrSession.getParent().getParent(), new Object[] {trialOrSession});
 			}
 			if(ResourceType.isSession(trialOrSession)) {
 				IResource[] trials = new IResource[0];
 				try {
 					trials = trialOrSession.members();
-					for (IResource trial : trials) ResourceProperties.setTrialState(!ResourceProperties.isTrialDone(trial), trial);
+					for (IResource trial : trials) ResourceProperties.setTrialState(trial, !ResourceProperties.isTrialDone(trial));
 				} catch (CoreException e) {
 					e.printStackTrace();
 					Activator.logErrorMessageWithCause(e);

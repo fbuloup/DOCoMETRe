@@ -128,6 +128,9 @@ public class OrganizeSessionWizardPage extends WizardPage {
 	private HashMap<Integer, IResource> resultAssociation = new HashMap<Integer, IResource>();
 	private Random random;
 	private ListViewer resultListViewer;
+	private CTabFolder selectDistributionMethodTabFolder;
+	private CTabItem selectedTrialsTabItem;
+	private CTabItem packTrialsTabItem;
 
 	public OrganizeSessionWizardPage() {
 		super(PageName);
@@ -163,14 +166,11 @@ public class OrganizeSessionWizardPage extends WizardPage {
 		availableProcessesListViewer.setComparator(new ViewerComparator());
 		List availableProcessesList = availableProcessesListViewer.getList();
 		availableProcessesList.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 2));
-		IResource session = ((NewResourceWizard)getWizard()).getResource();
-		if(session != null) {
-			IResource[] elements = ResourceProperties.getAllTypedResources(ResourceType.PROCESS, session.getProject());
-			for (IResource item : elements) {
-				availableProcesses.add(item);
-			}
-			availableProcessesListViewer.setInput(availableProcesses);
+		IResource[] elements = ResourceProperties.getAllTypedResources(ResourceType.PROCESS, ((NewResourceWizard)getWizard()).getParentResource().getProject(), null);
+		for (IResource item : elements) {
+			availableProcesses.add(item);
 		}
+		availableProcessesListViewer.setInput(availableProcesses);
 		Button addButton = new Button(leftContainer, SWT.FLAT);
 		addButton.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, false, false));
 		addButton.setImage(Activator.getImage(IImageKeys.ADD_ICON));
@@ -282,11 +282,13 @@ public class OrganizeSessionWizardPage extends WizardPage {
 		gl_rightContainer.horizontalSpacing = 0;
 		rightContainer.setLayout(gl_rightContainer);
 		
-		CTabFolder selectDistributionMethodTabFolder = new CTabFolder(rightContainer, SWT.BORDER);
-		selectDistributionMethodTabFolder.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		
+		selectDistributionMethodTabFolder = new CTabFolder(rightContainer, SWT.TOP | SWT.BORDER);
+		selectDistributionMethodTabFolder.setBorderVisible(true);
+		selectDistributionMethodTabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 		selectDistributionMethodTabFolder.setSelectionBackground(Display.getCurrent().getSystemColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND_GRADIENT));
 		
-		CTabItem selectedTrialsTabItem = new CTabItem(selectDistributionMethodTabFolder, SWT.NONE);
+		selectedTrialsTabItem = new CTabItem(selectDistributionMethodTabFolder, SWT.NONE);
 		selectedTrialsTabItem.setText(DocometreMessages.OrganizeSessionWizardPage_selectedTrialsTabItem);
 		
 		Composite selectedTrialsContainer = new Composite(selectDistributionMethodTabFolder, SWT.NONE);
@@ -345,10 +347,10 @@ public class OrganizeSessionWizardPage extends WizardPage {
 		randomDistributionButton1.addSelectionListener(selectionAdapter);
 		randomDistributionButton2.addSelectionListener(selectionAdapter);
 		
-		CTabItem packTrialsTabItem = new CTabItem(selectDistributionMethodTabFolder, SWT.NONE);
+		packTrialsTabItem = new CTabItem(selectDistributionMethodTabFolder, SWT.NONE);
 		packTrialsTabItem.setText(DocometreMessages.OrganizeSessionWizardPage_packTrialsTabItem);
 		
-		Composite packTrialsContainer = new Composite(selectDistributionMethodTabFolder, SWT.NONE);
+		Composite packTrialsContainer = new Composite(selectDistributionMethodTabFolder, SWT.BORDER);
 		packTrialsTabItem.setControl(packTrialsContainer);
 		packTrialsContainer.setLayout(new GridLayout(2, false));
 		
@@ -465,6 +467,8 @@ public class OrganizeSessionWizardPage extends WizardPage {
 		});
 		resultListViewer.setInput(resultAssociation);
 	}
+	
+	
 
 	private void addProcessesHandler(Object[] selection) {
 		removeAddProcesses(true, selection);
@@ -497,10 +501,6 @@ public class OrganizeSessionWizardPage extends WizardPage {
 					monitor.beginTask(DocometreMessages.ApplyWait, 100);
 					resultAssociation.clear();
 					selectedProcessesOccurences.clear();
-					System.out.println("distributionMethod : " + distributionMethod);
-					System.out.println("trialsList : " + trialsList);
-					System.out.println("packetSize : " + packetSize);
-
 					monitor.subTask(DocometreMessages.BuildTrialsList);
 					buildTrialsList(monitor);
 					monitor.worked(20);
@@ -607,15 +607,24 @@ public class OrganizeSessionWizardPage extends WizardPage {
 		if(trialsNumbers.size() > 0 && selectedProcesses.size() > 0) {
 			double mean = 1f*trialsNumbers.size() / (1f*selectedProcesses.size());
 			int index = 0;
-			while (index < trialsNumbers.size()) {
+			long t0 = System.currentTimeMillis();
+			redo : while (index < trialsNumbers.size()) {
 				Integer trialNumber = trialsNumbers.get(index);
 				monitor.subTask(DocometreMessages.ChooseProcess + DocometreMessages.Trial + trialNumber);
 				int selectedProcessNumber = random.nextInt(selectedProcesses.size());
 				Integer occurence = selectedProcessesOccurences.get(selectedProcesses.get(selectedProcessNumber));
-				if(occurence == null || occurence <= mean) {
+				if(System.currentTimeMillis() - t0 > 500) {
+					index = 0;
+					t0 = System.currentTimeMillis();
+					resultAssociation.clear();
+					selectedProcessesOccurences.clear();
+					continue redo;
+				}
+				if(occurence == null || occurence < mean) {
 					if(index == 0 || !resultAssociation.get(trialsNumbers.get(index - 1)).equals(selectedProcesses.get(selectedProcessNumber))) {
 						putAssociation(trialNumber, selectedProcesses.get(selectedProcessNumber));
 						index++;
+						t0 = System.currentTimeMillis();
 					}
 				}
 				if(monitor.isCanceled()) throw new OperationCanceledException();
@@ -625,8 +634,8 @@ public class OrganizeSessionWizardPage extends WizardPage {
 //		procedure TAppliqueRepartEssaisDLGForm.appliquerAleat2(listeEssai : array of integer;taillePaquet : integer);//Appliquer aleat2
 //		var i,numST,nbEssais,n,m,o : integer;
 //		    mean : double;
-//				occurences : array of integer;
-//				label goAgain;
+//			occurences : array of integer;
+//		label goAgain;
 //		begin
 //			if high(listeEssai) > -1 then//taille paquet=1
 //		  begin
@@ -646,12 +655,9 @@ public class OrganizeSessionWizardPage extends WizardPage {
 //						begin
 //							if (i>0)then
 //							begin
-//								if (STSelectListBox.Items[numST] <>
-//										
-//		DocDOCOMETRE.SESSIONS[numSession].ESSAIS[listeEssai[i-1]].NOMST) then
+//								if (STSelectListBox.Items[numST] <> DocDOCOMETRE.SESSIONS[numSession].ESSAIS[listeEssai[i-1]].NOMST) then
 //								begin
-//									
-//		DocDOCOMETRE.SESSIONS[numSession].ESSAIS[listeEssai[i]].NOMST := STSelectListBox.Items[numST];
+//									DocDOCOMETRE.SESSIONS[numSession].ESSAIS[listeEssai[i]].NOMST := STSelectListBox.Items[numST];
 //									inc(occurences[numST]);
 //									inc(i);
 //								end else
@@ -665,7 +671,7 @@ public class OrganizeSessionWizardPage extends WizardPage {
 //										if i < nbEssais then
 //										begin
 //											
-//		DocDOCOMETRE.SESSIONS[numSession].ESSAIS[listeEssai[i]].NOMST := STSelectListBox.Items[o];
+//											DocDOCOMETRE.SESSIONS[numSession].ESSAIS[listeEssai[i]].NOMST := STSelectListBox.Items[o];
 //											inc(occurences[o]);
 //											inc(i);
 //										end;
@@ -673,8 +679,7 @@ public class OrganizeSessionWizardPage extends WizardPage {
 //								end;
 //							end else
 //							begin
-//								DocDOCOMETRE.SESSIONS[numSession].ESSAIS[listeEssai[i]].NOMST := 
-//		STSelectListBox.Items[numST];
+//								DocDOCOMETRE.SESSIONS[numSession].ESSAIS[listeEssai[i]].NOMST := STSelectListBox.Items[numST];
 //								inc(occurences[numST]);
 //								inc(i);
 //							end;
@@ -682,8 +687,7 @@ public class OrganizeSessionWizardPage extends WizardPage {
 //					end;
 //				until i = nbEssais;
 //				setLength(occurences,0);
-//				if DocDOCOMETRE.SESSIONS[numSession].ESSAIS[listeEssai[i-1]].NOMST =
-//					 DocDOCOMETRE.SESSIONS[numSession].ESSAIS[listeEssai[i-2]].NOMST
+//				if DocDOCOMETRE.SESSIONS[numSession].ESSAIS[listeEssai[i-1]].NOMST = DocDOCOMETRE.SESSIONS[numSession].ESSAIS[listeEssai[i-2]].NOMST
 //				then goto goAgain;
 //			end else
 //			begin
@@ -702,7 +706,7 @@ public class OrganizeSessionWizardPage extends WizardPage {
 				monitor.subTask(DocometreMessages.ChooseProcess + DocometreMessages.Trial + trialNumber);
 				int selectedProcessNumber = random.nextInt(selectedProcesses.size());
 				Integer occurence = selectedProcessesOccurences.get(selectedProcesses.get(selectedProcessNumber));
-				if(occurence == null || occurence <= mean) {
+				if(occurence == null || occurence < mean ) {
 					putAssociation(trialNumber, selectedProcesses.get(selectedProcessNumber));
 					index++;
 				}
@@ -808,6 +812,12 @@ public class OrganizeSessionWizardPage extends WizardPage {
 
 	public HashMap<Integer, IResource> getResultAssociation() {
 		return resultAssociation;
+	}
+
+	public void updateFocus() {
+		// Workaround to avoid bad items display (OS X)
+		selectDistributionMethodTabFolder.setSelection(packTrialsTabItem);
+		selectDistributionMethodTabFolder.setSelection(selectedTrialsTabItem);
 	}
 	
 }

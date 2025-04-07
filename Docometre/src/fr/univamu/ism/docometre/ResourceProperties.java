@@ -41,6 +41,7 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
@@ -49,7 +50,10 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.QualifiedName;
+
+import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 
 public final class ResourceProperties {
 	
@@ -68,14 +72,20 @@ public final class ResourceProperties {
 	public static QualifiedName ASSOCIATED_DACQ_CONFIGURATION_FILE_QN = new QualifiedName(Activator.PLUGIN_ID, "associated.dacq.configuration.file");
 	// Associated process file
 	public static QualifiedName ASSOCIATED_PROCESS_FILE_QN = new QualifiedName(Activator.PLUGIN_ID, "associated.process.file");
+	// Whether a process may run in main thread 
+	public static QualifiedName RUN_IN_MAIN_THREAD_QN =  new QualifiedName(Activator.PLUGIN_ID, "run.in.main.thread");
 	// Trial state : 
 	//    - if trial.state property doesn't exist or is not equal to "done", trial is undone
 	//    - if trial.state property exists and is equal to "done" trial is done !
 	public static QualifiedName TRIAL_STATE_QN = new QualifiedName(Activator.PLUGIN_ID, "trial.state");
-	// Trial state : AUTO or MANUAL
+	// Trial start : AUTO or MANUAL
 	//    - if trial.start.mode property doesn't exist or is not equal to "AUTO", trial start mode is MANUAL
-	//    - if trial.start.mode property exists and is equal to "AUTO" trial is done !
+	//    - if trial.start.mode property exists and is equal to "AUTO" trial is started automatically !
 	public static QualifiedName TRIAL_START_MODE_QN = new QualifiedName(Activator.PLUGIN_ID, "trial.start.mode");
+	// Trial validate : AUTO or MANUAL
+	//    - if trial.validate.mode property doesn't exist or is not equal to "AUTO", trial is validated manually
+	//    - if trial.validate.mode property exists and is equal to "AUTO" trial is validated automatically !
+	public static QualifiedName TRIAL_VALIDATE_MODE_QN = new QualifiedName(Activator.PLUGIN_ID, "trial.validate.mode");
 	// Prefix for data files names, if null, means prefix is not used
 	public static QualifiedName DATA_FILES_NAMES_PREFIX_QN = new QualifiedName(Activator.PLUGIN_ID, "data.files.name.prefix");
 	// First suffix, if null, means first suffix is not used : true or false
@@ -95,6 +105,33 @@ public final class ResourceProperties {
 	public static QualifiedName DATA_FILES_LIST_QN = new QualifiedName(Activator.PLUGIN_ID, "data.files.list");
 	// Channels list
 	public static QualifiedName CHANNELS_LIST_QN = new QualifiedName(Activator.PLUGIN_ID, "channels.list");
+	// Subject modified
+	public static QualifiedName SUBJECT_MODIFIED_QN = new QualifiedName(Activator.PLUGIN_ID, "subject.modified");
+	
+	public static void setSubjectModified(IResource resource, boolean modified) {
+		try {
+			if(!ResourceType.isSubject(resource)) return;
+			resource.setSessionProperty(SUBJECT_MODIFIED_QN, modified);
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+	}
+	
+	public static boolean isSubjectModified(IResource resource) {
+		boolean modified = false;
+		try {
+			if(ResourceType.isSubject(resource)) {
+				if(resource.getSessionProperty(SUBJECT_MODIFIED_QN) != null)
+					modified = (boolean) resource.getSessionProperty(SUBJECT_MODIFIED_QN);
+			}
+			
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return modified;
+	}
 	
 	/////////////////////////////////////////////////////////////////////////////
 	/*
@@ -129,8 +166,9 @@ public final class ResourceProperties {
 	 * Return the type of the resource : Experiment, subject etc. See ResourceType class for details
 	 */
 	public static String getTypePersistentProperty(IResource resource) {
+		if(resource == null) return "";
 		try {
-			return resource.getPersistentProperty(TYPE_QN);
+			if(resource.exists()) return resource.getPersistentProperty(TYPE_QN);
 		} catch (CoreException e) {
 			e.printStackTrace();
 			Activator.logErrorMessageWithCause(e);
@@ -274,6 +312,25 @@ public final class ResourceProperties {
 		return null;
 	}
 	
+	public static void setRunInMainThread(IResource process, boolean value) {
+		try {
+			process.setPersistentProperty(RUN_IN_MAIN_THREAD_QN, Boolean.toString(value));
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+	}
+	
+	public static boolean isRunInMainThread(IResource process) {
+		try {
+			String value = process.getPersistentProperty(RUN_IN_MAIN_THREAD_QN);
+			return Boolean.parseBoolean(value) && MathEngineFactory.isPython();
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return false;
+	}
 	/*
 	 * Return trial execution state
 	 */
@@ -292,7 +349,7 @@ public final class ResourceProperties {
 	/*
 	 * Set trial execution state
 	 */
-	public static void setTrialState(boolean done, IResource trialFolder) {
+	public static void setTrialState(IResource trialFolder, boolean done) {
 		try {
 			if(done == true) trialFolder.setPersistentProperty(TRIAL_STATE_QN, "done");
 			if(done == false) trialFolder.setPersistentProperty(TRIAL_STATE_QN, "undone");
@@ -409,6 +466,28 @@ public final class ResourceProperties {
 		}
 	}
 	
+	public static TrialValidateMode getTrialValidateMode(IResource resource) {
+		try {
+			if(!resource.exists()) return TrialValidateMode.MANUAL;
+			if(!ResourceType.isTrial(resource)) return TrialValidateMode.MANUAL;
+			String validateMode = resource.getPersistentProperty(TRIAL_VALIDATE_MODE_QN);
+			return TrialValidateMode.getValidateMode(validateMode);
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return TrialValidateMode.MANUAL;
+	}
+	
+	public static void setTrialValidateMode(IResource resource, TrialValidateMode validateMode) {
+		try {
+			resource.setPersistentProperty(TRIAL_VALIDATE_MODE_QN, validateMode.getKey());
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+	}
+	
 	public static void clonePersistentProperties(IResource originResource, IResource detinationResource) {
 		ResourceProperties.setDescriptionPersistentProperty(detinationResource, ResourceProperties.getDescriptionPersistentProperty(originResource));
 		ResourceProperties.setTypePersistentProperty(detinationResource, ResourceType.getResourceType(originResource).toString());
@@ -426,7 +505,7 @@ public final class ResourceProperties {
 		if(ResourceType.isProcess(originResource)) {
 			ResourceProperties.setAssociatedDACQConfigurationProperty(detinationResource, ResourceProperties.getAssociatedDACQConfigurationProperty(originResource));
 		}
-		if(ResourceType.isTrial(originResource)) {
+		if(ResourceType.isProcessTest(originResource)) {
 			ResourceProperties.setAssociatedProcessProperty(detinationResource, ResourceProperties.getAssociatedProcessProperty(originResource));
 		}
 	}
@@ -436,7 +515,7 @@ public final class ResourceProperties {
 	/*
 	 * Get all resources of type resourceType in container
 	 */
-	public static IResource[] getAllTypedResources(ResourceType resourceType, IContainer resourceContainer) {
+	public static IResource[] getAllTypedResources(ResourceType resourceType, IContainer resourceContainer, IProgressMonitor monitor) {
 		ArrayList<IResource> resources = new ArrayList<>(0);
 		try {
 			IResource[] resourcesMember = resourceContainer.members();
@@ -445,10 +524,12 @@ public final class ResourceProperties {
 				if (resourceType.toString().equals(currentResourceType))
 					resources.add(currentResource);
 				if (currentResource instanceof IContainer) {
-					IResource[] allResources = getAllTypedResources(resourceType, (IContainer) currentResource);
+					IResource[] allResources = getAllTypedResources(resourceType, (IContainer) currentResource, monitor);
 					resources.addAll(Arrays.asList(allResources));
 				}
+				if(monitor != null && monitor.isCanceled()) return new IResource[0];
 			}
+			if(monitor != null && monitor.isCanceled()) return new IResource[0];
 			return resources.toArray(new IResource[resources.size()]);
 		} catch (CoreException e) {
 			e.printStackTrace();
@@ -473,6 +554,12 @@ public final class ResourceProperties {
 			if(ResourceProperties.getDataFilesNamesPrefix(resource) != null) properties.put(keyName + SEPARATOR + DATA_FILES_NAMES_PREFIX_QN.getLocalName(), ResourceProperties.getDataFilesNamesPrefix(resource));
 			properties.put(keyName + SEPARATOR + USE_SESSION_NAME_AS_FIRST_SUFFIX_IN_DATA_FILES_NAMES_QN.getLocalName(), String.valueOf(ResourceProperties.useSessionNameInDataFilesNamesAsFirstSuffix(resource)));
 			properties.put(keyName + SEPARATOR + USE_TRIAL_NUMBER_AS_SECOND_SUFFIX_IN_DATA_FILES_NAMES_QN.getLocalName(), String.valueOf(ResourceProperties.useTrialNumberInDataFilesNamesAsSecondSuffix(resource)));
+		}
+		if(ResourceType.isLog(resource)) {
+			String system = ResourceProperties.getSystemPersistentProperty(resource);
+			if(system != null) {
+				properties.put(keyName + SEPARATOR + SYSTEM_QN.getLocalName(), system);
+			}
 		}
 	}
 	
@@ -551,7 +638,7 @@ public final class ResourceProperties {
 				for (int i = 0; i < members.length; i++) {
 					if(ResourceType.isTrial(members[i])) {
 						if(!ResourceProperties.isTrialDone(members[i])) {
-							String trialNumberString = members[i].getName().replaceAll(DocometreMessages.Trial, "");
+							String trialNumberString = members[i].getName().split("°")[1];//members[i].getName().replaceAll(DocometreMessages.Trial, "");
 							numbersArrayList.add(Integer.parseInt(trialNumberString));
 						}
 					}
@@ -584,6 +671,13 @@ public final class ResourceProperties {
 			e.printStackTrace();
 		}
 		return new int[0];
+	}
+	
+	public static long getSamplesNumber(IResource samplesFile) {
+		if(!ResourceType.isSamples(samplesFile)) return 0;
+		String wp = samplesFile.getWorkspace().getRoot().getLocation().toOSString();
+		File trialFile = new File(wp + samplesFile.getFullPath().toOSString());
+		return trialFile.length()/4;
 	}
 
 }

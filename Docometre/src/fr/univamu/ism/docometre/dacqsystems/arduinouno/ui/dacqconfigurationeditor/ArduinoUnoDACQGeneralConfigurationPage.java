@@ -60,7 +60,10 @@ import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Scrollable;
@@ -79,12 +82,19 @@ import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.PartListenerAdapter;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.Property;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinMessages;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ui.dacqconfigurationeditor.AddModuleHandler;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ui.dacqconfigurationeditor.DeleteModulesHandler;
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
+import fr.univamu.ism.docometre.dacqsystems.DACQConfigurationProperties;
 import fr.univamu.ism.docometre.dacqsystems.FrequencyInputValidator;
 import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyHandler;
 import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyOperation;
 import fr.univamu.ism.docometre.dialogs.DialogSelectionHandler;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoModulesList;
+import fr.univamu.ism.docometre.dacqsystems.ui.DeviceSelectionHandler;
+import fr.univamu.ism.docometre.dacqsystems.ui.DeviceSelectionHandler.DeviceType;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoADS1115ModuleProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfigurationProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoMessages;
 import fr.univamu.ism.docometre.editors.ModulePage;
@@ -100,7 +110,10 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 	private Hyperlink globalFrequencyHyperlink;
 	private Text builderPathText;
 	private Text avrDudePathText;
+	private Text arduinoCLIPathText;
 	private Text librariesPathText;
+	private Button useCLIButton;
+	private Combo revisionCombo;
 	
 	private class SetAsDefaultConfigurationAction extends Action {
 		public SetAsDefaultConfigurationAction() {
@@ -117,6 +130,9 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 			values.add(avrDudePathText.getText());
 			values.add(librariesPathText.getText());
 			values.add(globalFrequencyHyperlink.getText());
+			values.add(arduinoCLIPathText.getText());
+			values.add(useCLIButton.getSelection()?"true":"false");
+			values.add(revisionCombo.getText());
 			IPreferenceStore preferences = Activator.getDefault().getPreferenceStore();
 			preferences.putValue(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH.getKey(), values.get(0));
 			preferences.putValue(ArduinoUnoDACQConfigurationProperties.BAUD_RATE.getKey(), values.get(1));
@@ -124,6 +140,9 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 			preferences.putValue(ArduinoUnoDACQConfigurationProperties.AVRDUDE_PATH.getKey(), values.get(3));
 			preferences.putValue(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), values.get(4));
 			preferences.putValue(ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY.getKey(), values.get(5));
+			preferences.putValue(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH.getKey(), values.get(6));
+			preferences.putValue(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI.getKey(), values.get(7));
+			preferences.putValue(ArduinoUnoDACQConfigurationProperties.REVISION.getKey(), values.get(8));
 		}
 	}
 
@@ -199,6 +218,39 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 		avrDudePathText.addModifyListener(getGeneralConfigurationModifyListener());
 		createButton(generalconfigurationContainer, DocometreMessages.Browse, SWT.PUSH, 1, 1).addSelectionListener(new DialogSelectionHandler(avrDudePathText, false, getSite().getShell()));
 		
+		value = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI);
+		useCLIButton = createButton(generalconfigurationContainer, ArduinoUnoMessages.UseArduinoCLI_Label, SWT.CHECK, 3, 1);
+		useCLIButton.setToolTipText(ArduinoUnoMessages.UseArduinoCLI_Tooltip);
+		useCLIButton.setSelection("true".equals(value)?true:false);
+		
+		createLabel(generalconfigurationContainer, ArduinoUnoMessages.ArduinoCLIPath_Label, ArduinoUnoMessages.ArduinoCLIPath_Tooltip);
+		value = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH);
+		regExp = ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH.getRegExp();
+		arduinoCLIPathText = createText(generalconfigurationContainer, value, SWT.NONE, 1, 1);
+		arduinoCLIPathText.addModifyListener(new ModifyPropertyHandler(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH, dacqConfiguration, arduinoCLIPathText, regExp, DocometreMessages.ErrorFileFolderNotValid, true, (ResourceEditor)getEditor()));
+		arduinoCLIPathText.addModifyListener(getGeneralConfigurationModifyListener());
+		Button browseButton = createButton(generalconfigurationContainer, DocometreMessages.Browse, SWT.PUSH, 1, 1);
+		browseButton.addSelectionListener(new DialogSelectionHandler(arduinoCLIPathText, false, getSite().getShell()));
+		arduinoCLIPathText.setEnabled(useCLIButton.getSelection());
+		browseButton.setEnabled(useCLIButton.getSelection());
+		useCLIButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				dacqConfiguration.setProperty(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI, useCLIButton.getSelection()?"true":"false");
+				arduinoCLIPathText.setEnabled(useCLIButton.getSelection());
+				browseButton.setEnabled(useCLIButton.getSelection());
+				generalConfigurationSectionPart.markDirty();
+			}
+		});
+		
+		createLabel(generalconfigurationContainer, ArduinoUnoMessages.Revision_Label, ArduinoUnoMessages.Revision_Tooltip);
+		value = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
+		value = value == null ? ArduinoUnoDACQConfigurationProperties.REVISION_R3 : value;
+		regExp = ArduinoUnoDACQConfigurationProperties.REVISION.getRegExp();
+		revisionCombo = createCombo(generalconfigurationContainer, ArduinoUnoDACQConfigurationProperties.REVISIONS, value, 2 , 1);
+		revisionCombo.addModifyListener(new ModifyPropertyHandler(ArduinoUnoDACQConfigurationProperties.REVISION, dacqConfiguration, revisionCombo, regExp, "", false, (ResourceEditor)getEditor()));
+		revisionCombo.addModifyListener(getGeneralConfigurationModifyListener());
+		
 		createLabel(generalconfigurationContainer, ArduinoUnoMessages.DevicePath_Label, ArduinoUnoMessages.DevicePath_Tooltip);
 		value = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH);
 		regExp = ArduinoUnoDACQConfigurationProperties.DEVICE_PATH.getRegExp();
@@ -206,7 +258,7 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 		if(Platform.getOS().equals(Platform.OS_WIN32)) devicePathText.addModifyListener(new ModifyPropertyHandler(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH, dacqConfiguration, devicePathText, regExp, DocometreMessages.ArduinoUnoProcess_DevicePathErrorMessage, false, (ResourceEditor)getEditor()));
 		else devicePathText.addModifyListener(new ModifyPropertyHandler(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH, dacqConfiguration, devicePathText, regExp, DocometreMessages.ErrorFileFolderNotValid, true, (ResourceEditor)getEditor()));
 		devicePathText.addModifyListener(getGeneralConfigurationModifyListener());
-		createButton(generalconfigurationContainer, DocometreMessages.Browse, SWT.PUSH, 1, 1).addSelectionListener(new DeviceSelectionSelectionHandler(devicePathText, getSite().getShell()));
+		createButton(generalconfigurationContainer, DocometreMessages.Browse, SWT.PUSH, 1, 1).addSelectionListener(new DeviceSelectionHandler(devicePathText, getSite().getShell(), DeviceType.USB));
 		
 		createLabel(generalconfigurationContainer, ArduinoUnoMessages.DeviceBaudRate_Label, ArduinoUnoMessages.DeviceBaudRate_Tooltip);
 		value = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.BAUD_RATE);
@@ -245,11 +297,17 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 		/*
 		 * Section 2 : modules configuration
 		 */
-		createTableConfigurationSection(false, false, false, false);
+		createTableConfigurationSection(true, false, false, false);
 		tableConfigurationSection.setText(ArduinoUnoMessages.ModuleConfigurationSection_Title);
 		tableConfigurationSection.setDescription(ArduinoUnoMessages.ModulesConfigurationSectionDescription);
 		
+		deleteToolItem.setToolTipText(ADWinMessages.DeleteModule_Tooltip);
+		DeleteModulesHandler deleteModulesHandler = new DeleteModulesHandler(getSite().getShell(), dacqConfiguration, ((ResourceEditor)getEditor()).getUndoContext()); 
+		tableViewer.addSelectionChangedListener(deleteModulesHandler);
+		deleteToolItem.addSelectionListener(deleteModulesHandler);
 		
+		addToolItem.setToolTipText(ADWinMessages.AddModule_Tooltip);
+		addToolItem.addSelectionListener(new AddModuleHandler(getSite().getShell(), (ResourceEditor)getEditor()));
 		
 		TableColumnLayout  modulesTableColumnLayout = (TableColumnLayout) tableConfigurationContainer.getLayout();
 		Property moduleTypeColumnTitleProperty = new Property("", (String) ArduinoUnoMessages.ModuleType_ColumnTitle, "" ,"") {
@@ -325,6 +383,25 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 				updateWidget(deviceBaudRateCombo, (ArduinoUnoDACQConfigurationProperties)property);
 			if(property == ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY)
 				updateWidget(globalFrequencyHyperlink, (ArduinoUnoDACQConfigurationProperties)property);
+			if(property == ArduinoUnoDACQConfigurationProperties.REVISION)
+				updateWidget(revisionCombo, (ArduinoUnoDACQConfigurationProperties)property);
+		}
+		if(property instanceof DACQConfigurationProperties) {
+			if(property == DACQConfigurationProperties.UPDATE_MODULE) {
+				tableViewer.setInput(dacqConfiguration.getModules());
+				tableConfigurationSectionPart.markDirty();
+				if(newValue != null) {
+					((Module)newValue).addObserver(this);
+				} else if(oldValue != null) {
+					((Module)oldValue).removeObserver(this);
+				}
+			}
+			if(property == DACQConfigurationProperties.CHARTS_LAYOUT_COLUMNS_NUMBER);
+		}
+		if(property instanceof ArduinoUnoADS1115ModuleProperties) {
+			if(property == ArduinoUnoADS1115ModuleProperties.ADDRESS) {
+				tableViewer.refresh();
+			}
 		}
 	}
 	

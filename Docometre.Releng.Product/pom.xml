@@ -36,6 +36,11 @@
 				</executions>
 				<configuration>
 
+					<formats>
+						<win32>zip</win32>
+						<linux>zip</linux>
+						<macosx>zip</macosx>
+					</formats>
 					<products>
 						<product>
 							<id>DocometreProduct</id>

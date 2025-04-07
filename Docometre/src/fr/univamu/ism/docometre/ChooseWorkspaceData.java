@@ -49,6 +49,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Properties;
 
+import org.eclipse.swt.graphics.Rectangle;
+
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
 public final class ChooseWorkspaceData {
@@ -61,17 +63,26 @@ public final class ChooseWorkspaceData {
 	private String recentWorkspacesString = "";
 	private String selectedWorkspace = "";
 	private Properties workspaceDataProperties;
+	private int workspaceDialogXPosition = 0;
+	private int workspaceDialogYPosition = 0;
+	private int workspaceDialogWidth = 0;
+	private int workspaceDialogHeight = 0;
 	
 	private ChooseWorkspaceData() {
 		workspaceDataProperties = new Properties();
-		try {
-			FileInputStream workspaceDataPropertiesFile = new FileInputStream(propertiesFilePath);
+		try(FileInputStream workspaceDataPropertiesFile = new FileInputStream(propertiesFilePath)) {
 			workspaceDataProperties.load(workspaceDataPropertiesFile);
 			maxRecentWorkspaces = Integer.parseInt((String) workspaceDataProperties.get(GeneralPreferenceConstants.MAX_RECENT_WORKSPACES));
 			showWorkspaceDialog = Boolean.parseBoolean((String) workspaceDataProperties.get(GeneralPreferenceConstants.SHOW_WORKSPACE_SELECTION_DIALOG));
 			recentWorkspacesString = (String) workspaceDataProperties.get(GeneralPreferenceConstants.RECENT_WORKSPACES);
 			recentWorkspaces = recentWorkspacesString.split(",");
 			selectedWorkspace =  (String) workspaceDataProperties.get(GeneralPreferenceConstants.SELECTED_WORKSPACE);
+			if( workspaceDataProperties.get(GeneralPreferenceConstants.WORKSPACE_DIALOG_X_POSITION) != null) {
+				workspaceDialogXPosition = Integer.parseInt((String) workspaceDataProperties.get(GeneralPreferenceConstants.WORKSPACE_DIALOG_X_POSITION));
+				workspaceDialogYPosition = Integer.parseInt((String) workspaceDataProperties.get(GeneralPreferenceConstants.WORKSPACE_DIALOG_Y_POSITION));
+				workspaceDialogWidth = Integer.parseInt((String) workspaceDataProperties.get(GeneralPreferenceConstants.WORKSPACE_DIALOG_WIDTH));
+				workspaceDialogHeight = Integer.parseInt((String) workspaceDataProperties.get(GeneralPreferenceConstants.WORKSPACE_DIALOG_HEIGHT));
+			}
 		} catch (FileNotFoundException e) {
 			save();
 		} catch (Exception e) {
@@ -126,6 +137,10 @@ public final class ChooseWorkspaceData {
 		workspaceDataProperties.put(GeneralPreferenceConstants.RECENT_WORKSPACES, encodeWorkspacesString(recentWorkspaces));
 		workspaceDataProperties.put(GeneralPreferenceConstants.SELECTED_WORKSPACE, selectedWorkspace);
 		workspaceDataProperties.put(GeneralPreferenceConstants.SHOW_WORKSPACE_SELECTION_DIALOG, String.valueOf(getShowDialog()));
+		workspaceDataProperties.put(GeneralPreferenceConstants.WORKSPACE_DIALOG_X_POSITION, String.valueOf(workspaceDialogXPosition));
+		workspaceDataProperties.put(GeneralPreferenceConstants.WORKSPACE_DIALOG_Y_POSITION, String.valueOf(workspaceDialogYPosition));
+		workspaceDataProperties.put(GeneralPreferenceConstants.WORKSPACE_DIALOG_WIDTH, String.valueOf(workspaceDialogWidth));
+		workspaceDataProperties.put(GeneralPreferenceConstants.WORKSPACE_DIALOG_HEIGHT, String.valueOf(workspaceDialogHeight));
 		try {
 			FileOutputStream workspaceDataPropertiesFile = new FileOutputStream(propertiesFilePath);
 			workspaceDataProperties.store(workspaceDataPropertiesFile, "Workspaces data properties for DOCoMETRe");
@@ -141,6 +156,18 @@ public final class ChooseWorkspaceData {
 			recentWorkspacesString = recentWorkspacesString + recentWorkspaces[i] + ",";
 		}
 		return recentWorkspacesString.replaceAll(",$", "");
+	}
+
+	public void setWorkspaceDialogPosition(int x, int y, int width, int height) {
+		this.workspaceDialogXPosition = x;
+		this.workspaceDialogYPosition = y;
+		this.workspaceDialogWidth = width;
+		this.workspaceDialogHeight = height;
+		
+	}
+	
+	public Rectangle getWorkspaceDialogPosition() {
+		return new Rectangle(workspaceDialogXPosition, workspaceDialogYPosition, workspaceDialogWidth, workspaceDialogHeight);
 	}
 
 }

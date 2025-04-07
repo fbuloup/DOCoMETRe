@@ -42,63 +42,42 @@
 package fr.univamu.ism.docometre.editors;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.List;
 
-import org.eclipse.core.commands.operations.ObjectUndoContext;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.dialogs.IPageChangedListener;
+import org.eclipse.jface.dialogs.PageChangedEvent;
 import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.ITextListener;
-import org.eclipse.jface.text.TextEvent;
-import org.eclipse.jface.text.TextViewerUndoManager;
-import org.eclipse.jface.text.source.CompositeRuler;
-import org.eclipse.jface.text.source.LineNumberRulerColumn;
-import org.eclipse.jface.text.source.SourceViewer;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CaretEvent;
-import org.eclipse.swt.custom.CaretListener;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.KeyListener;
-import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.operations.UndoRedoActionGroup;
-import org.eclipse.ui.part.EditorPart;
+import org.eclipse.ui.part.MultiPageEditorPart;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.GetResourceLabelDelegate;
-import fr.univamu.ism.docometre.PartListenerAdapter;
-import fr.univamu.ism.docometre.dialogs.FindDialog;
-import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
-public class ParametersEditor extends EditorPart implements PartNameRefresher {
+public class ParametersEditor extends MultiPageEditorPart implements PartNameRefresher, IPageChangedListener {
 	
 	public static String ID = "Docometre.ParametersEditor";
 	
-	private ObjectUndoContext resourceEditorUndoContext;
-	private UndoRedoActionGroup undoRedoActionGroup;
-	private SourceViewer sourceViewer;
+//	private SourceViewer sourceViewer;
 	private boolean dirty;
-	private Document document;
-	private PartListenerAdapter partListenerAdapter;
-	
-	public ObjectUndoContext getUndoContext() {
-		IResource resource = ((IResource)((ResourceEditorInput)getEditorInput()).getObject());
-		String fullName = resource.getFullPath().toOSString();
-		if(resourceEditorUndoContext == null) resourceEditorUndoContext = new ObjectUndoContext(this, "ResourceEditorUndoContext_" + fullName);
-		return resourceEditorUndoContext;
-	}
+	protected Document document;
+//	private PartListenerAdapter partListenerAdapter;
+//	private ArrayList<Font> fontsArrayList = new ArrayList<>();
+	private ParametersRawEditor parametersRawEditor;
+
+private ParametersTableEditor parametersTableEditor;
 	
 	public ParametersEditor() {
+	}
+	
+	public Document getDocument() {
+		if(document == null) document = new Document();
+		return document;
 	}
 
 	@Override
@@ -106,8 +85,7 @@ public class ParametersEditor extends EditorPart implements PartNameRefresher {
 		try {
 			IResource paramsFile = ((IResource)((ResourceEditorInput)getEditorInput()).getObject());
 			Files.write(Paths.get(paramsFile.getLocationURI()), document.get().getBytes(), StandardOpenOption.TRUNCATE_EXISTING , StandardOpenOption.WRITE);
-			dirty = false;
-			firePropertyChange(PROP_DIRTY);
+			setDirty(false);
 		} catch (IOException e) {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
@@ -124,6 +102,7 @@ public class ParametersEditor extends EditorPart implements PartNameRefresher {
 		setSite(site);
 		IResource resource = ((IResource)((ResourceEditorInput)input).getObject());
 		setPartName(GetResourceLabelDelegate.getLabel(resource));
+		addPageChangedListener(this);
 	}
 
 	@Override
@@ -135,100 +114,16 @@ public class ParametersEditor extends EditorPart implements PartNameRefresher {
 	public boolean isSaveAsAllowed() {
 		return false;
 	}
-
-	@Override
-	public void createPartControl(Composite parent) {
-		try {
-			
-			IFile paramsFile = (IFile) ((ResourceEditorInput)getEditorInput()).getObject();
-			List<String> lines = Files.readAllLines(FileSystems.getDefault().getPath(paramsFile.getLocation().toOSString()), StandardCharsets.UTF_8);
-			StringBuffer content = new StringBuffer();
-			int lineNumber = 1;
-			for (String line : lines) {
-				content.append(line);
-				if(lineNumber < lines.size()) {
-					content.append("\n");
-					lineNumber++;
-				}
-			}
-			
-			document = new Document();
-			CompositeRuler lineAnnotationRuler = new CompositeRuler();
-			lineAnnotationRuler.addDecorator(0, new LineNumberRulerColumn());
-			sourceViewer = new SourceViewer(parent, lineAnnotationRuler, null, true, SWT.V_SCROLL | SWT.H_SCROLL);
-			sourceViewer.setDocument(document);
-			document.set(content.toString());
-			
-			TextViewerUndoManager textViewerUndoManager = new TextViewerUndoManager(Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.PREF_UNDO_LIMIT));
-			sourceViewer.setUndoManager(textViewerUndoManager);
-			textViewerUndoManager.connect(sourceViewer);
-			undoRedoActionGroup = new UndoRedoActionGroup(getSite(), textViewerUndoManager.getUndoContext(), true);
-			undoRedoActionGroup.fillActionBars(getEditorSite().getActionBars());
-			
-			sourceViewer.addTextListener(new ITextListener() {
-				@Override
-				public void textChanged(TextEvent event) {
-					dirty = true;
-					firePropertyChange(PROP_DIRTY);
-				}
-			});
-			
-			sourceViewer.getTextWidget().addKeyListener(new KeyListener() {
-				@Override
-				public void keyReleased(KeyEvent event) {
-				}
-				
-				@Override
-				public void keyPressed(KeyEvent event) {
-					if(((event.stateMask & SWT.MOD1) == SWT.MOD1) && event.keyCode == 'f') {
-						FindDialog.getInstance().setTextViewer(sourceViewer);
-						FindDialog.getInstance().open();
-					}
-				}
-			});
-			sourceViewer.getTextWidget().addCaretListener(new CaretListener() {
-				@Override
-				public void caretMoved(CaretEvent event) {
-					FindDialog.getInstance().resetOffset(sourceViewer, event.caretOffset);
-				}
-			});
-			
-			partListenerAdapter = new PartListenerAdapter() {
-				@Override
-				public void partClosed(IWorkbenchPartReference partRef) {
-					if(partRef.getPart(false) == ParametersEditor.this) {
-						PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().removePartListener(partListenerAdapter);
-					}
-				}
-				
-				@Override
-				public void partActivated(IWorkbenchPartReference partRef) {
-					update(partRef);
-				}
-				
-				@Override
-				public void partBroughtToTop(IWorkbenchPartReference partRef) {
-					update(partRef);
-				}
-				
-				private void update(IWorkbenchPartReference partRef) {
-					if(partRef.getPart(false) == ParametersEditor.this) FindDialog.getInstance().setTextViewer(sourceViewer);
-				}
-			};
-			PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().addPartListener(partListenerAdapter);
-			
-			
-			
-		} catch (IOException e) {
-			e.printStackTrace();
-			Activator.logErrorMessageWithCause(e);
-		}
-		
+	
+	protected void setDirty(boolean dirty) {
+		this.dirty = dirty;
+		firePropertyChange(PROP_DIRTY);
 	}
 
 	@Override
 	public void setFocus() {
-		sourceViewer.getTextWidget().setFocus();
+		if(getActivePage() == 0) parametersRawEditor.setFocus();
+		if(getActivePage() == 1) parametersTableEditor.setFocus();
 	}
 
 	@Override
@@ -237,6 +132,35 @@ public class ParametersEditor extends EditorPart implements PartNameRefresher {
 		setPartName(GetResourceLabelDelegate.getLabel((IResource) object));
 		setTitleToolTip(getEditorInput().getToolTipText());
 		firePropertyChange(PROP_TITLE);
+	}
+
+	@Override
+	protected void createPages() {
+		try {
+			parametersRawEditor = new ParametersRawEditor(this);
+			int pageIndex = addPage(parametersRawEditor, getEditorInput());
+			setPageText(pageIndex, "Fichier brut");
+			
+			parametersTableEditor = new ParametersTableEditor(this);
+			pageIndex = addPage(parametersTableEditor, getEditorInput());
+			setPageText(pageIndex, "Tableau");
+			
+		} catch (PartInitException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void pageChanged(PageChangedEvent event) {
+		if(event.getSelectedPage() == parametersRawEditor) {
+			boolean isDirty = isDirty();
+			parametersRawEditor.update();
+			if(!isDirty) setDirty(false);
+		}
+		if(event.getSelectedPage() == parametersTableEditor) {
+			parametersTableEditor.update();
+		}
 	}
 
 }

@@ -55,6 +55,7 @@ import org.eclipse.jface.text.rules.WordRule;
 import org.eclipse.swt.SWT;
 
 import fr.univamu.ism.docometre.DocometreApplication;
+import fr.univamu.ism.docometre.ThemeColors;
 import fr.univamu.ism.docometre.editors.WordsDetector;
 
 public class ArduinoUnoCodeScanner extends RuleBasedScanner {
@@ -62,15 +63,16 @@ public class ArduinoUnoCodeScanner extends RuleBasedScanner {
 	private static String[] INCLUDE = {"#include"};
 	private static String[] DEFINE = {"#ifndef", "#ifdef", "#endif"};
 	private static String[] SEGMENTS = {"setup()", "loop()", "finalize()"};
-	public static String[] RESERVED_WORDS = {"for", "while", "do", "void", "auto", "signed", "const", "extern", "register", "unsigned", "int", "float", "char", "double", "long", "break", "return", "continue",
+	public static String[] RESERVED_WORDS = {"double", "for", "while", "do", "void", "auto", "signed", "const", "extern", "register", "unsigned", "int", "float", "char", "double", "long", "break", "return", "continue",
 												"if", "else", "switch", "case", "default", "sizeof", "struct", "typedef", "union", "volatile", "byte", "bool", "sprintf", "Serial", "println", "print", "begin",
-												"available", "read", "micros", "String", "wdt_enable"};
+												"available", "read", "micros", "String", "wdt_enable", "exit", "EXTERNAL", "INTERNAL", "DEFAULT", "AR_EXTERNAL", "AR_DEFAULT", "GPT_TIMER", "TIMER_MODE_PERIODIC", "force_use_of_pwm_reserved_timer", 
+												"FspTimer", "get_available_timer", "analogReference", "pinMode", "WDT"};
 	
 	public static RuleBasedScanner getIncludeScanner() {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
 		List<IRule> rules = new ArrayList<IRule>(0);
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLUE), 
-													DocometreApplication.getColor(DocometreApplication.WHITE), 
+													ThemeColors.getBackgroundColor(), 
 													SWT.NORMAL, 
 													DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
@@ -85,7 +87,7 @@ public class ArduinoUnoCodeScanner extends RuleBasedScanner {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
 		List<IRule> rules = new ArrayList<IRule>(0);
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.ORANGE), 
-													DocometreApplication.getColor(DocometreApplication.WHITE), 
+													ThemeColors.getBackgroundColor(), 
 													SWT.NORMAL, 
 													DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
@@ -100,7 +102,7 @@ public class ArduinoUnoCodeScanner extends RuleBasedScanner {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
 		List<IRule> rules = new ArrayList<IRule>(0);
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.RED), 
-													DocometreApplication.getColor(DocometreApplication.WHITE), 
+													ThemeColors.getBackgroundColor(), 
 													SWT.NORMAL, 
 													DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
@@ -115,7 +117,7 @@ public class ArduinoUnoCodeScanner extends RuleBasedScanner {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
 		List<IRule> rules = new ArrayList<IRule>(0);
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.MAROON), 
-													DocometreApplication.getColor(DocometreApplication.WHITE), 
+													ThemeColors.getBackgroundColor(), 
 													SWT.NORMAL, 
 													DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
@@ -130,7 +132,7 @@ public class ArduinoUnoCodeScanner extends RuleBasedScanner {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
 		List<IRule> rules = new ArrayList<IRule>(0);
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.GREEN), 
-													DocometreApplication.getColor(DocometreApplication.WHITE), 
+													ThemeColors.getBackgroundColor(), 
 													SWT.NORMAL, 
 													DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);

@@ -59,8 +59,8 @@ public class Comment extends Block {
 	}
 	
 	@Override
-	public String getCode(Object context, Object step) {
-		return null;
+	public String getCode(Object context, Object step, Object...objects) {
+		return "";
 	}
 	
 	public String getComment() {

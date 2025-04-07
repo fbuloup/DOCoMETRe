@@ -182,4 +182,45 @@ public interface IImageKeys {
 	
 	public static final String DATA_PROCESSING_ICON = "icons/dataProcessing.gif"; //$NON-NLS-1$
 	
+	public static final String ADD_MARKER_GROUP_ICON = "icons/marker_label.png"; //$NON-NLS-1$
+	
+	public static final String MODIFIED_ICON = "icons/modified.gif"; //$NON-NLS-1$
+	
+	public static final String NUMPY_ICON = "icons/numpy.png"; //$NON-NLS-1$
+	public static final String NUMPY_ICON_2 = "icons/numpy2.png"; //$NON-NLS-1$
+	
+	public static final String LOAD_UNLOAD_ICON = "icons/LoadUnloadSubjects.gif"; //$NON-NLS-1$
+	
+	public static final String BATCH_DATA_PROCESSING_ICON = "icons/batchDataProcessing.gif"; //$NON-NLS-1$
+	
+	public static final String ACTIVATE_ICON = "icons/activate.png"; //$NON-NLS-1$
+	public static final String DEACTIVATE_ICON = "icons/deactivate.gif"; //$NON-NLS-1$
+	public static final String ENABLE_DISABLE_ICON = "icons/activateDeactivate.png"; //$NON-NLS-1$
+	
+	public static final String XYChart_ICON = "icons/XYChartIcon.png"; //$NON-NLS-1$
+	public static final String XYZChart_ICON = "icons/XYZChartIcon.png"; //$NON-NLS-1$
+	public static final String ZOOM_IN2 = "icons/zoomIn.png"; //$NON-NLS-1$
+	public static final String ZOOM_OUT2 = "icons/zoomOut.png"; //$NON-NLS-1$
+	public static final String ZOOM_FIT = "icons/zoomFit.png"; //$NON-NLS-1$
+	public static final String UP = "icons/up.png"; //$NON-NLS-1$
+	public static final String DOWN = "icons/down2.png"; //$NON-NLS-1$
+	public static final String RIGHT = "icons/right.png"; //$NON-NLS-1$
+	public static final String LEFT = "icons/left2.png"; //$NON-NLS-1$
+	public static final String TURN_LEFT = "icons/turnLeft.png"; //$NON-NLS-1$
+	public static final String TURN_RIGHT = "icons/turnRight.png"; //$NON-NLS-1$
+	
+	public static final String FUNCTION_ICON = "icons/function.gif"; //$NON-NLS-1$
+	public static final String CUSTOMER_FUNCTION_ICON = "icons/customerFunction.gif"; //$NON-NLS-1$
+	public static final String MAIN_PROPERTY_ICON = "icons/mainProperty.png"; //$NON-NLS-1$
+	public static final String INNER_PROPERTY_ICON = "icons/innerProperty.png"; //$NON-NLS-1$
+	
+	public static final String LINK_TO_EDITOR_ICON = "icons/link_to_editor.png"; //$NON-NLS-1$
+	
+	public static final String BUILD_WIZBAN = "icons/build.gif"; //$NON-NLS-1$
+	public static final String SAVE_AS_ICON = "icons/save_as.png"; //$NON-NLS-1$
+
+	public static final String RUN_IN_MAIN_THREAD_ICON = "icons/runInMainThread.png"; //$NON-NLS-1$
+	public static final String RUN_IN_MAIN_THREAD_ICON_2 = "icons/runInMainThread2.png"; //$NON-NLS-1$
+	
+	
 }

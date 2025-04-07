@@ -42,22 +42,37 @@
 package fr.univamu.ism.docometre.preferences;
 
 import org.eclipse.jface.preference.BooleanFieldEditor;
-import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.jface.preference.IntegerFieldEditor;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.commands.ICommandService;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ChooseWorkspaceData;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.analyse.editors.ChannelEditor;
+import fr.univamu.ism.docometre.editors.DataEditor;
+import fr.univamu.ism.docometre.handlers.AutoBuildHandler;
 
 public class GeneralPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 	
+	private Font font;
+
 	public GeneralPreferencePage() {
 		super(GRID);
 	}
@@ -70,13 +85,17 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
 
 	@Override
 	protected void createFieldEditors() {
-		IntegerFieldEditor camerasImageWidthFieldEditor = new IntegerFieldEditor(GeneralPreferenceConstants.PREF_UNDO_LIMIT,
-				DocometreMessages.GeneralPreferences_UndoLimit, getFieldEditorParent(), 4);
-		addField(camerasImageWidthFieldEditor);
-
-		BooleanFieldEditor confirmUndoFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.PREF_CONFIRM_UNDO,
-				DocometreMessages.GeneralPreferences_ConfirmUndo, getFieldEditorParent());
-		addField(confirmUndoFieldEditor);
+//		BooleanFieldEditor showTraditionalTabsFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.SHOW_TRADITIONAL_STYLE_TABS,
+//				DocometreMessages.GeneralPreferences_ShowTraditionalTabs, getFieldEditorParent());
+//		addField(showTraditionalTabsFieldEditor);
+		
+		BooleanFieldEditor xmlSerializationFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.XML_SERIALIZATION,
+				DocometreMessages.GeneralPreferences_XMLSerialization, getFieldEditorParent());
+		addField(xmlSerializationFieldEditor);
+		
+		BooleanFieldEditor buildAutomaticallyFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.BUILD_AUTOMATICALLY,
+				DocometreMessages.GeneralPreferences_BuildAutomatically, getFieldEditorParent());
+		addField(buildAutomaticallyFieldEditor);
 		
 		BooleanFieldEditor showWorkspaceDialogFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.SHOW_WORKSPACE_SELECTION_DIALOG,
 				DocometreMessages.GeneralPreferences_ShowWorkspaceDialog, getFieldEditorParent());
@@ -90,33 +109,127 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
 		});
 		addField(showWorkspaceDialogFieldEditor);
 		
-		BooleanFieldEditor showTraditionalTabsFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.SHOW_TRADITIONAL_STYLE_TABS,
-				DocometreMessages.GeneralPreferences_ShowTraditionalTabs, getFieldEditorParent());
-		addField(showTraditionalTabsFieldEditor);
+		IntegerFieldEditor undoLimitFieldEditor = new IntegerFieldEditor(GeneralPreferenceConstants.PREF_UNDO_LIMIT,
+				DocometreMessages.GeneralPreferences_UndoLimit, getFieldEditorParent());
+		undoLimitFieldEditor.setValidRange(0, 1000);
+		addField(undoLimitFieldEditor);
+
+		BooleanFieldEditor confirmUndoFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.PREF_CONFIRM_UNDO,
+				DocometreMessages.GeneralPreferences_ConfirmUndo, getFieldEditorParent());
+		addField(confirmUndoFieldEditor);
+		
+		Group wineGroup = new Group(getFieldEditorParent(), SWT.NONE);
+		wineGroup.setText(DocometreMessages.GeneralPreferences_WineDocker);// "");
+		wineGroup.setLayout(new FillLayout(SWT.HORIZONTAL));
+		wineGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1));
 		
 		// WINE_FULL_PATH
-		FileFieldEditor wineFileFieldEditor = new FolderPathFieldEditor(GeneralPreferenceConstants.WINE_FULL_PATH, DocometreMessages.GeneralPreferences_WineFileLocation, getFieldEditorParent());
+		BooleanFieldEditor useDockerBooleanFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.USE_DOCKER, DocometreMessages.GeneralPreferences_UseDocker, wineGroup);
+		addField(useDockerBooleanFieldEditor);
+		
+		// WINE_FULL_PATH
+		FileFieldEditor wineFileFieldEditor = new FolderPathFieldEditor(GeneralPreferenceConstants.WINE_FULL_PATH, DocometreMessages.GeneralPreferences_WineFileLocation, wineGroup);
 		addField(wineFileFieldEditor);
 		
+		Group trialsGroup = new Group(getFieldEditorParent(), SWT.NONE);
+		trialsGroup.setText(DocometreMessages.TrialsParameters);
+		trialsGroup.setLayout(new FillLayout(SWT.HORIZONTAL));
+		trialsGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1));
+		
 		BooleanFieldEditor stopTrialNowFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.STOP_TRIAL_NOW,
-				DocometreMessages.StopTrialImmediatlyWhenAsked, getFieldEditorParent());
+				DocometreMessages.StopTrialImmediatlyWhenAsked, trialsGroup);
 		addField(stopTrialNowFieldEditor);
 		
 		BooleanFieldEditor askForTrialEndingFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.USE_AS_DEFAULT_DO_NOT_ASK_STOP_TRIAL_NOW,
-				DocometreMessages.StopTrialDontAsk, getFieldEditorParent());
+				DocometreMessages.StopTrialDontAsk, trialsGroup);
 		addField(askForTrialEndingFieldEditor);
 		
 		BooleanFieldEditor autoTrialValidation = new BooleanFieldEditor(GeneralPreferenceConstants.AUTO_VALIDATE_TRIALS,
-				DocometreMessages.AutoValidateTrial, getFieldEditorParent());
+				DocometreMessages.AutoValidateTrial, trialsGroup);
 		addField(autoTrialValidation);
 		
 		BooleanFieldEditor autoTrialStartingFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.AUTO_START_TRIALS,
-				DocometreMessages.AutoStartTrial, getFieldEditorParent());
+				DocometreMessages.AutoStartTrial, trialsGroup);
 		addField(autoTrialStartingFieldEditor);
 		
-		ComboFieldEditor mathEngineFieldEditor = new ComboFieldEditor(GeneralPreferenceConstants.MATH_ENGINE, DocometreMessages.MathEngineLabel, GeneralPreferenceConstants.MATH_ENGINE_VALUES, getFieldEditorParent());
-		addField(mathEngineFieldEditor);
+		Group chartOptionsGroup = new Group(getFieldEditorParent(), SWT.NONE);
+		chartOptionsGroup.setText(DocometreMessages.Charts2DOptions);
+		chartOptionsGroup.setLayout(new FillLayout(SWT.HORIZONTAL));
+		chartOptionsGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1));
 		
+		BooleanFieldEditor showCursorFileEditor = new BooleanFieldEditor(GeneralPreferenceConstants.SHOW_CURSOR, DocometreMessages.SHOW_CURSOR, chartOptionsGroup);
+		addField(showCursorFileEditor);
+		
+		BooleanFieldEditor showMarkerFileEditor = new BooleanFieldEditor(GeneralPreferenceConstants.SHOW_MARKER, DocometreMessages.SHOW_MARKER, chartOptionsGroup);
+		addField(showMarkerFileEditor);
+		
+		BooleanFieldEditor synchronizeChartsFileEditor = new BooleanFieldEditor(GeneralPreferenceConstants.SYNCHRONIZE_CHARTS_WHEN_TRIAL_CHANGE, DocometreMessages.synchronizeChartWhenTrialChange, chartOptionsGroup);
+		addField(synchronizeChartsFileEditor);
+		
+		Group redirectOutErrOptionsGroup = new Group(getFieldEditorParent(), SWT.NONE);
+		redirectOutErrOptionsGroup.setText(DocometreMessages.REDIRECT_GROUP_TITLE);
+		redirectOutErrOptionsGroup.setLayout(new FillLayout(SWT.HORIZONTAL));
+		redirectOutErrOptionsGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1));
+		
+		BooleanFieldEditor redirectOption = new BooleanFieldEditor(GeneralPreferenceConstants.REDIRECT_STD_ERR_OUT_TO_FILE, DocometreMessages.REDIRECT_BUTTON_TITLE, redirectOutErrOptionsGroup);
+		addField(redirectOption);
+		FileFieldEditor redirectFile = new FileFieldEditor(GeneralPreferenceConstants.STD_ERR_OUT_FILE, DocometreMessages.REDIRECT_FILE_ABSOLUTE_PATH, true, FileFieldEditor.VALIDATE_ON_KEY_STROKE ,redirectOutErrOptionsGroup);
+		addField(redirectFile);
+		redirectFile.setEnabled(getPreferenceStore().getBoolean(GeneralPreferenceConstants.REDIRECT_STD_ERR_OUT_TO_FILE), redirectOutErrOptionsGroup); 
+		((Button)redirectOption.getDescriptionControl(redirectOutErrOptionsGroup)).addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				redirectFile.setEnabled(redirectOption.getBooleanValue(), redirectOutErrOptionsGroup); 
+				if(!redirectOption.getBooleanValue()) {
+					setErrorMessage(null);
+				}
+				else {
+					String value = redirectFile.getStringValue();
+					redirectFile.setStringValue("");
+					redirectFile.setStringValue(value);
+				}
+			}
+		});
+		Label redirectInfosLabel = new Label(redirectOutErrOptionsGroup, SWT.NORMAL);
+		redirectInfosLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1));
+		redirectInfosLabel.setText(DocometreMessages.REDIRECT_LABEL_TITLE);
+		font = redirectInfosLabel.getFont();
+		FontData[] fontData = font.getFontData();
+		if(fontData[0] != null) {
+			fontData[0].setStyle(SWT.BOLD);
+			font = new Font(PlatformUI.getWorkbench().getDisplay(), fontData[0]);
+			redirectInfosLabel.setFont(font);
+		}
 	}
-
+	
+	@Override
+	public void dispose() {
+		super.dispose();
+		font.dispose();
+	}
+	
+	@Override
+	public boolean performOk() {
+		boolean returnValue = super.performOk();
+		ICommandService commandService = (ICommandService) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getService(ICommandService.class);
+		commandService.refreshElements(AutoBuildHandler.ID, null);
+		boolean showCursor = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.SHOW_CURSOR);
+		boolean showMarker = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.SHOW_MARKER);
+		IEditorReference[] editorReferences = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
+		for (IEditorReference editorReference : editorReferences) {
+			boolean update = DataEditor.ID.equals(editorReference.getId());
+			if(update) {
+				DataEditor dataEditor = (DataEditor)editorReference.getEditor(false);
+				dataEditor.setShowCursor(showCursor);
+//				dataEditor.setShowMarker(showMarker);
+			}
+			update = ChannelEditor.ID.equals(editorReference.getId());
+			if(update) {
+				ChannelEditor channelEditor = (ChannelEditor)editorReference.getEditor(false);
+				channelEditor.setShowCursor(showCursor);
+				channelEditor.setShowMarker(showMarker);
+			}
+		}
+		return returnValue;
+	}
 }

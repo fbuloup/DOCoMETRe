@@ -1,0 +1,52 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"> 
+
+ <html>
+ <head>
+ 	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ 	<title>What is parameters file format ?</title>
+ </head>
+
+ <body>
+ <h1>What is parameters file format ?</h1>
+ <p>
+ Using parameters in acquisition configuration files is very often a good way to reduce acquisition process files number. Doing so, a set of parameters values will
+ be pushed to the real time process before current trial begins. There is also an option to propagate parameters values from a trial to its next one : it can be useful
+ if you need to keep and update specific values during all session execution. You can configure parameters in Variables tab of the acquisition configuration file.
+ Please keep in mind that his feature is only available with ADwin devices. Once these parameters are configured, you must add a parameters file in the root of each 
+ session : it's a simple text file you can manage from DOCoMETRe or create elsewhere. You can see below an example of this kind of file :
+ </p>
+ <pre>
+ paramName1;paramName2;paramName3
+ 1;5.25;3.28
+ 0;4.75;3.28
+ 1;3.25;3.28
+ ...
+ </pre>
+ <p>As you add such a file in each session, you must have at least as many lines as there are trials in the session.
+ Here is the content of a blank parameters file which will give more informations on file format, comments and separator char :</p>
+ <pre>
+# Welcome in this parameters file !
+#
+# You can use hashtag character (#) to insert comments.
+# Everything to the right of this hashtag will be processed as a comment.
+#
+# Parameters delimiters can be semicolon (;) or comma (,) or colon (:).
+#
+# Please note that each uncommented line is associated to a trial of the current session, except for the first uncommented line :
+# - The first uncommented line will correspond to the parameters names
+# - The second uncommented line will correspond to the first trial
+# - The third uncommented line will correspond to the second trial
+# etc.
+#
+# Each uncommented line will be parsed to read the parameter name or value.
+#
+# Here is a parameters file example (the third parameter is of type string) :
+# ParameterName1 ; ParameterName2 ; ParameterName3
+# 10.25 ; 5 ; condition-1
+# -10.25 ; 4 ; condition-2
+# 5 ; 3 ; condition-1
+# ...
+ </pre>
+ 
+ </body>
+ </html>

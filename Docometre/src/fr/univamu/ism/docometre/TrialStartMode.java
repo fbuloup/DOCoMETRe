@@ -55,7 +55,7 @@ public enum TrialStartMode {
 	}
 	
 	public String toString() {
-		return label;
+		return DocometreMessages.StartPrefix + "." + label;
 	}
 	
 	public String getKey() {
@@ -63,7 +63,7 @@ public enum TrialStartMode {
 	}
 
 	public static TrialStartMode getStartMode(String startMode) {
-		return AUTO.getKey().equals(startMode)?AUTO:MANUAL;
+		return AUTO.getKey().equalsIgnoreCase(startMode)?AUTO:MANUAL;
 	}
 
 }

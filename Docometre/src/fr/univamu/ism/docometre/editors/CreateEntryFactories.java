@@ -54,9 +54,9 @@ import fr.univamu.ism.process.Script;
 public final class CreateEntryFactories {
 	
 	public static final CreationFactory getIfBlockFactory(Script script) {
-		SimpleFactory blockFactory = new SimpleFactory(IfBlock.class) {
+		SimpleFactory<IfBlock> blockFactory = new SimpleFactory<IfBlock>(IfBlock.class) {
 			@Override
-			public Object getNewObject() {
+			public IfBlock getNewObject() {
 				IfBlock block = new IfBlock(script, DocometreMessages.NewIfBlockName);
 				return block;
 			}
@@ -65,9 +65,9 @@ public final class CreateEntryFactories {
 	}
 	
 	public static final CreationFactory getDoBlockFactory(Script script) {
-		SimpleFactory blockFactory = new SimpleFactory(DoBlock.class) {
+		SimpleFactory<DoBlock> blockFactory = new SimpleFactory<DoBlock>(DoBlock.class) {
 			@Override
-			public Object getNewObject() {
+			public DoBlock getNewObject() {
 				DoBlock block = new DoBlock(script, DocometreMessages.NewDoBlockName);
 				return block;
 			}
@@ -76,9 +76,9 @@ public final class CreateEntryFactories {
 	}
 	
 	public static final CreationFactory getFunctionFactory(Script script) {
-		SimpleFactory blockFactory = new SimpleFactory(Function.class) {
+		SimpleFactory<Function> blockFactory = new SimpleFactory<Function>(Function.class) {
 			@Override
-			public Object getNewObject() {
+			public Function getNewObject() {
 				Function block = new Function(script, DocometreMessages.NewFunctionName);
 //				block.setToolTip(DocometreMessages.NewFunctionTooltip);
 				return block;
@@ -88,9 +88,9 @@ public final class CreateEntryFactories {
 	}
 	
 	public static final CreationFactory getCommentBlockFactory(Script script) {
-		SimpleFactory blockFactory = new SimpleFactory(Comment.class) {
+		SimpleFactory<Comment> blockFactory = new SimpleFactory<Comment>(Comment.class) {
 			@Override
-			public Object getNewObject() {
+			public Comment getNewObject() {
 				Comment block = new Comment(script, DocometreMessages.NewCommentName);
 				return block;
 			}

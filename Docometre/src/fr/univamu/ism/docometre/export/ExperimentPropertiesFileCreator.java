@@ -58,13 +58,22 @@ import org.eclipse.osgi.util.NLS;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ResourceProperties;
+import fr.univamu.ism.docometre.ResourceType;
 
 public final class ExperimentPropertiesFileCreator {
 	
 	private static String toRootDirectory;
 	private static String fromRootDirectory;
 
-	public static IFile createPropertiesFile(IProject experiment, IPath destinationPath, SubMonitor subMonitor) {
+	/**
+	 * This method create a properties file for exported experiment
+	 * @param experiment
+	 * @param destinationPath
+	 * @param subMonitor
+	 * @param includeData whether data files must be included
+	 * @return
+	 */
+	public static IFile createPropertiesFile(IProject experiment, IPath destinationPath, SubMonitor subMonitor, boolean includeData) {
 		FileOutputStream fileOutputStream = null;
 		try {
 			IFile propertiesFile = experiment.getFile(destinationPath.removeFileExtension().lastSegment() + ".properties");
@@ -73,7 +82,48 @@ public final class ExperimentPropertiesFileCreator {
 			toRootDirectory =  destinationPath.removeFileExtension().lastSegment();
 			fromRootDirectory = experiment.getName();
 			Properties properties = new Properties();
-			writePropertiesRecursively(experiment, properties, subMonitor);
+			properties.put("OnlySubjects", "false");
+			writePropertiesRecursively(experiment, properties, includeData, subMonitor);
+			properties.store(new OutputStreamWriter(fileOutputStream, "UTF-8"), null);
+			propertiesFile.refreshLocal(IResource.DEPTH_INFINITE, null);
+			return propertiesFile;
+		} catch (IOException | CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+			return null;
+		} finally {
+			if(fileOutputStream != null)
+				try {
+					fileOutputStream.close();
+				} catch (IOException e) {
+					Activator.logErrorMessageWithCause(e);
+					e.printStackTrace();
+				}
+		}
+	}
+	
+	/**
+	 * This method create a properties file for exported subjects
+	 * @param experiment
+	 * @param resources
+	 * @param destinationPath
+	 * @param subMonitor
+	 * @param includeData
+	 * @return
+	 */
+	public static IFile createPropertiesFile(IProject experiment, IResource[] resources, IPath destinationPath, SubMonitor subMonitor, boolean includeData) {
+		FileOutputStream fileOutputStream = null;
+		try {
+			IFile propertiesFile = experiment.getFile(destinationPath.removeFileExtension().lastSegment() + ".properties");
+			IPath path = propertiesFile.getLocation();
+			fileOutputStream = new FileOutputStream(path.toOSString());
+			toRootDirectory =  destinationPath.removeFileExtension().lastSegment();
+			fromRootDirectory = experiment.getName();
+			Properties properties = new Properties();
+			properties.put("OnlySubjects", "true");
+			for (IResource resource : resources) {
+				writePropertiesRecursively(resource, properties, includeData, subMonitor);
+			}
 			properties.store(new OutputStreamWriter(fileOutputStream, "UTF-8"), null);
 			propertiesFile.refreshLocal(IResource.DEPTH_INFINITE, null);
 			return propertiesFile;
@@ -92,14 +142,24 @@ public final class ExperimentPropertiesFileCreator {
 		}
 	}
 
-	private static void writePropertiesRecursively(IResource resource, Properties properties, SubMonitor subMonitor) throws CoreException {
+	/**
+	 * Helper method to write properties recursively
+	 * @param resource
+	 * @param properties
+	 * @param includeData
+	 * @param subMonitor
+	 * @throws CoreException
+	 */
+	private static void writePropertiesRecursively(IResource resource, Properties properties, boolean includeData, SubMonitor subMonitor) throws CoreException {
 		subMonitor.subTask(NLS.bind(DocometreMessages.WritingProperties, resource.getFullPath().toOSString()));
-		String keyName =  resource.getFullPath().toOSString().replaceFirst(fromRootDirectory, toRootDirectory);
-		ResourceProperties.writeResourcePropertiesToPropertiesFile(resource, properties, keyName);
+		String keyName =  resource.getFullPath().toPortableString().replaceFirst(fromRootDirectory, toRootDirectory);
+		if(ResourceType.isDataFile(resource)) {
+			if(includeData) ResourceProperties.writeResourcePropertiesToPropertiesFile(resource, properties, keyName);
+		} else ResourceProperties.writeResourcePropertiesToPropertiesFile(resource, properties, keyName);
 		if(resource instanceof IContainer) {
 			IResource[] members = ((IContainer)resource).members();
 			for (IResource member : members) {
-				writePropertiesRecursively(member, properties, subMonitor);
+				writePropertiesRecursively(member, properties,  includeData, subMonitor);
 			}
 		}
 		

@@ -52,7 +52,6 @@ public class MouseMoveShiftEvent extends AbstractHandledEventProcessor implement
 					/*
 					 * Start
 					 */
-					baseChart.setCursor(baseChart.getDisplay().getSystemCursor(SWT.CURSOR_SIZENWSE));
 					baseChart.setMoveStartTime(System.currentTimeMillis());
 					baseChart.setXMoveStart(event.x);
 					baseChart.setYMoveStart(event.y);

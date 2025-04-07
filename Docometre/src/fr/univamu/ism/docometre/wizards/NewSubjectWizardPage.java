@@ -51,11 +51,11 @@ import fr.univamu.ism.docometre.ResourceType;
 public class NewSubjectWizardPage extends NewResourceWizardPage {
 
 	protected NewSubjectWizardPage() {
-		super(DocometreMessages.NewSubjectWizard_PageName, ResourceType.SUBJECT);
-		setTitle(DocometreMessages.NewSubjectWizard_PageTitle);
-		setMessage(DocometreMessages.NewSubjectWizard_PageMessage);
+		super(DocometreMessages.NewCustomFunctionWizard_PageName, ResourceType.CUSTOMER_FUNCTION);
+		setTitle(DocometreMessages.NewCustomFunctionWizard_PageTitle);
+		setMessage(DocometreMessages.NewCustomFunctionWizard_PageMessage);
 		setImageDescriptor(Activator.getImageDescriptor(IImageKeys.NEW_RESOURCE_BANNER));
-		resourceType = ResourceType.SUBJECT;
+		resourceType = ResourceType.CUSTOMER_FUNCTION;
 	}
 	
 	@Override

@@ -68,18 +68,23 @@ public class GetResourceLabelDelegate {
 		}
 		if(ResourceType.isTrial(resource)) {
 			TrialStartMode startMode = ResourceProperties.getTrialStartMode(resource);
+			TrialValidateMode validateMode = ResourceProperties.getTrialValidateMode(resource);
 			IResource processFile = ResourceProperties.getAssociatedProcess((IFolder)resource);
 			String associatedProcessFullPath = "";
 			if(processFile != null) {
 				associatedProcessFullPath = processFile.getFullPath().toOSString();
 				associatedProcessFullPath = associatedProcessFullPath.replaceAll(Activator.processFileExtension + "$", "");
 			} else associatedProcessFullPath = DocometreMessages.NoAssociatedProcessFile;
-			return resource.getName() + " [" + startMode + "]" + " [" + associatedProcessFullPath + "]";
+			return resource.getName() + " [" + startMode + "]" + "[" + validateMode + "]" + " [" + associatedProcessFullPath + "]";
 		}
 		if(ResourceType.isLog(resource)) return resource.getName().replaceAll(Activator.logFileExtension + "$", "");
 		if(ResourceType.isSamples(resource)) return resource.getName().replaceAll(Activator.samplesFileExtension + "$", "");
 		if(ResourceType.isParameters(resource)) return resource.getName().replaceAll(Activator.parametersFileExtension + "$", "");
 		if(ResourceType.isDataProcessing(resource)) return resource.getName().replaceAll(Activator.dataProcessingFileExtension + "$", "");
+		if(ResourceType.isBatchDataProcessing(resource)) return resource.getName().replaceAll(Activator.batchDataProcessingFileExtension + "$", "");
+		if(ResourceType.isXYChart(resource)) return resource.getName().replaceAll(Activator.xyChartFileExtension + "$", "");
+		if(ResourceType.isXYZChart(resource)) return resource.getName().replaceAll(Activator.xyzChartFileExtension + "$", "");
+		if(ResourceType.isCustomerFunction(resource)) return resource.getName().replaceAll(Activator.customerFunctionFileExtension + "$", "");
 		
 		if(ResourceType.isSession(resource) || ResourceType.isSubject(resource)) {
 			double percent = ResourceProperties.getPercentDone(resource);

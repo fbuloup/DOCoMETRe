@@ -57,6 +57,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 
 import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.analyse.views.FunctionsView;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 
@@ -88,6 +89,7 @@ public class RefreshResourceAction extends Action implements ISelectionListener,
 							resource.refreshLocal(IResource.DEPTH_INFINITE, monitor);
 							ExperimentsView.refresh(resource.getParent(), new IResource[]{resource});
 							SubjectsView.refresh(resource.getParent(), new IResource[]{resource});
+							FunctionsView.refresh(true);
 						} catch (CoreException e) {
 							e.printStackTrace();
 							Activator.logErrorMessageWithCause(e);

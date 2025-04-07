@@ -56,6 +56,7 @@ import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.swt.SWT;
 
 import fr.univamu.ism.docometre.DocometreApplication;
+import fr.univamu.ism.docometre.ThemeColors;
 
 public class ArduinoUnoSourceViewerConfiguration extends SourceViewerConfiguration {
 	
@@ -91,7 +92,7 @@ public class ArduinoUnoSourceViewerConfiguration extends SourceViewerConfigurati
 		//
 		RuleBasedScanner defaultScanner = new RuleBasedScanner();
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLUE),
-													DocometreApplication.getColor(DocometreApplication.WHITE), 
+													ThemeColors.getBackgroundColor(), 
 													SWT.NORMAL,
 													DocometreApplication.getFont(DocometreApplication.COURIER_NEW));
 		IToken token = new Token(attribute);

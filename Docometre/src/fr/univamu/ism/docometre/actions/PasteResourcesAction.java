@@ -41,7 +41,11 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.actions;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 
 import org.eclipse.core.resources.IContainer;
@@ -51,11 +55,16 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.FileTransfer;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchPart;
@@ -77,8 +86,11 @@ public class PasteResourcesAction extends Action implements ISelectionListener, 
 	private IContainer destinationResource;
 	private IPath newResourcePath;
 	private boolean copyLogAndDataFiles;
+	private Object clipboardData;
+	private Clipboard clipboard;
 	
 	public PasteResourcesAction(IWorkbenchWindow window, CopyResourcesAction copyResourcesAction) {
+		clipboard = new Clipboard(PlatformUI.getWorkbench().getDisplay());
 		setId("PasteResourcesAction"); //$NON-NLS-1$
 		this.window = window;
 		window.getSelectionService().addSelectionListener(this);
@@ -86,9 +98,8 @@ public class PasteResourcesAction extends Action implements ISelectionListener, 
 		this.copyResourcesAction = copyResourcesAction;
 		setText(DocometreMessages.PasteAction_Text);
         setToolTipText(DocometreMessages.PasteAction_Text);
-        ISharedImages sharedImages = window.getWorkbench().getSharedImages();
-        setImageDescriptor(sharedImages.getImageDescriptor(ISharedImages.IMG_TOOL_PASTE));
-        setDisabledImageDescriptor(sharedImages.getImageDescriptor(ISharedImages.IMG_TOOL_PASTE_DISABLED));
+        setImageDescriptor(Activator.getSharedImageDescriptor(ISharedImages.IMG_TOOL_PASTE)); 
+        setDisabledImageDescriptor(Activator.getSharedImageDescriptor(ISharedImages.IMG_TOOL_PASTE_DISABLED)); 
 	}
 	
 	@Override
@@ -104,17 +115,44 @@ public class PasteResourcesAction extends Action implements ISelectionListener, 
 						Activator.logErrorMessageWithCause(e);
 						e.printStackTrace();
 					}
-					//One or more resources already exist in destination
-					IResource[] resources = copyResourcesAction.getCopiedResources();
-					ArrayList<IResource> newResources = new ArrayList<IResource>();
-					for (IResource resource : resources) {
+					clipboardData = null;
+					PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+						@Override
+						public void run() {
+							clipboardData = clipboard.getContents(FileTransfer.getInstance());
+							if(clipboardData == null) clipboardData = clipboard.getContents(TextTransfer.getInstance());
+						}
+					});
+					IResource[] resources = new IResource[0];
+					boolean fromDocometre = (clipboardData instanceof String) && CopyResourcesAction.UUIDString.equals(clipboardData);
+					if(!fromDocometre) {
+						// Copy from clip board if data available
+						if(clipboardData instanceof String[]) {
+							String[] filesPath = (String[])clipboardData;
+							try {
+								copyFromClipboard(destinationResource, filesPath, monitor);
+								destinationResource.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+								ExperimentsView.refresh(destinationResource, null);
+							} catch (Exception e) {
+								e.printStackTrace();
+								Activator.logErrorMessageWithCause(e);
+							}
+						}
+					} else {
+						// Copy from internal resources
+						//One or more resources already exist in destination
+						resources = copyResourcesAction.getCopiedResources();
+						ArrayList<IResource> newResources = new ArrayList<IResource>();
+						for (IResource resource : resources) {
 							try {
 								resource.refreshLocal(IResource.DEPTH_INFINITE, monitor);
 								newResourcePath = destinationResource.getFullPath().append(resource.getName());
 								IResource newResource = destinationResource.findMember(newResourcePath.makeRelativeTo(destinationResource.getFullPath()));
 								int n = 1;
 								while (newResource != null) {
-									newResourcePath = destinationResource.getFullPath().append(resource.getName() + "_Copy_" + n);
+									String fileExtension = resource.getFullPath().getFileExtension();
+									String resourceName = resource.getFullPath().removeFileExtension().lastSegment();
+									newResourcePath = destinationResource.getFullPath().append(resourceName + "_Copy_" + n + ((fileExtension == null) ? "" : "." + fileExtension));
 									newResource = destinationResource.findMember(newResourcePath.makeRelativeTo(destinationResource.getFullPath()));
 									n++;
 								}
@@ -134,14 +172,39 @@ public class PasteResourcesAction extends Action implements ISelectionListener, 
 								e.printStackTrace();
 								Activator.logErrorMessageWithCause(e);
 							}
+						}
+						resources = newResources.toArray(new IResource[newResources.size()]);
+						ExperimentsView.refresh(destinationResource, resources);
 					}
-					resources = newResources.toArray(new IResource[newResources.size()]);
-					ExperimentsView.refresh(destinationResource, resources);
 				}
+
 			});
 		} catch (InvocationTargetException | InterruptedException e) {
-			// TODO Auto-generated catch block
+			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
+		}
+	}
+	
+	private void copyFromClipboard(IContainer destinationResource, String[] filesPath, IProgressMonitor monitor) throws Exception {
+		for (String filePath : filesPath) {
+			IPath source = Path.fromOSString(filePath);
+			IPath destination = Path.fromOSString(destinationResource.getLocation().toOSString()); 
+			destination = destination.append(Path.fromOSString(source.lastSegment()));
+			if(source.toFile().isDirectory()) {
+				// If source file is folder, create it in destination if not exists and then copy content
+				if(!destination.toFile().exists()) destination.toFile().mkdirs();
+				IFolder folder = destinationResource.getFolder(destination.makeRelativeTo(destinationResource.getLocation()));
+				folder.create(true, true, monitor);
+				String[] files = source.toFile().list();
+				for (int i = 0; i < files.length; i++) {
+					files[i] = source.toOSString() + File.separator + files[i];
+				}
+				copyFromClipboard(folder, files, monitor);
+			} else {
+				java.nio.file.Path src = Paths.get(filePath);
+				java.nio.file.Path dest = Paths.get(destination.toPortableString());
+				Files.copy(src, dest, StandardCopyOption.REPLACE_EXISTING);
+			}
 		}
 	}
 	
@@ -169,18 +232,26 @@ public class PasteResourcesAction extends Action implements ISelectionListener, 
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
 		setEnabled(false);
 		if(part instanceof ExperimentsView || part instanceof SubjectsView) {
+			// If clipboard not empty, copy from it
+			Clipboard clipboard = new Clipboard(Display.getCurrent());
+			Object fileData = clipboard.getContents(FileTransfer.getInstance());
+			clipboard.dispose();
 			destinationResource = null;
-			if(selection.isEmpty()) destinationResource = ResourcesPlugin.getWorkspace().getRoot();
-			else if (selection instanceof IStructuredSelection) {
+			if(selection.isEmpty() && part instanceof ExperimentsView) 
+				destinationResource = ResourcesPlugin.getWorkspace().getRoot();
+			else if(selection.isEmpty() && part instanceof SubjectsView) {
+				destinationResource = ((SubjectsView)part).getInput();
+			} else if (selection instanceof IStructuredSelection) {
 				Object element = ((IStructuredSelection) selection).getFirstElement();
 				if(element instanceof IContainer) destinationResource = (IContainer) element;
 			}
-			setEnabled(destinationResource != null && copyResourcesAction.notEmpty());
+			setEnabled(destinationResource != null && (copyResourcesAction.notEmpty() || fileData != null));
 		}
 	}
 	
 	public void dispose() {
 		window.getSelectionService().removeSelectionListener(this);
+		clipboard.dispose();
 	}
 	
 }

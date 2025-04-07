@@ -43,12 +43,10 @@ package fr.univamu.ism.docometre.widgets;
 
 import java.text.DecimalFormat;
 
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.graphics.Cursor;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -63,8 +61,8 @@ import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.calibration.CalibrationFactory;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
-import fr.univamu.ism.rtswtchart.RTSWTOscilloChart;
-import fr.univamu.ism.rtswtchart.RTSWTOscilloSerie;
+import fr.univamu.ism.nrtswtchart.RTSWTOscilloChart;
+import fr.univamu.ism.nrtswtchart.RTSWTOscilloSerie;
 
 public class ChannelViewer extends Composite {
 	
@@ -129,9 +127,8 @@ public class ChannelViewer extends Composite {
 		Label titleLabel = new Label(titleComposite, SWT.NONE);
 		titleLabel.setText(title);
 		titleLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		FontData fontData = titleLabel.getFont().getFontData()[0];
-		Font font = new Font(getDisplay(), new FontData(fontData.getName(), fontData.getHeight(), SWT.ITALIC | SWT.BOLD));
-		titleLabel.setFont(font);
+		titleLabel.setFont(Activator.getBoldFont(JFaceResources.DEFAULT_FONT));
+		titleLabel.setFont(Activator.getItalicFont(JFaceResources.DEFAULT_FONT));
 		
 		if(!this.input) {
 			if(!this.analog) {
@@ -141,7 +138,7 @@ public class ChannelViewer extends Composite {
 				stateLabel = new Label(titleComposite, SWT.NONE);
 				stateLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
 				stateLabel.setImage(imageOff);
-				stateLabel.setCursor(new Cursor(getDisplay(), SWT.CURSOR_HAND));
+				stateLabel.setCursor(Display.getDefault().getSystemCursor(SWT.CURSOR_HAND));//new Cursor(getDisplay(), SWT.CURSOR_HAND));
 				stateLabel.addMouseListener(new MouseAdapter() {
 					@Override
 					public void mouseUp(MouseEvent e) {
@@ -165,9 +162,7 @@ public class ChannelViewer extends Composite {
 				showCalibratedValuesButton.setLayoutData(new GridData(SWT.END, SWT.FILL, true, false, 13, 1));
 				showCalibratedValuesButton.setText(DocometreMessages.ShowCalibratedValues);
 				// Create calibrate header 
-				CalibrationHeader calibrationHeader = CalibrationFactory.createHeader(titleComposite, channel);
-				addDisposeListener(calibrationHeader);
-				
+				CalibrationFactory.createHeader(titleComposite, channel);
 			}
 			// Analog or digital input
 			valueLabel = new Label(titleComposite, SWT.NONE);
@@ -179,7 +174,7 @@ public class ChannelViewer extends Composite {
 		showGraphButton.setImage(imageLeft);
 		showGraphButton.setLayoutData(new GridData(SWT.END, SWT.TOP, false, false));
 		
-		showGraphButton.setCursor(new Cursor(getDisplay(), SWT.CURSOR_HAND));
+		showGraphButton.setCursor(Display.getDefault().getSystemCursor(SWT.CURSOR_HAND));//new Cursor(getDisplay(), SWT.CURSOR_HAND));
 		showGraphButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseUp(MouseEvent e) {
@@ -188,7 +183,7 @@ public class ChannelViewer extends Composite {
 					createGraph();
 					showGraphButton.setImage(imageDown);
 				} else {
-					rtswtOscilloChart.getParent().dispose();
+					rtswtOscilloChart.getChart().getParent().dispose();
 //					rtswtOscilloChart.dispose();
 					separator.dispose();
 					showGraphButton.setImage(imageLeft);
@@ -230,19 +225,16 @@ public class ChannelViewer extends Composite {
 		gl.marginHeight = 5;
 		gl.marginWidth = 0;
 		
-		
-		rtswtOscilloChart = new RTSWTOscilloChart(container, SWT.NONE, 10);
-		rtswtOscilloChart.setBackGroundColor(rtswtOscilloChart.getParent().getBackground());
-		rtswtOscilloChart.setGridLinesColor(Display.getDefault().getSystemColor(SWT.COLOR_BLACK));
-		rtswtOscilloChart.setFontColor(Display.getDefault().getSystemColor(SWT.COLOR_BLACK));
+		rtswtOscilloChart = new RTSWTOscilloChart(container, SWT.DOUBLE_BUFFERED, container.getFont().getFontData()[0].getName(), SWT.BOLD, 10);
+		rtswtOscilloChart.setGridLinesColor(Display.getDefault().getSystemColor(SWT.COLOR_WHITE));
+		rtswtOscilloChart.setFontColor(container.getBackground());
 		rtswtOscilloChart.setLegendVisibility(false);
 		rtswtOscilloChart.setAutoScale(true);
-		rtswtOscilloChart.setAntialias(SWT.ON);
-		rtswtOscilloChart.setInterpolation(SWT.HIGH);
-		rtswtOscilloChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		rtswtOscilloSerie = rtswtOscilloChart.createSerie(title, Display.getDefault().getSystemColor(SWT.COLOR_DARK_RED), SWT.LINE_SOLID, 2);
+		rtswtOscilloChart.setWindowTimeWidth(10);
+		rtswtOscilloChart.getChart().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		rtswtOscilloSerie = rtswtOscilloChart.createSerie(title, Display.getDefault().getSystemColor(SWT.COLOR_GREEN));
 		
-		GridData gd = (GridData) rtswtOscilloChart.getLayoutData();
+		GridData gd = (GridData) rtswtOscilloChart.getChart().getLayoutData();
 		gd.heightHint = 150;
 
 		separator = new Label(this, SWT.HORIZONTAL | SWT.SEPARATOR);
@@ -276,17 +268,6 @@ public class ChannelViewer extends Composite {
 	
 	public Channel getChannel() {
 		return channel;
-	}
-	
-	@Override
-	public void dispose() {
-		imageLeft.dispose();
-		imageDown.dispose();
-		if(!input && !analog) {
-			imageOn.dispose();
-			imageOff.dispose();
-		}
-		super.dispose();
 	}
 
 }

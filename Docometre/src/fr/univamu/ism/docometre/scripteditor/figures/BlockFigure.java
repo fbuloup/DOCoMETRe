@@ -56,6 +56,7 @@ import org.eclipse.gef.DefaultEditDomain;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 
@@ -98,22 +99,26 @@ public class BlockFigure extends RoundedRectangle {
 	private static final String DO_COLOR = "DO_COLOR";
 	private static final String FUNCTION_COLOR = "FUNCTION_COLOR";
 	private static final String COMMENT_COLOR = "COMMENT_COLOR";
+	private static final String DEACTIVATED_COLOR = "DEACTIVATED_COLOR";
 	
 	private static final String IF_BORDER_COLOR = "IF_BORDER_COLOR";
 	private static final String DO_BORDER_COLOR = "DO_BORDER_COLOR";
 	private static final String FUNCTION_BORDER_COLOR = "FUNCTION_BORDER_COLOR";
 	private static final String COMMENT_BORDER_COLOR = "COMMENT_BORDER_COLOR";
+	private static final String DEACTIVATED_BORDER_COLOR = "DEACTIVATED_BORDER_COLOR";
 
 	static {
 		JFaceResources.getColorRegistry().put(IF_BORDER_COLOR, new RGB(25, 60, 180));
 		JFaceResources.getColorRegistry().put(DO_BORDER_COLOR, new RGB(255, 69, 0));
 		JFaceResources.getColorRegistry().put(FUNCTION_BORDER_COLOR, new RGB(218, 165, 32));
 		JFaceResources.getColorRegistry().put(COMMENT_BORDER_COLOR, new RGB(255, 140, 0));
+		JFaceResources.getColorRegistry().put(DEACTIVATED_COLOR, new RGB(50,205,50));
 
 		JFaceResources.getColorRegistry().put(IF_COLOR, new RGB(179, 192, 239));
 		JFaceResources.getColorRegistry().put(DO_COLOR, new RGB(241, 157, 122));
 		JFaceResources.getColorRegistry().put(FUNCTION_COLOR, new RGB(235, 215, 162));
 		JFaceResources.getColorRegistry().put(COMMENT_COLOR, new RGB(254, 216, 177));
+		JFaceResources.getColorRegistry().put(DEACTIVATED_BORDER_COLOR, new RGB(34,139,34));
 	}
 	
 	private BlockEditPart blockEditPart;
@@ -175,19 +180,25 @@ public class BlockFigure extends RoundedRectangle {
 	
 	@Override
 	public void paintFigure(Graphics graphics) {
+		setBackgroundColor(getBorderColor());
+		roundedRectangle.setBackgroundColor(getColor());
+		roundedRectangle.setForegroundColor(getColor());
+		
 		fillShape(graphics);
-		if(label.getIcon() != null && !label.getIcon().isDisposed()) label.getIcon().dispose();
+		//if(label.getIcon() != null && !label.getIcon().isDisposed()) label.getIcon().dispose();
 		label.setIcon(null);
 		setToolTipFigure(null);
 		IStatus status = blockEditPart.getModel().getStatus();
 		if(status != null) {
-			label.setIcon(Activator.getImage(IImageKeys.WARNING_ANNOTATION_ICON));
+			Image image = Activator.getImage(IImageKeys.WARNING_ANNOTATION_ICON);
+			if(image != null && !image.isDisposed()) label.setIcon(image);
 			label.setIconAlignment(PositionConstants.LEFT);
 			setToolTipFigure(status.getMessage());
 		}
 	}
 	
 	private Color getColor() {
+		if(!getBlockEditPart().getModel().isActivated()) return JFaceResources.getColorRegistry().get(DEACTIVATED_COLOR);
 		if (getBlockEditPart().getModel() instanceof IfBlock) return JFaceResources.getColorRegistry().get(IF_COLOR);
 		if (getBlockEditPart().getModel() instanceof DoBlock) return JFaceResources.getColorRegistry().get(DO_COLOR);
 		if (getBlockEditPart().getModel() instanceof Comment) return JFaceResources.getColorRegistry().get(COMMENT_COLOR);
@@ -195,6 +206,7 @@ public class BlockFigure extends RoundedRectangle {
 	} 
 	
 	private Color getBorderColor() {
+		if(!getBlockEditPart().getModel().isActivated()) return JFaceResources.getColorRegistry().get(DEACTIVATED_BORDER_COLOR);
 		if (getBlockEditPart().getModel() instanceof IfBlock) return JFaceResources.getColorRegistry().get(IF_BORDER_COLOR);
 		if (getBlockEditPart().getModel() instanceof DoBlock) return JFaceResources.getColorRegistry().get(DO_BORDER_COLOR);
 		if (getBlockEditPart().getModel() instanceof Comment) return JFaceResources.getColorRegistry().get(COMMENT_BORDER_COLOR);

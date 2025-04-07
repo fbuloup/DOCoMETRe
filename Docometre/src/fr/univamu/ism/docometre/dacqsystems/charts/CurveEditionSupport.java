@@ -46,6 +46,7 @@ import org.eclipse.core.commands.operations.IOperationHistory;
 import org.eclipse.core.commands.operations.IUndoContext;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.jface.viewers.CheckboxCellEditor;
 import org.eclipse.jface.viewers.ColorCellEditor;
 import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.ComboBoxViewerCellEditor;
@@ -113,6 +114,15 @@ public class CurveEditionSupport extends EditingSupport implements PropertyObser
 			cellEditor = new TextCellEditor((Composite) viewer.getControl());
 			cellEditor.setValidator(new Validator(CurveConfigurationProperties.WIDTH.getRegExp()));
 		}
+		if(property == OscilloCurveConfigurationProperties.DISPLAY_CURRENT_VALUES) {
+			cellEditor = new CheckboxCellEditor((Composite) viewer.getControl());
+			cellEditor.setValidator(new Validator(OscilloCurveConfigurationProperties.DISPLAY_CURRENT_VALUES.getRegExp()));
+		}
+		if(property == MeterCurveConfigurationProperties.DISPLAY_CURRENT_VALUES) {
+			cellEditor = new CheckboxCellEditor((Composite) viewer.getControl());
+			cellEditor.setValidator(new Validator(MeterCurveConfigurationProperties.DISPLAY_CURRENT_VALUES.getRegExp()));
+		}
+		
 	}
 
 	@Override
@@ -133,11 +143,17 @@ public class CurveEditionSupport extends EditingSupport implements PropertyObser
 
 	@Override
 	protected Object getValue(Object element) {
-		if(!(element instanceof CurveConfiguration)) return null;
+		if(!((element instanceof CurveConfiguration) || (element instanceof OscilloCurveConfiguration) || (element instanceof MeterCurveConfiguration))) return null;
 		if(getCellEditor(element) instanceof ColorCellEditor) {
 			RGB rgbValue = new RGB(255, 255, 255);
 			if(element instanceof CurveConfiguration) rgbValue = CurveConfigurationProperties.getColor((CurveConfiguration)element).getRGB();
 			return rgbValue;
+		}
+		if(getCellEditor(element) instanceof CheckboxCellEditor) {
+			String value = "false";
+			if(element instanceof OscilloCurveConfiguration) value = ((OscilloCurveConfiguration)element).getProperty(property);
+			if(element instanceof MeterCurveConfiguration) value = ((MeterCurveConfiguration)element).getProperty(property);
+			return "true".equals(value) ? true : false;
 		}
 		return ((CurveConfiguration)element).getProperty(property);
 	}

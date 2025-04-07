@@ -42,11 +42,11 @@
 package fr.univamu.ism.docometre.actions;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.ui.console.IConsoleConstants;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
-import fr.univamu.ism.docometre.views.MessagesView;
 
 public class ShowMessagesViewAction extends Action {
 	
@@ -61,7 +61,7 @@ public class ShowMessagesViewAction extends Action {
 	
 	@Override
 	public void run() {
-		ShowViewDelegate.show(MessagesView.ID, false);
+		ShowViewDelegate.show(IConsoleConstants.ID_CONSOLE_VIEW, false);
 	}
 
 }

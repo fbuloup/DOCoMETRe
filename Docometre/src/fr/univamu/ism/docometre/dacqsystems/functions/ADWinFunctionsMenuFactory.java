@@ -47,6 +47,8 @@ import org.eclipse.jface.action.Separator;
 
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.dacqsystems.Process;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor.ADWinEventSegmentEditor;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor.ADWinInitializeSegmentEditor;
 import fr.univamu.ism.docometre.editors.AbstractScriptSegmentEditor;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.scripteditor.actions.AssignFunctionAction;
@@ -61,9 +63,11 @@ public final class ADWinFunctionsMenuFactory {
 	
 	public static String[] ADWinFunctionsFiles = new String[] {AnalogInputFunction.functionFileName, 
 															  AnalogOutputFunction.functionFileName, 
+															  AnalogWaitFunction.functionFileName, 
 															  SEPARATOR,
 															  DigitalInputFunction.functionFileName,
 															  DigitalOutputFunction.functionFileName,
+															  DigitalWaitFunction.functionFileName,
 															  SEPARATOR,
 															  ByteSerialOutputFunction.functionFileName,
 															  SerialOutputFunction.functionFileName,
@@ -80,13 +84,18 @@ public final class ADWinFunctionsMenuFactory {
 															  MedianFilterFunction.functionFileName,
 															  BinaryMedianFilterFunction.functionFileName,
 															  SEPARATOR,
+															  StimulusFunction.functionFileName,
+															  TransferFunction.functionFileName,
+															  SEPARATOR,
 															  SUBMENU_JVL};
 	
 	public static String[] ADWinFunctionsClasses = new String[] {AnalogInputFunction.class.getName(), 
 															    AnalogOutputFunction.class.getName(),
+															    AnalogWaitFunction.class.getName(),
 															    null,
 															    DigitalInputFunction.class.getName(),
 															    DigitalOutputFunction.class.getName(),
+															    DigitalWaitFunction.class.getName(),
 															    null,
 															    ByteSerialOutputFunction.class.getName(),
 															    SerialOutputFunction.class.getName(),
@@ -103,6 +112,8 @@ public final class ADWinFunctionsMenuFactory {
 															    MedianFilterFunction.class.getName(),
 															    BinaryMedianFilterFunction.class.getName(),
 															    null,
+															    StimulusFunction.class.getName(),
+															    TransferFunction.class.getName(),
 															    null};
 	
 	
@@ -132,6 +143,11 @@ public final class ADWinFunctionsMenuFactory {
 				String menuTooltip = FunctionFactory.getProperty(process, functionFilePath, FunctionFactory.DESCRIPTION);
 				if(menuTitle != null && menuTooltip != null) {
 					AssignFunctionAction assignFunctionAction = new AssignFunctionAction(scriptSegmentEditor, blockEditPart, menuTitle, menuTooltip, ADWinFunctionsClasses[i]);
+					assignFunctionAction.setLazyEnablementCalculation(false);
+					if(ADWinFunctionsClasses[i].equals(StimulusFunction.class.getName())) assignFunctionAction.setEnabled(scriptSegmentEditor instanceof ADWinEventSegmentEditor);
+					if(ADWinFunctionsClasses[i].equals(AnalogWaitFunction.class.getName())) assignFunctionAction.setEnabled(scriptSegmentEditor instanceof ADWinInitializeSegmentEditor);
+					if(ADWinFunctionsClasses[i].equals(DigitalWaitFunction.class.getName())) assignFunctionAction.setEnabled(scriptSegmentEditor instanceof ADWinInitializeSegmentEditor);
+					if(ADWinFunctionsClasses[i].equals(TransferFunction.class.getName())) assignFunctionAction.setEnabled(scriptSegmentEditor instanceof ADWinEventSegmentEditor);
 					functionMenuManager.add(assignFunctionAction);
 				}
 			}
@@ -143,10 +159,11 @@ public final class ADWinFunctionsMenuFactory {
 			functionMenuManager.add(new Separator());
 			MenuManager customerFunctionsMenuManager = new MenuManager(DocometreMessages.CustomerFunctionsMenuLabel, CUSTOMER_FUNCTIONS_MENU);
 			for (String customerFunction : customerFunctions) {
-				String menuTitle = FunctionFactory.getProperty(process, CustomerFunction.CUSTOMER_FUNCTIONS_PATH + customerFunction, FunctionFactory.MENU_TITLE);
-				String menuTooltip = FunctionFactory.getProperty(process, CustomerFunction.CUSTOMER_FUNCTIONS_PATH + customerFunction, FunctionFactory.DESCRIPTION);
+				String menuTitle = FunctionFactory.getProperty(process, customerFunction, FunctionFactory.MENU_TITLE, true);
+				String menuTooltip = FunctionFactory.getProperty(process, customerFunction, FunctionFactory.DESCRIPTION, true);
 				if(menuTitle != null && menuTooltip != null) {
 					AssignFunctionAction assignFunctionAction = new AssignFunctionAction(scriptSegmentEditor, blockEditPart, menuTitle, menuTooltip, customerFunction);
+					assignFunctionAction.setLazyEnablementCalculation(false);
 					customerFunctionsMenuManager.add(assignFunctionAction);
 				}
 			}
@@ -162,6 +179,7 @@ public final class ADWinFunctionsMenuFactory {
 				String menuTooltip = FunctionFactory.getProperty(process, jvlFunctionFile, FunctionFactory.DESCRIPTION);
 				if(menuTitle != null && menuTooltip != null) {
 					AssignFunctionAction assignFunctionAction = new AssignFunctionAction(scriptSegmentEditor, blockEditPart, menuTitle, menuTooltip, JVLFunctionsClasses[i]);
+					assignFunctionAction.setLazyEnablementCalculation(false);
 					subMenuManager.add(assignFunctionAction);
 				}
 				i++;

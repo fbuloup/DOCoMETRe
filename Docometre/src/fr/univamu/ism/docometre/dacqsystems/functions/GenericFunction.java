@@ -52,24 +52,44 @@ import org.eclipse.swt.widgets.Text;
 
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
+import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.Process;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfiguration;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfiguration;
 import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
 import fr.univamu.ism.process.Function;
 import fr.univamu.ism.process.Script;
 
 public class GenericFunction extends Function {
 	
+	public static String lastTrialsList = "1:10,15,20:25";
+	
 	public static String UNO_DEFAULT_INDENT = "";
 	public static String UNO_FINALIZE_INDENT = "";
 	
 	private static final long serialVersionUID = 1L;
+	
+	public static String getCommentedCode(GenericFunction genericFunction, Object context) {
+		String comment = "";
+		if(context instanceof Process) {
+			Process process = (Process)context;
+			DACQConfiguration dacqConfiguration = process.getDACQConfiguration();
+			if(dacqConfiguration instanceof ADWinDACQConfiguration) comment = "REM";
+			if(dacqConfiguration instanceof ArduinoUnoDACQConfiguration) comment = "//";
+		}
+		if(context instanceof Script) { 
+			if(MathEngineFactory.isMatlab()) comment = "%";
+			if(MathEngineFactory.isPython()) comment = "#";
+		}
+		return comment + " NOT ACTIVATED (COMMENTED) - " + genericFunction.getDescription(context) + "\n" ;
+	}
 	
 	protected boolean checkPreBuildGUI(TitleAreaDialog titleAreaDialog, Composite container, int hIndent, Object context) {
 		
 		if(context instanceof Script) {
 			if(!MathEngineFactory.getMathEngine().isStarted()) {
 				titleAreaDialog.setErrorMessage(DocometreMessages.PleaseStartMathEngineFirst);
-				Label errorLabel = new Label(container, SWT.BORDER);
+				Label errorLabel = new Label(container, SWT.NORMAL);
 				errorLabel.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true, hIndent, 1));
 				errorLabel.setText(DocometreMessages.PleaseStartMathEngineFirst);
 				return false;
@@ -87,25 +107,25 @@ public class GenericFunction extends Function {
 		
 		Text commentText = new Text((Composite) parent, SWT.BORDER);
 		commentText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, horSpan, 1));
+		commentText.setText(getName(context));
 		commentText.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
 				getTransientProperties().put(Function.commentKey, commentText.getText());
 			}
 		});
-		commentText.setText(getName(context));
 	}
 	
 	@Override
 	public String getTitle(Object process) {
 		if(!(process instanceof Process || process instanceof Script)) return "";
-		return FunctionFactory.getProperty(process, getFunctionFileName(), FunctionFactory.MENU_TITLE);
+		return FunctionFactory.getProperty(process, getFunctionFileName(), FunctionFactory.MENU_TITLE, false);
 	}
 	
 	@Override
 	public String getDescription(Object process) {
 		if(!(process instanceof Process || process instanceof Script)) return "";
-		return FunctionFactory.getProperty(process, getFunctionFileName(), FunctionFactory.DESCRIPTION);
+		return FunctionFactory.getProperty(process, getFunctionFileName(), FunctionFactory.DESCRIPTION, false);
 	}
 	
 }

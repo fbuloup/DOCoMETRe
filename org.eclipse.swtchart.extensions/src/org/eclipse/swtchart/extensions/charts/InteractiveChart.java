@@ -13,15 +13,17 @@ package org.eclipse.swtchart.extensions.charts;
 
 import java.text.NumberFormat;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.preference.PreferenceNode;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
@@ -33,7 +35,6 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swtchart.Chart;
 import org.eclipse.swtchart.IAxis;
-import org.eclipse.swtchart.IPlotArea;
 import org.eclipse.swtchart.ISeries;
 import org.eclipse.swtchart.IAxis.Direction;
 import org.eclipse.swtchart.Range;
@@ -45,6 +46,7 @@ import org.eclipse.swtchart.extensions.properties.LegendPage;
 import org.eclipse.swtchart.extensions.properties.PropertiesResources;
 import org.eclipse.swtchart.extensions.properties.SeriesLabelPage;
 import org.eclipse.swtchart.extensions.properties.SeriesPage;
+import org.eclipse.swtchart.internal.PlotArea;
 
 /**
  * An interactive chart which provides the following abilities.
@@ -67,6 +69,8 @@ public class InteractiveChart extends Chart implements PaintListener {
 	private long clickedTime;
 	/** the resources created with properties dialog */
 	private PropertiesResources resources;
+	/** **/
+	private HashSet<ChartPropertiesListener> propertiesListeners = new HashSet<>(); 
 
 	private int currentX_Pixel;
 	private int currentY_Pixel;
@@ -83,6 +87,8 @@ public class InteractiveChart extends Chart implements PaintListener {
 	private String markerCoordinatesString = "";
 	private String deltaCoordinateString = "";
 	private boolean doubleClick;
+	
+	private Set<ZoomListener> zoomListeners = new HashSet<>();
 
 	/**
 	 * Constructor.
@@ -96,14 +102,29 @@ public class InteractiveChart extends Chart implements PaintListener {
 		super(parent, style);
 		init();
 	}
+	
+	public void addPropertiesListener(ChartPropertiesListener propertiesListener) {
+		propertiesListeners.add(propertiesListener);
+	}
+	
+	public void removePropertiesListener(ChartPropertiesListener propertiesListener) {
+		propertiesListeners.remove(propertiesListener);
+	}
 
+	public void addZoomListener(ZoomListener zoomListener) {
+		zoomListeners.add(zoomListener);
+	}
+	
+	public void removeZoomListener(ZoomListener zoomListener) {
+		zoomListeners.remove(zoomListener);
+	}
+	
 	/**
 	 * Initializes.
 	 */
 	private void init() {
-
 		resources = new PropertiesResources();
-		Composite plot = getPlotArea();
+		PlotArea plot = (PlotArea)getPlotArea();
 		plot.addListener(SWT.Resize, this);
 		plot.addListener(SWT.MouseMove, this);
 		plot.addListener(SWT.MouseDown, this);
@@ -112,9 +133,9 @@ public class InteractiveChart extends Chart implements PaintListener {
 		plot.addListener(SWT.KeyDown, this);
 		plot.addListener(SWT.MouseDoubleClick, this);
 		plot.addPaintListener(this);
+		plot.setCursor(Display.getDefault().getSystemCursor(SWT.CURSOR_CROSS));
 		cursorMarkerDeltaPainter = new CursorMarkerDeltaPainter(this);
-		((IPlotArea)plot).addCustomPaintListener(cursorMarkerDeltaPainter);
-		getPlotArea().setCursor(new Cursor(Display.getDefault(), SWT.CURSOR_CROSS));
+		plot.addCustomPaintListener(cursorMarkerDeltaPainter);
 		createMenuItems();
 	}
 	
@@ -126,12 +147,11 @@ public class InteractiveChart extends Chart implements PaintListener {
 		return showCursor && getSeriesSet().getSeries().length > 0;
 	}
 
-//	public void setShowMarker(boolean showMarker) {
-//		this.showMarker = showMarker;
-//	}
+	public void setShowMarker(boolean showMarker) {
+		this.showMarker = showMarker;
+	}
 	
 	public boolean isShowMarker() {
-//		System.out.println("showMarker : " + showMarker + " - currentXMarker_Pixel : " + currentXMarker_Pixel);
 		return showMarker && currentXMarker_Pixel > -1;
 	}
 	
@@ -278,9 +298,8 @@ public class InteractiveChart extends Chart implements PaintListener {
 	 */
 	@Override
 	public void dispose() {
-
-		super.dispose();
 		resources.dispose();
+		super.dispose();
 	}
 
 	/**
@@ -412,10 +431,13 @@ public class InteractiveChart extends Chart implements PaintListener {
 		currentY = y;
 	}
 	
-	private void handleMouseDoubleClick(Event event) {
+	private int handleMouseDoubleClick(Event event) {
+		if(!isShowCursor()) return -1;
 		doubleClick = true;
 		currentXMarker_Pixel = getCurrentX_Pixel();
 		currentYMarker_Pixel = getCurrentY_Pixel();
+		
+		if(getCurrentSeries() == null) return -1;
 
 		double mx = getAxisSet().getXAxes()[0].getDataCoordinate(currentXMarker_Pixel);
 		
@@ -441,10 +463,26 @@ public class InteractiveChart extends Chart implements PaintListener {
 							
 		}
 		
-		currentXMarker_Pixel = getAxisSet().getXAxes()[0].getPixelCoordinate(xValues[index]);
-		currentYMarker_Pixel = getAxisSet().getYAxes()[0].getPixelCoordinate(yValues[index]);
+		if(index != -1) {
+			currentXMarker_Pixel = getAxisSet().getXAxes()[0].getPixelCoordinate(xValues[index]);
+			currentYMarker_Pixel = getAxisSet().getYAxes()[0].getPixelCoordinate(yValues[index]);
+		}
 		
 		handleMouseMoveEvent(event);
+		
+		return index;
+	}
+	
+	public double[] getMarkerCoordinates(Event event) {
+		int index = handleMouseDoubleClick(event);
+		
+		if(index > -1) {
+			double[] xValues = getCurrentSeries().getXSeries();
+			double[] yValues = getCurrentSeries().getYSeries();
+			
+			return new double[] {xValues[index], yValues[index]};
+		}
+		return new double[0];
 	}
 	
 	private void resetMarker(Event event) {
@@ -476,7 +514,7 @@ public class InteractiveChart extends Chart implements PaintListener {
 	 *            the mouse up event
 	 */
 	private void handleMouseUpEvent(Event event) {
-
+		boolean fireZoomListeners = false;
 		if(event.button == 1 && System.currentTimeMillis() - clickedTime > 100) {
 			for(IAxis axis : getAxisSet().getAxes()) {
 				Point range = null;
@@ -487,14 +525,22 @@ public class InteractiveChart extends Chart implements PaintListener {
 				}
 				if(range != null && range.x != range.y) {
 					setRange(range, axis);
+					fireZoomListeners = true;
 				}
 			}
 		}
 		selection.dispose();
 		redraw();
 		if (isShowCursor()) handleMouseMoveEvent(event);
+		if(fireZoomListeners) fireZoomListeners();
 	}
-
+	
+	private void fireZoomListeners() {
+		for (ZoomListener zoomListener : zoomListeners) {
+			zoomListener.postZoomUpdate();
+		}
+	}
+	
 	/**
 	 * Handles mouse wheel event.
 	 * 
@@ -535,29 +581,35 @@ public class InteractiveChart extends Chart implements PaintListener {
 		if(event.keyCode == SWT.ARROW_DOWN) {
 			if(event.stateMask == SWT.CTRL) {
 				getAxisSet().zoomOut();
+				fireZoomListeners();
 			} else {
 				for(IAxis axis : getAxes(SWT.VERTICAL)) {
 					axis.scrollDown();
+					fireZoomListeners();
 				}
 			}
 			redraw();
 		} else if(event.keyCode == SWT.ARROW_UP) {
 			if(event.stateMask == SWT.CTRL) {
 				getAxisSet().zoomIn();
+				fireZoomListeners();
 			} else {
 				for(IAxis axis : getAxes(SWT.VERTICAL)) {
 					axis.scrollUp();
+					fireZoomListeners();
 				}
 			}
 			redraw();
 		} else if(event.keyCode == SWT.ARROW_LEFT) {
 			for(IAxis axis : getAxes(SWT.HORIZONTAL)) {
 				axis.scrollDown();
+				fireZoomListeners();
 			}
 			redraw();
 		} else if(event.keyCode == SWT.ARROW_RIGHT) {
 			for(IAxis axis : getAxes(SWT.HORIZONTAL)) {
 				axis.scrollUp();
+				fireZoomListeners();
 			}
 			redraw();
 		} else if(event.keyCode == SWT.TAB) {
@@ -619,33 +671,42 @@ public class InteractiveChart extends Chart implements PaintListener {
 		MenuItem menuItem = (MenuItem)event.widget;
 		if(menuItem.getText().equals(Messages.ADJUST_AXIS_RANGE)) {
 			getAxisSet().adjustRange();
+			fireZoomListeners();
 		} else if(menuItem.getText().equals(Messages.ADJUST_X_AXIS_RANGE)) {
 			for(IAxis axis : getAxisSet().getXAxes()) {
 				axis.adjustRange();
+				fireZoomListeners();
 			}
 		} else if(menuItem.getText().equals(Messages.ADJUST_Y_AXIS_RANGE)) {
 			for(IAxis axis : getAxisSet().getYAxes()) {
 				axis.adjustRange();
+				fireZoomListeners();
 			}
 		} else if(menuItem.getText().equals(Messages.ZOOMIN)) {
 			getAxisSet().zoomIn();
+			fireZoomListeners();
 		} else if(menuItem.getText().equals(Messages.ZOOMIN_X)) {
 			for(IAxis axis : getAxisSet().getXAxes()) {
 				axis.zoomIn();
+				fireZoomListeners();
 			}
 		} else if(menuItem.getText().equals(Messages.ZOOMIN_Y)) {
 			for(IAxis axis : getAxisSet().getYAxes()) {
 				axis.zoomIn();
+				fireZoomListeners();
 			}
 		} else if(menuItem.getText().equals(Messages.ZOOMOUT)) {
 			getAxisSet().zoomOut();
+			fireZoomListeners();
 		} else if(menuItem.getText().equals(Messages.ZOOMOUT_X)) {
 			for(IAxis axis : getAxisSet().getXAxes()) {
 				axis.zoomOut();
+				fireZoomListeners();
 			}
 		} else if(menuItem.getText().equals(Messages.ZOOMOUT_Y)) {
 			for(IAxis axis : getAxisSet().getYAxes()) {
 				axis.zoomOut();
+				fireZoomListeners();
 			}
 		} else if(menuItem.getText().equals(Messages.SAVE_AS)) {
 			openSaveAsDialog();
@@ -732,7 +793,13 @@ public class InteractiveChart extends Chart implements PaintListener {
 		dialog.create();
 		dialog.getShell().setText("Properties");
 		dialog.getTreeViewer().expandAll();
-		dialog.open();
+		if(dialog.open() == Window.OK) {
+			for (ChartPropertiesListener listener : propertiesListeners) {
+				listener.updateChartProperties();
+			}
+		};
+		
+		
 	}
 
 	/**

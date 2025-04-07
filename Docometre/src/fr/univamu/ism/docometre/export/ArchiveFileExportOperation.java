@@ -63,6 +63,7 @@ import org.eclipse.osgi.util.NLS;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.ResourceType;
 
 /**
  *	Operation for exporting a resource and its children to a new .zip or
@@ -74,7 +75,7 @@ public class ArchiveFileExportOperation implements IRunnableWithProgress {
 	private IFileExporter exporter;
 	private String destinationFilename;
 	private IProgressMonitor monitor;
-	private List<? extends IResource> resourcesToExport;
+	private List<IResource> resourcesToExport;
 	private IResource resource;
 	private List<IStatus> errorTable = new ArrayList<>(1); // IStatus
 	private boolean useCompression = true;
@@ -83,6 +84,7 @@ public class ArchiveFileExportOperation implements IRunnableWithProgress {
 	private boolean createLeadupStructure = true;
 	private String toRootDirectory;
 	private String fromRootDirectory;
+	private boolean includeData = true;
 
 	/**
 	 *	Create an instance of this class.  Use this constructor if you wish to
@@ -91,7 +93,7 @@ public class ArchiveFileExportOperation implements IRunnableWithProgress {
 	 *	@param resources java.util.Vector
 	 *	@param filename java.lang.String
 	 */
-	public ArchiveFileExportOperation(List<? extends IResource> resources, String filename) {
+	public ArchiveFileExportOperation(List<IResource> resources, String filename) {
 		super();
 
 		// Eliminate redundancies in list of resources being exported
@@ -114,10 +116,11 @@ public class ArchiveFileExportOperation implements IRunnableWithProgress {
 	 *  @param res org.eclipse.core.resources.IResource;
 	 *  @param filename java.lang.String
 	 */
-	public ArchiveFileExportOperation(IResource res, String filename) {
+	public ArchiveFileExportOperation(IResource res, String filename, boolean includeData) {
 		super();
 		resource = res;
 		destinationFilename = filename;
+		this.includeData = includeData;
 	}
 
 	/**
@@ -129,8 +132,8 @@ public class ArchiveFileExportOperation implements IRunnableWithProgress {
 	 *  @param resources java.util.Vector
 	 *  @param filename java.lang.String
 	 */
-	public ArchiveFileExportOperation(IResource res, List<IResource> resources, String filename) {
-		this(res, filename);
+	public ArchiveFileExportOperation(IResource res, List<IResource> resources, String filename, boolean includeData) {
+		this(res, filename, includeData);
 		resourcesToExport = resources;
 	}
 
@@ -151,7 +154,8 @@ public class ArchiveFileExportOperation implements IRunnableWithProgress {
 	 */
 	protected int countChildrenOf(IResource checkResource) throws CoreException {
 		if (checkResource.getType() == IResource.FILE) {
-			return 1;
+			if(!includeData && ResourceType.isDataFile(checkResource)) return 0;
+			else return 1;
 		}
 
 		int count = 0;
@@ -216,6 +220,8 @@ public class ArchiveFileExportOperation implements IRunnableWithProgress {
 		if (!exportResource.isAccessible() || (!resolveLinks && exportResource.isLinked())) {
 			return;
 		}
+		
+		if(!includeData) if(ResourceType.isDataFile(exportResource)) return;
 
 		if (exportResource.getType() == IResource.FILE) {
 			String destinationName = createDestinationName(leadupDepth, exportResource);
@@ -412,5 +418,9 @@ public class ArchiveFileExportOperation implements IRunnableWithProgress {
 	 */
 	public void setIncludeLinkedResources(boolean value) {
 		resolveLinks = value;
+	}
+
+	public void addResource(IResource propertiesFile) {
+		resourcesToExport.add(propertiesFile);
 	}
 }

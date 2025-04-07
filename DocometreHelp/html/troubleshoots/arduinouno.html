@@ -3,13 +3,12 @@
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-	<title>Main Topic</title>
+	<title>Troubleshoots with Arduino Uno System</title>
 </head>
 
 <body>
-<h1>Toubleshoots with Arduino Uno System</h1>
-<h2>Linux</h2>
-<h3>I can't see Arduino Uno port on Linux. What can I do ?</h3>
+<h1>Troubleshoots with Arduino Uno System</h1>
+<h2>I am on Linux and  can't see Arduino Uno port. What can I do ?</h2>
 
 <p>
 On linux OS, an Arduino Uno is usually connected to <b>/dev/ttyACMn</b>. But if you do
@@ -24,7 +23,26 @@ In order to access this device, please run these commands in terminal :
 <p>
 These commands simply add <b>UserName</b> to <b>tty</b> and <b>dialout</b> groups and make sure
 <b>UserName</b> has read and write acces to <b>/dev/ttyACMn</b>. Please follow this
-<a href="https://www.arduino.cc/en/Guide/Linux">link</a> if you need more informations.
+<a href="https://www.arduino.cc/en/Guide/Linux">link</a> if you need more informations. You must obviously use proper values for <b>UserName</b> and <b>n</b>. 
 </p>
+<h2>My Arduino Uno processes using ADS1115 module doesn't compile.</h2>
+<p>If you get this kind of error message :</p>
+<pre>
+fatal error: ADS1X15.h: No such file or directory
+ #include "ADS1X15.h"
+                     ^
+compilation terminated.
+exit status 1
+Erreur de compilation pour la carte Arduino/Genuino Uno
+</pre>
+<p>It means that you need to install ADS1115 driver from Rob Tillaart as build-in Arduino Uno Library. To do so, please follow this github link : <a href="https://github.com/RobTillaart/ADS1X15" target="_blank" rel="noopener noreferrer">ADS115 Library</a>. Then click
+on <b><i>Download Button</i></b> and choose <b><i>Download ZIP Menu Item</i></b>. Once Zip file has been downloaded and uncompressed, rename corresponding folder to <b>ADS1115</b> 
+and cut/past it in Java/libraries folder of your Arduino Uno IDE installation directory. You can also install this library from Arduino IDE direclty. 
+If you choose this option, please follow this link to find a tutorial on installing additional libraries : <a href="https://www.arduino.cc/en/guide/libraries" target="_blank" rel="noopener noreferrer">Installing Additional Arduino Libraries</a>.
+Compilation should now occur without any error. </p>
+
+
+
+
 </body>
 </html>

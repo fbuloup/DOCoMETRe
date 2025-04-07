@@ -94,6 +94,7 @@ public class ADWinMessages extends NLS {
 	public static String UNKNOWN;
 	public static String DeleteModule_Tooltip;
 	public static String AddModule_Tooltip;
+	public static String NoStimulusFileFound;
 	
 	// ADD module dialog
 	public static String AddModuleDialog_ShellTitle;
@@ -150,6 +151,12 @@ public class ADWinMessages extends NLS {
 	public static String AddOutput_Tooltip;
 	public static String AnOutModuleExplanations_Text;
 	public static String AnOutModuleExplanations_Text2;
+	
+	/*
+	 * Stimulus label and tooltip
+	 */
+	public static String Stimulus_Path_Label;
+	public static String Stimulus_Path_Tooltip;
 
 	/*
 	 * DIO form page
@@ -177,6 +184,16 @@ public class ADWinMessages extends NLS {
 	public static String ADWinCANFrequency_Tooltip;
 	public static String ADWinCAN_NB_SENSORS_Label;
 	public static String ADWinCAN_NB_SENSORS_Toolip;
+	public static String ADWinCAN_MODE_Label;
+	public static String ADWinCAN_MODE_Toolip;
+	public static String ADWinCAN_MESSAGE_OBJECT_Label;
+	public static String ADWinCAN_MESSAGE_OBJECT_Toolip;
+	public static String ADWinCAN_MESSAGE_OBJECT_ErrorMessage;
+	public static String ADWinCAN_MESSAGE_ID_Label;
+	public static String ADWinCAN_MESSAGE_ID_Toolip;
+	public static String ADWinCAN_MESSAGE_ID_ErrorMessage;
+	public static String ADWinCAN_MESSAGE_ID_LENGTH_Label;
+	public static String ADWinCAN_MESSAGE_ID_LENGTH_Toolip;
 	
 	/*
 	 * RS232 form page
@@ -302,6 +319,12 @@ public class ADWinMessages extends NLS {
 	public static String ADWinDiary_Ending_Scanner;
 	public static String ADWinDiary_Approximative_Scanner;
 	public static String ADWinDiary_NoMoreToGenerate_Scanner;
+	
+	// RS232 ADWin module
+	public static String RS232ModuleFrequencyEmptyErrorMessage;
+	
+	// ADwinChannel
+	public static String ADWinChannel_StimulusFileNotFound;
 	
 	static {
 		NLS.initializeMessages(BUNDLE_NAME, ADWinMessages.class);

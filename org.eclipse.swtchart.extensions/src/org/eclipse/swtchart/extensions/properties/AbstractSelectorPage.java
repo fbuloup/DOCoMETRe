@@ -114,7 +114,7 @@ abstract public class AbstractSelectorPage extends AbstractPage {
 
 		Composite leftPanel = new Composite(parent, SWT.NULL);
 		GridData gridData = new GridData(GridData.FILL_BOTH);
-		gridData.horizontalSpan = 1;
+		gridData.horizontalSpan = 3;
 		leftPanel.setLayoutData(gridData);
 		GridLayout layout = new GridLayout(1, false);
 		layout.marginHeight = 0;

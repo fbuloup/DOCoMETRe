@@ -46,6 +46,7 @@ import java.nio.FloatBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.NumberFormat;
 import java.util.HashMap;
 
 import org.eclipse.core.resources.IContainer;
@@ -55,6 +56,10 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IInputValidator;
+import org.eclipse.jface.dialogs.InputDialog;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DropTarget;
@@ -62,32 +67,17 @@ import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.DropTargetListener;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseMoveListener;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.PaintListener;
-import org.eclipse.swt.graphics.Cursor;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.MenuItem;
-import org.eclipse.swtchart.IAxis;
-import org.eclipse.swtchart.ILineSeries;
-import org.eclipse.swtchart.ILineSeries.PlotSymbolType;
-import org.eclipse.swtchart.ISeries;
-import org.eclipse.swtchart.ISeries.SeriesType;
-import org.eclipse.swtchart.extensions.charts.InteractiveChart;
-import org.eclipse.swtchart.extensions.charts.Messages;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ApplicationActionBarAdvisor;
-import fr.univamu.ism.docometre.ColorUtil;
+import fr.univamu.ism.docometre.DocometreApplication;
+import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.GetResourceLabelDelegate;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
@@ -96,23 +86,19 @@ import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.ExperimentScheduler;
-import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfiguration;
-import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfiguration;
+import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
+import fr.univamu.ism.nswtchart.CursorMarkerListener;
+import fr.univamu.ism.nswtchart.Window;
+import fr.univamu.ism.nswtchart.XYSWTChart;
+import fr.univamu.ism.nswtchart.XYSWTSerie;
 
-public class DataEditor extends EditorPart implements PartNameRefresher, MouseMoveListener, PaintListener, Listener/*, MouseListener */{
+public class DataEditor extends EditorPart implements PartNameRefresher, CursorMarkerListener {
 	
 	public static String ID = "Docometre.DataEditor";
 	
-//	private static Color RED_COLOR = PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_RED);
-	
-	private InteractiveChart chart;
+//	private InteractiveChart chart;
+	XYSWTChart chart;
 
-//	private int currentXMarker = -1;
-//	private int currentYMarker = -1;
-//	
-//	private boolean doubleClick;
-	
-	
 	public DataEditor() {
 		// TODO Auto-generated constructor stub
 	}
@@ -155,9 +141,22 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 		ApplicationActionBarAdvisor.markerContributionItem.setVisible(false);
 		ApplicationActionBarAdvisor.deltaContributionItem.setVisible(false);
 		ApplicationActionBarAdvisor.cursorContributionItem.getParent().update(true);
+		chart.dispose();
 		super.dispose();
 	}
+	
+	public Window getWindow() {
+		return chart.getWindow();
+	}
 
+	public void setShowCursor(boolean value) {
+		chart.setShowCursor(value);
+	}
+//	
+//	public void setShowMarker(boolean value) {
+//		chart.setShowMarker(value);
+//	}
+	
 	@Override
 	public void createPartControl(Composite parent) {
 			
@@ -165,52 +164,55 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 		IFile dataFile = (IFile) ((ResourceEditorInput) getEditorInput()).getObject();
 		
 		// Create XY graph
-		chart = new InteractiveChart(parent, SWT.BORDER);
-		chart.setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_BLACK));
-		chart.getPlotArea().setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_BLACK));
-		chart.setForeground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
-		IAxis[] axes = chart.getAxisSet().getAxes();
-		for (IAxis axe : axes) {
-			axe.getTick().setForeground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
-		}
-		chart.getLegend().setPosition(SWT.BOTTOM);
-		chart.getLegend().setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_BLACK));
-		chart.getLegend().setForeground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
-		chart.setSelectionRectangleColor(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_RED));
-		chart.getTitle().setVisible(false);
-		chart.getAxisSet().getXAxes()[0].getTitle().setForeground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
-		chart.getAxisSet().getXAxes()[0].getTitle().setText("Time (s)");
-		chart.getAxisSet().getYAxes()[0].getTitle().setVisible(false);
+//		chart = new InteractiveChart(parent, SWT.BORDER);
+		FontData fontData = parent.getFont().getFontData()[0];
+		chart = new XYSWTChart(parent, SWT.DOUBLE_BUFFERED,fontData.getName(), fontData.getStyle(), fontData.getHeight());
+		chart.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_BLACK));
+		chart.addCursorMarkerListener(this);
+		boolean showCursor = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.SHOW_CURSOR);
+//		boolean showMarker = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.SHOW_MARKER);
+		chart.setShowCursor(showCursor);
+//		chart.setShowMarker(showMarker);
+//		chart.setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_BLACK));
+//		chart.getPlotArea().setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_BLACK));
+//		chart.setForeground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
+//		IAxis[] axes = chart.getAxisSet().getAxes();
+//		for (IAxis axe : axes) {
+//			axe.getTick().setForeground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
+//		}
+		chart.setLegendPosition(SWT.BOTTOM);
+//		chart.getLegend().setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_BLACK));
+//		chart.getLegend().setForeground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
+//		chart.setSelectionRectangleColor(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_RED));
+//		chart.getTitle().setVisible(false);
+//		chart.getAxisSet().getXAxes()[0].getTitle().setForeground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
+//		chart.getAxisSet().getXAxes()[0].getTitle().setText("Time (s)");
+//		chart.getAxisSet().getYAxes()[0].getTitle().setVisible(false);
 		
-		chart.getPlotArea().setCursor(new Cursor(PlatformUI.getWorkbench().getDisplay(), SWT.CURSOR_CROSS));
-
-		chart.getPlotArea().addMouseMoveListener(this);
-		chart.getPlotArea().addPaintListener(this);
-		chart.getPlotArea().addListener(SWT.MouseWheel, this);
-		MenuItem menuItem = chart.getMenuItem(null, Messages.ADJUST_AXIS_RANGE);
-		menuItem.addListener(SWT.Selection, this);
-		menuItem = chart.getMenuItem(null, Messages.ADJUST_X_AXIS_RANGE);
-		menuItem.addListener(SWT.Selection, this);
-		menuItem = chart.getMenuItem(null, Messages.ADJUST_Y_AXIS_RANGE);
-		menuItem.addListener(SWT.Selection, this);
-		menuItem = chart.getMenuItem(null, Messages.ZOOMIN);
-		menuItem.addListener(SWT.Selection, this);
-		menuItem = chart.getMenuItem(null, Messages.ZOOMIN_X);
-		menuItem.addListener(SWT.Selection, this);
-		menuItem = chart.getMenuItem(null, Messages.ZOOMIN_Y);
-		menuItem.addListener(SWT.Selection, this);
-		menuItem = chart.getMenuItem(null, Messages.ZOOMOUT);
-		menuItem.addListener(SWT.Selection, this);
-		menuItem = chart.getMenuItem(null, Messages.ZOOMOUT_X);
-		menuItem.addListener(SWT.Selection, this);
-		menuItem = chart.getMenuItem(null, Messages.ZOOMOUT_Y);
-		menuItem.addListener(SWT.Selection, this);
-		chart.getPlotArea().addListener(SWT.Resize, this);
+//		chart.getPlotArea().addMouseMoveListener(this);
+//		chart.getPlotArea().addPaintListener(this);
+//		chart.getPlotArea().addListener(SWT.MouseWheel, this);
+//
+//		chart.getPlotArea().addListener(SWT.Resize, this);
 //		chart.getPlotArea().addMouseListener(this);
 		
-		// Create trace and add it to graph
+		
+		
+//		// Create trace and add it to graph
 		createTrace(dataFile);
 		
+		Object[] objects = ((ResourceEditorInput) getEditorInput()).getOtherEditedObjects();
+		for (Object object : objects) {
+			createTrace((IFile) object);
+		}
+		
+		Window window = ((ResourceEditorInput) getEditorInput()).getWindow();
+		if(window != null) {
+			chart.setWindow(window);
+			chart.redraw();
+			chart.update();
+		}
+//		
 		// Allow data to be copied or moved to the drop target
 		int operations = DND.DROP_COPY;
 		DropTarget target = new DropTarget(chart, operations);
@@ -254,15 +256,15 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 				 }
 			}
 		});
-			
 		
 	}
 	
 	public void removeTrace(Object object) {
 		if(!(object instanceof IFile)) return;
 		IFile dataFile = (IFile)object;
-		chart.getSeriesSet().deleteSeries(dataFile.getFullPath().toOSString());
-		chart.getPlotArea().redraw();
+//		chart.getSeriesSet().deleteSeries(dataFile.getFullPath().toOSString());
+//		chart.getPlotArea().redraw();
+		chart.removeSerie(dataFile.getFullPath().toOSString());
 	}
 	
 	private void createTrace(IFile dataFile) {
@@ -273,6 +275,10 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 			FloatBuffer floatBuffer = byteBuffer.asFloatBuffer();
 			float[] values = new float[floatBuffer.capacity()];
 			floatBuffer.get(values);
+			
+			String message = NLS.bind(DocometreMessages.NumberSamplesReadMessage, values.length);
+			Activator.logInfoMessage(message, getClass());
+			
 			// Get sample frequency
 			boolean removeDACQHandle = false;
 			IContainer container = dataFile.getParent();
@@ -298,57 +304,63 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 					e1.printStackTrace();
 				}
 			}
-			if(processFile == null) {
-				Activator.logErrorMessage("Unabled to find associated process file !");
-				return;
-			}
-			IResource dacqConfigurationFile = ResourceProperties.getAssociatedDACQConfiguration(processFile);
-			Object object = ResourceProperties.getObjectSessionProperty(dacqConfigurationFile);
-			if(object == null) {
-				dacqConfiguration = (DACQConfiguration) ObjectsController.deserialize((IFile) dacqConfigurationFile);
-				ResourceProperties.setObjectSessionProperty(dacqConfigurationFile, dacqConfiguration);
-				ObjectsController.addHandle(dacqConfiguration);
-				removeDACQHandle = true;
-			} else dacqConfiguration = (DACQConfiguration) object;
+			
+			double sf = -1;
 			String channelNameToFind = dataFile.getName().replaceAll(Activator.samplesFileExtension, "");
 			
-			// Compute data file name to remove prefix and suffix
-			IContainer session = dataFile.getParent().getParent();
-			boolean usePrefix = ResourceProperties.getDataFilesNamesPrefix(session) == null ? false : true;
-			if(usePrefix) channelNameToFind = channelNameToFind.split(ExperimentScheduler.dataFilePathNameSeparator_RegExpSplitter)[1];
-			else channelNameToFind = channelNameToFind.split(ExperimentScheduler.dataFilePathNameSeparator_RegExpSplitter)[0];
-			
-			Channel[] channels = dacqConfiguration.getChannels();
-			Channel channelFound = null;
-			for (Channel channel : channels) {
-				String channelName = channel.getProperty(ChannelProperties.NAME);
-				if(channelName.equals(channelNameToFind)) {
-					channelFound = channel;
-					break;
+			if(processFile != null) {
+				IResource dacqConfigurationFile = ResourceProperties.getAssociatedDACQConfiguration(processFile);
+				Object object = ResourceProperties.getObjectSessionProperty(dacqConfigurationFile);
+				if(object == null) {
+					dacqConfiguration = (DACQConfiguration) ObjectsController.deserialize((IFile) dacqConfigurationFile);
+					ResourceProperties.setObjectSessionProperty(dacqConfigurationFile, dacqConfiguration);
+					ObjectsController.addHandle(dacqConfiguration);
+					removeDACQHandle = true;
+				} else dacqConfiguration = (DACQConfiguration) object;
+				
+				
+				// Compute data file name to remove prefix and suffix
+				IContainer session = dataFile.getParent().getParent();
+				boolean usePrefix = ResourceProperties.getDataFilesNamesPrefix(session) == null ? false : true;
+				if(usePrefix) channelNameToFind = channelNameToFind.split(ExperimentScheduler.dataFilePathNameSeparator_RegExpSplitter)[1];
+				else channelNameToFind = channelNameToFind.split(ExperimentScheduler.dataFilePathNameSeparator_RegExpSplitter)[0];
+				
+				Channel[] channels = dacqConfiguration.getChannels();
+				Channel channelFound = null;
+				for (Channel channel : channels) {
+					String channelName = channel.getProperty(ChannelProperties.NAME);
+					if(channelName.equals(channelNameToFind)) {
+						channelFound = channel;
+						break;
+					}
 				}
-			}
-			if(removeDACQHandle) ObjectsController.removeHandle(dacqConfiguration);
-			if(channelFound == null) {
-				Activator.logErrorMessage("Unabled to find channel : " + channelNameToFind);
-				return;
+				if(removeDACQHandle) ObjectsController.removeHandle(dacqConfiguration);
+				if(channelFound != null) sf = Double.parseDouble(channelFound.getProperty(ChannelProperties.SAMPLE_FREQUENCY));
 			}
 			
-			double sf = Double.parseDouble(channelFound.getProperty(ChannelProperties.SAMPLE_FREQUENCY));
+			if(sf == -1) {
+				message = NLS.bind(DocometreMessages.SampleFrequencyDialogMessage, channelNameToFind);
+				Activator.logWarningMessage(message);
+				sf = getSampleFrequencyDialog();
+			}
 			
 			HashMap<String, double[]> xyValues  = createXYDoubleValues(values, sf, dacqConfiguration);
 			// Create X and Y data arrays
 			double[] yDoubleValues = xyValues.get("Y");
 			double[] xDoubleValues = xyValues.get("X");
 			
-			ILineSeries lineSeries = (ILineSeries) chart.getSeriesSet().createSeries(SeriesType.LINE, dataFile.getFullPath().toOSString());
-			lineSeries.setXSeries(xDoubleValues);
-			lineSeries.setYSeries(yDoubleValues);
-			lineSeries.setAntialias(SWT.ON);
-			lineSeries.setSymbolType(PlotSymbolType.NONE);
-			lineSeries.setLineColor(ColorUtil.getColor());
-			lineSeries.setLineWidth(3);
+//			ILineSeries lineSeries = (ILineSeries) chart.getSeriesSet().createSeries(SeriesType.LINE, dataFile.getFullPath().toOSString());
+//			lineSeries.setXSeries(xDoubleValues);
+//			lineSeries.setYSeries(yDoubleValues);
+//			lineSeries.setAntialias(SWT.ON);
+//			lineSeries.setSymbolType(PlotSymbolType.NONE);
+//			Byte index = getSeriesIndex(lineSeries);
+//			lineSeries.setLineColor(DocometreApplication.getColor((byte) chart.getSeriesNumber()));
+//			lineSeries.setLineWidth(3);
 			
-			chart.getAxisSet().adjustRange();
+			chart.createSerie(xDoubleValues, yDoubleValues, dataFile.getFullPath().toOSString(), DocometreApplication.getColor((byte) chart.getSeriesNumber()), 1);
+			
+//			chart.getAxisSet().adjustRange();
 			
 			refreshPartName();
 		} catch (Exception e) {
@@ -357,38 +369,51 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 		}
 		
 	}
+	
+	private double getSampleFrequencyDialog() {
+		double sf = 1;
+		IInputValidator inputValidator = new IInputValidator() {
+			@Override
+			public String isValid(String newText) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+		};
+		InputDialog inputDialog = new InputDialog(getSite().getShell(), DocometreMessages.SampleFrequencyDialogTitle, DocometreMessages.SampleFrequencyDialogLabel, "1", inputValidator);
+		if(inputDialog.open() == Dialog.OK) {
+			sf = Double.parseDouble(inputDialog.getValue());
+		}
+		return sf;
+	}
+	
+//	private Byte getSeriesIndex(ILineSeries series) {
+//		ISeries[] seriesArray = chart.getSeriesSet().getSeries();
+//		for (int i = 0; i < seriesArray.length; i++) {
+//			if(series == seriesArray[i]) return (byte) i;
+//		}
+//		return 0;
+//	}
 
 	private HashMap<String, double[]> createXYDoubleValues(float[] values, double sf, DACQConfiguration dacqConfiguration) {
 		HashMap<String, double[]> xyValues = new HashMap<>();
-		if(dacqConfiguration instanceof ADWinDACQConfiguration) {
-			double[] yDoubleValues = new double[values.length];
-			double[] xDoubleValues = new double[values.length];
-			for (int i = 0; i < yDoubleValues.length; i++) {
-				yDoubleValues[i] = values[i];
-				xDoubleValues[i] = 1.0 * i / sf;
-			}
-			xyValues.put("X", xDoubleValues);
-			xyValues.put("Y", yDoubleValues);
+		double[] yDoubleValues = new double[values.length];
+		double[] xDoubleValues = new double[values.length];
+		for (int i = 0; i < yDoubleValues.length; i++) {
+			yDoubleValues[i] = values[i];
+			xDoubleValues[i] = 1.0 * i / sf;
 		}
-		if(dacqConfiguration instanceof ArduinoUnoDACQConfiguration) {
-			double[] yDoubleValues = new double[values.length / 2];
-			double[] xDoubleValues = new double[values.length / 2];
-			for (int i = 0; i < yDoubleValues.length; i++) {
-				yDoubleValues[i] = values[2*i+1];
-				xDoubleValues[i] = values[2*i] + (i == 0 ? 0 : xDoubleValues[i-1]);
-			}
-			xyValues.put("X", xDoubleValues);
-			xyValues.put("Y", yDoubleValues);
-		}
+		xyValues.put("X", xDoubleValues);
+		xyValues.put("Y", yDoubleValues);
 		return xyValues;
 	}
 
 	@Override
 	public void setFocus() {
-		((Control)chart.getPlotArea()).setFocus();
+//		((Control)chart.getPlotArea()).setFocus();
+		chart.setFocus();
 	}
 	
-	public InteractiveChart getChart() {
+	public XYSWTChart getChart() {
 		return chart;
 	}
 	
@@ -398,13 +423,13 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 		String partName = GetResourceLabelDelegate.getLabel((IResource) object);
 		String toolTip = getEditorInput().getToolTipText();
 		
-		if(chart.getSeriesSet().getSeries().length > 1) {
+		if(chart.getSeries().length > 1) {
 			partName += " (...)";
 			toolTip = "";
-			ISeries[] series = chart.getSeriesSet().getSeries();
+			XYSWTSerie[] series = chart.getSeries();
 			for (int i = 0; i < series.length; i++) {
-				if(i == series.length - 1) toolTip += series[i].getId();
-				else toolTip += series[i].getId() + "\n";
+				if(i == series.length - 1) toolTip += series[i].getTitle();
+				else toolTip += series[i].getTitle() + "\n";
 				
 			}
 			((ResourceEditorInput)getEditorInput()).setTooltip(toolTip);
@@ -414,125 +439,79 @@ public class DataEditor extends EditorPart implements PartNameRefresher, MouseMo
 	}
 	
 	public void updateContribution() {
-		ApplicationActionBarAdvisor.cursorContributionItem.setText(chart.getCursorCoordinatesString());
-		ApplicationActionBarAdvisor.markerContributionItem.setText(chart.getMarkerCoordinatesString());
-		ApplicationActionBarAdvisor.deltaContributionItem.setText(chart.getDeltaCoordinateString());
-		
-
-		if(!ApplicationActionBarAdvisor.cursorContributionItem.isVisible()) {
-			ApplicationActionBarAdvisor.cursorContributionItem.setVisible(true);
-			ApplicationActionBarAdvisor.markerContributionItem.setVisible(true);
-			ApplicationActionBarAdvisor.deltaContributionItem.setVisible(true);
-			ApplicationActionBarAdvisor.cursorContributionItem.getParent().update(true);
-		}
-		
-		if(!ApplicationActionBarAdvisor.markerContributionItem.isVisible() && chart.isShowMarker()) {
-			ApplicationActionBarAdvisor.markerContributionItem.setVisible(true);
-			ApplicationActionBarAdvisor.deltaContributionItem.setVisible(true);
-			ApplicationActionBarAdvisor.cursorContributionItem.getParent().update(true);
-			
-		}
-		
-		if(ApplicationActionBarAdvisor.markerContributionItem.isVisible() && !chart.isShowMarker()) {
-			ApplicationActionBarAdvisor.markerContributionItem.setVisible(false);
-			ApplicationActionBarAdvisor.deltaContributionItem.setVisible(false);
-			ApplicationActionBarAdvisor.cursorContributionItem.getParent().update(true);
-			
-		}
-	}
-
-	@Override
-	public void mouseMove(MouseEvent event) {
-		updateContribution();
-		
-		
-//		if(currentXMarker != -1) {
-//			NumberFormat nf = NumberFormat.getInstance();
-//			nf.setMaximumFractionDigits(6);
-//			double mx = chart.getAxisSet().getXAxes()[0].getDataCoordinate(currentXMarker);
-//			double my = chart.getAxisSet().getYAxes()[0].getDataCoordinate(currentYMarker);
-//			StringBuilder text = new StringBuilder();
-//			text.append("Marker (");
-//			text.append(nf.format(mx));
-//			text.append(" ; ");
-//			text.append(nf.format(my));
-//			text.append(")");
-//			ApplicationActionBarAdvisor.markerContributionItem.setText(text.toString());
-//			double x = chart.getCurrentX() - mx;
-//			double y = chart.getCurrentY() - my;
-//			text = new StringBuilder();
-//			text.append("\u0394 (");
-//			text.append(nf.format(x));
-//			text.append(" ; ");
-//			text.append(nf.format(y));
-//			text.append(")");
-//			ApplicationActionBarAdvisor.deltaContributionItem.setText(text.toString());
-//			
-//			if(!ApplicationActionBarAdvisor.markerContributionItem.isVisible()) {
-//				ApplicationActionBarAdvisor.markerContributionItem.setVisible(true);
-//				ApplicationActionBarAdvisor.deltaContributionItem.setVisible(true);
-//				ApplicationActionBarAdvisor.cursorContributionItem.getParent().update(true);
-//			}
-//			
-//		}
-	}
-
-	@Override
-	public void paintControl(PaintEvent e) {
-//		Color oldColor = e.gc.getForeground();			
+//		ApplicationActionBarAdvisor.cursorContributionItem.setText(chart.getCursorCoordinatesString());
+//		ApplicationActionBarAdvisor.markerContributionItem.setText(chart.getMarkerCoordinatesString());
+//		ApplicationActionBarAdvisor.deltaContributionItem.setText(chart.getDeltaCoordinateString());
 //		
-//		e.gc.setForeground(RED_COLOR);
-//		// Draw marker
-//		if(currentXMarker != -1) {
-//			e.gc.drawLine(currentXMarker, 0, currentXMarker, currentYMarker - 3);
-//			e.gc.drawLine(currentXMarker, currentYMarker + 3, currentXMarker, chart.getPlotArea().getBounds().height);
-//			e.gc.drawRectangle(currentXMarker - 3, currentYMarker - 3, 6, 6);
+//
+//		if(!ApplicationActionBarAdvisor.cursorContributionItem.isVisible()) {
+//			ApplicationActionBarAdvisor.cursorContributionItem.setVisible(true);
+//			ApplicationActionBarAdvisor.markerContributionItem.setVisible(true);
+//			ApplicationActionBarAdvisor.deltaContributionItem.setVisible(true);
+//			ApplicationActionBarAdvisor.cursorContributionItem.getParent().update(true);
 //		}
 //		
-//		e.gc.setForeground(oldColor);
-	}
-	
-	@Override
-	public void handleEvent(Event event) {
-//		mouseEventHandler(event);
-	}
-//	
-//	private void mouseEventHandler(Event event) {
-//		if(!doubleClick) {
-//			currentXMarker = -1;
+//		if(!ApplicationActionBarAdvisor.markerContributionItem.isVisible() && chart.isShowMarker()) {
+//			ApplicationActionBarAdvisor.markerContributionItem.setVisible(true);
+//			ApplicationActionBarAdvisor.deltaContributionItem.setVisible(true);
+//			ApplicationActionBarAdvisor.cursorContributionItem.getParent().update(true);
+//			
+//		}
+//		
+//		if(ApplicationActionBarAdvisor.markerContributionItem.isVisible() && !chart.isShowMarker()) {
 //			ApplicationActionBarAdvisor.markerContributionItem.setVisible(false);
 //			ApplicationActionBarAdvisor.deltaContributionItem.setVisible(false);
 //			ApplicationActionBarAdvisor.cursorContributionItem.getParent().update(true);
+//			
 //		}
-//		doubleClick = false;
-//		event.x = chart.getCurrentX_Pixel();
-//		MouseEvent mouseEvent = new MouseEvent(event);
-//		mouseMove(mouseEvent);
-//	}
-//	
-//	private void typedEventHandler(TypedEvent typedEvent) {
-//		Event e = new Event();
-//		e.widget = typedEvent.widget;
-//		e.type = SWT.Selection;
-//		mouseEventHandler(e);
-//	}
-//
-//	@Override
-//	public void mouseDoubleClick(MouseEvent e) {
-//		currentXMarker = chart.getCurrentX_Pixel();
-//		currentYMarker = chart.getCurrentY_Pixel();
-//		doubleClick = true;
-//	}
+	}
 
-//	@Override
-//	public void mouseDown(MouseEvent e) {
-//	}
-//
-//	@Override
-//	public void mouseUp(MouseEvent e) {
-//		typedEventHandler(e);
-//	}
+	@Override
+	public void update(java.awt.geom.Point2D.Double cursor, java.awt.geom.Point2D.Double marker) {
+		
+		NumberFormat nf = NumberFormat.getInstance();
+		nf.setMaximumFractionDigits(6);
+		StringBuilder text = new StringBuilder();
+		
+		text.append("Cursor (");
+		text.append(nf.format(cursor.x));
+		text.append(" ; ");
+		text.append(nf.format(cursor.y));
+		text.append(")");
+		
+		ApplicationActionBarAdvisor.cursorContributionItem.setText(text.toString());
+		
+		if(marker != null) {
+			text = new StringBuilder();
+			text.append("Marker (");
+			text.append(nf.format(marker.x));
+			text.append(" ; ");
+			text.append(nf.format(marker.y));
+			text.append(")");
+			
+			ApplicationActionBarAdvisor.markerContributionItem.setText(text.toString());
+			
+			double dx = cursor.x - marker.x;
+			double dy = cursor.y - marker.y;
+			text = new StringBuilder();
+			text.append("\u0394 (");
+			text.append(nf.format(dx));
+			text.append(" ; ");
+			text.append(nf.format(dy));
+			text.append(")");
+			
+			ApplicationActionBarAdvisor.deltaContributionItem.setText(text.toString());
+		}
+		
+	}
 
-	
+	@Override
+	public void update(boolean showCursor) {
+		ApplicationActionBarAdvisor.cursorContributionItem.setVisible(showCursor);
+		ApplicationActionBarAdvisor.markerContributionItem.setVisible(showCursor);
+		ApplicationActionBarAdvisor.deltaContributionItem.setVisible(showCursor);
+		ApplicationActionBarAdvisor.cursorContributionItem.getParent().update(true);
+		
+	}
 
 }

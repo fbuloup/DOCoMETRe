@@ -114,7 +114,7 @@ public class ADWinAnOutModulePage extends ADWinModulePage {
 			int result = 0;
 			Channel in1 = (Channel) e1;
 			Channel in2 = (Channel) e2;
-			switch (columnNumber) {
+			switch (sortingColumnNumber) {
 			case 0:
 				e1 = in1.getProperty(ChannelProperties.NAME);
 				e2 = in2.getProperty(ChannelProperties.NAME);
@@ -184,7 +184,7 @@ public class ADWinAnOutModulePage extends ADWinModulePage {
 		/*
 		 * General configuration section
 		 */
-		createGeneralConfigurationSection(2, false);
+		createGeneralConfigurationSection(2, true);
 		
 		FormText explanationsFormText = managedForm.getToolkit().createFormText(generalconfigurationContainer, false);
 		explanationsFormText.setText(ADWinMessages.AnOutModuleExplanations_Text, true, false);
@@ -346,8 +346,8 @@ public class ADWinAnOutModulePage extends ADWinModulePage {
 			}
 		}
 		if(property instanceof ADWinAnOutChannelProperties) {
-			tableViewer.refresh();
-			tableConfigurationSectionPart.markDirty();
+			if(tableViewer != null) tableViewer.refresh();
+			if(tableConfigurationSectionPart != null) tableConfigurationSectionPart.markDirty();
 		}
 	}
 

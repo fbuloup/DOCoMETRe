@@ -74,6 +74,7 @@ public final class CurveConfigurationProperties extends Property {
 	
 	public static Color getColor(CurveConfiguration curveConfiguration) {
 		String colorKey = curveConfiguration.getProperty(COLOR);
+		if(colorKey == null) colorKey = "RGB{255,255,255}";
 		Color color = JFaceResources.getColorRegistry().get(colorKey);
 		if(color == null) {
 			String value = colorKey.replaceAll("RGB", "");

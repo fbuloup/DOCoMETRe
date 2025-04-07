@@ -75,7 +75,7 @@ public class CommentBlockConfigurationDialog extends TitleAreaDialog {
 		getShell().setText(DocometreMessages.BlockDialogShellTitle);
 		setTitle(DocometreMessages.CommentBlockConfigurationTitle);
 		setMessage(DocometreMessages.CommentBlockConfigurationMessage, IMessageProvider.INFORMATION);
-		setTitleImage(Activator.getImageDescriptor(IImageKeys.COMMENT_WIZBAN).createImage());
+		setTitleImage(Activator.getImage(IImageKeys.COMMENT_WIZBAN));
 	}
 
 	@Override

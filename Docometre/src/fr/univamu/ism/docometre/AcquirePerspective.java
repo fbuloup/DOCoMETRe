@@ -41,6 +41,7 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre;
 
+import org.eclipse.ui.IFolderLayout;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
 
@@ -48,12 +49,17 @@ import fr.univamu.ism.docometre.views.RealTimeChartsView;
 
 public class AcquirePerspective implements IPerspectiveFactory {
 	
-	public static String ID = "Docometre.acquireperspective";
+	public static final String id = "Docometre.acquireperspective";
 	
 	@Override
 	public void createInitialLayout(IPageLayout layout) {
 		layout.setEditorAreaVisible(false);
 		layout.addStandaloneView(RealTimeChartsView.ID, false, IPageLayout.LEFT, 1f, layout.getEditorArea());
+		if(System.getProperty("Sleak") != null) {
+			IFolderLayout folder = layout.createFolder("Sleak folder",  IPageLayout.RIGHT, .5f, RealTimeChartsView.ID);
+			folder.addView("org.eclipse.swt.tools.views.SleakView");
+			folder.addView("org.eclipse.swt.tools.views.SpyView");
+		}
 	}
 
 }

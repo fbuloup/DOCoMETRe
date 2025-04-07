@@ -41,12 +41,14 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre;
 
+import org.eclipse.ui.IFolderLayout;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
+import org.eclipse.ui.console.IConsoleConstants;
 
+import fr.univamu.ism.docometre.analyse.views.FunctionsView;
 import fr.univamu.ism.docometre.views.DescriptionView;
 import fr.univamu.ism.docometre.views.ExperimentsView;
-import fr.univamu.ism.docometre.views.MessagesView;
 
 
 public class DesignPerspective implements IPerspectiveFactory {
@@ -54,10 +56,19 @@ public class DesignPerspective implements IPerspectiveFactory {
 	public static String ID = "Docometre.designperspective";
 
 	public void createInitialLayout(IPageLayout layout) {
-		layout.addView(ExperimentsView.ID, IPageLayout.LEFT, .25f, layout.getEditorArea());
-//		layout.getViewLayout(ExperimentsView.ID).setCloseable(false);
-		
+		IFolderLayout leftFolder = layout.createFolder("LeftFolder", IPageLayout.LEFT, .25f, layout.getEditorArea());
+		leftFolder.addView(ExperimentsView.ID);
+		leftFolder.addPlaceholder(FunctionsView.ID);
 		layout.addView(DescriptionView.ID, IPageLayout.BOTTOM, .75f, ExperimentsView.ID);
-		layout.addView(MessagesView.ID, IPageLayout.BOTTOM, .75f, layout.getEditorArea());
+//		layout.addView(MessagesView.ID, IPageLayout.BOTTOM, .75f, layout.getEditorArea());
+		layout.addView(IConsoleConstants.ID_CONSOLE_VIEW, IPageLayout.BOTTOM, .75f, layout.getEditorArea());
+		
+		if(System.getProperty("Sleak") != null) {
+			IFolderLayout folder = layout.createFolder("Sleak folder",  IPageLayout.RIGHT, .5f, layout.getEditorArea());
+			folder.addView("org.eclipse.swt.tools.views.SleakView");
+			folder.addView("org.eclipse.swt.tools.views.SpyView");
+		}
+		
+		
 	}
 }

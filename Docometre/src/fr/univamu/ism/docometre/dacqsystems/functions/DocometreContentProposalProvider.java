@@ -49,6 +49,8 @@ import org.eclipse.jface.fieldassist.IContentProposalListener;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.swt.widgets.Text;
 
+import fr.univamu.ism.docometre.analyse.datamodel.Channel;
+
 public class DocometreContentProposalProvider implements IContentProposalProvider, IContentProposalListener {
 	
 	
@@ -75,6 +77,19 @@ public class DocometreContentProposalProvider implements IContentProposalProvide
 	public DocometreContentProposalProvider(String[] proposals, Text expressionText) {
 		super();
 		this.proposals = proposals;
+		this.expressionText = expressionText;
+	}
+	
+	public DocometreContentProposalProvider(Object[] channels, Text expressionText) {
+		super();
+		if(channels != null) {
+			proposals = new String[channels.length];
+			int i = 0;
+			for (Object channel : channels) {
+				proposals[i] = ((Channel)channel).getFullName();
+				i++;
+			}
+		}
 		this.expressionText = expressionText;
 	}
 	

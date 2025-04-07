@@ -42,6 +42,7 @@
 package fr.univamu.ism.docometre.actions;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -50,10 +51,14 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 
 import fr.univamu.ism.docometre.Activator;
@@ -63,20 +68,23 @@ import fr.univamu.ism.docometre.views.ExperimentsView;
 
 public class CopyResourcesAction extends Action implements ISelectionListener, IWorkbenchAction {
 
+	public static String UUIDString;
+	
 	private IResource[] resources;
 	private IResource[] copiedResources;
 	private IWorkbenchWindow window;
+	private Clipboard clipboard;
 
 	public CopyResourcesAction(IWorkbenchWindow window) {
+		clipboard = new Clipboard(PlatformUI.getWorkbench().getDisplay());
 		setId("CopyResourcesAction"); //$NON-NLS-1$
 		this.window = window;
 		window.getSelectionService().addSelectionListener(this);
 		setEnabled(false);
 		setText(DocometreMessages.CopyAction_Text);
 		setToolTipText(DocometreMessages.CopyAction_Text);
-        ISharedImages sharedImages = window.getWorkbench().getSharedImages();
-        setImageDescriptor(sharedImages.getImageDescriptor(ISharedImages.IMG_TOOL_COPY));
-        setDisabledImageDescriptor(sharedImages.getImageDescriptor(ISharedImages.IMG_TOOL_COPY_DISABLED));
+        setImageDescriptor(Activator.getSharedImageDescriptor(ISharedImages.IMG_TOOL_COPY)); 
+        setDisabledImageDescriptor(Activator.getSharedImageDescriptor(ISharedImages.IMG_TOOL_COPY_DISABLED));
 	}
 	
 	@Override
@@ -95,6 +103,8 @@ public class CopyResourcesAction extends Action implements ISelectionListener, I
 			cleanedResources.addAll(files);
 			// Convert to array
 			copiedResources = cleanedResources.toArray(new IResource[cleanedResources.size()]);
+			UUIDString = UUID.randomUUID().toString();
+			clipboard.setContents(new Object[] {UUIDString}, new Transfer[] {TextTransfer.getInstance()});
 		} catch (CoreException e) {
 			e.printStackTrace();
 			Activator.logErrorMessageWithCause(e);
@@ -136,6 +146,7 @@ public class CopyResourcesAction extends Action implements ISelectionListener, I
 	
 	public void dispose() {
 		window.getSelectionService().removeSelectionListener(this);
+		clipboard.dispose();
 	}
 	
 	public IResource[] getCopiedResources() {

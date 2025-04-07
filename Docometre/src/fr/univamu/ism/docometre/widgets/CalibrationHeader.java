@@ -46,8 +46,6 @@ import java.util.ArrayList;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -62,7 +60,7 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
 
-public final class CalibrationHeader implements DisposeListener  {
+public final class CalibrationHeader/* implements DisposeListener*/  {
 	
 	private DecimalFormat decimalFormat = new DecimalFormat("#0.0000");
 	
@@ -255,11 +253,6 @@ public final class CalibrationHeader implements DisposeListener  {
 		for (CalibrationListener calibrationListener : cls) {
 			calibrationListener.push(newValue);
 		}
-	}
-
-	@Override
-	public void widgetDisposed(DisposeEvent e) {
-		captureValueImage.dispose();
 	}
 	
 }

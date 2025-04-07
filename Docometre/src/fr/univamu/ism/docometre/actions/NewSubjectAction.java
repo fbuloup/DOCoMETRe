@@ -82,6 +82,7 @@ public class NewSubjectAction extends Action implements IWorkbenchAction, ISelec
 		setText(DocometreMessages.NewSubjectAction_Text);
 		setToolTipText(DocometreMessages.NewSubjectAction_Tooltip);
 		setImageDescriptor(Activator.getImageDescriptor(IImageKeys.SUBJECT_ICON));
+		setEnabled(false);
 	}
 	
 	@Override

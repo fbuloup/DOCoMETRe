@@ -41,19 +41,17 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.processeditor;
 
-import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.gef.commands.CommandStack;
 import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.swt.widgets.Composite;
 
 import fr.univamu.ism.docometre.dacqsystems.ui.SourceEditor;
 
-public class ArduinoUnoSourceEditor extends SourceEditor implements IResourceChangeListener {
+public class ArduinoUnoSourceEditor extends SourceEditor {
 	
 	public static String ID =  "Docometre.ArduinoUnoSourceEditor";
 	
-	public ArduinoUnoSourceEditor(CommandStack commandStack, ArduinoUnoProcessEditor arduinoUnoProcessEditor) {
-		super(commandStack, arduinoUnoProcessEditor);
+	public ArduinoUnoSourceEditor(ArduinoUnoProcessEditor arduinoUnoProcessEditor) {
+		super(arduinoUnoProcessEditor);
 	}
 
 	@Override

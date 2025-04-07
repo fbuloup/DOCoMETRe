@@ -41,7 +41,13 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.functions;
 
+import org.eclipse.jface.bindings.keys.KeyStroke;
+import org.eclipse.jface.bindings.keys.ParseException;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.fieldassist.ContentProposalAdapter;
+import org.eclipse.jface.fieldassist.ControlDecoration;
+import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
+import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -56,7 +62,10 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.dacqsystems.Channel;
+import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.Process;
@@ -65,6 +74,8 @@ import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfigurationProperti
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinModuleProperties;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinProcess;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinRS232Module;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinVariable;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinVariableProperties;
 import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
 import fr.univamu.ism.process.Block;
 import fr.univamu.ism.process.ScriptSegmentType;
@@ -78,7 +89,8 @@ public class SerialOutputFunction extends GenericFunction {
 	private static final String moduleNumberKey = "moduleNumber";
 	private static final String portNumberKey = "portNumber";
 	private static final String asciiStringValueKey = "asciiStringValue";
-	private static final String addCRLFKey = "add_CRLF";
+	private static final String addCRKey = "add_CR";
+	private static final String addLFKey = "add_LF";
 	
 	@Override
 	public String getFunctionFileName() {
@@ -172,21 +184,59 @@ public class SerialOutputFunction extends GenericFunction {
 		value  = getProperty(asciiStringValueKey, "");
 		stringValueText.setText(value);
 		
-		Label dummyLabel = new Label(paramContainer, SWT.BORDER);
-		dummyLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		
-		Button crlfButton = new Button(paramContainer, SWT.CHECK);
-		crlfButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-		crlfButton.setText(DocometreMessages.CRLFValueLabel); 
-		boolean addCRLF  = Boolean.parseBoolean(getProperty(addCRLFKey, "false"));
-		crlfButton.setSelection(addCRLF);
-		crlfButton.addSelectionListener(new SelectionAdapter() {
+		ControlDecoration expressionCD = new ControlDecoration(stringValueText, SWT.TOP | SWT.LEFT);
+		expressionCD.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_CONTENT_PROPOSAL).getImage());
+		expressionCD.setDescriptionText(DocometreMessages.UseCtrlSpaceProposal);
+		expressionCD.setShowOnlyOnFocus(true);
+		expressionCD.setMarginWidth(5);
+		try {
+			Process adwinProcess = (Process) context;
+			DACQConfiguration adwinDacqConfiguration = adwinProcess.getDACQConfiguration();
+			KeyStroke keyStroke = KeyStroke.getInstance("CTRL+SPACE");
+			DocometreContentProposalProvider proposalProvider = new DocometreContentProposalProvider(adwinDacqConfiguration.getProposal(), stringValueText);
+			proposalProvider.setFiltering(true);
+			
+			ContentProposalAdapter leftProposalAdapter = new ContentProposalAdapter(stringValueText, new TextContentAdapter(), proposalProvider, keyStroke, null);
+			leftProposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_INSERT);
+			leftProposalAdapter.addContentProposalListener(proposalProvider);
+		} catch (ParseException e) {
+			e.printStackTrace();
+			Activator.logErrorMessageWithCause(e);
+		}
+		
+		Label dummyLabel1 = new Label(paramContainer, SWT.NONE);
+		dummyLabel1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+		
+		Button crButton = new Button(paramContainer, SWT.CHECK);
+		crButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+		crButton.setText(DocometreMessages.CRValueLabel);
+		crButton.setToolTipText(DocometreMessages.CRValueToolTip);
+		boolean addCR  = Boolean.parseBoolean(getProperty(addCRKey, "false"));
+		crButton.setSelection(addCR);
+		crButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				getTransientProperties().put(addCRLFKey, String.valueOf(crlfButton.getSelection()));
+				getTransientProperties().put(addCRKey, String.valueOf(crButton.getSelection()));
 			}
 		});
-
+		
+		Label dummyLabel2 = new Label(paramContainer, SWT.NONE);
+		dummyLabel2.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+		
+		Button lfButton = new Button(paramContainer, SWT.CHECK);
+		lfButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+		lfButton.setText(DocometreMessages.LFValueLabel); 
+		lfButton.setToolTipText(DocometreMessages.LFValueToolTip);
+		boolean addLF  = Boolean.parseBoolean(getProperty(addLFKey, "false"));
+		lfButton.setSelection(addLF);
+		lfButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				getTransientProperties().put(addLFKey, String.valueOf(lfButton.getSelection()));
+			}
+		});
+		
 		addCommentField(paramContainer, 1, context);
 		
 		return paramContainer;
@@ -195,7 +245,8 @@ public class SerialOutputFunction extends GenericFunction {
 	
 	
 	@Override
-	public String getCode(Object context, Object step) {
+	public String getCode(Object context, Object step, Object...objects) {
+		if(!isActivated()) return GenericFunction.getCommentedCode(this, context);
 		String code = "";
 		Process process = (Process) context;
 		DACQConfiguration dacqConfiguration = process.getDACQConfiguration();
@@ -207,7 +258,23 @@ public class SerialOutputFunction extends GenericFunction {
 				String hashCode = String.valueOf(hashCode());
 				temporaryCode = temporaryCode.replaceAll("HashCode", hashCode);
 				String value = getProperty(asciiStringValueKey, "");
-				code = code + temporaryCode.replaceAll("stringSize", String.valueOf(value.length()));
+				if(!value.startsWith("\"")) {
+					Channel[] variables = process.getDACQConfiguration().getVariables();
+					ADWinVariable adWinVariable = null;
+					boolean found = false;
+					for (Channel variable : variables) {
+						adWinVariable = (ADWinVariable)variable;
+						String channelName = adWinVariable.getProperty(ChannelProperties.NAME);
+						if(value.equals(channelName)) {
+							found = true;
+							break;
+						}
+					}
+					if(found) {
+						String size = adWinVariable.getProperty(ADWinVariableProperties.SIZE);
+						code = code + temporaryCode.replaceAll("stringSize", size);
+					} else Activator.logErrorMessage("Channel " + value + " not found !");
+				} else code = code + temporaryCode.replaceAll("stringSize", String.valueOf(value.length()-2));
 			}
 			if(step == ADWinCodeSegmentProperties.INITIALIZATION) {
 				code = code + "\nREM Serial output function initialization\n";
@@ -215,8 +282,10 @@ public class SerialOutputFunction extends GenericFunction {
 				String temporaryCode = FunctionFactory.getProperty(process, functionFileName, key.toUpperCase());
 				String hashCode = String.valueOf(hashCode());
 				temporaryCode = temporaryCode.replaceAll("HashCode", hashCode);
-				boolean addCRLF = Boolean.parseBoolean(getProperty(addCRLFKey, "false"));
-				code = code + temporaryCode.replaceAll(addCRLFKey, addCRLF?"1":"0");
+				boolean addCR = Boolean.parseBoolean(getProperty(addCRKey, "false"));
+				code = code + temporaryCode.replaceAll(addCRKey, addCR?"1":"0");
+				boolean addLF = Boolean.parseBoolean(getProperty(addLFKey, "false"));
+				code = code.replaceAll(addLFKey, addLF?"1":"0");
 			}
 			if(step == ScriptSegmentType.INITIALIZE || step == ScriptSegmentType.LOOP || step == ScriptSegmentType.FINALIZE) {
 				// Récupérer la bonne propriété dans le fichier functionFileName en fonction du bon device : Gold ou Pro ET du bon CPU : I ou II

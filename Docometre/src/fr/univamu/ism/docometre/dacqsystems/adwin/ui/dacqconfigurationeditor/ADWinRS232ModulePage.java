@@ -80,7 +80,7 @@ public class ADWinRS232ModulePage extends ADWinModulePage {
 			int result = 0;
 			Channel in1 = (Channel) e1;
 			Channel in2 = (Channel) e2;
-			switch (columnNumber) {
+			switch (sortingColumnNumber) {
 			case 0:
 				e1 = in1.getProperty(ChannelProperties.NAME);
 				e2 = in2.getProperty(ChannelProperties.NAME);
@@ -122,7 +122,7 @@ public class ADWinRS232ModulePage extends ADWinModulePage {
 		/*
 		 * General configuration section
 		 */
-		createGeneralConfigurationSection(2, false);
+		createGeneralConfigurationSection(2, true);
 		
 		FormText explanationsFormText = managedForm.getToolkit().createFormText(generalconfigurationContainer, false);
 		explanationsFormText.setText(ADWinMessages.ADWinRS232ModuleExplanations_Text, true, false);
@@ -259,16 +259,11 @@ public class ADWinRS232ModulePage extends ADWinModulePage {
 						updateWidget(flowControlCombo, (ADWinRS232ModuleProperties) property);
 				}
 				if(property instanceof ChannelProperties) {
-					if(property == ChannelProperties.NAME) {
-						tableViewer.setInput(module.getChannels());
-						tableConfigurationSectionPart.markDirty();
+					if(property == ChannelProperties.NAME || property == ChannelProperties.REMOVE) {
+						if(tableViewer != null && tableViewer.getTable() != null && !tableViewer.getTable().isDisposed())
+							tableViewer.setInput(module.getChannels());
+						if(tableConfigurationSectionPart != null) tableConfigurationSectionPart.markDirty();
 					}
-					if(property == ChannelProperties.REMOVE) {
-//						module.removeChannel(oldValue);
-						tableViewer.setInput(module.getChannels());
-						tableConfigurationSectionPart.markDirty();
-					}
-					
 				}
 			}
 			
@@ -284,7 +279,7 @@ public class ADWinRS232ModulePage extends ADWinModulePage {
 	
 	private void createChannelsConfigurationSection() {
 		// Create channels table
-		createTableConfigurationSection(true, true, true, true);
+		createTableConfigurationSection(true, false, false, false);
 		tableConfigurationSection.setDescription(ADWinMessages.ADWinRS232ChannelsConfigurationModuleSection_Description);
 		
 		deleteToolItem.setToolTipText(ADWinMessages.DeleteChannel_Tooltip);
@@ -299,6 +294,7 @@ public class ADWinRS232ModulePage extends ADWinModulePage {
 				if(selectedChannels.length > 0) {
 					tableViewer.setInput(module.getChannels());
 					tableConfigurationSectionPart.markDirty();
+					tableViewer.refresh();
 				}
 				
 			}

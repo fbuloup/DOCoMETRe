@@ -105,8 +105,8 @@ import fr.univamu.ism.docometre.dacqsystems.charts.ChartsConfigurationPage;
 public abstract class ModulePage extends FormPage implements PropertyObserver {
 
 	public static int defaultColumnWidth = 70;
-	public static Image checkedImage = Activator.getImageDescriptor(IImageKeys.CHECK_BOX_CHECKED_ICON).createImage();
-	public static Image uncheckedImage = Activator.getImageDescriptor(IImageKeys.CHECK_BOX_UNCHECKED_ICON).createImage();
+	public static Image checkedImage = Activator.getImage(IImageKeys.CHECK_BOX_CHECKED_ICON);
+	public static Image uncheckedImage = Activator.getImage(IImageKeys.CHECK_BOX_UNCHECKED_ICON);
 	
 	public class ModuleSectionPart extends SectionPart {
 
@@ -136,16 +136,16 @@ public abstract class ModulePage extends FormPage implements PropertyObserver {
 	}
 	
 	protected class Comparator extends ViewerComparator {
-		protected int columnNumber;
+		protected int sortingColumnNumber;
 		protected boolean ascendingDirection = true; 
 		public Comparator() {
 			super();
 		}
 		public void setSortingColumn(int columnNumber) {
-			if(this.columnNumber == columnNumber) {
+			if(this.sortingColumnNumber == columnNumber) {
 				ascendingDirection = !ascendingDirection;
 			} else {
-				this.columnNumber = columnNumber;
+				this.sortingColumnNumber = columnNumber;
 				ascendingDirection = true;
 			}
 		}
@@ -256,6 +256,7 @@ public abstract class ModulePage extends FormPage implements PropertyObserver {
 		generalConfigurationSection.setText(DocometreMessages.GeneralConfigurationModuleSection_Title);
 		generalConfigurationSection.setDescription(DocometreMessages.GeneralConfigurationModuleSection_Description);
 		generalConfigurationSection.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		((GridData)generalConfigurationSection.getLayoutData()).widthHint = 50;
 
 		generalconfigurationContainer = managedForm.getToolkit().createComposite(generalConfigurationSection);
 		GridLayout gridLayout = new GridLayout(nbColumns, false);
@@ -278,6 +279,7 @@ public abstract class ModulePage extends FormPage implements PropertyObserver {
 		tableConfigurationSection.setText(DocometreMessages.ChannelsConfigurationModuleSection_Title);
 		tableConfigurationSection.setDescription(DocometreMessages.ChannelsConfigurationModuleSection_Description);
 		tableConfigurationSection.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		((GridData)tableConfigurationSection.getLayoutData()).widthHint = 50;
 		
 		tableConfigurationSectionPart = new ModuleSectionPart(tableConfigurationSection);
 		managedForm.addPart(tableConfigurationSectionPart);
@@ -286,7 +288,7 @@ public abstract class ModulePage extends FormPage implements PropertyObserver {
 			//Tool bar
 			ToolBar toolBar = new ToolBar(tableConfigurationSection, SWT.FLAT | SWT.HORIZONTAL);
 			deleteToolItem = new ToolItem(toolBar, SWT.NULL);
-			deleteToolItem.setImage(Activator.getImageDescriptor(ISharedImages.IMG_ETOOL_DELETE).createImage());
+			deleteToolItem.setImage(Activator.getSharedImage(ISharedImages.IMG_ETOOL_DELETE));
 			new ToolItem(toolBar, SWT.SEPARATOR);
 			addToolItem = new ToolItem(toolBar, SWT.NULL);
 			addToolItem.setImage(Activator.getImage(IImageKeys.ADD_ICON));
@@ -337,6 +339,7 @@ public abstract class ModulePage extends FormPage implements PropertyObserver {
 		
 		Table channelsTable = managedForm.getToolkit().createTable(tableConfigurationContainer, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION);
 		channelsTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		((GridData)channelsTable.getLayoutData()).widthHint = 50;
 		managedForm.getToolkit().paintBordersFor(channelsTable);
 		channelsTable.setHeaderVisible(true);
 		channelsTable.setLinesVisible(true);
@@ -385,6 +388,7 @@ public abstract class ModulePage extends FormPage implements PropertyObserver {
 	public Text createText(Composite container, String initialValue, int style, int horspan, int vertspan) {
 		Text text = managedForm.getToolkit().createText(container, initialValue, style);
 		text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, horspan, vertspan));
+		((GridData)text.getLayoutData()).widthHint = 50;
 		setModuleData(text);
 		return text;
 	}
@@ -395,6 +399,7 @@ public abstract class ModulePage extends FormPage implements PropertyObserver {
 	public Combo createCombo(Composite container, String[] items, String initialValue, int horspan, int vertspan) {
 		Combo combo = new Combo(container, SWT.READ_ONLY);
 		combo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, horspan, vertspan));
+		((GridData)combo.getLayoutData()).widthHint = 50;
 		combo.setItems(items);
 		combo.select(combo.indexOf(initialValue));
 		setModuleData(combo);
@@ -411,34 +416,45 @@ public abstract class ModulePage extends FormPage implements PropertyObserver {
 		return button;
 	}
 	
+	public Button createColorDialogButton(Composite container, String title, int style, int horspan, int vertspan) {
+		Button button = managedForm.getToolkit().createButton(container, title, style);//SWT.PUSH);
+		button.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, horspan, vertspan));
+		button.setData("isColorDialog", "yes");
+		setModuleData(button);
+		return button;
+	}
+	
 	/*
 	 * Helper method to create hyperlink widget
 	 */
 	public Hyperlink createHyperlink(Composite container, String initialValue, int horspan, int vertspan) {
 		Hyperlink hyperlink = managedForm.getToolkit().createHyperlink(container, initialValue, SWT.WRAP);
 		hyperlink.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, horspan, vertspan));
+		((GridData)hyperlink.getLayoutData()).widthHint = 50;
 		setModuleData(hyperlink);
 		return hyperlink;
 	}
 	
-	protected TableViewerColumn createColumn(String tooltip, TableColumnLayout variablesTableColumnLayout, Property property, int columnWidth, final int columnNumber) {
+	protected TableViewerColumn createColumn(String tooltip, TableColumnLayout tableColumnLayout, Property property, int columnWidth, final int columnNumber) {
 		final TableViewerColumn viewerColumn = new TableViewerColumn(tableViewer, SWT.NONE);
 		viewerColumn.getColumn().setText(property.getLabel());
 		viewerColumn.getColumn().setToolTipText(tooltip);
 		viewerColumn.getColumn().setMoveable(false);
+		int columnIndex = tableViewer.getTable().indexOf(viewerColumn.getColumn());
+		tableViewer.setData(Integer.toString(columnIndex), columnNumber);
 		viewerColumn.getColumn().addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				Comparator comparator = (Comparator) tableViewer.getComparator();
 				if(comparator != null) {
-					comparator.setSortingColumn(columnNumber);
+					comparator.setSortingColumn(columnIndex);
 					tableViewer.getTable().setSortDirection(comparator.getDirection());
 					tableViewer.getTable().setSortColumn(viewerColumn.getColumn());
 					tableViewer.refresh();
 				}
 			}
 		});
-		variablesTableColumnLayout.setColumnData(viewerColumn.getColumn(), new ColumnPixelData(columnWidth, true, false));
+		tableColumnLayout.setColumnData(viewerColumn.getColumn(), new ColumnPixelData(columnWidth, true, false));
 		
 		if(this instanceof ADwinDACQGeneralConfigurationPage) tableViewer.getTable().setData("module", ADwinDACQGeneralConfigurationPage.PAGE_ID);
 		else if(this instanceof ADWinVariablesPage) tableViewer.getTable().setData("module", ADWinVariablesPage.PAGE_ID);
@@ -448,7 +464,7 @@ public abstract class ModulePage extends FormPage implements PropertyObserver {
 		tableViewer.getTable().setData("tableViewer", tableViewer);
 		editingSupport = ChannelEditingSupportFactory.getEditingSupport(this, tableViewer, property, dacqConfiguration, (ResourceEditor) getEditor());
 		viewerColumn.setEditingSupport(editingSupport);
-		
+
 		return viewerColumn;
 	}
 	
@@ -488,4 +504,5 @@ public abstract class ModulePage extends FormPage implements PropertyObserver {
 	public Button[] getSelectAllButtons() {
 		return new Button[] {selectAll_T_Button, selectAll_AT_Button, selectAll_R_Button};
 	}
-}
+	
+ }

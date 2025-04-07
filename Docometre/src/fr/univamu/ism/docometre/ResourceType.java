@@ -41,8 +41,12 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre;
 
+import java.nio.file.Path;
+
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
+
+import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
 
 public enum ResourceType {
 	
@@ -60,7 +64,13 @@ public enum ResourceType {
 	PROCESS_TEST("PROCESS_TEST"),
 	ADW_DATA_FILE("ADW_DATA_FILE"),
 	CHANNEL("CHANNEL"),
-	DATA_PROCESSING("DATA_PROCESSING");
+	DATA_PROCESSING("DATA_PROCESSING"),
+	BATCH_DATA_PROCESSING("BATCH_DATA_PROCESSING"),
+	XYCHART("XYCHART"),
+	XYZCHART("XYZCHART"),
+	CUSTOMER_FUNCTION("CUSTOMER_FUNCTION"),
+	OPTITRACK_TYPE_1("OPTITRACK_TYPE_1"),
+	COLUMN_DATA_FILE("COLUMN_DATA_FILE");
 
 	private String name = "";
 
@@ -89,6 +99,12 @@ public enum ResourceType {
 		if(typeValue.equals(ADW_DATA_FILE.toString())) return ADW_DATA_FILE;
 		if(typeValue.equals(CHANNEL.toString())) return CHANNEL;
 		if(typeValue.equals(DATA_PROCESSING.toString())) return DATA_PROCESSING;
+		if(typeValue.equals(BATCH_DATA_PROCESSING.toString())) return BATCH_DATA_PROCESSING;
+		if(typeValue.equals(XYCHART.toString())) return XYCHART;
+		if(typeValue.equals(XYZCHART.toString())) return XYZCHART;
+		if(typeValue.equals(CUSTOMER_FUNCTION.toString())) return CUSTOMER_FUNCTION;
+		if(typeValue.equals(OPTITRACK_TYPE_1.toString())) return OPTITRACK_TYPE_1;
+		if(typeValue.equals(COLUMN_DATA_FILE.toString())) return COLUMN_DATA_FILE;
 		return ANY;
 	}
 	
@@ -148,6 +164,55 @@ public enum ResourceType {
 		return check(resource, DATA_PROCESSING);
 	}
 	
+	public static boolean isBatchDataProcessing(IResource resource) {
+		return check(resource, BATCH_DATA_PROCESSING);
+	}
+	
+	public static boolean isXYChart(IResource resource) {
+		return check(resource, XYCHART);
+	}
+	
+	public static boolean isXYZChart(IResource resource) {
+		return check(resource, XYZCHART);
+	}
+	
+	public static boolean isCustomerFunction(Object resource) {
+		if(resource instanceof IResource) return isCustomerFunction((IResource)resource);
+		else if(resource instanceof Path)return isCustomerFunction((Path)resource);
+		return false;
+	}
+	
+	public static boolean isFunction(Object resource) {
+		if(resource instanceof IResource) return isFunction((IResource)resource);
+		else if(resource instanceof Path)return isFunction((Path)resource);
+		return false;
+	}
+	
+	private static boolean isCustomerFunction(IResource resource) {
+		return check(resource, CUSTOMER_FUNCTION);
+	}
+	
+	private static boolean isFunction(IResource resource) {
+		boolean value = isCustomerFunction(resource);
+		return  value || resource.getName().endsWith(Activator.customerFunctionFileExtension);
+	}
+	
+	private static boolean isCustomerFunction(Path resource) {
+		return FunctionFactory.isCustomerFunction(resource);
+	}
+	
+	private static boolean isFunction(Path resource) {
+		return  FunctionFactory.isFunction(resource);
+	}
+	
+	public static boolean isOptitrack_Type_1(IResource resource) {
+		return check(resource, OPTITRACK_TYPE_1);
+	}
+	
+	public static boolean isColumnDataFile(IResource resource) {
+		return check(resource, COLUMN_DATA_FILE);
+	}
+	
 	public static boolean isAnyTest(IResource resource) {
 	return check(resource, ANY);
 	}
@@ -166,6 +231,26 @@ public enum ResourceType {
 		return getResourceType(resource).equals(resourceType);
 	}
 
+	public static boolean isNumpyFile(IResource resource) {
+		if(!resource.exists()) return false;
+		if(resource.getFileExtension() == null) return false;
+		return resource.getFileExtension().equalsIgnoreCase("numpy");
+	}
+
+	public static boolean isSaveFile(IResource resource) {
+		if(!resource.exists()) return false;
+		return resource.getName().equalsIgnoreCase("save.data") || resource.getName().equalsIgnoreCase("save.mat");
+	}
+
+	public static boolean isDataFile(IResource resource) {
+		boolean isDataFile = ResourceType.isADWDataFile(resource) || ResourceType.isSamples(resource); 
+		isDataFile = isDataFile || ResourceType.isSaveFile(resource) || ResourceType.isNumpyFile(resource);
+		isDataFile = isDataFile || ResourceType.isOptitrack_Type_1(resource);
+		isDataFile = isDataFile || ResourceType.isColumnDataFile(resource);
+		return isDataFile;
+	}
+
+	
 	
 	
 }

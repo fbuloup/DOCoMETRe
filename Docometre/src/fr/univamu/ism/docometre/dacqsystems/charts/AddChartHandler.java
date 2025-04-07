@@ -44,12 +44,14 @@ package fr.univamu.ism.docometre.dacqsystems.charts;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.IOperationHistory;
 import org.eclipse.core.commands.operations.ObjectUndoContext;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.dialogs.NewChartDialog;
 import fr.univamu.ism.docometre.editors.ModulePage;
 
 public class AddChartHandler extends SelectionAdapter {
@@ -69,7 +71,11 @@ public class AddChartHandler extends SelectionAdapter {
 	@Override
 	public void widgetSelected(SelectionEvent event) {
 		try {
-			operationHistory.execute(new AddChartOperation(modulePage, DocometreMessages.AddChartOperation_Label, charts, undoContext), null, null);
+			NewChartDialog newChartDialog = new NewChartDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+			if(newChartDialog.open() == Window.OK) {
+				ChartTypes chartType = newChartDialog.getSelectedChartTypes();
+				operationHistory.execute(new AddChartOperation(modulePage, DocometreMessages.AddChartOperation_Label, charts, chartType, undoContext), null, null);
+			}
 		} catch (ExecutionException e) {
 			e.printStackTrace();
 			Activator.logErrorMessageWithCause(e);

@@ -72,7 +72,7 @@ public class ArduinoUnoAnOutModulePage extends ArduinoUnoModulePage {
 			int result = 0;
 			Channel in1 = (Channel) e1;
 			Channel in2 = (Channel) e2;
-			switch (columnNumber) {
+			switch (sortingColumnNumber) {
 			case 0:
 				e1 = in1.getProperty(ArduinoUnoChannelProperties.USED);
 				e2 = in2.getProperty(ArduinoUnoChannelProperties.USED);

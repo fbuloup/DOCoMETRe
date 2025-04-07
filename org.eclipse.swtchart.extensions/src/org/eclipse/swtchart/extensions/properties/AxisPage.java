@@ -25,6 +25,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
@@ -205,7 +206,8 @@ public class AxisPage extends AbstractSelectorPage {
 	private void addAxisPanel(Composite parent) {
 
 		Composite group = new Composite(parent, SWT.NONE);
-		group.setLayout(new GridLayout(2, true));
+		group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		group.setLayout(new GridLayout(2, false));
 		createLabelControl(group, "Minimum range value:");
 		minRangeText = createTextControl(group);
 		minRangeText.addFocusListener(new FocusAdapter() {

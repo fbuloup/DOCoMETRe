@@ -142,6 +142,11 @@ public abstract class Process extends AbstractElement implements ModuleBehaviour
 	public abstract void compile(IProgressMonitor progressMonitor) throws Exception;
 	
 	/**
+	 * This method clean/remove compile/build files and folders
+	 */
+	public abstract void cleanBuild();
+	
+	/**
 	 * This method can be used as a helper method to prepare the DAQ execution which can be launched by calling method {@link #execute(boolean)}
 	 * @param wait true if the method must wait the end of the process to continue
 	 * @param compile true if a compilation is needed
@@ -182,7 +187,6 @@ public abstract class Process extends AbstractElement implements ModuleBehaviour
 	private void createErrorMarkers() {
 		try {
 			for (Map.Entry<Integer, String> entry : errorMarkers.entrySet()) {
-//				System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
 				int lineNumber = entry.getKey();
 				String message = entry.getValue();
 				IMarker marker = logFile.createMarker(DocometreBuilder.MARKER_ID);
@@ -205,6 +209,7 @@ public abstract class Process extends AbstractElement implements ModuleBehaviour
 		IResource parent = resource;
 		outputFolder = parent;
 		if(ResourceType.isProcess(resource)) {
+			// This is a process test
 			parent = resource.getParent();
 			outputFolder = ((IContainer)parent).findMember("test." + resource.getName().replaceAll(Activator.processFileExtension, ""));
 			if(outputFolder != null) {
@@ -231,7 +236,7 @@ public abstract class Process extends AbstractElement implements ModuleBehaviour
 				outputFolder = ((IContainer)parent).getFolder(new Path("test." + resource.getName().replaceAll(Activator.processFileExtension, "")));
 				((IFolder)outputFolder).create(true, true, null);
 				ResourceProperties.setTypePersistentProperty(outputFolder, ResourceType.PROCESS_TEST.toString());
-				ResourceProperties.setAssociatedProcessProperty(outputFolder, resource.getLocation().toOSString());
+				ResourceProperties.setAssociatedProcessProperty(outputFolder, resource.getFullPath().toOSString());
 //			}
 		}
 		// Clear errors

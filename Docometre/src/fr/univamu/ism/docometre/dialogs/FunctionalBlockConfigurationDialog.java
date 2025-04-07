@@ -59,7 +59,7 @@ public class FunctionalBlockConfigurationDialog extends TitleAreaDialog {
 	
 	private Function function;
 	private Object context;
-	private String blockingErrorMessage;
+//	private String blockingErrorMessage;
 	
 	public FunctionalBlockConfigurationDialog(Shell parentShell, Object context, Function function) {
 		super(parentShell);
@@ -78,12 +78,11 @@ public class FunctionalBlockConfigurationDialog extends TitleAreaDialog {
 	protected Control createDialogArea(Composite parent) {
 		setTitle(NLS.bind(DocometreMessages.FunctionConfigurationDialog_Title, function.getTitle(context)));
 		setMessage(NLS.bind(DocometreMessages.FunctionConfigurationDialog_Message, function.getDescription(context)));
-		setTitleImage(Activator.getImageDescriptor(IImageKeys.CONFIGURE_FUNCTION_WIZBAN).createImage());
+		setTitleImage(Activator.getImage(IImageKeys.CONFIGURE_FUNCTION_WIZBAN));
 		
 		Composite container = (Composite) super.createDialogArea(parent);
 		Composite composite = (Composite)function.getGUI(this , container, context);
 		if(composite != null) {
-			composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 			// Build the separator line
 			(new Label(container, SWT.HORIZONTAL | SWT.SEPARATOR)).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		}
@@ -94,8 +93,8 @@ public class FunctionalBlockConfigurationDialog extends TitleAreaDialog {
 	
 	@Override
 	public void setErrorMessage(String newErrorMessage) {
-		String errorMessage = newErrorMessage == null ? blockingErrorMessage : newErrorMessage;
-		super.setErrorMessage(errorMessage);
+//		String errorMessage = newErrorMessage == null ? blockingErrorMessage : newErrorMessage;
+		super.setErrorMessage(newErrorMessage);
 		if(getButton(OK) != null) getButton(OK).setEnabled(newErrorMessage == null);
 	}
 	
@@ -115,12 +114,12 @@ public class FunctionalBlockConfigurationDialog extends TitleAreaDialog {
 	@Override
 	public String getErrorMessage() {
 		String errorMessage = super.getErrorMessage();
-		if(errorMessage == null) errorMessage = blockingErrorMessage;
+//		if(errorMessage == null) errorMessage = blockingErrorMessage;
 		return errorMessage;
 	}
 	
-	public void setBlockingErrorMessage(String blockingErrorMessage) {
-		this.blockingErrorMessage = blockingErrorMessage;
-	}
+//	public void setBlockingErrorMessage(String blockingErrorMessage) {
+//		this.blockingErrorMessage = blockingErrorMessage;
+//	}
 
 }

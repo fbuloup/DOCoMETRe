@@ -10,7 +10,7 @@
 			Arduino. Ce logiciel permet de créer et compiler les programmes utilisables par
 			ces systèmes et apporte également un pilote pour dialoguer avec eux.
 			Ce logiciel peut être téléchargé à partir du site internet Arduino. Visitez la page 
-			d'accueil en allant sur https://www.arduino.cc/en/Guide/HomePage.
+			d'accueil en allant sur https://www.arduino.cc/en/Guide
 			
       </description>
    </intro>
@@ -30,16 +30,25 @@
          <b>Suivez le lien ci-dessous pour installer Arduino pour Mac</b>
       </description>
       <command required="false"
-		serialization="Docometre.cheatsheet.OpenURLHandler(Docometre.cheatsheet.OpenURLHandler.Value=https://www.arduino.cc/en/Guide/MacOSX)" />
+		serialization="Docometre.cheatsheet.OpenURLHandler(Docometre.cheatsheet.OpenURLHandler.Value=https://www.arduino.cc/en/Guide/macOS)" />
    </item>
     <item
          skip="true"
          title="Arduino pour Linux">
       <description>
-         <b>Suivez le lien ci-dessous pour installer Arduino pour Mac</b>
+         <b>Suivez le lien ci-dessous pour installer Arduino pour Linux</b>
       </description>
       <command required="false"
 		serialization="Docometre.cheatsheet.OpenURLHandler(Docometre.cheatsheet.OpenURLHandler.Value=https://www.arduino.cc/en/Guide/Linux)" />
    </item>
+    <item
+         skip="true"
+          title="Portenta Machine Control">
+       <description>
+          If you want to use <b>Portenta Machine Control</b>, you must install its associated library. Click on the link below in order to follow installation instructions.
+       </description>
+        <command required="false"
+		serialization="Docometre.cheatsheet.OpenURLHandler(Docometre.cheatsheet.OpenURLHandler.Value=https://docs.arduino.cc/software/ide-v1/tutorials/getting-started/cores/arduino-mbed_portenta)" />
+    </item>
    
 </cheatsheet>

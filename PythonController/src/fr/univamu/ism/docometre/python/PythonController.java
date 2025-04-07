@@ -41,9 +41,18 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.python;
 
-import py4j.GatewayServer;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.concurrent.ExecutionException;
 
-public final class PythonController {
+import org.eclipse.core.runtime.IProgressMonitor;
+
+import py4j.ClientServer;
+import py4j.ClientServer.ClientServerBuilder;
+
+public final class PythonController  {
 	
 	public static PythonController getInstance() {
 		if(pythonController == null) pythonController = new PythonController();
@@ -51,18 +60,82 @@ public final class PythonController {
 	}
 
 	private static PythonController pythonController;
-	private GatewayServer server;
+	private ClientServer server;
+	private boolean isStarted;
+	private ProcessBuilder pythonProcessBuilder;
+	private JavaEntryPoint javaEntryPoint;
+	private Process pythonProcess;
 	
 	private PythonController() {
 	}
 	
-	public void startServer() {
-		server = new GatewayServer();
-		server.start();
+	public boolean startServer(String pythonLocation, String pythonScriptsLocation, int timeOut, IProgressMonitor monitor, int javaPort, int pythonPort) throws Exception {
+		javaEntryPoint = new JavaEntryPoint();
+		ClientServerBuilder clientServerBuilder = new ClientServer.ClientServerBuilder(javaEntryPoint);
+		clientServerBuilder.javaPort(javaPort);
+		clientServerBuilder.pythonPort(pythonPort);
+		clientServerBuilder.autoStartJavaServer(false);
+		server = clientServerBuilder.build();
+		server.getJavaServer().start();
+		
+		pythonProcessBuilder = new ProcessBuilder(pythonLocation, pythonScriptsLocation + File.separator + "DOCoMETRe.py", "--jvm", "--javaPort", String.valueOf(javaPort), "--pythonPort", String.valueOf(pythonPort));
+		pythonProcess = pythonProcessBuilder.start();
+		
+		Thread.sleep(1000);
+		
+		long t0 = System.currentTimeMillis();
+		long dt = 0;
+		while (dt < timeOut*1000 && getPythonEntryPoint() == null && pythonProcess.isAlive() && !monitor.isCanceled()) {
+			dt = System.currentTimeMillis() - t0;
+		}
+		
+		if(!pythonProcess.isAlive() && pythonProcess.exitValue() != 0) {
+			InputStream errorStream = pythonProcess.getErrorStream();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(errorStream));
+	        StringBuilder stringBuilder = new StringBuilder();
+	        String errorMessage;
+	        while ((errorMessage = reader.readLine()) != null) {
+	        	stringBuilder.append(errorMessage);
+	        	stringBuilder.append("\n");
+	        }
+	        reader.close();
+	        Throwable throwable = new Throwable(stringBuilder.toString());
+			throw new ExecutionException(throwable);
+		}
+		
+		isStarted = getPythonEntryPoint() != null && pythonProcess.isAlive();
+		
+		return isStarted;
 	}
 	
-	public void stopServer() {
-		server.shutdown();
+	public void stopServer(int timeOut) throws InterruptedException {
+		javaEntryPoint.getPythonEntryPoint().shutDownServer(this);
+		server.getJavaServer().shutdown();
+		pythonProcess.destroy();
+		
+		Thread.sleep(1000);
+		
+		long t0 = System.currentTimeMillis();
+		long dt = 0;
+		while (dt < timeOut*1000 && pythonProcess.isAlive()) {
+			dt = System.currentTimeMillis() - t0;
+		}
+		
+		isStarted = pythonProcess.isAlive();
 	}
+	
+	public boolean isStarted() {
+		return isStarted;
+	}
+
+	public JavaEntryPoint getJavaEntryPoint() {
+		return javaEntryPoint;
+	}
+	
+	public PythonEntryPoint getPythonEntryPoint() {
+		return javaEntryPoint.getPythonEntryPoint();
+	}
+	
+	
 
 }

@@ -51,6 +51,10 @@ import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.fieldassist.TextContentAdapter;
+import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.DocumentEvent;
+import org.eclipse.jface.text.IDocumentListener;
+import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -69,6 +73,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.ISharedImages;
 
@@ -90,6 +96,10 @@ public final class ExpressionFunction extends GenericFunction {
 	private static final long serialVersionUID = 1L;
 	
 	private static final String expressionKey = "expression";
+
+	private transient ListViewer expressionsListViewer;
+
+	private transient SourceViewer sourceViewer;
 	
 	@Override
 	public String getFunctionFileName() {
@@ -100,18 +110,92 @@ public final class ExpressionFunction extends GenericFunction {
 	public Object getGUI(Object titleAreaDialog, Object parent, Object context) {
 		if(!(context instanceof Process)) return null;
 		Composite container  = (Composite) parent;
-		Composite paramContainer = new Composite(container, SWT.NORMAL);
-		paramContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		paramContainer.setLayout(new GridLayout(3, false));
 		
-		Label expressionLabel = new Label(paramContainer, SWT.NORMAL);
+		TabFolder tabFolder = new TabFolder(container, SWT.BORDER);
+		tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		TabItem expressionsTabItem = new TabItem(tabFolder, SWT.BORDER);
+		expressionsTabItem.setText(DocometreMessages.expressionsListTitle);
+		TabItem sourceTabItem = new TabItem(tabFolder, SWT.BORDER);
+		sourceTabItem.setText(DocometreMessages.sourceCodeTitle);
+		
+		Composite expressionsContainer = createExpressionsTabItem(tabFolder, context);
+		Composite sourceContainer = createSourceTabItem(tabFolder, context);
+		
+		expressionsTabItem.setControl(expressionsContainer);
+		sourceTabItem.setControl(sourceContainer);
+		
+		Composite commentContainer = new Composite(container, SWT.NORMAL);
+		commentContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		commentContainer.setLayout(new GridLayout(3, false));
+		
+		// Default tabitem is expressions 
+		tabFolder.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if(tabFolder.getSelectionIndex() == 0) {
+					// Switch from source to expressions => update expressions
+					expressionsListViewer.setInput(getExpressionsFromSource());
+				} else {
+					// Switch from expressions to source => update source
+					String[] expressionsList = expressionsListViewer.getList().getItems();
+					StringBuffer stringBuffer = new StringBuffer();
+					for (String expression : expressionsList) {
+						stringBuffer.append(expression + "\n");
+					}
+					sourceViewer.getDocument().set(stringBuffer.toString());
+				}
+			}
+		});
+		
+		addCommentField(commentContainer, 2, context);
+		
+		return tabFolder;
+	}
+	
+	private String[] getExpressionsFromSource() {
+		ArrayList<String> expressions = new ArrayList<String>();
+		int nbLines = sourceViewer.getTextWidget().getLineCount();
+		for (int i = 0; i <nbLines; i++) {
+			String line = sourceViewer.getTextWidget().getLine(i);
+			if(!"".equals(line)) expressions.add(line);
+		}
+		return expressions.toArray(new String[expressions.size()]);
+	}
+	
+	private Composite createSourceTabItem(TabFolder tabFolder, Object context) {
+		Composite sourceContainer = new Composite(tabFolder, SWT.NORMAL);
+		sourceContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		sourceContainer.setLayout(new GridLayout(1, false));
+		
+		sourceViewer = new SourceViewer(sourceContainer, null, SWT.BORDER);
+		sourceViewer.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		sourceViewer.setDocument(new Document());
+		
+		sourceViewer.getDocument().addDocumentListener(new IDocumentListener() {
+			@Override
+			public void documentChanged(DocumentEvent event) {
+				applyChangesToTransientProperties(getExpressionsFromSource());
+			}
+			@Override
+			public void documentAboutToBeChanged(DocumentEvent event) {
+			}
+		});
+		return sourceContainer;
+	}
+
+	private Composite createExpressionsTabItem(TabFolder tabFolder, Object context) {
+		Composite expressionsContainer = new Composite(tabFolder, SWT.NORMAL);
+		expressionsContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		expressionsContainer.setLayout(new GridLayout(3, false));
+		
+		Label expressionLabel = new Label(expressionsContainer, SWT.NORMAL);
 		expressionLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
 		expressionLabel.setText("Expression : ");
 		
-		Text expressionText = new Text(paramContainer, SWT.BORDER);
-		Button validateButton = new Button(paramContainer, SWT.FLAT);
-		Composite expressionsListContainer = new Composite(paramContainer, SWT.NORMAL);
-		ListViewer expressionsListViewer = new ListViewer(expressionsListContainer, SWT.SINGLE | SWT.BORDER);
+		Text expressionText = new Text(expressionsContainer, SWT.BORDER);
+		Button validateButton = new Button(expressionsContainer, SWT.FLAT);
+		Composite expressionsListContainer = new Composite(expressionsContainer, SWT.NORMAL);
+		expressionsListViewer = new ListViewer(expressionsListContainer, SWT.SINGLE | SWT.BORDER);
 		Composite buttonsContainer = new Composite(expressionsListContainer, SWT.NORMAL);
 		Button deleteButton = new Button(buttonsContainer, SWT.FLAT);
 		Button upButton = new Button(buttonsContainer, SWT.FLAT);
@@ -200,7 +284,7 @@ public final class ExpressionFunction extends GenericFunction {
 					downButton.setEnabled(expressionsListViewer.getList().getSelectionIndex() < expressionsListViewer.getList().getItemCount() - 1);
 				}
 				validateButton.setEnabled(false);
-				paramContainer.layout();
+				expressionsContainer.layout();
 			}
 		});
 		
@@ -209,7 +293,7 @@ public final class ExpressionFunction extends GenericFunction {
 		
 		deleteButton.setLayoutData(new GridData());
 		deleteButton.setEnabled(false);
-		deleteButton.setImage(Activator.getImage(ISharedImages.IMG_TOOL_DELETE));
+		deleteButton.setImage(Activator.getSharedImage(ISharedImages.IMG_TOOL_DELETE));
 		deleteButton.setToolTipText(DocometreMessages.DeleteAction_Text);
 		deleteButton.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -257,13 +341,13 @@ public final class ExpressionFunction extends GenericFunction {
 			}
 		});
 		
-		addCommentField(paramContainer, 2, context);
+		return expressionsContainer;
 		
-		return paramContainer;
 	}
-	
+
 	@Override
-	public String getCode(Object context, Object step) {
+	public String getCode(Object context, Object step, Object...objects) {
+		if(!isActivated()) return GenericFunction.getCommentedCode(this, context);
 		String code = "";
 		Process process = (Process) context;
 		if(step == ScriptSegmentType.INITIALIZE || step == ScriptSegmentType.LOOP || step == ScriptSegmentType.FINALIZE) {
@@ -304,11 +388,6 @@ public final class ExpressionFunction extends GenericFunction {
 		ExpressionFunction function = new ExpressionFunction();
 		super.clone(function);
 		return function;
-	}
-	
-	@Override
-	public String getDescription(Object process) {
-		return getProperty(expressionKey, "");
 	}
 
 }

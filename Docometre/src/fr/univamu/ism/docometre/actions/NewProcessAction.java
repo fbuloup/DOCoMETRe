@@ -82,6 +82,7 @@ public class NewProcessAction extends Action implements ISelectionListener, IWor
 		setText(DocometreMessages.NewProcessAction_Text);
 		setToolTipText(DocometreMessages.NewProcessAction_Tooltip);
 		setImageDescriptor(Activator.getImageDescriptor(IImageKeys.PROCESS_ICON));
+		setEnabled(false);
 	}
 	
 	@Override

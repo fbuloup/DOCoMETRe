@@ -93,6 +93,11 @@ public class ConfigureChartsLayoutDialog extends TitleAreaDialog {
 	}
 	
 	@Override
+	protected void setShellStyle(int newShellStyle) {
+		super.setShellStyle(SWT.DIALOG_TRIM | SWT.MODELESS | SWT.MAX | SWT.RESIZE | getDefaultOrientation());
+	}
+	
+	@Override
 	protected Control createDialogArea(Composite parent) {
 		Composite area = (Composite) super.createDialogArea(parent);
 

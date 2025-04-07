@@ -57,9 +57,11 @@ import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.PartListenerAdapter;
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
+import fr.univamu.ism.docometre.dacqsystems.DACQConfigurationProperties;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.Property;
 import fr.univamu.ism.docometre.dacqsystems.PropertyObserver;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoADS1115Module;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnInModule;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnOutModule;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDigInOutModule;
@@ -138,7 +140,9 @@ public class ArduinoUnoDACQConfigurationEditor extends ResourceEditor implements
 
 	@Override
 	public void update(Property property, Object newValue, Object oldValue, AbstractElement element) {
-		// TODO Auto-generated method stub
+		if(property == DACQConfigurationProperties.UPDATE_MODULE) {
+			updateModulesPages();
+		}
 		
 	}
 	
@@ -175,11 +179,19 @@ public class ArduinoUnoDACQConfigurationEditor extends ResourceEditor implements
 			if(module instanceof ArduinoUnoAnInModule) newModuleFormPage = new ArduinoUnoAnInModulePage(this, Integer.toString(id), "Temporary Title", module);
 			if(module instanceof ArduinoUnoAnOutModule) newModuleFormPage = new ArduinoUnoAnOutModulePage(this, Integer.toString(id), "Temporary Title", module);
 			if(module instanceof ArduinoUnoDigInOutModule) newModuleFormPage = new ArduinoUnoDigInOutModulePage(this, Integer.toString(id), "Temporary Title", module);
+			if(module instanceof ArduinoUnoADS1115Module) newModuleFormPage = new ArduinoUnoADS1115ModulePage(this, Integer.toString(id), "Temporary Title", module);
 			if(newModuleFormPage != null) addPage(newModuleFormPage);
 		} catch (PartInitException e) {
 			e.printStackTrace();
 			Activator.logErrorMessageWithCause(e);
 		}
+	}
+	
+	@Override
+	protected void pageChange(int newPageIndex) {
+		super.pageChange(newPageIndex);
+		IFormPage currentPage = getPage(getActivePage());
+		if(currentPage instanceof ArduinoUnoADS1115ModulePage) ((ArduinoUnoADS1115ModulePage)currentPage).updateAvailableAddresses();
 	}
 
 }

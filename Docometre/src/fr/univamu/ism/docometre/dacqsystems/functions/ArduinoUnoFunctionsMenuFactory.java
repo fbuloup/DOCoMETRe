@@ -47,6 +47,7 @@ import org.eclipse.jface.action.Separator;
 
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.dacqsystems.Process;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.processeditor.ArduinoUnoInitializeSegmentEditor;
 import fr.univamu.ism.docometre.editors.AbstractScriptSegmentEditor;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.scripteditor.actions.AssignFunctionAction;
@@ -59,6 +60,8 @@ public class ArduinoUnoFunctionsMenuFactory {
 	private static String CUSTOMER_FUNCTIONS_MENU = "CUSTOMER_FUNCTIONS_MENU";
 	
 	public static String[] ArduinoUnoFunctionsFiles = new String[] {AnalogInputFunction.functionFileName, 
+																	AnalogWaitFunction.functionFileName,
+																	DigitalWaitFunction.functionFileName,
 		    														SEPARATOR,
 																	DigitalOutputFunction.functionFileName,
 																	DigitalInputFunction.functionFileName,
@@ -68,6 +71,8 @@ public class ArduinoUnoFunctionsMenuFactory {
 																    TerminateProcessFunction.functionFileName};
 	
 	public static String[] ArduinoUnoFunctionsClasses = new String[] {AnalogInputFunction.class.getName(),
+																	  AnalogWaitFunction.class.getName(),
+																	  DigitalWaitFunction.class.getName(),
 																	  null,
 																	  DigitalOutputFunction.class.getName(),
 																	  DigitalInputFunction.class.getName(),
@@ -92,6 +97,9 @@ public class ArduinoUnoFunctionsMenuFactory {
 				if (menuTitle != null && menuTooltip != null) {
 					AssignFunctionAction assignFunctionAction = new AssignFunctionAction(scriptSegmentEditor,
 							blockEditPart, menuTitle, menuTooltip, ArduinoUnoFunctionsClasses[i]);
+					assignFunctionAction.setLazyEnablementCalculation(false);
+					if(ArduinoUnoFunctionsClasses[i].equals(AnalogWaitFunction.class.getName())) assignFunctionAction.setEnabled(scriptSegmentEditor instanceof ArduinoUnoInitializeSegmentEditor);
+					if(ArduinoUnoFunctionsClasses[i].equals(DigitalWaitFunction.class.getName())) assignFunctionAction.setEnabled(scriptSegmentEditor instanceof ArduinoUnoInitializeSegmentEditor);
 					functionMenuManager.add(assignFunctionAction);
 				}
 			}
@@ -103,10 +111,11 @@ public class ArduinoUnoFunctionsMenuFactory {
 			functionMenuManager.add(new Separator());
 			MenuManager customerFunctionsMenuManager = new MenuManager(DocometreMessages.CustomerFunctionsMenuLabel, CUSTOMER_FUNCTIONS_MENU);
 			for (String customerFunction : customerFunctions) {
-				String menuTitle = FunctionFactory.getProperty(process, CustomerFunction.CUSTOMER_FUNCTIONS_PATH + customerFunction, FunctionFactory.MENU_TITLE);
-				String menuTooltip = FunctionFactory.getProperty(process, CustomerFunction.CUSTOMER_FUNCTIONS_PATH + customerFunction, FunctionFactory.DESCRIPTION);
+				String menuTitle = FunctionFactory.getProperty(process, customerFunction, FunctionFactory.MENU_TITLE, true);
+				String menuTooltip = FunctionFactory.getProperty(process, customerFunction, FunctionFactory.DESCRIPTION, true);
 				if (menuTitle != null && menuTooltip != null) {
 					AssignFunctionAction assignFunctionAction = new AssignFunctionAction(scriptSegmentEditor, blockEditPart, menuTitle, menuTooltip, customerFunction);
+					assignFunctionAction.setLazyEnablementCalculation(false);
 					customerFunctionsMenuManager.add(assignFunctionAction);
 				}
 			}

@@ -167,13 +167,13 @@ public class OpenProcessWithSystemEditorAction extends Action implements ISelect
 						fileWriter.write(cmd);
 						fileWriter.close();
 						// This bash file must be executable 
-						Runtime.getRuntime().exec("chmod +x " + bashFilePath);
+						Runtime.getRuntime().exec(new String[]{"chmod +x " + bashFilePath});
 						// The runnable for thread ADBasic editor in wine
 						Runnable runnable = new Runnable() {
 							@Override
 							public void run() {
 								try {
-									java.lang.Process wineProcess = Runtime.getRuntime().exec("/bin/sh " + bashFilePath);
+									java.lang.Process wineProcess = Runtime.getRuntime().exec(new String[]{"/bin/sh " + bashFilePath});
 									wineProcess.waitFor();
 									// Delete bash file once editing is done
 									if(bashFile.exists()) bashFile.delete();

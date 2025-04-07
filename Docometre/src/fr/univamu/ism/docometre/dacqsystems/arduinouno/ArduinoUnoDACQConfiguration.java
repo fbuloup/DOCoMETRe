@@ -57,7 +57,7 @@ import fr.univamu.ism.docometre.dacqsystems.PropertyObserver;
 
 public class ArduinoUnoDACQConfiguration extends DACQConfiguration implements PropertyObserver {
 	
-	protected static String[] defaultProposal = new String[]{"time"};
+	protected static String[] defaultProposal = new String[]{"time", "rtTime"};
 	
 	public static final long serialVersionUID = AbstractElement.serialVersionUID;
 
@@ -74,7 +74,7 @@ public class ArduinoUnoDACQConfiguration extends DACQConfiguration implements Pr
 			arduinoUnoChannel.setProperty(ChannelProperties.CHANNEL_NUMBER, String.valueOf(i));
 //			arduinoUnoChannel.setProperty(ChannelProperties.TRANSFER_NUMBER, String.valueOf(i));
 		}
-		// Six potential PWN analog output (when not used as digital input or output)
+		// Six potential PWM analog outputs (when not used as digital input or output)
 		ArduinoUnoAnOutModule arduinoUnoAnOutModule = new ArduinoUnoAnOutModule(this);
 		//int n = 6; // Because six analog input
 		for (int i = 0; i < 6; i++) {
@@ -219,6 +219,11 @@ public class ArduinoUnoDACQConfiguration extends DACQConfiguration implements Pr
 	public String[] getProposal() {
 		HashSet<String> proposalHashSet = new HashSet<>();
 		proposalHashSet.addAll(Arrays.asList(defaultProposal));
+		String arduinoUnoRelease = getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
+		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
+		boolean isRelease3 = ArduinoUnoDACQConfigurationProperties.REVISION_R3.equals(arduinoUnoRelease);
+		if(isRelease4Wifi) proposalHashSet.remove("time");
+		if(isRelease3) proposalHashSet.remove("rtTime");
 		ArduinoUnoVariable[] variables = getVariables();
 		for (ArduinoUnoVariable arduinoUnoVariable : variables) {
 			proposalHashSet.add(arduinoUnoVariable.getProperty(ChannelProperties.NAME));
@@ -234,6 +239,14 @@ public class ArduinoUnoDACQConfiguration extends DACQConfiguration implements Pr
 		String[] proposals = proposalHashSet.toArray(new String[proposalHashSet.size()]);
 		Arrays.sort(proposals);
 		return proposals;
+	}
+	
+	public boolean hasADS1115Module() {
+		Module[] modules = getModules();
+		for (Module module : modules) {
+			if(module instanceof ArduinoUnoADS1115Module) return true;
+		}
+		return false;
 	}
 
 }

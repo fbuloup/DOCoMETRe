@@ -41,15 +41,17 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre;
 
+import java.io.File;
 import java.net.URL;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
-import org.eclipse.jface.resource.ColorRegistry;
-import org.eclipse.jface.resource.FontRegistry;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.service.datalocation.Location;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
@@ -64,6 +66,8 @@ import org.eclipse.ui.PlatformUI;
  */
 public class DocometreApplication implements IApplication {
 	
+	public static final Integer EXIT_ERROR = Integer.valueOf(-1);
+	
 	public static String COURIER_NEW = "COURIER_NEW";
 	public static String COURIER_NEW_BOLD = "COURIER_NEW_BOLD";
 	
@@ -75,8 +79,27 @@ public class DocometreApplication implements IApplication {
 	public static String ORANGE = "ORANGE";
 	public static String MAROON = "MAROON";
 	
-	public static FontRegistry fontRegistry;
-	public static ColorRegistry colorRegistry;
+	public static String WORKSPACE_PATH;
+	
+	private static RGB[] rgbs = new RGB[] { 
+			new RGB(0xFF, 0x00, 0x00),
+			new RGB(0x00, 0xFF, 0x00),
+			new RGB(0x00, 0x00, 0xFF),
+			new RGB(0xFF, 0xFF, 0x00),
+			new RGB(0x00, 0xFF, 0xFF),
+			new RGB(0xFF, 0x00, 0xFF),
+			new RGB(0xFF, 0x80, 0x00),
+			new RGB(0x80, 0x80, 0x80),
+			new RGB(0xA0, 0x60, 0x20),
+			new RGB(0x60, 0xA0, 0x20),
+			new RGB(0x20, 0x60, 0xA0),
+			new RGB(0x6D, 0x1D, 0x73),
+			new RGB(0xFF, 0xAA, 0x00),
+			new RGB(0x99, 0x91, 0x26),
+			new RGB(0xFF, 0x80, 0x91),
+			new RGB(0x36, 0xB8, 0xD9)
+		};
+	private static int maxColors = rgbs.length;;
 
 	/*
 	 * (non-Javadoc)
@@ -85,44 +108,73 @@ public class DocometreApplication implements IApplication {
 	 * IApplicationContext)
 	 */
 	public Object start(IApplicationContext context) throws Exception {
-		Activator.logInfoMessage("Current runtime folder : " + System.getProperty("user.dir"), DocometreApplication.class);
 		Display display = PlatformUI.createDisplay();
 		
-		fontRegistry = new FontRegistry(display);
-		fontRegistry.put(COURIER_NEW, new FontData[]{ new FontData("Courier New", 12, SWT.NORMAL)});
-		fontRegistry.put(COURIER_NEW_BOLD, new FontData[]{ new FontData("Courier New", 12, SWT.BOLD)});
+		JFaceResources.getFontRegistry().put(COURIER_NEW, new FontData[]{ new FontData("Courier New", 12, SWT.NORMAL)});
+		JFaceResources.getFontRegistry().put(COURIER_NEW_BOLD, new FontData[]{ new FontData("Courier New", 12, SWT.BOLD)});
 		
-		colorRegistry = new ColorRegistry(display);
-		colorRegistry.put(WHITE, new RGB(255, 255, 255));
-		colorRegistry.put(BLACK, new RGB(0, 0, 0));
-		colorRegistry.put(RED, new RGB(255, 0, 0));
-		colorRegistry.put(GREEN, new RGB(61, 119, 91));
-		colorRegistry.put(BLUE, new RGB(0, 0, 255));
-		colorRegistry.put(ORANGE, new RGB(255, 102, 0));
-		colorRegistry.put(MAROON, new RGB(122, 0, 0));
+		JFaceResources.getColorRegistry().put(WHITE, new RGB(255, 255, 255));
+		JFaceResources.getColorRegistry().put(BLACK, new RGB(0, 0, 0));
+		JFaceResources.getColorRegistry().put(RED, new RGB(202, 0, 42));
+		JFaceResources.getColorRegistry().put(GREEN, new RGB(61, 119, 91));
+		JFaceResources.getColorRegistry().put(BLUE, new RGB(0, 0, 255));
+		JFaceResources.getColorRegistry().put(ORANGE, new RGB(255, 102, 0));
+		JFaceResources.getColorRegistry().put(MAROON, new RGB(122, 0, 0));
 		
-		ChooseWorkspaceData chooseWorkspaceData = ChooseWorkspaceData.getInstance();
-		String workspace = chooseWorkspaceData.getSelection();
-		if(workspace == null || workspace.equals("")) chooseWorkspaceData.setShowDialog(true);
-		if(chooseWorkspaceData.getShowDialog()) {
-			ChooseWorkspaceDialog chooseWorkspaceDialog = new ChooseWorkspaceDialog(chooseWorkspaceData);
-			if(chooseWorkspaceDialog.open() == Window.CANCEL) return IApplication.EXIT_OK;
-			chooseWorkspaceData.save();
-			workspace = chooseWorkspaceData.getSelection();
-		} 
-		
-		if(workspace == null || workspace.equals("")) {
-			Activator.logInfoMessage("Error : workspace folder has not been specified !", DocometreApplication.class);
-			return IApplication.EXIT_OK;
+		for (int i = 0; i < rgbs.length; i++) {
+			JFaceResources.getColorRegistry().put(String.valueOf(i), rgbs[i]);
 		}
+		
+		boolean workspaceOK = false;
+		String workspace = "";
+		while(!workspaceOK) {
+			workspaceOK = true;
+			ChooseWorkspaceData chooseWorkspaceData = ChooseWorkspaceData.getInstance();
+			workspace = chooseWorkspaceData.getSelection();
+			if(workspace == null || workspace.equals("")) chooseWorkspaceData.setShowDialog(true);
+			if(chooseWorkspaceData.getShowDialog()) {
+				ChooseWorkspaceDialog chooseWorkspaceDialog = new ChooseWorkspaceDialog(chooseWorkspaceData);
+				int response = chooseWorkspaceDialog.open();
+				chooseWorkspaceData.save();
+				if(response == Window.CANCEL) return IApplication.EXIT_OK;
+				workspace = chooseWorkspaceData.getSelection();
+			} 
+			
+			if(workspace == null || workspace.equals("")) {
+				MessageDialog.openError(display.getActiveShell(), DocometreMessages.Error, DocometreMessages.WorkspaceNotSpecified);
+				Activator.logInfoMessage(DocometreMessages.WorkspaceNotSpecified, DocometreApplication.class);
+				workspaceOK = false;
+			}
+			
+			File workspaceLocker = new File(workspace + File.separator + ".metadata" + File.separator +"workspace.locker");
+			if(workspaceLocker.exists()) {
+				String message = NLS.bind(DocometreMessages.WorkspaceAlreadyUsed, workspace);
+				MessageDialog.openError(display.getActiveShell(), DocometreMessages.Error, message);
+				Activator.logErrorMessage(message);
+				workspaceOK = false;
+			}
+		}
+		
+		File metadataFolder = new File(workspace + File.separator + ".metadata" + File.separator);
+		if(!metadataFolder.exists()) {
+			if(!metadataFolder.mkdirs()) {
+				MessageDialog.openError(display.getActiveShell(), DocometreMessages.Error,  DocometreMessages.UnableCreateMetadataFolder);
+				return EXIT_ERROR;
+			}
+		}
+		
+		File workspaceLocker = new File(workspace + File.separator + ".metadata" + File.separator +"workspace.locker");
+		if(!workspaceLocker.createNewFile()) MessageDialog.openError(display.getActiveShell(), DocometreMessages.Error,  DocometreMessages.UnableCreateLockerFile);
 		
 		Location instanceLocation = Platform.getInstanceLocation();
 		instanceLocation.release();
-		instanceLocation.set(new URL("file://" + workspace), true);
-		Activator.logInfoMessage(DocometreMessages.CurrentWorkspace + workspace, DocometreApplication.class);
-		
+		File workspaceFile = new File(workspace);
+		URL workspaceURL = workspaceFile.toURI().toURL();
+		instanceLocation.set(workspaceURL, true);
+		WORKSPACE_PATH = workspace;
 		try {
 			int returnCode = PlatformUI.createAndRunWorkbench(display, new ApplicationWorkbenchAdvisor());
+			Activator.logInfoMessage("createAndRunWorkbench return code : " + returnCode, getClass());
 			if (returnCode == PlatformUI.RETURN_RESTART)
 				return IApplication.EXIT_RESTART;
 			else
@@ -153,11 +205,28 @@ public class DocometreApplication implements IApplication {
 		});
 	}
 	
-	public static Color getColor(String colorName) {
-		return colorRegistry.get(colorName);
+	public static Color getColor(Byte index) {
+		if(index < 0) index = 0;
+		index = (byte) (index % maxColors);
+		Color color = JFaceResources.getColorRegistry().get(index.toString());
+		return color;
 	}
 	
-	public static Font getFont(String fontName) {
-		return fontRegistry.get(fontName);
+	public static Color getColor(String colorName) {
+		return JFaceResources.getColorRegistry().get(colorName);
 	}
+	
+	public static Color getColor(RGB rgb) {
+		Color color = JFaceResources.getColorRegistry().get(rgb.toString());
+		if(color == null) {
+			JFaceResources.getColorRegistry().put(rgb.toString(), rgb);
+			color = JFaceResources.getColorRegistry().get(rgb.toString());
+		}
+		return color;
+	}
+
+	public static Font getFont(String fontName) {
+		return JFaceResources.getFontRegistry().get(fontName);
+	}
+	
 }

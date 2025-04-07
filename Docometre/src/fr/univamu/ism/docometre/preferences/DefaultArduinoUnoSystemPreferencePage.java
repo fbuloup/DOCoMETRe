@@ -46,6 +46,9 @@ import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseWheelListener;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridLayout;
@@ -54,15 +57,18 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.analyse.views.FunctionsView;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfigurationProperties;
-import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.dacqconfigurationeditor.DeviceSelectionDialog;
+import fr.univamu.ism.docometre.dacqsystems.ui.DeviceSelectionDialog;
+import fr.univamu.ism.docometre.dacqsystems.ui.DeviceSelectionHandler.DeviceType;
 import fr.univamu.ism.docometre.dialogs.DialogSelectionHandler;
 
 public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
@@ -74,15 +80,28 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 	private Text devicePathText;
 	private Combo baudRateCombo;
 	private Text libraryPathText;
+	private Spinner delayTimeSpinner;
+	private Text userLibraryPathText;
+	private Text docoUserLibrariesAbsolutePathText;
+	private Text arduinoCLIText;
+	private Button useArduinoCLIButton;
+	private Button browsearduinoCLIButton;
+
+	private Combo revisionCombo;
 	
 	public static ArduinoUnoDACQConfiguration getDefaultDACQConfiguration() {
 		IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
+		if(!preferenceStore.getBoolean(DEFAULT_ARDUINO_UNO_SYSTEM_PREFERENCE_INITIALIZED)) performDefaultsPreferencesValues();
 		ArduinoUnoDACQConfiguration arduinoUnoDACQConfiguration = new ArduinoUnoDACQConfiguration();
 		arduinoUnoDACQConfiguration.setProperty(ArduinoUnoDACQConfigurationProperties.BUILDER_PATH, preferenceStore.getString(ArduinoUnoDACQConfigurationProperties.BUILDER_PATH.getKey()));
 		arduinoUnoDACQConfiguration.setProperty(ArduinoUnoDACQConfigurationProperties.AVRDUDE_PATH, preferenceStore.getString(ArduinoUnoDACQConfigurationProperties.AVRDUDE_PATH.getKey()));
+		arduinoUnoDACQConfiguration.setProperty(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH, preferenceStore.getString(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH.getKey()));
+		arduinoUnoDACQConfiguration.setProperty(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI, preferenceStore.getString(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI.getKey()));
 		arduinoUnoDACQConfiguration.setProperty(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH, preferenceStore.getString(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH.getKey()));
 		arduinoUnoDACQConfiguration.setProperty(ArduinoUnoDACQConfigurationProperties.BAUD_RATE, preferenceStore.getString(ArduinoUnoDACQConfigurationProperties.BAUD_RATE.getKey()));
 		arduinoUnoDACQConfiguration.setProperty(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH, preferenceStore.getString(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey()));
+		arduinoUnoDACQConfiguration.setProperty(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH, preferenceStore.getString(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getKey()));
+		arduinoUnoDACQConfiguration.setProperty(ArduinoUnoDACQConfigurationProperties.REVISION, preferenceStore.getString(ArduinoUnoDACQConfigurationProperties.REVISION.getKey()));
 		return arduinoUnoDACQConfiguration;
 	}
 
@@ -92,29 +111,36 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 		setDescription(DocometreMessages.DefaultArduinoUnoSystemPreference_Description);
 	}
 	
-	private void performDefaultsPreferencesValues() {
+	private static void performDefaultsPreferencesValues() {
 		ArduinoUnoDACQConfiguration arduinoUnoDACQConfiguration = new ArduinoUnoDACQConfiguration();
-		IPreferenceStore preferenceStore = getPreferenceStore();
+		IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.BUILDER_PATH.getKey(), arduinoUnoDACQConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.BUILDER_PATH));
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.AVRDUDE_PATH.getKey(), arduinoUnoDACQConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.AVRDUDE_PATH));
+		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH.getKey(), arduinoUnoDACQConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH));
+		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI.getKey(), arduinoUnoDACQConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI));
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH.getKey(), arduinoUnoDACQConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH));
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.BAUD_RATE.getKey(), arduinoUnoDACQConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.BAUD_RATE));
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), arduinoUnoDACQConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH));
+		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.REVISION.getKey(), arduinoUnoDACQConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION));
 		preferenceStore.putValue(DEFAULT_ARDUINO_UNO_SYSTEM_PREFERENCE_INITIALIZED, "true");
 	}
 	
 	@Override
 	protected void performDefaults() {
 		super.performDefaults();
-		
 		performDefaultsPreferencesValues();
-		
 		libraryPathText.setText(getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey()));
+		userLibraryPathText.setText(getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getKey()));
 		builderPathText.setText(getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.BUILDER_PATH.getKey()));
 		avrDUDEPathText.setText(getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.AVRDUDE_PATH.getKey()));
 		devicePathText.setText(getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH.getKey()));
 		baudRateCombo.setText(getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.BAUD_RATE.getKey()));
-		
+		arduinoCLIText.setText(getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH.getKey()));
+		boolean useCLI = "true".equals(getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI.getKey()))?true:false;
+		useArduinoCLIButton.setSelection(useCLI);
+		arduinoCLIText.setEnabled(useCLI);
+		browsearduinoCLIButton.setEnabled(useCLI);
+		revisionCombo.setText(getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.REVISION.getKey()));
 	}
 	
 	@Override
@@ -122,10 +148,18 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 		IPreferenceStore preferenceStore = getPreferenceStore();
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.BUILDER_PATH.getKey(), builderPathText.getText());
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.AVRDUDE_PATH.getKey(), avrDUDEPathText.getText());
+		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI.getKey(), useArduinoCLIButton.getSelection()?"true":"false");
+		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH.getKey(), arduinoCLIText.getText());
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH.getKey(), devicePathText.getText());
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.BAUD_RATE.getKey(), baudRateCombo.getText());
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), libraryPathText.getText());
-		return super.performOk();
+		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getKey(), userLibraryPathText.getText());
+		preferenceStore.putValue(GeneralPreferenceConstants.ARDUINO_DELAY_TIME_AFTER_SERIAL_PRINT, delayTimeSpinner.getText());
+		preferenceStore.putValue(GeneralPreferenceConstants.ARDUINO_USER_LIBRARIES_ABSOLUTE_PATH, docoUserLibrariesAbsolutePathText.getText());
+		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.REVISION.getKey(), revisionCombo.getText());
+		boolean value = super.performOk();
+		FunctionsView.refresh(false);
+		return value;
 	}
 
 	@Override
@@ -139,14 +173,48 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 		//LIBRARIES_ABSOLUTE_PATH
 		Label libraryPathLabel = new Label(container, SWT.NORMAL);
 		libraryPathLabel.setText(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getLabel());
+		libraryPathLabel.setToolTipText(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getTooltip());
 		GridDataFactory.fillDefaults().align(SWT.RIGHT, SWT.CENTER).applyTo(libraryPathLabel);
 		libraryPathText = new Text(container, SWT.BORDER);
 		libraryPathText.setText(getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey()));
+		libraryPathText.setToolTipText(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getTooltip());
+		libraryPathText.setEditable(false);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(libraryPathText);
 		Button browseLibraryPathButton = new Button(container, SWT.FLAT);
 		browseLibraryPathButton.setText("Browse...");
 		browseLibraryPathButton.addSelectionListener(new DialogSelectionHandler(libraryPathText, true, getShell()));
+		browseLibraryPathButton.setEnabled(false);
 		GridDataFactory.fillDefaults().applyTo(browseLibraryPathButton);
+		
+		//USER LIBRARIES_ABSOLUTE_PATH
+		Label userLibraryPathLabel = new Label(container, SWT.NORMAL);
+		userLibraryPathLabel.setText(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getLabel());
+		userLibraryPathLabel.setToolTipText(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getTooltip());
+		GridDataFactory.fillDefaults().align(SWT.RIGHT, SWT.CENTER).applyTo(userLibraryPathLabel);
+		userLibraryPathText = new Text(container, SWT.BORDER);
+		userLibraryPathText.setText(getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getKey()));
+		userLibraryPathText.setToolTipText(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getTooltip());
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(userLibraryPathText);
+		Button browseUserLibraryPathButton = new Button(container, SWT.FLAT);
+		browseUserLibraryPathButton.setText("Browse...");
+		browseUserLibraryPathButton.addSelectionListener(new DialogSelectionHandler(userLibraryPathText, true, getShell()));
+		GridDataFactory.fillDefaults().applyTo(browseUserLibraryPathButton);
+		
+		// ARDUINO_USER_LIBRARIES_ABSOLUTE_PATH 
+		Label docoUserLibrariesAbsolutePathLabel = new Label(container, SWT.NORMAL);
+		docoUserLibrariesAbsolutePathLabel.setText(DocometreMessages.ArduinoUserLibrariesAbsolutePath_Label);
+		docoUserLibrariesAbsolutePathLabel.setToolTipText(DocometreMessages.ArduinoUserLibrariesAbsolutePath_Tooltip);
+		GridDataFactory.fillDefaults().align(SWT.RIGHT, SWT.CENTER).applyTo(docoUserLibrariesAbsolutePathLabel);
+		docoUserLibrariesAbsolutePathText = new Text(container, SWT.BORDER);
+		docoUserLibrariesAbsolutePathText.setText(getPreferenceStore().getString(GeneralPreferenceConstants.ARDUINO_USER_LIBRARIES_ABSOLUTE_PATH));
+		docoUserLibrariesAbsolutePathText.setToolTipText(DocometreMessages.ArduinoUserLibrariesAbsolutePath_Tooltip);
+		docoUserLibrariesAbsolutePathText.setEditable(false);
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(docoUserLibrariesAbsolutePathText);
+		Button browseDocoUserLibrariesAbsolutePathButton = new Button(container, SWT.FLAT);
+		browseDocoUserLibrariesAbsolutePathButton.setEnabled(true);
+		browseDocoUserLibrariesAbsolutePathButton.setText("Browse...");
+		browseDocoUserLibrariesAbsolutePathButton.addSelectionListener(new DialogSelectionHandler(docoUserLibrariesAbsolutePathText, true, getShell()));
+		GridDataFactory.fillDefaults().applyTo(browseDocoUserLibrariesAbsolutePathButton);
 		
 		//BUILDER_PATH
 		Label builderPathLabel = new Label(container, SWT.NORMAL);
@@ -163,14 +231,49 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 		//AVRDUDE_PATH
 		Label avrDUDEPathLabel = new Label(container, SWT.NORMAL);
 		avrDUDEPathLabel.setText(ArduinoUnoDACQConfigurationProperties.AVRDUDE_PATH.getLabel());
+		avrDUDEPathLabel.setToolTipText(ArduinoUnoDACQConfigurationProperties.AVRDUDE_PATH.getTooltip());
 		GridDataFactory.fillDefaults().align(SWT.RIGHT, SWT.CENTER).applyTo(avrDUDEPathLabel);
 		avrDUDEPathText = new Text(container, SWT.BORDER);
 		avrDUDEPathText.setText(getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.AVRDUDE_PATH.getKey()));
+		avrDUDEPathText.setToolTipText(ArduinoUnoDACQConfigurationProperties.AVRDUDE_PATH.getTooltip());
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(avrDUDEPathText);
 		Button browseavrDUDEPathButton = new Button(container, SWT.FLAT);
 		browseavrDUDEPathButton.setText("Browse...");
 		browseavrDUDEPathButton.addSelectionListener(new DialogSelectionHandler(avrDUDEPathText, false, getShell()));
 		GridDataFactory.fillDefaults().applyTo(browseavrDUDEPathButton);
+		
+		//USE_ARDUINOCLI
+		useArduinoCLIButton = new Button(container, SWT.CHECK);
+		useArduinoCLIButton.setText(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI.getLabel());
+		useArduinoCLIButton.setToolTipText(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI.getTooltip());
+		GridDataFactory.fillDefaults().align(SWT.RIGHT, SWT.CENTER).applyTo(useArduinoCLIButton);
+		GridDataFactory.fillDefaults().span(3, 1).align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(useArduinoCLIButton);
+		boolean useCLI = "true".equals(getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI.getKey()))?true:false;
+		useArduinoCLIButton.setSelection(useCLI);
+		
+		//ARDUINOCLI_PATH
+		Label arduinoCLIPathLabel = new Label(container, SWT.NORMAL);
+		arduinoCLIPathLabel.setText(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH.getLabel());
+		arduinoCLIPathLabel.setToolTipText(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH.getTooltip());
+		GridDataFactory.fillDefaults().align(SWT.RIGHT, SWT.CENTER).applyTo(arduinoCLIPathLabel);
+		arduinoCLIText = new Text(container, SWT.BORDER);
+		arduinoCLIText.setText(getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH.getKey()));
+		arduinoCLIText.setToolTipText(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH.getTooltip());
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(arduinoCLIText);
+		browsearduinoCLIButton = new Button(container, SWT.FLAT);
+		browsearduinoCLIButton.setText("Browse...");
+		browsearduinoCLIButton.addSelectionListener(new DialogSelectionHandler(arduinoCLIText, false, getShell()));
+		GridDataFactory.fillDefaults().applyTo(browsearduinoCLIButton);
+
+		arduinoCLIText.setEnabled(useCLI);
+		browsearduinoCLIButton.setEnabled(useCLI);
+		useArduinoCLIButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				arduinoCLIText.setEnabled(useArduinoCLIButton.getSelection());
+				browsearduinoCLIButton.setEnabled(useArduinoCLIButton.getSelection());
+			}
+		});
 		
 		//DEVICE_PATH
 		Label devicePathLabel = new Label(container, SWT.NORMAL);
@@ -185,7 +288,7 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 		devicePathButton.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				DeviceSelectionDialog deviceSelectionDialog = new DeviceSelectionDialog(getShell());
+				DeviceSelectionDialog deviceSelectionDialog = new DeviceSelectionDialog(getShell(), DeviceType.USB);
 				if(deviceSelectionDialog.open() == Dialog.OK) {
 					devicePathText.setText(deviceSelectionDialog.getSelection());
 				}
@@ -203,6 +306,34 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 		baudRateCombo.setItems(ArduinoUnoDACQConfigurationProperties.BAUD_RATES);
 		baudRateCombo.setText(getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.BAUD_RATE.getKey()));
 		GridDataFactory.fillDefaults().grab(true, false).span(2, 1).applyTo(baudRateCombo);
+		
+		// Delay time
+		Label delayTimeLabel = new Label(container, SWT.NONE);
+		delayTimeLabel.setText(DocometreMessages.ArduinoDelayTimeAfterSerialPrint_Label);
+		GridDataFactory.fillDefaults().align(SWT.RIGHT, SWT.CENTER).applyTo(delayTimeLabel);
+		delayTimeSpinner = new Spinner(container, SWT.BORDER);
+		delayTimeSpinner.setMinimum(0);
+		delayTimeSpinner.setMaximum(10000);
+		delayTimeSpinner.setSelection(getPreferenceStore().getInt(GeneralPreferenceConstants.ARDUINO_DELAY_TIME_AFTER_SERIAL_PRINT));
+		GridDataFactory.fillDefaults().grab(true, false).span(2, 1).applyTo(delayTimeSpinner);
+		delayTimeSpinner.addMouseWheelListener(new MouseWheelListener() {
+			@Override
+			public void mouseScrolled(MouseEvent e) {
+				int value = delayTimeSpinner.getSelection() + e.count;
+				delayTimeSpinner.setSelection(value); 
+			}
+		});
+		
+		// Revision
+		Label revisionLabel = new Label(container, SWT.NORMAL);
+		revisionLabel.setText(ArduinoUnoDACQConfigurationProperties.REVISION.getLabel());
+		GridDataFactory.fillDefaults().align(SWT.RIGHT, SWT.CENTER).applyTo(revisionLabel);
+		revisionCombo = new Combo(container, SWT.READ_ONLY);
+		revisionCombo.setItems(ArduinoUnoDACQConfigurationProperties.REVISIONS);
+		String value = getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.REVISION.getKey());
+		value = value == null ? ArduinoUnoDACQConfigurationProperties.REVISION_R3 : "".equals(value) ? ArduinoUnoDACQConfigurationProperties.REVISION_R3 : value;
+		revisionCombo.setText(value);
+		GridDataFactory.fillDefaults().grab(true, false).span(2, 1).applyTo(revisionCombo);
 		
 		return container;
 	}

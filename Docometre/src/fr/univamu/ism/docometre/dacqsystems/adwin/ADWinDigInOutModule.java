@@ -43,12 +43,14 @@ package fr.univamu.ism.docometre.dacqsystems.adwin;
 
 import java.io.File;
 
+import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.Property;
+import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
 public class ADWinDigInOutModule extends Module {
 
@@ -83,8 +85,10 @@ public class ADWinDigInOutModule extends Module {
 						if (24<=channelN && channelN<=31) confDioNumber = confDioNumber | 8;
 					}
 				}
-				code = "\nREM ******** Configuration Entrees/Sorties numeriques\n";
-				code = code + "CONF_DIO(" + confDioNumber + ")\n";
+				if(getChannelsNumber() > 0) {
+					code = "\nREM ******** Configuration Entrees/Sorties numeriques\n";
+					code = code + "CONF_DIO(" + confDioNumber + ")\n";
+				}
 			}
 			
 			if(dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.SYSTEM_TYPE).equals(ADWinDACQConfigurationProperties.PRO)){
@@ -113,11 +117,13 @@ public class ADWinDigInOutModule extends Module {
 							}
 						}
 					}
-					int digProg1 = digProg & 65535;
-					int digProg2 = digProg >> 16;
-					code = "\nREM ******** Configuration Entrees/Sorties numeriques\n";
-					code = code + "DIGPROG1(" + getProperty(ADWinModuleProperties.MODULE_NUMBER) + "," + digProg1 + ")\n";
-					code = code + "DIGPROG2(" + getProperty(ADWinModuleProperties.MODULE_NUMBER) + "," + digProg2 + ")\n";
+					if(getChannelsNumber() > 0) {
+						int digProg1 = digProg & 65535;
+						int digProg2 = digProg >> 16;
+						code = "\nREM ******** Configuration Entrees/Sorties numeriques\n";
+						code = code + "DIGPROG1(" + getProperty(ADWinModuleProperties.MODULE_NUMBER) + "," + digProg1 + ")\n";
+						code = code + "DIGPROG2(" + getProperty(ADWinModuleProperties.MODULE_NUMBER) + "," + digProg2 + ")\n";
+					}
 				}
 				
 				if(dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.CPU_TYPE).equals(ADWinDACQConfigurationProperties.II)){
@@ -136,8 +142,10 @@ public class ADWinDigInOutModule extends Module {
 							if (24<=channelN && channelN<=31) digProgNumber = digProgNumber | 8;
 						}
 					}
-					code = "\nREM ******** Configuration Entrees/Sorties numeriques\n";
-					code = code + "P2_DIGPROG(" + getProperty(ADWinModuleProperties.MODULE_NUMBER) + "," + digProgNumber + ")\n";
+					if(getChannelsNumber() > 0) {
+						code = "\nREM ******** Configuration Entrees/Sorties numeriques\n";
+						code = code + "P2_DIGPROG(" + getProperty(ADWinModuleProperties.MODULE_NUMBER) + "," + digProgNumber + ")\n";
+					}
 				}
 			}
 		}
@@ -181,6 +189,8 @@ public class ADWinDigInOutModule extends Module {
 				if(isInput && !includeSegmentPassedFor_DIGIN){
 					includeSegmentPassedFor_DIGIN = true;
 					String temp = dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH) + File.separator;
+					boolean useDocker = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_DOCKER);
+					if(useDocker) temp = "";
 					temp = temp + "CALLDIGIN" + dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.SYSTEM_TYPE) + suffix + ".INC\n";
 					temp =	ADWinProcess.processPathForMacOSX(temp);
 					code = code + "#INCLUDE " + temp;
@@ -188,6 +198,8 @@ public class ADWinDigInOutModule extends Module {
 				else if(!isInput && !includeSegmentPassedFor_DIGOUT){
 					includeSegmentPassedFor_DIGOUT = true;
 					String temp = dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH) + File.separator;
+					boolean useDocker = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_DOCKER);
+					if(useDocker) temp = "";
 					temp = temp + "CALLDIGOUT" + dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.SYSTEM_TYPE) + suffix + ".INC\n";
 					temp =	ADWinProcess.processPathForMacOSX(temp);
 					code = code + "#INCLUDE " + temp;
@@ -227,9 +239,11 @@ public class ADWinDigInOutModule extends Module {
 					if (!isStimuli && isTransfered){
 						code = code + "TRANSFERT_" + name + " = " + frequencyRatio + "\n";
 						code = code + "FIFO_CLEAR(" + transferNumber + ")\n";
+						code = code + "PAR_" + transferNumber + " = 0\n";
 					}
 					if(isStimuli) {
 						code = code + "TRANSFERT_" + name + " = " + frequencyRatio + "\n";
+						code = code + "PAR_" + transferNumber + " = 0\n";
 					}
 				}
 			}
@@ -249,16 +263,16 @@ public class ADWinDigInOutModule extends Module {
 					
 			if (segment==ADWinCodeSegmentProperties.RECOVERY){
 				if (isStimuli && !isInput){
-					code = code + "\nIF (TRANSFERT_" + name + " = " + frequencyRatio + ") THEN\n";
-					code = code + "\tTRANSFERT_" + name + " = 0\n";
-					code = code + "\tIF (FIFO_FULL(" +  transferNumber + ") = 0) THEN\n";
-					code = code + "\t\tPAR_" +  transferNumber + " = PAR_" +  transferNumber + " + 1\n";
-					code = code + "\t\tFIFO_CLEAR(" +  transferNumber + ")\n";
-					code = code + "\tELSE\n";
-					code = code + "\t\t" + name + " = " + name + "_TAB\n";
-					code = code + "\tENDIF\n";
-					code = code + "ENDIF\n";
-					code = code + "INC(TRANSFERT_" + name + ")\n";
+//					code = code + "\nIF (TRANSFERT_" + name + " = " + frequencyRatio + ") THEN\n";
+//					code = code + "\tTRANSFERT_" + name + " = 0\n";
+//					code = code + "\tIF (FIFO_FULL(" +  transferNumber + ") = 0) THEN\n";
+//					code = code + "\t\tPAR_" +  transferNumber + " = PAR_" +  transferNumber + " + 1\n";
+//					code = code + "\t\tFIFO_CLEAR(" +  transferNumber + ")\n";
+//					code = code + "\tELSE\n";
+//					code = code + "\t\t" + name + " = " + name + "_TAB\n";
+//					code = code + "\tENDIF\n";
+//					code = code + "ENDIF\n";
+//					code = code + "INC(TRANSFERT_" + name + ")\n";
 				}	
 			}
 			
@@ -382,7 +396,7 @@ public class ADWinDigInOutModule extends Module {
 				}
 			}
 		}	*/
-		GenerationDelegate.generate(this, (ADWinProcess) process);
+		GenerationDelegate.generate(null, this, (ADWinProcess) process);
 	}
 	
 	public void reset() {

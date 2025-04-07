@@ -48,6 +48,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
@@ -93,6 +94,7 @@ public class CompileProcessAction extends Action implements ISelectionListener, 
 			try {
 				String message = NLS.bind(DocometreMessages.CompileProcessAction_JobMessage, resource.getName().replaceAll(Activator.processFileExtension, ""));
 				monitor.beginTask(message, 3);
+				process.getScript().clearCodeGenerationStatus();
 				process.compile(monitor);
 			} catch (Exception e) {
 				exception = e;
@@ -106,6 +108,8 @@ public class CompileProcessAction extends Action implements ISelectionListener, 
 				Activator.logInfoMessage(message, CompileProcessAction.class);
 				return Status.OK_STATUS;
 			} else {
+				if(exception instanceof OperationCanceledException) 
+					return Status.CANCEL_STATUS;
 				String message = NLS.bind(DocometreMessages.CompileProcessAction_CompileKO, resource.getName().replaceAll(Activator.processFileExtension, ""));
 				return new Status(Status.ERROR, Activator.PLUGIN_ID, message, exception);
 			}
@@ -124,6 +128,10 @@ public class CompileProcessAction extends Action implements ISelectionListener, 
 		setEnabled(false);
 		setText(DocometreMessages.CompileProcessAction_Text);
 		setToolTipText(DocometreMessages.CompileProcessAction_Text);
+	}
+	
+	public void setSelection(IFile[] resources) {
+		this.resources = resources;
 	}
 	
 	@Override

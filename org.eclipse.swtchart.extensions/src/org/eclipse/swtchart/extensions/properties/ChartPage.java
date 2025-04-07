@@ -107,11 +107,11 @@ public class ChartPage extends AbstractPage {
 
 		Composite panel = new Composite(parent, SWT.NONE);
 		panel.setLayout(new GridLayout(2, false));
-		createLabelControl(panel, "Background in plot area:");
+		createLabelControl(panel, "Plot area background color :");
 		backgroundInPlotAreaButton = createColorButtonControl(panel);
-		createLabelControl(panel, "Background:");
+		createLabelControl(panel, "Background color:");
 		backgroundButton = createColorButtonControl(panel);
-		orientationButton = createCheckBoxControl(panel, "Vertical orientation:");
+		orientationButton = createCheckBoxControl(panel, "Vertical orientation");
 	}
 
 	/**

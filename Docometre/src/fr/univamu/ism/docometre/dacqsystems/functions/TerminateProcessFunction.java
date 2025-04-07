@@ -112,7 +112,8 @@ public final class TerminateProcessFunction  extends GenericFunction implements 
 	}
 	
 	@Override
-	public String getCode(Object context, Object step) {
+	public String getCode(Object context, Object step, Object...objects) {
+		if(!isActivated()) return GenericFunction.getCommentedCode(this, context);
 		String code = "";
 		Process process = (Process) context;
 		if(step == ScriptSegmentType.INITIALIZE || step == ScriptSegmentType.LOOP || step == ScriptSegmentType.FINALIZE) {
@@ -130,7 +131,9 @@ public final class TerminateProcessFunction  extends GenericFunction implements 
 				code = code + "\n" + indent + "// Terminate Process Function\n";
 				String temporaryCode = FunctionFactory.getProperty(process, functionFileName, FUNCTION_CODE);
 				String leftOperand  = getProperty(leftOperandKey, "");
-				String operator  = getProperty(operatorKey, "");
+				String operator  = getProperty(operatorKey, " == ");
+				if(Operator.IS_EQUAL_TO.getValue().equals(operator)) operator = " == ";
+				if(Operator.IS_NOT_EQUAL_TO.getValue().equals(operator)) operator = " != ";
 				String rightOperand  = getProperty(rightOperandKey, "");
 				temporaryCode = indent + temporaryCode.replaceAll(leftOperandKey, leftOperand).replaceAll(operatorKey, operator).replaceAll(rightOperandKey, rightOperand);
 				temporaryCode = temporaryCode.replaceAll("\n", "\n" + indent);

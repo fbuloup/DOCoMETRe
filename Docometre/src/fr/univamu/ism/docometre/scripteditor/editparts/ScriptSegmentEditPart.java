@@ -166,6 +166,7 @@ public class ScriptSegmentEditPart extends AbstractGraphicalEditPart implements 
 			getViewer().setSelection(new StructuredSelection(editParts));
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public Object getAdapter(@SuppressWarnings("rawtypes") Class key) {
 		if (key == SnapToHelper.class) {

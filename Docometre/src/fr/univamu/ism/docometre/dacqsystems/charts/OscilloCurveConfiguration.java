@@ -50,15 +50,15 @@ import fr.univamu.ism.docometre.dacqsystems.ChannelObserver;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.Property;
 import fr.univamu.ism.docometre.dacqsystems.PropertyObserver;
-import fr.univamu.ism.rtswtchart.RTSWTOscilloSerie;
+import fr.univamu.ism.nrtswtchart.RTSWTOscilloSerie;
 
-public class OscilloCurveConfiguration extends CurveConfiguration implements PropertyObserver, ChannelObserver {
+public class OscilloCurveConfiguration extends CurveConfiguration implements PropertyObserver, ChannelObserver, OneChannelCurve {
 
 	private static final long serialVersionUID = 1L;
 	
 	private Channel channel;
 	
-	transient private RTSWTOscilloSerie oscilloSerie;
+	transient private RTSWTOscilloSerie serie;
 	transient double sampleFrequency;
 	transient private double previousTime = 0;
 
@@ -68,6 +68,7 @@ public class OscilloCurveConfiguration extends CurveConfiguration implements Pro
 		initializeObservers();
 	}
 	
+	@Override
 	public Channel getChannel() {
 		return channel;
 	}
@@ -83,12 +84,6 @@ public class OscilloCurveConfiguration extends CurveConfiguration implements Pro
 		channel.addChannelObserver((ChannelObserver)this);
 		sampleFrequency = Double.parseDouble(channel.getProperty(ChannelProperties.SAMPLE_FREQUENCY));
 	}
-	
-//	@Override
-//	public void clearObservers() {
-//		System.out.println("clearObservers in OscilloCurveConfiguration");
-//		channel.removeObserver(this);
-//	}
 
 	@Override
 	public void update(Property property, Object newValue, Object oldValue, AbstractElement element) {
@@ -123,14 +118,14 @@ public class OscilloCurveConfiguration extends CurveConfiguration implements Pro
 		return object == channel;
 	}
 
-	public void setSerie(RTSWTOscilloSerie oscilloSerie) {
-		this.oscilloSerie = oscilloSerie;
+	public void setSerie(RTSWTOscilloSerie serie) {
+		this.serie = serie;
 		previousTime = 0;
 	}
 
 	@Override
 	public void update(FloatBuffer floatBuffer, String channelID) {
-		if(oscilloSerie != null /*&& oscilloSerie.getId().equals(channelID)*/) {
+		if(serie != null /*&& oscilloSerie.getId().equals(channelID)*/) {
 			floatBuffer.flip();
 			float[] values = new float[floatBuffer.remaining()];
 			floatBuffer.get(values);
@@ -144,9 +139,10 @@ public class OscilloCurveConfiguration extends CurveConfiguration implements Pro
 					timeValues[i] = previousTime;
 					previousTime = timeValues[i] + 1f/sampleFrequency;
 				}
-				oscilloSerie.addPoints(timeValues, doubleValues);
+				serie.addPoints(timeValues, doubleValues);
 			}
 		}
+		
 	}
 
 }

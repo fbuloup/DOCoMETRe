@@ -83,6 +83,7 @@ public class NewFolderAction extends Action implements ISelectionListener, IWork
 		setText(DocometreMessages.NewFolderAction_Text);
 		setToolTipText(DocometreMessages.NewFolderAction_Tooltip);
 		setImageDescriptor(Activator.getImageDescriptor(IImageKeys.FOLDER_ICON));
+		setEnabled(false);
 	}
 	
 	@Override
@@ -114,9 +115,16 @@ public class NewFolderAction extends Action implements ISelectionListener, IWork
 			resource = null;
 			if (selection instanceof IStructuredSelection) {
 				Object object = ((IStructuredSelection) selection).getFirstElement();
-				if(object instanceof IResource)
-					if(ResourceType.isFolder((IResource) object) || ResourceType.isExperiment((IResource) object)) resource = (IContainer) object;
 				if(((IStructuredSelection) selection).isEmpty() && part instanceof SubjectsView) resource = (IContainer) SelectedExprimentContributionItem.selectedExperiment;
+				else {
+					if(object instanceof IResource) {
+						if(ResourceType.isFolder((IResource) object) || ResourceType.isExperiment((IResource) object)) resource = (IContainer) object;
+						else if(part instanceof SubjectsView) {
+							resource = ((IResource) object).getParent();
+						}
+						
+					}
+				}
 			}
 			setEnabled(resource != null);
 		}

@@ -91,6 +91,12 @@ public abstract class Block implements Serializable {
 	private int height = 30;
 	
 	/**
+	 * It true, this block will taken in account.
+	 * It false, this block will be ignored.
+	 */
+	private boolean activated = true;
+	
+	/**
 	 * The parent script that is the container of this block
 	 */
 	private Script script;
@@ -131,10 +137,11 @@ public abstract class Block implements Serializable {
 	
 	//Contructors
 	public Block() {
-
+		activated = true;
 	}
 
 	public Block(Script script, String name) {
+		this();
 		this.script = script;
 		this.name = name;
 	}
@@ -186,6 +193,14 @@ public abstract class Block implements Serializable {
 
 	public void setHeight(int height) {
 		this.height = height;
+	}
+	
+	public boolean isActivated() {
+		return activated;
+	}
+
+	public void setActivated(boolean activated) {
+		this.activated = activated;
 	}
 
 	protected List<Boolean> getPreviousBlocksIsLastBlockInDoBlock() {
@@ -352,7 +367,7 @@ public abstract class Block implements Serializable {
 	 * as the generated code depends on the concrete type of the block
 	 * @return the code
 	 */
-	public abstract String getCode(Object context, Object step);
+	public abstract String getCode(Object context, Object step, Object...objects);
 
 	/**
 	 * Helper method that return size and location as a draw2D rectangle
@@ -411,5 +426,5 @@ public abstract class Block implements Serializable {
 	public IStatus getStatus() {
 		return status;
 	}
-
+	
 }

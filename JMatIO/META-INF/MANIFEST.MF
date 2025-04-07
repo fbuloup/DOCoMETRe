@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: JMatIO
+Bundle-SymbolicName: JMatIO
+Bundle-Version: 1.0.0.qualifier
+Bundle-ClassPath: jmatio-1.0.jar
+Export-Package: com.jmatio.common,
+ com.jmatio.io,
+ com.jmatio.types
+Bundle-RequiredExecutionEnvironment: JavaSE-21
+Automatic-Module-Name: JMatIO

@@ -42,21 +42,16 @@
 package fr.univamu.ism.docometre.actions;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.IOperationHistory;
+import org.eclipse.core.commands.operations.IUndoContext;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.viewers.ISelection;
@@ -83,7 +78,8 @@ public class RenameResourceAction extends Action implements ISelectionListener, 
 	private IResource resource;
 	private IWorkbenchWindow window;
 	protected IStatus status;
-
+	private IUndoContext undoContext;
+	
 	public RenameResourceAction(IWorkbenchWindow window) {
 		setId("RenameResourceAction"); //$NON-NLS-1$
 		operationHistory = PlatformUI.getWorkbench().getOperationSupport().getOperationHistory();
@@ -120,39 +116,18 @@ public class RenameResourceAction extends Action implements ISelectionListener, 
 					}
 				}
 				
-				IStatus status = operationHistory.execute(new RenameResourceOperation(DocometreMessages.RenameAction_Text, resource, inputDialog.getValue(), true), null, null);
+				IStatus status = operationHistory.execute(new RenameResourceOperation(DocometreMessages.RenameAction_Text, resource, inputDialog.getValue(), true, inputDialog.isAlsoRenameDataFiles(), undoContext), null, null);
 				
-				if(status.isOK()) {
-					// Retrieve new resource
-					String fileExtension = "";
-					if(resource.getFileExtension() != null) fileExtension = "." + resource.getFileExtension();
-					IResource oldResource = resource;
-					resource = resource.getParent().findMember(inputDialog.getValue() + fileExtension);
-					if(resource != null && resource.exists())
-						if((ResourceType.isSubject(resource) || ResourceType.isSession(resource) || ResourceType.isTrial(resource)) && inputDialog.isAlsoRenameDataFiles()) {
-							Job renameDataFilesJob = new Job(DocometreMessages.RenameDataFileJobTitle) {
-								@Override
-								protected IStatus run(IProgressMonitor monitor) {
-									try {
-										monitor.beginTask(DocometreMessages.CollectDataFileTaskTitle, IProgressMonitor.UNKNOWN);
-										ArrayList<IResource> dataFiles = new ArrayList<IResource>();
-										populateDataFilesToRename((IContainer)resource, dataFiles);
-										monitor.beginTask(DocometreMessages.RenameDataFileTaskTitle, dataFiles.size());
-										return renameDataFiles(resource, oldResource, monitor);
-									} catch (CoreException e) {
-										e.printStackTrace();
-										Activator.logErrorMessageWithCause(e);
-									}
-									return Status.OK_STATUS;
-								}
-							};
-							renameDataFilesJob.schedule();
+				if(!status.isOK()) {
+					if(status instanceof MultiStatus) {
+						IStatus[] statuses = ((MultiStatus)status).getChildren();
+						for (IStatus localStatus : statuses) {
+							Activator.logErrorMessage(localStatus.getMessage());
 						}
-				} else {
-					Activator.logErrorMessage(status.getMessage());
-				}
-				
-				
+					} else {
+						Activator.logErrorMessage(status.getMessage());
+					}
+				} 
 			} catch (Exception e) {
 				e.printStackTrace();
 				Activator.logErrorMessageWithCause(e);
@@ -161,113 +136,15 @@ public class RenameResourceAction extends Action implements ISelectionListener, 
 
 	}
 	
-	private IStatus renameDataFiles(IResource newResource, IResource oldResource, IProgressMonitor monitor) throws CoreException {
-		// Collect all data files
-		ArrayList<IResource> dataFiles = new ArrayList<IResource>();
-		populateDataFilesToRename((IContainer)newResource, dataFiles);
-		// Rename data files
-		for (IResource dataFile : dataFiles) {
-			boolean rename = false;
-			String[] segments = dataFile.getName().split("\\.");
-			
-			// If only three segments : 
-			//      channelName.Tnn.samples -> nothing to rename
-			// continue to next data file
-			if(segments.length == 3 ) continue;
-			
-			// If resource is trial, rename segment n-2 and continue to next data file
-			if (ResourceType.isTrial(newResource)) {
-				String trialNumber = oldResource.getName().replaceAll(DocometreMessages.Trial, "");
-				String trialSegment = segments[segments.length - 2];
-				
-				if(trialSegment.replaceAll("T", "").equals(trialNumber)) {
-					rename = true;
-					trialNumber = newResource.getName().replaceAll(DocometreMessages.Trial, "");
-					trialSegment = trialSegment.replaceAll("\\d+$", trialNumber);
-					segments[segments.length - 2] = trialSegment;
-				}
-			}
-			// If four segments : 
-			//      Prefix.channelName.Tnn.samples
-			// or 
-			//      channelName.SessionName.Tnn.samples
-			if(segments.length == 4) {
-				// if resource is subject, try to rename first segment
-				if (ResourceType.isSubject(newResource)) {
-					if(oldResource.getName().equals(segments[0])) {
-						rename = true;
-						segments[0] = newResource.getName();
-					}
-				}
-				// if resource is session, try to rename second segment
-				if (ResourceType.isSession(newResource)) {
-					if(oldResource.getName().equals(segments[1])) {
-						rename = true;
-						segments[1] = newResource.getName();
-					}
-				}
-			}
-			// If five segments : 
-			// 		Prefix.channelName.SessionName.Tnn.samples
-			if (segments.length == 5) {
-				// if resource is subject, rename first segment
-				if (ResourceType.isSubject(newResource)) {
-					if(oldResource.getName().equals(segments[0])) {
-						rename = true;
-						segments[0] = newResource.getName();
-					}
-				}
-				// if resource is session, rename third segment
-				if (ResourceType.isSession(newResource)) {
-					if(oldResource.getName().equals(segments[2])) {
-						rename = true;
-						segments[2] = newResource.getName();
-					}
-				}
-			}
-			if(rename) {
-				String newName = "";
-				for (int i = 0; i < segments.length; i++) {
-					newName += segments[i];
-					if(i < segments.length - 1) newName += ".";
-				}
-				IPath newPath = dataFile.getParent().getFullPath().append(newName);
-				
-				PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
-					@Override
-					public void run() {
-						try {
-							status = operationHistory.execute(new RenameResourceOperation(DocometreMessages.RenameAction_Text, dataFile, newPath.removeFileExtension().lastSegment(), false), monitor, null);
-						} catch (ExecutionException e) {
-							Activator.logErrorMessageWithCause(e);
-							e.printStackTrace();
-						}
-					}
-				});
-				
-				if(!status.isOK()) return status;
-				
-			}
-			monitor.worked(1);
-		}
-		
-		return Status.OK_STATUS;
-	}
-
-	private void populateDataFilesToRename(IContainer resource, ArrayList<IResource> dataFiles) throws CoreException {
-		IResource[] childrenResources = resource.members();
-		for (IResource childResource : childrenResources) {
-			if(ResourceType.isSamples(childResource)) dataFiles.add(childResource);
-			if((ResourceType.isSession(resource) || ResourceType.isSubject(resource)) && (childResource instanceof IContainer)) populateDataFilesToRename((IContainer)childResource, dataFiles);
-		}
-	}
-
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
 		setEnabled(false);
 		if (part instanceof ExperimentsView || part instanceof SubjectsView) {
 			if (selection instanceof IStructuredSelection)
 				resource = (IResource) ((IStructuredSelection) selection).getFirstElement();
-			setEnabled(resource != null);
+			setEnabled(resource != null && !ResourceType.isChannel(resource));
+			undoContext = null;
+			if(part instanceof ExperimentsView) undoContext = ExperimentsView.experimentsViewUndoContext;
+			if(part instanceof SubjectsView) undoContext = SubjectsView.subjectsViewUndoContext;
 		}
 	}
 
@@ -289,6 +166,9 @@ public class RenameResourceAction extends Action implements ISelectionListener, 
 			} 
 			if (ResourceType.isSamples(resource)){
 				regexp = "^([a-zA-Z]+(\\w|\\.)*)+$"; //$NON-NLS-1$
+			} 
+			if (ResourceType.isBatchDataProcessing(resource) || ResourceType.isDataProcessing(resource)){
+				regexp = "^([a-zA-Z]+(\\w|\\.|_)*)+$"; //$NON-NLS-1$
 			} 
 		}
 		

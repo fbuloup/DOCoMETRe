@@ -49,6 +49,17 @@ public final class DocometreMessages extends NLS {
 	
 	private static final String BUNDLE_NAME = "fr.univamu.ism.docometre.messages";//$NON-NLS-1$
 
+	/* General */
+	public static String OperationCanceledByUser;
+	public static String WorkspaceAlreadyUsed;
+	public static String WorkspaceNotSpecified;
+	public static String LaunchNewDocometreInstance;
+	public static String CantLaunchNewDocometreInstance;
+	public static String UnableDeleteLockerFile;
+	public static String UnableCreateLockerFile;
+	public static String UnableCreateMetadataFolder;
+	public static String TimedOut;
+
 	/*Experiment View*/
 	public static String ExperimentsViewTitle;
 	public static String NoAssociatedProcessFile;
@@ -71,15 +82,21 @@ public final class DocometreMessages extends NLS {
 	/*Preferences*/
 	public static String GeneralPreferences_Description;
 	public static String GeneralPreferences_UndoLimit;
+	public static String GeneralPreferences_XMLSerialization;
 	public static String GeneralPreferences_ConfirmUndo;
 	public static String GeneralPreferences_ShowWorkspaceDialog;
 	public static String GeneralPreferences_ShowTraditionalTabs;
 	public static String GeneralPreferences_WineFileLocation;
-	
+	public static String GeneralPreferences_WineDocker;
+	public static String GeneralPreferences_UseDocker;
+	public static String GeneralPreferences_BuildAutomatically;
+	public static String TrialsParameters;
+	public static String Charts2DOptions;
 	
 	public static String RootPreferencePage_Label;
 	public static String DefaultADWinSystemPreference_Description;
 	public static String DefaultArduinoUnoSystemPreference_Description;
+	public static String ArduinoDelayTimeAfterSerialPrint_Label;
 //	public static String ADWinDefaultSystemPreferencePage_Label;
 //	public static String NIDefaultSystemPreferencePage_Label;
 	
@@ -125,6 +142,7 @@ public final class DocometreMessages extends NLS {
 	public static String OpenAction_ImpossibleToLoadProcessWhenNoAssociatedDAQ;
 	public static String AssociateWithAction_Text;
 	public static String CollapseAllAction_Text;
+	public static String LinkWithEditorAction_Text;
 	public static String CompileProcessAction_Text;
 	public static String CompileProcessAction_JobTitle;
 	public static String CompileProcessAction_JobMessage;
@@ -169,6 +187,8 @@ public final class DocometreMessages extends NLS {
 	public static String Trial;
 	public static String Manual;
 	public static String Auto;
+	public static String StartPrefix;
+	public static String ValidatePrefix;
 
 	/*New Resource Wizard*/
 	public static String NewResourceWizardWindowTitle;
@@ -231,12 +251,34 @@ public final class DocometreMessages extends NLS {
 	public static String ImportResourceWizardErrorMessage2;
 	public static String ImportResourceWizardErrorMessage3;
 	public static String NewSubjectFromADWDataFileLabel;
+	public static String NewSubjectFromOptiTrackDataFileLabel;
+	public static String NewSubjectFromColumnDataFile;
+	public static String ImportResourceWizardOptitrack1Message;
+	public static String ImportResourceWizardDataColumnFilesMessage;
 	public static String ImportingExperimentFromCompressedFile;
 	public static String CreatingNewExperimentInWorkspace;
 	public static String RefreshingWorkspace;
 	public static String AddingProjectToBuilderAndRefreshingExperiment;
 	public static String ApplyingProperty;
 	public static String UnzippingFile;
+	public static String ImportErrorMessage;
+	public static String ImportErrorDialogTitle;
+	public static String DataProcessingTitle;
+	public static String Sessions_Label;
+	public static String ImportResourceWizardErrorMessage4;
+	public static String ImportResourceWizardErrorMessage5;
+	public static String ImportResourceWizardErrorMessage6;
+	public static String ImportResourceWizardErrorMessage7;
+	
+	public static String ConfigureSeparatorTitle;
+	public static String SeparatorForMessage;
+	public static String ConfigureHeaderTitle;
+	public static String ConfigureHeaderMessage;
+	public static String ChannelNameTitle;
+	public static String ChannelFrequencyTitle;
+	public static String ChannelNameMessage;
+	public static String ChannelFrequencyMessage;
+	
 	
 	/*New Folder Page*/
 	public static String NewFolderWizard_PageName;
@@ -253,6 +295,11 @@ public final class DocometreMessages extends NLS {
 	public static String NewParametersFileWizard_PageName;
 	public static String NewParametersFileWizard_PageTitle;
 	public static String NewParametersFileWizard_PageMessage;
+	
+	/*New Custom function Page*/
+	public static String NewCustomFunctionWizard_PageName;
+	public static String NewCustomFunctionWizard_PageTitle;
+	public static String NewCustomFunctionWizard_PageMessage;
 
 	/*Workspace Dialog*/
 	public static String ChooseWorkspaceDialog_dialogTitle;
@@ -331,6 +378,7 @@ public final class DocometreMessages extends NLS {
 	public static String LoopEditorTitle;
 	public static String EndEditorTitle;
 	public static String ArduinoUnoSourceCodeEditorTitle;
+	public static String ToggleActivatedState;
 
 	/* Dialogs */
 	public static String BlockDialogShellTitle;
@@ -363,6 +411,33 @@ public final class DocometreMessages extends NLS {
 	public static String OscilloChartLabel;
 	public static String ScrollChartLabel;
 	public static String XYChartLabel;
+	public static String GaugeChartLabel;
+	public static String TankChartLabel;
+	public static String ImageChartLabel;
+	public static String ImageChartFileNameLabel;
+	public static String ImageChartFileNameTooltip;
+	
+	public static String rangeMaxAmplitude_Title;
+	public static String rangeMaxAmplitude_Tooltip;
+	public static String rangeMinAmplitude_Title;
+	public static String rangeMinAmplitude_Tooltip;
+	public static String ShowLow_Title;
+	public static String ShowLow_Tooltip;
+	public static String ShowLowLow_Title;
+	public static String ShowLowLow_Tooltip;
+	public static String ShowHigh_Title;
+	public static String ShowHigh_Tooltip;
+	public static String ShowHighHigh_Title;
+	public static String ShowHighHigh_Tooltip;;
+	public static String LevelLow_Title;
+	public static String LevelLow_Tooltip;
+	public static String LevelLowLow_Title;
+	public static String LevelLowLow_Tooltip;
+	public static String LevelHigh_Title;
+	public static String LevelHigh_Tooltip;
+	public static String LevelHighHigh_Title;
+	public static String LevelHighHigh_Tooltip;
+	
 	public static String ChartsConfigurationSection_Title;
 	public static String ChartsConfigurationSectionDescription;
 	public static String DeleteChartsToolItem_Tooltip; 
@@ -382,6 +457,20 @@ public final class DocometreMessages extends NLS {
 	public static String MaxAmplitude_Tooltip;
 	public static String MinAmplitude_Title;
 	public static String MinAmplitude_Tooltip;
+	public static String Font_Title;
+	public static String Font_Tooltip;
+	public static String DisplayValues_Title;
+	public static String DisplayValues_Tooltip;
+	public static String DisplayValuesCurves_Title;
+	public static String DisplayValuesCurves_Tooltip;
+	public static String Size_Title;
+	public static String Size_Tooltip;
+	public static String Bold_Title;
+	public static String Bold_Tooltip;
+	public static String Italic_Title;
+	public static String Italic_Tooltip;
+	public static String HistorySize_Title;
+	public static String HistorySize_Tooltip;
 
 	public static String xMaxAmplitude_Title;
 	public static String xMaxAmplitude_Tooltip;
@@ -418,13 +507,29 @@ public final class DocometreMessages extends NLS {
 	public static String DeleteCurvesDialog_Title;
 	public static String DeleteCurvesDialog_Message;
 	public static String AddCurvesDialog_ShellTitle;
+	public static String NoSubjectsLoadedMessage;
 	public static String AddCurvesDialog_Title;
 	public static String AddCurvesDialog_Message;
+	public static String ErrorValueAlreadyUsed;
+	public static String ReferenceValueDialogTitle;
+	public static String ReferenceValueDialogMessage;
 	public static String AssociatedProcessLabel;
 	public static String XChannelName_Label;
 	public static String XChannelName_Tooltip;
 	public static String YChannelName_Label;
 	public static String YChannelName_Tooltip;
+	
+	/* Charts preference */
+	public static String SHOW_CURSOR;
+	public static String SHOW_MARKER;
+	public static String UseSameColorForSameCategory;
+	public static String Categories;
+	
+	/* Redirect console preferences */
+	public static String REDIRECT_GROUP_TITLE;
+	public static String REDIRECT_BUTTON_TITLE;
+	public static String REDIRECT_FILE_ABSOLUTE_PATH;
+	public static String REDIRECT_LABEL_TITLE;
 	
 	/* Acquire perspective toolbar */
 	public static String ItemToRun_Label;
@@ -541,7 +646,10 @@ public final class DocometreMessages extends NLS {
 	public static String PortNumberLabel;
 	public static String StringValueLabel;
 	public static String ASCIICodeValueLabel;
-	public static String CRLFValueLabel;
+	public static String CRValueLabel;
+	public static String LFValueLabel;
+	public static String CRValueToolTip;
+	public static String LFValueToolTip;
 	
 	/* ADwin serial output function */
 	public static String ASCIICodeVariableNameLabel;
@@ -645,23 +753,50 @@ public final class DocometreMessages extends NLS {
 	public static String IsNotAValidValue;
 	public static String CustomerFunctionsMenuLabel;
 	
+	// ADwin pref page
+	public static String ADWinUserLibrariesAbsolutePath_Label;
+	public static String ADWinUserLibrariesAbsolutePath_Tooltip;
+	
+	// Arduino pref page
+	public static String ArduinoUserLibrariesAbsolutePath_Label;
+	public static String ArduinoUserLibrariesAbsolutePath_Tooltip;
+	
 	// Math Engine
 	public static String MathEngineStartStop;
 	public static String MathEngineStarting;
 	public static String MathEngineStarted;
 	public static String MathEngineStopping;
 	public static String MathEngineStopped;
-	public static String WaitingForMatlab;
+	public static String WaitingForMathEngine;
+	public static String PleaseWait;
+	public static String UpdateCacheChannels;
 	
 	// Math Engine Preferences
 	public static String MathEngineLabel;
+	public static String AlwaysLoadFromSavedData;
+	public static String AlwaysLoadFromSavedData_Tooltip;
+	public static String LoadSubjectFromRawDataDialog_Title;
+	public static String LoadSubjectFromRawDataDialog_Message;
+	public static String PaddWithLastValueRatherThanZero;
+	public static String PaddWithLastValueRatherThanZero_Tooltip;
 	
 	// Matlab preferences 
 	public static String MatlabPreferences_Description;
 	public static String MatlabEngineShowMatlabWindow;
 	public static String MatlabEngineTimeOut;
 	public static String MatlabEngineScriptLocation;
+	public static String MatlabEngineUserScriptLocation;
 	public static String MatlabEngineLocation;
+	public static String MatlabLicenceLocation;
+	
+	// Python preferences 
+	public static String PythonPreferences_Description;
+	public static String PythonEngineTimeOut;
+	public static String PythonEngineScriptLocation;
+	public static String PythonEngineUserScriptLocation;
+	public static String PythonEngineLocation;
+	public static String Py4JPythonPortNumber;
+	public static String Py4JJavaPortNumber;
 	
 	// Export to zip or tar
 	public static String DataTransfer_errorExporting;
@@ -682,6 +817,12 @@ public final class DocometreMessages extends NLS {
 	public static String ExportExperimentTaskTitle;
 	public static String createPropertiesFile;
 	public static String WritingProperties;
+	public static String ExportOnlySelectedSubjectTitle;
+	public static String ExportWithDataTitle;
+	public static String PleaseSelectAnExperimentMessage;
+	public static String PleaseSelectADestinationMessage;
+	public static String DestinationAlreadyExistsMessage;
+	public static String ExportWarningMessage;
 	
 	//
 	public static String UndoneTrials;
@@ -725,9 +866,14 @@ public final class DocometreMessages extends NLS {
 	
 	public static String LoadingSubject;
 	public static String UnloadingSubject;
+	public static String AutoUnLoadSubjectTitle;
 	public static String Done;
 	
 	public static String PleaseStartMathEngineFirst;
+	
+	// Builder
+	public static String NothingToBuild;
+	public static String NoDACQFileAssociatedToProcess;
 	
 	// Channel Editor
 	public static String MarkersGroupTitle;
@@ -736,8 +882,8 @@ public final class DocometreMessages extends NLS {
 	public static String TrialNumberLabel;
 	public static String XMarkerValueLabel;
 	public static String YMarkerValueLabel;
-	public static String FieldsGroupTitle;
-	public static String FieldsNameLabel;
+	public static String FeaturesGroupTitle;
+	public static String FeaturesNameLabel;
 	public static String TrialsGroupLabel;
 	public static String FrontCutLabel;
 	public static String EndCutLabel;
@@ -748,54 +894,277 @@ public final class DocometreMessages extends NLS {
 	public static String TrialsNumberLabel2;
 	public static String SignalNameLabel;
 	public static String DeleteSelectedMarkersGroupTooltip;
+	public static String CreateNewMarkersGroupTooltip;
 	public static String DeleteSelectedMarkerTrialTooltip;
-	public static String DeleteSelectedFieldTooltip;
+	public static String DeleteSelectedFeatureTooltip;
 	public static String CategoryCriteriaLabel;
+	public static String CreateNewMarkersGroupDialogTitle;
+	public static String CreateNewMarkersGroupDialogMessage;
+	public static String DeleteMarkerDialogTitle;
+	public static String DeleteMarkerDialogMessage;
+	public static String DeleteMarkersGroupDialogTitle;
+	public static String DeleteMarkersGroupDialogMessage;
+	public static String DeleteFeatureDialogTitle;
+	public static String DeleteFeatureDialogMessage;
+	public static String MarkerLabelInvalid;
+	public static String SameColorForSameTrialLabel;
 
 	// Data processing editor wizard
 	public static String NewDataProcessingWizard_PageTitle;
 	public static String NewDataProcessingWizard_PageMessage;
-	public static String NewDataProcessingizard_PageName;
-
+	public static String NewDataProcessingWizard_PageName;
+	
+	// Batch data processing editor wizard
+	public static String NewBatchDataProcessingWizard_PageTitle;
+	public static String NewBatchDataProcessingWizard_PageMessage;
+	public static String NewBatchDataProcessingWizard_PageName;
+	
+	// XY Chart 
+	public static String NewXYChartWizard_PageTitle;
+	public static String NewXYChartWizard_PageMessage;
+	public static String NewXYChartWizard_PageName;
+	public static String GraphicalCutsTitle;
+	public static String ScaleValueTitle;
+	public static String ApplyTitle;
+	public static String AddNewCurveToolTip;
+	public static String RemoveCurveToolTip;
+	public static String AxisSelectionDialogTitle;
+	public static String XAxisSelectionDialogSubTitle;
+	public static String YAxisSelectionDialogSubTitle;
+	public static String ZAxisSelectionDialogSubTitle;
+	public static String AxisSelectionDialogMessage;
+	public static String CurvesSelectionDialogTitle;
+	public static String CurvesSelectionDialogMessage;
+	public static String ShowMarkersLabelsTitle;
+	public static String ShowMarkersTitle;
+	public static String MarkersSizeTitle;
+	public static String SomethingWentWrong;
+	public static String PressEnter;
+	public static String PressEnterFrontCut;
+	public static String PressEnterEndCut;
+	public static String SubjectNotLoaded;
+	
+	// XY Chart
+	public static String NewXYZChartWizard_PageTitle;
+	public static String NewXYZChartWizard_PageMessage;
+	
 	// Data processing editor page editor titles
 	public static String MathEngineEditorTitle;
 	public static String MathEngineSourceCodeEditorTitle;
 	
 	// Functional Block Configuration Dialog Blocking Message
 	public static String FunctionalBlockConfigurationDialogBlockingMessage;
+	public static String ImpossibleToFindChannelTitle;
 	
-//	public static String OrganizeSessionWizardPage_button_1_text;
-//	public static String OrganizeSessionWizardPage_tbtmNewItem_text;
-//	public static String OrganizeSessionWizardPage_tbtmNewItem_1_text;
-//	public static String OrganizeSessionWizardPage_tbtmNewItem_2_text;
-//	public static String OrganizeSessionWizardPage_tbtmNewItem_3_text;
-//	public static String OrganizeSessionWizardPage_grpHjklgljkgl_text;
-//	public static String OrganizeSessionWizardPage_tbtmNewItem_text;
-//	public static String OrganizeSessionWizardPage_tbtmNewItem_1_text;
-//	public static String OrganizeSessionWizardPage_btnNewButton_text;
-//	public static String OrganizeSessionWizardPage_btnNewButton_1_text;
-//	public static String OrganizeSessionWizardPage_btnNewButton_2_text;
-//	public static String OrganizeSessionWizardPage_btnNewButton_3_text;
-//	public static String OrganizeSessionWizardPage_tbtmRpartirParSletion_text;
-//	public static String OrganizeSessionWizardPage_tbtmRpartirParPaquet_text;
-//	public static String OrganizeSessionWizardPage_lblNewLabel_text;
-//	public static String OrganizeSessionWizardPage_lblNewLabel_text;
-//	public static String OrganizeSessionWizardPage_text_text;
-//	public static String OrganizeSessionWizardPage_group_text;
-//	public static String OrganizeSessionWizardPage_btnRadioButton_text;
-//	public static String OrganizeSessionWizardPage_btnRadioButton_text;
-//	public static String OrganizeSessionWizardPage_btnRadioButton_1_text;
-//	public static String OrganizeSessionWizardPage_lblNewLabel_1_text;
-//	public static String OrganizeSessionWizardPage_text_1_text;
-//	public static String OrganizeSessionWizardPage_group_1_text;
-//	public static String OrganizeSessionWizardPage_btnRadioButton_2_text;
-//	public static String OrganizeSessionWizardPage_btnRadioButton_3_text;
-			
+	// Saving subject handler
+	public static String SavingSubject;
+	
+	public static String RecordSubjectDialogTitle;
+	public static String RecordSubjectDialogMessage;
+	
+	// Mathengine view
+	public static String sendButtonTitle;
+	public static String commandTitle;
+	public static String RevealEODTitle;
+	
+	// Rename resource operation
+	public static String RenameRessourceTaskTitle;
+	public static String CheckIsDacqSubTaskTitle;
+	public static String ComputeFileExtensionSubTaskTitle;
+	public static String RenameAndGetNewResourceSubTaskTitle;
+	public static String UpdateDefaultDacqSubTaskTitle;
+	public static String UpdateAffectedProcessesSubTaskTitle;
+	public static String UpdateAffectedProcessTestsAndTrialsSubTaskTitle;
+	public static String UpdateEditorsSubTaskTitle;
+	public static String RenameInMathengineSubTaskTitle;
+	public static String ErrorRenamingSubjectInMathengine;
+	public static String ErrorRenamingEsxperimentInMathengine;
+	public static String RefreshExperimentsSubjectsViewsSubTaskTitle;
+	public static String ErrorRenamingResource;
+	
+	// Batch processing editor
+	public static String Delete_Tooltip;
+	public static String Add_Tooltip;
+	public static String EnableDisable_Tooltip;
+	public static String Processes;
+	public static String Subjects;
+	public static String SelectProcessDialogTitle;
+	public static String SelectProcessDialogMessage;
+	public static String SelectSubjectDialogMessage;
+	public static String SelectSubjectDialogTitle;
+	public static String OrganizeProcessesAndSubjects;
+	public static String Explanation;
+	public static String AutoLoadSubjectTitle;
+	public static String Introduction;
+	public static String AddProcessModifyOperationLabel;
+	public static String AddSubjectModifyOperationLabel;
+	public static String RemoveProcessModifyOperationLabel;
+	public static String RemoveSubjectModifyOperationLabel;
+	public static String EnableDisableProcessModifyOperationLabel;
+	public static String EnableDisableSubjectModifyOperationLabel;
+	public static String MoveUpProcessModifyOperationLabel;
+	public static String MoveDownProcessModifyOperationLabel;
+	public static String MoveUpSubjectModifyOperationLabel;
+	public static String MoveDownSubjectModifyOperationLabel;
+	public static String GetAllDataProcessingLabel;
+	public static String GenerateGlobalScriptLabel;
+	public static String GetAllSubjectsLabel;
+	public static String LoadingLabel;
+	public static String ProcessingLabel;
+	public static String SavingLabel;
+	public static String UnloadingLabel;
+	public static String RunningScriptLabel;
+	public static String RunSelectedProcess;
+	public static String SaveProcessingScript;
+	public static String SaveBatchProcessingToFile;
+	public static String GetWholeProcessesScript;
+	public static String GenerateScriptForAllSubjects;
+	public static String ScriptSavedTo;
+	public static String RunInMainThreadButtonTitle;
+	public static String RunInMainThreadButtonActionTitle;
+
+	// Close workbench
+	public static String CloseMathEngineDialogTitle;
+	public static String CloseMathEngineDialogMessage;
+
+	// Export data wizard page
+	public static String ExportDataWizardPageTitle;
+	public static String ExportDataWizardPageDescription;
+	public static String ExportDataWizardPageAdd;
+	public static String ExportDataWizardPageRemoveSelection;
+	public static String ExportDataWizardPageRemoveAll;
+	public static String ExportDestination;
+	public static String ExportType;
+	public static String ExportInSingleFile;
+	public static String SingleFileName;
+	public static String Separator;
+	public static String DataExportError1;
+	public static String DataExportError2;
+	public static String DataExportError3;
+	public static String DataExportError4;
+	public static String DataExportError5;
+	public static String DataExportMainTaskTitle;
+	public static String DataExportSignalSubtaskMessage;
+	public static String DataExportErrorOccuredDialogTitle;
+	public static String DataExportErrorOccuredDialogMessage;
+	public static String ExportDataDialogTitle;
+
+	// Connected IPS gatherer
+	public static String IPsGathererMessage1;
+	public static String IPsGathererMessage2;
+	public static String IPsGathererMessage3;
+	
+	// Stimulus function
+	public static String PathToFileLabel;
+	public static String PathToFileTooltip;
+	
+	// Data Editor
+	public static String SampleFrequencyDialogTitle;
+	public static String SampleFrequencyDialogLabel;
+	public static String SampleFrequencyDialogMessage;
+	public static String NumberSamplesReadMessage;
+	
+	// Customer Function editor
+	public static String menuTitleDescription;
+	public static String descriptionDescription;
+	public static String userFunctionDescription;
+	public static String parameterNumberDescription;
+	public static String parameterNDescription;
+	public static String functionCodeDescription;
+	public static String nameDescription;
+	public static String typeDescription;
+	public static String textTypeDescription;
+	public static String text2TypeDescription;
+	public static String text3TypeDescription;
+	public static String text4TypeDescription;
+	public static String text5TypeDescription;
+	public static String text6TypeDescription;
+	public static String folderTypeDescription;
+	public static String folder2TypeDescription;
+	public static String fileTypeDescription;
+	public static String file2TypeDescription;
+	public static String comboTypeDescription;
+	public static String labelDescription;
+	
+	// Markers Manager
+	public static String activateShowCursorMessage;
+
+	public static String heightLabel;
+	public static String thresholdLabel;
+	public static String distanceLabel;
+	public static String prominenceLabel;
+	
+	public static String expressionsListTitle;
+	public static String sourceCodeTitle;
+
+	public static String synchronizeChartWhenTrialChange;
+
+	public static String MarkersNumberInSelectedTrial;
+	public static String MarkersNumberInSelectedTrialToolTip;
+	
+	// Save Save all commands
+	public static String SaveJobName;
+	public static String SaveJobEditorTaskName;
+	public static String SaveAllJobName;
+	public static String SaveAllJobEditorsTaskName;
+	public static String SaveAllJobSubjectsTaskName;
+	
+	// Functions editor
+	public static String FuntionEditorShellTitle;
+	public static String FunctionsListTitle;
+	public static String ADwinFunctions;
+	public static String ADwinUserFunctions;
+	public static String ArduinoUnoFunctions;
+	public static String ArduinoUnoUserFunctions;
+	public static String PythonFunctions;
+	public static String PythonUserFunctions;
+	public static String MatlabFunctions;
+	public static String MatlabUserFunctions;
+	public static String SaveMenuTitle;
+	public static String SaveAllMenuTitle;
+	public static String SaveMenuTooltip;
+	public static String SaveAllMenuTooltip;
+	
+	public static String RuntimeFolder;
+
+	public static String CompileDialog_Title;
+	public static String CompileDialog_Message;
+	public static String CompileDialog_ShellTitle;
+
+	// signalContainer
+	public static String KeepScaleWhenTrialChange;
+	public static String ShowSamples;
+
+	// Select subjects to save Dialog
+	public static String SelectSubjectsToSave;
+	public static String SelectSubjectsToSaveDialogTitle;
+	public static String Terminate;
+	
+	// ExportScriptWizardPage
+	public static String ExportScriptWizardPageTitle;
+	public static String ExportScriptWizardPageDescription;
+	public static String FileName;
+	public static String ScriptExportError1;
+	public static String ScriptExportError2;
+	public static String SaveScriptFile;
+	public static String ExportScriptDialogTitle;
+
+	public static String UpdateLibrariesVersion;
+	public static String CurrentLibrariesVersion;
+	public static String DacqConfLibrariesVersion;
+	
+	// LoadProcessDelegate
+	public static String ADBasicBinaryFileNotFound;
+	
+	// ParametersTableEditor
+	public static String AddLines;
+	public static String RemoveLines;
+	
 	static {
 		// load message values from bundle file
 		String bn = BUNDLE_NAME;
 		Locale locale = Locale.getDefault();
-		if (locale.getLanguage().equals(new Locale("fr").getLanguage())) bn = BUNDLE_NAME + "_fr";
+		if (locale.getLanguage().equals(Locale.of("fr").getLanguage())) bn = BUNDLE_NAME + "_fr";
 		NLS.initializeMessages(bn, DocometreMessages.class);
 	}
 

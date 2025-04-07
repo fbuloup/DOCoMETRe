@@ -87,9 +87,10 @@ public class ArduinoUnoChannel extends Channel {
 	@Override
 	public void notifyChannelObservers() {
 		if(notify && channelObserversList != null && channelObserversList.size() > 0) {
-			displayBuffer.put(floatBuffer.get(1));
+			displayBuffer.put(floatBuffer.get(0));
 			if(displayBuffer.remaining() == 0) {
-				for (int i = 0; i < channelObserversList.size(); i++) channelObserversList.get(i).update(displayBuffer, getID());
+				for (int i = 0; i < channelObserversList.size(); i++) 
+					channelObserversList.get(i).update(displayBuffer, getID());
 				displayBuffer.clear();
 			}
 			
@@ -105,6 +106,14 @@ public class ArduinoUnoChannel extends Channel {
 
 	@Override
 	public void addSamples(float[] buffer) {
+//		if(module instanceof ArduinoUnoADS1115Module) {
+//			// Convert samples values to volt for ADS1115 to do or not to do... ! Also for standard Arduino Analog inputs ? 
+//			float maxVoltage = ArduinoUnoAnInChannelProperties.getMaxVoltageForADS1115Gain(getProperty(ArduinoUnoAnInChannelProperties.GAIN));
+//			for (int i = 0; i < buffer.length/2; i++) {
+//				int j = 2*i+ 1;
+//				buffer[j] = buffer[j]*maxVoltage/32767;
+//			}
+//		}
 		ByteBuffer byteBuffer = ByteBuffer.allocate(buffer.length*4);
 		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 		floatBuffer = byteBuffer.asFloatBuffer();
@@ -145,7 +154,7 @@ public class ArduinoUnoChannel extends Channel {
 					fileChannel = outputFile.getChannel();
 				}
 			}
-			if(module instanceof ArduinoUnoAnInModule) {
+			if(module instanceof ArduinoUnoAnInModule || module instanceof ArduinoUnoADS1115Module) {
 				isStimulus = false;
 				isTransfered = Boolean.valueOf(getProperty(ChannelProperties.TRANSFER));
 				if(isTransfered) {
@@ -215,9 +224,8 @@ public class ArduinoUnoChannel extends Channel {
 					IResource fileResource = process.getOutputFolder().findMember(file.getName());
 					ResourceProperties.setTypePersistentProperty(fileResource, ResourceType.SAMPLES.toString());
 				}
-				
-				
 			}
+			if(displayBuffer != null) displayBuffer.clear();
 		} catch (IOException | CoreException e) {
 			Logger.getLogger(Process.class).error("Exception", e);
 		}

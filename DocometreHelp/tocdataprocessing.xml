@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ <?NLS TYPE="org.eclipse.help.toc"?>
+
+ <toc label="Data Acquisition Concepts" link_to="toc.xml#dataprocessing"> 
+ 	<topic label="Introduction"  href="html/dataprocessing/maintopic.html"> 
+ 	</topic>
+  <topic href="html/dataprocessing/datamodel.html" label="Data model">
+  </topic>
+  <topic href="html/dataprocessing/datafilesformats.html" label="Supported data files formats">
+     <topic href="html/dataprocessing/samplesdatafiles.html" label="Samples data files">
+     </topic>
+     <topic href="html/dataprocessing/adwdatafiles.html" label="ADW data files">
+     </topic>
+     <topic href="html/dataprocessing/optitrackcsvfiles.html" label="Optitrack CSV Files">
+     </topic>
+  </topic>
+ </toc>

@@ -59,6 +59,8 @@ public class Activator implements BundleActivator {// The plug-in ID
 	 */
 	public static final String ADWinProcess = "ADWinProcess";
 	public static final String ArduinoUnoProcess = "ArduinoUnoProcess";
+	public static final String Matlab = "Matlab";
+	public static final String Python = "Python";
 	public static final String Script = "Script";
 
 	private static BundleContext context;

@@ -69,8 +69,13 @@ import org.eclipse.ui.PlatformUI;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
+import fr.univamu.ism.docometre.dacqsystems.Module;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinMessages;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinModulesList;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoADS1115Module;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfiguration;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoModulesList;
 import fr.univamu.ism.docometre.editors.ResourceEditor;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 
@@ -78,7 +83,7 @@ public class AddModuleHandler extends SelectionAdapter implements ISelectionChan
 	
 	private Shell shell;
 	private ListViewer modulesListViewer;
-	private ArrayList<ADWinModulesList> selectedADWinModulesList = new ArrayList<ADWinModulesList>();
+	private ArrayList<Object> selectedModulesList = new ArrayList<Object>();
 	private IOperationHistory operationHistory;
 	private DACQConfiguration dacqConfiguration;
 	private IUndoContext undoContext;
@@ -99,7 +104,7 @@ public class AddModuleHandler extends SelectionAdapter implements ISelectionChan
 		protected Control createDialogArea(Composite parent) {
 			setTitle(ADWinMessages.AddModuleDialog_Title);
 			setMessage(ADWinMessages.AddModuleDialog_Message);
-			setTitleImage(Activator.getImageDescriptor(IImageKeys.MODULE_WIZBAN).createImage());
+			setTitleImage(Activator.getImage(IImageKeys.MODULE_WIZBAN));
 			Composite container = (Composite) super.createDialogArea(parent);
 			
 			modulesListViewer = new ListViewer(container);
@@ -109,10 +114,17 @@ public class AddModuleHandler extends SelectionAdapter implements ISelectionChan
 			modulesListViewer.setLabelProvider(new LabelProvider() {
 				@Override
 				public String getText(Object element) {
+					if(element instanceof ArduinoUnoModulesList) return ArduinoUnoModulesList.getDescription((ArduinoUnoModulesList) element);
 					return ADWinModulesList.getDescription((ADWinModulesList) element);
 				}
 			});
-			modulesListViewer.setInput(ADWinModulesList.values());
+			if(dacqConfiguration instanceof ADWinDACQConfiguration) modulesListViewer.setInput(ADWinModulesList.values());
+			if(dacqConfiguration instanceof ArduinoUnoDACQConfiguration) {
+				Module[] modules = dacqConfiguration.getModules();
+				int nbADS1115 = 0;
+				for (Module module : modules) if(module instanceof ArduinoUnoADS1115Module) nbADS1115++;
+				modulesListViewer.setInput(ArduinoUnoModulesList.getModules(nbADS1115 < 4));
+			}
 			modulesListViewer.addSelectionChangedListener(AddModuleHandler.this);
 			
 			modulesListViewer.addDoubleClickListener(new IDoubleClickListener() {
@@ -140,7 +152,7 @@ public class AddModuleHandler extends SelectionAdapter implements ISelectionChan
 		AddModuleDialog addModuleDialog = new AddModuleDialog(shell);
 		if(addModuleDialog.open() == Dialog.OK) {
 			try {
-				operationHistory.execute(new AddModulesOperation(ADWinMessages.AddModulesOperation_Label, dacqConfiguration, selectedADWinModulesList, undoContext), null, null);
+				operationHistory.execute(new AddModulesOperation(ADWinMessages.AddModulesOperation_Label, dacqConfiguration, selectedModulesList, undoContext), null, null);
 			} catch (ExecutionException e) {
 				e.printStackTrace();
 				Activator.logErrorMessageWithCause(e);
@@ -151,8 +163,8 @@ public class AddModuleHandler extends SelectionAdapter implements ISelectionChan
 	@SuppressWarnings("unchecked")
 	@Override
 	public void selectionChanged(SelectionChangedEvent event) {
-		selectedADWinModulesList.clear();
+		selectedModulesList.clear();
 		StructuredSelection selection = (StructuredSelection)modulesListViewer.getSelection();
-		selectedADWinModulesList.addAll(selection.toList());
+		selectedModulesList.addAll(selection.toList());
 	}
 }

@@ -44,6 +44,8 @@ package fr.univamu.ism.docometre.views;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.eclipse.core.commands.operations.UndoContext;
@@ -53,21 +55,28 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.SafeRunner;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.jface.util.SafeRunnable;
 import org.eclipse.jface.viewers.DecoratingLabelProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ILabelDecorator;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.ITreeSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.custom.BusyIndicator;
@@ -77,30 +86,44 @@ import org.eclipse.swt.dnd.DragSourceEvent;
 import org.eclipse.swt.dnd.DragSourceListener;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IMemento;
+import org.eclipse.ui.IPartListener;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IPerspectiveListener;
 import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.operations.UndoRedoActionGroup;
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.ui.progress.UIJob;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ApplicationActionBarAdvisor;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
+import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.PartListenerAdapter;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.handlers.RunStopHandler;
 
-public class ExperimentsView extends ViewPart implements IResourceChangeListener, IPerspectiveListener {
+public class ExperimentsView extends ViewPart implements IResourceChangeListener, IPerspectiveListener, IPropertyChangeListener {
 
 	public static String ID = "Docometre.ExperimentsView";
 	
@@ -119,7 +142,7 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 		public AssociateWithProcessAction(IFolder[] trials, IFile processFile) {
 			this.trials = trials;
 			this.processFile = processFile;
-			setText(processFile.getFullPath().toOSString().replaceAll(Activator.processFileExtension, ""));
+			setText(processFile.getFullPath().toOSString().replaceAll(Activator.processFileExtension + "$", ""));
 		}
 		@Override
 		public void run() {
@@ -166,10 +189,128 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 		}
 	}
 	
+	private class LinkWithEditorAction extends Action implements IPartListener, ISelectionChangedListener {
+		
+		private boolean ignoreEditorActivation;
+		private boolean ignoreSelectionChanged;
+		
+		private UIJob activateEditorJob = new UIJob("Link with editor Job - Activate part") {
+			@Override
+			public IStatus runInUIThread(IProgressMonitor monitor) {
+				ITreeSelection treeSelection = (ITreeSelection) ExperimentsView.this.experimentsTreeViewer.getSelection();
+				if(treeSelection != null && !treeSelection.isEmpty()) {
+					Object selectedResource = treeSelection.getFirstElement();
+					ignoreEditorActivation = true;
+					SafeRunner.run(new SafeRunnable() {
+						@Override
+						public void run() throws Exception {
+							IEditorReference[] editorsReferences = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
+							for (IEditorReference editorReference : editorsReferences) {
+								ResourceEditorInput resourceEditorInput = (ResourceEditorInput)editorReference.getEditorInput();
+								Object object  = selectedResource;
+								if(selectedResource instanceof IResource) object = ResourceProperties.getObjectSessionProperty((IResource)selectedResource);
+								if(resourceEditorInput.isEditing(object)) {
+									PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(editorReference.getPart(false));
+									ExperimentsView.this.setFocus();
+									break;
+								}
+							}
+						}
+					});
+					ignoreEditorActivation = false;
+				}
+				return Status.OK_STATUS;
+			}
+		};
+
+		private UIJob updateSelectionJob = new UIJob("Link with editor Job - Update selection") {
+			@Override
+			public IStatus runInUIThread(IProgressMonitor monitor) {
+				SafeRunner.run(new SafeRunnable() {
+					@Override
+					public void run() throws Exception {
+						IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+						if (page != null) {
+							IEditorPart editor = page.getActiveEditor();
+							if (editor != null) {
+								ResourceEditorInput input = (ResourceEditorInput) editor.getEditorInput();
+								IResource newSelectedResource;
+								if(input.getObject() instanceof IResource) newSelectedResource = (IResource) input.getObject();
+								else newSelectedResource = ObjectsController.getResourceForObject(input.getObject());
+								IStructuredSelection newSelection = new StructuredSelection(newSelectedResource);
+								if (!newSelection.isEmpty()) {
+									ignoreSelectionChanged = true;
+									ExperimentsView.this.experimentsTreeViewer.setSelection(newSelection, true);
+									ignoreSelectionChanged = false;
+								}
+								editor.setFocus();
+							}
+						}
+					}
+				});
+				return Status.OK_STATUS;
+			}
+		};
+		
+		
+		public LinkWithEditorAction() {
+			super(DocometreMessages.LinkWithEditorAction_Text, AS_CHECK_BOX);
+			setToolTipText(DocometreMessages.LinkWithEditorAction_Text);
+			setImageDescriptor(Activator.getImageDescriptor(IImageKeys.LINK_TO_EDITOR_ICON));
+			activateEditorJob.setSystem(true);
+			updateSelectionJob.setSystem(true);
+		}
+		
+		@Override
+		public void run() {
+			firePropertyChange(CHECKED, isChecked(), !isChecked());
+			if(isChecked()) {
+				ExperimentsView.this.getSite().getPage().addPartListener(this);
+				ExperimentsView.this.experimentsTreeViewer.addSelectionChangedListener(this);
+				updateSelectionJob.schedule(100);
+			} else {
+				ExperimentsView.this.getSite().getPage().removePartListener(this);
+				ExperimentsView.this.experimentsTreeViewer.removeSelectionChangedListener(this);
+			}
+		}
+
+		@Override
+		public void partActivated(IWorkbenchPart part) {
+			if (part instanceof IEditorPart && !ignoreEditorActivation) updateSelectionJob.schedule(100);
+		}
+
+		@Override
+		public void partBroughtToTop(IWorkbenchPart part) {
+			if (part instanceof IEditorPart && !ignoreEditorActivation) updateSelectionJob.schedule(100);
+		}
+
+		@Override
+		public void partClosed(IWorkbenchPart part) {
+		}
+
+		@Override
+		public void partDeactivated(IWorkbenchPart part) {
+		}
+
+		@Override
+		public void partOpened(IWorkbenchPart part) {
+		}
+
+		@Override
+		public void selectionChanged(SelectionChangedEvent event) {
+			if(!ignoreSelectionChanged) activateEditorJob.schedule(100);
+		}
+		
+	}
+	
 	public static ExperimentsViewUndoContext experimentsViewUndoContext;
 	private TreeViewer experimentsTreeViewer;
 	private MenuManager popUpMenuManager;
 	private PartListenerAdapter partListenerAdapter;
+
+	private IMemento memento;
+
+	private LinkWithEditorAction linkWithEditorAction;
 
 	public ExperimentsView() {
 		experimentsViewUndoContext = new ExperimentsViewUndoContext();
@@ -179,16 +320,61 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 	 * Refresh experiment view
 	 */
 	public static void refresh(IResource parentResource, IResource[] resourcesToSelect) {
-		Display.getDefault().asyncExec(new Runnable() {
+		Display.getDefault().syncExec(new Runnable() {
 			@Override
 			public void run() {
 				IViewPart experimentsView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(ExperimentsView.ID);
-				if (experimentsView instanceof ExperimentsView)
+				if (experimentsView instanceof ExperimentsView)// Check null also !
 					((ExperimentsView)experimentsView).refreshInput(parentResource, resourcesToSelect);
 			}
 		});
 	}
 
+	@Override
+	public void init(IViewSite site, IMemento memento) throws PartInitException {
+		super.init(site, memento);
+		this.memento = memento;
+		Activator.getDefault().getPreferenceStore().addPropertyChangeListener(this);
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public void saveState(IMemento memento) {
+		super.saveState(memento);
+		IStructuredSelection sel = (IStructuredSelection) experimentsTreeViewer.getSelection();
+		if (sel.isEmpty()) return;
+		IMemento childMemento = memento.createChild("tree-selections");
+		Iterator<IResource> iter = sel.iterator();
+		while (iter.hasNext()) {
+			IResource nodeName = iter.next();
+			childMemento.createChild("selected-nodes", nodeName.getFullPath().toPortableString());
+		}
+		memento.putBoolean("LinkWithEditor", linkWithEditorAction.isChecked());
+	}
+	
+	private void restoreState() {
+		if(memento == null) return;
+		IMemento selectionsMomento = memento.getChild("tree-selections");
+		if (selectionsMomento != null) {
+			IMemento selectedNodes[] = selectionsMomento.getChildren("selected-nodes");
+			if (selectedNodes.length > 0) {
+				ArrayList<IResource> selections = new ArrayList<IResource>(selectedNodes.length);
+				for (int i = 0; i < selectedNodes.length; i++) {
+					String path = selectedNodes[i].getID();
+					if (path != null) {
+						IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(path);
+						if(resource != null) selections.add(resource);
+					}
+				}
+				experimentsTreeViewer.setSelection(new StructuredSelection(selections));
+			}
+		}
+		Boolean linkWithEditor = memento.getBoolean("LinkWithEditor");
+		linkWithEditor = linkWithEditor == null ? false:linkWithEditor;
+		linkWithEditorAction.setChecked(linkWithEditor);
+		linkWithEditorAction.run();
+	}
+	
 	@Override
 	public void createPartControl(final Composite parent) {
 		experimentsTreeViewer = new TreeViewer(parent);
@@ -219,12 +405,20 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 				}
 			}
 		});
+		experimentsTreeViewer.getTree().addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent e) {
+				TreeItem item = experimentsTreeViewer.getTree().getItem(new Point(e.x, e.y));
+				if(item == null) experimentsTreeViewer.getTree().setSelection(new TreeItem[0]);
+			}
+		});
+		
 //		experimentsTreeViewer.addFilter(new ViewerFilter() {
 //			@Override
 //			public boolean select(Viewer viewer, Object parentElement, Object element) {
 //				String currentPerspectiveID = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getPerspective().getId();
 //				boolean isDesignPerspective = currentPerspectiveID.equals(DesignPerspective.ID);
-//				boolean isAcquirePerspective = currentPerspectiveID.equals(AcquirePerspective.ID);
+//				boolean isAcquirePerspective = currentPerspectiveID.equals(AcquirePerspective.id);
 //				if(isDesignPerspective || isAcquirePerspective) return true;
 //				return false;
 //			}
@@ -259,6 +453,8 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 		undoRedoActionGroup.fillActionBars(getViewSite().getActionBars());
 		
 		getViewSite().getActionBars().getToolBarManager().add(new CollapsAllAction());
+		linkWithEditorAction = new LinkWithEditorAction();
+		getViewSite().getActionBars().getToolBarManager().add(linkWithEditorAction);
 		
 		getViewSite().getActionBars().setGlobalActionHandler(ActionFactory.DELETE.getId(), ApplicationActionBarAdvisor.deleteResourcesAction);
 		getViewSite().getActionBars().setGlobalActionHandler(ActionFactory.COPY.getId(), ApplicationActionBarAdvisor.copyResourcesAction);
@@ -266,6 +462,7 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 		getViewSite().getActionBars().setGlobalActionHandler(ActionFactory.RENAME.getId(), ApplicationActionBarAdvisor.renameResourceAction);
 		getViewSite().getActionBars().setGlobalActionHandler(ActionFactory.REFRESH.getId(), ApplicationActionBarAdvisor.refreshResourceAction);
 		makePopupMenu();
+		
 		
 		experimentsTreeViewer.setInput(ResourcesPlugin.getWorkspace().getRoot());
 		experimentsTreeViewer.getTree().addSelectionListener(new SelectionListener() {
@@ -319,7 +516,11 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 			}
 		};
 		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().addPartListener(partListenerAdapter);
+		
+		restoreState();
 	}
+
+	
 
 	private void makePopupMenu() {
 		popUpMenuManager = new MenuManager("ExperimentsViewPopUpMenu");
@@ -360,7 +561,7 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 					if(onlyProcesses && sameProject && sameSystem) {
 						ArrayList<IFile> processesFiles = new ArrayList<>();
 						for (Object element : elements) processesFiles.add((IFile)element);
-						IResource[] daqFiles = ResourceProperties.getAllTypedResources(ResourceType.DACQ_CONFIGURATION, processesFiles.get(0).getProject());
+						IResource[] daqFiles = ResourceProperties.getAllTypedResources(ResourceType.DACQ_CONFIGURATION, processesFiles.get(0).getProject(), null);
 						if(daqFiles.length > 0) associateWithItemMenuManager.setVisible(true);
 						for (IResource daqFile : daqFiles) {
 							if(ResourceProperties.getSystemPersistentProperty(daqFile) != null && (ResourceProperties.getSystemPersistentProperty(daqFile).equals(systemType) || systemType == null))
@@ -370,7 +571,7 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 					if(onlyTrialsOrProcessesTests && sameProject && sameSystem) {
 						ArrayList<IFolder> trialsFiles = new ArrayList<>();
 						for (Object element : elements) trialsFiles.add((IFolder)element);
-						IResource[] processesFiles = ResourceProperties.getAllTypedResources(ResourceType.PROCESS, trialsFiles.get(0).getProject());
+						IResource[] processesFiles = ResourceProperties.getAllTypedResources(ResourceType.PROCESS, trialsFiles.get(0).getProject(), null);
 						if(processesFiles.length > 0) associateWithItemMenuManager.setVisible(true);
 						for (IResource processFile : processesFiles) {
 							associateWithItemMenuManager.add(new AssociateWithProcessAction(trialsFiles.toArray(new IFolder[trialsFiles.size()]), (IFile)processFile));
@@ -387,12 +588,12 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 		experimentsTreeViewer.refresh(parentResource, true);
 		PlatformUI.getWorkbench().getDecoratorManager().update(ExperimentsLabelDecorator.ID);
 		if(newResourcesToSelect != null) {
-			List<Object> list = Arrays.asList(newResourcesToSelect);
+			List<Object> list = new LinkedList<>(Arrays.asList(newResourcesToSelect));
 			for (Object object : newResourcesToSelect) {
 				IResource resource = (IResource)object;
 				if(!resource.exists()) list.remove(object);
 			}
-			StructuredSelection structuredSelection = new StructuredSelection(newResourcesToSelect);
+			StructuredSelection structuredSelection = new StructuredSelection(list.toArray());
 			experimentsTreeViewer.setSelection(structuredSelection, true);
 //			experimentsTreeViewer.getTree().notifyListeners(SWT.Selection, new Event());
 		}
@@ -411,27 +612,13 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 	public void resourceChanged(IResourceChangeEvent event) {
 		IResourceDelta delta = event.getDelta();
 		if(delta == null) return;
-		try {
-			delta.accept(new IResourceDeltaVisitor() {
+		if(delta.getResource() != null) 
+			PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
 				@Override
-				public boolean visit(IResourceDelta delta) throws CoreException {
-						PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
-							@Override
-							public void run() {
-								if(delta.getFlags() != 0) {
-									if(delta.getResource() != null) experimentsTreeViewer.refresh(delta.getResource());
-								}
-							}
-						});
-					return true;
+				public void run() {
+					experimentsTreeViewer.refresh(delta.getResource());
 				}
 			});
-		} catch (CoreException e) {
-			e.printStackTrace();
-			Activator.logErrorMessageWithCause(e);
-		}
-		
-		
 	}
 
 	@Override
@@ -443,6 +630,17 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 	public void perspectiveChanged(IWorkbenchPage page, IPerspectiveDescriptor perspective, String changeId) {
 		experimentsTreeViewer.refresh();
 		
+	}
+	
+	@Override
+	public void dispose() {
+		Activator.getDefault().getPreferenceStore().removePropertyChangeListener(this);
+		super.dispose();
+	}
+
+	@Override
+	public void propertyChange(PropertyChangeEvent event) {
+		ExperimentsView.refresh(null, null);
 	}
 
 }

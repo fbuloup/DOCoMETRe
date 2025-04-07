@@ -47,7 +47,9 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
@@ -58,7 +60,13 @@ import org.eclipse.ui.menus.UIElement;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 
-public class SetResourceTypeHandler extends AbstractHandler implements IElementUpdater {
+public class SetResourceTypeHandler extends AbstractHandler implements IElementUpdater, ISelectionListener {
+	
+	public SetResourceTypeHandler() {
+		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().addSelectionListener(this);
+		IViewPart experimentsView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(ExperimentsView.ID);
+		if(experimentsView !=  null) selectionChanged(experimentsView, experimentsView.getSite().getSelectionProvider().getSelection());
+	}
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -89,6 +97,11 @@ public class SetResourceTypeHandler extends AbstractHandler implements IElementU
 			String resourceType = ResourceProperties.getTypePersistentProperty(resource);
 			element.setChecked(parameterValue.equalsIgnoreCase(resourceType));
 		}
+	}
+	
+	@Override
+	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
+		setBaseEnabled(part instanceof ExperimentsView);
 	}
 
 }

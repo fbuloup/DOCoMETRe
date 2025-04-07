@@ -1,0 +1,43 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Data Acquisition and Real Time Systems</title>
+</head>
+
+<body>
+	<h1>Data Acquisition and Real Time Systems</h1>
+
+	<figure> <img src="RTS2.png"
+		style="height: 20%; width: 40%; display: block; margin-left: auto; margin-right: auto;" />
+	<figcaption style="text-align: center;margin-top:3px;">Real
+	time system loop illustration.</figcaption> </figure>
+
+	<p>A real-time system is a system that interacts with an external
+		environment that evolves in time: it performs observation and control
+		functions. The dynamics of this environment drive the timing
+		constraints on the system (latency and response time). The commands
+		must ensure the desired behaviour : logical exactitude (they have the
+		correct values) and timing exactitude (they are presented at the right
+		moment). These commands may depend on the observations and processing.
+	</p>
+	<p>There are many categories of real-time system. Without going
+		into detail, there are synchronous or asynchronous real-time systems
+		(Windows can be considered as an asynchronous real-time system), strict
+		(or hard, which does not tolerate any constraints being exceeded) or
+		flexible (soft). Latency corresponds to the system's reaction time and
+		response time is the time taken by the system to complete the
+		"Observation - Processing - Control" set. This time must be compatible
+		with the dynamics of the environment.</p>
+	<p>This type of system must therefore be able to observe the
+		environment (acquiring information about the state of the environment)
+		in order to carry out certain functions in relation to it (disturb it,
+		etc.) while complying with time constraints.</p>
+	<p>Digital Signal Processor or Microcontroller are typically used
+		in real time systems. ADwin products use SHARC DSP family processors
+		from Analog Devices or ARM Cortex A9 from Atmel and Arduino Uno uses
+		Atmel ATmega328P (release 3) or Renesas RA4M (release 4)
+		microcontrollers.</p>
+</body>
+</html>

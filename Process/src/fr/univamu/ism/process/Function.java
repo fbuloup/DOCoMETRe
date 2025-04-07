@@ -116,7 +116,7 @@ public class Function extends Block {
 	 * @return the code
 	 */
 	@Override
-	public String getCode(Object context, Object step) {
+	public String getCode(Object context, Object step, Object...objects) {
 		if(step == ScriptSegmentType.INITIALIZE || step == ScriptSegmentType.LOOP || step == ScriptSegmentType.FINALIZE) {
 			if(context.getClass().getSimpleName().equals(Activator.ADWinProcess))
 				return "\nREM Function " + getName(context) + "\n\n";
@@ -173,6 +173,9 @@ public class Function extends Block {
 	
 	protected String getProperty(String key, String defaultValue) {
 		String value = properties.get(key);
+		if((value == null || "".equals(value)) && !"".equals(defaultValue)) {
+			getTransientProperties().put(key, defaultValue);
+		}
 		return value == null ? defaultValue : value;
 		
 	}

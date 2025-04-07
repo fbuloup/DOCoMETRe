@@ -48,10 +48,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.window.Window;
-import org.eclipse.ui.PlatformUI;
 
-import fr.univamu.ism.docometre.dialogs.NewChartDialog;
 import fr.univamu.ism.docometre.editors.ModulePage;
 
 public class AddChartOperation extends AbstractOperation {
@@ -59,25 +56,22 @@ public class AddChartOperation extends AbstractOperation {
 	private Charts charts;
 	private ModulePage modulePage;
 	private ChartConfiguration chartConfiguration;
+	private ChartTypes chartType;
 
-	public AddChartOperation(ModulePage modulePage, String label, Charts charts, ObjectUndoContext undoContext) {
+	public AddChartOperation(ModulePage modulePage, String label, Charts charts, ChartTypes chartType, ObjectUndoContext undoContext) {
 		super(label);
 		this.charts = charts;
 		this.modulePage = modulePage;
+		this.chartType = chartType;
 		addContext(undoContext);
 	}
 
 	@Override
 	public IStatus execute(IProgressMonitor monitor, IAdaptable info) throws ExecutionException {
-		NewChartDialog newChartDialog = new NewChartDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
-		if(newChartDialog.open() == Window.OK) {
-			ChartTypes selectedChartType = newChartDialog.getSelectedChartTypes();
-			chartConfiguration = ChartFactory.createChart(selectedChartType);
-			chartConfiguration.addObserver(modulePage);
-			charts.addChartConfiguration(chartConfiguration);
-			return Status.OK_STATUS;
-		}
-		return Status.CANCEL_STATUS;
+		chartConfiguration = ChartFactory.createChart(chartType);
+		chartConfiguration.addObserver(modulePage);
+		charts.addChartConfiguration(chartConfiguration);
+		return Status.OK_STATUS;
 	}
 
 	@Override

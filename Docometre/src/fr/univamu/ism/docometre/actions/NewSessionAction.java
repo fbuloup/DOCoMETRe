@@ -41,6 +41,9 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.actions;
 
+import java.util.HashMap;
+import java.util.Set;
+
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
@@ -65,6 +68,7 @@ import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 import fr.univamu.ism.docometre.wizards.NewResourceWizard;
+import fr.univamu.ism.docometre.wizards.OrganizeSessionWizardPage;
 
 public class NewSessionAction extends Action implements ISelectionListener, IWorkbenchAction {
 	
@@ -81,12 +85,14 @@ public class NewSessionAction extends Action implements ISelectionListener, IWor
 		setText(DocometreMessages.NewSessionAction_Text);
 		setToolTipText(DocometreMessages.NewSessionAction_Tooltip);
 		setImageDescriptor(Activator.getImageDescriptor(IImageKeys.SESSION_ICON));
+		setEnabled(false);
 	}
 	
 	public void run() {
 		Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
 		NewResourceWizard newResourceWizard = new NewResourceWizard(ResourceType.SESSION, resource, NewResourceWizard.CREATE);
 		WizardDialog wizardDialog = new WizardDialog(shell, newResourceWizard);
+		wizardDialog.addPageChangedListener(newResourceWizard);
 		if(wizardDialog.open() == Window.OK) {
 			try {
 				IFolder session = resource.getFolder(new Path(newResourceWizard.getResourceName()));
@@ -103,6 +109,16 @@ public class NewSessionAction extends Action implements ISelectionListener, IWor
 					ResourceProperties.setDescriptionPersistentProperty(trial, "");
 					ResourceProperties.setTypePersistentProperty(trial, ResourceType.TRIAL.toString());
 				}
+				
+				OrganizeSessionWizardPage organizeSessionWizardPage = (OrganizeSessionWizardPage) newResourceWizard.getPage(OrganizeSessionWizardPage.PageName);
+				HashMap<Integer, IResource> resultAssociation = organizeSessionWizardPage.getResultAssociation();
+				Set<Integer> trialsNumbers = resultAssociation.keySet();
+				for (Integer trialNumber : trialsNumbers) {
+					IFolder trial = session.getFolder(DocometreMessages.Trial + trialNumber);
+					IResource process = resultAssociation.get(trialNumber);
+					ResourceProperties.setAssociatedProcessProperty(trial, process.getFullPath().toOSString());
+				}
+				
 				ExperimentsView.refresh(session.getParent(), new IResource[]{session});
 			} catch (CoreException e) {
 				e.printStackTrace();

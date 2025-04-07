@@ -25,7 +25,7 @@
          </property>
          <property
                name="cssTheme"
-               value="Docometre.theme">
+               value="org.eclipse.e4.ui.css.theme.e4_classic">
          </property>
          <property
                name="applicationCSSResources"
@@ -33,7 +33,7 @@
          </property>
          <property
                name="aboutText"
-               value="DOCoMETRe&#x0A;&#x0A;Dispositif d&apos;Observation et de Contrôle du Mouvement en Temp Réel&#x0A;&#x0A;Développement à l&apos;institut des Sciences du Mouvement.&#x0A;&#x0A;Merci à Zacharie et Kévin, stagiaires en IUT Info pour leurs contributions au projet.">
+               value="DOCoMETRe - https://teamicstechnos.github.io/DOCoMETRe/&#x0D;&#x0A;&#x0D;&#x0A;Dispositif d&apos;Observation et de Contrôle du Mouvement en Temp Réel&#x0D;&#x0A;&#x0D;&#x0A;Développement à l&apos;institut des Sciences du Mouvement.">
          </property>
          <property
                name="aboutImage"
@@ -68,19 +68,6 @@
                value="plugin_customization.ini">
          </property>
       </product>
-   </extension>
-   <extension
-         point="org.eclipse.e4.ui.css.swt.theme">
-  <theme
-        basestylesheeturi="platform:/plugin/Docometre.theme/css/theme.css"
-        id="Docometre.theme"
-        label="Docometre.theme">
-  </theme>
-  <theme
-        basestylesheeturi="platform:/plugin/Docometre.theme/css/dark_theme.css"
-        id="Docometre.dark_theme"
-        label="Docometre.dark_theme">
-  </theme>
    </extension>
    
    
@@ -150,6 +137,21 @@
             icon="icons/subject.png"
             id="Docometre.SubjectsView"
             name="%SubjectsView_Title"
+            restorable="true">
+      </view>
+      <view
+            class="fr.univamu.ism.docometre.analyse.views.MathEngineCommandView"
+            icon="icons/mathEngine.png"
+            id="Docometre.MathEngineCommandView"
+            name="%MathEngineCommandView_Tilte"
+            restorable="true">
+      </view>
+      <view
+            allowMultiple="false"
+            class="fr.univamu.ism.docometre.analyse.views.FunctionsView"
+            icon="icons/function.gif"
+            id="Docometre.FunctionsView"
+            name="%FunctionsView_Title"
             restorable="true">
       </view>
    </extension>
@@ -239,12 +241,6 @@
       </page>
       <page
             category="Docometre.SystemsPreferencePage"
-            class="fr.univamu.ism.docometre.preferences.DefaultNISystemPreferencePage"
-            id="Docometre.DefaultNISystem"
-            name="%PrefPage_DefaultNISystem">
-      </page>
-      <page
-            category="Docometre.SystemsPreferencePage"
             class="fr.univamu.ism.docometre.preferences.DefaultArduinoUnoSystemPreferencePage"
             id="Docometre.DefaultArduinoUnoSystem"
             name="%PrefPage_DefaultArduinoUnoSystem">
@@ -260,11 +256,17 @@
             id="Docometre.MatlabEnginePreferencePage"
             name="%PrefPage_Matlab">
       </page>
+      <page
+            category="Docometre.MathEnginePreferencePage"
+            class="fr.univamu.ism.docometre.preferences.PythonPreferencePage"
+            id="Docometre.PythonEnginePreferencePage"
+            name="%PrefPage_Python">
+      </page>
    </extension>
    <extension
          point="org.eclipse.core.runtime.preferences">
       <initializer
-            class="fr.univamu.ism.docometre.preferences.GeneralPreferenceInitializer">
+            class="fr.univamu.ism.docometre.preferences.PreferencesInitializer">
       </initializer>
    </extension>
    <extension
@@ -433,6 +435,36 @@
             id="Docometre.DataProcessScriptSourceEditor"
             name="DataProcessScriptSourceEditor">
       </editor>
+      <editor
+            class="fr.univamu.ism.docometre.analyse.editors.BatchDataProcessingEditor"
+            default="false"
+            icon="icons/batchDataProcessing.gif"
+            id="Docometre.BatchDataProcessingEditor"
+            name="BatchDataProcessingEditor">
+      </editor>
+      <editor
+            class="fr.univamu.ism.docometre.analyse.editors.XYChartEditor"
+            contributorClass="fr.univamu.ism.docometre.analyse.editors.ChannelEditorActionBarContributor"
+            default="false"
+            icon="icons/XYChartIcon.png"
+            id="Docometre.XYChartEditor"
+            name="XYChartEditor">
+      </editor>
+      <editor
+            class="fr.univamu.ism.docometre.analyse.editors.XYZChartEditor"
+            contributorClass="fr.univamu.ism.docometre.analyse.editors.ChannelEditorActionBarContributor"
+            default="false"
+            icon="icons/XYZChartIcon.png"
+            id="Docometre.XYZChartEditor"
+            name="XYZChartEditor">
+      </editor>
+      <editor
+            class="fr.univamu.ism.docometre.analyse.editors.functioneditor.CustomerFunctionEditor"
+            default="false"
+            icon="icons/customerFunction.gif"
+            id="Docometre.CustomerFunctionEditor"
+            name="CustomerFunctionEditor">
+      </editor>
    </extension>
    <extension
          point="org.eclipse.ui.decorators">
@@ -578,6 +610,24 @@
                      </visibleWhen>
                </command>
                <command
+                     commandId="NewBatchDataProcessingCommand"
+                     icon="icons/batchDataProcessing.gif"
+                     label="%NewBatchDataProcessingCommand.label"
+                     style="push"
+                     tooltip="%NewBatchDataProcessingCommand.tooltip">
+                  <visibleWhen
+                        checkEnabled="false">
+                     <or>
+                        <reference
+                              definitionId="Docometre.DesignPerspectiveSelected">
+                        </reference>
+                        <reference
+                              definitionId="Docometre.AnalysePerspectiveSelected">
+                        </reference>
+                     </or>
+                  </visibleWhen>
+               </command>
+               <command
                      commandId="NewFolderAction"
                      icon="icons/folder.gif"
                      label="%NewFolderAction.label"
@@ -585,15 +635,69 @@
                      tooltip="%NewFolderAction.tooltip">
                      <visibleWhen
                            checkEnabled="false">
-                           <or>
-	                           <reference
-	                                 definitionId="Docometre.DesignPerspectiveSelected">
-	                           </reference>
-                            <reference
-                                  definitionId="Docometre.AnalysePerspectiveSelected">
-                            </reference>
-                           </or>
+                        <or>
+                           <reference
+                                 definitionId="Docometre.DesignPerspectiveSelected">
+                           </reference>
+                           <reference
+                                 definitionId="Docometre.AnalysePerspectiveSelected">
+                           </reference>
+                        </or>
                      </visibleWhen>
+               </command>
+               <command
+                     commandId="NewXYChartCommand"
+                     icon="icons/XYChartIcon.png"
+                     label="%NewXYChartCommand.label"
+                     style="push"
+                     tooltip="%NewXYChartCommand.tooltip">
+                     <visibleWhen
+                           checkEnabled="false">
+                        <or>
+                           <reference
+                                 definitionId="Docometre.DesignPerspectiveSelected">
+                           </reference>
+                           <reference
+                                 definitionId="Docometre.AnalysePerspectiveSelected">
+                           </reference>
+                        </or>
+                     </visibleWhen>
+               </command>
+               <command
+                     commandId="NewXYZChartCommand"
+                     icon="icons/XYZChartIcon.png"
+                     label="%NewXYZChartCommand.label"
+                     style="push"
+                     tooltip="%NewXYZChartCommand.tooltip">
+                  <visibleWhen
+                        checkEnabled="false">
+                     <or>
+                        <reference
+                              definitionId="Docometre.DesignPerspectiveSelected">
+                        </reference>
+                        <reference
+                              definitionId="Docometre.AnalysePerspectiveSelected">
+                        </reference>
+                     </or>
+                  </visibleWhen>
+               </command>
+               <command
+                     commandId="NewCustomFunctionCommand"
+                     icon="icons/customerFunction.gif"
+                     label="%NewCustomFunctionCommand.label"
+                     style="push"
+                     tooltip="%NewCustomFunctionCommand.tooltip">
+                  <visibleWhen
+                        checkEnabled="false">
+                     <or>
+                        <reference
+                              definitionId="Docometre.DesignPerspectiveSelected">
+                        </reference>
+                        <reference
+                              definitionId="Docometre.AnalysePerspectiveSelected">
+                        </reference>
+                     </or>
+                  </visibleWhen>
                </command>
             </menu>
             <separator
@@ -699,14 +803,28 @@
                   name="Docometre.separator2" visible="true">
             </separator>
             <command
-                  commandId="org.eclipse.ui.file.save"
+                  commandId="SaveCommand"
+                  icon="platform:/plugin/org.eclipse.ui/icons/full/etool16/save_edit.png"
                   label="%SaveAction.label"
+                  style="push"
+                  tooltip="%SaveAction.label">
+            </command>
+            <command
+                  commandId="SaveAllCommand"
+                  icon="platform:/plugin/org.eclipse.ui/icons/full/etool16/saveall_edit.png"
+                  id="saveall"
+                  label="%SaveAllAction.label"
+                  style="push"
+                  tooltip="%SaveAllAction.label">
+            </command>
+            <command
+                  commandId="org.eclipse.ui.edit.rename"
+                  label="%Rename.label"
                   style="push">
             </command>
             <command
-                  commandId="org.eclipse.ui.file.saveAll"
-                  id="saveall"
-                  label="%SaveAllAction.label"
+                  commandId="org.eclipse.ui.file.refresh"
+                  label="%Refresh.label"
                   style="push">
             </command>
             <separator
@@ -726,6 +844,13 @@
                   label="%ExportExperimentCommand.label"
                   style="push">
             </command>
+            <command
+                  commandId="ExportDataCommand"
+                  icon="platform:/plugin/org.eclipse.ui/icons/full/etool16/export_wiz.png"
+                  label="%ExportDataCommand.label"
+                  style="push"
+                  tooltip="%ExportDataCommand.tooltip">
+            </command>
             <separator
                   name="Docometre.separator5"
                   visible="true">
@@ -735,6 +860,19 @@
                   label="%RestartAction.label"
                   style="push"
                   tooltip="%RestartAction.tooltip">
+            </command>
+            <command
+                  commandId="LaunchNewDocometreSessionCommand"
+                  label="%LaunchNewDocometreSessionCommand.label"
+                  style="push"
+                  tooltip="%LaunchNewDocometreSessionCommand.tooltip">
+               <visibleWhen
+                     checkEnabled="false">
+                  <systemTest
+                        property="osgi.os"
+                        value="macosx">
+                  </systemTest>
+               </visibleWhen>
             </command>
             <command
                   commandId="org.eclipse.ui.file.exit"
@@ -803,16 +941,6 @@
                   commandId="EditDescriptionAction"
                   icon="icons/editDescription.gif"
                   label="%EditDescriptionAction.label"
-                  style="push">
-            </command>
-            <command
-                  commandId="org.eclipse.ui.edit.rename"
-                  label="%Rename.label"
-                  style="push">
-            </command>
-            <command
-                  commandId="org.eclipse.ui.file.refresh"
-                  label="%Refresh.label"
                   style="push">
             </command>
             <menu
@@ -886,6 +1014,42 @@
                </command>
                <command
                      commandId="SetTypeCommand"
+                     label="%DACQConfigurationType.label"
+                     style="radio">
+                  <parameter
+                        name="Docometre.type.parameter"
+                        value="DACQ_CONFIGURATION">
+                  </parameter>
+               </command>
+               <command
+                     commandId="SetTypeCommand"
+                     label="%DACQProcessingType.label"
+                     style="radio">
+                  <parameter
+                        name="Docometre.type.parameter"
+                        value="PROCESS">
+                  </parameter>
+               </command>
+               <command
+                     commandId="SetTypeCommand"
+                     label="%DataProcessingType.label"
+                     style="radio">
+                  <parameter
+                        name="Docometre.type.parameter"
+                        value="DATA_PROCESSING">
+                  </parameter>
+               </command>
+               <command
+                     commandId="SetTypeCommand"
+                     label="%BatchDataProcessingType.label"
+                     style="radio">
+                  <parameter
+                        name="Docometre.type.parameter"
+                        value="BATCH_DATA_PROCESSING">
+                  </parameter>
+               </command>
+               <command
+                     commandId="SetTypeCommand"
                      label="%ProcessTestType.label"
                      style="radio">
                   <parameter
@@ -920,6 +1084,69 @@
                         value="TRIAL">
                   </parameter>
                </command>
+               <command
+                     commandId="SetTypeCommand"
+                     label="%LogType.label"
+                     style="radio">
+                  <parameter
+                        name="Docometre.type.parameter"
+                        value="LOG">
+                  </parameter>
+               </command>
+               <command
+                     commandId="SetTypeCommand"
+                     label="%SamplesType.label"
+                     style="radio">
+                  <parameter
+                        name="Docometre.type.parameter"
+                        value="SAMPLES">
+                  </parameter>
+               </command>
+               <command
+                     commandId="SetTypeCommand"
+                     label="%ParametersType.label"
+                     style="radio">
+                  <parameter
+                        name="Docometre.type.parameter"
+                        value="PARAMETERS">
+                  </parameter>
+               </command>
+               <command
+                     commandId="SetTypeCommand"
+                     label="%ADWType.label"
+                     style="radio">
+                  <parameter
+                        name="Docometre.type.parameter"
+                        value="ADW_DATA_FILE">
+                  </parameter>
+               </command>
+               <command
+                     commandId="SetTypeCommand"
+                     label="%OptitrackType1.label"
+                     style="radio">
+                  <parameter
+                        name="Docometre.type.parameter"
+                        value="OPTITRACK_TYPE_1">
+                  </parameter>
+               </command>
+               <command
+                     commandId="SetTypeCommand"
+                     label="%XYChartType.label"
+                     style="radio">
+                  <parameter
+                        name="Docometre.type.parameter"
+                        value="XYCHART">
+                  </parameter>
+               </command>
+               <command
+                     commandId="SetTypeCommand"
+                     label="%CustomerFunctionType.label"
+                     style="radio">
+                  <parameter
+                        name="Docometre.type.parameter"
+                        value="CUSTOMER_FUNCTION">
+                  </parameter>
+               </command>
             </menu>
             <command
                   commandId="EditSessionAction"
@@ -945,6 +1172,10 @@
                   </with>
                </visibleWhen>
             </command>
+            <separator
+                  name="Docometre.separator5"
+                  visible="true">
+            </separator>
             <command
                   commandId="ResetTrialsCommand"
                   icon="icons/reset.gif"
@@ -1005,6 +1236,162 @@
                   </with>
                </visibleWhen>
             </command>
+            <separator
+                  name="Docometre.separator6"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="MarkTrialsDoneCommand"
+                  icon="icons/clear.gif"
+                  label="%MarkTrialsDone.label"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                  <with
+                        variable="selection">
+                     <iterate>
+                        <or>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,TRIAL"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,SESSION"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,SUBJECT"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                        </or>
+                     </iterate>
+                  </with>
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="MarkTrialsUnDoneCommand"
+                  icon="icons/clear.gif"
+                  label="%MarkTrialsUnDone.label"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                  <with
+                        variable="selection">
+                     <iterate>
+                        <or>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,TRIAL"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,SESSION"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,SUBJECT"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                        </or>
+                     </iterate>
+                  </with>
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="MarkTrialsAutoCommand"
+                  icon="icons/clear.gif"
+                  label="%MarkTrialsAuto.label"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                  <with
+                        variable="selection">
+                     <iterate>
+                        <or>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,TRIAL"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,SESSION"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,SUBJECT"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                        </or>
+                     </iterate>
+                  </with>
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="MarkTrialsManualCommand"
+                  icon="icons/clear.gif"
+                  label="%MarkTrialsManual.label"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                  <with
+                        variable="selection">
+                     <iterate>
+                        <or>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,TRIAL"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,SESSION"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,SUBJECT"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                        </or>
+                     </iterate>
+                  </with>
+               </visibleWhen>
+            </command>
+            <separator
+                  name="Docometre.separator7"
+                  visible="true">
+            </separator>
             <command
                   commandId="CleanCommand"
                   icon="icons/clear.gif"
@@ -1100,7 +1487,45 @@
                      label="%ShowSubjectsViewCommand.label"
                      style="push">
                </command>
+               <command
+                     commandId="ShowFunctionsViewCommand"
+                     icon="icons/function.gif"
+                     label="%ShowFunctionsViewCommand.label"
+                     style="push">
+               </command>
+               <separator
+                     name="Docometre.separator1"
+                     visible="true">
+               </separator>
+               <command
+                     commandId="TestOpenGLAction"
+                     label="Test OpenGL View"
+                     style="push">
+               </command>
+               <command
+                     commandId="TestJZY3DAction"
+                     label="Test JZY3D View"
+                     style="push">
+               </command>
             </menu>
+            <separator
+                  name="Docometre.separator1"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="AutoBuildCommand"
+                  label="%AutoBuildCommand.label"
+                  style="radio">
+            </command>
+            <command
+                  commandId="CompileCommand"
+                  label="%CompileCommand.label"
+                  style="push">
+            </command>
+            <separator
+                  name="Docometre.separator2"
+                  visible="true">
+            </separator>
             <command
                   commandId="org.eclipse.ui.window.preferences"
                   label="%PreferencesAction.label"
@@ -1119,16 +1544,10 @@
                   </or>
                </visibleWhen>
             </command>
-            <command
-                  commandId="TestOpenGLAction"
-                  label="Test OpenGL Charts..."
-                  style="push">
-            </command>
-            <command
-                  commandId="TestJZY3DAction"
-                  label="Test JZY3D Charts..."
-                  style="push">
-            </command>
+            <separator
+                  name="Docometre.separator3"
+                  visible="true">
+            </separator>
             <command
                   commandId="StartStopMathEngineCommand"
                   label="Start/Stop Math Engine"
@@ -1254,11 +1673,39 @@
                      tooltip="%NewDataProcessingCommand.tooltip">
                </command>
                <command
+                     commandId="NewBatchDataProcessingCommand"
+                     icon="icons/batchDataProcessing.gif"
+                     label="%NewBatchDataProcessingCommand.label"
+                     style="push"
+                     tooltip="%NewBatchDataProcessingCommand.tooltip">
+               </command>
+               <command
                      commandId="NewFolderAction"
                      icon="icons/folder.gif"
                      label="%NewFolderAction.label"
                      style="push"
                      tooltip="%NewFolderAction.tooltip">
+               </command>
+               <command
+                     commandId="NewXYChartCommand"
+                     icon="icons/XYChartIcon.png"
+                     label="%NewXYChartCommand.label"
+                     style="push"
+                     tooltip="%NewXYChartCommand.tooltip">
+               </command>
+               <command
+                     commandId="NewXYZChartCommand"
+                     icon="icons/XYZChartIcon.png"
+                     label="%NewXYZChartCommand.label"
+                     style="push"
+                     tooltip="%NewXYZChartCommand.tooltip">
+               </command>
+               <command
+                     commandId="NewCustomFunctionCommand"
+                     icon="icons/customerFunction.gif"
+                     label="%NewCustomFunctionCommand.label"
+                     style="push"
+                     tooltip="%NewCustomFunctionCommand.tooltip">
                </command>
                
                
@@ -1475,6 +1922,42 @@
             </command>
             <command
                   commandId="SetTypeCommand"
+                  label="%DACQConfigurationType.label"
+                  style="radio">
+               <parameter
+                     name="Docometre.type.parameter"
+                     value="DACQ_CONFIGURATION">
+               </parameter>
+            </command>
+            <command
+                  commandId="SetTypeCommand"
+                  label="%DACQProcessingType.label"
+                  style="radio">
+               <parameter
+                     name="Docometre.type.parameter"
+                     value="PROCESS">
+               </parameter>
+            </command>
+            <command
+                  commandId="SetTypeCommand"
+                  label="%DataProcessingType.label"
+                  style="radio">
+               <parameter
+                     name="Docometre.type.parameter"
+                     value="DATA_PROCESSING">
+               </parameter>
+            </command>
+            <command
+                  commandId="SetTypeCommand"
+                  label="%BatchDataProcessingType.label"
+                  style="radio">
+               <parameter
+                     name="Docometre.type.parameter"
+                     value="BATCH_DATA_PROCESSING">
+               </parameter>
+            </command>
+            <command
+                  commandId="SetTypeCommand"
                   label="%ProcessTestType.label"
                   style="radio">
                <parameter
@@ -1509,6 +1992,69 @@
                      value="TRIAL">
                </parameter>
             </command>
+            <command
+                  commandId="SetTypeCommand"
+                  label="%LogType.label"
+                  style="radio">
+               <parameter
+                     name="Docometre.type.parameter"
+                     value="LOG">
+               </parameter>
+            </command>
+            <command
+                  commandId="SetTypeCommand"
+                  label="%SamplesType.label"
+                  style="radio">
+               <parameter
+                     name="Docometre.type.parameter"
+                     value="SAMPLES">
+               </parameter>
+            </command>
+            <command
+                  commandId="SetTypeCommand"
+                  label="%ParametersType.label"
+                  style="radio">
+               <parameter
+                     name="Docometre.type.parameter"
+                     value="PARAMETERS">
+               </parameter>
+            </command>
+            <command
+                  commandId="SetTypeCommand"
+                  label="%ADWType.label"
+                  style="radio">
+               <parameter
+                     name="Docometre.type.parameter"
+                     value="ADW_DATA_FILE">
+               </parameter>
+            </command>
+            <command
+                  commandId="SetTypeCommand"
+                  label="%OptitrackType1.label"
+                  style="radio">
+               <parameter
+                     name="Docometre.type.parameter"
+                     value="OPTITRACK_TYPE_1">
+               </parameter>
+            </command>
+            <command
+                  commandId="SetTypeCommand"
+                  label="%XYChartType.label"
+                  style="radio">
+               <parameter
+                     name="Docometre.type.parameter"
+                     value="XYCHART">
+               </parameter>
+            </command>
+            <command
+                  commandId="SetTypeCommand"
+                  label="%CustomerFunctionType.label"
+                  style="radio">
+               <parameter
+                     name="Docometre.type.parameter"
+                     value="CUSTOMER_FUNCTION">
+               </parameter>
+            </command>
          </menu>
          <command
                commandId="EditSessionAction"
@@ -1534,6 +2080,10 @@
                </with>
             </visibleWhen>
          </command>
+         <separator
+               name="Docometre.separator1"
+               visible="true">
+         </separator>
          <command
                commandId="ResetTrialsCommand"
                icon="icons/reset.gif"
@@ -1595,6 +2145,174 @@
                </with>
             </visibleWhen>
          </command>
+         <separator
+               name="Docometre.separator228"
+               visible="true">
+         </separator>
+         <command
+               commandId="MarkTrialsDoneCommand"
+               icon="icons/reset.gif"
+               label="%MarkTrialsDone.label"
+               style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                  <with
+                        variable="selection">
+                     <iterate>
+                        <or>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,TRIAL"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,SESSION"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,SUBJECT"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                        </or>
+                     </iterate>
+                  </with>
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="MarkTrialsUnDoneCommand"
+                  icon="icons/reset.gif"
+                  label="%MarkTrialsUnDone.label"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                  <with
+                        variable="selection">
+                     <iterate>
+                        <or>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,TRIAL"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,SESSION"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,SUBJECT"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                        </or>
+                     </iterate>
+                  </with>
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="MarkTrialsAutoCommand"
+                  icon="icons/TrialStartMode.gif"
+                  label="%MarkTrialsAuto.label"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                  <with
+                        variable="selection">
+                     <iterate>
+                        <or>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,TRIAL"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,SESSION"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,SUBJECT"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                        </or>
+                     </iterate>
+                  </with>
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="MarkTrialsManualCommand"
+                  icon="icons/TrialStartMode.gif"
+                  label="%MarkTrialsManual.label"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                  <with
+                        variable="selection">
+                     <iterate>
+                        <or>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,TRIAL"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,SESSION"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <test
+                                    args="Docometre.type,SUBJECT"
+                                    property="org.eclipse.core.resources.persistentProperty">
+                              </test>
+                           </adapt>
+                        </or>
+                     </iterate>
+                  </with>
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="ValidateTrialsAutoCommand"
+                  icon="icons/checkboxChecked.gif"
+                  label="%ValidateTrialsAuto.label"
+                  style="push">
+            </command>
+            <command
+                  commandId="ValidateTrialsManualCommand"
+                  icon="icons/checkboxUnchecked.gif"
+                  label="%ValidateTrialsManual.label"
+                  style="push">
+            </command>
+            <separator
+                  name="Docometre.separator3"
+                  visible="true">
+            </separator>
          <command
                commandId="CleanCommand"
                icon="icons/clear.gif"
@@ -1679,6 +2397,13 @@
                                  property="org.eclipse.core.resources.persistentProperty">
                            </test>
                         </adapt>
+                        <adapt
+                              type="org.eclipse.core.resources.IResource">
+                           <test
+                                 args="Docometre.type,SUBJECT"
+                                 property="org.eclipse.core.resources.persistentProperty">
+                           </test>
+                        </adapt>
                      </or>
                   </iterate>
                </with>
@@ -1706,9 +2431,11 @@
          <toolbar
                id="Docometre.DesignCoolBarToolbar">
             <command
-                  commandId="org.eclipse.ui.file.save"
+                  commandId="SaveCommand"
+                  icon="platform:/plugin/org.eclipse.ui/icons/full/etool16/save_edit.png"
                   label="%SaveAction.label"
-                  style="push">
+                  style="push"
+                  tooltip="%SaveAction.label">
                <visibleWhen
                      checkEnabled="false">
                   <reference
@@ -1717,10 +2444,12 @@
                </visibleWhen>
             </command>
             <command
-                  commandId="org.eclipse.ui.file.saveAll"
+                  commandId="SaveAllCommand"
+                  icon="platform:/plugin/org.eclipse.ui/icons/full/etool16/saveall_edit.png"
                   id="saveall"
                   label="%SaveAllAction.label"
-                  style="push">
+                  style="push"
+                  tooltip="%SaveAllAction.label">
                <visibleWhen
                      checkEnabled="false">
                   <reference
@@ -1824,6 +2553,19 @@
             </visibleWhen>
          </command>
          <command
+               commandId="NewBatchDataProcessingCommand"
+               icon="icons/batchDataProcessing.gif"
+               label="%NewBatchDataProcessingCommand.label"
+               style="push"
+               tooltip="%NewBatchDataProcessingCommand.tooltip">
+            <visibleWhen
+                  checkEnabled="false">
+               <reference
+                     definitionId="Docometre.DesignPerspectiveSelected">
+               </reference>
+            </visibleWhen>
+         </command>
+         <command
                commandId="NewFolderAction"
                icon="icons/folder.gif"
                label="%NewFolderAction.label"
@@ -1835,6 +2577,45 @@
 		                 definitionId="Docometre.DesignPerspectiveSelected">
 		           </reference>
 		        </visibleWhen>      
+         </command>
+         <command
+               commandId="NewXYChartCommand"
+               icon="icons/XYChartIcon.png"
+               label="%NewXYChartCommand.label"
+               style="push"
+               tooltip="%NewXYChartCommand.tooltip">
+            <visibleWhen
+                  checkEnabled="false">
+               <reference
+                     definitionId="Docometre.DesignPerspectiveSelected">
+               </reference>
+            </visibleWhen>
+         </command>
+         <command
+               commandId="NewXYZChartCommand"
+               icon="icons/XYZChartIcon.png"
+               label="%NewXYZChartCommand.label"
+               style="push"
+               tooltip="%NewXYZChartCommand.tooltip">
+            <visibleWhen
+                  checkEnabled="false">
+               <reference
+                     definitionId="Docometre.DesignPerspectiveSelected">
+               </reference>
+            </visibleWhen>
+         </command>
+         <command
+               commandId="NewCustomFunctionCommand"
+               icon="icons/customerFunction.gif"
+               label="%NewCustomFunctionCommand.label"
+               style="push"
+               tooltip="%NewCustomFunctionCommand.tooltip">
+            <visibleWhen
+                  checkEnabled="false">
+               <reference
+                     definitionId="Docometre.DesignPerspectiveSelected">
+               </reference>
+            </visibleWhen>
          </command>
          <separator
                name="Docometre.separator2"
@@ -1954,6 +2735,37 @@
          <toolbar
                id="Docometre.AnalyseCoolBarToolbar">
             <command
+                  commandId="SaveCommand"
+                  icon="platform:/plugin/org.eclipse.ui/icons/full/etool16/save_edit.png"
+                  label="%SaveAction.label"
+                  style="push"
+                  tooltip="%SaveAction.label">
+               <visibleWhen
+                     checkEnabled="false">
+                  <reference
+                        definitionId="Docometre.AnalysePerspectiveSelected">
+                  </reference>
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="SaveAllCommand"
+                  icon="platform:/plugin/org.eclipse.ui/icons/full/etool16/saveall_edit.png"
+                  id="saveall"
+                  label="%SaveAllAction.label"
+                  style="push"
+                  tooltip="%SaveAllAction.label">
+               <visibleWhen
+                     checkEnabled="false">
+                  <reference
+                        definitionId="Docometre.AnalysePerspectiveSelected">
+                  </reference>
+               </visibleWhen>
+            </command>
+            <separator
+                  name="Docometre.separator1"
+                  visible="true">
+            </separator>
+            <command
                   commandId="SelectExperimentCommand"
                   icon="icons/select.gif"
                   label="%SelectExperimentCommand.label"
@@ -2013,11 +2825,80 @@
                </visibleWhen>
             </command>
             <command
+                  commandId="NewBatchDataProcessingCommand"
+                  icon="icons/batchDataProcessing.gif"
+                  label="%NewBatchDataProcessingCommand.label"
+                  style="push"
+                  tooltip="%NewBatchDataProcessingCommand.tooltip">
+               <visibleWhen
+                     checkEnabled="false">
+                  <reference
+                        definitionId="Docometre.AnalysePerspectiveSelected">
+                  </reference>
+               </visibleWhen>
+            </command>
+            <command
                   commandId="RunDataProcessingCommand"
-                  icon="icons/runDataProcessing.gif"
+                  icon="icons/runDataProcessing.png"
                   label="%RunDataProcessingCommand.label"
                   style="push"
                   tooltip="%RunDataProcessingCommand.label">
+               <visibleWhen
+                     checkEnabled="false">
+                  <reference
+                        definitionId="Docometre.AnalysePerspectiveSelected">
+                  </reference>
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="NewXYChartCommand"
+                  icon="icons/XYChartIcon.png"
+                  label="%NewXYChartCommand.label"
+                  style="push"
+                  tooltip="%NewXYChartCommand.tooltip">
+               <visibleWhen
+                     checkEnabled="false">
+                  <reference
+                        definitionId="Docometre.AnalysePerspectiveSelected">
+                  </reference>
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="NewXYZChartCommand"
+                  icon="icons/XYZChartIcon.png"
+                  label="%NewXYZChartCommand.label"
+                  style="push"
+                  tooltip="%NewXYZChartCommand.tooltip">
+               <visibleWhen
+                     checkEnabled="false">
+                  <reference
+                        definitionId="Docometre.AnalysePerspectiveSelected">
+                  </reference>
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="NewCustomFunctionCommand"
+                  icon="icons/customerFunction.gif"
+                  label="%NewCustomFunctionCommand.label"
+                  style="push"
+                  tooltip="%NewCustomFunctionCommand.tooltip">
+               <visibleWhen
+                     checkEnabled="false">
+                  <reference
+                        definitionId="Docometre.AnalysePerspectiveSelected">
+                  </reference>
+               </visibleWhen>
+            </command>
+            <separator
+                  name="Docometre.separator3"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="ExportDataCommand"
+                  icon="platform:/plugin/org.eclipse.ui/icons/full/etool16/export_wiz.png"
+                  label="%ExportDataCommand.label"
+                  style="push"
+                  tooltip="%ExportDataCommand.tooltip">
                <visibleWhen
                      checkEnabled="false">
                   <reference
@@ -2040,11 +2921,38 @@
                   tooltip="%NewDataProcessingCommand.tooltip">
             </command>
             <command
+                  commandId="NewBatchDataProcessingCommand"
+                  icon="icons/batchDataProcessing.gif"
+                  label="%NewBatchDataProcessingCommand.label"
+                  style="push">
+            </command>
+            <command
                   commandId="NewFolderAction"
                   icon="icons/folder.gif"
                   label="%NewFolderAction.label"
                   style="push"
                   tooltip="%NewFolderAction.tooltip">
+            </command>
+            <command
+                  commandId="NewXYChartCommand"
+                  icon="icons/XYChartIcon.png"
+                  label="%NewXYChartCommand.label"
+                  style="push"
+                  tooltip="%NewXYChartCommand.tooltip">
+            </command>
+            <command
+                  commandId="NewXYZChartCommand"
+                  icon="icons/XYZChartIcon.png"
+                  label="%NewXYZChartCommand.label"
+                  style="push"
+                  tooltip="%NewXYZChartCommand.tooltip">
+            </command>
+            <command
+                  commandId="NewCustomFunctionCommand"
+                  icon="icons/customerFunction.gif"
+                  label="%NewCustomFunctionCommand.label"
+                  style="push"
+                  tooltip="%NewCustomFunctionCommand.tooltip">
             </command>
          </menu>
          <command
@@ -2105,7 +3013,7 @@
          </command>
          <command
                commandId="RunDataProcessingCommand"
-               icon="icons/runDataProcessing.gif"
+               icon="icons/runDataProcessing.png"
                label="%RunDataProcessingCommand.label"
                style="push">
          </command>
@@ -2147,9 +3055,31 @@
                visible="true">
          </separator>
          <command
+               commandId="ExportDataCommand"
+               icon="platform:/plugin/org.eclipse.ui/icons/full/etool16/export_wiz.png"
+               label="%ExportDataCommand.label"
+               style="push"
+               tooltip="%ExportDataCommand.tooltip">
+         </command>
+         <separator
+               name="Docometre.separator3"
+               visible="true">
+         </separator>
+         <command
                commandId="org.eclipse.ui.edit.delete"
                label="%Delete.label"
                style="push">
+         </command>
+      </menuContribution>
+      <menuContribution
+            allPopups="true"
+            locationURI="popup:Docometre.FunctionsView">
+         <command
+               commandId="NewCustomFunctionCommand"
+               icon="icons/customerFunction.gif"
+               label="%NewCustomFunctionCommand.label"
+               style="push"
+               tooltip="%NewCustomFunctionCommand.tooltip">
          </command>
       </menuContribution>
    </extension>
@@ -2235,6 +3165,11 @@
       <command
             id="NewFolderAction"
             name="NewFolderAction">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.handlers.NewCustomFunctionHandler"
+            id="NewCustomFunctionCommand"
+            name="NewCustomFunctionCommand">
       </command>
       <command
             id="ShowExperimentsViewAction"
@@ -2399,6 +3334,89 @@
             id="RunDataProcessingCommand"
             name="RunDataProcessingCommand">
       </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.analyse.handlers.NewBatchDataProcessingHandler"
+            id="NewBatchDataProcessingCommand"
+            name="NewBatchDataProcessingCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.analyse.handlers.ExportDataHandler"
+            id="ExportDataCommand"
+            name="ExportDataCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.analyse.handlers.NewXYChartHandler"
+            id="NewXYChartCommand"
+            name="NewXYChartCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.analyse.handlers.NewXYZChartHandler"
+            id="NewXYZChartCommand"
+            name="NewXYZChartCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.handlers.SaveHandler"
+            id="SaveCommand"
+            name="SaveCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.handlers.SaveAllHandler"
+            id="SaveAllCommand"
+            name="SaveAllCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.handlers.MarkTrialsDoneHandler"
+            id="MarkTrialsDoneCommand"
+            name="MarkTrialsDoneCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.handlers.MarkTrialsUnDoneHandler"
+            id="MarkTrialsUnDoneCommand"
+            name="MarkTrialsUnDoneCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.handlers.MarkTrialsAutoHandler"
+            id="MarkTrialsAutoCommand"
+            name="MarkTrialsAutoCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.handlers.MarkTrialsManualHandler"
+            id="MarkTrialsManualCommand"
+            name="MarkTrialsManualCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.handlers.LaunchNewDocometreSessionHandler"
+            id="LaunchNewDocometreSessionCommand"
+            name="LaunchNewDocometreSessionCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.handlers.ShowFunctionsViewHandler"
+            id="ShowFunctionsViewCommand"
+            name="ShowFunctionsViewCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.handlers.AutoBuildHandler"
+            id="AutoBuildCommand"
+            name="AutoBuildCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.handlers.CompileHandler"
+            id="CompileCommand"
+            name="CompileCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.handlers.ValidateTrialsManualHandler"
+            id="ValidateTrialsManualCommand"
+            name="ValidateTrialsManualCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.handlers.ValidateTrialsAutoHandler"
+            id="ValidateTrialsAutoCommand"
+            name="ValidateTrialsAutoCommand">
+      </command>
+      
+      
+      
    </extension>
    <extension
          point="org.eclipse.ui.activities">
@@ -2418,6 +3436,25 @@
             activityId="Docometre.Activity"
             pattern=".*/org.eclipse.equinox.p2.ui.sdk.update">
       </activityPatternBinding>
+   </extension>
+   <extension
+         point="org.eclipse.ui.elementFactories">
+      <factory
+            class="fr.univamu.ism.docometre.editors.EditorsPersitenceElementFactory"
+            id="Docometre.EditorsPersitenceElementFactory">
+      </factory>
+   </extension>
+   <extension
+         point="org.eclipse.ui.console.consolePageParticipants">
+      <consolePageParticipant
+            class="fr.univamu.ism.docometre.consoles.DocometreConsolePageParticipant"
+            id="Docometre.consolePageParticipant1">
+         <enablement>
+            <instanceof
+                  value="org.eclipse.ui.console.IConsole">
+            </instanceof>
+         </enablement>
+      </consolePageParticipant>
    </extension>
 
 </plugin>

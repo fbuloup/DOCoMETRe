@@ -49,11 +49,17 @@ public final class ChartFactory {
 		case OSCILLO_CHART:
 			chartConfiguration = new OscilloChartConfiguration();
 			break;
-//		case SCROLL_CHART:
-//			break;
 		case XY_CHART:
 			chartConfiguration = new XYChartConfiguration();
 			break;
+		case GAUGE_CHART:
+			chartConfiguration = new MeterChartConfiguration(ChartTypes.GAUGE_CHART);
+			break;
+		case TANK_CHART:
+			chartConfiguration = new MeterChartConfiguration(ChartTypes.TANK_CHART);
+			break;
+		case IMAGE_CHART:
+			chartConfiguration = new ImageChartConfiguration();
 		default:
 			break;
 		}

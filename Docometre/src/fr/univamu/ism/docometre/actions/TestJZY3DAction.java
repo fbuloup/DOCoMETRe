@@ -60,7 +60,7 @@ public class TestJZY3DAction extends Action {
 	@Override
 	public void run() {
 		TestJZY3DChart.main(new String[]{"-displayLoop", "false"});
-		TestJZY3DChart.getShell().setImage(Activator.getImage("icons/docometre.ico"));
+ 		TestJZY3DChart.getShell().setImage(Activator.getImage("icons/docometre.ico"));
 	}
 	
 }

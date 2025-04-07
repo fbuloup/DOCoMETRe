@@ -117,7 +117,7 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 	protected void initCommands(Gateway gateway, List<Class<? extends Command>> commandsClazz) {
 		for (Class<? extends Command> clazz : commandsClazz) {
 			try {
-				Command cmd = clazz.newInstance();
+				Command cmd = clazz.getDeclaredConstructor().newInstance();
 				initCommand(gateway, cmd);
 			} catch (Exception e) {
 				String name = "null";

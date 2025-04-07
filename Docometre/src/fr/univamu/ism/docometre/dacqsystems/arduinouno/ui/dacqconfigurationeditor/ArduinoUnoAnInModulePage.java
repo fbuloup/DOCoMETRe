@@ -82,6 +82,7 @@ public class ArduinoUnoAnInModulePage extends ArduinoUnoModulePage {
 			int result = 0;
 			Channel in1 = (Channel) e1;
 			Channel in2 = (Channel) e2;
+			int columnNumber = (int) tableViewer.getData(Integer.toString(sortingColumnNumber));
 			switch (columnNumber) {
 			case 0:
 				e1 = in1.getProperty(ArduinoUnoChannelProperties.USED);
@@ -212,11 +213,11 @@ public class ArduinoUnoAnInModulePage extends ArduinoUnoModulePage {
 		createColumn(ChannelProperties.RECORD.getTooltip(), channelsTableColumnLayout, ChannelProperties.RECORD, defaultColumnWidth, 6);
 		//createColumn(ChannelProperties.BUFFER_SIZE.getTooltip(), channelsTableColumnLayout, ChannelProperties.BUFFER_SIZE, defaultColumnWidth, 7);
 		//createColumn(ADWinAnInChannelProperties.GAIN.getTooltip(), channelsTableColumnLayout, ADWinAnInChannelProperties.GAIN, defaultColumnWidth, 8);
-		createColumn(ArduinoUnoAnInChannelProperties.UNIT.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.UNIT, defaultColumnWidth, 7);
-		createColumn(ArduinoUnoAnInChannelProperties.UNIT_MAX.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.UNIT_MAX, defaultColumnWidth, 8);
-		createColumn(ArduinoUnoAnInChannelProperties.UNIT_MIN.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.UNIT_MIN, defaultColumnWidth, 9);
-		createColumn(ArduinoUnoAnInChannelProperties.AMPLITUDE_MAX.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.AMPLITUDE_MAX, defaultColumnWidth, 10);
-		createColumn(ArduinoUnoAnInChannelProperties.AMPLITUDE_MIN.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.AMPLITUDE_MIN, defaultColumnWidth, 11);
+//		createColumn(ArduinoUnoAnInChannelProperties.UNIT.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.UNIT, defaultColumnWidth, 7);
+//		createColumn(ArduinoUnoAnInChannelProperties.UNIT_MAX.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.UNIT_MAX, defaultColumnWidth, 8);
+//		createColumn(ArduinoUnoAnInChannelProperties.UNIT_MIN.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.UNIT_MIN, defaultColumnWidth, 9);
+//		createColumn(ArduinoUnoAnInChannelProperties.AMPLITUDE_MAX.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.AMPLITUDE_MAX, defaultColumnWidth, 10);
+//		createColumn(ArduinoUnoAnInChannelProperties.AMPLITUDE_MIN.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.AMPLITUDE_MIN, defaultColumnWidth, 11);
 		tableViewer.setContentProvider(new ArrayContentProvider());
 		tableViewer.setLabelProvider(new ITableLabelProvider() {
 			public void removeListener(ILabelProviderListener listener) {
@@ -230,7 +231,8 @@ public class ArduinoUnoAnInModulePage extends ArduinoUnoModulePage {
 			}
 			public String getColumnText(Object element, int columnIndex) {
 				Channel channel = (Channel)element;
-				switch (columnIndex) {
+				int columnNumber = (int) tableViewer.getData(Integer.toString(columnIndex));
+				switch (columnNumber) {
 				case 0:
 					return channel.getProperty(ArduinoUnoChannelProperties.USED);
 				case 1:
@@ -262,7 +264,8 @@ public class ArduinoUnoAnInModulePage extends ArduinoUnoModulePage {
 			public Image getColumnImage(Object element, int columnIndex) {
 				Channel channel = (Channel)element;
 				String value = "false";
-				switch (columnIndex) {
+				int columnNumber = (int) tableViewer.getData(Integer.toString(columnIndex));
+				switch (columnNumber) {
 				case 0:
 					value = channel.getProperty(ArduinoUnoChannelProperties.USED);
 					return value.equals("true") ? ModulePage.checkedImage : ModulePage.uncheckedImage;

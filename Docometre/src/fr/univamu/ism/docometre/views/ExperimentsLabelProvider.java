@@ -47,6 +47,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.ui.ISharedImages;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.GetResourceLabelDelegate;
@@ -73,21 +74,29 @@ public class ExperimentsLabelProvider implements ILabelProvider {
 		if(!(element instanceof IResource)) return null;
 		IResource resource = (IResource) element;
 		if(resource instanceof IProject && !((IProject) resource).isOpen()) return null;
-		if(ResourceType.isExperiment(resource)) return Activator.getImageDescriptor(IImageKeys.EXPERIMENT_ICON).createImage();
-		if(ResourceType.isFolder(resource)) return Activator.getImageDescriptor(IImageKeys.FOLDER_ICON).createImage();
-		if(ResourceType.isSubject(resource)) return Activator.getImageDescriptor(IImageKeys.SUBJECT_ICON).createImage();
-		if(ResourceType.isSession(resource)) return Activator.getImageDescriptor(IImageKeys.SESSION_ICON).createImage();
-		if(ResourceType.isDACQConfiguration(resource)) return Activator.getImageDescriptor(IImageKeys.DACQ_CONFIGURATION_ICON).createImage();
-		if(ResourceType.isProcess(resource)) return Activator.getImageDescriptor(IImageKeys.PROCESS_ICON).createImage();
-		if(ResourceType.isTrial(resource) && ResourceProperties.isTrialDone((IFolder) resource)) return Activator.getImageDescriptor(IImageKeys.DONE_ICON).createImage();
-		if(ResourceType.isTrial(resource) && !ResourceProperties.isTrialDone((IFolder) resource)) return Activator.getImageDescriptor(IImageKeys.UNDONE_ICON).createImage();
-		if(ResourceType.isLog(resource)) return Activator.getImageDescriptor(IImageKeys.DIARY_ICON).createImage();
-		if(ResourceType.isSamples(resource)) return Activator.getImageDescriptor(IImageKeys.SAMPLES_ICON).createImage();
-		if(ResourceType.isADWDataFile(resource)) return Activator.getImageDescriptor(IImageKeys.SAMPLES_ICON).createImage();
-		if(ResourceType.isParameters(resource)) return Activator.getImageDescriptor(IImageKeys.PARAMETERS_FILE_ICON).createImage();
-		if(ResourceType.isProcessTest(resource)) return Activator.getImageDescriptor(IImageKeys.FOLDER_ICON).createImage();
-		if(ResourceType.isDataProcessing(resource)) return Activator.getImageDescriptor(IImageKeys.DATA_PROCESSING_ICON).createImage();
-		return Activator.getImageDescriptor("org.eclipse.ui", "icons/full/etool16/help_contents.png").createImage();
+		if(ResourceType.isExperiment(resource)) return Activator.getImage(IImageKeys.EXPERIMENT_ICON);
+		if(ResourceType.isFolder(resource)) return Activator.getImage(IImageKeys.FOLDER_ICON);
+		if(ResourceType.isSubject(resource)) return Activator.getImage(IImageKeys.SUBJECT_ICON);
+		if(ResourceType.isSession(resource)) return Activator.getImage(IImageKeys.SESSION_ICON);
+		if(ResourceType.isDACQConfiguration(resource)) return Activator.getImage(IImageKeys.DACQ_CONFIGURATION_ICON);
+		if(ResourceType.isProcess(resource)) return Activator.getImage(IImageKeys.PROCESS_ICON);
+		if(ResourceType.isTrial(resource) && ResourceProperties.isTrialDone((IFolder) resource)) return Activator.getImage(IImageKeys.DONE_ICON);
+		if(ResourceType.isTrial(resource) && !ResourceProperties.isTrialDone((IFolder) resource)) return Activator.getImage(IImageKeys.UNDONE_ICON);
+		if(ResourceType.isLog(resource)) return Activator.getImage(IImageKeys.DIARY_ICON);
+		if(ResourceType.isSamples(resource)) return Activator.getImage(IImageKeys.SAMPLES_ICON);
+		if(ResourceType.isADWDataFile(resource)) return Activator.getImage(IImageKeys.SAMPLES_ICON);
+		if(ResourceType.isOptitrack_Type_1(resource)) return Activator.getImage(IImageKeys.SAMPLES_ICON);
+		if(ResourceType.isColumnDataFile(resource)) return Activator.getImage(IImageKeys.SAMPLES_ICON);
+		if(ResourceType.isParameters(resource)) return Activator.getImage(IImageKeys.PARAMETERS_FILE_ICON);
+		if(ResourceType.isProcessTest(resource)) return Activator.getImage(IImageKeys.FOLDER_ICON);
+		if(ResourceType.isDataProcessing(resource)) return Activator.getImage(IImageKeys.DATA_PROCESSING_ICON);
+		if(ResourceType.isBatchDataProcessing(resource)) return Activator.getImage(IImageKeys.BATCH_DATA_PROCESSING_ICON);
+		if(ResourceType.isNumpyFile(resource)) return Activator.getImage(IImageKeys.NUMPY_ICON_2);
+		if(ResourceType.isSaveFile(resource)) return Activator.getImage(IImageKeys.LOAD_UNLOAD_ICON);
+		if(ResourceType.isXYChart(resource)) return Activator.getImage(IImageKeys.XYChart_ICON);
+		if(ResourceType.isXYZChart(resource)) return Activator.getImage(IImageKeys.XYZChart_ICON);
+		if(ResourceType.isCustomerFunction(resource)) return Activator.getImage(IImageKeys.CUSTOMER_FUNCTION_ICON);
+		return Activator.getSharedImage(ISharedImages.IMG_LCL_LINKTO_HELP);//"icons/full/etool16/help_contents.png"); // this is IWorkbenchGraphicConstants.IMG_ETOOL_HELP_CONTENTS from org.eclipse.ui
 	}
 
 	public String getText(Object element) {

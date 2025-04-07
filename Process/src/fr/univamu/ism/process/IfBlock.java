@@ -129,16 +129,16 @@ public class IfBlock extends ConditionalBlock {
 	 * @return the code
 	 */
 	@Override
-	public String getCode(Object context, Object step) {
+	public String getCode(Object context, Object step, Object...objects) {
 		if(step == ScriptSegmentType.INITIALIZE || step == ScriptSegmentType.LOOP || step == ScriptSegmentType.FINALIZE) {
 			String contextSimpleName = context.getClass().getSimpleName();
 			if(contextSimpleName.equals(Activator.ArduinoUnoProcess)) {
-				String operator =  getOperator() == Operator.IS_EQUAL_TO ? " == " : getOperator().getValue();
+				String operator =  Operator.getOperatorForC(getOperator());
 				return "if (" + getLeftOperand() + operator + getRightOperand() + ") {\n";
 			}
 			
 			if(contextSimpleName.equals(Activator.ADWinProcess))
-			return "IF (" + getLeftOperand() + getOperator().getValue() + getRightOperand() + ") THEN\n";
+			return "IF (" + getLeftOperand() + Operator.getOperatorForADBasic(getOperator()) + getRightOperand() + ") THEN\n";
 			
 			if(contextSimpleName.equals(Activator.Script))
 				return "if " + getLeftOperand() + getOperator().getValue() + getRightOperand() + "\n";

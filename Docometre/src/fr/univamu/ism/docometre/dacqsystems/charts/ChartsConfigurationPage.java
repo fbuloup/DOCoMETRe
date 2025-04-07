@@ -47,6 +47,7 @@ import java.util.List;
 import org.eclipse.jface.layout.TableColumnLayout;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CellLabelProvider;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -108,7 +109,7 @@ public class ChartsConfigurationPage extends ModulePage {
 			int result = 0;
 			CurveConfiguration in1 = (CurveConfiguration) e1;
 			CurveConfiguration in2 = (CurveConfiguration) e2;
-			switch (columnNumber) {
+			switch (sortingColumnNumber) {
 			case 0:
 				if(in1 instanceof OscilloCurveConfiguration){
 					e1 = in1.getProperty(OscilloCurveConfigurationProperties.CHANNEL_NAME);
@@ -206,7 +207,7 @@ public class ChartsConfigurationPage extends ModulePage {
 		ToolBar toolBar = new ToolBar(generalConfigurationSection, SWT.FLAT | SWT.HORIZONTAL);
 		deleteChartToolItem = new ToolItem(toolBar, SWT.NULL);
 		deleteChartToolItem.setEnabled(false);
-		deleteChartToolItem.setImage(Activator.getImageDescriptor(ISharedImages.IMG_ETOOL_DELETE).createImage());
+		deleteChartToolItem.setImage(Activator.getSharedImage(ISharedImages.IMG_ETOOL_DELETE));
 		deleteChartToolItem.setToolTipText(DocometreMessages.DeleteChartsToolItem_Tooltip);
 		DeleteChartsHandler deleteChartsHandler = new DeleteChartsHandler(getSite().getShell(), this, dacqConfiguration.getCharts(), ((ResourceEditor)getEditor()).getUndoContext()); 
 		deleteChartToolItem.addSelectionListener(deleteChartsHandler);
@@ -390,9 +391,13 @@ public class ChartsConfigurationPage extends ModulePage {
 			tableConfigurationContainer.layout(true);
 			return;
 		}
+		tableConfigurationSection.setVisible(true);
 		tableViewer.getTable().setVisible(true);
 		if(currentSelectedChartConfiguration instanceof OscilloChartConfiguration) createOscilloCurvesSection();			
-		if(currentSelectedChartConfiguration instanceof XYChartConfiguration) createXYCurvesSection();			
+		if(currentSelectedChartConfiguration instanceof XYChartConfiguration) createXYCurvesSection();
+		if(currentSelectedChartConfiguration instanceof MeterChartConfiguration) createMeterCurveSection();			
+		if(currentSelectedChartConfiguration instanceof ImageChartConfiguration) tableConfigurationSection.setVisible(false);
+		
 		tableConfigurationContainer.layout(true);
 	}
 
@@ -533,6 +538,27 @@ public class ChartsConfigurationPage extends ModulePage {
 			}
 		});
 		
+		
+		TableViewerColumn curveDisplayValueTableViewerColumn = createColumn(OscilloCurveConfigurationProperties.DISPLAY_CURRENT_VALUES.getTooltip(), curvesTableColumnLayout, OscilloCurveConfigurationProperties.DISPLAY_CURRENT_VALUES, defaultColumnWidth + 100, 4);
+		curveDisplayValueTableViewerColumn.setLabelProvider(new ColumnLabelProvider() {
+			@Override
+			public String getText(Object element) {
+				if(!(element instanceof OscilloCurveConfiguration)) return "";
+				OscilloCurveConfiguration curve = (OscilloCurveConfiguration)element;
+				String value = curve.getProperty(OscilloCurveConfigurationProperties.DISPLAY_CURRENT_VALUES);
+				return value == null ? "false":value;
+			}
+			
+			@Override
+			public Image getImage(Object element) {
+				if(!(element instanceof OscilloCurveConfiguration)) return null;
+				OscilloCurveConfiguration curve = (OscilloCurveConfiguration)element;
+				String value = "false";
+				value = curve.getProperty(OscilloCurveConfigurationProperties.DISPLAY_CURRENT_VALUES);
+				return "true".equals(value) ? ModulePage.checkedImage : ModulePage.uncheckedImage;
+			}
+		});
+		
 		configureSorter(new CurvesComparator(), tableViewer.getTable().getColumn(0));
 		tableViewer.setContentProvider(new ArrayContentProvider());
 		tableViewer.setInput(currentSelectedChartConfiguration.getCurvesConfiguration());
@@ -642,6 +668,50 @@ public class ChartsConfigurationPage extends ModulePage {
 		tableViewer.setContentProvider(new ArrayContentProvider());
 		tableViewer.setInput(currentSelectedChartConfiguration.getCurvesConfiguration());
 		
+	}
+	
+	private void createMeterCurveSection() {
+		TableColumnLayout  curvesTableColumnLayout = (TableColumnLayout) tableConfigurationContainer.getLayout();
+		TableViewerColumn channelNameTableViewerColumn = createColumn(MeterCurveConfigurationProperties.CHANNEL_NAME.getTooltip(), curvesTableColumnLayout, MeterCurveConfigurationProperties.CHANNEL_NAME, 175, 0);
+		channelNameTableViewerColumn.setEditingSupport(null);
+		channelNameTableViewerColumn.setLabelProvider(new CellLabelProvider() {
+			@Override
+			public void update(ViewerCell cell) {
+				Object element = cell.getElement();
+				if(!(element instanceof MeterCurveConfiguration)) return;
+				MeterCurveConfiguration curve = (MeterCurveConfiguration)element;
+				cell.setText(curve.getProperty(MeterCurveConfigurationProperties.CHANNEL_NAME));
+			}
+		});
+		
+		TableViewerColumn curveDisplayValueTableViewerColumn = createColumn(MeterCurveConfigurationProperties.DISPLAY_CURRENT_VALUES.getTooltip(), curvesTableColumnLayout, MeterCurveConfigurationProperties.DISPLAY_CURRENT_VALUES, defaultColumnWidth + 100, 4);
+		curveDisplayValueTableViewerColumn.setLabelProvider(new ColumnLabelProvider() {
+			@Override
+			public String getText(Object element) {
+				if(!(element instanceof MeterCurveConfiguration)) return "";
+				MeterCurveConfiguration curve = (MeterCurveConfiguration)element;
+				String value = curve.getProperty(MeterCurveConfigurationProperties.DISPLAY_CURRENT_VALUES);
+				return value == null ? "false":value;
+			}
+			
+			@Override
+			public Image getImage(Object element) {
+				if(!(element instanceof MeterCurveConfiguration)) return null;
+				MeterCurveConfiguration curve = (MeterCurveConfiguration)element;
+				String value = "false";
+				value = curve.getProperty(MeterCurveConfigurationProperties.DISPLAY_CURRENT_VALUES);
+				return "true".equals(value) ? ModulePage.checkedImage : ModulePage.uncheckedImage;
+			}
+		});
+		
+		configureSorter(new CurvesComparator(), tableViewer.getTable().getColumn(0));
+		tableViewer.setContentProvider(new ArrayContentProvider());
+		tableViewer.setInput(currentSelectedChartConfiguration.getCurvesConfiguration());
+		
+//		CurveConfiguration[] curvesConfigurations = currentSelectedChartConfiguration.getCurvesConfiguration();
+//		for (CurveConfiguration curveConfiguration : curvesConfigurations) {
+//			curveConfiguration.initializeObservers();
+//		}
 	}
 
 }

@@ -48,6 +48,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinAnOutChannelProperties;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinAnOutModule;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDigInOutChannelProperties;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDigInOutModule;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinVariableProperties;
 import fr.univamu.ism.docometre.dacqsystems.charts.Charts;
 
 public abstract class DACQConfiguration extends AbstractElement {
@@ -160,10 +165,69 @@ public abstract class DACQConfiguration extends AbstractElement {
 				proposalHashSet.add(channel.getProperty(ChannelProperties.NAME));
 			}
 		}
+		
+		Channel[] variables = getVariables();
+		for (Channel variable : variables) {
+			proposalHashSet.add(variable.getProperty(ChannelProperties.NAME));
+		}
+		
 		String[] proposals = proposalHashSet.toArray(new String[proposalHashSet.size()]);
 		Arrays.sort(proposals);
 		return proposals;
 	}
+	
+	public String[] getStimuliProposal() {
+		HashSet<String> proposalHashSet = new HashSet<>();
+		int nbModules = getModulesNumber();
+		for (int i = 0; i < nbModules; i++) {
+			Module module = (Module) getModule(i);
+			boolean add = (module instanceof ADWinAnOutModule) || (module instanceof ADWinDigInOutModule);
+			if(add) {
+				List<Channel> channels = Arrays.asList(module.getChannels());
+				for (Channel channel : channels) {
+					add = true;
+					if(module instanceof ADWinDigInOutModule) {
+						String inputOrOutput = channel.getProperty(ADWinDigInOutChannelProperties.IN_OUT);
+						add = inputOrOutput.equals(ADWinDigInOutChannelProperties.OUTPUT);
+						add = add && "true".equals(channel.getProperty(ADWinDigInOutChannelProperties.STIMULUS));
+					} else add = add && "true".equals(channel.getProperty(ADWinAnOutChannelProperties.STIMULUS));
+					if(add) proposalHashSet.add(channel.getProperty(ChannelProperties.NAME));
+				}
+			}
+		}
+		Channel[] variables = getVariables();
+		for (Channel variable : variables) {
+			boolean add = "true".equals(variable.getProperty(ADWinVariableProperties.STIMULUS));
+			if(add) if(add) proposalHashSet.add(variable.getProperty(ChannelProperties.NAME));
+		}
+		
+		String[] proposals = proposalHashSet.toArray(new String[proposalHashSet.size()]);
+		Arrays.sort(proposals);
+		return proposals;
+	}
+	
+//	public String[] getOutputsProposal() {
+//		HashSet<String> proposalHashSet = new HashSet<>();
+//		int nbModules = getModulesNumber();
+//		for (int i = 0; i < nbModules; i++) {
+//			Module module = (Module) getModule(i);
+//			boolean add = (module instanceof ADWinAnOutModule) || (module instanceof ADWinDigInOutModule);
+//			if(add) {
+//				List<Channel> channels = Arrays.asList(module.getChannels());
+//				for (Channel channel : channels) {
+//					add = true;
+//					if(module instanceof ADWinDigInOutModule) {
+//						String inputOrOutput = channel.getProperty(ADWinDigInOutChannelProperties.IN_OUT);
+//						add = inputOrOutput.equals(ADWinDigInOutChannelProperties.OUTPUT);
+//					}
+//					if(add) proposalHashSet.add(channel.getProperty(ChannelProperties.NAME));
+//				}
+//			}
+//		}
+//		String[] proposals = proposalHashSet.toArray(new String[proposalHashSet.size()]);
+//		Arrays.sort(proposals);
+//		return proposals;
+//	}
 
 	public abstract Channel[] getChannels();
 	

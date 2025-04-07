@@ -41,6 +41,7 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.actions;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 
 import org.eclipse.core.resources.IFile;
@@ -63,7 +64,12 @@ import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.editors.ChannelEditor;
+import fr.univamu.ism.docometre.analyse.editors.BatchDataProcessingEditor;
 import fr.univamu.ism.docometre.analyse.editors.DataProcessEditor;
+import fr.univamu.ism.docometre.analyse.editors.XYChartEditor;
+import fr.univamu.ism.docometre.analyse.editors.XYZChartEditor;
+import fr.univamu.ism.docometre.analyse.editors.functioneditor.CustomerFunctionEditor;
+import fr.univamu.ism.docometre.analyse.views.FunctionsView;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ui.dacqconfigurationeditor.ADWinDACQConfigurationEditor;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor.ADWinProcessEditor;
@@ -80,7 +86,7 @@ public class OpenEditorAction extends Action implements ISelectionListener, IWor
 	private static String ID = "OpenEditorAction";
 	
 	private IWorkbenchWindow window;
-	private IResource[] resources;
+	private Object[] resources;
 
 	public OpenEditorAction(IWorkbenchWindow window) {
 		setId(ID); //$NON-NLS-1$
@@ -95,44 +101,63 @@ public class OpenEditorAction extends Action implements ISelectionListener, IWor
 	@Override
 	public void run() {
 		if(resources == null) return;
-		for (IResource resource : resources) {
+		for (Object localResource : resources) {
 			String system = null;
 			String editorID = null;
 			
-			if(ResourceType.isDACQConfiguration(resource)) {
-				system = ResourceProperties.getSystemPersistentProperty(resource);
-				if(Activator.ADWIN_SYSTEM.equals(system)) editorID =  ADWinDACQConfigurationEditor.ID;
-				if(Activator.ARDUINO_UNO_SYSTEM.equals(system)) editorID =  ArduinoUnoDACQConfigurationEditor.ID;
-			}
-			
-			if(ResourceType.isProcess(resource)) {
-				String associatedDAQFullPath = ResourceProperties.getAssociatedDACQConfigurationProperty(resource);
-				if(associatedDAQFullPath != null) {
-					IResource associatedDAQFile = ResourcesPlugin.getWorkspace().getRoot().findMember(associatedDAQFullPath);
-					if(associatedDAQFile != null) {
-						system = ResourceProperties.getSystemPersistentProperty(associatedDAQFile); 
-						if(Activator.ADWIN_SYSTEM.equals(system)) editorID =  ADWinProcessEditor.ID;
-						if(Activator.ARDUINO_UNO_SYSTEM.equals(system)) editorID =  ArduinoUnoProcessEditor.ID;
-					} else Activator.logWarningMessage(DocometreMessages.OpenAction_ImpossibleToLoadProcessWhenNoAssociatedDAQ); 
-				} else Activator.logWarningMessage(DocometreMessages.OpenAction_ImpossibleToLoadProcessWhenNoAssociatedDAQ); 
-			}
-			
-			if(ResourceType.isLog(resource)) openEditor(resource, DiaryEditor.ID);
-			
-			if(ResourceType.isParameters(resource)) openEditor(resource, ParametersEditor.ID);
-			
-			if(ResourceType.isChannel(resource)) openEditor(resource, ChannelEditor.ID);
-			
-			if(ResourceType.isDataProcessing(resource)) editorID = DataProcessEditor.ID;
-			
-			if(ResourceType.isSamples(resource)) openEditor(resource, DataEditor.ID);
-			else if(editorID != null) {
-				Object object = ResourceProperties.getObjectSessionProperty(resource);
-				if(object == null) {
-					object = ObjectsController.deserialize((IFile)resource);
-					ResourceProperties.setObjectSessionProperty(resource, object);
+			if(localResource instanceof IResource) {
+				IResource resource = (IResource) localResource;
+				if(ResourceType.isDACQConfiguration(resource)) {
+					system = ResourceProperties.getSystemPersistentProperty(resource);
+					if(Activator.ADWIN_SYSTEM.equals(system)) editorID =  ADWinDACQConfigurationEditor.ID;
+					if(Activator.ARDUINO_UNO_SYSTEM.equals(system)) editorID =  ArduinoUnoDACQConfigurationEditor.ID;
 				}
-				openEditor(object, editorID);
+				
+				if(ResourceType.isProcess(resource)) {
+					String associatedDAQFullPath = ResourceProperties.getAssociatedDACQConfigurationProperty(resource);
+					if(associatedDAQFullPath != null) {
+						IResource associatedDAQFile = ResourcesPlugin.getWorkspace().getRoot().findMember(associatedDAQFullPath);
+						if(associatedDAQFile != null) {
+							system = ResourceProperties.getSystemPersistentProperty(associatedDAQFile); 
+							if(Activator.ADWIN_SYSTEM.equals(system)) editorID =  ADWinProcessEditor.ID;
+							if(Activator.ARDUINO_UNO_SYSTEM.equals(system)) editorID =  ArduinoUnoProcessEditor.ID;
+						} else Activator.logWarningMessage(DocometreMessages.OpenAction_ImpossibleToLoadProcessWhenNoAssociatedDAQ); 
+					} else Activator.logWarningMessage(DocometreMessages.OpenAction_ImpossibleToLoadProcessWhenNoAssociatedDAQ); 
+				}
+				
+				if(ResourceType.isLog(resource)) openEditor(resource, DiaryEditor.ID);
+				
+				if(ResourceType.isParameters(resource)) openEditor(resource, ParametersEditor.ID);
+				
+				if(ResourceType.isChannel(resource)) openEditor(resource, ChannelEditor.ID);
+				
+				if(ResourceType.isDataProcessing(resource)) editorID = DataProcessEditor.ID;
+				
+				if(ResourceType.isBatchDataProcessing(resource)) editorID = BatchDataProcessingEditor.ID;
+				
+				if(ResourceType.isXYChart(resource)) editorID = XYChartEditor.ID;
+				
+				if(ResourceType.isXYZChart(resource)) editorID = XYZChartEditor.ID;
+				
+				if(ResourceType.isCustomerFunction(resource)) openEditor(resource, CustomerFunctionEditor.ID);
+				else if(ResourceType.isFunction(resource)) openEditor(resource, CustomerFunctionEditor.ID);
+				
+				if(ResourceType.isSamples(resource)) openEditor(resource, DataEditor.ID);
+				else if(editorID != null) {
+					Object object = ResourceProperties.getObjectSessionProperty(resource);
+					if(object == null) {
+						object = ObjectsController.deserialize((IFile)resource);
+						ResourceProperties.setObjectSessionProperty(resource, object);
+					}
+					openEditor(object, editorID);
+				}
+			} else if(localResource instanceof Path) {
+				if(ResourceType.isCustomerFunction(localResource)) {
+					openEditor(localResource, CustomerFunctionEditor.ID);
+				}
+				else if(ResourceType.isFunction(localResource)) {
+					openEditor(localResource, CustomerFunctionEditor.ID);
+				}
 			}
 			
 		}
@@ -170,11 +195,11 @@ public class OpenEditorAction extends Action implements ISelectionListener, IWor
 	@Override
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
 		setEnabled(false);
-		if(part instanceof ExperimentsView || part instanceof SubjectsView) {
+		if(part instanceof ExperimentsView || part instanceof SubjectsView || part instanceof FunctionsView) {
 			resources = null;
 			if (selection instanceof IStructuredSelection) {
 				Object[] selectedObjects = ((IStructuredSelection) selection).toArray();
-				ArrayList<IResource> files = new ArrayList<>();
+				ArrayList<Object> files = new ArrayList<>();
 				for (Object object : selectedObjects) {
 					if(object instanceof IFile) {
 						boolean canOpen = ResourceType.isDACQConfiguration((IResource) object) || ResourceType.isProcess((IResource) object);
@@ -183,10 +208,19 @@ public class OpenEditorAction extends Action implements ISelectionListener, IWor
 						canOpen = canOpen || ResourceType.isSamples((IResource) object);
 						canOpen = canOpen || ResourceType.isChannel((IResource) object);
 						canOpen = canOpen || ResourceType.isDataProcessing((IResource) object);
+						canOpen = canOpen || ResourceType.isBatchDataProcessing((IResource) object);
+						canOpen = canOpen || ResourceType.isXYChart((IResource) object);
+						canOpen = canOpen || ResourceType.isXYZChart((IResource) object);
+						canOpen = canOpen || ResourceType.isCustomerFunction((IResource) object);
 						if(canOpen) files.add((IFile) object);
 					}
+					if(object instanceof Path && part instanceof FunctionsView) {
+//						IPath path = org.eclipse.core.runtime.Path.fromOSString(((Path)object).toFile().getAbsolutePath());
+//						IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
+						files.add(object);
+					}
 				}
-				if(files.size() > 0) resources = files.toArray(new IResource[files.size()]);
+				if(files.size() > 0) resources = files.toArray(new Object[files.size()]);
 			}
 			setEnabled(resources != null);
 		}

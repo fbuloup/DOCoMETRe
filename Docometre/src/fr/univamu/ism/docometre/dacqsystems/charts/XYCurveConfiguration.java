@@ -50,7 +50,7 @@ import fr.univamu.ism.docometre.dacqsystems.ChannelObserver;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.Property;
 import fr.univamu.ism.docometre.dacqsystems.PropertyObserver;
-import fr.univamu.ism.rtswtchart.RTSWTXYSerie;
+import fr.univamu.ism.nrtswtchart.RTSWTXYSerie;
 
 public class XYCurveConfiguration extends CurveConfiguration implements PropertyObserver, ChannelObserver  {
 
@@ -59,7 +59,15 @@ public class XYCurveConfiguration extends CurveConfiguration implements Property
 	private Channel xChannel;
 	private Channel yChannel;
 	
-	transient private RTSWTXYSerie xySerie;
+	private Double[] xValues;
+	private Double[] yValues;
+	
+	private Double[] xValuesToSerie;
+	private Double[] yValuesToSerie;
+	
+	private Double[] tempValues = new Double[0];
+	
+	transient private RTSWTXYSerie serie;
 	
 	public XYCurveConfiguration(Channel xChannel, Channel yChannel) {
 		XYCurveConfigurationProperties.populateProperties(this);
@@ -92,8 +100,13 @@ public class XYCurveConfiguration extends CurveConfiguration implements Property
 		initializeObservers();
 	}
 	
-	public void setSerie(RTSWTXYSerie xySerie) {
-		this.xySerie = xySerie;
+	public void setSerie(RTSWTXYSerie serie) {
+		this.serie = serie;
+		xValues = new Double[0];
+		yValues = new Double[0];
+		xValuesToSerie = new Double[0];
+		yValuesToSerie = new Double[0];
+		tempValues = new Double[0];
 	}
 
 	@Override
@@ -108,19 +121,45 @@ public class XYCurveConfiguration extends CurveConfiguration implements Property
 
 	@Override
 	public void update(FloatBuffer floatBuffer, String channelID) {
-		if(xySerie != null) {
+		if(serie != null) {
 			floatBuffer.flip();
 			float[] values = new float[floatBuffer.remaining()];
-			if(values.length > 0) {
-				floatBuffer.get(values);
-				Double[] doubleValues = new Double[values.length];
-				for (int i = 0; i < doubleValues.length; i++) {
-					doubleValues[i] = (double) floatBuffer.get(i);
-				}
-				if(xChannel.getID().equals(channelID)) xySerie.addPoints(doubleValues, new Double[0]);
-				if(yChannel.getID().equals(channelID)) xySerie.addPoints(new Double[0], doubleValues);
+			if(values.length > 0) floatBuffer.get(values);
+			Double[] newValues = new Double	[values.length];
+			for (int i = 0; i < newValues.length; i++) newValues[i] = (double) values[i];
+			
+			if(xChannel.getID().equals(channelID)) {
+				tempValues = new Double[xValues.length];
+				System.arraycopy(xValues, 0, tempValues, 0, xValues.length);
+				xValues = new Double[xValues.length + newValues.length];
+				System.arraycopy(tempValues, 0, xValues, 0, tempValues.length);
+				System.arraycopy(newValues, 0, xValues, tempValues.length, newValues.length);
 			}
-		}
+			if(yChannel.getID().equals(channelID)) {
+				tempValues = new Double[yValues.length];
+				System.arraycopy(yValues, 0, tempValues, 0, yValues.length);
+				yValues = new Double[yValues.length + newValues.length];
+				System.arraycopy(tempValues, 0, yValues, 0, tempValues.length);
+				System.arraycopy(newValues, 0, yValues, tempValues.length, newValues.length);
+			}
+
+			int n = Math.min(xValues.length, yValues.length);
+			
+			if(n > 0) {
+				xValuesToSerie = new Double[n];
+				yValuesToSerie = new Double[n];
+				System.arraycopy(xValues, 0, xValuesToSerie, 0, n);
+				System.arraycopy(yValues, 0, yValuesToSerie, 0, n);
+				serie.addPoints(xValuesToSerie, yValuesToSerie);
+				tempValues = new Double[xValues.length - n];
+				System.arraycopy(xValues, n, tempValues, 0, tempValues.length);
+				xValues = tempValues;
+				tempValues = new Double[yValues.length - n];
+				System.arraycopy(yValues, n, tempValues, 0, tempValues.length);
+				yValues = tempValues;
+			}
+		}		
+		
 	}
 
 	@Override

@@ -68,6 +68,7 @@ import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.TrialStartMode;
+import fr.univamu.ism.docometre.TrialValidateMode;
 import fr.univamu.ism.docometre.dialogs.NextTrialDialog;
 import fr.univamu.ism.docometre.dialogs.ValidateTrialDialog;
 import fr.univamu.ism.docometre.handlers.RunStopHandler;
@@ -113,6 +114,7 @@ public class ExperimentScheduler {
 				removeProcessHandle = true;
 			}
 			process = (Process) object;
+			int priority = Thread.currentThread().getPriority();
 			try {
 				process.preExecute((trial==null)?processFile:trial);
 				PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
@@ -134,7 +136,6 @@ public class ExperimentScheduler {
 					if(ResourceProperties.useTrialNumberInDataFilesNamesAsSecondSuffix(currentSession)) suffix = suffix  + dataFilePathNameSeparator + "T" + currentTrial.getName().split("°")[1];
 				}
 				
-				int priority = Thread.currentThread().getPriority();
 				Thread.currentThread().setPriority(Thread.NORM_PRIORITY + 1);
 				
 				Job realTimeLoopJob = process.execute(prefix, suffix);
@@ -155,17 +156,26 @@ public class ExperimentScheduler {
 //						monitor.setCanceled(false);
 //					}
 				}
-				Thread.currentThread().setPriority(priority);
-				process.postExecute((trial==null)?processFile:trial);
+//				Thread.currentThread().setPriority(priority);
+//				process.postExecute((trial==null)?processFile:trial);
 //				process.refreshLogFile((trial==null)?processFile:trial);
 				
 			} catch (Exception e) {
 				e.printStackTrace();
+				running = false;
 				return new Status(IStatus.ERROR, Activator.PLUGIN_ID, Activator.getLogErrorMessageWithCause(e));
 			} finally {
-				if(removeProcessHandle) {
-					ObjectsController.removeHandle(process.getDACQConfiguration());
-					ObjectsController.removeHandle(process);
+				try {
+					process.postExecute((trial==null)?processFile:trial);
+				} catch (Exception e) {
+					Activator.logErrorMessageWithCause(e);
+					e.printStackTrace();
+				} finally {
+					Thread.currentThread().setPriority(priority);
+					if(removeProcessHandle) {
+						ObjectsController.removeHandle(process.getDACQConfiguration());
+						ObjectsController.removeHandle(process);
+					}
 				}
 			}
 			return returnStatus;
@@ -218,14 +228,15 @@ public class ExperimentScheduler {
 						IStatus status = runProcessJob.getResult();
 						if(status.isOK()) if(!runProcess) {
 							boolean autoValidateTrial =Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.AUTO_VALIDATE_TRIALS);
-							if(autoValidateTrial) ResourceProperties.setTrialState(true, (IFolder) currentTrial);
+							autoValidateTrial = autoValidateTrial || ResourceProperties.getTrialValidateMode(currentTrial).equals(TrialValidateMode.AUTO);
+							if(autoValidateTrial) ResourceProperties.setTrialState((IFolder) currentTrial, true);
 							else {
 								PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
 									@Override
 									public void run() {
 										ValidateTrialDialog validateTrialDialog = new ValidateTrialDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), currentTrial);
 										if(validateTrialDialog.open() == Window.OK) {
-											ResourceProperties.setTrialState(validateTrialDialog.getValidateTrial(), (IFolder) currentTrial);
+											ResourceProperties.setTrialState( (IFolder) currentTrial, validateTrialDialog.getValidateTrial());
 											redoTrial = validateTrialDialog.getRedoTrial();
 										}
 										
@@ -472,6 +483,12 @@ public class ExperimentScheduler {
 				realTimeChartsView.updateValues(ResourceProperties.getAssociatedProcess(currentTrial));
 			}
 		});
+	}
+	
+	public int getCurrentTrialNumber() {
+		if(currentTrial == null) return 0;
+		String trialNumber = currentTrial.getName().split("°")[1];
+		return Integer.parseInt(trialNumber);
 	}
 
 }

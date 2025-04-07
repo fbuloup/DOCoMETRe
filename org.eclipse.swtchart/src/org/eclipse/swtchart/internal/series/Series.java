@@ -83,7 +83,13 @@ abstract public class Series implements ISeries {
 	private String description;
 	/** the list of dispose listeners */
 	private List<IDisposeListener> listeners;
-
+	/** Graphical Front cut **/
+	protected int frontCut;
+	/** Base Front cut **/
+	protected int baseFrontCut;
+	/** End cut **/
+	protected int endCut;
+	
 	/**
 	 * Constructor.
 	 *
@@ -109,8 +115,22 @@ abstract public class Series implements ISeries {
 		listeners = new ArrayList<IDisposeListener>();
 		xSeries = new double[0];
 		ySeries = new double[0];
+		frontCut = -1;
+		endCut = -1;
 	}
 
+	public void setFrontCut(int frontCut) {
+		this.frontCut = frontCut;
+	}
+
+	public void setEndCut(int endCut) {
+		this.endCut = endCut;
+	}
+	
+	public void setBaseFrontCut(int baseFrontCut) {
+		this.baseFrontCut = baseFrontCut;
+	}
+	
 	/*
 	 * @see ISeries#getId()
 	 */
@@ -180,6 +200,8 @@ abstract public class Series implements ISeries {
 			return; // to suppress warning...
 		}
 		xSeries = new double[series.length];
+		frontCut = frontCut == -1 ? 0 : frontCut;
+		endCut = endCut == -1 ? xSeries.length : endCut;
 		System.arraycopy(series, 0, xSeries, 0, series.length);
 		isDateSeries = false;
 		if(xSeries.length == 0) {
@@ -230,6 +252,8 @@ abstract public class Series implements ISeries {
 			return; // to suppress warning...
 		}
 		ySeries = new double[series.length];
+		frontCut = frontCut == -1 ? 0 : frontCut;
+		endCut = endCut == -1 ? ySeries.length : endCut;
 		System.arraycopy(series, 0, ySeries, 0, series.length);
 		if(ySeries.length == 0) {
 			return;

@@ -43,20 +43,7 @@ package fr.univamu.ism.docometre.dacqsystems.ui;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceChangeEvent;
-import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.IResourceDeltaVisitor;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.gef.DefaultEditDomain;
-import org.eclipse.gef.commands.CommandStack;
-import org.eclipse.gef.ui.actions.ActionRegistry;
-import org.eclipse.gef.ui.actions.RedoAction;
-import org.eclipse.gef.ui.actions.UndoAction;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
@@ -73,6 +60,8 @@ import org.eclipse.swt.custom.CaretEvent;
 import org.eclipse.swt.custom.CaretListener;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -95,61 +84,22 @@ import fr.univamu.ism.docometre.dacqsystems.DocometreBuilder;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.dialogs.FindDialog;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
+import fr.univamu.ism.docometre.preferences.MathEnginePreferencesConstants;
 import fr.univamu.ism.process.Script;
 import fr.univamu.ism.process.ScriptSegmentType;
 
-public class SourceEditor extends EditorPart implements IResourceChangeListener {
+public class SourceEditor extends EditorPart {
 
-	// Colors IDs
-	private static final String COLOR_BLACK = "COLOR_BLACK";
-	private static final String COLOR_DARK_GREY = "COLOR_DARK_GREY";
-
-	static {
-		JFaceResources.getColorRegistry().put(COLOR_BLACK, new RGB(0, 0, 0));
-		JFaceResources.getColorRegistry().put(COLOR_DARK_GREY, new RGB(127, 127, 127));
-	}
-
-	private DefaultEditDomain editDomain;
 	private MultiPageEditorPart multiPageEditorPart;
-	private ActionRegistry actionRegistry;
 	protected Document document;
 	protected AnnotationModel annotationModel;
 	private DocometreAnnotationAccesExtension docometreAnnotationAccesExtension;
 	protected SourceViewer sourceViewer;
 	private PartListenerAdapter partListenerAdapter;
 
-	public SourceEditor(CommandStack commandStack, MultiPageEditorPart multiPageEditorPart) {
+	public SourceEditor(MultiPageEditorPart multiPageEditorPart) {
 			this.multiPageEditorPart = multiPageEditorPart;
-			editDomain = new DefaultEditDomain(this);
-			editDomain.setCommandStack(commandStack);
 		}
-
-	@Override
-	public void resourceChanged(IResourceChangeEvent event) {
-		IResourceDelta delta = event.getDelta();
-		if (delta == null)
-			return;
-		try {
-			delta.accept(new IResourceDeltaVisitor() {
-				@Override
-				public boolean visit(IResourceDelta delta) throws CoreException {
-					PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
-						@Override
-						public void run() {
-							IResource process = ObjectsController.getResourceForObject(getObject());
-							if (delta.getResource().equals(process)) {
-								updateMarkers();
-							}
-						}
-					});
-					return true;
-				}
-			});
-		} catch (CoreException e) {
-			e.printStackTrace();
-			Activator.logErrorMessageWithCause(e);
-		}
-	}
 
 	@Override
 	public void doSave(IProgressMonitor monitor) {
@@ -167,19 +117,6 @@ public class SourceEditor extends EditorPart implements IResourceChangeListener 
 	public void init(IEditorSite site, IEditorInput input) throws PartInitException {
 		setSite(site);
 		setInput(input);
-
-		actionRegistry = new ActionRegistry();
-
-		IAction action;
-
-		action = new UndoAction(this);
-		actionRegistry.registerAction(action);
-//			getStackActions().add(action.getId());
-
-		action = new RedoAction(this);
-		actionRegistry.registerAction(action);
-//			getStackActions().add(action.getId());
-
 	}
 
 	@Override
@@ -210,7 +147,7 @@ public class SourceEditor extends EditorPart implements IResourceChangeListener 
 		lineAnnotationRuler.setModel(annotationModel);
 		// Lines numbers column
 		LineNumberRulerColumn lineNumberRulerColumn = new LineNumberRulerColumn();
-		lineNumberRulerColumn.setForeground(JFaceResources.getColorRegistry().get(COLOR_DARK_GREY));
+		//lineNumberRulerColumn.setForeground(PlatformUI.createDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND));
 		lineAnnotationRuler.addDecorator(0, lineNumberRulerColumn);
 		// Annotation column
 		docometreAnnotationAccesExtension = new DocometreAnnotationAccesExtension();
@@ -219,7 +156,7 @@ public class SourceEditor extends EditorPart implements IResourceChangeListener 
 		arc.setHover(defaultAnnotationHover);
 		arc.addAnnotationType(ErrorAnnotation.TYPE_ERROR);
 		arc.addAnnotationType(WarningAnnotation.TYPE_WARNING);
-		lineAnnotationRuler.addDecorator(0, arc);
+		lineAnnotationRuler.addDecorator(1, arc);
 		// Overview column
 		OverviewRuler overviewRuler = new OverviewRuler(docometreAnnotationAccesExtension, 13,
 				DocometreSharedTextColors.getInstance());
@@ -272,15 +209,12 @@ public class SourceEditor extends EditorPart implements IResourceChangeListener 
 			}
 		});
 
-		ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
-
 		partListenerAdapter = new PartListenerAdapter() {
 			@Override
 			public void partClosed(IWorkbenchPartReference partRef) {
 				if (partRef.getPart(false) == multiPageEditorPart) {
 					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
 							.removePartListener(partListenerAdapter);
-					ResourcesPlugin.getWorkspace().removeResourceChangeListener(SourceEditor.this);
 				}
 			}
 
@@ -308,6 +242,17 @@ public class SourceEditor extends EditorPart implements IResourceChangeListener 
 		}
 
 		updateMarkers();
+		
+		getSite().setSelectionProvider(sourceViewer);
+		
+		sourceViewer.getTextWidget().addPaintListener(new PaintListener() {
+			@Override
+			public void paintControl(PaintEvent e) {
+				lineNumberRulerColumn.setBackground(sourceViewer.getTextWidget().getBackground());
+				lineNumberRulerColumn.setForeground(sourceViewer.getTextWidget().getForeground());
+			}
+		});
+		
 
 	}
 
@@ -321,16 +266,11 @@ public class SourceEditor extends EditorPart implements IResourceChangeListener 
 		sourceViewer.getTextWidget().setFocus();
 	}
 
-	protected void update(String code) {
-//			System.out.println("update document...");
+	public void update(String code) {
 		sourceViewer.getDocument().set(code);
-//			for (int i = 0; i < sourceViewer.getDocument().getLength(); i++) {
-//				ITypedRegion typedRegion = sourceViewer.getDocument().getDocumentPartitioner().getPartition(i);			
-//				System.out.println(i + " = " + typedRegion.getType());
-//			}
 	}
 
-	protected void updateMarkers() {
+	public void updateMarkers() {
 		try {
 			update(getCode());
 			IResource process = ObjectsController.getResourceForObject(getObject());
@@ -359,16 +299,6 @@ public class SourceEditor extends EditorPart implements IResourceChangeListener 
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T> T getAdapter(Class<T> adapter) {
-		if (adapter == CommandStack.class)
-			return (T) editDomain.getCommandStack();
-		if (adapter == ActionRegistry.class)
-			return (T) actionRegistry;
-		return super.getAdapter(adapter);
-	}
-	
 	@Override
 	public void dispose() {
 		ResourceEditorInput resourceEditorInput = (ResourceEditorInput)getEditorInput();
@@ -377,15 +307,25 @@ public class SourceEditor extends EditorPart implements IResourceChangeListener 
 		super.dispose();
 	}
 	
-	private String getCode() {
+	public String getCode() {
 			try {
 				if(getObject() instanceof Process) return ((Process)getObject()).getCode(null);
-				if(getObject() instanceof Script) return ((Script)getObject()).getLoopCode(getObject(), ScriptSegmentType.LOOP);
+				if(getObject() instanceof Script) {
+					Script script = (Script)getObject();
+					String mathEngine = Activator.getDefault().getPreferenceStore().getString(MathEnginePreferencesConstants.MATH_ENGINE);
+					boolean isPython = MathEnginePreferencesConstants.MATH_ENGINE_PYTHON.equals(mathEngine);
+					script.setIndentCode(!isPython);
+					return ((Script)getObject()).getLoopCode(getObject(), ScriptSegmentType.LOOP);
+				}
 			} catch (Exception e) {
 				Activator.logErrorMessageWithCause(e);
 				e.printStackTrace();
 			}
 		return "";
+	}
+
+	public void selectAll() {
+		sourceViewer.getTextWidget().selectAll();
 	}
 
 }

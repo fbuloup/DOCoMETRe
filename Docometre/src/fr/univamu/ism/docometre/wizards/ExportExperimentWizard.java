@@ -42,6 +42,7 @@
 package fr.univamu.ism.docometre.wizards;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -87,26 +88,54 @@ public class ExportExperimentWizard extends Wizard {
 							boolean compress = exportExperimentWizardPage.isCompress();
 							boolean asZip = exportExperimentWizardPage.isAsZip();
 							Path destinationPath = new Path(destination);
+							boolean includeData = exportExperimentWizardPage.isIncludeData();
+							boolean onlyExportSelectedSubjects = exportExperimentWizardPage.isOnlyExportSubjects();
+							List<IResource> subjects = exportExperimentWizardPage.getSelectedSubjects();
 							
-							ArchiveFileExportOperation archiveFileExportOperation = new ArchiveFileExportOperation(experiment, destinationPath.toOSString());
-							archiveFileExportOperation.setUseCompression(compress);
-							archiveFileExportOperation.setUseTarFormat(!asZip);
-							
-							SubMonitor subMonitor = SubMonitor.convert(monitor, DocometreMessages.ExportExperimentTaskTitle, 2 + archiveFileExportOperation.getTotalWork());
-							
-							subMonitor.subTask(DocometreMessages.createPropertiesFile);
-							IFile propertiesFile = ExperimentPropertiesFileCreator.createPropertiesFile(experiment, destinationPath, subMonitor);
-							subMonitor.worked(1);
-							
-							subMonitor.subTask(DocometreMessages.RefreshingWorkspace);
-							experiment.refreshLocal(IResource.DEPTH_ONE, null);
-							subMonitor.worked(1);
-							
-							archiveFileExportOperation.run(subMonitor);
-							
-							propertiesFile.delete(true, null);
+							if(!onlyExportSelectedSubjects) {
+								ArchiveFileExportOperation archiveFileExportOperation = new ArchiveFileExportOperation(experiment, destinationPath.toOSString(), includeData);
+								archiveFileExportOperation.setUseCompression(compress);
+								archiveFileExportOperation.setUseTarFormat(!asZip);
+								
+								SubMonitor subMonitor = SubMonitor.convert(monitor, DocometreMessages.ExportExperimentTaskTitle, 2 + archiveFileExportOperation.getTotalWork());
+								
+								subMonitor.subTask(DocometreMessages.createPropertiesFile);
+								IFile propertiesFile = ExperimentPropertiesFileCreator.createPropertiesFile(experiment, destinationPath, subMonitor, includeData);
+								subMonitor.worked(1);
+								
+								subMonitor.subTask(DocometreMessages.RefreshingWorkspace);
+								experiment.refreshLocal(IResource.DEPTH_ONE, null);
+								subMonitor.worked(1);
+								
+								archiveFileExportOperation.run(subMonitor);
+								
+								propertiesFile.delete(true, null);
 
-							subMonitor.done();
+								subMonitor.done();
+							} else {
+								
+								ArchiveFileExportOperation archiveFileExportOperation = new ArchiveFileExportOperation(experiment, subjects, destinationPath.toOSString(), includeData);
+								archiveFileExportOperation.setUseCompression(compress);
+								archiveFileExportOperation.setUseTarFormat(!asZip);
+								
+								SubMonitor subMonitor = SubMonitor.convert(monitor, DocometreMessages.ExportExperimentTaskTitle, 2 + archiveFileExportOperation.getTotalWork());
+								
+								subMonitor.subTask(DocometreMessages.createPropertiesFile);
+								IFile propertiesFile = ExperimentPropertiesFileCreator.createPropertiesFile(experiment, subjects.toArray(new IResource[subjects.size()]), destinationPath, subMonitor, includeData);
+								subMonitor.worked(1);
+								
+								subMonitor.subTask(DocometreMessages.RefreshingWorkspace);
+								experiment.refreshLocal(IResource.DEPTH_ONE, null);
+								subMonitor.worked(1);
+								
+								archiveFileExportOperation.addResource(propertiesFile);
+								archiveFileExportOperation.run(subMonitor);
+								
+								propertiesFile.delete(true, null);
+
+								subMonitor.done();
+							}
+							
 							
 						} catch (CoreException e) {
 							Activator.logErrorMessageWithCause(e);

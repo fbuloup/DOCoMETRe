@@ -42,10 +42,13 @@
 package fr.univamu.ism.docometre.actions;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -57,6 +60,7 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchPart;
@@ -66,11 +70,18 @@ import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
+import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
+import fr.univamu.ism.docometre.analyse.handlers.LoadUnloadSubjectsHandler;
+import fr.univamu.ism.docometre.analyse.views.FunctionsView;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
+import fr.univamu.ism.docometre.dacqsystems.Process;
+import fr.univamu.ism.docometre.editors.PartNameRefresher;
+import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 
 public class DeleteResourcesAction extends Action implements ISelectionListener, IWorkbenchAction {
@@ -86,9 +97,8 @@ public class DeleteResourcesAction extends Action implements ISelectionListener,
 		setEnabled(false);
 		setText(DocometreMessages.DeleteAction_Text);
 		setToolTipText(DocometreMessages.DeleteAction_Text);
-        ISharedImages sharedImages = window.getWorkbench().getSharedImages();
-        setImageDescriptor(sharedImages.getImageDescriptor(ISharedImages.IMG_TOOL_DELETE));
-        setDisabledImageDescriptor(sharedImages.getImageDescriptor(ISharedImages.IMG_TOOL_DELETE_DISABLED));
+        setImageDescriptor(Activator.getSharedImageDescriptor(ISharedImages.IMG_TOOL_DELETE));
+        setDisabledImageDescriptor(Activator.getSharedImageDescriptor(ISharedImages.IMG_TOOL_DELETE_DISABLED));
 	}
 
 	@Override
@@ -109,6 +119,7 @@ public class DeleteResourcesAction extends Action implements ISelectionListener,
 							boolean deleteResource = false;
 							Set<IResource> parentResourcesToRefresh = new HashSet<IResource>();
 							for (IResource resource : resources) {
+								boolean updateEditors = false;
 								monitor.subTask("Deleting " + resource.getFullPath().toOSString());
 								if(resource instanceof IProject) {
 									if(!((IProject) resource).isOpen()) {
@@ -118,16 +129,67 @@ public class DeleteResourcesAction extends Action implements ISelectionListener,
 								if(ResourceType.isDACQConfiguration(resource)) {
 									String fullPath = ResourceProperties.getDefaultDACQPersistentProperty(resource); 
 									if(fullPath != null && resource.getFullPath().equals(new Path(fullPath))) ResourceProperties.setDefaultDACQPersistentProperty(resource, null);
+									updateEditors = true;
 								}
 								closeEditors(resource);
 								if(ResourceType.isChannel(resource)) {
+									IContainer subject = resource.getParent();
 									MathEngineFactory.getMathEngine().deleteChannel((Channel)resource);
+									try {
+										if(subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) != null && subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) instanceof ChannelsContainer) {
+											ChannelsContainer channelsContainer = (ChannelsContainer)subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
+											channelsContainer.setUpdateChannelsCache(true);
+										}
+									} catch (CoreException e) {
+										Activator.logErrorMessageWithCause(e);
+										e.printStackTrace();
+									}
 									deleteChannel = true;
-								} else {
+								} else if(ResourceType.isSubject(resource) && MathEngineFactory.getMathEngine().isSubjectLoaded(resource)) {
+									try {
+										ArrayList<IResource> resources = new ArrayList<>();
+										resources.add(resource);
+										LoadUnloadSubjectsHandler.getInstance().resetSelection(resources);
+										LoadUnloadSubjectsHandler.getInstance().execute(null);
+									} catch (ExecutionException e) {
+										Activator.logErrorMessageWithCause(e);
+										e.printStackTrace();
+									}
+									MathEngineFactory.getMathEngine().unload(resource);
+								} else if(ResourceType.isExperiment(resource)) {
+									try {
+										IResource[] subjects = ResourceProperties.getAllTypedResources(ResourceType.SUBJECT, (IContainer) resource, null);
+										ArrayList<IResource> resources = new ArrayList<>();
+										for (IResource subject : subjects) {
+											if(MathEngineFactory.getMathEngine().isSubjectLoaded(subject)) resources.add(subject);
+										}
+										if(LoadUnloadSubjectsHandler.getInstance() != null) {
+											LoadUnloadSubjectsHandler.getInstance().resetSelection(resources);
+											LoadUnloadSubjectsHandler.getInstance().execute(null);
+										}
+										MathEngineFactory.getMathEngine().unload(resource);
+									} catch (ExecutionException e) {
+										Activator.logErrorMessageWithCause(e);
+										e.printStackTrace();
+									}
+								} else if(ResourceType.isProcess(resource)) {
+									boolean removeProcessHandle = false;
+									Object object = ResourceProperties.getObjectSessionProperty(resource);
+									if(object == null) {
+										object = ObjectsController.deserialize((IFile)resource);
+										ResourceProperties.setObjectSessionProperty(resource, object);
+										ObjectsController.addHandle(object);
+										removeProcessHandle = true;
+									}
+									((Process)object).cleanBuild();
+									if(removeProcessHandle) ObjectsController.removeHandle(object);
+								}
+								if (!deleteChannel) {
 									IResource parentResource = resource.getParent();
 									resource.delete(true, monitor);
 									parentResourcesToRefresh.add(parentResource);
 									deleteResource = true;
+									if(updateEditors) updateEditors();
 								}
 								monitor.worked(1);
 							}
@@ -139,6 +201,8 @@ public class DeleteResourcesAction extends Action implements ISelectionListener,
 							if(deleteResource) {
 								for (IResource parentResourceToRefresh : parentResourcesToRefresh) {
 									ExperimentsView.refresh(parentResourceToRefresh.getProject(), new IResource[]{});
+									SubjectsView.refresh();
+									FunctionsView.refresh(true);
 								}
 								monitor.worked(1);
 							}
@@ -158,6 +222,26 @@ public class DeleteResourcesAction extends Action implements ISelectionListener,
 			
 		}
 	}
+	
+	private void updateEditors() {
+		PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					IEditorReference[] editors = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
+					for (IEditorReference editorReference : editors) {
+						ResourceEditorInput editorInput = (ResourceEditorInput)editorReference.getEditorInput();
+						Object localObject = editorInput.getObject();
+						IResource editedResource = ObjectsController.getResourceForObject(localObject);
+						if(ResourceType.isProcess(editedResource)) ((PartNameRefresher)editorReference.getEditor(false)).refreshPartName();
+					}
+				} catch (CoreException e) {
+					e.printStackTrace();
+					Activator.logErrorMessageWithCause(e);
+				}
+			}
+		});
+	}
 
 	private void closeEditors(IResource resource) throws CoreException {
 		object = ResourceProperties.getObjectSessionProperty(resource);
@@ -171,8 +255,8 @@ public class DeleteResourcesAction extends Action implements ISelectionListener,
 			});
 		}
 		if(resource instanceof IContainer) {
-			IResource[] chilrenResources = ((IContainer)resource).members();
-			for (IResource childResource : chilrenResources) {
+			IResource[] childrenResources = ((IContainer)resource).members();
+			for (IResource childResource : childrenResources) {
 				closeEditors(childResource);
 			}
 		}

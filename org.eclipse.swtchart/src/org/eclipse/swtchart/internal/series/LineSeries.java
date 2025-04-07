@@ -27,6 +27,7 @@ import org.eclipse.swtchart.internal.Util;
 import org.eclipse.swtchart.internal.axis.Axis;
 import org.eclipse.swtchart.internal.compress.CompressLineSeries;
 import org.eclipse.swtchart.internal.compress.CompressScatterSeries;
+import org.eclipse.swtchart.internal.compress.ICompress;
 
 /**
  * Line series.
@@ -457,9 +458,9 @@ public class LineSeries extends Series implements ILineSeries {
 			}
 		} else {
 			if(lineStyle == LineStyle.SOLID) {
-				drawLine(gc, xAxis, yAxis, xseries, yseries, isHorizontal);
+				drawLine(gc, xAxis, yAxis, xseries, yseries, isHorizontal, frontCut, endCut, baseFrontCut, compressor);
 			} else if(lineStyle != LineStyle.NONE) {
-				drawLineWithStyle(gc, xAxis, yAxis, xseries, yseries, isHorizontal);
+				drawLineWithStyle(gc, xAxis, yAxis, xseries, yseries, isHorizontal, frontCut, endCut, baseFrontCut, compressor);
 			}
 		}
 		gc.setForeground(oldForeground);
@@ -473,8 +474,8 @@ public class LineSeries extends Series implements ILineSeries {
 	 * for solid line style until that bug is fixed and the workaround is
 	 * removed.
 	 */
-	private static void drawLine(GC gc, Axis xAxis, Axis yAxis, double[] xseries, double[] yseries, boolean isHorizontal) {
-
+	private static void drawLine(GC gc, Axis xAxis, Axis yAxis, double[] xseries, double[] yseries, boolean isHorizontal, int frontCut, int endCut, int baseFrontCut, ICompress compressor) {
+		int[] indexes = compressor.getCompressedIndexes();
 		double xLower = xAxis.getRange().lower;
 		double xUpper = xAxis.getRange().upper;
 		double yLower = yAxis.getRange().lower;
@@ -487,32 +488,34 @@ public class LineSeries extends Series implements ILineSeries {
 		for(int i = 0; i < xseries.length - 1; i++) {
 			int x = xAxis.getPixelCoordinate(xseries[i + 1], xLower, xUpper);
 			int y = yAxis.getPixelCoordinate(yseries[i + 1], yLower, yUpper);
-			if(x == prevX && i < xseries.length - 2) {
-				if(drawVerticalLine) {
-					// extend vertical line
-					verticalLineYLower = Math.min(verticalLineYLower, y);
-					verticalLineYUpper = Math.max(verticalLineYUpper, y);
-				} else {
-					// init vertical line
-					verticalLineYLower = Math.min(prevY, y);
-					verticalLineYUpper = Math.max(prevY, y);
-					drawVerticalLine = true;
-				}
-			} else {
-				// draw vertical line
-				if(drawVerticalLine) {
-					if(isHorizontal) {
-						gc.drawLine(prevX, verticalLineYLower, prevX, verticalLineYUpper);
+			if(indexes[i] >= frontCut - baseFrontCut && indexes[i] < endCut - baseFrontCut) {
+				if(x == prevX && i < xseries.length - 2) {
+					if(drawVerticalLine) {
+						// extend vertical line
+						verticalLineYLower = Math.min(verticalLineYLower, y);
+						verticalLineYUpper = Math.max(verticalLineYUpper, y);
 					} else {
-						gc.drawLine(verticalLineYLower, prevX, verticalLineYUpper, prevX);
+						// init vertical line
+						verticalLineYLower = Math.min(prevY, y);
+						verticalLineYUpper = Math.max(prevY, y);
+						drawVerticalLine = true;
 					}
-					drawVerticalLine = false;
-				}
-				// draw non-vertical line
-				if(isHorizontal) {
-					gc.drawLine(prevX, prevY, x, y);
 				} else {
-					gc.drawLine(prevY, prevX, y, x);
+					// draw vertical line
+					if(drawVerticalLine) {
+						if(isHorizontal) {
+							gc.drawLine(prevX, verticalLineYLower, prevX, verticalLineYUpper);
+						} else {
+							gc.drawLine(verticalLineYLower, prevX, verticalLineYUpper, prevX);
+						}
+						drawVerticalLine = false;
+					}
+					// draw non-vertical line
+					if(isHorizontal) {
+						gc.drawLine(prevX, prevY, x, y);
+					} else {
+						gc.drawLine(prevY, prevX, y, x);
+					}
 				}
 			}
 			prevX = x;
@@ -543,9 +546,10 @@ public class LineSeries extends Series implements ILineSeries {
 	 *            the y series
 	 * @param isHorizontal
 	 *            true if orientation is horizontal
+	 * @param baseFrontCut 
 	 */
-	private static void drawLineWithStyle(GC gc, Axis xAxis, Axis yAxis, double[] xseries, double[] yseries, boolean isHorizontal) {
-
+	private static void drawLineWithStyle(GC gc, Axis xAxis, Axis yAxis, double[] xseries, double[] yseries, boolean isHorizontal, int frontCut, int endCut, int baseFrontCut, ICompress compressor) {
+		int[] indexes = compressor.getCompressedIndexes();
 		double xLower = xAxis.getRange().lower;
 		double xUpper = xAxis.getRange().upper;
 		double yLower = yAxis.getRange().lower;
@@ -561,27 +565,29 @@ public class LineSeries extends Series implements ILineSeries {
 		for(int i = 0; i < xseries.length - 1; i++) {
 			int x = xAxis.getPixelCoordinate(xseries[i + 1], xLower, xUpper);
 			int y = yAxis.getPixelCoordinate(yseries[i + 1], yLower, yUpper);
-			if(x == prevX && i < xseries.length - 2) {
-				if(drawVerticalLine) {
-					// extend vertical line
-					verticalLineYLower = Math.min(verticalLineYLower, y);
-					verticalLineYUpper = Math.max(verticalLineYUpper, y);
+			if(indexes[i] >= frontCut - baseFrontCut && indexes[i] < endCut - baseFrontCut) {
+				if(x == prevX && i < xseries.length - 2) {
+					if(drawVerticalLine) {
+						// extend vertical line
+						verticalLineYLower = Math.min(verticalLineYLower, y);
+						verticalLineYUpper = Math.max(verticalLineYUpper, y);
+					} else {
+						// init vertical line
+						verticalLineYLower = Math.min(prevY, y);
+						verticalLineYUpper = Math.max(prevY, y);
+						drawVerticalLine = true;
+					}
 				} else {
-					// init vertical line
-					verticalLineYLower = Math.min(prevY, y);
-					verticalLineYUpper = Math.max(prevY, y);
-					drawVerticalLine = true;
+					// add vertical line
+					if(drawVerticalLine) {
+						addPoint(pointList, prevX, verticalLineYLower, isHorizontal);
+						addPoint(pointList, prevX, verticalLineYUpper, isHorizontal);
+						addPoint(pointList, prevX, prevY, isHorizontal);
+					}
+					// add non-vertical line
+					addPoint(pointList, x, y, isHorizontal);
+					drawVerticalLine = false;
 				}
-			} else {
-				// add vertical line
-				if(drawVerticalLine) {
-					addPoint(pointList, prevX, verticalLineYLower, isHorizontal);
-					addPoint(pointList, prevX, verticalLineYUpper, isHorizontal);
-					addPoint(pointList, prevX, prevY, isHorizontal);
-				}
-				// add non-vertical line
-				addPoint(pointList, x, y, isHorizontal);
-				drawVerticalLine = false;
 			}
 			prevX = x;
 			prevY = y;

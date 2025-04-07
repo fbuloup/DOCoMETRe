@@ -113,7 +113,7 @@ public class ADWinAnInModulePage extends ADWinModulePage {
 			int result = 0;
 			Channel in1 = (Channel) e1;
 			Channel in2 = (Channel) e2;
-			switch (columnNumber) {
+			switch (sortingColumnNumber) {
 			case 0:
 				e1 = in1.getProperty(ChannelProperties.NAME);
 				e2 = in2.getProperty(ChannelProperties.NAME);
@@ -209,7 +209,7 @@ public class ADWinAnInModulePage extends ADWinModulePage {
 		/*
 		 * General configuration section
 		 */
-		createGeneralConfigurationSection(2, false);
+		createGeneralConfigurationSection(2, true);
 		
 		FormText explanationsFormText = managedForm.getToolkit().createFormText(generalconfigurationContainer, false);
 		explanationsFormText.setText(ADWinMessages.AnInModuleExplanations_Text, true, false);
@@ -393,11 +393,8 @@ public class ADWinAnInModulePage extends ADWinModulePage {
 			
 		}
 		if(property instanceof ADWinAnInChannelProperties) {
-			if(tableViewer != null && tableViewer.getTable() != null && !tableViewer.getTable().isDisposed()) {
-				tableViewer.refresh();
-				tableConfigurationSectionPart.markDirty();
-				
-			}
+			if(tableViewer != null && tableViewer.getTable() != null && !tableViewer.getTable().isDisposed()) tableViewer.refresh();
+			if(tableConfigurationSectionPart != null) tableConfigurationSectionPart.markDirty();
 		}
 		
 	}

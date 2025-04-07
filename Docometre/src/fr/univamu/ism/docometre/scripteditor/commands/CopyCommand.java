@@ -62,10 +62,6 @@ public class CopyCommand extends Command {
 	
 	@Override
 	public void execute() {
-//		System.out.println("Execute copy command");
-//		for (Block block : blocks) {
-//			System.out.println("Copy : " + block.toString() + " to clipboard");
-//		}
 		Clipboard.getDefault().setContents(blocks);
 	}
 	

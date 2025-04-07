@@ -41,28 +41,38 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.editors;
 
+import java.nio.file.Path;
 import java.util.HashSet;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
+import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.GetResourceLabelDelegate;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.analyse.datamodel.Channel;
+import fr.univamu.ism.docometre.analyse.datamodel.XYChart;
+import fr.univamu.ism.docometre.analyse.datamodel.XYZChart;
+import fr.univamu.ism.nswtchart.Window;
 
-public class ResourceEditorInput implements IEditorInput {
+public class ResourceEditorInput implements IEditorInput, IPersistableElement {
 
 	private Object object;
 	private String tooltip = null;
 	private HashSet<Object> editedObjects;
+	private Window window;
 
 	public ResourceEditorInput(Object object) {
 		this.object = object;
-		if(!(object instanceof IResource)) ObjectsController.addHandle(object);
+		if(!(object instanceof IResource) && !(object instanceof Path)) ObjectsController.addHandle(object);
 		editedObjects = new HashSet<>();
 	}
 	
@@ -84,6 +94,14 @@ public class ResourceEditorInput implements IEditorInput {
 		} else return editedObjects.remove(object);
 	}
 	
+	public void setWindow(Window window) {
+		this.window = window;
+	}
+	
+	public Window getWindow() {
+		return window;
+	}
+	
 	public boolean canCloseEditor() {
 		return object == null && editedObjects.size() == 0;
 	}
@@ -96,9 +114,9 @@ public class ResourceEditorInput implements IEditorInput {
 	public Object getAdapter(Class adapter) {
 		return null;
 	}
-
-	public boolean exists() {
-		return (object == null ? false:true);
+	
+	public Object[] getOtherEditedObjects() {
+		return editedObjects.toArray();
 	}
 
 	public ImageDescriptor getImageDescriptor() {
@@ -109,24 +127,22 @@ public class ResourceEditorInput implements IEditorInput {
 		if(ResourceType.isLog(resource)) return Activator.getImageDescriptor(IImageKeys.DIARY_ICON);
 		return null;
 	}
-
-	private IPath getResourceFullPath() {
-		IResource resource = ObjectsController.getResourceForObject(object);
-		if(resource == null && object instanceof IResource) resource = (IResource)object;
-		return resource.getFullPath();
-	}
 	
 	public String getName() {
-		IPath path = getResourceFullPath();
-		if(path == null) return null;
-		return path.lastSegment();
+		if(object instanceof IResource) return GetResourceLabelDelegate.getLabel((IFile)object);
+		if(object instanceof Path) {
+			return ((Path)object).getFileName().toString().replaceAll(Activator.customerFunctionFileExtension, "");
+		}
+		return "?";
 	}
 
 	public String getToolTipText() {
 		if(tooltip != null) return tooltip;
-		IPath path = getResourceFullPath();
-		if(path == null) return null;
-		return path.toOSString();
+		IResource resource = ObjectsController.getResourceForObject(object);
+		if(resource instanceof IResource) return resource.getFullPath().toOSString();
+		if(object instanceof Path) return ((Path)object).toFile().getAbsolutePath();
+		if(object instanceof Channel) return ((Channel)object).getFullName();
+		return "?";
 	}
 	
 	public Object getObject() {
@@ -137,17 +153,72 @@ public class ResourceEditorInput implements IEditorInput {
 		this.object = object;
 	}
 	
-	public IPersistableElement getPersistable() {
-		return null;
-	}
-	
 	public boolean isEditing(Object object) {
 		if(this.object.equals(object)) return true;
 		Object[] objects = editedObjects.toArray();
 		for (Object localObject : objects) {
 			if(localObject.equals(object)) return true;
 		}
+		if(this.object instanceof Channel && object instanceof Channel) {
+			Channel localChannel = (Channel)this.object;
+			Channel channel = (Channel)object;
+			return localChannel.equals(channel);
+		} else if(this.object instanceof IFile && object instanceof IFile) {
+			IFile localFile = (IFile)this.object;
+			IFile file = (IFile)object;
+			return localFile.getLocation().toOSString().equals(file.getLocation().toOSString());
+		} else if(this.object instanceof IFile && object instanceof Path) {
+			String path = ((IFile)this.object).getLocation().toOSString();
+			String localPath = ((Path)object).toFile().getAbsolutePath();
+			return path.equals(localPath);
+		} else if(this.object instanceof Path && object instanceof IFile) {
+			String localPath = ((IFile)object).getLocation().toOSString();
+			String path = ((Path)this.object).toFile().getAbsolutePath();
+			return path.equals(localPath);
+		} else if(this.object instanceof Path && object instanceof Path) {
+			String localPath = ((Path)object).toFile().getAbsolutePath();
+			String path = ((Path)this.object).toFile().getAbsolutePath();
+			return path.equals(localPath);
+		}
 		return false;
+	}
+	
+	public boolean exists() {
+		return true;
+	}
+	
+	public IPersistableElement getPersistable() {
+		if(object instanceof Channel) return null;
+		if(object instanceof XYChart) return null;
+		if(object instanceof XYZChart) return null;
+		return this;
+	}
+
+	@Override
+	public void saveState(IMemento memento) {
+		IResource resource = ObjectsController.getResourceForObject(object);
+		if(resource != null) {
+			memento.putString(EditorsPersitenceElementFactory.ResourceFullPath, resource.getFullPath().toPortableString());
+		}
+		
+		String otherObjectsString = "";
+		Object[] otherObjects = editedObjects.toArray();
+		for (Object object : otherObjects) {
+			resource = ObjectsController.getResourceForObject(object);
+			if(resource != null) otherObjectsString = otherObjectsString + resource.getFullPath().toPortableString() + ";";
+		}
+		if(!"".equals(otherObjectsString)) memento.putString(EditorsPersitenceElementFactory.otherResourcesFullPath, otherObjectsString);
+		
+		IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findEditor(this);
+		if(editor instanceof DataEditor) {
+			Window window = ((DataEditor)editor).getWindow();
+			memento.putString(EditorsPersitenceElementFactory.dataEditorWindow, window.toString());
+		}
+	}
+
+	@Override
+	public String getFactoryId() {
+		return EditorsPersitenceElementFactory.ID;
 	}
 
 }

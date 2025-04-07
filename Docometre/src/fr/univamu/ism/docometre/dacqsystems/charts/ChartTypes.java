@@ -46,8 +46,10 @@ import fr.univamu.ism.docometre.DocometreMessages;
 public enum ChartTypes {
 
 	OSCILLO_CHART(DocometreMessages.OscilloChartLabel),
-	//SCROLL_CHART(DocometreMessages.ScrollChartLabel), 
-	XY_CHART(DocometreMessages.XYChartLabel);
+	XY_CHART(DocometreMessages.XYChartLabel),
+	GAUGE_CHART(DocometreMessages.GaugeChartLabel),
+	TANK_CHART(DocometreMessages.TankChartLabel),
+	IMAGE_CHART(DocometreMessages.ImageChartLabel);
 	
 	private String label;
 	

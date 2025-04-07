@@ -81,6 +81,7 @@ public class NewTrialAction extends Action implements ISelectionListener, IWorkb
 		this.window = window;
 		setText(DocometreMessages.NewTrialAction_Text);
 		setToolTipText(DocometreMessages.NewTrialAction_Text);
+		setEnabled(false);
 	}
 	
 	@Override

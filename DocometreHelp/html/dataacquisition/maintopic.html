@@ -1,0 +1,44 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Data Acquisition</title>
+</head>
+
+<body>
+	<p>The ADWinPro, Arduino or any other real time system, come with their own programming environment. A
+		language (ADBasic, C etc.) is used to communicate with the various
+		modules installed to acquire and generate signals, as well as for
+		real-time processing. It is therefore entirely possible to use this
+		language to carry out an experiment.</p>
+	<p>However, this kind of language can be difficult to use for people who
+		are new to industrial computing and electronics, and costly in terms
+		of development time because it has to be reprogrammed for each
+		experimental configuration.</p>
+	<p>We have therefore developed a software within the laboratory to
+		enable all its staff, students, researchers and engineers, to
+		configure this acquisition system in the best possible conditions so
+		that it best meets their experimental needs. This software enables
+		motion to be acquired and possibly disturbed, according to criteria
+		defined graphically by the user.</p>
+	<p>When using DOCoMETRe, the only principle to bear in mind that
+		has a direct link with real time systems (ADwin, Arduino) is the operation of its real-time
+		loop. There are then several steps to follow, most of which are taken
+		directly from the management of an experimental protocol:</p>
+		<ul>
+			<li>Create one or more acquisition configuration files.</li>
+			<li>Create one or more acquisition process files. Each of these file must be associated with an acquisition configuration file.</li>
+			<li>Organize your experiment : create subjects, sessions and trials. Each trial will run an acquisition process file.</li>
+			<li>Run the experiment on a subject or a session</li>
+		</ul>
+	
+	<p>With DOCoMETRe you can also inspect acquired signals and even implement data pre-processing such as filtering or point marking in order to extract
+	data for statistical analysis. We need finally to add these last step</p>
+	<ul>
+		<li>Data inspection.</li>
+		<li>Data pre-processing and export.</li>
+	</ul>
+	
+</body>
+</html>

@@ -74,8 +74,10 @@ import fr.univamu.ism.docometre.scripteditor.figures.BlockFigure;
 import fr.univamu.ism.docometre.scripteditor.actions.EditBlockAction;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.scripteditor.actions.AssignFunctionAction;
+import fr.univamu.ism.docometre.scripteditor.actions.DeactivateBlockAction;
 import fr.univamu.ism.docometre.scripteditor.commands.AssignFunctionBlockCommand;
 import fr.univamu.ism.docometre.scripteditor.commands.CreateConnectionCommand;
+import fr.univamu.ism.docometre.scripteditor.commands.DeactivateCommand;
 import fr.univamu.ism.docometre.scripteditor.commands.DeleteBlockCommand;
 import fr.univamu.ism.docometre.scripteditor.commands.DeleteConnectionCommand;
 import fr.univamu.ism.docometre.scripteditor.commands.ModifyCommentBlockCommand;
@@ -141,6 +143,7 @@ public class BlockEditPart extends AbstractGraphicalEditPart implements SizeAndL
 	protected void refreshVisuals() {
 		Block block = getModel();
 		((GraphicalEditPart)getParent()).setLayoutConstraint(this, getFigure(), block.getSizeAndLocation());
+		figure.repaint();
 //		super.refreshVisuals();
 	}
 	
@@ -258,6 +261,14 @@ public class BlockEditPart extends AbstractGraphicalEditPart implements SizeAndL
 			protected Command getConnectionCompleteCommand(CreateConnectionRequest request) {
 				CreateConnectionCommand createConnectionCommand = (CreateConnectionCommand) request.getStartCommand();
 				if(createConnectionCommand.isValidTarget(getModel())) {
+					
+//					// If current model is a Stimulus (target)
+//					if(getModel() instanceof StimulusFunction)
+//						// And source is not a Stimulus
+//						if(!(((BlockEditPart)request.getSourceEditPart()).getModel() instanceof StimulusFunction))
+//							// do not allow connection
+//							return null;
+					
 					createConnectionCommand.setTarget(getModel());
 //					updateBlocks();
 					return createConnectionCommand;
@@ -359,6 +370,9 @@ public class BlockEditPart extends AbstractGraphicalEditPart implements SizeAndL
 			String functionClassName = (String) request.getExtendedData().get(Function.FUNCTION_CLASS_NAME);
 			String name = (String) request.getExtendedData().get(Function.FUNCTION_NAME);
 			return new AssignFunctionBlockCommand(this, functionClassName, name);
+		}
+		if(request.getType().equals(DeactivateBlockAction.REQ_DEACTIVATE_BLOCK)) {
+			return new DeactivateCommand((ScriptSegment) getParent().getModel(), this);
 		}
 		return super.getCommand(request);
 	}

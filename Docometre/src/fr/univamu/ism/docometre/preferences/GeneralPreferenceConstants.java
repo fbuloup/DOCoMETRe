@@ -46,6 +46,11 @@ package fr.univamu.ism.docometre.preferences;
  */
 public class GeneralPreferenceConstants {
 
+
+	public static final String XML_SERIALIZATION = "XML_SERIALIZATION";
+	public static final String BUILD_AUTOMATICALLY = "BUILD_AUTOMATICALLY";
+	
+	public static final String FIRST_LAUNCH = "FIRST_LAUNCH";
 	public static final String PREF_UNDO_LIMIT = "PREF_UNDO_LIMIT";
 	public static final String PREF_CONFIRM_UNDO = "PREF_CONFIRM_UNDO";
 	public static final String SHOW_WORKSPACE_SELECTION_DIALOG = "SHOW_WORKSPACE_SELECTION_DIALOG";
@@ -54,24 +59,43 @@ public class GeneralPreferenceConstants {
 	public static final String SELECTED_WORKSPACE = "SELECTED_WORKSPACE";
 	public static final String SHOW_TRADITIONAL_STYLE_TABS = "SHOW_TRADITIONAL_STYLE_TABS";
 	public static final String WINE_FULL_PATH = "WINE_FULL_PATH";
+	public static final String USE_DOCKER = "USE_DOCKER";
 	
 	public static final String STOP_TRIAL_NOW = "STOP_TRIAL_NOW";
 	public static final String USE_AS_DEFAULT_DO_NOT_ASK_STOP_TRIAL_NOW = "USE_AS_DEFAULT_DO_NOT_ASK_STOP_TRIAL_NOW";
 	public static final String AUTO_VALIDATE_TRIALS = "AUTO_VALIDATE_TRIALS";
 	public static final String AUTO_START_TRIALS = "AUTO_START_TRIALS";
 	
-	public static final String MATH_ENGINE = "MATH_ENGINE";
-	
-	public static final String MATH_ENGINE_MATLAB = "Matlab";
-	public static final String MATH_ENGINE_PYTHON = "Python";
-	public static final String MATH_ENGINE_OCTAVE = "Octave";
-	
-	public static final String[][] MATH_ENGINE_VALUES = new String[][] { {MATH_ENGINE_MATLAB, MATH_ENGINE_MATLAB}, {MATH_ENGINE_PYTHON, MATH_ENGINE_PYTHON}, {MATH_ENGINE_OCTAVE, MATH_ENGINE_OCTAVE}}; 
-	
-	
 	public static final String SHOW_MATLAB_WINDOW = "SHOW_MATLAB_WINDOW";
 	public static final String MATLAB_LOCATION = "MATLAB_LOCATION";
 	public static final String MATLAB_TIME_OUT = "MATLAB_TIME_OUT";
-	public static final String MATLAB_SCRIPT_LOCATION = "MATLAB_SCRIPT_LOCATION";
+	public static final String MATLAB_SCRIPTS_LOCATION = "MATLAB_SCRIPTS_LOCATION";
+	public static final String MATLAB_USER_SCRIPTS_LOCATION = "MATLAB_USER_SCRIPTS_LOCATION";
+	public static final String MATLAB_LICENCE_FILE = "MATLAB_LICENCE_FILE";
+	
+	public static final String PYTHON_LOCATION = "PYTHON_LOCATION";
+	public static final String PYTHON_TIME_OUT = "PYTHON_TIME_OUT";
+	public static final String PYTHON_SCRIPTS_LOCATION = "PYTHON_SCRIPTS_LOCATION";
+	public static final String PYTHON_USER_SCRIPTS_LOCATION = "PYTHON_USER_SCRIPTS_LOCATION";
+	
+	public static final String ADWIN_USER_LIBRARIES_ABSOLUTE_PATH = "ADWIN_USER_LIBRARIES_ABSOLUTE_PATH";
+	public static final String ARDUINO_USER_LIBRARIES_ABSOLUTE_PATH = "ARDUINO_USER_LIBRARIES_ABSOLUTE_PATH";
+	public static final String ARDUINO_USE_CLI = "ARDUINO_USE_CLI";
+	public static final String ARDUINO_CLI_ABSOLUTE_PATH = "ARDUINO_CLI_ABSOLUTE_PATH";
+	public static final String ARDUINO_REVISION = "ARDUINO_REVISION";
+	
+	public static final String SHOW_CURSOR = "SHOW_CURSOR";
+	public static final String SHOW_MARKER = "SHOW_MARKER";
+	public static final String SYNCHRONIZE_CHARTS_WHEN_TRIAL_CHANGE = "SYNCHRONIZE_CHARTS_WHEN_TRIAL_CHANGE";
+	
+	public static final String ARDUINO_DELAY_TIME_AFTER_SERIAL_PRINT = "ARDUINO_DELAY_TIME_AFTER_SERIAL_PRINT";
+	
+	public static final String REDIRECT_STD_ERR_OUT_TO_FILE = "REDIRECT_STD_ERR_OUT_TO_FILE";
+	public static final String STD_ERR_OUT_FILE = "STD_ERR_OUT_FILE";
+	
+	public static final String WORKSPACE_DIALOG_X_POSITION = "WORKSPACE_DIALOG_X_POSITION";
+	public static final String WORKSPACE_DIALOG_Y_POSITION = "WORKSPACE_DIALOG_Y_POSITION";
+	public static final String WORKSPACE_DIALOG_WIDTH = "WORKSPACE_DIALOG_WIDTH";
+	public static final String WORKSPACE_DIALOG_HEIGHT = "WORKSPACE_DIALOG_HEIGHT";
 	
 }

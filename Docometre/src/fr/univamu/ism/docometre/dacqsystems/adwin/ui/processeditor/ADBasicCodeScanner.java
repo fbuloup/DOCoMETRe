@@ -55,6 +55,7 @@ import org.eclipse.jface.text.rules.WordRule;
 import org.eclipse.swt.SWT;
 
 import fr.univamu.ism.docometre.DocometreApplication;
+import fr.univamu.ism.docometre.ThemeColors;
 import fr.univamu.ism.docometre.editors.WordsDetector;
 
 public final class ADBasicCodeScanner extends RuleBasedScanner {
@@ -64,7 +65,7 @@ public final class ADBasicCodeScanner extends RuleBasedScanner {
 	private static String[] DEFINE = {"#DEFINE", "FPAR_", "DATA_"};
 	private static String[] DECLARE = {"DIM", "AS", "LONG", "FLOAT", "SHORT", "INTEGER", "STRING"};
 	private static String[] SEGMENTS = {"LOWINIT:", "INIT:", "EVENT:", "FINISH:"};
-	private static String[] RESERVED_WORDS = {"for", "FIFO_CLEAR", "FIFO_EMPTY", "IF", "ELSE", "ENDIF", "THEN", "INC", "GLOBAL_DELAY", "DO", "UNTIL", "FOR", "TO", "NEXT", "SHIFT_RIGHT", "OR", "AND"};
+	private static String[] RESERVED_WORDS = {"for", "FIFO_CLEAR", "FIFO_EMPTY", "IF", "ELSE", "ENDIF", "THEN", "INC", "GLOBAL_DELAY", "DO", "UNTIL", "FOR", "TO", "NEXT", "SHIFT_RIGHT", "OR", "AND", "NOP"};
 	
 	
 //		 // Add rule for whitespace
@@ -73,13 +74,12 @@ public final class ADBasicCodeScanner extends RuleBasedScanner {
 //	        return Character.isWhitespace(c);
 //	      }
 //	    }));
-		
 	
 	public static RuleBasedScanner getSegmentScanner() {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
 		List<IRule> rules= new ArrayList<IRule>();
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.RED), 
-				   									DocometreApplication.getColor(DocometreApplication.WHITE), 
+													ThemeColors.getBackgroundColor(), 
 				   									SWT.NORMAL, 
 				   									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
@@ -93,7 +93,7 @@ public final class ADBasicCodeScanner extends RuleBasedScanner {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
 		List<IRule> rules= new ArrayList<IRule>();
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLUE),
-				 									DocometreApplication.getColor(DocometreApplication.WHITE), 
+													ThemeColors.getBackgroundColor(), 
 				 									SWT.NORMAL,
 				 									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
@@ -111,7 +111,7 @@ public final class ADBasicCodeScanner extends RuleBasedScanner {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
 		List<IRule> rules= new ArrayList<IRule>();
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLUE),
-				 									DocometreApplication.getColor(DocometreApplication.WHITE), 
+													ThemeColors.getBackgroundColor(), 
 				 									SWT.NORMAL,
 				 									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
@@ -127,7 +127,7 @@ public final class ADBasicCodeScanner extends RuleBasedScanner {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
 		List<IRule> rules= new ArrayList<IRule>();
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLUE),
-				 									DocometreApplication.getColor(DocometreApplication.WHITE), 
+													ThemeColors.getBackgroundColor(), 
 				 									SWT.NORMAL,
 				 									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
@@ -142,7 +142,7 @@ public final class ADBasicCodeScanner extends RuleBasedScanner {
 	private static IRule[] getCommentRules() {
 		List<IRule> rules= new ArrayList<IRule>();
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.GREEN), 
-													DocometreApplication.getColor(DocometreApplication.WHITE), 
+													ThemeColors.getBackgroundColor(), 
 													SWT.NORMAL, 
 													DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
@@ -165,7 +165,7 @@ public final class ADBasicCodeScanner extends RuleBasedScanner {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
 		List<IRule> rules= new ArrayList<IRule>();
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.ORANGE),
-				 									DocometreApplication.getColor(DocometreApplication.WHITE), 
+													ThemeColors.getBackgroundColor(), 
 				 									SWT.NORMAL,
 				 									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
@@ -192,7 +192,7 @@ public final class ADBasicCodeScanner extends RuleBasedScanner {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
 		List<IRule> rules= new ArrayList<IRule>();
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.ORANGE),
-				 									DocometreApplication.getColor(DocometreApplication.WHITE), 
+													ThemeColors.getBackgroundColor(), 
 				 									SWT.NORMAL,
 				 									DocometreApplication.getFont(DocometreApplication.COURIER_NEW));
 		IToken token = new Token(attribute);
@@ -209,7 +209,7 @@ public final class ADBasicCodeScanner extends RuleBasedScanner {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
 		List<IRule> rules= new ArrayList<IRule>();
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLUE),
-				 									DocometreApplication.getColor(DocometreApplication.WHITE), 
+													ThemeColors.getBackgroundColor(), 
 				 									SWT.NORMAL,
 				 									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);

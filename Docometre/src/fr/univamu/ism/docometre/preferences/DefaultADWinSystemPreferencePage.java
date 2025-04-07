@@ -87,6 +87,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
+import fr.univamu.ism.docometre.analyse.views.FunctionsView;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfigurationProperties;
@@ -115,7 +116,7 @@ public class DefaultADWinSystemPreferencePage extends PreferencePage implements 
 		protected Control createDialogArea(Composite parent) {
 			setTitle(ADWinMessages.AddModuleDialog_Title);
 			setMessage(ADWinMessages.AddModuleDialog_Message);
-			setTitleImage(Activator.getImageDescriptor(IImageKeys.MODULE_WIZBAN).createImage());
+			setTitleImage(Activator.getImage(IImageKeys.MODULE_WIZBAN));
 			Composite container = (Composite) super.createDialogArea(parent);
 			
 			modulesListViewer = new ListViewer(container);
@@ -294,12 +295,14 @@ public class DefaultADWinSystemPreferencePage extends PreferencePage implements 
 	private Combo cpuTypeCombo;
 	private Text globalFrequencyText;
 	private Text librariesAbsolutePathText;
+	private Text userLibrariesAbsolutePathText;
 	private TableViewer modulesTableViewer;
 	private ListViewer modulesListViewer;
 	private ArrayList<ADWinModulesList> selectedADWinModulesList = new ArrayList<ADWinModulesList>();
 	
 	public static ADWinDACQConfiguration getDefaultDACQConfiguration() {
 		IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
+		if(!preferenceStore.getBoolean(DEFAULT_ADWIN_SYSTEM_PREFERENCE_INITIALIZED)) performDefaultsPreferencesValues();
 		ADWinDACQConfiguration adWinDACQConfiguration = new ADWinDACQConfiguration();
 		adWinDACQConfiguration.setProperty(ADWinDACQConfigurationProperties.ADBASIC_COMPILER, preferenceStore.getString(ADWinDACQConfigurationProperties.ADBASIC_COMPILER.getKey()));
 		adWinDACQConfiguration.setProperty(ADWinDACQConfigurationProperties.BTL_FILE, preferenceStore.getString(ADWinDACQConfigurationProperties.BTL_FILE.getKey()));
@@ -343,9 +346,9 @@ public class DefaultADWinSystemPreferencePage extends PreferencePage implements 
 		setDescription(DocometreMessages.DefaultADWinSystemPreference_Description);
 	}
 	
-	private void performDefaultsPreferencesValues() {
+	private static void performDefaultsPreferencesValues() {
 		ADWinDACQConfiguration adwinDAQConfiguration = new ADWinDACQConfiguration();
-		IPreferenceStore preferenceStore = getPreferenceStore();
+		IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
 		preferenceStore.putValue(ADWinDACQConfigurationProperties.ADBASIC_COMPILER.getKey(), adwinDAQConfiguration.getProperty(ADWinDACQConfigurationProperties.ADBASIC_COMPILER));
 		preferenceStore.putValue(ADWinDACQConfigurationProperties.BTL_FILE.getKey(), adwinDAQConfiguration.getProperty(ADWinDACQConfigurationProperties.BTL_FILE));
 		preferenceStore.putValue(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), adwinDAQConfiguration.getProperty(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH));
@@ -397,8 +400,11 @@ public class DefaultADWinSystemPreferencePage extends PreferencePage implements 
 		preferenceStore.putValue(ADWinDACQConfigurationProperties.SYSTEM_TYPE.getKey(), systemTypeCombo.getText());
 		preferenceStore.putValue(ADWinDACQConfigurationProperties.CPU_TYPE.getKey(), cpuTypeCombo.getText());
 		preferenceStore.putValue(ADWinDACQConfigurationProperties.GLOBAL_FREQUENCY.getKey(), globalFrequencyText.getText());
+		preferenceStore.putValue(GeneralPreferenceConstants.ADWIN_USER_LIBRARIES_ABSOLUTE_PATH, userLibrariesAbsolutePathText.getText());
 		preferenceStore.putValue("DEFAULT_MODULES", createModuleInfosString());
-		return super.performOk();
+		boolean value = super.performOk();
+		FunctionsView.refresh(false);
+		return value;
 	}
 	
 	@Override
@@ -410,9 +416,11 @@ public class DefaultADWinSystemPreferencePage extends PreferencePage implements 
 		// ADBASIC_COMPILER
 		Label adbasicCompilerLabel = new Label(container, SWT.NORMAL);
 		adbasicCompilerLabel.setText(ADWinDACQConfigurationProperties.ADBASIC_COMPILER.getLabel());
+		adbasicCompilerLabel.setToolTipText(ADWinDACQConfigurationProperties.ADBASIC_COMPILER.getTooltip());
 		GridDataFactory.fillDefaults().align(SWT.RIGHT, SWT.CENTER).applyTo(adbasicCompilerLabel);
 		adbasicCompilerText = new Text(container, SWT.BORDER);
 		adbasicCompilerText.setText(getPreferenceStore().getString(ADWinDACQConfigurationProperties.ADBASIC_COMPILER.getKey()));
+		adbasicCompilerText.setToolTipText(ADWinDACQConfigurationProperties.ADBASIC_COMPILER.getTooltip());
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(adbasicCompilerText);
 		Button browseADBasicCompilerButton = new Button(container, SWT.FLAT);
 		browseADBasicCompilerButton.setText("Browse...");
@@ -422,9 +430,11 @@ public class DefaultADWinSystemPreferencePage extends PreferencePage implements 
 		// BTL_FILE
 		Label btlFileLabel = new Label(container, SWT.NORMAL);
 		btlFileLabel.setText(ADWinDACQConfigurationProperties.BTL_FILE.getLabel());
+		btlFileLabel.setToolTipText(ADWinDACQConfigurationProperties.BTL_FILE.getTooltip());
 		GridDataFactory.fillDefaults().align(SWT.RIGHT, SWT.CENTER).applyTo(btlFileLabel);
 		btlFileText = new Text(container, SWT.BORDER);
 		btlFileText.setText(getPreferenceStore().getString(ADWinDACQConfigurationProperties.BTL_FILE.getKey()));
+		btlFileText.setToolTipText(ADWinDACQConfigurationProperties.BTL_FILE.getTooltip());
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(btlFileText);
 		Button browseBTLFileButton = new Button(container, SWT.FLAT);
 		browseBTLFileButton.setText("Browse...");
@@ -434,88 +444,126 @@ public class DefaultADWinSystemPreferencePage extends PreferencePage implements 
 		// LIBRARIES_ABSOLUTE_PATH 
 		Label librariesAbsolutePathLabel = new Label(container, SWT.NORMAL);
 		librariesAbsolutePathLabel.setText(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getLabel());
+		librariesAbsolutePathLabel.setToolTipText(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getTooltip());
 		GridDataFactory.fillDefaults().align(SWT.RIGHT, SWT.CENTER).applyTo(librariesAbsolutePathLabel);
 		librariesAbsolutePathText = new Text(container, SWT.BORDER);
 		librariesAbsolutePathText.setText(getPreferenceStore().getString(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey()));
+		librariesAbsolutePathText.setToolTipText(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getTooltip());
+		librariesAbsolutePathText.setEditable(false);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(librariesAbsolutePathText);
 		Button browseLibrariesAbsolutePathButton = new Button(container, SWT.FLAT);
+		browseLibrariesAbsolutePathButton.setEnabled(false);
 		browseLibrariesAbsolutePathButton.setText("Browse...");
 		browseLibrariesAbsolutePathButton.addSelectionListener(new DialogSelectionHandler(librariesAbsolutePathText, true, getShell()));
 		GridDataFactory.fillDefaults().applyTo(browseLibrariesAbsolutePathButton);
 		
+		// USER_LIBRARIES_ABSOLUTE_PATH 
+		Label userLibrariesAbsolutePathLabel = new Label(container, SWT.NORMAL);
+		userLibrariesAbsolutePathLabel.setText(DocometreMessages.ADWinUserLibrariesAbsolutePath_Label);
+		userLibrariesAbsolutePathLabel.setToolTipText(DocometreMessages.ADWinUserLibrariesAbsolutePath_Tooltip);
+		GridDataFactory.fillDefaults().align(SWT.RIGHT, SWT.CENTER).applyTo(userLibrariesAbsolutePathLabel);
+		userLibrariesAbsolutePathText = new Text(container, SWT.BORDER);
+		userLibrariesAbsolutePathText.setText(getPreferenceStore().getString(GeneralPreferenceConstants.ADWIN_USER_LIBRARIES_ABSOLUTE_PATH));
+		userLibrariesAbsolutePathText.setToolTipText(DocometreMessages.ADWinUserLibrariesAbsolutePath_Tooltip);
+		userLibrariesAbsolutePathText.setEditable(false);
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(userLibrariesAbsolutePathText);
+		Button browseUserLibrariesAbsolutePathButton = new Button(container, SWT.FLAT);
+		browseUserLibrariesAbsolutePathButton.setEnabled(true);
+		browseUserLibrariesAbsolutePathButton.setText("Browse...");
+		browseUserLibrariesAbsolutePathButton.addSelectionListener(new DialogSelectionHandler(userLibrariesAbsolutePathText, true, getShell()));
+		GridDataFactory.fillDefaults().applyTo(browseUserLibrariesAbsolutePathButton);
+		
 		// ADBASIC_VERSION
 		Label adbasicVersionLabel = new Label(container, SWT.NORMAL);
 		adbasicVersionLabel.setText(ADWinDACQConfigurationProperties.ADBASIC_VERSION.getLabel());
+		adbasicVersionLabel.setToolTipText(ADWinDACQConfigurationProperties.ADBASIC_VERSION.getTooltip());
 		GridDataFactory.fillDefaults().align(SWT.RIGHT, SWT.CENTER).applyTo(adbasicVersionLabel);
 		adbasicVersionCombo = new Combo(container, SWT.READ_ONLY);
 		adbasicVersionCombo.setItems(ADWinDACQConfigurationProperties.ADBasicVersions);
 		adbasicVersionCombo.setText(getPreferenceStore().getString(ADWinDACQConfigurationProperties.ADBASIC_VERSION.getKey()));
+		adbasicVersionCombo.setToolTipText(ADWinDACQConfigurationProperties.ADBASIC_VERSION.getTooltip());
 		GridDataFactory.fillDefaults().grab(true, false).span(2, 1).applyTo(adbasicVersionCombo);
 		
 		// TCPIP_SERVER_DEVICE_NUMBER
 		Label tcpipServerDeviceNumberLabel = new Label(container, SWT.NORMAL);
 		tcpipServerDeviceNumberLabel.setText(ADWinDACQConfigurationProperties.TCPIP_SERVER_DEVICE_NUMBER.getLabel());
+		tcpipServerDeviceNumberLabel.setToolTipText(ADWinDACQConfigurationProperties.TCPIP_SERVER_DEVICE_NUMBER.getTooltip());
 		GridDataFactory.fillDefaults().align(SWT.RIGHT, SWT.CENTER).applyTo(tcpipServerDeviceNumberLabel);
 		tcpipServerDeviceNumberText = new Text(container, SWT.BORDER);
 		tcpipServerDeviceNumberText.setText(getPreferenceStore().getString(ADWinDACQConfigurationProperties.TCPIP_SERVER_DEVICE_NUMBER.getKey()));
+		tcpipServerDeviceNumberText.setToolTipText(ADWinDACQConfigurationProperties.TCPIP_SERVER_DEVICE_NUMBER.getTooltip());
 		GridDataFactory.fillDefaults().grab(true, false).span(2, 1).applyTo(tcpipServerDeviceNumberText);
 		
 		// IP_ADDRESS
 		Label ipAddressLabel = new Label(container, SWT.NORMAL);
 		ipAddressLabel.setText(ADWinDACQConfigurationProperties.IP_ADDRESS.getLabel());
+		ipAddressLabel.setToolTipText(ADWinDACQConfigurationProperties.IP_ADDRESS.getTooltip());
 		GridDataFactory.fillDefaults().align(SWT.RIGHT, SWT.CENTER).applyTo(ipAddressLabel);
 		ipAddressText = new Text(container, SWT.BORDER);
 		ipAddressText.setText(getPreferenceStore().getString(ADWinDACQConfigurationProperties.IP_ADDRESS.getKey()));
+		ipAddressText.setToolTipText(ADWinDACQConfigurationProperties.IP_ADDRESS.getTooltip());
 		GridDataFactory.fillDefaults().span(2, 1).align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(ipAddressText);
 		
 		// PORT_NUMBER
 		Label portNumberLabel = new Label(container, SWT.NORMAL);
 		portNumberLabel.setText(ADWinDACQConfigurationProperties.PORT_NUMBER.getLabel());
+		portNumberLabel.setToolTipText(ADWinDACQConfigurationProperties.PORT_NUMBER.getTooltip());
 		GridDataFactory.fillDefaults().align(SWT.RIGHT, SWT.CENTER).applyTo(portNumberLabel);
 		portNumberText = new Text(container, SWT.BORDER);
 		portNumberText.setText(getPreferenceStore().getString(ADWinDACQConfigurationProperties.PORT_NUMBER.getKey()));
+		portNumberText.setToolTipText(ADWinDACQConfigurationProperties.PORT_NUMBER.getTooltip());
 		GridDataFactory.fillDefaults().grab(true, false).span(2, 1).applyTo(portNumberText);
 		
 		// DEVICE_NUMBER
 		Label deviceNumberLabel = new Label(container, SWT.NORMAL);
 		deviceNumberLabel.setText(ADWinDACQConfigurationProperties.DEVICE_NUMBER.getLabel());
+		deviceNumberLabel.setToolTipText(ADWinDACQConfigurationProperties.DEVICE_NUMBER.getTooltip());
 		GridDataFactory.fillDefaults().align(SWT.RIGHT, SWT.CENTER).applyTo(deviceNumberLabel);
 		deviceNumberText = new Text(container, SWT.BORDER);
 		deviceNumberText.setText(getPreferenceStore().getString(ADWinDACQConfigurationProperties.DEVICE_NUMBER.getKey()));
+		deviceNumberText.setToolTipText(ADWinDACQConfigurationProperties.DEVICE_NUMBER.getTooltip());
 		GridDataFactory.fillDefaults().grab(true, false).span(2, 1).applyTo(deviceNumberText);
 		
 		// TIME_OUT
 		Label timeOutLabel = new Label(container, SWT.NORMAL);
 		timeOutLabel.setText(ADWinDACQConfigurationProperties.TIME_OUT.getLabel());
+		timeOutLabel.setToolTipText(ADWinDACQConfigurationProperties.TIME_OUT.getTooltip());
 		GridDataFactory.fillDefaults().align(SWT.RIGHT, SWT.CENTER).applyTo(timeOutLabel);
 		timeOutText = new Text(container, SWT.BORDER);
 		timeOutText.setText(getPreferenceStore().getString(ADWinDACQConfigurationProperties.TIME_OUT.getKey()));
+		timeOutText.setToolTipText(ADWinDACQConfigurationProperties.TIME_OUT.getTooltip());
 		GridDataFactory.fillDefaults().grab(true, false).span(2, 1).applyTo(timeOutText);
 		
 		// SYSTEM_TYPE
 		Label systemTypeLabel = new Label(container, SWT.NORMAL);
 		systemTypeLabel.setText(ADWinDACQConfigurationProperties.SYSTEM_TYPE.getLabel());
+		systemTypeLabel.setToolTipText(ADWinDACQConfigurationProperties.SYSTEM_TYPE.getTooltip());
 		GridDataFactory.fillDefaults().align(SWT.RIGHT, SWT.CENTER).applyTo(systemTypeLabel);
 		systemTypeCombo = new Combo(container, SWT.READ_ONLY);
 		systemTypeCombo.setItems(ADWinDACQConfigurationProperties.SystemsTypes);
 		systemTypeCombo.setText(getPreferenceStore().getString(ADWinDACQConfigurationProperties.SYSTEM_TYPE.getKey()));
+		systemTypeCombo.setToolTipText(ADWinDACQConfigurationProperties.SYSTEM_TYPE.getTooltip());
 		GridDataFactory.fillDefaults().grab(true, false).span(2, 1).applyTo(systemTypeCombo);
 		
 		// CPU_TYPE
 		Label cpuTypeLabel = new Label(container, SWT.NORMAL);
 		cpuTypeLabel.setText(ADWinDACQConfigurationProperties.CPU_TYPE.getLabel());
+		cpuTypeLabel.setToolTipText(ADWinDACQConfigurationProperties.CPU_TYPE.getTooltip());
 		GridDataFactory.fillDefaults().align(SWT.RIGHT, SWT.CENTER).applyTo(cpuTypeLabel);
 		cpuTypeCombo = new Combo(container, SWT.READ_ONLY);
 		cpuTypeCombo.setItems(ADWinDACQConfigurationProperties.CPUTypes);
 		cpuTypeCombo.setText(getPreferenceStore().getString(ADWinDACQConfigurationProperties.CPU_TYPE.getKey()));
+		cpuTypeCombo.setToolTipText(ADWinDACQConfigurationProperties.CPU_TYPE.getTooltip());
 		GridDataFactory.fillDefaults().grab(true, false).span(2, 1).applyTo(cpuTypeCombo);
 		
 		// GLOBAL_FREQUENCY
 		Label globalFrequencyLabel = new Label(container, SWT.NORMAL);
 		globalFrequencyLabel.setText(ADWinDACQConfigurationProperties.GLOBAL_FREQUENCY.getLabel());
+		globalFrequencyLabel.setToolTipText(ADWinDACQConfigurationProperties.GLOBAL_FREQUENCY.getTooltip());
 		GridDataFactory.fillDefaults().align(SWT.RIGHT, SWT.CENTER).applyTo(globalFrequencyLabel);
 		globalFrequencyText = new Text(container, SWT.BORDER);
 		globalFrequencyText.setText(getPreferenceStore().getString(ADWinDACQConfigurationProperties.GLOBAL_FREQUENCY.getKey()));
+		globalFrequencyText.setToolTipText(ADWinDACQConfigurationProperties.GLOBAL_FREQUENCY.getTooltip());
 		GridDataFactory.fillDefaults().grab(true, false).span(2, 1).applyTo(globalFrequencyText);
 		
 		// DEFAULT_MODULES

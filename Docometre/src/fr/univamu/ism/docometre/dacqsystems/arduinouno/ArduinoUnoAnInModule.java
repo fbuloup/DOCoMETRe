@@ -61,6 +61,13 @@ public class ArduinoUnoAnInModule extends Module {
 	public String getCodeSegment(Object segment) throws Exception {
 		String code = "";
 		
+		if (segment == ArduinoUnoCodeSegmentProperties.INITIALIZATION) {
+			String analogReference = getProperty(ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE);
+			code = code +  "\t\t// Set analog ref.\n";
+			code = code + "\t\tanalogReference(" + analogReference + ");\n";
+		}
+		
+		
 		for (int i = 0; i < getChannelsNumber(); i++) {
 			
 			Channel channel = getChannel(i);
@@ -77,29 +84,28 @@ public class ArduinoUnoAnInModule extends Module {
 			float sfFloat = Float.parseFloat(sfChannel);
 			boolean isTransfered = Boolean.valueOf(transfer);
 			int frequencyRatio = (int) (gsfFloat/sfFloat);
+			
 		
 			if (segment == ArduinoUnoCodeSegmentProperties.DECLARATION) {
 				if(isUsed) {
 					code = code + "// ******** Entree analogique : " + name + "\n";
 					code = code + "unsigned int " + name + ";\n";
 					code = code + "byte acquire_" + name + "_index = " + frequencyRatio + ";\n";
-					code = code + "unsigned long lastAcquireTime_" + name + ";\n\n";
 				}
 			}
 			
 			if (segment == ArduinoUnoCodeSegmentProperties.INITIALIZATION) {
 				if(isUsed) {
-					code = code + "\t\tlastAcquireTime_" + name + " = 0;\n";
 				}
 			}
 			
 			if (segment == ArduinoUnoCodeSegmentProperties.ACQUISITION) {
 				if(isUsed) {
-					code = code + "\n\t\t\t\t\t\tif(acquire_" + name + "_index == " + frequencyRatio + ") {\n";
-					code = code + "\t\t\t\t\t\t\tacquire_" + name + "_index = 0;\n";
-					code = code + "\t\t\t\t\t\t\t" + name + " = acquireAnalogInput(" + channelNumber + ", &lastAcquireTime_" + name + ", " + transfer + ", " + transferNumber + ");\n";
-					code = code + "\t\t\t\t\t\t}\n";
-					code = code + "\t\t\t\t\t\tacquire_" + name + "_index += 1;\n\n";
+					code = code + "\n\t\tif(acquire_" + name + "_index == " + frequencyRatio + ") {\n";
+					code = code + "\t\t\t\tacquire_" + name + "_index = 0;\n";
+					code = code + "\t\t\t\t" + name + " = acquireAnalogInput(" + channelNumber + ", " + transfer + ", " + transferNumber + ");\n";
+					code = code + "\t\t}\n";
+					code = code + "\t\tacquire_" + name + "_index += 1;\n\n";
 					
 				}
 			}

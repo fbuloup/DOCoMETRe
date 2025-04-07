@@ -41,9 +41,13 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.wizards;
 
+import java.nio.file.Path;
+
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.jface.dialogs.IPageChangedListener;
+import org.eclipse.jface.dialogs.PageChangedEvent;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
@@ -51,11 +55,14 @@ import org.eclipse.ui.IWorkbench;
 
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.analyse.datamodel.BatchDataProcessing;
+import fr.univamu.ism.docometre.analyse.datamodel.XYChart;
+import fr.univamu.ism.docometre.analyse.datamodel.XYZChart;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.process.Script;
 
-public class NewResourceWizard extends Wizard implements INewWizard {
+public class NewResourceWizard extends Wizard implements INewWizard, IPageChangedListener {
 	
 	public static int CREATE = 1;
 	public static int MODIFY = 2;
@@ -66,10 +73,18 @@ public class NewResourceWizard extends Wizard implements INewWizard {
 	private int mode;
 	// Must not be null when modifying resource
 	private IResource resource;
+	private OrganizeSessionWizardPage organizeSessionWizardPage;
+	private Path parentResourcePath;
 
 	public NewResourceWizard(ResourceType resourceType, IContainer parentResource, int mode) {
 		this.resourceType = resourceType;
 		this.parentResource = parentResource;
+		this.mode = mode; 
+	}
+	
+	public NewResourceWizard(ResourceType resourceType, Path parentResourcePath, int mode) {
+		this.resourceType = resourceType;
+		this.parentResourcePath = parentResourcePath;
 		this.mode = mode; 
 	}
 
@@ -107,9 +122,14 @@ public class NewResourceWizard extends Wizard implements INewWizard {
 		if(resourceType.equals(ResourceType.TRIAL)) newResourceWizardPage = new NewTrialWizardPage();
 		if(resourceType.equals(ResourceType.PARAMETERS)) newResourceWizardPage = new NewParametersFileWizardPage();
 		if(resourceType.equals(ResourceType.DATA_PROCESSING)) newResourceWizardPage = new NewDataProcessingWizardPage();
+		if(resourceType.equals(ResourceType.BATCH_DATA_PROCESSING)) newResourceWizardPage = new NewBatchDataProcessingWizardPage();
+		if(resourceType.equals(ResourceType.XYCHART)) newResourceWizardPage = new NewXYZChartWizardPage(ResourceType.XYCHART);
+		if(resourceType.equals(ResourceType.XYZCHART)) newResourceWizardPage = new NewXYZChartWizardPage(ResourceType.XYZCHART);
+		if(resourceType.equals(ResourceType.CUSTOMER_FUNCTION)) newResourceWizardPage = new NewCustomFunctionWizardPage(ResourceType.CUSTOMER_FUNCTION);
 		addPage(newResourceWizardPage);
 		if(resourceType.equals(ResourceType.SESSION)) {
-			addPage(new OrganizeSessionWizardPage());
+			organizeSessionWizardPage = new OrganizeSessionWizardPage();
+			addPage(organizeSessionWizardPage);
 		}
 	}
 
@@ -196,5 +216,37 @@ public class NewResourceWizard extends Wizard implements INewWizard {
 		if(resourceType.equals(ResourceType.SESSION)) return ((NewSessionWizardPage)newResourceWizardPage).getMinTrials();
 		return 0;
 	}
+
+	public Object getBatchDataProcessing() {
+		return new BatchDataProcessing();
+	}
+	
+	public Object getXYChart() {
+		return new XYChart();
+	}
+	
+	public Object getXYZChart() {
+		return new XYZChart();
+	}
+
+	@Override
+	public void pageChanged(PageChangedEvent event) {
+		if(event.getSelectedPage() == organizeSessionWizardPage) {
+			organizeSessionWizardPage.updateFocus();
+		}
+		
+	}
+	
+	public boolean findMember(String name) {
+		if(parentResource != null) return parentResource.findMember(name) != null;
+		if(parentResourcePath != null) {
+			String[] files = parentResourcePath.toFile().list();
+			for (String fileName : files) {
+				if(fileName.equalsIgnoreCase(name)) return true;
+			}
+		}
+		return false;
+	}
+	
  	
 }

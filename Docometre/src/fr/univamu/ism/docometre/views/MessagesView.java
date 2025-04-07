@@ -66,13 +66,13 @@ import org.eclipse.ui.progress.WorkbenchJob;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
+import fr.univamu.ism.docometre.ThemeColors;
+import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
 public class MessagesView extends ViewPart implements ILogListener, IDocumentListener {
 	
-	private static Color NORMAL_COLOR = JFaceResources.getResources().createColor(new RGB(0, 0, 0));
 	private static Color WARNING_COLOR = JFaceResources.getResources().createColor(new RGB(204,102,0));
-	private static Color ERROR_COLOR = JFaceResources.getResources().createColor(new RGB(255, 0, 0));
-	private static Color WHITE_COLOR = JFaceResources.getResources().createColor(new RGB(255, 255, 255));
+	private static Color ERROR_COLOR = JFaceResources.getResources().createColor(new RGB(250, 0, 0));
 	
 	private class ScrollLockAction extends Action {
 		public ScrollLockAction() {
@@ -83,7 +83,6 @@ public class MessagesView extends ViewPart implements ILogListener, IDocumentLis
 		@Override
 		public void run() {
 			autoScroll = !isChecked();
-			Activator.logErrorMessage("ERROR " + isChecked());
 		}
 	}
 	
@@ -104,7 +103,7 @@ public class MessagesView extends ViewPart implements ILogListener, IDocumentLis
 		}
 	}
 	
-	private WorkbenchJob revealJob = new WorkbenchJob("Reveal End of Document") {//$NON-NLS-1$
+	private WorkbenchJob revealJob = new WorkbenchJob(DocometreMessages.RevealEODTitle) {//$NON-NLS-1$
         public IStatus runInUIThread(IProgressMonitor monitor) {
             StyledText textWidget = messagesViewer.getTextWidget();
             if (textWidget != null && !textWidget.isDisposed()) {
@@ -139,6 +138,20 @@ public class MessagesView extends ViewPart implements ILogListener, IDocumentLis
 		messagesViewer.getDocument().addDocumentListener(this);
 		getViewSite().getActionBars().getToolBarManager().add(new ClearConsoleAction());
 		getViewSite().getActionBars().getToolBarManager().add(new ScrollLockAction());
+		PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+			@Override
+			public void run() {
+				Activator.getDefault().getLog().removeLogListener(CachedLogger.getInstance());
+				IStatus cachedStatus = CachedLogger.getInstance().get();
+				while (cachedStatus != null) {
+					putMessage(cachedStatus);
+					if(Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.REDIRECT_STD_ERR_OUT_TO_FILE)) {
+						System.out.println(cachedStatus.getMessage());
+					}
+					cachedStatus = CachedLogger.getInstance().get();
+				}
+			}
+		});
 	}
 
 	@Override
@@ -149,30 +162,9 @@ public class MessagesView extends ViewPart implements ILogListener, IDocumentLis
 	@Override
 	public void logging(IStatus status, String plugin) {
 		PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
-			
 			@Override
 			public void run() {
-				
-				String message = status.getPlugin() + " : " + status.getMessage();
-				int start = messagesViewer.getTextWidget().getCharCount();
-				if(start > 0) {
-					message = "\n" + message;
-				}
-				messagesViewer.getTextWidget().append(message);
-				
-				StyleRange styleRange = new StyleRange();
-				styleRange.start = start;
-				styleRange.length = message.length();
-				styleRange.background = WHITE_COLOR;
-				if(status.getSeverity() == IStatus.INFO) styleRange.fontStyle = SWT.NORMAL;
-//					if(status.getSeverity() == IStatus.WARNING) styleRange.fontStyle = SWT.BOLD;
-//					if(status.getSeverity() == IStatus.ERROR) styleRange.fontStyle = SWT.BOLD;
-				if(status.getSeverity() == IStatus.INFO) styleRange.foreground = NORMAL_COLOR;
-				if(status.getSeverity() == IStatus.WARNING) styleRange.foreground = WARNING_COLOR;
-				if(status.getSeverity() == IStatus.ERROR) styleRange.foreground = ERROR_COLOR;
-				
-				messagesViewer.getTextWidget().setStyleRange(styleRange);
-				
+				putMessage(status);
 			}
 		});
 		
@@ -186,6 +178,32 @@ public class MessagesView extends ViewPart implements ILogListener, IDocumentLis
 	@Override
 	public void documentChanged(DocumentEvent event) {
 		if(autoScroll) revealJob.schedule(50);
+	}
+	
+	private void putMessage(IStatus status) {
+		String message = status.getPlugin() + " : " + status.getMessage();
+		
+		int start = messagesViewer.getTextWidget().getCharCount();
+//		if(start > 0) {
+//			message = "\n" + message;
+//		}
+		messagesViewer.getTextWidget().append(message + "\n");
+		
+		StyleRange styleRange = new StyleRange();
+		styleRange.start = start;
+		styleRange.length = message.length();
+		styleRange.background = ThemeColors.getBackgroundColor();
+		
+		if(status.getSeverity() == IStatus.INFO) styleRange.fontStyle = SWT.NORMAL;
+//			if(status.getSeverity() == IStatus.WARNING) styleRange.fontStyle = SWT.BOLD;
+//			if(status.getSeverity() == IStatus.ERROR) styleRange.fontStyle = SWT.BOLD;
+		if(status.getSeverity() == IStatus.INFO) styleRange.foreground = messagesViewer.getTextWidget().getForeground();
+		if(status.getSeverity() == IStatus.WARNING) styleRange.foreground = WARNING_COLOR;
+		if(status.getSeverity() == IStatus.ERROR) styleRange.foreground = ERROR_COLOR;
+		
+		messagesViewer.getTextWidget().setStyleRange(styleRange);
+		
+		
 	}
 
 }

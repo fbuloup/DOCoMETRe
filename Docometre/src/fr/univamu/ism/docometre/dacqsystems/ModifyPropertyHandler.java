@@ -52,7 +52,10 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.ColorDialog;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
@@ -61,6 +64,7 @@ import org.eclipse.ui.forms.IMessageManager;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.dacqsystems.charts.ChartConfigurationProperties;
 import fr.univamu.ism.docometre.editors.ResourceEditor;
 
 public class ModifyPropertyHandler extends SelectionAdapter implements ModifyListener {
@@ -131,7 +135,19 @@ public class ModifyPropertyHandler extends SelectionAdapter implements ModifyLis
 		@Override
 		public void widgetSelected(SelectionEvent event) {
 			String text = "";
-			if(control instanceof Button) text = String.valueOf(((Button)control).getSelection());
+			if(control instanceof Button) {
+				Object object = (String) control.getData("isColorDialog");
+				if(object != null && object instanceof String) {
+					String needColorDialog = (String)object;
+					if("yes".equalsIgnoreCase(needColorDialog)) {
+						Color chartColor = ChartConfigurationProperties.getColor(element, property);
+						ColorDialog colorDialog = new ColorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+						if(chartColor != null) colorDialog.setRGB(chartColor.getRGB());
+						RGB rgbColor = colorDialog.open();
+						if(rgbColor != null) text = rgbColor.toString();
+					}
+				} else text = String.valueOf(((Button)control).getSelection());
+			}
 			boolean modifyRunned = false;
 			if(control.getData("modifyRunned") != null) {
 				modifyRunned = (boolean) control.getData("modifyRunned");
@@ -149,5 +165,9 @@ public class ModifyPropertyHandler extends SelectionAdapter implements ModifyLis
 				Activator.logErrorMessageWithCause(e);
 			} 
 
+		}
+		
+		public void setRegExp(String regExp) {
+			this.regexp = regExp;
 		}
 	}

@@ -74,5 +74,23 @@ public class ADWinVariable extends ADWinChannel {
 		String value = getProperty(ADWinVariableProperties.PROPAGATE);
 		return isParameter() && value.equalsIgnoreCase("true");
 	}
+	
+	public boolean isFloat() {
+		String value = getProperty(ADWinVariableProperties.TYPE);
+		return value.equalsIgnoreCase(ADWinVariableProperties.FLOAT); 
+	}
+	
+	public boolean isInt() {
+		String value = getProperty(ADWinVariableProperties.TYPE);
+		return value.equalsIgnoreCase(ADWinVariableProperties.INT); 
+	}
 
+	public boolean isString() {
+		String value = getProperty(ADWinVariableProperties.TYPE);
+		return value.equalsIgnoreCase(ADWinVariableProperties.STRING); 
+	}
+
+	
 }
+
+

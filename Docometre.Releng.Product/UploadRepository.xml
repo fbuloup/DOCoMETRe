@@ -1,13 +1,71 @@
 <project default="D_uploadZIPFiles" name="Deploy DOCoMETRe p2 repository Files To Server">
 
+	<condition property="isMac">
+		<os family="mac" />
+	</condition>
+
+	<condition property="linux.present">
+		<available file="./target/products/DocometreProduct-linux.gtk.x86_64.zip" />
+	</condition>
+
+	<condition property="mac.present">
+		<available file="./target/products/DocometreProduct-macosx.cocoa.x86_64.zip" />
+	</condition>
+
+	<condition property="windows.present">
+		<available file="./target/products/DocometreProduct-win32.win32.x86_64.zip" />
+	</condition>
+
+	<echoproperties></echoproperties>
 	<!--
 	Add commons-net-3.3-bin.jar to Preferences->Ant->runtime->Ant Home Entries
 	-->
+
+	<include file="FtpLoginProperties.xml" as="FtpProperties" />
+
+	<!-- Here is a "FtpLoginProperties.xml" file sample :
 	
-	<include file = "FtpLoginProperties.xml" as="FtpProperties"/>
+	 <project default="FTP_INPUT" name="FTP INPUT">
+		<target name="FTP_INPUT">
+			<input message="Please enter FTP IP :" addproperty="ftp.ip" defaultvalue="139.124.0.1"/>
+			<input message="Please enter FTP login :" addproperty="ftp.login" defaultvalue="lgoin"/>
+			<input message="Please enter FTP password :" addproperty="ftp.password" defaultvalue="pass"/>
+			<input message="Please enter FTP base remote directory :" addproperty="ftp.base.remotedir" defaultvalue="/Path/to/Sites/documents/"/>
+		</target>
+	</project>
+
+	-->
+
+	<!-- Buid dmg file (mac only!) -->
+	<target name="A1_BuildDMGFile" if="isMac">
+		<delete file="target/products/DOCoMETRe.dmg" />
+		<exec executable="hdiutil" failonerror="true">
+			<arg line="create -srcfolder 'target/products/DocometreProduct/macosx/cocoa/x86_64' -volname 'DOCoMETRe' -fs HFS+ -fsargs '-c c=64,a=16,e=16' -format UDRO 'target/products/DOCoMETRe.dmg'" />
+		</exec>
+	</target>
+
+	<target name="A3_MoveLinuxFile" if="linux.present">
+		<move file="./target/products/DocometreProduct-linux.gtk.x86_64.zip" tofile="target/products/DocometreLinux.zip"/>
+	</target>
+
+	<target name="A4_MoveMacFiles" if="mac.present">
+		<move file="target/products/DocometreProduct-macosx.cocoa.x86_64.zip" tofile="target/products/DocometreMacOS.zip"/>
+	</target>
+
+	<target name="A5_MoveWindowsFiles" if="windows.present">
+		<move file="target/products/DocometreProduct-win32.win32.x86_64.zip" tofile="target/products/DocometreWindows.zip"/>
+	</target>
+
+	<target name="A6_saveDMGFile" unless="isMac" depends="FtpProperties.FTP_INPUT">
+		<echo>Save DMG file as we are not on MacOS Host</echo>
+		<ftp action="get" server="${ftp.ip}" userid="${ftp.login}" password="${ftp.password}" remotedir="${ftp.base.remotedir}DOCoMETRe">
+			<fileset file="*.dmg" />
+		</ftp>
+	</target>
 
 	<!-- clear server -->
-	<target name="B_resetFTPFilesFolders" description="Create an empty DOCoMETRe folder" depends="FtpProperties.FTP_INPUT">
+	<target name="B_resetFTPFilesFolders" description="Create an empty DOCoMETRe folder" depends="FtpProperties.FTP_INPUT,A6_saveDMGFile">
+
 		<echo>Remove all files from FTP DOCoMETRe directory</echo>
 		<ftp action="del" server="${ftp.ip}" userid="${ftp.login}" password="${ftp.password}" remotedir="${ftp.base.remotedir}DOCoMETRe">
 			<fileset>
@@ -32,8 +90,18 @@
 				<ftp action="mkdir" server="${ftp.ip}" userid="${ftp.login}" password="${ftp.password}" remotedir="${ftp.base.remotedir}Docometre/repository//plugins" /> -->
 	</target>
 
+	<target name="C2_loadDMGFile" unless="isMac" depends="FtpProperties.FTP_INPUT">
+		<echo>Upload DMG file as we are not on MacOS Host and...</echo>
+		<ftp server="${ftp.ip}" passive="no" remotedir="${ftp.base.remotedir}DOCoMETRe/" userid="${ftp.login}" password="${ftp.password}" depends="no">
+			<fileset file="DOCoMETRe.dmg" />
+		</ftp>
+		<echo>... remove DMG file from local host</echo>
+		<delete file="DOCoMETRe.dmg" />
+	</target>
+
+
 	<!-- Upload to server -->
-	<target name="D_uploadZIPFiles" description="Upload created files to server" depends="B_resetFTPFilesFolders,C_createFoldersStructure">
+	<target name="D_uploadZIPFiles" description="Upload created files to server" depends="A1_BuildDMGFile,A3_MoveLinuxFile,A4_MoveMacFiles,A5_MoveWindowsFiles,B_resetFTPFilesFolders,C_createFoldersStructure,C2_loadDMGFile">
 
 		<!-- <echo>Uploading linux32</echo> >>>>>>>>>> No more 32 bits releases
 		<ftp server="${ftp.ip}" passive="yes" remotedir="${ftp.base.remotedir}DOCoMETRe" userid="${ftp.login}" password="${ftp.password}" depends="no">
@@ -46,20 +114,23 @@
 
 		<echo>Uploading linux64</echo>
 		<ftp server="${ftp.ip}" passive="no" remotedir="${ftp.base.remotedir}DOCoMETRe" userid="${ftp.login}" password="${ftp.password}" depends="no">
-			<fileset file="target/products/DocometreProduct-linux.gtk.x86_64.zip" />
+			<fileset file="target/products/DocometreLinux.zip" />
 		</ftp>
 		<echo>Uploading mac</echo>
 		<ftp server="${ftp.ip}" passive="no" remotedir="${ftp.base.remotedir}DOCoMETRe" userid="${ftp.login}" password="${ftp.password}" depends="no">
-			<fileset file="target/products/DocometreProduct-macosx.cocoa.x86_64.zip" />
+			<fileset file="target/products/DocometreMacOS.zip" />
+			<fileset file="target/products/DOCoMETRe.dmg" />
 		</ftp>
 		<echo>Uploading win64</echo>
 		<ftp server="${ftp.ip}" passive="no" remotedir="${ftp.base.remotedir}DOCoMETRe" userid="${ftp.login}" password="${ftp.password}" depends="no">
-			<fileset file="target/products/DocometreProduct-win32.win32.x86_64.zip" />
+			<fileset file="target/products/DocometreWindows.zip" />
 		</ftp>
 		<echo>Uploading repository</echo>
-		<ftp server="${ftp.ip}" passive="no" remotedir="${ftp.base.remotedir}DOCoMETRe/repository" userid="${ftp.login}" password="${ftp.password}" depends="no" >
+		<ftp server="${ftp.ip}" passive="no" remotedir="${ftp.base.remotedir}DOCoMETRe/repository" userid="${ftp.login}" password="${ftp.password}" depends="no">
 			<fileset dir="target/repository" />
 		</ftp>
 	</target>
+
+
 
 </project>

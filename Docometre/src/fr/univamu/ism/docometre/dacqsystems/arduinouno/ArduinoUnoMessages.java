@@ -60,8 +60,16 @@ public class ArduinoUnoMessages extends NLS {
 	public static String BuilderPath_Tooltip;
 	public static String AVRDudePath_Label;
 	public static String AVRDudePath_Tooltip;
+	public static String ArduinoCLIPath_Label;
+	public static String ArduinoCLIPath_Tooltip;
+	public static String UseArduinoCLI_Label;
+	public static String UseArduinoCLI_Tooltip;
 	public static String LibrariesAbsolutePath_Label;
 	public static String LibrariesAbsolutePath_Tooltip;
+	public static String UserLibrariesAbsolutePath_Label;
+	public static String UserLibrariesAbsolutePath_Tooltip;
+	public static String Revision_Label;
+	public static String Revision_Tooltip;
 	
 	// Variables
 	public static String Size_Label;
@@ -81,6 +89,7 @@ public class ArduinoUnoMessages extends NLS {
 	public static String ANALOG_INPUT;
 	public static String ANALOG_OUTPUT;
 	public static String DIO;
+	public static String ADS1115;
 	public static String UNKNOWN;
 	
 	/*
@@ -157,6 +166,28 @@ public class ArduinoUnoMessages extends NLS {
 	 */
 	public static String Refresh;
 	
+	/*
+	 * Global frequency not match
+	 */
+	public static String gfNotMatchMessage1;
+	public static String gfNotMatchMessage2;
+	public static String gfNotMatchMessage3;
+
+	/*
+	 * AD1115 module 
+	 */
+	public static String address_label;
+	public static String address_tooltip;
+	public static String ADS1115Page_PageTitle;
+	public static String mode_tooltip;
+	public static String mode_label;
+	public static String dataRate_tooltip;
+	public static String dataRate_label;
+	public static String ADS1115ModuleExplanations_Text;
+	public static String Gain_Tooltip;
+	public static String Gain_Label;
+	public static String ADS1115ModuleExplanations_Text2;
+
 	static {
 		NLS.initializeMessages(BUNDLE_NAME, ArduinoUnoMessages.class);
 	}

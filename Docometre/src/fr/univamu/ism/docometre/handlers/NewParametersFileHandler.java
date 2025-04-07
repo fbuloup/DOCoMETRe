@@ -43,6 +43,9 @@ package fr.univamu.ism.docometre.handlers;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -111,6 +114,29 @@ public class NewParametersFileHandler implements IHandler, ISelectionListener {
 					ResourceProperties.setDescriptionPersistentProperty(parametersFile, newResourceWizard.getResourceDescription());
 					ResourceProperties.setTypePersistentProperty(parametersFile, ResourceType.PARAMETERS.toString());
 					ExperimentsView.refresh(parametersFile.getParent(), new IResource[]{parametersFile});
+					StringBuffer text = new StringBuffer();
+					text.append("# Welcome in this parameters file !\n");
+					text.append("#\n");
+					text.append("# You can use hashtag character (#) to insert comments.\n");
+					text.append("# Everything to the right of this hashtag will be processed as a comment.\n");
+					text.append("#\n");
+					text.append("# Parameters delimiters can be semicolon (;) or comma (,) or colon (:).\n");
+					text.append("#\n");
+					text.append("# Please note that each uncommented line is associated to a trial of the current session, except for the first uncommented line :\n");
+					text.append("# - The first uncommented line will correspond to the parameters names\n");
+					text.append("# - The second uncommented line will correspond to the first trial\n");
+					text.append("# - The third uncommented line will correspond to the second trial\n");
+					text.append("# etc.\n");
+					text.append("#\n");
+					text.append("# Each uncommented line will be parsed to read the parameter name or value.\n");
+					text.append("#\n");
+					text.append("# Here is a parameters file example (the third parameter is of type string) :\n");
+					text.append("# ParameterName1 ; ParameterName2 ; ParameterName3\n");
+					text.append("# 10.25 ; 5 ; condition-1\n");
+					text.append("# -10.25 ; 4 ; condition-2\n");
+					text.append("# 5 ; 3 ; condition-1\n");
+					text.append("# ...");
+					Files.write(Paths.get(parametersFile.getLocationURI()), text.toString().getBytes(), StandardOpenOption.TRUNCATE_EXISTING , StandardOpenOption.WRITE);
 				};
 			} catch (CoreException | IOException e) {
 				e.printStackTrace();

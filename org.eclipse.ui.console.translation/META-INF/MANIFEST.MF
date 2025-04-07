@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Translation
+Bundle-SymbolicName: org.eclipse.ui.console.translation
+Bundle-Version: 1.0.0.qualifier
+Export-Package: org.eclipse.ui.internal.console
+Fragment-Host: org.eclipse.ui.console;bundle-version="3.14.100"
+Automatic-Module-Name: org.eclipse.ui.console.translation
+Bundle-RequiredExecutionEnvironment: JavaSE-21

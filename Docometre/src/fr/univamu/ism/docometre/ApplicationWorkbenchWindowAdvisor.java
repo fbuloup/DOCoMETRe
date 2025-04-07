@@ -41,11 +41,15 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 
 import org.eclipse.core.commands.operations.IOperationHistory;
-import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.application.ActionBarAdvisor;
@@ -53,6 +57,7 @@ import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 
+import fr.univamu.ism.docometre.consoles.DocometreConsole;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
@@ -73,22 +78,27 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
         configurer.setShowStatusLine(true);
         configurer.setShowProgressIndicator(true);
         configurer.setShowPerspectiveBar(true);
-        
-//        registerResourceListener(ResourcesPlugin.getWorkspace().getRoot());
+        DocometreConsole.createInstance();
+		Activator.logInfoMessage(DocometreMessages.CurrentWorkspace + DocometreApplication.WORKSPACE_PATH, DocometreApplication.class);
+        Activator.logInfoMessage("Locale : " + Locale.getDefault(),  getClass());
+		Activator.logInfoMessage(DocometreMessages.RuntimeFolder + System.getProperty("user.dir"), getClass());
+        try {
+			if(Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.REDIRECT_STD_ERR_OUT_TO_FILE)) {
+				String filePath = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.STD_ERR_OUT_FILE);
+				File consoleFile = new File(filePath);
+				FileOutputStream consoleFileOutputStream = new FileOutputStream(consoleFile, true);
+				PrintStream pst = new PrintStream(consoleFileOutputStream, true);
+				System.setOut(pst);
+				System.setErr(pst);
+				SimpleDateFormat now = new SimpleDateFormat("HH:mm:ss.SSS YYYY-MM-dd", Locale.getDefault());
+				// Let these System.outs be !
+				System.out.println("\n****************************************************");
+				System.out.println("This is std and err log file for DOCoMETRe session : " + now.format(new Date()));
+			}	
+		} catch (IOException e) {
+			e.printStackTrace();
+		}  
     }
-    
-//    private void registerResourceListener(IContainer container) {
-//    	try {
-//			IResource[] resources = container.members();
-//			for (IResource resource : resources) {
-//				if(ResourceType.isProcess(resource)) ResourcesPlugin.getWorkspace().addResourceChangeListener(new ProcessResourceChangeListener((IFile) resource));
-//				if(resource instanceof IContainer) registerResourceListener((IContainer) resource);
-//			}
-//		} catch (CoreException e) {
-//			e.printStackTrace();
-//			Activator.logErrorMessageWithCause(e);
-//		}
-//	}
 
 	@Override
     public void postWindowOpen() {
@@ -96,9 +106,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		PlatformUI.getWorkbench().getOperationSupport().getOperationHistory().setLimit(IOperationHistory.GLOBAL_UNDO_CONTEXT, historyLimit);
 		UndoRedoUserApprover promptingUserApprover = new UndoRedoUserApprover(IOperationHistory.GLOBAL_UNDO_CONTEXT);
 		PlatformUI.getWorkbench().getOperationSupport().getOperationHistory().addOperationApprover(promptingUserApprover);
-		IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
-		Activator.logInfoMessage("Workspace path : " + workspaceRoot.getLocation().toOSString(), ApplicationWorkbenchWindowAdvisor.class);
-		System.out.println("Locale : " + Locale.getDefault());
     }
 	
 }

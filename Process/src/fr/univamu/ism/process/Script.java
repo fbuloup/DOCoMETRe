@@ -85,7 +85,19 @@ public class Script implements Serializable {
 	 */
 	private transient ArrayList<BlocksListener> blocksListener = new ArrayList<BlocksListener>(0);
 	
+	/**
+	 * 
+	 */
 	private transient ArrayList<IStatus> codeGenerationStatus = new ArrayList<>(0);
+	
+	/**
+	 * 
+	 */
+	private transient Object resource;
+	/**
+	 * 
+	 */
+	private transient boolean indentCode = true;
 	
 	public static Script getSampleScript() {
 		return SampleScript1.getSampleScript();
@@ -93,16 +105,30 @@ public class Script implements Serializable {
 	
 	//constructors
 	public Script() {
-		
+		indentCode = true;
 	}
 	
 	public Script(String name) {
 		this.name = name;
+		indentCode = true;
+	}
+	
+	public Object getResource() {
+		return resource;
+	}
+	
+	public void setResource(Object resource) {
+		this.resource = resource;
 	}
 	
 	//Getters and setters
 	public String getName() {
 		return name;
+	}
+	
+	//
+	public void setIndentCode(boolean indentCode) {
+		this.indentCode = indentCode;
 	}
 
 	public void setName(String name) {
@@ -210,7 +236,11 @@ public class Script implements Serializable {
 	public String getInitializeCode(Object context, Object step) throws Exception {
 		Block firstBlock = getFirstInitializeBlock();
 		String code = generateCode(firstBlock, null, context, step);
-		return indentCode(context, code, (context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess))?"\t\t":"");
+		String initialIndent = "";
+		if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess)) {
+			if(!"DECLARATION".equals(step.toString())) initialIndent = "\t\t";
+		}
+		return indentCode(context, code, initialIndent);
 	}
 	
 	//Loop phase
@@ -261,10 +291,14 @@ public class Script implements Serializable {
 	 * This method returns the code for the loop
 	 * @return the loop code
 	 */
-	public String getLoopCode(Object context, Object step) throws Exception {
+	public String getLoopCode(Object context, Object step, Object...objects) throws Exception {
 		Block firstBlock = getFirstLoopBlock();
-		String code = generateCode(firstBlock, null, context, step);
-		return indentCode(context, code, (context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess))?"\t\t\t\t\t\t":"");
+		String code = generateCode(firstBlock, null, context, step, objects);
+		String initialIndent = "";
+		if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess)) {
+			if(!"DECLARATION".equals(step.toString())) initialIndent = "\t\t";
+		}
+		return indentCode(context, code, initialIndent);
 	}
 	
 	//Finalize phase
@@ -325,7 +359,12 @@ public class Script implements Serializable {
 	public String getFinalizeCode(Object context, Object step) throws Exception {
 		Block firstBlock = getFirstFinalizeBlock();
 		String code = generateCode(firstBlock, null, context, step);
-		return indentCode(context, code, (context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess))?"\t\t":"");
+		String initialIndent = "";
+		if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess)) {
+			if(!"DECLARATION".equals(step.toString())) initialIndent = "\t\t";
+		}
+//		initialIndent =  step.equals(ArduinounoCodeSegmentProperties.DECLARATION)? initialIndent: "";
+		return indentCode(context, code, initialIndent);
 	}
 	
 	/**
@@ -334,13 +373,14 @@ public class Script implements Serializable {
 	 * @param stopBlock the block where we have to stop iterative generation
 	 * @return the generated code
 	 */
-	private String generateCode(Block block, Block stopBlock, Object context, Object step) throws NullPointerException {
+	private String generateCode(Block block, Block stopBlock, Object context, Object step, Object...objects) throws NullPointerException {
 		boolean isScriptSegmentType = step == ScriptSegmentType.INITIALIZE || step == ScriptSegmentType.LOOP || step == ScriptSegmentType.FINALIZE;
+		//if(!isScriptSegmentType) return "";
 		String code = "";
 		if(block == stopBlock) return "";
-		if(block instanceof IfBlock && isScriptSegmentType) {
+		if(block instanceof IfBlock /*&& isScriptSegmentType*/) {
 			IfBlock ifBlock = (IfBlock)block;
-			code = ifBlock.getCode(context, step);
+			code = ifBlock.getCode(context, step, objects);
 			if(ifBlock.getNextTrueBranchBlock() == null) {
 				IStatus status = new Status(Status.WARNING, Activator.PLUGIN_ID, "WARNING - In " + step.toString() + " segment => IF Block without true branch : \"" + code.replaceAll("\n$", "") + "\"");
 				addGenerationCodeStatus(status);
@@ -353,22 +393,22 @@ public class Script implements Serializable {
 			//Find endif bloc
 			Block endifBlock = ifBlock.getEndBlock();
 			//generate code till this endif bloc from true branch
-			code = code + generateCode(ifBlock.getNextTrueBranchBlock(), endifBlock, context, step);
-			if(context.getClass().getSimpleName().equals(Activator.ADWinProcess)) code = code + "ELSE\n";
-			if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess)) code = code + "} else {\n";
-			if(context.getClass().getSimpleName().equals(Activator.Script)) code = code + "else\n";
+			code = code + generateCode(ifBlock.getNextTrueBranchBlock(), endifBlock, context, step, objects);
+			if(context.getClass().getSimpleName().equals(Activator.ADWinProcess) && isScriptSegmentType) code = code + "ELSE\n";
+			if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess) && isScriptSegmentType) code = code + "} else {\n";
+			if(context.getClass().getSimpleName().equals(Activator.Script) && isScriptSegmentType) code = code + "else\n";
 			//generate code till this endif bloc from false branch
-			code = code + generateCode(ifBlock.getNextFalseBranchBlock(), endifBlock, context, step);
-			if(context.getClass().getSimpleName().equals(Activator.ADWinProcess)) code = code + "ENDIF\n";
-			if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess)) code = code + "} // End if .. else\n";
-			if(context.getClass().getSimpleName().equals(Activator.Script)) code = code + "end\n";
+			code = code + generateCode(ifBlock.getNextFalseBranchBlock(), endifBlock, context, step, objects);
+			if(context.getClass().getSimpleName().equals(Activator.ADWinProcess) && isScriptSegmentType) code = code + "ENDIF\n";
+			if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess) && isScriptSegmentType) code = code + "} // End if .. else\n";
+			if(context.getClass().getSimpleName().equals(Activator.Script) && isScriptSegmentType) code = code + "end\n";
 			//Continue to next bloc
-			code = code + generateCode(endifBlock, stopBlock, context, step);
+			code = code + generateCode(endifBlock, stopBlock, context, step, objects);
 		}
-		else if(block instanceof DoBlock && isScriptSegmentType) {
+		else if(block instanceof DoBlock /*&& isScriptSegmentType*/) {
 			DoBlock doBlock = (DoBlock)block;
-			if(context.getClass().getSimpleName().equals(Activator.ADWinProcess)) code = "DO\n";
-			if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess)) code = "do {\n";
+			if(context.getClass().getSimpleName().equals(Activator.ADWinProcess) && isScriptSegmentType) code = "DO\n";
+			if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess) && isScriptSegmentType) code = "do {\n";
 			//Find end do bloc
 			Block endDoBlock = doBlock.getEndBlock();
 			if(endDoBlock == null ) {
@@ -378,18 +418,18 @@ public class Script implements Serializable {
 			} else doBlock.setStatus(null);
 			if(endDoBlock != null) {
 				//generate code till this end do bloc
-				code = code + generateCode(doBlock.getNextBlock(), endDoBlock, context, step);
+				code = code + generateCode(doBlock.getNextBlock(), endDoBlock, context, step, objects);
 				//generate code for this end do bloc
-				code = code + generateCode(endDoBlock, endDoBlock.getNextBlock(), context, step);
+				code = code + generateCode(endDoBlock, endDoBlock.getNextBlock(), context, step, objects);
 			}
 			//generate close do bloc
-			code = code + doBlock.getCode(context, step);
+			code = code + doBlock.getCode(context, step, objects);
 			//Continue to next bloc
-			if(endDoBlock != null) code = code + generateCode(endDoBlock.getNextBlock(), stopBlock, context, step);
+			if(endDoBlock != null) code = code + generateCode(endDoBlock.getNextBlock(), stopBlock, context, step, objects);
 		} else {
 			if(block != null) {
 				Block nextBlock = block.getNextBlock();
-				code = code + block.getCode(context, step) + generateCode(nextBlock, stopBlock, context, step);
+				code = code + block.getCode(context, step, objects) + generateCode(nextBlock, stopBlock, context, step, objects);
 			}
 		}
 		return code;
@@ -403,6 +443,7 @@ public class Script implements Serializable {
 	 */
 	private String indentCode(Object context, String code, String initialIndent) {
 		if(code.equals("")) return "";
+		if(!indentCode) return code;
 		String[] lines = code.split("\n");
 		String indent = initialIndent;
 		code = "";

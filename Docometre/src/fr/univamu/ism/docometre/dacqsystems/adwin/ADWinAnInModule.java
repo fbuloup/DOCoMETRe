@@ -43,12 +43,14 @@ package fr.univamu.ism.docometre.dacqsystems.adwin;
 
 import java.io.File;
 
+import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.Property;
+import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
 public class ADWinAnInModule extends Module {
 
@@ -73,6 +75,8 @@ public class ADWinAnInModule extends Module {
 			if(systemType.equals(ADWinDACQConfigurationProperties.GOLD) && cpuType.equals(ADWinDACQConfigurationProperties.II)) suffix = "II";
 			if(systemType.equals(ADWinDACQConfigurationProperties.PRO) && cpuType.equals(ADWinDACQConfigurationProperties.II)) suffix = "II";
 			String temp = dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH) + File.separator;
+			boolean useDocker = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_DOCKER);
+			if(useDocker) temp = "";
 			temp = temp + "CALLANIN" + dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.SYSTEM_TYPE) + suffix + ".INC\n";
 			temp =	ADWinProcess.processPathForMacOSX(temp);
 			code = code + "#INCLUDE " + temp;

@@ -46,7 +46,11 @@ import java.util.ArrayList;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.IOperationHistory;
 import org.eclipse.core.commands.operations.IUndoContext;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.layout.TableColumnLayout;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -79,9 +83,11 @@ import org.eclipse.ui.forms.widgets.Hyperlink;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
+import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.PartListenerAdapter;
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfigurationProperties;
+import fr.univamu.ism.docometre.dacqsystems.DocometreBuilder;
 import fr.univamu.ism.docometre.dacqsystems.FrequencyInputValidator;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.Property;
@@ -93,6 +99,8 @@ import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinModulesList;
 import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyHandler;
 import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyOperation;
 import fr.univamu.ism.docometre.dacqsystems.adwin.calibration.CalibrateMonitorDialog;
+import fr.univamu.ism.docometre.dacqsystems.ui.DeviceSelectionHandler;
+import fr.univamu.ism.docometre.dacqsystems.ui.DeviceSelectionHandler.DeviceType;
 import fr.univamu.ism.docometre.dialogs.DialogSelectionHandler;
 import fr.univamu.ism.docometre.editors.ModulePage;
 import fr.univamu.ism.docometre.editors.ResourceEditor;
@@ -166,17 +174,17 @@ public class ADwinDACQGeneralConfigurationPage extends ModulePage {
 			super();
 		}
 		public void setSortingColumn(int columnNumber) {
-			if(this.columnNumber == columnNumber) {
+			if(this.sortingColumnNumber == columnNumber) {
 				ascendingDirection = !ascendingDirection;
 			} else {
-				this.columnNumber = columnNumber;
+				this.sortingColumnNumber = columnNumber;
 				ascendingDirection = true;
 			}
 		}
 		@Override
 		public int compare(Viewer viewer, Object e1, Object e2) {
 			int result = 0;
-			switch (columnNumber) {
+			switch (sortingColumnNumber) {
 				case 0: case 2:
 					result = super.compare(viewer, e1, e2);
 					break;
@@ -304,9 +312,10 @@ public class ADwinDACQGeneralConfigurationPage extends ModulePage {
 		createLabel(generalconfigurationContainer, ADWinMessages.IPAddress_Label, ADWinMessages.IPAddress_Tooltip);
 		value = dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.IP_ADDRESS);
 		regExp = ADWinDACQConfigurationProperties.IP_ADDRESS.getRegExp();
-		ipText = createText(generalconfigurationContainer, value, SWT.NONE, 2, 1);
+		ipText = createText(generalconfigurationContainer, value, SWT.NONE, 1, 1);
 		ipText.addModifyListener(new ModifyPropertyHandler(ADWinDACQConfigurationProperties.IP_ADDRESS, dacqConfiguration, ipText, regExp, ADWinMessages.ErrorTCPIPDeviceNotValid, false, (ResourceEditor)getEditor()));
 		ipText.addModifyListener(getGeneralConfigurationModifyListener());
+		createButton(generalconfigurationContainer, DocometreMessages.Browse, SWT.PUSH, 1, 1).addSelectionListener(new DeviceSelectionHandler(ipText, getSite().getShell(), DeviceType.ETHERNET));
 		
 		createLabel(generalconfigurationContainer, ADWinMessages.TCPIPDevicePortNumber_Label, ADWinMessages.TCPIPDevicePortNumber_Tooltip);
 		value = dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.PORT_NUMBER);
@@ -431,6 +440,8 @@ public class ADwinDACQGeneralConfigurationPage extends ModulePage {
 		});
 		configureSorter(new ModulesComparator(), tableViewer.getTable().getColumn(0));
 		tableViewer.setInput(dacqConfiguration.getModules());
+		
+		updateDecorationsControls();
 	}
 	
 	/*
@@ -486,8 +497,9 @@ public class ADwinDACQGeneralConfigurationPage extends ModulePage {
 		}
 		if(property instanceof DACQConfigurationProperties) {
 			if(property == DACQConfigurationProperties.UPDATE_MODULE) {
-				tableViewer.setInput(dacqConfiguration.getModules());
-				tableConfigurationSectionPart.markDirty();
+				if(tableViewer != null && tableViewer.getTable() != null && !tableViewer.getTable().isDisposed())
+					tableViewer.setInput(dacqConfiguration.getModules());
+				if(tableConfigurationSectionPart != null) tableConfigurationSectionPart.markDirty();
 				if(newValue != null) {
 					((Module)newValue).addObserver(this);
 				} else if(oldValue != null) {
@@ -498,8 +510,10 @@ public class ADwinDACQGeneralConfigurationPage extends ModulePage {
 		}
 		if(property instanceof ADWinModuleProperties) {
 			if(property == ADWinModuleProperties.MODULE_NUMBER || property == ADWinModuleProperties.REVISION) {
-				tableViewer.refresh();
-				tableConfigurationSectionPart.markDirty();
+				if(tableViewer != null) {
+					tableViewer.refresh();
+					tableConfigurationSectionPart.markDirty();
+				}
 			}
 		}
 	}
@@ -507,6 +521,31 @@ public class ADwinDACQGeneralConfigurationPage extends ModulePage {
 	@Override
 	public String getPageTitle() {
 		return ADWinMessages.DACQGeneralConfigurationPage_PageTitle;
+	}
+
+	public void updateDecorationsControls() {
+		try {
+			if(getManagedForm() != null) {
+				getManagedForm().getMessageManager().removeAllMessages();
+				IResource dacqConfResource = ObjectsController.getResourceForObject(dacqConfiguration);
+				IMarker[] markers = dacqConfResource.findMarkers(DocometreBuilder.MARKER_ID, true, IResource.DEPTH_INFINITE);
+				for (IMarker marker : markers) {
+					String message = (String) marker.getAttribute(IMarker.MESSAGE);
+					int severity = (int) marker.getAttribute(IMarker.SEVERITY);
+						int type = IMessageProvider.NONE;
+						if(severity == IMarker.SEVERITY_WARNING) type = IMessageProvider.WARNING;
+						if(severity == IMarker.SEVERITY_ERROR) type = IMessageProvider.ERROR;
+						if(severity == IMarker.SEVERITY_INFO) type = IMessageProvider.INFORMATION;
+						getManagedForm().getMessageManager().addMessage(marker, message, null, type, librariesText);
+				}
+			}
+			
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		
+		
 	}
 	
 }

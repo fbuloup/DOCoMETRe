@@ -41,12 +41,14 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.arduinouno;
 
+import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.Property;
+import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
 public class ArduinoUnoAnOutModule extends Module {
 
@@ -59,6 +61,8 @@ public class ArduinoUnoAnOutModule extends Module {
 	@Override
 	public String getCodeSegment(Object segment) throws Exception {
 		String code = "";
+		
+		int delay = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.ARDUINO_DELAY_TIME_AFTER_SERIAL_PRINT);
 		
 		for (int i = 0; i < getChannelsNumber(); i++) {
 			
@@ -82,31 +86,28 @@ public class ArduinoUnoAnOutModule extends Module {
 					code = code + "// ******** Sortie analogique : " + name + "\n";
 					code = code + "unsigned int " + name + ";\n";
 					code = code + "byte generate_" + name + "_index = " + frequencyRatio + ";\n";
-					code = code + "unsigned long lastGenerateTime_" + name + ";\n\n";
+//					code = code + "unsigned long lastGenerateTime_" + name + ";\n\n";
 				}
 			}
 			
 			if (segment == ArduinoUnoCodeSegmentProperties.INITIALIZATION) {
 				if(isUsed) {
-					code = code + "\t\tlastGenerateTime_" + name + " = 0;\n";
 					code = code + "\t\tpinMode(" + channelNumber + ", OUTPUT);\n";
 				}
 			}
 			
 			if (segment == ArduinoUnoCodeSegmentProperties.GENERATION) {
-				
 				if(isUsed) {
-					code = code + "\n\t\t\t\t\t\tif(generate_" + name + "_index == " + frequencyRatio + ") {\n";
-					code = code + "\t\t\t\t\t\t\t\tgenerate_" + name + "_index = 0;\n";
-					code = code + "\t\t\t\t\t\t\t\tanalogWrite(" + channelNumber + ", " + name + ");\n";
+					code = code + "\n\t\tif(generate_" + name + "_index == " + frequencyRatio + ") {\n";
+					code = code + "\t\t\t\tgenerate_" + name + "_index = 0;\n";
+					code = code + "\t\t\t\tanalogWrite(" + channelNumber + ", " + name + ");\n";
 					if(isTransfered) {
-						code = code + "\t\t\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", " + transferNumber + ", (loopTime_MS - lastGenerateTime_" + name + "), " + name + ");\n";
-						code = code + "\t\t\t\t\t\t\t\tSerial.println(serialMessage);\n";
+						code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%d\", " + transferNumber + ", " + name + ");\n";
+						code = code + "\t\t\t\tSerial.println(serialMessage);\n";
+						if(delay > 0)code = code + "\t\t\t\tdelayMicroseconds(" + delay + ");\n";
 					}
-					code = code + "\t\t\t\t\t\t\t\tlastGenerateTime_" + name + "= loopTime_MS;\n";
-					code = code + "\t\t\t\t\t\t}\n";
-					code = code + "\t\t\t\t\t\tgenerate_" + name + "_index += 1;\n\n";
-					
+					code = code + "\t\t}\n";
+					code = code + "\t\tgenerate_" + name + "_index += 1;\n\n";
 				}
 			}
 			

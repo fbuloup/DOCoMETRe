@@ -73,8 +73,10 @@ import org.eclipse.gef.palette.PaletteToolbar;
 import org.eclipse.gef.palette.PanningSelectionToolEntry;
 import org.eclipse.gef.palette.ToolEntry;
 import org.eclipse.gef.requests.CreationFactory;
+import org.eclipse.gef.tools.MarqueeSelectionTool;
 import org.eclipse.gef.ui.actions.ActionRegistry;
 import org.eclipse.gef.ui.actions.GEFActionConstants;
+import org.eclipse.gef.ui.actions.SelectAllAction;
 import org.eclipse.gef.ui.parts.GraphicalEditorWithFlyoutPalette;
 import org.eclipse.gef.ui.parts.GraphicalViewerKeyHandler;
 import org.eclipse.gef.ui.parts.ScrollingGraphicalViewer;
@@ -89,6 +91,8 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.widgets.Composite;
@@ -101,7 +105,9 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ObjectsController;
+import fr.univamu.ism.docometre.dacqsystems.ui.SourceEditor;
 import fr.univamu.ism.docometre.scripteditor.actions.CopyAction;
+import fr.univamu.ism.docometre.scripteditor.actions.DeactivateBlockAction;
 import fr.univamu.ism.docometre.scripteditor.actions.EditBlockAction;
 import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
 import fr.univamu.ism.docometre.scripteditor.actions.PasteAction;
@@ -114,6 +120,22 @@ import fr.univamu.ism.process.ScriptSegment;
 import fr.univamu.ism.process.ScriptSegmentType;
 
 public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFlyoutPalette {
+	
+	class SegmentAndSourceSelectAllAction extends SelectAllAction {
+
+		public SegmentAndSourceSelectAllAction(IWorkbenchPart part) {
+			super(part);
+		}
+		
+		@Override
+		public void run() {
+			MultiPageEditorPart processEditor = ((MultiPageEditorPart) (getSite().getPage().getActiveEditor()));
+			if(processEditor.getSelectedPage() instanceof SourceEditor) {
+				((SourceEditor)processEditor.getSelectedPage()).selectAll();
+			} else super.run();
+		}
+		
+	}
 	
 	class ToggleSnapToGridAction extends Action {
 		
@@ -241,6 +263,10 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 	        		
 	        }
 	        menuManager.appendToGroup(GEFActionConstants.GROUP_EDIT, new Separator());
+	        action = getActionRegistry().getAction(DeactivateBlockAction.DEACTIVATE_BLOCK);
+	        menuManager.appendToGroup(GEFActionConstants.GROUP_EDIT, action);
+	        
+	        menuManager.appendToGroup(GEFActionConstants.GROUP_EDIT, new Separator());
 	        action = getActionRegistry().getAction(ActionFactory.DELETE.getId());
 	        menuManager.appendToGroup(GEFActionConstants.GROUP_EDIT, action);
 	        
@@ -278,6 +304,7 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 	private CopyAction copyAction;
 	private PasteAction pasteAction;
 	private EditBlockAction editBlockAction;
+	private DeactivateBlockAction deactivateBlockAction;
 
 	private PaletteDrawer paletteDrawer;
 	private RulerComposite rulerComp;
@@ -360,23 +387,19 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 		getGraphicalViewer().getControl().addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDoubleClick(MouseEvent event) {
-				@SuppressWarnings("unchecked")
-				Map<Object, Object> editPartMap = getGraphicalViewer().getEditPartRegistry();
+				Map<?, ?> editPartMap = getGraphicalViewer().getEditPartRegistry();
 				ScriptSegmentEditPart scriptSegmentEditPart = null;
 				if(scriptSegmentType.equals(ScriptSegmentType.INITIALIZE)) scriptSegmentEditPart = (ScriptSegmentEditPart) editPartMap.get(getScript().getInitializeBlocksContainer());
 				if(scriptSegmentType.equals(ScriptSegmentType.LOOP)) scriptSegmentEditPart = (ScriptSegmentEditPart) editPartMap.get(getScript().getLoopBlocksContainer());
 				if(scriptSegmentType.equals(ScriptSegmentType.FINALIZE)) scriptSegmentEditPart = (ScriptSegmentEditPart) editPartMap.get(getScript().getFinalizeBlocksContainer());
 //				if(scriptSegmentType.equals(ScriptSegmentType.DATA_PROCESSING)) scriptSegmentEditPart = (ScriptSegmentEditPart) editPartMap.get(getScript().getLoopBlocksContainer());
 				if(((StructuredSelection)scriptSegmentEditPart.getViewer().getSelection()).getFirstElement() instanceof BlockEditPart) editBlockAction.run();
-//				try {
-//					if(scriptSegmentType.equals(ScriptSegmentType.INITIALIZE)) System.out.println(process.getScript().getInitializeCode(process));
-//					if(scriptSegmentType.equals(ScriptSegmentType.LOOP)) System.out.println(process.getScript().getLoopCode(process));
-//					if(scriptSegmentType.equals(ScriptSegmentType.FINALIZE)) System.out.println(process.getScript().getFinalizeCode(process));
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//					Activator.logErrorMessageWithCause(e);
-//				}
-				
+			}
+		});
+		getGraphicalViewer().getControl().addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if(e.character == '\u0008' || e.character == '\u007F') getActionRegistry().getAction(ActionFactory.DELETE.getId()).run();
 			}
 		});
 	}
@@ -389,7 +412,6 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 			}
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	protected void createActions() {
 		super.createActions();
@@ -409,6 +431,9 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 		editBlockAction = new EditBlockAction(this); 
 		registry.registerAction(editBlockAction);
 	    getSelectionActions().add(editBlockAction.getId());
+	    deactivateBlockAction = new DeactivateBlockAction(this);
+	    registry.registerAction(deactivateBlockAction);
+	    getSelectionActions().add(deactivateBlockAction.getId());
 	    
 	    Action action = (Action) registry.getAction(ActionFactory.DELETE.getId());
 	    action.setText(DocometreMessages.DeleteAction_Text);
@@ -418,6 +443,9 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 	    
 	    action = (Action) registry.getAction(ActionFactory.REDO.getId());
 	    action.setText(DocometreMessages.Redo);
+	    
+	    action = new SegmentAndSourceSelectAllAction(this);
+		registry.registerAction(action);
 	    
 //		}
 	}
@@ -473,8 +501,21 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 		ToolEntry panningTool = new PanningSelectionToolEntry();
 		paletteToolbar.add(panningTool);
 
-		ToolEntry marqueeTool = new MarqueeToolEntry();
-		paletteToolbar.add(marqueeTool);
+		ToolEntry marqueeTouchedNodesTool = new MarqueeToolEntry();
+		marqueeTouchedNodesTool.setToolProperty(MarqueeSelectionTool.PROPERTY_MARQUEE_BEHAVIOR, MarqueeSelectionTool.BEHAVIOR_NODES_TOUCHED);
+		paletteToolbar.add(marqueeTouchedNodesTool);
+		
+		ToolEntry marqueeContainedNodesTool = new MarqueeToolEntry();
+		marqueeContainedNodesTool.setToolProperty(MarqueeSelectionTool.PROPERTY_MARQUEE_BEHAVIOR, MarqueeSelectionTool.BEHAVIOR_NODES_CONTAINED);
+		paletteToolbar.add(marqueeContainedNodesTool);
+		
+		ToolEntry marqueeTouchedConnectionsTool = new MarqueeToolEntry();
+		marqueeTouchedConnectionsTool.setToolProperty(MarqueeSelectionTool.PROPERTY_MARQUEE_BEHAVIOR, MarqueeSelectionTool.BEHAVIOR_CONNECTIONS_TOUCHED);
+		paletteToolbar.add(marqueeTouchedConnectionsTool);
+		
+		ToolEntry marqueeContainedConnectionsTool = new MarqueeToolEntry();
+		marqueeContainedConnectionsTool.setToolProperty(MarqueeSelectionTool.PROPERTY_MARQUEE_BEHAVIOR, MarqueeSelectionTool.BEHAVIOR_CONNECTIONS_CONTAINED);
+		paletteToolbar.add(marqueeContainedConnectionsTool);
 		
 		scriptEditorPalette.add(paletteToolbar);
 		scriptEditorPalette.setDefaultEntry(panningTool);
@@ -540,6 +581,7 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 		super.commandStackChanged(event);
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public Object getAdapter(@SuppressWarnings("rawtypes") Class type) {
 		if(type == ZoomManager.class) {
@@ -561,13 +603,18 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 	}
 	
 	public void updatePasteAction() {
-//		System.out.println("update PasteAction");
 		ScriptSegment scriptSegment = null;
 		if(scriptSegmentType.equals(ScriptSegmentType.INITIALIZE)) scriptSegment = getScript().getInitializeBlocksContainer();
 		if(scriptSegmentType.equals(ScriptSegmentType.LOOP)) scriptSegment = getScript().getLoopBlocksContainer();
 		if(scriptSegmentType.equals(ScriptSegmentType.FINALIZE)) scriptSegment = getScript().getFinalizeBlocksContainer();
 //		if(scriptSegmentType.equals(ScriptSegmentType.DATA_PROCESSING)) scriptSegment = getScript().getLoopBlocksContainer();
 		PasteAction.scriptSegment = scriptSegment;
+//		rulerComp.requestLayout();
+//		rulerComp.layout(true);
+//		rulerComp.redraw();
+//		rulerComp.update();
+		rulerComp.getParent().update();
+		
 	}
 	
 	protected abstract Script getScript();

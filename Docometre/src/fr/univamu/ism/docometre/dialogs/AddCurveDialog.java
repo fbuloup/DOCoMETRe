@@ -72,8 +72,10 @@ import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.charts.ChartConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.charts.CurveConfiguration;
+import fr.univamu.ism.docometre.dacqsystems.charts.MeterChartConfiguration;
+import fr.univamu.ism.docometre.dacqsystems.charts.HorizontalReferenceChannel;
+import fr.univamu.ism.docometre.dacqsystems.charts.OneChannelCurve;
 import fr.univamu.ism.docometre.dacqsystems.charts.OscilloChartConfiguration;
-import fr.univamu.ism.docometre.dacqsystems.charts.OscilloCurveConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.charts.XYChartConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.charts.XYCurveConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.charts.XYCurveConfigurationProperties;
@@ -98,14 +100,14 @@ public class AddCurveDialog extends TitleAreaDialog {
 	@Override
 	protected void configureShell(Shell newShell) {
 		super.configureShell(newShell);
-		newShell.setText(DocometreMessages.AddCurvesDialog_ShellTitle);//);
+		newShell.setText(DocometreMessages.AddCurvesDialog_ShellTitle);
 	}
 	
 	@Override
 	protected Control createDialogArea(Composite parent) {
 		setTitle(DocometreMessages.AddCurvesDialog_Title);
 		setMessage(DocometreMessages.AddCurvesDialog_Message);
-		setTitleImage(Activator.getImageDescriptor(IImageKeys.MODULE_WIZBAN).createImage());
+		setTitleImage(Activator.getImage(IImageKeys.MODULE_WIZBAN));
 		Composite container = (Composite) super.createDialogArea(parent);
 		// Create curve configuration depending on its type
 		createCurveConfigurationArea(container);
@@ -113,8 +115,8 @@ public class AddCurveDialog extends TitleAreaDialog {
 	}
 
 	private void createCurveConfigurationArea(Composite parent) {
-		if(chartConfiguration instanceof OscilloChartConfiguration) {
-			// If it's an oscillo chart
+		if(chartConfiguration instanceof OscilloChartConfiguration || chartConfiguration instanceof MeterChartConfiguration) {
+			// If it's an oscillo or meter chart
 			ListViewer channelsListViewer = new ListViewer(parent);
 			channelsListViewer.getList().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 			channelsListViewer.setContentProvider(new ArrayContentProvider());
@@ -127,11 +129,17 @@ public class AddCurveDialog extends TitleAreaDialog {
 			channelsListViewer.setComparator(new ViewerComparator());
 			// Get all transfered channels
 			ArrayList<Channel> channels = new ArrayList<Channel>(0);
-			channels.addAll(Arrays.asList(dacqConfiguration.getTransferedChannels()));
+			if(chartConfiguration instanceof OscilloChartConfiguration) {
+				channels.add(new HorizontalReferenceChannel());
+				channels.addAll(Arrays.asList(dacqConfiguration.getTransferedChannels()));
+			}
+			if(chartConfiguration instanceof MeterChartConfiguration && chartConfiguration.getCurvesConfiguration().length == 0) 
+				channels.addAll(Arrays.asList(dacqConfiguration.getTransferedChannels()));
+				
 			// Remove the one already used 
 			CurveConfiguration[] curvesConfigurations = chartConfiguration.getCurvesConfiguration();
 			for (CurveConfiguration curveConfiguration : curvesConfigurations) {
-				Channel currentChannel = ((OscilloCurveConfiguration)curveConfiguration).getChannel();
+				Channel currentChannel = ((OneChannelCurve)curveConfiguration).getChannel();
 				channels.remove(currentChannel);
 			}
 			channelsListViewer.setInput(channels.toArray(new Channel[channels.size()]));
@@ -225,7 +233,6 @@ public class AddCurveDialog extends TitleAreaDialog {
 				}
 			});
 		}
-		
 	}
 	
 	public IStructuredSelection getSelection() {

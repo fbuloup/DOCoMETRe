@@ -146,7 +146,7 @@ public abstract class NewResourceWizardPage extends WizardPage implements IWizar
 			try {
 				resourceDescriptionText.setEnabled(false);
 				String description = ((NewResourceWizard)getWizard()).getResource().getPersistentProperty(ResourceProperties.DESCRIPTION_QN);
-				resourceDescriptionText.setText(description);
+				resourceDescriptionText.setText(description == null ? "":description);
 			} catch (CoreException e) {
 				e.printStackTrace();
 				Activator.logErrorMessageWithCause(e);
@@ -166,6 +166,12 @@ public abstract class NewResourceWizardPage extends WizardPage implements IWizar
 		if(this instanceof NewProcessWizardPage) fileExtension = Activator.processFileExtension;
 		if(this instanceof NewParametersFileWizardPage) fileExtension = Activator.parametersFileExtension;
 		if(this instanceof NewDataProcessingWizardPage) fileExtension = Activator.dataProcessingFileExtension;
+		if(this instanceof NewBatchDataProcessingWizardPage) fileExtension = Activator.batchDataProcessingFileExtension;
+		if(this instanceof NewXYZChartWizardPage) {
+			if(ResourceType.XYCHART.equals(resourceType)) fileExtension = Activator.xyChartFileExtension;
+			if(ResourceType.XYZCHART.equals(resourceType)) fileExtension = Activator.xyzChartFileExtension;
+		}
+		if(this instanceof NewCustomFunctionWizardPage) fileExtension = Activator.customerFunctionFileExtension;
 		Pattern pattern = Pattern.compile(regexp);
 		Matcher matcher = pattern.matcher(name);
 		if(!matcher.matches()) {
@@ -199,7 +205,7 @@ public abstract class NewResourceWizardPage extends WizardPage implements IWizar
 				}
 				
 			} else {
-				if(newResourceWizard.getParentResource().findMember(name + fileExtension) != null) {
+				if(newResourceWizard.findMember(name + fileExtension)) {
 					setErrorMessage(DocometreMessages.NewResourceWizard_ErrorMessage2);
 					controlDecoration.show();
 					setPageComplete(false);
@@ -211,6 +217,12 @@ public abstract class NewResourceWizardPage extends WizardPage implements IWizar
 				}
 			}
 		}
+		if(getControl() != null && !getControl().isDisposed()) {
+			getControl().setRedraw(true);
+			getControl().redraw();
+			getControl().update();
+		}
+		
 	}
 	
 	public String getResourceName() {

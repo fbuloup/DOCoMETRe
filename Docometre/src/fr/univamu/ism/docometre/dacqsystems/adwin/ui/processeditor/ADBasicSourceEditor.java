@@ -41,7 +41,6 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor;
 
-import org.eclipse.gef.commands.CommandStack;
 import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.swt.widgets.Composite;
 
@@ -51,8 +50,8 @@ public class ADBasicSourceEditor extends SourceEditor {
 	
 	public static String ID =  "Docometre.ADBasicSourceEditor";
 	
-	public ADBasicSourceEditor(CommandStack commandStack, ADWinProcessEditor adwinProcessEditor) {
-		super(commandStack, adwinProcessEditor);
+	public ADBasicSourceEditor(ADWinProcessEditor adwinProcessEditor) {
+		super(adwinProcessEditor);
 	}
 	
 	@Override
@@ -68,17 +67,8 @@ public class ADBasicSourceEditor extends SourceEditor {
 	
 	
 	@Override
-	protected void update(String code) {
+	public void update(String code) {
 		code = code.replaceAll("^'<ADbasic Header.*\n(.*\n)*'<Header End>\n","");
-//		code = code.replaceAll("^(\n)*", "");
-//		code = "\n" + code;
-//		System.out.println("update document...");
-		sourceViewer.getDocument().set(code);
-//		for (int i = 0; i < sourceViewer.getDocument().getLength(); i++) {
-//			ITypedRegion typedRegion = sourceViewer.getDocument().getDocumentPartitioner().getPartition(i);			
-//			System.out.println(i + " = " + typedRegion.getType());
-//		}
+		super.update(code);
 	}
-	
-
 }
