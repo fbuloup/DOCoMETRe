@@ -57,7 +57,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -77,6 +77,7 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
+import fr.univamu.ism.docometre.dialogs.CopyLogDataFilesDialog;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 
 public class PasteResourcesAction extends Action implements ISelectionListener, IWorkbenchAction {
@@ -88,6 +89,7 @@ public class PasteResourcesAction extends Action implements ISelectionListener, 
 	private boolean copyLogAndDataFiles;
 	private Object clipboardData;
 	private Clipboard clipboard;
+	int choiceID = 0;
 	
 	public PasteResourcesAction(IWorkbenchWindow window, CopyResourcesAction copyResourcesAction) {
 		clipboard = new Clipboard(PlatformUI.getWorkbench().getDisplay());
@@ -139,12 +141,16 @@ public class PasteResourcesAction extends Action implements ISelectionListener, 
 							}
 						}
 					} else {
+						CopyLogDataFilesDialog.saveChoice = false;
+						choiceID = -1;
 						// Copy from internal resources
 						//One or more resources already exist in destination
 						resources = copyResourcesAction.getCopiedResources();
 						ArrayList<IResource> newResources = new ArrayList<IResource>();
 						for (IResource resource : resources) {
 							try {
+								if(CopyLogDataFilesDialog.saveChoice) choiceID = CopyLogDataFilesDialog.choiceID;
+								if(choiceID == IDialogConstants.CANCEL_ID) continue;
 								resource.refreshLocal(IResource.DEPTH_INFINITE, monitor);
 								newResourcePath = destinationResource.getFullPath().append(resource.getName());
 								IResource newResource = destinationResource.findMember(newResourcePath.makeRelativeTo(destinationResource.getFullPath()));
@@ -157,15 +163,17 @@ public class PasteResourcesAction extends Action implements ISelectionListener, 
 									n++;
 								}
 								copyLogAndDataFiles = ResourceType.isSamples(resource) || ResourceType.isLog(resource);
-								if(ResourceType.isContainer(resource)) {
+								if(ResourceType.isContainer(resource) && !CopyLogDataFilesDialog.saveChoice) {
 									PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
 										@Override
 										public void run() {
-											copyLogAndDataFiles = MessageDialog.openQuestion(PlatformUI.getWorkbench().getDisplay().getActiveShell(), DocometreMessages.CopyLogAndDataFilesDialogTitle, DocometreMessages.CopyLogAndDataFilesDialogQuestion);
+											CopyLogDataFilesDialog copyLogDataFilesDialog = new CopyLogDataFilesDialog(PlatformUI.getWorkbench().getDisplay().getActiveShell());
+											choiceID = copyLogDataFilesDialog.open();
 										}
 									});
 								}
-								doCopy(resource, newResourcePath, destinationResource, copyLogAndDataFiles, monitor);
+								if(choiceID == IDialogConstants.CANCEL_ID) continue;
+								doCopy(resource, newResourcePath, destinationResource, copyLogAndDataFiles || CopyLogDataFilesDialog.copyLogAndDataFile(), monitor);
 								newResource = destinationResource.findMember(newResourcePath.makeRelativeTo(destinationResource.getFullPath()));
 								newResources.add(newResource);
 							} catch (CoreException e) {

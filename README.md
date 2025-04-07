@@ -5,4 +5,4 @@ This is an old version of DOCoMETRe repo. Please follow this [link](https://gith
 
 # DOCoMETRe
 
-See [wiki](https://github.com/fbuloup/DOCoMETRe/wiki) for more details
+See [wiki](https://github.com/TeamICSTECHNOS/DOCoMETRe/wiki) for more details

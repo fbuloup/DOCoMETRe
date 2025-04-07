@@ -556,7 +556,12 @@ public final class DocometreMessages extends NLS {
 	/* Copy log and data files dialog */
 	public static String CopyLogAndDataFilesDialogTitle; 
 	public static String CopyLogAndDataFilesDialogQuestion; 
-			
+	public static String CopyLogDataFilesDontAsk;
+	
+	/*  */
+	public static String seemsNotLocale;		
+	public static String becameLocale;
+	
 	/* Experiment scheduler message */
 	public static String CantFindPreviousTrialMessage;
 	public static String CantFindLastTrialMessage;
