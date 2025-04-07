@@ -52,6 +52,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.QualifiedName;
+import org.eclipse.osgi.util.NLS;
 
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 
@@ -165,10 +166,19 @@ public final class ResourceProperties {
 	/*
 	 * Return the type of the resource : Experiment, subject etc. See ResourceType class for details
 	 */
+	@SuppressWarnings("deprecation")
 	public static String getTypePersistentProperty(IResource resource) {
 		if(resource == null) return "";
 		try {
-			if(resource.exists()) return resource.getPersistentProperty(TYPE_QN);
+			boolean resourceNonLocale = false;
+			if(!resource.isLocal(IResource.DEPTH_ZERO)) {
+				Activator.logWarningMessage(NLS.bind(DocometreMessages.seemsNotLocale, resource.getFullPath().toPortableString()));
+				resourceNonLocale = true;
+			}
+			String type = ResourceType.ANY.toString();
+			if(resource.exists()) type = resource.getPersistentProperty(TYPE_QN);
+			if(resourceNonLocale) Activator.logWarningMessage(DocometreMessages.becameLocale);
+			return type;
 		} catch (CoreException e) {
 			e.printStackTrace();
 			Activator.logErrorMessageWithCause(e);
