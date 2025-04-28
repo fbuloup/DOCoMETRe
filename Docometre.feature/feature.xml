@@ -6,16 +6,27 @@
       provider-name="ISM">
 
    <description>
-      -- 2025-02-14
+      -- 2025-04-28
+ADDED :
+* Move to 2025_03 eclipse release
+* Changes for Arduino Uno R4 (AR_INTERNAL, AR_DEFAULT etc.)
+* Update documentation (Help content and about box)
+* Improve copy/paste action with log or data files
+FIXED :
+* Improve user Cancel operation during processes compilation
+* Improve USB Serial communication during process execution (Arduino Uno)
+-- 2025-02-14
 ADDED :
 * Improve Arduino Uno process code (restart and Watchdog timer)
 * Start support for Arduino Uno R4
 * Small re-factoring (Arduino Uno - ADWin)
 FIXED :
 * Exception raised when project was just created but not opened
-* Rename resource : Reg Exp was wrong as we needed to replace process file ext at name&apos;s end
+* Rename resource : Reg Exp was wrong as we needed to replace
+process file ext at name&apos;s end
 * NPE when no stimulus file is defined
-* Diary and data files and test folder were not properly closed when Exc. occurs
+* Diary and data files and test folder were not properly closed
+when Exc. occurs
 * Process must not be systematically closed (ArduinoUnoProcess.execute())
 * Enable arduino CLI path when use CLI is true (ArduinoUnoDacqConfiguration)
 -- 2025-01-29 - Bis
