@@ -39,34 +39,29 @@
  * Contributors:
  *  - Frank Buloup - frank.buloup@univ-amu.fr - initial API and implementation [25/03/2020]
  ******************************************************************************/
-package fr.univamu.ism.docometre.editors;
+package fr.univamu.ism.docometre.dacqsystems.arduinouno.diary;
 
-import org.eclipse.core.resources.IResource;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.presentation.IPresentationReconciler;
+import org.eclipse.jface.text.presentation.PresentationReconciler;
+import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
+import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 
-import fr.univamu.ism.docometre.Activator;
-import fr.univamu.ism.docometre.ResourceProperties;
-import fr.univamu.ism.docometre.dacqsystems.adwin.diary.ADWinDiarySourceViewerConfiguration;
-import fr.univamu.ism.docometre.dacqsystems.arduinouno.diary.ArduinoDiarySourceViewerConfiguration;
-
-public final class DiarySourceViewerConfigurationFactory {
+public class ArduinoDiarySourceViewerConfiguration extends SourceViewerConfiguration {
 	
-	public static SourceViewerConfiguration getSourceViewerConfiguration(IResource diary) {
-		
-		String system = ResourceProperties.getSystemPersistentProperty(diary);
-		
-		// Default system is ADWin
-		if(system == null) system = Activator.ADWIN_SYSTEM;
-		
-		if(Activator.ADWIN_SYSTEM.equals(system)) {
-			return new ADWinDiarySourceViewerConfiguration();
-		}
-		if(Activator.ARDUINO_UNO_SYSTEM.equals(system)) {
-			return new ArduinoDiarySourceViewerConfiguration();
-		}
-		
-		return null;
-		
-	}
+	private PresentationReconciler presentationReconciler;
 
+	@Override
+	public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
+		if(presentationReconciler != null) return presentationReconciler;
+		
+		presentationReconciler =  new PresentationReconciler();
+		DefaultDamagerRepairer defaultDamagerRepairer = new DefaultDamagerRepairer(new ArduinoDiaryScanner());
+		presentationReconciler.setDamager(defaultDamagerRepairer, IDocument.DEFAULT_CONTENT_TYPE);
+		presentationReconciler.setRepairer(defaultDamagerRepairer, IDocument.DEFAULT_CONTENT_TYPE);
+
+		return presentationReconciler;
+	}
+	
 }
