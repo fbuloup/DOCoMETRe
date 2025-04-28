@@ -578,7 +578,8 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 	@Override
 	public void commandStackChanged(EventObject event) {
 		firePropertyChange(PROP_DIRTY);
-		super.commandStackChanged(event);
+		// super.commandStackChanged(event); ----> deprecated
+		updateActions(getStackActions());
 	}
 	
 	@SuppressWarnings("unchecked")
