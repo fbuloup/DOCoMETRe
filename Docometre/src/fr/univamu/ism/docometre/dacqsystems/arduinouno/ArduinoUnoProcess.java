@@ -199,7 +199,7 @@ public class ArduinoUnoProcess extends Process {
 			double processBeginTime = System.currentTimeMillis()/1000d;
 			String date = new SimpleDateFormat("EEE d MMM yyyy HH:mm:ss", Locale.getDefault()).format(new Date());
 			appendToEventDiary(date);
-			appendToEventDiary("Starting " + ObjectsController.getResourceForObject(ArduinoUnoProcess.this).getName() + " at " + Double.toString(processBeginTime) + "\n");
+			appendToEventDiary("Starting " + ObjectsController.getResourceForObject(ArduinoUnoProcess.this).getName() + " at " + Double.toString(processBeginTime) + " sec.\n");
 			try {
 				while(!terminate) {
 					if(monitor.isCanceled()) {
@@ -273,9 +273,9 @@ public class ArduinoUnoProcess extends Process {
 		                    			for (int n = 0; n < transferedChannelsOrderedByTransferNumber.length; n++) {
 		                    				name = transferedChannelsOrderedByTransferNumber[n].getProperty(ChannelProperties.NAME);
 		                    				nb = nbSamples[n];
-		                    				appendToEventDiary(name + " : " + nb);
+		                    				appendToEventDiary("Total number of transferred samples for " + name + " : " + nb);
 										}
-		                    			appendToEventDiary("At : " + formater.format(realTime) + "s - Workload : " + workload);
+		                    			appendToEventDiary("At : " + formater.format(realTime) + "sec. - Workload : " + workload + "%");
 			                    		timeBefore = timeAfter;
 		                    		}
 									
@@ -316,7 +316,7 @@ public class ArduinoUnoProcess extends Process {
 			                    
 		                    } else {
 		                    	if(b == 's') {
-		                    		appendToEventDiary("Received stop 's' char");
+		                    		appendToEventDiary("\nReceived stop 's' char");
 		                    		stopReceived = true;
 		                    		forceTermination = true;// Just to send s in reply as Arduino is waiting for it.
 		                    	} else message.append((char)b);
@@ -334,7 +334,7 @@ public class ArduinoUnoProcess extends Process {
 				
 			} catch (Exception e) {
 				Activator.logErrorMessageWithCause(e);							
-				appendToEventDiary("Error receiving string from port : " + e.getMessage());
+				appendToEventDiary("ERROR receiving string from port : " + e.getMessage());
 				appendErrorMarkerAtCurrentDiaryLine("Error receiving string from port: " + e.getMessage());
 				PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
 					@Override
@@ -353,12 +353,16 @@ public class ArduinoUnoProcess extends Process {
 					return new Status(Status.ERROR, Activator.PLUGIN_ID, "Error closing port: " + e.getMessage());
 				}
 				double processEndTime = System.currentTimeMillis()/1000d;
-				appendToEventDiary("\nEnd time (s) : " + Double.toString(processEndTime));
-				appendToEventDiary(ObjectsController.getResourceForObject(ArduinoUnoProcess.this).getName() + " duration (s) is about : " + Double.toString(processEndTime - processBeginTime) + "\n");
-				appendToEventDiary("Total samples for transfered channels :");
+				appendToEventDiary(ObjectsController.getResourceForObject(ArduinoUnoProcess.this).getName() + " duration (s) is about : " + Double.toString(processEndTime - processBeginTime));
+				appendToEventDiary("End time : " + Double.toString(processEndTime) + " sec.\n");
+				
+				appendToEventDiary("Total samples for transferred channels :");
 				for (int i = 0; i < nbSamples.length; i++) {
 					appendToEventDiary(transferedChannelsOrderedByTransferNumber[i].getProperty(ChannelProperties.NAME) + " : " + nbSamples[i]);
 				}
+				IResource processResource = ObjectsController.getResourceForObject(ArduinoUnoProcess.this);
+				appendToEventDiary(processResource.getFullPath() + " end.");
+				
 				PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
 					@Override
 					public void run() {

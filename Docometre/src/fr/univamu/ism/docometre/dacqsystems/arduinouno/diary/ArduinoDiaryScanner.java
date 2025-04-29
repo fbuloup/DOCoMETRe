@@ -56,7 +56,6 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.DocometreApplication;
-import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinMessages;
 
 public class ArduinoDiaryScanner extends RuleBasedScanner {
 	
@@ -64,44 +63,27 @@ public class ArduinoDiaryScanner extends RuleBasedScanner {
 	private static Color foregroundColor;
 	
 	private static final String HEADER_START = "Process";
-	private static final String HEADER_FOOTER_END = "Loaded";
-	private static final String TIME_BETWEEN_TWO_ADWIN_DIALOG = ADWinMessages.ADWinDiary_TimeBetween_Scanner; 
-	private static final String RECOVERING_CHANNEL = ADWinMessages.ADWinDiary_Recovering_Scanner;
-	private static final String RECOVERY_TIME = ADWinMessages.ADWinDiary_RecoveryTime_Scanner;
-	private static final String GENERATING_CHANNEL = ADWinMessages.ADWinDiary_Generating_Scanner;
-	private static final String GENERATION_TIME = ADWinMessages.ADWinDiary_GenerationTime_Scanner;
-	private static final String DISPLAY_TIME = ADWinMessages.ADWinDiary_DisplayTime_Scanner;
-	private static final String DATA_LOSS = ADWinMessages.ADWinDiary_DataLoss_Scanner;
-	private static final String FOOTER_START_1 = ADWinMessages.ADWinDiary_Ending_Scanner;
-	private static final String FOOTER_START_2 = ADWinMessages.ADWinDiary_Approximative_Scanner;
-	private static final String NO_MORE_TO_GENERATE = ADWinMessages.ADWinDiary_NoMoreToGenerate_Scanner;
+	private static final String HEADER_FOOTER_END = "sec.";
+	private static final String RECOVERING_CHANNEL = "Total number of transferred samples for";
+	private static final String AT_WORKLOAD = "At";
+	private static final String RECEIVED_STOP = "Received stop";
+	private static final String RECEIVED_STOP_FOOTER = "sec.";
+	private static final String START_FOOTER = "Total samples for transferred channels";
+	private static final String STOP_FOOTER = " end.";
+	private static final String ERROR = "ERROR";
 	
 	public ArduinoDiaryScanner() {
 		List<IRule> rules= new ArrayList<IRule>();
-		rules.add(getRecoveryTimeScanner());
-		rules.add(getGenerationTimeScanner());
-		rules.add(getDisplayTimeScanner());
-		rules.add(getGeneratingChannelScanner());
 		rules.add(getRecoveringChannelScanner());
-		rules.add(getTimeBetween2ADWinDialogScanner());
-		rules.add(getDataLossScanner());
+		rules.add(getAtWorkloadScanner());
+		rules.add(getReceivedStopScanner());
+		rules.add(getFooterScanner());
 		rules.add(getHeaderScanner());
-		rules.add(getFooterScanner_1());
-		rules.add(getFooterScanner_2());
-		rules.add(getNoMoreDataToGenerate());
 		setRules(rules.toArray(new IRule[rules.size()]));
 		backgroundColor = PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
 		foregroundColor = PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND);
 	}
 	
-	public static IRule getTimeBetween2ADWinDialogScanner() {
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLUE), 
-													backgroundColor, 
-				   									SWT.NORMAL, 
-				   									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
-		IToken token = new Token(attribute);
-        return new EndOfLineRule(TIME_BETWEEN_TWO_ADWIN_DIALOG, token);
-	}
 	
 	public static IRule getRecoveringChannelScanner() {
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.ORANGE), 
@@ -112,49 +94,13 @@ public class ArduinoDiaryScanner extends RuleBasedScanner {
         return new EndOfLineRule(RECOVERING_CHANNEL, token);
 	}
 	
-	public static IRule getRecoveryTimeScanner() {
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.ORANGE), 
-				   									backgroundColor, 
-				   									SWT.NORMAL, 
-				   									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
-		IToken token = new Token(attribute);
-        return new EndOfLineRule(RECOVERY_TIME, token);
-	}
-	
-	public static IRule getGeneratingChannelScanner() {
+	public static IRule getAtWorkloadScanner() {
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.GREEN), 
-				   									backgroundColor, 
+				backgroundColor, 
 				   									SWT.NORMAL, 
 				   									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
-        return new EndOfLineRule(GENERATING_CHANNEL, token);
-	}
-	
-	public static IRule getGenerationTimeScanner() {
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.GREEN), 
-				   									backgroundColor, 
-				   									SWT.NORMAL, 
-				   									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
-		IToken token = new Token(attribute);
-        return new EndOfLineRule(GENERATION_TIME, token);
-	}
-	
-	public static IRule getDisplayTimeScanner() {
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.MAROON), 
-				   									backgroundColor, 
-				   									SWT.NORMAL, 
-				   									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
-		IToken token = new Token(attribute);
-        return new EndOfLineRule(DISPLAY_TIME, token);
-	}
-	
-	public static IRule getDataLossScanner() {
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.RED), 
-				   									backgroundColor, 
-				   									SWT.NORMAL, 
-				   									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
-		IToken token = new Token(attribute);
-        return new EndOfLineRule(DATA_LOSS, token);
+        return new EndOfLineRule(AT_WORKLOAD, token);
 	}
 	
 	public static IRule getHeaderScanner() {
@@ -163,36 +109,33 @@ public class ArduinoDiaryScanner extends RuleBasedScanner {
 					SWT.NORMAL, 
 					DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
-		return new EndOfLineRule(HEADER_START, /*HEADER_FOOTER_END,*/ token);
+		return new MultiLineRule(HEADER_START, HEADER_FOOTER_END, token);
 	}
 	
-	public static IRule getFooterScanner_1() {
-		TextAttribute attribute = new TextAttribute(foregroundColor, 
+	public static IRule getReceivedStopScanner() {
+		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.MAROON), 
 					backgroundColor, 
 					SWT.NORMAL, 
 					DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
-		return new MultiLineRule(FOOTER_START_1, HEADER_FOOTER_END, token);
+		return new MultiLineRule(RECEIVED_STOP, RECEIVED_STOP_FOOTER, token);
 	}
 	
-	public static IRule getFooterScanner_2() {
-		TextAttribute attribute = new TextAttribute(foregroundColor, 
+	public static IRule getFooterScanner() {
+		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLUE), 
 					backgroundColor, 
 					SWT.NORMAL, 
 					DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
-		return new MultiLineRule(FOOTER_START_2, HEADER_FOOTER_END, token);
+		return new MultiLineRule(START_FOOTER, STOP_FOOTER, token);
 	}
 	
-	public static IRule getNoMoreDataToGenerate() {
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.GREEN), 
-					backgroundColor, 
-					SWT.NORMAL, 
-					DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
+	public static IRule getErrorScanner() {
+		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.RED), 
+				backgroundColor, 
+				   									SWT.NORMAL, 
+				   									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
-		return new EndOfLineRule(NO_MORE_TO_GENERATE, token);
+        return new EndOfLineRule(ERROR, token);
 	}
-	
-	
-
 }
