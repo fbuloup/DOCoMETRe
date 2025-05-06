@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2025-04-28
+      -- 2025-05-06
+ADDED :
+Arduino Uno Diary source viewer configuration
+FIXED : Nothing
+-- 2025-04-28
 ADDED :
 * Move to 2025_03 eclipse release
 * Changes for Arduino Uno R4 (AR_INTERNAL, AR_DEFAULT etc.)
@@ -14,7 +18,8 @@ ADDED :
 * Improve copy/paste action with log or data files
 FIXED :
 * Improve user Cancel operation during processes compilation
-* Improve USB Serial communication during process execution (Arduino Uno)
+* Improve USB Serial communication during process execution (Arduino
+Uno)
 -- 2025-02-14
 ADDED :
 * Improve Arduino Uno process code (restart and Watchdog timer)
