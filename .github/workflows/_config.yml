@@ -1,5 +1,1 @@
-title: Your awesome title
-
-theme: minima
-plugins:
-  - jekyll-feed
+theme: jekyll-theme-cayman
