@@ -1,8 +1,6 @@
 [![CeCILL-B License](https://img.shields.io/badge/Licence-CeCILL--B-brightgreen)](https://github.com/fbuloup/DOCoMETRe/blob/master/LICENCE)
 [![SWH](https://archive.softwareheritage.org/badge/origin/https://github.com/TeamICSTECHNOS/Docometre/)](https://archive.softwareheritage.org/browse/origin/?origin_url=https://github.com/TeamICSTECHNOS/Docometre)
 
-Same information is available on this [web page](https://fbuloup.github.io/DOCoMETRe/).
-
 Welcome to DOCoMETRe software !
 
 This software can be useful if you want to acquire signals based on ADwin or Arduino Uno devices. It can also be helpful to visualise and analyse acquired signals (e.g. filtering, points marking or features computation).
