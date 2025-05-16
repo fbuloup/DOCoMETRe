@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Installation
+Bundle-SymbolicName: Docometre.Installation
+Bundle-Version: 1.0.0.qualifier
+Automatic-Module-Name: Docometre.Installation
+Bundle-RequiredExecutionEnvironment: JavaSE-21
