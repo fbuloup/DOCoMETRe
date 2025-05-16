@@ -1,0 +1,14 @@
+
+<project default="FTP_INPUT" name="FTP INPUT">
+	<target name="FTP_INPUT">
+		<input message="Please enter FTP IP :" addproperty="ftp.ip"
+			defaultvalue="139.124.68.1" />
+		<input message="Please enter FTP login :"
+			addproperty="ftp.login" defaultvalue="buloup" />
+		<input message="Please enter FTP password :"
+			addproperty="ftp.password" defaultvalue="slqb9999" />
+		<input message="Please enter FTP base remote directory :"
+			addproperty="ftp.base.remotedir"
+			defaultvalue="Sites/documents/" />
+	</target>
+</project>

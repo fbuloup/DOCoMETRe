@@ -1,0 +1,152 @@
+\documentclass[a4paper,11pt]{beamer}
+\usepackage{etex}
+\usepackage{lmodern}
+\usepackage[french]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{pst-sigsys} 
+\usepackage{amsmath,amsfonts,amssymb}
+\usepackage{pstricks-add} 
+\usepackage{ragged2e}
+\usepackage{graphicx}   
+\usepackage{ulem} 
+\usepackage{wasysym}
+\usepackage{matlab-prettifier}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{color}
+\setbeamertemplate{navigation symbols}{}   
+  
+\usetheme{Darmstadt} 
+\setbeamertemplate{footline}{\insertframenumber/\inserttotalframenumber}
+\title{DOCoMETRe - Overview}
+\author{Frank BULOUP - frank.buloup@univ-amu.fr} 
+\institute{Aix Marseille Université\\Institut des Sciences du Mouvement}
+\date{}
+
+\setbeamertemplate{footline} 
+{  
+	\begin{beamercolorbox}[ht=2.5ex,dp=1.125ex,%
+      leftskip=.3cm,rightskip=.3cm plus1fil]{title in head/foot}%
+      {\usebeamerfont{title in head/foot}\insertshorttitle} \hfill    
+      \insertframenumber / \inserttotalframenumber%
+    \end{beamercolorbox}%
+%     \begin{beamercolorbox}[colsep=1.5pt]{lower separation line foot}
+%     \end{beamercolorbox} 
+}
+ 
+\newcounter{exampleBlockCounter}
+\setcounter{exampleBlockCounter}{1} 
+
+% Custom colors
+%\definecolor{deepblue}{rgb}{0,0,0.5}
+%\definecolor{deepred}{rgb}{0.6,0,0}
+%\definecolor{deepgreen}{rgb}{0,0.5,0}
+\definecolor{comment}{rgb}{0.12, 0.38, 0.18 } %adjusted, in Eclipse: {0.25, 0.42, 0.30 } = #3F6A4D
+\definecolor{keyword}{rgb}{0.37, 0.08, 0.25}  % #5F1441
+\definecolor{string}{rgb}{0.06, 0.10, 0.98} % #101AF9
+
+\lstset{
+language=Python,
+frame=single,
+frameround=tttt,
+rulesepcolor=\color{black},
+showspaces=false,showtabs=false,tabsize=2,
+numberstyle=\tiny,numbers=left,
+stringstyle=\color{string},
+keywordstyle = \color{keyword}\bfseries,
+commentstyle=\color{comment}\itshape,
+basicstyle=\ttfamily\footnotesize,
+breaklines=true,
+captionpos=b
+}
+  
+\begin{document} 
+
+\begin{frame}[plain]
+	\titlepage
+	\center{\includegraphics[scale=0.75]{images/by-nc-sa.eps}}
+	\vspace{1cm}
+ 
+	\includegraphics[scale=0.3]{images/LogoAMU.eps}\hspace*{2cm}
+	\includegraphics[scale=0.2]{images/LogoCNRS.eps}\hspace*{2cm}
+	\includegraphics[scale=0.1]{images/LogoISM.eps}
+\end{frame}
+
+\section{DOCoMETRe Overview}
+\begin{frame}
+\begin{itemize}
+    \item What DOCoMETRe is useful for ?
+    \item Workspace and workbench concepts
+    \item GUI basics
+\end{itemize}
+
+\end{frame}
+
+
+\subsection{What DOCoMETRe is useful for ?}
+\begin{frame}
+\begin{exampleblock}{You are using one of these DACQ systems :}
+    \begin{itemize}
+        \item ADWin Pro or Gold
+        \item Arduino Uno, with eventualy ADS1115 module
+    \end{itemize}
+\centering
+And in a near future Portenta Machine control and Teensy 4.
+\end{exampleblock}
+
+\begin{exampleblock}{And you want to :}
+    \begin{itemize}
+        \item easily manage Subjects/Sessions/Trials
+        \item normalize your data acquisition routines
+        \item have a quick look to acquired signals
+        \item normalize your data processing routines
+    \end{itemize}
+\end{exampleblock}
+\end{frame}
+
+\subsection{Workspace and workbench concepts}
+\begin{frame}
+\begin{block}{The workspace}
+\justifying
+It's a folder where everything is stored during a session.
+You can have more than one workspace and you can change workspace at start up.
+You can place all your experiments in a single workspace or you can create a workspace
+for each of your experiments, or you can have a workspace for each of your research topic etc. Please note that you can't have two simultaneous sessions pointing at the same workspace.
+\end{block}
+
+\begin{block}{The workbench window}
+\justifying
+It's the main graphical interface. It shows all your wokspace data arranged in experiments folders. In each experiment folder you can have data acquisition configuration files, processing files, subjects, sessions, trials folders etc.
+\end{block}
+\end{frame}
+
+\begin{frame}
+\centering
+\includegraphics[scale=0.18]{images/Workbench.eps}
+
+\begin{alertblock}{Workbench keywords}
+\centering
+Views, Editors, Perspectives
+\end{alertblock}
+\end{frame}
+
+\subsection{GUI basics}
+\begin{frame}
+\begin{alertblock}{Views}
+\centering
+Views allow users to see a graphical representation of experiments metadata
+\end{alertblock}
+\begin{alertblock}{Editors}
+\centering
+Editors allow users to create/modify experiments metadata
+\end{alertblock}
+\begin{alertblock}{Perspectives}
+\justifying
+Perspective can show any number of views and editors. It has a default
+layout (views and editors arrangement). You can personalize most of all perspectives
+by moving/opening any view or editor.
+\end{alertblock}
+\end{frame}
+
+\end{document}
