@@ -8,3 +8,4 @@
 *.toc
 images/*.pdf
 /target/
+/FtpLoginProperties.xml
