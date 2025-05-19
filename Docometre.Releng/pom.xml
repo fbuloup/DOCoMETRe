@@ -149,8 +149,7 @@
 			../org.eclipse.ui.workbench.texteditor.translation
 		</module>
 		<module>../Docometre.Overview</module>
-		<module>
-			../../../Documents/ECLIPSE_WORKSPACE/DOCoMETRe/Docometre.Installation
-		</module>
+		
+		<module>../Docometre.Installation</module>
 	</modules>
 </project>

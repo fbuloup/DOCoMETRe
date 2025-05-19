@@ -2312,4 +2312,8 @@ jurisdiction, by the more diligent Party.
          id="Docometre.Overview"
          version="0.0.0"/>
 
+   <plugin
+         id="Docometre.Installation"
+         version="0.0.0"/>
+
 </feature>
