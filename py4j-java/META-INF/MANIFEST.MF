@@ -11,4 +11,6 @@ DynamicImport-Package: *
 Export-Package: py4j;uses:="py4j.commands,py4j.reflection",py4j.commands
  ;uses:="py4j,py4j.reflection",py4j.model,py4j.reflection;uses:=py4j
 Automatic-Module-Name: py4j-java
+Bundle-ClassPath: py4j0.10.9.9.jar,
+ .
 Bundle-Vendor: Py4J - 0.10.9.bnd-LoVopg
