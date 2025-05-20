@@ -460,7 +460,7 @@ public class Channel implements IFile {
 	@Override
 	public boolean isLocal(int depth) {
 		
-		return false;
+		return true;
 	}
 
 	@Override
