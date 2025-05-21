@@ -71,7 +71,7 @@ import fr.univamu.ism.process.Script;
 
 public class ObjectsController {
 	
-	private static boolean debug = true;
+	public static boolean debug = false;
 	private static XStream xStream;
 	
 	/*

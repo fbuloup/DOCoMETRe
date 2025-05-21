@@ -43,6 +43,7 @@ package fr.univamu.ism.docometre;
 
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
 
@@ -131,6 +132,8 @@ public class Activator extends AbstractUIPlugin {
 		plugin = this;			
 		Logger.getRootLogger().getLoggerRepository().resetConfiguration();
 		Activator.getDefault().getLog().addLogListener(CachedLogger.getInstance());
+		String[] args = Platform.getApplicationArgs();
+		if(Arrays.asList(args).contains("-debugObjectHandler")) ObjectsController.debug = true;
 	}
 
 	/*
