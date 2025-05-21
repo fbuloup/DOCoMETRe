@@ -42,11 +42,16 @@
 package fr.univamu.ism.docometre.analyse.editors;
 
 import java.lang.reflect.InvocationTargetException;
+import java.text.DecimalFormat;
 import java.util.Arrays;
 
 import org.eclipse.core.commands.operations.ObjectUndoContext;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -387,7 +392,13 @@ public class BatchDataProcessingEditor extends EditorPart implements PartNameRef
 			public String getText(Object element) {
 				if(element instanceof BatchDataProcessingItem) {
 					String path = ((BatchDataProcessingItem) element).getPath();
-					return path;
+					IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+					IPath subjectPath = new Path(path);
+					IResource subject = root.findMember(subjectPath);
+					double percent = ResourceProperties.getPercentDone(subject);
+					String percentString = DecimalFormat.getPercentInstance().format(percent);
+					if(Double.isNaN(percent)) percentString = Double.toString(percent);
+					return path + " [" + percentString + "]";
 				}
 				return super.getText(element);
 			}

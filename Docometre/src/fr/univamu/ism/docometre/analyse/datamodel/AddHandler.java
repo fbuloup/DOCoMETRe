@@ -42,6 +42,7 @@
 package fr.univamu.ism.docometre.analyse.datamodel;
 
 import java.lang.reflect.InvocationTargetException;
+import java.text.DecimalFormat;
 import java.util.Arrays;
 
 import org.eclipse.core.commands.ExecutionException;
@@ -75,7 +76,12 @@ public class AddHandler extends SelectionAdapter {
 		public String getText(Object element) {
 			if(element instanceof IResource) {
 				if(ResourceType.isDataProcessing((IResource) element)) return ((IResource)element).getName().replaceAll(Activator.dataProcessingFileExtension, ""); 
-				else return ((IResource)element).getName();
+				else {
+					double percent = ResourceProperties.getPercentDone((IResource) element);
+					String percentString = DecimalFormat.getPercentInstance().format(percent);
+					if(Double.isNaN(percent)) percentString = Double.toString(percent);
+					return ((IResource)element).getName() + " [" + percentString + "]";
+				}
 			}
 			return super.getText(element);
 		}
