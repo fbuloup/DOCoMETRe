@@ -130,6 +130,19 @@
 			<fileset dir="target/repository" />
 		</ftp>
 	</target>
+	
+	<target name="E_DocumentsFiles" description="Upload docs files to server">
+		<echo>Uploading installation doc</echo>
+		<ftp server="${ftp.ip}" passive="no" remotedir="${ftp.base.remotedir}" userid="${ftp.login}" password="${ftp.password}" depends="no">
+			<fileset file="../Docometre.Installation/Installation.pdf" />
+		</ftp>
+	
+		<echo>Uploading overview doc</echo>
+		<ftp server="${ftp.ip}" passive="no" remotedir="${ftp.base.remotedir}" userid="${ftp.login}" password="${ftp.password}" depends="no">
+			<fileset file="../Docometre.Overview/Overview.pdf" />
+		</ftp>
+		
+	</target>
 
 
 
