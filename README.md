@@ -5,18 +5,18 @@ Welcome to DOCoMETRe software !
 
 This software can be useful if you want to acquire signals based on ADwin or Arduino Uno devices. It can also be helpful to visualise and analyse acquired signals (e.g. filtering, points marking or features computation).
 
-If you need more informations on DOCoMETRe, please check this [overview](http://www.ism.univ-amu.fr/buloup/documents/Overview.pdf) !
+If you need more informations on DOCoMETRe, please check this [overview](http://139.124.68.1/buloup/documents/Overview.pdf) !
 
-Need more details on installation procedure ? Follow this [link](http://www.ism.univ-amu.fr/buloup/documents/Installation.pdf).
+Need more details on installation procedure ? Follow this [link](http://139.124.68.1/buloup/documents/Installation.pdf).
 
 Videos tutorials ? It's [here](https://www.youtube.com/watch?v=BV_56Ztva1I&list=PLToTNXU9fy6WKUKD1BgPlpn-ONyaHg7vn).
 
 To download DOCoMETRe, please follow the link related to your platform :
 
-* [Linux64](http://www.ism.univ-amu.fr/buloup/documents/DOCoMETRe/DocometreLinux.zip) (tested with Ubuntu 18.04.2 LTS)
-* [MacOSX - DMG file](http://www.ism.univ-amu.fr/buloup/documents/DOCoMETRe/DOCoMETRe.dmg)
-* [MacOSX](http://www.ism.univ-amu.fr/buloup/documents/DOCoMETRe/DocometreMacOS.zip)
-* [Win64](http://www.ism.univ-amu.fr/buloup/documents/DOCoMETRe/DocometreWindows.zip)
+* [Linux64](http://139.124.68.1/buloup/documents/DOCoMETRe/DocometreLinux.zip) (tested with Ubuntu 18.04.2 LTS)
+* [MacOSX - DMG file](http://139.124.68.1/buloup/documents/DOCoMETRe/DOCoMETRe.dmg)
+* [MacOSX](http://139.124.68.1/buloup/documents/DOCoMETRe/DocometreMacOS.zip)
+* [Win64](http://139.124.68.1/buloup/documents/DOCoMETRe/DocometreWindows.zip)
 
 <ins>**You are using OSX ?**</ins> You could unfortunately get an error the first time you launch DOCoMETRe.
 Please read this page to get a solution : [note for OSX users](https://github.com/TeamICSTECHNOS/DOCoMETRe/wiki/Note-for-OSX-users).
