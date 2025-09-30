@@ -9,7 +9,7 @@ If you need more informations on DOCoMETRe, please check this [overview](http://
 
 Need more details on installation procedure ? Follow this [link](http://139.124.68.1/buloup/documents/Installation.pdf).
 
-Videos tutorials ? It's [here](https://www.youtube.com/watch?v=BV_56Ztva1I&list=PLToTNXU9fy6WKUKD1BgPlpn-ONyaHg7vn).
+Videos tutorials ? It's [here](VIDEOS.md).
 
 To download DOCoMETRe, please follow the link related to your platform :
 
