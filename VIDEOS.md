@@ -16,7 +16,7 @@
 
 ###### http://139.124.68.1/buloup/documents/DOCoMETRe_VIDEOS/4.%20Arduino%20-%20Test%20Processus.mp4
 
-##### Subject session
+##### Subject/Session
 
 ###### http://139.124.68.1/buloup/documents/DOCoMETRe_VIDEOS/5.%20Passation%20d'un%20sujet.mp4
 
@@ -24,7 +24,7 @@
 
 ###### http://139.124.68.1/buloup/documents/DOCoMETRe_VIDEOS/6.%20Aperçu%20traitement%20données.mp4
 
-##### Data processing
+##### Data processing more detailed
 
 ###### http://139.124.68.1/buloup/documents/DOCoMETRe_VIDEOS/7.%20Traitement%20données.mp4
 
