@@ -294,6 +294,7 @@ public class ADWinMessages extends NLS {
 	public static String ADWinDiary_Recovering;
 	public static String ADWinDiary_RecoveryTime;
 	public static String ADWinDiary_Generating;
+	public static String ADWinDiary_InitGenerationBuffer;
 	public static String ADWinDiary_GenerationTime;
 	public static String ADWinDiary_DisplayTime;
 	public static String ADWinDiary_DataLoss;

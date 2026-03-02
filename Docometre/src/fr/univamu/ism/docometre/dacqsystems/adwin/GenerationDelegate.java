@@ -56,7 +56,7 @@ import fr.univamu.ism.docometre.dacqsystems.Module;
 
 @SuppressWarnings("restriction")
 public class GenerationDelegate {
-
+	
 	public static void generate(Channel[] channels, Module module, ADWinProcess process) {
 		if(channels != null && module != null) {
 			Activator.logErrorMessage("Cannot generate channels and channels' module at same time !");
@@ -77,10 +77,10 @@ public class GenerationDelegate {
 					int nbData = adwinDevice.Fifo_Empty(transferNum);
 					if (nbData > 0){
 						float[] data = adwinChannel.getSamples(nbData);
-						adwinDevice.SetFifo_Float(transferNum, data, nbData);
 						boolean noMoreData = data.length == 0;
-						process.appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_Generating, new Object[] {transferNum, adwinChannel.getProperty(ChannelProperties.NAME), nbData}));
 						if (!noMoreData) {
+							adwinDevice.SetFifo_Float(transferNum, data, data.length);
+							process.appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_Generating, new Object[] {transferNum, adwinChannel.getProperty(ChannelProperties.NAME), data.length}));
 							if(adwinDevice.Get_Par(transferNum) > 0){
 								float real_time = adwinDevice.Get_FPar(processNumber);
 								String realTime = String.valueOf(real_time);
@@ -95,7 +95,7 @@ public class GenerationDelegate {
 									}
 								});
 							}
-						} else process.appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_NoMoreToGenerate, adwinChannel.getProperty(ChannelProperties.NAME)));
+						} else process.appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_NoMoreToGenerate, adwinChannel.getProperty(ChannelProperties.NAME), adwinDevice.Fifo_Full(transferNum)));
 					}
 				}catch (ADwinCommunicationError e) {
 					e.printStackTrace();

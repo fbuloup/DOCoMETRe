@@ -1016,7 +1016,7 @@ public class ADWinProcess extends Process {
 			int processNumberInt = Integer.parseInt(getProperty(ADWinProcessProperties.PROCESS_NUMBER));	
 			RealTimeLoopJob realTimeLoopJob = new RealTimeLoopJob(DocometreMessages.RunningProcess);
 			open(this, prefix, suffix);
-			generation();
+			//generation();
 //		for (int i = 0; i < getDACQConfiguration().getModulesNumber(); i++) {
 //			ModuleBehaviour module = getDACQConfiguration().getModule(i);
 //			module.open(this);

@@ -87,6 +87,8 @@ public class ADWinChannel extends Channel {
 	transient String suffix;
 	transient long adwinLastPosition;
 	transient long observersLastPosition;
+	transient long totalReadSamples;
+	transient long fileSize;
 	
 	public ADWinChannel(Module module) {
 		super(module);
@@ -110,6 +112,15 @@ public class ADWinChannel extends Channel {
 	}
 	
 	public float[] getSamples(int nbData){
+		
+		if((totalReadSamples + nbData)*4 > fileSize) {
+			nbData = (int) (fileSize - totalReadSamples*4);
+			nbData = nbData/4;
+		}
+		
+		if(nbData <= 0) return new float[0];
+		totalReadSamples += nbData;
+		
 		if(fileChannel == null || !fileChannel.isOpen()) return new float[nbData];
 		ByteBuffer byteBuffer = ByteBuffer.allocate(nbData*4);
 		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -148,6 +159,8 @@ public class ADWinChannel extends Channel {
 		try {
 			adwinLastPosition = -1;
 			observersLastPosition = -1;
+			totalReadSamples = 0;
+			fileSize = 0;
 			this.prefix = prefix;
 			this.suffix = suffix;
 			boolean isStimulus = false;
@@ -177,11 +190,13 @@ public class ADWinChannel extends Channel {
 				if(fileName != null) {
 					inputFile = new FileInputStream(fileName);
 					fileChannel = inputFile.getChannel();
+					fileSize = fileChannel.size();
 					int bs = Integer.parseInt(getProperty(ChannelProperties.BUFFER_SIZE));
 					float[] samples = getSamples(bs);
 					try {
 						((ADWinDACQConfiguration)process.getDACQConfiguration()).getADwinDevice().Fifo_Clear(getTransferNumber());
-						((ADWinDACQConfiguration)process.getDACQConfiguration()).getADwinDevice().SetFifo_Float(getTransferNumber(), samples, bs);
+						((ADWinDACQConfiguration)process.getDACQConfiguration()).getADwinDevice().SetFifo_Float(getTransferNumber(), samples, samples.length);
+						process.appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_InitGenerationBuffer, new Object[] {getTransferNumber(), getProperty(ChannelProperties.NAME), samples.length}));
 					} catch (ADwinCommunicationError e) {
 						Activator.logErrorMessageWithCause(e);
 						e.printStackTrace();
@@ -198,6 +213,9 @@ public class ADWinChannel extends Channel {
 			}
 			
 		} catch (FileNotFoundException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		} catch (IOException e) {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
 		}
