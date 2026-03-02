@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: ADWin
 Bundle-SymbolicName: ADWin
 Bundle-Version: 1.0.0.qualifier
-Bundle-ClassPath: ADwin-1.2.2.jar
+Bundle-ClassPath: ADwin-1.6.0.jar
 Export-Package: de.adwin.driver;version="1.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: ADWin

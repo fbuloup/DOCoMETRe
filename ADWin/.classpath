@@ -6,6 +6,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
-	<classpathentry exported="true" kind="lib" path="ADwin-1.2.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="ADwin-1.6.0.jar" sourcepath="ADwin-1.6.0-javadoc.zip"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
