@@ -48,6 +48,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.NumberFormat;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -72,6 +74,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
 
 import fr.univamu.ism.docometre.Activator;
@@ -209,9 +212,11 @@ public class DataEditor extends EditorPart implements PartNameRefresher, CursorM
 		Window window = ((ResourceEditorInput) getEditorInput()).getWindow();
 		if(window != null) {
 			chart.setWindow(window);
-			chart.redraw();
-			chart.update();
+		} else if(chart.getSeries().length == 0) {
+			chart.setWindow(new Window(0, 1, 0, 1));
 		}
+		chart.redraw();
+		chart.update();
 //		
 		// Allow data to be copied or moved to the drop target
 		int operations = DND.DROP_COPY;
@@ -250,6 +255,8 @@ public class DataEditor extends EditorPart implements PartNameRefresher, CursorM
 					if (ResourceType.isSamples(resource)) {
 						((ResourceEditorInput)getEditorInput()).addEditedObject(resource);
 						createTrace((IFile) resource);
+						chart.redraw();
+						chart.update();
 						setFocus();
 					}
 //					typedEventHandler(event);
@@ -344,6 +351,10 @@ public class DataEditor extends EditorPart implements PartNameRefresher, CursorM
 				sf = getSampleFrequencyDialog();
 			}
 			
+			if(sf == -1) {
+				return;
+			}
+			
 			HashMap<String, double[]> xyValues  = createXYDoubleValues(values, sf, dacqConfiguration);
 			// Create X and Y data arrays
 			double[] yDoubleValues = xyValues.get("Y");
@@ -371,11 +382,14 @@ public class DataEditor extends EditorPart implements PartNameRefresher, CursorM
 	}
 	
 	private double getSampleFrequencyDialog() {
-		double sf = 1;
+		double sf = -1;
 		IInputValidator inputValidator = new IInputValidator() {
 			@Override
 			public String isValid(String newText) {
-				// TODO Auto-generated method stub
+				/*Check pattern resource name*/
+				Pattern pattern = Pattern.compile("^[+]?([1-9][0-9]*(?:[\\.][0-9]*)?|0*\\.0*[1-9][0-9]*)(?:[eE][+-]?[0-9]+)?$");
+				Matcher matcher = pattern.matcher(newText);
+				if(!matcher.matches()) return DocometreMessages.SampleFrequencyErrorMessage;
 				return null;
 			}
 		};
@@ -411,6 +425,7 @@ public class DataEditor extends EditorPart implements PartNameRefresher, CursorM
 	public void setFocus() {
 //		((Control)chart.getPlotArea()).setFocus();
 		chart.setFocus();
+		if(chart.getSeries().length == 0) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().closeEditor(this, false);
 	}
 	
 	public XYSWTChart getChart() {

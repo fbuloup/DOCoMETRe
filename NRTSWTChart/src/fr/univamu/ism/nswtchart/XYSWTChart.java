@@ -578,6 +578,7 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 	}
 
 	private void notifyCursorMarkerListeners() {
+		if(cursorPosition == null) return;
 		int y0 = isLegendPositionBottom()?0:getLegendHeight();
 		Point2D.Double cursor = new Point2D.Double(xPixelToValue(cursorPosition.x - getYAxisWidth()), yPixelToValue(cursorPosition.y - y0));
 		Point2D.Double marker = null;

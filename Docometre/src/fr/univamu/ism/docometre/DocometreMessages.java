@@ -1068,6 +1068,7 @@ public final class DocometreMessages extends NLS {
 	public static String SampleFrequencyDialogLabel;
 	public static String SampleFrequencyDialogMessage;
 	public static String NumberSamplesReadMessage;
+	public static String SampleFrequencyErrorMessage;
 	
 	// Customer Function editor
 	public static String menuTitleDescription;
