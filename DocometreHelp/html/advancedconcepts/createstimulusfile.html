@@ -29,8 +29,8 @@ sf = 1000 # Sample frequency in Hz
 duration = 5 # Situmulus duration in sec.
 t = np.arange(0, duration ,1/sf) # time vector
 signal = 2 + np.sin(2*np.pi*5*t) # Stimulus values
-data = np.array(signal, dtype=np.float32)
-data.tofile("stimulus.samples")
+data = np.array(signal, dtype=np.float32) # Force values to float32 format
+data.tofile("stimulus.samples") # Write data to file
 </pre>
  </body>
  </html>
