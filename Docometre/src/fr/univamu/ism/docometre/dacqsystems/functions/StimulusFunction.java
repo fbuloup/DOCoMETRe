@@ -201,7 +201,7 @@ public class StimulusFunction extends GenericFunction {
 				code = code + "\nREM Stimulus Function\n\n";
 				String key = FUNCTION_CODE;
 				String temporaryCode = FunctionFactory.getProperty(process, functionFileName, key.toUpperCase());
-				code = temporaryCode.replaceAll(outputKey, output).replaceAll(absolutePathToFileKey, absolutePathToFile);
+				code = temporaryCode.replaceAll(outputKey, output).replace(absolutePathToFileKey, absolutePathToFile);
 				code = code.replaceAll(frequencyRatioKey, String.valueOf(frequencyRatio));
 				code = code.replaceAll(transferNumberKey, transferNumber);
 				code = code + "\n\n";

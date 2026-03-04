@@ -12,7 +12,7 @@ DESCRIPTION_FR = Fonction de génération d'un signal
 # any of segments INITIALIZATION, EVENT or FINISH depending on the actual function position.
 # Take care of the fact that each key must be upper case !
 
-FUNCTION_CODE = REM STIMULUS - This file : "absolutePathToFile"\n\
+FUNCTION_CODE = REM STIMULUS - This file : absolutePathToFile\n\
 REM will be used as stimulus for channel "output"\n\n\
 IF (TRANSFERT_output = frequencyRatio) THEN\n\
 	TRANSFERT_output = 0\n\
