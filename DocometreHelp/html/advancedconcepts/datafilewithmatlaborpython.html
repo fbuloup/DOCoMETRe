@@ -11,14 +11,14 @@
  <p>
  It's possible to open samples data files created by DOCoMETRe. These files are simply binaries files using IEEE754 floating point standard. 
  </p>
- <p>You can find below a Matlab code to read this kinf of file :</p>
+ <p>You can find below a Matlab code to read this kind of file :</p>
  <pre>
 fileHandle = fopen(dataFileName, 'r');
 data = fread(fileHandle, 'float32')';       
 fclose(fileHandle);
  </pre>
 
- <p>And below a Python code to read this kind of file using Numpy library :</p>
+ <p>And below a Python code to read this kind of file using numpy library :</p>
  <pre>
  data = numpy.fromfile(dataFileName, dtype="float32");
 </pre>

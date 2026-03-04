@@ -18,4 +18,6 @@
   </topic>
   <topic href="html/advancedconcepts/parametersfileformat.html" label="What is parameters file format ?">
   </topic>
+  <topic href="html/advancedconcepts/createstimulusfile.html" label="How to create stimulus file with Matlab or Python ?">
+  </topic>
  </toc>

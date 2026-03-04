@@ -1,0 +1,36 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"> 
+
+ <html>
+ <head>
+ 	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ 	<title>How to open samples data files with Matlab or Python ?</title>
+ </head>
+
+ <body>
+ <h1>How to create stimulus file with Matlab or Python ?</h1>
+ <p>
+ It's possible to create stimulus file for DOCoMETRe. These files are simply binaries files using IEEE754 floating point standard. 
+ </p>
+ <p>You can find below a Matlab code to create this kind of file :</p>
+ <pre>
+sf = 1000; % Sample frequency in Hz
+duration = 5; % Situmulus duration in sec.
+t = 0:1/sf:duration; % time vector
+signal = 2 + sin(2*pi*5*t); % Stimulus values
+fileHandle = fopen("stimulus.samples", 'w'); % Open stimulus file in write mode
+fwrite(fileHandle, signal, "float32"); % Write stimulus samples
+fclose(fileHandle); % Close stimulus file
+ </pre>
+
+ <p>And below a Python code to create this kind of file using numpy library :</p>
+ <pre>
+import numpy as np
+sf = 1000 # Sample frequency in Hz
+duration = 5 # Situmulus duration in sec.
+t = np.arange(0, duration ,1/sf) # time vector
+signal = 2 + np.sin(2*np.pi*5*t) # Stimulus values
+data = np.array(signal, dtype=np.float32)
+data.tofile("stimulus.samples")
+</pre>
+ </body>
+ </html>
