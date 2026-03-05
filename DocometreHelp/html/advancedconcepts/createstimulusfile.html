@@ -9,7 +9,7 @@
  <body>
  <h1>How to create stimulus file with Matlab or Python ?</h1>
  <p>
- It's possible to create stimulus file for DOCoMETRe. These files are simply binaries files using IEEE754 floating point standard. 
+ It's possible to create stimulus file for DOCoMETRe. These files are simply 32 bits binaries files using IEEE754 floating point standard. 
  </p>
  <p>You can find below a Matlab code to create this kind of file :</p>
  <pre>
@@ -27,7 +27,7 @@ fclose(fileHandle); % Close stimulus file
 import numpy as np
 sf = 1000 # Sample frequency in Hz
 duration = 5 # Situmulus duration in sec.
-t = np.arange(0, duration ,1/sf) # time vector
+t = np.arange(0, duration, 1/sf) # time vector
 signal = 2 + np.sin(2*np.pi*5*t) # Stimulus values
 data = np.array(signal, dtype=np.float32) # Force values to float32 format
 data.tofile("stimulus.samples") # Write data to file
