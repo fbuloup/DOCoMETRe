@@ -349,6 +349,10 @@ public class DataEditor extends EditorPart implements PartNameRefresher, CursorM
 				message = NLS.bind(DocometreMessages.SampleFrequencyDialogMessage, channelNameToFind);
 				Activator.logWarningMessage(message);
 				sf = getSampleFrequencyDialog();
+				if(sf > 0) {
+					message = NLS.bind(DocometreMessages.SampleFrequencyDialogUsed, sf, channelNameToFind);
+					Activator.logWarningMessage(message);
+				}
 			}
 			
 			if(sf == -1) {
