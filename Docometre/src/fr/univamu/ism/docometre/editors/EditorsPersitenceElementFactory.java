@@ -9,7 +9,7 @@ import org.eclipse.ui.IMemento;
 
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
-import fr.univamu.ism.nswtchart.Window;
+import fr.univamu.ism.nrtswtchart.Window;
 
 public class EditorsPersitenceElementFactory implements IElementFactory {
 	

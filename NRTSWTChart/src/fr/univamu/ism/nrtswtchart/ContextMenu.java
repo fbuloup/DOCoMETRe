@@ -1,4 +1,4 @@
-package fr.univamu.ism.nswtchart;
+package fr.univamu.ism.nrtswtchart;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MenuAdapter;
@@ -8,8 +8,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
-
-import fr.univamu.ism.nrtswtchart.RTSWTChartMessages;
 
 public class ContextMenu {
 	
