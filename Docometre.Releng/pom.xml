@@ -94,7 +94,7 @@
 		<module>../Docometre.feature</module>
 		<module>../Docometre.theme</module>
 		<module>../DocometreHelp</module>
-		<module>../JChart2D</module>
+		
 		<module>../JMatIO</module>
 		<module>../JOGL</module>
 		<module>../JSSC</module>
@@ -151,5 +151,7 @@
 		<module>../Docometre.Overview</module>
 		
 		<module>../Docometre.Installation</module>
+		
+		<module>../RTSWTChart</module>
 	</modules>
 </project>

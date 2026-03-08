@@ -2316,4 +2316,8 @@ jurisdiction, by the more diligent Party.
          id="Docometre.Installation"
          version="0.0.0"/>
 
+   <plugin
+         id="RTSWTChart"
+         version="0.0.0"/>
+
 </feature>
