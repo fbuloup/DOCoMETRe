@@ -39,7 +39,7 @@
  * Contributors:
  *  - Frank Buloup - frank.buloup@univ-amu.fr - initial API and implementation [01/06/2024]
  ******************************************************************************/
-package fr.univamu.ism.nrtswtchart;
+package fr.univamu.ism.nswtchart;
 
 import java.awt.geom.Point2D;
 import java.text.DecimalFormat;

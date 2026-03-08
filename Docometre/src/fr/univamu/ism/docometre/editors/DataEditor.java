@@ -90,10 +90,10 @@ import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.ExperimentScheduler;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
-import fr.univamu.ism.nrtswtchart.CursorMarkerListener;
-import fr.univamu.ism.nrtswtchart.Window;
-import fr.univamu.ism.nrtswtchart.XYSWTChart;
-import fr.univamu.ism.nrtswtchart.XYSWTSerie;
+import fr.univamu.ism.nswtchart.CursorMarkerListener;
+import fr.univamu.ism.nswtchart.Window;
+import fr.univamu.ism.nswtchart.XYSWTChart;
+import fr.univamu.ism.nswtchart.XYSWTSerie;
 
 public class DataEditor extends EditorPart implements PartNameRefresher, CursorMarkerListener {
 	

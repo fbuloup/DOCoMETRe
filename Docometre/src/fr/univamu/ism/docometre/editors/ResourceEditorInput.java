@@ -61,7 +61,7 @@ import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.analyse.datamodel.XYChart;
 import fr.univamu.ism.docometre.analyse.datamodel.XYZChart;
-import fr.univamu.ism.nrtswtchart.Window;
+import fr.univamu.ism.nswtchart.Window;
 
 public class ResourceEditorInput implements IEditorInput, IPersistableElement {
 

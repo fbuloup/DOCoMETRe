@@ -1,4 +1,4 @@
-package fr.univamu.ism.nrtswtchart;
+package fr.univamu.ism.nswtchart;
 
 import java.awt.geom.Point2D;
 

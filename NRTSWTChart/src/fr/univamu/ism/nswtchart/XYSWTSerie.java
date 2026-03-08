@@ -39,13 +39,15 @@
  * Contributors:
  *  - Frank Buloup - frank.buloup@univ-amu.fr - initial API and implementation [01/06/2024]
  ******************************************************************************/
-package fr.univamu.ism.nrtswtchart;
+package fr.univamu.ism.nswtchart;
 
 import java.util.ArrayList;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
+
+import fr.univamu.ism.nrtswtchart.RTSWTChartUtils;
 
 public class XYSWTSerie {
 
