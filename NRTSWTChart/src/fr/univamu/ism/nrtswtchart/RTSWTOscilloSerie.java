@@ -75,6 +75,7 @@ public class RTSWTOscilloSerie {
 		this.rtswtChart = rtswtChart;
 		this.title = title;
 		this.color = color;
+		this.thickness = 1;
 		if(title.startsWith(HORIZONTAL_REFERENCE)) {
 			String value = title.split("\\[")[1].replaceAll("\\]", "");
 			yValues = new double[1];

@@ -75,6 +75,7 @@ public class RTSWTXYSerie {
 		this.rtswtChart = rtswtChart;
 		this.title = title;
 		this.color = color;
+		this.thickness = 1;
 	}
 
 	protected Color getColor() {
