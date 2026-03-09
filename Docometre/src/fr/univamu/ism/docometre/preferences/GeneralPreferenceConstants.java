@@ -98,4 +98,6 @@ public class GeneralPreferenceConstants {
 	public static final String WORKSPACE_DIALOG_WIDTH = "WORKSPACE_DIALOG_WIDTH";
 	public static final String WORKSPACE_DIALOG_HEIGHT = "WORKSPACE_DIALOG_HEIGHT";
 	
+	public static final String USE_OPENGL_FOR_RTSWT_CHART = "USE_OPENGL_FOR_RTSWT_CHART";
+	
 }

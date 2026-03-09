@@ -109,6 +109,10 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
 		});
 		addField(showWorkspaceDialogFieldEditor);
 		
+		BooleanFieldEditor useOpenGLForRTSWTChartFiledEditor = new BooleanFieldEditor(GeneralPreferenceConstants.USE_OPENGL_FOR_RTSWT_CHART,
+				DocometreMessages.UseOpenGLForRTSWTChart, getFieldEditorParent());
+		addField(useOpenGLForRTSWTChartFiledEditor);
+		
 		IntegerFieldEditor undoLimitFieldEditor = new IntegerFieldEditor(GeneralPreferenceConstants.PREF_UNDO_LIMIT,
 				DocometreMessages.GeneralPreferences_UndoLimit, getFieldEditorParent());
 		undoLimitFieldEditor.setValidRange(0, 1000);
