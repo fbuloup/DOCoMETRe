@@ -152,6 +152,6 @@
 		
 		<module>../Docometre.Installation</module>
 		
-		<module>../RTSWTChart</module>
+		
 	</modules>
 </project>
