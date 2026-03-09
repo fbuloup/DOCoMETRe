@@ -55,15 +55,26 @@ import org.eclipse.swt.widgets.Shell;
 
 import com.jogamp.opengl.JoglVersion;
 
-public class TestRTSWTXYChart {
+/**
+ * This class can be used as a start point to use the library.  
+ * @author frank buloup
+ */
+public class RTSWTOscilloChartTest {
+	/**
+	 * These two series are displayed in a first chart
+	 */
+	private static RTSWTOscilloSerie serie1;
+	private static RTSWTOscilloSerie serie2;
+	
+	/**
+	 * These two series are displayed in a second chart 
+	 */
+//	private static RTSWTOscilloSerie serie3;
+//	private static RTSWTOscilloSerie serie4;
 	
 	private static Random random = new Random();
-	
-	private static RTSWTXYChart chart;
-	private static RTSWTXYSerie serie1;
-	private static RTSWTXYSerie serie2;
-	
 	private static Shell shell;
+	private static RTSWTOscilloChart rtswtChartOscillo;
 	
 	/**
 	 * This class is responsible to generate random data
@@ -77,31 +88,57 @@ public class TestRTSWTXYChart {
 			int nbSamples = 1+random.nextInt(1000);
 			final Double[] x = new Double[nbSamples];
 			final Double[] y = new Double[nbSamples];
-			double time;
 			for (int i = 0; i < y.length; i++) {
-				time = previousTime + i/1000.0;
-				x[i] = 5*Math.sin(2*Math.PI*0.01*time) + (random.nextDouble() - 0.5)/10;
-				y[i] = 5*Math.sin(2*Math.PI*0.06*time) + (random.nextDouble() - 0.5)/10;
-				x[i] = x[i]*1E200;/* Just to have big big numbers */
+				x[i] = previousTime + i/1000.0;
+				y[i] = 5*Math.sin(2*Math.PI*1*x[i]) + (random.nextDouble() - 0.5)*2;
 				y[i] = y[i]*1E200;/* Just to have big big numbers */
 			}
-			previousTime = previousTime + nbSamples/1000.0;
+			previousTime = x[x.length - 1];
 			serie1.addPoints(x, y);
 			previousTime = saveprevioustime;
 			for (int i = 0; i < y.length; i++) {
-				time = previousTime + i/1000.0;
-				x[i] = 5*Math.sin(2*Math.PI*0.06*time) + (random.nextDouble() - 0.5)/10;
-				y[i] = 5*Math.sin(2*Math.PI*0.06*time + Math.PI/2) + (random.nextDouble() - 0.5)/10;
-				x[i] = x[i]*1E200;/* Just to have big big numbers */
+				x[i] = previousTime + i/1000.0;
+				y[i] = 3*Math.sin(2*Math.PI*1*x[i] + 2*Math.PI/3) + (random.nextDouble() - 0.5)*2;
 				y[i] = y[i]*1E200;/* Just to have big big numbers */
 			}
-			previousTime = previousTime + nbSamples/1000.0;
+			previousTime = x[x.length - 1];
 			serie2.addPoints(x, y);
 		}
 	}
+	
+	/**
+	 * This class is responsible to generate random data
+	 * for series 3 and 4 in the Test class
+	 */
+//	private static class GenerateData2 extends TimerTask {
+//		private double previousTime = 0;
+//		@Override
+//		public void run() {
+//			double saveprevioustime = previousTime;
+//			int nbSamples = 1+random.nextInt(10);
+//			final Double[] x = new Double[nbSamples];
+//			final Double[] y = new Double[nbSamples];
+//			for (int i = 0; i < y.length; i++) {
+//				x[i] = previousTime + i/1000.0;
+//				y[i] = 5*Math.sin(2*Math.PI*1*x[i]) + (random.nextDouble() - 0.5)*2;
+//			}
+//			previousTime = x[x.length - 1];
+//			serie3.addPoints(x, y);
+//			previousTime = saveprevioustime;
+//			for (int i = 0; i < y.length; i++) {
+//				x[i] = previousTime + i/1000.0;
+//				y[i] = 3*Math.sin(2*Math.PI*1*x[i] + 2*Math.PI/3) + (random.nextDouble() - 0.5)*2;
+//			}
+//			previousTime = x[x.length - 1];
+//			serie4.addPoints(x, y);
+//		}
+//	}
 
+	/**
+	 * @param args
+	 */
 	public static void main(String[] args) {
-		
+
 		System.out.println(JoglVersion.getInstance().toString());
 		boolean displayLoop = true;
 		
@@ -125,18 +162,33 @@ public class TestRTSWTXYChart {
 		shell.setLayout(new GridLayout(1,true));
 		
 		/* Create the first chart */
-		chart = new RTSWTXYChart(shell, SWT.NORMAL, RTSWTChartFonts.BITMAP_HELVETICA_10);
-		chart.setAutoScale(true);
-		chart.setWaitForAllSeriesToRedraw(false);
-		chart.setAntialias(SWT.ON);
-		chart.setShowGrid(true);
+		rtswtChartOscillo = new RTSWTOscilloChart(shell, SWT.NORMAL, RTSWTChartFonts.BITMAP_HELVETICA_18);
+		rtswtChartOscillo.setAutoScale(true);
+		rtswtChartOscillo.setWaitForAllSeriesToRedraw(false);
+		rtswtChartOscillo.setAntialias(SWT.ON);
 		//rtswtChartOscillo.setLegendPosition(SWT.BOTTOM);
-		chart.setInterpolation(SWT.HIGH);
-		chart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		chart.setGridLinesColor(display.getSystemColor(SWT.COLOR_DARK_GREEN));
+		rtswtChartOscillo.setInterpolation(SWT.HIGH);
+		rtswtChartOscillo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		rtswtChartOscillo.setGridLinesColor(display.getSystemColor(SWT.COLOR_DARK_GREEN));
 		/* Create two series in this first chart */
-		serie1 = chart.createSerie("serie1", display.getSystemColor(SWT.COLOR_GREEN), SWT.LINE_DASHDOTDOT, 1);
-		serie2 = chart.createSerie("serie2", display.getSystemColor(SWT.COLOR_RED));
+		serie1 = rtswtChartOscillo.createSerie("serie1", display.getSystemColor(SWT.COLOR_GREEN), SWT.LINE_DASHDOTDOT, 4);
+		serie1.setShowCurrentValue(true);
+		serie2 = rtswtChartOscillo.createSerie("serie2", display.getSystemColor(SWT.COLOR_RED));
+		serie2.setShowCurrentValue(true);
+		
+//		/* Create a second chart */
+//		RTSWTOscilloChart rtswtChartOscillo2 = new RTSWTOscilloChart(shell, SWT.NORMAL);
+//		rtswtChartOscillo2.setAutoScale(true);
+//		rtswtChartOscillo2.setWaitForAllSeriesToRedraw(false);
+//		rtswtChartOscillo2.setAntialias(SWT.ON);
+//		//rtswtChartOscillo2.setLegendPosition(SWT.BOTTOM);
+//		rtswtChartOscillo2.setInterpolation(SWT.HIGH);
+////		rtswtChartOscillo2.setBackGroundColor(display.getSystemColor(SWT.COLOR_BLUE));
+//		rtswtChartOscillo2.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+//		rtswtChartOscillo2.setFontColor(display.getSystemColor(SWT.COLOR_RED));
+//		/* Add two series in this second chart */
+//		serie3 = rtswtChartOscillo2.createSerie("serie3", display.getSystemColor(SWT.COLOR_GREEN), SWT.LINE_DASHDOTDOT, 4);
+//		serie4 = rtswtChartOscillo2.createSerie("serie4", display.getSystemColor(SWT.COLOR_RED));
 		
 		/* Open the shell to display charts */
 		shell.open ();
@@ -155,7 +207,7 @@ public class TestRTSWTXYChart {
 				/* Stop timers, dispose display and exit */
 				timer1.cancel();
 //				timer2.cancel();
-				System.out.println(chart.getMeanDrawTime());
+				System.out.println(rtswtChartOscillo.getMeanDrawTime());
 			}
 		});
 		
@@ -166,15 +218,17 @@ public class TestRTSWTXYChart {
 			}
 			display.dispose ();
 		}
-
+		
 	}
-	
+
 	public static Shell getShell() {
 		return shell;
 	}
 	
 	public static String getMeanDrawTime() {
-		return chart.getMeanDrawTime();
+		return rtswtChartOscillo.getMeanDrawTime();
 	}
+	
+	
 
 }

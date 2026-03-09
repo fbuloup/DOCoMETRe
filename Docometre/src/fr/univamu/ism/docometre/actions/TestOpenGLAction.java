@@ -46,7 +46,7 @@ import org.eclipse.swt.events.ShellAdapter;
 import org.eclipse.swt.events.ShellEvent;
 
 import fr.univamu.ism.docometre.Activator;
-import fr.univamu.ism.rtswtchart.TestRTSWTOscilloChart;
+import fr.univamu.ism.rtswtchart.RTSWTOscilloChartTest;
 
 
 public class TestOpenGLAction extends Action {
@@ -62,11 +62,11 @@ public class TestOpenGLAction extends Action {
 	
 	@Override
 	public void run() {
-		TestRTSWTOscilloChart.main(new String[]{"-displayLoop", "false"});
-		TestRTSWTOscilloChart.getShell().addShellListener(new ShellAdapter() {
+		RTSWTOscilloChartTest.main(new String[]{"-displayLoop", "false"});
+		RTSWTOscilloChartTest.getShell().addShellListener(new ShellAdapter() {
 			@Override
 			public void shellClosed(ShellEvent e) {
-				Activator.logInfoMessage(TestRTSWTOscilloChart.getMeanDrawTime(), TestOpenGLAction.class);
+				Activator.logInfoMessage(RTSWTOscilloChartTest.getMeanDrawTime(), TestOpenGLAction.class);
 			}
 		});
 	}
