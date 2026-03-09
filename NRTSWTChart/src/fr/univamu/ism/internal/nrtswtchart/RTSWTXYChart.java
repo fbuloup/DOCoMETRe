@@ -66,13 +66,16 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.PaletteData;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 
-public class RTSWTXYChart extends ControlAdapter implements PaintListener, DisposeListener {
+import fr.univamu.ism.rtswtchart.IRTSWTXYChart;
+
+public class RTSWTXYChart extends ControlAdapter implements PaintListener, DisposeListener, IRTSWTXYChart {
 	
 	private final class MenuListenerHandler extends MenuAdapter {
 		public void menuShown(MenuEvent e) {
@@ -660,6 +663,16 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 		yHeight = seriesImageData.height;
 		e.gc.drawImage(seriesImage, 0, 0, seriesImageData.width, seriesImageData.height, xLeft, yTop, xWidth, yHeight);
 
+	}
+
+	@Override
+	public void setLayoutData(GridData gridData) {
+		chart.setLayoutData(gridData);
+	}
+
+	@Override
+	public GridData getLayoutData() {
+		return (GridData) chart.getLayoutData();
 	}
 
 }

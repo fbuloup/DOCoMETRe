@@ -108,6 +108,12 @@ public class RTSWTXYChart extends RTSWTChart {
 		setInterpolation(interpolation);
 	}
 	
+	public RTSWTXYChart(Composite parent, int style, String fontName, int fontStyle, int fontSize) {
+		// TODO Just call default constructor for now ! 
+		// TODO Must use fontName, fontStyle and fontSize
+		this(parent, style, RTSWTChartFonts.BITMAP_8_BY_13);
+	}
+
 	/**
 	 * Add a new serie to the chart specifying its ID and colour.
 	 * 

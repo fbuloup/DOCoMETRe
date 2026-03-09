@@ -13,6 +13,16 @@ public final class RTSWTChartsFactory {
 		IRTSWTOscilloChart chart = new fr.univamu.ism.internal.rtswtchart.RTSWTOscilloChart(parent, style, fontName, fontStyle, fontSize);
 		return chart;
 	}
+	
+	public static IRTSWTXYChart createPureSWTXYChart(Composite parent, int style, String fontName, int fontStyle, int fontSize) {
+		IRTSWTXYChart chart =  new fr.univamu.ism.internal.nrtswtchart.RTSWTXYChart(parent, style, fontName, fontStyle, fontSize);
+		return chart;
+	}
+	
+	public static IRTSWTXYChart createOpenGLXYChart(Composite parent, int style, String fontName, int fontStyle, int fontSize) {
+		IRTSWTXYChart chart = new fr.univamu.ism.internal.rtswtchart.RTSWTXYChart(parent, style, fontName, fontStyle, fontSize);
+		return chart;
+	}
 
 
 }

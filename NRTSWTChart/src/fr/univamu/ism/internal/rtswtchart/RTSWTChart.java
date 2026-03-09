@@ -70,8 +70,9 @@ import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.util.gl2.GLUT;
 
 import fr.univamu.ism.rtswtchart.IRTSWTOscilloChart;
+import fr.univamu.ism.rtswtchart.IRTSWTXYChart;
 
-public abstract class RTSWTChart extends Composite implements ControlListener, IRTSWTOscilloChart {
+public abstract class RTSWTChart extends Composite implements ControlListener, IRTSWTOscilloChart, IRTSWTXYChart {
 	
 	/**
 	 * Handler for legend position menu : top or bottom
@@ -570,14 +571,14 @@ public abstract class RTSWTChart extends Composite implements ControlListener, I
 	/**
 	 * Set the minimum amplitude value.
 	 */
-	protected void setxMin(double xMin) {
+	public void setxMin(double xMin) {
 		this.xMin = xMin;
 	}
 
 	/**
 	 * Set the maximum amplitude value.
 	 */
-	protected void setxMax(double xMax) {
+	public void setxMax(double xMax) {
 		this.xMax = xMax;
 	}
 	
@@ -910,5 +911,11 @@ public abstract class RTSWTChart extends Composite implements ControlListener, I
 	@Override
 	public GridData getLayoutData() {
 		return (GridData) super.getLayoutData();
+	}
+	
+	@Override
+	public void setHistorySize(double historySize) {
+		// TODO add support for history size
+		
 	}
 }
