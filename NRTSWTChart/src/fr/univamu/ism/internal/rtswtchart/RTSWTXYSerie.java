@@ -39,7 +39,7 @@
  * Contributors:
  *  - Frank Buloup - frank.buloup@univ-amu.fr - initial API and implementation [25/03/2020]
  ******************************************************************************/
-package fr.univamu.ism.rtswtchart;
+package fr.univamu.ism.internal.rtswtchart;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -107,8 +107,8 @@ public class RTSWTXYSerie extends RTSWTSerie {
 				
 				if(y_XYValues == null || x_XYValues == null) reset();
 				
-				if(x.length == 0) y_XYValues_Buffer.addAll(Arrays.asList(y));
-				if(y.length == 0) x_XYValues_Buffer.addAll(Arrays.asList(x));
+				if(x.length != 0) y_XYValues_Buffer.addAll(Arrays.asList(y));
+				if(y.length != 0) x_XYValues_Buffer.addAll(Arrays.asList(x));
 				
 				if(y_XYValues_Buffer.size() == 0 || x_XYValues_Buffer.size() == 0) return;
 				
@@ -136,8 +136,6 @@ public class RTSWTXYSerie extends RTSWTSerie {
 						setModified(true);
 					}
 				}
-				
-				
 				
 				chart.render();
 			}

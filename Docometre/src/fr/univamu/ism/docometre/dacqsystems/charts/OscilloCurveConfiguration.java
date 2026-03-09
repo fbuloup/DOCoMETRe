@@ -50,7 +50,8 @@ import fr.univamu.ism.docometre.dacqsystems.ChannelObserver;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.Property;
 import fr.univamu.ism.docometre.dacqsystems.PropertyObserver;
-import fr.univamu.ism.nrtswtchart.RTSWTOscilloSerie;
+import fr.univamu.ism.internal.nrtswtchart.RTSWTOscilloSerie;
+import fr.univamu.ism.rtswtchart.IRTSWTSerie;
 
 public class OscilloCurveConfiguration extends CurveConfiguration implements PropertyObserver, ChannelObserver, OneChannelCurve {
 
@@ -58,7 +59,7 @@ public class OscilloCurveConfiguration extends CurveConfiguration implements Pro
 	
 	private Channel channel;
 	
-	transient private RTSWTOscilloSerie serie;
+	transient private IRTSWTSerie serie;
 	transient double sampleFrequency;
 	transient private double previousTime = 0;
 
@@ -118,7 +119,7 @@ public class OscilloCurveConfiguration extends CurveConfiguration implements Pro
 		return object == channel;
 	}
 
-	public void setSerie(RTSWTOscilloSerie serie) {
+	public void setSerie(IRTSWTSerie serie) {
 		this.serie = serie;
 		previousTime = 0;
 	}

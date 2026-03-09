@@ -39,12 +39,14 @@
  * Contributors:
  *  - Frank Buloup - frank.buloup@univ-amu.fr - initial API and implementation [25/03/2020]
  ******************************************************************************/
-package fr.univamu.ism.rtswtchart;
+package fr.univamu.ism.internal.rtswtchart;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 
-public abstract class RTSWTSerie {
+import fr.univamu.ism.rtswtchart.IRTSWTSerie;
+
+public abstract class RTSWTSerie implements IRTSWTSerie {
 	
 	public static final String HORIZONTAL_REFERENCE = "Horizontal Reference";
 	
@@ -181,4 +183,14 @@ public abstract class RTSWTSerie {
 	}
 
 	protected abstract void reset();
+	
+	@Override
+	public void setThickness(int thickness) {
+		this.lineWidth = thickness;
+	}
+	
+	@Override
+	public void setDisplayCurrentValue(boolean displayCurrentValues) {
+		this.showCurrentValue = displayCurrentValues;
+	}
 }

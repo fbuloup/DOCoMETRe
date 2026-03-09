@@ -66,9 +66,9 @@ import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyHandler;
 import fr.univamu.ism.docometre.dacqsystems.Property;
 import fr.univamu.ism.docometre.editors.ResourceEditor;
-import fr.univamu.ism.nrtswtchart.RTSWTXYChart;
-import fr.univamu.ism.nrtswtchart.RTSWTXYSerie;
 import fr.univamu.ism.docometre.editors.ModulePage.ModuleSectionPart;
+import fr.univamu.ism.internal.nrtswtchart.RTSWTXYChart;
+import fr.univamu.ism.internal.nrtswtchart.RTSWTXYSerie;
 
 public class XYChartConfiguration extends ChartConfiguration {
 

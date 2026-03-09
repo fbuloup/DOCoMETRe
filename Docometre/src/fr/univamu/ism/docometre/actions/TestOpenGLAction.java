@@ -46,7 +46,7 @@ import org.eclipse.swt.events.ShellAdapter;
 import org.eclipse.swt.events.ShellEvent;
 
 import fr.univamu.ism.docometre.Activator;
-import fr.univamu.ism.rtswtchart.RTSWTOscilloChartTest;
+import fr.univamu.ism.rtswtchart.tests.RTSWTOscilloChartTest;
 
 
 public class TestOpenGLAction extends Action {

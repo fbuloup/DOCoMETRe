@@ -39,7 +39,7 @@
  * Contributors:
  *  - Frank Buloup - frank.buloup@univ-amu.fr - initial API and implementation [25/03/2020]
  ******************************************************************************/
-package fr.univamu.ism.rtswtchart;
+package fr.univamu.ism.internal.rtswtchart;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -315,6 +315,12 @@ public class RTSWTXYChart extends RTSWTChart {
 			max = Math.max(serie.getxMaxHeight(), max);
 		}
 		return max;
+	}
+
+	@Override
+	public void setWindowTimeWidth(double value) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

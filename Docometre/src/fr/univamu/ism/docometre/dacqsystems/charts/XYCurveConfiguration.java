@@ -50,7 +50,7 @@ import fr.univamu.ism.docometre.dacqsystems.ChannelObserver;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.Property;
 import fr.univamu.ism.docometre.dacqsystems.PropertyObserver;
-import fr.univamu.ism.nrtswtchart.RTSWTXYSerie;
+import fr.univamu.ism.internal.nrtswtchart.RTSWTXYSerie;
 
 public class XYCurveConfiguration extends CurveConfiguration implements PropertyObserver, ChannelObserver  {
 

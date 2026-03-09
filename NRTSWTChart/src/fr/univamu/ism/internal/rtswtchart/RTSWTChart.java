@@ -39,7 +39,7 @@
  * Contributors:
  *  - Frank Buloup - frank.buloup@univ-amu.fr - initial API and implementation [25/03/2020]
  ******************************************************************************/
-package fr.univamu.ism.rtswtchart;
+package fr.univamu.ism.internal.rtswtchart;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -55,6 +55,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.opengl.GLCanvas;
 import org.eclipse.swt.opengl.GLData;
 import org.eclipse.swt.widgets.Composite;
@@ -68,7 +69,9 @@ import com.jogamp.opengl.GLDrawableFactory;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.util.gl2.GLUT;
 
-public abstract class RTSWTChart extends Composite implements ControlListener {
+import fr.univamu.ism.rtswtchart.IRTSWTOscilloChart;
+
+public abstract class RTSWTChart extends Composite implements ControlListener, IRTSWTOscilloChart {
 	
 	/**
 	 * Handler for legend position menu : top or bottom
@@ -263,6 +266,8 @@ public abstract class RTSWTChart extends Composite implements ControlListener {
 	 * Ten is default max amplitude value
 	 */
 	private double xMax = 10;
+	
+	protected boolean showCurrentValue;
 
 	public RTSWTChart(Composite parent, int style, RTSWTChartFonts font) {
 		super(parent, style);
@@ -533,14 +538,14 @@ public abstract class RTSWTChart extends Composite implements ControlListener {
 	/**
 	 * Set the minimum amplitude value.
 	 */
-	protected void setyMin(double yMin) {
+	public void setyMin(double yMin) {
 		this.yMin = yMin;
 	}
 
 	/**
 	 * Set the maximum amplitude value.
 	 */
-	protected void setyMax(double yMax) {
+	public void setyMax(double yMax) {
 		this.yMax = yMax;
 	}
 	
@@ -886,4 +891,24 @@ public abstract class RTSWTChart extends Composite implements ControlListener {
 	protected abstract void drawBottomAxis();
 	protected abstract void drawSeries();
 	
+	
+	@Override
+	public void setLayoutData(GridData gridData) {
+		super.setLayoutData(gridData);
+	}
+	
+	@Override
+	public void setGridVisibility(boolean value) {
+		this.showGrid = value;
+	}
+	
+	@Override
+	public void setShowCurrentValue(boolean value) {
+		showCurrentValue = value;
+	}
+	
+	@Override
+	public GridData getLayoutData() {
+		return (GridData) super.getLayoutData();
+	}
 }
