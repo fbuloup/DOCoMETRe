@@ -162,7 +162,7 @@ public class RTSWTOscilloChartTest {
 		if(display == null) display = new Display();
 		shell = new Shell (display);
 		shell.setMaximized(true);
-		shell.setText("OpenGL RTSWT Test");
+		shell.setText("OpenGL RTSWT Oscillo Test");
 		shell.setLayout(new GridLayout(1,true));
 		
 		/* Create the first chart */

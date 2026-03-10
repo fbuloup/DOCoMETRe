@@ -835,7 +835,7 @@ public abstract class RTSWTChart extends Composite implements ControlListener, I
 	        sum += drawTimes[i];
 	    }
 	    double finalValue = sum / 1000000f;
-	    return Double.toString(finalValue) + "ms for " + drawTimes.length + " graph update. Mean time per graph update : " + (finalValue/(drawTimes.length)) + "ms";
+	    return Double.toString(finalValue) + "ms for " + drawTimes.length + " graph update (OpenGL). Mean time per graph update : " + (finalValue/(drawTimes.length)) + "ms";
 	}
 	
 	/**

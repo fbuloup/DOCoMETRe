@@ -47,7 +47,7 @@ import org.eclipse.swt.events.ShellEvent;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.rtswtchart.tests.RTSWTOscilloChartTest;
-
+import fr.univamu.ism.rtswtchart.tests.RTSWTXYChartTest;
 
 public class TestOpenGLAction extends Action {
 	
@@ -69,6 +69,16 @@ public class TestOpenGLAction extends Action {
 				Activator.logInfoMessage(RTSWTOscilloChartTest.getMeanDrawTime(), TestOpenGLAction.class);
 			}
 		});
+		RTSWTOscilloChartTest.getShell().setBounds(0, 0, 640, 480);
+		
+		RTSWTXYChartTest.main(new String[]{"-displayLoop", "false"});
+		RTSWTXYChartTest.getShell().addShellListener(new ShellAdapter() {
+			@Override
+			public void shellClosed(ShellEvent e) {
+				Activator.logInfoMessage(RTSWTXYChartTest.getMeanDrawTime(), TestOpenGLAction.class);
+			}
+		});
+		RTSWTXYChartTest.getShell().setBounds(640, 0, 640, 480);
 	}
 	
 }

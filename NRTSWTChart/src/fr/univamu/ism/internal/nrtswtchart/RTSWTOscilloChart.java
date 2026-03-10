@@ -396,7 +396,7 @@ public class RTSWTOscilloChart extends ControlAdapter implements PaintListener, 
 	        sum += drawTimes[i];
 	    }
 	    double finalValue = sum / 1000000f;
-	    return Double.toString(finalValue) + "ms for " + drawTimes.length + " graph update. Mean time per graph update : " + (finalValue/(drawTimes.length)) + "ms";
+	    return Double.toString(finalValue) + "ms for " + drawTimes.length + " graph update (SWT only). Mean time per graph update : " + (finalValue/(drawTimes.length)) + "ms";
 	}
 
 	@Override

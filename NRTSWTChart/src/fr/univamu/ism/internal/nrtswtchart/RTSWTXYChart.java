@@ -427,7 +427,7 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 	        sum += drawTimes[i];
 	    }
 	    double finalValue = sum / 1000000f;
-	    return Double.toString(finalValue) + "ms for " + drawTimes.length + " graph update. Mean time per graph update : " + (finalValue/(drawTimes.length)) + "ms";
+	    return Double.toString(finalValue) + "ms for " + drawTimes.length + " graph update (SWT only). Mean time per graph update : " + (finalValue/(drawTimes.length)) + "ms";
 	}
 
 	@Override
