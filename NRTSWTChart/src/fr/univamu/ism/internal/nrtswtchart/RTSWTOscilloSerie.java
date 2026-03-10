@@ -101,7 +101,7 @@ public class RTSWTOscilloSerie implements IRTSWTSerie {
 		return color;
 	}
 
-	protected String getTitle() {
+	public String getId() {
 		return title;
 	}
 

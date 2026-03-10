@@ -325,8 +325,12 @@ public class RTSWTXYChart extends RTSWTChart {
 
 	@Override
 	public void setWindowTimeWidth(double value) {
-		// TODO Auto-generated method stub
-		
+		// TODO Nothing ! sampleFrequency is used For XY chart
+	}
+
+	@Override
+	public void setSampleFrequency(double sfx) {
+		// TODO Add this feature to XY OpenGL chart (see SWT Only XY Chart)
 	}
 
 }

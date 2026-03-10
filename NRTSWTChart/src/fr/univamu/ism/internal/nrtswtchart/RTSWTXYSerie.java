@@ -47,7 +47,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 
-public class RTSWTXYSerie {
+import fr.univamu.ism.rtswtchart.IRTSWTSerie;
+
+public class RTSWTXYSerie implements IRTSWTSerie {
 	
 	private double[] xValues;
 	private double[] yValues;
@@ -65,7 +67,7 @@ public class RTSWTXYSerie {
 	private String title;
 	private Color color;
 	private int thickness;
-
+	
 	protected RTSWTXYSerie(RTSWTXYChart rtswtChart, String title, Color color) {
 		if(rtswtChart == null) SWT.error(SWT.ERROR_NULL_ARGUMENT);
 		if(title == null) SWT.error(SWT.ERROR_NULL_ARGUMENT);
@@ -82,7 +84,7 @@ public class RTSWTXYSerie {
 		return color;
 	}
 
-	protected String getTitle() {
+	public String getId() {
 		return title;
 	}
 	
@@ -209,5 +211,10 @@ public class RTSWTXYSerie {
 		int[] pointsInt = new int[pointsArray.size()];
 		for (int i = 0; i < pointsInt.length; i++) pointsInt[i] = pointsArray.get(i);
 		return pointsInt;
+	}
+
+	@Override
+	public void setDisplayCurrentValue(boolean displayCurrentValues) {
+		System.out.println("Impossible to display current value in XY Charts !");
 	}
 }

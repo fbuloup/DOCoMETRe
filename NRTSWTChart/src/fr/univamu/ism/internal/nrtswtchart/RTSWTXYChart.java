@@ -520,15 +520,15 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 		int totalLength = 0;
 		for (int i = 0; i < rtswtSeries.size(); i++) {
 			RTSWTXYSerie rtswtSerie = rtswtSeries.get(i);
-			String title = rtswtSerie.getTitle(); 
-			title = rtswtSerie.getTitle() + " -- ";
+			String title = rtswtSerie.getId(); 
+			title = rtswtSerie.getId() + " -- ";
 			totalLength += gc.textExtent(title).x;
 		}
 		int lastValueStringLength = 0;
 		for (int i = 0; i < rtswtSeries.size(); i++) {
 			RTSWTXYSerie rtswtSerie = rtswtSeries.get(i);
-			String title = rtswtSerie.getTitle();
-			title = rtswtSerie.getTitle() + " -- ";
+			String title = rtswtSerie.getId();
+			title = rtswtSerie.getId() + " -- ";
 			Color color  = rtswtSerie.getColor();
 			int valueStringLength = gc.textExtent(title).x;
 			int xPosition = legendImageData.width / 2 - totalLength / 2 + lastValueStringLength;

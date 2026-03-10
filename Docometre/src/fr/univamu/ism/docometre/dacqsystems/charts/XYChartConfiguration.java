@@ -67,8 +67,10 @@ import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyHandler;
 import fr.univamu.ism.docometre.dacqsystems.Property;
 import fr.univamu.ism.docometre.editors.ResourceEditor;
 import fr.univamu.ism.docometre.editors.ModulePage.ModuleSectionPart;
-import fr.univamu.ism.internal.nrtswtchart.RTSWTXYChart;
-import fr.univamu.ism.internal.nrtswtchart.RTSWTXYSerie;
+import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
+import fr.univamu.ism.rtswtchart.IRTSWTSerie;
+import fr.univamu.ism.rtswtchart.IRTSWTXYChart;
+import fr.univamu.ism.rtswtchart.RTSWTChartsFactory;
 
 public class XYChartConfiguration extends ChartConfiguration {
 
@@ -274,8 +276,11 @@ public class XYChartConfiguration extends ChartConfiguration {
 		double historySize = Double.parseDouble(value);
 		Color chartColor = ChartConfigurationProperties.getColor(this, ChartConfigurationProperties.COLOR);
 		
-		RTSWTXYChart rtswtxyChart = new RTSWTXYChart(chartContainer, SWT.DOUBLE_BUFFERED, fontName, fontStyle, fontSize);
-		rtswtxyChart.getChart().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, hSpan, vSpan));
+		IRTSWTXYChart rtswtxyChart = null;
+		boolean useOpenGL = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_OPENGL_FOR_RTSWT_CHART);
+		if(useOpenGL) rtswtxyChart = RTSWTChartsFactory.createOpenGLXYChart(chartContainer, SWT.DOUBLE_BUFFERED, fontName, fontStyle, fontSize);
+		else rtswtxyChart = RTSWTChartsFactory.createPureSWTXYChart(chartContainer, SWT.DOUBLE_BUFFERED, fontName, fontStyle, fontSize);;
+		rtswtxyChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, hSpan, vSpan));
 		rtswtxyChart.setAutoScale(autoscale);
 		rtswtxyChart.setxMax(xMax);
 		rtswtxyChart.setxMin(xMin);
@@ -287,6 +292,7 @@ public class XYChartConfiguration extends ChartConfiguration {
 		rtswtxyChart.setHistorySize(historySize);
 		rtswtxyChart.setGridLinesColor(chartColor);
 		rtswtxyChart.setFontColor(chartColor);
+		rtswtxyChart.setWaitForAllSeriesToRedraw(true);
 		
 		// Create curves
 		for (CurveConfiguration curveConfiguration : curvesConfigurations) {
@@ -320,7 +326,7 @@ public class XYChartConfiguration extends ChartConfiguration {
 	
 			double sfx = Double.parseDouble(sfxString);
 			rtswtxyChart.setSampleFrequency(sfx);
-			RTSWTXYSerie rtswtSerie = rtswtxyChart.createSerie(ySerieID + "(" + xSerieID + ")", serieColor);
+			IRTSWTSerie rtswtSerie = rtswtxyChart.createSerie(ySerieID + "(" + xSerieID + ")", serieColor);
 			rtswtSerie.setThickness(thickness);
 			xyCurveConfiguration.setSerie(rtswtSerie);
 		}

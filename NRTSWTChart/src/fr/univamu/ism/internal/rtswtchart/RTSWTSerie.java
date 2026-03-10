@@ -190,7 +190,7 @@ public abstract class RTSWTSerie implements IRTSWTSerie {
 	}
 	
 	@Override
-	public void setDisplayCurrentValue(boolean displayCurrentValues) {
-		this.showCurrentValue = displayCurrentValues;
+	public void setDisplayCurrentValue(boolean displayCurrentValue) {
+		this.showCurrentValue = displayCurrentValue;
 	}
 }

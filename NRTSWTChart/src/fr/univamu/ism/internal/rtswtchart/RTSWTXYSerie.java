@@ -102,7 +102,7 @@ public class RTSWTXYSerie extends RTSWTSerie {
 		Display.getDefault().syncExec(new Runnable() {
 			@Override
 			public void run() {
-				
+
 				if(chart.isDisposed()) return;
 				
 				if(y_XYValues == null || x_XYValues == null) reset();
@@ -134,6 +134,7 @@ public class RTSWTXYSerie extends RTSWTSerie {
 					if(addPoint) {
 						addValue(xBuffer[i], yBuffer[i], nbPixelsX, nbPixelsY);
 						setModified(true);
+						System.out.println("Modified : " + getId());
 					}
 				}
 				
@@ -192,7 +193,7 @@ public class RTSWTXYSerie extends RTSWTSerie {
 	 * Return an array containing points in pixels coordinates to draw. 
 	 * @return an int array of point
 	 */
-	public int[] getPointsArrayToDraw() {
+	protected int[] getPointsArrayToDraw() {
 		double xMin = chart.getxMin();
 		double yMin = chart.getyMin();
 		double dx = chart.getDx();

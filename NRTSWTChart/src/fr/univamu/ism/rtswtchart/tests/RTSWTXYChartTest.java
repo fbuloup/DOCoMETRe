@@ -55,17 +55,18 @@ import org.eclipse.swt.widgets.Shell;
 
 import com.jogamp.opengl.JoglVersion;
 
-import fr.univamu.ism.internal.rtswtchart.RTSWTChartFonts;
 import fr.univamu.ism.internal.rtswtchart.RTSWTXYChart;
-import fr.univamu.ism.internal.rtswtchart.RTSWTXYSerie;
+import fr.univamu.ism.rtswtchart.IRTSWTSerie;
+import fr.univamu.ism.rtswtchart.IRTSWTXYChart;
+import fr.univamu.ism.rtswtchart.RTSWTChartsFactory;
 
 public class RTSWTXYChartTest {
 	
 	private static Random random = new Random();
 	
-	private static RTSWTXYChart chart;
-	private static RTSWTXYSerie serie1;
-	private static RTSWTXYSerie serie2;
+	private static IRTSWTXYChart chart;
+	private static IRTSWTSerie serie1;
+	private static IRTSWTSerie serie2;
 	
 	private static Shell shell;
 	
@@ -129,17 +130,17 @@ public class RTSWTXYChartTest {
 		shell.setLayout(new GridLayout(1,true));
 		
 		/* Create the first chart */
-		chart = new RTSWTXYChart(shell, SWT.NORMAL, RTSWTChartFonts.BITMAP_HELVETICA_10);
+		chart = RTSWTChartsFactory.createOpenGLXYChart(shell, SWT.DOUBLE_BUFFERED, "arial", SWT.BOLD, 10); //(shell, SWT.NORMAL, RTSWTChartFonts.BITMAP_HELVETICA_10);
 		chart.setAutoScale(true);
-		chart.setWaitForAllSeriesToRedraw(false);
-		chart.setAntialias(SWT.ON);
-		chart.setShowGrid(true);
+		chart.setWaitForAllSeriesToRedraw(true);
+		((RTSWTXYChart)chart).setAntialias(SWT.ON);
+		chart.setGridVisibility(true);
 		//rtswtChartOscillo.setLegendPosition(SWT.BOTTOM);
-		chart.setInterpolation(SWT.HIGH);
+		((RTSWTXYChart)chart).setInterpolation(SWT.HIGH);
 		chart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		chart.setGridLinesColor(display.getSystemColor(SWT.COLOR_DARK_GREEN));
 		/* Create two series in this first chart */
-		serie1 = chart.createSerie("serie1", display.getSystemColor(SWT.COLOR_GREEN), SWT.LINE_DASHDOTDOT, 1);
+		serie1 = ((RTSWTXYChart)chart).createSerie("serie1", display.getSystemColor(SWT.COLOR_GREEN), SWT.LINE_DASHDOTDOT, 1);
 		serie2 = chart.createSerie("serie2", display.getSystemColor(SWT.COLOR_RED));
 		
 		/* Open the shell to display charts */

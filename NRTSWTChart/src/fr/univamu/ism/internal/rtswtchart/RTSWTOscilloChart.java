@@ -477,4 +477,9 @@ public final class RTSWTOscilloChart extends RTSWTChart {
 		
 	}
 
+	@Override
+	public void setSampleFrequency(double sfx) {
+		// TODO Nothing ! windowTimeWidth is used For Oscilo chart
+	}
+
 }

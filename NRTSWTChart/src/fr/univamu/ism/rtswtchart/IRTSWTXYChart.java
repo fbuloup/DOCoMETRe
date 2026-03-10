@@ -17,4 +17,13 @@ public interface IRTSWTXYChart {
 	public void setGridLinesColor(Color color);
 	public void setFontColor(Color color);
 	public void setHistorySize(double historySize);
+	public void setSampleFrequency(double sfx);
+	public void setWaitForAllSeriesToRedraw(boolean wait);
+//	public void setAntialias(int antialias);// SWT.ON or OFF
+//	public void setInterpolation(int interpolation); // SWT.HIGH or LOW
+	public String getMeanDrawTime();
+
+	public IRTSWTSerie createSerie(String serieId, Color color);
+//	public IRTSWTSerie createSerie(String id, Color serieColor, int serieStyle);
+//	public IRTSWTSerie createSerie(String id, Color serieColor, int serieStyle, int serieWidth);
 }

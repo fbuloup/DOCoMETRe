@@ -490,16 +490,16 @@ public class RTSWTOscilloChart extends ControlAdapter implements PaintListener, 
 		for (int i = 0; i < rtswtSeries.size(); i++) {
 			RTSWTOscilloSerie rtswtSerie = rtswtSeries.get(i);
 			if(rtswtSerie.isHorizontalReference()) continue;
-			String title = rtswtSerie.getTitle(); 
-			title = rtswtSerie.getTitle() + " -- ";
+			String title = rtswtSerie.getId(); 
+			title = rtswtSerie.getId() + " -- ";
 			totalLength += gc.textExtent(title).x;
 		}
 		int lastValueStringLength = 0;
 		for (int i = 0; i < rtswtSeries.size(); i++) {
 			RTSWTOscilloSerie rtswtSerie = rtswtSeries.get(i);
 			if(rtswtSerie.isHorizontalReference()) continue;
-			String title = rtswtSerie.getTitle();
-			title = rtswtSerie.getTitle() + " -- ";
+			String title = rtswtSerie.getId();
+			title = rtswtSerie.getId() + " -- ";
 			Color color  = rtswtSerie.getColor();
 			int valueStringLength = gc.textExtent(title).x;
 			int xPosition = legendImageData.width / 2 - totalLength / 2 + lastValueStringLength;

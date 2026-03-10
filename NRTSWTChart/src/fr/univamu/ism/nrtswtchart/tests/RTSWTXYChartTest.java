@@ -130,7 +130,7 @@ public class RTSWTXYChartTest {
 		chart.setGridVisibility(true);
 		chart.setLegendPosition(SWT.BOTTOM);
 		chart.setLegendVisibility(false);
-		chart.setHistorySize(1);
+		chart.setHistorySize(10);
 		chart.setSampleFrequency(1000);
 		/* Create two series in this first chart */
 		serie1 = chart.createSerie("serie1", display.getSystemColor(SWT.COLOR_GREEN));

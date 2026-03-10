@@ -289,9 +289,9 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 		int fontSize = Integer.parseInt(value);
 		Color chartColor = ChartConfigurationProperties.getColor(this, ChartConfigurationProperties.COLOR);
 		
-		IRTSWTOscilloChart rtswtOscilloChart = null;
+		IRTSWTOscilloChart rtswtOscilloChart;
 		boolean useOpenGL = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_OPENGL_FOR_RTSWT_CHART);
-		if(useOpenGL) RTSWTChartsFactory.createOpenGLOscilloChart(chartContainer, SWT.DOUBLE_BUFFERED, fontName, fontStyle, fontSize);
+		if(useOpenGL) rtswtOscilloChart = RTSWTChartsFactory.createOpenGLOscilloChart(chartContainer, SWT.DOUBLE_BUFFERED, fontName, fontStyle, fontSize);
 		else rtswtOscilloChart = RTSWTChartsFactory.createPureSWTOscilloChart(chartContainer, SWT.DOUBLE_BUFFERED, fontName, fontStyle, fontSize);
 		
 		rtswtOscilloChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, hSpan, vSpan));
