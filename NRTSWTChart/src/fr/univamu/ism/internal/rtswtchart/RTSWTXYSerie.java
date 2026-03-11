@@ -134,7 +134,6 @@ public class RTSWTXYSerie extends RTSWTSerie {
 					if(addPoint) {
 						addValue(xBuffer[i], yBuffer[i], nbPixelsX, nbPixelsY);
 						setModified(true);
-						System.out.println("Modified : " + getId());
 					}
 				}
 				
