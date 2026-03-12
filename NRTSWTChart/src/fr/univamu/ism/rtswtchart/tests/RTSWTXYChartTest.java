@@ -139,6 +139,8 @@ public class RTSWTXYChartTest {
 		((RTSWTXYChart)chart).setInterpolation(SWT.HIGH);
 		chart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		chart.setGridLinesColor(display.getSystemColor(SWT.COLOR_DARK_GREEN));
+		chart.setHistorySize(10);
+		chart.setSampleFrequency(1000);
 		/* Create two series in this first chart */
 		serie1 = ((RTSWTXYChart)chart).createSerie("serie1", display.getSystemColor(SWT.COLOR_GREEN), SWT.LINE_DASHDOTDOT, 1);
 		serie2 = chart.createSerie("serie2", display.getSystemColor(SWT.COLOR_RED));
@@ -148,7 +150,7 @@ public class RTSWTXYChartTest {
 		
 		/* Run first timer to generate random data for the first two series */
 		Timer timer1 = new Timer();
-		timer1.schedule(new GenerateData(), 100, 10);
+		timer1.schedule(new GenerateData(), 100, 30);
 		
 		/* Run second timer to generate random data for the second two series */
 //		Timer timer2 = new Timer();

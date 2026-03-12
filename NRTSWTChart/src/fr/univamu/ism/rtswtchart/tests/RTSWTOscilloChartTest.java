@@ -55,9 +55,9 @@ import org.eclipse.swt.widgets.Shell;
 
 import com.jogamp.opengl.JoglVersion;
 
-import fr.univamu.ism.internal.rtswtchart.RTSWTChartFonts;
 import fr.univamu.ism.internal.rtswtchart.RTSWTOscilloChart;
 import fr.univamu.ism.rtswtchart.IRTSWTSerie;
+import fr.univamu.ism.rtswtchart.RTSWTChartFonts;
 
 /**
  * This class can be used as a start point to use the library.  

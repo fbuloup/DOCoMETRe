@@ -48,6 +48,7 @@ import org.eclipse.swt.widgets.Composite;
 import com.jogamp.opengl.GL2;
 
 import fr.univamu.ism.rtswtchart.IRTSWTSerie;
+import fr.univamu.ism.rtswtchart.RTSWTChartFonts;
 
 
 /**
@@ -260,7 +261,7 @@ public final class RTSWTOscilloChart extends RTSWTChart {
 	public RTSWTOscilloChart(Composite parent, int style, String fontName, int fontStyle, int fontSize) {
 		// TODO Just call default constructor for now ! 
 		// TODO Must use fontName, fontStyle and fontSize
-		this(parent, style, RTSWTChartFonts.BITMAP_8_BY_13);
+		this(parent, style, RTSWTChartFonts.getFont(fontName));
 	}
 
 	/**
@@ -474,7 +475,11 @@ public final class RTSWTOscilloChart extends RTSWTChart {
 	@Override
 	public void setWindowTimeWidth(double value) {
 		windowTimeWidth = value;
-		
+	}
+	
+	@Override
+	public void setHistorySize(double historySize) {
+		this.windowTimeWidth = historySize;
 	}
 
 	@Override

@@ -45,6 +45,7 @@ import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.jface.preference.IntegerFieldEditor;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -185,7 +186,7 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
 			public void widgetSelected(SelectionEvent e) {
 				redirectFile.setEnabled(redirectOption.getBooleanValue(), redirectOutErrOptionsGroup); 
 				if(!redirectOption.getBooleanValue()) {
-					setErrorMessage(null);
+					//setErrorMessage(null);
 				}
 				else {
 					String value = redirectFile.getStringValue();
@@ -235,5 +236,20 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
 			}
 		}
 		return returnValue;
+	}
+	
+	@Override
+	public void propertyChange(PropertyChangeEvent event) {
+		super.propertyChange(event);
+		if(event.getSource() instanceof BooleanFieldEditor) {
+			BooleanFieldEditor booleanFieldEditor = (BooleanFieldEditor) event.getSource();
+			if(GeneralPreferenceConstants.USE_OPENGL_FOR_RTSWT_CHART.equals(booleanFieldEditor.getPreferenceName())) {
+				setErrorMessage(DocometreMessages.RestartToApplyChanges);
+				
+			}
+			if(GeneralPreferenceConstants.REDIRECT_STD_ERR_OUT_TO_FILE.equals(booleanFieldEditor.getPreferenceName())) {
+				setErrorMessage(DocometreMessages.RestartToApplyChanges);
+			}
+		}
 	}
 }

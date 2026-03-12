@@ -146,6 +146,7 @@ public class XYChartConfiguration extends ChartConfiguration {
 			}
 		});
 		
+		boolean useOpenGL = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_OPENGL_FOR_RTSWT_CHART);
 		page.createLabel(container, DocometreMessages.Font_Title, DocometreMessages.Font_Tooltip);
 		value = getProperty(XYChartConfigurationProperties.FONT);
 		value = value==null?FontUtil.getDefaultFontName():value;
@@ -158,17 +159,20 @@ public class XYChartConfiguration extends ChartConfiguration {
 		fontBoldButton = page.createButton(container, "Bold", SWT.CHECK, 1, 1);
 		fontBoldButton.setSelection(fontBold);
 		fontBoldButton.addSelectionListener(new ModifyPropertyHandler(XYChartConfigurationProperties.FONT_BOLD, this, fontBoldButton, XYChartConfigurationProperties.FONT_BOLD.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		fontBoldButton.setEnabled(!useOpenGL);
 		
 		value = getProperty(XYChartConfigurationProperties.FONT_ITALIC);
 		boolean fontItalic = Boolean.valueOf(value);
 		fontItalicButton = page.createButton(container, "Italic", SWT.CHECK, 1, 1);
 		fontItalicButton.setSelection(fontItalic);
 		fontItalicButton.addSelectionListener(new ModifyPropertyHandler(XYChartConfigurationProperties.FONT_ITALIC, this, fontItalicButton, XYChartConfigurationProperties.FONT_ITALIC.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		fontItalicButton.setEnabled(!useOpenGL);
 		
 		page.createLabel(container, DocometreMessages.Size_Title, DocometreMessages.Size_Tooltip);
 		fontSizeText = page.createText(container, getProperty(XYChartConfigurationProperties.FONT_SIZE), SWT.NONE, 1, 1);
 		fontSizeText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		fontSizeText.addModifyListener(new ModifyPropertyHandler(XYChartConfigurationProperties.FONT_SIZE, this, fontSizeText, XYChartConfigurationProperties.FONT_SIZE.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		fontSizeText.setEnabled(!useOpenGL);
 		
 		Color chartColor = ChartConfigurationProperties.getColor(this, ChartConfigurationProperties.COLOR);
 		chartColorButton = page.createColorDialogButton(container, "...", SWT.PUSH | SWT.FLAT, 1, 1);

@@ -96,6 +96,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				System.out.println("This is std and err log file for DOCoMETRe session : " + now.format(new Date()));
 			}	
 		} catch (IOException e) {
+			Activator.logErrorMessage("Error in \"REDIRECT_STD_ERR_OUT_TO_FILE\"");
+			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
 		}  
     }

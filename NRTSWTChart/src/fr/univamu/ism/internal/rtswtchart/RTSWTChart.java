@@ -71,6 +71,7 @@ import com.jogamp.opengl.util.gl2.GLUT;
 
 import fr.univamu.ism.rtswtchart.IRTSWTOscilloChart;
 import fr.univamu.ism.rtswtchart.IRTSWTXYChart;
+import fr.univamu.ism.rtswtchart.RTSWTChartFonts;
 
 public abstract class RTSWTChart extends Composite implements ControlListener, IRTSWTOscilloChart, IRTSWTXYChart {
 	
@@ -868,7 +869,7 @@ public abstract class RTSWTChart extends Composite implements ControlListener, I
 		RTSWTSerie[] series = getSeries();
 		double min = Double.MAX_VALUE;
 		for (int i = 0; i < series.length; i++) {
-			min = Math.min(series[i].getyMinHeight(), min);
+			min = Math.min(series[i].getyMin(), min);
 		}
 		return min;
 	}
@@ -883,7 +884,7 @@ public abstract class RTSWTChart extends Composite implements ControlListener, I
 		RTSWTSerie[] series = getSeries();
 		double max = Double.MIN_VALUE;
 		for (int i = 0; i < series.length; i++) {
-			max = Math.max(series[i].getyMaxHeight(), max);
+			max = Math.max(series[i].getyMax(), max);
 		}
 		return max;
 	}
@@ -913,9 +914,4 @@ public abstract class RTSWTChart extends Composite implements ControlListener, I
 		return (GridData) super.getLayoutData();
 	}
 	
-	@Override
-	public void setHistorySize(double historySize) {
-		// TODO add support for history size
-		
-	}
 }

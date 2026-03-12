@@ -169,14 +169,6 @@ public class RTSWTXYSerie implements IRTSWTSerie {
 //		System.out.println("currentIndex after : " + currentIndex + " - nbHistoryPoints : " + nbHistoryPoints);
 	}
 
-	protected boolean getModified() {
-		return this.modified;
-	}
-
-	protected void setModified(boolean modified) {
-		this.modified = modified;
-	}
-
 	protected double getyMin() {
 		return RTSWTChartUtils.getMin(yValues);
 	}
@@ -216,5 +208,13 @@ public class RTSWTXYSerie implements IRTSWTSerie {
 	@Override
 	public void setDisplayCurrentValue(boolean displayCurrentValues) {
 		System.out.println("Impossible to display current value in XY Charts !");
+	}
+	
+	protected boolean getModified() {
+		return this.modified;
+	}
+
+	protected void setModified(boolean modified) {
+		this.modified = modified;
 	}
 }

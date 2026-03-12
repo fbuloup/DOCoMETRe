@@ -39,7 +39,7 @@
  * Contributors:
  *  - Frank Buloup - frank.buloup@univ-amu.fr - initial API and implementation [25/03/2020]
  ******************************************************************************/
-package fr.univamu.ism.internal.rtswtchart;
+package fr.univamu.ism.rtswtchart;
 
 public enum RTSWTChartFonts {
 	
@@ -97,6 +97,10 @@ public enum RTSWTChartFonts {
 		return expression;
 	}
 	
+	public static String[] getAvailableFontsNames() {
+		return getAvailableValues().split(":");
+	}
+	
 	public static RTSWTChartFonts getFont(String fontKey) {
 		if(STROKE_ROMAN.label.equals(fontKey)) return STROKE_ROMAN;
 		if(STROKE_MONO_ROMAN.label.equals(fontKey)) return STROKE_MONO_ROMAN;
@@ -106,7 +110,8 @@ public enum RTSWTChartFonts {
 		if(BITMAP_TIMES_ROMAN_24.label.equals(fontKey)) return BITMAP_TIMES_ROMAN_24;
 		if(BITMAP_HELVETICA_10.label.equals(fontKey)) return BITMAP_HELVETICA_10;
 		if(BITMAP_HELVETICA_12.label.equals(fontKey)) return BITMAP_HELVETICA_12;
-		return BITMAP_HELVETICA_18;
+		if(BITMAP_HELVETICA_18.label.equals(fontKey)) return BITMAP_HELVETICA_18;
+		return BITMAP_HELVETICA_12; // Default
 	}
 
 }

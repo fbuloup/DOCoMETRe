@@ -139,6 +139,7 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 			}
 		});
 		
+		boolean useOpenGL = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_OPENGL_FOR_RTSWT_CHART);
 		page.createLabel(container, DocometreMessages.Font_Title, DocometreMessages.Font_Tooltip);
 		value = getProperty(OscilloChartConfigurationProperties.FONT);
 		value = value==null?FontUtil.getDefaultFontName():value;
@@ -151,17 +152,20 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 		fontBoldButton = page.createButton(container, DocometreMessages.Bold_Title, SWT.CHECK, 1, 1);
 		fontBoldButton.setSelection(fontBold);
 		fontBoldButton.addSelectionListener(new ModifyPropertyHandler(OscilloChartConfigurationProperties.FONT_BOLD, OscilloChartConfiguration.this, fontBoldButton, OscilloChartConfigurationProperties.FONT_BOLD.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		fontBoldButton.setEnabled(!useOpenGL);
 		
 		value = getProperty(OscilloChartConfigurationProperties.FONT_ITALIC);
 		boolean fontItalic = Boolean.valueOf(value);
 		fontItalicButton = page.createButton(container, DocometreMessages.Italic_Title, SWT.CHECK, 1, 1);
 		fontItalicButton.setSelection(fontItalic);
 		fontItalicButton.addSelectionListener(new ModifyPropertyHandler(OscilloChartConfigurationProperties.FONT_ITALIC, OscilloChartConfiguration.this, fontItalicButton, OscilloChartConfigurationProperties.FONT_ITALIC.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		fontItalicButton.setEnabled(!useOpenGL);
 		
 		page.createLabel(container, DocometreMessages.Size_Title, DocometreMessages.Size_Tooltip);
 		fontSizeText = page.createText(container, getProperty(OscilloChartConfigurationProperties.FONT_SIZE), SWT.NONE, 1, 1);
 		fontSizeText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		fontSizeText.addModifyListener(new ModifyPropertyHandler(OscilloChartConfigurationProperties.FONT_SIZE, this, fontSizeText, OscilloChartConfigurationProperties.FONT_SIZE.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		fontSizeText.setEnabled(!useOpenGL);
 		
 		Color chartColor = ChartConfigurationProperties.getColor(this, ChartConfigurationProperties.COLOR);
 		chartColorButton = page.createColorDialogButton(container, "...", SWT.PUSH | SWT.FLAT, 1, 1);

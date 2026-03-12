@@ -162,7 +162,7 @@ public abstract class RTSWTSerie implements IRTSWTSerie {
 	 * Return the minimum value in pixel coordinate of the history
 	 * @return minimum value
 	 */
-	protected double getyMinHeight() {
+	protected double getyMin() {
 		return Utils.getMin(yValues);
 	}
 
@@ -170,7 +170,7 @@ public abstract class RTSWTSerie implements IRTSWTSerie {
 	 * Return the maximum value in pixel coordinate of the history
 	 * @return maximum value
 	 */
-	protected double getyMaxHeight() {
+	protected double getyMax() {
 		return Utils.getMax(yValues);
 	}
 	
