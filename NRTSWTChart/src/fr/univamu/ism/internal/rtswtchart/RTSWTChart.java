@@ -276,7 +276,7 @@ public abstract class RTSWTChart extends Composite implements ControlListener, I
 		this.font = font;
 		setLayout(new FillLayout());
 		GLProfile.initSingleton();
-		glProfile = GLProfile.get(GLProfile.GL2ES2);// GLProfile.getMinimum(true);
+		glProfile = GLProfile.get(GLProfile.GL2);// GLProfile.getMinimum(true);
 		glut = new GLUT();
 		leftAxisWidth = glut.glutBitmapLength(getFontNumber(), "-9." + decimalFormatter.getDecimalFormatSymbols().getDecimalSeparator() + "999E-999");
 		GLData glDataChartArea = new GLData();
