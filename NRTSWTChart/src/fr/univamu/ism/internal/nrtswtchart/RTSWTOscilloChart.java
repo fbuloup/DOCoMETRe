@@ -452,6 +452,7 @@ public class RTSWTOscilloChart extends ControlAdapter implements PaintListener, 
 		gridImage = new Image(chart.getDisplay(), gridImageData);
 		// Draw labels
 		GC gc = new GC(gridImage);
+		gc.setFont(chart.getFont());
 		for (int i = 0; i < horizontalGridLinesPositions.size(); i++) {
 			int position = horizontalGridLinesPositions.get(i);
 			double value = 0;
@@ -486,6 +487,7 @@ public class RTSWTOscilloChart extends ControlAdapter implements PaintListener, 
 		legendImageData = new ImageData(getWidth() - getLeftAxisWidth(), fontHeight, 24, paletteData);
 		legendImage = new Image(chart.getDisplay(), legendImageData);
 		GC gc = new GC(legendImage);
+		gc.setFont(chart.getFont());
 		int totalLength = 0;
 		for (int i = 0; i < rtswtSeries.size(); i++) {
 			RTSWTOscilloSerie rtswtSerie = rtswtSeries.get(i);
@@ -589,7 +591,7 @@ public class RTSWTOscilloChart extends ControlAdapter implements PaintListener, 
 		currentValuesImageData = new ImageData(10, 10, 24, paletteData);
 		currentValuesImage = new Image(chart.getDisplay(), currentValuesImageData);
 		GC gc = new GC(currentValuesImage);
-		
+		gc.setFont(chart.getFont());
 		int imageWidth = 0;
 		int imageHeight = 0;
 		ArrayList<String> valuesString = new ArrayList<>();
@@ -610,7 +612,7 @@ public class RTSWTOscilloChart extends ControlAdapter implements PaintListener, 
 		currentValuesImageData = new ImageData(imageWidth, imageHeight, 24, paletteData);
 		currentValuesImage = new Image(chart.getDisplay(), currentValuesImageData);
 		gc = new GC(currentValuesImage);
-
+		gc.setFont(chart.getFont());
 		int numSerie = 0;
 		int yPosition = 0;
 		for (RTSWTOscilloSerie rtswtSerie : rtswtSeries) {
