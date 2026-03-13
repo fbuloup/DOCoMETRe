@@ -278,7 +278,7 @@ public abstract class RTSWTChart extends Composite implements ControlListener, I
 		GLProfile.initSingleton();
 		glProfile = GLProfile.get(GLProfile.GL2);// GLProfile.getMinimum(true);
 		glut = new GLUT();
-		leftAxisWidth = glut.glutBitmapLength(getFontNumber(), "-9." + decimalFormatter.getDecimalFormatSymbols().getDecimalSeparator() + "999E-999");
+		leftAxisWidth = RTSWTChartFonts.glutGetLength(glut, getFontNumber(), "-9." + decimalFormatter.getDecimalFormatSymbols().getDecimalSeparator() + "999E-999");
 		GLData glDataChartArea = new GLData();
 		glDataChartArea.doubleBuffer = true;
 		chartArea = new GLCanvas(this, SWT.NONE | SWT.NO_BACKGROUND, glDataChartArea);
@@ -709,11 +709,11 @@ public abstract class RTSWTChart extends Composite implements ControlListener, I
 			int position = horizontalGridLinesPositions.get(i).intValue();
 			double value = getyMax() - (i + 1) * (getyMax() - getyMin()) / (horizontalGridLinesPositions.size() + 1);
 			String valueString = decimalFormatter.format(value).replaceAll("E0$", "");
-			int valueStringLength = glut.glutBitmapLength(getFontNumber(), valueString);
+			int valueStringLength =  RTSWTChartFonts.glutGetLength(glut, getFontNumber(), valueString);//glut.glutBitmapLength(getFontNumber(), valueString);
 			float xPosition = getLeftAxisWidth() / 2 - valueStringLength / 2;
 			float yPostion = position + getFontHeight() / 2;
 			chartAreaGLContext.getGL().getGL2().glRasterPos3f(xPosition, yPostion, 0);
-			glut.glutBitmapString(getFontNumber(), valueString);
+			RTSWTChartFonts.glutString(glut, getFontNumber(), valueString);//glut.glutBitmapString(getFontNumber(), valueString);
 		}
 	}
 
@@ -730,10 +730,10 @@ public abstract class RTSWTChart extends Composite implements ControlListener, I
 		for (int i = 0; i < seriesList.length; i++) {
 			if(seriesList[i].isHorizontalReference()) continue;
 			totalWidth += legendLineWidth + 5;
-			totalWidth += glut.glutBitmapLength(getFontNumber(), seriesList[i].getId());
-			totalWidth += glut.glutBitmapLength(getFontNumber(), "  ");
+			totalWidth +=  RTSWTChartFonts.glutGetLength(glut, getFontNumber(), seriesList[i].getId());// glut.glutBitmapLength(getFontNumber(), seriesList[i].getId());
+			totalWidth += RTSWTChartFonts.glutGetLength(glut, getFontNumber(), "  ");//glut.glutBitmapLength(getFontNumber(), "  ");
 		}
-		totalWidth -= glut.glutBitmapLength(getFontNumber(), "  ");
+		totalWidth -= RTSWTChartFonts.glutGetLength(glut, getFontNumber(), "  ");//glut.glutBitmapLength(getFontNumber(), "  ");
 		int position = 0;
 		for (int i = 0; i < seriesList.length; i++) {
 			RTSWTSerie serie = seriesList[i];
@@ -757,9 +757,9 @@ public abstract class RTSWTChart extends Composite implements ControlListener, I
 			chartAreaGLContext.getGL().getGL2().glVertex2i(xPosition + legendLineWidth, yPosition);
 			chartAreaGLContext.getGL().getGL2().glEnd();
 			chartAreaGLContext.getGL().getGL2().glRasterPos3f(xPosition + legendLineWidth + 5, yPosition, 0);
-			glut.glutBitmapString(getFontNumber(), serie.getId());
-			position += glut.glutBitmapLength(getFontNumber(), serie.getId());
-			position += glut.glutBitmapLength(getFontNumber(), "  ");
+			RTSWTChartFonts.glutString(glut, getFontNumber(), serie.getId());//glut.glutBitmapString(getFontNumber(), serie.getId());
+			position += RTSWTChartFonts.glutGetLength(glut, getFontNumber(), serie.getId());//glut.glutBitmapLength(getFontNumber(), serie.getId());
+			position += RTSWTChartFonts.glutGetLength(glut, getFontNumber(), "  ");//glut.glutBitmapLength(getFontNumber(), "  ");
 			position += legendLineWidth + 5;
 		}
 	}

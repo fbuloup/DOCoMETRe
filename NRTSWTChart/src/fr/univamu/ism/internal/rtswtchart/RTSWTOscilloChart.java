@@ -461,12 +461,12 @@ public final class RTSWTOscilloChart extends RTSWTChart {
 			if(showCurrentValue || ((RTSWTOscilloSerie)serie).isShowCurrentValue()) {
 				double currentValue = ((RTSWTOscilloSerie)serie).getCurrentValue();
 				String valueString = decimalFormatterCurrentValues.format(currentValue);
-				int valueStringLength = glut.glutBitmapLength(getFontNumber(), valueString) + 5;
+				int valueStringLength = RTSWTChartFonts.glutGetLength(glut, getFontNumber(), valueString) + 5;//glut.glutBitmapLength(getFontNumber(), valueString) + 5;
 				float xPosition = getWidth() - valueStringLength ;
 				int yOffset = (showLegend && legendPosition == SWT.TOP) ? getLegendHeight() : 0;
 				float yPostion = yOffset + getFontHeight()*(nbShowCurrentValueSeries+1) + 3*nbShowCurrentValueSeries;
 				chartAreaGLContext.getGL().getGL2().glRasterPos3f(xPosition, yPostion, 0);
-				glut.glutBitmapString(getFontNumber(), valueString);
+				RTSWTChartFonts.glutString(glut, getFontNumber(), valueString);//glut.glutBitmapString(getFontNumber(), valueString);
 				nbShowCurrentValueSeries++;
 			}
 		}
