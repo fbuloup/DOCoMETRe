@@ -39,7 +39,7 @@
  * Contributors:
  *  - Frank Buloup - frank.buloup@univ-amu.fr - initial API and implementation [25/03/2020]
  ******************************************************************************/
-package fr.univamu.ism.rtswtchart;
+package fr.univamu.ism.internal.rtswtchart;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -47,7 +47,12 @@ import org.eclipse.swt.widgets.Composite;
 
 import com.jogamp.opengl.GL2;
 
+import fr.univamu.ism.rtswtchart.RTSWTChartFonts;
+
 public class RTSWTXYChart extends RTSWTChart {
+	
+	private double historySize = 1;
+	private double sampleFrequency;
 
 	/**
 	 * 
@@ -108,6 +113,12 @@ public class RTSWTXYChart extends RTSWTChart {
 		setInterpolation(interpolation);
 	}
 	
+	public RTSWTXYChart(Composite parent, int style, String fontName, int fontStyle, int fontSize) {
+		// TODO Just call default constructor for now ! 
+		// TODO Must use fontName, fontStyle and fontSize
+		this(parent, style, RTSWTChartFonts.getFont(fontName));
+	}
+
 	/**
 	 * Add a new serie to the chart specifying its ID and colour.
 	 * 
@@ -258,7 +269,7 @@ public class RTSWTXYChart extends RTSWTChart {
 		RTSWTSerie[] series = getSeries();
 		for (int i = 0; i < series.length; i++) {
 			RTSWTXYSerie serie = (RTSWTXYSerie) series[i];
-			if(serie.getNumberOfPoints() == 0) continue;
+//			if(serie.getNumberOfPoints() == 0) continue;
 			chartAreaGLContext.getGL().getGL2().glColor3f(serie.getLineColor().getRed() / 255.0f, serie.getLineColor().getGreen() / 255.0f, serie.getLineColor().getBlue() / 255.0f);
 			chartAreaGLContext.getGL().getGL2().glLineWidth(serie.getLineWidth());
 			if (serie.getLineStyle() == SWT.LINE_SOLID)
@@ -296,7 +307,7 @@ public class RTSWTXYChart extends RTSWTChart {
 		double min = Double.MAX_VALUE;
 		for (int i = 0; i < series.length; i++) {
 			RTSWTXYSerie serie = (RTSWTXYSerie) series[i];
-			min = Math.min(serie.getxMinHeight(), min);
+			min = Math.min(serie.getxMin(), min);
 		}
 		return min;
 	}
@@ -312,9 +323,32 @@ public class RTSWTXYChart extends RTSWTChart {
 		double max = Double.MIN_VALUE;
 		for (int i = 0; i < series.length; i++) {
 			RTSWTXYSerie serie = (RTSWTXYSerie) series[i];
-			max = Math.max(serie.getxMaxHeight(), max);
+			max = Math.max(serie.getxMax(), max);
 		}
 		return max;
+	}
+
+	@Override
+	public void setWindowTimeWidth(double value) {
+		this.historySize = value;
+	}
+	
+	@Override
+	public void setHistorySize(double historySize) {
+		this.historySize = historySize;
+	}
+
+	@Override
+	public void setSampleFrequency(double sfx) {
+		this.sampleFrequency = sfx;
+	}
+	
+	public double getHistorySize() {
+		return historySize;
+	}
+	
+	public double getSampleFrequency() {
+		return sampleFrequency;
 	}
 
 }

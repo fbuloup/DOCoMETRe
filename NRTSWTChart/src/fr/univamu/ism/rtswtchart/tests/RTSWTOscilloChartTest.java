@@ -39,7 +39,7 @@
  * Contributors:
  *  - Frank Buloup - frank.buloup@univ-amu.fr - initial API and implementation [25/03/2020]
  ******************************************************************************/
-package fr.univamu.ism.rtswtchart;
+package fr.univamu.ism.rtswtchart.tests;
 
 import java.util.Random;
 import java.util.Timer;
@@ -55,6 +55,10 @@ import org.eclipse.swt.widgets.Shell;
 
 import com.jogamp.opengl.JoglVersion;
 
+import fr.univamu.ism.internal.rtswtchart.RTSWTOscilloChart;
+import fr.univamu.ism.rtswtchart.IRTSWTSerie;
+import fr.univamu.ism.rtswtchart.RTSWTChartFonts;
+
 /**
  * This class can be used as a start point to use the library.  
  * @author frank buloup
@@ -63,8 +67,8 @@ public class RTSWTOscilloChartTest {
 	/**
 	 * These two series are displayed in a first chart
 	 */
-	private static RTSWTOscilloSerie serie1;
-	private static RTSWTOscilloSerie serie2;
+	private static IRTSWTSerie serie1;
+	private static IRTSWTSerie serie2;
 	
 	/**
 	 * These two series are displayed in a second chart 
@@ -91,7 +95,7 @@ public class RTSWTOscilloChartTest {
 			for (int i = 0; i < y.length; i++) {
 				x[i] = previousTime + i/1000.0;
 				y[i] = 5*Math.sin(2*Math.PI*1*x[i]) + (random.nextDouble() - 0.5)*2;
-				y[i] = y[i]*1E200;/* Just to have big big numbers */
+				y[i] = y[i];//*1E200;/* Just to have big big numbers */
 			}
 			previousTime = x[x.length - 1];
 			serie1.addPoints(x, y);
@@ -99,7 +103,7 @@ public class RTSWTOscilloChartTest {
 			for (int i = 0; i < y.length; i++) {
 				x[i] = previousTime + i/1000.0;
 				y[i] = 3*Math.sin(2*Math.PI*1*x[i] + 2*Math.PI/3) + (random.nextDouble() - 0.5)*2;
-				y[i] = y[i]*1E200;/* Just to have big big numbers */
+				y[i] = y[i];//*1E200;/* Just to have big big numbers */
 			}
 			previousTime = x[x.length - 1];
 			serie2.addPoints(x, y);
@@ -158,7 +162,7 @@ public class RTSWTOscilloChartTest {
 		if(display == null) display = new Display();
 		shell = new Shell (display);
 		shell.setMaximized(true);
-		shell.setText("OpenGL RTSWT Test");
+		shell.setText("OpenGL RTSWT Oscillo Test");
 		shell.setLayout(new GridLayout(1,true));
 		
 		/* Create the first chart */
@@ -172,9 +176,9 @@ public class RTSWTOscilloChartTest {
 		rtswtChartOscillo.setGridLinesColor(display.getSystemColor(SWT.COLOR_DARK_GREEN));
 		/* Create two series in this first chart */
 		serie1 = rtswtChartOscillo.createSerie("serie1", display.getSystemColor(SWT.COLOR_GREEN), SWT.LINE_DASHDOTDOT, 4);
-		serie1.setShowCurrentValue(true);
+		serie1.setDisplayCurrentValue(true);
 		serie2 = rtswtChartOscillo.createSerie("serie2", display.getSystemColor(SWT.COLOR_RED));
-		serie2.setShowCurrentValue(true);
+		serie2.setDisplayCurrentValue(true);
 		
 //		/* Create a second chart */
 //		RTSWTOscilloChart rtswtChartOscillo2 = new RTSWTOscilloChart(shell, SWT.NORMAL);

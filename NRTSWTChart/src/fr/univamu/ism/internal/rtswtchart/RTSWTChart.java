@@ -39,7 +39,7 @@
  * Contributors:
  *  - Frank Buloup - frank.buloup@univ-amu.fr - initial API and implementation [25/03/2020]
  ******************************************************************************/
-package fr.univamu.ism.rtswtchart;
+package fr.univamu.ism.internal.rtswtchart;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -55,6 +55,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.opengl.GLCanvas;
 import org.eclipse.swt.opengl.GLData;
 import org.eclipse.swt.widgets.Composite;
@@ -68,7 +69,11 @@ import com.jogamp.opengl.GLDrawableFactory;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.util.gl2.GLUT;
 
-public abstract class RTSWTChart extends Composite implements ControlListener {
+import fr.univamu.ism.rtswtchart.IRTSWTOscilloChart;
+import fr.univamu.ism.rtswtchart.IRTSWTXYChart;
+import fr.univamu.ism.rtswtchart.RTSWTChartFonts;
+
+public abstract class RTSWTChart extends Composite implements ControlListener, IRTSWTOscilloChart, IRTSWTXYChart {
 	
 	/**
 	 * Handler for legend position menu : top or bottom
@@ -263,15 +268,17 @@ public abstract class RTSWTChart extends Composite implements ControlListener {
 	 * Ten is default max amplitude value
 	 */
 	private double xMax = 10;
+	
+	protected boolean showCurrentValue;
 
 	public RTSWTChart(Composite parent, int style, RTSWTChartFonts font) {
 		super(parent, style);
 		this.font = font;
 		setLayout(new FillLayout());
 		GLProfile.initSingleton();
-		glProfile = GLProfile.get(GLProfile.GL2ES2);// GLProfile.getMinimum(true);
+		glProfile = GLProfile.get(GLProfile.GL2);// GLProfile.getMinimum(true);
 		glut = new GLUT();
-		leftAxisWidth = glut.glutBitmapLength(getFontNumber(), "-9." + decimalFormatter.getDecimalFormatSymbols().getDecimalSeparator() + "999E-999");
+		leftAxisWidth = RTSWTChartFonts.glutGetLength(glut, getFontNumber(), "-9." + decimalFormatter.getDecimalFormatSymbols().getDecimalSeparator() + "999E-999");
 		GLData glDataChartArea = new GLData();
 		glDataChartArea.doubleBuffer = true;
 		chartArea = new GLCanvas(this, SWT.NONE | SWT.NO_BACKGROUND, glDataChartArea);
@@ -533,14 +540,14 @@ public abstract class RTSWTChart extends Composite implements ControlListener {
 	/**
 	 * Set the minimum amplitude value.
 	 */
-	protected void setyMin(double yMin) {
+	public void setyMin(double yMin) {
 		this.yMin = yMin;
 	}
 
 	/**
 	 * Set the maximum amplitude value.
 	 */
-	protected void setyMax(double yMax) {
+	public void setyMax(double yMax) {
 		this.yMax = yMax;
 	}
 	
@@ -565,14 +572,14 @@ public abstract class RTSWTChart extends Composite implements ControlListener {
 	/**
 	 * Set the minimum amplitude value.
 	 */
-	protected void setxMin(double xMin) {
+	public void setxMin(double xMin) {
 		this.xMin = xMin;
 	}
 
 	/**
 	 * Set the maximum amplitude value.
 	 */
-	protected void setxMax(double xMax) {
+	public void setxMax(double xMax) {
 		this.xMax = xMax;
 	}
 	
@@ -702,11 +709,11 @@ public abstract class RTSWTChart extends Composite implements ControlListener {
 			int position = horizontalGridLinesPositions.get(i).intValue();
 			double value = getyMax() - (i + 1) * (getyMax() - getyMin()) / (horizontalGridLinesPositions.size() + 1);
 			String valueString = decimalFormatter.format(value).replaceAll("E0$", "");
-			int valueStringLength = glut.glutBitmapLength(getFontNumber(), valueString);
+			int valueStringLength =  RTSWTChartFonts.glutGetLength(glut, getFontNumber(), valueString);//glut.glutBitmapLength(getFontNumber(), valueString);
 			float xPosition = getLeftAxisWidth() / 2 - valueStringLength / 2;
 			float yPostion = position + getFontHeight() / 2;
 			chartAreaGLContext.getGL().getGL2().glRasterPos3f(xPosition, yPostion, 0);
-			glut.glutBitmapString(getFontNumber(), valueString);
+			RTSWTChartFonts.glutString(glut, getFontNumber(), valueString);//glut.glutBitmapString(getFontNumber(), valueString);
 		}
 	}
 
@@ -723,10 +730,10 @@ public abstract class RTSWTChart extends Composite implements ControlListener {
 		for (int i = 0; i < seriesList.length; i++) {
 			if(seriesList[i].isHorizontalReference()) continue;
 			totalWidth += legendLineWidth + 5;
-			totalWidth += glut.glutBitmapLength(getFontNumber(), seriesList[i].getId());
-			totalWidth += glut.glutBitmapLength(getFontNumber(), "  ");
+			totalWidth +=  RTSWTChartFonts.glutGetLength(glut, getFontNumber(), seriesList[i].getId());// glut.glutBitmapLength(getFontNumber(), seriesList[i].getId());
+			totalWidth += RTSWTChartFonts.glutGetLength(glut, getFontNumber(), "  ");//glut.glutBitmapLength(getFontNumber(), "  ");
 		}
-		totalWidth -= glut.glutBitmapLength(getFontNumber(), "  ");
+		totalWidth -= RTSWTChartFonts.glutGetLength(glut, getFontNumber(), "  ");//glut.glutBitmapLength(getFontNumber(), "  ");
 		int position = 0;
 		for (int i = 0; i < seriesList.length; i++) {
 			RTSWTSerie serie = seriesList[i];
@@ -750,9 +757,9 @@ public abstract class RTSWTChart extends Composite implements ControlListener {
 			chartAreaGLContext.getGL().getGL2().glVertex2i(xPosition + legendLineWidth, yPosition);
 			chartAreaGLContext.getGL().getGL2().glEnd();
 			chartAreaGLContext.getGL().getGL2().glRasterPos3f(xPosition + legendLineWidth + 5, yPosition, 0);
-			glut.glutBitmapString(getFontNumber(), serie.getId());
-			position += glut.glutBitmapLength(getFontNumber(), serie.getId());
-			position += glut.glutBitmapLength(getFontNumber(), "  ");
+			RTSWTChartFonts.glutString(glut, getFontNumber(), serie.getId());//glut.glutBitmapString(getFontNumber(), serie.getId());
+			position += RTSWTChartFonts.glutGetLength(glut, getFontNumber(), serie.getId());//glut.glutBitmapLength(getFontNumber(), serie.getId());
+			position += RTSWTChartFonts.glutGetLength(glut, getFontNumber(), "  ");//glut.glutBitmapLength(getFontNumber(), "  ");
 			position += legendLineWidth + 5;
 		}
 	}
@@ -829,7 +836,7 @@ public abstract class RTSWTChart extends Composite implements ControlListener {
 	        sum += drawTimes[i];
 	    }
 	    double finalValue = sum / 1000000f;
-	    return Double.toString(finalValue) + "ms for " + drawTimes.length + " graph update. Mean time per graph update : " + (finalValue/(drawTimes.length)) + "ms";
+	    return Double.toString(finalValue) + "ms for " + drawTimes.length + " graph update (OpenGL). Mean time per graph update : " + (finalValue/(drawTimes.length)) + "ms";
 	}
 	
 	/**
@@ -862,7 +869,7 @@ public abstract class RTSWTChart extends Composite implements ControlListener {
 		RTSWTSerie[] series = getSeries();
 		double min = Double.MAX_VALUE;
 		for (int i = 0; i < series.length; i++) {
-			min = Math.min(series[i].getyMinHeight(), min);
+			min = Math.min(series[i].getyMin(), min);
 		}
 		return min;
 	}
@@ -877,7 +884,7 @@ public abstract class RTSWTChart extends Composite implements ControlListener {
 		RTSWTSerie[] series = getSeries();
 		double max = Double.MIN_VALUE;
 		for (int i = 0; i < series.length; i++) {
-			max = Math.max(series[i].getyMaxHeight(), max);
+			max = Math.max(series[i].getyMax(), max);
 		}
 		return max;
 	}
@@ -885,5 +892,26 @@ public abstract class RTSWTChart extends Composite implements ControlListener {
 	protected abstract void render();
 	protected abstract void drawBottomAxis();
 	protected abstract void drawSeries();
+	
+	
+	@Override
+	public void setLayoutData(GridData gridData) {
+		super.setLayoutData(gridData);
+	}
+	
+	@Override
+	public void setGridVisibility(boolean value) {
+		this.showGrid = value;
+	}
+	
+	@Override
+	public void setShowCurrentValue(boolean value) {
+		showCurrentValue = value;
+	}
+	
+	@Override
+	public GridData getLayoutData() {
+		return (GridData) super.getLayoutData();
+	}
 	
 }

@@ -61,8 +61,9 @@ import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.calibration.CalibrationFactory;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
-import fr.univamu.ism.nrtswtchart.RTSWTOscilloChart;
-import fr.univamu.ism.nrtswtchart.RTSWTOscilloSerie;
+import fr.univamu.ism.rtswtchart.IRTSWTOscilloChart;
+import fr.univamu.ism.rtswtchart.IRTSWTSerie;
+import fr.univamu.ism.rtswtchart.RTSWTChartsFactory;
 
 public class ChannelViewer extends Composite {
 	
@@ -70,8 +71,8 @@ public class ChannelViewer extends Composite {
 	private String title;
 	private Label separator;
 	private DecimalFormat decimalFormater;
-	private RTSWTOscilloSerie rtswtOscilloSerie;
-	private RTSWTOscilloChart rtswtOscilloChart; 
+	private IRTSWTSerie rtswtOscilloSerie;
+	private IRTSWTOscilloChart rtswtOscilloChart; 
 	private boolean firstSample = true;
 	private double initialTime;
 	private Image imageLeft;
@@ -183,7 +184,7 @@ public class ChannelViewer extends Composite {
 					createGraph();
 					showGraphButton.setImage(imageDown);
 				} else {
-					rtswtOscilloChart.getChart().getParent().dispose();
+					rtswtOscilloChart.dispose();
 //					rtswtOscilloChart.dispose();
 					separator.dispose();
 					showGraphButton.setImage(imageLeft);
@@ -225,16 +226,16 @@ public class ChannelViewer extends Composite {
 		gl.marginHeight = 5;
 		gl.marginWidth = 0;
 		
-		rtswtOscilloChart = new RTSWTOscilloChart(container, SWT.DOUBLE_BUFFERED, container.getFont().getFontData()[0].getName(), SWT.BOLD, 10);
+		rtswtOscilloChart = RTSWTChartsFactory.createPureSWTOscilloChart(container, SWT.DOUBLE_BUFFERED, container.getFont().getFontData()[0].getName(), SWT.BOLD, 10);;
 		rtswtOscilloChart.setGridLinesColor(Display.getDefault().getSystemColor(SWT.COLOR_WHITE));
 		rtswtOscilloChart.setFontColor(container.getBackground());
 		rtswtOscilloChart.setLegendVisibility(false);
 		rtswtOscilloChart.setAutoScale(true);
 		rtswtOscilloChart.setWindowTimeWidth(10);
-		rtswtOscilloChart.getChart().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		rtswtOscilloChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		rtswtOscilloSerie = rtswtOscilloChart.createSerie(title, Display.getDefault().getSystemColor(SWT.COLOR_GREEN));
 		
-		GridData gd = (GridData) rtswtOscilloChart.getChart().getLayoutData();
+		GridData gd = (GridData) rtswtOscilloChart.getLayoutData();
 		gd.heightHint = 150;
 
 		separator = new Label(this, SWT.HORIZONTAL | SWT.SEPARATOR);

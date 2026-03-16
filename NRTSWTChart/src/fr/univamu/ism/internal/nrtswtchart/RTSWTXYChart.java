@@ -39,7 +39,7 @@
  * Contributors:
  *  - Frank Buloup - frank.buloup@univ-amu.fr - initial API and implementation [01/06/2024]
  ******************************************************************************/
-package fr.univamu.ism.nrtswtchart;
+package fr.univamu.ism.internal.nrtswtchart;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -66,13 +66,16 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.PaletteData;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 
-public class RTSWTXYChart extends ControlAdapter implements PaintListener, DisposeListener {
+import fr.univamu.ism.rtswtchart.IRTSWTXYChart;
+
+public class RTSWTXYChart extends ControlAdapter implements PaintListener, DisposeListener, IRTSWTXYChart {
 	
 	private final class MenuListenerHandler extends MenuAdapter {
 		public void menuShown(MenuEvent e) {
@@ -424,7 +427,7 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 	        sum += drawTimes[i];
 	    }
 	    double finalValue = sum / 1000000f;
-	    return Double.toString(finalValue) + "ms for " + drawTimes.length + " graph update. Mean time per graph update : " + (finalValue/(drawTimes.length)) + "ms";
+	    return Double.toString(finalValue) + "ms for " + drawTimes.length + " graph update (SWT only). Mean time per graph update : " + (finalValue/(drawTimes.length)) + "ms";
 	}
 
 	@Override
@@ -517,15 +520,15 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 		int totalLength = 0;
 		for (int i = 0; i < rtswtSeries.size(); i++) {
 			RTSWTXYSerie rtswtSerie = rtswtSeries.get(i);
-			String title = rtswtSerie.getTitle(); 
-			title = rtswtSerie.getTitle() + " -- ";
+			String title = rtswtSerie.getId(); 
+			title = rtswtSerie.getId() + " -- ";
 			totalLength += gc.textExtent(title).x;
 		}
 		int lastValueStringLength = 0;
 		for (int i = 0; i < rtswtSeries.size(); i++) {
 			RTSWTXYSerie rtswtSerie = rtswtSeries.get(i);
-			String title = rtswtSerie.getTitle();
-			title = rtswtSerie.getTitle() + " -- ";
+			String title = rtswtSerie.getId();
+			title = rtswtSerie.getId() + " -- ";
 			Color color  = rtswtSerie.getColor();
 			int valueStringLength = gc.textExtent(title).x;
 			int xPosition = legendImageData.width / 2 - totalLength / 2 + lastValueStringLength;
@@ -660,6 +663,16 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 		yHeight = seriesImageData.height;
 		e.gc.drawImage(seriesImage, 0, 0, seriesImageData.width, seriesImageData.height, xLeft, yTop, xWidth, yHeight);
 
+	}
+
+	@Override
+	public void setLayoutData(GridData gridData) {
+		chart.setLayoutData(gridData);
+	}
+
+	@Override
+	public GridData getLayoutData() {
+		return (GridData) chart.getLayoutData();
 	}
 
 }

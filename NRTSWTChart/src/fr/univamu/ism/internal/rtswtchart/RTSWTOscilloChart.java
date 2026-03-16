@@ -39,13 +39,17 @@
  * Contributors:
  *  - Frank Buloup - frank.buloup@univ-amu.fr - initial API and implementation [25/03/2020]
  ******************************************************************************/
-package fr.univamu.ism.rtswtchart;
+package fr.univamu.ism.internal.rtswtchart;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
 
 import com.jogamp.opengl.GL2;
+
+import fr.univamu.ism.rtswtchart.IRTSWTSerie;
+import fr.univamu.ism.rtswtchart.RTSWTChartFonts;
+
 
 /**
  * 
@@ -254,6 +258,12 @@ public final class RTSWTOscilloChart extends RTSWTChart {
 		setInterpolation(interpolation);
 	}
 
+	public RTSWTOscilloChart(Composite parent, int style, String fontName, int fontStyle, int fontSize) {
+		// TODO Just call default constructor for now ! 
+		// TODO Must use fontName, fontStyle and fontSize
+		this(parent, style, RTSWTChartFonts.getFont(fontName));
+	}
+
 	/**
 	 * Add a new serie to the chart specifying its ID and colour.
 	 * 
@@ -263,7 +273,7 @@ public final class RTSWTOscilloChart extends RTSWTChart {
 	 *            the colour of the serie
 	 * @return the new created serie {@link RTSWTOscilloSerie}
 	 */
-	public RTSWTOscilloSerie createSerie(String id, Color serieColor) {
+	public IRTSWTSerie createSerie(String id, Color serieColor) {
 		return serieFactory(id, serieColor, SWT.LINE_SOLID, 1);
 	}
 
@@ -278,7 +288,7 @@ public final class RTSWTOscilloChart extends RTSWTChart {
 	 *            the style of the serie (dot, dash dot etc.)
 	 * @return the new created serie {@link RTSWTOscilloSerie}
 	 */
-	public RTSWTOscilloSerie createSerie(String id, Color serieColor, int serieStyle) {
+	public IRTSWTSerie createSerie(String id, Color serieColor, int serieStyle) {
 		return serieFactory(id, serieColor, serieStyle, 1);
 	}
 
@@ -296,7 +306,7 @@ public final class RTSWTOscilloChart extends RTSWTChart {
 	 *            the line width of the serie
 	 * @return the new created serie {@link RTSWTOscilloSerie}
 	 */
-	public RTSWTOscilloSerie createSerie(String id, Color serieColor, int serieStyle, int serieWidth) {
+	public IRTSWTSerie createSerie(String id, Color serieColor, int serieStyle, int serieWidth) {
 		return serieFactory(id, serieColor, serieStyle, serieWidth);
 	}
 
@@ -314,11 +324,11 @@ public final class RTSWTOscilloChart extends RTSWTChart {
 	 *            the line width of the serie
 	 * @return the new created serie {@link RTSWTOscilloSerie}
 	 */
-	private RTSWTOscilloSerie serieFactory(String id, Color serieColor, int serieStyle, int serieWidth) {
+	private IRTSWTSerie serieFactory(String id, Color serieColor, int serieStyle, int serieWidth) {
 		if (series.get(id) != null)
 			SWT.error(SWT.ERROR_INVALID_ARGUMENT, null, " : A serie with this ID already exists !");
-		RTSWTOscilloSerie serie = new RTSWTOscilloSerie(this, id, serieColor, serieStyle, serieWidth);
-		series.put(id, serie);
+		IRTSWTSerie serie = new RTSWTOscilloSerie(this, id, serieColor, serieStyle, serieWidth);
+		series.put(id, (RTSWTSerie) serie);
 		return serie;
 	}
 
@@ -448,18 +458,33 @@ public final class RTSWTOscilloChart extends RTSWTChart {
 				chartAreaGLContext.getGL().getGL2().glEnd();
 				serie.setModified(false);
 			}
-			if(((RTSWTOscilloSerie)serie).isShowCurrentValue()) {
+			if(showCurrentValue || ((RTSWTOscilloSerie)serie).isShowCurrentValue()) {
 				double currentValue = ((RTSWTOscilloSerie)serie).getCurrentValue();
 				String valueString = decimalFormatterCurrentValues.format(currentValue);
-				int valueStringLength = glut.glutBitmapLength(getFontNumber(), valueString) + 5;
+				int valueStringLength = RTSWTChartFonts.glutGetLength(glut, getFontNumber(), valueString) + 5;//glut.glutBitmapLength(getFontNumber(), valueString) + 5;
 				float xPosition = getWidth() - valueStringLength ;
 				int yOffset = (showLegend && legendPosition == SWT.TOP) ? getLegendHeight() : 0;
 				float yPostion = yOffset + getFontHeight()*(nbShowCurrentValueSeries+1) + 3*nbShowCurrentValueSeries;
 				chartAreaGLContext.getGL().getGL2().glRasterPos3f(xPosition, yPostion, 0);
-				glut.glutBitmapString(getFontNumber(), valueString);
+				RTSWTChartFonts.glutString(glut, getFontNumber(), valueString);//glut.glutBitmapString(getFontNumber(), valueString);
 				nbShowCurrentValueSeries++;
 			}
 		}
+	}
+
+	@Override
+	public void setWindowTimeWidth(double value) {
+		windowTimeWidth = value;
+	}
+	
+	@Override
+	public void setHistorySize(double historySize) {
+		this.windowTimeWidth = historySize;
+	}
+
+	@Override
+	public void setSampleFrequency(double sfx) {
+		// TODO Nothing ! windowTimeWidth is used For Oscilo chart
 	}
 
 }

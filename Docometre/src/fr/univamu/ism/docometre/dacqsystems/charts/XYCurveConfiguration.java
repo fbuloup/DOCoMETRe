@@ -50,7 +50,7 @@ import fr.univamu.ism.docometre.dacqsystems.ChannelObserver;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.Property;
 import fr.univamu.ism.docometre.dacqsystems.PropertyObserver;
-import fr.univamu.ism.nrtswtchart.RTSWTXYSerie;
+import fr.univamu.ism.rtswtchart.IRTSWTSerie;
 
 public class XYCurveConfiguration extends CurveConfiguration implements PropertyObserver, ChannelObserver  {
 
@@ -67,7 +67,7 @@ public class XYCurveConfiguration extends CurveConfiguration implements Property
 	
 	private Double[] tempValues = new Double[0];
 	
-	transient private RTSWTXYSerie serie;
+	transient private IRTSWTSerie serie;
 	
 	public XYCurveConfiguration(Channel xChannel, Channel yChannel) {
 		XYCurveConfigurationProperties.populateProperties(this);
@@ -100,7 +100,7 @@ public class XYCurveConfiguration extends CurveConfiguration implements Property
 		initializeObservers();
 	}
 	
-	public void setSerie(RTSWTXYSerie serie) {
+	public void setSerie(IRTSWTSerie serie) {
 		this.serie = serie;
 		xValues = new Double[0];
 		yValues = new Double[0];

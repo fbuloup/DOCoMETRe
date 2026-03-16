@@ -47,7 +47,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 
-import fr.univamu.ism.nrtswtchart.RTSWTChartUtils;
+import fr.univamu.ism.internal.nrtswtchart.RTSWTChartUtils;
 
 public class XYSWTSerie {
 

@@ -61,6 +61,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.widgets.Hyperlink;
 
+import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.FontUtil;
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
@@ -69,9 +70,11 @@ import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyHandler;
 import fr.univamu.ism.docometre.dacqsystems.Property;
 import fr.univamu.ism.docometre.editors.ResourceEditor;
-import fr.univamu.ism.nrtswtchart.RTSWTOscilloChart;
-import fr.univamu.ism.nrtswtchart.RTSWTOscilloSerie;
 import fr.univamu.ism.docometre.editors.ModulePage.ModuleSectionPart;
+import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
+import fr.univamu.ism.rtswtchart.IRTSWTOscilloChart;
+import fr.univamu.ism.rtswtchart.IRTSWTSerie;
+import fr.univamu.ism.rtswtchart.RTSWTChartsFactory;
 
 public class OscilloChartConfiguration extends ChartConfiguration {
 
@@ -136,6 +139,7 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 			}
 		});
 		
+		boolean useOpenGL = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_OPENGL_FOR_RTSWT_CHART);
 		page.createLabel(container, DocometreMessages.Font_Title, DocometreMessages.Font_Tooltip);
 		value = getProperty(OscilloChartConfigurationProperties.FONT);
 		value = value==null?FontUtil.getDefaultFontName():value;
@@ -148,17 +152,20 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 		fontBoldButton = page.createButton(container, DocometreMessages.Bold_Title, SWT.CHECK, 1, 1);
 		fontBoldButton.setSelection(fontBold);
 		fontBoldButton.addSelectionListener(new ModifyPropertyHandler(OscilloChartConfigurationProperties.FONT_BOLD, OscilloChartConfiguration.this, fontBoldButton, OscilloChartConfigurationProperties.FONT_BOLD.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		fontBoldButton.setEnabled(!useOpenGL);
 		
 		value = getProperty(OscilloChartConfigurationProperties.FONT_ITALIC);
 		boolean fontItalic = Boolean.valueOf(value);
 		fontItalicButton = page.createButton(container, DocometreMessages.Italic_Title, SWT.CHECK, 1, 1);
 		fontItalicButton.setSelection(fontItalic);
 		fontItalicButton.addSelectionListener(new ModifyPropertyHandler(OscilloChartConfigurationProperties.FONT_ITALIC, OscilloChartConfiguration.this, fontItalicButton, OscilloChartConfigurationProperties.FONT_ITALIC.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		fontItalicButton.setEnabled(!useOpenGL);
 		
 		page.createLabel(container, DocometreMessages.Size_Title, DocometreMessages.Size_Tooltip);
 		fontSizeText = page.createText(container, getProperty(OscilloChartConfigurationProperties.FONT_SIZE), SWT.NONE, 1, 1);
 		fontSizeText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		fontSizeText.addModifyListener(new ModifyPropertyHandler(OscilloChartConfigurationProperties.FONT_SIZE, this, fontSizeText, OscilloChartConfigurationProperties.FONT_SIZE.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		fontSizeText.setEnabled(!useOpenGL);
 		
 		Color chartColor = ChartConfigurationProperties.getColor(this, ChartConfigurationProperties.COLOR);
 		chartColorButton = page.createColorDialogButton(container, "...", SWT.PUSH | SWT.FLAT, 1, 1);
@@ -286,8 +293,12 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 		int fontSize = Integer.parseInt(value);
 		Color chartColor = ChartConfigurationProperties.getColor(this, ChartConfigurationProperties.COLOR);
 		
-		RTSWTOscilloChart rtswtOscilloChart = new RTSWTOscilloChart(chartContainer, SWT.DOUBLE_BUFFERED, fontName, fontStyle, fontSize);
-		rtswtOscilloChart.getChart().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, hSpan, vSpan));
+		IRTSWTOscilloChart rtswtOscilloChart;
+		boolean useOpenGL = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_OPENGL_FOR_RTSWT_CHART);
+		if(useOpenGL) rtswtOscilloChart = RTSWTChartsFactory.createOpenGLOscilloChart(chartContainer, SWT.DOUBLE_BUFFERED, fontName, fontStyle, fontSize);
+		else rtswtOscilloChart = RTSWTChartsFactory.createPureSWTOscilloChart(chartContainer, SWT.DOUBLE_BUFFERED, fontName, fontStyle, fontSize);
+		
+		rtswtOscilloChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, hSpan, vSpan));
 		rtswtOscilloChart.setShowCurrentValue(displayCurrentValuesChart);
 		rtswtOscilloChart.setAutoScale(autoscale);
 		rtswtOscilloChart.setWindowTimeWidth(timeWidth);
@@ -322,12 +333,10 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 //			if(serieStyle == SWT.LINE_DASHDOTDOT) 
 //				stroke = new BasicStroke(serieWidth, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 1.0f, new float[] {lineWidth, emptyWidth, emptyWidth, emptyWidth, emptyWidth, emptyWidth}, 0.0f);
 			
-			RTSWTOscilloSerie rtswtSerie = rtswtOscilloChart.createSerie(serieID, serieColor);
+			IRTSWTSerie rtswtSerie = rtswtOscilloChart.createSerie(serieID, serieColor);
 			rtswtSerie.setDisplayCurrentValue(displayCurrentValues);
 			rtswtSerie.setThickness(thickness);
-			
 			oscilloCurveConfiguration.setSerie(rtswtSerie);
-			
 		}
 	}
 

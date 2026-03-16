@@ -64,6 +64,7 @@ public final class ChartConfigurationProperties extends Property {
 	public static void populateProperties(ChartConfiguration chartConfiguration){
 		chartConfiguration.setProperty(HORIZONTAL_SPANNING, "1");
 		chartConfiguration.setProperty(VERTICAL_SPANNING, "1");
+		chartConfiguration.setProperty(COLOR, "RGB{255,255,255}");
 	}
 	
 	public static Color getColor(AbstractElement chartConfiguration, Property property) {
@@ -91,7 +92,9 @@ public final class ChartConfigurationProperties extends Property {
 	public static void clone(ChartConfiguration chartConfiguration, ChartConfiguration newChartConfiguration) {
 		newChartConfiguration.setProperty(HORIZONTAL_SPANNING, new String(chartConfiguration.getProperty(HORIZONTAL_SPANNING)));
 		newChartConfiguration.setProperty(VERTICAL_SPANNING, new String(chartConfiguration.getProperty(VERTICAL_SPANNING)));
-		newChartConfiguration.setProperty(COLOR, new String(chartConfiguration.getProperty(COLOR)));
+		String colorKey = chartConfiguration.getProperty(COLOR);
+		if(colorKey == null) colorKey = "RGB{255,255,255}";
+		newChartConfiguration.setProperty(COLOR, colorKey);
 	}
 	
 	private ChartConfigurationProperties(String key, String label, String tooltip, String regExp) {

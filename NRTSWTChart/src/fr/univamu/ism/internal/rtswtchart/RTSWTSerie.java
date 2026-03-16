@@ -39,12 +39,14 @@
  * Contributors:
  *  - Frank Buloup - frank.buloup@univ-amu.fr - initial API and implementation [25/03/2020]
  ******************************************************************************/
-package fr.univamu.ism.rtswtchart;
+package fr.univamu.ism.internal.rtswtchart;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 
-public abstract class RTSWTSerie {
+import fr.univamu.ism.rtswtchart.IRTSWTSerie;
+
+public abstract class RTSWTSerie implements IRTSWTSerie {
 	
 	public static final String HORIZONTAL_REFERENCE = "Horizontal Reference";
 	
@@ -160,7 +162,7 @@ public abstract class RTSWTSerie {
 	 * Return the minimum value in pixel coordinate of the history
 	 * @return minimum value
 	 */
-	protected double getyMinHeight() {
+	protected double getyMin() {
 		return Utils.getMin(yValues);
 	}
 
@@ -168,7 +170,7 @@ public abstract class RTSWTSerie {
 	 * Return the maximum value in pixel coordinate of the history
 	 * @return maximum value
 	 */
-	protected double getyMaxHeight() {
+	protected double getyMax() {
 		return Utils.getMax(yValues);
 	}
 	
@@ -181,4 +183,14 @@ public abstract class RTSWTSerie {
 	}
 
 	protected abstract void reset();
+	
+	@Override
+	public void setThickness(int thickness) {
+		this.lineWidth = thickness;
+	}
+	
+	@Override
+	public void setDisplayCurrentValue(boolean displayCurrentValue) {
+		this.showCurrentValue = displayCurrentValue;
+	}
 }

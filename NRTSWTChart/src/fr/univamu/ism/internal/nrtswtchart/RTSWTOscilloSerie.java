@@ -37,45 +37,50 @@
  * knowledge of the CeCILL-B license and that you accept its terms.
  * 
  * Contributors:
- *  - Frank Buloup - frank.buloup@univ-amu.fr - initial API and implementation [25/03/2020]
+ *  - Frank Buloup - frank.buloup@univ-amu.fr - initial API and implementation [01/06/2024]
  ******************************************************************************/
-package fr.univamu.ism.rtswtchart;
+package fr.univamu.ism.internal.nrtswtchart;
 
 import java.util.ArrayList;
 
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 
-/**
- * This class is intended to be used in an RTSWTOscilloChart. It cannot be instantiated.
- * Just call {@link #addPoints(Double[], Double[])} method in order to add
- * new values to the serie.
- * @author frank buloup
- *
- */
-public final class RTSWTOscilloSerie extends RTSWTSerie {
-	/**
-	 * Current position in values array yValues
-	 */
-	private int currentIndex = -1;
-	/**
-	 * Most recent real time value
-	 */
+import fr.univamu.ism.rtswtchart.IRTSWTSerie;
+
+
+public class RTSWTOscilloSerie implements IRTSWTSerie {
+
+	public static final String HORIZONTAL_REFERENCE = "Horizontal Reference";
+
+	private double[] yValues;
+	private RTSWTOscilloChart rtswtChart;
+	private int currentIndex;
 	private double lastPointTime = Double.NEGATIVE_INFINITY;
+	private boolean modified;
+	private String title;
+	private Color color;
+	private boolean displayCurrentValue;
+	private int thickness;
 	
 	/**
-	 * This constructor is used within corresponding chart class.
-	 * 
-	 * @param chart parent chart
-	 * @param id name of the serie. Must be unique in the parent chart or an error is raised
-	 * @param lineColor colour of the line serie
-	 * @param lineStyle style of the line serie
-	 * @param lineWidth width of the line serie
+	 * If true, serie will be a simple horizontal line at value specified in yValues[0]
 	 */
-	protected RTSWTOscilloSerie(RTSWTChart chart, String id, Color lineColor, int lineStyle, int lineWidth) {
-		super(chart, id, lineColor, lineStyle, lineWidth);
-		if(id.startsWith(HORIZONTAL_REFERENCE)) {
-			String value = id.split("\\[")[1].replaceAll("\\]", "");
+	private boolean isHorizontalReference;
+
+	protected RTSWTOscilloSerie(RTSWTOscilloChart rtswtChart, String title, Color color) {
+		if(rtswtChart == null) SWT.error(SWT.ERROR_NULL_ARGUMENT);
+		if(title == null) SWT.error(SWT.ERROR_NULL_ARGUMENT);
+		if(title.equals("")) SWT.error(SWT.ERROR_INVALID_ARGUMENT);
+		if(color == null) SWT.error(SWT.ERROR_NULL_ARGUMENT);
+		if(color.isDisposed()) SWT.error(SWT.ERROR_INVALID_ARGUMENT);
+		this.rtswtChart = rtswtChart;
+		this.title = title;
+		this.color = color;
+		this.thickness = 1;
+		if(title.startsWith(HORIZONTAL_REFERENCE)) {
+			String value = title.split("\\[")[1].replaceAll("\\]", "");
 			yValues = new double[1];
 			yValues[0] = Double.parseDouble(value);
 			isHorizontalReference = true;
@@ -84,25 +89,65 @@ public final class RTSWTOscilloSerie extends RTSWTSerie {
 		}
 	}
 	
-	@Override
-	protected void reset() {
-		if(isHorizontalReference) return;
-		yValues = new double[chart.getWidth()];
-		for (int i = 0; i < yValues.length; i++) yValues[i] = Double.NaN;
-		currentIndex = -1;
-		if(lastPointTime == Double.NEGATIVE_INFINITY) lastPointTime = - ((RTSWTOscilloChart)chart).getDx();
-		setModified(false);
+	public void setDisplayCurrentValue(boolean displayCurrentValue) {
+		this.displayCurrentValue = displayCurrentValue;
 	}
 	
-	/**
-	 * Add a new value over nbPixels range
-	 * @param Y
-	 * @param nbPixels
-	 */
+	public boolean isDisplayCurrentValue() {
+		return displayCurrentValue;
+	}
+
+	protected Color getColor() {
+		return color;
+	}
+
+	public String getId() {
+		return title;
+	}
+
+	public int getThickness() {
+		return thickness;
+	}
+
+	public void setThickness(int thickness) {
+		this.thickness = thickness;
+	}
+
+	public boolean isHorizontalReference() {
+		return isHorizontalReference;
+	}
+
+	public void addPoints(final Double[] x, final Double[] y) {
+		Display.getDefault().syncExec(new Runnable() {
+			public void run() {
+				if(rtswtChart.getChart().isDisposed()) return;
+				if(yValues == null) reset();
+				double dx = rtswtChart.getDx();
+				for (int i = 0; i < x.length; i++) {
+					int nbPixels = (int)((x[i] - lastPointTime) / dx);
+					if(nbPixels > 0) {
+						addValue(y[i], nbPixels);
+						setModified(true);
+					}
+				}
+				rtswtChart.checkUpdate();
+			}
+		});
+	}
+
+	protected void reset() {
+		if(isHorizontalReference) return;
+		yValues = new double[rtswtChart.getWidth()];
+		for (int i = 0; i < yValues.length; i++) yValues[i] = Double.NaN;
+		currentIndex = -1;
+		if(lastPointTime == Double.NEGATIVE_INFINITY) lastPointTime = - rtswtChart.getDx();
+		setModified(false);
+	}
+
 	private void addValue(double Y, int nbPixels) {
 		if(yValues.length == 0) return;
-		int width = chart.getWidth() - chart.getLeftAxisWidth();
-		double dx = ((RTSWTOscilloChart)chart).getDx();
+		int width = rtswtChart.getWidth() - rtswtChart.getLeftAxisWidth();
+		double dx = rtswtChart.getDx();
 		int localCurrentIndex = 0;
 		for (int i = 1; i <= nbPixels; i++) {
 			localCurrentIndex = (currentIndex + i) % width;
@@ -111,46 +156,35 @@ public final class RTSWTOscilloSerie extends RTSWTSerie {
 		currentIndex = (currentIndex + nbPixels) % width;
 		lastPointTime = lastPointTime + nbPixels*dx;
 	}
-	
-	/**
-	 * Add new values to the serie. Values
-	 * will be filtered in order to be painted within chart screen dimensions.
-	 * @param x time values
-	 * @param y amplitude values
-	 */
-	public void addPoints(final Double[] x, final Double[] y) {
-		Display.getDefault().syncExec(new Runnable() {
-			public void run() {
-				if(chart.isDisposed()) return;
-				if(yValues == null) reset();
-				double dx = chart.getDx();
-				for (int i = 0; i < x.length; i++) {
-					int nbPixels = (int)((x[i] - lastPointTime) / dx);
-					boolean addPoint = nbPixels > 0;
-					if(addPoint) {
-						addValue(y[i], nbPixels);
-						setModified(true);
-					}
-				}
-				chart.render();
-			}
-		});
+
+	protected boolean getModified() {
+		return this.modified;
 	}
-	
-	/**
-	 * Return an array containing points in pixels coordinates to draw. 
-	 * @return an int array of point
-	 */
-	public int[] getPointsArrayToDraw() {
+
+	protected void setModified(boolean modified) {
+		this.modified = modified;
+	}
+
+	protected double getyMin() {
+		return RTSWTChartUtils.getMin(yValues);
+	}
+
+	protected double getyMax() {
+		return RTSWTChartUtils.getMax(yValues);
+	}
+
+	protected int[] getPointsArrayToDraw() {
 		ArrayList<Integer> pointsArray = new ArrayList<Integer>(0);
-		int height = chart.getHeight() - chart.getBottomAxisHeight();
-		if(chart.isLegendVisible()) height = height - chart.getLegendHeight();
-		double yMin = ((RTSWTOscilloChart)chart).getyMin();
-		double dy = ((RTSWTOscilloChart)chart).getDy();
+		int height = rtswtChart.getHeight() - rtswtChart.getBottomAxisHeight() - rtswtChart.getLegendHeight();
+		double yMin = rtswtChart.getyMin();
+		double dy = rtswtChart.getDy();
 		for (int i = 0; i < yValues.length; i++) {
 			if(Double.compare(yValues[i], Double.NaN) != 0) {
+				int value = height - (int) Math.round((yValues[i] - yMin)/dy);
+				value = (value >= height)?height-1:value;
+				value = (value < 0)?0:value;
 				pointsArray.add(i);
-				pointsArray.add(height - (int) Math.round((yValues[i] - yMin)/dy));
+				pointsArray.add(value);
 			} else break;
 		} 
 		int[] pointsInt = new int[pointsArray.size()];
@@ -158,17 +192,9 @@ public final class RTSWTOscilloSerie extends RTSWTSerie {
 		return pointsInt;
 	}
 
-	/**
-	 * Return the current index
-	 * @return int
-	 */
-	public int getCurrentIndex() {
-		return currentIndex;
-	}
-	
-	public double getCurrentValue() {
+	protected double getCurrentValue() {
 		if(currentIndex > -1) return yValues[currentIndex];
 		return Double.NaN;
 	}
-	
+
 }

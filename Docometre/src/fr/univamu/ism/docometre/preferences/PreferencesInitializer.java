@@ -107,6 +107,8 @@ public class PreferencesInitializer extends AbstractPreferenceInitializer {
 				
 		defaults.putInt(MathEnginePreferencesConstants.PY4J_JAVA_PORT, GatewayServer.DEFAULT_PORT);
 		defaults.putInt(MathEnginePreferencesConstants.PY4J_PYTHON_PORT, GatewayServer.DEFAULT_PYTHON_PORT);
+
+		defaults.putBoolean(GeneralPreferenceConstants.USE_OPENGL_FOR_RTSWT_CHART, true);
 		
 		Bundle bundle = Platform.getBundle("Libraries");
 		Optional<File> files = FileLocator.getBundleFileLocation(bundle);

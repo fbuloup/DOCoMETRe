@@ -9,7 +9,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 
-import fr.univamu.ism.nrtswtchart.RTSWTChartMessages;
+import fr.univamu.ism.internal.nrtswtchart.RTSWTChartMessages;
 
 public class ContextMenu {
 	

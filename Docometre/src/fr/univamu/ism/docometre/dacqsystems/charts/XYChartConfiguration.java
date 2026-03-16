@@ -66,9 +66,11 @@ import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyHandler;
 import fr.univamu.ism.docometre.dacqsystems.Property;
 import fr.univamu.ism.docometre.editors.ResourceEditor;
-import fr.univamu.ism.nrtswtchart.RTSWTXYChart;
-import fr.univamu.ism.nrtswtchart.RTSWTXYSerie;
 import fr.univamu.ism.docometre.editors.ModulePage.ModuleSectionPart;
+import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
+import fr.univamu.ism.rtswtchart.IRTSWTSerie;
+import fr.univamu.ism.rtswtchart.IRTSWTXYChart;
+import fr.univamu.ism.rtswtchart.RTSWTChartsFactory;
 
 public class XYChartConfiguration extends ChartConfiguration {
 
@@ -144,6 +146,7 @@ public class XYChartConfiguration extends ChartConfiguration {
 			}
 		});
 		
+		boolean useOpenGL = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_OPENGL_FOR_RTSWT_CHART);
 		page.createLabel(container, DocometreMessages.Font_Title, DocometreMessages.Font_Tooltip);
 		value = getProperty(XYChartConfigurationProperties.FONT);
 		value = value==null?FontUtil.getDefaultFontName():value;
@@ -156,17 +159,20 @@ public class XYChartConfiguration extends ChartConfiguration {
 		fontBoldButton = page.createButton(container, "Bold", SWT.CHECK, 1, 1);
 		fontBoldButton.setSelection(fontBold);
 		fontBoldButton.addSelectionListener(new ModifyPropertyHandler(XYChartConfigurationProperties.FONT_BOLD, this, fontBoldButton, XYChartConfigurationProperties.FONT_BOLD.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		fontBoldButton.setEnabled(!useOpenGL);
 		
 		value = getProperty(XYChartConfigurationProperties.FONT_ITALIC);
 		boolean fontItalic = Boolean.valueOf(value);
 		fontItalicButton = page.createButton(container, "Italic", SWT.CHECK, 1, 1);
 		fontItalicButton.setSelection(fontItalic);
 		fontItalicButton.addSelectionListener(new ModifyPropertyHandler(XYChartConfigurationProperties.FONT_ITALIC, this, fontItalicButton, XYChartConfigurationProperties.FONT_ITALIC.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		fontItalicButton.setEnabled(!useOpenGL);
 		
 		page.createLabel(container, DocometreMessages.Size_Title, DocometreMessages.Size_Tooltip);
 		fontSizeText = page.createText(container, getProperty(XYChartConfigurationProperties.FONT_SIZE), SWT.NONE, 1, 1);
 		fontSizeText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		fontSizeText.addModifyListener(new ModifyPropertyHandler(XYChartConfigurationProperties.FONT_SIZE, this, fontSizeText, XYChartConfigurationProperties.FONT_SIZE.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		fontSizeText.setEnabled(!useOpenGL);
 		
 		Color chartColor = ChartConfigurationProperties.getColor(this, ChartConfigurationProperties.COLOR);
 		chartColorButton = page.createColorDialogButton(container, "...", SWT.PUSH | SWT.FLAT, 1, 1);
@@ -274,8 +280,11 @@ public class XYChartConfiguration extends ChartConfiguration {
 		double historySize = Double.parseDouble(value);
 		Color chartColor = ChartConfigurationProperties.getColor(this, ChartConfigurationProperties.COLOR);
 		
-		RTSWTXYChart rtswtxyChart = new RTSWTXYChart(chartContainer, SWT.DOUBLE_BUFFERED, fontName, fontStyle, fontSize);
-		rtswtxyChart.getChart().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, hSpan, vSpan));
+		IRTSWTXYChart rtswtxyChart = null;
+		boolean useOpenGL = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_OPENGL_FOR_RTSWT_CHART);
+		if(useOpenGL) rtswtxyChart = RTSWTChartsFactory.createOpenGLXYChart(chartContainer, SWT.DOUBLE_BUFFERED, fontName, fontStyle, fontSize);
+		else rtswtxyChart = RTSWTChartsFactory.createPureSWTXYChart(chartContainer, SWT.DOUBLE_BUFFERED, fontName, fontStyle, fontSize);;
+		rtswtxyChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, hSpan, vSpan));
 		rtswtxyChart.setAutoScale(autoscale);
 		rtswtxyChart.setxMax(xMax);
 		rtswtxyChart.setxMin(xMin);
@@ -287,6 +296,7 @@ public class XYChartConfiguration extends ChartConfiguration {
 		rtswtxyChart.setHistorySize(historySize);
 		rtswtxyChart.setGridLinesColor(chartColor);
 		rtswtxyChart.setFontColor(chartColor);
+		rtswtxyChart.setWaitForAllSeriesToRedraw(true);
 		
 		// Create curves
 		for (CurveConfiguration curveConfiguration : curvesConfigurations) {
@@ -320,7 +330,7 @@ public class XYChartConfiguration extends ChartConfiguration {
 	
 			double sfx = Double.parseDouble(sfxString);
 			rtswtxyChart.setSampleFrequency(sfx);
-			RTSWTXYSerie rtswtSerie = rtswtxyChart.createSerie(ySerieID + "(" + xSerieID + ")", serieColor);
+			IRTSWTSerie rtswtSerie = rtswtxyChart.createSerie(ySerieID + "(" + xSerieID + ")", serieColor);
 			rtswtSerie.setThickness(thickness);
 			xyCurveConfiguration.setSerie(rtswtSerie);
 		}
