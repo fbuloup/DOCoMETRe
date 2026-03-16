@@ -23,14 +23,19 @@
 
 	<repositories>
 		<repository>
-			<id>2025_03</id>
+			<id>2026_03</id>
 			<layout>p2</layout>
-			<url>https://download.eclipse.org/releases/2025-03/</url>
+			<url>https://download.eclipse.org/releases/2026-03/</url>
 		</repository>
 		<repository>
 			<id>GEF Legacy</id>
 			<layout>p2</layout>
 			<url>https://download.eclipse.org/tools/gef/classic/releases/latest/</url>
+		</repository>
+		<repository>
+			<id>Eclipse ECF</id>
+			<layout>p2</layout>
+			<url>https://download.eclipse.org/rt/ecf/3.16.5/site.p2/</url>
 		</repository>
 	</repositories>
 
