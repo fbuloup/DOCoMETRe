@@ -26,7 +26,7 @@ Développement à l&apos;institut des Sciences du Mouvement.
 --add-opens=java.base/java.lang=ALL-UNNAMED
 --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
       </vmArgs>
-      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
+      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts -Djava.awt.headless=true
       </vmArgsMac>
    </launcherArgs>
 
@@ -44,7 +44,6 @@ Développement à l&apos;institut des Sciences du Mouvement.
          <bmp/>
       </win>
    </launcher>
-
 
    <vm>
    </vm>
