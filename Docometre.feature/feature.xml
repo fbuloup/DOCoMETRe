@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2026-03-16
+      -- 2026-03-17
+ADDED : Nothing
+FIXED :
+* Return to Eclipse 4.35 (2025_03) : Bad OpenGL charts rendering
+-- 2026-03-16
 ADDED :
 * Docometre Overview and Installation plugins
 * Now use py4j.jar 0.10.9.9
@@ -14,12 +18,15 @@ ADDED :
 * Percentage of completion to batch data processing editor
 * Video.md on Github
 * update to Readme.md on github
-* Improve code generation messages (ADwin) and samples counter in diary journal (ADwin)
+* Improve code generation messages (ADwin) and samples counter
+in diary journal (ADwin)
 * Now use ADwin 1.6.0 java library version
 * Close Data editor when Samp. Freq. dialog is closed or canceled
 * Update help with stimulus file creation (Python, Matlab)
-* Reuse RTSWTChart (OpenGL) Project - Giving the choice between pure SWT or OpenGL in prefs.
-* Move to Eclipse 4.39 (2026_03) - Add Eclipse ECF p2 repository to parent pom (Docometre.releng)
+* Reuse RTSWTChart (OpenGL) Project - Giving the choice between
+pure SWT or OpenGL in prefs.
+* Move to Eclipse 4.39 (2026_03) - Add Eclipse ECF p2 repository
+to parent pom (Docometre.releng)
 FIXED :
 * Channel (as IFile resource) is always local
 * Use -Djava.awt.headless=true on MacOS 
