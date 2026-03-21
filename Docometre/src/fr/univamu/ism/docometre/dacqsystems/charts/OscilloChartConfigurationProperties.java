@@ -79,9 +79,12 @@ public final class OscilloChartConfigurationProperties extends Property {
 		newOscilloChartConfiguration.setProperty(AUTO_SCALE, new String(oscilloChartConfiguration.getProperty(AUTO_SCALE)));
 		newOscilloChartConfiguration.setProperty(FONT, new String(oscilloChartConfiguration.getProperty(FONT)));
 		newOscilloChartConfiguration.setProperty(DISPLAY_CURRENT_VALUES, new String(oscilloChartConfiguration.getProperty(DISPLAY_CURRENT_VALUES)));
-		newOscilloChartConfiguration.setProperty(FONT_BOLD, new String(oscilloChartConfiguration.getProperty(FONT_BOLD)));
-		newOscilloChartConfiguration.setProperty(FONT_ITALIC, new String(oscilloChartConfiguration.getProperty(FONT_ITALIC)));
-		newOscilloChartConfiguration.setProperty(FONT_SIZE, new String(oscilloChartConfiguration.getProperty(FONT_SIZE)));
+		if(oscilloChartConfiguration.getProperty(FONT_BOLD) == null) newOscilloChartConfiguration.setProperty(FONT_BOLD, "true");
+		else newOscilloChartConfiguration.setProperty(FONT_BOLD, new String(oscilloChartConfiguration.getProperty(FONT_BOLD)));
+		if(oscilloChartConfiguration.getProperty(FONT_ITALIC) == null) oscilloChartConfiguration.setProperty(FONT_ITALIC, "false");
+		else newOscilloChartConfiguration.setProperty(FONT_ITALIC, new String(oscilloChartConfiguration.getProperty(FONT_ITALIC)));
+		if(oscilloChartConfiguration.getProperty(FONT_SIZE) == null) oscilloChartConfiguration.setProperty(FONT_SIZE, "12");
+		else newOscilloChartConfiguration.setProperty(FONT_SIZE, new String(oscilloChartConfiguration.getProperty(FONT_SIZE)));
 		CurveConfiguration[] curveConfigurations = oscilloChartConfiguration.getCurvesConfiguration();
 		for (CurveConfiguration curveConfiguration : curveConfigurations) {
 			try {
