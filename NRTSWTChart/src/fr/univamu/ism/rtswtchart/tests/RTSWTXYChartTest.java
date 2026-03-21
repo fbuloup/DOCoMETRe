@@ -106,6 +106,12 @@ public class RTSWTXYChartTest {
 	}
 
 	public static void main(String[] args) {
+		String OS = System.getProperty("os.name").toLowerCase();
+		if(OS.indexOf("mac") >= 0) System.setProperty("java.awt.headless", "true");
+		System.setProperty("jogl.verbose", "true");
+		System.setProperty("jogl.debug", "true");
+		System.setProperty("jogl.debug.GLContext.TraceSwitch", "true");
+		
 		
 		System.out.println(JoglVersion.getInstance().toString());
 		boolean displayLoop = true;
@@ -169,7 +175,14 @@ public class RTSWTXYChartTest {
 		if(displayLoop) {
 			/* SWT display loop */
 			while (!shell.isDisposed ()) {
-				if (!display.readAndDispatch ()) display.sleep ();
+				boolean response = false;
+				try {
+					response = display.readAndDispatch ();
+				} catch (Exception e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				if (!response) display.sleep ();
 			}
 			display.dispose ();
 		}
@@ -181,7 +194,7 @@ public class RTSWTXYChartTest {
 	}
 	
 	public static String getMeanDrawTime() {
-		return chart.getMeanDrawTime();
+		return "XYChart : " + chart.getMeanDrawTime();
 	}
 
 }

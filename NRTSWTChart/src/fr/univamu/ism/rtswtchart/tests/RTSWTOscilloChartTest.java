@@ -142,6 +142,11 @@ public class RTSWTOscilloChartTest {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		String OS = System.getProperty("os.name").toLowerCase();
+		if(OS.indexOf("mac") >= 0) System.setProperty("java.awt.headless", "true");
+		System.setProperty("jogl.verbose", "true");
+		System.setProperty("jogl.debug", "true");
+		System.setProperty("jogl.debug.GLContext.TraceSwitch", "true");
 
 		System.out.println(JoglVersion.getInstance().toString());
 		boolean displayLoop = true;
@@ -161,7 +166,6 @@ public class RTSWTOscilloChartTest {
 		Display display = Display.getDefault();
 		if(display == null) display = new Display();
 		shell = new Shell (display);
-		shell.setMaximized(true);
 		shell.setText("OpenGL RTSWT Oscillo Test");
 		shell.setLayout(new GridLayout(1,true));
 		
@@ -195,7 +199,10 @@ public class RTSWTOscilloChartTest {
 //		serie4 = rtswtChartOscillo2.createSerie("serie4", display.getSystemColor(SWT.COLOR_RED));
 		
 		/* Open the shell to display charts */
-		shell.open ();
+		shell.setSize(800, 600);
+		shell.open();
+		
+		
 		
 		/* Run first timer to generate random data for the first two series */
 		Timer timer1 = new Timer();
@@ -218,7 +225,14 @@ public class RTSWTOscilloChartTest {
 		if(displayLoop) {
 			/* SWT display loop */
 			while (!shell.isDisposed ()) {
-				if (!display.readAndDispatch ()) display.sleep ();
+				boolean response = false;
+				try {
+					response = display.readAndDispatch ();
+				} catch (Exception e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				if (!response) display.sleep ();
 			}
 			display.dispose ();
 		}
@@ -230,7 +244,7 @@ public class RTSWTOscilloChartTest {
 	}
 	
 	public static String getMeanDrawTime() {
-		return rtswtChartOscillo.getMeanDrawTime();
+		return "OscilloChart : " + rtswtChartOscillo.getMeanDrawTime();
 	}
 	
 	
