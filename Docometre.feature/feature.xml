@@ -6,7 +6,16 @@
       provider-name="ISM">
 
    <description>
-      -- 2026-03-17
+      -- 2026-03-21
+ADDED :
+* System properties to debug and run (Mac OS) to charts tests
+FIXED :
+* NPE : some properties were null when cloning OscilloChartConfiguration
+* OpenGL Charts : GL context was initialized too late resulting
+in wrong viewport size
+* Display error if Uno release isnt specified 
+* Some bug with Process exec command line 
+-- 2026-03-17
 ADDED : Nothing
 FIXED :
 * Return to Eclipse 4.35 (2025_03) : Bad OpenGL charts rendering
