@@ -460,6 +460,11 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "// Loop time in second\n";
 			if(isRelease4Wifi) code = code + "double rtTime;\n\n";
 			if(isRelease3) code = code + "double time;\n\n";
+			if(!isRelease3 && !isRelease4Wifi) {
+				IResource dacqResource = ObjectsController.getResourceForObject(getDACQConfiguration());
+				Activator.logErrorMessage("ArduinoUno's Revision is not specified (R3 or R4Wifi)");
+				Activator.logErrorMessage("Please fix this property in Dacq. Conf. file : " + dacqResource.getFullPath().toPortableString());
+			}
 //			code = code + "// Loop time in usecond\n";
 //			code = code + "unsigned long timeMicros;\n\n";
 			code = code + "// Loop index to compute time\n";
@@ -1328,7 +1333,7 @@ public class ArduinoUnoProcess extends Process {
 		fileWriter.write(cmd);
 		fileWriter.close();
 		// This bash file must be executable 
-		java.lang.Process process = Runtime.getRuntime().exec(new String[]{"chmod 777 " + bashFilePath});
+		java.lang.Process process = Runtime.getRuntime().exec(new String[]{"chmod", "777", bashFilePath});
 		process.waitFor();
 		return /*"/bin/sh " +*/ bashFilePath;
 	}
@@ -1471,7 +1476,7 @@ public class ArduinoUnoProcess extends Process {
 		fileWriter.close();
 		if(!Platform.getOS().equals(Platform.OS_WIN32)) {
 			// This bash file must be executable 
-			java.lang.Process process = Runtime.getRuntime().exec(new String[]{"chmod 777 " + bashFilePath});
+			java.lang.Process process = Runtime.getRuntime().exec(new String[]{"chmod", "777", bashFilePath});
 			process.waitFor();
 		}
 		return bashFilePath;
