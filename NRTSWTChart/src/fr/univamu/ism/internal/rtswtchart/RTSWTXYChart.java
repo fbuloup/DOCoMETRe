@@ -223,7 +223,6 @@ public class RTSWTXYChart extends RTSWTChart {
 			}
 			
 			long t = System.nanoTime();
-			if (!glInitialized) glInit();
 			
 			chartArea.setCurrent();
 			chartAreaGLContext.makeCurrent();

@@ -303,12 +303,14 @@ public abstract class RTSWTChart extends Composite implements ControlListener, I
 		autoScaleMenu.setText("Autoscale");
 		autoScaleMenu.addSelectionListener(new AutoScaleHandler());
 		chartArea.setMenu(mainMenu);
+		glInit();
 	}
 	
 	/**
 	 * Initialize Graphic library
 	 */
-	protected void glInit() {
+	private void glInit() {
+		System.out.println("Initializing OpenGL context ... ");
 		chartArea.setCurrent();
 		if (chartAreaGLContext == null) chartAreaGLContext = GLDrawableFactory.getFactory(glProfile).createExternalGLContext();
 		chartAreaGLContext.makeCurrent();
@@ -327,6 +329,7 @@ public abstract class RTSWTChart extends Composite implements ControlListener, I
 		chartAreaGLContext.getGL().getGL2().glLoadIdentity();
 		chartAreaGLContext.release();
 		glInitialized = true;
+		System.out.println("Initializing OpenGL context ... Done");
 	}
 
 	@Override
@@ -340,22 +343,21 @@ public abstract class RTSWTChart extends Composite implements ControlListener, I
 	@Override
 	public void controlResized(ControlEvent e) {
 		resetSeries();
-		if(glInitialized) {
-			chartArea.setCurrent();
-			chartAreaGLContext.makeCurrent();
-			chartAreaGLContext.getGL().getGL2().glViewport(0, 0, getWidth(), getHeight());
-			chartAreaGLContext.getGL().getGL2().glMatrixMode(GL2.GL_PROJECTION);
-			chartAreaGLContext.getGL().getGL2().glLoadIdentity();
-			chartAreaGLContext.getGL().getGL2().glOrtho(0, getWidth(), getHeight(), 0, 0, -1);
-			chartAreaGLContext.getGL().getGL2().glDisable(GL2.GL_DEPTH_TEST);
-			chartAreaGLContext.getGL().getGL2().glEnable(GL2.GL_LINE_STIPPLE);
-			chartAreaGLContext.getGL().getGL2().glMatrixMode(GL2.GL_MODELVIEW);
-			chartAreaGLContext.getGL().getGL2().glLoadIdentity();
-			chartAreaGLContext.getGL().getGL2().glClearColor(backGroundColor.getRed() / 255f, backGroundColor.getGreen() / 255f, backGroundColor.getBlue() / 255f, 1f);
-			chartAreaGLContext.getGL().getGL2().glClear(GL2.GL_COLOR_BUFFER_BIT);
-			chartArea.swapBuffers();
-			chartAreaGLContext.release();
-		}
+		if(!glInitialized) return;
+		chartArea.setCurrent();
+		chartAreaGLContext.makeCurrent();
+		chartAreaGLContext.getGL().getGL2().glViewport(0, 0, getWidth(), getHeight());
+		chartAreaGLContext.getGL().getGL2().glMatrixMode(GL2.GL_PROJECTION);
+		chartAreaGLContext.getGL().getGL2().glLoadIdentity();
+		chartAreaGLContext.getGL().getGL2().glOrtho(0, getWidth(), getHeight(), 0, 0, -1);
+		chartAreaGLContext.getGL().getGL2().glDisable(GL2.GL_DEPTH_TEST);
+		chartAreaGLContext.getGL().getGL2().glEnable(GL2.GL_LINE_STIPPLE);
+		chartAreaGLContext.getGL().getGL2().glMatrixMode(GL2.GL_MODELVIEW);
+		chartAreaGLContext.getGL().getGL2().glLoadIdentity();
+		chartAreaGLContext.getGL().getGL2().glClearColor(backGroundColor.getRed() / 255f, backGroundColor.getGreen() / 255f, backGroundColor.getBlue() / 255f, 1f);
+		chartAreaGLContext.getGL().getGL2().glClear(GL2.GL_COLOR_BUFFER_BIT);
+		chartArea.swapBuffers();
+		chartAreaGLContext.release();
 	}
 	
 	/**
@@ -704,6 +706,7 @@ public abstract class RTSWTChart extends Composite implements ControlListener, I
 	 * Draw left axis
 	 */
 	protected void drawLeftAxis() {
+		if(!glInitialized) return;
 		chartAreaGLContext.getGL().getGL2().glColor3f(fontColor.getRed() / 255, fontColor.getGreen() / 255, fontColor.getBlue() / 255);
 		for (int i = 0; i < horizontalGridLinesPositions.size(); i++) {
 			int position = horizontalGridLinesPositions.get(i).intValue();
@@ -723,6 +726,7 @@ public abstract class RTSWTChart extends Composite implements ControlListener, I
 	 * Draw the chart legend
 	 */
 	protected void drawLegend() {
+		if(!glInitialized) return;
 		if (getSeries().length == 0) return;
 		RTSWTSerie[] seriesList = getSeries();
 		int totalWidth = 0;
@@ -768,8 +772,8 @@ public abstract class RTSWTChart extends Composite implements ControlListener, I
 	 * Draw grids on the chart image
 	 */
 	protected void drawGrids() {
-		if (chartArea.isDisposed())
-			return;
+		if(!glInitialized) return;
+		if (chartArea.isDisposed()) return;
 		chartAreaGLContext.getGL().getGL2().glColor3f(gridLinesColor.getRed() / 255.0f, gridLinesColor.getGreen() / 255.0f, gridLinesColor.getBlue() / 255.0f);
 		chartAreaGLContext.getGL().getGL2().glLineWidth(gridLinesWidth);
 		if (gridLinesStyle == SWT.LINE_SOLID)
@@ -894,10 +898,6 @@ public abstract class RTSWTChart extends Composite implements ControlListener, I
 	protected abstract void drawSeries();
 	
 	
-	@Override
-	public void setLayoutData(GridData gridData) {
-		super.setLayoutData(gridData);
-	}
 	
 	@Override
 	public void setGridVisibility(boolean value) {
@@ -907,6 +907,11 @@ public abstract class RTSWTChart extends Composite implements ControlListener, I
 	@Override
 	public void setShowCurrentValue(boolean value) {
 		showCurrentValue = value;
+	}
+
+	@Override
+	public void setLayoutData(GridData gridData) {
+		super.setLayoutData(gridData);
 	}
 	
 	@Override
