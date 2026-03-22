@@ -283,9 +283,6 @@ public class DataEditor extends EditorPart implements PartNameRefresher, CursorM
 			float[] values = new float[floatBuffer.capacity()];
 			floatBuffer.get(values);
 			
-			String message = NLS.bind(DocometreMessages.NumberSamplesReadMessage, values.length);
-			Activator.logInfoMessage(message, getClass());
-			
 			// Get sample frequency
 			boolean removeDACQHandle = false;
 			IContainer container = dataFile.getParent();
@@ -345,6 +342,8 @@ public class DataEditor extends EditorPart implements PartNameRefresher, CursorM
 				if(channelFound != null) sf = Double.parseDouble(channelFound.getProperty(ChannelProperties.SAMPLE_FREQUENCY));
 			}
 			
+			String message;
+			
 			if(sf == -1) {
 				message = NLS.bind(DocometreMessages.SampleFrequencyDialogMessage, channelNameToFind);
 				Activator.logWarningMessage(message);
@@ -358,6 +357,9 @@ public class DataEditor extends EditorPart implements PartNameRefresher, CursorM
 			if(sf == -1) {
 				return;
 			}
+			
+			message = NLS.bind(DocometreMessages.NumberSamplesReadMessage, values.length, channelNameToFind);
+			Activator.logInfoMessage(message, getClass());
 			
 			HashMap<String, double[]> xyValues  = createXYDoubleValues(values, sf, dacqConfiguration);
 			// Create X and Y data arrays
