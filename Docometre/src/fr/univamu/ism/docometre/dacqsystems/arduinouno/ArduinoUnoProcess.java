@@ -462,8 +462,8 @@ public class ArduinoUnoProcess extends Process {
 			if(isRelease3) code = code + "double time;\n\n";
 			if(!isRelease3 && !isRelease4Wifi) {
 				IResource dacqResource = ObjectsController.getResourceForObject(getDACQConfiguration());
-				Activator.logErrorMessage("ArduinoUno's Revision is not specified (R3 or R4Wifi)");
-				Activator.logErrorMessage("Please fix this property in Dacq. Conf. file : " + dacqResource.getFullPath().toPortableString());
+				Activator.logErrorMessage(ArduinoUnoMessages.arduinoRevisionNotSpecified);
+				Activator.logErrorMessage(NLS.bind(ArduinoUnoMessages.fixArduinoRevisionProperty, dacqResource.getFullPath().toPortableString()));
 			}
 //			code = code + "// Loop time in usecond\n";
 //			code = code + "unsigned long timeMicros;\n\n";
@@ -1072,6 +1072,16 @@ public class ArduinoUnoProcess extends Process {
 	@Override
 	public void compile(IProgressMonitor progressMonitor) throws Exception {
 		cleanBuild();
+		
+		// Check if revision has been specified
+		getDACQConfiguration().getResource().deleteMarkers(null, true, IResource.DEPTH_INFINITE);
+		String value = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
+		if( value == null) {
+			IMarker marker = getDACQConfiguration().getResource().createMarker(DocometreBuilder.MARKER_ID);
+			marker.setAttribute(IMarker.MESSAGE, ArduinoUnoMessages.arduinoRevisionNotSpecified);
+			marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+		}
+		
 		IResource processResource = ObjectsController.getResourceForObject(this);
 		IPath wsPath = new Path(Platform.getInstanceLocation().getURL().getPath());
 		String currentFolder = wsPath.append(processResource.getParent().getFullPath()).toOSString();

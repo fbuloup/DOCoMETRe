@@ -187,6 +187,12 @@ public class ArduinoUnoMessages extends NLS {
 	public static String Gain_Tooltip;
 	public static String Gain_Label;
 	public static String ADS1115ModuleExplanations_Text2;
+	
+	/*
+	 * Arduino revision empty !
+	 */
+	public static String arduinoRevisionNotSpecified;
+	public static String fixArduinoRevisionProperty;
 
 	static {
 		NLS.initializeMessages(BUNDLE_NAME, ArduinoUnoMessages.class);

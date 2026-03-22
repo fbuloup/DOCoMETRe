@@ -46,8 +46,12 @@ import java.util.ArrayList;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.IOperationHistory;
 import org.eclipse.core.commands.operations.IUndoContext;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.layout.TableColumnLayout;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -87,6 +91,7 @@ import fr.univamu.ism.docometre.dacqsystems.adwin.ui.dacqconfigurationeditor.Add
 import fr.univamu.ism.docometre.dacqsystems.adwin.ui.dacqconfigurationeditor.DeleteModulesHandler;
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfigurationProperties;
+import fr.univamu.ism.docometre.dacqsystems.DocometreBuilder;
 import fr.univamu.ism.docometre.dacqsystems.FrequencyInputValidator;
 import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyHandler;
 import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyOperation;
@@ -245,11 +250,21 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 		
 		createLabel(generalconfigurationContainer, ArduinoUnoMessages.Revision_Label, ArduinoUnoMessages.Revision_Tooltip);
 		value = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
-		value = value == null ? ArduinoUnoDACQConfigurationProperties.REVISION_R3 : value;
 		regExp = ArduinoUnoDACQConfigurationProperties.REVISION.getRegExp();
-		revisionCombo = createCombo(generalconfigurationContainer, ArduinoUnoDACQConfigurationProperties.REVISIONS, value, 2 , 1);
+		revisionCombo = createCombo(generalconfigurationContainer, ArduinoUnoDACQConfigurationProperties.REVISIONS, value == null ? "" : value, 2 , 1);
 		revisionCombo.addModifyListener(new ModifyPropertyHandler(ArduinoUnoDACQConfigurationProperties.REVISION, dacqConfiguration, revisionCombo, regExp, "", false, (ResourceEditor)getEditor()));
 		revisionCombo.addModifyListener(getGeneralConfigurationModifyListener());
+		if(value == null) {
+			try {
+				getManagedForm().getMessageManager().addMessage(revisionCombo, ArduinoUnoMessages.arduinoRevisionNotSpecified, null, IMessageProvider.ERROR);
+				IMarker marker = dacqConfiguration.getResource().createMarker(DocometreBuilder.MARKER_ID);
+				marker.setAttribute(IMarker.MESSAGE, ArduinoUnoMessages.arduinoRevisionNotSpecified);
+				marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+			} catch (CoreException e) {
+				Activator.logErrorMessageWithCause(e);
+				e.printStackTrace();
+			}
+		}
 		
 		createLabel(generalconfigurationContainer, ArduinoUnoMessages.DevicePath_Label, ArduinoUnoMessages.DevicePath_Tooltip);
 		value = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH);
@@ -383,8 +398,18 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 				updateWidget(deviceBaudRateCombo, (ArduinoUnoDACQConfigurationProperties)property);
 			if(property == ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY)
 				updateWidget(globalFrequencyHyperlink, (ArduinoUnoDACQConfigurationProperties)property);
-			if(property == ArduinoUnoDACQConfigurationProperties.REVISION)
+			if(property == ArduinoUnoDACQConfigurationProperties.REVISION) {
 				updateWidget(revisionCombo, (ArduinoUnoDACQConfigurationProperties)property);
+				if(newValue != null) {
+					try {
+						getManagedForm().getMessageManager().removeMessage(revisionCombo);
+						dacqConfiguration.getResource().deleteMarkers(DocometreBuilder.MARKER_ID, false, IResource.DEPTH_INFINITE);
+					} catch (CoreException e) {
+						Activator.logErrorMessageWithCause(e);
+						e.printStackTrace();
+					}
+				}
+			}
 		}
 		if(property instanceof DACQConfigurationProperties) {
 			if(property == DACQConfigurationProperties.UPDATE_MODULE) {
