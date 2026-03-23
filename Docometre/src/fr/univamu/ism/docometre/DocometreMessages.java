@@ -709,6 +709,7 @@ public final class DocometreMessages extends NLS {
 	public static String CalibrationMonitoringDialogMessage;
 	public static String Inputs;
 	public static String Outputs;
+	public static String CalibrationHasBeenModified;
 	
 	// DACQ configuration editor undo/redo modify operation label
 	public static String ErrorFileFolderNotExists;

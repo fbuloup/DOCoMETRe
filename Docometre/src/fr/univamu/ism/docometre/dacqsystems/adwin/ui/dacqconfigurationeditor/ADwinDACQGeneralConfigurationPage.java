@@ -166,6 +166,8 @@ public class ADwinDACQGeneralConfigurationPage extends ModulePage {
 			Shell shell = ADwinDACQGeneralConfigurationPage.this.getSite().getShell();
 			CalibrateMonitorDialog calibrateMonitorDialog = new CalibrateMonitorDialog(shell, (ADWinDACQConfiguration) dacqConfiguration);
 			calibrateMonitorDialog.open();
+			if(CalibrateMonitorDialog.hasCalibrationBeenModified()) 
+				Activator.logWarningMessage(NLS.bind(DocometreMessages.CalibrationHasBeenModified, dacqConfiguration.getResource().getFullPath()));
 		}
 	}
 	

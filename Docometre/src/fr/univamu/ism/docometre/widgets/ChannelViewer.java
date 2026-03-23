@@ -61,6 +61,7 @@ import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.calibration.CalibrationFactory;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
+import fr.univamu.ism.docometre.dacqsystems.adwin.calibration.CalibrateMonitorDialog;
 import fr.univamu.ism.rtswtchart.IRTSWTOscilloChart;
 import fr.univamu.ism.rtswtchart.IRTSWTSerie;
 import fr.univamu.ism.rtswtchart.RTSWTChartsFactory;
@@ -163,7 +164,11 @@ public class ChannelViewer extends Composite {
 				showCalibratedValuesButton.setLayoutData(new GridData(SWT.END, SWT.FILL, true, false, 13, 1));
 				showCalibratedValuesButton.setText(DocometreMessages.ShowCalibratedValues);
 				// Create calibrate header 
-				CalibrationFactory.createHeader(titleComposite, channel);
+				CalibrationHeader calibrationHeader = CalibrationFactory.createHeader(titleComposite, channel);
+				calibrationHeader.addAMaxListener(CalibrateMonitorDialog.getGlobalCalibrationListener());
+				calibrationHeader.addAMinListener(CalibrateMonitorDialog.getGlobalCalibrationListener());
+				calibrationHeader.addUMaxListener(CalibrateMonitorDialog.getGlobalCalibrationListener());
+				calibrationHeader.addUMinListener(CalibrateMonitorDialog.getGlobalCalibrationListener());
 			}
 			// Analog or digital input
 			valueLabel = new Label(titleComposite, SWT.NONE);

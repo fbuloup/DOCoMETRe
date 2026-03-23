@@ -76,9 +76,28 @@ import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinAnOutModule;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDigInOutChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDigInOutModule;
+import fr.univamu.ism.docometre.widgets.CalibrationListener;
 import fr.univamu.ism.docometre.widgets.ChannelViewer;
 
 public class CalibrateMonitorDialog extends TitleAreaDialog {
+	
+	private static final class GlobalCalibrationListener implements CalibrationListener {
+		public static boolean calibrationModified;
+		@Override
+		public void push(double value) {
+			calibrationModified = true;
+		}
+		@Override
+		public double get() throws Exception {
+			// TODO nothing !
+			return 0;
+		}
+		public boolean hasBeenModified() {
+			return calibrationModified;
+		}
+	}
+	
+	public static GlobalCalibrationListener globalCalibrationListener = new GlobalCalibrationListener();
 	
 	private ADWinDACQConfiguration adwinDACQConfiguration;
 	private boolean started; 
@@ -87,6 +106,15 @@ public class CalibrateMonitorDialog extends TitleAreaDialog {
 	public CalibrateMonitorDialog(Shell parentShell, ADWinDACQConfiguration adwinDACQConfiguration) {
 		super(parentShell);
 		this.adwinDACQConfiguration = adwinDACQConfiguration;
+		GlobalCalibrationListener.calibrationModified = false;
+	}
+	
+	public static GlobalCalibrationListener getGlobalCalibrationListener() {
+		return globalCalibrationListener;
+	}
+	
+	public static boolean hasCalibrationBeenModified() {
+		return globalCalibrationListener.hasBeenModified();
 	}
 	
 	@Override

@@ -100,6 +100,7 @@ public final class CalibrationHeader/* implements DisposeListener*/  {
 		aMinLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		aMinLabel.setToolTipText(DocometreMessages.AmpMinTooltip);
 		aMinText = new StyledText(parent, SWT.SINGLE | SWT.BORDER);
+		aMinText.setToolTipText(DocometreMessages.AmpMinTooltip);
 		aMinText.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 		aMinText.setText(decimalFormat.format(initialValues[0]));
 		((GridData)aMinText.getLayoutData()).widthHint = aMinText.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
@@ -116,6 +117,7 @@ public final class CalibrationHeader/* implements DisposeListener*/  {
 		aMaxLabel.setToolTipText(DocometreMessages.AmpMaxTooltip);
 		aMaxLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		aMaxText = new StyledText(parent, SWT.SINGLE | SWT.BORDER);
+		aMaxText.setToolTipText(DocometreMessages.AmpMaxTooltip);
 		aMaxText.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 		aMaxText.setText(decimalFormat.format(initialValues[1]));
 		((GridData)aMaxText.getLayoutData()).widthHint = aMaxText.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
@@ -136,6 +138,7 @@ public final class CalibrationHeader/* implements DisposeListener*/  {
 		uMinLabel.setToolTipText(DocometreMessages.UnitMinTooltip);
 		uMinLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		uMinText = new StyledText(parent, SWT.SINGLE | SWT.BORDER);
+		uMinText.setToolTipText(DocometreMessages.UnitMinTooltip);
 		uMinText.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 		uMinText.setText(decimalFormat.format(initialValues[2]));
 		((GridData)uMinText.getLayoutData()).widthHint = uMinText.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
@@ -146,6 +149,7 @@ public final class CalibrationHeader/* implements DisposeListener*/  {
 		uMaxLabel.setToolTipText(DocometreMessages.UnitMaxTooltip);
 		uMaxLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		uMaxText = new StyledText(parent, SWT.SINGLE | SWT.BORDER);
+		uMaxText.setToolTipText(DocometreMessages.UnitMaxTooltip);
 		uMaxText.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 		uMaxText.setText(decimalFormat.format(initialValues[3]));
 		((GridData)uMaxText.getLayoutData()).widthHint = uMaxText.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
