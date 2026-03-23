@@ -79,6 +79,7 @@ captionpos=b
 \begin{block}{Check these key points}
      \begin{itemize}
         \item Is proper Java version installed ?
+        \item Will I use Matlab and/or Python ?
         \item Is desired hardware available ?
         \item Corresponding Software installed ?
     \end{itemize}
@@ -86,6 +87,7 @@ captionpos=b
 \begin{block}{Then just follow one or more of theses steps}
 \begin{itemize}
         \item Install Java
+        \item Install Matlab and/or Python
         \item Install and configure desired Hardware
         \item Install DOCoMETRe
     \end{itemize}
@@ -144,6 +146,68 @@ captionpos=b
     \textbf{In this screenshot, we check Java version is at least 11}\\
     \textbf{Please update information to the latest needed release}
 \end{frame}
+
+
+\section{Install Matlab/Python}
+\subsection{Matlab}
+\begin{frame}
+\centering
+DOCoMETRe is supposed to work with any version of Matlab. It has been tested with 2020 to 2024 versions.\\
+
+You can install Matlab using \textcolor{blue}{\textbf{\underline{\href{https://fr.mathworks.com/academia/tah-portal/aix-marseille-universite-31651599.html}{this link}}}}\\
+\vspace{1cm}
+\centering
+    \textcolor{red}{\textbf{Remember you will have to configure path to Matlab executable in DOCoMETRe preferences}}
+\end{frame}
+
+\subsection{Python}
+\begin{frame}
+\begin{block}{In order to use Python with DOCoMETRe, follow these steps :}
+	\begin{itemize}
+		\item Install Python
+		\item Install Py4J
+	\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}
+
+\begin{alertblock}{Python version alert !}
+    \center{Python version that has been tested and works with Py4J is 3.10.4
+    Please install this version if you want to use Python with DOCoMETRe}
+\end{alertblock}
+
+\begin{exampleblock}{How to check Python installation and version ?}
+\center
+Just like the Java installation test, you can check Python installation and version using this kind of command in Terminal :\\
+ \textbf{python -version}
+\end{exampleblock}
+\vspace{1cm}
+\centering
+    \textcolor{red}{\textbf{Remember you will have to configure path to Python executable in DOCoMETRe preferences}}
+\end{frame}
+
+\begin{frame}
+\begin{block}{You need to install Python again ?}
+Please follow one of these links :
+\begin{itemize}
+\item Download Python 3.10.4 for Windows from \textcolor{blue}{\textbf{\underline{\href{http://www.ism.univ-amu.fr/buloup/documents/PYTHON/python-3.10.4-amd64.exe}{here}}}}
+\item Download Python 3.10.4 for Mac OS from \textcolor{blue}{\textbf{\underline{\href{http://www.ism.univ-amu.fr/buloup/documents/PYTHON/python-3.10.4-macos11.pkg}{here}}}}
+\end{itemize}
+\end{block}
+
+\begin{exampleblock}{Install Py4J}
+\justifying Once Python 3.10.4 is installed, you can install Py4J using : 
+\center{\textbf{pip install py4j}}
+\linebreak
+
+\justifying You will also need matplotlib, numpy and scipy libraries. Here is the kind of command you could use :
+\center{\textbf{pip install py4j matplotlib numpy scipy}}
+\end{exampleblock}
+
+\end{frame}
+
+
 
 \section{Install Hardware}
 \subsection{Available and planned Hardware}
