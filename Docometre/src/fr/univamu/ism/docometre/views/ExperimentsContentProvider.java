@@ -128,6 +128,9 @@ public class ExperimentsContentProvider implements ITreeContentProvider {
 					if(resource.getName().endsWith(Activator.xyChartFileExtension)) {
 						ResourceProperties.setTypePersistentProperty(resource, ResourceType.XYCHART.toString());
 					}
+					if(resource.getName().endsWith(Activator.csvFileExtension)) {
+						ResourceProperties.setTypePersistentProperty(resource, ResourceType.CSV.toString());
+					}
 				}
 				
 			}

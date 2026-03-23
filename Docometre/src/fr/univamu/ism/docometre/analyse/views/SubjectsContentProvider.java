@@ -84,6 +84,17 @@ public class SubjectsContentProvider implements ITreeContentProvider {
 			if(ResourceType.isBatchDataProcessing(element)) return true;
 			if(ResourceType.isXYChart(element)) return true;
 			if(ResourceType.isXYZChart(element)) return true;
+			
+			if(ResourceType.isAnyTest(element)) {
+				if(element.getFileExtension() != null) {
+					if(element.getName().endsWith(Activator.csvFileExtension)) {
+						ResourceProperties.setTypePersistentProperty(element, ResourceType.CSV.toString());
+					}
+				}
+			}
+			
+			if(ResourceType.isCSVFile(element)) 
+				return true;
 			if(!ResourceType.isFolder(element)) return false;
 			
 			IResource[] resources = ((IFolder)element).members();
