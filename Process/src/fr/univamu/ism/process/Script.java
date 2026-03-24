@@ -378,16 +378,18 @@ public class Script implements Serializable {
 		//if(!isScriptSegmentType) return "";
 		String code = "";
 		if(block == stopBlock) return "";
+		boolean displayWarning = step.toString().equals(ScriptSegmentType.INITIALIZE.toString()) || step.toString().equals(ScriptSegmentType.LOOP.toString()) || step.toString().equals(ScriptSegmentType.FINALIZE.toString());
 		if(block instanceof IfBlock /*&& isScriptSegmentType*/) {
 			IfBlock ifBlock = (IfBlock)block;
 			code = ifBlock.getCode(context, step, objects);
+			displayWarning = displayWarning && !"".equals(code);
 			if(ifBlock.getNextTrueBranchBlock() == null) {
 				IStatus status = new Status(Status.WARNING, Activator.PLUGIN_ID, "WARNING - In " + step.toString() + " segment => IF Block without true branch : \"" + code.replaceAll("\n$", "") + "\"");
-				addGenerationCodeStatus(status);
+				if(displayWarning) addGenerationCodeStatus(status);
 				ifBlock.setStatus(status);
 			} else if(ifBlock.getNextFalseBranchBlock() == null) {
 				IStatus status = new Status(Status.WARNING, Activator.PLUGIN_ID, "WARNING - In " + step.toString() + " segment => IF Block without false branch : \"" + code.replaceAll("\n$", "") + "\"");
-				addGenerationCodeStatus(status);
+				if(displayWarning) addGenerationCodeStatus(status);
 				ifBlock.setStatus(status);
 			} else ifBlock.setStatus(null);
 			//Find endif bloc
@@ -409,11 +411,12 @@ public class Script implements Serializable {
 			DoBlock doBlock = (DoBlock)block;
 			if(context.getClass().getSimpleName().equals(Activator.ADWinProcess) && isScriptSegmentType) code = "DO\n";
 			if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess) && isScriptSegmentType) code = "do {\n";
+			displayWarning = displayWarning && !"".equals(code);
 			//Find end do bloc
 			Block endDoBlock = doBlock.getEndBlock();
 			if(endDoBlock == null ) {
 				IStatus status = new Status(Status.WARNING, Activator.PLUGIN_ID, "WARNING - In " + step.toString() + " segment => DO Block without end block. Double click on proper incoming connection to specify the end block of this do block");
-				addGenerationCodeStatus(status);
+				if(displayWarning) addGenerationCodeStatus(status);
 				doBlock.setStatus(status);
 			} else doBlock.setStatus(null);
 			if(endDoBlock != null) {

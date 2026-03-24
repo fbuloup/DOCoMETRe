@@ -42,14 +42,25 @@
 package fr.univamu.ism.docometre.dacqsystems.adwin;
 
 public enum ADWinCodeSegmentProperties {
-	HEADER,
-	INCLUDE,
-	DECLARATION, 
-	INITIALIZATION, 
-	ACQUISITION, 
-	RECOVERY, 
-	EVENT,
-	TRANSFER, 
-	GENERATION,
-	FINISH; 
+	HEADER("HEADER"),
+	INCLUDE("INCLUDE"),
+	DECLARATION("DECLARATION"), 
+	INITIALIZATION("INITIALIZATION"), 
+	ACQUISITION("ACQUISITION"), 
+	RECOVERY("RECOVERY"), 
+	EVENT("LOOP"),
+	TRANSFER("TRANSFER"), 
+	GENERATION("GENERATION"),
+	FINISH("FINALIZATION"); 
+	
+	
+	private String name;
+
+	ADWinCodeSegmentProperties(String name) {
+	    this.name = name;
+	}
+
+	public String toString() {
+		return name;
+	}
 }
