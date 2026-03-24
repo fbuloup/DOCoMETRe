@@ -41,27 +41,28 @@
  ******************************************************************************/
 package fr.univamu.ism.process;
 
-public enum ScriptSegmentType {
-	
-	INITIALIZE("INITIALIZATION", ProcessMessages.ExecutedOneTimeBefore),  //$NON-NLS-1$
-	LOOP("LOOP", ProcessMessages.ExecutedEachLoop),  //$NON-NLS-1$
-	FINALIZE("FINALIZATION", ProcessMessages.ExecutedOneTimeAfter); //$NON-NLS-1$
-//	DATA_PROCESSING("DATA_PROCESSING", "Executed one time for data processing using Matlab or Python etc.");
-	
-	private String name;
-	private String comment;
+import java.util.Locale;
 
-	ScriptSegmentType(String name, String comment) {
-	    this.name = name;
-	    this.comment = comment;
-	}
+import org.eclipse.osgi.util.NLS;
 
-	public String getComment() {
-		return name + " (" + comment + ")"; //$NON-NLS-1$ //$NON-NLS-2$
-	}
+public final class ProcessMessages extends NLS {
 	
-	public String toString() {
-		return name;
+	private static final String BUNDLE_NAME = "fr.univamu.ism.process.messages";//$NON-NLS-1$
+
+	public static String IfBlockWithoutTrueBranch;
+	public static String IfBlockWithoutFalseBranch;
+	public static String DoBlockWithoutEndFunction;
+	public static String DoBlockWithoutStartFunction;
+	public static String ExecutedEachLoop;
+	public static String ExecutedOneTimeAfter;
+	public static String ExecutedOneTimeBefore;
+	
+	static {
+		// load message values from bundle file
+		String bn = BUNDLE_NAME;
+		Locale locale = Locale.getDefault();
+		if (locale.getLanguage().equals(Locale.of("fr").getLanguage())) bn = BUNDLE_NAME + "_fr";
+		NLS.initializeMessages(bn, ProcessMessages.class);
 	}
 
 }

@@ -46,6 +46,7 @@ import java.util.ArrayList;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.osgi.util.NLS;
 
 import fr.univamu.ism.process.tests.SampleScript1;
 
@@ -384,11 +385,13 @@ public class Script implements Serializable {
 			code = ifBlock.getCode(context, step, objects);
 			displayWarning = displayWarning && !"".equals(code);
 			if(ifBlock.getNextTrueBranchBlock() == null) {
-				IStatus status = new Status(Status.WARNING, Activator.PLUGIN_ID, "WARNING - In " + step.toString() + " segment => IF Block without true branch : \"" + code.replaceAll("\n$", "") + "\"");
+				String message = NLS.bind(ProcessMessages.IfBlockWithoutTrueBranch, step.toString(), code.replaceAll("\n$", ""));
+				IStatus status = new Status(Status.WARNING, Activator.PLUGIN_ID, message);
 				if(displayWarning) addGenerationCodeStatus(status);
 				ifBlock.setStatus(status);
 			} else if(ifBlock.getNextFalseBranchBlock() == null) {
-				IStatus status = new Status(Status.WARNING, Activator.PLUGIN_ID, "WARNING - In " + step.toString() + " segment => IF Block without false branch : \"" + code.replaceAll("\n$", "") + "\"");
+				String message = NLS.bind(ProcessMessages.IfBlockWithoutFalseBranch, step.toString(), code.replaceAll("\n$", ""));
+				IStatus status = new Status(Status.WARNING, Activator.PLUGIN_ID, message);
 				if(displayWarning) addGenerationCodeStatus(status);
 				ifBlock.setStatus(status);
 			} else ifBlock.setStatus(null);
@@ -415,7 +418,8 @@ public class Script implements Serializable {
 			//Find end do bloc
 			Block endDoBlock = doBlock.getEndBlock();
 			if(endDoBlock == null ) {
-				IStatus status = new Status(Status.WARNING, Activator.PLUGIN_ID, "WARNING - In " + step.toString() + " segment => DO Block without end block. Double click on proper incoming connection to specify the end block of this do block");
+				String message = NLS.bind(ProcessMessages.DoBlockWithoutEndFunction, step.toString());
+				IStatus status = new Status(Status.WARNING, Activator.PLUGIN_ID,  message);
 				if(displayWarning) addGenerationCodeStatus(status);
 				doBlock.setStatus(status);
 			} else doBlock.setStatus(null);
@@ -428,7 +432,16 @@ public class Script implements Serializable {
 			//generate close do bloc
 			code = code + doBlock.getCode(context, step, objects);
 			//Continue to next bloc
-			if(endDoBlock != null) code = code + generateCode(endDoBlock.getNextBlock(), stopBlock, context, step, objects);
+			if(endDoBlock != null) {
+				if(doBlock != endDoBlock.getNextBlock())
+					code = code + generateCode(endDoBlock.getNextBlock(), stopBlock, context, step, objects);
+				else { 
+					String message = NLS.bind(ProcessMessages.DoBlockWithoutStartFunction, step.toString());
+					IStatus status = new Status(Status.WARNING, Activator.PLUGIN_ID, message);
+					if(displayWarning) addGenerationCodeStatus(status);
+					doBlock.setStatus(status);
+				}
+			}
 		} else {
 			if(block != null) {
 				Block nextBlock = block.getNextBlock();
