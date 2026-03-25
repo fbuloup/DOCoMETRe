@@ -84,6 +84,7 @@ public class SubjectsContentProvider implements ITreeContentProvider {
 			if(ResourceType.isBatchDataProcessing(element)) return true;
 			if(ResourceType.isXYChart(element)) return true;
 			if(ResourceType.isXYZChart(element)) return true;
+			if(ResourceType.isCustomerFunction(element)) return true;
 			
 			if(ResourceType.isAnyTest(element)) {
 				if(element.getFileExtension() != null) {
