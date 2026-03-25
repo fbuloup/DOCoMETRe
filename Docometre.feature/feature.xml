@@ -6,7 +6,21 @@
       provider-name="ISM">
 
    <description>
-      -- 2026-03-21
+      -- 2026-03-25
+ADDED :
+* Use find/replace instead of find dialog
+* Channel name to console message in Data Editor
+* Support to csv files in Experiments and Subjects views
+* Take calibration changes into account by notifying user
+* Include Python 3.10.4 links in README
+* Update installation (pdf)
+* Internationalization (Process)
+FIXED :
+* Manage Revision property null in dacq. conf. file
+* Remove Warning message displayed repeatedly without any interest
+* SelectedExperiment must be null if it has been deleted
+* Display customer functions in SubjectsView
+-- 2026-03-21
 ADDED :
 * System properties to debug and run (Mac OS) to charts tests
 FIXED :
