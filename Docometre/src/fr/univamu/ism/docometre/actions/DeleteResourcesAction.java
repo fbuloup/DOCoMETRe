@@ -74,6 +74,7 @@ import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
+import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
 import fr.univamu.ism.docometre.analyse.handlers.LoadUnloadSubjectsHandler;
@@ -158,6 +159,8 @@ public class DeleteResourcesAction extends Action implements ISelectionListener,
 									MathEngineFactory.getMathEngine().unload(resource);
 								} else if(ResourceType.isExperiment(resource)) {
 									try {
+										if(SelectedExprimentContributionItem.selectedExperiment == resource)
+											SelectedExprimentContributionItem.selectedExperiment = null;
 										IResource[] subjects = ResourceProperties.getAllTypedResources(ResourceType.SUBJECT, (IContainer) resource, null);
 										ArrayList<IResource> resources = new ArrayList<>();
 										for (IResource subject : subjects) {
