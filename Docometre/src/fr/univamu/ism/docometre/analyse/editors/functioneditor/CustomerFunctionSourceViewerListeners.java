@@ -1,7 +1,10 @@
 package fr.univamu.ism.docometre.analyse.editors.functioneditor;
 
+import java.util.ResourceBundle;
+
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextListener;
 import org.eclipse.jface.text.ITextOperationTarget;
@@ -14,6 +17,8 @@ import org.eclipse.swt.custom.VerifyKeyListener;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.VerifyEvent;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.texteditor.FindReplaceAction;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.dialogs.FindDialog;
@@ -31,8 +36,13 @@ public final class CustomerFunctionSourceViewerListeners {
 			@Override
 			public void keyPressed(KeyEvent event) {
 				if(((event.stateMask & SWT.MOD1) == SWT.MOD1) && event.keyCode == 'f') {
-					FindDialog.getInstance().setTextViewer(functionSourceViewer);
-					FindDialog.getInstance().open();
+//					FindDialog.getInstance().setTextViewer(functionSourceViewer);
+//					FindDialog.getInstance().open();
+					// Use replace/find dialog instead
+					ResourceBundle resourceBundle = ResourceBundle.getBundle("fr.univamu.ism.docometre.messages");
+					IFindReplaceTarget findReplaceTarget = functionSourceViewer.getFindReplaceTarget();
+					FindReplaceAction customFindReplaceAction = new FindReplaceAction(resourceBundle, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), findReplaceTarget);
+					customFindReplaceAction.run();
 				} else if(isRedoKeyPress(event)) {
 					functionSourceViewer.doOperation(ITextOperationTarget.REDO);
 				} else if(isUndoKeyPress(event)) {
