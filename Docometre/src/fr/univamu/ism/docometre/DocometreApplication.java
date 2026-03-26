@@ -61,6 +61,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 
+import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
+
 /**
  * This class controls all aspects of the application's execution
  */
@@ -226,7 +228,14 @@ public class DocometreApplication implements IApplication {
 	}
 
 	public static Font getFont(String fontName) {
-		return JFaceResources.getFontRegistry().get(fontName);
+		int fontSize = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.EDITORS_FONT_SIZE);
+		String fontNameWithSize = fontName + "_" + fontSize;
+		if(!JFaceResources.getFontRegistry().hasValueFor(fontNameWithSize)) {
+			Font font = JFaceResources.getFontRegistry().get(fontName);
+		    Font newFont = new Font(font.getDevice(), font.getFontData()[0].getName(), fontSize, font.getFontData()[0].getStyle());
+		    JFaceResources.getFontRegistry().put(fontNameWithSize, newFont.getFontData());
+		}
+		return JFaceResources.getFontRegistry().get(fontNameWithSize);
 	}
 	
 }
