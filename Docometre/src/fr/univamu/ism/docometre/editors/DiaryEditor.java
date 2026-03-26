@@ -79,6 +79,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
 
 import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.GetResourceLabelDelegate;
 import fr.univamu.ism.docometre.PartListenerAdapter;
 import fr.univamu.ism.docometre.ResourceProperties;
@@ -171,6 +172,8 @@ public class DiaryEditor extends EditorPart implements PartNameRefresher {
 			
 			sourceViewer = new SourceViewer(parent, lineAnnotationRuler, overviewRuler, true, SWT.V_SCROLL | SWT.H_SCROLL);
 			sourceViewer.getTextWidget().setEditable(false);
+		    sourceViewer.getTextWidget().setFont(DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
+			
 			sourceViewer.setDocument(document, annotationModel, -1, -1);
 			sourceViewer.configure(DiarySourceViewerConfigurationFactory.getSourceViewerConfiguration(diary));
 			sourceViewer.getTextWidget().addKeyListener(new KeyAdapter() {

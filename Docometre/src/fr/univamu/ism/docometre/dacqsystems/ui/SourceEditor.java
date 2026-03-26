@@ -74,6 +74,7 @@ import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.MultiPageEditorPart;
 
 import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.PartListenerAdapter;
 import fr.univamu.ism.docometre.annotations.DocometreAnnotationAccesExtension;
@@ -174,7 +175,7 @@ public class SourceEditor extends EditorPart {
 		sourceViewer = new SourceViewer(sourceContainer, lineAnnotationRuler, overviewRuler, true,
 				SWT.V_SCROLL | SWT.H_SCROLL);
 		sourceViewer.getTextWidget().setEditable(false);
-
+		sourceViewer.getTextWidget().setFont(DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		sourceViewer.setDocument(document, annotationModel, -1, -1);
 		
 //		FastPartitioner adbasicFastPartitioner = new FastPartitioner(new ADBasicRulesPartitionScanner(), ADBasicRulesPartitionScanner.PARTITIONS);
