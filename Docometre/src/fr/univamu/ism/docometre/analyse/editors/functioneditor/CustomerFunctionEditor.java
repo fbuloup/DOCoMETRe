@@ -12,6 +12,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.jface.text.source.CompositeRuler;
 import org.eclipse.jface.text.source.LineNumberRulerColumn;
 import org.eclipse.jface.text.source.SourceViewer;
@@ -28,6 +29,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
 
 import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.PartListenerAdapter;
 import fr.univamu.ism.docometre.ResourceType;
@@ -123,6 +125,7 @@ public class CustomerFunctionEditor extends EditorPart implements PartNameRefres
 		sourceViewer = new SourceViewer(parent, lineAnnotationRuler, null, false, SWT.V_SCROLL | SWT.H_SCROLL);
 		sourceViewer.setDocument(document);
 		sourceViewer.setEditable(false);
+	    sourceViewer.getTextWidget().setFont(DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		
 		Object customerFunction = ((ResourceEditorInput)getEditorInput()).getObject();
 		String content = "";
@@ -139,6 +142,13 @@ public class CustomerFunctionEditor extends EditorPart implements PartNameRefres
 		if(devMode) sourceViewer.setEditable(true);
 		
 		document.set(content);
+		
+		FastPartitioner customerFunctionFastPartitioner = new FastPartitioner(new CustomerFunctionRulesPartitionScanner(), CustomerFunctionRulesPartitionScanner.PARTITIONS);
+	    document.setDocumentPartitioner(customerFunctionFastPartitioner);
+	    customerFunctionFastPartitioner.connect(document);
+	    
+	    
+		sourceViewer.setDocument(document);
 		sourceViewer.configure(new CustomerFunctionSourceViewerConfiguration());
 		
 		CustomerFunctionSourceViewerListeners.addSourceViewerListeners(sourceViewer, this);
