@@ -110,6 +110,8 @@ public class PreferencesInitializer extends AbstractPreferenceInitializer {
 
 		defaults.putBoolean(GeneralPreferenceConstants.USE_OPENGL_FOR_RTSWT_CHART, true);
 		
+		defaults.putInt(GeneralPreferenceConstants.EDITORS_FONT_SIZE, 12);
+		
 		Bundle bundle = Platform.getBundle("Libraries");
 		Optional<File> files = FileLocator.getBundleFileLocation(bundle);
 		if(files.isPresent()) {

@@ -100,4 +100,6 @@ public class GeneralPreferenceConstants {
 	
 	public static final String USE_OPENGL_FOR_RTSWT_CHART = "USE_OPENGL_FOR_RTSWT_CHART";
 	
+	public static final String EDITORS_FONT_SIZE = "EDITORS_FONT_SIZE";
+	
 }

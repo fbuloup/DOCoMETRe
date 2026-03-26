@@ -205,6 +205,10 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
 			font = new Font(PlatformUI.getWorkbench().getDisplay(), fontData[0]);
 			redirectInfosLabel.setFont(font);
 		}
+		
+		
+		IntegerFieldEditor editorsFontSizeFieldEditor = new IntegerFieldEditor(GeneralPreferenceConstants.EDITORS_FONT_SIZE, DocometreMessages.EditorsFontSize, getFieldEditorParent());
+		addField(editorsFontSizeFieldEditor);
 	}
 	
 	@Override

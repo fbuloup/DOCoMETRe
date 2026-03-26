@@ -102,6 +102,8 @@ public final class DocometreMessages extends NLS {
 //	public static String ADWinDefaultSystemPreferencePage_Label;
 //	public static String NIDefaultSystemPreferencePage_Label;
 	
+	public static String EditorsFontSize;
+	
 	/*Undo/Redo prompt user*/
 	public static String Undo;
 	public static String Redo;
