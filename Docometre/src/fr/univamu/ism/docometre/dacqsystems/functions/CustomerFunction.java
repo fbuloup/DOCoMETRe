@@ -154,7 +154,10 @@ public class CustomerFunction extends GenericFunction {
 					for (int j = 0; j < parameterSegments.length; j++) {
 						String segment = parameterSegments[j];
 						String[] keyValue = segment.split("=");
-						properties.put(keyValue[0].trim(), keyValue[1].trim());
+						keyValue[0] = keyValue[0].trim();
+						keyValue[1] = keyValue[1].trim();
+						if(keyValue[0].equals("TYPE")) keyValue[1]= keyValue[1].replace("\n","\\");
+						properties.put(keyValue[0], keyValue[1]);
 					}
 					// Create parameter
 					createParameterWidget(paramContainer, properties, context);
