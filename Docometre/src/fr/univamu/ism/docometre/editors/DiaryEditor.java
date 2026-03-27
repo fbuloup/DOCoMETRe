@@ -158,6 +158,7 @@ public class DiaryEditor extends EditorPart implements PartNameRefresher {
 			arc.setHover(defaultAnnotationHover);
 			arc.addAnnotationType(ErrorAnnotation.TYPE_ERROR);
 			lineAnnotationRuler.addDecorator(1, arc);
+			lineNumberRulerColumn.setFont(DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 			
 			// Overview column
 			OverviewRuler overviewRuler = new OverviewRuler(docometreAnnotationAccesExtension, 13, DocometreSharedTextColors.getInstance());
@@ -187,12 +188,16 @@ public class DiaryEditor extends EditorPart implements PartNameRefresher {
 						 Font font = sourceViewer.getTextWidget().getFont();
 						 Font newFont = new Font(font.getDevice(), font.getFontData()[0].getName(), font.getFontData()[0].getHeight() + 1, font.getFontData()[0].getStyle());
 						 sourceViewer.getTextWidget().setFont(newFont);
+						 lineNumberRulerColumn.setFont(newFont);
+						 ((Composite) sourceViewer.getControl()).layout(true);
 						 fontsArrayList.add(newFont);
 					 }
 					 if(((event.stateMask & SWT.MOD1) == SWT.MOD1) && event.keyCode == '-') {
 						 Font font = sourceViewer.getTextWidget().getFont();
 						 Font newFont = new Font(font.getDevice(), font.getFontData()[0].getName(), font.getFontData()[0].getHeight() - 1, font.getFontData()[0].getStyle());
 						 sourceViewer.getTextWidget().setFont(newFont);
+						 lineNumberRulerColumn.setFont(newFont);
+						 ((Composite) sourceViewer.getControl()).layout(true);
 						 fontsArrayList.add(newFont);
 					 }
 				}

@@ -124,6 +124,7 @@ public class CustomerFunctionEditor extends EditorPart implements PartNameRefres
 		sourceViewer.setDocument(document);
 		sourceViewer.setEditable(false);
 	    sourceViewer.getTextWidget().setFont(DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
+		lineNumberRulerColumn.setFont(DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		
 		Object customerFunction = ((ResourceEditorInput)getEditorInput()).getObject();
 		String content = "";

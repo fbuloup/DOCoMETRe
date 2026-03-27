@@ -177,6 +177,7 @@ public class SourceEditor extends EditorPart {
 				SWT.V_SCROLL | SWT.H_SCROLL);
 		sourceViewer.getTextWidget().setEditable(false);
 		sourceViewer.getTextWidget().setFont(DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
+		lineNumberRulerColumn.setFont(DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		sourceViewer.setDocument(document, annotationModel, -1, -1);
 		
 //		FastPartitioner adbasicFastPartitioner = new FastPartitioner(new ADBasicRulesPartitionScanner(), ADBasicRulesPartitionScanner.PARTITIONS);
