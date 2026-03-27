@@ -42,9 +42,15 @@
 package fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor;
 
 import org.eclipse.jface.text.rules.FastPartitioner;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.widgets.Composite;
 
+import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.dacqsystems.ui.SourceEditor;
+import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
 public class ADBasicSourceEditor extends SourceEditor {
 	
@@ -63,6 +69,31 @@ public class ADBasicSourceEditor extends SourceEditor {
 	    adbasicFastPartitioner.connect(document);
 		sourceViewer.setDocument(document, annotationModel, -1, -1);
 		sourceViewer.configure(new ADBasicSourceViewerConfiguration());
+		
+		sourceViewer.getTextWidget().addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent event) {
+				boolean update = false;
+				int fontSize = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.EDITORS_FONT_SIZE);
+				if (((event.stateMask & SWT.MOD1) == SWT.MOD1) && (event.keyCode == '=' || event.keyCode == 16777259)) {
+					fontSize++;
+					update = true;
+				}
+				if (((event.stateMask & SWT.MOD1) == SWT.MOD1) && (event.keyCode == '-' || event.keyCode == 16777261)) {
+					fontSize = fontSize > 2 ? fontSize - 1 : 1;
+					update = true;
+				}
+				if(update) {
+					Activator.getDefault().getPreferenceStore().setValue(GeneralPreferenceConstants.EDITORS_FONT_SIZE,fontSize);
+					sourceViewer.getTextWidget().setFont(DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
+					lineNumberRulerColumn.setFont(DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
+					((Composite) sourceViewer.getControl()).layout(true);
+					sourceViewer.setHyperlinkDetectors(null, 0);
+					sourceViewer.configure(new ADBasicSourceViewerConfiguration());
+				}
+			}
+		});
+		
 	}
 	
 	

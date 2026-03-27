@@ -42,14 +42,20 @@
 package fr.univamu.ism.docometre.analyse.editors;
 
 import org.eclipse.jface.text.rules.FastPartitioner;
+import org.eclipse.jface.text.source.SourceViewerConfiguration;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.widgets.Composite;
 
 import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.analyse.matlabeditor.MatlabRulesPartitionScanner;
 import fr.univamu.ism.docometre.analyse.matlabeditor.MatlabSourceViewerConfiguration;
 import fr.univamu.ism.docometre.analyse.pythoneditor.PythonRulesPartitionScanner;
 import fr.univamu.ism.docometre.analyse.pythoneditor.PythonSourceViewerConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.ui.SourceEditor;
+import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 import fr.univamu.ism.docometre.preferences.MathEnginePreferencesConstants;
 
 public class DataProcessScriptSourceEditor extends SourceEditor {
@@ -62,6 +68,8 @@ public class DataProcessScriptSourceEditor extends SourceEditor {
 	public void createPartControl(Composite parent) {
 		super.createPartControl(parent);
 		
+		SourceViewerConfiguration sourceViewerConfiguration = null;
+		
 		String mathEngine = Activator.getDefault().getPreferenceStore().getString(MathEnginePreferencesConstants.MATH_ENGINE);
 		if(MathEnginePreferencesConstants.MATH_ENGINE_MATLAB.equals(mathEngine)) {
 			
@@ -71,17 +79,47 @@ public class DataProcessScriptSourceEditor extends SourceEditor {
 		    document.setDocumentPartitioner(matlabFastPartitioner);
 		    matlabFastPartitioner.connect(document);
 			sourceViewer.setDocument(document, annotationModel, -1, -1);
-			sourceViewer.configure(new MatlabSourceViewerConfiguration());
+			sourceViewerConfiguration = new MatlabSourceViewerConfiguration();
 		}
 		if(MathEnginePreferencesConstants.MATH_ENGINE_PYTHON.equals(mathEngine)) {
-			
 			FastPartitioner pythonFastPartitioner = new FastPartitioner(new PythonRulesPartitionScanner(), PythonRulesPartitionScanner.PARTITIONS);
 		    document.setDocumentPartitioner(pythonFastPartitioner);
 		    pythonFastPartitioner.connect(document);
 			sourceViewer.setDocument(document, annotationModel, -1, -1);
-			sourceViewer.configure(new PythonSourceViewerConfiguration());
+			sourceViewerConfiguration = new PythonSourceViewerConfiguration();
 		}
-		
+
+		sourceViewer.configure(sourceViewerConfiguration);
+		configureListener(sourceViewerConfiguration);
+	}
+	
+	private void configureListener(SourceViewerConfiguration sourceViewerConfiguration) {
+		sourceViewer.getTextWidget().addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent event) {
+				boolean update = false;
+				int fontSize = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.EDITORS_FONT_SIZE);
+				if (((event.stateMask & SWT.MOD1) == SWT.MOD1) && (event.keyCode == '=' || event.keyCode == 16777259)) {
+					fontSize++;
+					update = true;
+				}
+				if (((event.stateMask & SWT.MOD1) == SWT.MOD1) && (event.keyCode == '-' || event.keyCode == 16777261)) {
+					fontSize = fontSize > 2 ? fontSize - 1 : 1;
+					update = true;
+				}
+				if(update) {
+					Activator.getDefault().getPreferenceStore().setValue(GeneralPreferenceConstants.EDITORS_FONT_SIZE,fontSize);
+					sourceViewer.getTextWidget().setFont(DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
+					lineNumberRulerColumn.setFont(DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
+					((Composite) sourceViewer.getControl()).layout(true);
+					sourceViewer.setHyperlinkDetectors(null, 0);
+					if (sourceViewerConfiguration instanceof MatlabSourceViewerConfiguration)
+						sourceViewer.configure(new MatlabSourceViewerConfiguration());
+					if (sourceViewerConfiguration instanceof PythonSourceViewerConfiguration)
+						sourceViewer.configure(new PythonSourceViewerConfiguration());
+				}
+			}
+		});
 	}
 
 }

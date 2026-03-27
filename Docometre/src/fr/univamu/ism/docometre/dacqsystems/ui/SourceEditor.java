@@ -97,6 +97,7 @@ public class SourceEditor extends EditorPart {
 	private DocometreAnnotationAccesExtension docometreAnnotationAccesExtension;
 	protected SourceViewer sourceViewer;
 	private PartListenerAdapter partListenerAdapter;
+	protected LineNumberRulerColumn lineNumberRulerColumn;
 
 	public SourceEditor(MultiPageEditorPart multiPageEditorPart) {
 			this.multiPageEditorPart = multiPageEditorPart;
@@ -147,7 +148,7 @@ public class SourceEditor extends EditorPart {
 		annotationModel.connect(document);
 		lineAnnotationRuler.setModel(annotationModel);
 		// Lines numbers column
-		LineNumberRulerColumn lineNumberRulerColumn = new LineNumberRulerColumn();
+		lineNumberRulerColumn = new LineNumberRulerColumn();
 		//lineNumberRulerColumn.setForeground(PlatformUI.createDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND));
 		lineAnnotationRuler.addDecorator(0, lineNumberRulerColumn);
 		// Annotation column
