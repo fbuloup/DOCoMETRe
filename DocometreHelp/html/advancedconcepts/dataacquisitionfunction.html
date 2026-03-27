@@ -161,10 +161,10 @@ But in this case, user will be able to enter any value and it could be error pro
 <h4>3.6 Core code</h4>
 Finally a value for FUNCTION_CODE key must be provided. Its value has been identified in step 2 :
 <pre>
-FUNCTION_CODE = if(time - ((int)(time/period))*period < dutyCycle) {\n\
-	output = 1;\n\
-} else {\n\
-	output = 0;\n\
+FUNCTION_CODE = if(time - ((int)(time/period))*period < dutyCycle) {\
+	output = 1;\
+} else {\
+	output = 0;\
 }
 </pre>
 This function code will be parsed and paste in segment where it has been placed (INITIALIZATION, LOOP or FINALIZE segment).
@@ -184,16 +184,16 @@ PARAMETER_2 = NAME = dutyCycle, TYPE = TEXT:^[0]\.[0-9]*$, LABEL = "Duty cycle (
 LABEL_FR = "Rapport cyclique (%) :"
 PARAMETER_3 = NAME = output, TYPE = TEXT:^(?!\s*$).+$, LABEL = "Put generated signal in :",\
 LABEL_FR = "Mettre la valeur générée dans :"
-FUNCTION_CODE = if(time - ((int)(time/period))*period < dutyCycle)\n\
-{\n\
-\toutput = 1;\n\
-}\n\
-else\n\
-{\n\
-\toutput = 0;\n\
+FUNCTION_CODE = if(time - ((int)(time/period))*period < dutyCycle)\
+{\
+	output = 1;\
+}\
+else\
+{\
+	output = 0;\
 }
  </pre>
- Place this key/value pairs in a text file named "SQUARE_WAVE_GENERATOR.FUN".
+ Place this key/value pairs in a text file named "SQUARE_WAVE_GENERATOR.FUN". Backslash at end of line must be placed in order to specify that the value of key/value pair is continuing to next line.
  
  <p style="color:rgba(255,0,0,1);"><b>Do not put any extra char after backslash because file content after this backslash wont be parsed.</b></p> 
  
@@ -220,13 +220,13 @@ PARAMETER_2 = NAME = dutyCycle, TYPE = TEXT[0.25]:^[0]\.[0-9]*$, LABEL = "Duty c
 LABEL_FR = "Rapport cyclique (%) :"
 PARAMETER_3 = NAME = output, TYPE = TEXT:^(?!\s*$).+$, LABEL = "Put generated signal in :",\
 LABEL_FR = "Mettre la valeur générée dans :"
-FUNCTION_CODE = if(time - ((int)(time/period))*period < dutyCycle)\n\
-{\n\
-\toutput = 1;\n\
-}\n\
-else\n\
-{\n\
-\toutput = 0;\n\
+FUNCTION_CODE = if(time - ((int)(time/period))*period < dutyCycle)\
+{\
+\toutput = 1;\
+}\
+else\
+{\
+\toutput = 0;\
 }
  </pre>
  
