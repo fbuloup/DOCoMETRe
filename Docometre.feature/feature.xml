@@ -8,6 +8,12 @@
    <description>
       -- 2026-03-25
 ADDED :
+* Font size changes in editors
+* Syntax coloring to customer function editor
+FIXED :
+* Bug in regexp reading : removing \ (Customer functions)
+-- 2026-03-25
+ADDED :
 * Use find/replace instead of find dialog
 * Channel name to console message in Data Editor
 * Support to csv files in Experiments and Subjects views
