@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2026-03-25
+      -- 2026-04-01
+ADDED :
+* Support to personalize font size in all editors
+FIXED : Nothing
+-- 2026-03-25
 ADDED :
 * Font size changes in editors
 * Syntax coloring to customer function editor
