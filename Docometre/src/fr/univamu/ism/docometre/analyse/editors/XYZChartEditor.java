@@ -689,7 +689,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 		container.setWeights(new int[] {80, 20});
 		
 		refreshTrialsListFrontEndCutsCategories();
-		trialsListViewer.setSelection(new StructuredSelection(xyzChartData.getSelectedTrialsNumbers()));
+//		trialsListViewer.setSelection(new StructuredSelection(xyzChartData.getSelectedTrialsNumbers()));
 		setDirty(false);
 	}
 

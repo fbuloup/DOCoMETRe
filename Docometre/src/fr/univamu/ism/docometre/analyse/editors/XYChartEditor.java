@@ -112,6 +112,7 @@ import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
+import fr.univamu.ism.docometre.analyse.datamodel.TimeChannel;
 import fr.univamu.ism.docometre.analyse.datamodel.XYChart;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 
@@ -273,8 +274,8 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 						Channel xSignal = (Channel)items[0];
 						Channel ySignal = (Channel)items[1];
 						xyChartData.addCurve(xSignal, ySignal);
-						refreshTrialsListFrontEndCutsCategories();
 						setDirty(true);
+						refreshTrialsListFrontEndCutsCategories();
 					}
 				 }
 			}
@@ -341,8 +342,8 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		for (Object channelTuple : channelsTuple) {
 			if(!(channelTuple instanceof Channel[])) continue;
 			Channel[] channels = (Channel[])channelTuple;
-			String fullXChannelName = channels[0].getFullName();//seriesID.split("\\(")[0];
-			String fullSubjectName = fullXChannelName.replaceAll("\\.\\w+$", "");
+			String fullYChannelName = channels[1].getFullName();//seriesID.split("\\(")[0];
+			String fullSubjectName = fullYChannelName.replaceAll("\\.\\w+$", "");
 			IResource subject = ((IContainer)SelectedExprimentContributionItem.selectedExperiment).findMember(fullSubjectName.split("\\.")[1]);
 			Channel[] categories = MathEngineFactory.getMathEngine().getCategories(subject);
 			allCategories.addAll(Arrays.asList(categories));
@@ -363,7 +364,9 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 				Set<String> keys = xyChartData.getCurvesIDs();
 				for (String key : keys) {
 					Channel[] channels = xyChartData.getXYChannels(key);
-					category = MathEngineFactory.getMathEngine().getCategoryForTrialNumber(channels[0], Integer.parseInt(trial));
+					Channel refChannel = channels[0];
+					if(refChannel instanceof TimeChannel) refChannel = channels[1];
+					category = MathEngineFactory.getMathEngine().getCategoryForTrialNumber(refChannel, Integer.parseInt(trial));
 					break;
 				}
 				return DocometreMessages.Trial + trial + ("".equals(category)?"":" [" + category + "]");
@@ -562,7 +565,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		container.setWeights(new int[] {75, 25});
 		
 		refreshTrialsListFrontEndCutsCategories();
-		trialsListViewer.setSelection(new StructuredSelection(xyChartData.getSelectedTrialsNumbers()));
+//		trialsListViewer.setSelection(new StructuredSelection(xyChartData.getSelectedTrialsNumbers()));
 		setDirty(false);
 		
 	}
@@ -613,8 +616,13 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		for (Channel[] xyChannel : xyChannels) {
 			Channel xChannel = xyChannel[0];
 			Channel yChannel = xyChannel[1];
-			nbTrials = Math.max(MathEngineFactory.getMathEngine().getTrialsNumber(xChannel), nbTrials);
-			baseFrontCut = Math.min(MathEngineFactory.getMathEngine().getFrontCut(xChannel, 1), baseFrontCut);
+			if(xChannel instanceof TimeChannel) {
+				nbTrials = Math.max(MathEngineFactory.getMathEngine().getTrialsNumber(yChannel), nbTrials);
+				baseFrontCut = Math.min(MathEngineFactory.getMathEngine().getFrontCut(yChannel, 1), baseFrontCut);
+			} else {
+				nbTrials = Math.max(MathEngineFactory.getMathEngine().getTrialsNumber(xChannel), nbTrials);
+				baseFrontCut = Math.min(MathEngineFactory.getMathEngine().getFrontCut(xChannel, 1), baseFrontCut);
+			}
 			baseEndCut = Math.max(MathEngineFactory.getMathEngine().getEndCut(yChannel, 1), baseEndCut);
 		}
 		Integer[] trials = IntStream.rangeClosed(1, nbTrials).boxed().toArray(Integer[]::new);
@@ -637,6 +645,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		}
 		
 
+		trialsListViewer.setSelection(new StructuredSelection(xyChartData.getSelectedTrialsNumbers()));
 	}
 	
 	@Override
@@ -687,7 +696,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 			
 			// Add series
 			for (Integer selectedTrialNumber : selectedTrialsNumbers) {
-				if(!chartHasAlreadyThisTrial(selectedTrialNumber)) {
+				if(!chartHasAlreadyThisTrial(selectedTrialNumber) || isDirty()) {
 					addSeriesToChart(selectedTrialNumber);
 				}
 			}
@@ -750,7 +759,9 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		Set<String> keys = xyChartData.getCurvesIDs();
 		for (String key : keys) {
 			Channel[] channels = xyChartData.getXYChannels(key);
-			double[] xValues = MathEngineFactory.getMathEngine().getYValuesForSignal(channels[0], trialNumber);
+			double[] xValues;
+			if(channels[0] instanceof TimeChannel) xValues = ((TimeChannel)channels[0]).getValues();
+			else xValues = MathEngineFactory.getMathEngine().getYValuesForSignal(channels[0], trialNumber);
 			double[] yValues = MathEngineFactory.getMathEngine().getYValuesForSignal(channels[1], trialNumber);
 			// 
 			if(yValues == null || xValues == null || yValues.length == 0 || xValues.length == 0) return;

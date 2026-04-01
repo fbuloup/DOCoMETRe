@@ -79,6 +79,7 @@ public class Channel implements IFile {
 	
 	public static Channel fromBeginningChannel = new Channel(null, "From_Beginning");
 	public static Channel toEndChannel = new Channel(null, "To_End");
+	public static Channel timeChannel = new Channel(null, "time");
 	
 	private String name;
 	private IFolder subject;
@@ -114,12 +115,14 @@ public class Channel implements IFile {
 	}
 
 	public void setModified(boolean modified) {
+		if(subject == null) return;
 		ResourceProperties.setSubjectModified(subject, modified);
 		ExperimentsView.refresh(subject, null);
 		SubjectsView.refresh(subject, null);
 	}
 	
 	public boolean isModified() {
+		if(subject == null) return false;
 		return ResourceProperties.isSubjectModified(subject);
 	}
 	
@@ -128,6 +131,7 @@ public class Channel implements IFile {
 			return subject.getFullPath().toString().replaceAll("^/", "").replaceAll("/", ".") + "." + parentChannel.getName() + "." + getName();
 		}
 		if(isFrontEndCut() || isFromBeginningToEnd()) return getName();
+		if(this == timeChannel || this instanceof TimeChannel) return getName();
 		return subject.getFullPath().toString().replaceAll("^/", "").replaceAll("/", ".") + "." + getName();
 	}
 	
@@ -141,16 +145,19 @@ public class Channel implements IFile {
 	
 	public boolean isSignal() {
 		if(isMarker() || isFeature() || isFrontEndCut() || isFromBeginningToEnd()) return false;
+		if(this == timeChannel || this instanceof TimeChannel) return false;
 		return MathEngineFactory.getMathEngine().isSignal(this);
 	}
 	
 	public boolean isCategory() {
 		if(isMarker() || isFeature() || isFrontEndCut() || isFromBeginningToEnd()) return false;
+		if(this == timeChannel || this instanceof TimeChannel) return false;
 		return MathEngineFactory.getMathEngine().isCategory(this);
 	}
 	
 	public boolean isEvent() {
 		if(isMarker() || isFeature() || isFrontEndCut() || isFromBeginningToEnd()) return false;
+		if(this == timeChannel || this instanceof TimeChannel) return false;
 		return MathEngineFactory.getMathEngine().isEvent(this);
 	}
 	

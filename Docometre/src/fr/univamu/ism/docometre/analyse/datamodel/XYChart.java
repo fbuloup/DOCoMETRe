@@ -281,8 +281,16 @@ public class XYChart extends AbstractElement {
 			String yFullChannelName = seriesID.split("\\(")[0];
 			String xFullChannelName = seriesID.split("\\(")[1].replaceAll("\\)", "");
 			
-			String xProjectName = xFullChannelName.split("\\.")[0];
-			String xSubjectName = xFullChannelName.split("\\.")[1];
+			String xProjectName = "";
+			String xSubjectName = "";
+			if(xFullChannelName.equals("time")) {
+				xProjectName = yFullChannelName.split("\\.")[0];
+				xSubjectName = yFullChannelName.split("\\.")[1];
+			} else {
+				xProjectName = xFullChannelName.split("\\.")[0];
+				xSubjectName = xFullChannelName.split("\\.")[1];
+			}
+			
 			IProject xProject = ResourcesPlugin.getWorkspace().getRoot().getProject(xProjectName);
 			IResource xSubject = xProject.findMember(xSubjectName);
 			
@@ -293,8 +301,10 @@ public class XYChart extends AbstractElement {
 			
 			
 			if(MathEngineFactory.getMathEngine().isSubjectLoaded(xSubject) && MathEngineFactory.getMathEngine().isSubjectLoaded(ySubject)) {
-				Channel xChannel = MathEngineFactory.getMathEngine().getChannelWithName(xSubject, xFullChannelName.split("\\.")[2]);
 				Channel yChannel = MathEngineFactory.getMathEngine().getChannelWithName(ySubject, yFullChannelName.split("\\.")[2]);
+				Channel xChannel;
+				if(xFullChannelName.equals("time")) xChannel = new TimeChannel(yChannel);
+				else xChannel = MathEngineFactory.getMathEngine().getChannelWithName(xSubject, xFullChannelName.split("\\.")[2]);
 				if(xChannel == null || yChannel == null) {
 					if(xChannel == null) {
 						String message = NLS.bind(DocometreMessages.ImpossibleToFindChannelTitle, xFullChannelName);

@@ -41,6 +41,8 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.analyse.wizard;
 
+import java.util.ArrayList;
+
 import org.eclipse.jface.wizard.Wizard;
 
 import fr.univamu.ism.docometre.DocometreMessages;
@@ -77,7 +79,11 @@ public class SelectChannelsWizard extends Wizard {
 		selectedChannels = new Channel[1];
 		super.addPage(firstChannelPage);
 		if(channelsNumber == ChannelsNumber.TWO || channelsNumber == ChannelsNumber.THREE) {
-			secondChannelPage = new SelectChannelsWizardPage("SelectChannelsWizardPage_Second", availableChannels, DocometreMessages.YAxisSelectionDialogSubTitle, DocometreMessages.AxisSelectionDialogMessage);
+			// Remove time channel for second channel page
+			ArrayList<Channel> channels = new ArrayList<Channel>();
+			for (Channel channel : availableChannels) 
+				if(channel != Channel.timeChannel) channels.add(channel);
+			secondChannelPage = new SelectChannelsWizardPage("SelectChannelsWizardPage_Second", channels.toArray(new Channel[channels.size()]), DocometreMessages.YAxisSelectionDialogSubTitle, DocometreMessages.AxisSelectionDialogMessage);
 			selectedChannels = new Channel[2];
 			super.addPage(secondChannelPage);
 		}

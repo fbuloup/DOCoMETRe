@@ -73,6 +73,7 @@ import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
+import fr.univamu.ism.docometre.analyse.datamodel.TimeChannel;
 import fr.univamu.ism.docometre.analyse.datamodel.XYZChart;
 import fr.univamu.ism.docometre.analyse.wizard.SelectChannelsWizard;
 import fr.univamu.ism.docometre.analyse.wizard.SelectChannelsWizard.ChannelsNumber;
@@ -134,8 +135,12 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 				signals.addAll(Arrays.asList(MathEngineFactory.getMathEngine().getSignals(subject)));
 			}
 			
+			
 			ChannelsNumber channelsNumber = ChannelsNumber.ONE;
-			if(chartEditor instanceof XYChartEditor) channelsNumber = ChannelsNumber.TWO;
+			if(chartEditor instanceof XYChartEditor) {
+				channelsNumber = ChannelsNumber.TWO;
+				signals.add(Channel.timeChannel);
+			}
 			if(chartEditor instanceof XYZChartEditor) channelsNumber = ChannelsNumber.THREE;
 			SelectChannelsWizard selectChannelsWizard = new SelectChannelsWizard(channelsNumber, signals.toArray(new Channel[signals.size()]));
 			Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
@@ -147,6 +152,7 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 				Channel zSignal = (Channel) channels[0];
 				if(channelsNumber == ChannelsNumber.TWO) {
 					ySignal = (Channel) channels[1];
+					if(xSignal == Channel.timeChannel) xSignal = new TimeChannel(ySignal);
 					chartEditor.getChartData().addCurve(xSignal, ySignal);
 				}
 				if(channelsNumber == ChannelsNumber.THREE) {
@@ -154,8 +160,8 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 					zSignal = (Channel) channels[2];
 					((XYZChart)chartEditor.getChartData()).addCurve(xSignal, ySignal, zSignal);
 				}
-				chartEditor.refreshTrialsListFrontEndCutsCategories();
 				chartEditor.setDirty(true);
+				chartEditor.refreshTrialsListFrontEndCutsCategories();
 			}
 		}
 	}
@@ -185,8 +191,8 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 					}
 				}
 				chartEditor.redraw();
-				chartEditor.refreshTrialsListFrontEndCutsCategories();
 				chartEditor.setDirty(true);
+				chartEditor.refreshTrialsListFrontEndCutsCategories();
 			}
 		}
 	}

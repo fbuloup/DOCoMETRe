@@ -66,6 +66,7 @@ import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
+import fr.univamu.ism.docometre.analyse.datamodel.TimeChannel;
 import fr.univamu.ism.docometre.analyse.datamodel.XYChart;
 
 public final class MarkersManager extends MouseAdapter implements ICustomPaintListener {
@@ -194,7 +195,9 @@ public final class MarkersManager extends MouseAdapter implements ICustomPaintLi
 	private void displayXYMarkers(ISeries series, Channel xSignal, Channel ySignal, boolean displayXMarkers, int trialNumber, int frontCut, int endCut, PaintEvent event) {
 		XYChart xyChartData = ((XYChartEditor)containerEditor).getChartData();
 		int delta = xyChartData.getMarkersSize();
-		double sf = MathEngineFactory.getMathEngine().getSampleFrequency(xSignal);
+		double sf = 1;
+		if(xSignal instanceof TimeChannel) sf = MathEngineFactory.getMathEngine().getSampleFrequency(ySignal);
+		else sf = MathEngineFactory.getMathEngine().getSampleFrequency(xSignal);
 		String[] markersGroupsLabels = new String[0]; 
 		if(displayXMarkers) markersGroupsLabels = MathEngineFactory.getMathEngine().getMarkersGroupsLabels(xSignal);
 		else markersGroupsLabels = MathEngineFactory.getMathEngine().getMarkersGroupsLabels(ySignal);
@@ -215,8 +218,15 @@ public final class MarkersManager extends MouseAdapter implements ICustomPaintLi
 						yIndex = containerEditor.getChart().getAxisSet().getYAxes()[0].getPixelCoordinate(values[sampleIndex - baseFrontCut]);
 					} else {
 						yIndex = containerEditor.getChart().getAxisSet().getYAxes()[0].getPixelCoordinate(markers[i][2]);
-						double[] values = MathEngineFactory.getMathEngine().getYValuesForSignal(xSignal, trialNumber);
-						int baseFrontCut = MathEngineFactory.getMathEngine().getFrontCut(xSignal, trialNumber);
+						double[] values;
+						int baseFrontCut;
+						if(xSignal instanceof TimeChannel) {
+							values = ((TimeChannel)xSignal).getValues();
+							baseFrontCut = MathEngineFactory.getMathEngine().getFrontCut(ySignal, trialNumber);
+						} else {
+							values = MathEngineFactory.getMathEngine().getYValuesForSignal(xSignal, trialNumber);
+							baseFrontCut = MathEngineFactory.getMathEngine().getFrontCut(xSignal, trialNumber);
+						}
 						xIndex = containerEditor.getChart().getAxisSet().getXAxes()[0].getPixelCoordinate(values[sampleIndex - baseFrontCut]);
 					}
 					
@@ -255,7 +265,8 @@ public final class MarkersManager extends MouseAdapter implements ICustomPaintLi
 			for (Integer trialNumber : trialsNumbers) {
 				ISeries series = containerEditor.getChart().getSeriesSet().getSeries(seriesID + "." + trialNumber);
 				// Display xSignal markers
-				displayXYMarkers(series, xSignal, ySignal, true, trialNumber, xyChartData.getFrontCut(), xyChartData.getEndCut(), event);
+				if(!(xSignal instanceof TimeChannel))
+					displayXYMarkers(series, xSignal, ySignal, true, trialNumber, xyChartData.getFrontCut(), xyChartData.getEndCut(), event);
 				// Display ySignal markers
 				displayXYMarkers(series, xSignal, ySignal, false, trialNumber, xyChartData.getFrontCut(),xyChartData.getEndCut(),  event);
 			}
