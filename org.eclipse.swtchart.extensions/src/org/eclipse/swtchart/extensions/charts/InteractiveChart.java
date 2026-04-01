@@ -529,7 +529,7 @@ public class InteractiveChart extends Chart implements PaintListener {
 				}
 			}
 		}
-		selection.dispose();
+		if(selection != null && !selection.isDisposed()) selection.dispose();
 		redraw();
 		if (isShowCursor()) handleMouseMoveEvent(event);
 		if(fireZoomListeners) fireZoomListeners();
