@@ -44,6 +44,7 @@ package fr.univamu.ism.docometre;
 import org.eclipse.ui.IFolderLayout;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
+import org.eclipse.ui.console.IConsoleConstants;
 
 import fr.univamu.ism.docometre.analyse.views.MathEngineCommandView;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
@@ -58,7 +59,8 @@ public class AnalysePerspective implements IPerspectiveFactory {
 		layout.addView(SubjectsView.ID, IPageLayout.LEFT, .25f, layout.getEditorArea());
 //		layout.getViewLayout(ExperimentsView.ID).setCloseable(false);
 //		layout.addView(DescriptionView.ID, IPageLayout.BOTTOM, .75f, ExperimentsView.ID);
-		layout.addView(MessagesView.ID, IPageLayout.BOTTOM, .75f, layout.getEditorArea());
+//		layout.addView(MessagesView.ID, IPageLayout.BOTTOM, .75f, layout.getEditorArea());
+		layout.addView(IConsoleConstants.ID_CONSOLE_VIEW, IPageLayout.BOTTOM, .75f, layout.getEditorArea());
 		layout.addView(MathEngineCommandView.ID, IPageLayout.RIGHT, .5f, MessagesView.ID);
 		if(System.getProperty("Sleak") != null) {
 			IFolderLayout folder = layout.createFolder("Sleak folder",  IPageLayout.RIGHT, .5f, layout.getEditorArea());
