@@ -64,17 +64,18 @@ public class ADBasicSourceEditor extends SourceEditor {
 	public void createPartControl(Composite parent) {
 		super.createPartControl(parent);
 		
+		fontSize = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.EDITORS_FONT_SIZE);
+		
 		FastPartitioner adbasicFastPartitioner = new FastPartitioner(new ADBasicRulesPartitionScanner(), ADBasicRulesPartitionScanner.PARTITIONS);
 	    document.setDocumentPartitioner(adbasicFastPartitioner);
 	    adbasicFastPartitioner.connect(document);
 		sourceViewer.setDocument(document, annotationModel, -1, -1);
-		sourceViewer.configure(new ADBasicSourceViewerConfiguration());
+		sourceViewer.configure(new ADBasicSourceViewerConfiguration(this));
 		
 		sourceViewer.getTextWidget().addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent event) {
 				boolean update = false;
-				int fontSize = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.EDITORS_FONT_SIZE);
 				if (((event.stateMask & SWT.MOD1) == SWT.MOD1) && (event.keyCode == '=' || event.keyCode == 16777259)) {
 					fontSize++;
 					update = true;
@@ -84,12 +85,11 @@ public class ADBasicSourceEditor extends SourceEditor {
 					update = true;
 				}
 				if(update) {
-					Activator.getDefault().getPreferenceStore().setValue(GeneralPreferenceConstants.EDITORS_FONT_SIZE,fontSize);
-					sourceViewer.getTextWidget().setFont(DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
-					lineNumberRulerColumn.setFont(DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
+					sourceViewer.getTextWidget().setFont(DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, fontSize));
+					lineNumberRulerColumn.setFont(DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, fontSize));
 					((Composite) sourceViewer.getControl()).layout(true);
 					sourceViewer.setHyperlinkDetectors(null, 0);
-					sourceViewer.configure(new ADBasicSourceViewerConfiguration());
+					sourceViewer.configure(new ADBasicSourceViewerConfiguration(ADBasicSourceEditor.this));
 				}
 			}
 		});

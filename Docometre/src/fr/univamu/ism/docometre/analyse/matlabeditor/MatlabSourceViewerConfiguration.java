@@ -47,9 +47,16 @@ import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 
+import fr.univamu.ism.docometre.analyse.editors.DataProcessScriptSourceEditor;
+
 public class MatlabSourceViewerConfiguration extends SourceViewerConfiguration {
 	
 	private PresentationReconciler presentationReconciler;
+	private DataProcessScriptSourceEditor dataProcessScriptSourceEditor;
+	
+	public MatlabSourceViewerConfiguration(DataProcessScriptSourceEditor dataProcessScriptSourceEditor) {
+		this.dataProcessScriptSourceEditor = dataProcessScriptSourceEditor;
+	}
 
 	@Override
 	public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
@@ -57,11 +64,11 @@ public class MatlabSourceViewerConfiguration extends SourceViewerConfiguration {
 		
 		presentationReconciler = (PresentationReconciler) super.getPresentationReconciler(sourceViewer);
 		
-		DefaultDamagerRepairer defaultDamagerRepairer = new DefaultDamagerRepairer(MatlabCodeScanner.getCommentScanner());		
+		DefaultDamagerRepairer defaultDamagerRepairer = new DefaultDamagerRepairer(MatlabCodeScanner.getCommentScanner(dataProcessScriptSourceEditor));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, MatlabRulesPartitionScanner.COMMENT);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, MatlabRulesPartitionScanner.COMMENT);
 		
-		defaultDamagerRepairer = new DefaultDamagerRepairer(MatlabCodeScanner.getMatlabCodeScanner());		
+		defaultDamagerRepairer = new DefaultDamagerRepairer(MatlabCodeScanner.getMatlabCodeScanner(dataProcessScriptSourceEditor));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, MatlabRulesPartitionScanner.DEFAULT);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, MatlabRulesPartitionScanner.DEFAULT);
 

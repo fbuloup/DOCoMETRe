@@ -226,9 +226,8 @@ public class DocometreApplication implements IApplication {
 		}
 		return color;
 	}
-
-	public static Font getFont(String fontName) {
-		int fontSize = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.EDITORS_FONT_SIZE);
+	
+	public static Font getFont(String fontName, int fontSize) {
 		String fontNameWithSize = fontName + "_" + fontSize;
 		if(!JFaceResources.getFontRegistry().hasValueFor(fontNameWithSize)) {
 			Font font = JFaceResources.getFontRegistry().get(fontName);
@@ -236,6 +235,11 @@ public class DocometreApplication implements IApplication {
 		    JFaceResources.getFontRegistry().put(fontNameWithSize, newFont.getFontData());
 		}
 		return JFaceResources.getFontRegistry().get(fontNameWithSize);
+	}
+
+	public static Font getFont(String fontName) {
+		int fontSize = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.EDITORS_FONT_SIZE);
+		return getFont(fontName, fontSize);
 	}
 	
 }

@@ -64,13 +64,13 @@ public class CustomerFunctionCodeScanner extends RuleBasedScanner {
 											 "TEXT", "TYPE", "NAME", "PARAMETERS_NUMBER", "PARAMETER_"};
 	
 
-	public static RuleBasedScanner getReservedWordsScanner() {
+	public static RuleBasedScanner getReservedWordsScanner(CustomerFunctionEditor customerFunctionEditor) {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
 		List<IRule> rules = new ArrayList<IRule>(0);
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.MAROON), 
 													ThemeColors.getBackgroundColor(), 
 													SWT.NORMAL, 
-													DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
+													DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, customerFunctionEditor.fontSize));
 		IToken token = new Token(attribute);
 		WordRule wordRule = new WordRule(new WordsDetector(RESERVED_WORDS), token);
 		rules.add(wordRule);
@@ -79,13 +79,13 @@ public class CustomerFunctionCodeScanner extends RuleBasedScanner {
 		return ruleBasedScanner;
 	}
 	
-	public static RuleBasedScanner getCommentScanner() {
+	public static RuleBasedScanner getCommentScanner(CustomerFunctionEditor customerFunctionEditor) {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
 		List<IRule> rules = new ArrayList<IRule>(0);
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.GREEN), 
 													ThemeColors.getBackgroundColor(), 
 													SWT.NORMAL, 
-													DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
+													DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, customerFunctionEditor.fontSize));
 		IToken token = new Token(attribute);
 		IRule commentRule1 = new EndOfLineRule("#", token);
 //		IRule commentRule2 = new MultiLineRule("/*", "*/", token, (char) 0, true);

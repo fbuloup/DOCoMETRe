@@ -98,10 +98,15 @@ public class SourceEditor extends EditorPart {
 	protected SourceViewer sourceViewer;
 	private PartListenerAdapter partListenerAdapter;
 	protected LineNumberRulerColumn lineNumberRulerColumn;
+	protected int fontSize;
 
 	public SourceEditor(MultiPageEditorPart multiPageEditorPart) {
-			this.multiPageEditorPart = multiPageEditorPart;
-		}
+		this.multiPageEditorPart = multiPageEditorPart;
+	}
+	
+	public int getFontSize() {
+		return fontSize;
+	}
 
 	@Override
 	public void doSave(IProgressMonitor monitor) {

@@ -26,6 +26,11 @@ import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 public class CustomerFunctionSourceViewerConfiguration extends SourceViewerConfiguration {
 	
 	private PresentationReconciler presentationReconciler;
+	CustomerFunctionEditor customerFunctionEditor;
+	
+	public CustomerFunctionSourceViewerConfiguration(CustomerFunctionEditor customerFunctionEditor) {
+		this.customerFunctionEditor = customerFunctionEditor;
+	}
 
 	@Override
 	public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
@@ -52,11 +57,11 @@ public class CustomerFunctionSourceViewerConfiguration extends SourceViewerConfi
 		
 		presentationReconciler = (PresentationReconciler) super.getPresentationReconciler(sourceViewer);
 		
-		DefaultDamagerRepairer defaultDamagerRepairer = new DefaultDamagerRepairer(CustomerFunctionCodeScanner.getCommentScanner());		
+		DefaultDamagerRepairer defaultDamagerRepairer = new DefaultDamagerRepairer(CustomerFunctionCodeScanner.getCommentScanner(customerFunctionEditor));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, CustomerFunctionRulesPartitionScanner.COMMENT);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, CustomerFunctionRulesPartitionScanner.COMMENT);
 		
-		defaultDamagerRepairer = new DefaultDamagerRepairer(CustomerFunctionCodeScanner.getReservedWordsScanner());		
+		defaultDamagerRepairer = new DefaultDamagerRepairer(CustomerFunctionCodeScanner.getReservedWordsScanner(customerFunctionEditor));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, CustomerFunctionRulesPartitionScanner.RESERVED_WORDS);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, CustomerFunctionRulesPartitionScanner.RESERVED_WORDS);
 		
@@ -66,7 +71,7 @@ public class CustomerFunctionSourceViewerConfiguration extends SourceViewerConfi
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLUE),
 													ThemeColors.getBackgroundColor(), 
 													SWT.NORMAL,
-													DocometreApplication.getFont(DocometreApplication.COURIER_NEW));
+													DocometreApplication.getFont(DocometreApplication.COURIER_NEW, customerFunctionEditor.fontSize));
 		IToken token = new Token(attribute);
 		NumberRule numberRule = new NumberRule(token);		
 		defaultScanner.setRules(new IRule[]{numberRule});

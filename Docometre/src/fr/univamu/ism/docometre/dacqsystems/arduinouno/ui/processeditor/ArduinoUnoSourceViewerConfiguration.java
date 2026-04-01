@@ -61,6 +61,11 @@ import fr.univamu.ism.docometre.ThemeColors;
 public class ArduinoUnoSourceViewerConfiguration extends SourceViewerConfiguration {
 	
 	private PresentationReconciler presentationReconciler;
+	private ArduinoUnoSourceEditor arduinoUnoSourceEditor;
+	
+	public ArduinoUnoSourceViewerConfiguration(ArduinoUnoSourceEditor arduinoUnoSourceEditor) {
+		this.arduinoUnoSourceEditor = arduinoUnoSourceEditor;
+	}
 
 	@Override
 	public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
@@ -68,23 +73,23 @@ public class ArduinoUnoSourceViewerConfiguration extends SourceViewerConfigurati
 		
 		presentationReconciler = (PresentationReconciler) super.getPresentationReconciler(sourceViewer);
 		
-		DefaultDamagerRepairer defaultDamagerRepairer = new DefaultDamagerRepairer(ArduinoUnoCodeScanner.getCommentScanner());		
+		DefaultDamagerRepairer defaultDamagerRepairer = new DefaultDamagerRepairer(ArduinoUnoCodeScanner.getCommentScanner(arduinoUnoSourceEditor));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, ArduinoUnoRulesPartitionScanner.COMMENT);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, ArduinoUnoRulesPartitionScanner.COMMENT);
 		
-		defaultDamagerRepairer = new DefaultDamagerRepairer(ArduinoUnoCodeScanner.getIncludeScanner());		
+		defaultDamagerRepairer = new DefaultDamagerRepairer(ArduinoUnoCodeScanner.getIncludeScanner(arduinoUnoSourceEditor));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, ArduinoUnoRulesPartitionScanner.INCLUDE);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, ArduinoUnoRulesPartitionScanner.INCLUDE);
 		
-		defaultDamagerRepairer = new DefaultDamagerRepairer(ArduinoUnoCodeScanner.getDefineScanner());		
+		defaultDamagerRepairer = new DefaultDamagerRepairer(ArduinoUnoCodeScanner.getDefineScanner(arduinoUnoSourceEditor));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, ArduinoUnoRulesPartitionScanner.DEFINE);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, ArduinoUnoRulesPartitionScanner.DEFINE);
 		
-		defaultDamagerRepairer = new DefaultDamagerRepairer(ArduinoUnoCodeScanner.getSegmentScanner());		
+		defaultDamagerRepairer = new DefaultDamagerRepairer(ArduinoUnoCodeScanner.getSegmentScanner(arduinoUnoSourceEditor));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, ArduinoUnoRulesPartitionScanner.SEGMENT);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, ArduinoUnoRulesPartitionScanner.SEGMENT);
 		
-		defaultDamagerRepairer = new DefaultDamagerRepairer(ArduinoUnoCodeScanner.getReservedWordsScanner());		
+		defaultDamagerRepairer = new DefaultDamagerRepairer(ArduinoUnoCodeScanner.getReservedWordsScanner(arduinoUnoSourceEditor));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, ArduinoUnoRulesPartitionScanner.RESERVED_WORDS);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, ArduinoUnoRulesPartitionScanner.RESERVED_WORDS);
 		
@@ -94,7 +99,7 @@ public class ArduinoUnoSourceViewerConfiguration extends SourceViewerConfigurati
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLUE),
 													ThemeColors.getBackgroundColor(), 
 													SWT.NORMAL,
-													DocometreApplication.getFont(DocometreApplication.COURIER_NEW));
+													DocometreApplication.getFont(DocometreApplication.COURIER_NEW, arduinoUnoSourceEditor.getFontSize()));
 		IToken token = new Token(attribute);
 		NumberRule numberRule = new NumberRule(token);		
 		defaultScanner.setRules(new IRule[]{numberRule});

@@ -47,9 +47,16 @@ import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 
+import fr.univamu.ism.docometre.analyse.editors.DataProcessScriptSourceEditor;
+
 public class PythonSourceViewerConfiguration extends SourceViewerConfiguration {
 	
 	private PresentationReconciler presentationReconciler;
+	private DataProcessScriptSourceEditor dataProcessScriptSourceEditor;
+	
+	public PythonSourceViewerConfiguration(DataProcessScriptSourceEditor dataProcessScriptSourceEditor) {
+		this.dataProcessScriptSourceEditor = dataProcessScriptSourceEditor;
+	}
 
 	@Override
 	public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
@@ -57,11 +64,11 @@ public class PythonSourceViewerConfiguration extends SourceViewerConfiguration {
 		
 		presentationReconciler = (PresentationReconciler) super.getPresentationReconciler(sourceViewer);
 		
-		DefaultDamagerRepairer defaultDamagerRepairer = new DefaultDamagerRepairer(PythonCodeScanner.getCommentScanner());		
+		DefaultDamagerRepairer defaultDamagerRepairer = new DefaultDamagerRepairer(PythonCodeScanner.getCommentScanner(dataProcessScriptSourceEditor));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, PythonRulesPartitionScanner.COMMENT);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, PythonRulesPartitionScanner.COMMENT);
 		
-		defaultDamagerRepairer = new DefaultDamagerRepairer(PythonCodeScanner.getPythonCodeScanner());		
+		defaultDamagerRepairer = new DefaultDamagerRepairer(PythonCodeScanner.getPythonCodeScanner(dataProcessScriptSourceEditor));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, PythonRulesPartitionScanner.DEFAULT);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, PythonRulesPartitionScanner.DEFAULT);
 

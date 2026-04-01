@@ -68,6 +68,8 @@ public class DataProcessScriptSourceEditor extends SourceEditor {
 	public void createPartControl(Composite parent) {
 		super.createPartControl(parent);
 		
+		fontSize = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.EDITORS_FONT_SIZE);
+		
 		SourceViewerConfiguration sourceViewerConfiguration = null;
 		
 		String mathEngine = Activator.getDefault().getPreferenceStore().getString(MathEnginePreferencesConstants.MATH_ENGINE);
@@ -79,14 +81,14 @@ public class DataProcessScriptSourceEditor extends SourceEditor {
 		    document.setDocumentPartitioner(matlabFastPartitioner);
 		    matlabFastPartitioner.connect(document);
 			sourceViewer.setDocument(document, annotationModel, -1, -1);
-			sourceViewerConfiguration = new MatlabSourceViewerConfiguration();
+			sourceViewerConfiguration = new MatlabSourceViewerConfiguration(this);
 		}
 		if(MathEnginePreferencesConstants.MATH_ENGINE_PYTHON.equals(mathEngine)) {
 			FastPartitioner pythonFastPartitioner = new FastPartitioner(new PythonRulesPartitionScanner(), PythonRulesPartitionScanner.PARTITIONS);
 		    document.setDocumentPartitioner(pythonFastPartitioner);
 		    pythonFastPartitioner.connect(document);
 			sourceViewer.setDocument(document, annotationModel, -1, -1);
-			sourceViewerConfiguration = new PythonSourceViewerConfiguration();
+			sourceViewerConfiguration = new PythonSourceViewerConfiguration(this);
 		}
 
 		sourceViewer.configure(sourceViewerConfiguration);
@@ -98,7 +100,6 @@ public class DataProcessScriptSourceEditor extends SourceEditor {
 			@Override
 			public void keyPressed(KeyEvent event) {
 				boolean update = false;
-				int fontSize = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.EDITORS_FONT_SIZE);
 				if (((event.stateMask & SWT.MOD1) == SWT.MOD1) && (event.keyCode == '=' || event.keyCode == 16777259)) {
 					fontSize++;
 					update = true;
@@ -108,15 +109,14 @@ public class DataProcessScriptSourceEditor extends SourceEditor {
 					update = true;
 				}
 				if(update) {
-					Activator.getDefault().getPreferenceStore().setValue(GeneralPreferenceConstants.EDITORS_FONT_SIZE,fontSize);
-					sourceViewer.getTextWidget().setFont(DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
-					lineNumberRulerColumn.setFont(DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
+					sourceViewer.getTextWidget().setFont(DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, fontSize));
+					lineNumberRulerColumn.setFont(DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, fontSize));
 					((Composite) sourceViewer.getControl()).layout(true);
 					sourceViewer.setHyperlinkDetectors(null, 0);
 					if (sourceViewerConfiguration instanceof MatlabSourceViewerConfiguration)
-						sourceViewer.configure(new MatlabSourceViewerConfiguration());
+						sourceViewer.configure(new MatlabSourceViewerConfiguration(DataProcessScriptSourceEditor.this));
 					if (sourceViewerConfiguration instanceof PythonSourceViewerConfiguration)
-						sourceViewer.configure(new PythonSourceViewerConfiguration());
+						sourceViewer.configure(new PythonSourceViewerConfiguration(DataProcessScriptSourceEditor.this));
 				}
 			}
 		});
