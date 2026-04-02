@@ -9,7 +9,7 @@ public class TimeChannel extends Channel {
 	public TimeChannel(Channel associatedChannel) {
 		super(null, "time");
 		double sf = MathEngineFactory.getMathEngine().getSampleFrequency(associatedChannel);
-		int nbSamples = MathEngineFactory.getMathEngine().getSamplesNumber(associatedChannel, 0);
+		int nbSamples = MathEngineFactory.getMathEngine().getSamplesNumber(associatedChannel, 1);
 		values = new double[nbSamples];
 		for (int i = 0; i < values.length; i++) values[i] = i/sf;
 	}
