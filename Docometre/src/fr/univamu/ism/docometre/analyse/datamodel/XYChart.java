@@ -302,18 +302,17 @@ public class XYChart extends AbstractElement {
 			
 			if(MathEngineFactory.getMathEngine().isSubjectLoaded(xSubject) && MathEngineFactory.getMathEngine().isSubjectLoaded(ySubject)) {
 				Channel yChannel = MathEngineFactory.getMathEngine().getChannelWithName(ySubject, yFullChannelName.split("\\.")[2]);
+				if(yChannel == null) {
+					String message = NLS.bind(DocometreMessages.ImpossibleToFindChannelTitle, yFullChannelName);
+					Activator.logErrorMessage(message);
+					return false;
+				}
 				Channel xChannel;
 				if(xFullChannelName.equals("time")) xChannel = new TimeChannel(yChannel);
 				else xChannel = MathEngineFactory.getMathEngine().getChannelWithName(xSubject, xFullChannelName.split("\\.")[2]);
-				if(xChannel == null || yChannel == null) {
-					if(xChannel == null) {
-						String message = NLS.bind(DocometreMessages.ImpossibleToFindChannelTitle, xFullChannelName);
-						Activator.logErrorMessage(message);
-					}
-					if(yChannel == null) {
-						String message = NLS.bind(DocometreMessages.ImpossibleToFindChannelTitle, yFullChannelName);
-						Activator.logErrorMessage(message);
-					}
+				if(xChannel == null) {
+					String message = NLS.bind(DocometreMessages.ImpossibleToFindChannelTitle, xFullChannelName);
+					Activator.logErrorMessage(message);
 					return false;
 				}
 				channelsMap.put(seriesID, new Channel[] {xChannel, yChannel});
