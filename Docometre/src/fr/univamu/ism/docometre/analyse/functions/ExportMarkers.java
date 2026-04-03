@@ -433,7 +433,7 @@ public class ExportMarkers extends GenericFunction {
 			if(MathEngineFactory.isPython()) return "# Nothing to export !";
 		}
 		
-		if(filesNames.size() > 1) {
+		if(subjectsNames.size() > 1) {
 			if(MathEngineFactory.isMatlab()) return "% Export error : cannot export more than one subject ! " + String.join(", ", markers);
 			if(MathEngineFactory.isPython()) return "# Export error : cannot export more than one subject ! " + String.join(", ", markers);
 		}
