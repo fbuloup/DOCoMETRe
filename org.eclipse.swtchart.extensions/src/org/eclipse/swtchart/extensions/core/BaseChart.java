@@ -49,8 +49,8 @@ public class BaseChart extends AbstractExtendedChart implements IChartDataCoordi
 
 	public static final int ID_PRIMARY_X_AXIS = 0;
 	public static final int ID_PRIMARY_Y_AXIS = 0;
-	public static final String DEFAULT_TITLE_X_AXIS = "X-Axis";
-	public static final String DEFAULT_TITLE_Y_AXIS = "Y-Axis";
+	public static final String DEFAULT_TITLE_X_AXIS = Messages.BaseChart_0;
+	public static final String DEFAULT_TITLE_Y_AXIS = Messages.BaseChart_1;
 	//
 	public static final int EVENT_MOUSE_DOUBLE_CLICK = 1;
 	public static final int EVENT_MOUSE_WHEEL = 2;
@@ -120,7 +120,7 @@ public class BaseChart extends AbstractExtendedChart implements IChartDataCoordi
 	public static final int KEY_CODE_y = 121;
 	public static final int KEY_CODE_z = 122;
 	//
-	public static final String SELECTED_SERIES_NONE = "None";
+	public static final String SELECTED_SERIES_NONE = Messages.BaseChart_2;
 	/*
 	 * see: IHandledEventProcessor
 	 * Map<Integer, Map<Integer, Map<Integer, List<IEventProcessor>>>>
@@ -965,7 +965,7 @@ public class BaseChart extends AbstractExtendedChart implements IChartDataCoordi
 			if(axisSettings != null) {
 				label = axisSettings.getLabel();
 			} else {
-				label = "not set";
+				label = Messages.BaseChart_3;
 			}
 			items[i] = label;
 		}
@@ -1128,7 +1128,7 @@ public class BaseChart extends AbstractExtendedChart implements IChartDataCoordi
 	public String getSelectedseriesId(Event event) {
 
 		ISeries[] series = getSeriesSet().getSeries();
-		String selectedSeriesId = "";
+		String selectedSeriesId = ""; //$NON-NLS-1$
 		/*
 		 * Get the selected series id.
 		 */

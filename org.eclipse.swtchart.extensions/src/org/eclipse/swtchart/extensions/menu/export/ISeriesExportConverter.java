@@ -15,6 +15,6 @@ import org.eclipse.swtchart.extensions.menu.IChartMenuEntry;
 
 public interface ISeriesExportConverter extends IChartMenuEntry {
 
-	String MESSAGE_OK = "The data has been exported successully.";
-	String MESSAGE_ERROR = "Sorry, something has gone wrong to export the data.";
+	String MESSAGE_OK = Messages.ISeriesExportConverter_0;
+	String MESSAGE_ERROR = Messages.ISeriesExportConverter_1;
 }

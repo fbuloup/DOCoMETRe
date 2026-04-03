@@ -168,11 +168,11 @@ public abstract class AbstractSeparatedValueHandler extends AbstractSeriesExport
 				printValue(printWriter, xSeries[i], indexAxisX, BaseChart.ID_PRIMARY_X_AXIS, decimalFormatX, axisScaleConverterX);
 				printWriter.print(delimiter);
 				printValue(printWriter, ySeries[i], indexAxisY, BaseChart.ID_PRIMARY_Y_AXIS, decimalFormatY, axisScaleConverterY);
-				printWriter.println("");
+				printWriter.println(""); //$NON-NLS-1$
 			}
 		}
 		//
-		printWriter.println("");
+		printWriter.println(""); //$NON-NLS-1$
 	}
 
 	private void printValue(PrintWriter printWriter, double value, int indexAxis, int indexPrimaryAxis, DecimalFormat decimalFormat, IAxisScaleConverter axisScaleConverter) {

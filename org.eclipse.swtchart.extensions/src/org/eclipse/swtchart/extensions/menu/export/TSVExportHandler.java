@@ -13,11 +13,11 @@ package org.eclipse.swtchart.extensions.menu.export;
 
 public class TSVExportHandler extends AbstractSeparatedValueHandler implements ISeriesExportConverter {
 
-	private static final String FILE_EXTENSION = "*.tsv";
-	public static final String NAME = "Tab Separated Values (" + FILE_EXTENSION + ")";
+	private static final String FILE_EXTENSION = "*.tsv"; //$NON-NLS-1$
+	public static final String NAME = Messages.TSVExportHandler_1 + FILE_EXTENSION + ")"; //$NON-NLS-2$
 	//
-	private static final String TITLE = "Save As Tab Separated Text";
-	private static final String DELIMITER = "\t";
+	private static final String TITLE = Messages.TSVExportHandler_3;
+	private static final String DELIMITER = "\t"; //$NON-NLS-1$
 
 	@Override
 	public String getName() {

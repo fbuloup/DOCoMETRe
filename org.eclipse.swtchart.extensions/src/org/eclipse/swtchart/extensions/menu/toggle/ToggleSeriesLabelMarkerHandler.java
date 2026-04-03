@@ -29,7 +29,7 @@ public class ToggleSeriesLabelMarkerHandler extends AbstractChartMenuEntry imple
 	@Override
 	public String getName() {
 
-		return "Series Label Marker";
+		return Messages.ToggleSeriesLabelMarkerHandler_0;
 	}
 
 	@Override

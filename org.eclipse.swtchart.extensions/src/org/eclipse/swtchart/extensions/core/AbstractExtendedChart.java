@@ -297,7 +297,7 @@ public abstract class AbstractExtendedChart extends AbstractHandledChart impleme
 			calculateCoordinates(series);
 			return series;
 		} else {
-			throw new SeriesException("The length of x and y series differs.");
+			throw new SeriesException(Messages.AbstractExtendedChart_0);
 		}
 	}
 
@@ -404,7 +404,7 @@ public abstract class AbstractExtendedChart extends AbstractHandledChart impleme
 						Range adjustedRange = new Range(start, end);
 						axis.setRange(adjustedRange);
 					} else {
-						System.out.println("Can't set secondary x axes range: " + start + "\t" + end);
+						System.out.println(Messages.AbstractExtendedChart_1 + start + "\t" + end); //$NON-NLS-2$
 					}
 				}
 			}
@@ -430,7 +430,7 @@ public abstract class AbstractExtendedChart extends AbstractHandledChart impleme
 						Range adjustedRange = new Range(start, end);
 						axis.setRange(adjustedRange);
 					} else {
-						System.out.println("Can't set secondary y axes range: " + start + "\t" + end);
+						System.out.println(Messages.AbstractExtendedChart_3 + start + "\t" + end); //$NON-NLS-2$
 					}
 				}
 			}

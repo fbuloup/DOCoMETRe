@@ -61,7 +61,7 @@ import org.eclipse.swtchart.internal.PlotArea;
 public class InteractiveChart extends Chart implements PaintListener {
 
 	/** the filter extensions */
-	private static final String[] EXTENSIONS = new String[]{"*.jpeg", "*.jpg", "*.png"};
+	private static final String[] EXTENSIONS = new String[]{"*.jpeg", "*.jpg", "*.png"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	/** the selection rectangle for zoom in/out */
 	protected SelectionRectangle selection;
 	private Color selectionColor;
@@ -76,7 +76,7 @@ public class InteractiveChart extends Chart implements PaintListener {
 	private int currentY_Pixel;
 	private double currentX;
 	private double currentY;
-	private String cursorCoordinatesString = "";
+	private String cursorCoordinatesString = ""; //$NON-NLS-1$
 	private CursorMarkerDeltaPainter cursorMarkerDeltaPainter;
 	private boolean showCursor = true;
 	private int previousCurrentX_Pixel; 
@@ -84,8 +84,8 @@ public class InteractiveChart extends Chart implements PaintListener {
 	private boolean showMarker = true;
 	private int currentXMarker_Pixel = -1;
 	private int currentYMarker_Pixel = -1;
-	private String markerCoordinatesString = "";
-	private String deltaCoordinateString = "";
+	private String markerCoordinatesString = ""; //$NON-NLS-1$
+	private String deltaCoordinateString = ""; //$NON-NLS-1$
 	private boolean doubleClick;
 	
 	private Set<ZoomListener> zoomListeners = new HashSet<>();
@@ -322,7 +322,7 @@ public class InteractiveChart extends Chart implements PaintListener {
 				computeCurrentCordinates(event);
 				// Convert to String
 				cursorCoordinatesString = convertToString(1, currentX, currentY);
-			} else cursorCoordinatesString = "";
+			} else cursorCoordinatesString = ""; //$NON-NLS-1$
 			if(isShowMarker()) {
 				double mx = getAxisSet().getXAxes()[0].getDataCoordinate(currentXMarker_Pixel);
 				double my = getAxisSet().getYAxes()[0].getDataCoordinate(currentYMarker_Pixel);
@@ -358,18 +358,18 @@ public class InteractiveChart extends Chart implements PaintListener {
 	}
 	
 	private String convertToString(int type, double x, double y) {
-		if(getCurrentSeries() == null) return "";
+		if(getCurrentSeries() == null) return ""; //$NON-NLS-1$
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setMaximumFractionDigits(6);
 		
 		StringBuilder text = new StringBuilder();
-		if(type == 2) text.append("Marker (");
-		else if(type == 1)  text.append("Cursor (");
-		else if(type == 3) text.append("\u0394 (");
+		if(type == 2) text.append(Messages.InteractiveChart_8);
+		else if(type == 1)  text.append(Messages.InteractiveChart_9);
+		else if(type == 3) text.append("\u0394 ("); //$NON-NLS-1$
 		text.append(nf.format(x));
-		text.append(" ; ");
+		text.append(" ; "); //$NON-NLS-1$
 		text.append(nf.format(y));
-		text.append(")");
+		text.append(")"); //$NON-NLS-1$
 		
 		
 		return text.toString();
@@ -733,9 +733,9 @@ public class InteractiveChart extends Chart implements PaintListener {
 			return;
 		}
 		int format;
-		if(filename.endsWith(".jpg") || filename.endsWith(".jpeg")) {
+		if(filename.endsWith(".jpg") || filename.endsWith(".jpeg")) { //$NON-NLS-1$ //$NON-NLS-2$
 			format = SWT.IMAGE_JPEG;
-		} else if(filename.endsWith(".png")) {
+		} else if(filename.endsWith(".png")) { //$NON-NLS-1$
 			format = SWT.IMAGE_PNG;
 		} else {
 			format = SWT.IMAGE_UNDEFINED;
@@ -751,47 +751,47 @@ public class InteractiveChart extends Chart implements PaintListener {
 	private void openPropertiesDialog() {
 
 		PreferenceManager manager = new PreferenceManager();
-		final String chartTitle = "Chart";
+		final String chartTitle = Messages.InteractiveChart_16;
 		PreferenceNode chartNode = new PreferenceNode(chartTitle);
 		chartNode.setPage(new ChartPage(this, resources, chartTitle));
 		manager.addToRoot(chartNode);
-		final String legendTitle = "Legend";
+		final String legendTitle = Messages.InteractiveChart_17;
 		PreferenceNode legendNode = new PreferenceNode(legendTitle);
 		legendNode.setPage(new LegendPage(this, resources, legendTitle));
 		manager.addTo(chartTitle, legendNode);
-		final String xAxisTitle = "X Axis";
+		final String xAxisTitle = Messages.InteractiveChart_18;
 		PreferenceNode xAxisNode = new PreferenceNode(xAxisTitle);
 		xAxisNode.setPage(new AxisPage(this, resources, Direction.X, xAxisTitle));
 		manager.addTo(chartTitle, xAxisNode);
-		final String gridTitle = "Grid";
+		final String gridTitle = Messages.InteractiveChart_19;
 		PreferenceNode xGridNode = new PreferenceNode(gridTitle);
 		xGridNode.setPage(new GridPage(this, resources, Direction.X, gridTitle));
-		manager.addTo(chartTitle + "." + xAxisTitle, xGridNode);
-		final String tickTitle = "Tick";
+		manager.addTo(chartTitle + "." + xAxisTitle, xGridNode); //$NON-NLS-1$
+		final String tickTitle = Messages.InteractiveChart_21;
 		PreferenceNode xTickNode = new PreferenceNode(tickTitle);
 		xTickNode.setPage(new AxisTickPage(this, resources, Direction.X, tickTitle));
 		manager.addTo(chartTitle + "." + xAxisTitle, xTickNode);
-		final String yAxisTitle = "Y Axis";
+		final String yAxisTitle = Messages.InteractiveChart_23;
 		PreferenceNode yAxisNode = new PreferenceNode(yAxisTitle);
 		yAxisNode.setPage(new AxisPage(this, resources, Direction.Y, yAxisTitle));
 		manager.addTo(chartTitle, yAxisNode);
 		PreferenceNode yGridNode = new PreferenceNode(gridTitle);
 		yGridNode.setPage(new GridPage(this, resources, Direction.Y, gridTitle));
-		manager.addTo(chartTitle + "." + yAxisTitle, yGridNode);
+		manager.addTo(chartTitle + "." + yAxisTitle, yGridNode); //$NON-NLS-1$
 		PreferenceNode yTickNode = new PreferenceNode(tickTitle);
 		yTickNode.setPage(new AxisTickPage(this, resources, Direction.Y, tickTitle));
-		manager.addTo(chartTitle + "." + yAxisTitle, yTickNode);
-		final String seriesTitle = "Series";
+		manager.addTo(chartTitle + "." + yAxisTitle, yTickNode); //$NON-NLS-1$
+		final String seriesTitle = Messages.InteractiveChart_26;
 		PreferenceNode plotNode = new PreferenceNode(seriesTitle);
 		plotNode.setPage(new SeriesPage(this, resources, seriesTitle));
 		manager.addTo(chartTitle, plotNode);
-		final String labelTitle = "Label";
+		final String labelTitle = Messages.InteractiveChart_27;
 		PreferenceNode labelNode = new PreferenceNode(labelTitle);
 		labelNode.setPage(new SeriesLabelPage(this, resources, labelTitle));
-		manager.addTo(chartTitle + "." + seriesTitle, labelNode);
+		manager.addTo(chartTitle + "." + seriesTitle, labelNode); //$NON-NLS-1$
 		PreferenceDialog dialog = new PreferenceDialog(getShell(), manager);
 		dialog.create();
-		dialog.getShell().setText("Properties");
+		dialog.getShell().setText(Messages.InteractiveChart_29);
 		dialog.getTreeViewer().expandAll();
 		if(dialog.open() == Window.OK) {
 			for (ChartPropertiesListener listener : propertiesListeners) {

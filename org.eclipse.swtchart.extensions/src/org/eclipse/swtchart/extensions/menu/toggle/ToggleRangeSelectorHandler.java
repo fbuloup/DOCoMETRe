@@ -29,7 +29,7 @@ public class ToggleRangeSelectorHandler extends AbstractChartMenuEntry implement
 	@Override
 	public String getName() {
 
-		return "Range Selector";
+		return Messages.ToggleRangeSelectorHandler_0;
 	}
 
 	@Override

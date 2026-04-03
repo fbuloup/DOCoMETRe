@@ -21,8 +21,8 @@ import org.eclipse.swtchart.LineStyle;
 
 public abstract class AbstractAxisSettings implements IAxisSettings {
 
-	private String title = ""; // Chart Title
-	private String description = ""; // e.g. DropDown RangeSelector
+	private String title = ""; // Chart Title //$NON-NLS-1$
+	private String description = ""; // e.g. DropDown RangeSelector //$NON-NLS-1$
 	private DecimalFormat decimalFormat;
 	private Color color;
 	private boolean visible;
@@ -56,15 +56,15 @@ public abstract class AbstractAxisSettings implements IAxisSettings {
 	@Override
 	public String getLabel() {
 
-		String label = "";
-		if(title.equals("")) {
+		String label = ""; //$NON-NLS-1$
+		if(title.equals("")) { //$NON-NLS-1$
 			/*
 			 * Title is not set.
 			 * Use the description instead or
 			 * print a note that no label is available.
 			 */
-			if(description.equals("")) {
-				label = "label not set";
+			if(description.equals("")) { //$NON-NLS-1$
+				label = Messages.AbstractAxisSettings_5;
 			} else {
 				label = description;
 			}
@@ -74,7 +74,7 @@ public abstract class AbstractAxisSettings implements IAxisSettings {
 			 * Use description if available
 			 * otherwise the title.
 			 */
-			if(description.equals("")) {
+			if(description.equals("")) { //$NON-NLS-1$
 				label = title;
 			} else {
 				label = description;

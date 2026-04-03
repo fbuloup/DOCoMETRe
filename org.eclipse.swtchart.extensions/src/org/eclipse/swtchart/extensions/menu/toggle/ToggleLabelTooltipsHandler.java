@@ -19,7 +19,7 @@ import org.eclipse.swtchart.extensions.menu.IChartMenuEntry;
 
 public class ToggleLabelTooltipsHandler extends AbstractChartMenuEntry implements IChartMenuEntry {
 
-	public static final String NAME = "Show Tooltips";
+	public static final String NAME = Messages.ToggleLabelTooltipsHandler_0;
 
 	@Override
 	public String getCategory() {

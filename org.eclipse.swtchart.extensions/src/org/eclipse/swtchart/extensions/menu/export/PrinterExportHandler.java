@@ -25,8 +25,8 @@ import org.eclipse.swtchart.extensions.images.ImageSupplier;
 
 public class PrinterExportHandler extends AbstractSeriesExportHandler implements ISeriesExportConverter {
 
-	public static final String NAME = "Print";
-	private static final String TITLE = "Save Selection";
+	public static final String NAME = Messages.PrinterExportHandler_0;
+	private static final String TITLE = Messages.PrinterExportHandler_1;
 
 	@Override
 	public String getName() {
@@ -44,7 +44,7 @@ public class PrinterExportHandler extends AbstractSeriesExportHandler implements
 		PrinterData printerData = dialog.open();
 		if(printerData != null) {
 			Printer printer = new Printer(printerData);
-			if(printer.startJob("PrinterExport")) {
+			if(printer.startJob("PrinterExport")) { //$NON-NLS-1$
 				/*
 				 * Create a page
 				 */

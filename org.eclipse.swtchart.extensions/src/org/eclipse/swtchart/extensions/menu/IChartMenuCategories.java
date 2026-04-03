@@ -13,8 +13,8 @@ package org.eclipse.swtchart.extensions.menu;
 
 public interface IChartMenuCategories {
 
-	String STANDARD_OPERATION = ""; // Must be empty to be placed on the main menu level.
-	String RANGE_SELECTION = "Range Selection";
-	String TOGGLE_VISIBILITY = "Toggle Visibility";
-	String EXPORT_CONVERTER = "Export Chart Selection";
+	String STANDARD_OPERATION = ""; // Must be empty to be placed on the main menu level. //$NON-NLS-1$
+	String RANGE_SELECTION = Messages.IChartMenuCategories_1;
+	String TOGGLE_VISIBILITY = Messages.IChartMenuCategories_2;
+	String EXPORT_CONVERTER = Messages.IChartMenuCategories_3;
 }

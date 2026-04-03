@@ -28,7 +28,7 @@ public class ToggleSeriesLegendHandler extends AbstractChartMenuEntry implements
 	@Override
 	public String getName() {
 
-		return "Series Legend";
+		return Messages.ToggleSeriesLegendHandler_0;
 	}
 
 	@Override

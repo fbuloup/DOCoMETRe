@@ -29,7 +29,7 @@ public class TogglePlotCenterMarkerHandler extends AbstractChartMenuEntry implem
 	@Override
 	public String getName() {
 
-		return "Plot Center Marker";
+		return Messages.TogglePlotCenterMarkerHandler_0;
 	}
 
 	@Override

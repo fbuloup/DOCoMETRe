@@ -60,4 +60,16 @@ public class Messages extends NLS {
 		if (locale.getLanguage().equals(Locale.of("fr").getLanguage())) bn = BUNDLE_NAME + "_fr";
 		NLS.initializeMessages(bn, Messages.class);
 	}
+
+	public static String InteractiveChart_16;
+	public static String InteractiveChart_17;
+	public static String InteractiveChart_18;
+	public static String InteractiveChart_19;
+	public static String InteractiveChart_21;
+	public static String InteractiveChart_23;
+	public static String InteractiveChart_26;
+	public static String InteractiveChart_27;
+	public static String InteractiveChart_29;
+	public static String InteractiveChart_8;
+	public static String InteractiveChart_9;
 }

@@ -16,7 +16,7 @@ import org.eclipse.swtchart.extensions.core.ScrollableChart;
 
 public class ResetChartHandler extends AbstractChartMenuEntry implements IChartMenuEntry {
 
-	public static final String NAME = "Reset Chart (1:1)";
+	public static final String NAME = Messages.ResetChartHandler_0;
 
 	@Override
 	public String getCategory() {

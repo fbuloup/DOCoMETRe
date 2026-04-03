@@ -13,11 +13,11 @@ package org.eclipse.swtchart.extensions.menu.export;
 
 public class CSVExportHandler extends AbstractSeparatedValueHandler implements ISeriesExportConverter {
 
-	private static final String FILE_EXTENSION = "*.csv";
-	public static final String NAME = "Comma Separated Values (" + FILE_EXTENSION + ")";
+	private static final String FILE_EXTENSION = "*.csv"; //$NON-NLS-1$
+	public static final String NAME = Messages.CSVExportHandler_1 + FILE_EXTENSION + ")"; //$NON-NLS-2$
 	//
-	private static final String TITLE = "Save As Comma Separated Text";
-	private static final String DELIMITER = ",";
+	private static final String TITLE = Messages.CSVExportHandler_3;
+	private static final String DELIMITER = ","; //$NON-NLS-1$
 
 	@Override
 	public String getName() {

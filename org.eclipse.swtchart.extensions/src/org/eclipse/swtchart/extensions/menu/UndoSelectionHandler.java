@@ -16,7 +16,7 @@ import org.eclipse.swtchart.extensions.core.ScrollableChart;
 
 public class UndoSelectionHandler extends AbstractChartMenuEntry implements IChartMenuEntry {
 
-	public static final String NAME = "Undo Selection";
+	public static final String NAME = Messages.UndoSelectionHandler_0;
 
 	@Override
 	public String getCategory() {

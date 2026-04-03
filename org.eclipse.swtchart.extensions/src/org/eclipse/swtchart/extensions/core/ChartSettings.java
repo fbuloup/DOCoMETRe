@@ -120,7 +120,7 @@ public class ChartSettings implements IChartSettings {
 		 * To display a space on top of the chart, a default
 		 * title is set and WHITE is used to hide it.
 		 */
-		title = "Chart Title";
+		title = Messages.ChartSettings_ChartTitle;
 		titleVisible = true;
 		titleColor = display.getSystemColor(SWT.COLOR_WHITE);
 		//
@@ -271,7 +271,7 @@ public class ChartSettings implements IChartSettings {
 		 */
 		// this.verticalSliderVisible = verticalSliderVisible;
 		this.verticalSliderVisible = false;
-		System.out.println("Can't set vertical slider true, see: https://bugs.eclipse.org/bugs/show_bug.cgi?id=511257");
+		System.out.println(Messages.ChartSettings_CantSerVerticalSliderTrue);
 	}
 
 	@Override
@@ -298,7 +298,7 @@ public class ChartSettings implements IChartSettings {
 		if(title != null) {
 			this.title = title;
 		} else {
-			this.title = "";
+			this.title = ""; //$NON-NLS-1$
 		}
 	}
 

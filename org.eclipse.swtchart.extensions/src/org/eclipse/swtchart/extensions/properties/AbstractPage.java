@@ -172,7 +172,7 @@ public abstract class AbstractPage extends PreferencePage {
 	 */
 	protected Combo createComboControl(Composite parent, String[] items) {
 
-		Combo combo = new Combo(parent, SWT.BORDER | SWT.SINGLE);
+		Combo combo = new Combo(parent, SWT.BORDER | SWT.READ_ONLY);
 		combo.setItems(items);
 		GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
 		gridData.horizontalSpan = 1;

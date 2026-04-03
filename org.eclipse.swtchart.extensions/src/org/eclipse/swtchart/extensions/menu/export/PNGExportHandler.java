@@ -21,9 +21,9 @@ import org.eclipse.swtchart.extensions.images.ImageSupplier;
 
 public class PNGExportHandler extends AbstractSeriesExportHandler implements ISeriesExportConverter {
 
-	private static final String FILE_EXTENSION = "*.png";
-	public static final String NAME = "Image (" + FILE_EXTENSION + ")";
-	private static final String TITLE = "Save As Image";
+	private static final String FILE_EXTENSION = "*.png"; //$NON-NLS-1$
+	public static final String NAME = "Image (" + FILE_EXTENSION + ")"; //$NON-NLS-1$ //$NON-NLS-2$
+	private static final String TITLE = Messages.PNGExportHandler_3;
 
 	@Override
 	public String getName() {
@@ -37,7 +37,7 @@ public class PNGExportHandler extends AbstractSeriesExportHandler implements ISe
 		FileDialog fileDialog = new FileDialog(shell, SWT.SAVE);
 		fileDialog.setOverwrite(true);
 		fileDialog.setText(NAME);
-		fileDialog.setFilterExtensions(new String[]{"*.png"});
+		fileDialog.setFilterExtensions(new String[]{"*.png"}); //$NON-NLS-1$
 		//
 		String fileName = fileDialog.open();
 		if(fileName != null) {

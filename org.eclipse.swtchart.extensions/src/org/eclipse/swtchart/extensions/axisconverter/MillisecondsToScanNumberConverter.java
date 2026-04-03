@@ -30,11 +30,11 @@ public class MillisecondsToScanNumberConverter extends AbstractAxisScaleConverte
 		 * Validations.
 		 */
 		if(scanDelay < 0) {
-			throw new Exception("The scan delay must be >= 0.");
+			throw new Exception(Messages.MillisecondsToScanNumberConverter_Delay);
 		}
 		//
 		if(scanInterval <= 0) {
-			throw new Exception("The scan interval must be > 0.");
+			throw new Exception(Messages.MillisecondsToScanNumberConverter_Interval);
 		}
 		//
 		this.scanDelay = scanDelay;

@@ -16,7 +16,7 @@ import org.eclipse.swtchart.extensions.core.ScrollableChart;
 
 public class RedoSelectionHandler extends AbstractChartMenuEntry implements IChartMenuEntry {
 
-	public static final String NAME = "Redo Selection";
+	public static final String NAME = Messages.RedoSelectionHandler_0;
 
 	@Override
 	public String getCategory() {

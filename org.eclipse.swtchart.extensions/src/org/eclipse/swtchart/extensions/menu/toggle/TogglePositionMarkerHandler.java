@@ -29,7 +29,7 @@ public class TogglePositionMarkerHandler extends AbstractChartMenuEntry implemen
 	@Override
 	public String getName() {
 
-		return "Position Marker";
+		return Messages.TogglePositionMarkerHandler_0;
 	}
 
 	@Override

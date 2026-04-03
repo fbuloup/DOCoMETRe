@@ -31,9 +31,9 @@ import org.osgi.framework.BundleContext;
  */
 public class Activator extends AbstractUIPlugin {
 
-	public static final String ICON_SET_RANGE = "ICON_SET_RANGE"; // $NON-NLS-1$
-	public static final String ICON_HIDE = "ICON_HIDE"; // $NON-NLS-1$
-	public static final String ICON_RESET = "ICON_RESET"; // $NON-NLS-1$
+	public static final String ICON_SET_RANGE = "ICON_SET_RANGE"; // $NON-NLS-1$ //$NON-NLS-1$
+	public static final String ICON_HIDE = "ICON_HIDE"; // $NON-NLS-1$ //$NON-NLS-1$
+	public static final String ICON_RESET = "ICON_RESET"; // $NON-NLS-1$ //$NON-NLS-1$
 	//
 	private static Activator plugin;
 
@@ -84,9 +84,9 @@ public class Activator extends AbstractUIPlugin {
 	private void initializeImageRegistry() {
 
 		Map<String, String> imageHashMap = new HashMap<String, String>();
-		imageHashMap.put(ICON_SET_RANGE, "icons/16x16/set_range.gif"); // $NON-NLS-1$
-		imageHashMap.put(ICON_HIDE, "icons/16x16/hide.gif"); // $NON-NLS-1$
-		imageHashMap.put(ICON_RESET, "icons/16x16/reset.gif"); // $NON-NLS-1$
+		imageHashMap.put(ICON_SET_RANGE, "icons/16x16/set_range.gif"); // $NON-NLS-1$ //$NON-NLS-1$
+		imageHashMap.put(ICON_HIDE, "icons/16x16/hide.gif"); // $NON-NLS-1$ //$NON-NLS-1$
+		imageHashMap.put(ICON_RESET, "icons/16x16/reset.gif"); // $NON-NLS-1$ //$NON-NLS-1$
 		//
 		ImageRegistry imageRegistry = getImageRegistry();
 		if(imageRegistry != null) {

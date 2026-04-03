@@ -29,7 +29,7 @@ public class ToggleAxisZeroMarkerHandler extends AbstractChartMenuEntry implemen
 	@Override
 	public String getName() {
 
-		return "Axis Zero Marker";
+		return Messages.ToggleAxisZeroMarkerHandler_0;
 	}
 
 	@Override

@@ -18,7 +18,7 @@ import org.eclipse.swtchart.extensions.linecharts.LineChart;
 
 public class ResetSelectedSeriesHandler extends AbstractChartMenuEntry implements IChartMenuEntry {
 
-	public static final String NAME = "Reset Selected Series";
+	public static final String NAME = Messages.ResetSelectedSeriesHandler_0;
 
 	@Override
 	public String getCategory() {

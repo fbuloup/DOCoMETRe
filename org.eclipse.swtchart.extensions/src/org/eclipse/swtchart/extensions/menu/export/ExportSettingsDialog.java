@@ -36,8 +36,8 @@ public class ExportSettingsDialog extends TitleAreaDialog {
 	private int indexAxisY;
 	private boolean exportVisibleOnly;
 	//
-	private static final String SERIES_ALL = "All Series";
-	private static final String SERIES_VISIBLE = "Visible Series";
+	private static final String SERIES_ALL = Messages.ExportSettingsDialog_0;
+	private static final String SERIES_VISIBLE = Messages.ExportSettingsDialog_1;
 	private String[] exportOptions;
 
 	public ExportSettingsDialog(Shell parent, BaseChart baseChart) {
@@ -50,8 +50,8 @@ public class ExportSettingsDialog extends TitleAreaDialog {
 	public void create() {
 
 		super.create();
-		setTitle("Export Axis Selection");
-		setMessage("Select the X and Y axis you'd like to export.", IMessageProvider.INFORMATION);
+		setTitle(Messages.ExportSettingsDialog_2);
+		setMessage(Messages.ExportSettingsDialog_3, IMessageProvider.INFORMATION);
 	}
 
 	@Override
@@ -73,7 +73,7 @@ public class ExportSettingsDialog extends TitleAreaDialog {
 	private void createSelectionAxisX(Composite container) {
 
 		Label label = new Label(container, SWT.NONE);
-		label.setText("X Axis:");
+		label.setText(Messages.ExportSettingsDialog_4);
 		//
 		String[] axisLabelsX = baseChart.getAxisLabels(IExtendedChart.X_AXIS);
 		comboScaleX = new Combo(container, SWT.READ_ONLY);
@@ -87,7 +87,7 @@ public class ExportSettingsDialog extends TitleAreaDialog {
 	private void createSelectionAxisY(Composite container) {
 
 		Label label = new Label(container, SWT.NONE);
-		label.setText("Y Axis:");
+		label.setText(Messages.ExportSettingsDialog_5);
 		//
 		String[] axisLabelsY = baseChart.getAxisLabels(IExtendedChart.Y_AXIS);
 		comboScaleY = new Combo(container, SWT.READ_ONLY);
@@ -101,7 +101,7 @@ public class ExportSettingsDialog extends TitleAreaDialog {
 	private void createExportOptionSelection(Composite container) {
 
 		Label label = new Label(container, SWT.NONE);
-		label.setText("Export:");
+		label.setText(Messages.ExportSettingsDialog_6);
 		//
 		comboExportOption = new Combo(container, SWT.READ_ONLY);
 		comboExportOption.setItems(exportOptions);

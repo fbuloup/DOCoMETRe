@@ -33,13 +33,13 @@ import org.eclipse.swtchart.ISeries;
 
 public class RScriptExportHandler extends AbstractSeriesExportHandler implements ISeriesExportConverter {
 
-	private static final String FILE_EXTENSION = "*.R";
-	public static final String NAME = "Image R-Script (" + FILE_EXTENSION + ")";
+	private static final String FILE_EXTENSION = "*.R"; //$NON-NLS-1$
+	public static final String NAME = Messages.RScriptExportHandler_0 + FILE_EXTENSION + ")"; //$NON-NLS-2$
 	//
-	private static final String TITLE = "Save As R-Script Image";
+	private static final String TITLE = Messages.RScriptExportHandler_3;
 	//
-	private static final String AXIS_X = "x";
-	private static final String AXIS_Y = "y";
+	private static final String AXIS_X = "x"; //$NON-NLS-1$
+	private static final String AXIS_Y = "y"; //$NON-NLS-1$
 
 	@Override
 	public String getName() {
@@ -147,14 +147,14 @@ public class RScriptExportHandler extends AbstractSeriesExportHandler implements
 		 * Header
 		 */
 		int seriesSize = getSeriesSize(series, exportVisibleOnly);
-		printWriter.println("# Header");
-		printWriter.println("xValueList<-vector(\"list\", " + seriesSize + ")");
-		printWriter.println("yValueList<-vector(\"list\", " + seriesSize + ")");
-		printWriter.println("");
+		printWriter.println("# Header"); //$NON-NLS-1$
+		printWriter.println("xValueList<-vector(\"list\", " + seriesSize + ")"); //$NON-NLS-1$ //$NON-NLS-2$
+		printWriter.println("yValueList<-vector(\"list\", " + seriesSize + ")"); //$NON-NLS-1$ //$NON-NLS-2$
+		printWriter.println(""); //$NON-NLS-1$
 		/*
 		 * Data
 		 */
-		printWriter.println("# Data");
+		printWriter.println("# Data"); //$NON-NLS-1$
 		int widthPlotArea = baseChart.getPlotArea().getBounds().width;
 		int index = 1;
 		for(ISeries dataSeries : series) {
@@ -168,67 +168,67 @@ public class RScriptExportHandler extends AbstractSeriesExportHandler implements
 				}
 			}
 		}
-		printWriter.println("");
+		printWriter.println(""); //$NON-NLS-1$
 		/*
 		 * Footer
 		 */
-		printWriter.println("#  Footer");
-		printWriter.println("colorList<-c(\"black\", \"red\", \"blue\", \"green\", \"grey\", \"purple\", \"brown\", \"pink\", \"yellow\", \"orange\")");
+		printWriter.println("#  Footer"); //$NON-NLS-1$
+		printWriter.println("colorList<-c(\"black\", \"red\", \"blue\", \"green\", \"grey\", \"purple\", \"brown\", \"pink\", \"yellow\", \"orange\")"); //$NON-NLS-1$
 		//
-		printWriter.println("");
-		printWriter.println("plot(");
-		printWriter.println("	xValueList[[1]], yValueList[[1]],");
-		printWriter.println("	xlim=c(range(xValueList)[1], range(xValueList)[2]),");
-		printWriter.println("	ylim=c(range(yValueList)[1], range(yValueList)[2]),");
-		printWriter.println("	type='l',");
-		printWriter.println("	col=colorList[1],");
-		printWriter.println("	ylab='" + axisSettingsY.getLabel() + "',");
-		printWriter.println("	xlab='" + axisSettingsX.getLabel() + "'");
-		printWriter.println(")");
-		printWriter.println("");
+		printWriter.println(""); //$NON-NLS-1$
+		printWriter.println("plot("); //$NON-NLS-1$
+		printWriter.println("	xValueList[[1]], yValueList[[1]],"); //$NON-NLS-1$
+		printWriter.println("	xlim=c(range(xValueList)[1], range(xValueList)[2]),"); //$NON-NLS-1$
+		printWriter.println("	ylim=c(range(yValueList)[1], range(yValueList)[2]),"); //$NON-NLS-1$
+		printWriter.println("	type='l',"); //$NON-NLS-1$
+		printWriter.println("	col=colorList[1],"); //$NON-NLS-1$
+		printWriter.println("	ylab='" + axisSettingsY.getLabel() + "',"); //$NON-NLS-1$ //$NON-NLS-2$
+		printWriter.println("	xlab='" + axisSettingsX.getLabel() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+		printWriter.println(")"); //$NON-NLS-1$
+		printWriter.println(""); //$NON-NLS-1$
 		//
 		if(seriesSize > 1) {
-			printWriter.println("for(i in 2:" + seriesSize + "){");
-			printWriter.println("	points(xValueList[[i]], yValueList[[i]], type='l', col=colorList[(i+8)%%9+1])");
-			printWriter.println("}");
-			printWriter.println("");
+			printWriter.println("for(i in 2:" + seriesSize + "){"); //$NON-NLS-1$ //$NON-NLS-2$
+			printWriter.println("	points(xValueList[[i]], yValueList[[i]], type='l', col=colorList[(i+8)%%9+1])"); //$NON-NLS-1$
+			printWriter.println("}"); //$NON-NLS-1$
+			printWriter.println(""); //$NON-NLS-1$
 		}
 		//
 		int size;
 		//
 		int k;
-		printWriter.println("legend('topleft',");
-		printWriter.println("		c(");
+		printWriter.println("legend('topleft',"); //$NON-NLS-1$
+		printWriter.println("		c("); //$NON-NLS-1$
 		k = 0;
 		size = series.length;
 		for(ISeries dataSeries : series) {
 			if(dataSeries != null) {
-				printWriter.print("			'Series " + dataSeries.getDescription() + "'");
+				printWriter.print("			'Series " + dataSeries.getDescription() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
 				if(k < size - 1) {
-					printWriter.print(",");
+					printWriter.print(","); //$NON-NLS-1$
 				}
 				printWriter.println();
 				k++;
 			}
 		}
-		printWriter.println("		),");
-		printWriter.println("		col=c(");
+		printWriter.println("		),"); //$NON-NLS-1$
+		printWriter.println("		col=c("); //$NON-NLS-1$
 		k = 0;
 		size = series.length;
 		for(ISeries dataSeries : series) {
 			if(dataSeries != null) {
-				printWriter.print("			colorList[(" + (k + 1) + "+8)%%9+1]");
+				printWriter.print("			colorList[(" + (k + 1) + "+8)%%9+1]"); //$NON-NLS-1$ //$NON-NLS-2$
 				if(k < size - 1) {
-					printWriter.print(",");
+					printWriter.print(","); //$NON-NLS-1$
 				}
 				printWriter.println();
 				k++;
 			}
 		}
-		printWriter.println("		),");
-		printWriter.println("		lwd=2");
-		printWriter.println("	)");
-		printWriter.println("");
+		printWriter.println("		),"); //$NON-NLS-1$
+		printWriter.println("		lwd=2"); //$NON-NLS-1$
+		printWriter.println("	)"); //$NON-NLS-1$
+		printWriter.println(""); //$NON-NLS-1$
 	}
 
 	private void printLineData(ISeries dataSeries, int widthPlotArea, AxisSettings axisSettings, int index, PrintWriter printWriter) {
@@ -258,16 +258,16 @@ public class RScriptExportHandler extends AbstractSeriesExportHandler implements
 
 		if(indexAxis == indexPrimaryAxis || axisScaleConverter == null) {
 			if(axis.equals(AXIS_X)) {
-				printWriter.println("xValueList[[" + index + "]]<-c(xValueList[[" + index + "]]," + value + ")");
+				printWriter.println("xValueList[[" + index + "]]<-c(xValueList[[" + index + "]]," + value + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 			} else if(axis.equals(AXIS_Y)) {
-				printWriter.println("yValueList[[" + index + "]]<-c(yValueList[[" + index + "]]," + value + ")");
+				printWriter.println("yValueList[[" + index + "]]<-c(yValueList[[" + index + "]]," + value + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 			}
 		} else {
 			if(axisScaleConverter != null) {
 				if(axis.equals(AXIS_X)) {
-					printWriter.println("xValueList[[" + index + "]]<-c(xValueList[[" + index + "]]," + axisScaleConverter.convertToSecondaryUnit(value) + ")");
+					printWriter.println("xValueList[[" + index + "]]<-c(xValueList[[" + index + "]]," + axisScaleConverter.convertToSecondaryUnit(value) + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 				} else if(axis.equals(AXIS_Y)) {
-					printWriter.println("yValueList[[" + index + "]]<-c(yValueList[[" + index + "]]," + axisScaleConverter.convertToSecondaryUnit(value) + ")");
+					printWriter.println("yValueList[[" + index + "]]<-c(yValueList[[" + index + "]]," + axisScaleConverter.convertToSecondaryUnit(value) + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 				}
 			}
 		}
@@ -288,13 +288,13 @@ public class RScriptExportHandler extends AbstractSeriesExportHandler implements
 		/*
 		 * Header
 		 */
-		printWriter.println("# Header");
-		printWriter.println("count_values<-NULL");
-		printWriter.println("");
+		printWriter.println("# Header"); //$NON-NLS-1$
+		printWriter.println("count_values<-NULL"); //$NON-NLS-1$
+		printWriter.println(""); //$NON-NLS-1$
 		/*
 		 * Data
 		 */
-		printWriter.println("# Data");
+		printWriter.println("# Data"); //$NON-NLS-1$
 		int widthPlotArea = baseChart.getPlotArea().getBounds().width;
 		for(ISeries dataSeries : series) {
 			if(dataSeries != null) {
@@ -307,23 +307,23 @@ public class RScriptExportHandler extends AbstractSeriesExportHandler implements
 				}
 			}
 		}
-		printWriter.println("");
+		printWriter.println(""); //$NON-NLS-1$
 		/*
 		 * Footer
 		 */
-		printWriter.println("#  Footer");
-		printWriter.println("hist(count_values, breaks = range(count_values)[2]-range(count_values)[1]+1, axes=FALSE, xlab='" + axisSettingsX.getLabel() + "', ylab='" + axisSettingsY.getLabel() + "', main='" + scrollableChart.getChartSettings().getTitle() + "')");
-		printWriter.println("");
-		printWriter.println("axis(2, at = NULL)");
-		printWriter.println("lower_x <- NULL");
-		printWriter.println("if(min(count_values) %% 10 != 0){");
-		printWriter.println("  lower_x <- round(min(count_values) %/% 10,0)*10");
-		printWriter.println("} else {");
-		printWriter.println("  lower_x <- min(count_values)+0.5");
-		printWriter.println("}");
-		printWriter.println("");
-		printWriter.println("upper_x <- round(max(count_values)/10,0)*10+0.5");
-		printWriter.println("axis(1, at = seq(lower_x+0.5, upper_x+0.5, 10), labels=seq(lower_x, upper_x, 10), tick = TRUE )");
+		printWriter.println("#  Footer"); //$NON-NLS-1$
+		printWriter.println("hist(count_values, breaks = range(count_values)[2]-range(count_values)[1]+1, axes=FALSE, xlab='" + axisSettingsX.getLabel() + "', ylab='" + axisSettingsY.getLabel() + "', main='" + scrollableChart.getChartSettings().getTitle() + "')"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+		printWriter.println(""); //$NON-NLS-1$
+		printWriter.println("axis(2, at = NULL)"); //$NON-NLS-1$
+		printWriter.println("lower_x <- NULL"); //$NON-NLS-1$
+		printWriter.println("if(min(count_values) %% 10 != 0){"); //$NON-NLS-1$
+		printWriter.println("  lower_x <- round(min(count_values) %/% 10,0)*10"); //$NON-NLS-1$
+		printWriter.println("} else {"); //$NON-NLS-1$
+		printWriter.println("  lower_x <- min(count_values)+0.5"); //$NON-NLS-1$
+		printWriter.println("}"); //$NON-NLS-1$
+		printWriter.println(""); //$NON-NLS-1$
+		printWriter.println("upper_x <- round(max(count_values)/10,0)*10+0.5"); //$NON-NLS-1$
+		printWriter.println("axis(1, at = seq(lower_x+0.5, upper_x+0.5, 10), labels=seq(lower_x, upper_x, 10), tick = TRUE )"); //$NON-NLS-1$
 	}
 
 	private void printBarData(ISeries dataSeries, int widthPlotArea, AxisSettings axisSettings, PrintWriter printWriter) {
@@ -353,10 +353,10 @@ public class RScriptExportHandler extends AbstractSeriesExportHandler implements
 	private void printValueBarPlot(PrintWriter printWriter, double valueX, double valueY, boolean isPrimaryAxis, IAxisScaleConverter axisScaleConverterX, IAxisScaleConverter axisScaleConverterY) {
 
 		if(isPrimaryAxis || axisScaleConverterX == null || axisScaleConverterY == null) {
-			printWriter.println("count_values<-c(count_values, rep(" + valueX + ", " + valueY + "))");
+			printWriter.println("count_values<-c(count_values, rep(" + valueX + ", " + valueY + "))"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		} else {
 			if(axisScaleConverterX != null && axisScaleConverterY != null) {
-				printWriter.println("count_values<-c(count_values, rep(" + axisScaleConverterX.convertToSecondaryUnit(valueX) + ", " + axisScaleConverterY.convertToSecondaryUnit(valueY) + "))");
+				printWriter.println("count_values<-c(count_values, rep(" + axisScaleConverterX.convertToSecondaryUnit(valueX) + ", " + axisScaleConverterY.convertToSecondaryUnit(valueY) + "))"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			}
 		}
 	}
@@ -376,15 +376,15 @@ public class RScriptExportHandler extends AbstractSeriesExportHandler implements
 		/*
 		 * Header
 		 */
-		printWriter.println("# Header");
-		printWriter.println("scatter_labels <- NULL");
-		printWriter.println("x_values <- NULL");
-		printWriter.println("y_values <- NULL");
-		printWriter.println("");
+		printWriter.println("# Header"); //$NON-NLS-1$
+		printWriter.println("scatter_labels <- NULL"); //$NON-NLS-1$
+		printWriter.println("x_values <- NULL"); //$NON-NLS-1$
+		printWriter.println("y_values <- NULL"); //$NON-NLS-1$
+		printWriter.println(""); //$NON-NLS-1$
 		/*
 		 * Data
 		 */
-		printWriter.println("# Data");
+		printWriter.println("# Data"); //$NON-NLS-1$
 		int widthPlotArea = baseChart.getPlotArea().getBounds().width;
 		for(ISeries dataSeries : series) {
 			if(dataSeries != null) {
@@ -397,16 +397,16 @@ public class RScriptExportHandler extends AbstractSeriesExportHandler implements
 				}
 			}
 		}
-		printWriter.println("");
+		printWriter.println(""); //$NON-NLS-1$
 		/*
 		 * Footer
 		 */
-		printWriter.println("#  Footer");
-		printWriter.println("plot_data<-cbind(x_values, y_values)");
-		printWriter.println("plot(plot_data, xlab=\"" + axisSettingsX.getLabel() + "\", ylab=\"" + axisSettingsY.getLabel() + "\")");
-		printWriter.println("text(plot_data[,1], plot_data[,2], scatter_labels, pos=3)");
-		printWriter.println("abline(h=0)");
-		printWriter.println("abline(v=0)");
+		printWriter.println("#  Footer"); //$NON-NLS-1$
+		printWriter.println("plot_data<-cbind(x_values, y_values)"); //$NON-NLS-1$
+		printWriter.println("plot(plot_data, xlab=\"" + axisSettingsX.getLabel() + "\", ylab=\"" + axisSettingsY.getLabel() + "\")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		printWriter.println("text(plot_data[,1], plot_data[,2], scatter_labels, pos=3)"); //$NON-NLS-1$
+		printWriter.println("abline(h=0)"); //$NON-NLS-1$
+		printWriter.println("abline(v=0)"); //$NON-NLS-1$
 	}
 
 	private void printScatterData(ISeries dataSeries, int widthPlotArea, AxisSettings axisSettings, PrintWriter printWriter) {
@@ -428,7 +428,7 @@ public class RScriptExportHandler extends AbstractSeriesExportHandler implements
 			 */
 			Point point = dataSeries.getPixelCoordinates(i);
 			if(point.x >= 0 && point.x <= widthPlotArea) {
-				printWriter.println("scatter_labels<-c(scatter_labels,'" + dataSeries.getId() + "')");
+				printWriter.println("scatter_labels<-c(scatter_labels,'" + dataSeries.getId() + "')"); //$NON-NLS-1$ //$NON-NLS-2$
 				printValueScatterPlot(AXIS_X, printWriter, xSeries[i], indexAxisX, BaseChart.ID_PRIMARY_X_AXIS, axisScaleConverterX);
 				printValueScatterPlot(AXIS_Y, printWriter, ySeries[i], indexAxisY, BaseChart.ID_PRIMARY_Y_AXIS, axisScaleConverterY);
 			}
@@ -439,16 +439,16 @@ public class RScriptExportHandler extends AbstractSeriesExportHandler implements
 
 		if(indexAxis == indexPrimaryAxis || axisScaleConverter == null) {
 			if(axis.equals(AXIS_X)) {
-				printWriter.println("x_values<-c(x_values," + value + ")");
+				printWriter.println("x_values<-c(x_values," + value + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 			} else if(axis.equals(AXIS_Y)) {
-				printWriter.println("y_values<-c(y_values," + value + ")");
+				printWriter.println("y_values<-c(y_values," + value + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 		} else {
 			if(axisScaleConverter != null) {
 				if(axis.equals(AXIS_X)) {
-					printWriter.println("x_values<-c(x_values," + axisScaleConverter.convertToSecondaryUnit(value) + ")");
+					printWriter.println("x_values<-c(x_values," + axisScaleConverter.convertToSecondaryUnit(value) + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 				} else if(axis.equals(AXIS_Y)) {
-					printWriter.println("y_values<-c(y_values," + axisScaleConverter.convertToSecondaryUnit(value) + ")");
+					printWriter.println("y_values<-c(y_values," + axisScaleConverter.convertToSecondaryUnit(value) + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 				}
 			}
 		}
@@ -456,10 +456,10 @@ public class RScriptExportHandler extends AbstractSeriesExportHandler implements
 
 	private void printExecuteInfo(String fileName, PrintWriter printWriter) {
 
-		printWriter.println("#-----------------------------------");
-		printWriter.println("# source('" + fileName + "')");
-		printWriter.println("#-----------------------------------");
-		printWriter.println("");
+		printWriter.println("#-----------------------------------"); //$NON-NLS-1$
+		printWriter.println("# source('" + fileName + "')"); //$NON-NLS-1$ //$NON-NLS-2$
+		printWriter.println("#-----------------------------------"); //$NON-NLS-1$
+		printWriter.println(""); //$NON-NLS-1$
 	}
 
 	private int getSeriesSize(ISeries[] series, boolean isExportVisibleOnly) {

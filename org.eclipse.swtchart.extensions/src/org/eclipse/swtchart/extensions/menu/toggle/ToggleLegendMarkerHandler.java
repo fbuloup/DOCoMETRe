@@ -29,7 +29,7 @@ public class ToggleLegendMarkerHandler extends AbstractChartMenuEntry implements
 	@Override
 	public String getName() {
 
-		return "Legend Marker";
+		return Messages.ToggleLegendMarkerHandler_0;
 	}
 
 	@Override

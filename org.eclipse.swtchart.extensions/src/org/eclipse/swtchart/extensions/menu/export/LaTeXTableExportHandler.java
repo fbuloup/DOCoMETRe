@@ -31,14 +31,14 @@ import org.eclipse.swtchart.ISeries;
 
 public class LaTeXTableExportHandler extends AbstractSeriesExportHandler implements ISeriesExportConverter {
 
-	private static final String FILE_EXTENSION = "*.tex";
-	public static final String NAME = "LaTeX Table (" + FILE_EXTENSION + ")";
+	private static final String FILE_EXTENSION = "*.tex"; //$NON-NLS-1$
+	public static final String NAME = Messages.LaTeXTableExportHandler_1 + FILE_EXTENSION + ")"; //$NON-NLS-2$
 	//
-	private static final String TITLE = "Save As LaTeX Table";
-	private static final String TAB = "\t";
-	private static final String DELIMITER = " & ";
-	private static final String HORIZONTAL_LINE = "\\hline";
-	private static final String LINE_END = " \\\\";
+	private static final String TITLE = Messages.LaTeXTableExportHandler_3;
+	private static final String TAB = "\t"; //$NON-NLS-1$
+	private static final String DELIMITER = " & "; //$NON-NLS-1$
+	private static final String HORIZONTAL_LINE = "\\hline"; //$NON-NLS-1$
+	private static final String LINE_END = " \\\\"; //$NON-NLS-1$
 
 	@Override
 	public String getName() {
@@ -98,8 +98,8 @@ public class LaTeXTableExportHandler extends AbstractSeriesExportHandler impleme
 						/*
 						 * Header
 						 */
-						printWriter.println("\\begin{center}");
-						printWriter.println("\\begin{tabular}{ c c }");
+						printWriter.println("\\begin{center}"); //$NON-NLS-1$
+						printWriter.println("\\begin{tabular}{ c c }"); //$NON-NLS-1$
 						//
 						printWriter.print(TAB);
 						printWriter.print(axisSettingsX.getLabel());
@@ -135,8 +135,8 @@ public class LaTeXTableExportHandler extends AbstractSeriesExportHandler impleme
 							}
 						}
 						//
-						printWriter.println("\\end{tabular}");
-						printWriter.println("\\end{center}");
+						printWriter.println("\\end{tabular}"); //$NON-NLS-1$
+						printWriter.println("\\end{center}"); //$NON-NLS-1$
 						printWriter.flush();
 						MessageDialog.openInformation(shell, TITLE, MESSAGE_OK);
 					} catch(FileNotFoundException e) {
