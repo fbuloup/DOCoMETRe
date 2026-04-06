@@ -25,6 +25,7 @@ Développement à l&apos;institut des Sciences du Mouvement.
 --add-opens=java.base/java.util=ALL-UNNAMED
 --add-opens=java.base/java.lang=ALL-UNNAMED
 --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
+ -Declipse.e4.inject.javax.disabled=true
       </vmArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts -Djava.awt.headless=true
       </vmArgsMac>

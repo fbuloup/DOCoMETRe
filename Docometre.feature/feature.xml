@@ -6,8 +6,31 @@
       provider-name="ISM">
 
    <description>
-      -- 2026-04-01
+      -- 2026-04-06 - Bis
 ADDED :
+* -Declipse.e4.inject.javax.disabled=true
+FIXED : Nothing
+-- 2026-04-06
+ADDED : 
+* SWT chart extension internationalization
+* Support for time chart in XYCart
+* Use default console in Analyse perspective
+* Remove preference node (p2.ui.sdk.TrustPreferencePage)
+* Update messages FR (internal.p2.ui)
+* Missing entries (‎Docometre/OSGI-INF/l10n/bundle_en.properties)
+* Platform plugin to have the build ID
+* Code to activator to retrieve Build ID
+FIXED :
+* Trial number starts at one not zero (Time Channel) !
+* Wrong init. of checked features (ExportFeatures function)
+* SubjectsNames not filesNames (ExportFeatures function)
+* Wrong replacement in fileName (use RegExp - ExportFeatures
+function)
+* SubjectsNames not filesNames (ExportMarkers function)
+* Return if YChannel is null before getting xChannel (XYChart)
+* Remove unused message key (ui.cheatsheets.translation)
+-- 2026-04-01
+ADDED : 
 * Support to personalize font size in all editors
 FIXED : Nothing
 -- 2026-03-25

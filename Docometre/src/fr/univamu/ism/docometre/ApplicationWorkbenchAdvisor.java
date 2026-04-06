@@ -100,6 +100,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 		preferenceManager.remove( "org.eclipse.equinox.security.ui.storage" ); //$NON-NLS-1$
 		preferenceManager.remove( "org.eclipse.help.ui.browsersPreferencePage" ); //$NON-NLS-1$
 		preferenceManager.remove( "org.eclipse.ui.internal.console.ansi.preferences.AnsiConsolePreferencePage" ); //$NON-NLS-1$
+		preferenceManager.remove("org.eclipse.equinox.internal.p2.ui.sdk.ProvisioningPreferencePage/org.eclipse.equinox.internal.p2.ui.sdk.TrustPreferencePage"); //$NON-NLS-1$
 		if(!Boolean.getBoolean("DEV")) {
 			// We are not in dev mode
 			// Get first launch flag

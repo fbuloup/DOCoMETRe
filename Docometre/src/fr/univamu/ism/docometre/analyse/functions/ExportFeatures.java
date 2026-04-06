@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IContainer;
@@ -375,8 +376,10 @@ public class ExportFeatures extends GenericFunction {
 			boolean checked = false;
 			for (TableItem tableItem : tableItems) {
 				checked = tableItem.getText().equals(feature);
-				tableItem.setChecked(checked);
-				if(checked) break;
+				if(checked) {
+					tableItem.setChecked(checked);
+					break;
+				}
 			}
 			if(!checked) {
 				String message = NLS.bind(DocometreMessages.ImpossibleToFindChannelTitle, feature);
@@ -428,7 +431,7 @@ public class ExportFeatures extends GenericFunction {
 			if(MathEngineFactory.isPython()) return "# Nothing to export !";
 		}
 		
-		if(filesNames.size() > 1) {
+		if(subjectsNames.size() > 1) {
 			if(MathEngineFactory.isMatlab()) return "% Export error : cannot export more than one subject ! " + String.join(", ", features);
 			if(MathEngineFactory.isPython()) return "# Export error : cannot export more than one subject ! " + String.join(", ", features);
 		}
@@ -440,7 +443,7 @@ public class ExportFeatures extends GenericFunction {
 		if(MathEngineFactory.isMatlab()) cellExpression = "{'" + String.join("','", features) + "'}";
 		if(MathEngineFactory.isPython()) cellExpression = "['" + String.join("','", features) + "']";
 		
-		code  = code.replaceAll(fullPathFileNameKey, fileName);
+		code  = code.replaceAll(fullPathFileNameKey, Matcher.quoteReplacement(fileName));
 		code  = code.replaceAll(fullSubjectNameKey, fullSubjectName);
 		code  = code.replaceAll(cellExpressionKey, cellExpression);
 		code  = code.replaceAll(dividerKey, divider);
