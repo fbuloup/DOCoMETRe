@@ -116,6 +116,29 @@ public class Activator extends AbstractUIPlugin {
 	 * The constructor
 	 */
 	public Activator() {
+		System.setProperty("eclipse.buildId", "Unknown");
+		try {
+			// Find bundle org.eclipse.platform
+			org.osgi.framework.Bundle platformBundle = null;
+			org.osgi.framework.Bundle[] bundles = org.eclipse.core.runtime.Platform.getBundles("org.eclipse.platform", null);
+			if (bundles != null && bundles.length > 0) platformBundle = bundles[0];
+			if (platformBundle != null) {
+				// Read about.mappings file
+				java.net.URL aboutMappingsUrl = platformBundle.getEntry("about.mappings");
+				java.io.InputStream inputStream = aboutMappingsUrl.openStream();
+				java.util.Properties properties = new java.util.Properties();
+				properties.load(inputStream);
+				String main = properties.getProperty("2", ""); // Main version
+				String buildTime = properties.getProperty("0", "").replaceAll("I", "v"); // Build time
+				String buildRelease = properties.getProperty("1", ""); // Release
+				String buildId = main + buildTime + " - " + buildRelease;
+				System.setProperty("eclipse.buildId", buildId);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			Activator.logErrorMessageWithCause(e);
+		}
+
 	}
 	
 	public String getVersion() {
