@@ -6,7 +6,11 @@
       provider-name="ISM">
 
    <description>
-      -- 2026-04-06 - Bis
+      -- 2026-04-08
+ADDED :
+* Increase Python timeout
+FIXED : Nothing
+-- 2026-04-06 - Bis
 ADDED :
 * -Declipse.e4.inject.javax.disabled=true
 FIXED : Nothing
