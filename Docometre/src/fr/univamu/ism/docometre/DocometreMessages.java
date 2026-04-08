@@ -1172,6 +1172,10 @@ public final class DocometreMessages extends NLS {
 	public static String AddLines;
 	public static String RemoveLines;
 	
+	// ExportToADW Handler 
+	public static String ExportToADWJob_Title;
+	public static String ExportToADWJob_Title2;
+	
 	static {
 		// load message values from bundle file
 		String bn = BUNDLE_NAME;

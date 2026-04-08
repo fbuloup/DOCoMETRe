@@ -2415,6 +2415,27 @@
                label="%ExportExperimentCommand.label"
                style="push">
          </command>
+         <command
+               commandId="ExportToADWFile"
+               icon="platform:/plugin/org.eclipse.ui/icons/full/etool16/export_wiz.png"
+               label="%ExportToADWFile.label"
+               style="push">
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="selection">
+                  <iterate>
+                     <adapt
+                           type="org.eclipse.core.resources.IResource">
+                        <test
+                              args="Docometre.type,SUBJECT"
+                              property="org.eclipse.core.resources.persistentProperty">
+                        </test>
+                     </adapt>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </command>
          <separator
                name="Docometre.separator2"
                visible="true">
@@ -3413,6 +3434,11 @@
             defaultHandler="fr.univamu.ism.docometre.handlers.ValidateTrialsAutoHandler"
             id="ValidateTrialsAutoCommand"
             name="ValidateTrialsAutoCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.handlers.ExportToADWFileHandler"
+            id="ExportToADWFile"
+            name="ExportToADWFile">
       </command>
       
       
