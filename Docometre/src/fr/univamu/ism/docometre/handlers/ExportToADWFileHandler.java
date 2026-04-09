@@ -1,5 +1,11 @@
 package fr.univamu.ism.docometre.handlers;
 
+import java.io.File;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.channels.FileChannel;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.HashSet;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -16,6 +22,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPart;
@@ -38,6 +45,7 @@ public class ExportToADWFileHandler extends AbstractHandler implements ISelectio
 		HashSet<String> sessions = new HashSet<String>();
 		HashSet<String> processes = new HashSet<String>();
 		private int trialsNumber;
+		private String outputFolder;
 		
 		public ExportToADWJob(String name) {
 			super(name);
@@ -82,6 +90,14 @@ public class ExportToADWFileHandler extends AbstractHandler implements ISelectio
 		@Override
 		protected IStatus run(IProgressMonitor monitor) {
 			try {
+				PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+					@Override
+					public void run() {
+						DirectoryDialog directoryDialog = new DirectoryDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+						outputFolder = directoryDialog.open();
+					}
+				});
+				if(outputFolder == null) return Status.CANCEL_STATUS;;
 				monitor.beginTask(DocometreMessages.ExportToADWJob_Title2, resources.length);
 				for (IFolder subject : resources) {
 					channels.clear();
@@ -92,6 +108,16 @@ public class ExportToADWFileHandler extends AbstractHandler implements ISelectio
 					gatherInformationsForHeader(subject, monitor);
 					
 					// Continue ...
+					
+					
+					ByteBuffer byteBuffer = ByteBuffer.allocateDirect(1024);
+					byteBuffer.order(ByteOrder.BIG_ENDIAN);
+					byteBuffer.putInt(10);
+					FileChannel fileChannel = FileChannel.open(Paths.get(outputFolder + File.separatorChar + subject.getName() + ".ADW"), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+					fileChannel.write(byteBuffer);
+
+					// should not forget to close manually the FileChannel if we are not choosing the try-with-resource in Java 7.
+					fileChannel.close();
 					
 					System.out.println(channels.size());
 					System.out.println(sessions.size());
