@@ -851,6 +851,30 @@
                   style="push"
                   tooltip="%ExportDataCommand.tooltip">
             </command>
+            
+                     <command
+               commandId="ExportToADWFile"
+               icon="platform:/plugin/org.eclipse.ui/icons/full/etool16/export_wiz.png"
+               label="%ExportToADWFile.label"
+               style="push">
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="selection">
+                  <iterate>
+                     <adapt
+                           type="org.eclipse.core.resources.IResource">
+                        <test
+                              args="Docometre.type,SUBJECT"
+                              property="org.eclipse.core.resources.persistentProperty">
+                        </test>
+                     </adapt>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </command>
+            
+            
             <separator
                   name="Docometre.separator5"
                   visible="true">

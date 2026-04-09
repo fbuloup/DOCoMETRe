@@ -256,4 +256,13 @@ public abstract class DACQConfiguration extends AbstractElement {
 		 return frequencies.toArray(new String[frequencies.size()]);
 	}
 	
+	public Channel getChannelFromName(String channelName) {
+		Channel[] channels = getChannels();
+		for (Channel channel : channels) {
+			String name = channel.getProperty(ChannelProperties.NAME);
+			if(name.equals(channelName)) return channel;
+		}
+		return null;
+	}
+	
 }

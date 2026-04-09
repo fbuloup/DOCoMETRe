@@ -1175,6 +1175,9 @@ public final class DocometreMessages extends NLS {
 	// ExportToADW Handler 
 	public static String ExportToADWJob_Title;
 	public static String ExportToADWJob_Title2;
+	public static String ExportToADWJob_FileAlreadyExists;
+	public static String ExportToADWJob_SubjectNotExported;
+	public static String ExportToADWJob_SubjectExported;
 	
 	static {
 		// load message values from bundle file
