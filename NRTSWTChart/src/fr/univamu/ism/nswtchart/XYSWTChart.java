@@ -693,6 +693,12 @@ public class XYSWTChart extends Canvas implements PaintListener, MouseListener, 
 		double xValue = xPixelToValue(crossPosition.x - getYAxisWidth());
 		int y0 = isLegendPositionBottom()?0:getLegendHeight();
 		double yValue = yPixelToValue(crossPosition.y - y0);
+		boolean centerZoom = xValue < window.getXMin() || xValue > window.getXMax();
+		centerZoom = centerZoom || yValue < window.getYMin() || yValue > window.getYMax();
+		if(centerZoom) {
+			xValue = (window.getXMax() + window.getXMin())/2;
+			yValue = (window.getYMax() + window.getYMin())/2;
+		}
 		window.zoom(count, xValue, yValue);
 		redraw();
 		update();

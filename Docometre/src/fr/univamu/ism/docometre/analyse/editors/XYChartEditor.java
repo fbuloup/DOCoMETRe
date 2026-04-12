@@ -939,5 +939,73 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		chart.removeSeries(seriesID);
 		xyChartData.removeCurve(seriesID);
 	}
+
+	@Override
+	public void left() {
+		Range range = chart.getAxisSet().getXAxis(0).getRange();
+		double delta = (range.upper - range.lower)/10;
+		updateXAxisRange(range.lower + delta, range.upper + delta);
+		chart.redraw();
+		updateRange();
+	}
+
+	@Override
+	public void right() {
+		Range range = chart.getAxisSet().getXAxis(0).getRange();
+		double delta = (range.upper - range.lower)/10;
+		updateXAxisRange(range.lower - delta, range.upper - delta);
+		chart.redraw();
+		updateRange();
+	}
+
+	@Override
+	public void up() {
+		Range range = chart.getAxisSet().getYAxis(0).getRange();
+		double delta = (range.upper - range.lower)/10;
+		updateYAxisRange(range.lower - delta, range.upper - delta);
+		chart.redraw();
+		updateRange();
+	}
+
+	@Override
+	public void down() {
+		Range range = chart.getAxisSet().getYAxis(0).getRange();
+		double delta = (range.upper - range.lower)/10;
+		updateYAxisRange(range.lower + delta, range.upper + delta);
+		chart.redraw();
+		updateRange();
+	}
+
+	@Override
+	public void zoomIn() {
+		Range rangeX = chart.getAxisSet().getXAxis(0).getRange();
+		Range rangeY = chart.getAxisSet().getYAxis(0).getRange();
+		double deltaX = (rangeX.upper - rangeX.lower)/20;
+		double deltaY = (rangeY.upper - rangeY.lower)/20;
+		updateXAxisRange(rangeX.lower + deltaX, rangeX.upper - deltaX);
+		updateYAxisRange(rangeY.lower + deltaY, rangeY.upper - deltaY);
+		chart.redraw();
+		updateRange();
+	}
+
+	@Override
+	public void zoomOut() {
+		Range rangeX = chart.getAxisSet().getXAxis(0).getRange();
+		Range rangeY = chart.getAxisSet().getYAxis(0).getRange();
+		double deltaX = (rangeX.upper - rangeX.lower)/20;
+		double deltaY = (rangeY.upper - rangeY.lower)/20;
+		updateXAxisRange(rangeX.lower - deltaX, rangeX.upper + deltaX);
+		updateYAxisRange(rangeY.lower - deltaY, rangeY.upper + deltaY);
+		chart.redraw();
+		updateRange();
+	}
+
+	@Override
+	public void zoomToFit() {
+		chart.getAxisSet().getXAxis(0).adjustRange();
+		chart.getAxisSet().getYAxis(0).adjustRange();
+		chart.redraw();
+		updateRange();
+	}
 	
 }

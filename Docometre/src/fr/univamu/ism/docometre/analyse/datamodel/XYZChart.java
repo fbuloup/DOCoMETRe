@@ -94,11 +94,11 @@ public class XYZChart extends XYChart {
 		this.zMin = zMin;
 	}
 	
-	public void setRange(double xMin, double xMax, double yMin, double yMax, double zMin, double zMax) {
-		super.setRange(xMin, xMax, yMin, yMax);
-		setzMin(zMin);
-		setzMax(zMax);
-	}
+//	public void setRange(double xMin, double xMax, double yMin, double yMax, double zMin, double zMax) {
+//		super.setRange(xMin, xMax, yMin, yMax);
+//		setzMin(zMin);
+//		setzMax(zMax);
+//	}
 	
 	public void addCurve(Channel xChannel, Channel yChannel, Channel zChannel) {
 		String key = zChannel.getFullName() + "(" + xChannel.getFullName() + "," + yChannel.getFullName() + ")";

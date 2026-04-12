@@ -194,10 +194,9 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 		
 //		subToolBarManager.add(editGraphActionContributionItem);
 		subToolBarManager.add(new Separator());
-		subToolBarManager.add(autoScaleGraphActionContributionItem);
-		subToolBarManager.add(new Separator());
 		subToolBarManager.add(zoomInGraphActionContributionItem);
 		subToolBarManager.add(zoomOutGraphActionContributionItem);
+		subToolBarManager.add(autoScaleGraphActionContributionItem);
 		subToolBarManager.add(new Separator());
 		subToolBarManager.add(panLeftActionContributionItem);
 		subToolBarManager.add(panUpActionContributionItem);
@@ -210,35 +209,29 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 		editor = null;
 		if(!(targetEditor instanceof DataEditor)) return;
 		editor = (DataEditor) targetEditor;
-		
+		updateVisibilities(false);
 	}
 
 	@Override
 	public void perspectiveActivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
-		boolean actionsVisibility = !perspective.getId().equals(AcquirePerspective.id);
-		
-//		editGraphActionContributionItem.setVisible(actionsVisibility);
-		autoScaleGraphActionContributionItem.setVisible(actionsVisibility);
-		zoomInGraphActionContributionItem.setVisible(actionsVisibility);
-		zoomOutGraphActionContributionItem.setVisible(actionsVisibility);
-		panDownActionContributionItem.setVisible(actionsVisibility);
-		panLeftActionContributionItem.setVisible(actionsVisibility);
-		panRightActionContributionItem.setVisible(actionsVisibility);
-		panUpActionContributionItem.setVisible(actionsVisibility);
-		
-		subToolBarManager.setVisible(actionsVisibility);
-		
-//		editGraphActionContributionItem.getAction().setEnabled(actionsVisibility);
-		autoScaleGraphActionContributionItem.getAction().setEnabled(actionsVisibility);
-		zoomInGraphActionContributionItem.getAction().setEnabled(actionsVisibility);
-		zoomOutGraphActionContributionItem.getAction().setEnabled(actionsVisibility);
-		panDownActionContributionItem.getAction().setEnabled(actionsVisibility);
-		panLeftActionContributionItem.getAction().setEnabled(actionsVisibility);
-		panRightActionContributionItem.getAction().setEnabled(actionsVisibility);
-		panUpActionContributionItem.getAction().setEnabled(actionsVisibility);
-		
+		updateVisibilities(true);
+		boolean hideActions = perspective.getId().equals(AcquirePerspective.id);
+		if(hideActions) return;
+		IEditorPart activeEditor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		if(this.editor == activeEditor) updateVisibilities(false);
+	}
+	
+	private void updateVisibilities(boolean forceHide) {
+		subToolBarManager.setVisible(false);
+		if(forceHide) {
+			subToolBarManager.update(true);
+			if(subToolBarManager.getParent() != null) {
+				subToolBarManager.getParent().update(true);
+			}
+			return;
+		}
+		subToolBarManager.setVisible(true);
 		subToolBarManager.update(true);
-		
 		if(subToolBarManager.getParent() != null) {
 			subToolBarManager.getParent().update(true);
 		}

@@ -55,5 +55,12 @@ public interface Chart2D3DBehaviour {
 	void updateYAxisRange(double min, double max);
 	void updateZAxisRange(double min, double max);
 	void removeSeries(String seriesID);
+	void left();
+	void right();
+	void up();
+	void down();
+	void zoomIn();
+	void zoomOut();
+	void zoomToFit();
 
 }

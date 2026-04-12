@@ -1074,7 +1074,8 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 				trialNumber++;
 				selectedTrialsNumbers.set(i, trialNumber);
 			}
-			trialsListViewer.setSelection(new StructuredSelection(selectedTrialsNumbers), true);
+			if(chart != null)
+				trialsListViewer.setSelection(new StructuredSelection(selectedTrialsNumbers), true);
 		}
 		
 	}
@@ -1099,7 +1100,8 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 				trialNumber--;
 				selectedTrialsNumbers.set(i, trialNumber);
 			}
-			trialsListViewer.setSelection(new StructuredSelection(selectedTrialsNumbers), true);
+			if(chart != null)
+				trialsListViewer.setSelection(new StructuredSelection(selectedTrialsNumbers), true);
 		}
 		
 	}
@@ -1185,11 +1187,9 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 //        chart3DPanel.getViewPoint().setRho(valRho);
 //        xyzChartData.setViewPoint(chart3DPanel.getViewPoint());
 //        chart3DPanel.update();
-
 		chart.getView().getCamera().setEye(chart.getView().getCamera().getEye().add(new Coord3d(1, 1, 1)));
 		redraw();
-      setDirty(true);
-				
+		setDirty(true);
 	}
 
 	public void zoomOut() {
@@ -1247,14 +1247,14 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 
 	public void turnLeft() {
 		Coord3d coord3d = chart.getViewPoint();
-		coord3d = coord3d.rotate(-0.1f, Coord3d.IDENTITY.normalizeTo(1));
+		coord3d = coord3d.rotate(-0.0025f, Coord3d.IDENTITY.normalizeTo(1));
 		chart.setViewPoint(coord3d);
         setDirty(true);
 	}
 
 	public void turnRight() {
 		Coord3d coord3d = chart.getViewPoint();
-		coord3d = coord3d.rotate(0.1f, Coord3d.IDENTITY.normalizeTo(1));
+		coord3d = coord3d.rotate(0.0025f, Coord3d.IDENTITY.normalizeTo(1));
 		chart.setViewPoint(coord3d);
         setDirty(true);
 	}

@@ -211,12 +211,12 @@ public class XYChart extends AbstractElement {
 		this.endCut = endCut;
 	}
 	
-	public void setRange(double xMin, double xMax, double yMin, double yMax) {
-		setxMin(xMin);
-		setxMax(xMax);
-		setyMin(yMin);
-		setyMax(yMax);
-	}
+//	public void setRange(double xMin, double xMax, double yMin, double yMax) {
+//		setxMin(xMin);
+//		setxMax(xMax);
+//		setyMin(yMin);
+//		setyMax(yMax);
+//	}
 	
 	public boolean isUseSameColorForSameCategory() {
 		return useSameColorForSameCategory;
