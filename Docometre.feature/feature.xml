@@ -6,7 +6,15 @@
       provider-name="ISM">
 
    <description>
-      -- 2026-04-08
+      -- 2026-04-13
+ADDED :
+* Median filter function (Matlab and Python)
+* Support to export subject to ADW file
+* Zoom in / Zoom out 3D chart
+FIXED :
+* Bug in DIGPROG argument computation for DIO32 REV. A
+* Standardize charts tool bar contribution actions
+-- 2026-04-08
 ADDED :
 * Increase Python timeout
 FIXED : Nothing
