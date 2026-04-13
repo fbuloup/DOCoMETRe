@@ -107,7 +107,7 @@ public class ADWinDigInOutModule extends Module {
 						if(!isInput){
 							
 							if(ADWinModuleProperties.REV_A.equals(revision)) {
-								digProg = (int) (digProg + Math.pow(2, channelN - 1));
+								digProg = (int) (digProg + Math.pow(2, channelN));
 							}
 							if(ADWinModuleProperties.REV_B.equals(revision)) {
 								if (channelN<=7) digProg = digProg | 1;
