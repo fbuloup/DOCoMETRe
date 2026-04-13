@@ -1179,35 +1179,13 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 	}
 
 	public void zoomIn() {
-//        double zoomMultiplier = 0.95; 
-//		ViewPoint3D viewPt = chart3DPanel.getViewPoint();
-//        double minDistance = chart3DPanel.getMinViewingDistance();
-//        double maxDistance = minDistance * chart3DPanel.getMaxViewingDistanceMultiplier();
-//        double valRho = Math.max(minDistance, Math.min(maxDistance, viewPt.getRho() * zoomMultiplier));
-//        chart3DPanel.getViewPoint().setRho(valRho);
-//        xyzChartData.setViewPoint(chart3DPanel.getViewPoint());
-//        chart3DPanel.update();
-		chart.getView().getCamera().setEye(chart.getView().getCamera().getEye().add(new Coord3d(1, 1, 1)));
-		redraw();
+        chart.getView().zoom(0.9f, true);
 		setDirty(true);
 	}
 
 	public void zoomOut() {
-//        double zoomMultiplier = 10.0 / 9.5; 
-//		ViewPoint3D viewPt = chart3DPanel.getViewPoint();
-//        double minDistance = chart3DPanel.getMinViewingDistance();
-//        double maxDistance = minDistance * chart3DPanel.getMaxViewingDistanceMultiplier();
-//        double valRho = Math.max(minDistance, Math.min(maxDistance, viewPt.getRho() * zoomMultiplier));
-//        chart3DPanel.getViewPoint().setRho(valRho);
-//        xyzChartData.setViewPoint(chart3DPanel.getViewPoint());
-//        chart3DPanel.update();
-//		Coord3d eye = chart.getView().getCamera().getEye();
-//		Coord3d target = chart.getView().getCamera().getTarget();
-//		Coord3d up = chart.getView().getCamera().getUp();
-//		Coord3d scale = chart.getView().getCamera().getScale().mul(new Coord3d(0.5, 0.5, 0.5));
-//		chart.getView().getCamera().setPosition(eye, target, up, scale);
-//		redraw();
-//        setDirty(true);
+        chart.getView().zoom(1.1f, true);
+        setDirty(true);
 	}
 
 	public void zoomToFit() {
@@ -1247,14 +1225,14 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 
 	public void turnLeft() {
 		Coord3d coord3d = chart.getViewPoint();
-		coord3d = coord3d.rotate(-0.0025f, Coord3d.IDENTITY.normalizeTo(1));
+		coord3d = coord3d.rotate(-0.0075f, Coord3d.IDENTITY.normalizeTo(1));
 		chart.setViewPoint(coord3d);
         setDirty(true);
 	}
 
 	public void turnRight() {
 		Coord3d coord3d = chart.getViewPoint();
-		coord3d = coord3d.rotate(0.0025f, Coord3d.IDENTITY.normalizeTo(1));
+		coord3d = coord3d.rotate(0.0075f, Coord3d.IDENTITY.normalizeTo(1));
 		chart.setViewPoint(coord3d);
         setDirty(true);
 	}
