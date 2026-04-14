@@ -53,6 +53,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -74,6 +76,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.WorkbenchWindow;
+import org.osgi.framework.Bundle;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ApplicationActionBarAdvisor;
@@ -88,11 +91,13 @@ import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.ModuleBehaviour;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinMessages;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.dacqconfigurationeditor.ArduinoUnoDACQConfigurationEditor;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.processeditor.ArduinoUnoProcessEditor;
 import fr.univamu.ism.docometre.dacqsystems.ui.DeviceSelectionDialog;
 import fr.univamu.ism.docometre.dacqsystems.ui.DeviceSelectionHandler.DeviceType;
 import fr.univamu.ism.docometre.dacqsystems.ui.ProcessEditor;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
+import fr.univamu.ism.docometre.views.ExperimentsView;
 import fr.univamu.ism.process.ScriptSegmentType;
 import jssc.SerialPort;
 import jssc.SerialPortException;
@@ -1073,14 +1078,17 @@ public class ArduinoUnoProcess extends Process {
 	public void compile(IProgressMonitor progressMonitor) throws Exception {
 		cleanBuild();
 		
+		IResource dacqConfigurationResource = getDACQConfiguration().getResource();
+		dacqConfigurationResource.deleteMarkers(null, true, IResource.DEPTH_INFINITE);
+		
 		// Check if revision has been specified
-		getDACQConfiguration().getResource().deleteMarkers(null, true, IResource.DEPTH_INFINITE);
 		String value = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
 		if( value == null) {
-			IMarker marker = getDACQConfiguration().getResource().createMarker(DocometreBuilder.MARKER_ID);
+			IMarker marker = getDACQConfiguration().getResource().createMarker("ArduinoUnoDACQConfiguration.Revision");
 			marker.setAttribute(IMarker.MESSAGE, ArduinoUnoMessages.arduinoRevisionNotSpecified);
 			marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
 		}
+		ExperimentsView.refresh(getDACQConfiguration().getResource(), null);
 		
 		IResource processResource = ObjectsController.getResourceForObject(this);
 		IPath wsPath = new Path(Platform.getInstanceLocation().getURL().getPath());
@@ -1144,6 +1152,30 @@ public class ArduinoUnoProcess extends Process {
 		if (!errorString.equals("")) {
 			createMarker(IMarker.SEVERITY_ERROR, processResource, errorString);
 		}
+		
+
+		Bundle librariesBundle = Platform.getBundle("Libraries");
+		String message = NLS.bind(DocometreMessages.CurrentLibrariesVersion, librariesBundle.getVersion().toString());
+		Activator.logInfoMessage(message, getClass());
+		ArduinoUnoDACQConfiguration dacqConfig = (ArduinoUnoDACQConfiguration)getDACQConfiguration();
+		String librariesAbsolutePath = dacqConfig.getProperty(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH);
+		Pattern pattern = Pattern.compile("Libraries_\\d\\.\\d.\\d.\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d");
+		Matcher matcher = pattern.matcher(librariesAbsolutePath);
+		if (matcher.find()) {
+			String usedLibrariesVersion = librariesAbsolutePath.substring(matcher.start(), matcher.end());
+			usedLibrariesVersion = usedLibrariesVersion.replaceAll("Libraries_", "");
+			message = NLS.bind(DocometreMessages.DacqConfLibrariesVersion, usedLibrariesVersion);
+			Activator.logInfoMessage(message, getClass());
+			if(!usedLibrariesVersion.equals(librariesBundle.getVersion().toString())) {
+				message = NLS.bind(DocometreMessages.UpdateLibrariesVersion, usedLibrariesVersion, librariesBundle.getVersion().toString());
+				Activator.logWarningMessage(message);
+				IMarker marker = getDACQConfiguration().getResource().createMarker("ArduinoUnoDACQConfiguration.Libraries");
+				marker.setAttribute(IMarker.MESSAGE, message);
+				marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
+			}
+		}
+		ExperimentsView.refresh(getDACQConfiguration().getResource(), null);
+		
 
 		if (getScript().getCodeGenerationStatus().length > 0) {
 			IStatus[] statuses = getScript().getCodeGenerationStatus();
@@ -1174,6 +1206,12 @@ public class ArduinoUnoProcess extends Process {
 					((ProcessEditor)editorPart).updateTitleImage();
 					PageChangedEvent event = new PageChangedEvent((IPageChangeProvider) editorPart, ((ProcessEditor)editorPart));
 					((ProcessEditor)editorPart).pageChanged(event);
+				}
+				ArduinoUnoDACQConfiguration dacqConfiguration = (ArduinoUnoDACQConfiguration) ObjectsController.getDACQConfiguration(ArduinoUnoProcess.this);
+//				IResource dacqConfigurationResource = ObjectsController.getResourceForObject(dacqConfiguration);
+				editorPart = Activator.getEditor(dacqConfiguration, ArduinoUnoDACQConfigurationEditor.ID);
+				if(editorPart != null) {
+					((ArduinoUnoDACQConfigurationEditor)editorPart).updateTitleImage();
 				}
 			}
 		});

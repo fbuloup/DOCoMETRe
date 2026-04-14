@@ -311,18 +311,6 @@ public class ADWinProcess extends Process {
 		java.lang.Process process = Runtime.getRuntime().exec(cmdLine.split(" "));
 		
 		String line;
-//			BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-//			String errorString = "";
-//			while((line = error.readLine()) != null){
-//				errorString = errorString + line + "\n";
-//			}
-//			error.close();
-//			if(!errorString.equals("")) {
-//				IMarker marker = processResource.createMarker(DocometreBuilder.MARKER_ID);
-//				marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-//				marker.setAttribute(IMarker.MESSAGE, errorString);
-//				throw new Exception(DocometreMessages.ADWinProcess_CompileErrorsMessage + "\n" + errorString); 
-//			}
 		boolean useDocker = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_DOCKER);
 		boolean firstLine = true;
 		BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -365,10 +353,9 @@ public class ADWinProcess extends Process {
 		
 		
 		processResource.deleteMarkers(null, true, IResource.DEPTH_INFINITE);
-		ADWinDACQConfiguration dacqConfiguration = (ADWinDACQConfiguration) ObjectsController.getDACQConfiguration(this);
-		IResource dacqConfigurationResource = ObjectsController.getResourceForObject(dacqConfiguration);
+		IResource dacqConfigurationResource = getDACQConfiguration().getResource();
 		dacqConfigurationResource.deleteMarkers(null, true, IResource.DEPTH_INFINITE);
-		
+
 		//Get compile errors
 		progressMonitor.subTask(DocometreMessages.ADWinProcess_GetCompileErrorsMessage);
 		if(errorFile.exists()) {
@@ -396,9 +383,10 @@ public class ADWinProcess extends Process {
 			message = NLS.bind(DocometreMessages.DacqConfLibrariesVersion, usedLibrariesVersion);
 			Activator.logInfoMessage(message, getClass());
 			if(!usedLibrariesVersion.equals(librariesBundle.getVersion().toString())) {
-				Activator.logWarningMessage(DocometreMessages.UpdateLibrariesVersion);
-				IMarker marker = dacqConfigurationResource.createMarker(DocometreBuilder.MARKER_ID);
-				marker.setAttribute(IMarker.MESSAGE, DocometreMessages.UpdateLibrariesVersion);
+				message = NLS.bind(DocometreMessages.UpdateLibrariesVersion, usedLibrariesVersion, librariesBundle.getVersion().toString());
+				Activator.logWarningMessage(message);
+				IMarker marker = dacqConfigurationResource.createMarker("ADWinDACQConfigurationProperties.Libraries");
+				marker.setAttribute(IMarker.MESSAGE, message);
 				marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
 			}
 		}

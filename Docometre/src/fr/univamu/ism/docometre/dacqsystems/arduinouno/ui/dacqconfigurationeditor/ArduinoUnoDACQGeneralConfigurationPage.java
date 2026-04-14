@@ -83,6 +83,7 @@ import org.eclipse.ui.forms.widgets.Hyperlink;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
+import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.PartListenerAdapter;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.Property;
@@ -254,17 +255,6 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 		revisionCombo = createCombo(generalconfigurationContainer, ArduinoUnoDACQConfigurationProperties.REVISIONS, value == null ? "" : value, 2 , 1);
 		revisionCombo.addModifyListener(new ModifyPropertyHandler(ArduinoUnoDACQConfigurationProperties.REVISION, dacqConfiguration, revisionCombo, regExp, "", false, (ResourceEditor)getEditor()));
 		revisionCombo.addModifyListener(getGeneralConfigurationModifyListener());
-		if(value == null) {
-			try {
-				getManagedForm().getMessageManager().addMessage(revisionCombo, ArduinoUnoMessages.arduinoRevisionNotSpecified, null, IMessageProvider.ERROR);
-				IMarker marker = dacqConfiguration.getResource().createMarker(DocometreBuilder.MARKER_ID);
-				marker.setAttribute(IMarker.MESSAGE, ArduinoUnoMessages.arduinoRevisionNotSpecified);
-				marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-			} catch (CoreException e) {
-				Activator.logErrorMessageWithCause(e);
-				e.printStackTrace();
-			}
-		}
 		
 		createLabel(generalconfigurationContainer, ArduinoUnoMessages.DevicePath_Label, ArduinoUnoMessages.DevicePath_Tooltip);
 		value = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH);
@@ -363,6 +353,7 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 		configureSorter(new Comparator(), tableViewer.getTable().getColumn(0));
 		tableViewer.setInput(dacqConfiguration.getModules());
 		
+		updateDecorationsControls();
 		
 	}
 	
@@ -428,6 +419,35 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 				tableViewer.refresh();
 			}
 		}
+	}
+	
+	public void updateDecorationsControls() {
+		try {
+			if(getManagedForm() != null) {
+				getManagedForm().getMessageManager().removeAllMessages();
+				IResource dacqConfResource = ObjectsController.getResourceForObject(dacqConfiguration);
+				IMarker[] markers = dacqConfResource.findMarkers(null, true, IResource.DEPTH_INFINITE);
+				for (IMarker marker : markers) {
+					String message = (String) marker.getAttribute(IMarker.MESSAGE);
+					int severity = (int) marker.getAttribute(IMarker.SEVERITY);
+					int type = IMessageProvider.NONE;
+					if(severity == IMarker.SEVERITY_WARNING) type = IMessageProvider.WARNING;
+					if(severity == IMarker.SEVERITY_ERROR) type = IMessageProvider.ERROR;
+					if(severity == IMarker.SEVERITY_INFO) type = IMessageProvider.INFORMATION;
+					if(marker.getType().equals("ArduinoUnoDACQConfiguration.Revision"))
+						getManagedForm().getMessageManager().addMessage(marker, message, null, type, revisionCombo);
+					else if(marker.getType().equals("ArduinoUnoDACQConfiguration.Libraries"))
+						getManagedForm().getMessageManager().addMessage(marker, message, null, type, librariesPathText);
+					else getManagedForm().getMessageManager().addMessage(marker, message, null, type);
+				} 
+			}
+			
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		
+		
 	}
 	
 }

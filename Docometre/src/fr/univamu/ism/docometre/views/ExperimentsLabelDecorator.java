@@ -55,7 +55,6 @@ import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
-import fr.univamu.ism.docometre.dacqsystems.DocometreBuilder;
 import py4j.Py4JException;
 
 public class ExperimentsLabelDecorator implements ILightweightLabelDecorator {
@@ -112,7 +111,7 @@ public class ExperimentsLabelDecorator implements ILightweightLabelDecorator {
 						decoration.addOverlay(Activator.getImageDescriptor(IImageKeys.RUN_IN_MAIN_THREAD_ICON_2), IDecoration.TOP_LEFT);
 					}
 					try {
-						int severity = resource.findMaxProblemSeverity(DocometreBuilder.MARKER_ID, true, IResource.DEPTH_INFINITE);
+						int severity = resource.findMaxProblemSeverity(null, true, IResource.DEPTH_INFINITE);
 						if(severity == IMarker.SEVERITY_ERROR) decoration.addOverlay(Activator.getImageDescriptor(IImageKeys.ERROR_ICON), IDecoration.BOTTOM_LEFT);
 						if(severity == IMarker.SEVERITY_WARNING) decoration.addOverlay(Activator.getImageDescriptor(IImageKeys.WARNING_ICON), IDecoration.BOTTOM_LEFT);	
 					} catch (CoreException e) {

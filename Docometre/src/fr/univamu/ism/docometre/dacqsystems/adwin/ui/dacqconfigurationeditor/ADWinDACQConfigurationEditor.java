@@ -66,7 +66,6 @@ import fr.univamu.ism.docometre.PartListenerAdapter;
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfigurationProperties;
-import fr.univamu.ism.docometre.dacqsystems.DocometreBuilder;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.Property;
 import fr.univamu.ism.docometre.dacqsystems.PropertyObserver;
@@ -238,7 +237,7 @@ public class ADWinDACQConfigurationEditor extends ResourceEditor implements Prop
 	public void updateTitleImage() {
 		try {
 			IResource dacqConfResource = ObjectsController.getResourceForObject(getDACQConfiguration());
-			int severity = dacqConfResource.findMaxProblemSeverity(DocometreBuilder.MARKER_ID, true, IResource.DEPTH_INFINITE);
+			int severity = dacqConfResource.findMaxProblemSeverity(null, true, IResource.DEPTH_INFINITE);
 			if(severity == IMarker.SEVERITY_ERROR) setTitleImage(JFaceResources.getImageRegistry().get(IImageKeys.ERROR_DECORATOR));
 			if(severity == IMarker.SEVERITY_WARNING) setTitleImage(JFaceResources.getImageRegistry().get(IImageKeys.WARNING_DECORATOR));
 			if(severity == -1) setTitleImage(JFaceResources.getImageRegistry().get(IImageKeys.DACQ_CONFIGURATION_ICON));

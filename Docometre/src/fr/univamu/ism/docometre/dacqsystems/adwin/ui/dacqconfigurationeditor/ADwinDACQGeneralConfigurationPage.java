@@ -87,7 +87,6 @@ import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.PartListenerAdapter;
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfigurationProperties;
-import fr.univamu.ism.docometre.dacqsystems.DocometreBuilder;
 import fr.univamu.ism.docometre.dacqsystems.FrequencyInputValidator;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.Property;
@@ -530,15 +529,17 @@ public class ADwinDACQGeneralConfigurationPage extends ModulePage {
 			if(getManagedForm() != null) {
 				getManagedForm().getMessageManager().removeAllMessages();
 				IResource dacqConfResource = ObjectsController.getResourceForObject(dacqConfiguration);
-				IMarker[] markers = dacqConfResource.findMarkers(DocometreBuilder.MARKER_ID, true, IResource.DEPTH_INFINITE);
+				IMarker[] markers = dacqConfResource.findMarkers(null, true, IResource.DEPTH_INFINITE);
 				for (IMarker marker : markers) {
 					String message = (String) marker.getAttribute(IMarker.MESSAGE);
 					int severity = (int) marker.getAttribute(IMarker.SEVERITY);
-						int type = IMessageProvider.NONE;
-						if(severity == IMarker.SEVERITY_WARNING) type = IMessageProvider.WARNING;
-						if(severity == IMarker.SEVERITY_ERROR) type = IMessageProvider.ERROR;
-						if(severity == IMarker.SEVERITY_INFO) type = IMessageProvider.INFORMATION;
+					int type = IMessageProvider.NONE;
+					if(severity == IMarker.SEVERITY_WARNING) type = IMessageProvider.WARNING;
+					if(severity == IMarker.SEVERITY_ERROR) type = IMessageProvider.ERROR;
+					if(severity == IMarker.SEVERITY_INFO) type = IMessageProvider.INFORMATION;
+					if(marker.getType().equals("ADWinDACQConfigurationProperties.Libraries"))
 						getManagedForm().getMessageManager().addMessage(marker, message, null, type, librariesText);
+					else getManagedForm().getMessageManager().addMessage(marker, message, null, type);
 				}
 			}
 			
