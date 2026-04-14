@@ -137,7 +137,7 @@ public class ImportResourceWizardPage extends WizardPage {
 				if(selection == ResourceType.DATA_PROCESSING) extension = Activator.dataProcessingFileExtension;
 				valid = name.matches("^[a-zA-Z][a-zA-Z0-9_]*" + extension + "$");
 			} else if(selection == ResourceType.OPTITRACK_TYPE_1) {
-				valid = name.matches("^[a-zA-Z]+[0-9]+[a-zA-Z]+[a-zA-Z0-9_]*$");
+				valid = name.matches("^[a-zA-Z]+[0-9]+(_)?[a-zA-Z]+[a-zA-Z0-9_]*.csv$");
 			} else if(selection == ResourceType.COLUMN_DATA_FILE) {
 				valid = name.matches("^[a-zA-Z][a-zA-Z0-9_]*.txt$");
 			}
