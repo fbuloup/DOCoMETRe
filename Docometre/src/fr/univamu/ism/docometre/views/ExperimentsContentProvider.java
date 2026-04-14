@@ -122,14 +122,29 @@ public class ExperimentsContentProvider implements ITreeContentProvider {
 					if(resource.getName().endsWith(Activator.processFileExtension)) {
 						ResourceProperties.setTypePersistentProperty(resource, ResourceType.PROCESS.toString());
 					}
+					if(resource.getName().endsWith(Activator.dataProcessingFileExtension)) {
+						ResourceProperties.setTypePersistentProperty(resource, ResourceType.DATA_PROCESSING.toString());
+					}
+					if(resource.getName().endsWith(Activator.batchDataProcessingFileExtension)) {
+						ResourceProperties.setTypePersistentProperty(resource, ResourceType.BATCH_DATA_PROCESSING.toString());
+					}
 					if(resource.getName().endsWith(Activator.samplesFileExtension)) {
 						ResourceProperties.setTypePersistentProperty(resource, ResourceType.SAMPLES.toString());
 					}
 					if(resource.getName().endsWith(Activator.xyChartFileExtension)) {
 						ResourceProperties.setTypePersistentProperty(resource, ResourceType.XYCHART.toString());
 					}
+					if(resource.getName().endsWith(Activator.xyzChartFileExtension)) {
+						ResourceProperties.setTypePersistentProperty(resource, ResourceType.XYZCHART.toString());
+					}
 					if(resource.getName().endsWith(Activator.csvFileExtension)) {
 						ResourceProperties.setTypePersistentProperty(resource, ResourceType.CSV.toString());
+					}
+					if(resource.getName().endsWith(Activator.adwFileExtension)) {
+						ResourceProperties.setTypePersistentProperty(resource, ResourceType.ADW_DATA_FILE.toString());
+					}
+					if(resource.getName().endsWith(Activator.customerFunctionFileExtension)) {
+						ResourceProperties.setTypePersistentProperty(resource, ResourceType.CUSTOMER_FUNCTION.toString());
 					}
 				}
 				
