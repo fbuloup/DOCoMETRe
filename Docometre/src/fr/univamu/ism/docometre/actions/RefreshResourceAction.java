@@ -50,13 +50,20 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.ISelectionListener;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 
 import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.ResourceProperties;
+import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.analyse.MathEngineFactory;
+import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
+import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
 import fr.univamu.ism.docometre.analyse.views.FunctionsView;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.views.ExperimentsView;
@@ -90,6 +97,30 @@ public class RefreshResourceAction extends Action implements ISelectionListener,
 							ExperimentsView.refresh(resource.getParent(), new IResource[]{resource});
 							SubjectsView.refresh(resource.getParent(), new IResource[]{resource});
 							FunctionsView.refresh(true);
+							if(ResourceType.isSubject(resource)) {
+								if(MathEngineFactory.getMathEngine().isStarted()) {
+									if(MathEngineFactory.getMathEngine().isSubjectLoaded(resource)) {
+										Display.getDefault().syncExec(new Runnable() {
+											@Override
+											public void run() {
+												IViewPart view = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(SubjectsView.ID);
+												if(view != null) {
+													try {
+														if(resource.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) != null && resource.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) instanceof ChannelsContainer) {
+															ChannelsContainer channelsContainer = (ChannelsContainer)resource.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
+															channelsContainer.setUpdateChannelsCache(true);
+															((SubjectsView)view).updateInput(SelectedExprimentContributionItem.selectedExperiment);
+														}
+													} catch (CoreException e) {
+														Activator.logErrorMessageWithCause(e);
+														e.printStackTrace();
+													}
+												}
+											}
+										});
+									}
+								}
+							}
 						} catch (CoreException e) {
 							e.printStackTrace();
 							Activator.logErrorMessageWithCause(e);
