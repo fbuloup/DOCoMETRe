@@ -70,6 +70,7 @@ public enum ResourceType {
 	XYZCHART("XYZCHART"),
 	CUSTOMER_FUNCTION("CUSTOMER_FUNCTION"),
 	OPTITRACK_TYPE_1("OPTITRACK_TYPE_1"),
+	OPTITRACK_TYPE_2("OPTITRACK_TYPE_2"),
 	COLUMN_DATA_FILE("COLUMN_DATA_FILE"),
 	CSV("CSV");
 
@@ -105,6 +106,7 @@ public enum ResourceType {
 		if(typeValue.equals(XYZCHART.toString())) return XYZCHART;
 		if(typeValue.equals(CUSTOMER_FUNCTION.toString())) return CUSTOMER_FUNCTION;
 		if(typeValue.equals(OPTITRACK_TYPE_1.toString())) return OPTITRACK_TYPE_1;
+		if(typeValue.equals(OPTITRACK_TYPE_2.toString())) return OPTITRACK_TYPE_2;
 		if(typeValue.equals(COLUMN_DATA_FILE.toString())) return COLUMN_DATA_FILE;
 		if(typeValue.equals(CSV.toString())) return CSV;
 		return ANY;
@@ -209,6 +211,10 @@ public enum ResourceType {
 	
 	public static boolean isOptitrack_Type_1(IResource resource) {
 		return check(resource, OPTITRACK_TYPE_1);
+	}
+	
+	public static boolean isOptitrack_Type_2(IResource resource) {
+		return check(resource, OPTITRACK_TYPE_2);
 	}
 	
 	public static boolean isColumnDataFile(IResource resource) {

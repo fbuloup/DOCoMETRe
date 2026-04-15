@@ -138,6 +138,8 @@ public class ImportResourceWizardPage extends WizardPage {
 				valid = name.matches("^[a-zA-Z][a-zA-Z0-9_]*" + extension + "$");
 			} else if(selection == ResourceType.OPTITRACK_TYPE_1) {
 				valid = name.matches("^[a-zA-Z]+[0-9]+(_)?[a-zA-Z]+[a-zA-Z0-9_]*.csv$");
+			} else if(selection == ResourceType.OPTITRACK_TYPE_2) {
+					valid = name.matches("^[a-zA-Z]+[0-9]*(_)?[a-zA-Z]+[a-zA-Z0-9_]*.csv$");
 			} else if(selection == ResourceType.COLUMN_DATA_FILE) {
 				valid = name.matches("^[a-zA-Z][a-zA-Z0-9_]*.txt$");
 			}
@@ -184,6 +186,7 @@ public class ImportResourceWizardPage extends WizardPage {
 				if(element == ResourceType.EXPERIMENT) return DocometreMessages.NewExperimentAction_Text + " (*.zip, *.tar)";
 				if(element == ResourceType.ADW_DATA_FILE) return DocometreMessages.NewSubjectFromADWDataFileLabel;
 				if(element == ResourceType.OPTITRACK_TYPE_1) return DocometreMessages.NewSubjectFromOptiTrackDataFileLabel;
+				if(element == ResourceType.OPTITRACK_TYPE_2) return DocometreMessages.NewSubjectFromOptiTrackDataFileLabel_type2;
 				if(element == ResourceType.COLUMN_DATA_FILE) return DocometreMessages.NewSubjectFromColumnDataFile;
 				if(element == ResourceType.SUBJECT) return DocometreMessages.Subjects + " (*.zip, *.tar)";
 				if(element == ResourceType.DATA_PROCESSING) return DocometreMessages.DataProcessingTitle;
@@ -325,7 +328,7 @@ public class ImportResourceWizardPage extends WizardPage {
 				Object[] elements = selection.toArray();
 				for (Object element : elements) {
 					File file = (File)element;
-					if(ResourceType.OPTITRACK_TYPE_1.equals(selectedType) || ResourceType.COLUMN_DATA_FILE.equals(selectedType)) {
+					if(ResourceType.OPTITRACK_TYPE_1.equals(selectedType) || ResourceType.OPTITRACK_TYPE_2.equals(selectedType) || ResourceType.COLUMN_DATA_FILE.equals(selectedType)) {
 						if(file.isDirectory()) {
 							setPageComplete(true);
 							break;
@@ -349,7 +352,8 @@ public class ImportResourceWizardPage extends WizardPage {
 		if(ResourceType.isExperiment(parentSelectedResource)) {
 			resourceTypeComboViewer.setInput(new Object[] {/*ResourceType.SUBJECT,*/ ResourceType.DACQ_CONFIGURATION, ResourceType.PROCESS, 
 																					 ResourceType.DATA_PROCESSING, ResourceType.ADW_DATA_FILE, 
-																					 ResourceType.OPTITRACK_TYPE_1, ResourceType.COLUMN_DATA_FILE});
+																					 ResourceType.OPTITRACK_TYPE_1, ResourceType.OPTITRACK_TYPE_2,
+																					 ResourceType.COLUMN_DATA_FILE});
 			resourceTypeComboViewer.setSelection(new StructuredSelection(ResourceType.DACQ_CONFIGURATION));
 			selectedResourceType = ResourceType.DACQ_CONFIGURATION;
 		}

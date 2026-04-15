@@ -1155,6 +1155,15 @@
                </command>
                <command
                      commandId="SetTypeCommand"
+                     label="%OptitrackType2.label"
+                     style="radio">
+                  <parameter
+                        name="Docometre.type.parameter"
+                        value="OPTITRACK_TYPE_2">
+                  </parameter>
+               </command>
+               <command
+                     commandId="SetTypeCommand"
                      label="%XYChartType.label"
                      style="radio">
                   <parameter
@@ -2061,6 +2070,15 @@
                      value="OPTITRACK_TYPE_1">
                </parameter>
             </command>
+               <command
+                     commandId="SetTypeCommand"
+                     label="%OptitrackType2.label"
+                     style="radio">
+                  <parameter
+                        name="Docometre.type.parameter"
+                        value="OPTITRACK_TYPE_2">
+                  </parameter>
+               </command>
             <command
                   commandId="SetTypeCommand"
                   label="%XYChartType.label"
