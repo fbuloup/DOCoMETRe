@@ -1,23 +1,18 @@
 function subject = loadDataOptitrackType2(dataFilesAbsolutePath)
-%Read data file
-%mlines =
-%textread(dataFileAbsolutePath,'%s','bufsize',131072,'delimiter','\n');
+% Read data file
+% mlines =
+% textread(dataFileAbsolutePath,'%s','bufsize',131072,'delimiter','\n');
 
 [files, nbFiles] = explode(dataFilesAbsolutePath, ';');
 
-nbCategories = 0;
-categories = {};
 nbTrials = nbFiles;
 nbSamples = 0;
 channelsNames = java.util.ArrayList();
-createdCategories = containers.Map('KeyType','char','ValueType','char');
-firstTime = true;
-criteria = 'Session1';
 % Get nb Samples, sample frequency and signals names on first file     
 fid = fopen(files{1});
 line = fgetl(fid);
 tempValue = explode(line, ',');
-nbSamples = max(nbSamples, str2double(tempValue{15}));
+nbSamples = str2double(tempValue{15}));
 sampleFrequency = str2double(tempValue{7});    
 fgetl(fid);
 fgetl(fid);        
