@@ -73,7 +73,6 @@ import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
 import fr.univamu.ism.docometre.matlab.MatlabController;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
-import fr.univamu.ism.docometre.preferences.MathEnginePreferencesConstants;
 
 public final class MatlabEngine implements MathEngine {
 	
@@ -1018,21 +1017,21 @@ public final class MatlabEngine implements MathEngine {
 		String subjectName = subject.getFullPath().segment(1);
 		
 		String dataFilesList = Analyse.getDataFiles(subject);
-		boolean isOptitrack = Analyse.isOptitrack(dataFilesList.split(";"), (IContainer) subject);
+		boolean isOptitrackType1 = Analyse.isOptitrack_Type_1(dataFilesList.split(";"), (IContainer) subject);
+		boolean isOptitrackType2 = Analyse.isOptitrack_Type_2(dataFilesList.split(";"), (IContainer) subject);
 		boolean isColumnDataFile = Analyse.isColumnDataFile(dataFilesList.split(";"), (IContainer) subject);
 		if(isColumnDataFile) {
 			String cmd = experimentName + "." + subjectName + " = loadData('COLUMN_DATA_FILE', '" + dataFilesList + "')";
 			return cmd;
-		} else if(isOptitrack) {
-			// If all data files are OPTITRACK_TYPE_1
-			String cmd = experimentName + "." + subjectName + " = loadData('OPTITRACK_TYPE_1', '" + dataFilesList + "')";
+		} else if(isOptitrackType1 || isOptitrackType2) {
+			// If all data files are OPTITRACK_TYPE_1 or 2
+			String optitrackType = isOptitrackType1 ? "OPTITRACK_TYPE_1" : "OPTITRACK_TYPE_2"; 
+			String cmd = experimentName + "." + subjectName + " = loadData('" + optitrackType + "', '" + dataFilesList + "')";
 			return cmd;
 		} else {
 			//String dataFilesList = (String)subject.getSessionProperty(ResourceProperties.DATA_FILES_LIST_QN);
 
 			Map<String, String> sessionsProperties = Analyse.getSessionsInformations(subject);
-			boolean paddWithLastValue = Activator.getDefault().getPreferenceStore().getBoolean(MathEnginePreferencesConstants.PADD_WITH_LAST_VALUE_RATHER_THAN_ZERO);
-			sessionsProperties.put(MathEnginePreferencesConstants.PADD_WITH_LAST_VALUE_RATHER_THAN_ZERO, String.valueOf(paddWithLastValue));
 			
 			Set<String> keys = sessionsProperties.keySet();
 			Collection<String> values = sessionsProperties.values();

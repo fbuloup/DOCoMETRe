@@ -59,6 +59,7 @@ import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
+import fr.univamu.ism.docometre.preferences.MathEnginePreferencesConstants;
 
 public final class Analyse {
 
@@ -87,6 +88,8 @@ public final class Analyse {
 		IResource[] members = resource.members();
 		for (IResource member : members) {
 			if(ResourceType.isADWDataFile(member) || ResourceType.isSamples(member) || ResourceType.isOptitrack_Type_1(member) || ResourceType.isColumnDataFile(member)) {
+				dataFilesList.add(member.getLocation().toOSString());
+			} else if(ResourceType.isOptitrack_Type_2(member)) {
 				dataFilesList.add(member.getLocation().toOSString());
 			}
 			if(ResourceType.isSession(member) || ResourceType.isTrial(member)) getData((IContainer)member, dataFilesList);
@@ -160,6 +163,8 @@ public final class Analyse {
 			}
 			values.put("TOTAL_TRIALS_NUMBER", String.valueOf(baseTrialsNumber));
 			values.put("MAXIMUM_SAMPLES", String.valueOf(maxSamples));
+			boolean paddWithLastValue = Activator.getDefault().getPreferenceStore().getBoolean(MathEnginePreferencesConstants.PADD_WITH_LAST_VALUE_RATHER_THAN_ZERO);
+			values.put(MathEnginePreferencesConstants.PADD_WITH_LAST_VALUE_RATHER_THAN_ZERO, String.valueOf(paddWithLastValue));
 		} catch (CoreException e) {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
@@ -183,7 +188,7 @@ public final class Analyse {
 		return response;
 	}
 	
-	public static boolean isOptitrack(String[] dataFiles, IContainer subject) {
+	public static boolean isOptitrack_Type_1(String[] dataFiles, IContainer subject) {
 		boolean response = dataFiles.length > 0;
 		for (String dataFile : dataFiles) {
 			if(Platform.getOS().equals(Platform.OS_WIN32)) {
@@ -194,6 +199,21 @@ public final class Analyse {
 			} else dataFile = dataFile.replaceAll(subject.getLocation().toOSString(), "");
 			IResource resource = subject.findMember(dataFile);
 			response = response && ResourceType.isOptitrack_Type_1(resource);
+		}
+		return response;
+	}
+	
+	public static boolean isOptitrack_Type_2(String[] dataFiles, IContainer subject) {
+		boolean response = dataFiles.length > 0;
+		for (String dataFile : dataFiles) {
+			if(Platform.getOS().equals(Platform.OS_WIN32)) {
+				dataFile = dataFile.replaceAll("\\\\", "/");
+				String path = subject.getLocation().toPortableString();
+				dataFile = dataFile.replaceAll(path, "");
+				dataFile  = dataFile.replaceAll("/", "\\\\");
+			} else dataFile = dataFile.replaceAll(subject.getLocation().toOSString(), "");
+			IResource resource = subject.findMember(dataFile);
+			response = response && ResourceType.isOptitrack_Type_2(resource);
 		}
 		return response;
 	}

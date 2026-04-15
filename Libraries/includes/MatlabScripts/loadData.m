@@ -28,6 +28,9 @@ switch experimentType
     	
     case 'OPTITRACK_TYPE_1'
     	subject = loadDataOptitrackType1(dataFilesList);
+    	
+    case 'OPTITRACK_TYPE_2'
+    	subject = loadDataOptitrackType2(dataFilesList);
         
     case 'COLUMN_DATA_FILE'
         subject = loadDataColumnFile(dataFilesList);

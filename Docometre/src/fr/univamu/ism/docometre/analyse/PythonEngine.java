@@ -258,16 +258,14 @@ public class PythonEngine implements MathEngine {
 			} else {
 				String loadName = getFullPath(subject);
 				String dataFilesList = Analyse.getDataFiles(subject);
-				//String dataFilesList = (String)subject.getSessionProperty(ResourceProperties.DATA_FILES_LIST_QN);
-				boolean isOptitrack = Analyse.isOptitrack(dataFilesList.split(";"), (IContainer) subject);
-				if(isOptitrack) {
-					// If all data files are OPTITRACK_TYPE_1
-					pythonController.getPythonEntryPoint().loadData("OPTITRACK_TYPE_1", loadName, dataFilesList, null);
+				Map<String, String> sessionsProperties = Analyse.getSessionsInformations(subject);
+				boolean isOptitrackType1 = Analyse.isOptitrack_Type_1(dataFilesList.split(";"), (IContainer) subject);
+				boolean isOptitrackType2 = Analyse.isOptitrack_Type_2(dataFilesList.split(";"), (IContainer) subject);
+				if(isOptitrackType1 || isOptitrackType2) {
+					// If all data files are OPTITRACK_TYPE_1 or 2
+					String optitrackType = isOptitrackType1 ? "OPTITRACK_TYPE_1" : "OPTITRACK_TYPE_2"; 
+					pythonController.getPythonEntryPoint().loadData(optitrackType, loadName, dataFilesList, sessionsProperties);
 				} else {
-					Map<String, String> sessionsProperties = Analyse.getSessionsInformations(subject);
-					boolean paddWithLastValue = Activator.getDefault().getPreferenceStore().getBoolean(MathEnginePreferencesConstants.PADD_WITH_LAST_VALUE_RATHER_THAN_ZERO);
-					sessionsProperties.put(MathEnginePreferencesConstants.PADD_WITH_LAST_VALUE_RATHER_THAN_ZERO, String.valueOf(paddWithLastValue));
-					
 					pythonController.getPythonEntryPoint().loadData("DOCOMETRE", loadName, dataFilesList, sessionsProperties);
 				}
 				
@@ -735,37 +733,41 @@ public class PythonEngine implements MathEngine {
 
 	@Override
 	public String getCommandLineToLoadSubjectFromRawData(IResource subject) throws Exception {	
-		String loadName = getFullPath(subject);
-		String dataFilesList = Analyse.getDataFiles(subject);
-		//String dataFilesList = (String)subject.getSessionProperty(ResourceProperties.DATA_FILES_LIST_QN);
-		boolean isOptitrack = Analyse.isOptitrack(dataFilesList.split(";"), (IContainer) subject);
-		if(isOptitrack) {
-			// If all data files are OPTITRACK_TYPE_1
-			return "docometre.loadData(\"OPTITRACK_TYPE_1\", \"" + loadName + "\", r\"" + dataFilesList + "\", None);";
-		} else {
-			Map<String, String> sessionsProperties = Analyse.getSessionsInformations(subject);
-			String sessionsPropertiesString = sessionsProperties.toString().replaceAll("\\{", "{\"");
-			sessionsPropertiesString = sessionsPropertiesString.replaceAll("=", "\":");
-			sessionsPropertiesString = sessionsPropertiesString.replaceAll(", ", ",\"");
-			return "docometre.loadData(\"DOCOMETRE\", \"" + loadName + "\", r\"" + dataFilesList + "\", " + sessionsPropertiesString + ");\n";
-		}
+//		String loadName = getFullPath(subject);
+//		String dataFilesList = Analyse.getDataFiles(subject);
+//		//String dataFilesList = (String)subject.getSessionProperty(ResourceProperties.DATA_FILES_LIST_QN);
+//		boolean isOptitrackType1 = Analyse.isOptitrack_Type_1(dataFilesList.split(";"), (IContainer) subject);
+//		boolean isOptitrackType2 = Analyse.isOptitrack_Type_1(dataFilesList.split(";"), (IContainer) subject);
+//		if(isOptitrackType1 || isOptitrackType2) {
+//			// If all data files are OPTITRACK_TYPE_1
+//			String optitrackType = isOptitrackType1 ? "OPTITRACK_TYPE_1" : "OPTITRACK_TYPE_2"; 
+//			return "docometre.loadData(\"" + optitrackType + "\", \"" + loadName + "\", r\"" + dataFilesList + "\", None);";
+//		} else {
+//			Map<String, String> sessionsProperties = Analyse.getSessionsInformations(subject);
+//			String sessionsPropertiesString = sessionsProperties.toString().replaceAll("\\{", "{\"");
+//			sessionsPropertiesString = sessionsPropertiesString.replaceAll("=", "\":");
+//			sessionsPropertiesString = sessionsPropertiesString.replaceAll(", ", ",\"");
+//			return "docometre.loadData(\"DOCOMETRE\", \"" + loadName + "\", r\"" + dataFilesList + "\", " + sessionsPropertiesString + ");\n";
+//		}	
+		return "# Command line not used - Using Python entry point";
 	}
-
+//
 	@Override
 	public String getCommandLineToUnloadSubject(IResource resource) throws Exception {
-		if(!(ResourceType.isSubject(resource) || ResourceType.isExperiment(resource))) return "";
-		String prefixKey = "";
-		if(ResourceType.isSubject(resource)) {
-			String experimentName = resource.getFullPath().segment(0);
-			String subjectName = resource.getFullPath().segment(1);
-			prefixKey = experimentName + "\\." + subjectName + "\\.";
-			
-		}
-		if(ResourceType.isExperiment(resource)) {
-			String experimentName = resource.getFullPath().segment(0);
-			prefixKey = experimentName + "\\.";
-		}
-		return "docometre.unload(\"" + prefixKey + "\")";
+//		if(!(ResourceType.isSubject(resource) || ResourceType.isExperiment(resource))) return "";
+//		String prefixKey = "";
+//		if(ResourceType.isSubject(resource)) {
+//			String experimentName = resource.getFullPath().segment(0);
+//			String subjectName = resource.getFullPath().segment(1);
+//			prefixKey = experimentName + "\\." + subjectName + "\\.";
+//			
+//		}
+//		if(ResourceType.isExperiment(resource)) {
+//			String experimentName = resource.getFullPath().segment(0);
+//			prefixKey = experimentName + "\\.";
+//		}
+//		return "docometre.unload(\"" + prefixKey + "\")";
+		return "# Command line not used - Using Python entry point";
 	}
 
 }
