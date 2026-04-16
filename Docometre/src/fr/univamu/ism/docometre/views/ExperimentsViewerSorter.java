@@ -86,7 +86,7 @@ public class ExperimentsViewerSorter extends ViewerComparator {
 			IResource resource2 = (IResource)e2;
 			if(resource1 instanceof IProject && !((IProject) resource1).isOpen()) return super.compare(viewer, e1, e2);
 			if(resource2 instanceof IProject && !((IProject) resource2).isOpen()) return super.compare(viewer, e1, e2);
-			if(ResourceType.areResourcesSameType(resource1, resource2)) {
+			if(ResourceType.isTrial(resource1) && ResourceType.isTrial(resource2))	{			
 				if(resource1.getName().matches("^.*\\d+$") && resource2.getName().matches("^.*\\d+$")) {
 					long number = compare(resource1, resource2);
 					if(number > Integer.MAX_VALUE) number = Integer.MAX_VALUE;
