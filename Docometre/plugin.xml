@@ -3124,6 +3124,12 @@
                style="push"
                tooltip="%ExportDataCommand.tooltip">
          </command>
+         <command
+               commandId="MergeSubjectsCommand"
+               icon="icons/merge.png"
+               label="%MergeSubjects.label"
+               style="push">
+         </command>
          <separator
                name="Docometre.separator3"
                visible="true">
@@ -3481,6 +3487,11 @@
             defaultHandler="fr.univamu.ism.docometre.handlers.ExportToADWFileHandler"
             id="ExportToADWFile"
             name="ExportToADWFile">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.analyse.handlers.MergeSubjectsHandler"
+            id="MergeSubjectsCommand"
+            name="MergeSubjectsCommand">
       </command>
       
       

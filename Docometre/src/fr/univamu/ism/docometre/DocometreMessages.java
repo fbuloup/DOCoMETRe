@@ -1180,6 +1180,15 @@ public final class DocometreMessages extends NLS {
 	public static String ExportToADWJob_SubjectNotExported;
 	public static String ExportToADWJob_SubjectExported;
 	
+	// Merge subjects wizard
+	public static String MergeSubjectsErrorOccuredDialogTitle;
+	public static String MergeSubjectsErrorOccuredDialogMessage;
+	public static String MergeSubjectsWizardPageTitle;
+	public static String MergeSubjectsWizardPageDescription;
+	public static String MergeSubjectsFromLabel;
+	public static String MergeSubjectsToLabel;
+	public static String MergeSubjectsDialogTitle;
+	
 	static {
 		// load message values from bundle file
 		String bn = BUNDLE_NAME;

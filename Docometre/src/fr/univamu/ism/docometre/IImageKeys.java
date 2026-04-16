@@ -222,5 +222,8 @@ public interface IImageKeys {
 	public static final String RUN_IN_MAIN_THREAD_ICON = "icons/runInMainThread.png"; //$NON-NLS-1$
 	public static final String RUN_IN_MAIN_THREAD_ICON_2 = "icons/runInMainThread2.png"; //$NON-NLS-1$
 	
+	public static final String MERGE_ICON = "icons/merge.png"; //$NON-NLS-1$
+	public static final String MERGE_WIZARD = "icons/merge_wiz.png"; //$NON-NLS-1$
+	
 	
 }
