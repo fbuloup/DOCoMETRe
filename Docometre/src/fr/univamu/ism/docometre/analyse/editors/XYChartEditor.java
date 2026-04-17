@@ -760,7 +760,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		for (String key : keys) {
 			Channel[] channels = xyChartData.getXYChannels(key);
 			double[] xValues;
-			if(channels[0] instanceof TimeChannel) xValues = ((TimeChannel)channels[0]).getValues();
+			if(channels[0] instanceof TimeChannel) xValues = ((TimeChannel)channels[0]).getValues(trialNumber);
 			else xValues = MathEngineFactory.getMathEngine().getYValuesForSignal(channels[0], trialNumber);
 			double[] yValues = MathEngineFactory.getMathEngine().getYValuesForSignal(channels[1], trialNumber);
 			// 
