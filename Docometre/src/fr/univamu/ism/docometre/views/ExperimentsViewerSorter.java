@@ -86,24 +86,31 @@ public class ExperimentsViewerSorter extends ViewerComparator {
 			IResource resource2 = (IResource)e2;
 			if(resource1 instanceof IProject && !((IProject) resource1).isOpen()) return super.compare(viewer, e1, e2);
 			if(resource2 instanceof IProject && !((IProject) resource2).isOpen()) return super.compare(viewer, e1, e2);
-			if(ResourceType.isTrial(resource1) && ResourceType.isTrial(resource2))	{			
+			if(ResourceType.areResourcesSameType(resource1, resource2)) {
 				if(resource1.getName().matches("^.*\\d+$") && resource2.getName().matches("^.*\\d+$")) {
-					long number = compare(resource1, resource2);
-					if(number > Integer.MAX_VALUE) number = Integer.MAX_VALUE;
-					if(number < Integer.MIN_VALUE) number = Integer.MIN_VALUE;
-					return (int)number;
+					String prefix1 = resource1.getName().replaceAll("\\d+$", "");
+					String prefix2 = resource2.getName().replaceAll("\\d+$", "");
+					if(prefix1.equals(prefix2)) {
+						long number1 = Long.parseLong(resource1.getName().replaceAll(prefix1, ""));
+						long number2 = Long.parseLong(resource2.getName().replaceAll(prefix2, ""));
+						return (int) (number1 - number2);
+					}
+//					long number = compare(resource1, resource2);
+//					if(number > Integer.MAX_VALUE) number = Integer.MAX_VALUE;
+//					if(number < Integer.MIN_VALUE) number = Integer.MIN_VALUE;
+//					return (int)number;
 				}
 			}
 		}
 		return super.compare(viewer, e1, e2);
 	}
 	
-	private long compare(IResource resource1, IResource resource2) {
-		String prefix = resource1.getName().replaceAll("\\d+$", "");
-		long number1 = Long.parseLong(resource1.getName().replaceAll(prefix, ""));
-		prefix = resource2.getName().replaceAll("\\d+$", "");
-		long number2 = Long.parseLong(resource2.getName().replaceAll(prefix, ""));
-		return number1 - number2;
-	}
+//	private long compare(IResource resource1, IResource resource2) {
+//		String prefix = resource1.getName().replaceAll("\\d+$", "");
+//		long number1 = Long.parseLong(resource1.getName().replaceAll(prefix, ""));
+//		prefix = resource2.getName().replaceAll("\\d+$", "");
+//		long number2 = Long.parseLong(resource2.getName().replaceAll(prefix, ""));
+//		return number1 - number2;
+//	}
 
 }

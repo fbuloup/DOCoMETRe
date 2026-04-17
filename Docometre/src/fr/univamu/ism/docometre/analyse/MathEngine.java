@@ -126,6 +126,8 @@ public interface MathEngine {
 	
 	String getErrorMessages();
 	
+	void mergeSubject(String fromSubject, String toSubject);
+	
 	default int getMarkersGroupNumber(String markersGroupLabel, Channel signal) {
 		String[] labels = getMarkersGroupsLabels(signal);
 		return Arrays.binarySearch(labels, markersGroupLabel);

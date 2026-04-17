@@ -770,4 +770,9 @@ public class PythonEngine implements MathEngine {
 		return "# Command line not used - Using Python entry point";
 	}
 
+	@Override
+	public void mergeSubject(String fromSubject, String toSubject) {
+		Activator.logErrorMessage("Not yet available !");
+	}
+
 }

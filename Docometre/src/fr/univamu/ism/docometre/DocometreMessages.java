@@ -1188,6 +1188,14 @@ public final class DocometreMessages extends NLS {
 	public static String MergeSubjectsFromLabel;
 	public static String MergeSubjectsToLabel;
 	public static String MergeSubjectsDialogTitle;
+	public static String MergeSubjectsSelectionDescription;
+	public static String Merge;
+	public static String MergeIn;
+	public static String ImpossibleToMergeSubjectWithItself;
+	public static String AChannelWithThisNameAlreadyExist;
+	public static String ImpossibleToMerge;
+	public static String NbTrialsNotEquals;
+	public static String MergeDone;
 	
 	static {
 		// load message values from bundle file

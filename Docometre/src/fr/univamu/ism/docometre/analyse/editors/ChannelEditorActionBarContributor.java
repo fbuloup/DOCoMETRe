@@ -132,9 +132,8 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 			Set<Channel> signals = new HashSet<>();
 			for (String loadedSubject : loadedSubjects) {
 				IResource subject = ((IContainer)SelectedExprimentContributionItem.selectedExperiment).findMember(loadedSubject.split("\\.")[1]);
-				signals.addAll(Arrays.asList(MathEngineFactory.getMathEngine().getSignals(subject)));
+				if(subject != null) signals.addAll(Arrays.asList(MathEngineFactory.getMathEngine().getSignals(subject)));
 			}
-			
 			
 			ChannelsNumber channelsNumber = ChannelsNumber.ONE;
 			if(chartEditor instanceof XYChartEditor) {

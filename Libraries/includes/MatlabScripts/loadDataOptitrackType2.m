@@ -12,7 +12,7 @@ channelsNames = java.util.ArrayList();
 fid = fopen(files{1});
 line = fgetl(fid);
 tempValue = explode(line, ',');
-nbSamples = str2double(tempValue{15}));
+nbSamples = str2double(tempValue{15});
 sampleFrequency = str2double(tempValue{7});    
 fgetl(fid);
 fgetl(fid);        

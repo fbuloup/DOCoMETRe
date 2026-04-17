@@ -221,7 +221,7 @@ public final class MarkersManager extends MouseAdapter implements ICustomPaintLi
 						double[] values;
 						int baseFrontCut;
 						if(xSignal instanceof TimeChannel) {
-							values = ((TimeChannel)xSignal).getValues();
+							values = ((TimeChannel)xSignal).getValues(trialNumber);
 							baseFrontCut = MathEngineFactory.getMathEngine().getFrontCut(ySignal, trialNumber);
 						} else {
 							values = MathEngineFactory.getMathEngine().getYValuesForSignal(xSignal, trialNumber);

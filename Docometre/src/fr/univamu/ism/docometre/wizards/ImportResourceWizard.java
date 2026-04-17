@@ -531,6 +531,7 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 			while (matcher.find()) {
 				String subjectName = matcher.group();
 				String sessionName = fileName.substring(matcher.end());
+				if("".equals(sessionName)) sessionName = "Session1";
 				IResource newSubject = parentResource.findMember(subjectName);
 				if(newSubject == null) {
 					newSubject = parentResource.getFolder(new org.eclipse.core.runtime.Path(subjectName));

@@ -308,7 +308,6 @@ public final class MatlabEngine implements MathEngine {
 						MatlabEngine.this.loadFromSavedFile = !MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), DocometreMessages.LoadSubjectFromRawDataDialog_Title, message);
 					}
 				});
-				
 			}
 			
 			if(saveFile.exists() && MatlabEngine.this.loadFromSavedFile) {
@@ -1069,6 +1068,17 @@ public final class MatlabEngine implements MathEngine {
 			cmd = "clear " + experimentName + ";";
 		}
 		return cmd;
+	}
+
+	@Override
+	public void mergeSubject(String fromSubject, String toSubject) {
+		String code = "for fName = fieldnames(" + fromSubject + ")'\n";
+		code = code + "\tif(" + fromSubject  + ".(fName{1}).isSignal)\n";
+		code = code + "\t\t" + toSubject  + ".(fName{1}) = " + fromSubject + ".(fName{1});\n";
+		code = code + "\tend\n";
+		code = code + "end\n";
+		code = code + "clear fName;";
+		runScript(code, false);
 	}
 
 }
