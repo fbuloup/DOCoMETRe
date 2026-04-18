@@ -283,7 +283,7 @@ class DOCoMETRe(object):
 			channelsPrefix[p] = re.sub(":.*", "", channelsPrefix[p]).strip();
 			if(jvmMode): 
 				self.gateway.jvm.System.out.print("Channel prefix " + str(p) + " : ");
-				self.gateway.jvm.System.out.println(channelsPrefix[p]);
+				self.gateway.jvm.System.out.println(channelsPrefix[p].strip());
 		fid.readline();
 		fid.readline();
 		fid.readline();
@@ -295,7 +295,7 @@ class DOCoMETRe(object):
 			if tempValue2 != "Time (Seconds)" and tempValue2 != "Frame" and tempValue2 != "" :
 				channelNames.append(channelsPrefix[prefixIndex] + "_" + tempValue2.strip());
 				if(jvmMode): 
-					self.gateway.jvm.System.out.print("Add channel : ");
+					self.gateway.jvm.System.out.print("Add channel name : ");
 					self.gateway.jvm.System.out.println(channelsPrefix[prefixIndex] + "_" + tempValue2.strip());
 				prefixIndex+=1;
 		fid.close();
