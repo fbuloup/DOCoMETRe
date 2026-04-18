@@ -9,7 +9,9 @@
  <body>
  <h1>Optitrack CSV Data Files</h1>
 
-For now only Optitrack CSV Data Files with Markers are supported. It is called <b>Optitrack Type 1</b> in DOCoMETRe. 
+For now only Optitrack CSV Data Files with Markers are supported. Two kinds of data files are supported : <b>Optitrack Type 1</b> and <b>Optitrack Type 2</b>. 
+
+<h2>Optitrack Type 1</h2>
 Such a file <b>MUST</b> look like this example :
 
 <pre>
@@ -42,6 +44,31 @@ folders and <b>Optitrack type 1</b> type to all data files (S02_D_1.csv, S02_D_2
 check that data files are arranged like the image below. Check also that directories names shape "whateverSubjectXXwhateverSession" where XX is a number like 02 or 34
 (e.g. Paul01Cond1 or S01ND)
 <img src="image1.png" alt="Optitrack CSV files organization" style="width:380px;height:500px;margin-left:auto;margin-right:auto;display:block;margin-top:20px;">
+
+<h2>Optitrack Type 2</h2>
+Such a file <b>MUST</b> look like this example (with or without "Size" channel) :
+<pre>
+Format Version,1.25,Take Name,Test_sujet1_001,Take Notes,,Capture Frame Rate,100.000000,Export Frame Rate,100.000000,Capture Start Time,2026-04-13 04.45.36.235 ,Capture Start Frame,99129,Total Frames in Take,1091,Total Exported Frames,1091,Rotation Type,XYZ,Length Units,Centimeters,Coordinate Space,Global
+
+,Type,Marker,Marker,Marker,Marker
+,Name,DOIGT:DOIGT,DOIGT:DOIGT,DOIGT:DOIGT,DOIGT:DOIGT
+,ID,"59B638B4374911F1:B3966A1CBBC3A8B6","59B638B4374911F1:B3966A1CBBC3A8B6","59B638B4374911F1:B3966A1CBBC3A8B6","59B638B4374911F1:B3966A1CBBC3A8B6"
+,Parent,,,,
+,,Position,Position,Position,Position
+Frame,Time (Seconds),X,Y,Z,Size
+0,0.000000,-60.569691,122.224762,29.356190,0.015354
+1,0.010000,-60.577072,122.234558,29.346004,0.015354
+2,0.020000,-60.580437,122.245285,29.332850,0.015354
+3,0.030000,-60.585480,122.257248,29.324480,0.015354
+4,0.040000,-60.591000,122.270027,29.323235,0.015354
+5,0.050000,-60.599339,122.270096,29.321503,0.015354
+6,0.060000,-60.615986,122.267891,29.312218,0.015354
+7,0.070000,-60.623222,122.264465,29.300365,0.015354
+8,0.080000,-60.632317,122.258034,29.292807,0.015354
+9,0.090000,-60.633820,122.247711,29.288509,0.015354
+10,0.100000,-60.638439,122.242950,29.285118,0.015354
+...
+</pre>
 
  </body>
  </html>
