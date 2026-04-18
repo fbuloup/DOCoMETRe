@@ -284,8 +284,11 @@ class DOCoMETRe(object):
 		tempValue = line.split(",");
 		for p in range(0, len(tempValue)):
 			tempValue2 = tempValue[p]
-			if tempValue2 != 'Time (Seconds)' and tempValue2 != 'Frame' and tempValue2 != '' :
-				channelNames.append(tempValue2);
+			if tempValue2 != "Time (Seconds)" and tempValue2 != "Frame" and tempValue2 != "" :
+				channelNames.append(tempValue2.strip("\n"));
+				if(jvmMode): 
+					self.gateway.jvm.System.out.print("Add channel : ");
+					self.gateway.jvm.System.out.println(tempValue2);
 		fid.close();
 		
 		for trialNumber in range(1, nbTrials+1):
@@ -315,6 +318,10 @@ class DOCoMETRe(object):
 				values = self.experiments[loadName + "." + channelName + ".Values"];
 				values[trialNumber - 1][0:sizeData] = data[:, numChannel];
 				numChannel+=1;
+				if(jvmMode): 
+					self.gateway.jvm.System.out.print("Create channel : ");
+					self.gateway.jvm.System.out.println(channelName);
+						
 			
 		self.experiments[loadName + ".Category1.Criteria"] = "Session1";
 		self.experiments[loadName + ".Category1.TrialsList"] = numpy.arange(nbTrials) + 1;
