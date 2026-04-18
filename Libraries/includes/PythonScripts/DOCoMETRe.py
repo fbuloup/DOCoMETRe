@@ -276,19 +276,28 @@ class DOCoMETRe(object):
 		sampleFrequency = float(tempValue[7]);
 		fid.readline();
 		fid.readline();
-		fid.readline();
+		line = fid.readline();
+		line = re.sub("^,Name,", "", line);
+		channelsPrefix = line.split(",");
+		for p in range(0, len(channelsPrefix)):
+			channelsPrefix[p] = re.sub(":.*", "", channelsPrefix[p]).strip();
+			if(jvmMode): 
+				self.gateway.jvm.System.out.print("Channel prefix " + str(p) + " : ");
+				self.gateway.jvm.System.out.println(channelsPrefix[p]);
 		fid.readline();
 		fid.readline();
 		fid.readline();
 		line = fid.readline();
 		tempValue = line.split(",");
+		prefixIndex = 0;
 		for p in range(0, len(tempValue)):
 			tempValue2 = tempValue[p]
 			if tempValue2 != "Time (Seconds)" and tempValue2 != "Frame" and tempValue2 != "" :
-				channelNames.append(tempValue2.strip("\n"));
+				channelNames.append(channelsPrefix[prefixIndex] + "_" + tempValue2.strip());
 				if(jvmMode): 
 					self.gateway.jvm.System.out.print("Add channel : ");
-					self.gateway.jvm.System.out.println(tempValue2);
+					self.gateway.jvm.System.out.println(channelsPrefix[prefixIndex] + "_" + tempValue2.strip());
+				prefixIndex+=1;
 		fid.close();
 		
 		for trialNumber in range(1, nbTrials+1):
