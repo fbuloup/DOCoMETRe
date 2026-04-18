@@ -772,7 +772,23 @@ public class PythonEngine implements MathEngine {
 
 	@Override
 	public void mergeSubject(String fromSubject, String toSubject) {
-		Activator.logErrorMessage("Not yet available !");
+		String code = "";
+		IResource subject = ResourcesPlugin.getWorkspace().getRoot().findMember(fromSubject.replaceAll("\\.", "/"));
+		Channel[] signals = MathEngineFactory.getMathEngine().getSignals(subject);
+		for (Channel signal : signals) {
+			String toKey = toSubject + "." + signal.getName();
+			code = code + "D['" + toKey + ".Values'] = numpy.copy(D['" + signal.getFullName() + ".Values'])\n";
+			code = code + "D['" + toKey + ".NbSamples'] = numpy.copy(D['" + signal.getFullName() + ".NbSamples'])\n";
+			code = code + "D['" + toKey + ".FrontCut'] = numpy.copy(D['" + signal.getFullName() + ".FrontCut'])\n";
+			code = code + "D['" + toKey + ".EndCut'] = numpy.copy(D['" + signal.getFullName() + ".EndCut'])\n";
+			code = code + "D['" + toKey + ".isSignal'] = 1\n";
+			code = code + "D['" + toKey + ".isCategory'] = 0\n";
+			code = code + "D['" + toKey + ".isEvent'] = 0\n";
+			code = code + "D['" + toKey + ".NbFeatures'] = 0\n";
+			code = code + "D['" + toKey + ".NbMarkersGroups'] = 0\n";
+			code = code + "D['" + toKey + ".SampleFrequency'] = numpy.copy(D['" + signal.getFullName() + ".SampleFrequency'])\n";
+		}
+		runScript(code, false);
 	}
 
 }
