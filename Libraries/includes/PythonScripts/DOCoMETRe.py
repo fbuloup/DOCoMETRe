@@ -33,19 +33,21 @@ class DOCoMETRe(object):
 			self.loadDataDocometre(loadName, dataFilesList, sessionsProperties);
 		elif(dataType == "OPTITRACK_TYPE_1"):
 			self.loadDataOptitrackType1(loadName, dataFilesList);
+		elif(dataType == "OPTITRACK_TYPE_2"):
+			self.loadDataOptitrackType2(loadName, dataFilesList);
 		else:
-			if(jvmMode): self.gateway.jvm.System.out.println("Data files format not hanled with Python");
+			if(jvmMode): self.gateway.jvm.System.out.println("Data files format not handeled with Python");
 
 	def loadDataDocometre(self, loadName, dataFilesList, sessionsProperties):
 		if(jvmMode): self.gateway.jvm.System.out.println("In loadDataDocometre");
 		if ".sau" in dataFilesList:
-			if(jvmMode): self.gateway.jvm.System.out.println("For now, sau files are not handled with Python");
+			if(jvmMode): self.gateway.jvm.System.out.println("For now, sau files are not handeled with Python");
 		elif ".samples" in dataFilesList:
 			self.loadDataDocometreSAMPLES(loadName, dataFilesList, sessionsProperties);
 		elif ".adw" in dataFilesList:
 			self.loadDataDocometreADW(loadName, dataFilesList);
 		else:
-			if(jvmMode): self.gateway.jvm.System.out.println("Data files format not handled with Python");
+			if(jvmMode): self.gateway.jvm.System.out.println("Data files format not handeled with Python");
 	
 	def loadDataDocometreADW(self, loadName, dataFilesList):
 		if(jvmMode):
@@ -253,7 +255,72 @@ class DOCoMETRe(object):
 			self.experiments[loadName + ".Category" + str(n) + ".isEvent"] = "0";
 			n+=1;
 			
+	def loadDataOptitrackType2(self, loadName, dataFilesAbsolutePath):
+		if(jvmMode): self.gateway.jvm.System.out.println("In loadDataOptitrackType2");
+		
+		createdCategories = dict();
+		createdChannelsNames = list();
+		channelNames = list();
+		nbSamples = 0;
+		firstTime = True;
+		
+		files = dataFilesAbsolutePath.split(";");
+		nbFiles = len(files);
+		nbTrials = nbFiles;
+		
+		# Get nb Samples, sample frequency and signals names on first file     
+		fid = open(files[0], "r");
+		line = fid.readline();
+		tempValue = line.split(",");
+		nbSamples = int(tempValue[15]);
+		sampleFrequency = float(tempValue[7]);
+		fid.readline();
+		fid.readline();
+		fid.readline();
+		fid.readline();
+		fid.readline();
+		fid.readline();
+		line = fid.readline();
+		tempValue = line.split(",");
+		for p in range(0, len(tempValue)):
+			tempValue2 = tempValue[p]
+			if tempValue2 != 'Time (Seconds)' and tempValue2 != 'Frame' and tempValue2 != '' :
+				channelNames.append(tempValue2);
+		fid.close();
+		
+		for trialNumber in range(1, nbTrials+1):
+			data = numpy.loadtxt(files[trialNumber-1], delimiter=',', skiprows=8);
+			data = numpy.delete(data, [0, 1], axis = 1);
 			
+			numChannel = 0;
+			for channelName in channelNames:
+				if channelName not in createdChannelsNames:
+					self.experiments[loadName + "." + channelName + "." + "SampleFrequency"] = sampleFrequency;
+					self.experiments[loadName + "." + channelName + "." + "isSignal"] = "1";
+					self.experiments[loadName + "." + channelName + "." + "isCategory"] = "0";
+					self.experiments[loadName + "." + channelName + "." + "isEvent"] = "0";
+					self.experiments[loadName + "." + channelName + "." + "NbFeatures"] = "0";
+					self.experiments[loadName + "." + channelName + "." + "NbMarkersGroups"] = "0";
+					self.experiments[loadName + "." + channelName + "." + "Values"] = numpy.zeros((nbTrials, nbSamples));
+					self.experiments[loadName + "." + channelName + "." + "NbSamples"] = numpy.zeros(nbTrials);
+					self.experiments[loadName + "." + channelName + "." + "FrontCut"] = numpy.zeros(nbTrials);
+					self.experiments[loadName + "." + channelName + "." + "EndCut"] = numpy.zeros(nbTrials);
+					createdChannelsNames.append(channelName);
+			
+				sizeData = len(data[:,numChannel]);
+				key = loadName + "." + channelName + ".NbSamples";
+				self.experiments[key][trialNumber - 1] = sizeData;
+				key = loadName + "." + channelName + ".EndCut";
+				self.experiments[key][trialNumber - 1] = sizeData;
+				values = self.experiments[loadName + "." + channelName + ".Values"];
+				values[trialNumber - 1][0:sizeData] = data[:, numChannel];
+				numChannel+=1;
+			
+		self.experiments[loadName + ".Category1.Criteria"] = "Session1";
+		self.experiments[loadName + ".Category1.TrialsList"] = numpy.arange(nbTrials) + 1;
+		self.experiments[loadName + ".Category1.isSignal"] = "0";
+		self.experiments[loadName + ".Category1.isCategory"] = "1";
+		self.experiments[loadName + ".Category1.isEvent"] = "0";		
 				
 	def loadDataDocometreSAMPLES(self, loadName, dataFilesList, sessionsProperties):
 		if(jvmMode): self.gateway.jvm.System.out.println("In loadDataDocometreSAMPLES");
