@@ -81,16 +81,28 @@ if nbTrials > 0
             end
             trials{currentNumTrial,1} = signals;
             
-            
-        end                     
-        
-%         percentComplete = percentComplete + 1;
-%         percentCompleteString = int2str(100*percentComplete/maxPercent);        
-%         evalin('base',['percentComplete = ',percentCompleteString,';']);
-%         
-%         if currentNumTrial == stoptrial 
-%             break
-%         end        
+        else
+            signals = cell(nbChannels,1);                                    
+                        
+            for currentNumChannel = 1:nbChannels
+                signals{currentNumChannel,1}.isSignal = 1;   
+                signals{currentNumChannel,1}.isCategory = 0;   
+                signals{currentNumChannel,1}.isEvent = 0;       
+                signals{currentNumChannel,1}.NbMarkersGroups = 0;
+                signals{currentNumChannel,1}.NbFeatures = 0;
+                signals{currentNumChannel,1}.SampleFrequency = 0;                    
+                signalName = char(channelsNames{currentNumChannel,1});
+                fullSignalName = [ 'tempSubject.' signalName ];
+                signals{currentNumChannel,1}.Values = [0];%fread(fp,nbData,'float32');                  
+                signals{currentNumChannel,1}.FrontCut = 0;                    
+                signals{currentNumChannel,1}.NbSamples = 0;
+                signals{currentNumChannel,1}.EndCut = 0;   
+                signals{currentNumChannel,1}.FullSignalName = fullSignalName;      
+                %signals{currentNumChannel,1}.Category = {fullcondname{currentNumTrial}};
+            end
+
+            trials{currentNumTrial,1} = signals;
+        end                        
         
     end
     
@@ -137,7 +149,6 @@ if nbTrials > 0
                     eval(['currentValuesSizes = size(', fullSignalName,'.Values);']);
                     currentValuesSize = currentValuesSizes(2);
                     nbSamplesString = int2str(currentValuesSize);
-                    eval(['currentValuesSizes = size(', fullSignalName,'.Values);']);
                 end                
                 %If there are missed trials : trials without data for this signal, add...
                 trialsSize = currentValuesSizes(1);
@@ -159,18 +170,20 @@ if nbTrials > 0
                 
                 %If size of new trial is bigger than all others, increase matrix Values
                 %padding with zeros (or last values within comments)
-                if(currentValuesSize < signal.NbSamples)
+                if(currentValuesSize < width(signal.Values))
                     currentNumTrialString = int2str(currentNumTrial - 1);
-                    increaseByString = int2str(signal.NbSamples - currentValuesSize);
+                    increaseByString = int2str(width(signal.Values) - currentValuesSize);
                     expression = [fullSignalName,'.Values = [', fullSignalName ,'.Values, zeros(',currentNumTrialString,',',increaseByString,')];'];
                     eval(expression);                                                                                                                                       
                 end
                 
-                %If size of new trial is smaller than all others, increase vector values 
-                %pading withi zeros (or last value whithin comments)
-                if(currentValuesSize > signal.NbSamples)
-	                signal.Values = [signal.Values zeros(1,currentValuesSize - signal.NbSamples)];
-                    signal.EndCut = currentValuesSize;
+                % If size of new trial is smaller than all others, increase vector values 
+                % padding with zeros (or last value whithin comments)
+                if(currentValuesSize > width(signal.Values))
+	                signal.Values = [signal.Values zeros(1,currentValuesSize - width(signal.Values))];
+                    if signal.NbSamples > 0
+                        signal.EndCut = currentValuesSize;
+                    end
                 end
                 
                 eval([fullSignalName,'.Values = [', fullSignalName ,'.Values;  signal.Values];']);               
@@ -178,6 +191,9 @@ if nbTrials > 0
                 eval([fullSignalName,'.EndCut = [', fullSignalName ,'.EndCut;  signal.EndCut];']);                
                 eval([fullSignalName,'.NbSamples = [', fullSignalName ,'.NbSamples;  signal.NbSamples];']);
                 
+            end
+            if signal.SampleFrequency ~= 0
+                eval([fullSignalName,'.SampleFrequency = signal.SampleFrequency;']);
             end
             
 %             if currentNumTrial == 1            
