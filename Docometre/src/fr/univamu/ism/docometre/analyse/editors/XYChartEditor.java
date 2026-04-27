@@ -916,7 +916,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 
 	@Override
 	public void redraw() {
-		chart.redraw();
+		if(chart != null && !chart.isDisposed()) chart.redraw();
 	}
 
 	@Override
