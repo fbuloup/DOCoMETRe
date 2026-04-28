@@ -127,7 +127,7 @@ public class MathEngineCommandView extends ViewPart implements IDocumentListener
     };
 
 	public MathEngineCommandView() {
-		cmdsArrayList.add("");
+		
 	}
 
 	@Override
@@ -149,9 +149,10 @@ public class MathEngineCommandView extends ViewPart implements IDocumentListener
 					sendCommandHandler();
 				}
 				if(e.keyCode == SWT.ARROW_DOWN || e.keyCode == SWT.ARROW_UP) {
-					if(e.keyCode == SWT.ARROW_UP) cmdIndex = (cmdIndex < cmdsArrayList.size()) ? cmdIndex + 1 : cmdIndex;	
-					if(e.keyCode == SWT.ARROW_DOWN) cmdIndex = (cmdIndex > 1) ? cmdIndex - 1 : 1;
-					String cmd = cmdsArrayList.get(cmdIndex-1);
+					if(e.keyCode == SWT.ARROW_DOWN) cmdIndex = (cmdIndex < cmdsArrayList.size()) ? cmdIndex + 1 : cmdIndex;	
+					if(e.keyCode == SWT.ARROW_UP) cmdIndex = (cmdIndex > 0) ? cmdIndex - 1 : 0;
+					String cmd = "";
+					if(cmdIndex < cmdsArrayList.size()) cmd = cmdsArrayList.get(cmdIndex);
 					commandText.setText(cmd);
 					commandText.setSelection(cmd.length());
 					e.doit = false;
@@ -187,8 +188,8 @@ public class MathEngineCommandView extends ViewPart implements IDocumentListener
 				String cmd = commandText.getText();
 				String response = mathEngine.evaluate(cmd);
 				messagesViewer.getTextWidget().append(response);
-				messagesViewer.getTextWidget().append("\n");
-				messagesViewer.getTextWidget().append("\n");
+//				messagesViewer.getTextWidget().append("\n");
+//				messagesViewer.getTextWidget().append("\n");
 				commandText.setText("");
 				cmdsArrayList.add(cmd);
 				cmdIndex = cmdsArrayList.size();
