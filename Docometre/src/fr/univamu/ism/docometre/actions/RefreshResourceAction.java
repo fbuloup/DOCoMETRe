@@ -40,8 +40,15 @@
  *  - Frank Buloup - frank.buloup@univ-amu.fr - initial API and implementation [25/03/2020]
  ******************************************************************************/
 package fr.univamu.ism.docometre.actions;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -66,6 +73,7 @@ import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
 import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
 import fr.univamu.ism.docometre.analyse.views.FunctionsView;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
+import fr.univamu.ism.docometre.dacqsystems.DocometreBuilder;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 
 
@@ -91,6 +99,13 @@ public class RefreshResourceAction extends Action implements ISelectionListener,
 				
 				@Override
 				public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+					try {
+						boolean refresh  = selectedResources.length == 1 ? selectedResources[0] == ResourcesPlugin.getWorkspace().getRoot() : selectedResources.length == 0; 
+						if(refresh) refreshProjects();
+					} catch (IOException | CoreException e) {
+						Activator.getLogErrorMessageWithCause(e);
+						e.printStackTrace();
+					}
 					for (IResource resource : selectedResources) {
 						try {
 							resource.refreshLocal(IResource.DEPTH_INFINITE, monitor);
@@ -156,6 +171,33 @@ public class RefreshResourceAction extends Action implements ISelectionListener,
 	public void dispose() {
 		window.getSelectionService().removeSelectionListener(this);
 	}
+	
+	private void refreshProjects() throws IOException, CoreException {
+		List<IProject> existingExperiments = Arrays.asList(ResourcesPlugin.getWorkspace().getRoot().getProjects());
+		File[] existingFolders = new File(ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile().getCanonicalPath()).listFiles(File::isDirectory);
+		ArrayList<File> experimentsToAdd = new ArrayList<File>();
+		for (File folder : existingFolders) {
+			boolean isExperiment = new File(folder, IProjectDescription.DESCRIPTION_FILE_NAME).exists();
+			boolean alreadyExists = alreadyExists(folder, existingExperiments);
+			if(isExperiment && !alreadyExists) {
+				experimentsToAdd.add(folder);
+			};
+		}
+		for (File experimentToAdd : experimentsToAdd) {
+			IProject experiment = ResourcesPlugin.getWorkspace().getRoot().getProject(experimentToAdd.getName());
+			experiment.create(null);
+			experiment.open(null);
+			DocometreBuilder.addProject(experiment);
+			ResourceProperties.setTypePersistentProperty(experiment, ResourceType.EXPERIMENT.toString());
+		}
+		
+	}
 
+	private boolean alreadyExists(File folder, List<IProject> existingExperiments) {
+		for (IProject experiment : existingExperiments) {
+			if(experiment.getName().equals(folder.getName())) return true;
+		}
+		return false;
+	}
 
 }

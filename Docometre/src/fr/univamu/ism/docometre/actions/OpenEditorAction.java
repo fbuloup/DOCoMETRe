@@ -45,6 +45,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -111,6 +112,7 @@ public class OpenEditorAction extends Action implements ISelectionListener, IWor
 					system = ResourceProperties.getSystemPersistentProperty(resource);
 					if(Activator.ADWIN_SYSTEM.equals(system)) editorID =  ADWinDACQConfigurationEditor.ID;
 					if(Activator.ARDUINO_UNO_SYSTEM.equals(system)) editorID =  ArduinoUnoDACQConfigurationEditor.ID;
+					if(system == null) Activator.logWarningMessage(DocometreMessages.OpenAction_ImpossibleToLoadDacqConfWhenNoAssociatedSystem);
 				}
 				
 				if(ResourceType.isProcess(resource)) {
@@ -125,7 +127,36 @@ public class OpenEditorAction extends Action implements ISelectionListener, IWor
 					} else Activator.logWarningMessage(DocometreMessages.OpenAction_ImpossibleToLoadProcessWhenNoAssociatedDAQ); 
 				}
 				
-				if(ResourceType.isLog(resource)) openEditor(resource, DiaryEditor.ID);
+				if(ResourceType.isLog(resource)) {
+					system = ResourceProperties.getSystemPersistentProperty(resource);
+					if(system == null) {
+						if(resource.getParent() instanceof IProject) {
+							String processName = resource.getName().split("_")[0];
+							IResource[] processes = ResourceProperties.getAllTypedResources(ResourceType.PROCESS, resource.getParent(), null);
+							for (IResource process : processes) {
+								if(process.getName().replaceAll(Activator.processFileExtension, "").endsWith(processName)) {
+									IResource dacq = ResourceProperties.getAssociatedDACQConfiguration(process);
+									if(dacq != null) {
+										system = ResourceProperties.getSystemPersistentProperty(dacq);
+										ResourceProperties.setSystemPersistentProperty(resource, system);
+										break;
+									}
+								}
+							}
+						} else {
+							IResource process = ResourceProperties.getAssociatedProcess(resource.getParent());
+							if(process != null) {
+								IResource dacq = ResourceProperties.getAssociatedDACQConfiguration(process);
+								if(dacq != null) {
+									system = ResourceProperties.getSystemPersistentProperty(dacq);
+									ResourceProperties.setSystemPersistentProperty(resource, system);
+								}
+							}
+						}
+					}
+					if(system != null) openEditor(resource, DiaryEditor.ID);
+					else Activator.logWarningMessage(DocometreMessages.OpenAction_ImpossibleToLoadDiaryWhenNoAssociatedSystem); 
+				}
 				
 				if(ResourceType.isParameters(resource)) openEditor(resource, ParametersEditor.ID);
 				

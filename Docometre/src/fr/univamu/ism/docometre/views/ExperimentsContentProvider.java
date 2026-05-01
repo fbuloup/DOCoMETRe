@@ -43,6 +43,8 @@ package fr.univamu.ism.docometre.views;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IProject;
@@ -53,6 +55,7 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
 import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 
@@ -145,6 +148,16 @@ public class ExperimentsContentProvider implements ITreeContentProvider {
 					}
 					if(resource.getName().endsWith(Activator.customerFunctionFileExtension)) {
 						ResourceProperties.setTypePersistentProperty(resource, ResourceType.CUSTOMER_FUNCTION.toString());
+					}
+				} else {
+					Pattern pattern = Pattern.compile("^" + DocometreMessages.Trial + "[1-9]\\d*(:[1-9]\\d*)?$");
+					Matcher matcher = pattern.matcher(resource.getName());
+					if(matcher.matches()) {
+						ResourceProperties.setTypePersistentProperty(resource, ResourceType.TRIAL.toString());
+						IResource parentResource = resource.getParent();
+						if(ResourceType.isAnyTest(parentResource)) 
+							ResourceProperties.setTypePersistentProperty(parentResource, ResourceType.SESSION.toString());
+						
 					}
 				}
 				

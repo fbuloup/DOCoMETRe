@@ -58,6 +58,7 @@ public final class DocometreMessages extends NLS {
 	public static String UnableDeleteLockerFile;
 	public static String UnableCreateLockerFile;
 	public static String UnableCreateMetadataFolder;
+	public static String UnableToSetWorkspaceLocation;
 	public static String TimedOut;
 
 	/*Experiment View*/
@@ -144,6 +145,8 @@ public final class DocometreMessages extends NLS {
 	public static String OpenWithSystemEditorAction_Text;
 	public static String SetDAQConfigurationAsDefaultAction_Text;
 	public static String OpenAction_ImpossibleToLoadProcessWhenNoAssociatedDAQ;
+	public static String OpenAction_ImpossibleToLoadDacqConfWhenNoAssociatedSystem;
+	public static String OpenAction_ImpossibleToLoadDiaryWhenNoAssociatedSystem;
 	public static String AssociateWithAction_Text;
 	public static String CollapseAllAction_Text;
 	public static String LinkWithEditorAction_Text;

@@ -172,7 +172,10 @@ public class DocometreApplication implements IApplication {
 		instanceLocation.release();
 		File workspaceFile = new File(workspace);
 		URL workspaceURL = workspaceFile.toURI().toURL();
-		instanceLocation.set(workspaceURL, true);
+		if(!instanceLocation.set(workspaceURL, true)) {
+			MessageDialog.openError(display.getActiveShell(), DocometreMessages.Error,  DocometreMessages.UnableToSetWorkspaceLocation);
+			return EXIT_ERROR;
+		}
 		WORKSPACE_PATH = workspace;
 		try {
 			int returnCode = PlatformUI.createAndRunWorkbench(display, new ApplicationWorkbenchAdvisor());

@@ -213,9 +213,13 @@ public class DiaryEditor extends EditorPart implements PartNameRefresher {
 			
 			if(system == null) {
 				IResource process = ResourceProperties.getAssociatedProcess(diary.getParent());
-				IResource dacq = ResourceProperties.getAssociatedDACQConfiguration(process);
-				system = ResourceProperties.getSystemPersistentProperty(dacq);
-				ResourceProperties.setSystemPersistentProperty(diary, system);
+				if(process != null) {
+					IResource dacq = ResourceProperties.getAssociatedDACQConfiguration(process);
+					if(dacq != null) {
+						system = ResourceProperties.getSystemPersistentProperty(dacq);
+						ResourceProperties.setSystemPersistentProperty(diary, system);
+					}
+				}
 			}
 			
 			if(Activator.ADWIN_SYSTEM.equals(system)) {

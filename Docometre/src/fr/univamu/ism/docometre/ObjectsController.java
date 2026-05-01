@@ -116,6 +116,7 @@ public class ObjectsController {
 	public static Object getDACQConfiguration(Object process) {
 		IResource processResource = ObjectsController.getResourceForObject(process);
 		String fullPath = ResourceProperties.getAssociatedDACQConfigurationProperty((IFile) processResource);
+		if(fullPath == null) return null;
 		IFile daqConfigurationFile = ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(fullPath)) ;
 		Object dacqConfiguration = null;
 		if(daqConfigurationFile.exists()) {
