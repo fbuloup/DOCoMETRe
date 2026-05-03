@@ -55,7 +55,6 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.Dialog;
@@ -294,19 +293,14 @@ public class DataEditor extends EditorPart implements PartNameRefresher, CursorM
 				
 			} else if(ResourceType.isProcessTest(container)) {
 				// If this container is a process test, retrieve process file
-				try {
-					String processFilePath = container.getPersistentProperty(ResourceProperties.ASSOCIATED_PROCESS_FILE_QN);
-					String rootLocation = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();
-					if(Platform.getOS().equals(Platform.OS_WIN32)) {
-						processFilePath = processFilePath.replaceAll("\\\\", "/");
-						rootLocation = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString().replaceAll("\\\\", "/");
-					}
-					processFilePath = processFilePath.replaceFirst(rootLocation, "");
-					processFile = ResourcesPlugin.getWorkspace().getRoot().findMember(processFilePath);
-				} catch (CoreException e1) {
-					Activator.logErrorMessageWithCause(e1);
-					e1.printStackTrace();
+				String processFilePath = ResourceProperties.getAssociatedProcessProperty(container);
+				String rootLocation = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();
+				if(Platform.getOS().equals(Platform.OS_WIN32)) {
+					processFilePath = processFilePath.replaceAll("\\\\", "/");
+					rootLocation = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString().replaceAll("\\\\", "/");
 				}
+				processFilePath = processFilePath.replaceFirst(rootLocation, "");
+				processFile = ResourcesPlugin.getWorkspace().getRoot().findMember(processFilePath);
 			}
 			
 			double sf = -1;

@@ -44,6 +44,7 @@ package fr.univamu.ism.docometre;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Properties;
 
 import org.eclipse.core.resources.IContainer;
@@ -55,12 +56,15 @@ import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.osgi.util.NLS;
 
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
+import fr.univamu.ism.docometre.editors.AbstractScriptSegmentEditor;
 
 public final class ResourceProperties {
 	
 	/*
 	 * Qualified names for persistent resource properties 
 	 */
+	// Separator used in properties file
+	public static String SEPARATOR = ">>>";
 	// Default DACQ file for project
 	public static QualifiedName DEFAULT_DACQ_QN = new QualifiedName(Activator.PLUGIN_ID, "default.daq");
 	// Resource type (Experiment, Subject etc.) see ResourceType class for details 
@@ -93,8 +97,10 @@ public final class ResourceProperties {
 	public static QualifiedName USE_SESSION_NAME_AS_FIRST_SUFFIX_IN_DATA_FILES_NAMES_QN = new QualifiedName(Activator.PLUGIN_ID, "use.session.name.as.first.suffix.in.data.files.name");
 	// Second suffix, if null, means Second suffix is not used : true or false
 	public static QualifiedName USE_TRIAL_NUMBER_AS_SECOND_SUFFIX_IN_DATA_FILES_NAMES_QN = new QualifiedName(Activator.PLUGIN_ID, "use.trial.number.as.second.suffix.in.data.files.name");
-	// Separator used on properties file
-	public static String SEPARATOR = ">>>";
+	// Grid state in editor
+	public static QualifiedName GRID_STATE_EDITOR = new QualifiedName(AbstractScriptSegmentEditor.class.getCanonicalName(), "gridState");
+	// Snap state in editor
+	public static QualifiedName SNAP_STATE_EDITOR = new QualifiedName(AbstractScriptSegmentEditor.class.getCanonicalName(), "snapState");
 	
 
 	/*
@@ -109,35 +115,36 @@ public final class ResourceProperties {
 	// Subject modified
 	public static QualifiedName SUBJECT_MODIFIED_QN = new QualifiedName(Activator.PLUGIN_ID, "subject.modified");
 	
-	public static void setSubjectModified(IResource resource, boolean modified) {
-		try {
-			if(!ResourceType.isSubject(resource)) return;
-			resource.setSessionProperty(SUBJECT_MODIFIED_QN, modified);
-		} catch (CoreException e) {
-			Activator.logErrorMessageWithCause(e);
-			e.printStackTrace();
-		}
-	}
-	
-	public static boolean isSubjectModified(IResource resource) {
-		boolean modified = false;
-		try {
-			if(ResourceType.isSubject(resource)) {
-				if(resource.getSessionProperty(SUBJECT_MODIFIED_QN) != null)
-					modified = (boolean) resource.getSessionProperty(SUBJECT_MODIFIED_QN);
-			}
-			
-		} catch (CoreException e) {
-			Activator.logErrorMessageWithCause(e);
-			e.printStackTrace();
-		}
-		return modified;
-	}
-	
 	/////////////////////////////////////////////////////////////////////////////
 	/*
 	* Methods for persistent resource properties 
 	*/
+	
+	public static void setPersistentProperty(QualifiedName qn, IResource resource, String value) {
+		try {
+			resource.setPersistentProperty(qn, value);
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+	}
+	
+	public static String getPersistentProperty(QualifiedName qn, IResource resource) {
+		String value = null;
+		try {
+			value = resource.getPersistentProperty(qn);
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return value;
+	}
+	
+	public static Map<QualifiedName, String> getPersistentProperties(IResource resource) throws CoreException {
+		return resource.getPersistentProperties();
+	}
+	
+	
 	/*
 	 * Return default dacq configuration file path 
 	 */
@@ -520,6 +527,48 @@ public final class ResourceProperties {
 		}
 	}
 	
+	public static void setGridStateEditor(IResource resource, boolean gridState) {
+		try {
+			resource.setPersistentProperty(GRID_STATE_EDITOR, Boolean.toString(gridState));
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+	}
+	
+	public static boolean getGridStateEditor(IResource resource) {
+		boolean gridState = false;
+		try {
+			String gridStateString = resource.getPersistentProperty(GRID_STATE_EDITOR);
+			gridState = Boolean.parseBoolean(gridStateString);
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return gridState;
+	}
+	
+	public static void setSnapStateEditor(IResource resource, boolean snapState) {
+		try {
+			resource.setPersistentProperty(SNAP_STATE_EDITOR, Boolean.toString(snapState));
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+	}
+	
+	public static boolean getSnapStateEditor(IResource resource) {
+		boolean snapState = false;
+		try {
+			String gridStateString = resource.getPersistentProperty(SNAP_STATE_EDITOR);
+			snapState = Boolean.parseBoolean(gridStateString);
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return snapState;
+	}
+	
 	//////////////////////////////////////////////////////
 	// Resources functions
 	/*
@@ -577,6 +626,30 @@ public final class ResourceProperties {
 	/*
 	* Methods for session resource properties 
 	*/
+	
+	public static void setSessionProperty(QualifiedName qn, IResource resource, Object object) {
+		try {
+			resource.setSessionProperty(qn, object);
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+	}
+	
+	public static Object getSessionProperty(QualifiedName qn, IResource resource) {
+		Object value = null;
+		try {
+			value = resource.getSessionProperty(qn);
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return value;
+	}
+	
+	public static Map<QualifiedName, Object> getSessionProperties(IResource resource) throws CoreException {
+		return resource.getSessionProperties();
+	}
 	
 	/*
 	 * Return deserialized associated resource object
@@ -688,6 +761,31 @@ public final class ResourceProperties {
 		String wp = samplesFile.getWorkspace().getRoot().getLocation().toOSString();
 		File trialFile = new File(wp + samplesFile.getFullPath().toOSString());
 		return trialFile.length()/4;
+	}
+	
+	public static void setSubjectModified(IResource resource, boolean modified) {
+		try {
+			if(!ResourceType.isSubject(resource)) return;
+			resource.setSessionProperty(SUBJECT_MODIFIED_QN, modified);
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+	}
+	
+	public static boolean isSubjectModified(IResource resource) {
+		boolean modified = false;
+		try {
+			if(ResourceType.isSubject(resource)) {
+				if(resource.getSessionProperty(SUBJECT_MODIFIED_QN) != null)
+					modified = (boolean) resource.getSessionProperty(SUBJECT_MODIFIED_QN);
+			}
+			
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return modified;
 	}
 
 }

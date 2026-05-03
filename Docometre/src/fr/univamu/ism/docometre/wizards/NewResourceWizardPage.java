@@ -44,7 +44,6 @@ package fr.univamu.ism.docometre.wizards;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.wizard.IWizardPage;
@@ -143,14 +142,9 @@ public abstract class NewResourceWizardPage extends WizardPage implements IWizar
 			}
 		});
 		if(((NewResourceWizard)getWizard()).getMode() == NewResourceWizard.MODIFY) {
-			try {
-				resourceDescriptionText.setEnabled(false);
-				String description = ((NewResourceWizard)getWizard()).getResource().getPersistentProperty(ResourceProperties.DESCRIPTION_QN);
-				resourceDescriptionText.setText(description == null ? "":description);
-			} catch (CoreException e) {
-				e.printStackTrace();
-				Activator.logErrorMessageWithCause(e);
-			}
+			resourceDescriptionText.setEnabled(false);
+			String description = ResourceProperties.getDescriptionPersistentProperty(((NewResourceWizard)getWizard()).getResource());
+			resourceDescriptionText.setText(description == null ? "":description);
 			
 		}
 		

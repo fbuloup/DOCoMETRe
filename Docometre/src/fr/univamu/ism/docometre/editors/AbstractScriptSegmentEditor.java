@@ -45,9 +45,7 @@ import java.util.EventObject;
 import java.util.Map;
 
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.draw2d.FreeformViewport;
 import org.eclipse.draw2d.ScalableFreeformLayeredPane;
 import org.eclipse.draw2d.geometry.Rectangle;
@@ -105,6 +103,7 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ObjectsController;
+import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.dacqsystems.ui.SourceEditor;
 import fr.univamu.ism.docometre.scripteditor.actions.CopyAction;
 import fr.univamu.ism.docometre.scripteditor.actions.DeactivateBlockAction;
@@ -319,58 +318,27 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 	}
 	
 	private boolean getGridState() {
-		boolean state = false;
 		IResource resource = ObjectsController.getResourceForObject(((ResourceEditorInput)getEditorInput()).getObject());
 		if(resource == null && ((ResourceEditorInput)getEditorInput()).getObject() instanceof IResource) resource = (IResource) ((ResourceEditorInput)getEditorInput()).getObject();
-		QualifiedName key = new QualifiedName(AbstractScriptSegmentEditor.this.getClass().getCanonicalName(), "gridState");
-		try {
-			String gridStateString = resource.getPersistentProperty(key);
-			state = Boolean.parseBoolean(gridStateString);
-		} catch (CoreException e) {
-			setGridState(false);
-		}
-		return state;
+		return ResourceProperties.getGridStateEditor(resource);
 	}
 	
 	private void setGridState(boolean state) {
-		try {
-			IResource resource = ObjectsController.getResourceForObject(((ResourceEditorInput)getEditorInput()).getObject());
-			if(resource == null && ((ResourceEditorInput)getEditorInput()).getObject() instanceof IResource) resource = (IResource) ((ResourceEditorInput)getEditorInput()).getObject();
-			QualifiedName key = new QualifiedName(AbstractScriptSegmentEditor.this.getClass().getCanonicalName(), "gridState");
-			resource.setPersistentProperty(key, Boolean.toString(state));
-		} catch (CoreException e) {
-			e.printStackTrace();
-			Activator.logErrorMessageWithCause(e);
-		}
-		
+		IResource resource = ObjectsController.getResourceForObject(((ResourceEditorInput)getEditorInput()).getObject());
+		if(resource == null && ((ResourceEditorInput)getEditorInput()).getObject() instanceof IResource) resource = (IResource) ((ResourceEditorInput)getEditorInput()).getObject();
+		ResourceProperties.setGridStateEditor(resource, state);
 	}
 	
 	private boolean getAlignmentHelperState() {
-		boolean state = false;
 		IResource resource = ObjectsController.getResourceForObject(((ResourceEditorInput)getEditorInput()).getObject());
 		if(resource == null && ((ResourceEditorInput)getEditorInput()).getObject() instanceof IResource) resource = (IResource) ((ResourceEditorInput)getEditorInput()).getObject();
-		QualifiedName key = new QualifiedName(AbstractScriptSegmentEditor.this.getClass().getCanonicalName(), "snapState");
-		try {
-			String alignmentHelperString = resource.getPersistentProperty(key);
-			state = alignmentHelperString == null ? false :Boolean.parseBoolean(alignmentHelperString);
-			state = Boolean.parseBoolean(alignmentHelperString);
-		} catch (CoreException e) {
-			setGridState(false);
-		}
-		return state;
+		return ResourceProperties.getSnapStateEditor(resource);
 	}
 	
 	private void setAlignmentHelperState(boolean state) {
-		try {
-			IResource resource = ObjectsController.getResourceForObject(((ResourceEditorInput)getEditorInput()).getObject());
-			if(resource == null && ((ResourceEditorInput)getEditorInput()).getObject() instanceof IResource) resource = (IResource) ((ResourceEditorInput)getEditorInput()).getObject();
-			QualifiedName key = new QualifiedName(AbstractScriptSegmentEditor.this.getClass().getCanonicalName(), "snapState");
-			resource.setPersistentProperty(key, Boolean.toString(state));
-		} catch (CoreException e) {
-			e.printStackTrace();
-			Activator.logErrorMessageWithCause(e);
-		}
-		
+		IResource resource = ObjectsController.getResourceForObject(((ResourceEditorInput)getEditorInput()).getObject());
+		if(resource == null && ((ResourceEditorInput)getEditorInput()).getObject() instanceof IResource) resource = (IResource) ((ResourceEditorInput)getEditorInput()).getObject();
+		ResourceProperties.setSnapStateEditor(resource, state);
 	}
 	
 	@Override
