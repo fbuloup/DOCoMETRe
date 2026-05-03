@@ -42,8 +42,14 @@
 package fr.univamu.ism.docometre;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -59,6 +65,9 @@ import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.editors.AbstractScriptSegmentEditor;
 
 public final class ResourceProperties {
+	
+	private static boolean usePropertyFile = true;
+	private static HashMap<String, Properties> experimentsProperties = new HashMap<String, Properties>();
 	
 	/*
 	 * Qualified names for persistent resource properties 
@@ -101,7 +110,6 @@ public final class ResourceProperties {
 	public static QualifiedName GRID_STATE_EDITOR = new QualifiedName(AbstractScriptSegmentEditor.class.getCanonicalName(), "gridState");
 	// Snap state in editor
 	public static QualifiedName SNAP_STATE_EDITOR = new QualifiedName(AbstractScriptSegmentEditor.class.getCanonicalName(), "snapState");
-	
 
 	/*
 	 * Qualified names for session resource properties 
@@ -120,9 +128,49 @@ public final class ResourceProperties {
 	* Methods for persistent resource properties 
 	*/
 	
+	private static Properties loadPropertiesFromFile(IResource resource) {
+		Properties properties = experimentsProperties.get(resource.getProject().getName());
+		if(properties != null) return properties;
+		String fullPath = resource.getProject().getLocation().toPortableString();
+		properties = new Properties();
+		if(Files.exists(Path.of(fullPath + "/docometre.properties"))) {
+			try(FileInputStream fis = new FileInputStream(fullPath + "/docometre.properties")) {
+				properties.load(fis);
+			} catch (Exception e) {
+				Activator.logErrorMessageWithCause(e);
+				e.printStackTrace();
+			} 
+		}
+		experimentsProperties.put(resource.getProject().getName(), properties);
+		return properties;
+	}
+	
+	public static void savePropertiesToFile(IResource resource) {
+		Properties properties = experimentsProperties.get(resource.getProject().getName());
+		if(properties == null) return;
+		String fullPath = resource.getProject().getLocation().toPortableString();
+		try(FileOutputStream fos = new FileOutputStream(fullPath + "/docometre.properties")) {
+			properties.store(fos, null);
+		} catch (IOException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+	}
+	
+	private static String getPersistentPropertyFromFile(QualifiedName qn, IResource resource) {
+		Properties properties = loadPropertiesFromFile(resource);
+		return (String) properties.get(resource.getFullPath().toPortableString() + ":" + qn.toString());
+	}
+	
 	public static void setPersistentProperty(QualifiedName qn, IResource resource, String value) {
+		
 		try {
 			resource.setPersistentProperty(qn, value);
+			if(usePropertyFile) {
+				Properties properties = loadPropertiesFromFile(resource);
+				if(value == null) properties.remove(resource.getFullPath().toPortableString() + ":" + qn.toString());
+				else properties.put(resource.getFullPath().toPortableString() + ":" + qn.toString(), value);
+			}
 		} catch (CoreException e) {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
@@ -130,9 +178,16 @@ public final class ResourceProperties {
 	}
 	
 	public static String getPersistentProperty(QualifiedName qn, IResource resource) {
-		String value = null;
+		String value = "";
 		try {
 			value = resource.getPersistentProperty(qn);
+			if(value == null && usePropertyFile) {
+				value = getPersistentPropertyFromFile(qn, resource);
+				if(value != null) resource.setPersistentProperty(qn, value);
+			} else if(usePropertyFile) {
+				Properties properties = loadPropertiesFromFile(resource);
+				properties.put(resource.getFullPath().toPortableString() + ":" + qn.toString(), value);
+			}
 		} catch (CoreException e) {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
@@ -144,30 +199,18 @@ public final class ResourceProperties {
 		return resource.getPersistentProperties();
 	}
 	
-	
 	/*
 	 * Return default dacq configuration file path 
 	 */
 	public static String getDefaultDACQPersistentProperty(IResource resource) {
-		try {
-			return resource.getProject().getPersistentProperty(DEFAULT_DACQ_QN);
-		} catch (CoreException e) {
-			e.printStackTrace();
-			Activator.logErrorMessageWithCause(e);
-		}
-		return "";
+		return getPersistentProperty(DEFAULT_DACQ_QN, resource.getProject());
 	}
 	
 	/*
 	 * Set default dacq configuration file path
 	 */
 	public static void setDefaultDACQPersistentProperty(IResource resource, String value) {
-		try {
-			resource.getProject().setPersistentProperty(DEFAULT_DACQ_QN, value);
-		} catch (CoreException e) {
-			e.printStackTrace();
-			Activator.logErrorMessageWithCause(e);
-		}
+		setPersistentProperty(DEFAULT_DACQ_QN, resource.getProject(), value);
 	}
 	
 	/*
@@ -176,95 +219,54 @@ public final class ResourceProperties {
 	@SuppressWarnings("deprecation")
 	public static String getTypePersistentProperty(IResource resource) {
 		if(resource == null) return "";
-		try {
-			boolean resourceNonLocale = false;
-			if(!resource.isLocal(IResource.DEPTH_ZERO)) {
-				Activator.logWarningMessage(NLS.bind(DocometreMessages.seemsNotLocale, resource.getFullPath().toPortableString()));
-				resourceNonLocale = true;
-			}
-			String type = ResourceType.ANY.toString();
-			if(resource.exists()) type = resource.getPersistentProperty(TYPE_QN);
-			if(resourceNonLocale) Activator.logWarningMessage(DocometreMessages.becameLocale);
-			return type;
-		} catch (CoreException e) {
-			e.printStackTrace();
-			Activator.logErrorMessageWithCause(e);
-		}
-		return "";
+		boolean resourceNonLocale = !resource.isLocal(IResource.DEPTH_ZERO);
+		if(resourceNonLocale) Activator.logWarningMessage(NLS.bind(DocometreMessages.seemsNotLocale, resource.getFullPath().toPortableString()));
+		String type = ResourceType.ANY.toString();
+		if(resource.exists()) type = getPersistentProperty(TYPE_QN, resource);
+		if(resourceNonLocale) Activator.logWarningMessage(DocometreMessages.becameLocale);
+		return type;
 	}
 	
 	/*
 	 * Set the type of the resource : Experiment, subject etc. See ResourceType class for details
 	 */
 	public static void setTypePersistentProperty(IResource resource, String value) {
-		try {
-			resource.setPersistentProperty(TYPE_QN, value);
-		} catch (CoreException e) {
-			e.printStackTrace();
-			Activator.logErrorMessageWithCause(e);
-		}
+		setPersistentProperty(TYPE_QN, resource, value);
 	}
 	
 	/*
 	 * Get the resource description
 	 */
 	public static String getDescriptionPersistentProperty(IResource resource) {
-		try {
-			return resource.getPersistentProperty(DESCRIPTION_QN);
-		} catch (CoreException e) {
-			e.printStackTrace();
-			Activator.logErrorMessageWithCause(e);
-		}
-		return "";
+		return getPersistentProperty(DESCRIPTION_QN, resource);
 	}
 	
 	/*
 	 * Set the resource description
 	 */
 	public static void setDescriptionPersistentProperty(IResource resource, String value) {
-		try {
-			resource.setPersistentProperty(DESCRIPTION_QN, value);
-		} catch (CoreException e) {
-			e.printStackTrace();
-			Activator.logErrorMessageWithCause(e);
-		}
+		setPersistentProperty(DESCRIPTION_QN, resource, value);
 	}
 	
 	/*
 	 * Get the resource type (ADwin, NI etc.). See Activator for details.
 	 */
 	public static String getSystemPersistentProperty(IResource resource) {
-		try {
-			return resource.getPersistentProperty(SYSTEM_QN);
-		} catch (CoreException e) {
-			e.printStackTrace();
-			Activator.logErrorMessageWithCause(e);
-		}
-		return null;
+		return getPersistentProperty(SYSTEM_QN, resource);
 	}
 	
 	/*
 	 * Set the resource type (ADwin, NI etc.). See Activator for details.
 	 */
 	public static void setSystemPersistentProperty(IResource resource, String value) {
-		try {
-			resource.setPersistentProperty(SYSTEM_QN, value);
-		} catch (CoreException e) {
-			e.printStackTrace();
-			Activator.logErrorMessageWithCause(e);
-		}
+		setPersistentProperty(SYSTEM_QN, resource, value);
 	}
 	
 	/*
 	 * Set process file associated DACQ configuration file path
 	 */
 	public static void setAssociatedDACQConfigurationProperty(IResource processFile, String value) {
-		try {
-			processFile.setPersistentProperty(ASSOCIATED_DACQ_CONFIGURATION_FILE_QN, value);
-		} catch (CoreException e) {
-			e.printStackTrace();
-			Activator.logErrorMessageWithCause(e);
-		}
+		setPersistentProperty(ASSOCIATED_DACQ_CONFIGURATION_FILE_QN, processFile, value);
 	}
 	
 	/*
@@ -283,25 +285,14 @@ public final class ResourceProperties {
 	public static String getAssociatedDACQConfigurationProperty(IResource processFile) {
 		if(!processFile.exists()) return null;
 		if(!ResourceType.isProcess(processFile)) return null;
-		try {
-			return processFile.getPersistentProperty(ASSOCIATED_DACQ_CONFIGURATION_FILE_QN);
-		} catch (CoreException e) {
-			e.printStackTrace();
-			Activator.logErrorMessageWithCause(e);
-		}
-		return null;
+		return getPersistentProperty(ASSOCIATED_DACQ_CONFIGURATION_FILE_QN, processFile);
 	}
 	
 	/*
 	 * Set process file associated trial file path
 	 */
 	public static void setAssociatedProcessProperty(IResource folder, String value) {
-		try {
-			folder.setPersistentProperty(ASSOCIATED_PROCESS_FILE_QN, value);
-		} catch (CoreException e) {
-			e.printStackTrace();
-			Activator.logErrorMessageWithCause(e);
-		}
+		setPersistentProperty(ASSOCIATED_PROCESS_FILE_QN, folder, value);
 	}
 	
 	/*
@@ -318,48 +309,26 @@ public final class ResourceProperties {
 	 * Return process file path associated with trial file 
 	 */
 	public static String getAssociatedProcessProperty(IResource folder) {
-		try {
-			if(!folder.exists()) return null;
-			if(!(ResourceType.isTrial(folder) || ResourceType.isProcessTest(folder))) return null;
-			return folder.getPersistentProperty(ASSOCIATED_PROCESS_FILE_QN);
-		} catch (CoreException e) {
-			Activator.logErrorMessageWithCause(e);
-			e.printStackTrace();
-		}
-		return null;
+		if(!folder.exists()) return null;
+		if(!(ResourceType.isTrial(folder) || ResourceType.isProcessTest(folder))) return null;
+		return getPersistentProperty(ASSOCIATED_PROCESS_FILE_QN, folder);
 	}
 	
 	public static void setRunInMainThread(IResource process, boolean value) {
-		try {
-			process.setPersistentProperty(RUN_IN_MAIN_THREAD_QN, Boolean.toString(value));
-		} catch (CoreException e) {
-			Activator.logErrorMessageWithCause(e);
-			e.printStackTrace();
-		}
+		setPersistentProperty(RUN_IN_MAIN_THREAD_QN, process, Boolean.toString(value));
 	}
 	
 	public static boolean isRunInMainThread(IResource process) {
-		try {
-			String value = process.getPersistentProperty(RUN_IN_MAIN_THREAD_QN);
-			return Boolean.parseBoolean(value) && MathEngineFactory.isPython();
-		} catch (CoreException e) {
-			Activator.logErrorMessageWithCause(e);
-			e.printStackTrace();
-		}
-		return false;
+		String value = getPersistentProperty(RUN_IN_MAIN_THREAD_QN, process);
+		return Boolean.parseBoolean(value) && MathEngineFactory.isPython();
 	}
+	
 	/*
 	 * Return trial execution state
 	 */
 	public static boolean isTrialDone(IResource trialFolder) {
-		try {
-			String state = trialFolder.getPersistentProperty(TRIAL_STATE_QN);
-			if(state == null) return false;
-			if(state.equals("done") || state.equals("true")) return true;
-		} catch (CoreException e) {
-			Activator.logErrorMessageWithCause(e);
-			e.printStackTrace();
-		}
+		String state = getPersistentProperty(TRIAL_STATE_QN, trialFolder);
+		if("done".equals(state) || "true".equals(state)) return true;
 		return false;
 	}
 	
@@ -367,13 +336,8 @@ public final class ResourceProperties {
 	 * Set trial execution state
 	 */
 	public static void setTrialState(IResource trialFolder, boolean done) {
-		try {
-			if(done == true) trialFolder.setPersistentProperty(TRIAL_STATE_QN, "done");
-			if(done == false) trialFolder.setPersistentProperty(TRIAL_STATE_QN, "undone");
-		} catch (CoreException e) {
-			Activator.logErrorMessageWithCause(e);
-			e.printStackTrace();
-		}
+		if(done == true) setPersistentProperty(TRIAL_STATE_QN, trialFolder, "done");
+		else setPersistentProperty(TRIAL_STATE_QN, trialFolder, "undone");
 	}
 	
 	/*
@@ -399,110 +363,55 @@ public final class ResourceProperties {
 	
 	
 	public static String getDataFilesNamesPrefix(IResource resource) {
-		try {
-			if(!resource.exists()) return null;
-			if(!ResourceType.isSession(resource)) return null;
-			return resource.getPersistentProperty(DATA_FILES_NAMES_PREFIX_QN);
-		} catch (CoreException e) {
-			Activator.logErrorMessageWithCause(e);
-			e.printStackTrace();
-		}
-		return null;
+		if(!resource.exists()) return null;
+		if(!ResourceType.isSession(resource)) return null;
+		return getPersistentProperty(DATA_FILES_NAMES_PREFIX_QN, resource);
 	}
 	
 	public static void setDataFilesNamesPrefix(IResource resource, String value) {
-		try {
-			resource.setPersistentProperty(DATA_FILES_NAMES_PREFIX_QN, value);
-		} catch (CoreException e) {
-			Activator.logErrorMessageWithCause(e);
-			e.printStackTrace();
-		}
+		setPersistentProperty(DATA_FILES_NAMES_PREFIX_QN, resource, value);
 	}
 	
 	public static boolean useSessionNameInDataFilesNamesAsFirstSuffix(IResource resource) {
-		try {
-			if(!resource.exists()) return false;
-			if(!ResourceType.isSession(resource)) return false;
-			return "true".equals(resource.getPersistentProperty(USE_SESSION_NAME_AS_FIRST_SUFFIX_IN_DATA_FILES_NAMES_QN));
-		} catch (CoreException e) {
-			Activator.logErrorMessageWithCause(e);
-			e.printStackTrace();
-		}
-		return false;
+		if(!resource.exists()) return false;
+		if(!ResourceType.isSession(resource)) return false;
+		return "true".equals(getPersistentProperty(USE_SESSION_NAME_AS_FIRST_SUFFIX_IN_DATA_FILES_NAMES_QN, resource));
 	}
 	
 	public static void setUseSessionNameInDataFilesNamesAsFirstSuffix(IResource resource, boolean value) {
-		try {
-			resource.setPersistentProperty(USE_SESSION_NAME_AS_FIRST_SUFFIX_IN_DATA_FILES_NAMES_QN, String.valueOf(value));
-		} catch (CoreException e) {
-			Activator.logErrorMessageWithCause(e);
-			e.printStackTrace();
-		}
+		setPersistentProperty(USE_SESSION_NAME_AS_FIRST_SUFFIX_IN_DATA_FILES_NAMES_QN, resource, String.valueOf(value));
 	}
 	
 	public static boolean useTrialNumberInDataFilesNamesAsSecondSuffix(IResource resource) {
-		try {
-			if(!resource.exists()) return false;
-			if(!ResourceType.isSession(resource)) return false;
-			return "true".equals(resource.getPersistentProperty(USE_TRIAL_NUMBER_AS_SECOND_SUFFIX_IN_DATA_FILES_NAMES_QN));
-		} catch (CoreException e) {
-			Activator.logErrorMessageWithCause(e);
-			e.printStackTrace();
-		}
-		return false;
+		if(!resource.exists()) return false;
+		if(!ResourceType.isSession(resource)) return false;
+		return "true".equals(getPersistentProperty(USE_TRIAL_NUMBER_AS_SECOND_SUFFIX_IN_DATA_FILES_NAMES_QN, resource));
 	}
 	
 	public static void setUseTrialNumberInDataFilesNamesAsSecondSuffix(IResource resource, boolean value) {
-		try {
-			resource.setPersistentProperty(USE_TRIAL_NUMBER_AS_SECOND_SUFFIX_IN_DATA_FILES_NAMES_QN, String.valueOf(value));
-		} catch (CoreException e) {
-			Activator.logErrorMessageWithCause(e);
-			e.printStackTrace();
-		}
+		setPersistentProperty(USE_TRIAL_NUMBER_AS_SECOND_SUFFIX_IN_DATA_FILES_NAMES_QN, resource, String.valueOf(value));
 	}
 	
 	public static TrialStartMode getTrialStartMode(IResource resource) {
-		try {
-			if(!resource.exists()) return TrialStartMode.MANUAL;
-			if(!ResourceType.isTrial(resource)) return TrialStartMode.MANUAL;
-			String startMode = resource.getPersistentProperty(TRIAL_START_MODE_QN);
-			return TrialStartMode.getStartMode(startMode);
-		} catch (CoreException e) {
-			Activator.logErrorMessageWithCause(e);
-			e.printStackTrace();
-		}
-		return TrialStartMode.MANUAL;
+		if(!resource.exists()) return TrialStartMode.MANUAL;
+		if(!ResourceType.isTrial(resource)) return TrialStartMode.MANUAL;
+		String startMode = getPersistentProperty(TRIAL_START_MODE_QN, resource);
+		return TrialStartMode.getStartMode(startMode);
 	}
 	
 	public static void setTrialStartMode(IResource resource, TrialStartMode startMode) {
-		try {
-			resource.setPersistentProperty(TRIAL_START_MODE_QN, startMode.getKey());
-		} catch (CoreException e) {
-			Activator.logErrorMessageWithCause(e);
-			e.printStackTrace();
-		}
+		setPersistentProperty(TRIAL_START_MODE_QN, resource, startMode.getKey());
 	}
 	
 	public static TrialValidateMode getTrialValidateMode(IResource resource) {
-		try {
-			if(!resource.exists()) return TrialValidateMode.MANUAL;
-			if(!ResourceType.isTrial(resource)) return TrialValidateMode.MANUAL;
-			String validateMode = resource.getPersistentProperty(TRIAL_VALIDATE_MODE_QN);
-			return TrialValidateMode.getValidateMode(validateMode);
-		} catch (CoreException e) {
-			Activator.logErrorMessageWithCause(e);
-			e.printStackTrace();
-		}
-		return TrialValidateMode.MANUAL;
+		if(!resource.exists()) return TrialValidateMode.MANUAL;
+		if(!ResourceType.isTrial(resource)) return TrialValidateMode.MANUAL;
+		String validateMode = getPersistentProperty(TRIAL_VALIDATE_MODE_QN, resource);
+		return TrialValidateMode.getValidateMode(validateMode);
 	}
 	
 	public static void setTrialValidateMode(IResource resource, TrialValidateMode validateMode) {
-		try {
-			resource.setPersistentProperty(TRIAL_VALIDATE_MODE_QN, validateMode.getKey());
-		} catch (CoreException e) {
-			Activator.logErrorMessageWithCause(e);
-			e.printStackTrace();
-		}
+		setPersistentProperty(TRIAL_VALIDATE_MODE_QN, resource, validateMode.getKey());
 	}
 	
 	public static void clonePersistentProperties(IResource originResource, IResource detinationResource) {
@@ -528,45 +437,21 @@ public final class ResourceProperties {
 	}
 	
 	public static void setGridStateEditor(IResource resource, boolean gridState) {
-		try {
-			resource.setPersistentProperty(GRID_STATE_EDITOR, Boolean.toString(gridState));
-		} catch (CoreException e) {
-			Activator.logErrorMessageWithCause(e);
-			e.printStackTrace();
-		}
+		setPersistentProperty(GRID_STATE_EDITOR, resource, Boolean.toString(gridState));
 	}
 	
 	public static boolean getGridStateEditor(IResource resource) {
-		boolean gridState = false;
-		try {
-			String gridStateString = resource.getPersistentProperty(GRID_STATE_EDITOR);
-			gridState = Boolean.parseBoolean(gridStateString);
-		} catch (CoreException e) {
-			Activator.logErrorMessageWithCause(e);
-			e.printStackTrace();
-		}
-		return gridState;
+		String gridStateString = getPersistentProperty(GRID_STATE_EDITOR, resource);
+		return Boolean.parseBoolean(gridStateString);
 	}
 	
 	public static void setSnapStateEditor(IResource resource, boolean snapState) {
-		try {
-			resource.setPersistentProperty(SNAP_STATE_EDITOR, Boolean.toString(snapState));
-		} catch (CoreException e) {
-			Activator.logErrorMessageWithCause(e);
-			e.printStackTrace();
-		}
+		setPersistentProperty(SNAP_STATE_EDITOR, resource, Boolean.toString(snapState));
 	}
 	
 	public static boolean getSnapStateEditor(IResource resource) {
-		boolean snapState = false;
-		try {
-			String gridStateString = resource.getPersistentProperty(SNAP_STATE_EDITOR);
-			snapState = Boolean.parseBoolean(gridStateString);
-		} catch (CoreException e) {
-			Activator.logErrorMessageWithCause(e);
-			e.printStackTrace();
-		}
-		return snapState;
+		String gridStateString = getPersistentProperty(SNAP_STATE_EDITOR, resource);
+		return Boolean.parseBoolean(gridStateString);
 	}
 	
 	//////////////////////////////////////////////////////

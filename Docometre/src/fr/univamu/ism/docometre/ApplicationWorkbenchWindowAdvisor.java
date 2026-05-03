@@ -45,11 +45,16 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
 import org.eclipse.core.commands.operations.IOperationHistory;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.application.ActionBarAdvisor;
@@ -109,5 +114,31 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		UndoRedoUserApprover promptingUserApprover = new UndoRedoUserApprover(IOperationHistory.GLOBAL_UNDO_CONTEXT);
 		PlatformUI.getWorkbench().getOperationSupport().getOperationHistory().addOperationApprover(promptingUserApprover);
     }
+	
+	@Override
+	public boolean preWindowShellClose() {
+		boolean doClose = true;
+		try {
+			PlatformUI.getWorkbench().getProgressService().busyCursorWhile(new IRunnableWithProgress() {
+				@Override
+				public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+					IProject[] projects =ResourcesPlugin.getWorkspace().getRoot().getProjects();
+					monitor.beginTask("", projects.length);
+					for (IProject project : projects) {
+						ResourceProperties.savePropertiesToFile(project);
+						monitor.done();
+						if(monitor.isCanceled()) break;
+					}
+					
+				}
+			});
+		} catch (InvocationTargetException | InterruptedException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+			if(e instanceof InterruptedException) doClose = false;
+		} 
+		if(!doClose) return false;
+		return super.preWindowShellClose();
+	}
 	
 }
