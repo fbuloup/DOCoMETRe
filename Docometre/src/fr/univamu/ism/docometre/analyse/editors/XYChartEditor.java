@@ -52,7 +52,9 @@ import java.util.stream.IntStream;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.util.LocalSelectionTransfer;
@@ -583,6 +585,10 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 					String fullYChannelName = seriesID.split("\\(")[0];
 					String fullSubjectName = fullYChannelName.replaceAll("\\.\\w+$", "");
 					IResource subject = ((IContainer)SelectedExprimentContributionItem.selectedExperiment).findMember(fullSubjectName.split("\\.")[1]);
+					if(subject == null) {
+						IProject project = (IProject) ResourcesPlugin.getWorkspace().getRoot().findMember(fullSubjectName.split("\\.")[0]);
+						subject = project.findMember(fullSubjectName.split("\\.")[1]);
+					}
 					ChannelsContainer channelsContainer = (ChannelsContainer)subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
 					Channel channel = channelsContainer.getChannelFromName(fullYChannelName);
 					String category = mathEngine.getCategoryForTrialNumber(channel, seriesIDTrial);
