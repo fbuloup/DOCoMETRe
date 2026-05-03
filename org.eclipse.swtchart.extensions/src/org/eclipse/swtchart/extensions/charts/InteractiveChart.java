@@ -514,6 +514,7 @@ public class InteractiveChart extends Chart implements PaintListener {
 	 *            the mouse up event
 	 */
 	private void handleMouseUpEvent(Event event) {
+		if(selection == null) return;
 		boolean fireZoomListeners = false;
 		if(event.button == 1 && System.currentTimeMillis() - clickedTime > 100) {
 			for(IAxis axis : getAxisSet().getAxes()) {
