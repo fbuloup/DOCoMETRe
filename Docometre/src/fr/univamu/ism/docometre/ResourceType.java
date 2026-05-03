@@ -72,7 +72,9 @@ public enum ResourceType {
 	OPTITRACK_TYPE_1("OPTITRACK_TYPE_1"),
 	OPTITRACK_TYPE_2("OPTITRACK_TYPE_2"),
 	COLUMN_DATA_FILE("COLUMN_DATA_FILE"),
-	CSV("CSV");
+	CSV("CSV"),
+	NUMPY_DATA_FILE("NUMPY_DATA_FILE"),
+	SAVE_DATA_FILE("SAVE_DATA_FILE");
 
 	private String name = "";
 
@@ -109,6 +111,8 @@ public enum ResourceType {
 		if(typeValue.equals(OPTITRACK_TYPE_2.toString())) return OPTITRACK_TYPE_2;
 		if(typeValue.equals(COLUMN_DATA_FILE.toString())) return COLUMN_DATA_FILE;
 		if(typeValue.equals(CSV.toString())) return CSV;
+		if(typeValue.equals(NUMPY_DATA_FILE.toString())) return NUMPY_DATA_FILE;
+		if(typeValue.equals(SAVE_DATA_FILE.toString())) return SAVE_DATA_FILE;
 		return ANY;
 	}
 	
@@ -221,6 +225,21 @@ public enum ResourceType {
 		return check(resource, COLUMN_DATA_FILE);
 	}
 	
+	public static boolean isCSVFile(IResource resource) {
+		return check(resource, CSV);
+	}
+
+	public static boolean isNumpyFile(IResource resource) {
+		if(!resource.exists()) return false;
+		if(resource.getFileExtension() == null) return false;
+		return resource.getFileExtension().equalsIgnoreCase("numpy");
+	}
+
+	public static boolean isSaveFile(IResource resource) {
+		if(!resource.exists()) return false;
+		return resource.getName().equalsIgnoreCase("save.data") || resource.getName().equalsIgnoreCase("save.mat");
+	}
+	
 	public static boolean isAnyTest(IResource resource) {
 	return check(resource, ANY);
 	}
@@ -239,28 +258,12 @@ public enum ResourceType {
 		return getResourceType(resource).equals(resourceType);
 	}
 
-	public static boolean isNumpyFile(IResource resource) {
-		if(!resource.exists()) return false;
-		if(resource.getFileExtension() == null) return false;
-		return resource.getFileExtension().equalsIgnoreCase("numpy");
-	}
-
-	public static boolean isSaveFile(IResource resource) {
-		if(!resource.exists()) return false;
-		return resource.getName().equalsIgnoreCase("save.data") || resource.getName().equalsIgnoreCase("save.mat");
-	}
-
 	public static boolean isDataFile(IResource resource) {
 		boolean isDataFile = ResourceType.isADWDataFile(resource) || ResourceType.isSamples(resource); 
 		isDataFile = isDataFile || ResourceType.isSaveFile(resource) || ResourceType.isNumpyFile(resource) || ResourceType.isCSVFile(resource);
-		isDataFile = isDataFile || ResourceType.isOptitrack_Type_1(resource);
+		isDataFile = isDataFile || ResourceType.isOptitrack_Type_1(resource) || ResourceType.isOptitrack_Type_2(resource);
 		isDataFile = isDataFile || ResourceType.isColumnDataFile(resource);
 		return isDataFile;
 	}
-
-	public static boolean isCSVFile(IResource resource) {
-		return check(resource, CSV);
-	}
-	
 	
 }

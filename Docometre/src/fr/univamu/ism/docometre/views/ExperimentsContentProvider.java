@@ -149,6 +149,12 @@ public class ExperimentsContentProvider implements ITreeContentProvider {
 					if(resource.getName().endsWith(Activator.customerFunctionFileExtension)) {
 						ResourceProperties.setTypePersistentProperty(resource, ResourceType.CUSTOMER_FUNCTION.toString());
 					}
+					if(ResourceType.isNumpyFile(resource)) {
+						ResourceProperties.setTypePersistentProperty(resource, ResourceType.NUMPY_DATA_FILE.toString());
+					}
+					if(ResourceType.isSaveFile(resource)) {
+						ResourceProperties.setTypePersistentProperty(resource, ResourceType.SAVE_DATA_FILE.toString());
+					}
 				} else {
 					Pattern pattern = Pattern.compile("^" + DocometreMessages.Trial + "[1-9]\\d*(:[1-9]\\d*)?$");
 					Matcher matcher = pattern.matcher(resource.getName());
