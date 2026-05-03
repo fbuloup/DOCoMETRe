@@ -329,7 +329,7 @@ public class Channel implements IFile {
 
 	@Override
 	public IProject getProject() {
-		return null;
+		return subject.getProject();
 	}
 
 	@Override
