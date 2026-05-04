@@ -122,6 +122,8 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.BAUD_RATE.getKey(), arduinoUnoDACQConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.BAUD_RATE));
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey(), arduinoUnoDACQConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH));
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.REVISION.getKey(), arduinoUnoDACQConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION));
+		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getKey(), arduinoUnoDACQConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH));
+		preferenceStore.putValue(GeneralPreferenceConstants.ARDUINO_USER_LIBRARIES_ABSOLUTE_PATH, "");
 		preferenceStore.putValue(DEFAULT_ARDUINO_UNO_SYSTEM_PREFERENCE_INITIALIZED, "true");
 	}
 	
@@ -131,6 +133,7 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 		performDefaultsPreferencesValues();
 		libraryPathText.setText(getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH.getKey()));
 		userLibraryPathText.setText(getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getKey()));
+		docoUserLibrariesAbsolutePathText.setText(getPreferenceStore().getString(GeneralPreferenceConstants.ARDUINO_USER_LIBRARIES_ABSOLUTE_PATH));
 		builderPathText.setText(getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.BUILDER_PATH.getKey()));
 		avrDUDEPathText.setText(getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.AVRDUDE_PATH.getKey()));
 		devicePathText.setText(getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH.getKey()));
