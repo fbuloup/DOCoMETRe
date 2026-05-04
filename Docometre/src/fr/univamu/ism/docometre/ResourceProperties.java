@@ -68,6 +68,7 @@ public final class ResourceProperties {
 	
 	private static boolean usePropertyFile = true;
 	private static HashMap<String, Properties> experimentsProperties = new HashMap<String, Properties>();
+	private static String metadataFileName = "/.metadata.properties";
 	
 	/*
 	 * Qualified names for persistent resource properties 
@@ -133,8 +134,8 @@ public final class ResourceProperties {
 		if(properties != null) return properties;
 		String fullPath = resource.getProject().getLocation().toPortableString();
 		properties = new Properties();
-		if(Files.exists(Path.of(fullPath + "/docometre.properties"))) {
-			try(FileInputStream fis = new FileInputStream(fullPath + "/docometre.properties")) {
+		if(Files.exists(Path.of(fullPath + metadataFileName))) {
+			try(FileInputStream fis = new FileInputStream(fullPath + metadataFileName)) {
 				properties.load(fis);
 			} catch (Exception e) {
 				Activator.logErrorMessageWithCause(e);
@@ -149,7 +150,7 @@ public final class ResourceProperties {
 		Properties properties = experimentsProperties.get(resource.getProject().getName());
 		if(properties == null) return;
 		String fullPath = resource.getProject().getLocation().toPortableString();
-		try(FileOutputStream fos = new FileOutputStream(fullPath + "/docometre.properties")) {
+		try(FileOutputStream fos = new FileOutputStream(fullPath + metadataFileName)) {
 			properties.store(fos, null);
 		} catch (IOException e) {
 			Activator.logErrorMessageWithCause(e);
