@@ -164,7 +164,6 @@ public final class ResourceProperties {
 	}
 	
 	public static void setPersistentProperty(QualifiedName qn, IResource resource, String value) {
-		
 		try {
 			resource.setPersistentProperty(qn, value);
 			if(usePropertyFile) {
@@ -179,13 +178,14 @@ public final class ResourceProperties {
 	}
 	
 	public static String getPersistentProperty(QualifiedName qn, IResource resource) {
+		if(ResourcesPlugin.getWorkspace().getRoot() == resource) return null;
 		String value = "";
 		try {
 			value = resource.getPersistentProperty(qn);
 			if(value == null && usePropertyFile) {
 				value = getPersistentPropertyFromFile(qn, resource);
 				if(value != null) resource.setPersistentProperty(qn, value);
-			} else if(usePropertyFile) {
+			} else if(usePropertyFile && !ResourceType.CHANNEL.toString().equals(value)) {
 				Properties properties = loadPropertiesFromFile(resource);
 				properties.put(resource.getFullPath().toPortableString() + ":" + qn.toString(), value);
 			}
