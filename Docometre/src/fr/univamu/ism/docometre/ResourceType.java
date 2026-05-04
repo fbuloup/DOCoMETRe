@@ -255,7 +255,7 @@ public enum ResourceType {
 	
 	private static boolean check(IResource resource, ResourceType resourceType) {
 		if(!resource.exists()) return false;
-		return getResourceType(resource).equals(resourceType);
+		return resourceType.equals(getResourceType(resource));
 	}
 
 	public static boolean isDataFile(IResource resource) {
