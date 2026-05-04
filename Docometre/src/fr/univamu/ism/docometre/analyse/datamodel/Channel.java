@@ -65,7 +65,6 @@ import org.eclipse.core.resources.ResourceAttributes;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.content.IContentDescription;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
@@ -590,8 +589,7 @@ public class Channel implements IFile {
 
 	@Override
 	public IPath getFullPath() {
-		Path path = new Path(getFullName().replaceAll("\\.", "/"));
-		return path;
+		return subject.getFullPath().append(name);
 	}
 
 	@Override
