@@ -102,6 +102,7 @@ import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.TrialStartMode;
+import fr.univamu.ism.docometre.TrialValidateMode;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.dacqsystems.DocometreBuilder;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfiguration;
@@ -430,14 +431,16 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 									for (String trialKey = sessionsProperties.getProperty("session" + numSession + ".trial" + numTrial); trialKey != null; ) {
 										// Add Trial
 										String[] values = trialKey.split(":");
-										String manualAuto = values.length > 0 ? TrialStartMode.getStartMode(values[0]).getKey():TrialStartMode.MANUAL.getKey();
-										String process = values.length > 1 ? values[1]:null;
+										String startMode = values.length > 0 ? TrialStartMode.getStartMode(values[0]).getKey():TrialStartMode.MANUAL.getKey();
+										String validateMode = values.length > 1 ? TrialValidateMode.getValidateMode(values[1]).getKey():TrialValidateMode.MANUAL.getKey();
+										String process = values.length > 2 ? values[2]:null;
 										if(process != null) process = process.endsWith(Activator.processFileExtension) ? process : process + Activator.processFileExtension;
 										String trialName = DocometreMessages.NewResourceWizard_DefaultTrialName.replaceAll("N", "") + numTrial;
 										IFolder newTrial = newSession.getFolder(new org.eclipse.core.runtime.Path(trialName));
 										newTrial.create(true, true, null);
 										ResourceProperties.setTypePersistentProperty(newTrial, ResourceType.TRIAL.toString());
-										ResourceProperties.setTrialStartMode(newTrial, TrialStartMode.getStartMode(manualAuto));
+										ResourceProperties.setTrialStartMode(newTrial, TrialStartMode.getStartMode(startMode));
+										ResourceProperties.setTrialValidateMode(newTrial, TrialValidateMode.getValidateMode(validateMode));
 										ResourceProperties.setAssociatedProcessProperty(newTrial, process);
 										numTrial++;
 										trialKey = sessionsProperties.getProperty("session" + numSession + ".trial" + numTrial);
