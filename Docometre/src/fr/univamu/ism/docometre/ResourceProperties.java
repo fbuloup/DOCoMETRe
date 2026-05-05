@@ -68,7 +68,7 @@ public final class ResourceProperties {
 	
 	private static boolean usePropertyFile = true;
 	private static HashMap<String, Properties> experimentsProperties = new HashMap<String, Properties>();
-	private static String metadataFileName = "/.metadata.properties";
+	public static String metadataFileName = "/.metadata.properties";
 	
 	/*
 	 * Qualified names for persistent resource properties 
@@ -129,7 +129,7 @@ public final class ResourceProperties {
 	* Methods for persistent resource properties 
 	*/
 	
-	private static Properties loadPropertiesFromFile(IResource resource) {
+	public static Properties loadPropertiesFromFile(IResource resource) {
 		Properties properties = experimentsProperties.get(resource.getProject().getName());
 		if(properties != null) return properties;
 		String fullPath = resource.getProject().getLocation().toPortableString();

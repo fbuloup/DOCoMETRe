@@ -42,6 +42,11 @@
 package fr.univamu.ism.docometre.actions;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,6 +55,7 @@ import org.eclipse.core.commands.operations.IUndoContext;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.jface.action.Action;
@@ -116,6 +122,12 @@ public class RenameResourceAction extends Action implements ISelectionListener, 
 					}
 				}
 				
+				String fileExtension = "";
+				if(resource.getFileExtension() != null) fileExtension = "." + resource.getFileExtension();
+				IPath oldResourceAbsolutePath = resource.getLocation();
+				IPath newResourceAbsolutePath = resource.getParent().getLocation().append(inputDialog.getValue() + fileExtension);
+				String oldPrefix = resource.getFullPath().toPortableString();
+				
 				IStatus status = operationHistory.execute(new RenameResourceOperation(DocometreMessages.RenameAction_Text, resource, inputDialog.getValue(), true, inputDialog.isAlsoRenameDataFiles(), undoContext), null, null);
 				
 				if(!status.isOK()) {
@@ -128,6 +140,23 @@ public class RenameResourceAction extends Action implements ISelectionListener, 
 						Activator.logErrorMessage(status.getMessage());
 					}
 				} 
+				// If resource has been renamed, update .metadata.properties
+				boolean oldResourceNotExists = Files.notExists(Paths.get(oldResourceAbsolutePath.toOSString()));
+				boolean newResourceExists = Files.exists(Paths.get(newResourceAbsolutePath.toOSString()));
+				if(oldResourceNotExists && newResourceExists) {
+					// Update metadata properties file
+					Properties properties = ResourceProperties.loadPropertiesFromFile(resource);
+			        // Remove keys which start with oldPrefix
+			        Set<String> keys = properties.stringPropertyNames();
+			        Iterator<String> iterator = keys.iterator();
+			        while (iterator.hasNext()) {
+			            String key = iterator.next();
+			            if (key.startsWith(oldPrefix)) {
+			            	properties.remove(key);
+			            }
+			        }
+					ResourceProperties.savePropertiesToFile(resource);
+				}
 			} catch (Exception e) {
 				e.printStackTrace();
 				Activator.logErrorMessageWithCause(e);
