@@ -995,6 +995,11 @@ public final class DocometreMessages extends NLS {
 	public static String ErrorRenamingEsxperimentInMathengine;
 	public static String RefreshExperimentsSubjectsViewsSubTaskTitle;
 	public static String ErrorRenamingResource;
+	public static String UpdateMetadaPropertiesFile;
+	public static String LoadProperties;
+	public static String RetrieveKeys;
+	public static String RemoveKeys;
+	public static String UpdateMetadataFile;
 	
 	// Batch processing editor
 	public static String Delete_Tooltip;

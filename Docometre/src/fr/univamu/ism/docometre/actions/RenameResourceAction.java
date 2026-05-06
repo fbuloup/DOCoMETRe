@@ -56,10 +56,13 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.IInputValidator;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.window.Window;
@@ -140,23 +143,39 @@ public class RenameResourceAction extends Action implements ISelectionListener, 
 						Activator.logErrorMessage(status.getMessage());
 					}
 				} 
-				// If resource has been renamed, update .metadata.properties
+				
 				boolean oldResourceNotExists = Files.notExists(Paths.get(oldResourceAbsolutePath.toOSString()));
 				boolean newResourceExists = Files.exists(Paths.get(newResourceAbsolutePath.toOSString()));
 				if(oldResourceNotExists && newResourceExists) {
-					// Update metadata properties file
-					Properties properties = ResourceProperties.loadPropertiesFromFile(resource);
-			        // Remove keys which start with oldPrefix
-			        Set<String> keys = properties.stringPropertyNames();
-			        Iterator<String> iterator = keys.iterator();
-			        while (iterator.hasNext()) {
-			            String key = iterator.next();
-			            if (key.startsWith(oldPrefix)) {
-			            	properties.remove(key);
-			            }
-			        }
-					ResourceProperties.savePropertiesToFile(resource);
+					// If resource has been renamed, update .metadata.properties
+					ProgressMonitorDialog progressMonitorDialog = new ProgressMonitorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+					progressMonitorDialog.run(true, false, new IRunnableWithProgress() {
+						public void run(IProgressMonitor monitor) {
+							// Update metadata properties file
+							monitor.beginTask(DocometreMessages.UpdateMetadaPropertiesFile, 3);
+							monitor.subTask(DocometreMessages.LoadProperties);
+							Properties properties = ResourceProperties.loadPropertiesFromFile(resource);
+							monitor.worked(1);
+					        // Remove keys which start with oldPrefix
+							monitor.subTask(DocometreMessages.RetrieveKeys);
+					        Set<String> keys = properties.stringPropertyNames();
+					        Iterator<String> iterator = keys.iterator();
+							monitor.worked(1);
+							monitor.subTask(DocometreMessages.RemoveKeys);
+					        while (iterator.hasNext()) {
+					            String key = iterator.next();
+					            if (key.startsWith(oldPrefix)) {
+					            	properties.remove(key);
+					            }
+					        }
+					        monitor.subTask(DocometreMessages.UpdateMetadataFile);
+							ResourceProperties.savePropertiesToFile(resource);
+							monitor.worked(1);
+							monitor.done();
+						}
+					});
 				}
+				
 			} catch (Exception e) {
 				e.printStackTrace();
 				Activator.logErrorMessageWithCause(e);
