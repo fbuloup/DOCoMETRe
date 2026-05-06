@@ -2413,4 +2413,8 @@ jurisdiction, by the more diligent Party.
          id="Docometre.Installation"
          version="0.0.0"/>
 
+   <plugin
+         id="org.eclipse.core.resources.nl_fr"
+         version="0.0.0"/>
+
 </feature>
