@@ -19,7 +19,7 @@ To download DOCoMETRe, please follow the link related to your platform :
 * [Win64](https://github.com/fbuloup/docometre-release/releases/download/docometre/DocometreProduct-win32.win32.x86_64.zip)
 
 <ins>**You are using OSX ?**</ins> You could unfortunately get an error the first time you launch DOCoMETRe.
-Please read this page to get a solution : [note for OSX users](https://github.com/TeamICSTECHNOS/DOCoMETRe/wiki/Note-for-OSX-users).
+Please read this page to get a solution : [note for OSX users](https://github.com/fbuloup/DOCoMETRe/wiki/Note-for-OSX-Users).
 
 <ins>**Your OS is Linux GTK**</ins>, 3D charts won't work because of this [bug](https://jogamp.org/bugzilla//show_bug.cgi?id=1362). It should be resolved once Jogamp release 2.4.0 will be available.
 
