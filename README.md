@@ -37,10 +37,10 @@ If you want to use DOCoMETRe, you must first download Java 21 or later from [Ado
 
 You can find direct Oracle JDK 21 links below :
 
-* [Windows 64](http://www.ism.univ-amu.fr/buloup/documents/JAVA/jdk-21_windows-x64_bin.exe)
-* [Linux Debian 64](http://www.ism.univ-amu.fr/buloup/documents/JAVA/jdk-21_linux-x64_bin.deb)
-* [Linux RPM 64](http://www.ism.univ-amu.fr/buloup/documents/JAVA/jdk-21_linux-x64_bin.rpm)
-* [Mac OS](http://www.ism.univ-amu.fr/buloup/documents/JAVA/jdk-21_macos-x64_bin.dmg)
+* [Windows 64](https://docometre.ism.univ-amu.fr/java-releases/jdk-21_windows-x64_bin.exe)
+* [Linux Debian 64](https://docometre.ism.univ-amu.fr/java-releases/jdk-21_linux-x64_bin.deb)
+* [Linux RPM 64](https://docometre.ism.univ-amu.fr/java-releases/jdk-21_linux-x64_bin.rpm)
+* [Mac OS](https://docometre.ism.univ-amu.fr/java-releases/jdk-21_macos-x64_bin.dmg)
 
 If you want to use Python as mathengine, please use 3.10.4 version. You can find direct links below :
 
