@@ -1,0 +1,115 @@
+<project name="Deploy Docometre App" default="deploy" basedir=".">
+    <!-- Properties -->
+    <property name="github.owner" value="fbuloup"/>
+    <property name="github.repo" value="docometre-release"/>
+    <property name="release.tag" value="docometre"/> 
+    <property name="product.dir" location="./target"/>
+    <property name="p2.dir" location="${product.dir}/repository"/>
+    <property name="gh.pages.branch" value="gh-pages"/>
+	<property name="gh.pages.branch.new" value="gh-pages-new"/>
+	<property file="github.properties"/>
+	
+	<!-- ZIP locations -->
+    <property name="zip.mac" location="${product.dir}/DocometreProduct-linux.gtk.x86_64.zip"/>
+    <property name="zip.linux" location="${product.dir}/DocometreProduct-linux.gtk.x86_64.zip"/>
+    <property name="zip.win" location="${product.dir}/DocometreProduct-win32.win32.x86_64.zip"/>
+	
+	<echoproperties></echoproperties>
+	
+	<!-- Delete actual release -->
+	<target name="A_delete-releases">
+		<exec executable="gh" failonerror="true">
+			<env key="GITHUB_TOKEN" value="${GH_TOKEN}"/>
+            <arg value="release"/>
+            <arg value="delete"/>
+            <arg value="${release.tag}"/>
+            <arg value="--repo"/>
+            <arg value="${github.owner}/${github.repo}"/>
+        </exec>
+    </target>
+	
+	
+    <!-- Create new release and upload ZIP files -->
+    <target name="B_upload-releases">
+        <!-- Crée une release via GitHub CLI -->
+        <exec executable="gh" failonerror="true">
+			<env key="GITHUB_TOKEN" value="${GH_TOKEN}"/>
+            <arg value="release"/>
+            <arg value="create"/>
+            <arg value="${release.tag}"/>
+            <arg value="${product.dir}/products/*.zip"/>
+            <arg value="--repo"/>
+            <arg value="${github.owner}/${github.repo}"/>
+        </exec>
+    </target>
+
+    <!-- Deploy p2 repo to GitHub Pages -->
+    <target name="C_deploy-p2">
+        <!-- Clone gh-pages branch to gh-pages-temp folder -->
+        <exec executable="git" failonerror="true">
+            <arg value="clone"/>
+            <arg value="--branch"/>
+            <arg value="${gh.pages.branch}"/>
+            <arg value="https://github.com/${github.owner}/${github.repo}.git"/>
+            <arg value="gh-pages-temp"/>
+        </exec>
+    	<!-- Switch gh-pages-new branch : branch without history -->
+    	<exec executable="git" dir="gh-pages-temp" failonerror="true">
+    		<arg value="checkout"/>
+    		<arg value="--orphan"/>
+    		<arg value="${gh.pages.branch.new}"/>
+    	</exec>
+        <!-- Copy p2 folder to gh-pages-temp/p2 folder -->
+        <copy todir="gh-pages-temp/p2" overwrite="true">
+            <fileset dir="${p2.dir}"/>
+        </copy>
+        <!-- Commit and push changes to gh-pages-new branch -->
+        <exec executable="git" dir="gh-pages-temp" failonerror="true">
+            <arg value="add"/>
+            <arg value="p2/"/>
+        </exec>
+        <exec executable="git" dir="gh-pages-temp" failonerror="true">
+            <arg value="config"/>
+            <arg value="user.name"/>
+            <arg value="GitHub Actions"/>
+        </exec>
+        <exec executable="git" dir="gh-pages-temp" failonerror="true">
+            <arg value="config"/>
+            <arg value="user.email"/>
+            <arg value="actions@github.com"/>
+        </exec>
+        <exec executable="git" dir="gh-pages-temp" failonerror="true">
+            <arg value="commit"/>
+            <arg value="-m"/>
+            <arg value="Deploy p2 repository for ${release.tag} - Flat history"/>
+        </exec>
+        <exec executable="git" dir="gh-pages-temp" failonerror="true">
+            <arg value="push"/>
+            <arg value="origin"/>
+            <arg value="${gh.pages.branch.new}:${gh.pages.branch}"/>
+        	<arg value="--force"/>
+        </exec>
+    </target>
+	
+	<target name="C2_Delete-zip-assets">
+		<exec executable="gh" failonerror="true">
+			<env key="GITHUB_TOKEN" value="${GH_TOKEN}"/>
+            <arg value="release"/>
+            <arg value="delete-asset"/>
+            <arg value="${release.tag}"/>
+            <arg value="Source code (zip)"/>
+            <arg value="--repo"/>
+            <arg value="${github.owner}/${github.repo}"/>
+        </exec>
+	</target>
+	
+	<target name="D_Delete-gh-pages-temp">
+		<!-- Nettoie le dossier temporaire -->
+        <delete dir="gh-pages-temp" verbose="true"/>
+	</target>
+
+    <!-- Cible principale -->
+    <target name="deploy" depends="A_delete-releases, B_upload-releases, C_deploy-p2, D_Delete-gh-pages-temp">
+        <echo>Déploiement terminé avec succès !</echo>
+    </target>
+</project>
