@@ -44,7 +44,7 @@ You can find direct Oracle JDK 21 links below :
 
 If you want to use Python as mathengine, please use 3.10.4 version. You can find direct links below :
 
-* [Windows 64](http://www.ism.univ-amu.fr/buloup/documents/PYTHON/python-3.10.4-amd64.exe)
-* [Mac OS](http://www.ism.univ-amu.fr/buloup/documents/PYTHON/python-3.10.4-macos11.pkg)
+* [Windows 64](https://docometre.ism.univ-amu.fr/python-releases/python-3.10.4-amd64.exe)
+* [Mac OS](https://docometre.ism.univ-amu.fr/python-releases/python-3.10.4-macos11.pkg)
 
 Hope you will appreciate this software :-)
