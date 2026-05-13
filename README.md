@@ -13,10 +13,10 @@ Videos tutorials ? It's [here](https://github.com/fbuloup/DOCoMETRe/wiki/videos)
 
 To download DOCoMETRe, please follow the link related to your platform :
 
-* [Linux64](https://github.com/fbuloup/docometre-release/releases/download/docometre/DocometreProduct-linux.gtk.x86_64.zip) (tested with Ubuntu 18.04.2 LTS)
-* [MacOSX - DMG file](http://139.124.68.1/buloup/documents/DOCoMETRe/DOCoMETRe.dmg)
-* [MacOSX](https://github.com/fbuloup/docometre-release/releases/download/docometre/DocometreProduct-macosx.cocoa.x86_64.zip)
-* [Win64](https://github.com/fbuloup/docometre-release/releases/download/docometre/DocometreProduct-win32.win32.x86_64.zip)
+* [Linux64](https://github.com/fbuloup/docometre-release/releases/download/docometre/DocometreLinux.zip) (tested with Ubuntu 18.04.2 LTS)
+* [MacOSX - DMG file](https://github.com/fbuloup/docometre-release/releases/download/docometre/DOCoMETRe.dmg)
+* [MacOSX](https://github.com/fbuloup/docometre-release/releases/download/docometre/DocometreMacOS.zip)
+* [Win64](https://github.com/fbuloup/docometre-release/releases/download/docometre/DocometreWindows.zip)
 
 <ins>**You are using OSX ?**</ins> You could unfortunately get an error the first time you launch DOCoMETRe.
 Please read this page to get a solution : [note for OSX users](https://github.com/fbuloup/DOCoMETRe/wiki/Note-for-OSX-Users).
