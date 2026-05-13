@@ -14,10 +14,47 @@
     <property name="zip.linux" location="${product.dir}/DocometreProduct-linux.gtk.x86_64.zip"/>
     <property name="zip.win" location="${product.dir}/DocometreProduct-win32.win32.x86_64.zip"/>
 	
+	<condition property="isMac">
+		<os family="mac" />
+	</condition>
+	
+	<condition property="linux.present">
+		<available file="./target/products/DocometreProduct-linux.gtk.x86_64.zip" />
+	</condition>
+
+	<condition property="mac.present">
+		<available file="./target/products/DocometreProduct-macosx.cocoa.x86_64.zip" />
+	</condition>
+
+	<condition property="windows.present">
+		<available file="./target/products/DocometreProduct-win32.win32.x86_64.zip" />
+	</condition>
+	
 	<echoproperties></echoproperties>
 	
+	<!-- Buid dmg file (mac only!) -->
+	<target name="A1_BuildDMGFile" if="isMac">
+		<delete file="target/products/DOCoMETRe.dmg" />
+		<exec executable="hdiutil" failonerror="true">
+			<arg line="create -srcfolder 'target/products/DocometreProduct/macosx/cocoa/x86_64' -volname 'DOCoMETRe' -fs HFS+ -fsargs '-c c=64,a=16,e=16' -format UDRO 'target/products/DOCoMETRe.dmg'" />
+		</exec>
+	</target>
+	
+	<target name="A3_MoveLinuxFile" if="linux.present">
+		<move file="./target/products/DocometreProduct-linux.gtk.x86_64.zip" tofile="target/products/DocometreLinux.zip"/>
+	</target>
+
+	<target name="A4_MoveMacFiles" if="mac.present">
+		<move file="target/products/DocometreProduct-macosx.cocoa.x86_64.zip" tofile="target/products/DocometreMacOS.zip"/>
+	</target>
+
+	<target name="A5_MoveWindowsFiles" if="windows.present">
+		<move file="target/products/DocometreProduct-win32.win32.x86_64.zip" tofile="target/products/DocometreWindows.zip"/>
+	</target>
+
+	
 	<!-- Delete actual release -->
-	<target name="A_delete-releases">
+	<target name="A2_delete-releases">
 		<exec executable="gh" failonerror="true">
 			<env key="GITHUB_TOKEN" value="${GH_TOKEN}"/>
             <arg value="release"/>
@@ -38,6 +75,7 @@
             <arg value="create"/>
             <arg value="${release.tag}"/>
             <arg value="${product.dir}/products/*.zip"/>
+            <arg value="${product.dir}/products/DOCoMETRe.dmg"/>
             <arg value="--repo"/>
             <arg value="${github.owner}/${github.repo}"/>
         </exec>
@@ -109,7 +147,7 @@
 	</target>
 
     <!-- Cible principale -->
-    <target name="deploy" depends="A_delete-releases, B_upload-releases, C_deploy-p2, D_Delete-gh-pages-temp">
+    <target name="deploy" depends="A1_BuildDMGFile, A2_delete-releases, B_upload-releases, C_deploy-p2, D_Delete-gh-pages-temp">
         <echo>Déploiement terminé avec succès !</echo>
     </target>
 </project>
