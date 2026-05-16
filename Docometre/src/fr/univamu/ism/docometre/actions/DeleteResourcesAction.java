@@ -135,12 +135,12 @@ public class DeleteResourcesAction extends Action implements ISelectionListener,
 								closeEditors(resource);
 								if(ResourceType.isChannel(resource)) {
 									IContainer subject = resource.getParent();
-									MathEngineFactory.getMathEngine().deleteChannel((Channel)resource);
 									try {
 										if(subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) != null && subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) instanceof ChannelsContainer) {
 											ChannelsContainer channelsContainer = (ChannelsContainer)subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
 											channelsContainer.setUpdateChannelsCache(true);
 										}
+										MathEngineFactory.getMathEngine().deleteChannel((Channel)resource);
 									} catch (CoreException e) {
 										Activator.logErrorMessageWithCause(e);
 										e.printStackTrace();
