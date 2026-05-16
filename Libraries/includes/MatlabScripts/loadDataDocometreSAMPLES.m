@@ -41,7 +41,7 @@ function subject = loadDataDocometreSAMPLES(dataFilesList, varargin)
         baseTrialsNumber = sessionsProperties([sessionNameCell{1}, baseTrialsNumber_QN]);
         trialNumber = num2str(str2double(baseTrialsNumber) + str2double(trialNumber));
         
-        % Get channel's name
+        % Get channel name
         fileName = segments(length(segments));
         fileNameSegments = split(fileName, '.');
         channelName = fileNameSegments{1};
@@ -84,15 +84,15 @@ function subject = loadDataDocometreSAMPLES(dataFilesList, varargin)
         sizeData = size(data);
         sizeData = sizeData(2);
         
-        eval(['subject.', channelName, '.NbSamples(',trialNumber ,') = ', num2str(sizeData),';']);
-        eval(['subject.', channelName, '.EndCut(',trialNumber ,') = ', num2str(sizeData),';']);
-        eval(['subject.', channelName, '.FrontCut(',trialNumber ,') = 0;']);
+        eval(['subject.', channelName, '.NbSamples(',trialNumber ,', 1) = ', num2str(sizeData),';']);
+        eval(['subject.', channelName, '.EndCut(',trialNumber ,', 1) = ', num2str(sizeData),';']);
+        eval(['subject.', channelName, '.FrontCut(',trialNumber ,', 1) = 0;']);
         eval([channelNameValues, '(', trialNumber, ', 1:', num2str(sizeData),') = data;']);
         if(strcmp(paddWithLastValue, 'true'))
         	eval([channelNameValues, '(', trialNumber, ', ', num2str(sizeData), ':end) = data(', num2str(sizeData), ');']);
         end 
     end
-
+	
     n = 1;
     for k = keys(createdCategories)
         values = createdCategories(k{1});
