@@ -88,8 +88,7 @@ public interface MathEngine {
 	}
 	String[] getLoadedSubjects();
 	boolean exist(String variableName);
-	boolean isStruct(String variableName);
-	boolean isField(String variableName, String fieldName);
+	boolean isFrequencyDomain(Channel channel);
 	Channel[] getChannels(IResource subject);
 	boolean isSignalCategoryOrEvent(String fullName, String check);
 	String getCriteriaForCategory(IResource category);

@@ -93,7 +93,7 @@ public class CategoryContainerEditor extends Composite implements ISelectionChan
 		gl.marginHeight = 5;
 		gl.marginWidth = 5;
 		
-		chart = ChannelEditorWidgetsFactory.createChart(this, 1);
+		chart = ChannelEditorWidgetsFactory.createChart(this, 1, true, false);
 		ChannelEditorWidgetsFactory.createSeparator(this, false, true, 1, SWT.VERTICAL);
 		
 		new MarkersManager(this);
@@ -199,6 +199,7 @@ public class CategoryContainerEditor extends Composite implements ISelectionChan
 		for (ISeries aSeries : series) {
 			chart.getSeriesSet().deleteSeries(aSeries.getId());
 		}
+		updateXAxisTitle();
 	}
 
 	private Set<Channel> getSignalsInChart() {
@@ -228,6 +229,7 @@ public class CategoryContainerEditor extends Composite implements ISelectionChan
 		if(chart.getSeriesSet().getSeries(seriesID) != null) {
 			chart.getSeriesSet().deleteSeries(seriesID);
 		}
+		updateXAxisTitle();
 	}
 	
 	private void addSeriesToChart(Channel signal, Integer trialNumber) {
@@ -242,6 +244,21 @@ public class CategoryContainerEditor extends Composite implements ISelectionChan
 		series.setAntialias(SWT.ON);
 		series.setSymbolType(PlotSymbolType.NONE);
 		series.setLineWidth(3);
+		updateXAxisTitle();
+	}
+	
+	private void updateXAxisTitle() {
+		Set<Channel> signals = getSignalsInChart();
+		boolean timeChannels = false;
+		boolean frequencyChannels = false;
+		for (Channel currentSignal : signals) {
+			if(MathEngineFactory.getMathEngine().isFrequencyDomain(currentSignal)) frequencyChannels = true;
+			else timeChannels = true;
+		}
+		String xAxislabel = DocometreMessages.XAxisLabelTime;
+		if(frequencyChannels && !timeChannels) xAxislabel = DocometreMessages.XAxisLabelFrequency;
+		if(frequencyChannels && timeChannels) xAxislabel = DocometreMessages.XAxisLabelTimeFrequency;
+		chart.getAxisSet().getXAxes()[0].getTitle().setText(xAxislabel);
 	}
 	
 	private void updateSeriesColors() {

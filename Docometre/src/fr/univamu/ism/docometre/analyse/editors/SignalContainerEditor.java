@@ -128,10 +128,12 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 	private Button keepScaleButton;
 	private Button showSamplesButton;
 	private Label sfLabel;
+	private boolean isFrequencyDomain;
 
 	public SignalContainerEditor(Composite parent, int style, ChannelEditor channelEditor) {
 		super(parent, style);
 		this.channelEditor = channelEditor;
+		isFrequencyDomain = MathEngineFactory.getMathEngine().isFrequencyDomain(channelEditor.getChannel());
 		setLayout(new GridLayout(2, false));
 		GridLayout gl = (GridLayout)getLayout();
 		gl.horizontalSpacing = 0;
@@ -145,7 +147,7 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		gl2.marginWidth = 0;
 		channelContainer.setLayout(gl2);
 		channelContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
-		chart = ChannelEditorWidgetsFactory.createChart(channelContainer, 1);
+		chart = ChannelEditorWidgetsFactory.createChart(channelContainer, 1, !isFrequencyDomain, isFrequencyDomain);
 		markersManager = new MarkersManager(this);
 		
 		trialsListViewer = new ListViewer(channelContainer, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
@@ -200,11 +202,9 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		});
 	}
 	
-
 	public InteractiveChart getChart() {
 		return chart;
 	}
-
 	
 	private void createMarkersGroup(Composite infosTrialFeaturesMarkersContainer) {
 		Group markersGroupsGroup = ChannelEditorWidgetsFactory.createGroup(infosTrialFeaturesMarkersContainer, DocometreMessages.MarkersGroupTitle);
@@ -555,7 +555,11 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.SamplesNumberLabel, SWT.LEFT, false);
 		samplesNumberLabelValue = ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.NotAvailable_Label, SWT.FILL, true);
 		
-		ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.DurationLabel, SWT.LEFT, false);
+		if(!isFrequencyDomain) {
+			ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.DurationLabel, SWT.LEFT, false);
+		} else {
+			ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.MaxFrequencyLabel, SWT.LEFT, false);
+		}
 		durationLabelValue = ChannelEditorWidgetsFactory.createLabel(trialsGroup, DocometreMessages.NotAvailable_Label, SWT.FILL, true);
 
 		trialSelectionSpinner.addSelectionListener(new SelectionAdapter() {
@@ -582,6 +586,7 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		int endCut =  MathEngineFactory.getMathEngine().getEndCut(channelEditor.getChannel(), trialSelectionSpinner.getSelection());
 		double sf = MathEngineFactory.getMathEngine().getSampleFrequency(channelEditor.getChannel());
 		double duration = samplesNumber > 0 ? 1f*(samplesNumber-1)/sf : 0.0;
+		if(isFrequencyDomain) duration = 1/(2*sf)*(samplesNumber - 1);
 		frontCutLabelValue.setText(Integer.toString(frontCut));
 		endCutLabelValue.setText(Integer.toString(endCut));
 		samplesNumberLabelValue.setText(Integer.toString(samplesNumber));
@@ -602,8 +607,13 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		ChannelEditorWidgetsFactory.createLabel(infosGroup, channelEditor.getChannel().getParent().getParent().getName(), SWT.LEFT, true);
 		
 		double sf = MathEngineFactory.getMathEngine().getSampleFrequency(channelEditor.getChannel());
-		ChannelEditorWidgetsFactory.createLabel(infosGroup, DocometreMessages.FrequencyLabel, SWT.LEFT, false);
-		sfLabel = ChannelEditorWidgetsFactory.createLabel(infosGroup, Double.toString(sf), SWT.LEFT, true);
+		if(!isFrequencyDomain) {
+			ChannelEditorWidgetsFactory.createLabel(infosGroup, DocometreMessages.FrequencyLabel, SWT.LEFT, false);
+			sfLabel = ChannelEditorWidgetsFactory.createLabel(infosGroup, Double.toString(sf), SWT.LEFT, true);
+		} else {
+			ChannelEditorWidgetsFactory.createLabel(infosGroup, DocometreMessages.FrequencyStepLabel, SWT.LEFT, false);
+			sfLabel = ChannelEditorWidgetsFactory.createLabel(infosGroup, Double.toString(1/sf), SWT.LEFT, true);
+		}
 		
 		nbTrials = MathEngineFactory.getMathEngine().getTrialsNumber(channelEditor.getChannel());
 		ChannelEditorWidgetsFactory.createLabel(infosGroup, DocometreMessages.TrialsNumberLabel2, SWT.LEFT, false);

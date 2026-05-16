@@ -220,7 +220,11 @@ public final class MatlabEngine implements MathEngine {
 	}
 	
 	@Override
-	public boolean isField(String variableName, String fieldName) {
+	public boolean isFrequencyDomain(Channel channel) {
+		return isField(channel.getFullName(), "isFrequencyDomain");
+	}
+
+	private boolean isField(String variableName, String fieldName) {
 		try {
 			Object[] responses = matlabController.returningEval("isfield(" + variableName + ",'" + fieldName + "')", 1);
 			Object response = responses[0];
@@ -235,8 +239,7 @@ public final class MatlabEngine implements MathEngine {
 		return false;
 	}
 	
-	@Override
-	public boolean isStruct(String variableName) {
+	private boolean isStruct(String variableName) {
 		try {
 			Object[] responses = matlabController.returningEval("isstruct(" + variableName + ")", 1);
 			Object response = responses[0];
@@ -575,7 +578,9 @@ public final class MatlabEngine implements MathEngine {
 	public void deleteChannel(Channel channel) {
 		try {
 			String channelName = channel.getName();
-			String subjectFullPath = channel.getFullPath().removeLastSegments(1).toString().replaceAll("/", ".");
+			String subjectFullPath = channel.getFullPath().removeLastSegments(1).toString();
+			if(subjectFullPath.startsWith("/")) subjectFullPath = subjectFullPath.replaceFirst("/", "");
+			subjectFullPath = subjectFullPath.replaceAll("/", ".");
 			String cmd = subjectFullPath + " = " + "rmfield(" + subjectFullPath + ", '" + channelName + "');";
 			matlabController.evaluate(cmd);
 			channel.setModified(true);

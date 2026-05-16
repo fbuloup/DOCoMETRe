@@ -890,6 +890,9 @@ public final class DocometreMessages extends NLS {
 	public static String NoDACQFileAssociatedToProcess;
 	
 	// Channel Editor
+	public static String XAxisLabelTime;
+	public static String XAxisLabelFrequency;
+	public static String XAxisLabelTimeFrequency;
 	public static String MarkersGroupTitle;
 	public static String GroupNameLabel;
 	public static String GraphicalSymbolLabel;
@@ -903,8 +906,10 @@ public final class DocometreMessages extends NLS {
 	public static String EndCutLabel;
 	public static String SamplesNumberLabel;
 	public static String DurationLabel;
+	public static String MaxFrequencyLabel;
 	public static String GeneralInfoGroupLabel;
 	public static String FrequencyLabel;
+	public static String FrequencyStepLabel;
 	public static String TrialsNumberLabel2;
 	public static String SignalNameLabel;
 	public static String DeleteSelectedMarkersGroupTooltip;

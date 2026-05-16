@@ -304,16 +304,6 @@ public class PythonEngine implements MathEngine {
 		String response = evaluate(cmd);
 		return "True".equals(response);
 	}
-
-	@Override
-	public boolean isStruct(String variableName) {
-		return false;
-	}
-
-	@Override
-	public boolean isField(String variableName, String fieldName) {
-		return false;
-	}
 	
 	@Override
 	public Channel[] getChannels(IResource subject) {
@@ -789,6 +779,15 @@ public class PythonEngine implements MathEngine {
 			code = code + "D['" + toKey + ".SampleFrequency'] = numpy.copy(D['" + signal.getFullName() + ".SampleFrequency'])\n";
 		}
 		runScript(code, false);
+	}
+
+	@Override
+	public boolean isFrequencyDomain(Channel channel) {
+		String expression = channel.getFullName() + ".isFrequencyDomain";
+		return exist(expression);
+//		expression = "docometre.experiments[\"" + expression + "\"]";
+//		String values = pythonController.getPythonEntryPoint().evaluate(expression);
+//		return values.equalsIgnoreCase("true") || values.equalsIgnoreCase("1");
 	}
 
 }

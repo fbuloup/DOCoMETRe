@@ -56,6 +56,7 @@ import org.eclipse.swtchart.extensions.charts.InteractiveChart;
 import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
 public final class ChannelEditorWidgetsFactory {
@@ -104,7 +105,7 @@ public final class ChannelEditorWidgetsFactory {
 		separator.setLayoutData(new GridData(SWT.FILL, SWT.FILL, grabExcessHorizontal, grabExcessVertical, horizontalSpan, 1));
 	}
 
-	public static InteractiveChart createChart(Composite parent, int horizontalSpan) {
+	public static InteractiveChart createChart(Composite parent, int horizontalSpan, boolean isTimeDomain, boolean isFrequencyDomain) {
 		InteractiveChart chart = new InteractiveChart(parent, SWT.BORDER);
 		boolean showCursor = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.SHOW_CURSOR);
 		boolean showMarker = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.SHOW_MARKER);
@@ -121,7 +122,10 @@ public final class ChannelEditorWidgetsFactory {
 		}
 		chart.getTitle().setVisible(false);
 		chart.getAxisSet().getXAxes()[0].getTitle().setForeground(colorWhite);
-		chart.getAxisSet().getXAxes()[0].getTitle().setText("Time (s)");
+		String xAxislabel = DocometreMessages.XAxisLabelTime;
+		if(isFrequencyDomain && !isTimeDomain) xAxislabel = DocometreMessages.XAxisLabelFrequency;
+		if(isFrequencyDomain && isTimeDomain) xAxislabel = DocometreMessages.XAxisLabelTimeFrequency;
+		chart.getAxisSet().getXAxes()[0].getTitle().setText(xAxislabel);
 		chart.getAxisSet().getYAxes()[0].getTitle().setVisible(false);
 		chart.getLegend().setPosition(SWT.BOTTOM);
 		chart.setSelectionRectangleColor(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_RED));
