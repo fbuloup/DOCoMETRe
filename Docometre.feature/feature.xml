@@ -6,23 +6,36 @@
       provider-name="ISM">
 
    <description>
-      -- 2026-05-11
+      -- 2026-05-17
+ADDED :
+* FFT function (Matlab and Python)
+* Support to display freq. domain in Signal editor
+* Border to CheckboxTableViewer (Subject selection dialog)
+FIXED :
+* Update wasn&apos;t done properly : prepare refresh before signal deletion
+* Bad shape for NbSamples, EndCut and FrontCut (load subject from samples files, Matlab)
+* Computation of duration was wrong in Signal editor (odd samplesNumber - frequency domain)
+-- 2026-05-11
 ADDED :
 * Support for Optitrack type 2 data files
 * Update Channels cache when subject is refreshed
 * Support to merge subjects (Matlab and Python)
-* Add support to manage trials without recorded signals (ADW files)
+* Add support to manage trials without recorded signals (ADW
+files)
 * Update session importation : now use validate mode
 * org.eclipse.core.resources.nl_fr fragment
 * Move to GitHub for releases and p2 repository
 FIXED :
 * RegExp correction for Optitrack type 1 files names
 * Optitrack CSV files names format correction in help
-* Bug with TimeChannel computation : must take trial number into account
+* Bug with TimeChannel computation : must take trial number into
+account
 * NPE - Called from UpdateWorkbenchDelegate : 49
 * Command history correction
-* if .metadata corrupted, removed : refresh to partially restore workspace
-* Refactor in order to duplicate persist. prop. in java prop. files
+* if .metadata corrupted, removed : refresh to partially restore
+workspace
+* Refactor in order to duplicate persist. prop. in java prop.
+files
 -- 2026-04-14
 ADDED :
 * Assign detected types to more untyped resources
