@@ -196,7 +196,7 @@ public class FFT extends GenericFunction {
 		String trialsList = getProperty(trialsListKey, "");
 		trialsList = FunctionsHelper.createTrialsListHelper(trialsList);
 		String inputSignal = getProperty(inputSignalKey, "");
-		String outputSignal = inputSignal + getProperty(outputSignalSuffixKey, "Deriv");
+		String outputSignal = inputSignal + getProperty(outputSignalSuffixKey, "FFT");
 		
 		code = code.replaceAll(trialsListKey, trialsList);
 		code = code.replaceAll(inputSignalKey, inputSignal).replaceAll(outputSignalSuffixKey, outputSignal);
