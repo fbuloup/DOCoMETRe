@@ -590,6 +590,7 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 			if(samplesNumber % 2 == 1) duration = (samplesNumber - 1)/(2*sf);
 			else duration = (samplesNumber - 2)/(2*sf);
 		}
+		duration = duration < 0 ? 0 : duration;
 		frontCutLabelValue.setText(Integer.toString(frontCut));
 		endCutLabelValue.setText(Integer.toString(endCut));
 		samplesNumberLabelValue.setText(Integer.toString(samplesNumber));

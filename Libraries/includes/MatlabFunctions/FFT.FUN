@@ -14,16 +14,16 @@ outputSignal.isCategory = 0;\n\
 outputSignal.isEvent = 0;\n\
 outputSignal.NbMarkersGroups = 0;\n\
 outputSignal.NbFeatures = 0;\n\
-outputSignal.SampleFrequency = inputSignal.NbSamples(1)/inputSignal.SampleFrequency;\n\
+outputSignal.SampleFrequency = signalSizes(2)/inputSignal.SampleFrequency;\n\
 outputSignal.FrontCut = inputSignal.FrontCut;\n\
 outputSignal.EndCut = inputSignal.EndCut;\n\
 if (mod(inputSignal.NbSamples(1),2) == 0)\n\
-	outputSignal.EndCut(1:signalSizes(1)) = inputSignal.NbSamples(1)/2;\n\
+	outputSignal.EndCut(1:signalSizes(1)) = signalSizes(2)/2;\n\
 else\n\
-	outputSignal.EndCut(1:signalSizes(1)) = (inputSignal.NbSamples(1) + 1)/2;\n\
+	outputSignal.EndCut(1:signalSizes(1)) = (signalSizes(2) + 1)/2;\n\
 end\n\
 tempValues = abs(fft(inputSignal.Values(trialsList,:)'))';\n\
-outputSignal.Values(trialsList,:) = tempValues./outputSignal.NbSamples(trialsList);\n\
+outputSignal.Values(trialsList,:) = tempValues./signalSizes(2);\n\
 outputSignal.isFrequencyDomain = true;\n\
 clear signalSizes tempValues;\n\
 if (~exist('createdOrModifiedChannels'))\n\
