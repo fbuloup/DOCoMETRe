@@ -183,6 +183,7 @@ if nbTrials > 0
 	                signal.Values = [signal.Values zeros(1,currentValuesSize - width(signal.Values))];
                     if signal.NbSamples > 0
                         signal.EndCut = currentValuesSize;
+                        signal.NbSamples = currentValuesSize;
                     end
                 end
                 
