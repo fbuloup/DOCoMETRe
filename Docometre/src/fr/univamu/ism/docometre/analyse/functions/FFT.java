@@ -172,7 +172,7 @@ public class FFT extends GenericFunction {
 		outputSignalSuffixLabel.setText(FunctionsMessages.OutputSignalSuffixLabel);
 		Text outputSignalSuffixText = new Text(paramContainer, SWT.BORDER);
 		outputSignalSuffixText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		value  = getProperty(outputSignalSuffixKey, "Deriv");
+		value  = getProperty(outputSignalSuffixKey, "FFT");
 		outputSignalSuffixText.setText(value);
 		outputSignalSuffixText.addModifyListener(new ModifyListener() {
 			@Override
