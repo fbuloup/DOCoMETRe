@@ -119,6 +119,7 @@ class DOCoMETRe(object):
 			                self.experiments[loadName + "." + channelName + "." + "FrontCut"] = numpy.zeros(int(nbTrials))
 			                self.experiments[loadName + "." + channelName + "." + "EndCut"] = nbSamples*numpy.ones(int(nbTrials))
 			                self.experiments[loadName + "." + channelName + "." + "Values"][currentTrialNumber][:] = newValues
+			            self.experiments[loadName + "." + channelName + "." + "EndCut"][currentTrialNumber] = nbSamples
 			            self.experiments[loadName + "." + channelName + "." + "isSignal"] = '1'
 			            self.experiments[loadName + "." + channelName + "." + "isCategory"] = '0'
 			            self.experiments[loadName + "." + channelName + "." + "isEvent"] = '0'
