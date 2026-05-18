@@ -7,302 +7,112 @@ elseif contains(dataFilesList,'.samples;')
 else
     
 %% Here we are : this is ADW data file, only one file in data files list
+tempSubject = {};
 
-dataFile = dataFilesList;
+fhandle = fopen(dataFilesList, 'rb','l');
+		
+% Nb channels
+nbChannels = fread(fhandle,1,'int32');
+channelsNames = readNames(fhandle, nbChannels);
+	
+% Nb sessions
+nbSessions = fread(fhandle,1,'int32');
+sessionsNames = readNames(fhandle, nbSessions);
+		
+% Nb conditions
+nbConditions = fread(fhandle,1,'int32');
+conditionsNames = readNames(fhandle, nbConditions);
+		
+% Nb seq. type
+nbSeqTypes = fread(fhandle,1,'int32');
+seqTypesNames = readNames(fhandle, nbSeqTypes);
+		
+% Nb trials
+nbTrials = fread(fhandle,1,'int32');
 
-fp = fopen(dataFile, 'rb','l');
- 
-nbChannels = fread(fp,1,'int32');          % nbA/D total possible
-channelsNames = readNames(fp,nbChannels);      %findnamesN(fp,vg.nad);
-  
-nbSessions = fread(fp,1,'int32')  ;          % nb sessions
-sessionsNames = readNames(fp,nbSessions);        
-
-nbConditions = fread(fp,1,'int32')    ;        % nb conditions
-conditionsNames = readNames(fp,nbConditions);
-  
-nbSeqTypes = fread(fp,1,'int32');            % nb s�quence types
-seqTypesNames = readNames(fp,nbSeqTypes);
-  
-nbTrials = fread(fp,1,'int32');
-
-nbTotCategories =  nbSessions*nbConditions*nbSeqTypes;
-
-% stoptrial = -1;
-% maxPercent = 2*nbTrials + nbTotCategories;
-% percentComplete = 0;
-% evalin('base','percentComplete = 0;');
-
-trials = cell(nbTrials,1);
+nbTotalCategories = nbSessions*nbConditions*nbSeqTypes;
+		
+criteria = cell(1,nbTrials);
+criteria(:) = {""};
+createdCategories = containers.Map;
 Categories = [];
-if nbTrials > 0
-	for currentNumTrial = 1:nbTrials
-       
-        currentSession(currentNumTrial) = fread(fp,1,'int32');
-        currentCondition(currentNumTrial) = fread(fp,1,'int32');
-        currentSeqType(currentNumTrial) = fread(fp,1,'int32');        
-        nbChannelsInTrial = fread(fp,1,'int32');
-        
-        ind(currentNumTrial) = ((currentSession(currentNumTrial) -1)*nbConditions*nbSeqTypes) + ((currentCondition(currentNumTrial) -1)* nbSeqTypes) + currentSeqType(currentNumTrial);
-        fullcondname{currentNumTrial} = [ sessionsNames{currentSession(currentNumTrial)} '_' seqTypesNames{currentSeqType(currentNumTrial)}];    
-        
-        Categories = [Categories; {fullcondname{currentNumTrial}}];
-        
-        if nbChannelsInTrial > 0            
-            
-            signals = cell(nbChannelsInTrial,1);                                    
-                        
-            for currentNumChannel = 1:nbChannelsInTrial     
-             	                            
-                numChannel = fread(fp,1,'int32');
-                sampleFrequency = fread(fp,1,'float32') ;
-                nbData = fread(fp,1,'int32');
-                                                   
-                if nbData >= 0
-                    
-                    signals{currentNumChannel,1}.isSignal = 1;   
-                    signals{currentNumChannel,1}.isCategory = 0;   
-                    signals{currentNumChannel,1}.isEvent = 0;       
-                    signals{currentNumChannel,1}.NbMarkersGroups = 0;
-                    signals{currentNumChannel,1}.NbFeatures = 0;
-                    signals{currentNumChannel,1}.SampleFrequency = sampleFrequency;                    
-                    signalName = char(channelsNames{numChannel,1});
-                    fullSignalName = [ 'tempSubject.' signalName ];
-                    values = fread(fp,nbData,'float32');
-                    signals{currentNumChannel,1}.Values = values';%fread(fp,nbData,'float32');                  
-                    signals{currentNumChannel,1}.FrontCut = 0;                    
-                    signals{currentNumChannel,1}.NbSamples = nbData;
-                    signals{currentNumChannel,1}.EndCut = signals{currentNumChannel,1}.NbSamples;   
-                    signals{currentNumChannel,1}.FullSignalName = fullSignalName;      
-                    %signals{currentNumChannel,1}.Category = {fullcondname{currentNumTrial}};
-                    
-                    
-               end
-            end
-            trials{currentNumTrial,1} = signals;
-            
-        else
-            signals = cell(nbChannels,1);                                    
-                        
-            for currentNumChannel = 1:nbChannels
-                signals{currentNumChannel,1}.isSignal = 1;   
-                signals{currentNumChannel,1}.isCategory = 0;   
-                signals{currentNumChannel,1}.isEvent = 0;       
-                signals{currentNumChannel,1}.NbMarkersGroups = 0;
-                signals{currentNumChannel,1}.NbFeatures = 0;
-                signals{currentNumChannel,1}.SampleFrequency = 0;                    
-                signalName = char(channelsNames{currentNumChannel,1});
-                fullSignalName = [ 'tempSubject.' signalName ];
-                signals{currentNumChannel,1}.Values = [0];%fread(fp,nbData,'float32');                  
-                signals{currentNumChannel,1}.FrontCut = 0;                    
-                signals{currentNumChannel,1}.NbSamples = 0;
-                signals{currentNumChannel,1}.EndCut = 0;   
-                signals{currentNumChannel,1}.FullSignalName = fullSignalName;      
-                %signals{currentNumChannel,1}.Category = {fullcondname{currentNumTrial}};
-            end
-
-            trials{currentNumTrial,1} = signals;
-        end                        
-        
+		
+for currentTrialNumber = 1:nbTrials
+	currentSession = fread(fhandle,1,'int32');
+	currentCondition = fread(fhandle,1,'int32');
+	currentSeqType = fread(fhandle,1,'int32');
+	nbChannelsInTrial = fread(fhandle,1,'int32');
+	criteria = [char(sessionsNames{currentSession}) '_' char(seqTypesNames{currentSeqType})];
+    Categories = [Categories; {criteria}];
+	if isKey(createdCategories, criteria)
+	    append = false;
+	    trialsList = createdCategories(criteria);
+        if isempty(find(trialsList == currentTrialNumber))
+            append = true;
+        end
+	    if append
+	        trialsList = [trialsList, currentTrialNumber];
+        end
+	else
+	    trialsList = currentTrialNumber;
     end
-    
-   % categoriesTrialsNames = {};
-   % categoriesTrialsNumber = [];
-    
-    nbTrialsWithChannels = 0;
-    for currentNumTrial = 1:nbTrials
-        %['currentNumTrial', ' : ', int2str(currentNumTrial)]
-        signals = trials{currentNumTrial,1};        
-        sizeTemp = size(signals);
-        nbChannelsInTrial = sizeTemp(1);
-        if(nbChannelsInTrial > 0)
-            nbTrialsWithChannels = nbTrialsWithChannels + 1;
-        end
-        
-        for currentNumChannel = 1:nbChannelsInTrial
-            signal = signals{currentNumChannel,1};            
-            fullSignalName = signal.FullSignalName;
-            signal = rmfield(signal,'FullSignalName');   
-            %DEBUG['currentSignal', ' : ', fullSignalName]            
-            if nbTrialsWithChannels == 1
-                eval([fullSignalName, ' = signal;']);      
-                eval(['currentValuesSizes = size(', fullSignalName,'.Values);']);
-                %DEBUG['create Signal 1 ', fullSignalName]
-            else
-                %Check if signal exists. Create it if not.
-                segmentsNames = explode(fullSignalName,'.');
-                %cmd = strcat(segmentsNames(1), '.', segmentsNames(2));
-                %cmd = strcat(cmd,',','''',segmentsNames(3),'''');
-                cmd = strcat('signalExist = isfield(tempSubject,''',segmentsNames(2),''');');
-                eval(cat(2,cmd{:}));
-                if(signalExist == 0)
-                    eval([fullSignalName, ' = signal;']);
-                    nbSamplesString = int2str(signal.NbSamples);                                        
-                    eval([fullSignalName,'.Values = []']); 
-                    eval([fullSignalName,'.FrontCut = []']);            
-                    eval([fullSignalName,'.EndCut = []']);                
-                    eval([fullSignalName,'.NbSamples = []']); 
-                    currentValuesSize = signal.NbSamples;   
-                    eval(['currentValuesSizes = size(', fullSignalName,'.Values);']);
-                    %DEBUG['create Signal 2 ', fullSignalName, ' with ', currentNumTrialString, ' empty trials']
-                else
-                    eval(['currentValuesSizes = size(', fullSignalName,'.Values);']);
-                    currentValuesSize = currentValuesSizes(2);
-                    nbSamplesString = int2str(currentValuesSize);
-                end                
-                %If there are missed trials : trials without data for this signal, add...
-                trialsSize = currentValuesSizes(1);
-                %currentValuesSizeString = int2str(currentValuesSize);
-                if(trialsSize < currentNumTrial - 1)                    
-                    nbTrialsToAdd = currentNumTrial - 1 - trialsSize;
-                    nbTrialsToAddString = int2str(nbTrialsToAdd);
-                    expression = [fullSignalName,'.Values = [', fullSignalName ,'.Values; zeros(',nbTrialsToAddString,',',nbSamplesString,')];'];
-                    eval(expression); 
-                    eval([fullSignalName,'.FrontCut = [', fullSignalName ,'.FrontCut; zeros(',nbTrialsToAddString,',1)];']);            
-                    eval([fullSignalName,'.EndCut = [', fullSignalName ,'.EndCut; ',nbSamplesString,'*ones(',nbTrialsToAddString,',1)];']);                
-                    eval([fullSignalName,'.NbSamples = [', fullSignalName ,'.NbSamples; ', nbSamplesString, '*ones(',nbTrialsToAddString,',1)];']);
-                    %DEBUG['add ', nbTrialsToAddString, ' empty trials to ', fullSignalName]
-                end
-                
-                %currentCategories = eval([fullSignalName, '.Category;']);
-                %currentCategories = [currentCategories; signal.Category];
-                %eval([fullSignalName,'.Category = currentCategories;']);       
-                
-                %If size of new trial is bigger than all others, increase matrix Values
-                %padding with zeros (or last values within comments)
-                if(currentValuesSize < width(signal.Values))
-                    currentNumTrialString = int2str(currentNumTrial - 1);
-                    increaseByString = int2str(width(signal.Values) - currentValuesSize);
-                    expression = [fullSignalName,'.Values = [', fullSignalName ,'.Values, zeros(',currentNumTrialString,',',increaseByString,')];'];
-                    eval(expression);                                                                                                                                       
-                end
-                
-                % If size of new trial is smaller than all others, increase vector values 
-                % padding with zeros (or last value whithin comments)
-                if(currentValuesSize > width(signal.Values))
-	                signal.Values = [signal.Values zeros(1,currentValuesSize - width(signal.Values))];
-                    if signal.NbSamples > 0
-                        signal.EndCut = currentValuesSize;
-                        signal.NbSamples = currentValuesSize;
+	createdCategories(criteria) = trialsList;
+	if nbChannelsInTrial > 0
+	    for currentChannelNumber = 1:nbChannelsInTrial
+	        channelNumber = fread(fhandle,1,'int32');
+	        channelName = char(channelsNames{channelNumber});
+            fullSignalName = ['tempSubject.' channelName];
+	        sampleFrequency = fread(fhandle,1,'float32');
+	        nbSamples = fread(fhandle,1,'int32');
+	        if nbSamples > 0
+	            newValues = fread(fhandle, nbSamples,'float32');
+	            if isfield(tempSubject, channelName)
+                    eval(['values = ' fullSignalName '.Values;']);
+	                currentNbSamples = size(values, 2);
+	                if(currentNbSamples > nbSamples)
+                        newValues = [newValues', zeros(1,currentNbSamples - nbSamples)];
+                    elseif(currentNbSamples < nbSamples)
+                        values = [values, zeros(nbTrials, nbSamples - currentNbSamples)];
+                        eval([fullSignalName '.Values = values;']);
                     end
+	                eval([fullSignalName '.Values(currentTrialNumber,:) = newValues;']);
+		        else
+	                eval([fullSignalName '.Values = zeros(nbTrials, nbSamples);']);
+	                eval([fullSignalName '.NbSamples = nbSamples*ones(nbTrials, 1);']);
+	                eval([fullSignalName '.FrontCut = zeros(nbTrials, 1);']);
+	                eval([fullSignalName '.EndCut = nbSamples*ones(nbTrials, 1);']);
+	                eval([fullSignalName '.Values(currentTrialNumber,:) = newValues;']);
                 end
-                
-                eval([fullSignalName,'.Values = [', fullSignalName ,'.Values;  signal.Values];']);               
-                eval([fullSignalName,'.FrontCut = [', fullSignalName ,'.FrontCut;  signal.FrontCut];']);            
-                eval([fullSignalName,'.EndCut = [', fullSignalName ,'.EndCut;  signal.EndCut];']);                
-                eval([fullSignalName,'.NbSamples = [', fullSignalName ,'.NbSamples;  signal.NbSamples];']);
-                
+	            eval([fullSignalName '.EndCut(currentTrialNumber) = nbSamples;']);
+	            eval([fullSignalName '.isSignal = 1;']);
+	            eval([fullSignalName '.isCategory = 0;']);
+	            eval([fullSignalName '.isEvent = 0;']);
+	            eval([fullSignalName '.NbFeatures = 0;']);
+	            eval([fullSignalName '.NbMarkersGroups = 0;']);
+	            eval([fullSignalName '.SampleFrequency = sampleFrequency;']);
             end
-            if signal.SampleFrequency ~= 0
-                eval([fullSignalName,'.SampleFrequency = signal.SampleFrequency;']);
-            end
-            
-%             if currentNumTrial == 1            
-%                 assignin('base','tempSignal',signal); % create temporary variable 
-%                 %Affect this temp variable to fullSignalName with evalin
-%                 evalin('base',[fullSignalName,' = tempSignal;']);                         
-%                 evalin('base','clear tempSignal;')            
-%             else
-%                 %sizeTemp = size(signal.Values);                     
-%                 evalin('base',['currentValuesSizes = size(', fullSignalName,'.Values);']);
-%                 currentValuesSizes = evalin('base','currentValuesSizes');
-%                 currentValuesSize = currentValuesSizes(2);
-%                 evalin('base','clear currentValuesSizes;')
-%                 
-%                 currentCategories = evalin('base',[fullSignalName, '.Category']);
-%                 signal.Category = [currentCategories; signal.Category];
-%                 assignin('base','tempSignalCategory',signal.Category); % create temporary variable 
-%                 %Affect this temp variable to fullSignalName with evalin
-%                 evalin('base',[fullSignalName,'.Category = tempSignalCategory;']);                         
-%                 evalin('base','clear tempSignalCategory;')    
-%                 
-%                 %expression = [fullSignalName, '.category = [', fullSignalName, '.category; ', category, '];']
-%                 %evalin('base',expression); 
-%                 
-%                 if(currentValuesSize < signal.NbSamples)
-%                     currentNumTrialString = int2str(currentNumTrial - 1);
-%                     increaseByString = int2str(signal.NbSamples - currentValuesSize);
-%                     expression = [fullSignalName,'.Values = [', fullSignalName ,'.Values, zeros(',currentNumTrialString,',',increaseByString,')];'];
-%                     evalin('base',expression);                                                
-%                     
-%                     nbSamplesString = int2str(signal.NbSamples);
-%                     expression = [fullSignalName,'.NbSamples = ', nbSamplesString,'*ones(1,',currentNumTrialString,');'];
-%                    	evalin('base',expression);                                                                                                                                   
-%                 end
-%                 
-%                 if(currentValuesSize > signal.NbSamples)
-%                     signal.Values = [signal.Values zeros(1,currentValuesSize - signal.NbSamples)];
-%                     signal.NbSamples = currentValuesSize;
-%                 end
-%                 
-%                 assignin('base','tempSignalValues',signal.Values); % create temporary variable 
-%                 %Affect this temp variable to fullSignalName with evalin
-%                 evalin('base',[fullSignalName,'.Values = [', fullSignalName ,'.Values;  tempSignalValues];']);
-%                 
-%                 assignin('base','tempSignalValues',signal.FrontCut); % create temporary variable 
-%                 %Affect this temp variable to fullSignalName with evalin
-%                 evalin('base',[fullSignalName,'.FrontCut = [', fullSignalName ,'.FrontCut  tempSignalValues];']);
-%                 
-%                 assignin('base','tempSignalValues',signal.EndCut); % create temporary variable 
-%                 %Affect this temp variable to fullSignalName with evalin
-%                 evalin('base',[fullSignalName,'.EndCut = [', fullSignalName ,'.EndCut  tempSignalValues];']);
-%                 
-%                 assignin('base','tempSignalValues',signal.NbSamples); % create temporary variable 
-%                 %Affect this temp variable to fullSignalName with evalin
-%                 evalin('base',[fullSignalName,'.NbSamples = [', fullSignalName ,'.NbSamples  tempSignalValues];']);               
-%                 
-%                 evalin('base','clear tempSignalValues;')
-%             end
-            
         end
-        
-%         percentComplete = percentComplete + 1;
-%         percentCompleteString = int2str(100*percentComplete/maxPercent);        
-%         evalin('base',['percentComplete = ',percentCompleteString,';']);
-%         
-%         if currentNumTrial == stoptrial 
-%             break
-%         end
-        
     end
 end
-
-%eval(['tempSubject = [', experimentName ,'.' ,  subjectName, '];']); 
-
-%fieldsNames = eval('fieldnames(tempSubject)');
-%firstSignalName = fieldsNames(1);
-%eval(['firstSignal = tempSubject.', firstSignalName{1}, ';']); 
-%categories = firstSignal.Category;
-categoriesDone = {};
-numCategory = 1;
-for i=1:length(Categories)
-    categoryName = Categories{i};
-    if(isempty(indexesOf(categoriesDone,categoryName)))
-        indexes = indexesOf(Categories,categoryName);
-        eval(['tempSubject.Category', int2str(numCategory), '.isCategory = 1;']);
-        eval(['tempSubject.Category', int2str(numCategory), '.isSignal = 0;']);
-        eval(['tempSubject.Category', int2str(numCategory), '.isEvent = 0;']);
-        eval(['tempSubject.Category', int2str(numCategory), '.Criteria = categoryName;']); 
-        eval(['tempSubject.Category', int2str(numCategory), '.TrialsList = indexes;']);     
-        if(exist('categoriesDone'))
-            categoriesDone(1,numCategory)={categoryName};           
-        else
-            categoriesDone = {categoryName}; 
-        end
-        numCategory = numCategory + 1;
-    end    
+	
+n = 1;
+for criteria = keys(createdCategories)
+    values = createdCategories(criteria{1});
+    eval(['tempSubject.Category' num2str(n) '.Criteria = criteria{1};']);
+    eval(['tempSubject.Category' num2str(n) '.TrialsList = values'''';']);
+    eval(['tempSubject.Category' num2str(n) '.isSignal = 0;']);
+    eval(['tempSubject.Category' num2str(n) '.isCategory = 1;']);
+    eval(['tempSubject.Category' num2str(n) '.isEvent = 0;']);
+    n = n + 1;
 end
 tempSubject.Categories.Names = Categories;
 tempSubject.Categories.isCategory = 0;
 tempSubject.Categories.isSignal = 0;
 tempSubject.Categories.isEvent = 0;
-    
-subject = tempSubject;
 
-%assignin('base','tempSubject',tempSubject);
-%evalin('base', [experimentName,'.', subjectName,'=tempSubject;']);
-%evalin('base','clear tempSubject;');
-fclose(fp);
+subject = tempSubject;
+fclose(fhandle);
+
 end
 
 %**************************************************************************
@@ -317,13 +127,4 @@ function names = readNames(id, nbNames)
             charact = fread(id,1,'char');
         end        
         names{i,1} = name;
-    end
-
-%**************************************************************************
-function indexes = indexesOf(names, name)
-    indexes = [];
-    for i=1:length(names)
-        if(strcmp(names(i),name)) 
-            indexes=[indexes, i];
-        end
     end
