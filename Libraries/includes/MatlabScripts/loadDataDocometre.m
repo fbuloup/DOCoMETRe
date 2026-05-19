@@ -8,6 +8,9 @@ else
     
 %% Here we are : this is ADW data file, only one file in data files list
 tempSubject = {};
+sessionsProperties = containers.Map(varargin{1}, varargin{2});
+paddWithLastValue = sessionsProperties('PADD_WITH_LAST_VALUE_RATHER_THAN_ZERO');
+
 
 fhandle = fopen(dataFilesList, 'rb','l');
 		
@@ -70,9 +73,20 @@ for currentTrialNumber = 1:nbTrials
                     eval(['values = ' fullSignalName '.Values;']);
 	                currentNbSamples = size(values, 2);
 	                if(currentNbSamples > nbSamples)
-                        newValues = [newValues', zeros(1,currentNbSamples - nbSamples)];
+	                	if(strcmp(paddWithLastValue, 'true'))
+	                		paddValues = newValues(nbSamples)*ones(1,currentNbSamples - nbSamples);
+	                	else
+	                		paddValues = zeros(1,currentNbSamples - nbSamples);
+	                	end
+                        newValues = [newValues', paddValues];
                     elseif(currentNbSamples < nbSamples)
-                        values = [values, zeros(nbTrials, nbSamples - currentNbSamples)];
+                    	if(strcmp(paddWithLastValue, 'true'))
+                    		lastSamples = values(:, end);
+                    		paddValues = repmat(lastSamples, 1, nbSamples - currentNbSamples);
+                    	else
+                    		paddValues = zeros(nbTrials, nbSamples - currentNbSamples);
+                    	end
+                        values = [values, paddValues];
                         eval([fullSignalName '.Values = values;']);
                     end
 	                eval([fullSignalName '.Values(currentTrialNumber,:) = newValues;']);
