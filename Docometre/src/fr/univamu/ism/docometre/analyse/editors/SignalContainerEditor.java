@@ -579,6 +579,10 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		endCutLabelValue.setText(Integer.toString(endCut));
 		samplesNumberLabelValue.setText(Integer.toString(samplesNumber));
 		durationLabelValue.setText(Double.toString(duration));
+		frontCutLabelValue.setToolTipText(Integer.toString(frontCut));
+		endCutLabelValue.setToolTipText(Integer.toString(endCut));
+		samplesNumberLabelValue.setToolTipText(Integer.toString(samplesNumber));
+		durationLabelValue.setToolTipText(Double.toString(duration));
 	}
 
 	private void createGeneralInfoGroup(Composite infosTrialsFieldsMarkersContainer) {
@@ -610,6 +614,7 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		useSameColorButton = new Button(infosGroup, SWT.CHECK);
 		useSameColorButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 		useSameColorButton.setText(DocometreMessages.UseSameColorForSameCategory);
+		useSameColorButton.setToolTipText(DocometreMessages.UseSameColorForSameCategory);
 		useSameColorButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -620,10 +625,12 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		keepScaleButton = new Button(infosGroup, SWT.CHECK);
 		keepScaleButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 		keepScaleButton.setText(DocometreMessages.KeepScaleWhenTrialChange);
+		keepScaleButton.setToolTipText(DocometreMessages.KeepScaleWhenTrialChange);
 		
 		showSamplesButton = new Button(infosGroup, SWT.CHECK);
 		showSamplesButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 		showSamplesButton.setText(DocometreMessages.ShowSamples);
+		showSamplesButton.setToolTipText(DocometreMessages.ShowSamples);
 		showSamplesButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -681,9 +688,7 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 			((ILineSeries)series).setSymbolColor(((ILineSeries)series).getLineColor());
 		}
 		chart.redraw();
-		
 	}
-
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -788,6 +793,8 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 				selectedTrialsNumbers.set(i, trialNumber);
 			}
 			trialsListViewer.setSelection(new StructuredSelection(selectedTrialsNumbers), true);
+			int minSelectedTrialNumber = Collections.min(selectedTrialsNumbers);
+			trialSelectionSpinner.setSelection(minSelectedTrialNumber);
 		}
 	}
 
@@ -802,6 +809,7 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 				newSelection.add(maxTrialNumber);
 				trialsListViewer.setSelection(new StructuredSelection(newSelection), true);
 				trialsListViewer.getList().showSelection();
+				trialSelectionSpinner.setSelection(maxTrialNumber);
 			}
 			return;
 		}
@@ -812,6 +820,8 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 				selectedTrialsNumbers.set(i, trialNumber);
 			}
 			trialsListViewer.setSelection(new StructuredSelection(selectedTrialsNumbers), true);
+			int minSelectedTrialNumber = Collections.min(selectedTrialsNumbers);
+			trialSelectionSpinner.setSelection(minSelectedTrialNumber);
 		}
 	}
 

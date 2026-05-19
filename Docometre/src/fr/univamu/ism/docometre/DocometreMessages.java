@@ -889,6 +889,19 @@ public final class DocometreMessages extends NLS {
 	public static String NothingToBuild;
 	public static String NoDACQFileAssociatedToProcess;
 	
+	// Channel Editor : Action bar contributor
+	public static String NextTrial;
+	public static String PreviousTrial;
+	public static String Up;
+	public static String Down;
+	public static String Right;
+	public static String Left;
+	public static String ZoomIn;
+	public static String ZoomOut;
+	public static String ZoomToFit;
+	public static String TurnLeft;
+	public static String TurnRight;
+	
 	// Channel Editor
 	public static String XAxisLabelTime;
 	public static String XAxisLabelFrequency;

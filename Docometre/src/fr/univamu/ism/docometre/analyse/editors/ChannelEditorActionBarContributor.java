@@ -83,7 +83,7 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 	
 	private class NextTrialAction extends Action {
 		public NextTrialAction() {
-			super("Next trial", Activator.getImageDescriptor(IImageKeys.NEXT_ICON));
+			super(DocometreMessages.NextTrial, Activator.getImageDescriptor(IImageKeys.NEXT_ICON));
 		}
 		
 		@Override
@@ -101,7 +101,7 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 	
 	private class PreviousTrialAction extends Action {
 		public PreviousTrialAction() {
-			super("Previous trial", Activator.getImageDescriptor(IImageKeys.PREVIOUS_ICON));
+			super(DocometreMessages.PreviousTrial, Activator.getImageDescriptor(IImageKeys.PREVIOUS_ICON));
 		}
 		@Override
 		public void run() {
@@ -198,7 +198,7 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 
 	private class UpAction extends Action {
 		public UpAction() {
-			super("Up", Activator.getImageDescriptor(IImageKeys.UP_PANNING));
+			super(DocometreMessages.Up, Activator.getImageDescriptor(IImageKeys.UP_PANNING));
 		}
 		
 		@Override
@@ -210,7 +210,7 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 	
 	private class DownAction extends Action {
 		public DownAction() {
-			super("Down", Activator.getImageDescriptor(IImageKeys.DOWN_PANNING));
+			super(DocometreMessages.Down, Activator.getImageDescriptor(IImageKeys.DOWN_PANNING));
 		}
 		
 		@Override
@@ -222,7 +222,7 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 	
 	private class RightAction extends Action {
 		public RightAction() {
-			super("Right", Activator.getImageDescriptor(IImageKeys.RIGHT_PANNING));
+			super(DocometreMessages.Right, Activator.getImageDescriptor(IImageKeys.RIGHT_PANNING));
 		}
 		
 		@Override
@@ -234,7 +234,7 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 	
 	private class LeftAction extends Action {
 		public LeftAction() {
-			super("Left", Activator.getImageDescriptor(IImageKeys.LEFT_PANNING));
+			super(DocometreMessages.Left, Activator.getImageDescriptor(IImageKeys.LEFT_PANNING));
 		}
 		
 		@Override
@@ -246,7 +246,7 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 	
 	private class ZoomInAction extends Action {
 	public ZoomInAction() {
-		super("Zoom In", Activator.getImageDescriptor(IImageKeys.ZOOM_IN));
+		super(DocometreMessages.ZoomIn, Activator.getImageDescriptor(IImageKeys.ZOOM_IN));
 	}
 	
 	@Override
@@ -258,7 +258,7 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 
 private class ZoomOutAction extends Action {
 	public ZoomOutAction() {
-		super("Zoom Out", Activator.getImageDescriptor(IImageKeys.ZOOM_OUT));
+		super(DocometreMessages.ZoomOut, Activator.getImageDescriptor(IImageKeys.ZOOM_OUT));
 	}
 	
 	@Override
@@ -270,7 +270,7 @@ private class ZoomOutAction extends Action {
 
 private class ZoomFitAction extends Action {
 	public ZoomFitAction() {
-		super("Zoom to Fit", Activator.getImageDescriptor(IImageKeys.AUTO_SCALE_ICON));
+		super(DocometreMessages.ZoomToFit, Activator.getImageDescriptor(IImageKeys.AUTO_SCALE_ICON));
 	}
 	
 	@Override
@@ -282,7 +282,7 @@ private class ZoomFitAction extends Action {
 	
 	private class TurnLeftAction extends Action {
 		public TurnLeftAction() {
-			super("Turn Left", Activator.getImageDescriptor(IImageKeys.TURN_LEFT));
+			super(DocometreMessages.TurnLeft, Activator.getImageDescriptor(IImageKeys.TURN_LEFT));
 		}
 		
 		@Override
@@ -293,7 +293,7 @@ private class ZoomFitAction extends Action {
 	
 	private class TurnRightAction extends Action {
 		public TurnRightAction() {
-			super("Turn Right", Activator.getImageDescriptor(IImageKeys.TURN_RIGHT));
+			super(DocometreMessages.TurnRight, Activator.getImageDescriptor(IImageKeys.TURN_RIGHT));
 		}
 		
 		@Override

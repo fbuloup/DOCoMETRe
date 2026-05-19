@@ -68,6 +68,7 @@ public final class ChannelEditorWidgetsFactory {
 		Label label = new Label(parent, SWT.NORMAL);
 		label.setLayoutData(new GridData(horizontalAlignment, SWT.CENTER, grabExcessHorizontal, false));
 		label.setText(text);
+		label.setToolTipText(text);
 		return label;
 	}
 	
