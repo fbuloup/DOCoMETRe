@@ -68,6 +68,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.jface.window.Window;
+import org.eclipse.nebula.widgets.pgroup.PGroup;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
@@ -168,38 +169,21 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 		trialsListViewer.setInput(trials);
 		trialsListViewer.addSelectionChangedListener(this);
 		
-		ChannelEditorWidgetsFactory.createSeparator(this, true, false, 1, SWT.HORIZONTAL);
-		Button showHideInfosButton = new Button(this, SWT.FLAT);
-		showHideInfosButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
-		((GridData)showHideInfosButton.getLayoutData()).heightHint = 10;
-		((GridData)showHideInfosButton.getLayoutData()).widthHint = 12;
-		showHideInfosButton.setImage(Activator.getImage(IImageKeys.HIDE_PANNEL));
+		PGroup pGroupInfos = new PGroup(this, SWT.SMOOTH);
+		pGroupInfos.setText(DocometreMessages.ChannelEditorGroupLabel);
+		pGroupInfos.setExpanded(false);
 		
-		Composite infosTrialFeaturesMarkersContainer = new Composite(this, SWT.NORMAL);
-		infosTrialFeaturesMarkersContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
-		infosTrialFeaturesMarkersContainer.setLayout(new GridLayout(4, true));
-		GridLayout gl3 = (GridLayout) infosTrialFeaturesMarkersContainer.getLayout();
+		pGroupInfos.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		pGroupInfos.setLayout(new GridLayout(4, true));
+		GridLayout gl3 = (GridLayout) pGroupInfos.getLayout();
 		gl3.horizontalSpacing = 0;
 		gl3.verticalSpacing = 0;
-		gl3.marginHeight = 0;
-		gl3.marginWidth = 0;
-		createGeneralInfoGroup(infosTrialFeaturesMarkersContainer);
-		createTrialsGroup(infosTrialFeaturesMarkersContainer);
-		createFeaturesGroup(infosTrialFeaturesMarkersContainer);
-		createMarkersGroup(infosTrialFeaturesMarkersContainer);
-		
-		showHideInfosButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				GridData gd = (GridData)infosTrialFeaturesMarkersContainer.getLayoutData();
-				boolean exclude = gd.exclude;
-				gd.exclude = !exclude;
-				infosTrialFeaturesMarkersContainer.setVisible(exclude);
-				infosTrialFeaturesMarkersContainer.getParent().layout(true);
-				if(gd.exclude) showHideInfosButton.setImage(Activator.getImage(IImageKeys.SHOW_PANNEL));
-				else showHideInfosButton.setImage(Activator.getImage(IImageKeys.HIDE_PANNEL));
-			}
-		});
+		gl3.marginHeight = 3;
+		gl3.marginWidth = 3;
+		createGeneralInfoGroup(pGroupInfos);
+		createTrialsGroup(pGroupInfos);
+		createFeaturesGroup(pGroupInfos);
+		createMarkersGroup(pGroupInfos);
 	}
 	
 	public InteractiveChart getChart() {

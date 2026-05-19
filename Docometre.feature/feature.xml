@@ -2447,4 +2447,8 @@ jurisdiction, by the more diligent Party.
          id="org.eclipse.core.resources.nl_fr"
          version="0.0.0"/>
 
+   <plugin
+         id="org.eclipse.nebula.widgets.pgroup"
+         version="0.0.0"/>
+
 </feature>

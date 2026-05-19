@@ -37,7 +37,8 @@ Require-Bundle: org.eclipse.ui;bundle-version="3.108.0",
  NRTSWTChart;bundle-version="1.0.0",
  org.eclipse.ui.console;bundle-version="3.14.100",
  org.eclipse.ui.workbench.texteditor;bundle-version="3.17.400",
- org.eclipse.platform;bundle-version="4.35.0"
+ org.eclipse.platform;bundle-version="4.35.0",
+ org.eclipse.nebula.widgets.pgroup;bundle-version="1.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Bundle-Localization: OSGI-INF/l10n/bundle
