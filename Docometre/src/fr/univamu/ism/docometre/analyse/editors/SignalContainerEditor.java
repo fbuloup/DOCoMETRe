@@ -795,6 +795,9 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 			trialsListViewer.setSelection(new StructuredSelection(selectedTrialsNumbers), true);
 			int minSelectedTrialNumber = Collections.min(selectedTrialsNumbers);
 			trialSelectionSpinner.setSelection(minSelectedTrialNumber);
+			trialSelectionSpinner.notifyListeners(SWT.Selection, new Event());
+			trialFeatureSpinner.setSelection(minSelectedTrialNumber);
+			trialFeatureSpinner.notifyListeners(SWT.Selection, new Event());
 		}
 	}
 
@@ -822,6 +825,9 @@ public class SignalContainerEditor extends Composite implements ISelectionChange
 			trialsListViewer.setSelection(new StructuredSelection(selectedTrialsNumbers), true);
 			int minSelectedTrialNumber = Collections.min(selectedTrialsNumbers);
 			trialSelectionSpinner.setSelection(minSelectedTrialNumber);
+			trialSelectionSpinner.notifyListeners(SWT.Selection, new Event());
+			trialFeatureSpinner.setSelection(minSelectedTrialNumber);
+			trialFeatureSpinner.notifyListeners(SWT.Selection, new Event());
 		}
 	}
 
