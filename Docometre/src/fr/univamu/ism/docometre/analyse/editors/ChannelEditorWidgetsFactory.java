@@ -81,7 +81,7 @@ public final class ChannelEditorWidgetsFactory {
 		spinner.addMouseWheelListener(new MouseWheelListener() {
 			@Override
 			public void mouseScrolled(MouseEvent e) {
-				spinner.setSelection(spinner.getSelection() + e.count);
+				spinner.setSelection((int) (spinner.getSelection() +  Math.signum(e.count)));
 				
 			}
 		});
