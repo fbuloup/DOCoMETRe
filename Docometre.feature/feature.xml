@@ -6,15 +6,31 @@
       provider-name="ISM">
 
    <description>
-      -- 2026-05-17
+      -- 2026-05-21
+ADDED :
+* Refactoring load data from ADW file
+* Now padd With Last Values rather than zeros if necessary (ADW files)
+* Use PGroup Nebula widget for ChannelEditor
+* Channel editor toolbar contributor internat. 
+* Signal editor : increase one trial by one trial on mouse scroll event
+* Signal editor : update tooltips in signal editor
+* Update trial and feature infos when trial number is changed
+FIXED :
+* Default suffix of FFT function must be FFT not Deriv !
+* Bugs in samples number to compute FFT in FFT function
+* EndCut must be real samples number
+-- 2026-05-17
 ADDED :
 * FFT function (Matlab and Python)
 * Support to display freq. domain in Signal editor
 * Border to CheckboxTableViewer (Subject selection dialog)
 FIXED :
-* Update wasn&apos;t done properly : prepare refresh before signal deletion
-* Bad shape for NbSamples, EndCut and FrontCut (load subject from samples files, Matlab)
-* Computation of duration was wrong in Signal editor (odd samplesNumber - frequency domain)
+* Update wasn&apos;t done properly : prepare refresh before signal
+deletion
+* Bad shape for NbSamples, EndCut and FrontCut (load subject
+from samples files, Matlab)
+* Computation of duration was wrong in Signal editor (odd samplesNumber
+- frequency domain)
 -- 2026-05-11
 ADDED :
 * Support for Optitrack type 2 data files
