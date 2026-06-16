@@ -183,6 +183,7 @@ public class ADWinCANModulePage extends ADWinModulePage {
 		nbSensorsCombo.addModifyListener(new ModifyPropertyHandler(ADWinCANModuleProperties.NB_SENSORS, module, nbSensorsCombo, ADWinCANModuleProperties.NB_SENSORS.getRegExp(), "", false, (ResourceEditor)getEditor()));
 		nbSensorsCombo.setEnabled(false);
 		if(module.getProperty(ADWinCANModuleProperties.SYSTEM_TYPE).contains(ADWinCANModuleProperties.CODAMOTION_SYSTEM_TYPE)) nbSensorsCombo.setEnabled(true);
+		if(module.getProperty(ADWinCANModuleProperties.SYSTEM_TYPE).contains(ADWinCANModuleProperties.OPTITRACK_SYSTEM_TYPE)) nbSensorsCombo.setEnabled(true);
 		
 		createLabel(generalconfigurationContainer, ADWinMessages.ADWinCAN_MODE_Label, ADWinMessages.ADWinCAN_MODE_Toolip);
 		value = module.getProperty(ADWinCANModuleProperties.MODE);
@@ -322,21 +323,23 @@ public class ADWinCANModulePage extends ADWinModulePage {
 					
 					boolean wasCoda = ((String)oldValue).contains(ADWinCANModuleProperties.CODAMOTION_SYSTEM_TYPE);
 					boolean isCoda = ((String)newValue).contains(ADWinCANModuleProperties.CODAMOTION_SYSTEM_TYPE);
+					boolean wasOptitrack = ((String)oldValue).contains(ADWinCANModuleProperties.OPTITRACK_SYSTEM_TYPE);
+					boolean isOptitrack = ((String)newValue).contains(ADWinCANModuleProperties.OPTITRACK_SYSTEM_TYPE);
 					boolean wasGyro = ((String)oldValue).contains(ADWinCANModuleProperties.GYROSCOPE_SYSTEM_TYPE);
 					boolean isGyro = ((String)newValue).contains(ADWinCANModuleProperties.GYROSCOPE_SYSTEM_TYPE);
 					boolean wasTimeStamp = ((String)oldValue).contains(ADWinCANModuleProperties.TIMESTAMP_SYSTEM_TYPE);
 					boolean isTimeStamp = ((String)newValue).contains(ADWinCANModuleProperties.TIMESTAMP_SYSTEM_TYPE);
 					boolean isNotSpecified = ((String)newValue).contains(ADWinCANModuleProperties.NOT_SPECIFIED_SYSTEM_TYPE);
 					
-					if(isCoda) {
-						nbSensorsCombo.setEnabled(true);
-						updateWidget(systemTypeCombo, (ADWinCANModuleProperties) property);
-					}
-					
-					// Clean codamotion channels
-					if(wasCoda && !isCoda) {
+					// Clean codamotion/optitrack channels
+					if((wasCoda && !isCoda) || (wasOptitrack && !isOptitrack)) {
 						getModule().setProperty(ADWinCANModuleProperties.NB_SENSORS, "0");
 						nbSensorsCombo.setEnabled(false);
+					}
+					
+					if(isCoda || isOptitrack) {
+						nbSensorsCombo.setEnabled(true);
+						updateWidget(systemTypeCombo, (ADWinCANModuleProperties) property);
 					}
 					
 					// Clean gyroscope channels

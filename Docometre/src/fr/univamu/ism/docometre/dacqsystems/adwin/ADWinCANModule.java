@@ -92,7 +92,7 @@ public class ADWinCANModule extends Module {
 		String messageID = getProperty(ADWinCANModuleProperties.MESSAGE_ID);
 		if(messageID == null) messageID = "1";
 		
-		if(useCodamotion() || useGyroscope() || useTimeStamp()) baudRate = "1000000";
+		if(useCodamotion() || useGyroscope() || useTimeStamp() || useOptitrack()) baudRate = "1000000";
 		else {
 			int baudRateSpeed = (int) (Double.parseDouble(baudRate) * 1000);
 			baudRate = String.valueOf(baudRateSpeed);
@@ -112,10 +112,10 @@ public class ADWinCANModule extends Module {
 		}
 		
 		if (segment == ADWinCodeSegmentProperties.DECLARATION) {
-			if(useCodamotion() || useGyroscope() || useTimeStamp()) code = code + "DIM " + canName + "_SYSTEM_ID AS LONG\n";
-			if(useCodamotion()) { // There is CODA
+			if(useCodamotion() || useGyroscope() || useTimeStamp() || useOptitrack()) code = code + "DIM " + canName + "_SYSTEM_ID AS LONG\n";
+			if(useCodamotion() || useOptitrack()) { // There is CODA or Optitrack
 				if(nbSensors > 0) {
-					code = code + "\nREM ******** Déclaration variables CODAmotion CAN module " + moduleNumber + " interface " + interfaceNumber + "\n";
+					code = code + "\nREM ******** Déclaration variables CODAmotion/Optitrack CAN module " + moduleNumber + " interface " + interfaceNumber + "\n";
 					code = code + "DIM " + canName + "_xValue[" + nbSensors + "] AS LONG\n";
 					code = code + "DIM " + canName + "_yValue[" + nbSensors + "] AS LONG\n";
 					code = code + "DIM " + canName + "_zValue[" + nbSensors + "] AS LONG\n";
@@ -143,7 +143,7 @@ public class ADWinCANModule extends Module {
 				code = code + "SET_CAN_REG("+ moduleNumber + ", " + interfaceNumber + ", 6, 0)\n";
 				code = code + "SET_CAN_REG("+ moduleNumber + ", " + interfaceNumber + ", 7, 0)\n";
 				code = code + "fpar_80 = SET_CAN_BAUDRATE("+ moduleNumber + ", " + interfaceNumber + ", " + baudRate + ")\n";
-				if(useCodamotion() || useGyroscope() || useTimeStamp()) {
+				if(useCodamotion() || useGyroscope() || useTimeStamp() || useOptitrack()) {
 					code = code + "REM Reception de message ID 2 dans message objet 2, ID normal (pas étendu)\n";
 					code = code + "EN_RECEIVE("+ moduleNumber + ", " + interfaceNumber + ", 2, 2, 0)\n";
 				} else {
@@ -180,7 +180,7 @@ public class ADWinCANModule extends Module {
 				code = code + "SET_CAN_REG(" + interfaceNumber + ", 6, 0)\n";
 				code = code + "SET_CAN_REG(" + interfaceNumber + ", 7, 0)\n";
 				code = code + "fpar_80 = SET_CAN_BAUDRATE(" + interfaceNumber + ", " + baudRate + ")\n";
-				if(useCodamotion() || useGyroscope() || useTimeStamp()) {
+				if(useCodamotion() || useGyroscope() || useTimeStamp() || useOptitrack()) {
 					code = code + "REM Reception de message ID 2 dans message objet 2, ID normal (pas étendu)\n";
 					code = code + "EN_RECEIVE(" + interfaceNumber + ", 2, 2, 0)\n";
 				} else {
@@ -213,9 +213,9 @@ public class ADWinCANModule extends Module {
 				
 			}
 			
-			if(useCodamotion()) { // There is CODA
+			if(useCodamotion() || useOptitrack()) { // There is CODA or Optitrack
 				if(nbSensors > 0) {
-					code = code + "\nREM ******** Initialisation variables CODAmotion CAN module " + moduleNumber + " interface " + interfaceNumber + "\n";
+					code = code + "\nREM ******** Initialisation variables CODAmotion/Optitrack CAN module " + moduleNumber + " interface " + interfaceNumber + "\n";
 					code = code + canName + "_currentMarkerIndex = 0\n";
 					code = code + canName + "_FRAME_ID_LONG = 0\n";
 					for (int i = 1; i <= nbSensors; i++) {
@@ -249,10 +249,10 @@ public class ADWinCANModule extends Module {
 				TAB = "\t\t";
 				code = code + "\t\tIF (CAN_MSG[9] = 8) THEN ' All bytes have been read\n";
 			}
-			code = code + TAB + "\t\tREM Get System ID : 00b -> CODA, 01b -> XSens, 10b -> Time Server\n";
+			code = code + TAB + "\t\tREM Get System ID : 00b -> CODA or Optitrack, 01b -> XSens, 10b -> Time Server\n";
 			code = code + TAB + "\t\t" + canName + "_SYSTEM_ID = SHIFT_RIGHT(CAN_MSG[1], 6)\n";
-			if(useCodamotion() && nbSensors > 0) {
-				code = code + TAB + "\t\tIF (" + canName + "_SYSTEM_ID = 0) THEN ' This is CODA system\n";
+			if((useCodamotion() || useOptitrack()) && nbSensors > 0) {
+				code = code + TAB + "\t\tIF (" + canName + "_SYSTEM_ID = 0) THEN ' This is CODA or Optitrack system\n";
 				code = code + TAB + "\t\t\t\tREM Marker number on 5 bits : max 32 possibilities\n";
 				code = code + TAB + "\t\t\t\t" + canName + "_currentMarkerIndex = CAN_MSG[1] AND 01Fh\n";
 				code = code + TAB + "\t\t\t\tREM Read frame ID (8 signed bits) in long\n";
@@ -280,9 +280,15 @@ public class ADWinCANModule extends Module {
 			    code = code + TAB + "\t\t\t\t\t\t" + canName + "_zValue[" + canName + "_currentMarkerIndex] = " + canName + "_zValue[" + canName + "_currentMarkerIndex] OR 0FFFF0000h\n";
 			    code = code + TAB + "\t\t\t\tENDIF\n";
 			    for (int i = 0; i < nbSensors; i++) {
-			    	code = code + TAB + "\t\t\t\t" + canName + "_Marker" + (i+1) + "_X = " + canName + "_xValue[" + (i+1) + "]/100.0\n";
-				    code = code + TAB + "\t\t\t\t" + canName + "_Marker" + (i+1) + "_Y = " + canName + "_yValue[" + (i+1) + "]/100.0\n";
-				    code = code + TAB + "\t\t\t\t" + canName + "_Marker" + (i+1) + "_Z = " + canName + "_zValue[" + (i+1) + "]/100.0\n";
+			    	if(useCodamotion()) {
+			    		code = code + TAB + "\t\t\t\t" + canName + "_Marker" + (i+1) + "_X = " + canName + "_xValue[" + (i+1) + "]/100.0\n";
+					    code = code + TAB + "\t\t\t\t" + canName + "_Marker" + (i+1) + "_Y = " + canName + "_yValue[" + (i+1) + "]/100.0\n";
+					    code = code + TAB + "\t\t\t\t" + canName + "_Marker" + (i+1) + "_Z = " + canName + "_zValue[" + (i+1) + "]/100.0\n";
+			    	} else if(useOptitrack()) {
+			    		code = code + TAB + "\t\t\t\t" + canName + "_Marker" + (i+1) + "_X = " + canName + "_xValue[" + (i+1) + "]/1000.0\n";
+					    code = code + TAB + "\t\t\t\t" + canName + "_Marker" + (i+1) + "_Y = " + canName + "_yValue[" + (i+1) + "]/1000.0\n";
+					    code = code + TAB + "\t\t\t\t" + canName + "_Marker" + (i+1) + "_Z = " + canName + "_zValue[" + (i+1) + "]/1000.0\n";
+			    	}
 				    code = code + TAB + "\t\t\t\t" + canName + "_Marker" + (i+1) + "_VISIBILITY = " + canName + "_visibility[" + (i+1) + "]\n";
 				}
 				code = code + TAB + "\t\tENDIF\n";
@@ -615,6 +621,10 @@ public class ADWinCANModule extends Module {
 	
 	private boolean useTimeStamp() {
 		return getProperty(ADWinCANModuleProperties.SYSTEM_TYPE).contains(ADWinCANModuleProperties.TIMESTAMP_SYSTEM_TYPE);
+	}
+	
+	private boolean useOptitrack() {
+		return getProperty(ADWinCANModuleProperties.SYSTEM_TYPE).contains(ADWinCANModuleProperties.OPTITRACK_SYSTEM_TYPE);
 	}
 
 }
