@@ -6,13 +6,19 @@
       provider-name="ISM">
 
    <description>
-      -- 2026-05-21
+      -- 2026-06-18
+ADDED :
+* Support for Optitrack system
+FIXED : Nothing
+-- 2026-05-21
 ADDED :
 * Refactoring load data from ADW file
-* Now padd With Last Values rather than zeros if necessary (ADW files)
+* Now padd With Last Values rather than zeros if necessary (ADW
+files)
 * Use PGroup Nebula widget for ChannelEditor
 * Channel editor toolbar contributor internat. 
-* Signal editor : increase one trial by one trial on mouse scroll event
+* Signal editor : increase one trial by one trial on mouse scroll
+event
 * Signal editor : update tooltips in signal editor
 * Update trial and feature infos when trial number is changed
 FIXED :
