@@ -114,12 +114,12 @@
 		<exec executable="git" dir="gh-pages-temp" failonerror="true">
 			<arg value="config"/>
 			<arg value="user.name"/>
-			<arg value="GitHub Actions"/>
+			<arg value="fbuloup"/>
 		</exec>
 		<exec executable="git" dir="gh-pages-temp" failonerror="true">
 			<arg value="config"/>
 			<arg value="user.email"/>
-			<arg value="actions@github.com"/>
+			<arg value="frank.buloup@univ-amu.fr"/>
 		</exec>
 		<exec executable="git" dir="gh-pages-temp" failonerror="true">
 			<arg value="commit"/>
