@@ -47,6 +47,7 @@ import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -94,6 +95,7 @@ public class NewChartDialog extends TitleAreaDialog {
 		chartTypeComboViewer.setContentProvider(new ArrayContentProvider());
 		chartTypeComboViewer.setLabelProvider(new LabelProvider());
 		chartTypeComboViewer.setInput(ChartTypes.values());
+		chartTypeComboViewer.setSelection(new StructuredSelection(ChartTypes.OSCILLO_CHART));
 		
 		return area;
 	}
