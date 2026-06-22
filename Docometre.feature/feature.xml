@@ -6,7 +6,12 @@
       provider-name="ISM">
 
    <description>
-      -- 2026-06-18
+      -- 2026-06-22
+ADDED :
+* Dacq configuration : default chart style to OSCILLO CHART
+* Dacq configuration : default line style (SOLID) and width (3)
+FIXED : Nothing
+-- 2026-06-18
 ADDED :
 * Support for Optitrack system
 FIXED : Nothing
