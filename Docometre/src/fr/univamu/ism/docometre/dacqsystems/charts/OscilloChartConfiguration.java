@@ -242,8 +242,6 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 				Channel channel = (Channel) object;
 				OscilloCurveConfiguration oscilloCurveConfiguration = new OscilloCurveConfiguration(channel);
 				oscilloCurveConfiguration.setProperty(OscilloCurveConfigurationProperties.CHANNEL_NAME, channel.getProperty(ChannelProperties.NAME));
-				oscilloCurveConfiguration.setProperty(CurveConfigurationProperties.STYLE, CurveConfigurationProperties.SOLID);
-				oscilloCurveConfiguration.setProperty(CurveConfigurationProperties.WIDTH, "1");
 				addCurveConfiguration(oscilloCurveConfiguration);
 				newCurvesConfigurations[i] = oscilloCurveConfiguration;
 				i++;
