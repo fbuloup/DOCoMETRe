@@ -27,9 +27,9 @@ There is no installer : simply unzip downloaded file and copy/paste resulting fo
 
 DOCoMETRe stands for "Dispositif d'Observation et de COntrôle du Mouvement En Temps Réel". It's obviously a very bad acronym, but has the advantage to evoke a meter device ! It is composed of a multiplatform software developed in Java using [Eclipse RCP](https://wiki.eclipse.org/Rich_Client_Platform) framework and for now is able to handle these hardwares : 
 
-* [ADwin Gold](https://www.adwin.de/us/produkte/gold.html) and [ADwin Gold II](https://www.adwin.de/us/produkte/goldII.html) 
-* [ADwin Pro](https://www.adwin.de/us/produkte/pro.html) and [ADwin Pro II](https://www.adwin.de/us/produkte/proII.html)
-* [Arduino UNO R3 and R4](https://store.arduino.cc/arduino-uno-rev3) (with support for [ADS1115](https://www.pjrc.com/store/teensy40.html), ADC 16bits - I2C)
+* [ADwin Gold](https://www.adwin.de/us/products/gold1.html) and [ADwin Gold II](https://www.adwin.de/us/products/gold2.html) 
+* [ADwin Pro](https://www.adwin.de/us/products/pro1total.html) and [ADwin Pro II](https://www.adwin.de/us/products/pro2total.html)
+* [Arduino UNO R3 and R4](https://store.arduino.cc/arduino-uno-rev3) (with support for [ADS1115](https://www.adafruit.com/product/1085?srsltid=AfmBOoqnt6zaNOScCpEz-Lrld_ugPS9gVksIbEYY5uhDtfzFVi7tzfjg), ADC 16bits - I2C)
 
 Enhanced Arduino Uno with support for [MCP4725](https://www.microchip.com/en-us/product/MCP4725) (DAC 12 bits - I2C), [Portenta Machine Control](https://store.arduino.cc/products/arduino-portenta-machine-control?selectedStore=eu) or [Teensy 4.0](https://www.pjrc.com/store/teensy40.html) support are planned.
 
