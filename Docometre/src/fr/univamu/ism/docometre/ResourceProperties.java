@@ -165,6 +165,7 @@ public final class ResourceProperties {
 	
 	public static void setPersistentProperty(QualifiedName qn, IResource resource, String value) {
 		try {
+			if(resource == null) return;
 			resource.setPersistentProperty(qn, value);
 			if(usePropertyFile) {
 				Properties properties = loadPropertiesFromFile(resource);
