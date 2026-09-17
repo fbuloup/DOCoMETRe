@@ -335,11 +335,13 @@ public class Activator extends AbstractUIPlugin {
 					continue;
 				}
 				ResourceEditorInput resourceEditorInput = ((ResourceEditorInput)editorReferences[i].getEditorInput());
-				if(resourceEditorInput.isEditing(object)) {
+				if(object != null && resourceEditorInput.isEditing(object)) {
 					if(resourceEditorInput.removeEditedObject(object)) {
 						if(editorReferences[i].getEditor(false) instanceof DataEditor) ((DataEditor)editorReferences[i].getEditor(false)).removeTrace(object);
 					}
-					if(resourceEditorInput.canCloseEditor()) editorReferences[i].getEditor(false).getSite().getPage().closeEditor(editorReferences[i].getEditor(false), false);
+					if(resourceEditorInput.canCloseEditor()) {
+						if(editorReferences[i].getEditor(false) != null) editorReferences[i].getEditor(false).getSite().getPage().closeEditor(editorReferences[i].getEditor(false), false);
+					}
 					else if(editorReferences[i].getEditor(false) instanceof PartNameRefresher) ((PartNameRefresher)editorReferences[i].getEditor(false)).refreshPartName();
 				}
 			} catch (PartInitException e) {
