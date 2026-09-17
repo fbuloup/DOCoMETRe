@@ -142,7 +142,7 @@ public class ExperimentScheduler {
 				realTimeLoopJob.schedule();
 				boolean timeOut = false;
 				long startTime = System.currentTimeMillis();
-				while(realTimeLoopJob.getState() != Job.RUNNING || timeOut) {
+				while(realTimeLoopJob.getState() != Job.RUNNING && !timeOut) {
 					timeOut = (System.currentTimeMillis() - startTime > 1000);
 				};
 				if(timeOut) Activator.logErrorMessage("Time out on scheduling realTimeLoopJob");
@@ -479,8 +479,10 @@ public class ExperimentScheduler {
 			@Override
 			public void run() {
 				RealTimeChartsView realTimeChartsView = (RealTimeChartsView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(RealTimeChartsView.ID);
-				realTimeChartsView.updateValues(currentTrial);
-				realTimeChartsView.updateValues(ResourceProperties.getAssociatedProcess(currentTrial));
+				if(realTimeChartsView != null) {
+					realTimeChartsView.updateValues(currentTrial);
+					realTimeChartsView.updateValues(ResourceProperties.getAssociatedProcess(currentTrial));
+				}
 			}
 		});
 	}

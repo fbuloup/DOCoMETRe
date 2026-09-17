@@ -70,7 +70,10 @@ public class BootDelegate {
 		try {
 			@SuppressWarnings("unused")// Test if a call to Get_FPar responds, if not it means that ADWin is not booted
 			float time = adWinDACQConfiguration.getADwinDevice().Get_FPar(1);
-			isAdwinBooted = true;
+			int processNumberInt = Integer.parseInt(adWinProcess.getProperty(ADWinProcessProperties.PROCESS_NUMBER));
+			int processStatus = adWinDACQConfiguration.getADwinDevice().Process_Status(processNumberInt);
+			if(processStatus == -1) isAdwinBooted = false;
+			else isAdwinBooted = true;
 		} catch (Exception e) {
 			isAdwinBooted = false;
 		}

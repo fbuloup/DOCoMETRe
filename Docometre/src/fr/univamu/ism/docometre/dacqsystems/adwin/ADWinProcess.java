@@ -154,7 +154,8 @@ public class ADWinProcess extends Process {
 			try {
 				getThread().setPriority(Thread.MAX_PRIORITY);
 				int processNumberInt = Integer.parseInt(ADWinProcess.this.getProperty(ADWinProcessProperties.PROCESS_NUMBER));	
-				boolean active = ((ADWinDACQConfiguration)ADWinProcess.this.getDACQConfiguration()).getADwinDevice().Process_Status(processNumberInt) == 1;
+				int processStatus = ((ADWinDACQConfiguration)ADWinProcess.this.getDACQConfiguration()).getADwinDevice().Process_Status(processNumberInt);
+				boolean active = processStatus == 1;
 				processBeginTime = System.currentTimeMillis()/1000d;
 				String date = new SimpleDateFormat("EEE d MMM yyyy HH:mm:ss", Locale.getDefault()).format(new Date());
 				appendToEventDiary(date);
@@ -709,9 +710,23 @@ public class ADWinProcess extends Process {
 	}
 
 	@Override
-	public void stop() throws ADwinCommunicationError {
+	public void stop() throws ADwinCommunicationError, UnknownHostException {
 		int processNumberInt = Integer.parseInt(getProperty(ADWinProcessProperties.PROCESS_NUMBER));	
 		((ADWinDACQConfiguration)getDACQConfiguration()).getADwinDevice().Stop_Process(processNumberInt);
+		int processSatus = 1;
+		boolean timeOut = false;
+		long startTime = System.currentTimeMillis();
+		while(processSatus != 0 && !timeOut) {
+			processSatus = ((ADWinDACQConfiguration)getDACQConfiguration()).getADwinDevice().Process_Status(processNumberInt);
+			timeOut = (System.currentTimeMillis() - startTime > 100);
+		}
+		if(timeOut) {
+			appendToEventDiary("Time out (100ms) on stopping ADWin process : force boot !");
+			String status = BootDelegate.boot((ADWinDACQConfiguration) getDACQConfiguration(), this, true);
+			if(status.equals(BootDelegate.BOOTED)) appendToEventDiary(ADWinMessages.ADWinDiary_Booted);
+			if(status.equals(BootDelegate.ALREADY_BOOTED)) appendToEventDiary(ADWinMessages.ADWinDiary_AlreadyBooted);
+		}
+		
 	}
 	
 	public static String processPathForMacOSX(String path) {
