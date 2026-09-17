@@ -609,24 +609,27 @@ public class RTSWTOscilloChart extends ControlAdapter implements PaintListener, 
 		gc.dispose();
 		currentValuesImage.dispose();
 		
-		currentValuesImageData = new ImageData(imageWidth, imageHeight, 24, paletteData);
-		currentValuesImage = new Image(chart.getDisplay(), currentValuesImageData);
-		gc = new GC(currentValuesImage);
-		gc.setFont(chart.getFont());
-		int numSerie = 0;
-		int yPosition = 0;
-		for (RTSWTOscilloSerie rtswtSerie : rtswtSeries) {
-			if(!rtswtSerie.isDisplayCurrentValue() && !showCurrentValues) continue;
-			String valueString = valuesString.get(numSerie);
-			Color color = rtswtSerie.getColor();
-			gc.setForeground(color);
-			gc.setBackground(backgroundColor);
-			gc.drawString(valueString, 0, yPosition);
-			numSerie++;
-			yPosition += gc.textExtent(valueString).y;
+		if(imageWidth > 0 && imageHeight > 0) {
+			currentValuesImageData = new ImageData(imageWidth, imageHeight, 24, paletteData);
+			currentValuesImage = new Image(chart.getDisplay(), currentValuesImageData);
+			gc = new GC(currentValuesImage);
+			gc.setFont(chart.getFont());
+			int numSerie = 0;
+			int yPosition = 0;
+			for (RTSWTOscilloSerie rtswtSerie : rtswtSeries) {
+				if(!rtswtSerie.isDisplayCurrentValue() && !showCurrentValues) continue;
+				String valueString = valuesString.get(numSerie);
+				Color color = rtswtSerie.getColor();
+				gc.setForeground(color);
+				gc.setBackground(backgroundColor);
+				gc.drawString(valueString, 0, yPosition);
+				numSerie++;
+				yPosition += gc.textExtent(valueString).y;
+			}
+			
+			gc.dispose();
 		}
 		
-		gc.dispose();
 	}
 
 	protected void checkUpdate() {
@@ -692,7 +695,8 @@ public class RTSWTOscilloChart extends ControlAdapter implements PaintListener, 
 			yTop = (showLegend && legendPosition == SWT.TOP) ? getLegendHeight() : 0;
 			xWidth = currentValuesImageData.width;
 			yHeight = currentValuesImageData.height;
-			e.gc.drawImage(currentValuesImage, 0, 0, currentValuesImageData.width, currentValuesImageData.height, xLeft - 5, yTop + 5, xWidth, yHeight);
+			if(currentValuesImage != null && !currentValuesImage.isDisposed() && xWidth > 0 && yHeight > 0)
+				e.gc.drawImage(currentValuesImage, 0, 0, currentValuesImageData.width, currentValuesImageData.height, xLeft - 5, yTop + 5, xWidth, yHeight);
 		}
 	}
 
