@@ -949,7 +949,7 @@ public class ADWinProcess extends Process {
 		binaryFilePath = binaryFilePath + processFile.getParent().getFullPath().toOSString();
 		binaryFilePath = binaryFilePath + File.separator + "BinSource" + File.separator + processFile.getName().replaceAll(Activator.processFileExtension + "$", "");
 		appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_Loading, binaryFilePath));
-		LoadProcessDelegate.loadProcess(binaryFilePath, getProperty(ADWinProcessProperties.PROCESS_NUMBER), (ADWinDACQConfiguration) getDACQConfiguration());
+		LoadProcessDelegate.loadProcess(binaryFilePath, getProperty(ADWinProcessProperties.PROCESS_NUMBER), (ADWinDACQConfiguration) getDACQConfiguration(), this);
 //		String filePath = null;
 //		if (getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.CPU_TYPE).contentEquals(ADWinDACQConfigurationProperties.I))
 //			filePath = binaryFilePath + ".t9" + getProperty(ADWinProcessProperties.PROCESS_NUMBER);
@@ -966,7 +966,7 @@ public class ADWinProcess extends Process {
 	 */
 	public void boot() throws UnknownHostException, ADwinCommunicationError {
 		
-		String status = BootDelegate.boot((ADWinDACQConfiguration) getDACQConfiguration());
+		String status = BootDelegate.boot((ADWinDACQConfiguration) getDACQConfiguration(), this, false);
 		if(status.equals(BootDelegate.BOOTED)) appendToEventDiary(ADWinMessages.ADWinDiary_Booted);
 		if(status.equals(BootDelegate.ALREADY_BOOTED)) appendToEventDiary(ADWinMessages.ADWinDiary_AlreadyBooted);
 		

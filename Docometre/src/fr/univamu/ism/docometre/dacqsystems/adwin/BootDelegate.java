@@ -52,7 +52,7 @@ public class BootDelegate {
 	public static String ALREADY_BOOTED = "ALREADY_BOOTED";
 	public static String BOOTED = "BOOTED";
 	
-	public static String boot(ADWinDACQConfiguration adWinDACQConfiguration) throws UnknownHostException, ADwinCommunicationError {
+	public static String boot(ADWinDACQConfiguration adWinDACQConfiguration, ADWinProcess adWinProcess, boolean force) throws UnknownHostException, ADwinCommunicationError {
 		
 		String ADWinBTL = adWinDACQConfiguration.getProperty(ADWinDACQConfigurationProperties.BTL_FILE);
 		String IP = adWinDACQConfiguration.getProperty(ADWinDACQConfigurationProperties.IP_ADDRESS);
@@ -74,8 +74,11 @@ public class BootDelegate {
 		} catch (Exception e) {
 			isAdwinBooted = false;
 		}
-		if(!isAdwinBooted){
+		if(!isAdwinBooted || force){
+			if(!force && adWinProcess != null) adWinProcess.appendToEventDiary("Booting with " + ADWinBTL + "...");
+			if(force && adWinProcess != null) adWinProcess.appendToEventDiary("Force booting with " + ADWinBTL + "...");
 			adWinDACQConfiguration.getADwinDevice().Boot(ADWinBTL);
+			if(adWinProcess != null) adWinProcess.appendToEventDiary("... OK !");
 			return BOOTED;
 			//appendToEventDiary(ADWinMessages.ADWinDiary_Booted);
 		} else return ALREADY_BOOTED; 

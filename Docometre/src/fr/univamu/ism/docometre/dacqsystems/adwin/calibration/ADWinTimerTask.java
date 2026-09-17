@@ -73,7 +73,7 @@ public class ADWinTimerTask extends CalibrationTimerTask {
 			if(channelsViewers.length == 0) return;
 			adwinDacqConfiguration = (ADWinDACQConfiguration) channelsViewers[0].getChannel().getModule().getDACQConfiguration();
 			// Boot adwin if necessary
-			BootDelegate.boot(adwinDacqConfiguration);
+			BootDelegate.boot(adwinDacqConfiguration, null, false);
 			
 			// Load calibration, monitoring process
 			LoadProcessDelegate.loadCalibrationProcess("1", adwinDacqConfiguration);

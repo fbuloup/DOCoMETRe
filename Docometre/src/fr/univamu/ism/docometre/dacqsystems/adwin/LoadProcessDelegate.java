@@ -45,18 +45,30 @@ import java.io.File;
 
 import org.eclipse.osgi.util.NLS;
 
+import de.adwin.driver.ADwinCommunicationError;
 import fr.univamu.ism.docometre.DocometreMessages;
 
 public class LoadProcessDelegate {
 	
-	public static void loadProcess(String binaryFilePath, String processNumber, ADWinDACQConfiguration adwinDacqConfiguration) throws Exception {
+	public static void loadProcess(String binaryFilePath, String processNumber, ADWinDACQConfiguration adwinDacqConfiguration, ADWinProcess adWinProcess) throws Exception {
 		String filePath = null;
 		String cpuType = adwinDacqConfiguration.getProperty(ADWinDACQConfigurationProperties.CPU_TYPE);
 		if (cpuType.contentEquals(ADWinDACQConfigurationProperties.I)) filePath = binaryFilePath + ".t9" + processNumber;
 		if (cpuType.contentEquals(ADWinDACQConfigurationProperties.II)) filePath = binaryFilePath + ".tB" + processNumber;
 		File file = new File(filePath);
 		if(filePath != null && file.exists()) {
-			adwinDacqConfiguration.getADwinDevice().Load_Process(file.getAbsolutePath());
+			boolean forceBoot = false;
+			try {
+				if(adWinProcess != null) adWinProcess.appendToEventDiary("Loading process file : " + file.getAbsolutePath());
+				adwinDacqConfiguration.getADwinDevice().Load_Process(file.getAbsolutePath());
+			} catch (ADwinCommunicationError e) {
+				forceBoot = true;
+			}
+			if(forceBoot) {
+				if(adWinProcess != null) adWinProcess.appendToEventDiary("Error while loading process file. Let's try to force boot ADwin !");
+				BootDelegate.boot(adwinDacqConfiguration, adWinProcess, true);
+				adwinDacqConfiguration.getADwinDevice().Load_Process(file.getAbsolutePath());
+			}
 		} else 
 			throw new Exception(NLS.bind(DocometreMessages.ADBasicBinaryFileNotFound, filePath)  );	
 		
@@ -76,7 +88,7 @@ public class LoadProcessDelegate {
 			if(systemType.contentEquals(ADWinDACQConfigurationProperties.GOLD)) filePath = filePath + "CalibrationGold2";
 			if(systemType.contentEquals(ADWinDACQConfigurationProperties.PRO)) filePath = filePath + "CalibrationPro2";
 		}
-		loadProcess(filePath, processNumber, adwinDacqConfiguration);
+		loadProcess(filePath, processNumber, adwinDacqConfiguration, null);
 	}
 
 }
