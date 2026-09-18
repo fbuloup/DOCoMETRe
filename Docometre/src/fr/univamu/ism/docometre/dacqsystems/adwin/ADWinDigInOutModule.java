@@ -163,6 +163,8 @@ public class ADWinDigInOutModule extends Module {
 			boolean isStimuli=Boolean.valueOf(stimuli);
 			String transfer=channel.getProperty(ChannelProperties.TRANSFER);
 			boolean isTransfered=Boolean.valueOf(transfer);
+			String auto_transfer = channel.getProperty(ChannelProperties.AUTO_TRANSFER);
+			boolean isAutoTransfered = Boolean.valueOf(auto_transfer);
 			boolean isInput=inOut.equals(ADWinDigInOutChannelProperties.INPUT);
 			String gsf = dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.GLOBAL_FREQUENCY);
 			float gsfFloat = Float.parseFloat(gsf);	
@@ -277,7 +279,7 @@ public class ADWinDigInOutModule extends Module {
 			}
 			
 			if (segment==ADWinCodeSegmentProperties.TRANSFER){
-				if (!isStimuli && isTransfered){
+				if (!isStimuli && isAutoTransfered){
 					code = code + "\nIF (TRANSFERT_" + name + " = " + frequencyRatio + ") THEN\n";
 					code = code + "\tTRANSFERT_" + name + " = 0\n";
 					code = code + "\tIF (FIFO_EMPTY(" + transferNumber + ") = 0) THEN\n";
