@@ -46,9 +46,10 @@ import java.util.Map;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.draw2d.FreeformViewport;
+import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.draw2d.ScalableFreeformLayeredPane;
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.draw2d.zoom.ZoomListener;
 import org.eclipse.gef.ContextMenuProvider;
 import org.eclipse.gef.DefaultEditDomain;
 import org.eclipse.gef.EditPartViewer;
@@ -198,6 +199,7 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 			ScalableFreeformRootEditPart rootEditPart = (ScalableFreeformRootEditPart) scriptSegmentEditor.getGraphicalViewer().getRootEditPart();
 			ScalableFreeformLayeredPane scalableLayerPane = (ScalableFreeformLayeredPane) rootEditPart.getZoomManager().getScalableFigure();
 			scalableLayerPane.setScale(scaleValue);
+			setZoomHelperScale(scaleValue);
 		}
 	}
 	
@@ -215,13 +217,13 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 		public void run() {
 			ScalableFreeformRootEditPart rootEditPart = (ScalableFreeformRootEditPart) scriptSegmentEditor.getGraphicalViewer().getRootEditPart();
 			ScalableFreeformLayeredPane scalableLayerPane = (ScalableFreeformLayeredPane) rootEditPart.getZoomManager().getScalableFigure();
-			FreeformViewport viewport = (FreeformViewport) scalableLayerPane.getParent().getParent();
 			scalableLayerPane.setScale(1);
 			Rectangle extend = scalableLayerPane.getFreeformExtent().union(0, 0);
-			double wScale = ((double)viewport.getClientArea().width() / extend.width());
-			double hScale = ((double)viewport.getClientArea().height() / extend.height);
+			double wScale = ((double)scalableLayerPane.getBounds().width() / extend.width());
+			double hScale = ((double)scalableLayerPane.getBounds().height() / extend.height);
 			double newScale = Math.min(wScale, hScale);
 			scalableLayerPane.setScale(newScale);
+			setZoomHelperScale(newScale);
 		}
 	}
 	
@@ -341,6 +343,24 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 		ResourceProperties.setSnapStateEditor(resource, state);
 	}
 	
+	private double getZoomHelperScale() {
+		IResource resource = ObjectsController.getResourceForObject(((ResourceEditorInput)getEditorInput()).getObject());
+		if(resource == null && ((ResourceEditorInput)getEditorInput()).getObject() instanceof IResource) resource = (IResource) ((ResourceEditorInput)getEditorInput()).getObject();
+		QualifiedName qn = ResourceProperties.ZOOM_STATE_EDITOR_INIT;
+		if(scriptSegmentType.equals(ScriptSegmentType.LOOP)) qn = ResourceProperties.ZOOM_STATE_EDITOR_EVENT;
+		if(scriptSegmentType.equals(ScriptSegmentType.FINALIZE)) qn = ResourceProperties.ZOOM_STATE_EDITOR_FINISH;
+		return ResourceProperties.getZoomScaleEditor(resource, qn);
+	}
+	
+	private void setZoomHelperScale(double scale) {
+		IResource resource = ObjectsController.getResourceForObject(((ResourceEditorInput)getEditorInput()).getObject());
+		if(resource == null && ((ResourceEditorInput)getEditorInput()).getObject() instanceof IResource) resource = (IResource) ((ResourceEditorInput)getEditorInput()).getObject();
+		QualifiedName qn = ResourceProperties.ZOOM_STATE_EDITOR_INIT;
+		if(scriptSegmentType.equals(ScriptSegmentType.LOOP)) qn = ResourceProperties.ZOOM_STATE_EDITOR_EVENT;
+		if(scriptSegmentType.equals(ScriptSegmentType.FINALIZE)) qn = ResourceProperties.ZOOM_STATE_EDITOR_FINISH;
+		ResourceProperties.setZoomScaleEditor(resource, scale, qn);
+	}
+	
 	@Override
 	public void createPartControl(Composite parent) {
 		super.createPartControl(parent);
@@ -432,6 +452,18 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 		getGraphicalViewer().setProperty(SnapToGrid.PROPERTY_GRID_VISIBLE, getGridState());
 		getGraphicalViewer().setProperty(SnapToGrid.PROPERTY_GRID_ENABLED, getGridState());
 		getGraphicalViewer().setProperty(SnapToGeometry.PROPERTY_SNAP_ENABLED, getAlignmentHelperState());
+		
+		ScalableFreeformRootEditPart rootEditPart = (ScalableFreeformRootEditPart) this.getGraphicalViewer().getRootEditPart();
+		ScalableFreeformLayeredPane scalableLayerPane = (ScalableFreeformLayeredPane) rootEditPart.getZoomManager().getScalableFigure();
+		scalableLayerPane.setScale(getZoomHelperScale());
+		rootEditPart.getZoomManager().setZoom(getZoomHelperScale());
+		rootEditPart.getZoomManager().addZoomListener(new ZoomListener() {
+			@Override
+			public void zoomChanged(double zoom) {
+				System.out.println(zoom);
+				setZoomHelperScale(zoom);
+			}
+		});
 		
 //		List<String> zoomContributions = Arrays.asList(new String[] {ZoomManager.FIT_ALL, ZoomManager.FIT_HEIGHT, ZoomManager.FIT_WIDTH });
 //		((ScalableFreeformRootEditPart)getGraphicalViewer().getRootEditPart()).getZoomManager().setZoomLevelContributions(zoomContributions);

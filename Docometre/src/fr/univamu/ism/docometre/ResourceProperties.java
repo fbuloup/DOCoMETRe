@@ -111,7 +111,11 @@ public final class ResourceProperties {
 	public static QualifiedName GRID_STATE_EDITOR = new QualifiedName(AbstractScriptSegmentEditor.class.getCanonicalName(), "gridState");
 	// Snap state in editor
 	public static QualifiedName SNAP_STATE_EDITOR = new QualifiedName(AbstractScriptSegmentEditor.class.getCanonicalName(), "snapState");
-
+	// Zoom state in editor
+	public static QualifiedName ZOOM_STATE_EDITOR_INIT = new QualifiedName(AbstractScriptSegmentEditor.class.getCanonicalName(), "zoomStateInit");
+	public static QualifiedName ZOOM_STATE_EDITOR_EVENT = new QualifiedName(AbstractScriptSegmentEditor.class.getCanonicalName(), "zoomStateEvent");
+	public static QualifiedName ZOOM_STATE_EDITOR_FINISH = new QualifiedName(AbstractScriptSegmentEditor.class.getCanonicalName(), "zoomStateFinish");
+	
 	/*
 	 * Qualified names for session resource properties 
 	 */
@@ -454,6 +458,16 @@ public final class ResourceProperties {
 	public static boolean getSnapStateEditor(IResource resource) {
 		String gridStateString = getPersistentProperty(SNAP_STATE_EDITOR, resource);
 		return Boolean.parseBoolean(gridStateString);
+	}
+	
+	public static void setZoomScaleEditor(IResource resource, double zoomScale, QualifiedName zoomQN) {
+		setPersistentProperty(zoomQN, resource, Double.toString(zoomScale));
+	}
+	
+	public static double getZoomScaleEditor(IResource resource, QualifiedName zoomQN) {
+		String zoomScaleString = getPersistentProperty(zoomQN, resource);
+		if(zoomScaleString == null) return 1; 
+		return Double.parseDouble(zoomScaleString);
 	}
 	
 	//////////////////////////////////////////////////////
