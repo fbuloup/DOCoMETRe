@@ -6,7 +6,17 @@
       provider-name="ISM">
 
    <description>
-      -- 2026-06-22
+      -- 2026-09-18
+ADDED :
+* Zoom presistence to process editors
+FIXED :
+* Auto transfer was not managed correctly in all modules
+* Reboot ADwin when necessary (infinite loop e.g. analog wait) 
+* NPE - RTSWTOscilloChart.java
+* NPE - ResourceProperties.java
+* NPE - ExperimentsView.java
+* NPE - Activator.java
+-- 2026-06-22
 ADDED :
 * Dacq configuration : default chart style to OSCILLO CHART
 * Dacq configuration : default line style (SOLID) and width (3)
