@@ -116,7 +116,7 @@ public class ADWinDACQConfigurationEditor extends ResourceEditor implements Prop
 			public void partClosed(IWorkbenchPartReference partRef) {
 				if(partRef.getPart(false) == ADWinDACQConfigurationEditor.this) {
 					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().removePartListener(partListenerAdapter);
-					getDACQConfiguration().removeObserver(ADWinDACQConfigurationEditor.this);
+					if(getDACQConfiguration() != null) getDACQConfiguration().removeObserver(ADWinDACQConfigurationEditor.this);
 				}
 			}
 		};
