@@ -57,19 +57,54 @@ public final class ArduinoUnoDACQConfigurationProperties extends Property {
 	public static final ArduinoUnoDACQConfigurationProperties ARDUINOCLI_PATH = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH", ArduinoUnoMessages.ArduinoCLIPath_Label, ArduinoUnoMessages.ArduinoCLIPath_Tooltip, "(.)+");
 	public static final ArduinoUnoDACQConfigurationProperties USE_ARDUINOCLI = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI", ArduinoUnoMessages.UseArduinoCLI_Label, ArduinoUnoMessages.UseArduinoCLI_Tooltip, "^(true|false)$", "true:false");	
 	public static final ArduinoUnoDACQConfigurationProperties DEVICE_PATH = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.DEVICE_PATH", ArduinoUnoMessages.DevicePath_Label, ArduinoUnoMessages.DevicePath_Tooltip, Platform.getOS().equals(Platform.OS_WIN32)?"^COM\\d+$":"(.)+");
-	public static final ArduinoUnoDACQConfigurationProperties BAUD_RATE = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.BAUD_RATE", ArduinoUnoMessages.DeviceBaudRate_Label, ArduinoUnoMessages.DeviceBaudRate_Tooltip, "^(9600|115200|1000000|1500000|2000000)$", "9600:115200:1000000:1500000:2000000");
+	public static final ArduinoUnoDACQConfigurationProperties BAUD_RATE = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.BAUD_RATE", ArduinoUnoMessages.DeviceBaudRate_Label, ArduinoUnoMessages.DeviceBaudRate_Tooltip, "^(300|600|1200|2400|4800|9600|14400|19200|28800|38400|57600|115200|230400|250000|460800|500000|921600|1000000|1500000|2000000)$", "300:600:1200:2400:4800:9600:14400:19200:28800:38400:57600:115200:230400:250000:460800:500000:921600:1000000:1500000:2000000");
 	public static final ArduinoUnoDACQConfigurationProperties GLOBAL_FREQUENCY = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY", ArduinoUnoMessages.GlobalFrequency_Label, ArduinoUnoMessages.GlobalFrequency_Tooltip, "(^\\d{1,10}$)");
 	public static final ArduinoUnoDACQConfigurationProperties LIBRARIES_ABSOLUTE_PATH = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH", ArduinoUnoMessages.LibrariesAbsolutePath_Label, ArduinoUnoMessages.LibrariesAbsolutePath_Tooltip, "(.)+");
 	public static final ArduinoUnoDACQConfigurationProperties USER_LIBRARIES_ABSOLUTE_PATH = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH", ArduinoUnoMessages.UserLibrariesAbsolutePath_Label, ArduinoUnoMessages.UserLibrariesAbsolutePath_Tooltip, "(.)+");
 	public static final ArduinoUnoDACQConfigurationProperties REVISION = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.REVISION", ArduinoUnoMessages.Revision_Label, ArduinoUnoMessages.Revision_Tooltip, "^(R3|R4_WIFI)$", "R3:R4_WIFI");
 
-	
+	public static String BAUD_RATE_300 = "300";
+	public static String BAUD_RATE_600 = "600";
+	public static String BAUD_RATE_1200 = "1200";
+	public static String BAUD_RATE_2400 = "2400";
+	public static String BAUD_RATE_4800 = "4800";
 	public static String BAUD_RATE_9600 = "9600";
+	public static String BAUD_RATE_14400 = "14400";
+	public static String BAUD_RATE_19200 = "19200";
+	public static String BAUD_RATE_28800 = "28800";
+	public static String BAUD_RATE_38400 = "38400";
+	public static String BAUD_RATE_57600 = "57600";
 	public static String BAUD_RATE_115200 = "115200";
+	public static String BAUD_RATE_230400 = "230400";
+	public static String BAUD_RATE_250000 = "250000";
+	public static String BAUD_RATE_460800 = "460800";
+	public static String BAUD_RATE_500000 = "500000";
+	public static String BAUD_RATE_921600 = "921600";
 	public static String BAUD_RATE_1000000 = "1000000";
 	public static String BAUD_RATE_1500000 = "1500000";
 	public static String BAUD_RATE_2000000 = "2000000";
-	public static String[] BAUD_RATES = new String[] { BAUD_RATE_9600, BAUD_RATE_115200, BAUD_RATE_1000000, BAUD_RATE_1500000, BAUD_RATE_2000000 };
+	public static String[] BAUD_RATES = new String[] {
+		    BAUD_RATE_300,
+		    BAUD_RATE_600,
+		    BAUD_RATE_1200,
+		    BAUD_RATE_2400,
+		    BAUD_RATE_4800,
+		    BAUD_RATE_9600,
+		    BAUD_RATE_14400,
+		    BAUD_RATE_19200,
+		    BAUD_RATE_28800,
+		    BAUD_RATE_38400,
+		    BAUD_RATE_57600,
+		    BAUD_RATE_115200,
+		    BAUD_RATE_230400,
+		    BAUD_RATE_250000,
+		    BAUD_RATE_460800,
+		    BAUD_RATE_500000,
+		    BAUD_RATE_921600,
+		    BAUD_RATE_1000000,
+		    BAUD_RATE_1500000,
+		    BAUD_RATE_2000000
+		};
 	public static String REVISION_R3 = "R3";
 	public static String REVISION_R4_WIFI = "R4_WIFI";
 	public static String[] REVISIONS = new String[] { REVISION_R3, REVISION_R4_WIFI };
