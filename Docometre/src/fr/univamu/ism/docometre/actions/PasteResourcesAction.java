@@ -149,6 +149,11 @@ public class PasteResourcesAction extends Action implements ISelectionListener, 
 						ArrayList<IResource> newResources = new ArrayList<IResource>();
 						for (IResource resource : resources) {
 							try {
+								if(resource.equals(destinationResource)) {
+									Activator.logWarningMessage(DocometreMessages.ImpossibleToCopyResourceInItself);
+									continue;
+								}
+									
 								if(CopyLogDataFilesDialog.saveChoice) choiceID = CopyLogDataFilesDialog.choiceID;
 								if(choiceID == IDialogConstants.CANCEL_ID) continue;
 								resource.refreshLocal(IResource.DEPTH_INFINITE, monitor);

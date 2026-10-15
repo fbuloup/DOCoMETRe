@@ -168,8 +168,7 @@ public final class DocometreMessages extends NLS {
 	public static String ArduinoUnoProcess_CompileErrorsMessage;
 	public static String ArduinoUnoProcess_DevicePathErrorMessage;
 	public static String OpenProcessWithADWinSystemEditorAction_WaitTaskMessage;
-	
-	
+	public static String ImpossibleToCopyResourceInItself;
 
 	/*Menus*/
 	public static String Window;
