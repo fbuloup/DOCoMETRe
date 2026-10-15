@@ -79,17 +79,17 @@ captionpos=b
 \begin{block}{Check these key points}
      \begin{itemize}
         \item Is proper Java version installed ?
-        \item Will I use Matlab and/or Python ?
-        \item Is desired hardware available ?
+        \item Is desired hardware available (ADWin or Arduino Uno) ?
         \item Corresponding Software installed ?
+        \item Will I use Matlab and/or Python for analysis ?
     \end{itemize}
 \end{block}
 \begin{block}{Then just follow one or more of theses steps}
 \begin{itemize}
         \item Install Java
-        \item Install Matlab and/or Python
         \item Install and configure desired Hardware
         \item Install DOCoMETRe
+        \item Install Matlab and/or Python
     \end{itemize}
 \end{block}
     
@@ -119,11 +119,11 @@ captionpos=b
 \begin{frame}
 \begin{block}{Select one of these distros and follow installation instructions}
     \begin{itemize}
+        \item \textcolor{blue}{\textbf{\underline{\href{https://www.oracle.com/fr/java/technologies/javase-downloads.html}{Oracle Java JDK}*}}}
         \item \textcolor{blue}{\textbf{\underline{\href{https://adoptopenjdk.net}{AdoptOpenJDK}}}}
         \item \textcolor{blue}{\textbf{\underline{\href{https://www.azul.com/downloads/?package=jre}{Azul Zulu OpenJDK}}}}
         \item \textcolor{blue}{\textbf{\underline{\href{https://docs.aws.amazon.com/corretto/index.html}{Amazon Coretto}}}}
         \item \textcolor{blue}{\textbf{\underline{\href{https://bell-sw.com}{Liberica OpenJDK}}}}
-        \item \textcolor{blue}{\textbf{\underline{\href{https://www.oracle.com/fr/java/technologies/javase-downloads.html}{Oracle Java JDK}*}}}
     \end{itemize}
 \end{block}
 \begin{alertblock}{Java Version Alert}
@@ -132,6 +132,14 @@ captionpos=b
     \textbf{Prefer a Long Term Support JRE or JDK}\\
      \textbf{*Prefer Oracle Java JRE/JDK as it is used for dev.}\\
 \end{alertblock}
+\centering
+\textcolor{blue}{\textbf{\underline{\href{https://docometre.ism.univ-amu.fr/java-releases/jdk-21_windows-x64_bin.exe}{*Windows Oracle Java 21 direct link on ISM server}}}}
+
+\textcolor{blue}{\textbf{\underline{\href{https://docometre.ism.univ-amu.fr/java-releases/jdk-21_macos-x64_bin.dmg}{*MacOS Oracle Java 21 direct link on ISM server}}}}
+
+
+
+
 \end{frame}
 
 
@@ -144,70 +152,8 @@ captionpos=b
     \textcolor{red}{\textbf{Just to be sure Java has been properly installed !}}\\
     \vspace{0.5cm}
     \textbf{In this screenshot, we check Java version is at least 11}\\
-    \textbf{Please update information to the latest needed release}
+    \textbf{Please update information to the latest needed release : 21}
 \end{frame}
-
-
-\section{Install Matlab/Python}
-\subsection{Matlab}
-\begin{frame}
-\centering
-DOCoMETRe is supposed to work with any version of Matlab. It has been tested with 2020 to 2024 versions.\\
-
-You can install Matlab using \textcolor{blue}{\textbf{\underline{\href{https://fr.mathworks.com/academia/tah-portal/aix-marseille-universite-31651599.html}{this link}}}}\\
-\vspace{1cm}
-\centering
-    \textcolor{red}{\textbf{Remember you will have to configure path to Matlab executable in DOCoMETRe preferences}}
-\end{frame}
-
-\subsection{Python}
-\begin{frame}
-\begin{block}{To use Python with DOCoMETRe, please follow these steps :}
-	\begin{itemize}
-		\item Install Python
-		\item Install Py4J
-	\end{itemize}
-\end{block}
-\end{frame}
-
-\begin{frame}
-
-\begin{alertblock}{Python version alert !}
-    \center{Python version that has been tested and works with Py4J is 3.10.4
-    Please install this version if you want to use Python with DOCoMETRe}
-\end{alertblock}
-
-\begin{exampleblock}{How to check Python installation and version ?}
-\center
-Just like the Java installation test, you can check Python installation and version using this kind of command in Terminal :\\
- \textbf{python -version}
-\end{exampleblock}
-\vspace{1cm}
-\centering
-    \textcolor{red}{\textbf{Remember you will have to configure path to Python executable in DOCoMETRe preferences}}
-\end{frame}
-
-\begin{frame}
-\begin{block}{You need to install Python again ?}
-Please follow one of these links :
-\begin{itemize}
-\item Download Python 3.10.4 for Windows from \textcolor{blue}{\textbf{\underline{\href{http://www.ism.univ-amu.fr/buloup/documents/PYTHON/python-3.10.4-amd64.exe}{here}}}}
-\item Download Python 3.10.4 for Mac OS from \textcolor{blue}{\textbf{\underline{\href{http://www.ism.univ-amu.fr/buloup/documents/PYTHON/python-3.10.4-macos11.pkg}{here}}}}
-\end{itemize}
-\end{block}
-
-\begin{exampleblock}{Install Py4J}
-\justifying Once Python 3.10.4 is installed, you can install Py4J using : 
-\center{\textbf{pip install py4j}}
-\linebreak
-
-\justifying You will also need matplotlib, numpy and scipy libraries. Here is the kind of command you could use :
-\center{\textbf{pip install py4j matplotlib numpy scipy}}
-\end{exampleblock}
-
-\end{frame}
-
-
 
 \section{Install Hardware}
 \subsection{Available and planned Hardware}
@@ -281,17 +227,24 @@ Please follow one of these links :
 
 \begin{block}{Two Steps}
     \begin{itemize}
-        \item Download Software from \textcolor{blue}{\textbf{\underline{\href{https://www.arduino.cc/en/software}{Arduino}}}}
-        \item Install Software : simply uncompress downloaded file
+        \item Download Software from \textcolor{blue}{\textbf{\underline{\href{https://www.arduino.cc/en/software}{Arduino*}}}}
+        \item Simply uncompress downloaded file or launch the installer
     \end{itemize}
 \end{block}
 
 \begin{alertblock}{}
     \centering
-    \textcolor{red}{\textbf{Please choose Legacy IDE or CLI version}}\\
+    \textcolor{red}{\textbf{*Please choose CLI version as it is used for tests}}\\
     \textcolor{red}{\textbf{Put uncompressed file in a folder}}\\
     \textcolor{red}{\textbf{where you have all rights}}
 \end{alertblock}
+\centering
+
+\textcolor{blue}{\textbf{\underline{\href{https://github.com/arduino/arduino-cli/releases/download/v0.35.3/arduino-cli_0.35.3_Windows_32bit.zip}{*Windows Arduino CLI 0.35.3 direct link}}}}
+
+\textcolor{blue}{\textbf{\underline{\href{https://github.com/arduino/arduino-cli/releases/download/v0.35.3/arduino-cli_0.35.3_macOS_64bit.tar.gz}{*MacOS Arduino CLI 0.35.3 direct link}}}}
+
+
 
 \end{frame}
 
@@ -318,6 +271,65 @@ Please follow one of these links :
     tutorial on how to solve this problem.
     
 \end{alertblock}
+
+\end{frame}
+
+\section{Install Matlab/Python}
+\subsection{Matlab}
+\begin{frame}
+\centering
+DOCoMETRe is supposed to work with any version of Matlab. It has been tested with 2020 to 2024 versions.\\
+
+You can install Matlab using \textcolor{blue}{\textbf{\underline{\href{https://fr.mathworks.com/academia/tah-portal/aix-marseille-universite-31651599.html}{this link}}}}\\
+\vspace{1cm}
+\centering
+    \textcolor{red}{\textbf{Remember you will have to configure path to Matlab executable in DOCoMETRe preferences}}
+\end{frame}
+
+\subsection{Python}
+\begin{frame}
+\begin{block}{To use Python with DOCoMETRe, please follow these steps :}
+	\begin{itemize}
+		\item Install Python
+		\item Install Py4J
+	\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}
+
+\begin{alertblock}{Python version alert !}
+    \center{Python version that has been tested and works with Py4J is 3.10.4
+    Please install this version if you want to use Python with DOCoMETRe}
+\end{alertblock}
+
+\begin{exampleblock}{How to check Python installation and version ?}
+\center
+Just like the Java installation test, you can check Python installation and version using this kind of command in Terminal :\\
+ \textbf{python -version}
+\end{exampleblock}
+\vspace{1cm}
+\centering
+    \textcolor{red}{\textbf{Remember you will have to configure path to Python executable in DOCoMETRe preferences}}
+\end{frame}
+
+\begin{frame}
+\begin{block}{You need to install Python again ?}
+Please follow one of these links :
+\begin{itemize}
+\item Download Python 3.10.4 for Windows from \textcolor{blue}{\textbf{\underline{\href{http://www.ism.univ-amu.fr/buloup/documents/PYTHON/python-3.10.4-amd64.exe}{here}}}}
+\item Download Python 3.10.4 for Mac OS from \textcolor{blue}{\textbf{\underline{\href{http://www.ism.univ-amu.fr/buloup/documents/PYTHON/python-3.10.4-macos11.pkg}{here}}}}
+\end{itemize}
+\end{block}
+
+\begin{exampleblock}{Install Py4J}
+\justifying Once Python 3.10.4 is installed, you can install Py4J using : 
+\center{\textbf{pip install py4j}}
+\linebreak
+
+\justifying You will also need matplotlib, numpy and scipy libraries. Here is the kind of command you could use :
+\center{\textbf{pip install py4j matplotlib numpy scipy}}
+\end{exampleblock}
 
 \end{frame}
 
