@@ -6,12 +6,18 @@
       provider-name="ISM">
 
    <description>
-      -- 2026-09-18
+      -- 2026-10-15
+ADDED :
+* Update Installation doc.
+FIXED :
+* Do not allow to copy resource in itself
+* NPE
+-- 2026-09-18
 ADDED :
 * Zoom presistence to process editors
 FIXED :
 * Auto transfer was not managed correctly in all modules
-* Reboot ADwin when necessary (infinite loop e.g. analog wait) 
+* Reboot ADwin when necessary (infinite loop e.g. analog wait)
 * NPE - RTSWTOscilloChart.java
 * NPE - ResourceProperties.java
 * NPE - ExperimentsView.java
