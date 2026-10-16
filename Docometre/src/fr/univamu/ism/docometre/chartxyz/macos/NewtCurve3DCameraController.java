@@ -33,6 +33,12 @@ public class NewtCurve3DCameraController {
             }
 
             @Override
+            public void mouseEntered(MouseEvent e) {
+                // Focus clavier dès que la souris entre dans le graphe (plusieurs graphes par fenêtre)
+                glWindow.requestFocus();
+            }
+
+            @Override
             public void mouseReleased(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON1) leftDown = false;
                 if (e.getButton() == MouseEvent.BUTTON3) rightDown = false;
@@ -67,6 +73,7 @@ public class NewtCurve3DCameraController {
                     case 'p': renderer.togglePoints(); break;
                     case 'g': renderer.toggleGrid(); break;
                     case 'l': renderer.toggleLabel(); break;
+                    case 'n': renderer.toggleLegend(); break;
                     default: break;
                 }
             }

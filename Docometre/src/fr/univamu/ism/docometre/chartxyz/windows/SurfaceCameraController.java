@@ -1,5 +1,6 @@
 package fr.univamu.ism.docometre.chartxyz.windows;
 
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.MouseAdapter;
@@ -13,6 +14,7 @@ import fr.univamu.ism.docometre.chartxyz.Surface3DRenderer;
  * pour permettre à l'utilisateur de manipuler la caméra et l'affichage :
  * - Clic gauche + glisser : rotation (orbite)
  * - Clic droit + glisser  : panoramique
+ * - Survol             : donne le focus clavier au graphe
  * - Molette               : zoom avant/arrière
  * - Touche R : réinitialiser la vue
  * - Touche A : afficher/masquer les axes
@@ -80,6 +82,15 @@ public class SurfaceCameraController {
                     case 'l': renderer.toggleLabel(); break;
                     default: break;
                 }
+            }
+        });
+
+        // Focus clavier dès que la souris entre dans le graphe (utile quand plusieurs
+        // graphes partagent une fenêtre), seulement si notre fenêtre est active pour
+        // ne pas voler le focus à une autre fenêtre ou à un dialogue
+        control.addListener(SWT.MouseEnter, e -> {
+            if (control.getShell() == control.getDisplay().getActiveShell()) {
+                control.forceFocus();
             }
         });
 

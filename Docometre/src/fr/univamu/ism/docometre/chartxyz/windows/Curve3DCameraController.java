@@ -1,5 +1,6 @@
 package fr.univamu.ism.docometre.chartxyz.windows;
 
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.MouseAdapter;
@@ -63,8 +64,18 @@ public class Curve3DCameraController {
                     case 'p': renderer.togglePoints(); break;
                     case 'g': renderer.toggleGrid(); break;
                     case 'l': renderer.toggleLabel(); break;
+                    case 'n': renderer.toggleLegend(); break;
                     default: break;
                 }
+            }
+        });
+
+        // Focus clavier dès que la souris entre dans le graphe (utile quand plusieurs
+        // graphes partagent une fenêtre), seulement si notre fenêtre est active pour
+        // ne pas voler le focus à une autre fenêtre ou à un dialogue
+        control.addListener(SWT.MouseEnter, e -> {
+            if (control.getShell() == control.getDisplay().getActiveShell()) {
+                control.forceFocus();
             }
         });
 

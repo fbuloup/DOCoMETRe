@@ -4,19 +4,54 @@ import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.glu.GLU;
-import com.jogamp.opengl.util.gl2.GLUT;
 
+import org.eclipse.swt.SWT;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Curve3DRenderer implements GLEventListener {
 
-    private final CurveData curveData;
+    // Courbes affichées ; la liste peut être modifiée depuis n'importe quel thread
+    private final List<Curve3DData> curves = new CopyOnWriteArrayList<>();
+    private List<Curve3DData> frameCurves = new ArrayList<>(); // courbes figées pour l'image en cours
+
+    // Boîte englobante de l'ensemble des courbes, recalculée à chaque image
+    private float dataMinX = -1f, dataMaxX = 1f, dataMinY = -1f, dataMaxY = 1f, dataMinZ = -1f, dataMaxZ = 1f;
+    private float dataCenterX, dataCenterY, dataCenterZ;
+    private float dataRadius = 1f;
     private final GLU glu = new GLU();
-    private final GLUT glut = new GLUT();
+    private final GLText text = new GLText(); // texte en police du système (graduations, noms d'axes, légende)
+
+    // Polices réglables (voir setScaleFont / setLegendFont)
+    private volatile ChartFont scaleFont = new ChartFont(9, SWT.NORMAL);
+    private volatile ChartFont legendFont = new ChartFont(9, SWT.NORMAL);
+    private volatile boolean showLegend = true; // légende affichée (si au moins une courbe a un nom)
+
+    /** Étiquette placée dans la scène 3D, projetée à l'écran et dessinée par-dessus la scène. */
+    private static final class Label {
+        final String text;
+        final ChartFont font;
+        final float[] color;
+        final double x, y; // position à l'écran (pixels)
+
+        Label(String text, ChartFont font, float[] color, double x, double y) {
+            this.text = text;
+            this.font = font;
+            this.color = color;
+            this.x = x;
+            this.y = y;
+        }
+    }
+    private final List<Label> labels = new ArrayList<>(); // étiquettes de l'image en cours
+    private float[] labelMatrix;                         // matrice données -> écran de l'image en cours
+    private final DashedLines dashedLines = new DashedLines(); // tirets ancrés sur les données
 
     private static final int TICK_COUNT = 5;
+    private static final float DEFAULT_LINE_WIDTH = 2.5f; // épaisseur des courbes sans épaisseur explicite (pixels)
 
     // État de la caméra en orbite autour du centre de la courbe
     private float rotationX = 25f;    // inclinaison haut/bas
@@ -29,9 +64,23 @@ public class Curve3DRenderer implements GLEventListener {
     private boolean showGrid = true;
     private boolean showLabel= true;
 
-    public Curve3DRenderer(CurveData curveData) {
-        this.curveData = curveData;
+    // Échelles fixes {xMin, xMax, yMin, yMax, zMin, zMax}, ou null pour des échelles dynamiques
+    private volatile double[] fixedScales;
+    private double[] frameFixedScales; // échelles fixes figées pour l'image en cours
+
+    private int width = 1, height = 1; // taille de la zone d'affichage (pixels)
+    private float aspect = 1f;         // largeur / hauteur de la zone d'affichage
+
+    public Curve3DRenderer(Curve3DData... curves) {
+        this.curves.addAll(Arrays.asList(curves));
     }
+
+    /** Ajoute une courbe au graphe (utilisable pendant l'affichage, depuis n'importe quel thread). */
+    public void addCurve(Curve3DData curve) { curves.add(curve); }
+    /** Retire une courbe du graphe. */
+    public void removeCurve(Curve3DData curve) { curves.remove(curve); }
+    /** Courbes actuellement affichées. */
+    public List<Curve3DData> getCurves() { return new ArrayList<>(curves); }
 
     @Override
     public void init(GLAutoDrawable drawable) {
@@ -47,16 +96,32 @@ public class Curve3DRenderer implements GLEventListener {
 
     @Override
     public void dispose(GLAutoDrawable drawable) {
-        // Rien à libérer explicitement ici (GLUT ne détient pas de ressources GL).
+        text.dispose(drawable.getGL().getGL2()); // textures des textes
     }
 
     @Override
     public void display(GLAutoDrawable drawable) {
         GL2 gl = drawable.getGL().getGL2();
         gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
+
+        // Fige les données reçues depuis l'image précédente, puis calcule la boîte englobante commune
+        labels.clear();
+        labelMatrix = null;
+        frameCurves = new ArrayList<>(curves);
+        for (Curve3DData curve : frameCurves) curve.takeSnapshot();
+        computeBounds();
+
+        float distance = dataRadius * distanceFactor;
+
+        // La projection dépend du rayon englobant, qui varie en temps réel :
+        // elle est donc recalculée à chaque image (et non plus seulement dans reshape()).
+        gl.glMatrixMode(GL2.GL_PROJECTION);
+        gl.glLoadIdentity();
+        float radius = dataRadius;
+        glu.gluPerspective(45.0, aspect, Math.max(distance - 2f * radius, distance * 0.01f), distance + 2f * radius);
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
         gl.glLoadIdentity();
 
-        float distance = curveData.getBoundingRadius() * distanceFactor;
         glu.gluLookAt(0, 0, distance,
                       0, 0, 0,
                       0, 1, 0);
@@ -64,13 +129,16 @@ public class Curve3DRenderer implements GLEventListener {
         gl.glTranslatef(panX, panY, 0f);
         gl.glRotatef(rotationX, 1f, 0f, 0f);
         gl.glRotatef(rotationY, 0f, 1f, 0f);
-        gl.glTranslatef(-curveData.getCenterX(), -curveData.getCenterY(), -curveData.getCenterZ());
+        gl.glTranslatef(-dataCenterX, -dataCenterY, -dataCenterZ);
 
         if (showGrid) drawCubeGrid(gl); 
         if (showGrid && showLabel) drawAxisLabels(gl);
         if (showAxes) drawAxes(gl);
-        drawCurve(gl);
+        enableClipping(gl, true);
+        drawCurves(gl);
         if (showPoints) drawPoints(gl);
+        enableClipping(gl, false);
+        drawOverlay(gl);
     }
 
     @Override
@@ -78,40 +146,189 @@ public class Curve3DRenderer implements GLEventListener {
         GL2 gl = drawable.getGL().getGL2();
         if (height <= 0) height = 1;
         gl.glViewport(0, 0, width, height);
-        gl.glMatrixMode(GL2.GL_PROJECTION);
-        gl.glLoadIdentity();
-        float aspect = (float) width / height;
-        float farPlane = Math.max(curveData.getBoundingRadius() * 20f, 100f);
-        glu.gluPerspective(45.0, aspect, 0.1, farPlane);
-        gl.glMatrixMode(GL2.GL_MODELVIEW);
+        this.width = Math.max(width, 1);
+        this.height = height;
+        aspect = (float) width / height; // la projection est appliquée dans display()
+        text.setPixelScale(GLText.surfaceScale(drawable));
     }
 
-    private void drawCurve(GL2 gl) {
-        List<Point3D> points = curveData.getPoints();
-        gl.glLineWidth(2.5f);
-        gl.glBegin(GL2.GL_LINE_STRIP);
-        int n = points.size();
-        for (int i = 0; i < n; i++) {
-            float t = (n <= 1) ? 0f : (float) i / (n - 1);
-            // Dégradé du bleu vers l'orange le long de la courbe
-            gl.glColor3f(0.2f + 0.8f * t, 0.55f + 0.25f * (1 - t), 1.0f - 0.8f * t);
-            Point3D p = points.get(i);
-            gl.glVertex3f(p.x, p.y, p.z);
+    /**
+     * Avec des échelles fixes, coupe ce qui sort de la boîte [xMin, xMax] x
+     * [yMin, yMax] x [zMin, zMax] (6 plans de découpage, exprimés dans le
+     * repère des données : la matrice courante doit être celle de la scène).
+     */
+    private void enableClipping(GL2 gl, boolean enable) {
+        double[] f = frameFixedScales;
+        if (f == null) return;
+        for (int i = 0; i < 6; i++) {
+            int plane = GL2.GL_CLIP_PLANE0 + i;
+            if (enable) {
+                int axis = i / 2;
+                double[] equation = new double[4];
+                // Plan i pair : coordonnée >= min ; plan i impair : coordonnée <= max
+                equation[axis] = (i % 2 == 0) ? 1 : -1;
+                equation[3] = (i % 2 == 0) ? -f[2 * axis] : f[2 * axis + 1];
+                gl.glClipPlane(plane, equation, 0);
+                gl.glEnable(plane);
+            } else {
+                gl.glDisable(plane);
+            }
         }
-        gl.glEnd();
+    }
+
+    /** Boîte englobante, centre et rayon de l'ensemble des courbes non vides (de -1 à 1 s'il n'y en a aucune). */
+    private void computeBounds() {
+        frameFixedScales = fixedScales;
+        if (frameFixedScales != null) { // échelles fixes : la boîte est exactement celle fournie
+            double[] f = frameFixedScales;
+            setBounds((float) f[0], (float) f[1], (float) f[2], (float) f[3], (float) f[4], (float) f[5]);
+            return;
+        }
+        float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE, minZ = Float.MAX_VALUE;
+        float maxX = -Float.MAX_VALUE, maxY = -Float.MAX_VALUE, maxZ = -Float.MAX_VALUE;
+        boolean empty = true;
+        for (Curve3DData curve : frameCurves) {
+            if (curve.getSnapshotCount() == 0) continue;
+            empty = false;
+            minX = Math.min(minX, curve.getMinX()); maxX = Math.max(maxX, curve.getMaxX());
+            minY = Math.min(minY, curve.getMinY()); maxY = Math.max(maxY, curve.getMaxY());
+            minZ = Math.min(minZ, curve.getMinZ()); maxZ = Math.max(maxZ, curve.getMaxZ());
+        }
+        if (empty) {
+            minX = minY = minZ = -1f;
+            maxX = maxY = maxZ = 1f;
+        }
+        setBounds(minX, maxX, minY, maxY, minZ, maxZ);
+    }
+
+    private void setBounds(float minX, float maxX, float minY, float maxY, float minZ, float maxZ) {
+        dataMinX = minX; dataMaxX = maxX;
+        dataMinY = minY; dataMaxY = maxY;
+        dataMinZ = minZ; dataMaxZ = maxZ;
+        dataCenterX = (minX + maxX) / 2f;
+        dataCenterY = (minY + maxY) / 2f;
+        dataCenterZ = (minZ + maxZ) / 2f;
+        float dx = maxX - minX, dy = maxY - minY, dz = maxZ - minZ;
+        dataRadius = Math.max((float) Math.sqrt(dx * dx + dy * dy + dz * dz) / 2f, 0.001f);
+    }
+
+    /**
+     * Dessine les courbes. Une courbe seule et sans couleur explicite garde le
+     * dégradé bleu -> orange ; sinon chaque courbe a sa couleur (explicite ou
+     * de la palette) et s'estompe vers ses échantillons les plus anciens.
+     */
+    private void drawCurves(GL2 gl) {
+        float[] screen = null; // matrice données -> écran, calculée seulement si une courbe est en tirets
+        for (int k = 0; k < frameCurves.size(); k++) {
+            Curve3DData curve = frameCurves.get(k);
+            float width = CurveStyles.lineWidthOf(curve, DEFAULT_LINE_WIDTH);
+            gl.glLineWidth(width);
+            float[] xyz = curve.getSnapshotCoordinates();
+            int n = curve.getSnapshotCount();
+            boolean gradient = curve.getColor() == null && frameCurves.size() == 1;
+            float[] color = CurveStyles.colorOf(curve, k);
+            if (CurveStyles.isDashed(curve)) {
+                if (screen == null) screen = screenMatrix(gl);
+                float[] m = screen;
+                double scale = height / (dataRadius * distanceFactor);
+                dashedLines.draw(gl, curve, width, curve.getCapacity(), curve.getSnapshotTotalSamples(), n, 0, scale, scale,
+                        i -> screenDistance(m, xyz, i - 1, i), null,
+                        (i, f) -> {
+                            vertexColor(gl, gradient, color, (n <= 1) ? 1f : (i - 1 + f) / (n - 1));
+                            int a = 3 * (i - 1), b = 3 * i;
+                            gl.glVertex3f(xyz[a] + f * (xyz[b] - xyz[a]), xyz[a + 1] + f * (xyz[b + 1] - xyz[a + 1]),
+                                          xyz[a + 2] + f * (xyz[b + 2] - xyz[a + 2]));
+                        });
+            } else {
+                gl.glBegin(GL2.GL_LINE_STRIP);
+                for (int i = 0; i < n; i++) {
+                    vertexColor(gl, gradient, color, (n <= 1) ? 1f : (float) i / (n - 1));
+                    gl.glVertex3f(xyz[3 * i], xyz[3 * i + 1], xyz[3 * i + 2]);
+                }
+                gl.glEnd();
+            }
+        }
+    }
+
+    /**
+     * Couleur d'un sommet selon sa position t le long de la courbe (0 = plus
+     * ancien, 1 = plus récent) : dégradé bleu -> orange, ou couleur de la
+     * courbe s'estompant vers les échantillons anciens.
+     */
+    private static void vertexColor(GL2 gl, boolean gradient, float[] color, float t) {
+        if (gradient) {
+            gl.glColor3f(0.2f + 0.8f * t, 0.55f + 0.25f * (1 - t), 1.0f - 0.8f * t);
+        } else {
+            gl.glColor4f(color[0], color[1], color[2], 0.25f + 0.75f * t);
+        }
+    }
+
+    /** Matrice (colonne majeure) qui transforme les coordonnées des données en coordonnées de découpage (projection x vue). */
+    private static float[] screenMatrix(GL2 gl) {
+        float[] modelView = new float[16], projection = new float[16], result = new float[16];
+        gl.glGetFloatv(GL2.GL_MODELVIEW_MATRIX, modelView, 0);
+        gl.glGetFloatv(GL2.GL_PROJECTION_MATRIX, projection, 0);
+        for (int col = 0; col < 4; col++) {
+            for (int row = 0; row < 4; row++) {
+                float sum = 0;
+                for (int k = 0; k < 4; k++) sum += projection[k * 4 + row] * modelView[col * 4 + k];
+                result[col * 4 + row] = sum;
+            }
+        }
+        return result;
+    }
+
+    /** Distance à l'écran, en pixels, entre les points a et b de l'instantané (0 si l'un est derrière la caméra). */
+    private double screenDistance(float[] m, float[] xyz, int a, int b) {
+        double[] pa = project(m, xyz[3 * a], xyz[3 * a + 1], xyz[3 * a + 2]);
+        double[] pb = project(m, xyz[3 * b], xyz[3 * b + 1], xyz[3 * b + 2]);
+        if (pa == null || pb == null) return 0;
+        return Math.hypot(pb[0] - pa[0], pb[1] - pa[1]);
+    }
+
+    private double[] project(float[] m, float x, float y, float z) {
+        double w = m[3] * x + m[7] * y + m[11] * z + m[15];
+        if (!(w > 1e-9)) return null;
+        double cx = (m[0] * x + m[4] * y + m[8] * z + m[12]) / w;
+        double cy = (m[1] * x + m[5] * y + m[9] * z + m[13]) / w;
+        return new double[]{(cx + 1) / 2 * width, (cy + 1) / 2 * height};
     }
 
     private void drawPoints(GL2 gl) {
         gl.glColor3f(1f, 1f, 1f);
         gl.glBegin(GL2.GL_POINTS);
-        for (Point3D p : curveData.getPoints()) {
-            gl.glVertex3f(p.x, p.y, p.z);
+        for (Curve3DData curve : frameCurves) {
+            float[] xyz = curve.getSnapshotCoordinates();
+            int n = curve.getSnapshotCount();
+            for (int i = 0; i < n; i++) {
+                gl.glVertex3f(xyz[3 * i], xyz[3 * i + 1], xyz[3 * i + 2]);
+            }
         }
         gl.glEnd();
     }
 
+    /**
+     * Passe 2D finale, en pixels, par-dessus la scène 3D : étiquettes des
+     * échelles et noms d'axes (positions projetées pendant le dessin de la
+     * scène), puis légende en haut à gauche (si au moins une courbe a un nom).
+     */
+    private void drawOverlay(GL2 gl) {
+        gl.glDisable(GL2.GL_DEPTH_TEST);
+        gl.glMatrixMode(GL2.GL_PROJECTION);
+        gl.glLoadIdentity();
+        gl.glOrtho(0, width, 0, height, -1, 1);
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
+        gl.glLoadIdentity();
+        for (Label label : labels) {
+            gl.glColor4f(label.color[0], label.color[1], label.color[2], label.color[3]);
+            text.draw(gl, label.text, label.font, (float) label.x, (float) label.y);
+        }
+        if (showLegend) CurveStyles.drawLegend(gl, text, legendFont, frameCurves, 16, height - 10);
+        gl.glEnable(GL2.GL_DEPTH_TEST);
+    }
+
     private void drawAxes(GL2 gl) {
-        float len = curveData.getBoundingRadius() * 1.3f;
+        float len = dataRadius * 1.3f;
         gl.glLineWidth(1.5f);
         gl.glBegin(GL2.GL_LINES);
         // Axe X - rouge
@@ -151,13 +368,15 @@ public class Curve3DRenderer implements GLEventListener {
 
     private BoxInfo computeBoxInfo() {
         // Léger espace entre la courbe et la boîte, proportionnel à chaque dimension
-        float marginX = Math.max((curveData.getMaxX() - curveData.getMinX()) * 0.08f, curveData.getBoundingRadius() * 0.02f);
-        float marginY = Math.max((curveData.getMaxY() - curveData.getMinY()) * 0.08f, curveData.getBoundingRadius() * 0.02f);
-        float marginZ = Math.max((curveData.getMaxZ() - curveData.getMinZ()) * 0.08f, curveData.getBoundingRadius() * 0.02f);
+        // (aucun avec des échelles fixes : la boîte correspond exactement aux bornes fournies)
+        boolean fixed = frameFixedScales != null;
+        float marginX = fixed ? 0f : Math.max((dataMaxX - dataMinX) * 0.08f, dataRadius * 0.02f);
+        float marginY = fixed ? 0f : Math.max((dataMaxY - dataMinY) * 0.08f, dataRadius * 0.02f);
+        float marginZ = fixed ? 0f : Math.max((dataMaxZ - dataMinZ) * 0.08f, dataRadius * 0.02f);
 
-        float minX = curveData.getMinX() - marginX, maxX = curveData.getMaxX() + marginX;
-        float minY = curveData.getMinY() - marginY, maxY = curveData.getMaxY() + marginY;
-        float minZ = curveData.getMinZ() - marginZ, maxZ = curveData.getMaxZ() + marginZ;
+        float minX = dataMinX - marginX, maxX = dataMaxX + marginX;
+        float minY = dataMinY - marginY, maxY = dataMaxY + marginY;
+        float minZ = dataMinZ - marginZ, maxZ = dataMaxZ + marginZ;
 
         float[] cam = cameraPositionInDataSpace();
         float xFace = (cam[0] > (minX + maxX) / 2f) ? minX : maxX;
@@ -197,10 +416,9 @@ public class Curve3DRenderer implements GLEventListener {
      * l'endroit où elles restent lisibles quel que soit l'angle de vue,
      * puisque les faces les plus proches de la caméra ne sont pas dessinées.
      *
-     * Utilise une police bitmap GLUT (glRasterPos3f + glutBitmapString),
-     * qui ne dépend pas d'AWT — contrairement à TextRenderer, dont le mélange
-     * avec le pipeline natif SWT peut produire un rendu incorrect (texture de
-     * glyphe non initialisée) sur certaines configurations.
+     * Le texte est rendu par SWT (voir {@link GLText}), sans AWT : le mélange
+     * de TextRenderer (AWT) avec le pipeline natif SWT peut produire un rendu
+     * incorrect sur certaines configurations.
      */
     private void drawAxisLabels(GL2 gl) {
         BoxInfo box = computeBoxInfo();
@@ -236,15 +454,29 @@ public class Curve3DRenderer implements GLEventListener {
         gl.glEnable(GL2.GL_DEPTH_TEST);
     }
 
-    /** Positionne le curseur de rendu (raster) à (x, y, z) et y dessine une chaîne en police bitmap HELVETICA_12. */
-    private void drawBitmapLabel(GL2 gl, String text, float x, float y, float z) {
-        drawBitmapLabel(gl, text, x, y, z, GLUT.BITMAP_HELVETICA_18);
+    /** Étiquette de graduation au point (x, y, z), dans la police des échelles. */
+    private void drawBitmapLabel(GL2 gl, String label, float x, float y, float z) {
+        drawBitmapLabel(gl, label, x, y, z, scaleFont);
     }
 
-    /** Positionne le curseur de rendu (raster) à (x, y, z) et y dessine une chaîne dans la police bitmap donnée. */
-    private void drawBitmapLabel(GL2 gl, String text, float x, float y, float z, int bitmapFont) {
-        gl.glRasterPos3f(x, y, z);
-        glut.glutBitmapString(bitmapFont, text);
+    /**
+     * Étiquette au point (x, y, z) de la scène, dans la couleur courante : la
+     * position est projetée à l'écran maintenant (matrices de la scène) et le
+     * texte est dessiné dans la passe 2D finale (drawOverlay).
+     */
+    private void drawBitmapLabel(GL2 gl, String label, float x, float y, float z, ChartFont font) {
+        if (labelMatrix == null) labelMatrix = screenMatrix(gl);
+        double[] screen = project(labelMatrix, x, y, z);
+        if (screen == null) return; // derrière la caméra
+        float[] color = new float[4];
+        gl.glGetFloatv(GL2.GL_CURRENT_COLOR, color, 0);
+        labels.add(new Label(label, font, color, screen[0], screen[1]));
+    }
+
+    /** Police des noms d'axes : celle des graduations, en gras et 70 % plus grande. */
+    private ChartFont axisNameFont() {
+        ChartFont font = scaleFont;
+        return font.withSize(Math.round(font.getSize() * 1.7f)).withStyle(font.getStyle() | SWT.BOLD);
     }
 
     /** Formate une valeur de graduation avec 2 décimales, en évitant l'affichage "-0.00". */
@@ -283,7 +515,7 @@ public class Curve3DRenderer implements GLEventListener {
         float xDir = (box.skipX == 0) ? 1f : -1f;
         gl.glDisable(GL2.GL_DEPTH_TEST);
         gl.glColor3f(0.9f, 0.2f, 0.2f);
-        drawBitmapLabel(gl, "x", xFar + xDir * edgeX * 0.10f, box.yFace, box.zFace, GLUT.BITMAP_TIMES_ROMAN_24);
+        drawBitmapLabel(gl, "x", xFar + xDir * edgeX * 0.10f, box.yFace, box.zFace, axisNameFont());
         gl.glEnable(GL2.GL_DEPTH_TEST);
     }
 
@@ -317,7 +549,7 @@ public class Curve3DRenderer implements GLEventListener {
         float yDir = (box.skipY == 0) ? 1f : -1f;
         gl.glDisable(GL2.GL_DEPTH_TEST);
         gl.glColor3f(0.2f, 0.9f, 0.2f);
-        drawBitmapLabel(gl, "y", box.xFace, yFar + yDir * edgeY * 0.10f, box.zFace, GLUT.BITMAP_TIMES_ROMAN_24);
+        drawBitmapLabel(gl, "y", box.xFace, yFar + yDir * edgeY * 0.10f, box.zFace, axisNameFont());
         gl.glEnable(GL2.GL_DEPTH_TEST);
     }
 
@@ -351,7 +583,7 @@ public class Curve3DRenderer implements GLEventListener {
         float zDir = (box.skipZ == 0) ? 1f : -1f;
         gl.glDisable(GL2.GL_DEPTH_TEST);
         gl.glColor3f(0.3f, 0.5f, 0.95f);
-        drawBitmapLabel(gl, "z", box.xFace, box.yFace, zFar + zDir * edgeZ * 0.10f, GLUT.BITMAP_TIMES_ROMAN_24);
+        drawBitmapLabel(gl, "z", box.xFace, box.yFace, zFar + zDir * edgeZ * 0.10f, axisNameFont());
         gl.glEnable(GL2.GL_DEPTH_TEST);
     }
 
@@ -363,7 +595,7 @@ public class Curve3DRenderer implements GLEventListener {
      * plus proches de l'utilisateur, pour ne pas les dessiner.
      */
     private float[] cameraPositionInDataSpace() {
-        float distance = curveData.getBoundingRadius() * distanceFactor;
+        float distance = dataRadius * distanceFactor;
 
         // Position de la caméra juste avant panoramique/rotations (cf. gluLookAt dans display())
         float dx = -panX;
@@ -385,9 +617,9 @@ public class Curve3DRenderer implements GLEventListener {
         float y2 = y1;
 
         return new float[]{
-                x2 + curveData.getCenterX(),
-                y2 + curveData.getCenterY(),
-                z2 + curveData.getCenterZ()
+                x2 + dataCenterX,
+                y2 + dataCenterY,
+                z2 + dataCenterZ
         };
     }
 
@@ -400,7 +632,7 @@ public class Curve3DRenderer implements GLEventListener {
     }
 
     public void pan(float deltaX, float deltaY) {
-        float scale = curveData.getBoundingRadius() * 0.002f;
+        float scale = dataRadius * 0.002f;
         panX += deltaX * scale;
         panY -= deltaY * scale;
     }
@@ -422,4 +654,34 @@ public class Curve3DRenderer implements GLEventListener {
     public void togglePoints() { showPoints = !showPoints; }
     public void toggleGrid() { showGrid = !showGrid; }
     public void toggleLabel() { showLabel = !showLabel; }
+
+    /** Affiche ou masque la légende (prise en compte à l'image suivante). */
+    public void setLegendVisible(boolean visible) { showLegend = visible; }
+    public boolean isLegendVisible() { return showLegend; }
+    /** Bascule l'affichage de la légende (touche N). */
+    public void toggleLegend() { showLegend = !showLegend; }
+
+    /**
+     * Échelles fixes : la boîte de repère et les graduations vont exactement
+     * de xMin à xMax, yMin à yMax et zMin à zMax, quelles que soient les
+     * valeurs des courbes (ce qui sort de la boîte est coupé). La caméra
+     * reste alors à distance constante.
+     */
+    public void setFixedScales(double xMin, double xMax, double yMin, double yMax, double zMin, double zMax) {
+        fixedScales = CurveStyles.checkScales(xMin, xMax, yMin, yMax, zMin, zMax);
+    }
+    /** Échelles dynamiques, ajustées en continu aux valeurs des courbes (par défaut). */
+    public void setDynamicScales() { fixedScales = null; }
+    /** Vrai si les échelles sont fixes. */
+    public boolean hasFixedScales() { return fixedScales != null; }
+
+    /**
+     * Police des graduations des échelles (les noms d'axes utilisent la même
+     * famille, en gras et 70 % plus grande).
+     */
+    public void setScaleFont(ChartFont font) { if (font != null) scaleFont = font; }
+    public ChartFont getScaleFont() { return scaleFont; }
+    /** Police de la légende. */
+    public void setLegendFont(ChartFont font) { if (font != null) legendFont = font; }
+    public ChartFont getLegendFont() { return legendFont; }
 }

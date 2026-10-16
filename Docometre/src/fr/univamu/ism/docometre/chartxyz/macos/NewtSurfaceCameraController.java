@@ -33,6 +33,12 @@ public class NewtSurfaceCameraController {
             }
 
             @Override
+            public void mouseEntered(MouseEvent e) {
+                // Focus clavier dès que la souris entre dans le graphe (plusieurs graphes par fenêtre)
+                glWindow.requestFocus();
+            }
+
+            @Override
             public void mouseReleased(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON1) leftDown = false;
                 if (e.getButton() == MouseEvent.BUTTON3) rightDown = false;

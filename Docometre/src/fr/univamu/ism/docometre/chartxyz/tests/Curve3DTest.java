@@ -1,4 +1,4 @@
-package fr.univamu.ism.docometre.chartxyz.windows;
+package fr.univamu.ism.docometre.chartxyz.tests;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -11,20 +11,21 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
-import fr.univamu.ism.docometre.chartxyz.CurveData;
+import fr.univamu.ism.docometre.chartxyz.Curve3DData;
+import fr.univamu.ism.docometre.chartxyz.windows.Curve3D;
 
 public class Curve3DTest {
 
     private static Curve3D curve3d;
 
 	public static void main(String[] args) {
-    	CurveData curveData;
+    	Curve3DData curveData;
     	int choice = 1;
-    	if(choice == 1) curveData = CurveData.loadFromEquation();
+    	if(choice == 1) curveData = Curve3DData.loadFromEquation();
     	else {
           String dataFile = (args.length > 0) ? args[0] : "data/sample_curve.txt";
           try {
-              curveData = CurveData.loadFromFile(Paths.get(dataFile));
+              curveData = Curve3DData.loadFromFile(Paths.get(dataFile));
           } catch (IOException e) {
               System.err.println("Impossible de charger le fichier de points : " + dataFile);
               e.printStackTrace();

@@ -1,4 +1,4 @@
-package fr.univamu.ism.docometre.chartxyz.windows;
+package fr.univamu.ism.docometre.chartxyz.tests;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -12,10 +12,11 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
 import fr.univamu.ism.docometre.chartxyz.SurfaceData;
+import fr.univamu.ism.docometre.chartxyz.macos.NewtSurface;
 
-public class SurfaceTest {
+public class NewtSurfaceTest {
 
-    private static Surface surface;
+    private static NewtSurface newtSurface;
 
 	public static void main(String[] args) {
         SurfaceData surfaceData;
@@ -41,17 +42,17 @@ public class SurfaceTest {
         shell.setSize(1000, 700);
         shell.setLayout(new FillLayout());
 
-        surface = new Surface(shell, surfaceData);
+        newtSurface = new NewtSurface(shell, surfaceData);
 
         Button button = new Button(shell, SWT.NORMAL);
         button.setText("PUSH");
         button.addSelectionListener(new SelectionAdapter() {
         	@Override
         	public void widgetSelected(SelectionEvent e) {
-        		if(!surface.isDisposed()) surface.close();
+        		if(!newtSurface.isDisposed()) newtSurface.close();
         		else {
-        			surface = new Surface(shell, surfaceData);
-        			surface.moveAbove(button);
+        			newtSurface = new NewtSurface(shell, surfaceData);
+        			newtSurface.moveAbove(button);
         		}
         		shell.layout();
         	}
