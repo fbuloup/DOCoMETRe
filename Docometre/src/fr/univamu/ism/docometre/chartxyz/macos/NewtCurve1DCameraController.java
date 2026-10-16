@@ -75,6 +75,7 @@ public class NewtCurve1DCameraController {
                     case 'g': renderer.toggleGrid(); break;
                     case 'l': renderer.toggleLabel(); break;
                     case 'n': renderer.toggleLegend(); break;
+                    case 'f': renderer.toggleFps(); break;
                     case ' ': renderer.togglePause(); break;
                     case 'm': renderer.toggleDisplayMode(); break;
                     default: break;

@@ -65,6 +65,7 @@ public class Curve3DCameraController {
                     case 'g': renderer.toggleGrid(); break;
                     case 'l': renderer.toggleLabel(); break;
                     case 'n': renderer.toggleLegend(); break;
+                    case 'f': renderer.toggleFps(); break;
                     default: break;
                 }
             }

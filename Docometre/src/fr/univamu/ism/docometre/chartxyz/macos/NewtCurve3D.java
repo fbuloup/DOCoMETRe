@@ -1,6 +1,7 @@
 package fr.univamu.ism.docometre.chartxyz.macos;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
@@ -127,6 +128,20 @@ public class NewtCurve3D {
 	
 	public boolean isLegendVisible() {
 		return renderer.isLegendVisible();
+	}
+	
+	/** Cadence d'affichage réelle mesurée, en images par seconde (cible : 60). */
+	public double getFps() {
+		return renderer.getFps();
+	}
+	
+	/** Affiche ou masque la cadence d'affichage dans le graphe (également avec la touche F). */
+	public void setFpsVisible(boolean visible) {
+		renderer.setFpsVisible(visible);
+	}
+	
+	public void setLayoutData(GridData gridData) {
+		newtCanvas.setLayoutData(gridData);
 	}
 	
 	public boolean isDisposed() {

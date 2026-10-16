@@ -138,16 +138,26 @@ public class Curve2D {
 		return renderer.isLegendVisible();
 	}
 	
+	/** Cadence d'affichage réelle mesurée, en images par seconde (cible : 60). */
+	public double getFps() {
+		return renderer.getFps();
+	}
+	
+	/** Affiche ou masque la cadence d'affichage dans le graphe (également avec la touche F). */
+	public void setFpsVisible(boolean visible) {
+		renderer.setFpsVisible(visible);
+	}
+	
+	public void setLayoutData(GridData gridData) {
+		glCanvas.setLayoutData(gridData);
+	}
+	
 	public boolean isDisposed() {
 		return glCanvas == null || glCanvas.isDisposed();
 	}
 	
 	public void moveAbove(Control control) {
 		glCanvas.moveAbove(control);
-	}
-
-	public void setLayoutData(GridData gridData) {
-		glCanvas.setLayoutData(gridData);
 	}
 	
 }

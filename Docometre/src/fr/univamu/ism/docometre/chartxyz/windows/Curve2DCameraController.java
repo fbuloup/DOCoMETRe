@@ -21,6 +21,7 @@ import fr.univamu.ism.docometre.chartxyz.Curve2DRenderer;
  * - Touche G : afficher/masquer la grille
  * - Touche L : afficher/masquer les graduations
  * - Touche N : afficher/masquer la légende
+ * - Touche F : afficher/masquer la cadence d'affichage (images/s)
  * - Touche E : même échelle sur x et y
  */
 public class Curve2DCameraController {
@@ -75,6 +76,7 @@ public class Curve2DCameraController {
                     case 'g': renderer.toggleGrid(); break;
                     case 'l': renderer.toggleLabel(); break;
                     case 'n': renderer.toggleLegend(); break;
+                    case 'f': renderer.toggleFps(); break;
                     case 'e': renderer.toggleEqualAspect(); break;
                     default: break;
                 }

@@ -81,6 +81,8 @@ public class Curve1DRenderer implements GLEventListener {
     private volatile ChartFont scaleFont = new ChartFont(9, SWT.NORMAL);
     private volatile ChartFont legendFont = new ChartFont(9, SWT.NORMAL);
     private volatile boolean showLegend = true; // légende affichée (si au moins une courbe a un nom)
+    private final FpsCounter fpsCounter = new FpsCounter(); // cadence d'affichage réelle
+    private volatile boolean showFps = false;
     private final DashedLines dashedLines = new DashedLines(); // tirets ancrés sur les données
 
     private static final int TARGET_TICK_COUNT = 6;     // nombre approximatif de graduations par axe
@@ -148,6 +150,7 @@ public class Curve1DRenderer implements GLEventListener {
 
     @Override
     public void display(GLAutoDrawable drawable) {
+        fpsCounter.frame();
         GL2 gl = drawable.getGL().getGL2();
         gl.glViewport(0, 0, width, height);
         gl.glClear(GL2.GL_COLOR_BUFFER_BIT);
@@ -205,6 +208,7 @@ public class Curve1DRenderer implements GLEventListener {
         drawFrame(gl);
         if (showLabel) drawLabels(gl, stepT, stepY);
         drawLegend(gl);
+        drawFps(gl);
         if (paused) {
             gl.glColor3f(1f, 0.75f, 0.2f);
             String label = "PAUSE";
@@ -267,6 +271,14 @@ public class Curve1DRenderer implements GLEventListener {
         marginBottom = (int) Math.ceil(tickHeight + 10 + legendSpace);
         marginTop = (int) Math.max(10, Math.ceil(tickHeight / 2f + 4));
         marginRight = (int) Math.max(10, Math.ceil(xLabelWidth / 2f + 4));
+    }
+
+    /** Cadence d'affichage réelle, en bas à droite, dans la police des échelles (coordonnées en pixels). */
+    private void drawFps(GL2 gl) {
+        if (!showFps) return;
+        String label = String.format(java.util.Locale.US, "%.1f i/s", fpsCounter.getFps());
+        gl.glColor3f(1f, 0.75f, 0.2f);
+        text.draw(gl, label, scaleFont, marginLeft + plotWidth - text.width(label, scaleFont) - 6, marginBottom + 4);
     }
 
     /** Légende : dans le graphe en haut à gauche, ou en ligne(s) sous l'axe des abscisses. */
@@ -585,6 +597,13 @@ public class Curve1DRenderer implements GLEventListener {
     public boolean isLegendVisible() { return showLegend; }
     /** Bascule l'affichage de la légende (touche N). */
     public void toggleLegend() { showLegend = !showLegend; }
+
+    /** Cadence d'affichage réelle mesurée, en images par seconde. */
+    public double getFps() { return fpsCounter.getFps(); }
+    /** Affiche ou masque la cadence d'affichage dans le graphe (touche F). */
+    public void setFpsVisible(boolean visible) { showFps = visible; }
+    public boolean isFpsVisible() { return showFps; }
+    public void toggleFps() { showFps = !showFps; }
     public void setDisplayMode(DisplayMode displayMode) { this.displayMode = displayMode; }
     public DisplayMode getDisplayMode() { return displayMode; }
     /** Bascule entre balayage (oscilloscope) et défilement. */
