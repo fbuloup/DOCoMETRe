@@ -1,92 +1,93 @@
-package fr.univamu.ism.docometre.chartxyz.macos;
+package fr.univamu.ism.docometre.chartxyz.windows;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
-import com.jogamp.newt.opengl.GLWindow;
-import com.jogamp.newt.swt.NewtCanvasSWT;
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
+import com.jogamp.opengl.swt.GLCanvas;
 import com.jogamp.opengl.util.FPSAnimator;
 
 import fr.univamu.ism.docometre.chartxyz.ChartFont;
 import fr.univamu.ism.docometre.chartxyz.CurveStyles;
 import fr.univamu.ism.docometre.chartxyz.LegendPosition;
-import fr.univamu.ism.docometre.chartxyz.Curve2DData;
-import fr.univamu.ism.docometre.chartxyz.Curve2DRenderer;
+import fr.univamu.ism.docometre.chartxyz.Curve1DData;
+import fr.univamu.ism.docometre.chartxyz.Chart1DRenderer;
 
-public class NewtCurve2D {
+public class Chart1D {
 	
+	private GLCanvas glCanvas;
 	private FPSAnimator animator;
-	private NewtCanvasSWT newtCanvas;
-	private GLWindow glWindow;
 
-	private Curve2DRenderer renderer;
+	private Chart1DRenderer renderer;
 
 	/**
 	 * Crée le graphe avec une ou plusieurs courbes (d'autres peuvent être
 	 * ajoutées ensuite avec addCurve), avec des échelles dynamiques : elles
 	 * s'ajustent en continu aux valeurs des courbes.
 	 */
-	public NewtCurve2D(Composite container, Curve2DData... curves) {
+	public Chart1D(Composite container, Curve1DData... curves) {
 		this(container, (double[]) null, curves);
 	}
 	
 	/**
-	 * Crée le graphe avec des échelles fixes pour les axes x et y : elles restent égales
+	 * Crée le graphe avec des échelles fixes pour l'axe vertical (l'axe du temps est fixé par la fenêtre temporelle) : elles restent égales
 	 * aux bornes fournies quelles que soient les valeurs des courbes (ce qui
 	 * dépasse est coupé). setDynamicScales() permet de revenir aux échelles dynamiques.
 	 *
 	 * @throws IllegalArgumentException si un minimum n'est pas strictement inférieur à son maximum
 	 */
-	public NewtCurve2D(Composite container, double xMin, double xMax, double yMin, double yMax, Curve2DData... curves) {
-		this(container, CurveStyles.checkScales(xMin, xMax, yMin, yMax), curves);
+	public Chart1D(Composite container, double yMin, double yMax, Curve1DData... curves) {
+		this(container, CurveStyles.checkScales(yMin, yMax), curves);
 	}
 	
 	/** fixedScales : bornes des échelles fixes, déjà vérifiées, ou null pour des échelles dynamiques. */
-	private NewtCurve2D(Composite container, double[] fixedScales, Curve2DData... curves) {
+	private Chart1D(Composite container, double[] fixedScales, Curve1DData... curves) {
 		GLProfile glProfile = GLProfile.get(GLProfile.GL2);
         GLCapabilities glCapabilities = new GLCapabilities(glProfile);
         glCapabilities.setDoubleBuffered(true);
         glCapabilities.setSampleBuffers(true);
         glCapabilities.setNumSamples(4);
         
-        glWindow = GLWindow.create(glCapabilities);
+        glCanvas = new GLCanvas(container, SWT.NO_BACKGROUND, glCapabilities, null);
+
+        animator = new FPSAnimator(glCanvas, 60, true);
         
-        animator = new FPSAnimator(glWindow, 60, true);
+        renderer = new Chart1DRenderer(curves);
+        if (fixedScales != null) renderer.setFixedScales(fixedScales[0], fixedScales[1]);
+        glCanvas.addGLEventListener(renderer);
         
-        renderer = new Curve2DRenderer(curves);
-        if (fixedScales != null) renderer.setFixedScales(fixedScales[0], fixedScales[1], fixedScales[2], fixedScales[3]);
-        glWindow.addGLEventListener(renderer);
-        
-        NewtCurve2DCameraController cameraController = new NewtCurve2DCameraController(renderer, glWindow);
+        Chart1DCameraController cameraController = new Chart1DCameraController(renderer, glCanvas);
         cameraController.attach();
-        
-        newtCanvas = NewtCanvasSWT.create(container, SWT.NO_BACKGROUND, glWindow);
         
         container.addListener(SWT.Close, e -> {
         	close();
         });
         
         animator.start();
+        
 	}
 	
 	public void close() {
 		animator.stop();
-        if(newtCanvas != null && !newtCanvas.isDisposed()) newtCanvas.dispose();
-        glWindow.destroy();
+        if(glCanvas != null && !glCanvas.isDisposed()) glCanvas.dispose();
 	}
 	
 	/** Ajoute une courbe au graphe (utilisable pendant l'affichage, depuis n'importe quel thread). */
-	public void addCurve(Curve2DData curve) {
+	public void addCurve(Curve1DData curve) {
 		renderer.addCurve(curve);
 	}
 	
 	/** Retire une courbe du graphe. */
-	public void removeCurve(Curve2DData curve) {
+	public void removeCurve(Curve1DData curve) {
 		renderer.removeCurve(curve);
+	}
+	
+	/** Choisit le mode d'affichage : balayage de type oscilloscope (par défaut) ou défilement. */
+	public void setDisplayMode(Chart1DRenderer.DisplayMode displayMode) {
+		renderer.setDisplayMode(displayMode);
 	}
 	
 	/**
@@ -118,9 +119,9 @@ public class NewtCurve2D {
 		return renderer.getLegendPosition();
 	}
 	
-	/** Échelles fixes pour les axes x et y (voir le constructeur correspondant). */
-	public void setFixedScales(double xMin, double xMax, double yMin, double yMax) {
-		renderer.setFixedScales(xMin, xMax, yMin, yMax);
+	/** Échelles fixes pour l'axe vertical (l'axe du temps est fixé par la fenêtre temporelle) (voir le constructeur correspondant). */
+	public void setFixedScales(double yMin, double yMax) {
+		renderer.setFixedScales(yMin, yMax);
 	}
 	
 	/** Échelles dynamiques, ajustées en continu aux valeurs des courbes (par défaut). */
@@ -153,7 +154,7 @@ public class NewtCurve2D {
 	}
 	
 	public void setLayoutData(GridData gridData) {
-		newtCanvas.setLayoutData(gridData);
+		glCanvas.setLayoutData(gridData);
 	}
 	
 	/** Affiche ou masque, en haut à droite du graphe, la dernière valeur de chaque courbe (également avec la touche V). */
@@ -165,12 +166,24 @@ public class NewtCurve2D {
 		return renderer.isCurrentValuesVisible();
 	}
 	
+	/**
+	 * Active ou désactive la réduction du nombre de points envoyés à OpenGL
+	 * (activée par défaut, également avec la touche D). Le dessin est inchangé.
+	 */
+	public void setDecimationEnabled(boolean enabled) {
+		renderer.setDecimationEnabled(enabled);
+	}
+	
+	public boolean isDecimationEnabled() {
+		return renderer.isDecimationEnabled();
+	}
+	
 	public boolean isDisposed() {
-		return newtCanvas == null || newtCanvas.isDisposed();
+		return glCanvas == null || glCanvas.isDisposed();
 	}
-
+	
 	public void moveAbove(Control control) {
-		newtCanvas.moveAbove(control);
+		glCanvas.moveAbove(control);
 	}
-
+	
 }

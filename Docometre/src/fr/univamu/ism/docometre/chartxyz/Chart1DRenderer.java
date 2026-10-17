@@ -46,7 +46,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * dernier échantillon en défilement, temps modulo la durée de balayage en
  * mode oscilloscope.
  */
-public class Curve1DRenderer implements GLEventListener {
+public class Chart1DRenderer implements GLEventListener {
 
     /** Mode d'affichage de l'axe du temps. */
     public enum DisplayMode {
@@ -83,6 +83,11 @@ public class Curve1DRenderer implements GLEventListener {
     private volatile boolean showLegend = true; // légende affichée (si au moins une courbe a un nom)
     private final FpsCounter fpsCounter = new FpsCounter(); // cadence d'affichage réelle
     private volatile boolean showFps = false;
+    private final Decimation decimation = new Decimation(); // réduction du nombre de points envoyés à OpenGL
+    private volatile boolean decimationEnabled = true;
+    private int drawnPoints;          // points envoyés à OpenGL pendant l'image en cours
+    private int displayedPoints;      // valeur affichée avec la cadence (mise à jour en même temps qu'elle)
+    private double displayedFps = -1;
     private final CurrentValues currentValues = new CurrentValues(); // textes des valeurs courantes
     private volatile boolean showCurrentValues = false;
     private final DashedLines dashedLines = new DashedLines(); // tirets ancrés sur les données
@@ -114,7 +119,7 @@ public class Curve1DRenderer implements GLEventListener {
     private double viewStartTime, viewEndTime;
     private float viewMinY, viewMaxY;
 
-    public Curve1DRenderer(Curve1DData... curves) {
+    public Chart1DRenderer(Curve1DData... curves) {
         this.curves.addAll(Arrays.asList(curves));
     }
 
@@ -153,6 +158,7 @@ public class Curve1DRenderer implements GLEventListener {
     @Override
     public void display(GLAutoDrawable drawable) {
         fpsCounter.frame();
+        drawnPoints = 0;
         GL2 gl = drawable.getGL().getGL2();
         gl.glViewport(0, 0, width, height);
         gl.glClear(GL2.GL_COLOR_BUFFER_BIT);
@@ -294,10 +300,15 @@ public class Curve1DRenderer implements GLEventListener {
         return CurveStyles.drawCurrentValues(gl, text, scaleFont, curves, labels, marginLeft + plotWidth - 6, marginBottom + plotHeight - 6);
     }
 
-    /** Cadence d'affichage réelle, en bas à droite, dans la police des échelles (coordonnées en pixels). */
+    /** Cadence d'affichage réelle et nombre de points tracés, en bas à droite, dans la police des échelles (coordonnées en pixels). */
     private void drawFps(GL2 gl) {
         if (!showFps) return;
-        String label = String.format(java.util.Locale.US, "%.1f i/s", fpsCounter.getFps());
+        double fps = fpsCounter.getFps();
+        if (fps != displayedFps) { // le nombre de points est mis à jour en même temps que la cadence (2 fois par seconde)
+            displayedFps = fps;
+            displayedPoints = drawnPoints;
+        }
+        String label = String.format(java.util.Locale.US, "%.1f i/s \u00b7 %d pts", fps, displayedPoints);
         gl.glColor3f(1f, 0.75f, 0.2f);
         text.draw(gl, label, scaleFont, marginLeft + plotWidth - text.width(label, scaleFont) - 6, marginBottom + 4);
     }
@@ -398,14 +409,34 @@ public class Curve1DRenderer implements GLEventListener {
             if (CurveStyles.isDashed(curve)) {
                 drawDashed(gl, curve, width, values, n, 0, null,
                         (i, f) -> gl.glVertex2f(offset - (n - i - f) * dt, values[i - 1] + f * (values[i] - values[i - 1])));
+                drawnPoints += n;
+            } else if (useDecimation(n)) {
+                // Réduction M4 : colonne de pixels de chaque échantillon, à partir de son abscisse tracée
+                double left = viewStartTime - lastTime, pixelsPerSecond = plotWidth / windowTime;
+                decimation.m4(0, n, values, i -> (long) Math.floor(((offset - (n - 1 - i) * dt) - left) * pixelsPerSecond));
+                int[] kept = decimation.indices();
+                int count = decimation.count();
+                gl.glBegin(GL2.GL_LINE_STRIP);
+                for (int j = 0; j < count; j++) {
+                    int i = kept[j];
+                    gl.glVertex2f(offset - (n - 1 - i) * dt, values[i]);
+                }
+                gl.glEnd();
+                drawnPoints += count;
             } else {
                 gl.glBegin(GL2.GL_LINE_STRIP);
                 for (int i = 0; i < n; i++) {
                     gl.glVertex2f(offset - (n - 1 - i) * dt, values[i]);
                 }
                 gl.glEnd();
+                drawnPoints += n;
             }
         }
+    }
+
+    /** Réduction appliquée si elle est activée, si les points ne sont pas affichés et s'il y a en moyenne au moins 2 échantillons par colonne de pixels. */
+    private boolean useDecimation(int sampleCount) {
+        return decimationEnabled && !showPoints && sampleCount > 2 * plotWidth;
     }
 
     /**
@@ -453,10 +484,26 @@ public class Curve1DRenderer implements GLEventListener {
                             double sweepStart = Math.floor((curveLast - (n - i) / frequency) / windowTime) * windowTime;
                             gl.glVertex2d(t - sweepStart, values[i - 1] + f * (values[i] - values[i - 1]));
                         });
+                drawnPoints += n - first;
             } else {
+                // Réduction M4 éventuelle : clé = (balayage, colonne de pixels dans le balayage)
+                int[] kept = null;
+                int count = n - first;
+                if (useDecimation(count)) {
+                    double pixelsPerSecond = plotWidth / windowTime;
+                    decimation.m4(first, n, values, i -> {
+                        double t = curveLast - (n - 1 - i) / frequency;
+                        double sweep = Math.floor(t / windowTime);
+                        return ((long) sweep << 32) + (long) Math.floor((t - sweep * windowTime) * pixelsPerSecond);
+                    });
+                    kept = decimation.indices();
+                    count = decimation.count();
+                }
+                drawnPoints += count;
                 long currentSweep = Long.MIN_VALUE;
                 boolean open = false;
-                for (int i = first; i < n; i++) {
+                for (int j = 0; j < count; j++) {
+                    int i = (kept == null) ? first + j : kept[j];
                     double t = curveLast - (n - 1 - i) / frequency;
                     long sweep = (long) Math.floor(t / windowTime);
                     if (sweep != currentSweep) { // retour à gauche : nouveau tronçon
@@ -471,6 +518,7 @@ public class Curve1DRenderer implements GLEventListener {
             }
 
             if (withPoints) {
+                drawnPoints += n - first;
                 gl.glColor3f(1f, 1f, 1f);
                 gl.glBegin(GL2.GL_POINTS);
                 for (int i = first; i < n; i++) {
@@ -625,6 +673,20 @@ public class Curve1DRenderer implements GLEventListener {
     public void setFpsVisible(boolean visible) { showFps = visible; }
     public boolean isFpsVisible() { return showFps; }
     public void toggleFps() { showFps = !showFps; }
+
+    /**
+     * Active ou désactive la réduction du nombre de points envoyés à OpenGL
+     * (activée par défaut, touche D) : réduction "M4" par colonne de pixels
+     * (premier, minimum, maximum et dernier échantillon de chaque colonne),
+     * appliquée dès qu'il y a en moyenne au moins 2 échantillons par colonne.
+     * Le dessin à l'écran est inchangé ; les courbes en tirets et
+     * l'affichage des points (touche P) ne sont pas réduits.
+     */
+    public void setDecimationEnabled(boolean enabled) { decimationEnabled = enabled; }
+    public boolean isDecimationEnabled() { return decimationEnabled; }
+    public void toggleDecimation() { decimationEnabled = !decimationEnabled; }
+    /** Nombre de points envoyés à OpenGL pour tracer les courbes lors de la dernière image. */
+    public int getDrawnPointCount() { return drawnPoints; }
 
     /** Affiche ou masque les valeurs courantes des courbes, en haut à droite (touche V). */
     public void setCurrentValuesVisible(boolean visible) { showCurrentValues = visible; }

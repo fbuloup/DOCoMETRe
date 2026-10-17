@@ -13,43 +13,43 @@ import com.jogamp.opengl.util.FPSAnimator;
 
 import fr.univamu.ism.docometre.chartxyz.ChartFont;
 import fr.univamu.ism.docometre.chartxyz.CurveStyles;
-import fr.univamu.ism.docometre.chartxyz.Curve3DRenderer;
-import fr.univamu.ism.docometre.chartxyz.Curve3DData;
+import fr.univamu.ism.docometre.chartxyz.LegendPosition;
+import fr.univamu.ism.docometre.chartxyz.Curve2DData;
+import fr.univamu.ism.docometre.chartxyz.Chart2DRenderer;
 
-public class NewtCurve3D {
+public class NewtChart2D {
 	
 	private FPSAnimator animator;
 	private NewtCanvasSWT newtCanvas;
 	private GLWindow glWindow;
 
-	private Curve3DRenderer renderer;
+	private Chart2DRenderer renderer;
 
 	/**
 	 * Crée le graphe avec une ou plusieurs courbes (d'autres peuvent être
 	 * ajoutées ensuite avec addCurve), avec des échelles dynamiques : elles
 	 * s'ajustent en continu aux valeurs des courbes.
 	 */
-	public NewtCurve3D(Composite container, Curve3DData... curves) {
+	public NewtChart2D(Composite container, Curve2DData... curves) {
 		this(container, (double[]) null, curves);
 	}
 	
 	/**
-	 * Crée le graphe avec des échelles fixes pour les axes x, y et z : elles restent égales
+	 * Crée le graphe avec des échelles fixes pour les axes x et y : elles restent égales
 	 * aux bornes fournies quelles que soient les valeurs des courbes (ce qui
 	 * dépasse est coupé). setDynamicScales() permet de revenir aux échelles dynamiques.
 	 *
 	 * @throws IllegalArgumentException si un minimum n'est pas strictement inférieur à son maximum
 	 */
-	public NewtCurve3D(Composite container, double xMin, double xMax, double yMin, double yMax, double zMin, double zMax, Curve3DData... curves) {
-		this(container, CurveStyles.checkScales(xMin, xMax, yMin, yMax, zMin, zMax), curves);
+	public NewtChart2D(Composite container, double xMin, double xMax, double yMin, double yMax, Curve2DData... curves) {
+		this(container, CurveStyles.checkScales(xMin, xMax, yMin, yMax), curves);
 	}
 	
 	/** fixedScales : bornes des échelles fixes, déjà vérifiées, ou null pour des échelles dynamiques. */
-	private NewtCurve3D(Composite container, double[] fixedScales, Curve3DData... curves) {
+	private NewtChart2D(Composite container, double[] fixedScales, Curve2DData... curves) {
 		GLProfile glProfile = GLProfile.get(GLProfile.GL2);
         GLCapabilities glCapabilities = new GLCapabilities(glProfile);
         glCapabilities.setDoubleBuffered(true);
-        glCapabilities.setDepthBits(24);
         glCapabilities.setSampleBuffers(true);
         glCapabilities.setNumSamples(4);
         
@@ -57,11 +57,11 @@ public class NewtCurve3D {
         
         animator = new FPSAnimator(glWindow, 60, true);
         
-        renderer = new Curve3DRenderer(curves);
-        if (fixedScales != null) renderer.setFixedScales(fixedScales[0], fixedScales[1], fixedScales[2], fixedScales[3], fixedScales[4], fixedScales[5]);
+        renderer = new Chart2DRenderer(curves);
+        if (fixedScales != null) renderer.setFixedScales(fixedScales[0], fixedScales[1], fixedScales[2], fixedScales[3]);
         glWindow.addGLEventListener(renderer);
         
-        NewtCurve3DCameraController cameraController = new NewtCurve3DCameraController(renderer, glWindow);
+        NewtChart2DCameraController cameraController = new NewtChart2DCameraController(renderer, glWindow);
         cameraController.attach();
         
         newtCanvas = NewtCanvasSWT.create(container, SWT.NO_BACKGROUND, glWindow);
@@ -80,12 +80,12 @@ public class NewtCurve3D {
 	}
 	
 	/** Ajoute une courbe au graphe (utilisable pendant l'affichage, depuis n'importe quel thread). */
-	public void addCurve(Curve3DData curve) {
+	public void addCurve(Curve2DData curve) {
 		renderer.addCurve(curve);
 	}
 	
 	/** Retire une courbe du graphe. */
-	public void removeCurve(Curve3DData curve) {
+	public void removeCurve(Curve2DData curve) {
 		renderer.removeCurve(curve);
 	}
 	
@@ -106,9 +106,21 @@ public class NewtCurve3D {
 		renderer.setLegendFont(new ChartFont(family, size, style));
 	}
 	
-	/** Échelles fixes pour les axes x, y et z (voir le constructeur correspondant). */
-	public void setFixedScales(double xMin, double xMax, double yMin, double yMax, double zMin, double zMax) {
-		renderer.setFixedScales(xMin, xMax, yMin, yMax, zMin, zMax);
+	/**
+	 * Position de la légende : LegendPosition.INSIDE (dans le graphe, en haut à
+	 * gauche, par défaut) ou LegendPosition.BELOW (tout en bas, sous l'axe des abscisses).
+	 */
+	public void setLegendPosition(LegendPosition position) {
+		renderer.setLegendPosition(position);
+	}
+	
+	public LegendPosition getLegendPosition() {
+		return renderer.getLegendPosition();
+	}
+	
+	/** Échelles fixes pour les axes x et y (voir le constructeur correspondant). */
+	public void setFixedScales(double xMin, double xMax, double yMin, double yMax) {
+		renderer.setFixedScales(xMin, xMax, yMin, yMax);
 	}
 	
 	/** Échelles dynamiques, ajustées en continu aux valeurs des courbes (par défaut). */
@@ -151,6 +163,18 @@ public class NewtCurve3D {
 	
 	public boolean isCurrentValuesVisible() {
 		return renderer.isCurrentValuesVisible();
+	}
+	
+	/**
+	 * Active ou désactive la réduction du nombre de points envoyés à OpenGL
+	 * (activée par défaut, également avec la touche D). Le dessin est inchangé.
+	 */
+	public void setDecimationEnabled(boolean enabled) {
+		renderer.setDecimationEnabled(enabled);
+	}
+	
+	public boolean isDecimationEnabled() {
+		return renderer.isDecimationEnabled();
 	}
 	
 	public boolean isDisposed() {

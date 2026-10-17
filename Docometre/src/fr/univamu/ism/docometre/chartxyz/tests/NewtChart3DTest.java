@@ -12,14 +12,14 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
 import fr.univamu.ism.docometre.chartxyz.Curve3DData;
-import fr.univamu.ism.docometre.chartxyz.macos.NewtCurve3D;
+import fr.univamu.ism.docometre.chartxyz.macos.NewtChart3D;
 
 /**
  * NEWT MUST BE USED WITH OSX instead of 
  */
-public class NewtCurve3DTest {
+public class NewtChart3DTest {
 
-    private static NewtCurve3D newtCurve3D;
+    private static NewtChart3D newtChart3D;
 
 	public static void main(String[] args) {
 
@@ -40,17 +40,17 @@ public class NewtCurve3DTest {
         shell.setSize(1000, 700);
         shell.setLayout(new FillLayout());
 
-        newtCurve3D = new NewtCurve3D(shell, curveData);
+        newtChart3D = new NewtChart3D(shell, curveData);
         
         Button button = new Button(shell, SWT.NORMAL);
         button.setText("PUSH");
         button.addSelectionListener(new SelectionAdapter() {
         	@Override
         	public void widgetSelected(SelectionEvent e) {
-        		if(!newtCurve3D.isDisposed()) newtCurve3D.close();
+        		if(!newtChart3D.isDisposed()) newtChart3D.close();
         		else {
-        			newtCurve3D = new NewtCurve3D(shell, curveData);
-        			newtCurve3D.moveAbove(button);
+        			newtChart3D = new NewtChart3D(shell, curveData);
+        			newtChart3D.moveAbove(button);
         		}
         		shell.layout();
         	}

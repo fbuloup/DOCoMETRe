@@ -16,9 +16,9 @@ import fr.univamu.ism.docometre.chartxyz.Curve2DData;
 import fr.univamu.ism.docometre.chartxyz.Curve3DData;
 import fr.univamu.ism.docometre.chartxyz.LegendPosition;
 import fr.univamu.ism.docometre.chartxyz.LineStyle;
-import fr.univamu.ism.docometre.chartxyz.windows.Curve1D;
-import fr.univamu.ism.docometre.chartxyz.windows.Curve2D;
-import fr.univamu.ism.docometre.chartxyz.windows.Curve3D;
+import fr.univamu.ism.docometre.chartxyz.windows.Chart1D;
+import fr.univamu.ism.docometre.chartxyz.windows.Chart2D;
+import fr.univamu.ism.docometre.chartxyz.windows.Chart3D;
 
 /**
  * Démonstration de l'affichage de plusieurs signaux y(t) en temps réel : un
@@ -27,7 +27,7 @@ import fr.univamu.ism.docometre.chartxyz.windows.Curve3D;
  * WINDOW_TIME_WIDTH dernières secondes sont affichées, en balayage de type
  * oscilloscope. Espace : pause / reprise ; M : balayage / défilement.
  */
-public class RealTimeCurvesTest {
+public class RealTimeChartsTest {
 
     private static final double FAST_FREQUENCY = 1000;    // Hz
     private static final double SLOW_FREQUENCY = 100;     // Hz
@@ -59,7 +59,7 @@ public class RealTimeCurvesTest {
         shell.setSize(1000, 500);
         shell.setLayout(new GridLayout(2, true));
 
-        Curve1D graph1D = new Curve1D(shell, -10, 10, sine, noisy, drift);
+        Chart1D graph1D = new Chart1D(shell, -10, 10, sine, noisy, drift);
         graph1D.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         graph1D.setScaleFont("Courier New", 10, SWT.NORMAL);
         graph1D.setLegendFont(null, 11, SWT.BOLD); // police du système, en gras
@@ -87,7 +87,7 @@ public class RealTimeCurvesTest {
             drift.addSamples(c);
         }, 0, PERIOD_MS, TimeUnit.MILLISECONDS);
         
-        Curve2D graph2D = new Curve2D(shell, -10, 10, -10, 10, lissajous, circle);
+        Chart2D graph2D = new Chart2D(shell, -10, 10, -10, 10, lissajous, circle);
         graph2D.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         graph2D.setLegendPosition(LegendPosition.BELOW); // légende sous l'axe des abscisses
 
@@ -110,7 +110,7 @@ public class RealTimeCurvesTest {
         }, 0, periodMicros, TimeUnit.MICROSECONDS);
         
         
-        Curve3D graph3D = new Curve3D(shell, spiral, helix);
+        Chart3D graph3D = new Chart3D(shell, spiral, helix);
         graph3D.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         graph3D.setLegendFont(null, 11, SWT.BOLD); // police du système, en gras
 
@@ -142,7 +142,7 @@ public class RealTimeCurvesTest {
             a[i] = (float) (0.8 * Math.sin(2 * Math.PI * 0.05 * t));
         }
         last.addSamples(a);
-        Curve1D graph1DBIS = new Curve1D(shell, -10, 10, last);
+        Chart1D graph1DBIS = new Chart1D(shell, -10, 10, last);
         graph1DBIS.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         graph1DBIS.setScaleFont("Courier New", 10, SWT.NORMAL);
         graph1DBIS.setLegendFont(null, 11, SWT.BOLD); // police du système, en gras

@@ -13,7 +13,7 @@ import org.eclipse.swt.widgets.Shell;
 import fr.univamu.ism.docometre.chartxyz.Curve1DData;
 import fr.univamu.ism.docometre.chartxyz.LegendPosition;
 import fr.univamu.ism.docometre.chartxyz.LineStyle;
-import fr.univamu.ism.docometre.chartxyz.windows.Curve1D;
+import fr.univamu.ism.docometre.chartxyz.macos.NewtChart1D;
 
 /**
  * Démonstration de l'affichage de plusieurs signaux y(t) en temps réel : un
@@ -22,7 +22,7 @@ import fr.univamu.ism.docometre.chartxyz.windows.Curve1D;
  * WINDOW_TIME_WIDTH dernières secondes sont affichées, en balayage de type
  * oscilloscope. Espace : pause / reprise ; M : balayage / défilement.
  */
-public class RealTimeCurve1DTest {
+public class NewtRealTimeChart1DTest {
 
     private static final double FAST_FREQUENCY = 1000;    // Hz
     private static final double SLOW_FREQUENCY = 100;     // Hz
@@ -36,14 +36,15 @@ public class RealTimeCurve1DTest {
 
         Display display = new Display();
         Shell shell = new Shell(display);
-        shell.setText("Signaux temps réel — SWT + JOGL");
+        shell.setText("Signaux temps réel — SWT + JOGL (NEWT)");
         shell.setSize(1000, 500);
         shell.setLayout(new FillLayout());
 
-        Curve1D graph = new Curve1D(shell, -10, 10, sine, noisy, drift);
+        NewtChart1D graph = new NewtChart1D(shell, sine, noisy, drift);
         graph.setScaleFont("Courier New", 10, SWT.NORMAL);
         graph.setLegendFont(null, 11, SWT.BOLD); // police du système, en gras
         graph.setLegendPosition(LegendPosition.BELOW); // légende sous l'axe des abscisses
+        graph.setCurrentValuesVisible(true);              // dernières valeurs en haut à droite (touche V)
 
         ScheduledExecutorService acquisition = Executors.newSingleThreadScheduledExecutor();
         Random random = new Random();

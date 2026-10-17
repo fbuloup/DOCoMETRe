@@ -12,11 +12,11 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
 import fr.univamu.ism.docometre.chartxyz.Curve3DData;
-import fr.univamu.ism.docometre.chartxyz.windows.Curve3D;
+import fr.univamu.ism.docometre.chartxyz.windows.Chart3D;
 
-public class Curve3DTest {
+public class Chart3DTest {
 
-    private static Curve3D curve3d;
+    private static Chart3D chart3d;
 
 	public static void main(String[] args) {
     	Curve3DData curveData;
@@ -41,17 +41,17 @@ public class Curve3DTest {
         shell.setSize(1000, 700);
         shell.setLayout(new FillLayout());
         
-        curve3d = new Curve3D(shell, curveData);
+        chart3d = new Chart3D(shell, curveData);
 
         Button button = new Button(shell, SWT.NORMAL);
         button.setText("PUSH");
         button.addSelectionListener(new SelectionAdapter() {
         	@Override
         	public void widgetSelected(SelectionEvent e) {
-        		if(!curve3d.isDisposed()) curve3d.close();
+        		if(!chart3d.isDisposed()) chart3d.close();
         		else {
-        			curve3d = new Curve3D(shell, curveData);
-        			curve3d.moveAbove(button);
+        			chart3d = new Chart3D(shell, curveData);
+        			chart3d.moveAbove(button);
         		}
         		shell.layout();
         	}

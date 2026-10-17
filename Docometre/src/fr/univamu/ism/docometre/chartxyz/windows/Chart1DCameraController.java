@@ -8,10 +8,10 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Control;
 
-import fr.univamu.ism.docometre.chartxyz.Curve1DRenderer;
+import fr.univamu.ism.docometre.chartxyz.Chart1DRenderer;
 
 /**
- * Relie les événements souris/clavier SWT au {@link Curve1DRenderer} :
+ * Relie les événements souris/clavier SWT au {@link Chart1DRenderer} :
  * - Clic gauche (ou droit) + glisser : panoramique vertical
  * - Survol             : donne le focus clavier au graphe
  * - Molette               : zoom vertical
@@ -23,18 +23,19 @@ import fr.univamu.ism.docometre.chartxyz.Curve1DRenderer;
  * - Touche N : afficher/masquer la légende
  * - Touche F : afficher/masquer la cadence d'affichage (images/s)
  * - Touche V : afficher/masquer les valeurs courantes des courbes
+ * - Touche D : activer/désactiver la réduction du nombre de points tracés
  * - Espace   : pause / reprise de l'affichage
  * - Touche M : bascule balayage (oscilloscope) / défilement
  */
-public class Curve1DCameraController {
+public class Chart1DCameraController {
 
-    private final Curve1DRenderer renderer;
+    private final Chart1DRenderer renderer;
     private final Control control;
 
     private int lastX, lastY;
     private boolean dragging = false;
 
-    public Curve1DCameraController(Curve1DRenderer renderer, Control control) {
+    public Chart1DCameraController(Chart1DRenderer renderer, Control control) {
         this.renderer = renderer;
         this.control = control;
     }
@@ -80,6 +81,7 @@ public class Curve1DCameraController {
                     case 'n': renderer.toggleLegend(); break;
                     case 'f': renderer.toggleFps(); break;
                     case 'v': renderer.toggleCurrentValues(); break;
+                    case 'd': renderer.toggleDecimation(); break;
                     case ' ': renderer.togglePause(); break;
                     case 'm': renderer.toggleDisplayMode(); break;
                     default: break;

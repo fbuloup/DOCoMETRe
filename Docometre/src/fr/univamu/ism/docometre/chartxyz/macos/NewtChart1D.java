@@ -1,34 +1,36 @@
-package fr.univamu.ism.docometre.chartxyz.windows;
+package fr.univamu.ism.docometre.chartxyz.macos;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
+import com.jogamp.newt.opengl.GLWindow;
+import com.jogamp.newt.swt.NewtCanvasSWT;
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
-import com.jogamp.opengl.swt.GLCanvas;
 import com.jogamp.opengl.util.FPSAnimator;
 
 import fr.univamu.ism.docometre.chartxyz.ChartFont;
 import fr.univamu.ism.docometre.chartxyz.CurveStyles;
 import fr.univamu.ism.docometre.chartxyz.LegendPosition;
 import fr.univamu.ism.docometre.chartxyz.Curve1DData;
-import fr.univamu.ism.docometre.chartxyz.Curve1DRenderer;
+import fr.univamu.ism.docometre.chartxyz.Chart1DRenderer;
 
-public class Curve1D {
+public class NewtChart1D {
 	
-	private GLCanvas glCanvas;
 	private FPSAnimator animator;
+	private NewtCanvasSWT newtCanvas;
+	private GLWindow glWindow;
 
-	private Curve1DRenderer renderer;
+	private Chart1DRenderer renderer;
 
 	/**
 	 * Crée le graphe avec une ou plusieurs courbes (d'autres peuvent être
 	 * ajoutées ensuite avec addCurve), avec des échelles dynamiques : elles
 	 * s'ajustent en continu aux valeurs des courbes.
 	 */
-	public Curve1D(Composite container, Curve1DData... curves) {
+	public NewtChart1D(Composite container, Curve1DData... curves) {
 		this(container, (double[]) null, curves);
 	}
 	
@@ -39,40 +41,42 @@ public class Curve1D {
 	 *
 	 * @throws IllegalArgumentException si un minimum n'est pas strictement inférieur à son maximum
 	 */
-	public Curve1D(Composite container, double yMin, double yMax, Curve1DData... curves) {
+	public NewtChart1D(Composite container, double yMin, double yMax, Curve1DData... curves) {
 		this(container, CurveStyles.checkScales(yMin, yMax), curves);
 	}
 	
 	/** fixedScales : bornes des échelles fixes, déjà vérifiées, ou null pour des échelles dynamiques. */
-	private Curve1D(Composite container, double[] fixedScales, Curve1DData... curves) {
+	private NewtChart1D(Composite container, double[] fixedScales, Curve1DData... curves) {
 		GLProfile glProfile = GLProfile.get(GLProfile.GL2);
         GLCapabilities glCapabilities = new GLCapabilities(glProfile);
         glCapabilities.setDoubleBuffered(true);
         glCapabilities.setSampleBuffers(true);
         glCapabilities.setNumSamples(4);
         
-        glCanvas = new GLCanvas(container, SWT.NO_BACKGROUND, glCapabilities, null);
-
-        animator = new FPSAnimator(glCanvas, 60, true);
+        glWindow = GLWindow.create(glCapabilities);
         
-        renderer = new Curve1DRenderer(curves);
+        animator = new FPSAnimator(glWindow, 60, true);
+        
+        renderer = new Chart1DRenderer(curves);
         if (fixedScales != null) renderer.setFixedScales(fixedScales[0], fixedScales[1]);
-        glCanvas.addGLEventListener(renderer);
+        glWindow.addGLEventListener(renderer);
         
-        Curve1DCameraController cameraController = new Curve1DCameraController(renderer, glCanvas);
+        NewtChart1DCameraController cameraController = new NewtChart1DCameraController(renderer, glWindow);
         cameraController.attach();
+        
+        newtCanvas = NewtCanvasSWT.create(container, SWT.NO_BACKGROUND, glWindow);
         
         container.addListener(SWT.Close, e -> {
         	close();
         });
         
         animator.start();
-        
 	}
 	
 	public void close() {
 		animator.stop();
-        if(glCanvas != null && !glCanvas.isDisposed()) glCanvas.dispose();
+        if(newtCanvas != null && !newtCanvas.isDisposed()) newtCanvas.dispose();
+        glWindow.destroy();
 	}
 	
 	/** Ajoute une courbe au graphe (utilisable pendant l'affichage, depuis n'importe quel thread). */
@@ -86,7 +90,7 @@ public class Curve1D {
 	}
 	
 	/** Choisit le mode d'affichage : balayage de type oscilloscope (par défaut) ou défilement. */
-	public void setDisplayMode(Curve1DRenderer.DisplayMode displayMode) {
+	public void setDisplayMode(Chart1DRenderer.DisplayMode displayMode) {
 		renderer.setDisplayMode(displayMode);
 	}
 	
@@ -154,7 +158,7 @@ public class Curve1D {
 	}
 	
 	public void setLayoutData(GridData gridData) {
-		glCanvas.setLayoutData(gridData);
+		newtCanvas.setLayoutData(gridData);
 	}
 	
 	/** Affiche ou masque, en haut à droite du graphe, la dernière valeur de chaque courbe (également avec la touche V). */
@@ -166,12 +170,24 @@ public class Curve1D {
 		return renderer.isCurrentValuesVisible();
 	}
 	
+	/**
+	 * Active ou désactive la réduction du nombre de points envoyés à OpenGL
+	 * (activée par défaut, également avec la touche D). Le dessin est inchangé.
+	 */
+	public void setDecimationEnabled(boolean enabled) {
+		renderer.setDecimationEnabled(enabled);
+	}
+	
+	public boolean isDecimationEnabled() {
+		return renderer.isDecimationEnabled();
+	}
+	
 	public boolean isDisposed() {
-		return glCanvas == null || glCanvas.isDisposed();
+		return newtCanvas == null || newtCanvas.isDisposed();
 	}
-	
+
 	public void moveAbove(Control control) {
-		glCanvas.moveAbove(control);
+		newtCanvas.moveAbove(control);
 	}
-	
+
 }

@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class Curve3DRenderer implements GLEventListener {
+public class Chart3DRenderer implements GLEventListener {
 
     // Courbes affichées ; la liste peut être modifiée depuis n'importe quel thread
     private final List<Curve3DData> curves = new CopyOnWriteArrayList<>();
@@ -32,6 +32,11 @@ public class Curve3DRenderer implements GLEventListener {
     private volatile boolean showLegend = true; // légende affichée (si au moins une courbe a un nom)
     private final FpsCounter fpsCounter = new FpsCounter(); // cadence d'affichage réelle
     private volatile boolean showFps = false;
+    private final Decimation decimation = new Decimation(); // réduction du nombre de points envoyés à OpenGL
+    private volatile boolean decimationEnabled = true;
+    private int drawnPoints;          // points envoyés à OpenGL pendant l'image en cours
+    private int displayedPoints;      // valeur affichée avec la cadence (mise à jour en même temps qu'elle)
+    private double displayedFps = -1;
     private final CurrentValues currentValues = new CurrentValues(); // textes des valeurs courantes
     private volatile boolean showCurrentValues = false;
 
@@ -75,7 +80,7 @@ public class Curve3DRenderer implements GLEventListener {
     private int width = 1, height = 1; // taille de la zone d'affichage (pixels)
     private float aspect = 1f;         // largeur / hauteur de la zone d'affichage
 
-    public Curve3DRenderer(Curve3DData... curves) {
+    public Chart3DRenderer(Curve3DData... curves) {
         this.curves.addAll(Arrays.asList(curves));
     }
 
@@ -106,6 +111,7 @@ public class Curve3DRenderer implements GLEventListener {
     @Override
     public void display(GLAutoDrawable drawable) {
         fpsCounter.frame();
+        drawnPoints = 0;
         GL2 gl = drawable.getGL().getGL2();
         gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
 
@@ -223,7 +229,7 @@ public class Curve3DRenderer implements GLEventListener {
      * de la palette) et s'estompe vers ses échantillons les plus anciens.
      */
     private void drawCurves(GL2 gl) {
-        float[] screen = null; // matrice données -> écran, calculée seulement si une courbe est en tirets
+        float[] screen = null; // matrice données -> écran, calculée seulement si nécessaire (tirets, réduction)
         for (int k = 0; k < frameCurves.size(); k++) {
             Curve3DData curve = frameCurves.get(k);
             float width = CurveStyles.lineWidthOf(curve, DEFAULT_LINE_WIDTH);
@@ -244,6 +250,28 @@ public class Curve3DRenderer implements GLEventListener {
                             gl.glVertex3f(xyz[a] + f * (xyz[b] - xyz[a]), xyz[a + 1] + f * (xyz[b + 1] - xyz[a + 1]),
                                           xyz[a + 2] + f * (xyz[b + 2] - xyz[a + 2]));
                         });
+                drawnPoints += n;
+            } else if (useDecimation(n)) {
+                // Filtre par distance à l'écran : projection de chaque point (perspective comprise)
+                if (screen == null) screen = screenMatrix(gl);
+                float[] m = screen;
+                decimation.screenDistance(n, MIN_POINT_DISTANCE, (i, pixel) -> {
+                    double[] p = project(m, xyz[3 * i], xyz[3 * i + 1], xyz[3 * i + 2]);
+                    if (p == null) return false;
+                    pixel[0] = p[0];
+                    pixel[1] = p[1];
+                    return true;
+                });
+                int[] kept = decimation.indices();
+                int count = decimation.count();
+                gl.glBegin(GL2.GL_LINE_STRIP);
+                for (int j = 0; j < count; j++) {
+                    int i = kept[j];
+                    vertexColor(gl, gradient, color, (n <= 1) ? 1f : (float) i / (n - 1));
+                    gl.glVertex3f(xyz[3 * i], xyz[3 * i + 1], xyz[3 * i + 2]);
+                }
+                gl.glEnd();
+                drawnPoints += count;
             } else {
                 gl.glBegin(GL2.GL_LINE_STRIP);
                 for (int i = 0; i < n; i++) {
@@ -251,8 +279,17 @@ public class Curve3DRenderer implements GLEventListener {
                     gl.glVertex3f(xyz[3 * i], xyz[3 * i + 1], xyz[3 * i + 2]);
                 }
                 gl.glEnd();
+                drawnPoints += n;
             }
         }
+    }
+
+    /** Distance minimale à l'écran (pixels) entre deux points tracés, quand la réduction est activée. */
+    private static final double MIN_POINT_DISTANCE = 0.5;
+
+    /** Réduction appliquée si elle est activée et si les points ne sont pas affichés. */
+    private boolean useDecimation(int pointCount) {
+        return decimationEnabled && !showPoints && pointCount > 2;
     }
 
     /**
@@ -332,10 +369,15 @@ public class Curve3DRenderer implements GLEventListener {
         return CurveStyles.drawCurrentValues(gl, text, scaleFont, curves, labels, width - 10, height - 10);
     }
 
-    /** Cadence d'affichage réelle, en bas à droite, dans la police des échelles (coordonnées en pixels). */
+    /** Cadence d'affichage réelle et nombre de points tracés, en bas à droite, dans la police des échelles (coordonnées en pixels). */
     private void drawFps(GL2 gl) {
         if (!showFps) return;
-        String label = String.format(java.util.Locale.US, "%.1f i/s", fpsCounter.getFps());
+        double fps = fpsCounter.getFps();
+        if (fps != displayedFps) { // le nombre de points est mis à jour en même temps que la cadence (2 fois par seconde)
+            displayedFps = fps;
+            displayedPoints = drawnPoints;
+        }
+        String label = String.format(java.util.Locale.US, "%.1f i/s \u00b7 %d pts", fps, displayedPoints);
         gl.glColor3f(1f, 0.75f, 0.2f);
         text.draw(gl, label, scaleFont, width - text.width(label, scaleFont) - 10, 8);
     }
@@ -702,6 +744,19 @@ public class Curve3DRenderer implements GLEventListener {
     public void setFpsVisible(boolean visible) { showFps = visible; }
     public boolean isFpsVisible() { return showFps; }
     public void toggleFps() { showFps = !showFps; }
+
+    /**
+     * Active ou désactive la réduction du nombre de points envoyés à OpenGL
+     * (activée par défaut, touche D) : un point n'est tracé que si sa projection
+     * à l'écran est à au moins 0,5 pixel de celle du point précédemment tracé.
+     * Le dessin à l'écran est inchangé ; les courbes en tirets et
+     * l'affichage des points (touche P) ne sont pas réduits.
+     */
+    public void setDecimationEnabled(boolean enabled) { decimationEnabled = enabled; }
+    public boolean isDecimationEnabled() { return decimationEnabled; }
+    public void toggleDecimation() { decimationEnabled = !decimationEnabled; }
+    /** Nombre de points envoyés à OpenGL pour tracer les courbes lors de la dernière image. */
+    public int getDrawnPointCount() { return drawnPoints; }
 
     /** Affiche ou masque les valeurs courantes des courbes, en haut à droite (touche V). */
     public void setCurrentValuesVisible(boolean visible) { showCurrentValues = visible; }

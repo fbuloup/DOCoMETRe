@@ -6,21 +6,21 @@ import com.jogamp.newt.event.MouseAdapter;
 import com.jogamp.newt.event.MouseEvent;
 import com.jogamp.newt.opengl.GLWindow;
 
-import fr.univamu.ism.docometre.chartxyz.Curve2DRenderer;
+import fr.univamu.ism.docometre.chartxyz.Chart1DRenderer;
 
 /**
- * Version NEWT de {@link fr.univamu.ism.docometre.chartxyz.windows.Curve2DCameraController}
+ * Version NEWT de {@link fr.univamu.ism.docometre.chartxyz.windows.Chart1DCameraController}
  * (mêmes commandes souris et clavier).
  */
-public class NewtCurve2DCameraController {
+public class NewtChart1DCameraController {
 
-    private final Curve2DRenderer renderer;
+    private final Chart1DRenderer renderer;
     private final GLWindow glWindow;
 
     private int lastX, lastY;
     private boolean dragging = false;
 
-    public NewtCurve2DCameraController(Curve2DRenderer renderer, GLWindow glWindow) {
+    public NewtChart1DCameraController(Chart1DRenderer renderer, GLWindow glWindow) {
         this.renderer = renderer;
         this.glWindow = glWindow;
     }
@@ -77,7 +77,9 @@ public class NewtCurve2DCameraController {
                     case 'n': renderer.toggleLegend(); break;
                     case 'f': renderer.toggleFps(); break;
                     case 'v': renderer.toggleCurrentValues(); break;
-                    case 'e': renderer.toggleEqualAspect(); break;
+                    case 'd': renderer.toggleDecimation(); break;
+                    case ' ': renderer.togglePause(); break;
+                    case 'm': renderer.toggleDisplayMode(); break;
                     default: break;
                 }
             }

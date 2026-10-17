@@ -11,7 +11,7 @@ import org.eclipse.swt.widgets.Shell;
 import fr.univamu.ism.docometre.chartxyz.Curve2DData;
 import fr.univamu.ism.docometre.chartxyz.LegendPosition;
 import fr.univamu.ism.docometre.chartxyz.LineStyle;
-import fr.univamu.ism.docometre.chartxyz.macos.NewtCurve2D;
+import fr.univamu.ism.docometre.chartxyz.windows.Chart2D;
 
 /**
  * Démonstration de l'affichage 2D temps réel de deux courbes : un thread
@@ -19,7 +19,7 @@ import fr.univamu.ism.docometre.chartxyz.macos.NewtCurve2D;
  * par blocs de BLOCK_SIZE. Seules les WINDOW_TIME_WIDTH dernières secondes
  * sont affichées.
  */
-public class NewtRealTimeCurve2DTest {
+public class RealTimeChart2DTest {
 
     private static final double SAMPLE_FREQUENCY = 1000;  // Hz
     private static final double WINDOW_TIME_WIDTH = 5;    // s
@@ -31,11 +31,11 @@ public class NewtRealTimeCurve2DTest {
 
         Display display = new Display();
         Shell shell = new Shell(display);
-        shell.setText("Courbes 2D temps réel — SWT + JOGL (NEWT)");
+        shell.setText("Courbes 2D temps réel — SWT + JOGL");
         shell.setSize(1000, 700);
         shell.setLayout(new FillLayout());
 
-        NewtCurve2D graph = new NewtCurve2D(shell, lissajous, circle);
+        Chart2D graph = new Chart2D(shell, lissajous, circle);
         graph.setLegendPosition(LegendPosition.BELOW); // légende sous l'axe des abscisses
 
         // Simulation d'acquisition : figure de Lissajous à amplitude variable et cercle qui dérive

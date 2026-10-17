@@ -10,14 +10,14 @@ import org.eclipse.swt.widgets.Shell;
 
 import fr.univamu.ism.docometre.chartxyz.Curve3DData;
 import fr.univamu.ism.docometre.chartxyz.LineStyle;
-import fr.univamu.ism.docometre.chartxyz.windows.Curve3D;
+import fr.univamu.ism.docometre.chartxyz.macos.NewtChart3D;
 
 /**
- * Démonstration de l'affichage temps réel de deux courbes 3D : un thread simule une acquisition
+ * Démonstration de l'affichage temps réel de deux courbes 3D avec NEWT (macOS) : un thread simule une acquisition
  * à SAMPLE_FREQUENCY Hz et envoie les échantillons par blocs de BLOCK_SIZE.
  * Seules les WINDOW_TIME_WIDTH dernières secondes sont affichées.
  */
-public class RealTimeCurve3DTest {
+public class NewtRealTimeChart3DTest {
 
     private static final double SAMPLE_FREQUENCY = 1000;  // Hz
     private static final double WINDOW_TIME_WIDTH = 5;    // s
@@ -29,11 +29,11 @@ public class RealTimeCurve3DTest {
 
         Display display = new Display();
         Shell shell = new Shell(display);
-        shell.setText("Courbe 3D temps réel — SWT + JOGL");
+        shell.setText("Courbe 3D temps réel — SWT + JOGL (NEWT)");
         shell.setSize(1000, 700);
         shell.setLayout(new FillLayout());
 
-        new Curve3D(shell, -0.5, 0.5, -0.5, 0.5, -0.5, 0.5, spiral, helix);
+        new NewtChart3D(shell, spiral, helix);
 
         // Simulation d'acquisition : spirale de Lissajous dont la phase dérive lentement
         ScheduledExecutorService acquisition = Executors.newSingleThreadScheduledExecutor();

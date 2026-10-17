@@ -5,35 +5,20 @@ import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Control;
 
-import fr.univamu.ism.docometre.chartxyz.Curve2DRenderer;
+import fr.univamu.ism.docometre.chartxyz.Chart3DRenderer;
 
-/**
- * Relie les événements souris/clavier SWT au {@link Curve2DRenderer} :
- * - Clic gauche (ou droit) + glisser : panoramique
- * - Survol             : donne le focus clavier au graphe
- * - Molette               : zoom avant/arrière
- * - Touche R : réinitialiser la vue (ajustement automatique)
- * - Touche A : afficher/masquer les axes x = 0 et y = 0
- * - Touche P : afficher/masquer les points
- * - Touche G : afficher/masquer la grille
- * - Touche L : afficher/masquer les graduations
- * - Touche N : afficher/masquer la légende
- * - Touche F : afficher/masquer la cadence d'affichage (images/s)
- * - Touche V : afficher/masquer les valeurs courantes des courbes
- * - Touche E : même échelle sur x et y
- */
-public class Curve2DCameraController {
+public class Chart3DCameraController {
 
-    private final Curve2DRenderer renderer;
+    private final Chart3DRenderer renderer;
     private final Control control;
 
     private int lastX, lastY;
-    private boolean dragging = false;
+    private boolean leftDown = false;
+    private boolean rightDown = false;
 
-    public Curve2DCameraController(Curve2DRenderer renderer, Control control) {
+    public Chart3DCameraController(Chart3DRenderer renderer, Control control) {
         this.renderer = renderer;
         this.control = control;
     }
@@ -44,12 +29,14 @@ public class Curve2DCameraController {
             public void mouseDown(MouseEvent e) {
                 lastX = e.x;
                 lastY = e.y;
-                if (e.button == 1 || e.button == 3) dragging = true;
+                if (e.button == 1) leftDown = true;
+                if (e.button == 3) rightDown = true;
             }
 
             @Override
             public void mouseUp(MouseEvent e) {
-                if (e.button == 1 || e.button == 3) dragging = false;
+                if (e.button == 1) leftDown = false;
+                if (e.button == 3) rightDown = false;
             }
         });
 
@@ -59,13 +46,14 @@ public class Curve2DCameraController {
             lastX = e.x;
             lastY = e.y;
 
-            if (dragging) {
-                Point size = control.getSize();
-                renderer.pan((float) dx / Math.max(1, size.x), (float) dy / Math.max(1, size.y));
+            if (leftDown) {
+                renderer.rotate(dx * 0.5f, dy * 0.5f);
+            } else if (rightDown) {
+                renderer.pan(dx, dy);
             }
         });
 
-        control.addMouseWheelListener(e -> renderer.zoom(Math.signum(e.count)));
+        control.addMouseWheelListener(e -> renderer.zoom(-e.count * 0.1f));
 
         control.addKeyListener(new KeyAdapter() {
             @Override
@@ -79,7 +67,7 @@ public class Curve2DCameraController {
                     case 'n': renderer.toggleLegend(); break;
                     case 'f': renderer.toggleFps(); break;
                     case 'v': renderer.toggleCurrentValues(); break;
-                    case 'e': renderer.toggleEqualAspect(); break;
+                    case 'd': renderer.toggleDecimation(); break;
                     default: break;
                 }
             }

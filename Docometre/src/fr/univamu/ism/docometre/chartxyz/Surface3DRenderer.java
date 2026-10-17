@@ -6,7 +6,7 @@ import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.util.gl2.GLUT;
 
-import fr.univamu.ism.docometre.chartxyz.windows.Curve3DCameraController;
+import fr.univamu.ism.docometre.chartxyz.windows.Chart3DCameraController;
 
 import java.util.Locale;
 
@@ -14,7 +14,7 @@ import java.util.Locale;
  * Gère le rendu OpenGL de la surface 3D : axes, grille de repère au sol,
  * surface triangulée avec ombrage lisse (normales par sommet) et couleur
  * dégradée selon l'altitude (y), bascule solide / filaire / les deux.
- * Expose les méthodes utilisées par {@link Curve3DCameraController} pour piloter
+ * Expose les méthodes utilisées par {@link Chart3DCameraController} pour piloter
  * la caméra orbitale (rotation, panoramique, zoom).
  */
 public class Surface3DRenderer implements GLEventListener {
