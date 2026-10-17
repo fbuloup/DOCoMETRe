@@ -106,7 +106,12 @@ public class VariablesCodeGenerationDelegate {
 					code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%lu\"," + transferNumber + ", " + name + ");\n";
 				}
 				if(type.equals(ArduinoUnoVariableProperties.FLOAT)) {
-					code = code + "\t\t\t\tdtostre(" + name + ", temporaryBuffer, 6, DTOSTR_ALWAYS_SIGN + DTOSTR_PLUS_SIGN + DTOSTR_UPPERCASE);\n";
+					if(isRelease4Wifi) {
+						code = code + "\t\t\t\tsnprintf(temporaryBuffer, sizeof(temporaryBuffer), \"%+.6E\"," + name + ");\n";
+					}
+					if(isRelease3) {
+						code = code + "\t\t\t\tdtostre(" + name + ", temporaryBuffer, 6, DTOSTR_ALWAYS_SIGN + DTOSTR_PLUS_SIGN + DTOSTR_UPPERCASE);\n";
+					}
 					code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%s\"," + transferNumber + ", temporaryBuffer);\n";
 				}
 				
