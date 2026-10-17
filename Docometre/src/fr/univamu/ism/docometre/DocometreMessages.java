@@ -420,6 +420,7 @@ public final class DocometreMessages extends NLS {
 	public static String OscilloChartLabel;
 	public static String ScrollChartLabel;
 	public static String XYChartLabel;
+	public static String XYZChartLabel;
 	public static String GaugeChartLabel;
 	public static String TankChartLabel;
 	public static String ImageChartLabel;

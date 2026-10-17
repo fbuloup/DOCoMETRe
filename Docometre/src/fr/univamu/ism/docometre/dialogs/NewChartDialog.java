@@ -48,6 +48,8 @@ import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -57,8 +59,10 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
+import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.dacqsystems.charts.ChartTypes;
+import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
 public class NewChartDialog extends TitleAreaDialog {
 	
@@ -96,6 +100,21 @@ public class NewChartDialog extends TitleAreaDialog {
 		chartTypeComboViewer.setLabelProvider(new LabelProvider());
 		chartTypeComboViewer.setInput(ChartTypes.values());
 		chartTypeComboViewer.setSelection(new StructuredSelection(ChartTypes.OSCILLO_CHART));
+		chartTypeComboViewer.setFilters(new ViewerFilter() {
+			@Override
+			public boolean select(Viewer viewer, Object parentElement, Object element) {
+				// For backward compatibility
+				String defaultValue = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.RTSWT_CHART_LIBRARY);
+				if("".equals(defaultValue)) {
+					boolean useOpenGL = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_OPENGL_FOR_RTSWT_CHART);
+					if(useOpenGL) Activator.getDefault().getPreferenceStore().setValue(GeneralPreferenceConstants.RTSWT_CHART_LIBRARY, GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT_OPENGL_V1);
+					else Activator.getDefault().getPreferenceStore().setValue(GeneralPreferenceConstants.RTSWT_CHART_LIBRARY, GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT);
+				}
+				String rtSWTChartLibrary = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.RTSWT_CHART_LIBRARY);
+				boolean useOpenGL_V2 = GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT_OPENGL_V2.equals(rtSWTChartLibrary);
+				return useOpenGL_V2 || !element.equals(ChartTypes.XYZ_CHART);
+			}
+		});
 		
 		return area;
 	}

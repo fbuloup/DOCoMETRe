@@ -45,8 +45,9 @@ import fr.univamu.ism.docometre.DocometreMessages;
 
 public enum ChartTypes {
 
-	OSCILLO_CHART(DocometreMessages.OscilloChartLabel),
+	OSCILLO_CHART(DocometreMessages.OscilloChartLabel), // Also scrolling chart in RT OpenGL chart V2
 	XY_CHART(DocometreMessages.XYChartLabel),
+	XYZ_CHART(DocometreMessages.XYZChartLabel),
 	GAUGE_CHART(DocometreMessages.GaugeChartLabel),
 	TANK_CHART(DocometreMessages.TankChartLabel),
 	IMAGE_CHART(DocometreMessages.ImageChartLabel);
