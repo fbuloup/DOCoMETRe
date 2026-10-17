@@ -46,6 +46,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
@@ -1099,10 +1102,8 @@ public class ArduinoUnoProcess extends Process {
 		File buildFolderFile = new File(outputFolder + File.separator + "Build");
 		buildFolderFile.mkdirs();
 		
-//		final File errorFile = new File(outputFolder + File.separator + processResource.getFullPath().lastSegment().replaceAll(Activator.processFileExtension + "$", ".ERR"));
-//		if(errorFile.exists()) errorFile.delete();
-//		final File outputFile = new File(outputFolder + File.separator + processResource.getFullPath().lastSegment().replaceAll(Activator.processFileExtension + "$", ".OUT"));
-//		if(outputFile.exists()) outputFile.delete();
+		final File compileFile = new File(outputFolder + File.separator + "Build" + File.separator + "compile.txt");
+		if(compileFile.exists()) compileFile.delete();
 		
 		progressMonitor.subTask(DocometreMessages.ArduinoUnoProcess_CompileCMDLineMessage);
 		String sketchFilePath = outputFolder + File.separator + processResource.getFullPath().lastSegment().replaceAll(Activator.processFileExtension +"$", ".ino");
@@ -1113,14 +1114,6 @@ public class ArduinoUnoProcess extends Process {
 		if(Platform.getOS().equals(Platform.OS_LINUX)) cmdLine = createLinuxCompileProcess(currentFolder, outputFolder, arduinoUnoCompiler, sketchFilePath);
 		if(Platform.getOS().equals(Platform.OS_MACOSX)) cmdLine = createOSXCompileProcess(currentFolder, outputFolder, arduinoUnoCompiler, sketchFilePath);
 		progressMonitor.worked(1);
-		
-//	    ProcessBuilder pb = new ProcessBuilder(cmdLine);
-//	    pb.redirectError(errorFile);
-//	    pb.redirectOutput(outputFile);
-//	    
-//	    java.lang.Process p = pb.start();
-//	    p.waitFor();
-	    
 	    
 	    java.lang.Process process = Runtime.getRuntime().exec(new String[] {cmdLine});
 	    boolean stillWaiting = true;
@@ -1132,34 +1125,40 @@ public class ArduinoUnoProcess extends Process {
 	    if(progressMonitor.isCanceled()) throw new OperationCanceledException();
 	    
 	    String line;
-		BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-		String errorString = "";
-		while((line = error.readLine()) != null){
-			errorString = errorString + line + "\n";
-		}
-		error.close();
-		
-		BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
+	    BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
 		while((line=input.readLine()) != null){
 			Activator.logInfoMessage(line, ArduinoUnoProcess.class);
 		}
 		input.close();
 	    
-		processResource.deleteMarkers(null, true, IResource.DEPTH_INFINITE);
-		
-		// Get compile errors
-		progressMonitor.subTask(DocometreMessages.ArduinoUnoProcess_GetCompileErrorsMessage);
-		if (!errorString.equals("")) {
-			createMarker(IMarker.SEVERITY_ERROR, processResource, errorString);
+	    // Get compile results
+	    progressMonitor.subTask(DocometreMessages.ArduinoUnoProcess_GetCompileErrorsMessage);
+	    processResource.deleteMarkers(null, true, IResource.DEPTH_INFINITE);
+	    Pattern pattern = Pattern.compile("^(.+):(\\d+):(\\d+):\\s+error:\\s+(.*)$");
+		BufferedReader fReader = Files.newBufferedReader(Paths.get(compileFile.getAbsolutePath()), StandardCharsets.UTF_8);
+		String compileString = "";
+		boolean errorDetected = false;
+		while((line = fReader.readLine()) != null){
+			Matcher matcher = pattern.matcher(line);
+			errorDetected = errorDetected || matcher.matches();
+			if (matcher.matches()) {
+			    int numLine = Integer.parseInt(matcher.group(2)); 
+			    int numColumn    = Integer.parseInt(matcher.group(3)); 
+			    String message = matcher.group(4);    
+			    createMarker(IMarker.SEVERITY_ERROR, processResource, numLine, numColumn, message);
+			}
+			compileString = compileString + line + "\n";
 		}
+		fReader.close();
 		
+		Activator.logInfoMessage(compileString, ArduinoUnoProcess.class);
 
 		Bundle librariesBundle = Platform.getBundle("Libraries");
 		String message = NLS.bind(DocometreMessages.CurrentLibrariesVersion, librariesBundle.getVersion().toString());
 		Activator.logInfoMessage(message, getClass());
 		ArduinoUnoDACQConfiguration dacqConfig = (ArduinoUnoDACQConfiguration)getDACQConfiguration();
 		String librariesAbsolutePath = dacqConfig.getProperty(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH);
-		Pattern pattern = Pattern.compile("Libraries_\\d\\.\\d.\\d.\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d");
+		pattern = Pattern.compile("Libraries_\\d\\.\\d.\\d.\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d");
 		Matcher matcher = pattern.matcher(librariesAbsolutePath);
 		if (matcher.find()) {
 			String usedLibrariesVersion = librariesAbsolutePath.substring(matcher.start(), matcher.end());
@@ -1221,42 +1220,63 @@ public class ArduinoUnoProcess extends Process {
 		
 		progressMonitor.worked(1);
 		
-		if (!errorString.equals("")) {
+		if (errorDetected) {
 			throw new Exception(DocometreMessages.ArduinoUnoProcess_CompileErrorsMessage);
 		}
 		
 		
 	}
 	
-	private void createMarker(int severity, IResource processResource, final String errorLine) {
+	private void createMarker(int severity, IResource processResource, final int numLine, final int numColumn, final String message) {
 		PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
 			@Override
 			public void run() {
-				if(severity == IMarker.SEVERITY_ERROR) Activator.logErrorMessage(errorLine);
-				if(severity == IMarker.SEVERITY_WARNING) Activator.logWarningMessage(errorLine);
-				String[] lines = errorLine.split("\\r?\\n");
-				for (String line : lines) {
-					if(line.contains("error:") || line.contains("warning:")) {
-						try {
-							IMarker marker = processResource.createMarker(DocometreBuilder.MARKER_ID);
-							String[] localLines = line.split(":");
-							marker.setAttribute(IMarker.MESSAGE, localLines[localLines.length - 1]);
-							//boolean useCLI = "true".equals(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI))?true:false;
-							//if(useCLI) marker.setAttribute(IMarker.LINE_NUMBER, Integer.parseInt(localLines[localLines.length - 5]));
-							//else
-							marker.setAttribute(IMarker.LINE_NUMBER, Integer.parseInt(localLines[localLines.length - 4]));
-							marker.setAttribute(IMarker.SEVERITY, severity);
-//							marker.setAttribute(IMarker.CHAR_START, 0);
-//							marker.setAttribute(IMarker.CHAR_END, localLines[localLines.length - 1].length() - 1);
-						} catch (CoreException e) {
-							Activator.logErrorMessageWithCause(e);
-							e.printStackTrace();
-						}
-					}
+				try {
+					if(severity == IMarker.SEVERITY_ERROR) Activator.logErrorMessage(message);
+					if(severity == IMarker.SEVERITY_WARNING) Activator.logWarningMessage(message);
+					IMarker marker = processResource.createMarker(DocometreBuilder.MARKER_ID);
+					marker.setAttribute(IMarker.MESSAGE, message);
+					marker.setAttribute(IMarker.LINE_NUMBER, numLine);
+					marker.setAttribute(IMarker.CHAR_START, numColumn);
+					marker.setAttribute(IMarker.CHAR_END, message.length() - numColumn);
+					marker.setAttribute(IMarker.SEVERITY, severity);
+				} catch (CoreException e) {
+					Activator.logErrorMessageWithCause(e);
+					e.printStackTrace();
 				}
 			}
 		});
 	}
+	
+//	private void createMarker(int severity, IResource processResource, final String errorLine) {
+//		PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+//			@Override
+//			public void run() {
+//				if(severity == IMarker.SEVERITY_ERROR) Activator.logErrorMessage(errorLine);
+//				if(severity == IMarker.SEVERITY_WARNING) Activator.logWarningMessage(errorLine);
+//				String[] lines = errorLine.split("\\r?\\n");
+//				for (String line : lines) {
+//					if(line.contains("error:") || line.contains("warning:")) {
+//						try {
+//							IMarker marker = processResource.createMarker(DocometreBuilder.MARKER_ID);
+//							String[] localLines = line.split(":");
+//							marker.setAttribute(IMarker.MESSAGE, localLines[localLines.length - 1]);
+//							//boolean useCLI = "true".equals(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI))?true:false;
+//							//if(useCLI) marker.setAttribute(IMarker.LINE_NUMBER, Integer.parseInt(localLines[localLines.length - 5]));
+//							//else
+//							marker.setAttribute(IMarker.LINE_NUMBER, Integer.parseInt(localLines[localLines.length - 4]));
+//							marker.setAttribute(IMarker.SEVERITY, severity);
+////							marker.setAttribute(IMarker.CHAR_START, 0);
+////							marker.setAttribute(IMarker.CHAR_END, localLines[localLines.length - 1].length() - 1);
+//						} catch (CoreException e) {
+//							Activator.logErrorMessageWithCause(e);
+//							e.printStackTrace();
+//						}
+//					}
+//				}
+//			}
+//		});
+//	}
 	
 	private String createWindowsCompileProcess(String currentFolder, String outputFolder, String arduinoUnoCompiler, String sketchFilePath) throws IOException, InterruptedException {
 		// We need to create a bash file in order to launch Arduino uno's compilation
@@ -1290,7 +1310,7 @@ public class ArduinoUnoProcess extends Process {
 		} else {
 			String arduinoCLIPATH = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH);
 			
-			cmd = cmd + "\"" + arduinoCLIPATH + "\"" + " compile -b " + fullQualifiedBoardName + " --output-dir \"" + outputFolder + File.separator + "Build\" \"" + sketchFilePath + "\"";			
+			cmd = cmd + "\"" + arduinoCLIPATH + "\"" + " compile -b " + fullQualifiedBoardName + " --output-dir \"" + outputFolder + File.separator + "Build\" \"" + sketchFilePath + "\" > " + outputFolder + File.separator + "Build" +  File.separator + "compile.txt 2>&1";			
 			String userLibrariesPath = getDACQConfiguration().getProperty((ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH));
 			if(userLibrariesPath != null && !"".equals(userLibrariesPath)) cmd = cmd + " -libraries \"" + userLibrariesPath + "\"";
 		}
