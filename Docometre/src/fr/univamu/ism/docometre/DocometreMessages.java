@@ -94,6 +94,7 @@ public final class DocometreMessages extends NLS {
 	public static String TrialsParameters;
 	public static String Charts2DOptions;
 	public static String UseOpenGLForRTSWTChart;
+	public static String UsedRTChartLibrary;
 	public static String RestartToApplyChanges;
 	
 	public static String RootPreferencePage_Label;
