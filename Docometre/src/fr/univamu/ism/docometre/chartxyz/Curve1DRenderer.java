@@ -83,6 +83,8 @@ public class Curve1DRenderer implements GLEventListener {
     private volatile boolean showLegend = true; // légende affichée (si au moins une courbe a un nom)
     private final FpsCounter fpsCounter = new FpsCounter(); // cadence d'affichage réelle
     private volatile boolean showFps = false;
+    private final CurrentValues currentValues = new CurrentValues(); // textes des valeurs courantes
+    private volatile boolean showCurrentValues = false;
     private final DashedLines dashedLines = new DashedLines(); // tirets ancrés sur les données
 
     private static final int TARGET_TICK_COUNT = 6;     // nombre approximatif de graduations par axe
@@ -209,11 +211,13 @@ public class Curve1DRenderer implements GLEventListener {
         if (showLabel) drawLabels(gl, stepT, stepY);
         drawLegend(gl);
         drawFps(gl);
+        float valuesHeight = drawCurrentValues(gl);
         if (paused) {
+            // Sous les valeurs courantes si elles sont affichées
             gl.glColor3f(1f, 0.75f, 0.2f);
             String label = "PAUSE";
             text.draw(gl, label, scaleFont, marginLeft + plotWidth - text.width(label, scaleFont) - 6,
-                      marginBottom + plotHeight - text.lineHeight(scaleFont) - 4);
+                      marginBottom + plotHeight - text.lineHeight(scaleFont) - 4 - (valuesHeight > 0 ? valuesHeight + 4 : 0));
         }
     }
 
@@ -271,6 +275,23 @@ public class Curve1DRenderer implements GLEventListener {
         marginBottom = (int) Math.ceil(tickHeight + 10 + legendSpace);
         marginTop = (int) Math.max(10, Math.ceil(tickHeight / 2f + 4));
         marginRight = (int) Math.max(10, Math.ceil(xLabelWidth / 2f + 4));
+    }
+
+    /**
+     * Valeurs courantes (la dernière valeur de chaque courbe), en haut à droite de la zone de tracé, dans la couleur de chaque courbe et la police
+     * des échelles du graphe (coordonnées en pixels).
+     *
+     * @return la hauteur occupée en pixels (0 si rien n'est affiché)
+     */
+    private float drawCurrentValues(GL2 gl) {
+        if (!showCurrentValues) return 0;
+        List<Curve1DData> curves = frameCurves;
+        String[] labels = currentValues.update(text, scaleFont, curves, k -> {
+            Curve1DData c = curves.get(k);
+            int n = c.getSnapshotCount();
+            return (n == 0) ? null : CurrentValues.format(c.getSnapshotValues()[n - 1]);
+        });
+        return CurveStyles.drawCurrentValues(gl, text, scaleFont, curves, labels, marginLeft + plotWidth - 6, marginBottom + plotHeight - 6);
     }
 
     /** Cadence d'affichage réelle, en bas à droite, dans la police des échelles (coordonnées en pixels). */
@@ -604,6 +625,11 @@ public class Curve1DRenderer implements GLEventListener {
     public void setFpsVisible(boolean visible) { showFps = visible; }
     public boolean isFpsVisible() { return showFps; }
     public void toggleFps() { showFps = !showFps; }
+
+    /** Affiche ou masque les valeurs courantes des courbes, en haut à droite (touche V). */
+    public void setCurrentValuesVisible(boolean visible) { showCurrentValues = visible; }
+    public boolean isCurrentValuesVisible() { return showCurrentValues; }
+    public void toggleCurrentValues() { showCurrentValues = !showCurrentValues; }
     public void setDisplayMode(DisplayMode displayMode) { this.displayMode = displayMode; }
     public DisplayMode getDisplayMode() { return displayMode; }
     /** Bascule entre balayage (oscilloscope) et défilement. */

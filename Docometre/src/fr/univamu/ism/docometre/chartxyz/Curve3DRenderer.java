@@ -32,6 +32,8 @@ public class Curve3DRenderer implements GLEventListener {
     private volatile boolean showLegend = true; // légende affichée (si au moins une courbe a un nom)
     private final FpsCounter fpsCounter = new FpsCounter(); // cadence d'affichage réelle
     private volatile boolean showFps = false;
+    private final CurrentValues currentValues = new CurrentValues(); // textes des valeurs courantes
+    private volatile boolean showCurrentValues = false;
 
     /** Étiquette placée dans la scène 3D, projetée à l'écran et dessinée par-dessus la scène. */
     private static final class Label {
@@ -310,6 +312,26 @@ public class Curve3DRenderer implements GLEventListener {
         gl.glEnd();
     }
 
+    /**
+     * Valeurs courantes (le dernier point (x, y, z) de chaque courbe), en haut à droite de la fenêtre, dans la couleur de chaque courbe et la police
+     * des échelles du graphe (coordonnées en pixels).
+     *
+     * @return la hauteur occupée en pixels (0 si rien n'est affiché)
+     */
+    private float drawCurrentValues(GL2 gl) {
+        if (!showCurrentValues) return 0;
+        List<Curve3DData> curves = frameCurves;
+        String[] labels = currentValues.update(text, scaleFont, curves, k -> {
+            Curve3DData c = curves.get(k);
+            int n = c.getSnapshotCount();
+            if (n == 0) return null;
+            float[] xyz = c.getSnapshotCoordinates();
+            return "(" + CurrentValues.format(xyz[3 * n - 3]) + ", " + CurrentValues.format(xyz[3 * n - 2])
+                    + ", " + CurrentValues.format(xyz[3 * n - 1]) + ")";
+        });
+        return CurveStyles.drawCurrentValues(gl, text, scaleFont, curves, labels, width - 10, height - 10);
+    }
+
     /** Cadence d'affichage réelle, en bas à droite, dans la police des échelles (coordonnées en pixels). */
     private void drawFps(GL2 gl) {
         if (!showFps) return;
@@ -336,6 +358,7 @@ public class Curve3DRenderer implements GLEventListener {
         }
         if (showLegend) CurveStyles.drawLegend(gl, text, legendFont, frameCurves, 16, height - 10);
         drawFps(gl);
+        drawCurrentValues(gl);
         gl.glEnable(GL2.GL_DEPTH_TEST);
     }
 
@@ -679,6 +702,11 @@ public class Curve3DRenderer implements GLEventListener {
     public void setFpsVisible(boolean visible) { showFps = visible; }
     public boolean isFpsVisible() { return showFps; }
     public void toggleFps() { showFps = !showFps; }
+
+    /** Affiche ou masque les valeurs courantes des courbes, en haut à droite (touche V). */
+    public void setCurrentValuesVisible(boolean visible) { showCurrentValues = visible; }
+    public boolean isCurrentValuesVisible() { return showCurrentValues; }
+    public void toggleCurrentValues() { showCurrentValues = !showCurrentValues; }
 
     /**
      * Échelles fixes : la boîte de repère et les graduations vont exactement

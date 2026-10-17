@@ -144,6 +144,15 @@ public class NewtCurve3D {
 		newtCanvas.setLayoutData(gridData);
 	}
 	
+	/** Affiche ou masque, en haut à droite du graphe, la dernière valeur de chaque courbe (également avec la touche V). */
+	public void setCurrentValuesVisible(boolean visible) {
+		renderer.setCurrentValuesVisible(visible);
+	}
+	
+	public boolean isCurrentValuesVisible() {
+		return renderer.isCurrentValuesVisible();
+	}
+	
 	public boolean isDisposed() {
 		return newtCanvas == null || newtCanvas.isDisposed();
 	}

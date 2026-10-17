@@ -173,6 +173,14 @@ public final class GLText {
 
     // ------------------------------------------------------------------
 
+    /**
+     * Prépare le texte s'il ne l'est pas déjà (immédiatement dans le thread
+     * SWT, de manière asynchrone sinon) et indique s'il est prêt à dessiner.
+     */
+    public boolean prepare(String text, ChartFont font) {
+        return entry(text, font) != null;
+    }
+
     /** Texte prêt à dessiner, ou null s'il est en cours de préparation. */
     private Entry entry(String text, ChartFont font) {
         Key key = new Key(text, font, pixelScale);

@@ -22,6 +22,7 @@ import fr.univamu.ism.docometre.chartxyz.Curve1DRenderer;
  * - Touche L : afficher/masquer les graduations
  * - Touche N : afficher/masquer la légende
  * - Touche F : afficher/masquer la cadence d'affichage (images/s)
+ * - Touche V : afficher/masquer les valeurs courantes des courbes
  * - Espace   : pause / reprise de l'affichage
  * - Touche M : bascule balayage (oscilloscope) / défilement
  */
@@ -78,6 +79,7 @@ public class Curve1DCameraController {
                     case 'l': renderer.toggleLabel(); break;
                     case 'n': renderer.toggleLegend(); break;
                     case 'f': renderer.toggleFps(); break;
+                    case 'v': renderer.toggleCurrentValues(); break;
                     case ' ': renderer.togglePause(); break;
                     case 'm': renderer.toggleDisplayMode(); break;
                     default: break;

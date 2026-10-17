@@ -75,6 +75,7 @@ public class NewtCurve3DCameraController {
                     case 'l': renderer.toggleLabel(); break;
                     case 'n': renderer.toggleLegend(); break;
                     case 'f': renderer.toggleFps(); break;
+                    case 'v': renderer.toggleCurrentValues(); break;
                     default: break;
                 }
             }

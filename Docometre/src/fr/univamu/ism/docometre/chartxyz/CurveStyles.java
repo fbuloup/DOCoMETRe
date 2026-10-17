@@ -163,6 +163,28 @@ public final class CurveStyles {
         return LEGEND_SWATCH_WIDTH + 6 + text.width(labelOf(curve, index), font);
     }
 
+    /**
+     * Dessine les valeurs courantes : une ligne par courbe ayant une valeur,
+     * dans la couleur de la courbe, alignée à droite sur xRight, la première
+     * ligne ayant son haut en yTop. La projection courante doit être en pixels.
+     *
+     * @param values une valeur formatée par courbe (null = ligne omise), voir {@link CurrentValues}
+     * @return la hauteur occupée en pixels (0 si rien n'est dessiné)
+     */
+    public static float drawCurrentValues(GL2 gl, GLText text, ChartFont font, List<? extends CurveAppearance> curves,
+                                          String[] values, float xRight, float yTop) {
+        float lineHeight = text.lineHeight(font) + 2;
+        int row = 0;
+        for (int i = 0; i < values.length && i < curves.size(); i++) {
+            if (values[i] == null) continue;
+            float[] color = colorOf(curves.get(i), i);
+            gl.glColor3f(color[0], color[1], color[2]);
+            row++;
+            text.draw(gl, values[i], font, xRight - text.width(values[i], font), yTop - row * lineHeight);
+        }
+        return row * lineHeight;
+    }
+
     /** Une entrée de légende : trait au type, à la couleur et à l'épaisseur de la courbe, puis son nom. */
     private static void drawEntry(GL2 gl, GLText text, ChartFont font, CurveAppearance curve, int index, float x, float middle) {
         float[] color = colorOf(curve, index);
