@@ -69,7 +69,7 @@ public class NewtChart3D implements IRTSWTXYZChart {
         
         newtCanvas = NewtCanvasSWT.create(container, SWT.NO_BACKGROUND, glWindow);
         
-        container.addListener(SWT.Close, e -> {
+        newtCanvas.addListener(SWT.Dispose, e -> {
         	close();
         });
         

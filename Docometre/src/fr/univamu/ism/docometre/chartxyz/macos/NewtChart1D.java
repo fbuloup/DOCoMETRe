@@ -69,7 +69,7 @@ public class NewtChart1D implements IRTSWTOscilloChart {
         
         newtCanvas = NewtCanvasSWT.create(container, SWT.NO_BACKGROUND, glWindow);
         
-        container.addListener(SWT.Close, e -> {
+        newtCanvas.addListener(SWT.Dispose, e -> {
         	close();
         });
         
