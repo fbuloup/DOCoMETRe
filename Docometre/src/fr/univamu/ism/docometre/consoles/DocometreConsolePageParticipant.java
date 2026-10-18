@@ -31,6 +31,7 @@ public class DocometreConsolePageParticipant implements IConsolePageParticipant 
 		IPageSite pageSite = page.getSite();
 		IWorkbenchPage workbenchPage = pageSite.getPage();
 		IViewPart viewPart = workbenchPage.findView( IConsoleConstants.ID_CONSOLE_VIEW );
+		if(viewPart == null) return;
 		IViewSite viewSite = viewPart.getViewSite();
 		IActionBars actionBars = viewSite.getActionBars();
 		IToolBarManager toolBarManager = actionBars.getToolBarManager();
