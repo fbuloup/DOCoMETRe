@@ -87,7 +87,7 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 
 	private PartListenerAdapter partListenerAdapter;
 
-	private Composite chartsContainer;
+	private static Composite chartsContainer;
 
 	public RealTimeChartsView() {
 		// TODO Auto-generated constructor stub
@@ -269,20 +269,22 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 	@Override
 	public void perspectiveActivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
 		if(perspective.getId().equals(AcquirePerspective.id)) {
-			IResource resource = ExperimentsView.currentSelectedResource;
-			updateItemToLaunch(resource);
-			ExperimentScheduler.getInstance().initialize();
-			removeAllCharts();
+			if(!ExperimentScheduler.getInstance().isRunning()) {
+				IResource resource = ExperimentsView.currentSelectedResource;
+				updateItemToLaunch(resource);
+				ExperimentScheduler.getInstance().initialize();
+				removeAllCharts();
+			}
+		} else {
+			if(!ExperimentScheduler.getInstance().isRunning()) removeAllCharts();
 		}
 	}
 
 	@Override
 	public void perspectiveChanged(IWorkbenchPage page, IPerspectiveDescriptor perspective, String changeId) {
-		// TODO Auto-generated method stub
-		
 	}
 	
-	private void removeAllCharts() {
+	public static void removeAllCharts() {
 		Control[] children = chartsContainer.getChildren();
 		for (Control control : children) control.dispose();
 	}
