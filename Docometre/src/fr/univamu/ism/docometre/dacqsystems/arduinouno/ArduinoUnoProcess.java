@@ -1351,7 +1351,7 @@ public class ArduinoUnoProcess extends Process {
 			cmd = cmd + " -compile " + sketchFilePath;// + " > stdout.txt 2>stderr.txt";
 		} else {
 			String arduinoCLIPATH = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH);
-			cmd = cmd + "\"" + arduinoCLIPATH + "\"" + " compile -b " + fullQualifiedBoardName + " --output-dir \"" + outputFolder + File.separator + "Build\" \"" + sketchFilePath + "\"";			
+			cmd = cmd + "\"" + arduinoCLIPATH + "\"" + " compile -b " + fullQualifiedBoardName + " --output-dir \"" + outputFolder + File.separator + "Build\" \"" + sketchFilePath + "\" > " + outputFolder + File.separator + "Build" +  File.separator + "compile.txt 2>&1";				
 			String userLibrariesPath = getDACQConfiguration().getProperty((ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH));
 			if(userLibrariesPath != null && !"".equals(userLibrariesPath)) cmd = cmd + " -libraries \"" + userLibrariesPath + "\"";
 		}
@@ -1393,7 +1393,7 @@ public class ArduinoUnoProcess extends Process {
 			cmd = cmd + " -compile " + sketchFilePath;// + " > stdout.txt 2>stderr.txt";
 		} else {
 			String arduinoCLIPATH = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH);
-			cmd = cmd + "\"" + arduinoCLIPATH + "\"" + " compile -b " + fullQualifiedBoardName + " --output-dir \"" + outputFolder + File.separator + "Build\" \"" + sketchFilePath + "\"";			
+			cmd = cmd + "\"" + arduinoCLIPATH + "\"" + " compile -b " + fullQualifiedBoardName + " --output-dir \"" + outputFolder + File.separator + "Build\" \"" + sketchFilePath + "\" > " + outputFolder + File.separator + "Build" +  File.separator + "compile.txt 2>&1";				
 			String userLibrariesPath = getDACQConfiguration().getProperty((ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH));
 			if(userLibrariesPath != null && !"".equals(userLibrariesPath)) cmd = cmd + " -libraries \"" + userLibrariesPath + "\"";
 		}
