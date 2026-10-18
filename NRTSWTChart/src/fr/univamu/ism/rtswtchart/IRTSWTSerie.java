@@ -4,6 +4,6 @@ public interface IRTSWTSerie {
 	public String getId();
 	public void setDisplayCurrentValue(boolean displayCurrentValues);
 	public void setThickness(int thickness);
-	public void addPoints(Double[] timeValues, Double[] doubleValues);
+	public void addPoints(Double[] xValues, Double[] yValues); // xValues could be time values
 
 }

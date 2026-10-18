@@ -395,6 +395,7 @@ public class ChartsConfigurationPage extends ModulePage {
 		tableViewer.getTable().setVisible(true);
 		if(currentSelectedChartConfiguration instanceof OscilloChartConfiguration) createOscilloCurvesSection();			
 		if(currentSelectedChartConfiguration instanceof XYChartConfiguration) createXYCurvesSection();
+		if(currentSelectedChartConfiguration instanceof XYZChartConfiguration) createXYZCurvesSection();
 		if(currentSelectedChartConfiguration instanceof MeterChartConfiguration) createMeterCurveSection();			
 		if(currentSelectedChartConfiguration instanceof ImageChartConfiguration) tableConfigurationSection.setVisible(false);
 		
@@ -660,6 +661,119 @@ public class ChartsConfigurationPage extends ModulePage {
 				Object element = cell.getElement();
 				if(!(element instanceof XYCurveConfiguration)) return;
 				XYCurveConfiguration curve = (XYCurveConfiguration)cell.getElement();
+				cell.setText(curve.getProperty(CurveConfigurationProperties.WIDTH));
+			}
+		});
+		if(tableViewer.getContentProvider() != null) tableViewer.setInput(null);
+		configureSorter(new CurvesComparator(), tableViewer.getTable().getColumn(0));
+		tableViewer.setContentProvider(new ArrayContentProvider());
+		tableViewer.setInput(currentSelectedChartConfiguration.getCurvesConfiguration());
+		
+	}
+	
+	private void createXYZCurvesSection() {
+		TableColumnLayout  curvesTableColumnLayout = (TableColumnLayout) tableConfigurationContainer.getLayout();
+		
+		TableViewerColumn xChannelNameTableViewerColumn = createColumn(XYZCurveConfigurationProperties.X_CHANNEL_NAME.getTooltip(), curvesTableColumnLayout, XYZCurveConfigurationProperties.X_CHANNEL_NAME, 175, 0);
+		xChannelNameTableViewerColumn.setEditingSupport(null);
+		xChannelNameTableViewerColumn.setLabelProvider(new CellLabelProvider() {
+			@Override
+			public void update(ViewerCell cell) {
+				Object element = cell.getElement();
+				if(!(element instanceof XYZCurveConfiguration)) return;
+				XYZCurveConfiguration curve = (XYZCurveConfiguration)element;
+				cell.setText(curve.getProperty(XYZCurveConfigurationProperties.X_CHANNEL_NAME));
+			}
+		});
+		
+		TableViewerColumn yChannelNameTableViewerColumn = createColumn(XYZCurveConfigurationProperties.Y_CHANNEL_NAME.getTooltip(), curvesTableColumnLayout, XYZCurveConfigurationProperties.Y_CHANNEL_NAME, 175, 0);
+		yChannelNameTableViewerColumn.setEditingSupport(null);
+		yChannelNameTableViewerColumn.setLabelProvider(new CellLabelProvider() {
+			@Override
+			public void update(ViewerCell cell) {
+				Object element = cell.getElement();
+				if(!(element instanceof XYZCurveConfiguration)) return;
+				XYZCurveConfiguration curve = (XYZCurveConfiguration)cell.getElement();
+				cell.setText(curve.getProperty(XYZCurveConfigurationProperties.Y_CHANNEL_NAME));
+			}
+		});
+		
+		TableViewerColumn zChannelNameTableViewerColumn = createColumn(XYZCurveConfigurationProperties.Z_CHANNEL_NAME.getTooltip(), curvesTableColumnLayout, XYZCurveConfigurationProperties.Z_CHANNEL_NAME, 175, 0);
+		zChannelNameTableViewerColumn.setEditingSupport(null);
+		zChannelNameTableViewerColumn.setLabelProvider(new CellLabelProvider() {
+			@Override
+			public void update(ViewerCell cell) {
+				Object element = cell.getElement();
+				if(!(element instanceof XYZCurveConfiguration)) return;
+				XYZCurveConfiguration curve = (XYZCurveConfiguration)cell.getElement();
+				cell.setText(curve.getProperty(XYZCurveConfigurationProperties.Z_CHANNEL_NAME));
+			}
+		});
+		
+		final TableViewerColumn curveColorTableViewerColumn = createColumn(CurveConfigurationProperties.COLOR.getTooltip(), curvesTableColumnLayout, CurveConfigurationProperties.COLOR, 175, 1);
+		curveColorTableViewerColumn.setLabelProvider(new CellLabelProvider() {
+			@Override
+			public void update(ViewerCell cell) {
+				Object element = cell.getElement();
+				if(!(element instanceof XYZCurveConfiguration)) return;
+				XYZCurveConfiguration curve = (XYZCurveConfiguration)cell.getElement();
+				GC gc = new GC(tableViewer.getTable());
+		        FontMetrics fm = gc.getFontMetrics();
+		        int size = fm.getAscent();
+		        gc.dispose();
+		        int indent = 6;
+		        int extent = 16;
+		        extent = tableViewer.getTable().getItemHeight() - 1;
+		        if (size > extent) {
+					size = extent;
+				}
+		        int width = indent + size;
+		        int height = extent;
+		        int xoffset = indent;
+		        int yoffset = (height - size) / 2;
+		        RGB black = new RGB(0, 0, 0);
+		        PaletteData dataPalette = new PaletteData(new RGB[] { black, black, CurveConfigurationProperties.getColor(curve).getRGB() });
+		        ImageData data = new ImageData(width, height, 4, dataPalette);
+		        data.transparentPixel = 0;
+		        int end = size - 1;
+		        for (int y = 0; y < size; y++) {
+		            for (int x = 0; x < size; x++) {
+		                if (x == 0 || y == 0 || x == end || y == end) {
+							data.setPixel(x + xoffset, y + yoffset, 1);
+						} else {
+							data.setPixel(x + xoffset, y + yoffset, 2);
+						}
+		            }
+		        }
+		        Image image = new Image(PlatformUI.getWorkbench().getDisplay(), data);
+		        cell.setImage(image);
+		        curveColorTableViewerColumn.getColumn().addDisposeListener(new DisposeListener() {
+					@Override
+					public void widgetDisposed(DisposeEvent e) {
+						image.dispose();
+					}
+				});
+			}
+		});
+		
+		TableViewerColumn curveStyleTableViewerColumn = createColumn(CurveConfigurationProperties.STYLE.getTooltip(), curvesTableColumnLayout, CurveConfigurationProperties.STYLE, defaultColumnWidth, 2);
+		curveStyleTableViewerColumn.setLabelProvider(new CellLabelProvider() {
+			@Override
+			public void update(ViewerCell cell) {
+				Object element = cell.getElement();
+				if(!(element instanceof XYZCurveConfiguration)) return;
+				XYZCurveConfiguration curve = (XYZCurveConfiguration)cell.getElement();
+				cell.setText(curve.getProperty(CurveConfigurationProperties.STYLE));
+			}
+		});
+		
+		TableViewerColumn curveWidthTableViewerColumn = createColumn(CurveConfigurationProperties.WIDTH.getTooltip(), curvesTableColumnLayout, CurveConfigurationProperties.WIDTH, defaultColumnWidth, 3);
+		curveWidthTableViewerColumn.setLabelProvider(new CellLabelProvider() {
+			@Override
+			public void update(ViewerCell cell) {
+				Object element = cell.getElement();
+				if(!(element instanceof XYZCurveConfiguration)) return;
+				XYZCurveConfiguration curve = (XYZCurveConfiguration)cell.getElement();
 				cell.setText(curve.getProperty(CurveConfigurationProperties.WIDTH));
 			}
 		});

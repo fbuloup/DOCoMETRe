@@ -25,7 +25,7 @@ import java.util.List;
  * (getMinX(), getBoundingRadius(), ...) renvoient les valeurs de ce dernier
  * instantané, qui restent donc cohérentes pendant toute l'image.
  */
-public class Curve3DData implements CurveAppearance {
+public class Curve3DData implements CurveAppearance, IRTSWTXYZSerie {
 
     private final double sampleFrequency;  // Hz
     private final double windowTimeWidth;  // s
@@ -311,4 +311,35 @@ public class Curve3DData implements CurveAppearance {
     public float getMinZ() { return minZ; }
     public float getMaxZ() { return maxZ; }
     public float getBoundingRadius() { return boundingRadius; }
+
+	@Override
+	public String getId() {
+		return getName();
+	}
+
+	@Override
+	public void setDisplayCurrentValue(boolean displayCurrentValues) {
+	}
+
+	@Override
+	public void setThickness(int thickness) {
+		setLineWidth(thickness);
+	}
+
+	@Override
+	public void addPoints(Double[] timeValues, Double[] doubleValues) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void addPoints(Double[] xValues, Double[] yValues, Double[] zValues) {
+		float[] xf = new float[xValues.length];
+		float[] yf = new float[yValues.length];
+		float[] zf = new float[zValues.length];
+		for (int i = 0; i < xValues.length; i++) xf[i] = xValues[i].floatValue();   
+		for (int i = 0; i < yValues.length; i++) yf[i] = yValues[i].floatValue();   
+		for (int i = 0; i < zValues.length; i++) zf[i] = zValues[i].floatValue();   
+		addSamples(xf, yf, zf);
+	}
 }

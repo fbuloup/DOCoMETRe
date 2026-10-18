@@ -701,4 +701,8 @@ public class Chart1DRenderer implements GLEventListener {
 
     /** Fige / relance l'affichage ; les données continuent d'être reçues pendant la pause. */
     public void togglePause() { paused = !paused; }
+
+	public void setGridVisibility(boolean value) {
+		showGrid = value;
+	}
 }

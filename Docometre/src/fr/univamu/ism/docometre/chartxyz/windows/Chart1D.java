@@ -1,6 +1,7 @@
 package fr.univamu.ism.docometre.chartxyz.windows;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -8,37 +9,25 @@ import org.eclipse.swt.widgets.Control;
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.swt.GLCanvas;
-import com.jogamp.opengl.util.FPSAnimator;
 
 import fr.univamu.ism.docometre.chartxyz.ChartFont;
 import fr.univamu.ism.docometre.chartxyz.CurveStyles;
 import fr.univamu.ism.docometre.chartxyz.LegendPosition;
+import fr.univamu.ism.rtswtchart.IRTSWTOscilloChart;
+import fr.univamu.ism.rtswtchart.IRTSWTSerie;
 import fr.univamu.ism.docometre.chartxyz.Curve1DData;
 import fr.univamu.ism.docometre.chartxyz.Chart1DRenderer;
 
-public class Chart1D {
+public class Chart1D implements IRTSWTOscilloChart {
 	
 	private GLCanvas glCanvas;
-	private FPSAnimator animator;
-
+	private SWTAnimator animator;
 	private Chart1DRenderer renderer;
 
-	/**
-	 * Crée le graphe avec une ou plusieurs courbes (d'autres peuvent être
-	 * ajoutées ensuite avec addCurve), avec des échelles dynamiques : elles
-	 * s'ajustent en continu aux valeurs des courbes.
-	 */
 	public Chart1D(Composite container, Curve1DData... curves) {
 		this(container, (double[]) null, curves);
 	}
 	
-	/**
-	 * Crée le graphe avec des échelles fixes pour l'axe vertical (l'axe du temps est fixé par la fenêtre temporelle) : elles restent égales
-	 * aux bornes fournies quelles que soient les valeurs des courbes (ce qui
-	 * dépasse est coupé). setDynamicScales() permet de revenir aux échelles dynamiques.
-	 *
-	 * @throws IllegalArgumentException si un minimum n'est pas strictement inférieur à son maximum
-	 */
 	public Chart1D(Composite container, double yMin, double yMax, Curve1DData... curves) {
 		this(container, CurveStyles.checkScales(yMin, yMax), curves);
 	}
@@ -53,7 +42,7 @@ public class Chart1D {
         
         glCanvas = new GLCanvas(container, SWT.NO_BACKGROUND, glCapabilities, null);
 
-        animator = new FPSAnimator(glCanvas, 60, true);
+        animator = new SWTAnimator(glCanvas, 60, glCanvas::display);
         
         renderer = new Chart1DRenderer(curves);
         if (fixedScales != null) renderer.setFixedScales(fixedScales[0], fixedScales[1]);
@@ -62,7 +51,7 @@ public class Chart1D {
         Chart1DCameraController cameraController = new Chart1DCameraController(renderer, glCanvas);
         cameraController.attach();
         
-        container.addListener(SWT.Close, e -> {
+        glCanvas.addListener(SWT.Dispose, e -> {
         	close();
         });
         
@@ -184,6 +173,65 @@ public class Chart1D {
 	
 	public void moveAbove(Control control) {
 		glCanvas.moveAbove(control);
+	}
+
+	@Override
+	public GridData getLayoutData() {
+		return null;
+	}
+
+	@Override
+	public void setAutoScale(boolean autoscale) {
+		if(autoscale) setDynamicScales();
+	}
+
+	@Override
+	public void setyMax(double value) {
+	}
+
+	@Override
+	public void setyMin(double value) {
+	}
+
+	@Override
+	public void setGridVisibility(boolean value) {
+		renderer.setGridVisibility(value);
+	}
+
+	@Override
+	public void setLegendVisibility(boolean value) {
+		setLegendVisible(value);
+	}
+
+	@Override
+	public void setLegendPosition(int position) {
+		renderer.setLegendPosition(position == SWT.BOTTOM ? LegendPosition.BELOW : LegendPosition.INSIDE);
+	}
+
+	@Override
+	public void setGridLinesColor(Color color) {
+	}
+
+	@Override
+	public void setFontColor(Color color) {
+	}
+
+
+	@Override
+	public IRTSWTSerie createSerie(String serieId, Color color) {
+		return null;
+	}
+
+	@Override
+	public void setShowCurrentValue(boolean value) {
+	}
+
+	@Override
+	public void setWindowTimeWidth(double value) {
+	}
+
+	@Override
+	public void dispose() {
 	}
 	
 }

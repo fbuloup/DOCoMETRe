@@ -569,4 +569,8 @@ public class Chart2DRenderer implements GLEventListener {
     public boolean isCurrentValuesVisible() { return showCurrentValues; }
     public void toggleCurrentValues() { showCurrentValues = !showCurrentValues; }
     public void toggleEqualAspect() { equalAspect = !equalAspect; }
+
+	public void setGridVisibility(boolean value) {
+		showGrid = value;
+	}
 }

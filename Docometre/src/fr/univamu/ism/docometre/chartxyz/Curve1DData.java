@@ -1,5 +1,7 @@
 package fr.univamu.ism.docometre.chartxyz;
 
+import fr.univamu.ism.rtswtchart.IRTSWTSerie;
+
 /**
  * Signal temporel y(t) échantillonné à sampleFrequency Hz, dont seules les
  * windowTimeWidth dernières secondes sont conservées (tampon circulaire de
@@ -17,7 +19,7 @@ package fr.univamu.ism.docometre.chartxyz;
  * Les accesseurs (getMinY(), getLastSampleTime(), ...) renvoient les valeurs
  * de ce dernier instantané, qui restent donc cohérentes pendant toute l'image.
  */
-public class Curve1DData implements CurveAppearance {
+public class Curve1DData implements CurveAppearance, IRTSWTSerie {
 
     private final double sampleFrequency;  // Hz
     private final double windowTimeWidth;  // s
@@ -186,4 +188,29 @@ public class Curve1DData implements CurveAppearance {
     public float getMinY() { return minY; }
     public float getMaxY() { return maxY; }
     public float getCenterY() { return centerY; }
+
+	@Override
+	public String getId() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setDisplayCurrentValue(boolean displayCurrentValues) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setThickness(int thickness) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void addPoints(Double[] xValues, Double[] yValues) {
+		float[] yf = new float[yValues.length];
+		for (int i = 0; i < yValues.length; i++) yf[i] = yValues[i].floatValue();   
+		addSamples(yf);
+	}
 }
