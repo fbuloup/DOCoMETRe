@@ -24,16 +24,19 @@ public class RealTimeChart3DTest {
     private static final int BLOCK_SIZE = 20;             // échantillons par envoi (=> un envoi toutes les 20 ms)
 
     public static void main(String[] args) {
-        Curve3DData spiral = new Curve3DData(SAMPLE_FREQUENCY, WINDOW_TIME_WIDTH).setName("spirale");
-        Curve3DData helix = new Curve3DData(SAMPLE_FREQUENCY, WINDOW_TIME_WIDTH).setName("hélice").setLineStyle(LineStyle.DASH_DASH_DOT).setLineWidth(2);
-
+        
         Display display = new Display();
         Shell shell = new Shell(display);
         shell.setText("Courbe 3D temps réel — SWT + JOGL");
         shell.setSize(1000, 700);
         shell.setLayout(new FillLayout());
 
-        new Chart3D(shell, spiral, helix);
+        Chart3D chart = new Chart3D(shell, new Curve3DData[0]);
+        
+        Curve3DData spiral = new Curve3DData(SAMPLE_FREQUENCY, WINDOW_TIME_WIDTH).setName("spirale");
+        Curve3DData helix = new Curve3DData(SAMPLE_FREQUENCY, WINDOW_TIME_WIDTH).setName("hélice").setLineStyle(LineStyle.DASH_DASH_DOT).setLineWidth(2);
+        chart.addCurve(helix);
+        chart.addCurve(spiral);
 
         // Simulation d'acquisition : spirale de Lissajous dont la phase dérive lentement
         ScheduledExecutorService acquisition = Executors.newSingleThreadScheduledExecutor();
