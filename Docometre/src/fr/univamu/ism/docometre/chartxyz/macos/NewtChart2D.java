@@ -1,6 +1,7 @@
 package fr.univamu.ism.docometre.chartxyz.macos;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -14,10 +15,12 @@ import com.jogamp.opengl.util.FPSAnimator;
 import fr.univamu.ism.docometre.chartxyz.ChartFont;
 import fr.univamu.ism.docometre.chartxyz.CurveStyles;
 import fr.univamu.ism.docometre.chartxyz.LegendPosition;
+import fr.univamu.ism.rtswtchart.IRTSWTSerie;
+import fr.univamu.ism.rtswtchart.IRTSWTXYChart;
 import fr.univamu.ism.docometre.chartxyz.Curve2DData;
 import fr.univamu.ism.docometre.chartxyz.Chart2DRenderer;
 
-public class NewtChart2D {
+public class NewtChart2D implements IRTSWTXYChart {
 	
 	private FPSAnimator animator;
 	private NewtCanvasSWT newtCanvas;
@@ -183,6 +186,76 @@ public class NewtChart2D {
 
 	public void moveAbove(Control control) {
 		newtCanvas.moveAbove(control);
+	}
+
+	@Override
+	public GridData getLayoutData() {
+		return null;
+	}
+
+	@Override
+	public void setAutoScale(boolean autoscale) {
+		if(autoscale) setDynamicScales();
+	}
+
+	@Override
+	public void setxMax(double xMax) {
+	}
+
+	@Override
+	public void setxMin(double xMin) {
+	}
+
+	@Override
+	public void setyMax(double value) {
+	}
+
+	@Override
+	public void setyMin(double value) {
+	}
+
+	@Override
+	public void setGridVisibility(boolean value) {
+	}
+
+	@Override
+	public void setLegendVisibility(boolean value) {
+		setLegendVisible(value);
+	}
+
+	@Override
+	public void setLegendPosition(int position) {
+		renderer.setLegendPosition(position == SWT.BOTTOM ? LegendPosition.BELOW : LegendPosition.INSIDE);
+	}
+
+	@Override
+	public void setGridLinesColor(Color color) {
+	}
+
+	@Override
+	public void setFontColor(Color color) {
+	}
+
+	@Override
+	public void setHistorySize(double historySize) {
+	}
+
+	@Override
+	public void setSampleFrequency(double sfx) {
+	}
+
+	@Override
+	public void setWaitForAllSeriesToRedraw(boolean wait) {
+	}
+
+	@Override
+	public String getMeanDrawTime() {
+		return null;
+	}
+
+	@Override
+	public IRTSWTSerie createSerie(String serieId, Color color) {
+		return null;
 	}
 
 }

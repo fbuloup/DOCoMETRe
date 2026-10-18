@@ -786,4 +786,8 @@ public class Chart3DRenderer implements GLEventListener {
     /** Police de la légende. */
     public void setLegendFont(ChartFont font) { if (font != null) legendFont = font; }
     public ChartFont getLegendFont() { return legendFont; }
+
+	public void setGridVisibility(boolean value) {
+		showGrid = value;
+	}
 }

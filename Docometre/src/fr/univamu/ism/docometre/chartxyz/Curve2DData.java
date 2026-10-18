@@ -3,6 +3,8 @@ package fr.univamu.ism.docometre.chartxyz;
 import java.util.ArrayList;
 import java.util.List;
 
+import fr.univamu.ism.rtswtchart.IRTSWTSerie;
+
 /**
  * Équivalent 2D de {@link Curve3DData} : ensemble ordonné de points (x, y)
  * stockés dans un tampon circulaire de capacité sampleFrequency * windowTimeWidth.
@@ -16,7 +18,7 @@ import java.util.List;
  * Les accesseurs (getMinX(), getCenterY(), ...) renvoient les valeurs de ce
  * dernier instantané, qui restent donc cohérentes pendant toute l'image.
  */
-public class Curve2DData implements CurveAppearance {
+public class Curve2DData implements CurveAppearance, IRTSWTSerie {
 
     private final double sampleFrequency;  // Hz
     private final double windowTimeWidth;  // s
@@ -236,4 +238,32 @@ public class Curve2DData implements CurveAppearance {
     public float getMaxX() { return maxX; }
     public float getMinY() { return minY; }
     public float getMaxY() { return maxY; }
+
+	@Override
+	public String getId() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setDisplayCurrentValue(boolean displayCurrentValues) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setThickness(int thickness) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void addPoints(Double[] xValues, Double[] yValues) {
+		float[] xf = new float[xValues.length];
+		float[] yf = new float[yValues.length];
+		for (int i = 0; i < xValues.length; i++) xf[i] = xValues[i].floatValue();   
+		for (int i = 0; i < yValues.length; i++) yf[i] = yValues[i].floatValue();   
+		addSamples(xf, yf);
+		
+	}
 }

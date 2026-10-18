@@ -41,11 +41,9 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.charts;
 
-//import java.awt.BasicStroke;
-//import java.awt.Font;
-//import java.awt.Frame;
 import java.nio.FloatBuffer;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -64,6 +62,10 @@ import org.eclipse.ui.forms.widgets.Hyperlink;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.FontUtil;
+import fr.univamu.ism.docometre.chartxyz.Curve1DData;
+import fr.univamu.ism.docometre.chartxyz.LineStyle;
+import fr.univamu.ism.docometre.chartxyz.macos.NewtChart1D;
+import fr.univamu.ism.docometre.chartxyz.windows.Chart1D;
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
@@ -103,7 +105,6 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 	
 	@Override
 	public void initializeObservers() {
-		// TODO Auto-generated method stub
 	}
 	
 	public void populateChartConfigurationContainer(Composite container, ChartsConfigurationPage page, ModuleSectionPart generalConfigurationSectionPart) {
@@ -261,8 +262,6 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 
 	@Override
 	public void update(FloatBuffer floatBuffer, String channelID) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
@@ -299,7 +298,7 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 		int fontSize = Integer.parseInt(value);
 		Color chartColor = ChartConfigurationProperties.getColor(this, ChartConfigurationProperties.COLOR);
 		
-		IRTSWTOscilloChart rtswtOscilloChart;
+		IRTSWTOscilloChart rtswtOscilloChart = null;
 		// For backward compatibility
 		String defaultValue = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.RTSWT_CHART_LIBRARY);
 		if("".equals(defaultValue)) {
@@ -307,9 +306,21 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 			if(useOpenGL) Activator.getDefault().getPreferenceStore().setValue(GeneralPreferenceConstants.RTSWT_CHART_LIBRARY, GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT_OPENGL_V1);
 			else Activator.getDefault().getPreferenceStore().setValue(GeneralPreferenceConstants.RTSWT_CHART_LIBRARY, GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT);
 		}
+		
 		String rtSWTChartLibrary = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.RTSWT_CHART_LIBRARY);
 		boolean useOpenGL_V1 = GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT_OPENGL_V1.equals(rtSWTChartLibrary);
+		boolean useOpenGL_V2 = GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT_OPENGL_V2.equals(rtSWTChartLibrary);
 		if(useOpenGL_V1) rtswtOscilloChart = RTSWTChartsFactory.createOpenGLOscilloChart(chartContainer, SWT.DOUBLE_BUFFERED, fontName, fontStyle, fontSize);
+		else if(useOpenGL_V2) {
+			String os = Platform.getOS();
+			if (Platform.OS_WIN32.equals(os)) {
+				rtswtOscilloChart = new Chart1D(chartContainer, yMin, yMax, new Curve1DData[0]);
+			} else if (Platform.OS_LINUX.equals(os)) {
+				rtswtOscilloChart = new Chart1D(chartContainer, yMin, yMax, new Curve1DData[0]);
+			} else if (Platform.OS_MACOSX.equals(os)) {
+				rtswtOscilloChart = new NewtChart1D(chartContainer, yMin, yMax, new Curve1DData[0]);
+			}
+		}
 		else rtswtOscilloChart = RTSWTChartsFactory.createPureSWTOscilloChart(chartContainer, SWT.DOUBLE_BUFFERED, fontName, fontStyle, fontSize);
 		
 		rtswtOscilloChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, hSpan, vSpan));
@@ -328,28 +339,41 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 		for (CurveConfiguration curveConfiguration : curvesConfigurations) {
 			OscilloCurveConfiguration oscilloCurveConfiguration = (OscilloCurveConfiguration)curveConfiguration;
 			String serieID = oscilloCurveConfiguration.getChannel().getID();
+			String sfString = oscilloCurveConfiguration.getChannel().getProperty(ChannelProperties.SAMPLE_FREQUENCY);
 			Color serieColor = CurveConfigurationProperties.getColor(oscilloCurveConfiguration);
 			value = oscilloCurveConfiguration.getProperty(OscilloCurveConfigurationProperties.DISPLAY_CURRENT_VALUES);
 			boolean displayCurrentValues = displayCurrentValuesChart || Boolean.parseBoolean(value);
 			int thickness = Integer.parseInt(oscilloCurveConfiguration.getProperty(CurveConfigurationProperties.WIDTH));
 
-//			int serieWidth = Integer.parseInt(oscilloCurveConfiguration.getProperty(CurveConfigurationProperties.WIDTH));
-//			int serieStyle = CurveConfigurationProperties.getStyle(oscilloCurveConfiguration);
-//			BasicStroke stroke = new BasicStroke(serieWidth);
-//			int lineWidth = serieWidth + 13;
-//			int emptyWidth = serieWidth + 3;
-//			if(serieStyle == SWT.LINE_DASH) 
-//				stroke = new BasicStroke(serieWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1.0f, new float[] {lineWidth, emptyWidth}, 0.0f);
-//			if(serieStyle == SWT.LINE_DOT) 
-//				stroke = new BasicStroke(serieWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1.0f, new float[] {emptyWidth, emptyWidth}, 0.0f);
-//			if(serieStyle == SWT.LINE_DASHDOT) 
-//				stroke = new BasicStroke(serieWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1.0f, new float[] {lineWidth, serieWidth, emptyWidth, serieWidth}, 0.0f);
-//			if(serieStyle == SWT.LINE_DASHDOTDOT) 
-//				stroke = new BasicStroke(serieWidth, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 1.0f, new float[] {lineWidth, emptyWidth, emptyWidth, emptyWidth, emptyWidth, emptyWidth}, 0.0f);
+			int serieStyle = CurveConfigurationProperties.getStyle(curveConfiguration);
+			LineStyle lineStyle = LineStyle.SOLID;
+			if(serieStyle == SWT.LINE_DASH) lineStyle = LineStyle.DASH;
+			if(serieStyle == SWT.LINE_DOT) lineStyle = LineStyle.DASH_DOT;
+			if(serieStyle == SWT.LINE_DASHDOT) lineStyle = LineStyle.DASH_DOT;
+			if(serieStyle == SWT.LINE_DASHDOTDOT) lineStyle = LineStyle.DASH_DASH_DOT;
 			
-			IRTSWTSerie rtswtSerie = rtswtOscilloChart.createSerie(serieID, serieColor);
-			rtswtSerie.setDisplayCurrentValue(displayCurrentValues);
-			rtswtSerie.setThickness(thickness);
+			IRTSWTSerie rtswtSerie = null;
+			if(useOpenGL_V2) {
+				rtswtSerie = new Curve1DData(Double.parseDouble(sfString), timeWidth);
+				((Curve1DData)rtswtSerie).setName(serieID);
+				((Curve1DData)rtswtSerie).setLineWidth(thickness);
+				((Curve1DData)rtswtSerie).setLineStyle(lineStyle);
+				((Curve1DData)rtswtSerie).setColor(serieColor.getRed()/255,serieColor.getGreen()/255,serieColor.getBlue()/255);
+				String os = Platform.getOS();
+				if (Platform.OS_WIN32.equals(os)) {
+					((Chart1D)rtswtOscilloChart).addCurve((Curve1DData)rtswtSerie);
+				} else if (Platform.OS_LINUX.equals(os)) {
+					((Chart1D)rtswtOscilloChart).addCurve((Curve1DData)rtswtSerie);
+				} else if (Platform.OS_MACOSX.equals(os)) {
+					((NewtChart1D)rtswtOscilloChart).addCurve((Curve1DData)rtswtSerie);
+				}
+				
+			} else {
+				rtswtSerie = rtswtOscilloChart.createSerie(serieID, serieColor);
+				rtswtSerie.setDisplayCurrentValue(displayCurrentValues);
+				rtswtSerie.setThickness(thickness);
+			}
+			
 			oscilloCurveConfiguration.setSerie(rtswtSerie);
 		}
 	}

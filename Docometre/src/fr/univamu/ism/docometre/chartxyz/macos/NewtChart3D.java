@@ -1,6 +1,7 @@
 package fr.univamu.ism.docometre.chartxyz.macos;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -13,10 +14,12 @@ import com.jogamp.opengl.util.FPSAnimator;
 
 import fr.univamu.ism.docometre.chartxyz.ChartFont;
 import fr.univamu.ism.docometre.chartxyz.CurveStyles;
+import fr.univamu.ism.docometre.chartxyz.IRTSWTXYZChart;
+import fr.univamu.ism.rtswtchart.IRTSWTSerie;
 import fr.univamu.ism.docometre.chartxyz.Chart3DRenderer;
 import fr.univamu.ism.docometre.chartxyz.Curve3DData;
 
-public class NewtChart3D {
+public class NewtChart3D implements IRTSWTXYZChart {
 	
 	private FPSAnimator animator;
 	private NewtCanvasSWT newtCanvas;
@@ -71,6 +74,10 @@ public class NewtChart3D {
         });
         
         animator.start();
+	}
+	
+	public void stopAnimator() {
+		animator.stop();
 	}
 	
 	public void close() {
@@ -171,6 +178,85 @@ public class NewtChart3D {
 
 	public void moveAbove(Control control) {
 		newtCanvas.moveAbove(control);
+	}
+
+	@Override
+	public GridData getLayoutData() {
+		return null;
+	}
+
+	@Override
+	public void setAutoScale(boolean autoscale) {
+		if(autoscale) setDynamicScales();
+	}
+
+	@Override
+	public void setxMax(double xMax) {
+	}
+
+	@Override
+	public void setxMin(double xMin) {
+	}
+
+	@Override
+	public void setyMax(double value) {
+	}
+
+	@Override
+	public void setyMin(double value) {
+	}
+
+	@Override
+	public void setGridVisibility(boolean value) {
+		renderer.setGridVisibility(value);
+	}
+
+	@Override
+	public void setLegendVisibility(boolean value) {
+		setLegendVisible(value);
+	}
+
+	@Override
+	public void setLegendPosition(int position) {
+		// N.A. in 3D
+	}
+
+	@Override
+	public void setGridLinesColor(Color color) {
+	}
+
+	@Override
+	public void setFontColor(Color color) {
+	}
+
+	@Override
+	public void setHistorySize(double historySize) {
+	}
+
+	@Override
+	public void setSampleFrequency(double sfx) {
+	}
+
+	@Override
+	public void setWaitForAllSeriesToRedraw(boolean wait) {
+	}
+
+	@Override
+	public String getMeanDrawTime() {
+		return null;
+	}
+
+	@Override
+	public IRTSWTSerie createSerie(String serieId, Color color) {
+		return null;
+	}
+
+	@Override
+	public void setzMax(double value) {
+	}
+
+	@Override
+	public void setzMin(double value) {
 	}
 
 }

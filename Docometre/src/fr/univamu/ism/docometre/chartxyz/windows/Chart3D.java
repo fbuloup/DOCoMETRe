@@ -1,6 +1,7 @@
 package fr.univamu.ism.docometre.chartxyz.windows;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -8,36 +9,24 @@ import org.eclipse.swt.widgets.Control;
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.swt.GLCanvas;
-import com.jogamp.opengl.util.FPSAnimator;
 
 import fr.univamu.ism.docometre.chartxyz.ChartFont;
 import fr.univamu.ism.docometre.chartxyz.CurveStyles;
+import fr.univamu.ism.docometre.chartxyz.IRTSWTXYZChart;
+import fr.univamu.ism.rtswtchart.IRTSWTSerie;
 import fr.univamu.ism.docometre.chartxyz.Chart3DRenderer;
 import fr.univamu.ism.docometre.chartxyz.Curve3DData;
 
-public class Chart3D {
+public class Chart3D implements IRTSWTXYZChart {
 	
 	private GLCanvas glCanvas;
-	private FPSAnimator animator;
-
+	private SWTAnimator animator;
 	private Chart3DRenderer renderer;
 
-	/**
-	 * Crée le graphe avec une ou plusieurs courbes (d'autres peuvent être
-	 * ajoutées ensuite avec addCurve), avec des échelles dynamiques : elles
-	 * s'ajustent en continu aux valeurs des courbes.
-	 */
 	public Chart3D(Composite container, Curve3DData... curves) {
 		this(container, (double[]) null, curves);
 	}
 	
-	/**
-	 * Crée le graphe avec des échelles fixes pour les axes x, y et z : elles restent égales
-	 * aux bornes fournies quelles que soient les valeurs des courbes (ce qui
-	 * dépasse est coupé). setDynamicScales() permet de revenir aux échelles dynamiques.
-	 *
-	 * @throws IllegalArgumentException si un minimum n'est pas strictement inférieur à son maximum
-	 */
 	public Chart3D(Composite container, double xMin, double xMax, double yMin, double yMax, double zMin, double zMax, Curve3DData... curves) {
 		this(container, CurveStyles.checkScales(xMin, xMax, yMin, yMax, zMin, zMax), curves);
 	}
@@ -53,7 +42,7 @@ public class Chart3D {
         
         glCanvas = new GLCanvas(container, SWT.NO_BACKGROUND, glCapabilities, null);
 
-        animator = new FPSAnimator(glCanvas, 60, true);
+        animator = new SWTAnimator(glCanvas, 60, glCanvas::display);
         
         renderer = new Chart3DRenderer(curves);
         if (fixedScales != null) renderer.setFixedScales(fixedScales[0], fixedScales[1], fixedScales[2], fixedScales[3], fixedScales[4], fixedScales[5]);
@@ -62,7 +51,7 @@ public class Chart3D {
         Chart3DCameraController cameraController = new Chart3DCameraController(renderer, glCanvas);
         cameraController.attach();
         
-        container.addListener(SWT.Close, e -> {
+        glCanvas.addListener(SWT.Dispose, e -> {
         	close();
         });
         
@@ -75,12 +64,10 @@ public class Chart3D {
         if(glCanvas != null && !glCanvas.isDisposed()) glCanvas.dispose();
 	}
 	
-	/** Ajoute une courbe au graphe (utilisable pendant l'affichage, depuis n'importe quel thread). */
 	public void addCurve(Curve3DData curve) {
 		renderer.addCurve(curve);
 	}
 	
-	/** Retire une courbe du graphe. */
 	public void removeCurve(Curve3DData curve) {
 		renderer.removeCurve(curve);
 	}
@@ -167,6 +154,85 @@ public class Chart3D {
 	
 	public void moveAbove(Control control) {
 		glCanvas.moveAbove(control);
+	}
+
+	@Override
+	public GridData getLayoutData() {
+		return null;
+	}
+
+	@Override
+	public void setAutoScale(boolean autoscale) {
+		if(autoscale) setDynamicScales();
+	}
+
+	@Override
+	public void setxMax(double xMax) {
+	}
+
+	@Override
+	public void setxMin(double xMin) {
+	}
+
+	@Override
+	public void setyMax(double value) {
+	}
+
+	@Override
+	public void setyMin(double value) {
+	}
+
+	@Override
+	public void setGridVisibility(boolean value) {
+		renderer.setGridVisibility(value);
+	}
+
+	@Override
+	public void setLegendVisibility(boolean value) {
+		setLegendVisible(value);
+	}
+
+	@Override
+	public void setLegendPosition(int position) {
+		// N.A. in 3D
+	}
+
+	@Override
+	public void setGridLinesColor(Color color) {
+	}
+
+	@Override
+	public void setFontColor(Color color) {
+	}
+
+	@Override
+	public void setHistorySize(double historySize) {
+	}
+
+	@Override
+	public void setSampleFrequency(double sfx) {
+	}
+
+	@Override
+	public void setWaitForAllSeriesToRedraw(boolean wait) {
+	}
+
+	@Override
+	public String getMeanDrawTime() {
+		return null;
+	}
+
+	@Override
+	public IRTSWTSerie createSerie(String serieId, Color color) {
+		return null;
+	}
+
+	@Override
+	public void setzMax(double value) {
+	}
+
+	@Override
+	public void setzMin(double value) {
 	}
 	
 }

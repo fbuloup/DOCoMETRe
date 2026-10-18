@@ -52,6 +52,9 @@ public final class ChartFactory {
 		case XY_CHART:
 			chartConfiguration = new XYChartConfiguration();
 			break;
+		case XYZ_CHART:
+			chartConfiguration = new XYZChartConfiguration();
+			break;
 		case GAUGE_CHART:
 			chartConfiguration = new MeterChartConfiguration(ChartTypes.GAUGE_CHART);
 			break;

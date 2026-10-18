@@ -490,6 +490,11 @@ public final class DocometreMessages extends NLS {
 	public static String yMaxAmplitude_Tooltip;
 	public static String yMinAmplitude_Title;
 	public static String yMinAmplitude_Tooltip;
+
+	public static String zMaxAmplitude_Title;
+	public static String zMaxAmplitude_Tooltip;
+	public static String zMinAmplitude_Title;
+	public static String zMinAmplitude_Tooltip;
 	
 	public static String DecreaseVSpan_Tooltip;
 	public static String IncreaseVSpan_Tooltip;
@@ -528,6 +533,8 @@ public final class DocometreMessages extends NLS {
 	public static String XChannelName_Tooltip;
 	public static String YChannelName_Label;
 	public static String YChannelName_Tooltip;
+	public static String ZChannelName_Label;
+	public static String ZChannelName_Tooltip;
 	
 	/* Charts preference */
 	public static String SHOW_CURSOR;
