@@ -482,6 +482,7 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 		gridImage = new Image(chart.getDisplay(), gridImageData);
 		// Draw labels
 		GC gc = new GC(gridImage);
+		gc.setFont(chartFont);
 		for (int i = 0; i < horizontalGridLinesPositions.size(); i++) {
 			int position = horizontalGridLinesPositions.get(i);
 			double value = 0;
@@ -517,6 +518,7 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 		legendImageData = new ImageData(getWidth() - getLeftAxisWidth(), fontHeight, 24, paletteData);
 		legendImage = new Image(chart.getDisplay(), legendImageData);
 		GC gc = new GC(legendImage);
+		gc.setFont(chartFont);
 		int totalLength = 0;
 		for (int i = 0; i < rtswtSeries.size(); i++) {
 			RTSWTXYSerie rtswtSerie = rtswtSeries.get(i);
