@@ -6,7 +6,8 @@ import com.jogamp.opengl.GL2;
  * Rendu OpenGL d'une ou plusieurs courbes 2D temps réel ({@link Curve2DData}).
  *
  * La vue s'ajuste automatiquement aux données de la fenêtre temporelle (ou
- * aux échelles fixes) ; zoom et panoramique s'appliquent par-dessus.
+ * aux échelles fixes) ; zoom et panoramique s'appliquent par-dessus, ainsi
+ * que le zoom par rectangle (voir {@link PlotRenderer}).
  * Commande clavier propre au 2D : E, même échelle sur x et y.
  */
 public class Chart2DRenderer extends PlotRenderer<Curve2DData> {
@@ -56,33 +57,45 @@ public class Chart2DRenderer extends PlotRenderer<Curve2DData> {
         dataMinY = minY; dataMaxY = maxY;
     }
 
+    /**
+     * Fenêtre visible : la fenêtre de zoom si elle existe, sinon les échelles
+     * fixes ou les données (avec marge), zoom et panoramique compris ; puis,
+     * si "même échelle" est active, élargissement de l'axe le plus serré.
+     */
     @Override
     protected void computeView() {
+        double halfX, halfY, centerX, centerY;
+        double[] window = zoomWindow();
         double[] fixed = getFixedScaleBounds();
-        float halfX, halfY, baseCenterX, baseCenterY;
-        if (fixed != null) { // échelles fixes : exactement les bornes fournies, sans marge
-            halfX = (float) ((fixed[1] - fixed[0]) / 2);
-            halfY = (float) ((fixed[3] - fixed[2]) / 2);
-            baseCenterX = (float) ((fixed[0] + fixed[1]) / 2);
-            baseCenterY = (float) ((fixed[2] + fixed[3]) / 2);
+        if (window != null) { // fenêtre de zoom : exactement le rectangle choisi
+            halfX = (window[1] - window[0]) / 2;
+            halfY = (window[3] - window[2]) / 2;
+            centerX = (window[0] + window[1]) / 2;
+            centerY = (window[2] + window[3]) / 2;
         } else {
-            halfX = halfExtent(dataMinX, dataMaxX);
-            halfY = halfExtent(dataMinY, dataMaxY);
-            baseCenterX = (dataMinX + dataMaxX) / 2f;
-            baseCenterY = (dataMinY + dataMaxY) / 2f;
+            double baseCenterX, baseCenterY;
+            if (fixed != null) { // échelles fixes : exactement les bornes fournies, sans marge
+                halfX = (fixed[1] - fixed[0]) / 2;
+                halfY = (fixed[3] - fixed[2]) / 2;
+                baseCenterX = (fixed[0] + fixed[1]) / 2;
+                baseCenterY = (fixed[2] + fixed[3]) / 2;
+            } else {
+                halfX = halfExtent(dataMinX, dataMaxX);
+                halfY = halfExtent(dataMinY, dataMaxY);
+                baseCenterX = (dataMinX + dataMaxX) / 2f;
+                baseCenterY = (dataMinY + dataMaxY) / 2f;
+            }
+            centerX = baseCenterX + panX * 2 * halfX;
+            centerY = baseCenterY + panY * 2 * halfY;
+            halfX /= zoom;
+            halfY /= zoom;
         }
-
-        float centerX = baseCenterX + panX * 2f * halfX;
-        float centerY = baseCenterY + panY * 2f * halfY;
-
-        halfX /= zoom;
-        halfY /= zoom;
 
         if (equalAspect) {
             // Même nombre d'unités par pixel sur les deux axes : on élargit l'axe le plus "serré"
-            float unitsPerPixel = Math.max(2f * halfX / plotWidth, 2f * halfY / plotHeight);
-            halfX = unitsPerPixel * plotWidth / 2f;
-            halfY = unitsPerPixel * plotHeight / 2f;
+            double unitsPerPixel = Math.max(2 * halfX / plotWidth, 2 * halfY / plotHeight);
+            halfX = unitsPerPixel * plotWidth / 2;
+            halfY = unitsPerPixel * plotHeight / 2;
         }
 
         viewMinX = centerX - halfX; viewMaxX = centerX + halfX;

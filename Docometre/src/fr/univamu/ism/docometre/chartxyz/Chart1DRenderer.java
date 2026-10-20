@@ -33,7 +33,14 @@ import com.jogamp.opengl.GL2;
  * fige l'affichage sans interrompre la réception des données.
  *
  * Commandes clavier propres au 1D : espace, pause / reprise ; M, bascule
- * balayage / défilement. Le panoramique est uniquement vertical.
+ * balayage / défilement (la fenêtre de zoom est alors supprimée). Le
+ * panoramique est uniquement vertical ; la molette ne zoome que sur y.
+ *
+ * Zoom par rectangle (voir {@link PlotRenderer}) : en balayage, les
+ * abscisses de la fenêtre sont des positions dans le balayage ; en
+ * défilement, elles sont relatives au dernier échantillon, si bien que la
+ * fenêtre suit le temps (loupe sur les dernières secondes) ; la pause
+ * (espace) permet d'examiner un instant précis.
  *
  * Pour garder une bonne précision même après des heures d'acquisition,
  * les positions des sommets sont calculées en double : temps relatif au
@@ -114,12 +121,22 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
     }
 
     /**
-     * Calcule la fenêtre visible : [0, windowTime] en balayage, windowTime
-     * secondes se terminant au dernier échantillon en défilement ; y ajusté
-     * aux données, ou égal à l'échelle fixe si elle est définie.
+     * Calcule la fenêtre visible : la fenêtre de zoom si elle existe (abscisses
+     * relatives à {@link #zoomXReference()}) ; sinon [0, windowTime] en
+     * balayage, windowTime secondes se terminant au dernier échantillon en
+     * défilement, et y ajusté aux données, ou égal à l'échelle fixe si elle est définie.
      */
     @Override
     protected void computeView() {
+        double[] window = zoomWindow();
+        if (window != null) {
+            double reference = zoomXReference();
+            viewMinX = window[0] + reference;
+            viewMaxX = window[1] + reference;
+            viewMinY = window[2];
+            viewMaxY = window[3];
+            return;
+        }
         if (frameMode == DisplayMode.SWEEP) {
             viewMinX = 0;
             viewMaxX = windowTime;
@@ -146,6 +163,16 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
     protected double xOrigin() {
         return (frameMode == DisplayMode.SCROLL) ? lastTime : 0;
     }
+
+    /** En défilement, la fenêtre de zoom est relative au dernier échantillon : elle suit le temps. */
+    @Override
+    protected double zoomXReference() {
+        return (frameMode == DisplayMode.SCROLL) ? lastTime : 0;
+    }
+
+    /** La molette ne zoome que sur l'axe vertical, avec ou sans fenêtre de zoom. */
+    @Override
+    protected boolean wheelZoomsX() { return false; }
 
     @Override
     protected void drawCurves(GL2 gl, double origin) {
@@ -190,7 +217,8 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
                 drawnPoints += n;
             } else if (useDecimation(n, 2 * plotWidth)) {
                 // Réduction M4 : colonne de pixels de chaque échantillon, à partir de son abscisse tracée
-                double left = viewMinX - lastTime, pixelsPerSecond = plotWidth / windowTime;
+                // (étendue visible et non windowTime : l'axe du temps peut être zoomé)
+                double left = viewMinX - lastTime, pixelsPerSecond = plotWidth / (viewMaxX - viewMinX);
                 decimation.m4(0, n, values, i -> (long) Math.floor(((offset - (n - 1 - i) * dt) - left) * pixelsPerSecond));
                 int[] kept = decimation.indices();
                 int count = decimation.count();
@@ -219,7 +247,7 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
      */
     private void drawDashed(GL2 gl, Curve1DData curve, float width, float[] values, int n, int from,
                             DashedLines.SegmentFilter filter, DashedLines.Emitter emitter) {
-        double scaleX = plotWidth / windowTime;                         // pixels par seconde
+        double scaleX = plotWidth / (viewMaxX - viewMinX);              // pixels par seconde (zoom compris)
         double scaleY = plotHeight / (viewMaxY - viewMinY);          // pixels par unité
         double dx = scaleX / curve.getSampleFrequency();                // pixels entre deux échantillons
         dashedLines.draw(gl, curve, width, curve.getSnapshotCapacity(), curve.getSnapshotTotalSamples(), n, from, scaleX, scaleY,
@@ -263,11 +291,11 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
                 int[] kept = null;
                 int count = n - first;
                 if (useDecimation(count, 2 * plotWidth)) {
-                    double pixelsPerSecond = plotWidth / windowTime;
+                    double pixelsPerSecond = plotWidth / (viewMaxX - viewMinX), left = viewMinX;
                     decimation.m4(first, n, values, i -> {
                         double t = curveLast - (n - 1 - i) / frequency;
                         double sweep = Math.floor(t / windowTime);
-                        return ((long) sweep << 32) + (long) Math.floor((t - sweep * windowTime) * pixelsPerSecond);
+                        return ((long) sweep << 32) + (long) Math.floor((t - sweep * windowTime - left) * pixelsPerSecond);
                     });
                     kept = decimation.indices();
                     count = decimation.count();
@@ -359,11 +387,16 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
      */
     public void setFixedScales(double yMin, double yMax) { setFixedScaleBounds(yMin, yMax); }
 
-    public void setDisplayMode(DisplayMode displayMode) { if (displayMode != null) this.displayMode = displayMode; }
+    /** Choisit le mode d'affichage ; un changement de mode supprime la fenêtre de zoom (abscisses incompatibles). */
+    public void setDisplayMode(DisplayMode displayMode) {
+        if (displayMode == null || displayMode == this.displayMode) return;
+        this.displayMode = displayMode;
+        clearZoomWindow();
+    }
     public DisplayMode getDisplayMode() { return displayMode; }
     /** Bascule entre balayage (oscilloscope) et défilement. */
     public void toggleDisplayMode() {
-        displayMode = (displayMode == DisplayMode.SWEEP) ? DisplayMode.SCROLL : DisplayMode.SWEEP;
+        setDisplayMode((displayMode == DisplayMode.SWEEP) ? DisplayMode.SCROLL : DisplayMode.SWEEP);
     }
 
     /** Fige / relance l'affichage ; les données continuent d'être reçues pendant la pause. */

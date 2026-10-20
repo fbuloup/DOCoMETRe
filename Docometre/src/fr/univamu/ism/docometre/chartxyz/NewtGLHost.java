@@ -60,6 +60,9 @@ final class NewtGLHost extends GLHost {
                 lastY = e.getY();
                 if (e.getButton() == MouseEvent.BUTTON1) leftDown = true;
                 if (e.getButton() == MouseEvent.BUTTON3) rightDown = true;
+                int button = toButton(e), x = e.getX(), y = e.getY(), w = glWindow.getWidth(), h = glWindow.getHeight();
+                // Comme le glisser, dans le thread OpenGL : appui, glisser et relâchement y sont traités dans l'ordre
+                if (button != 0) glWindow.invoke(false, d -> { interaction.press(button, x, y, w, h); return true; });
             }
 
             @Override
@@ -72,6 +75,8 @@ final class NewtGLHost extends GLHost {
             public void mouseReleased(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON1) leftDown = false;
                 if (e.getButton() == MouseEvent.BUTTON3) rightDown = false;
+                int button = toButton(e), x = e.getX(), y = e.getY(), w = glWindow.getWidth(), h = glWindow.getHeight();
+                if (button != 0) glWindow.invoke(false, d -> { interaction.release(button, x, y, w, h); return true; });
             }
 
             @Override
@@ -82,9 +87,9 @@ final class NewtGLHost extends GLHost {
                 lastY = e.getY();
                 int button = leftDown ? ChartInteraction.LEFT_BUTTON : rightDown ? ChartInteraction.RIGHT_BUTTON : 0;
                 if (button != 0) {
-                    int w = glWindow.getWidth(), h = glWindow.getHeight();
+                    int x = e.getX(), y = e.getY(), w = glWindow.getWidth(), h = glWindow.getHeight();
                     // exécuté dans le thread OpenGL au début de l'image suivante : pas d'accès concurrent au renderer
-                    glWindow.invoke(false, d -> { interaction.drag(button, dx, dy, w, h, ChartInteraction.InputScale.NEWT); return true; });
+                    glWindow.invoke(false, d -> { interaction.dragTo(button, x, y, dx, dy, w, h, ChartInteraction.InputScale.NEWT); return true; });
                 }
             }
 
@@ -98,10 +103,24 @@ final class NewtGLHost extends GLHost {
         glWindow.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-            	char key = Character.toLowerCase(e.getKeyChar());
+            	char key = toKey(e);
             	glWindow.invoke(false, d -> { interaction.keyPressed(key); return true; });
             }
         });
+    }
+
+    /** Bouton NEWT -> {@link ChartInteraction#LEFT_BUTTON} / {@link ChartInteraction#RIGHT_BUTTON}, 0 pour les autres. */
+    private static int toButton(MouseEvent e) {
+        if (e.getButton() == MouseEvent.BUTTON1) return ChartInteraction.LEFT_BUTTON;
+        if (e.getButton() == MouseEvent.BUTTON3) return ChartInteraction.RIGHT_BUTTON;
+        return 0;
+    }
+
+    /** Caractère transmis au renderer : Échap et Retour arrière par leur code, les autres en minuscule. */
+    private static char toKey(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_ESCAPE) return ChartInteraction.ESCAPE;
+        if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE) return ChartInteraction.BACKSPACE;
+        return Character.toLowerCase(e.getKeyChar());
     }
 
     @Override

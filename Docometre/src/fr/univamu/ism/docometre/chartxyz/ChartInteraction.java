@@ -4,6 +4,10 @@ package fr.univamu.ism.docometre.chartxyz;
  * Commandes souris et clavier d'un graphe, indépendantes de la boîte à
  * outils qui produit les événements (SWT ou NEWT, voir {@link GLHost}).
  * Implémentée par les renderers.
+ *
+ * Les coordonnées de la souris sont exprimées en unités de la fenêtre,
+ * origine en haut à gauche ; width et height sont la taille du composant
+ * dans les mêmes unités.
  */
 public interface ChartInteraction {
 
@@ -11,6 +15,11 @@ public interface ChartInteraction {
     int LEFT_BUTTON = 1;
     /** Bouton droit de la souris. */
     int RIGHT_BUTTON = 3;
+
+    /** Caractère transmis à {@link #keyPressed} pour la touche Échap. */
+    char ESCAPE = '\u001b';
+    /** Caractère transmis à {@link #keyPressed} pour la touche Retour arrière. */
+    char BACKSPACE = '\b';
 
     /**
      * Facteurs propres à la boîte à outils : les déplacements de souris et
@@ -42,9 +51,28 @@ public interface ChartInteraction {
      */
     void drag(int button, int dx, int dy, int width, int height, InputScale scale);
 
+    /**
+     * Déplacement de la souris bouton enfoncé, avec sa position (x, y) après
+     * le déplacement. Par défaut, seul le déplacement est utilisé ({@link #drag}).
+     */
+    default void dragTo(int button, int x, int y, int dx, int dy, int width, int height, InputScale scale) {
+        drag(button, dx, dy, width, height, scale);
+    }
+
+    /** Bouton enfoncé en (x, y). Sans effet par défaut. */
+    default void press(int button, int x, int y, int width, int height) {
+    }
+
+    /** Bouton relâché en (x, y) (éventuellement hors du composant). Sans effet par défaut. */
+    default void release(int button, int x, int y, int width, int height) {
+    }
+
     /** Rotation de la molette, dans l'unité de la boîte à outils : amount > 0 vers le haut (zoom avant). */
     void wheel(float amount, InputScale scale);
 
-    /** Touche du clavier (caractère en minuscule) ; sans effet si elle n'est pas gérée. */
+    /**
+     * Touche du clavier (caractère en minuscule, {@link #ESCAPE} ou
+     * {@link #BACKSPACE}) ; sans effet si elle n'est pas gérée.
+     */
     void keyPressed(char key);
 }

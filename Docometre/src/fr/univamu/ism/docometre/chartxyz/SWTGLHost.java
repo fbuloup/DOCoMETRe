@@ -42,12 +42,17 @@ final class SWTGLHost extends GLHost {
                 lastY = e.y;
                 if (e.button == ChartInteraction.LEFT_BUTTON) leftDown = true;
                 if (e.button == ChartInteraction.RIGHT_BUTTON) rightDown = true;
+                Point size = canvas.getSize();
+                interaction.press(e.button, e.x, e.y, size.x, size.y);
             }
 
             @Override
             public void mouseUp(MouseEvent e) {
                 if (e.button == ChartInteraction.LEFT_BUTTON) leftDown = false;
                 if (e.button == ChartInteraction.RIGHT_BUTTON) rightDown = false;
+                // Reçu même hors du composant : SWT capture la souris pendant le glisser
+                Point size = canvas.getSize();
+                interaction.release(e.button, e.x, e.y, size.x, size.y);
             }
         });
 
@@ -59,12 +64,13 @@ final class SWTGLHost extends GLHost {
             int button = leftDown ? ChartInteraction.LEFT_BUTTON : rightDown ? ChartInteraction.RIGHT_BUTTON : 0;
             if (button != 0) {
                 Point size = canvas.getSize();
-                interaction.drag(button, dx, dy, size.x, size.y, ChartInteraction.InputScale.SWT);
+                interaction.dragTo(button, e.x, e.y, dx, dy, size.x, size.y, ChartInteraction.InputScale.SWT);
             }
         });
 
         canvas.addMouseWheelListener(e -> interaction.wheel(e.count, ChartInteraction.InputScale.SWT));
 
+        // Échap et Retour arrière arrivent comme les caractères ESCAPE et BACKSPACE
         canvas.addListener(SWT.KeyDown, e -> interaction.keyPressed(Character.toLowerCase(e.character)));
 
         // Focus clavier dès que la souris entre dans le graphe (utile quand plusieurs
