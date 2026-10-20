@@ -317,10 +317,6 @@ public class XYChartConfiguration extends ChartConfiguration {
 		else rtswtxyChart = RTSWTChartsFactory.createPureSWTXYChart(chartContainer, SWT.DOUBLE_BUFFERED, fontName, fontStyle, fontSize);;
 		rtswtxyChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, hSpan, vSpan));
 		rtswtxyChart.setAutoScale(autoscale);
-		rtswtxyChart.setxMax(xMax);
-		rtswtxyChart.setxMin(xMin);
-		rtswtxyChart.setyMax(yMax);
-		rtswtxyChart.setyMin(yMin);
 		rtswtxyChart.setGridVisibility(true);
 		rtswtxyChart.setLegendVisibility(true);
 		rtswtxyChart.setLegendPosition(SWT.BOTTOM);

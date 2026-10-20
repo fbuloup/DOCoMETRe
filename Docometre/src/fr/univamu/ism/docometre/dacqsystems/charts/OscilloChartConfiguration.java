@@ -325,10 +325,8 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 		
 		rtswtOscilloChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, hSpan, vSpan));
 		rtswtOscilloChart.setShowCurrentValue(displayCurrentValuesChart);
-		rtswtOscilloChart.setAutoScale(autoscale);
 		rtswtOscilloChart.setWindowTimeWidth(timeWidth);
-		rtswtOscilloChart.setyMax(yMax);
-		rtswtOscilloChart.setyMin(yMin);
+		rtswtOscilloChart.setAutoScale(autoscale);
 		rtswtOscilloChart.setGridVisibility(true);
 		rtswtOscilloChart.setLegendVisibility(true);
 		rtswtOscilloChart.setLegendPosition(SWT.BOTTOM);
