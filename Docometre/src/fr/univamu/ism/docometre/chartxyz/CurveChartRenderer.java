@@ -341,4 +341,8 @@ public abstract class CurveChartRenderer<C extends CurveData<C>> extends GLChart
     public void setCurrentValuesVisible(boolean visible) { showCurrentValues = visible; }
     public boolean isCurrentValuesVisible() { return showCurrentValues; }
     public void toggleCurrentValues() { showCurrentValues = !showCurrentValues; }
+
+	public int getCurvesNumber() {
+		return curves.size();
+	}
 }

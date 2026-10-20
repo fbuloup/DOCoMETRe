@@ -190,4 +190,9 @@ public abstract class AbstractGLChart<C extends CurveData<C>, R extends CurveCha
     public IRTSWTSerie createSerie(String serieId, Color color) {
     	throw new UnsupportedOperationException("utiliser addCurve(...)");
     }
+    
+    public int getCurvesNumber() {
+    	return renderer.getCurvesNumber();
+    }
+    
 }
