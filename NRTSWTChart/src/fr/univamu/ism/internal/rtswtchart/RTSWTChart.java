@@ -919,4 +919,17 @@ public abstract class RTSWTChart extends Composite implements ControlListener, I
 		return (GridData) super.getLayoutData();
 	}
 	
+	public void setFixedScales(double yMin, double yMax) {
+		this.yMin = yMin;
+		this.yMax = yMax;
+	}
+	
+
+	public void setFixedScales(double xMin, double xMax, double yMin, double yMax) {
+		this.xMin = xMin;
+		this.xMax = xMax;
+		this.yMin = yMin;
+		this.yMax = yMax;
+	}
+	
 }

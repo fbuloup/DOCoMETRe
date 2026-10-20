@@ -314,11 +314,11 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 		else if(useOpenGL_V2) {
 			String os = Platform.getOS();
 			if (Platform.OS_WIN32.equals(os)) {
-				rtswtOscilloChart = new Chart1D(chartContainer, yMin, yMax, new Curve1DData[0]);
+				rtswtOscilloChart = new Chart1D(chartContainer, timeWidth, yMin, yMax, new Curve1DData[0]);
 			} else if (Platform.OS_LINUX.equals(os)) {
-				rtswtOscilloChart = new Chart1D(chartContainer, yMin, yMax, new Curve1DData[0]);
+				rtswtOscilloChart = new Chart1D(chartContainer, timeWidth, yMin, yMax, new Curve1DData[0]);
 			} else if (Platform.OS_MACOSX.equals(os)) {
-				rtswtOscilloChart = new NewtChart1D(chartContainer, yMin, yMax, new Curve1DData[0]);
+				rtswtOscilloChart = new NewtChart1D(chartContainer, timeWidth, yMin, yMax, new Curve1DData[0]);
 			}
 		}
 		else rtswtOscilloChart = RTSWTChartsFactory.createPureSWTOscilloChart(chartContainer, SWT.DOUBLE_BUFFERED, fontName, fontStyle, fontSize);
@@ -354,7 +354,7 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 			
 			IRTSWTSerie rtswtSerie = null;
 			if(useOpenGL_V2) {
-				rtswtSerie = new Curve1DData(Double.parseDouble(sfString), timeWidth);
+				rtswtSerie = new Curve1DData(Double.parseDouble(sfString));
 				((Curve1DData)rtswtSerie).setName(serieID);
 				((Curve1DData)rtswtSerie).setLineWidth(thickness);
 				((Curve1DData)rtswtSerie).setLineStyle(lineStyle);

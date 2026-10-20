@@ -23,9 +23,7 @@ public class SurfaceData {
     private final float[][][] normals;  // normals[row][col] = {nx, ny, nz}
     private final int rows, cols;
 
-    private final float centerX, centerY, centerZ;
-    private final float minX, maxX, minY, maxY, minZ, maxZ;
-    private final float boundingRadius;
+    private final BoundingBox bounds;
 
     public SurfaceData(Point3D[][] grid) {
         if (grid == null || grid.length < 2 || grid[0].length < 2) {
@@ -35,26 +33,16 @@ public class SurfaceData {
         this.rows = grid.length;
         this.cols = grid[0].length;
 
-        float minXv = Float.MAX_VALUE, minYv = Float.MAX_VALUE, minZv = Float.MAX_VALUE;
-        float maxXv = -Float.MAX_VALUE, maxYv = -Float.MAX_VALUE, maxZv = -Float.MAX_VALUE;
+        float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE, minZ = Float.MAX_VALUE;
+        float maxX = -Float.MAX_VALUE, maxY = -Float.MAX_VALUE, maxZ = -Float.MAX_VALUE;
         for (Point3D[] row : grid) {
             for (Point3D p : row) {
-                minXv = Math.min(minXv, p.x); maxXv = Math.max(maxXv, p.x);
-                minYv = Math.min(minYv, p.y); maxYv = Math.max(maxYv, p.y);
-                minZv = Math.min(minZv, p.z); maxZv = Math.max(maxZv, p.z);
+                minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x);
+                minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y);
+                minZ = Math.min(minZ, p.z); maxZ = Math.max(maxZ, p.z);
             }
         }
-        this.centerX = (minXv + maxXv) / 2f;
-        this.centerY = (minYv + maxYv) / 2f;
-        this.centerZ = (minZv + maxZv) / 2f;
-        this.minX = minXv; this.maxX = maxXv;
-        this.minY = minYv; this.maxY = maxYv;
-        this.minZ = minZv; this.maxZ = maxZv;
-
-        float dx = maxXv - minXv, dy = maxYv - minYv, dz = maxZv - minZv;
-        float diag = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
-        this.boundingRadius = Math.max(diag / 2f, 0.001f);
-
+        this.bounds = new BoundingBox(minX, maxX, minY, maxY, minZ, maxZ);
         this.normals = computeSmoothNormals();
     }
     
@@ -206,14 +194,16 @@ public class SurfaceData {
     public float[] normal(int r, int c) { return normals[r][c]; }
     public int getRows() { return rows; }
     public int getCols() { return cols; }
-    public float getCenterX() { return centerX; }
-    public float getCenterY() { return centerY; }
-    public float getCenterZ() { return centerZ; }
-    public float getMinX() { return minX; }
-    public float getMaxX() { return maxX; }
-    public float getMinY() { return minY; }
-    public float getMaxY() { return maxY; }
-    public float getMinZ() { return minZ; }
-    public float getMaxZ() { return maxZ; }
-    public float getBoundingRadius() { return boundingRadius; }
+    /** Boîte englobante de la grille. */
+    public BoundingBox getBoundingBox() { return bounds; }
+    public float getCenterX() { return bounds.centerX; }
+    public float getCenterY() { return bounds.centerY; }
+    public float getCenterZ() { return bounds.centerZ; }
+    public float getMinX() { return bounds.minX; }
+    public float getMaxX() { return bounds.maxX; }
+    public float getMinY() { return bounds.minY; }
+    public float getMaxY() { return bounds.maxY; }
+    public float getMinZ() { return bounds.minZ; }
+    public float getMaxZ() { return bounds.maxZ; }
+    public float getBoundingRadius() { return bounds.radius; }
 }

@@ -1,4 +1,4 @@
-package fr.univamu.ism.docometre.chartxyz.windows;
+package fr.univamu.ism.docometre.chartxyz;
 
 import org.eclipse.swt.widgets.Control;
 

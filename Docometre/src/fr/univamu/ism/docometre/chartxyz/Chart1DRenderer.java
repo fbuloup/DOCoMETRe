@@ -1,16 +1,6 @@
 package fr.univamu.ism.docometre.chartxyz;
 
 import com.jogamp.opengl.GL2;
-import com.jogamp.opengl.GLAutoDrawable;
-import com.jogamp.opengl.GLEventListener;
-
-import org.eclipse.swt.SWT;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Rendu OpenGL d'un ou plusieurs signaux temps réel y(t) ({@link Curve1DData}),
@@ -25,11 +15,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *     dernier échantillon reçu et glisse avec le temps.</li>
  * </ul>
  *
- * Plusieurs signaux : chacun peut avoir sa propre fréquence d'échantillonnage
- * et sa propre durée de fenêtre. Leurs temps sont comptés à partir de leur
- * premier échantillon respectif (des voies acquises ensemble sont donc
- * alignées). La fenêtre affichée a la durée de la plus longue fenêtre et se
- * termine au dernier échantillon le plus récent, toutes courbes confondues.
+ * Plusieurs signaux : chacun peut avoir sa propre fréquence d'échantillonnage.
+ * La durée de la fenêtre (windowTimeWidth) est celle du graphe : elle est
+ * imposée à toutes ses courbes, dont elle fixe la capacité. Les temps sont
+ * comptés à partir du premier échantillon de chaque courbe (des voies
+ * acquises ensemble sont donc alignées) ; la fenêtre se termine au dernier
+ * échantillon le plus récent, toutes courbes confondues.
  *
  * En mode défilement, l'axe horizontal est le temps, en secondes depuis le
  * premier échantillon. Il couvre toujours windowTimeWidth secondes : tant
@@ -41,12 +32,15 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * zoom et panoramique vertical s'appliquent par-dessus. La touche "pause"
  * fige l'affichage sans interrompre la réception des données.
  *
+ * Commandes clavier propres au 1D : espace, pause / reprise ; M, bascule
+ * balayage / défilement. Le panoramique est uniquement vertical.
+ *
  * Pour garder une bonne précision même après des heures d'acquisition,
  * les positions des sommets sont calculées en double : temps relatif au
  * dernier échantillon en défilement, temps modulo la durée de balayage en
  * mode oscilloscope.
  */
-public class Chart1DRenderer implements GLEventListener {
+public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
 
     /** Mode d'affichage de l'axe du temps. */
     public enum DisplayMode {
@@ -56,325 +50,54 @@ public class Chart1DRenderer implements GLEventListener {
         SCROLL
     }
 
-    private volatile LegendPosition legendPosition = LegendPosition.INSIDE;
-
-    // Échelle verticale fixe {yMin, yMax}, ou null pour une échelle dynamique (ajustée aux données)
-    private volatile double[] fixedScales;
-    private float legendBelowHeight = 0; // hauteur de la légende sous l'axe (pixels), 0 si absente
-
     /** En balayage, fraction de la fenêtre laissée vide juste devant le curseur d'écriture. */
     private static final double SWEEP_GAP = 0.02;
+    private static final float DEFAULT_LINE_WIDTH = 1.5f; // épaisseur des courbes sans épaisseur explicite (pixels)
 
     private volatile DisplayMode displayMode = DisplayMode.SWEEP;
-
-    // Courbes affichées ; la liste peut être modifiée depuis n'importe quel thread
-    private final List<Curve1DData> curves = new CopyOnWriteArrayList<>();
-    private List<Curve1DData> frameCurves = new ArrayList<>(); // courbes figées pour l'image en cours
+    private DisplayMode frameMode = DisplayMode.SWEEP; // mode figé pour l'image en cours
+    private boolean paused = false;
 
     // Bornes communes, recalculées à chaque image
     private float dataMinY = -1f, dataMaxY = 1f;
     private double lastTime = 0;  // instant du dernier échantillon le plus récent (s)
-    private double windowTime = 1; // durée de la plus longue fenêtre (s)
-    private final GLText text = new GLText(); // texte en police du système (graduations, noms d'axes, légende)
-
-    // Polices réglables (voir setScaleFont / setLegendFont)
-    private volatile ChartFont scaleFont = new ChartFont(9, SWT.NORMAL);
-    private volatile ChartFont legendFont = new ChartFont(9, SWT.NORMAL);
-    private volatile boolean showLegend = true; // légende affichée (si au moins une courbe a un nom)
-    private final FpsCounter fpsCounter = new FpsCounter(); // cadence d'affichage réelle
-    private volatile boolean showFps = false;
-    private final Decimation decimation = new Decimation(); // réduction du nombre de points envoyés à OpenGL
-    private volatile boolean decimationEnabled = true;
-    private int drawnPoints;          // points envoyés à OpenGL pendant l'image en cours
-    private int displayedPoints;      // valeur affichée avec la cadence (mise à jour en même temps qu'elle)
-    private double displayedFps = -1;
-    private final CurrentValues currentValues = new CurrentValues(); // textes des valeurs courantes
-    private volatile boolean showCurrentValues = false;
-    private final DashedLines dashedLines = new DashedLines(); // tirets ancrés sur les données
-
-    private static final int TARGET_TICK_COUNT = 6;     // nombre approximatif de graduations par axe
-    private static final float DEFAULT_LINE_WIDTH = 1.5f; // épaisseur des courbes sans épaisseur explicite (pixels)
-    private static final float DATA_MARGIN = 0.05f;     // espace entre courbe et cadre (fraction de l'étendue)
-
-    // Vue verticale : zoom (1 = ajustement automatique) et panoramique (en fraction de l'étendue non zoomée)
-    private float zoomY = 1f;
-    private float panY = 0f;
-
-    private boolean showAxes = false;
-    private boolean showPoints = false;
-    private boolean showGrid = true;
-    private boolean showLabel = true;
-    private boolean paused = false;
-
-    // Marges autour de la zone de tracé (pixels), adaptées à la taille des polices
-    private int marginLeft = 75, marginRight = 25, marginTop = 25, marginBottom = 35;
-    private float yLabelWidth = 0; // largeur de la plus longue graduation verticale (image précédente)
-    private float xLabelWidth = 0; // largeur de la plus longue graduation horizontale (image précédente)
-
-    // Taille de la zone d'affichage et de la zone de tracé (pixels)
-    private int width = 1, height = 1;
-    private int plotWidth = 1, plotHeight = 1;
-
-    // Fenêtre visible : temps absolus (s) et valeurs, recalculés à chaque image
-    private double viewStartTime, viewEndTime;
-    private float viewMinY, viewMaxY;
-
-    public Chart1DRenderer(Curve1DData... curves) {
-        this.curves.addAll(Arrays.asList(curves));
-    }
-
-    /** Ajoute une courbe au graphe (utilisable pendant l'affichage, depuis n'importe quel thread). */
-    public void addCurve(Curve1DData curve) { curves.add(curve); }
-    /** Retire une courbe du graphe. */
-    public void removeCurve(Curve1DData curve) { curves.remove(curve); }
-    /** Courbes actuellement affichées. */
-    public List<Curve1DData> getCurves() { return new ArrayList<>(curves); }
-
-    @Override
-    public void init(GLAutoDrawable drawable) {
-        GL2 gl = drawable.getGL().getGL2();
-        gl.glClearColor(0.10f, 0.11f, 0.13f, 1f);
-        gl.glDisable(GL2.GL_DEPTH_TEST);
-        gl.glEnable(GL2.GL_LINE_SMOOTH);
-        gl.glEnable(GL2.GL_BLEND);
-        gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);
-        gl.glHint(GL2.GL_LINE_SMOOTH_HINT, GL2.GL_NICEST);
-        gl.glPointSize(4f);
-    }
-
-    @Override
-    public void dispose(GLAutoDrawable drawable) {
-        text.dispose(drawable.getGL().getGL2()); // textures des textes
-    }
-
-    @Override
-    public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
-        this.width = Math.max(width, 1);
-        this.height = Math.max(height, 1);
-        text.setPixelScale(GLText.surfaceScale(drawable));
-        // Viewport et projection sont appliqués dans display()
-    }
-
-    @Override
-    public void display(GLAutoDrawable drawable) {
-        fpsCounter.frame();
-        drawnPoints = 0;
-        GL2 gl = drawable.getGL().getGL2();
-        gl.glViewport(0, 0, width, height);
-        gl.glClear(GL2.GL_COLOR_BUFFER_BIT);
-
-        // Fige les données reçues depuis l'image précédente (sauf en pause : l'affichage reste figé)
-        if (!paused) {
-            frameCurves = new ArrayList<>(curves);
-            for (Curve1DData curve : frameCurves) curve.takeSnapshot();
-            computeBounds();
-        }
-
-        computeMargins();
-        plotWidth = Math.max(1, width - marginLeft - marginRight);
-        plotHeight = Math.max(1, height - marginBottom - marginTop);
-        computeView();
-
-        double stepT = niceStep((viewEndTime - viewStartTime) / TARGET_TICK_COUNT);
-        double stepY = niceStep((viewMaxY - viewMinY) / TARGET_TICK_COUNT);
-
-        // Origine des abscisses OpenGL : le dernier échantillon en défilement (précision des float),
-        // le début du balayage en mode oscilloscope (les abscisses vont alors de 0 à windowTime)
-        DisplayMode mode = displayMode;
-        double origin = (mode == DisplayMode.SCROLL) ? lastTime : 0;
-
-        // --- Zone de tracé : x en temps relatif à origin, y en unités des données ---
-        gl.glViewport(marginLeft, marginBottom, plotWidth, plotHeight);
-        gl.glEnable(GL2.GL_SCISSOR_TEST);
-        gl.glScissor(marginLeft, marginBottom, plotWidth, plotHeight);
-        gl.glMatrixMode(GL2.GL_PROJECTION);
-        gl.glLoadIdentity();
-        gl.glOrtho(viewStartTime - origin, viewEndTime - origin, viewMinY, viewMaxY, -1, 1);
-        gl.glMatrixMode(GL2.GL_MODELVIEW);
-        gl.glLoadIdentity();
-
-        if (showGrid) drawGrid(gl, stepT, stepY, origin);
-        if (showAxes) drawZeroLine(gl, origin);
-        if (mode == DisplayMode.SWEEP) {
-            drawSweepCursor(gl);
-            drawCurvesSweep(gl, showPoints);
-        } else {
-            drawCurves(gl);
-            if (showPoints) drawPoints(gl);
-        }
-
-        gl.glDisable(GL2.GL_SCISSOR_TEST);
-
-        // --- Habillage (cadre, graduations), en pixels sur toute la surface ---
-        gl.glViewport(0, 0, width, height);
-        gl.glMatrixMode(GL2.GL_PROJECTION);
-        gl.glLoadIdentity();
-        gl.glOrtho(0, width, 0, height, -1, 1);
-        gl.glMatrixMode(GL2.GL_MODELVIEW);
-        gl.glLoadIdentity();
-
-        drawFrame(gl);
-        if (showLabel) drawLabels(gl, stepT, stepY);
-        drawLegend(gl);
-        drawFps(gl);
-        float valuesHeight = drawCurrentValues(gl);
-        if (paused) {
-            // Sous les valeurs courantes si elles sont affichées
-            gl.glColor3f(1f, 0.75f, 0.2f);
-            String label = "PAUSE";
-            text.draw(gl, label, scaleFont, marginLeft + plotWidth - text.width(label, scaleFont) - 6,
-                      marginBottom + plotHeight - text.lineHeight(scaleFont) - 4 - (valuesHeight > 0 ? valuesHeight + 4 : 0));
-        }
-    }
+    private double windowTime = 1; // durée de la fenêtre pour l'image en cours (s)
 
     /**
-     * Calcule la fenêtre visible : [0, windowTime] en balayage, windowTime
-     * secondes se terminant au dernier échantillon en défilement ; y ajusté
-     * aux données, ou égal à l'échelle fixe si elle est définie.
+     * @param windowTimeWidth durée de la fenêtre affichée, en secondes, imposée à toutes les courbes
      */
-    private void computeView() {
-        if (displayMode == DisplayMode.SWEEP) {
-            viewStartTime = 0;
-            viewEndTime = windowTime;
-        } else {
-            viewEndTime = Math.max(windowTime, lastTime);
-            viewStartTime = viewEndTime - windowTime;
-        }
-
-        double[] fixed = fixedScales;
-        float halfY = (fixed != null) ? (float) ((fixed[1] - fixed[0]) / 2) : halfExtent(dataMinY, dataMaxY);
-        float baseCenterY = (fixed != null) ? (float) ((fixed[0] + fixed[1]) / 2) : (dataMinY + dataMaxY) / 2f;
-        float centerY = baseCenterY + panY * 2f * halfY;
-        halfY /= zoomY;
-        viewMinY = centerY - halfY;
-        viewMaxY = centerY + halfY;
-    }
-
-    /** Demi-étendue (avec marge) d'un axe ; gère le cas dégénéré où toutes les valeurs sont égales. */
-    private static float halfExtent(float min, float max) {
-        float range = max - min;
-        if (range > 0f) return range / 2f * (1f + 2f * DATA_MARGIN);
-        float center = Math.abs((min + max) / 2f);
-        return (center > 0f) ? center * 0.1f : 1f;
+    public Chart1DRenderer(double windowTimeWidth, Curve1DData... curves) {
+        super(4f, curves);
+        setWindowTimeWidth(windowTimeWidth);
     }
 
     /**
-     * Calcule les marges autour de la zone de tracé à partir des polices : à
-     * gauche les graduations verticales (largeur mesurée à l'image précédente),
-     * en bas les graduations horizontales et, le cas échéant, la légende, en
-     * haut et à droite juste de quoi ne pas couper les graduations placées aux
-     * bords. La marge de gauche ne diminue que nettement, pour éviter que la
-     * zone de tracé ne tremble quand la longueur des graduations varie.
-     */
-    private void computeMargins() {
-        legendBelowHeight = (showLegend && legendPosition == LegendPosition.BELOW)
-                ? CurveStyles.legendRowsHeight(text, legendFont, frameCurves, width - 20) : 0;
-        float legendSpace = (legendBelowHeight > 0) ? legendBelowHeight + 6 : 0;
-        if (!showLabel) {
-            marginLeft = marginRight = marginTop = 15;
-            marginBottom = (int) Math.ceil(15 + legendSpace);
-            return;
-        }
-        float tickHeight = text.lineHeight(scaleFont);
-        int neededLeft = (int) Math.ceil(Math.max(yLabelWidth, text.width("-0.00", scaleFont)) + 12);
-        if (neededLeft > marginLeft || neededLeft < marginLeft * 0.8f) marginLeft = neededLeft;
-        marginBottom = (int) Math.ceil(tickHeight + 10 + legendSpace);
-        marginTop = (int) Math.max(10, Math.ceil(tickHeight / 2f + 4));
-        marginRight = (int) Math.max(10, Math.ceil(xLabelWidth / 2f + 4));
-    }
-
-    /**
-     * Valeurs courantes (la dernière valeur de chaque courbe), en haut à droite de la zone de tracé, dans la couleur de chaque courbe et la police
-     * des échelles du graphe (coordonnées en pixels).
+     * Graphe dont la fenêtre est la plus longue des fenêtres de ses courbes,
+     * qui gardent chacune la leur (comportement d'origine).
      *
-     * @return la hauteur occupée en pixels (0 si rien n'est affiché)
+     * @deprecated la fenêtre appartient au graphe : utiliser {@link #Chart1DRenderer(double, Curve1DData...)}
      */
-    private float drawCurrentValues(GL2 gl) {
-        if (!showCurrentValues) return 0;
-        List<Curve1DData> curves = frameCurves;
-        String[] labels = currentValues.update(text, scaleFont, curves, k -> {
-            Curve1DData c = curves.get(k);
-            int n = c.getSnapshotCount();
-            return (n == 0) ? null : CurrentValues.format(c.getSnapshotValues()[n - 1]);
-        });
-        return CurveStyles.drawCurrentValues(gl, text, scaleFont, curves, labels, marginLeft + plotWidth - 6, marginBottom + plotHeight - 6);
+    @Deprecated
+    public Chart1DRenderer(Curve1DData... curves) {
+        super(4f, curves);
     }
 
-    /** Cadence d'affichage réelle et nombre de points tracés, en bas à droite, dans la police des échelles (coordonnées en pixels). */
-    private void drawFps(GL2 gl) {
-        if (!showFps) return;
-        double fps = fpsCounter.getFps();
-        if (fps != displayedFps) { // le nombre de points est mis à jour en même temps que la cadence (2 fois par seconde)
-            displayedFps = fps;
-            displayedPoints = drawnPoints;
-        }
-        String label = String.format(java.util.Locale.US, "%.1f i/s \u00b7 %d pts", fps, displayedPoints);
-        gl.glColor3f(1f, 0.75f, 0.2f);
-        text.draw(gl, label, scaleFont, marginLeft + plotWidth - text.width(label, scaleFont) - 6, marginBottom + 4);
+    /** Fige les données reçues depuis l'image précédente (sauf en pause : l'affichage reste figé). */
+    @Override
+    protected void updateData() {
+        frameMode = displayMode;
+        if (paused) return;
+        snapshotCurves();
+        computeBounds();
     }
 
-    /** Légende : dans le graphe en haut à gauche, ou en ligne(s) sous l'axe des abscisses. */
-    private void drawLegend(GL2 gl) {
-        if (!showLegend) return;
-        if (legendPosition == LegendPosition.BELOW) {
-            // Tout en bas, sous les graduations de l'axe des abscisses, centrée sous la zone de tracé
-            CurveStyles.drawLegendRows(gl, text, legendFont, frameCurves, marginLeft + plotWidth / 2f,
-                                       legendBelowHeight + 4, width - 20);
-        } else {
-            CurveStyles.drawLegend(gl, text, legendFont, frameCurves, marginLeft + 12, marginBottom + plotHeight - 6);
-        }
-    }
-
-    /** Pas de graduation "rond" (1, 2 ou 5 x 10^n) le plus proche de rawStep. */
-    private static double niceStep(double rawStep) {
-        if (!(rawStep > 0)) return 1;
-        double magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
-        double normalized = rawStep / magnitude;
-        double nice = (normalized < 1.5) ? 1 : (normalized < 3.5) ? 2 : (normalized < 7.5) ? 5 : 10;
-        return nice * magnitude;
-    }
-
-    /** Valeurs des graduations multiples de step comprises dans [min, max] (au plus 100). */
-    private static double[] ticks(double min, double max, double step) {
-        long first = (long) Math.ceil(min / step);
-        int n = (int) Math.max(0, Math.min(100, Math.floor(max / step) - first + 1));
-        double[] values = new double[n];
-        for (int i = 0; i < n; i++) values[i] = (first + i) * step;
-        return values;
-    }
-
-    private void drawGrid(GL2 gl, double stepT, double stepY, double origin) {
-        double startRel = viewStartTime - origin, endRel = viewEndTime - origin;
-        gl.glColor4f(0.4f, 0.4f, 0.45f, 0.3f);
-        gl.glLineWidth(1f);
-        gl.glBegin(GL2.GL_LINES);
-        for (double t : ticks(viewStartTime, viewEndTime, stepT)) {
-            gl.glVertex2d(t - origin, viewMinY);
-            gl.glVertex2d(t - origin, viewMaxY);
-        }
-        for (double y : ticks(viewMinY, viewMaxY, stepY)) {
-            gl.glVertex2d(startRel, y);
-            gl.glVertex2d(endRel, y);
-        }
-        gl.glEnd();
-    }
-
-    /** Droite y = 0, si elle est visible (abscisses relatives à origin). */
-    private void drawZeroLine(GL2 gl, double origin) {
-        gl.glColor3f(0.9f, 0.2f, 0.2f);
-        gl.glLineWidth(1.5f);
-        gl.glBegin(GL2.GL_LINES);
-        gl.glVertex2d(viewStartTime - origin, 0);
-        gl.glVertex2d(viewEndTime - origin, 0);
-        gl.glEnd();
-    }
-
-    /** Bornes en y de l'ensemble des courbes non vides, instant du dernier échantillon et durée de fenêtre communs. */
+    /** Bornes en y de l'ensemble des courbes non vides, instant du dernier échantillon et durée de la fenêtre. */
     private void computeBounds() {
         float minY = Float.MAX_VALUE, maxY = -Float.MAX_VALUE;
-        double last = Double.NEGATIVE_INFINITY, window = 0;
+        double imposed = getWindowTimeWidth();
+        double last = Double.NEGATIVE_INFINITY, window = imposed;
         for (Curve1DData curve : frameCurves) {
-            window = Math.max(window, curve.getWindowTimeWidth());
+            if (imposed == 0) window = Math.max(window, curve.getWindowTimeWidth());
             if (curve.getSnapshotCount() == 0) continue;
             last = Math.max(last, curve.getLastSampleTime());
             minY = Math.min(minY, curve.getMinY());
@@ -391,11 +114,66 @@ public class Chart1DRenderer implements GLEventListener {
     }
 
     /**
+     * Calcule la fenêtre visible : [0, windowTime] en balayage, windowTime
+     * secondes se terminant au dernier échantillon en défilement ; y ajusté
+     * aux données, ou égal à l'échelle fixe si elle est définie.
+     */
+    @Override
+    protected void computeView() {
+        if (frameMode == DisplayMode.SWEEP) {
+            viewMinX = 0;
+            viewMaxX = windowTime;
+        } else {
+            viewMaxX = Math.max(windowTime, lastTime);
+            viewMinX = viewMaxX - windowTime;
+        }
+
+        double[] fixed = getFixedScaleBounds();
+        float halfY = (fixed != null) ? (float) ((fixed[1] - fixed[0]) / 2) : halfExtent(dataMinY, dataMaxY);
+        float baseCenterY = (fixed != null) ? (float) ((fixed[0] + fixed[1]) / 2) : (dataMinY + dataMaxY) / 2f;
+        float centerY = baseCenterY + panY * 2f * halfY;
+        halfY /= zoom;
+        viewMinY = centerY - halfY;
+        viewMaxY = centerY + halfY;
+    }
+
+    /**
+     * Origine des abscisses OpenGL : le dernier échantillon en défilement
+     * (précision des float), le début du balayage en mode oscilloscope (les
+     * abscisses vont alors de 0 à windowTime).
+     */
+    @Override
+    protected double xOrigin() {
+        return (frameMode == DisplayMode.SCROLL) ? lastTime : 0;
+    }
+
+    @Override
+    protected void drawCurves(GL2 gl, double origin) {
+        if (frameMode == DisplayMode.SWEEP) {
+            drawSweepCursor(gl);
+            drawCurvesSweep(gl, showPoints);
+        } else {
+            drawCurvesScroll(gl);
+            if (showPoints) drawPointsScroll(gl);
+        }
+    }
+
+    /** "PAUSE", sous les valeurs courantes si elles sont affichées. */
+    @Override
+    protected void drawStatus(GL2 gl, float valuesHeight) {
+        if (!paused) return;
+        gl.glColor3f(1f, 0.75f, 0.2f);
+        String label = "PAUSE";
+        text.draw(gl, label, scaleFont, marginLeft + plotWidth - text.width(label, scaleFont) - 6,
+                  marginBottom + plotHeight - text.lineHeight(scaleFont) - 4 - (valuesHeight > 0 ? valuesHeight + 4 : 0));
+    }
+
+    /**
      * Dessine les courbes, chacune de sa couleur (explicite ou de la palette).
      * Les abscisses sont en temps relatif à lastTime (le dernier échantillon
      * le plus récent), ce qui préserve la précision des float.
      */
-    private void drawCurves(GL2 gl) {
+    private void drawCurvesScroll(GL2 gl) {
         for (int k = 0; k < frameCurves.size(); k++) {
             Curve1DData curve = frameCurves.get(k);
             float width = CurveStyles.lineWidthOf(curve, DEFAULT_LINE_WIDTH);
@@ -410,9 +188,9 @@ public class Chart1DRenderer implements GLEventListener {
                 drawDashed(gl, curve, width, values, n, 0, null,
                         (i, f) -> gl.glVertex2f(offset - (n - i - f) * dt, values[i - 1] + f * (values[i] - values[i - 1])));
                 drawnPoints += n;
-            } else if (useDecimation(n)) {
+            } else if (useDecimation(n, 2 * plotWidth)) {
                 // Réduction M4 : colonne de pixels de chaque échantillon, à partir de son abscisse tracée
-                double left = viewStartTime - lastTime, pixelsPerSecond = plotWidth / windowTime;
+                double left = viewMinX - lastTime, pixelsPerSecond = plotWidth / windowTime;
                 decimation.m4(0, n, values, i -> (long) Math.floor(((offset - (n - 1 - i) * dt) - left) * pixelsPerSecond));
                 int[] kept = decimation.indices();
                 int count = decimation.count();
@@ -434,11 +212,6 @@ public class Chart1DRenderer implements GLEventListener {
         }
     }
 
-    /** Réduction appliquée si elle est activée, si les points ne sont pas affichés et s'il y a en moyenne au moins 2 échantillons par colonne de pixels. */
-    private boolean useDecimation(int sampleCount) {
-        return decimationEnabled && !showPoints && sampleCount > 2 * plotWidth;
-    }
-
     /**
      * Tracé en tirets d'un signal (motif ancré sur les données, voir
      * {@link DashedLines}). La longueur à l'écran d'un segment ne dépend que
@@ -447,9 +220,9 @@ public class Chart1DRenderer implements GLEventListener {
     private void drawDashed(GL2 gl, Curve1DData curve, float width, float[] values, int n, int from,
                             DashedLines.SegmentFilter filter, DashedLines.Emitter emitter) {
         double scaleX = plotWidth / windowTime;                         // pixels par seconde
-        double scaleY = plotHeight / (double) (viewMaxY - viewMinY);   // pixels par unité
+        double scaleY = plotHeight / (viewMaxY - viewMinY);          // pixels par unité
         double dx = scaleX / curve.getSampleFrequency();                // pixels entre deux échantillons
-        dashedLines.draw(gl, curve, width, curve.getCapacity(), curve.getSnapshotTotalSamples(), n, from, scaleX, scaleY,
+        dashedLines.draw(gl, curve, width, curve.getSnapshotCapacity(), curve.getSnapshotTotalSamples(), n, from, scaleX, scaleY,
                 i -> Math.hypot(dx, (values[i] - values[i - 1]) * scaleY), filter, emitter);
     }
 
@@ -489,7 +262,7 @@ public class Chart1DRenderer implements GLEventListener {
                 // Réduction M4 éventuelle : clé = (balayage, colonne de pixels dans le balayage)
                 int[] kept = null;
                 int count = n - first;
-                if (useDecimation(count)) {
+                if (useDecimation(count, 2 * plotWidth)) {
                     double pixelsPerSecond = plotWidth / windowTime;
                     decimation.m4(first, n, values, i -> {
                         double t = curveLast - (n - 1 - i) / frequency;
@@ -544,7 +317,7 @@ public class Chart1DRenderer implements GLEventListener {
         gl.glEnd();
     }
 
-    private void drawPoints(GL2 gl) {
+    private void drawPointsScroll(GL2 gl) {
         gl.glColor3f(1f, 1f, 1f);
         gl.glBegin(GL2.GL_POINTS);
         for (Curve1DData curve : frameCurves) {
@@ -559,140 +332,34 @@ public class Chart1DRenderer implements GLEventListener {
         gl.glEnd();
     }
 
-    /** Cadre autour de la zone de tracé (coordonnées en pixels). */
-    private void drawFrame(GL2 gl) {
-        float left = marginLeft, bottom = marginBottom;
-        float right = marginLeft + plotWidth, top = marginBottom + plotHeight;
-        gl.glColor4f(0.6f, 0.6f, 0.65f, 0.8f);
-        gl.glLineWidth(1f);
-        gl.glBegin(GL2.GL_LINE_LOOP);
-        gl.glVertex2f(left, bottom);
-        gl.glVertex2f(right, bottom);
-        gl.glVertex2f(right, top);
-        gl.glVertex2f(left, top);
-        gl.glEnd();
-    }
-
-    /**
-     * Graduations (sous l'axe du temps et à gauche de l'axe vertical) et
-     * dans la police des échelles (coordonnées en pixels).
-     */
-    private void drawLabels(GL2 gl, double stepT, double stepY) {
-        gl.glColor3f(0.85f, 0.85f, 0.9f);
-        ChartFont font = scaleFont;
-        float lineHeight = text.lineHeight(font);
-
-        float widestX = 0;
-        for (double t : ticks(viewStartTime, viewEndTime, stepT)) {
-            String label = formatTick(t, stepT);
-            float px = marginLeft + (float) ((t - viewStartTime) / (viewEndTime - viewStartTime)) * plotWidth;
-            float labelWidth = text.width(label, font);
-            widestX = Math.max(widestX, labelWidth);
-            text.draw(gl, label, font, px - labelWidth / 2f, marginBottom - 4 - lineHeight);
+    @Override
+    public void keyPressed(char key) {
+        switch (key) {
+            case ' ': togglePause(); break;
+            case 'm': toggleDisplayMode(); break;
+            default: super.keyPressed(key); break;
         }
-        xLabelWidth = widestX;
-        float widest = 0;
-        for (double y : ticks(viewMinY, viewMaxY, stepY)) {
-            String label = formatTick(y, stepY);
-            float labelWidth = text.width(label, font);
-            widest = Math.max(widest, labelWidth);
-            float py = marginBottom + (float) ((y - viewMinY) / (viewMaxY - viewMinY)) * plotHeight;
-            text.draw(gl, label, font, marginLeft - 6 - labelWidth, py - lineHeight / 2f);
-        }
-        yLabelWidth = widest; // sert au calcul de la marge de gauche à l'image suivante
     }
-
-    /** Formate une graduation avec juste assez de décimales pour le pas utilisé, en évitant "-0". */
-    private static String formatTick(double value, double step) {
-        if (Math.abs(value) < step * 1e-6) value = 0;
-        if (step >= 1e6 || step < 1e-4) return String.format(Locale.US, "%.3g", value);
-        int decimals = (int) Math.max(0, -Math.floor(Math.log10(step)));
-        return String.format(Locale.US, "%." + decimals + "f", value);
-    }
-
-    // --- Accesseurs utilisés par CameraController ---
 
     /**
      * Panoramique vertical (l'axe du temps suit toujours le dernier
      * échantillon). dy est un déplacement exprimé en fraction de la hauteur
      * du composant ; dx est ignoré. Le contenu suit la souris.
      */
+    @Override
     public void pan(float dx, float dy) {
-        panY += dy * height / plotHeight / zoomY;
+        super.pan(0f, dy);
     }
 
-    /** Zoom vertical multiplicatif : steps > 0 rapproche, steps < 0 éloigne. */
-    public void zoom(float steps) {
-        zoomY *= (float) Math.pow(1.15, steps);
-        zoomY = Math.max(1e-3f, Math.min(1e4f, zoomY));
-    }
-
-    public void resetView() {
-        zoomY = 1f;
-        panY = 0f;
-    }
-
-    /**
-     * Police des graduations des échelles.
-     */
-    public void setScaleFont(ChartFont font) { if (font != null) scaleFont = font; }
-    public ChartFont getScaleFont() { return scaleFont; }
-    /** Police de la légende. */
-    public void setLegendFont(ChartFont font) { if (font != null) legendFont = font; }
     /**
      * Échelle verticale fixe : l'axe vertical va exactement de yMin à yMax,
      * quelles que soient les valeurs des courbes (ce qui dépasse est coupé
      * par le cadre). Zoom et panoramique restent possibles ; R revient à
      * cette échelle.
      */
-    public void setFixedScales(double yMin, double yMax) { fixedScales = CurveStyles.checkScales(yMin, yMax); }
-    /** Échelle verticale dynamique, ajustée en continu aux valeurs des courbes (par défaut). */
-    public void setDynamicScales() { fixedScales = null; }
-    /** Vrai si l'échelle verticale est fixe. */
-    public boolean hasFixedScales() { return fixedScales != null; }
+    public void setFixedScales(double yMin, double yMax) { setFixedScaleBounds(yMin, yMax); }
 
-    /** Position de la légende : dans le graphe (INSIDE, par défaut) ou sous l'axe des abscisses (BELOW). */
-    public void setLegendPosition(LegendPosition position) { if (position != null) legendPosition = position; }
-    public LegendPosition getLegendPosition() { return legendPosition; }
-    public ChartFont getLegendFont() { return legendFont; }
-
-    public void toggleAxes() { showAxes = !showAxes; }
-    public void togglePoints() { showPoints = !showPoints; }
-    public void toggleGrid() { showGrid = !showGrid; }
-    public void toggleLabel() { showLabel = !showLabel; }
-
-    /** Affiche ou masque la légende (prise en compte à l'image suivante). */
-    public void setLegendVisible(boolean visible) { showLegend = visible; }
-    public boolean isLegendVisible() { return showLegend; }
-    /** Bascule l'affichage de la légende (touche N). */
-    public void toggleLegend() { showLegend = !showLegend; }
-
-    /** Cadence d'affichage réelle mesurée, en images par seconde. */
-    public double getFps() { return fpsCounter.getFps(); }
-    /** Affiche ou masque la cadence d'affichage dans le graphe (touche F). */
-    public void setFpsVisible(boolean visible) { showFps = visible; }
-    public boolean isFpsVisible() { return showFps; }
-    public void toggleFps() { showFps = !showFps; }
-
-    /**
-     * Active ou désactive la réduction du nombre de points envoyés à OpenGL
-     * (activée par défaut, touche D) : réduction "M4" par colonne de pixels
-     * (premier, minimum, maximum et dernier échantillon de chaque colonne),
-     * appliquée dès qu'il y a en moyenne au moins 2 échantillons par colonne.
-     * Le dessin à l'écran est inchangé ; les courbes en tirets et
-     * l'affichage des points (touche P) ne sont pas réduits.
-     */
-    public void setDecimationEnabled(boolean enabled) { decimationEnabled = enabled; }
-    public boolean isDecimationEnabled() { return decimationEnabled; }
-    public void toggleDecimation() { decimationEnabled = !decimationEnabled; }
-    /** Nombre de points envoyés à OpenGL pour tracer les courbes lors de la dernière image. */
-    public int getDrawnPointCount() { return drawnPoints; }
-
-    /** Affiche ou masque les valeurs courantes des courbes, en haut à droite (touche V). */
-    public void setCurrentValuesVisible(boolean visible) { showCurrentValues = visible; }
-    public boolean isCurrentValuesVisible() { return showCurrentValues; }
-    public void toggleCurrentValues() { showCurrentValues = !showCurrentValues; }
-    public void setDisplayMode(DisplayMode displayMode) { this.displayMode = displayMode; }
+    public void setDisplayMode(DisplayMode displayMode) { if (displayMode != null) this.displayMode = displayMode; }
     public DisplayMode getDisplayMode() { return displayMode; }
     /** Bascule entre balayage (oscilloscope) et défilement. */
     public void toggleDisplayMode() {
@@ -701,8 +368,4 @@ public class Chart1DRenderer implements GLEventListener {
 
     /** Fige / relance l'affichage ; les données continuent d'être reçues pendant la pause. */
     public void togglePause() { paused = !paused; }
-
-	public void setGridVisibility(boolean value) {
-		showGrid = value;
-	}
 }

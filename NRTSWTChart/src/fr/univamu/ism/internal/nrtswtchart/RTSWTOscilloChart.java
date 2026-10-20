@@ -223,8 +223,7 @@ public class RTSWTOscilloChart extends ControlAdapter implements PaintListener, 
 		gc.setFont(chart.getFont());
 		leftAxisWidth = gc.textExtent("-9." + decimalFormatter.getDecimalFormatSymbols().getDecimalSeparator() + "9E-99").x + 10;
 		FontMetrics fontMetrics = gc.getFontMetrics();
-//		showCurrentValuesFontHeight = fontMetrics.getAscent();
-		bottomAxisHeight = fontMetrics.getAscent() + fontMetrics.getDescent();
+		bottomAxisHeight = fontMetrics.getHeight();
 		legendHeight = bottomAxisHeight;
 		fontHeight = bottomAxisHeight;
 		
@@ -339,14 +338,6 @@ public class RTSWTOscilloChart extends ControlAdapter implements PaintListener, 
 
 	private double getyMax() {
 		return yMax;
-	}
-
-	public void setyMin(double yMin) {
-		this.yMin = yMin;
-	}
-
-	public void setyMax(double yMax) {
-		this.yMax = yMax;
 	}
 
 	protected int getBottomAxisHeight() {
@@ -648,8 +639,7 @@ public class RTSWTOscilloChart extends ControlAdapter implements PaintListener, 
 					newYMin = newYMin - Double.MIN_VALUE;
 					newYMax = newYMax + Double.MIN_VALUE;
 				}
-				setyMax(newYMax);
-				setyMin(newYMin);
+				setFixedScales(newYMin, newYMax);
 				redrawGrid = true;
 			}
 		}
@@ -713,6 +703,12 @@ public class RTSWTOscilloChart extends ControlAdapter implements PaintListener, 
 	@Override
 	public void dispose() {
 		getChart().getParent().dispose();
+	}
+
+	@Override
+	public void setFixedScales(double yMin, double yMax) {
+			this.yMin = yMin;
+			this.yMax = yMax;
 	}
 
 }

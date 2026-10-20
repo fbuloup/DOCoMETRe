@@ -1,5 +1,6 @@
 package fr.univamu.ism.docometre.chartxyz;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.jogamp.opengl.GL2;
@@ -65,23 +66,32 @@ public final class CurveStyles {
     }
 
     /**
+     * Couleur d'un sommet selon sa position t le long de la courbe (0 = plus
+     * ancien, 1 = plus récent) : dégradé bleu -> orange si gradient, sinon
+     * couleur de la courbe s'estompant vers les échantillons anciens.
+     */
+    public static void vertexColor(GL2 gl, boolean gradient, float[] color, float t) {
+        if (gradient) {
+            gl.glColor3f(0.2f + 0.8f * t, 0.55f + 0.25f * (1 - t), 1.0f - 0.8f * t);
+        } else {
+            gl.glColor4f(color[0], color[1], color[2], 0.25f + 0.75f * t);
+        }
+    }
+
+    /**
      * Dessine la légende (un trait de couleur suivi du nom, une ligne par
      * courbe), dans la police donnée, dont le coin supérieur gauche est en (x, yTop). La projection
      * courante doit être en pixels. Rien n'est dessiné si aucune courbe n'a
      * de nom ; les courbes sans nom apparaissent alors comme "courbe n".
      */
     public static void drawLegend(GL2 gl, GLText text, ChartFont font, List<? extends CurveAppearance> curves, float x, float yTop) {
-        boolean anyName = false;
-        for (CurveAppearance curve : curves) anyName |= curve.getName() != null;
-        if (!anyName) return;
+        if (!hasAnyName(curves)) return;
         float textWidth = 0;
         for (int i = 0; i < curves.size(); i++) {
             textWidth = Math.max(textWidth, text.width(labelOf(curves.get(i), i), font));
         }
 
-        // Hauteur de ligne : celle de la police, ou l'épaisseur de trait si elle est plus grande
-        float lineHeight = text.lineHeight(font) + 2;
-        for (CurveAppearance curve : curves) lineHeight = Math.max(lineHeight, legendLineWidth(curve) + 6);
+        float lineHeight = legendRowHeight(text, font, curves);
 
         // Fond semi-transparent pour rester lisible par-dessus les courbes
         float boxWidth = LEGEND_SWATCH_WIDTH + 6 + textWidth + 12;
@@ -134,10 +144,8 @@ public final class CurveStyles {
 
     /** Répartit les entrées en lignes de largeur au plus maxWidth : {début, fin exclue, largeur} par ligne. */
     private static List<float[]> layoutRows(GLText text, ChartFont font, List<? extends CurveAppearance> curves, float maxWidth) {
-        List<float[]> rows = new java.util.ArrayList<>();
-        boolean anyName = false;
-        for (CurveAppearance curve : curves) anyName |= curve.getName() != null;
-        if (!anyName) return rows;
+        List<float[]> rows = new ArrayList<>();
+        if (!hasAnyName(curves)) return rows;
         int start = 0;
         float rowWidth = 0;
         for (int i = 0; i < curves.size(); i++) {
@@ -153,6 +161,15 @@ public final class CurveStyles {
         return rows;
     }
 
+    /** La légende n'est dessinée que si au moins une courbe a un nom. */
+    private static boolean hasAnyName(List<? extends CurveAppearance> curves) {
+        for (CurveAppearance curve : curves) {
+            if (curve.getName() != null) return true;
+        }
+        return false;
+    }
+
+    /** Hauteur d'une ligne de légende : celle de la police, ou l'épaisseur de trait si elle est plus grande. */
     private static float legendRowHeight(GLText text, ChartFont font, List<? extends CurveAppearance> curves) {
         float height = text.lineHeight(font) + 2;
         for (CurveAppearance curve : curves) height = Math.max(height, legendLineWidth(curve) + 6);

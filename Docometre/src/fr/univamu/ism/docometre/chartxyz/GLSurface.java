@@ -1,0 +1,43 @@
+package fr.univamu.ism.docometre.chartxyz;
+
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+
+/**
+ * Visualisation d'une surface 3D (voir {@link Surface3DRenderer}) intégrée
+ * dans une interface SWT.
+ */
+public class GLSurface implements GLComponent {
+
+    protected final Surface3DRenderer renderer;
+    protected final GLHost host;
+
+    public GLSurface(Composite container, GLToolkit toolkit, SurfaceData surfaceData) {
+        renderer = new Surface3DRenderer(surfaceData);
+        host = GLHost.create(toolkit, container, true, renderer, null);
+    }
+
+    /** Renderer de la surface, pour les réglages d'affichage. */
+    public Surface3DRenderer getRenderer() { return renderer; }
+
+    @Override
+    public void close() {
+        host.close();
+    }
+
+    @Override
+    public boolean isDisposed() {
+        return host.isDisposed();
+    }
+
+    @Override
+    public void moveAbove(Control control) {
+        host.getControl().moveAbove(control);
+    }
+
+    @Override
+    public void setLayoutData(GridData gridData) {
+        host.getControl().setLayoutData(gridData);
+    }
+}

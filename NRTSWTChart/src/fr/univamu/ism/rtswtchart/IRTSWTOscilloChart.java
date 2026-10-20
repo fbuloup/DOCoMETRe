@@ -9,8 +9,7 @@ public interface IRTSWTOscilloChart {
 	public void setShowCurrentValue(boolean value);
 	public void setAutoScale(boolean value);
 	public void setWindowTimeWidth(double value);
-	public void setyMax(double value);
-	public void setyMin(double value);
+	public void setFixedScales(double yMin, double yMax);
 	public void setGridVisibility(boolean value);
 	public void setLegendVisibility(boolean value);
 	public void setLegendPosition(int position);

@@ -216,7 +216,7 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 		gc.setFont(chart.getFont());
 		leftAxisWidth = gc.textExtent("-9." + decimalFormatter.getDecimalFormatSymbols().getDecimalSeparator() + "9E-99").x + 10;
 		FontMetrics fontMetrics = gc.getFontMetrics();
-		bottomAxisHeight = fontMetrics.getAscent() + fontMetrics.getDescent();
+		bottomAxisHeight = fontMetrics.getHeight();//  fontMetrics.getAscent() + fontMetrics.getDescent();
 		legendHeight = bottomAxisHeight;
 		fontHeight = bottomAxisHeight;
 		
@@ -359,14 +359,6 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 	private double getyMax() {
 		return yMax;
 	}
-
-	public void setyMin(double yMin) {
-		this.yMin = yMin;
-	}
-
-	public void setyMax(double yMax) {
-		this.yMax = yMax;
-	}
 	
 	public double getxMin() {
 		return xMin;
@@ -394,14 +386,6 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 
 	public Canvas getChart() {
 		return chart;
-	}
-
-	public void setxMin(double xMin) {
-		this.xMin = xMin;
-	}
-
-	public void setxMax(double xMax) {
-		this.xMax = xMax;
 	}
 
 	public void setLegendPosition(int legendPosition) {
@@ -605,29 +589,26 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 				redraw = redraw && series[i].getModified();
 
 		if (redraw && isAutoScale()) {
-			double newMin = getAbsoluteyMinValue();
-			double newMax = getAbsoluteyMaxValue();
-			if (newMin != getyMin() || newMax != getyMax()) {
-				if (newMin == newMax) {
-					newMin = newMin - Double.MIN_VALUE;
-					newMax = newMax + Double.MIN_VALUE;
+			double newYMin = getAbsoluteyMinValue();
+			double newYMax = getAbsoluteyMaxValue();
+			if (newYMin != getyMin() || newYMax != getyMax()) {
+				if (newYMin == newYMax) {
+					newYMin = newYMin - Double.MIN_VALUE;
+					newYMax = newYMax + Double.MIN_VALUE;
 				}
-				setyMax(newMax);
-				setyMin(newMin);
 				redrawGrid = true;
 			}
 			
-			newMin = getAbsolutexMinValue();
-			newMax = getAbsolutexMaxValue();
-			if (newMin != getyMin() || newMax != getyMax()) {
-				if (newMin == newMax) {
-					newMin = newMin - Double.MIN_VALUE;
-					newMax = newMax + Double.MIN_VALUE;
+			double newXMin = getAbsolutexMinValue();
+			double newXMax = getAbsolutexMaxValue();
+			if (newXMin != getxMin() || newXMax != getxMax()) {
+				if (newXMin == newXMax) {
+					newXMin = newXMin - Double.MIN_VALUE;
+					newXMax = newXMax + Double.MIN_VALUE;
 				}
-				setxMax(newMax);
-				setxMin(newMin);
 				redrawGrid = true;
 			}
+			if(redrawGrid) setFixedScales(newXMin, newXMax, newYMin, newYMax);
 		}
 		if(redraw) {
 			long t = System.nanoTime();
@@ -675,6 +656,13 @@ public class RTSWTXYChart extends ControlAdapter implements PaintListener, Dispo
 	@Override
 	public GridData getLayoutData() {
 		return (GridData) chart.getLayoutData();
+	}
+	
+	public void setFixedScales(double xMin, double xMax, double yMin, double yMax) {
+		this.xMin = xMin;
+		this.xMax = xMax;
+		this.yMin = yMin;
+		this.yMax = yMax;
 	}
 
 }

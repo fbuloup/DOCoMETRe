@@ -355,7 +355,7 @@ public class XYChartConfiguration extends ChartConfiguration {
 			IRTSWTSerie rtswtSerie = null;
 			double sfx = Double.parseDouble(sfxString);
 			if(useOpenGL_V2) {
-				rtswtSerie = new Curve2DData(sfx, historySize);
+				rtswtSerie = new Curve2DData(sfx);
 				((Curve2DData)rtswtSerie).setName(ySerieID + "(" + xSerieID + ")");
 				((Curve2DData)rtswtSerie).setLineWidth(thickness);
 				((Curve2DData)rtswtSerie).setLineStyle(lineStyle);

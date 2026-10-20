@@ -13,74 +13,34 @@ import java.util.List;
  *
  * Fonctionnement "temps réel" : les points sont stockés dans un tampon
  * circulaire dont la capacité vaut sampleFrequency * windowTimeWidth
- * échantillons. {@link #addSamples} ajoute des échantillons temporellement
- * consécutifs ; lorsque le tampon est plein, les plus anciens sont écrasés
- * par les plus récents. Seuls les windowTimeWidth dernières secondes de
- * signal sont donc conservées et affichées.
- *
- * Accès concurrents : addSamples() peut être appelé depuis n'importe quel
- * thread (thread d'acquisition par exemple). Le renderer appelle
- * {@link #takeSnapshot()} une fois au début de chaque image : cette méthode
- * fige une copie des points et recalcule les bornes. Les accesseurs
- * (getMinX(), getBoundingRadius(), ...) renvoient les valeurs de ce dernier
- * instantané, qui restent donc cohérentes pendant toute l'image.
+ * échantillons (voir {@link CurveData}). {@link #addSamples} ajoute des
+ * échantillons temporellement consécutifs ; lorsque le tampon est plein,
+ * les plus anciens sont écrasés par les plus récents.
  */
-public class Curve3DData implements CurveAppearance, IRTSWTXYZSerie {
-
-    private final double sampleFrequency;  // Hz
-    private final double windowTimeWidth;  // s
-    private final int capacity;            // nombre max d'échantillons conservés
-
-    // Tampon circulaire (x, y, z entrelacés), protégé par "this"
-    private final float[] ring;
-    private int head = 0;            // indice (en échantillons) de la prochaine écriture
-    private int count = 0;           // nombre d'échantillons valides dans le tampon
-    private long totalSamples = 0;   // nombre total d'échantillons reçus depuis le début
-    private boolean modified = true;
-
-    // Instantané utilisé par le rendu (dans l'ordre chronologique)
-    private final float[] snapshot;
-    private int snapshotCount = 0;
-    private long snapshotTotalSamples = 0;
-    private float centerX, centerY, centerZ;
-    private float minX, maxX, minY, maxY, minZ, maxZ;
-    private float boundingRadius = 1f;
+public class Curve3DData extends CurveData<Curve3DData> implements IRTSWTXYZSerie {
 
     /**
-     * Crée une courbe temps réel, initialement vide.
+     * Crée une courbe temps réel, initialement vide ; la durée de
+     * l'historique sera celle du graphe auquel elle sera ajoutée
+     * ({@link #DEFAULT_WINDOW_TIME_WIDTH} secondes d'ici là, ou si le graphe n'en impose pas).
      *
      * @param sampleFrequency fréquence d'échantillonnage des coordonnées, en Hz
-     * @param windowTimeWidth durée de l'historique conservé, en secondes
      */
-    public Curve3DData(double sampleFrequency, double windowTimeWidth) {
-        if (!(sampleFrequency > 0) || !(windowTimeWidth > 0)) {
-            throw new IllegalArgumentException("sampleFrequency et windowTimeWidth doivent être strictement positifs.");
-        }
-        this.sampleFrequency = sampleFrequency;
-        this.windowTimeWidth = windowTimeWidth;
-        this.capacity = (int) Math.max(1, Math.round(sampleFrequency * windowTimeWidth));
-        this.ring = new float[capacity * 3];
-        this.snapshot = new float[capacity * 3];
-        takeSnapshot();
+    public Curve3DData(double sampleFrequency) {
+        super(3, sampleFrequency, DEFAULT_WINDOW_TIME_WIDTH);
     }
 
     /**
      * Crée une courbe statique à partir d'une liste de points (comportement
      * d'origine) : la fenêtre a exactement la taille de la liste (fréquence
      * nominale de 1 Hz). addSamples() reste utilisable et fait alors défiler
-     * la courbe.
+     * la courbe. À afficher dans un graphe qui n'impose pas de durée
+     * d'historique : sinon la courbe serait réduite à ses historySize derniers points.
      */
     public Curve3DData(List<Point3D> points) {
-        this(1, checkNotEmpty(points).size());
+        super(3, 1, checkNotEmpty(points).size());
         addSamples(points);
         takeSnapshot();
-    }
-
-    private static List<Point3D> checkNotEmpty(List<Point3D> points) {
-        if (points == null || points.isEmpty()) {
-            throw new IllegalArgumentException("La liste de points ne peut pas être vide.");
-        }
-        return points;
     }
 
     /**
@@ -90,13 +50,11 @@ public class Curve3DData implements CurveAppearance, IRTSWTXYZSerie {
      */
     public synchronized void addSamples(List<Point3D> samples) {
         int n = samples.size();
-        int start = Math.max(0, n - capacity); // inutile d'écrire ce qui serait aussitôt écrasé
-        for (int i = start; i < n; i++) {
+        for (int i = firstUsefulSample(n); i < n; i++) {
             Point3D p = samples.get(i);
             put(p.x, p.y, p.z);
         }
-        totalSamples += n;
-        modified = true;
+        commit(n);
     }
 
     /**
@@ -106,76 +64,19 @@ public class Curve3DData implements CurveAppearance, IRTSWTXYZSerie {
      */
     public synchronized void addSamples(float[] x, float[] y, float[] z) {
         int n = x.length;
-        if (y.length != n || z.length != n) {
-            throw new IllegalArgumentException("Les tableaux x, y et z doivent avoir la même longueur.");
-        }
-        for (int i = Math.max(0, n - capacity); i < n; i++) {
+        checkSameLength(n, y.length, z.length);
+        for (int i = firstUsefulSample(n); i < n; i++) {
             put(x[i], y[i], z[i]);
         }
-        totalSamples += n;
-        modified = true;
+        commit(n);
     }
 
     private void put(float x, float y, float z) {
-        int k = head * 3;
+        float[] ring = ring();
+        int k = nextSlot();
         ring[k] = x;
         ring[k + 1] = y;
         ring[k + 2] = z;
-        head = (head + 1) % capacity;
-        if (count < capacity) count++;
-    }
-
-    /** Supprime tous les échantillons. */
-    public synchronized void clear() {
-        head = 0;
-        count = 0;
-        totalSamples = 0;
-        modified = true;
-    }
-
-    /**
-     * Fige l'état courant du tampon pour le rendu : copie les points dans
-     * l'ordre chronologique et recalcule boîte englobante, centre et rayon.
-     * Appelé par le renderer au début de chaque image.
-     *
-     * @return true si les données ont changé depuis le précédent instantané
-     */
-    public synchronized boolean takeSnapshot() {
-        if (!modified) return false;
-        modified = false;
-
-        // Le plus ancien échantillon est à "head" si le tampon est plein, à 0 sinon
-        int oldest = (count == capacity) ? head : 0;
-        int firstPart = Math.min(count, capacity - oldest);
-        System.arraycopy(ring, oldest * 3, snapshot, 0, firstPart * 3);
-        System.arraycopy(ring, 0, snapshot, firstPart * 3, (count - firstPart) * 3);
-        snapshotCount = count;
-        snapshotTotalSamples = totalSamples;
-
-        if (count == 0) {
-            minX = minY = minZ = -1f;
-            maxX = maxY = maxZ = 1f;
-        } else {
-            float minXv = Float.MAX_VALUE, minYv = Float.MAX_VALUE, minZv = Float.MAX_VALUE;
-            float maxXv = -Float.MAX_VALUE, maxYv = -Float.MAX_VALUE, maxZv = -Float.MAX_VALUE;
-            for (int k = 0; k < count * 3; k += 3) {
-                minXv = Math.min(minXv, snapshot[k]);     maxXv = Math.max(maxXv, snapshot[k]);
-                minYv = Math.min(minYv, snapshot[k + 1]); maxYv = Math.max(maxYv, snapshot[k + 1]);
-                minZv = Math.min(minZv, snapshot[k + 2]); maxZv = Math.max(maxZv, snapshot[k + 2]);
-            }
-            minX = minXv; maxX = maxXv;
-            minY = minYv; maxY = maxYv;
-            minZ = minZv; maxZ = maxZv;
-        }
-
-        centerX = (minX + maxX) / 2f;
-        centerY = (minY + maxY) / 2f;
-        centerZ = (minZ + maxZ) / 2f;
-
-        float dx = maxX - minX, dy = maxY - minY, dz = maxZ - minZ;
-        float diag = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
-        boundingRadius = Math.max(diag / 2f, 0.001f);
-        return true;
     }
 
     /**
@@ -231,115 +132,42 @@ public class Curve3DData implements CurveAppearance, IRTSWTXYZSerie {
 
     /** Renvoie une copie des points actuellement dans la fenêtre, du plus ancien au plus récent. */
     public synchronized List<Point3D> getPoints() {
-        List<Point3D> points = new ArrayList<>(count);
-        int oldest = (count == capacity) ? head : 0;
-        for (int i = 0; i < count; i++) {
-            int k = ((oldest + i) % capacity) * 3;
+        List<Point3D> points = new ArrayList<>(count());
+        float[] ring = ring();
+        for (int i = 0; i < count(); i++) {
+            int k = ringOffset(i);
             points.add(new Point3D(ring[k], ring[k + 1], ring[k + 2]));
         }
         return points;
     }
 
-    // Apparence dans un graphe à plusieurs courbes (facultatif)
-    private volatile String name;
-    private volatile float[] color; // null = couleur automatique selon le rang de la courbe
-    private volatile float lineWidth = 0f; // 0 = épaisseur par défaut du graphe
-    private volatile LineStyle lineStyle = LineStyle.SOLID;
-
-    /** Nom affiché dans la légende (null = pas de nom). Renvoie this pour chaîner les appels. */
-    public Curve3DData setName(String name) { this.name = name; return this; }
-    @Override
-    public String getName() { return name; }
-
-    /** Couleur RGB (composantes entre 0 et 1). Renvoie this pour chaîner les appels. */
-    public Curve3DData setColor(float r, float g, float b) { this.color = new float[]{r, g, b}; return this; }
-    /** Revient à la couleur automatique (palette, selon le rang de la courbe dans le graphe). */
-    public Curve3DData setAutomaticColor() { this.color = null; return this; }
-    @Override
-    public float[] getColor() { return color; }
-
-    /**
-     * Épaisseur du trait en pixels (1, 2, 3...), ou 0 pour revenir à
-     * l'épaisseur par défaut du graphe. Renvoie this pour chaîner les appels.
-     */
-    public Curve3DData setLineWidth(float lineWidth) {
-        if (!(lineWidth >= 0)) throw new IllegalArgumentException("L'épaisseur doit être positive ou nulle.");
-        this.lineWidth = lineWidth;
-        return this;
-    }
-    @Override
-    public float getLineWidth() { return lineWidth; }
-
-    /**
-     * Type de tracé : SOLID (par défaut), DASH, DASH_DOT ou DASH_DASH_DOT.
-     * Se combine avec l'épaisseur. Renvoie this pour chaîner les appels.
-     */
-    public Curve3DData setLineStyle(LineStyle lineStyle) {
-        this.lineStyle = (lineStyle != null) ? lineStyle : LineStyle.SOLID;
-        return this;
-    }
-    @Override
-    public LineStyle getLineStyle() { return lineStyle; }
-
     /** Coordonnées (x, y, z entrelacés) du dernier instantané, du plus ancien au plus récent. */
-    public float[] getSnapshotCoordinates() { return snapshot; }
-    /** Nombre de points du dernier instantané. */
-    public int getSnapshotCount() { return snapshotCount; }
-    /**
-     * Nombre total d'échantillons reçus au moment du dernier instantané : le
-     * point i de l'instantané est l'échantillon numéro
-     * getSnapshotTotalSamples() - getSnapshotCount() + i depuis le début.
-     */
-    public long getSnapshotTotalSamples() { return snapshotTotalSamples; }
+    public float[] getSnapshotCoordinates() { return getSnapshotData(); }
 
-    public double getSampleFrequency() { return sampleFrequency; }
-    public double getWindowTimeWidth() { return windowTimeWidth; }
-    /** Nombre maximal d'échantillons conservés (sampleFrequency * windowTimeWidth). */
-    public int getCapacity() { return capacity; }
-    /** Nombre total d'échantillons reçus depuis la création (ou le dernier clear()). */
-    public synchronized long getTotalSamples() { return totalSamples; }
-    /** Instant (en s) du dernier échantillon reçu, en prenant t = 0 pour le premier. */
-    public synchronized double getLastSampleTime() { return (totalSamples - 1) / sampleFrequency; }
+    /** Boîte englobante du dernier instantané (de -1 à 1 s'il est vide). */
+    public BoundingBox getBoundingBox() {
+        return new BoundingBox(getMinX(), getMaxX(), getMinY(), getMaxY(), getMinZ(), getMaxZ());
+    }
 
-    public float getCenterX() { return centerX; }
-    public float getCenterY() { return centerY; }
-    public float getCenterZ() { return centerZ; }
-    public float getMinX() { return minX; }
-    public float getMaxX() { return maxX; }
-    public float getMinY() { return minY; }
-    public float getMaxY() { return maxY; }
-    public float getMinZ() { return minZ; }
-    public float getMaxZ() { return maxZ; }
-    public float getBoundingRadius() { return boundingRadius; }
+    public float getCenterX() { return getCenter(0); }
+    public float getCenterY() { return getCenter(1); }
+    public float getCenterZ() { return getCenter(2); }
+    public float getMinX() { return getMin(0); }
+    public float getMaxX() { return getMax(0); }
+    public float getMinY() { return getMin(1); }
+    public float getMaxY() { return getMax(1); }
+    public float getMinZ() { return getMin(2); }
+    public float getMaxZ() { return getMax(2); }
+    /** Demi-diagonale de la boîte englobante du dernier instantané. */
+    public float getBoundingRadius() { return getBoundingBox().radius; }
 
-	@Override
-	public String getId() {
-		return getName();
-	}
+    /** Sans effet : une courbe 3D a besoin des trois coordonnées (voir {@link #addPoints(Double[], Double[], Double[])}). */
+    @Override
+    public void addPoints(Double[] timeValues, Double[] doubleValues) {
+    }
 
-	@Override
-	public void setDisplayCurrentValue(boolean displayCurrentValues) {
-	}
-
-	@Override
-	public void setThickness(int thickness) {
-		setLineWidth(thickness);
-	}
-
-	@Override
-	public void addPoints(Double[] timeValues, Double[] doubleValues) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void addPoints(Double[] xValues, Double[] yValues, Double[] zValues) {
-		float[] xf = new float[xValues.length];
-		float[] yf = new float[yValues.length];
-		float[] zf = new float[zValues.length];
-		for (int i = 0; i < xValues.length; i++) xf[i] = xValues[i].floatValue();   
-		for (int i = 0; i < yValues.length; i++) yf[i] = yValues[i].floatValue();   
-		for (int i = 0; i < zValues.length; i++) zf[i] = zValues[i].floatValue();   
-		addSamples(xf, yf, zf);
-	}
+    @Override
+    public void addPoints(Double[] xValues, Double[] yValues, Double[] zValues) {
+        addSamples(toFloats(xValues), toFloats(yValues), toFloats(zValues));
+    }
 }
