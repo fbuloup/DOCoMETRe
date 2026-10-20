@@ -3,7 +3,7 @@ package fr.univamu.ism.docometre.chartxyz;
 /**
  * Signal temporel y(t) échantillonné à sampleFrequency Hz, dont seules les
  * windowTimeWidth dernières secondes sont conservées (tampon circulaire de
- * capacité sampleFrequency * windowTimeWidth, voir {@link CurveData}).
+ * capacité sampleFrequency * windowTimeWidth + 1, voir {@link CurveData}).
  *
  * La durée windowTimeWidth est celle du graphe 1D qui affiche la courbe :
  * elle lui est imposée quand on l'ajoute au graphe (voir
@@ -23,6 +23,35 @@ public class Curve1DData extends CurveData<Curve1DData> {
      */
     public Curve1DData(double sampleFrequency) {
         super(1, sampleFrequency, DEFAULT_WINDOW_TIME_WIDTH);
+    }
+
+    /**
+     * Crée un signal statique à partir de ses valeurs (la première à t = 0,
+     * la dernière à (values.length - 1) / sampleFrequency) : la durée conservée
+     * est exactement cet écart, si bien qu'aucune valeur n'est perdue. addSamples() reste utilisable et fait alors défiler le signal.
+     * À afficher dans un graphe de même durée (getWindowTimeWidth()) : une
+     * durée plus courte ne garderait que les dernières valeurs.
+     *
+     * @param sampleFrequency fréquence d'échantillonnage, en Hz
+     * @param values          valeurs du signal (au moins deux)
+     * @throws IllegalArgumentException si values a moins de deux valeurs ou si sampleFrequency n'est pas strictement positive
+     */
+    public Curve1DData(double sampleFrequency, float[] values) {
+        super(1, sampleFrequency, durationOf(sampleFrequency, values));
+        addSamples(values);
+        takeSnapshot();
+    }
+
+    /**
+     * Durée (s) de values.length échantillons à sampleFrequency Hz, du premier
+     * au dernier : (values.length - 1) / sampleFrequency. Méthode
+     * statique : elle peut être appelée dans l'appel au constructeur parent,
+     * avant que l'objet n'existe.
+     */
+    private static double durationOf(double sampleFrequency, float[] values) {
+        if (!(sampleFrequency > 0)) throw new IllegalArgumentException("sampleFrequency doit être strictement positive.");
+        if (values == null || values.length < 2) throw new IllegalArgumentException("Le signal doit comporter au moins deux valeurs.");
+        return (values.length - 1) / sampleFrequency;
     }
 
     /**

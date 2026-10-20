@@ -92,7 +92,7 @@ public abstract class CurveChartRenderer<C extends CurveData<C>> extends GLChart
 
     /**
      * Durée de l'historique, en secondes, imposée à toutes les courbes du
-     * graphe, présentes et futures (leur capacité devient fréquence x durée ;
+     * graphe, présentes et futures (leur capacité devient fréquence x durée + 1 ;
      * les échantillons les plus récents sont conservés). En 1D, c'est la
      * largeur de l'axe du temps ; en 2D et 3D, la longueur des traînées.
      * Utilisable pendant l'affichage, depuis n'importe quel thread.
@@ -119,6 +119,8 @@ public abstract class CurveChartRenderer<C extends CurveData<C>> extends GLChart
     }
     /** Courbes actuellement affichées. */
     public List<C> getCurves() { return new ArrayList<>(curves); }
+    /** Nombre de courbes actuellement affichées (sans copier la liste). */
+    public int getCurvesCount() { return curves.size(); }
 
     @Override
     public void init(GLAutoDrawable drawable) {
@@ -341,8 +343,4 @@ public abstract class CurveChartRenderer<C extends CurveData<C>> extends GLChart
     public void setCurrentValuesVisible(boolean visible) { showCurrentValues = visible; }
     public boolean isCurrentValuesVisible() { return showCurrentValues; }
     public void toggleCurrentValues() { showCurrentValues = !showCurrentValues; }
-
-	public int getCurvesNumber() {
-		return curves.size();
-	}
 }

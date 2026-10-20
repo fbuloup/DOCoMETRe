@@ -5,7 +5,7 @@ import java.util.List;
 
 /**
  * Équivalent 2D de {@link Curve3DData} : ensemble ordonné de points (x, y)
- * stockés dans un tampon circulaire de capacité sampleFrequency * windowTimeWidth
+ * stockés dans un tampon circulaire de capacité sampleFrequency * windowTimeWidth + 1
  * (voir {@link CurveData}).
  */
 public class Curve2DData extends CurveData<Curve2DData> {
@@ -29,7 +29,7 @@ public class Curve2DData extends CurveData<Curve2DData> {
      * la courbe serait réduite à ses historySize derniers points.
      */
     public Curve2DData(List<Point2D> points) {
-        super(2, 1, checkNotEmpty(points).size());
+        super(2, 1, Math.max(1, checkNotEmpty(points).size() - 1)); // N points couvrent N - 1 secondes à 1 Hz
         addSamples(points);
         takeSnapshot();
     }

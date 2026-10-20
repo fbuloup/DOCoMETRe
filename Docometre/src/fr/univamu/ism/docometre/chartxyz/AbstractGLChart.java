@@ -88,6 +88,11 @@ public abstract class AbstractGLChart<C extends CurveData<C>, R extends CurveCha
         renderer.removeCurve(curve);
     }
 
+    /** Nombre de courbes actuellement affichées dans le graphe (utilisable depuis n'importe quel thread). */
+    public int getCurvesCount() {
+        return renderer.getCurvesCount();
+    }
+
     /**
      * Police des graduations des échelles ; les noms d'axes utilisent la même
      * famille, en gras et plus grande.
@@ -190,9 +195,4 @@ public abstract class AbstractGLChart<C extends CurveData<C>, R extends CurveCha
     public IRTSWTSerie createSerie(String serieId, Color color) {
     	throw new UnsupportedOperationException("utiliser addCurve(...)");
     }
-    
-    public int getCurvesNumber() {
-    	return renderer.getCurvesNumber();
-    }
-    
 }

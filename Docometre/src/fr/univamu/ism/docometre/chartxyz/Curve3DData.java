@@ -12,7 +12,7 @@ import java.util.List;
  * ainsi que les informations géométriques utiles au rendu (centre, rayon englobant).
  *
  * Fonctionnement "temps réel" : les points sont stockés dans un tampon
- * circulaire dont la capacité vaut sampleFrequency * windowTimeWidth
+ * circulaire dont la capacité vaut sampleFrequency * windowTimeWidth + 1
  * échantillons (voir {@link CurveData}). {@link #addSamples} ajoute des
  * échantillons temporellement consécutifs ; lorsque le tampon est plein,
  * les plus anciens sont écrasés par les plus récents.
@@ -38,7 +38,7 @@ public class Curve3DData extends CurveData<Curve3DData> implements IRTSWTXYZSeri
      * d'historique : sinon la courbe serait réduite à ses historySize derniers points.
      */
     public Curve3DData(List<Point3D> points) {
-        super(3, 1, checkNotEmpty(points).size());
+        super(3, 1, Math.max(1, checkNotEmpty(points).size() - 1)); // N points couvrent N - 1 secondes à 1 Hz
         addSamples(points);
         takeSnapshot();
     }

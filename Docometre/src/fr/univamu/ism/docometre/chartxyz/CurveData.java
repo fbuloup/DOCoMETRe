@@ -6,7 +6,9 @@ import fr.univamu.ism.rtswtchart.IRTSWTSerie;
  * Base commune des courbes temps réel ({@link Curve1DData}, {@link Curve2DData},
  * {@link Curve3DData}) : un échantillon est formé de {@link #getDimension()}
  * coordonnées (y ; x, y ; x, y, z), stockées entrelacées dans un tampon
- * circulaire de capacité sampleFrequency * windowTimeWidth échantillons.
+ * circulaire de capacité sampleFrequency * windowTimeWidth + 1 échantillons :
+ * windowTimeWidth est l'écart entre le premier et le dernier échantillon
+ * conservés (N échantillons durent (N - 1) / sampleFrequency secondes).
  *
  * Lorsque le tampon est plein, les échantillons les plus anciens sont
  * écrasés par les plus récents : seules les windowTimeWidth dernières
@@ -91,8 +93,9 @@ public abstract class CurveData<T extends CurveData<T>> implements CurveAppearan
         }
     }
 
+    /** N échantillons couvrent (N - 1) / sampleFrequency secondes : il en faut sampleFrequency * durée + 1. */
     private int capacityFor(double windowTimeWidth) {
-        return (int) Math.max(1, Math.round(sampleFrequency * windowTimeWidth));
+        return (int) Math.max(1, Math.round(sampleFrequency * windowTimeWidth) + 1);
     }
 
     /**
@@ -292,7 +295,7 @@ public abstract class CurveData<T extends CurveData<T>> implements CurveAppearan
     public double getSampleFrequency() { return sampleFrequency; }
     /** Durée de l'historique conservé, en secondes. */
     public synchronized double getWindowTimeWidth() { return windowTimeWidth; }
-    /** Nombre maximal d'échantillons conservés (sampleFrequency * windowTimeWidth). */
+    /** Nombre maximal d'échantillons conservés (sampleFrequency * windowTimeWidth + 1). */
     public synchronized int getCapacity() { return capacity; }
     /** Nombre total d'échantillons reçus depuis la création (ou le dernier clear()). */
     public synchronized long getTotalSamples() { return totalSamples; }
