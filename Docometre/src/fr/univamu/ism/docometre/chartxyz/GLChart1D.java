@@ -66,9 +66,11 @@ public class GLChart1D extends AbstractGLPlotChart<Curve1DData, Chart1DRenderer>
 
     @Override
     public void setShowCurrentValue(boolean value) {
+    	renderer.setCurrentValuesVisible(value);
     }
 
     @Override
     public void dispose() {
+    	close();
     }
 }

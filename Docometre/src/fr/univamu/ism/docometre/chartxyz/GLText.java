@@ -39,6 +39,10 @@ import com.jogamp.opengl.GL2;
 public final class GLText {
 
     private static final int MAX_CACHED_TEXTS = 512;
+    
+    /** Nombre maximal de textes en cours de préparation 
+     * asynchrone (évite d'engorger le thread SWT).**/
+    private static final int MAX_PENDING = 64;
 
     /** Image d'un texte : alpha sur 8 bits, lignes de bas en haut (convention OpenGL). */
     private static final class Raster {
@@ -169,6 +173,7 @@ public final class GLText {
         }
         cache.clear();
         deletePendingTextures(gl);
+        ready.clear();
     }
 
     // ------------------------------------------------------------------
@@ -183,33 +188,44 @@ public final class GLText {
 
     /** Texte prêt à dessiner, ou null s'il est en cours de préparation. */
     private Entry entry(String text, ChartFont font) {
-        Key key = new Key(text, font, pixelScale);
+    	drainReady(); // les images prêtes passent dans le cache LRU, qui est borné
+    	Key key = new Key(text, font, pixelScale);
         Entry entry = cache.get(key);
         if (entry != null) return entry;
 
-        Raster raster = ready.remove(key);
-        if (raster == null) {
-            Display swt = display();
-            if (swt == null || swt.isDisposed()) return null;
-            if (Display.getCurrent() == swt) {
-                raster = rasterize(swt, key); // déjà dans le thread SWT : préparation immédiate
-            } else {
-                if (pending.add(key)) {
-                    swt.asyncExec(() -> {
-                        try {
-                            if (!swt.isDisposed()) ready.put(key, rasterize(swt, key));
-                        } finally {
-                            pending.remove(key);
-                        }
-                    });
-                }
-                return null;
+        Display swt = display();
+        if (swt == null || swt.isDisposed()) return null;
+        if (Display.getCurrent() != swt) {
+        	if (pending.size() < MAX_PENDING && pending.add(key)) { // ne pas inonder le thread SWT
+                try {
+					swt.asyncExec(() -> {
+					    try {
+					        if (!swt.isDisposed()) ready.put(key, rasterize(swt, key));
+					    } finally {
+					        pending.remove(key);
+					    }
+					});
+				} catch (Exception e) {
+					pending.remove(key);
+				}
             }
+            return null;
         }
-        entry = new Entry(raster);
+        entry = new Entry(rasterize(swt, key));
         cache.put(key, entry);
         evictOldEntries();
         return entry;
+    }
+    
+    /** Transfère dans le cache les images préparées par le thread SWT (même celles qui ne sont plus demandées). */
+    private void drainReady() {
+        if (ready.isEmpty()) return;
+        for (Iterator<Map.Entry<Key, Raster>> it = ready.entrySet().iterator(); it.hasNext(); ) {
+            Map.Entry<Key, Raster> e = it.next();
+            it.remove();
+            cache.putIfAbsent(e.getKey(), new Entry(e.getValue()));
+        }
+        evictOldEntries();
     }
 
     private Display display() {
@@ -275,60 +291,73 @@ public final class GLText {
 
     private FontMetrics measure(Display swt, ChartFont font, float scale) {
         Font swtFont = createFont(swt, font, scale);
-        Image image = new Image(swt, 1, 1);
-        GC gc = new GC(image);
         try {
-            gc.setFont(swtFont);
-            Point sample = gc.textExtent("0123456789");
-            FontMetrics m = new FontMetrics(gc.textExtent("Ag").y, sample.x / 10f);
-            metrics.put(metricsKey(font, scale), m);
-            return m;
-        } finally {
-            gc.dispose();
-            image.dispose();
-            swtFont.dispose();
-        }
+			Image image = new Image(swt, 1, 1);
+			try {
+				GC gc = new GC(image);
+				try {
+					gc.setFont(swtFont);
+					Point sample = gc.textExtent("0123456789");
+					FontMetrics m = new FontMetrics(gc.textExtent("Ag").y, sample.x / 10f);
+					metrics.put(metricsKey(font, scale), m);
+					return m;
+				} finally {
+					gc.dispose();
+				} 
+			} finally {
+				image.dispose();
+			} 
+		} finally {
+			swtFont.dispose();
+		}
     }
 
     private Raster rasterize(Display swt, Key key) {
-        measure(swt, key.font, key.scale);
-        Font swtFont = createFont(swt, key.font, key.scale);
-        Image probe = new Image(swt, 1, 1);
-        GC gc = new GC(probe);
-        Point extent;
-        try {
-            gc.setFont(swtFont);
-            extent = gc.textExtent(key.text);
-        } finally {
-            gc.dispose();
-            probe.dispose();
-        }
-        int width = Math.max(1, extent.x), height = Math.max(1, extent.y);
+    	// Mesures de la police : une seule fois par police et par échelle
+        if (!metrics.containsKey(metricsKey(key.font, key.scale))) measure(swt, key.font, key.scale);
 
-        // Texte blanc sur fond noir : la luminance devient l'opacité
-        Image image = new Image(swt, width, height);
-        gc = new GC(image);
         ImageData data;
+        Font swtFont = createFont(swt, key.font, key.scale);
         try {
-            gc.setAntialias(SWT.ON);
-            gc.setTextAntialias(SWT.ON);
-            gc.setBackground(swt.getSystemColor(SWT.COLOR_BLACK));
-            gc.fillRectangle(0, 0, width, height);
-            gc.setForeground(swt.getSystemColor(SWT.COLOR_WHITE));
-            gc.setFont(swtFont);
-            gc.drawText(key.text, 0, 0, true);
+            Point extent;
+            Image probe = new Image(swt, 1, 1);
+            try {
+                GC gc = new GC(probe);
+                try {
+                    gc.setFont(swtFont);
+                    extent = gc.textExtent(key.text);
+                } finally {
+                    gc.dispose();
+                }
+            } finally {
+                probe.dispose();
+            }
+            int width = Math.max(1, extent.x), height = Math.max(1, extent.y);
+
+            // Texte blanc sur fond noir : la luminance devient l'opacité
+            Image image = new Image(swt, width, height);
+            try {
+                GC gc = new GC(image);
+                try {
+                    gc.setAntialias(SWT.ON);
+                    gc.setTextAntialias(SWT.ON);
+                    gc.setBackground(swt.getSystemColor(SWT.COLOR_BLACK));
+                    gc.fillRectangle(0, 0, width, height);
+                    gc.setForeground(swt.getSystemColor(SWT.COLOR_WHITE));
+                    gc.setFont(swtFont);
+                    gc.drawText(key.text, 0, 0, true);
+                } finally {
+                    gc.dispose();
+                }
+                data = image.getImageData();
+            } finally {
+                image.dispose();
+            }
         } finally {
-            gc.dispose();
-        }
-        try {
-            data = image.getImageData();
-        } finally {
-            image.dispose();
             swtFont.dispose();
         }
 
-        width = data.width;
-        height = data.height;
+        int width = data.width, height = data.height;
         byte[] alpha = new byte[width * height];
         for (int y = 0; y < height; y++) {
             int row = (height - 1 - y) * width; // OpenGL : première ligne en bas
@@ -338,5 +367,6 @@ public final class GLText {
             }
         }
         return new Raster(width, height, alpha);
+        
     }
 }

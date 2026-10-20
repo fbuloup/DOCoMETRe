@@ -43,7 +43,7 @@ public abstract class CurveChartRenderer<C extends CurveData<C>> extends GLChart
     protected volatile ChartFont scaleFont = new ChartFont(9, SWT.NORMAL);
     protected volatile ChartFont legendFont = new ChartFont(9, SWT.NORMAL);
     protected volatile boolean showLegend = true; // légende affichée (si au moins une courbe a un nom)
-    protected boolean showPoints = false;
+    protected volatile boolean showPoints = false;
 
     private final FpsCounter fpsCounter = new FpsCounter(); // cadence d'affichage réelle
     private volatile boolean showFps = false;

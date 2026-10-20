@@ -26,8 +26,8 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     private float legendBelowHeight = 0; // hauteur de la légende sous l'axe (pixels), 0 si absente
 
     // Vue : zoom (1 = ajustement automatique) et panoramique (en fraction de l'étendue non zoomée)
-    protected float zoom = 1f;
-    protected float panX = 0f, panY = 0f;
+    protected volatile float zoom = 1f;
+    protected volatile float panX = 0f, panY = 0f;
 
     // Marges autour de la zone de tracé (pixels), adaptées à la taille des polices
     protected int marginLeft = 75, marginRight = 25, marginTop = 25, marginBottom = 35;

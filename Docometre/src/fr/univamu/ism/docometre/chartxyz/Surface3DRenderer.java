@@ -28,9 +28,9 @@ public class Surface3DRenderer extends GLChartRenderer {
     private final GLUT glut = new GLUT();
     private final OrbitCamera camera = new OrbitCamera(30f, -40f);
 
-    private boolean showSolid = true;
-    private boolean showWireframe = false;
-    private boolean lightingEnabled = true;
+    private volatile boolean showSolid = true;
+    private volatile boolean showWireframe = false;
+    private volatile boolean lightingEnabled = true;
 
     public Surface3DRenderer(SurfaceData surfaceData) {
         super(true, false);
@@ -54,6 +54,8 @@ public class Surface3DRenderer extends GLChartRenderer {
         gl.glColorMaterial(GL2.GL_FRONT_AND_BACK, GL2.GL_AMBIENT_AND_DIFFUSE);
         gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_SPECULAR, new float[]{0.2f, 0.2f, 0.2f, 1f}, 0);
         gl.glMaterialf(GL2.GL_FRONT_AND_BACK, GL2.GL_SHININESS, 16f);
+        
+        gl.glLightModeli(GL2.GL_LIGHT_MODEL_TWO_SIDE, GL2.GL_TRUE); // les deux faces de la surface sont éclairées correctement
 
         if (lightingEnabled) gl.glEnable(GL2.GL_LIGHTING);
     }
@@ -62,10 +64,18 @@ public class Surface3DRenderer extends GLChartRenderer {
     public void display(GLAutoDrawable drawable) {
         GL2 gl = drawable.getGL().getGL2();
         gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
-        gl.glLoadIdentity();
-
+        
         BoundingBox bounds = surfaceData.getBoundingBox();
-        camera.lookAt(glu, bounds.radius);
+        // near / far encadrent la scène à la distance courante de la caméra (zoom compris)
+        float aspect = (float) this.width / this.height;
+        float radius = bounds.radius;
+        float distance = camera.distance(radius);
+        gl.glMatrixMode(GL2.GL_PROJECTION);
+        gl.glLoadIdentity();
+        glu.gluPerspective(45.0, aspect, Math.max(distance - 2f * radius, distance * 0.01f), distance + 2f * radius);
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
+        gl.glLoadIdentity();
+        camera.lookAt(glu, radius);
 
         // Lumière fixée dans l'espace caméra : elle "suit" la vue, toujours bien éclairée
         gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, new float[]{0.4f, 0.6f, 1f, 0f}, 0);
@@ -101,15 +111,8 @@ public class Surface3DRenderer extends GLChartRenderer {
 
     @Override
     public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
-        super.reshape(drawable, x, y, width, height);
-        GL2 gl = drawable.getGL().getGL2();
-        gl.glViewport(0, 0, this.width, this.height);
-        gl.glMatrixMode(GL2.GL_PROJECTION);
-        gl.glLoadIdentity();
-        float aspect = (float) this.width / this.height;
-        float farPlane = Math.max(surfaceData.getBoundingRadius() * 20f, 100f);
-        glu.gluPerspective(45.0, aspect, 0.1, farPlane);
-        gl.glMatrixMode(GL2.GL_MODELVIEW);
+    	super.reshape(drawable, x, y, width, height);
+        drawable.getGL().getGL2().glViewport(0, 0, this.width, this.height);
     }
 
     /**

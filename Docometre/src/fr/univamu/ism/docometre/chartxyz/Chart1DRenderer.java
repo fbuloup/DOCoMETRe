@@ -56,7 +56,7 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
 
     private volatile DisplayMode displayMode = DisplayMode.SWEEP;
     private DisplayMode frameMode = DisplayMode.SWEEP; // mode figé pour l'image en cours
-    private boolean paused = false;
+    private volatile boolean paused = false;
 
     // Bornes communes, recalculées à chaque image
     private float dataMinY = -1f, dataMaxY = 1f;

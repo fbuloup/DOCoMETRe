@@ -25,6 +25,7 @@ final class SWTGLHost extends GLHost {
 
     SWTGLHost(Composite parent, GLCapabilities capabilities, GLChartRenderer renderer) {
         canvas = new GLCanvas(parent, SWT.NO_BACKGROUND, capabilities, null);
+        canvas.setData(this);
         animator = new SWTAnimator(canvas, FPS, canvas::display);
         canvas.addGLEventListener(renderer);
         attachInput(renderer);

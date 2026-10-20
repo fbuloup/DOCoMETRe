@@ -16,7 +16,7 @@ public class Chart2DRenderer extends PlotRenderer<Curve2DData> {
     // Boîte englobante de l'ensemble des courbes, recalculée à chaque image
     private float dataMinX = -1f, dataMaxX = 1f, dataMinY = -1f, dataMaxY = 1f;
 
-    private boolean equalAspect = false; // même échelle sur x et y (utile pour les trajectoires)
+    private volatile boolean equalAspect = false; // même échelle sur x et y (utile pour les trajectoires)
 
     /**
      * @param historySize durée de l'historique (longueur des traînées), en secondes, imposée à toutes les courbes

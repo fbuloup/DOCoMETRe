@@ -29,12 +29,26 @@ final class NewtGLHost extends GLHost {
 
     NewtGLHost(Composite parent, GLCapabilities capabilities, GLChartRenderer renderer) {
         glWindow = GLWindow.create(capabilities);
+        NewtCanvasSWT created;
+        try {
+            glWindow.addGLEventListener(renderer);
+            attachInput(renderer);
+            created = NewtCanvasSWT.create(parent, SWT.NO_BACKGROUND, glWindow);
+            if (created == null) throw new IllegalStateException("Impossible d'intégrer la fenêtre NEWT dans SWT.");
+        } catch (RuntimeException | Error e) {
+            glWindow.destroy(); // la fenêtre native ne doit pas survivre à l'échec
+            throw e;
+        }
+        canvas = created;
+        canvas.setData(this);
         animator = new FPSAnimator(glWindow, FPS, true);
-        glWindow.addGLEventListener(renderer);
-        attachInput(renderer);
-        canvas = NewtCanvasSWT.create(parent, SWT.NO_BACKGROUND, glWindow);
         canvas.addListener(SWT.Dispose, e -> close());
-        animator.start();
+        try {
+			animator.start();
+		} catch (RuntimeException | Error e) {
+			close();
+			throw e;
+		}
     }
 
     /** Relie les événements souris / clavier NEWT aux commandes du renderer. */
@@ -68,21 +82,24 @@ final class NewtGLHost extends GLHost {
                 lastY = e.getY();
                 int button = leftDown ? ChartInteraction.LEFT_BUTTON : rightDown ? ChartInteraction.RIGHT_BUTTON : 0;
                 if (button != 0) {
-                    // getX()/getY() et getWidth()/getHeight() sont dans les mêmes unités (fenêtre)
-                    interaction.drag(button, dx, dy, glWindow.getWidth(), glWindow.getHeight(), ChartInteraction.InputScale.NEWT);
+                    int w = glWindow.getWidth(), h = glWindow.getHeight();
+                    // exécuté dans le thread OpenGL au début de l'image suivante : pas d'accès concurrent au renderer
+                    glWindow.invoke(false, d -> { interaction.drag(button, dx, dy, w, h, ChartInteraction.InputScale.NEWT); return true; });
                 }
             }
 
             @Override
             public void mouseWheelMoved(MouseEvent e) {
-                interaction.wheel(e.getRotation()[1], ChartInteraction.InputScale.NEWT);
+                float amount = e.getRotation()[1];
+                glWindow.invoke(false, d -> { interaction.wheel(amount, ChartInteraction.InputScale.NEWT); return true; });
             }
         });
 
         glWindow.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                interaction.keyPressed(Character.toLowerCase(e.getKeyChar()));
+            	char key = Character.toLowerCase(e.getKeyChar());
+            	glWindow.invoke(false, d -> { interaction.keyPressed(key); return true; });
             }
         });
     }

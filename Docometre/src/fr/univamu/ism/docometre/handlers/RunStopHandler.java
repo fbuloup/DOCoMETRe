@@ -73,6 +73,7 @@ import fr.univamu.ism.docometre.dacqsystems.ExperimentScheduler;
 import fr.univamu.ism.docometre.dialogs.StopTrialDialog;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 import fr.univamu.ism.docometre.views.ExperimentsView;
+import fr.univamu.ism.docometre.views.RealTimeChartsView;
 
 @SuppressWarnings("restriction")
 public class RunStopHandler extends AbstractHandler implements IElementUpdater, IPerspectiveListener {
@@ -168,6 +169,7 @@ public class RunStopHandler extends AbstractHandler implements IElementUpdater, 
 		}
 		if(stop) {
 			ExperimentScheduler.getInstance().stop(false);
+			RealTimeChartsView.removeAllCharts(false);
 			IViewPart viewPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(ExperimentsView.ID);
 			if(viewPart != null && viewPart instanceof ExperimentsView) {
 				ExperimentsView experimentsView = (ExperimentsView)viewPart;

@@ -93,14 +93,12 @@ public class GLChart3D extends AbstractGLChart<Curve3DData, Chart3DRenderer> imp
         return null;
     }
 
+    /** Cette méthode ne doit rien fair si l'échelle est dynamique
+     *  dans ce cas f est null
+     *  **/
 	@Override
 	public void setFixedScales(double xMin, double xMax, double yMin, double yMax) {
-		if(hasFixedScales()) {
-			double zMin = renderer.getFixedScaleBounds()[4];
-			double zMax = renderer.getFixedScaleBounds()[5];
-			renderer.setFixedScales(xMin, xMax, yMin, yMax, zMin, zMax);
-		}
-		
-		
+		double[] f = renderer.getFixedScaleBounds();
+		if (f != null) renderer.setFixedScales(xMin, xMax, yMin, yMax, f[4], f[5]);
 	}
 }

@@ -18,9 +18,9 @@ import com.jogamp.opengl.GLEventListener;
  */
 public abstract class GLChartRenderer implements GLEventListener, ChartInteraction {
 
-    protected boolean showAxes;
-    protected boolean showGrid = true;
-    protected boolean showLabel;
+    protected volatile boolean showAxes;
+    protected volatile boolean showGrid = true;
+    protected volatile boolean showLabel;
 
     /** Taille de la zone d'affichage (pixels). */
     protected int width = 1, height = 1;

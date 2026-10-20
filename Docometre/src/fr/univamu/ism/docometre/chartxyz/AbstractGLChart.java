@@ -33,7 +33,12 @@ public abstract class AbstractGLChart<C extends CurveData<C>, R extends CurveCha
      */
     protected AbstractGLChart(Composite container, GLToolkit toolkit, R renderer, boolean depthBuffer) {
         this.renderer = renderer;
-        this.host = GLHost.create(toolkit, container, depthBuffer, renderer, renderer::removeAllCurves);
+        try {
+			this.host = GLHost.create(toolkit, container, depthBuffer, renderer, renderer::removeAllCurves);
+		} catch (RuntimeException | Error e) {
+			renderer.removeAllCurves();
+			throw e;
+		}
     }
 
     /** Renderer du graphe, pour les réglages qui ne sont pas exposés ici. */
@@ -183,6 +188,6 @@ public abstract class AbstractGLChart<C extends CurveData<C>, R extends CurveCha
 
     /** Non géré : les courbes sont créées par l'appelant puis ajoutées avec addCurve(). */
     public IRTSWTSerie createSerie(String serieId, Color color) {
-        return null;
+    	throw new UnsupportedOperationException("utiliser addCurve(...)");
     }
 }

@@ -273,10 +273,11 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 				IResource resource = ExperimentsView.currentSelectedResource;
 				updateItemToLaunch(resource);
 				ExperimentScheduler.getInstance().initialize();
-				removeAllCharts();
+				removeAllCharts(false);
 			}
 		} else {
-			if(!ExperimentScheduler.getInstance().isRunning()) removeAllCharts();
+			if(!ExperimentScheduler.getInstance().isRunning()) 
+				removeAllCharts(false);
 		}
 	}
 
@@ -284,13 +285,20 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 	public void perspectiveChanged(IWorkbenchPage page, IPerspectiveDescriptor perspective, String changeId) {
 	}
 	
-	public static void removeAllCharts() {
+	public static void removeAllCharts(boolean force) {
+		if(!force) {
+			String currentPerspectiveID = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getPerspective().getId();
+			if(currentPerspectiveID.equals(AcquirePerspective.id)) return;
+		}
 		Control[] children = chartsContainer.getChildren();
-		for (Control control : children) control.dispose();
+		for (Control control : children) {
+			System.out.println("Dispose : " + control.getClass().getCanonicalName());
+			control.dispose();
+		}
 	}
 
 	public void updateCharts(Process process) {
-		removeAllCharts();
+		removeAllCharts(true);
 		DACQConfiguration dacqConfiguration = process.getDACQConfiguration();
 		String value = dacqConfiguration.getProperty(DACQConfigurationProperties.CHARTS_LAYOUT_COLUMNS_NUMBER);
 		int chartsLayoutColumnsNumber = Integer.parseInt(value);

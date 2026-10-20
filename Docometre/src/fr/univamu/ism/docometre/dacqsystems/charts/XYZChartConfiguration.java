@@ -44,6 +44,7 @@ package fr.univamu.ism.docometre.dacqsystems.charts;
 import java.nio.FloatBuffer;
 
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -338,7 +339,12 @@ public class XYZChartConfiguration extends ChartConfiguration {
 			}
 		}
 		else {
-			Activator.logErrorMessage("impossible to use 3D chart without SWT + OpenGL v2 library !");
+			Text text = new Text(chartContainer, SWT.WRAP);
+			text.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
+			text.setText(DocometreMessages.ImpossibleToCreate3DChartMessage);
+			text.setBackground(chartContainer.getBackground());
+			text.setForeground(JFaceColors.getErrorText(null));
+			Activator.logErrorMessage("Impossible to use 3D chart without SWT + OpenGL v2 library !");
 			return;
 		}
 		rtswtxyzChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, hSpan, vSpan));
