@@ -122,7 +122,7 @@ public class ZoomLogicTest {
         check("1D molette : y seulement", after[0] == before[0] && after[1] == before[1] && after[3] - after[2] < before[3] - before[2]);
         r1.drag(ChartInteraction.RIGHT_BUTTON, 100, 50, 800, 600, ChartInteraction.InputScale.SWT);
         double[] panned = r1.getZoomWindow();
-        check("1D panoramique : vertical seulement", panned[0] == after[0] && panned[2] != after[2]);
+        check("1D panoramique avec fenêtre de zoom : horizontal et vertical", panned[0] < after[0] && panned[2] != after[2]);
         r1.keyPressed('m');
         check("1D touche M : fenêtre supprimée, écouteur prévenu", !r1.isZoomed() && events1.get(events1.size() - 1) == null);
         r1.updateData();

@@ -62,16 +62,32 @@ final class SWTGLHost extends GLHost {
             lastX = e.x;
             lastY = e.y;
             int button = leftDown ? ChartInteraction.LEFT_BUTTON : rightDown ? ChartInteraction.RIGHT_BUTTON : 0;
+            Point size = canvas.getSize();
             if (button != 0) {
-                Point size = canvas.getSize();
                 interaction.dragTo(button, e.x, e.y, dx, dy, size.x, size.y, ChartInteraction.InputScale.SWT);
+            } else {
+                interaction.move(e.x, e.y, size.x, size.y);
             }
         });
 
         canvas.addMouseWheelListener(e -> interaction.wheel(e.count, ChartInteraction.InputScale.SWT));
 
+        // Tabulation : transmise au renderer s'il l'utilise (curseur sur plusieurs courbes),
+        // au lieu de faire passer le focus au composant suivant
+        canvas.addListener(SWT.Traverse, e -> {
+            if ((e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) && interaction.usesTabKey()) {
+                e.doit = false; // la touche arrive alors en KeyDown
+            }
+        });
+
         // Échap et Retour arrière arrivent comme les caractères ESCAPE et BACKSPACE
-        canvas.addListener(SWT.KeyDown, e -> interaction.keyPressed(Character.toLowerCase(e.character)));
+        canvas.addListener(SWT.KeyDown, e -> {
+            if (e.character == SWT.TAB) {
+                interaction.keyPressed((e.stateMask & SWT.SHIFT) != 0 ? ChartInteraction.BACK_TAB : ChartInteraction.TAB);
+            } else {
+                interaction.keyPressed(Character.toLowerCase(e.character));
+            }
+        });
 
         // Focus clavier dès que la souris entre dans le graphe (utile quand plusieurs
         // graphes partagent une fenêtre), seulement si notre fenêtre est active pour

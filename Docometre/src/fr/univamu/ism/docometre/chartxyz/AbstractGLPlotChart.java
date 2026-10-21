@@ -4,8 +4,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 
 /**
- * Base des graphes plans (1D et 2D) : ajoute la position de la légende et le
- * pilotage du zoom par rectangle (voir {@link PlotRenderer}).
+ * Base des graphes plans (1D et 2D) : ajoute la position de la légende, le
+ * pilotage du zoom par rectangle et celui du curseur (voir {@link PlotRenderer}).
  */
 public abstract class AbstractGLPlotChart<C extends CurveData<C>, R extends PlotRenderer<C>> extends AbstractGLChart<C, R> {
 
@@ -72,5 +72,40 @@ public abstract class AbstractGLPlotChart<C extends CurveData<C>, R extends Plot
 
     public void removeZoomListener(ZoomListener listener) {
         renderer.removeZoomListener(listener);
+    }
+
+    // ------------------------------------------------------------------
+    // Curseur
+
+    /** Active ou désactive le curseur (également avec la touche C) ; à l'activation, il suit la première courbe. */
+    public void setCursorEnabled(boolean enabled) {
+        renderer.setCursorEnabled(enabled);
+    }
+
+    public boolean isCursorEnabled() {
+        return renderer.isCursorEnabled();
+    }
+
+    /** Courbe suivie par le curseur, par son rang (0 = première ; également avec Tabulation / Maj + Tabulation). */
+    public void setCursorCurveIndex(int index) {
+        renderer.setCursorCurveIndex(index);
+    }
+
+    public int getCursorCurveIndex() {
+        return renderer.getCursorCurveIndex();
+    }
+
+    /** Coordonnées {x, y} du point désigné par le curseur (copie), ou null s'il n'y en a pas. */
+    public float[] getCursorPosition() {
+        return renderer.getCursorPosition();
+    }
+
+    /** Ajoute un écouteur du curseur (voir {@link CursorListener} pour le thread d'appel). */
+    public void addCursorListener(CursorListener listener) {
+        renderer.addCursorListener(listener);
+    }
+
+    public void removeCursorListener(CursorListener listener) {
+        renderer.removeCursorListener(listener);
     }
 }

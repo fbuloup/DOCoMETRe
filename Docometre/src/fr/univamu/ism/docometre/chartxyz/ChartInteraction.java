@@ -20,6 +20,10 @@ public interface ChartInteraction {
     char ESCAPE = '\u001b';
     /** Caractère transmis à {@link #keyPressed} pour la touche Retour arrière. */
     char BACKSPACE = '\b';
+    /** Caractère transmis à {@link #keyPressed} pour la touche Tabulation. */
+    char TAB = '\t';
+    /** Caractère transmis à {@link #keyPressed} pour Maj + Tabulation (caractère à usage privé). */
+    char BACK_TAB = '\uE000';
 
     /**
      * Facteurs propres à la boîte à outils : les déplacements de souris et
@@ -59,6 +63,19 @@ public interface ChartInteraction {
         drag(button, dx, dy, width, height, scale);
     }
 
+    /** Déplacement de la souris sans bouton enfoncé, jusqu'en (x, y). Sans effet par défaut. */
+    default void move(int x, int y, int width, int height) {
+    }
+
+    /**
+     * Vrai si la touche Tabulation doit être transmise à {@link #keyPressed}
+     * plutôt que de faire passer le focus clavier au composant suivant
+     * (consulté par l'hôte SWT à chaque appui). Faux par défaut.
+     */
+    default boolean usesTabKey() {
+        return false;
+    }
+
     /** Bouton enfoncé en (x, y). Sans effet par défaut. */
     default void press(int button, int x, int y, int width, int height) {
     }
@@ -71,8 +88,9 @@ public interface ChartInteraction {
     void wheel(float amount, InputScale scale);
 
     /**
-     * Touche du clavier (caractère en minuscule, {@link #ESCAPE} ou
-     * {@link #BACKSPACE}) ; sans effet si elle n'est pas gérée.
+     * Touche du clavier (caractère en minuscule, {@link #ESCAPE},
+     * {@link #BACKSPACE}, {@link #TAB} ou {@link #BACK_TAB}) ; sans effet si
+     * elle n'est pas gérée.
      */
     void keyPressed(char key);
 }

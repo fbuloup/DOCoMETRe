@@ -94,6 +94,14 @@ final class NewtGLHost extends GLHost {
             }
 
             @Override
+            public void mouseMoved(MouseEvent e) {
+                lastX = e.getX();
+                lastY = e.getY();
+                int x = e.getX(), y = e.getY(), w = glWindow.getWidth(), h = glWindow.getHeight();
+                glWindow.invoke(false, d -> { interaction.move(x, y, w, h); return true; });
+            }
+
+            @Override
             public void mouseWheelMoved(MouseEvent e) {
                 float amount = e.getRotation()[1];
                 glWindow.invoke(false, d -> { interaction.wheel(amount, ChartInteraction.InputScale.NEWT); return true; });
@@ -116,10 +124,11 @@ final class NewtGLHost extends GLHost {
         return 0;
     }
 
-    /** Caractère transmis au renderer : Échap et Retour arrière par leur code, les autres en minuscule. */
+    /** Caractère transmis au renderer : Échap, Retour arrière et Tabulation par leur code, les autres en minuscule. */
     private static char toKey(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_ESCAPE) return ChartInteraction.ESCAPE;
         if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE) return ChartInteraction.BACKSPACE;
+        if (e.getKeyCode() == KeyEvent.VK_TAB) return e.isShiftDown() ? ChartInteraction.BACK_TAB : ChartInteraction.TAB;
         return Character.toLowerCase(e.getKeyChar());
     }
 

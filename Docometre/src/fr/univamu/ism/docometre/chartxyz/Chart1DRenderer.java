@@ -1,5 +1,7 @@
 package fr.univamu.ism.docometre.chartxyz;
 
+import java.util.Locale;
+
 import com.jogamp.opengl.GL2;
 
 /**
@@ -29,12 +31,22 @@ import com.jogamp.opengl.GL2;
  * échantillon reçu et défile. En mode balayage, il indique le temps écoulé
  * depuis le début du balayage en cours.
  * L'axe vertical s'ajuste automatiquement aux valeurs de la fenêtre ;
- * zoom et panoramique vertical s'appliquent par-dessus. La touche "pause"
+ * zoom et panoramique s'appliquent par-dessus. La touche "pause"
  * fige l'affichage sans interrompre la réception des données.
+ *
+ * Curseur (touche C, voir {@link PlotRenderer}) : il désigne l'échantillon
+ * dont l'instant est le plus proche de l'abscisse de la souris, quelle que
+ * soit la hauteur de celle-ci. Son abscisse est celle de
+ * l'axe du temps (temps depuis le premier échantillon en défilement, position
+ * dans le balayage en balayage), affichée avec la résolution de la fréquence
+ * d'échantillonnage ; en balayage, les échantillons de l'espace vide ne
+ * peuvent pas être désignés.
  *
  * Commandes clavier propres au 1D : espace, pause / reprise ; M, bascule
  * balayage / défilement (la fenêtre de zoom est alors supprimée). Le
- * panoramique est uniquement vertical ; la molette ne zoome que sur y.
+ * panoramique (bouton droit) déplace la vue en x et en y ; en défilement,
+ * la vue décalée continue de suivre le dernier échantillon. La molette ne
+ * zoome que sur y.
  *
  * Zoom par rectangle (voir {@link PlotRenderer}) : en balayage, les
  * abscisses de la fenêtre sont des positions dans le balayage ; en
@@ -144,6 +156,10 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
             viewMaxX = Math.max(windowTime, lastTime);
             viewMinX = viewMaxX - windowTime;
         }
+        // Panoramique horizontal, en fraction de la fenêtre (le contenu suit la souris)
+        double shift = panX * windowTime;
+        viewMinX += shift;
+        viewMaxX += shift;
 
         double[] fixed = getFixedScaleBounds();
         float halfY = (fixed != null) ? (float) ((fixed[1] - fixed[0]) / 2) : halfExtent(dataMinY, dataMaxY);
@@ -173,6 +189,40 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
     /** La molette ne zoome que sur l'axe vertical, avec ou sans fenêtre de zoom. */
     @Override
     protected boolean wheelZoomsX() { return false; }
+
+    /** Le curseur suit l'abscisse de la souris : l'échantillon de même instant, quelle que soit sa hauteur. */
+    @Override
+    protected boolean cursorFollowsXOnly() { return true; }
+
+    /** En balayage, les échantillons de l'espace vide ne sont pas dessinés : le curseur les ignore. */
+    @Override
+    protected int firstCursorPoint(Curve1DData curve) {
+        return (frameMode == DisplayMode.SWEEP) ? firstSweepSample(curve) : 0;
+    }
+
+    /** Point i : temps (ou position dans le balayage) et valeur, comme au tracé. */
+    @Override
+    protected boolean cursorPoint(Curve1DData curve, int i, double[] xy) {
+        int n = curve.getSnapshotCount();
+        double t = curve.getLastSampleTime() - (n - 1 - i) / curve.getSampleFrequency();
+        xy[0] = (frameMode == DisplayMode.SWEEP) ? t - Math.floor(t / windowTime) * windowTime : t;
+        xy[1] = curve.getSnapshotValues()[i];
+        return true;
+    }
+
+    /** Temps du curseur avec autant de décimales que la période d'échantillonnage en demande (0,002 s à 500 Hz). */
+    @Override
+    protected String formatCursorX(Curve1DData curve, double x) {
+        int decimals = (int) Math.max(0, Math.min(6, Math.ceil(Math.log10(curve.getSampleFrequency()) - 1e-9)));
+        return String.format(Locale.US, "%." + decimals + "f", x);
+    }
+
+    /** En balayage, premier échantillon dessiné de la courbe : les plus anciens sont dans l'espace vide devant le curseur d'écriture. */
+    private int firstSweepSample(Curve1DData curve) {
+        double oldestShown = lastTime - windowTime * (1 - SWEEP_GAP);
+        int n = curve.getSnapshotCount();
+        return (int) Math.max(0, Math.ceil((oldestShown - curve.getLastSampleTime()) * curve.getSampleFrequency() + (n - 1) - 1e-9));
+    }
 
     @Override
     protected void drawCurves(GL2 gl, double origin) {
@@ -261,15 +311,13 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
      * ne sont pas dessinés, ce qui laisse un espace vide devant le curseur.
      */
     private void drawCurvesSweep(GL2 gl, boolean withPoints) {
-        double oldestShown = lastTime - windowTime * (1 - SWEEP_GAP);
         for (int k = 0; k < frameCurves.size(); k++) {
             Curve1DData curve = frameCurves.get(k);
             float[] values = curve.getSnapshotValues();
             int n = curve.getSnapshotCount();
             double frequency = curve.getSampleFrequency();
             double curveLast = curve.getLastSampleTime();
-            // Premier échantillon à dessiner (les plus anciens sont dans l'espace vide)
-            int first = (int) Math.max(0, Math.ceil((oldestShown - curveLast) * frequency + (n - 1) - 1e-9));
+            int first = firstSweepSample(curve); // les plus anciens sont dans l'espace vide
 
             float[] color = CurveStyles.colorOf(curve, k);
             gl.glColor3f(color[0], color[1], color[2]);
@@ -370,12 +418,17 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
     }
 
     /**
-     * Panoramique vertical (l'axe du temps suit toujours le dernier
-     * échantillon). dy est un déplacement exprimé en fraction de la hauteur
-     * du composant ; dx est ignoré. Le contenu suit la souris.
+     * Panoramique horizontal et vertical, comme en 2D ; le contenu suit la
+     * souris. Sans fenêtre de zoom, le zoom de la molette ne porte que sur y :
+     * le déplacement horizontal n'en dépend donc pas.
      */
     @Override
     public void pan(float dx, float dy) {
+        if (zoomWindow() != null) {
+            super.pan(dx, dy); // la fenêtre de zoom est déplacée sur les deux axes
+            return;
+        }
+        panX -= dx * width / plotWidth;
         super.pan(0f, dy);
     }
 
@@ -391,6 +444,7 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
     public void setDisplayMode(DisplayMode displayMode) {
         if (displayMode == null || displayMode == this.displayMode) return;
         this.displayMode = displayMode;
+        panX = 0f; // le décalage horizontal n'a pas le même sens dans les deux modes
         clearZoomWindow();
     }
     public DisplayMode getDisplayMode() { return displayMode; }

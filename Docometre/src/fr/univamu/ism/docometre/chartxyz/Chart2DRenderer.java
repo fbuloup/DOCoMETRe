@@ -8,6 +8,8 @@ import com.jogamp.opengl.GL2;
  * La vue s'ajuste automatiquement aux données de la fenêtre temporelle (ou
  * aux échelles fixes) ; zoom et panoramique s'appliquent par-dessus, ainsi
  * que le zoom par rectangle (voir {@link PlotRenderer}).
+ * Curseur (touche C, voir {@link PlotRenderer}) : il désigne le point de la
+ * trajectoire le plus proche de la souris.
  * Commande clavier propre au 2D : E, même échelle sur x et y.
  */
 public class Chart2DRenderer extends PlotRenderer<Curve2DData> {
@@ -104,6 +106,15 @@ public class Chart2DRenderer extends PlotRenderer<Curve2DData> {
 
     @Override
     protected boolean hasVerticalAxis() { return true; }
+
+    /** Point i de la trajectoire : ses coordonnées (x, y). */
+    @Override
+    protected boolean cursorPoint(Curve2DData curve, int i, double[] xy) {
+        float[] c = curve.getSnapshotCoordinates();
+        xy[0] = c[2 * i];
+        xy[1] = c[2 * i + 1];
+        return true;
+    }
 
     @Override
     protected void drawCurves(GL2 gl, double origin) {

@@ -1,6 +1,7 @@
 package fr.univamu.ism.docometre.chartxyz;
 
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -31,6 +32,16 @@ import com.jogamp.opengl.GLAutoDrawable;
  * <li>U ou Retour arrière : revient à la fenêtre précédente</li>
  * <li>R : revient à la vue initiale (efface aussi l'historique)</li>
  * </ul>
+ *
+ * Curseur (touche C, désactivé par défaut) : un axe vertical et un axe
+ * horizontal, dans la couleur de la courbe suivie, se croisent sur le point
+ * de cette courbe le plus proche de la souris (distance à l'écran, parmi les
+ * échantillons visibles ; en 1D, le point de même abscisse que la souris,
+ * voir {@link #cursorFollowsXOnly()}). Ses coordonnées sont affichées dans des étiquettes
+ * placées au pied de chaque axe du curseur, sur les axes des abscisses et des
+ * ordonnées. Le curseur suit d'abord la première courbe ; Tabulation passe à
+ * la suivante, Maj + Tabulation à la précédente. Les {@link CursorListener}
+ * reçoivent les coordonnées {x, y} du point désigné.
  *
  * Chaque image suit le même déroulement ({@link #display}) ; les
  * sous-classes fournissent la mise à jour des données, la fenêtre visible
@@ -63,6 +74,18 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     private final Deque<double[]> zoomHistory = new ArrayDeque<>();
     private final Object viewLock = new Object();
     private final List<ZoomListener> zoomListeners = new CopyOnWriteArrayList<>();
+
+    // Curseur (touche C) : réglages modifiables depuis n'importe quel thread
+    private volatile boolean cursorEnabled;
+    private volatile int cursorCurveIndex;     // rang de la courbe suivie (0 = première)
+    private volatile float[] cursorPosition;   // {x, y} du point désigné, null si aucun (jamais modifié en place)
+    private final List<CursorListener> cursorListeners = new CopyOnWriteArrayList<>();
+    // Thread d'affichage uniquement : souris (pixels OpenGL, < 0 = inconnue) et point trouvé à l'image courante
+    private float mouseX = -1, mouseY = -1;
+    private boolean cursorFound;
+    private float cursorPixelX, cursorPixelY;
+    private float[] cursorColor;
+    private String cursorLabelX, cursorLabelY;
 
     // Rectangle de zoom en cours de tracé, en pixels OpenGL (thread d'affichage uniquement)
     private boolean selecting;
@@ -108,6 +131,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         plotWidth = Math.max(1, width - marginLeft - marginRight);
         plotHeight = Math.max(1, height - marginBottom - marginTop);
         computeView();
+        updateCursor();
 
         double stepX = AxisTicks.niceStep((viewMaxX - viewMinX) / TARGET_TICK_COUNT);
         double stepY = AxisTicks.niceStep((viewMaxY - viewMinY) / TARGET_TICK_COUNT);
@@ -135,6 +159,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         drawFps(gl, marginLeft + plotWidth - 6, marginBottom + 4);
         float valuesHeight = drawCurrentValues(gl, marginLeft + plotWidth - 6, marginBottom + plotHeight - 6);
         drawStatus(gl, valuesHeight);
+        if (cursorFound) drawCursor(gl);
         if (selecting) drawSelection(gl);
     }
 
@@ -176,6 +201,27 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
 
     /** La molette zoome-t-elle aussi sur l'axe x quand une fenêtre de zoom existe (oui par défaut) ? */
     protected boolean wheelZoomsX() { return true; }
+
+    /** Premier point de la courbe que le curseur peut désigner (0 par défaut ; en 1D balayage, après l'espace vide). */
+    protected int firstCursorPoint(C curve) { return 0; }
+
+    /**
+     * Coordonnées {x, y}, dans les unités des axes (celles de viewMinX...
+     * viewMaxY), du point i du dernier instantané de la courbe, écrites dans xy.
+     *
+     * @return false si ce point n'est pas dessiné
+     */
+    protected abstract boolean cursorPoint(C curve, int i, double[] xy);
+
+    /**
+     * Vrai si le curseur désigne le point dont l'abscisse est la plus proche
+     * de celle de la souris (sans tenir compte de sa hauteur), faux (par
+     * défaut) pour le point le plus proche de la souris à l'écran.
+     */
+    protected boolean cursorFollowsXOnly() { return false; }
+
+    /** Texte de l'abscisse du curseur (4 chiffres significatifs par défaut). */
+    protected String formatCursorX(C curve, double x) { return CurrentValues.format(x); }
 
     /** Dessine les courbes (et leurs points s'ils sont affichés), abscisses relatives à origin. */
     protected abstract void drawCurves(GL2 gl, double origin);
@@ -314,6 +360,53 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         yLabelWidth = widestY; // sert au calcul de la marge de gauche à l'image suivante
     }
 
+    /**
+     * Axes du curseur (vertical et horizontal, sur toute la zone de tracé),
+     * marque au point désigné et étiquettes des coordonnées au pied de chaque
+     * axe : x sous la zone de tracé, y à sa gauche (dans les marges quand elles
+     * sont assez grandes, sinon juste à l'intérieur de la zone de tracé).
+     */
+    private void drawCursor(GL2 gl) {
+        float left = marginLeft, bottom = marginBottom, right = marginLeft + plotWidth, top = marginBottom + plotHeight;
+        float px = cursorPixelX, py = cursorPixelY;
+        float[] c = cursorColor;
+
+        gl.glColor4f(c[0], c[1], c[2], 0.8f);
+        gl.glLineWidth(1f);
+        gl.glBegin(GL2.GL_LINES);
+        gl.glVertex2f(px, bottom);
+        gl.glVertex2f(px, top);
+        gl.glVertex2f(left, py);
+        gl.glVertex2f(right, py);
+        gl.glEnd();
+
+        // Marque au point désigné : carré plein cerclé de la couleur du fond
+        gl.glColor3f(0.10f, 0.11f, 0.13f);
+        gl.glRectf(px - 4, py - 4, px + 4, py + 4);
+        gl.glColor3f(c[0], c[1], c[2]);
+        gl.glRectf(px - 3, py - 3, px + 3, py + 3);
+
+        ChartFont font = scaleFont;
+        float h = text.lineHeight(font) + 4;
+        float wx = text.width(cursorLabelX, font) + 8;
+        float xBadge = Math.max(0, Math.min(width - wx, px - wx / 2));
+        float yBadge = (marginBottom >= h + 2) ? marginBottom - h - 1 : marginBottom + 1;
+        drawBadge(gl, cursorLabelX, font, c, xBadge, yBadge, wx, h);
+
+        float wy = text.width(cursorLabelY, font) + 8;
+        xBadge = (marginLeft >= wy + 2) ? marginLeft - wy - 1 : marginLeft + 1;
+        yBadge = Math.max(0, Math.min(height - h, py - h / 2));
+        drawBadge(gl, cursorLabelY, font, c, xBadge, yBadge, wy, h);
+    }
+
+    /** Étiquette : fond de la couleur de la courbe, texte de la couleur du fond du graphe. */
+    private void drawBadge(GL2 gl, String label, ChartFont font, float[] color, float x, float y, float w, float h) {
+        gl.glColor4f(color[0], color[1], color[2], 0.95f);
+        gl.glRectf(x, y, x + w, y + h);
+        gl.glColor3f(0.10f, 0.11f, 0.13f);
+        text.draw(gl, label, font, x + 4, y + 2);
+    }
+
     /** Rectangle de zoom en cours de tracé : fond translucide et contour (coordonnées en pixels). */
     private void drawSelection(GL2 gl) {
         float x0 = Math.min(selectionX0, selectionX1), x1 = Math.max(selectionX0, selectionX1);
@@ -336,8 +429,10 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     /** Bouton gauche : début d'un rectangle de zoom, s'il commence dans la zone de tracé. */
     @Override
     public void press(int button, int x, int y, int width, int height) {
-        if (button != LEFT_BUTTON) return;
         float px = toPixelX(x, width), py = toPixelY(y, height);
+        mouseX = px;
+        mouseY = py;
+        if (button != LEFT_BUTTON) return;
         selecting = px >= marginLeft && px <= marginLeft + plotWidth
                  && py >= marginBottom && py <= marginBottom + plotHeight;
         selectionX0 = selectionX1 = px;
@@ -347,6 +442,8 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     /** Bouton gauche : le second coin du rectangle suit la souris ; bouton droit : panoramique. */
     @Override
     public void dragTo(int button, int x, int y, int dx, int dy, int width, int height, InputScale scale) {
+        mouseX = toPixelX(x, width); // le curseur suit aussi la souris pendant un glisser
+        mouseY = toPixelY(y, height);
         if (button == LEFT_BUTTON) {
             if (selecting) {
                 selectionX1 = clampX(toPixelX(x, width));
@@ -394,6 +491,19 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         if (isUsable(window)) changeZoomWindow(current -> window, true);
     }
 
+    /** Souris déplacée sans bouton : position mémorisée pour le curseur. */
+    @Override
+    public void move(int x, int y, int width, int height) {
+        mouseX = toPixelX(x, width);
+        mouseY = toPixelY(y, height);
+    }
+
+    /** Tabulation utilisée quand le curseur est actif sur un graphe de plusieurs courbes. */
+    @Override
+    public boolean usesTabKey() {
+        return cursorEnabled && getCurvesCount() > 1;
+    }
+
     /** Molette : zoom d'un cran (sur la fenêtre de zoom si elle existe). */
     @Override
     public void wheel(float amount, InputScale scale) {
@@ -406,6 +516,9 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
             case ESCAPE: selecting = false; break;
             case 'u':
             case BACKSPACE: undoZoom(); break;
+            case 'c': setCursorEnabled(!cursorEnabled); break;
+            case TAB: if (cursorEnabled) selectNextCursorCurve(1); break;
+            case BACK_TAB: if (cursorEnabled) selectNextCursorCurve(-1); break;
             default: super.keyPressed(key); break;
         }
     }
@@ -459,6 +572,93 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         panY = 0f;
         selecting = false;
         clearZoomWindow();
+    }
+
+    // ------------------------------------------------------------------
+    // Curseur
+
+    /**
+     * Active ou désactive le curseur (également avec la touche C). À
+     * l'activation, le curseur suit la première courbe. Utilisable depuis
+     * n'importe quel thread.
+     */
+    public void setCursorEnabled(boolean enabled) {
+        if (enabled && !cursorEnabled) cursorCurveIndex = 0;
+        cursorEnabled = enabled;
+    }
+
+    public boolean isCursorEnabled() { return cursorEnabled; }
+
+    /** Courbe suivie par le curseur, par son rang dans le graphe (0 = première ; un rang absent revient à 0). */
+    public void setCursorCurveIndex(int index) { cursorCurveIndex = Math.max(0, index); }
+
+    /** Rang de la courbe suivie par le curseur. */
+    public int getCursorCurveIndex() { return cursorCurveIndex; }
+
+    /** Copie des coordonnées {x, y} du point désigné par le curseur, ou null s'il n'y en a pas. */
+    public float[] getCursorPosition() {
+        float[] position = cursorPosition;
+        return (position != null) ? position.clone() : null;
+    }
+
+    public void addCursorListener(CursorListener listener) { if (listener != null) cursorListeners.add(listener); }
+    public void removeCursorListener(CursorListener listener) { cursorListeners.remove(listener); }
+
+    /** Passe à la courbe suivante (step = 1) ou précédente (step = -1), en boucle. */
+    private void selectNextCursorCurve(int step) {
+        int count = getCurvesCount();
+        if (count > 0) cursorCurveIndex = Math.floorMod(Math.min(cursorCurveIndex, count - 1) + step, count);
+    }
+
+    /**
+     * Cherche, à chaque image, le point de la courbe suivie le plus proche de
+     * la souris (distance à l'écran, parmi les points visibles) : les données
+     * et la vue changent aussi sous une souris immobile. Prévient les
+     * écouteurs si le point désigné a changé.
+     */
+    private void updateCursor() {
+        cursorFound = false;
+        float[] found = null;
+        List<C> curves = frameCurves;
+        if (cursorEnabled && mouseX >= 0 && !curves.isEmpty()) {
+            int index = (cursorCurveIndex < curves.size()) ? cursorCurveIndex : 0;
+            C curve = curves.get(index);
+            double scaleX = plotWidth / (viewMaxX - viewMinX), scaleY = plotHeight / (viewMaxY - viewMinY);
+            double[] xy = new double[2];
+            double best = Double.POSITIVE_INFINITY, bestX = 0, bestY = 0;
+            boolean xOnly = cursorFollowsXOnly();
+            for (int i = firstCursorPoint(curve), n = curve.getSnapshotCount(); i < n; i++) {
+                if (!cursorPoint(curve, i, xy)) continue;
+                if (xy[0] < viewMinX || xy[0] > viewMaxX || xy[1] < viewMinY || xy[1] > viewMaxY) continue; // hors de la vue
+                double dx = marginLeft + (xy[0] - viewMinX) * scaleX - mouseX;
+                double dy = marginBottom + (xy[1] - viewMinY) * scaleY - mouseY;
+                double d = xOnly ? dx * dx : dx * dx + dy * dy;
+                if (d < best) {
+                    best = d;
+                    bestX = xy[0];
+                    bestY = xy[1];
+                }
+            }
+            if (best < Double.POSITIVE_INFINITY) {
+                cursorFound = true;
+                cursorPixelX = (float) (marginLeft + (bestX - viewMinX) * scaleX);
+                cursorPixelY = (float) (marginBottom + (bestY - viewMinY) * scaleY);
+                cursorColor = CurveStyles.colorOf(curve, index);
+                cursorLabelX = formatCursorX(curve, bestX);
+                cursorLabelY = CurrentValues.format(bestY);
+                found = new float[]{(float) bestX, (float) bestY};
+            }
+        }
+        if (!Arrays.equals(found, cursorPosition)) {
+            cursorPosition = found;
+            for (CursorListener listener : cursorListeners) {
+                try {
+                    listener.cursorMoved((found != null) ? found.clone() : null);
+                } catch (RuntimeException e) {
+                    e.printStackTrace(); // une erreur dans un écouteur ne doit pas interrompre l'affichage
+                }
+            }
+        }
     }
 
     // ------------------------------------------------------------------
