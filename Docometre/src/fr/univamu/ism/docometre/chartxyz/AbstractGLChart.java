@@ -53,6 +53,11 @@ public abstract class AbstractGLChart<C extends CurveData<C>, R extends CurveCha
     public void stopAnimator() {
         host.stopAnimation();
     }
+    
+    /** Démarre l'animation : l'affichage est rafraîchi. */
+    public void startAnimator() {
+        host.startAnimation();
+    }
 
     @Override
     public boolean isDisposed() {

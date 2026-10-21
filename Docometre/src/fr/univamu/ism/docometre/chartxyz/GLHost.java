@@ -57,6 +57,9 @@ public abstract class GLHost {
 
     /** Arrête l'animation : l'affichage n'est plus rafraîchi. */
     public abstract void stopAnimation();
+    
+    /** Démarre l'animation : l'affichage est rafraîchi. */
+    public abstract void startAnimation();
 
     /** Arrête l'animation et détruit la surface OpenGL et son composant SWT (une seule fois). */
     public final void close() {

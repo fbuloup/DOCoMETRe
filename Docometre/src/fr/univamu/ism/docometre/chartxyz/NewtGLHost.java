@@ -137,6 +137,9 @@ final class NewtGLHost extends GLHost {
 
     @Override
     public void stopAnimation() { animator.stop(); }
+    
+    @Override
+    public void startAnimation() { animator.start(); }
 
     @Override
     protected void destroy() {
