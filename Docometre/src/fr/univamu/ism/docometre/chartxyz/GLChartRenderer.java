@@ -1,5 +1,7 @@
 package fr.univamu.ism.docometre.chartxyz;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
@@ -18,7 +20,11 @@ import com.jogamp.opengl.GLEventListener;
  */
 public abstract class GLChartRenderer implements GLEventListener, ChartInteraction {
 
-    protected volatile boolean showAxes;
+	private static final AtomicBoolean GL_INFO_LOGGED = new AtomicBoolean();
+	private static volatile String glInfo = "OpenGL not initialised";
+	private static final System.Logger LOGGER = System.getLogger(GLChartRenderer.class.getName());
+	
+	protected volatile boolean showAxes;
     protected volatile boolean showGrid = true;
     protected volatile boolean showLabel;
 
@@ -33,6 +39,14 @@ public abstract class GLChartRenderer implements GLEventListener, ChartInteracti
     @Override
     public void init(GLAutoDrawable drawable) {
         GL2 gl = drawable.getGL().getGL2();
+
+        // Configuration OpenGL de la machine, journalisée une seule fois (aide au support)
+		if (GL_INFO_LOGGED.compareAndSet(false, true)) {
+		    glInfo = gl.glGetString(GL2.GL_RENDERER) + " (" + gl.glGetString(GL2.GL_VENDOR) + ") - "
+		            + drawable.getContext().getGLVersion();
+		    LOGGER.log(System.Logger.Level.INFO, "OpenGL : " + glInfo);
+		}
+        
         gl.glClearColor(0.10f, 0.11f, 0.13f, 1f);
         gl.glEnable(GL2.GL_LINE_SMOOTH);
         gl.glEnable(GL2.GL_BLEND);
