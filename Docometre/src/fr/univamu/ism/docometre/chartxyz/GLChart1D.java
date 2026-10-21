@@ -1,5 +1,6 @@
 package fr.univamu.ism.docometre.chartxyz;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.swt.widgets.Composite;
 
 import fr.univamu.ism.rtswtchart.IRTSWTOscilloChart;
@@ -11,6 +12,15 @@ import fr.univamu.ism.rtswtchart.IRTSWTOscilloChart;
  */
 public class GLChart1D extends AbstractGLPlotChart<Curve1DData, Chart1DRenderer> implements IRTSWTOscilloChart {
 
+	public static GLChart1D createChart(Composite container, double windowTimeWidth, Curve1DData... curves) {
+		GLToolkit toolkit = GLToolkit.SWT;
+		String os = Platform.getOS();
+		if (Platform.OS_MACOSX.equals(os)) {
+			toolkit = GLToolkit.NEWT;
+		}
+		return new GLChart1D(container, toolkit, windowTimeWidth, curves);
+	}
+	
     /**
      * Crée le graphe avec une ou plusieurs courbes (d'autres peuvent être
      * ajoutées ensuite avec addCurve), avec une échelle verticale dynamique :
