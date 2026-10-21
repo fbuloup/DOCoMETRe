@@ -6,7 +6,6 @@ import java.nio.FloatBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -25,16 +24,18 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IPartListener2;
+import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
 
 import fr.univamu.ism.docometre.Activator;
-import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.GetResourceLabelDelegate;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.chartxyz.Chart1DRenderer;
 import fr.univamu.ism.docometre.chartxyz.Curve1DData;
 import fr.univamu.ism.docometre.chartxyz.GLChart1D;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
@@ -43,14 +44,13 @@ import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.ExperimentScheduler;
 import fr.univamu.ism.docometre.editors.PartNameRefresher;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
-import fr.univamu.ism.nswtchart.XYSWTSerie;
 
-public class GL2DataEditor extends EditorPart implements PartNameRefresher {
+public class GL2DataEditor extends EditorPart implements PartNameRefresher, IPartListener2 {
 	
 	public static String ID = "Docometre.GL2DataEditor";
 	
-	private GLChart1D chart1d;
-	private float values;
+	private GLChart1D chart;
+	private Curve1DData curveData;
 
 	public GL2DataEditor() {
 		// TODO Auto-generated constructor stub
@@ -74,6 +74,7 @@ public class GL2DataEditor extends EditorPart implements PartNameRefresher {
 		setSite(site);
 		IFile dataFile = (IFile) ((ResourceEditorInput) getEditorInput()).getObject();
 		loadData(dataFile);
+		site.getPage().addPartListener(this);
 	}
 
 	@Override
@@ -90,8 +91,8 @@ public class GL2DataEditor extends EditorPart implements PartNameRefresher {
 
 	@Override
 	public void createPartControl(Composite parent) {
-		// TODO Auto-generated method stub
-
+		chart = GLChart1D.createChart(parent, curveData.getWindowTimeWidth(), curveData);
+		chart.setDisplayMode(Chart1DRenderer.DisplayMode.SCROLL); 
 		refreshPartName();
 	}
 
@@ -180,6 +181,8 @@ public class GL2DataEditor extends EditorPart implements PartNameRefresher {
 				return;
 			}
 			
+			curveData = new Curve1DData(sf, values).setName(dataFile.getFullPath().toOSString());
+			
 			message = NLS.bind(DocometreMessages.NumberSamplesReadMessage, values.length, channelNameToFind);
 			Activator.logInfoMessage(message, getClass());
 			
@@ -195,12 +198,12 @@ public class GL2DataEditor extends EditorPart implements PartNameRefresher {
 		String partName = GetResourceLabelDelegate.getLabel((IResource) object);
 		String toolTip = getEditorInput().getToolTipText();
 		
-		if(chart1d.getCurvesCount() > 1) {
+		if(chart.getCurvesCount() > 1) {
 			partName += " (...)";
 			toolTip = "";
-			List<String> names = chart1d.getRenderer().getCurves().stream().map(Curve1DData::getName).collect(Collectors.toList());
+			List<String> names = chart.getRenderer().getCurves().stream().map(Curve1DData::getName).collect(Collectors.toList());
 			for (int i = 0; i < names.size(); i++) {
-				if(i == chart1d.getCurvesCount() - 1) toolTip += names.get(i);
+				if(i == chart.getCurvesCount() - 1) toolTip += names.get(i);
 				else toolTip += names.get(i) + "\n";
 			}
 			((ResourceEditorInput)getEditorInput()).setTooltip(toolTip);
@@ -226,6 +229,27 @@ public class GL2DataEditor extends EditorPart implements PartNameRefresher {
 			sf = Double.parseDouble(inputDialog.getValue());
 		}
 		return sf;
+	}
+	
+	@Override
+	public void partActivated(IWorkbenchPartReference partRef) {
+		if(partRef == getSite().getPage().getReference(this)) {
+			chart.startAnimator();
+		}
+	}
+	
+	@Override
+	public void partDeactivated(IWorkbenchPartReference partRef) {
+		if(partRef == getSite().getPage().getReference(this)) {
+			chart.stopAnimator();
+		}
+	}
+	
+	@Override
+	public void dispose() {
+		chart.close();
+		getSite().getPage().removePartListener(this);
+		super.dispose();
 	}
 
 }
