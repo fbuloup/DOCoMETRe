@@ -6,7 +6,17 @@
       provider-name="ISM">
 
    <description>
-      -- 2026-10-15
+      -- 2026-10-21
+ADDED :
+* INPUT_PULLUP to available signals in digital wait function (ArduinoUno)
+* Compile results are written to a file for arduinoUno compilation processes
+* More baud rate choices for ArduinoUno in dacq conf file
+FIXED :
+* Chart font was not updated in RT SWT XY chart
+* NPE in DocometreConsolePageParticipant.java
+* Print float using dtostre with UnoR4 is not possible. Must use snprintf.
+
+-- 2026-10-15
 ADDED :
 * Update Installation doc.
 FIXED :
