@@ -99,7 +99,7 @@ public class DataEditor extends EditorPart implements PartNameRefresher, CursorM
 	public static String ID = "Docometre.DataEditor";
 	
 //	private InteractiveChart chart;
-	XYSWTChart chart;
+	private XYSWTChart chart;
 
 	public DataEditor() {
 		// TODO Auto-generated constructor stub

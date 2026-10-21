@@ -465,6 +465,14 @@
             id="Docometre.CustomerFunctionEditor"
             name="CustomerFunctionEditor">
       </editor>
+      <editor
+            class="fr.univamu.ism.docometre.chartxyz.editors.GL2DataEditor"
+            contributorClass="fr.univamu.ism.docometre.editors.DataEditorActionBarContributor"
+            default="false"
+            icon="icons/samples.gif"
+            id="Docometre.GL2DataEditor"
+            name="GL2DataEditor">
+      </editor>
    </extension>
    <extension
          point="org.eclipse.ui.decorators">
