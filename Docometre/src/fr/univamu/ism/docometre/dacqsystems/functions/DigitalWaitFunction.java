@@ -126,6 +126,7 @@ public final class DigitalWaitFunction extends GenericFunction {
 					if(module instanceof ADWinDigInOutModule) addChannel = channel.getProperty(ADWinDigInOutChannelProperties.IN_OUT).equals(ADWinDigInOutChannelProperties.INPUT);
 					if(module instanceof ArduinoUnoDigInOutModule) {
 						addChannel = channel.getProperty(ArduinoUnoDigInOutChannelProperties.IN_OUT).equals(ArduinoUnoDigInOutChannelProperties.INPUT);
+						addChannel = addChannel || channel.getProperty(ArduinoUnoDigInOutChannelProperties.IN_OUT).equals(ArduinoUnoDigInOutChannelProperties.INPUT_PULLUP);
 						addChannel = addChannel && channel.getProperty(ArduinoUnoChannelProperties.USED).equals("true");
 					}
 					if(addChannel) channels.add(channel);
