@@ -61,7 +61,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     /** Marque de la vue initiale dans l'historique (ArrayDeque n'accepte pas null). */
     private static final double[] INITIAL_VIEW = new double[0];
 
-    private volatile LegendPosition legendPosition = LegendPosition.INSIDE;
+    private volatile LegendPosition legendPosition = LegendPosition.BELOW;
     private float legendBelowHeight = 0; // hauteur de la légende sous l'axe (pixels), 0 si absente
 
     // Vue : zoom (1 = ajustement automatique) et panoramique (en fraction de l'étendue non zoomée)
@@ -807,7 +807,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         return viewMinY + (py - marginBottom) / plotHeight * (viewMaxY - viewMinY);
     }
 
-    /** Position de la légende : dans le graphe (INSIDE, par défaut) ou sous l'axe des abscisses (BELOW). */
+    /** Position de la légende : dans le graphe (INSIDE) ou sous l'axe des abscisses (BELOW, par défaut). */
     public void setLegendPosition(LegendPosition position) { if (position != null) legendPosition = position; }
     public LegendPosition getLegendPosition() { return legendPosition; }
 }

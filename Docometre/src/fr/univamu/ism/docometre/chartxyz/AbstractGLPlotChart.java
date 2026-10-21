@@ -15,7 +15,7 @@ public abstract class AbstractGLPlotChart<C extends CurveData<C>, R extends Plot
 
     /**
      * Position de la légende : LegendPosition.INSIDE (dans le graphe, en haut à
-     * gauche, par défaut) ou LegendPosition.BELOW (tout en bas, sous l'axe des abscisses).
+     * gauche) ou LegendPosition.BELOW (tout en bas, sous l'axe des abscisses, par défaut).
      */
     public void setLegendPosition(LegendPosition position) {
         renderer.setLegendPosition(position);
