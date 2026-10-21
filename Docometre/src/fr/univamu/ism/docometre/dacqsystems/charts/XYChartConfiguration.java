@@ -72,7 +72,6 @@ import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyHandler;
 import fr.univamu.ism.docometre.dacqsystems.Property;
 import fr.univamu.ism.docometre.editors.ResourceEditor;
 import fr.univamu.ism.docometre.editors.ModulePage.ModuleSectionPart;
-import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 import fr.univamu.ism.rtswtchart.IRTSWTSerie;
 import fr.univamu.ism.rtswtchart.IRTSWTXYChart;
 import fr.univamu.ism.rtswtchart.RTSWTChartsFactory;
@@ -151,15 +150,6 @@ public class XYChartConfiguration extends ChartConfiguration {
 			}
 		});
 		
-		// For backward compatibility
-		String defaultValue = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.RTSWT_CHART_LIBRARY);
-		if("".equals(defaultValue)) {
-			boolean useOpenGL = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_OPENGL_FOR_RTSWT_CHART);
-			if(useOpenGL) Activator.getDefault().getPreferenceStore().setValue(GeneralPreferenceConstants.RTSWT_CHART_LIBRARY, GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT_OPENGL_V1);
-			else Activator.getDefault().getPreferenceStore().setValue(GeneralPreferenceConstants.RTSWT_CHART_LIBRARY, GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT);
-		}
-		String rtSWTChartLibrary = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.RTSWT_CHART_LIBRARY);
-		boolean useOpenGL_V1 = GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT_OPENGL_V1.equals(rtSWTChartLibrary);
 		page.createLabel(container, DocometreMessages.Font_Title, DocometreMessages.Font_Tooltip);
 		value = getProperty(XYChartConfigurationProperties.FONT);
 		value = value==null?FontUtil.getDefaultFontName():value;
@@ -172,20 +162,20 @@ public class XYChartConfiguration extends ChartConfiguration {
 		fontBoldButton = page.createButton(container, "Bold", SWT.CHECK, 1, 1);
 		fontBoldButton.setSelection(fontBold);
 		fontBoldButton.addSelectionListener(new ModifyPropertyHandler(XYChartConfigurationProperties.FONT_BOLD, this, fontBoldButton, XYChartConfigurationProperties.FONT_BOLD.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
-		fontBoldButton.setEnabled(!useOpenGL_V1);
+		fontBoldButton.setEnabled(!Activator.useOpenGLV1());
 		
 		value = getProperty(XYChartConfigurationProperties.FONT_ITALIC);
 		boolean fontItalic = Boolean.valueOf(value);
 		fontItalicButton = page.createButton(container, "Italic", SWT.CHECK, 1, 1);
 		fontItalicButton.setSelection(fontItalic);
 		fontItalicButton.addSelectionListener(new ModifyPropertyHandler(XYChartConfigurationProperties.FONT_ITALIC, this, fontItalicButton, XYChartConfigurationProperties.FONT_ITALIC.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
-		fontItalicButton.setEnabled(!useOpenGL_V1);
+		fontItalicButton.setEnabled(!Activator.useOpenGLV1());
 		
 		page.createLabel(container, DocometreMessages.Size_Title, DocometreMessages.Size_Tooltip);
 		fontSizeText = page.createText(container, getProperty(XYChartConfigurationProperties.FONT_SIZE), SWT.NONE, 1, 1);
 		fontSizeText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		fontSizeText.addModifyListener(new ModifyPropertyHandler(XYChartConfigurationProperties.FONT_SIZE, this, fontSizeText, XYChartConfigurationProperties.FONT_SIZE.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
-		fontSizeText.setEnabled(!useOpenGL_V1);
+		fontSizeText.setEnabled(!Activator.useOpenGLV1());
 		
 		Color chartColor = ChartConfigurationProperties.getColor(this, ChartConfigurationProperties.COLOR);
 		chartColorButton = page.createColorDialogButton(container, "...", SWT.PUSH | SWT.FLAT, 1, 1);
@@ -293,18 +283,8 @@ public class XYChartConfiguration extends ChartConfiguration {
 		Color chartColor = ChartConfigurationProperties.getColor(this, ChartConfigurationProperties.COLOR);
 		
 		IRTSWTXYChart rtswtxyChart = null;
-		// For backward compatibility
-		String defaultValue = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.RTSWT_CHART_LIBRARY);
-		if("".equals(defaultValue)) {
-			boolean useOpenGL = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_OPENGL_FOR_RTSWT_CHART);
-			if(useOpenGL) Activator.getDefault().getPreferenceStore().setValue(GeneralPreferenceConstants.RTSWT_CHART_LIBRARY, GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT_OPENGL_V1);
-			else Activator.getDefault().getPreferenceStore().setValue(GeneralPreferenceConstants.RTSWT_CHART_LIBRARY, GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT);
-		}
-		String rtSWTChartLibrary = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.RTSWT_CHART_LIBRARY);
-		boolean useOpenGL_V1 = GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT_OPENGL_V1.equals(rtSWTChartLibrary);
-		boolean useOpenGL_V2 = GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT_OPENGL_V2.equals(rtSWTChartLibrary);
-		if(useOpenGL_V1) rtswtxyChart = RTSWTChartsFactory.createOpenGLXYChart(chartContainer, SWT.DOUBLE_BUFFERED, fontName, fontStyle, fontSize);
-		else if(useOpenGL_V2) {
+		if(Activator.useOpenGLV1()) rtswtxyChart = RTSWTChartsFactory.createOpenGLXYChart(chartContainer, SWT.DOUBLE_BUFFERED, fontName, fontStyle, fontSize);
+		else if(Activator.useOpenGLV2()) {
 			String os = Platform.getOS();
 			if (Platform.OS_WIN32.equals(os)) {
 				rtswtxyChart = new Chart2D(chartContainer, xMin, xMax, yMin, yMax, new Curve2DData[0]);
@@ -350,7 +330,7 @@ public class XYChartConfiguration extends ChartConfiguration {
 			
 			IRTSWTSerie rtswtSerie = null;
 			double sfx = Double.parseDouble(sfxString);
-			if(useOpenGL_V2) {
+			if(Activator.useOpenGLV2()) {
 				rtswtSerie = new Curve2DData(sfx);
 				((Curve2DData)rtswtSerie).setName(ySerieID + "(" + xSerieID + ")");
 				((Curve2DData)rtswtSerie).setLineWidth(thickness);

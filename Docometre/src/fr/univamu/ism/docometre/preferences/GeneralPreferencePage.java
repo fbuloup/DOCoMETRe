@@ -116,12 +116,7 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
 //		addField(useOpenGLForRTSWTChartFiledEditor);
 		
 		// For backward compatibility
-		String defaultValue = getPreferenceStore().getString(GeneralPreferenceConstants.RTSWT_CHART_LIBRARY);
-		if("".equals(defaultValue)) {
-			boolean useOpenGL = getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_OPENGL_FOR_RTSWT_CHART);
-			if(useOpenGL) getPreferenceStore().setValue(GeneralPreferenceConstants.RTSWT_CHART_LIBRARY, GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT_OPENGL_V1);
-			else getPreferenceStore().setValue(GeneralPreferenceConstants.RTSWT_CHART_LIBRARY, GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT);
-		}
+		Activator.initRTSWTChartLibraryPreference();
 		String[][] namesValues = new String[][] {
 		    {GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT, GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT},
 		    {GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT_OPENGL_V1, GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT_OPENGL_V1},

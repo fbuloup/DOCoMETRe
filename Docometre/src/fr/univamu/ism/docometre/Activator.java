@@ -76,6 +76,7 @@ import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.processeditor.ArduinoU
 import fr.univamu.ism.docometre.editors.DataEditor;
 import fr.univamu.ism.docometre.editors.PartNameRefresher;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
+import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 import fr.univamu.ism.docometre.views.CachedLogger;
 import fr.univamu.ism.process.ScriptSegment;
 
@@ -407,5 +408,35 @@ public class Activator extends AbstractUIPlugin {
 		logErrorMessageWithCause(e);
 		e.printStackTrace();
 	}
+	
+	public static void initRTSWTChartLibraryPreference() {
+		// For backward compatibility, in case RTSWT_CHART_LIBRARY preference is not defined
+		String defaultValue = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.RTSWT_CHART_LIBRARY);
+		if("".equals(defaultValue)) {
+			boolean useOpenGL = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_OPENGL_FOR_RTSWT_CHART);
+			if(useOpenGL) Activator.getDefault().getPreferenceStore().setValue(GeneralPreferenceConstants.RTSWT_CHART_LIBRARY, GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT_OPENGL_V1);
+			else Activator.getDefault().getPreferenceStore().setValue(GeneralPreferenceConstants.RTSWT_CHART_LIBRARY, GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT);
+		}
+	}
+	
+	public static boolean useOpenGLV2() {
+		initRTSWTChartLibraryPreference();
+		String rtSWTChartLibrary = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.RTSWT_CHART_LIBRARY);
+		return GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT_OPENGL_V2.equals(rtSWTChartLibrary);
+	}
+	
+	public static boolean useOpenGLV1() {
+		initRTSWTChartLibraryPreference();	
+		String rtSWTChartLibrary = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.RTSWT_CHART_LIBRARY);
+		return GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT_OPENGL_V1.equals(rtSWTChartLibrary);
+	}
+	
+	public static boolean usePureSWT() {
+		initRTSWTChartLibraryPreference();
+		String rtSWTChartLibrary = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.RTSWT_CHART_LIBRARY);
+		return GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT.equals(rtSWTChartLibrary);
+	}
+	
+	
 	
 }

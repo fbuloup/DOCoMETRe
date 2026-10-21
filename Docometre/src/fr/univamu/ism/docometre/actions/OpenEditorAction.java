@@ -81,7 +81,6 @@ import fr.univamu.ism.docometre.editors.DataEditor;
 import fr.univamu.ism.docometre.editors.DiaryEditor;
 import fr.univamu.ism.docometre.editors.ParametersEditor;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
-import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 
 public class OpenEditorAction extends Action implements ISelectionListener, IWorkbenchAction {
@@ -176,16 +175,7 @@ public class OpenEditorAction extends Action implements ISelectionListener, IWor
 				else if(ResourceType.isFunction(resource)) openEditor(resource, CustomerFunctionEditor.ID);
 				
 				if(ResourceType.isSamples(resource)) {
-					// For backward compatibility
-					String defaultValue = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.RTSWT_CHART_LIBRARY);
-					if("".equals(defaultValue)) {
-						boolean useOpenGL = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_OPENGL_FOR_RTSWT_CHART);
-						if(useOpenGL) Activator.getDefault().getPreferenceStore().setValue(GeneralPreferenceConstants.RTSWT_CHART_LIBRARY, GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT_OPENGL_V1);
-						else Activator.getDefault().getPreferenceStore().setValue(GeneralPreferenceConstants.RTSWT_CHART_LIBRARY, GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT);
-					}
-					String rtSWTChartLibrary = Activator.getDefault().getPreferenceStore().getString(GeneralPreferenceConstants.RTSWT_CHART_LIBRARY);
-					boolean useOpenGL_V2 = GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT_OPENGL_V2.equals(rtSWTChartLibrary);
-					if(useOpenGL_V2) openEditor(resource, GL2DataEditor.ID);
+					if(Activator.useOpenGLV2()) openEditor(resource, GL2DataEditor.ID);
 					else openEditor(resource, DataEditor.ID);
 				}
 				else if(editorID != null) {
