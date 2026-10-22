@@ -7,27 +7,27 @@ import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
 
 /**
- * Surface OpenGL d'un graphe intégrée dans une interface SWT : création du
- * composant, animation (environ {@link #FPS} images par seconde), transmission
- * des événements souris et clavier au renderer ({@link ChartInteraction}),
- * fermeture. Deux implémentations, selon la boîte à outils ({@link GLToolkit}) :
- * {@link SWTGLHost} et {@link NewtGLHost}.
+ * OpenGL surface of a chart embedded in an SWT user interface: creation of
+ * the component, animation (about {@link #FPS} frames per second),
+ * forwarding of the mouse and keyboard events to the renderer
+ * ({@link ChartInteraction}), closing. Two implementations, depending on the
+ * toolkit ({@link GLToolkit}): {@link SWTGLHost} and {@link NewtGLHost}.
  *
- * La surface est fermée (animation arrêtée, ressources libérées) par
- * {@link #close()} ou quand son composant SWT est détruit (directement ou
- * via son parent).
+ * The surface is closed (animation stopped, resources released) by
+ * {@link #close()} or when its SWT component is disposed (directly or
+ * through its parent).
  */
 public abstract class GLHost {
 
-    /** Cadence d'affichage visée, en images par seconde. */
+    /** Target frame rate, in frames per second. */
     public static final int FPS = 60;
 
     /**
-     * Crée la surface OpenGL dans parent et démarre l'animation.
+     * Creates the OpenGL surface in parent and starts the animation.
      *
-     * @param depthBuffer true pour une scène 3D (tampon de profondeur de 24 bits)
-     * @param renderer    rendu et commandes souris / clavier
-     * @param onClose     action exécutée une fois, à la fermeture (null = aucune)
+     * @param depthBuffer true for a 3D scene (24-bit depth buffer)
+     * @param renderer    rendering and mouse / keyboard commands
+     * @param onClose     action run once, on closing (null = none)
      */
     public static GLHost create(GLToolkit toolkit, Composite parent, boolean depthBuffer, GLChartRenderer renderer,
                                 Runnable onClose) {
@@ -42,7 +42,7 @@ public abstract class GLHost {
     private Runnable onClose;
     private boolean closed;
 
-    /** Profil GL2, double tampon, anticrénelage 4x et, si demandé, tampon de profondeur. */
+    /** GL2 profile, double buffering, 4x antialiasing and, if requested, depth buffer. */
     private static GLCapabilities capabilities(boolean depthBuffer) {
         GLCapabilities capabilities = new GLCapabilities(GLProfile.get(GLProfile.GL2));
         capabilities.setDoubleBuffered(true);
@@ -52,16 +52,16 @@ public abstract class GLHost {
         return capabilities;
     }
 
-    /** Composant SWT qui contient la surface OpenGL (pour la mise en page). */
+    /** SWT component containing the OpenGL surface (for layout). */
     public abstract Control getControl();
 
-    /** Arrête l'animation : l'affichage n'est plus rafraîchi. */
+    /** Stops the animation: the display is no longer refreshed. */
     public abstract void stopAnimation();
     
-    /** Démarre l'animation : l'affichage est rafraîchi. */
+    /** Starts the animation: the display is refreshed. */
     public abstract void startAnimation();
 
-    /** Arrête l'animation et détruit la surface OpenGL et son composant SWT (une seule fois). */
+    /** Stops the animation and destroys the OpenGL surface and its SWT component (only once). */
     public final void close() {
         if (closed) return;
         closed = true;
@@ -69,7 +69,7 @@ public abstract class GLHost {
         if (onClose != null) onClose.run();
     }
 
-    /** Arrête l'animation et détruit la surface OpenGL et son composant SWT. */
+    /** Stops the animation and destroys the OpenGL surface and its SWT component. */
     protected abstract void destroy();
 
     public boolean isDisposed() {

@@ -7,8 +7,8 @@ import fr.univamu.ism.docometre.chartxyz.GLToolkit;
 import fr.univamu.ism.docometre.chartxyz.SurfaceData;
 
 /**
- * Surface 3D dans un GLCanvas SWT, pour Windows et Linux.
- * Toutes les fonctionnalités sont dans {@link GLSurface}.
+ * 3D surface in an SWT GLCanvas, for Windows and Linux.
+ * All the features are in {@link GLSurface}.
  */
 public class Surface extends GLSurface {
 

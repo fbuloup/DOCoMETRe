@@ -21,7 +21,9 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IPartListener2;
@@ -92,6 +94,13 @@ public class GL2DataEditor extends EditorPart implements PartNameRefresher, IPar
 
 	@Override
 	public void createPartControl(Composite parent) {
+		if (curveData == null) {
+			// No data (unknown sampling frequency and input cancelled, or read error): message instead of the chart
+			Label label = new Label(parent, SWT.WRAP);
+			label.setText("No data to display: the samples could not be loaded (see the error log).");
+			refreshPartName();
+			return;
+		}
 		chart = GLChart1D.createChart(parent, curveData.getWindowTimeWidth(), curveData);
 		chart.setDisplayMode(Chart1DRenderer.DisplayMode.SCROLL); 
 		refreshPartName();
@@ -199,7 +208,7 @@ public class GL2DataEditor extends EditorPart implements PartNameRefresher, IPar
 		String partName = GetResourceLabelDelegate.getLabel((IResource) object);
 		String toolTip = getEditorInput().getToolTipText();
 		
-		if(chart.getCurvesCount() > 1) {
+		if(chart != null && chart.getCurvesCount() > 1) {
 			partName += " (...)";
 			toolTip = "";
 			List<String> names = chart.getRenderer().getCurves().stream().map(Curve1DData::getName).collect(Collectors.toList());
@@ -234,58 +243,58 @@ public class GL2DataEditor extends EditorPart implements PartNameRefresher, IPar
 	
 	@Override
 	public void partActivated(IWorkbenchPartReference partRef) {
-		if(partRef == getSite().getPage().getReference(this)) {
+		if(chart != null && partRef == getSite().getPage().getReference(this)) {
 			chart.startAnimator();
 		}
 	}
 	
 	@Override
 	public void partDeactivated(IWorkbenchPartReference partRef) {
-		if(partRef == getSite().getPage().getReference(this)) {
+		if(chart != null && partRef == getSite().getPage().getReference(this)) {
 			chart.stopAnimator();
 		}
 	}
 	
 	@Override
 	public void dispose() {
-		chart.close();
+		if (chart != null) chart.close();
 		getSite().getPage().removePartListener(this);
 		super.dispose();
 	}
 
 	@Override
 	public void panLeft() {
-		chart.getRenderer().pan(-0.1f, 0);
+		if (chart != null) chart.getRenderer().pan(-0.1f, 0);
 	}
 
 	@Override
 	public void panRight() {
-		chart.getRenderer().pan(0.1f, 0);
+		if (chart != null) chart.getRenderer().pan(0.1f, 0);
 	}
 
 	@Override
 	public void panUp() {
-		chart.getRenderer().pan(0, 0.1f);
+		if (chart != null) chart.getRenderer().pan(0, -0.1f);
 	}
 
 	@Override
 	public void panDown() {
-		chart.getRenderer().pan(0, -0.1f);
+		if (chart != null) chart.getRenderer().pan(0, 0.1f);
 	}
 
 	@Override
 	public void zoomIn() {
-		chart.getRenderer().zoom(1f);
+		if (chart != null) chart.getRenderer().zoom(1f);
 	}
 
 	@Override
 	public void zoomOut() {
-		chart.getRenderer().zoom(-1f);
+		if (chart != null) chart.getRenderer().zoom(-1f);
 	}
 
 	@Override
 	public void reset() {
-		chart.getRenderer().resetView();
+		if (chart != null) chart.getRenderer().resetView();
 	}
 
 }

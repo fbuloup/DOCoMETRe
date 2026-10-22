@@ -2,7 +2,7 @@ package fr.univamu.ism.docometre.chartxyz.tests;
 
 import fr.univamu.ism.docometre.chartxyz.GLToolkit;
 
-/** {@link RealTimeChart2DTest} avec NEWT (macOS). */
+/** {@link RealTimeChart2DTest} with NEWT (macOS). */
 public class NewtRealTimeChart2DTest {
 
     public static void main(String[] args) {

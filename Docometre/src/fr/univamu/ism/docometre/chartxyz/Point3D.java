@@ -1,7 +1,7 @@
 package fr.univamu.ism.docometre.chartxyz;
 
 /**
- * Représente un point immuable dans l'espace 3D.
+ * Immutable point in 3D space.
  */
 public class Point3D {
 

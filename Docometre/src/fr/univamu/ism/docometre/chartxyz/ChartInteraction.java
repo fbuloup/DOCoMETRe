@@ -1,41 +1,40 @@
 package fr.univamu.ism.docometre.chartxyz;
 
 /**
- * Commandes souris et clavier d'un graphe, indépendantes de la boîte à
- * outils qui produit les événements (SWT ou NEWT, voir {@link GLHost}).
- * Implémentée par les renderers.
+ * Mouse and keyboard commands of a chart, independent of the toolkit that
+ * produces the events (SWT or NEWT, see {@link GLHost}). Implemented by the
+ * renderers.
  *
- * Les coordonnées de la souris sont exprimées en unités de la fenêtre,
- * origine en haut à gauche ; width et height sont la taille du composant
- * dans les mêmes unités.
+ * Mouse coordinates are expressed in window units, origin at the top left;
+ * width and height are the size of the component in the same units.
  */
 public interface ChartInteraction {
 
-    /** Bouton gauche de la souris. */
+    /** Left mouse button. */
     int LEFT_BUTTON = 1;
-    /** Bouton droit de la souris. */
+    /** Right mouse button. */
     int RIGHT_BUTTON = 3;
 
-    /** Caractère transmis à {@link #keyPressed} pour la touche Échap. */
+    /** Character passed to {@link #keyPressed} for the Escape key. */
     char ESCAPE = '\u001b';
-    /** Caractère transmis à {@link #keyPressed} pour la touche Retour arrière. */
+    /** Character passed to {@link #keyPressed} for the Backspace key. */
     char BACKSPACE = '\b';
-    /** Caractère transmis à {@link #keyPressed} pour la touche Tabulation. */
+    /** Character passed to {@link #keyPressed} for the Tab key. */
     char TAB = '\t';
-    /** Caractère transmis à {@link #keyPressed} pour Maj + Tabulation (caractère à usage privé). */
+    /** Character passed to {@link #keyPressed} for Shift + Tab (private use character). */
     char BACK_TAB = '\uE000';
 
     /**
-     * Facteurs propres à la boîte à outils : les déplacements de souris et
-     * les crans de molette n'y ont pas la même amplitude.
+     * Toolkit-specific factors: mouse displacements and wheel steps do not
+     * have the same amplitude in each toolkit.
      */
     enum InputScale {
         SWT(0.5f, 0.1f),
         NEWT(0.05f, 0.01f);
 
-        /** Rotation de la caméra 3D, en degrés par pixel de déplacement. */
+        /** Rotation of the 3D camera, in degrees per pixel of displacement. */
         public final float degreesPerPixel;
-        /** Variation de distance de la caméra 3D par unité de molette. */
+        /** Change of the 3D camera distance per wheel unit. */
         public final float zoomPerWheelUnit;
 
         InputScale(float degreesPerPixel, float zoomPerWheelUnit) {
@@ -45,52 +44,51 @@ public interface ChartInteraction {
     }
 
     /**
-     * Déplacement de la souris, bouton enfoncé.
+     * Mouse moved with a button pressed.
      *
-     * @param button        {@link #LEFT_BUTTON} ou {@link #RIGHT_BUTTON} (le gauche l'emporte si les deux sont enfoncés)
-     * @param dx            déplacement horizontal, en unités de la fenêtre
-     * @param dy            déplacement vertical (vers le bas), en unités de la fenêtre
-     * @param width         largeur du composant, dans les mêmes unités
-     * @param height        hauteur du composant, dans les mêmes unités
+     * @param button        {@link #LEFT_BUTTON} or {@link #RIGHT_BUTTON} (the left one wins if both are pressed)
+     * @param dx            horizontal displacement, in window units
+     * @param dy            vertical displacement (downwards), in window units
+     * @param width         width of the component, in the same units
+     * @param height        height of the component, in the same units
      */
     void drag(int button, int dx, int dy, int width, int height, InputScale scale);
 
     /**
-     * Déplacement de la souris bouton enfoncé, avec sa position (x, y) après
-     * le déplacement. Par défaut, seul le déplacement est utilisé ({@link #drag}).
+     * Mouse moved with a button pressed, with its position (x, y) after the
+     * move. By default, only the displacement is used ({@link #drag}).
      */
     default void dragTo(int button, int x, int y, int dx, int dy, int width, int height, InputScale scale) {
         drag(button, dx, dy, width, height, scale);
     }
 
-    /** Déplacement de la souris sans bouton enfoncé, jusqu'en (x, y). Sans effet par défaut. */
+    /** Mouse moved without a button pressed, up to (x, y). No effect by default. */
     default void move(int x, int y, int width, int height) {
     }
 
     /**
-     * Vrai si la touche Tabulation doit être transmise à {@link #keyPressed}
-     * plutôt que de faire passer le focus clavier au composant suivant
-     * (consulté par l'hôte SWT à chaque appui). Faux par défaut.
+     * True if the Tab key must be passed to {@link #keyPressed} rather than
+     * moving the keyboard focus to the next component (checked by the SWT
+     * host at each key press). False by default.
      */
     default boolean usesTabKey() {
         return false;
     }
 
-    /** Bouton enfoncé en (x, y). Sans effet par défaut. */
+    /** Button pressed at (x, y). No effect by default. */
     default void press(int button, int x, int y, int width, int height) {
     }
 
-    /** Bouton relâché en (x, y) (éventuellement hors du composant). Sans effet par défaut. */
+    /** Button released at (x, y) (possibly outside the component). No effect by default. */
     default void release(int button, int x, int y, int width, int height) {
     }
 
-    /** Rotation de la molette, dans l'unité de la boîte à outils : amount > 0 vers le haut (zoom avant). */
+    /** Wheel rotation, in the toolkit unit: amount > 0 upwards (zoom in). */
     void wheel(float amount, InputScale scale);
 
     /**
-     * Touche du clavier (caractère en minuscule, {@link #ESCAPE},
-     * {@link #BACKSPACE}, {@link #TAB} ou {@link #BACK_TAB}) ; sans effet si
-     * elle n'est pas gérée.
+     * Keyboard key (lower-case character, {@link #ESCAPE}, {@link #BACKSPACE},
+     * {@link #TAB} or {@link #BACK_TAB}); no effect if it is not handled.
      */
     void keyPressed(char key);
 }

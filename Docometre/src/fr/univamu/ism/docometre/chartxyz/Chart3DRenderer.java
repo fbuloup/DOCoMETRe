@@ -10,26 +10,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Rendu OpenGL d'une ou plusieurs courbes 3D temps réel ({@link Curve3DData}),
- * vues par une caméra en orbite ({@link OrbitCamera}) autour du centre des
- * données, avec une boîte de repère graduée ({@link ReferenceBox}).
+ * OpenGL rendering of one or several real-time 3D curves ({@link Curve3DData}),
+ * seen by a camera orbiting ({@link OrbitCamera}) around the center of the
+ * data, with a graduated reference box ({@link ReferenceBox}).
  *
- * Le texte (graduations, noms d'axes) est rendu par SWT (voir {@link GLText}),
- * sans AWT : le mélange de TextRenderer (AWT) avec le pipeline natif SWT
- * peut produire un rendu incorrect sur certaines configurations. Les
- * étiquettes sont projetées à l'écran pendant le dessin de la scène, puis
- * dessinées dans une passe 2D finale.
+ * Text (tick labels, axis names) is rendered by SWT (see {@link GLText}),
+ * without AWT: mixing TextRenderer (AWT) with the native SWT pipeline can
+ * produce incorrect rendering on some configurations. The labels are
+ * projected on screen while the scene is drawn, then drawn in a final 2D
+ * pass.
  */
 public class Chart3DRenderer extends CurveChartRenderer<Curve3DData> {
 
-    private static final float DEFAULT_LINE_WIDTH = 2.5f; // épaisseur des courbes sans épaisseur explicite (pixels)
+    private static final float DEFAULT_LINE_WIDTH = 2.5f; // width of the curves without an explicit width (pixels)
 
-    /** Étiquette placée dans la scène 3D, projetée à l'écran et dessinée par-dessus la scène. */
+    /** Label placed in the 3D scene, projected on screen and drawn over the scene. */
     private static final class Label {
         final String text;
         final ChartFont font;
         final float[] color;
-        final double x, y; // position à l'écran (pixels)
+        final double x, y; // on-screen position (pixels)
 
         Label(String text, ChartFont font, float[] color, double x, double y) {
             this.text = text;
@@ -42,23 +42,23 @@ public class Chart3DRenderer extends CurveChartRenderer<Curve3DData> {
 
     private final GLU glu = new GLU();
     private final OrbitCamera camera = new OrbitCamera(25f, -35f);
-    private final List<Label> labels = new ArrayList<>(); // étiquettes de l'image en cours
-    private float[] sceneMatrix;                          // matrice données -> découpage de l'image en cours
+    private final List<Label> labels = new ArrayList<>(); // labels of the current frame
+    private float[] sceneMatrix;                          // data -> clip matrix of the current frame
 
-    // Boîte englobante de l'ensemble des courbes, recalculée à chaque image
+    // Bounding box of all the curves, recomputed at each frame
     private BoundingBox bounds = BoundingBox.DEFAULT;
-    private double[] frameFixedScales; // échelles fixes figées pour l'image en cours
-    private float aspect = 1f;         // largeur / hauteur de la zone d'affichage
+    private double[] frameFixedScales; // fixed scales frozen for the current frame
+    private float aspect = 1f;         // width / height of the drawing area
 
     /**
-     * @param historySize durée de l'historique (longueur des traînées), en secondes, imposée à toutes les courbes
+     * @param historySize history duration (length of the trails), in seconds, imposed on all the curves
      */
     public Chart3DRenderer(double historySize, Curve3DData... curves) {
         super(5f, curves);
         setWindowTimeWidth(historySize);
     }
 
-    /** Graphe dont chaque courbe garde sa propre durée d'historique (données statiques, par exemple). */
+    /** Chart in which each curve keeps its own history duration (static data, for example). */
     public Chart3DRenderer(Curve3DData... curves) {
         super(5f, curves);
     }
@@ -73,7 +73,7 @@ public class Chart3DRenderer extends CurveChartRenderer<Curve3DData> {
     public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
         super.reshape(drawable, x, y, width, height);
         drawable.getGL().getGL2().glViewport(0, 0, this.width, this.height);
-        aspect = (float) this.width / this.height; // la projection est appliquée dans display()
+        aspect = (float) this.width / this.height; // the projection is applied in display()
     }
 
     @Override
@@ -82,13 +82,13 @@ public class Chart3DRenderer extends CurveChartRenderer<Curve3DData> {
         GL2 gl = drawable.getGL().getGL2();
         gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
 
-        // Fige les données reçues depuis l'image précédente, puis calcule la boîte englobante commune
+        // Freezes the data received since the previous frame, then computes the common bounding box
         labels.clear();
         snapshotCurves();
         computeBounds();
 
-        // La projection dépend du rayon englobant, qui varie en temps réel :
-        // elle est donc recalculée à chaque image (et non seulement dans reshape()).
+        // The projection depends on the bounding radius, which varies in real time:
+        // it is therefore recomputed at each frame (and not only in reshape()).
         float radius = bounds.radius;
         float distance = camera.distance(radius);
         gl.glMatrixMode(GL2.GL_PROJECTION);
@@ -107,17 +107,17 @@ public class Chart3DRenderer extends CurveChartRenderer<Curve3DData> {
         }
         if (showAxes) ReferenceBox.drawOriginAxes(gl, radius);
         enableClipping(gl, true);
-        double scale = height / distance; // échelle d'affichage, sert à détecter les changements d'échelle des tirets
+        double scale = height / distance; // display scale, used to detect scale changes for the dashes
         drawTrajectories(gl, DEFAULT_LINE_WIDTH, (x, y, z, pixel) -> project(x, y, z, pixel), scale, scale);
         if (showPoints) drawTrajectoryPoints(gl);
         enableClipping(gl, false);
         drawOverlay(gl);
     }
 
-    /** Boîte englobante de l'ensemble des courbes non vides (de -1 à 1 s'il n'y en a aucune), ou échelles fixes. */
+    /** Bounding box of all the non-empty curves (from -1 to 1 if there is none), or fixed scales. */
     private void computeBounds() {
         frameFixedScales = getFixedScaleBounds();
-        if (frameFixedScales != null) { // échelles fixes : la boîte est exactement celle fournie
+        if (frameFixedScales != null) { // fixed scales: the box is exactly the one given
             double[] f = frameFixedScales;
             bounds = new BoundingBox((float) f[0], (float) f[1], (float) f[2], (float) f[3], (float) f[4], (float) f[5]);
             return;
@@ -131,9 +131,9 @@ public class Chart3DRenderer extends CurveChartRenderer<Curve3DData> {
     }
 
     /**
-     * Avec des échelles fixes, coupe ce qui sort de la boîte [xMin, xMax] x
-     * [yMin, yMax] x [zMin, zMax] (6 plans de découpage, exprimés dans le
-     * repère des données : la matrice courante doit être celle de la scène).
+     * With fixed scales, clips what leaves the box [xMin, xMax] x
+     * [yMin, yMax] x [zMin, zMax] (6 clipping planes, expressed in the data
+     * coordinate system: the current matrix must be the scene matrix).
      */
     private void enableClipping(GL2 gl, boolean enable) {
         double[] f = frameFixedScales;
@@ -143,7 +143,7 @@ public class Chart3DRenderer extends CurveChartRenderer<Curve3DData> {
             if (enable) {
                 int axis = i / 2;
                 double[] equation = new double[4];
-                // Plan i pair : coordonnée >= min ; plan i impair : coordonnée <= max
+                // Even plane i: coordinate >= min; odd plane i: coordinate <= max
                 equation[axis] = (i % 2 == 0) ? 1 : -1;
                 equation[3] = (i % 2 == 0) ? -f[2 * axis] : f[2 * axis + 1];
                 gl.glClipPlane(plane, equation, 0);
@@ -154,7 +154,7 @@ public class Chart3DRenderer extends CurveChartRenderer<Curve3DData> {
         }
     }
 
-    /** Matrice (colonne majeure) qui transforme les coordonnées des données en coordonnées de découpage (projection x vue). */
+    /** Matrix (column-major) transforming data coordinates into clip coordinates (projection x view). */
     private static float[] sceneMatrix(GL2 gl) {
         float[] modelView = new float[16], projection = new float[16], result = new float[16];
         gl.glGetFloatv(GL2.GL_MODELVIEW_MATRIX, modelView, 0);
@@ -169,7 +169,7 @@ public class Chart3DRenderer extends CurveChartRenderer<Curve3DData> {
         return result;
     }
 
-    /** Position à l'écran (pixels) du point (x, y, z) de la scène ; false s'il est derrière la caméra. */
+    /** On-screen position (pixels) of the scene point (x, y, z); false if it is behind the camera. */
     private boolean project(float x, float y, float z, double[] out) {
         float[] m = sceneMatrix;
         double w = m[3] * x + m[7] * y + m[11] * z + m[15];
@@ -182,28 +182,28 @@ public class Chart3DRenderer extends CurveChartRenderer<Curve3DData> {
     }
 
     /**
-     * Étiquette au point (x, y, z) de la scène, dans la couleur courante : la
-     * position est projetée à l'écran maintenant et le texte est dessiné dans
-     * la passe 2D finale (drawOverlay).
+     * Label at the scene point (x, y, z), in the current color: the position
+     * is projected on screen now and the text is drawn in the final 2D pass
+     * (drawOverlay).
      */
     private void addLabel(GL2 gl, String label, float x, float y, float z, boolean axisName) {
         double[] screen = new double[2];
-        if (!project(x, y, z, screen)) return; // derrière la caméra
+        if (!project(x, y, z, screen)) return; // behind the camera
         float[] color = new float[4];
         gl.glGetFloatv(GL2.GL_CURRENT_COLOR, color, 0);
         labels.add(new Label(label, axisName ? axisNameFont() : scaleFont, color, screen[0], screen[1]));
     }
 
-    /** Police des noms d'axes : celle des graduations, en gras et 70 % plus grande. */
+    /** Font of the axis names: the one of the tick labels, bold and 70% larger. */
     private ChartFont axisNameFont() {
         ChartFont font = scaleFont;
         return font.withSize(Math.round(font.getSize() * 1.7f)).withStyle(font.getStyle() | SWT.BOLD);
     }
 
     /**
-     * Passe 2D finale, en pixels, par-dessus la scène 3D : étiquettes des
-     * échelles et noms d'axes, puis légende en haut à gauche (si au moins une
-     * courbe a un nom), cadence d'affichage et valeurs courantes.
+     * Final 2D pass, in pixels, over the 3D scene: tick labels and axis
+     * names, then legend at the top left (if at least one curve has a name),
+     * frame rate and current values.
      */
     private void drawOverlay(GL2 gl) {
         gl.glDisable(GL2.GL_DEPTH_TEST);
@@ -242,10 +242,10 @@ public class Chart3DRenderer extends CurveChartRenderer<Curve3DData> {
     public void resetView() { camera.reset(); }
 
     /**
-     * Échelles fixes : la boîte de repère et les graduations vont exactement
-     * de xMin à xMax, yMin à yMax et zMin à zMax, quelles que soient les
-     * valeurs des courbes (ce qui sort de la boîte est coupé). La caméra
-     * reste alors à distance constante.
+     * Fixed scales: the reference box and the tick labels go exactly from
+     * xMin to xMax, yMin to yMax and zMin to zMax, whatever the curve values
+     * (what leaves the box is clipped). The camera then stays at a constant
+     * distance.
      */
     public void setFixedScales(double xMin, double xMax, double yMin, double yMax, double zMin, double zMax) {
         setFixedScaleBounds(xMin, xMax, yMin, yMax, zMin, zMax);

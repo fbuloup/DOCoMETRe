@@ -1,33 +1,34 @@
 package fr.univamu.ism.docometre.chartxyz;
 
 /**
- * Réduction du nombre de points envoyés à OpenGL, sans changer le dessin à
- * l'écran. Calcule la liste des indices (croissants) des points à tracer :
+ * Reduction of the number of points sent to OpenGL, without changing the
+ * on-screen drawing. Computes the list of the (increasing) indices of the
+ * points to draw:
  *
  * <ul>
- * <li>{@link #m4} (graphes 1D) : réduction "M4" par colonne de pixels. Dans
- *     chaque colonne, on garde le premier échantillon, le minimum, le
- *     maximum et le dernier, dans leur ordre chronologique. Le tracé obtenu
- *     est identique au pixel près au tracé complet (le trait vertical de la
- *     colonne et les liaisons entre colonnes sont conservés), avec au plus
- *     4 points par colonne quelle que soit la fréquence d'échantillonnage.</li>
- * <li>{@link #screenDistance} (graphes 2D et 3D) : on ne garde un point que
- *     s'il est à au moins epsilon pixels du dernier point gardé (le premier
- *     et le dernier sont toujours gardés). Le tracé simplifié ne s'écarte
- *     jamais de plus d'epsilon pixels du tracé complet.</li>
+ * <li>{@link #m4} (1D charts): "M4" reduction per pixel column. In each
+ *     column, the first sample, the minimum, the maximum and the last one
+ *     are kept, in their chronological order. The resulting drawing is
+ *     identical to the pixel to the full drawing (the vertical stroke of the
+ *     column and the links between columns are kept), with at most 4 points
+ *     per column whatever the sampling frequency.</li>
+ * <li>{@link #screenDistance} (2D and 3D charts): a point is only kept if it
+ *     is at least epsilon pixels away from the last kept point (the first
+ *     and last ones are always kept). The simplified drawing never deviates
+ *     by more than epsilon pixels from the full drawing.</li>
  * </ul>
  *
- * Une instance réutilise son tableau d'indices d'une image à l'autre : elle
- * est propre à un renderer et doit être utilisée depuis son thread d'affichage.
+ * An instance reuses its index array from one frame to the next: it is
+ * specific to a renderer and must be used from its rendering thread.
  */
 public final class Decimation {
 
-    /** Colonne de pixels (ou toute clé de regroupement) de l'échantillon i. */
+    /** Pixel column (or any grouping key) of sample i. */
     public interface ColumnKey {
         long key(int i);
     }
 
-    /** Position à l'écran (pixels) du point i, écrite dans out ; false si elle est inconnue (point derrière la caméra). */
+    /** On-screen position (pixels) of point i, written into out; false if it is unknown (point behind the camera). */
     public interface ScreenPosition {
         boolean project(int i, double[] out);
     }
@@ -35,17 +36,17 @@ public final class Decimation {
     private int[] indices = new int[256];
     private int count;
 
-    /** Indices des points à tracer (les count() premiers éléments sont valides). */
+    /** Indices of the points to draw (the first count() elements are valid). */
     public int[] indices() { return indices; }
-    /** Nombre de points à tracer. */
+    /** Number of points to draw. */
     public int count() { return count; }
 
     /**
-     * Réduction M4 des échantillons [from, n) : les échantillons consécutifs
-     * de même clé (même colonne de pixels) sont regroupés et réduits à leurs
-     * premier, minimum, maximum et dernier éléments.
+     * M4 reduction of the samples [from, n): consecutive samples with the
+     * same key (same pixel column) are grouped and reduced to their first,
+     * minimum, maximum and last elements.
      *
-     * @param values valeurs (ordonnées) des échantillons
+     * @param values values (ordinates) of the samples
      */
     public void m4(int from, int n, float[] values, ColumnKey column) {
         count = 0;
@@ -68,8 +69,8 @@ public final class Decimation {
     }
 
     /**
-     * Filtre par distance à l'écran des points [0, n) : un point est gardé
-     * s'il est à au moins epsilon pixels du dernier point gardé.
+     * On-screen distance filter of the points [0, n): a point is kept if it
+     * is at least epsilon pixels away from the last kept point.
      */
     public void screenDistance(int n, double epsilon, ScreenPosition position) {
         count = 0;
@@ -82,7 +83,7 @@ public final class Decimation {
         indices[count++] = 0;
         for (int i = 1; i < n - 1; i++) {
             boolean known = position.project(i, p);
-            if (!known || !lastKnown) { // position inconnue : on garde le point par prudence
+            if (!known || !lastKnown) { // unknown position: the point is kept to be safe
                 indices[count++] = i;
             } else {
                 double dx = p[0] - lastX, dy = p[1] - lastY;
@@ -96,9 +97,9 @@ public final class Decimation {
         if (n > 1) indices[count++] = n - 1;
     }
 
-    /** Ajoute les indices a, b, c, d d'une colonne, triés et sans doublon. */
+    /** Adds the indices a, b, c, d of a column, sorted and without duplicates. */
     private void appendColumn(int a, int b, int c, int d) {
-        // b et c (minimum, maximum) sont entre a (premier) et d (dernier) : seul leur ordre est à fixer
+        // b and c (minimum, maximum) are between a (first) and d (last): only their order must be set
         int lo = Math.min(b, c), hi = Math.max(b, c);
         append(a);
         append(lo);
@@ -107,7 +108,7 @@ public final class Decimation {
     }
 
     private void append(int index) {
-        if (count > 0 && indices[count - 1] >= index) return; // doublon (ou déjà couvert)
+        if (count > 0 && indices[count - 1] >= index) return; // duplicate (or already covered)
         indices[count++] = index;
     }
 

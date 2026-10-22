@@ -3,15 +3,15 @@ package fr.univamu.ism.docometre.chartxyz;
 import java.util.Locale;
 
 /**
- * Graduations des axes : pas "ronds" (1, 2 ou 5 x 10^n), valeurs des
- * graduations dans un intervalle et formatage des étiquettes.
+ * Axis ticks: "round" steps (1, 2 or 5 x 10^n), tick values within an
+ * interval and label formatting.
  */
 public final class AxisTicks {
 
     private AxisTicks() {
     }
 
-    /** Pas de graduation "rond" (1, 2 ou 5 x 10^n) le plus proche de rawStep. */
+    /** "Round" tick step (1, 2 or 5 x 10^n) closest to rawStep. */
     public static double niceStep(double rawStep) {
         if (!(rawStep > 0)) return 1;
         double magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
@@ -20,7 +20,7 @@ public final class AxisTicks {
         return nice * magnitude;
     }
 
-    /** Valeurs des graduations multiples de step comprises dans [min, max] (au plus 100). */
+    /** Tick values that are multiples of step within [min, max] (at most 100). */
     public static double[] ticks(double min, double max, double step) {
         long first = (long) Math.ceil(min / step);
         int n = (int) Math.max(0, Math.min(100, Math.floor(max / step) - first + 1));
@@ -29,7 +29,7 @@ public final class AxisTicks {
         return values;
     }
 
-    /** Formate une graduation avec juste assez de décimales pour le pas utilisé, en évitant "-0". */
+    /** Formats a tick with just enough decimals for the step used, avoiding "-0". */
     public static String format(double value, double step) {
         if (Math.abs(value) < step * 1e-6) value = 0;
         if (step >= 1e6 || step < 1e-4) return String.format(Locale.US, "%.3g", value);
@@ -37,7 +37,7 @@ public final class AxisTicks {
         return String.format(Locale.US, "%." + decimals + "f", value);
     }
 
-    /** Formate une valeur avec 2 décimales, en évitant l'affichage "-0.00" (graduations des boîtes 3D). */
+    /** Formats a value with 2 decimals, avoiding the display of "-0.00" (ticks of the 3D boxes). */
     public static String format2(float value) {
         if (Math.abs(value) < 0.005f) value = 0f;
         return String.format(Locale.US, "%.2f", value);

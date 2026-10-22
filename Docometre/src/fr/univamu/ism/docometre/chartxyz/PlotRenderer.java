@@ -11,95 +11,93 @@ import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
 
 /**
- * Base des renderers plans (1D et 2D). L'écran est découpé en une zone de
- * tracé (projection orthographique en unités des données, avec découpage
- * par scissor) entourée de marges en pixels où sont écrites les
- * graduations. Les graduations tombent sur des valeurs "rondes" (1, 2 ou
- * 5 x 10^n). La vue s'ajuste automatiquement aux données ; zoom et
- * panoramique s'appliquent par-dessus cet ajustement automatique.
+ * Base of the plane renderers (1D and 2D). The screen is split into a plot
+ * area (orthographic projection in data units, clipped with a scissor)
+ * surrounded by margins in pixels where the tick labels are written. Ticks
+ * fall on "round" values (1, 2 or 5 x 10^n). The view automatically fits
+ * the data; zoom and pan apply on top of this automatic fit.
  *
- * Zoom par rectangle : bouton gauche enfoncé, on trace à la souris la
- * fenêtre à afficher (dessinée pendant le déplacement), qui est appliquée
- * au relâchement. Un rectangle très étroit dans une direction ne zoome que
- * sur l'autre axe. Cette fenêtre de zoom est exprimée en unités des données
- * (en 1D, mode défilement, abscisses relatives au dernier échantillon :
- * la fenêtre suit le temps) ; tant qu'elle existe, molette et panoramique la
- * modifient. Commandes, en plus de celles de {@link CurveChartRenderer} :
+ * Rectangle zoom: with the left button held down, the window to display is
+ * drawn with the mouse (shown while moving) and applied on release. A very
+ * narrow rectangle in one direction only zooms on the other axis. This zoom
+ * window is expressed in data units (in 1D scroll mode, abscissas relative
+ * to the last sample: the window follows time); as long as it exists, the
+ * wheel and pan modify it. Commands, in addition to those of
+ * {@link CurveChartRenderer}:
  * <ul>
- * <li>bouton gauche + glisser : zoom par rectangle</li>
- * <li>bouton droit + glisser : panoramique</li>
- * <li>Échap : annule le rectangle en cours</li>
- * <li>U ou Retour arrière : revient à la fenêtre précédente</li>
- * <li>R : revient à la vue initiale (efface aussi l'historique)</li>
+ * <li>left button + drag: rectangle zoom</li>
+ * <li>right button + drag: pan</li>
+ * <li>Escape: cancels the rectangle being drawn</li>
+ * <li>U or Backspace: goes back to the previous window</li>
+ * <li>R: goes back to the initial view (also clears the history)</li>
  * </ul>
  *
- * Curseur (touche C, désactivé par défaut) : un axe vertical et un axe
- * horizontal, dans la couleur de la courbe suivie, se croisent sur le point
- * de cette courbe le plus proche de la souris (distance à l'écran, parmi les
- * échantillons visibles ; en 1D, le point de même abscisse que la souris,
- * voir {@link #cursorFollowsXOnly()}). Ses coordonnées sont affichées dans des étiquettes
- * placées au pied de chaque axe du curseur, sur les axes des abscisses et des
- * ordonnées. Le curseur suit d'abord la première courbe ; Tabulation passe à
- * la suivante, Maj + Tabulation à la précédente. Les {@link CursorListener}
- * reçoivent les coordonnées {x, y} du point désigné.
+ * Cursor (C key, disabled by default): a vertical axis and a horizontal axis,
+ * in the color of the followed curve, cross on the point of that curve
+ * closest to the mouse (on-screen distance, among the visible samples; in
+ * 1D, the point with the same abscissa as the mouse, see
+ * {@link #cursorFollowsXOnly()}). Its coordinates are displayed in badges at
+ * the foot of each cursor axis, on the abscissa and ordinate axes. The
+ * cursor first follows the first curve; Tab moves to the next one, Shift +
+ * Tab to the previous one. {@link CursorListener}s receive the coordinates
+ * {x, y} of the designated point.
  *
- * Chaque image suit le même déroulement ({@link #display}) ; les
- * sous-classes fournissent la mise à jour des données, la fenêtre visible
- * et le tracé des courbes.
+ * Each frame follows the same sequence ({@link #display}); subclasses
+ * provide the data update, the visible window and the curve drawing.
  *
- * @param <C> type des courbes affichées
+ * @param <C> type of the displayed curves
  */
 public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRenderer<C> {
 
-    private static final int TARGET_TICK_COUNT = 6;          // nombre approximatif de graduations par axe
-    protected static final float DATA_MARGIN = 0.05f;        // espace entre courbe et cadre (fraction de l'étendue)
+    private static final int TARGET_TICK_COUNT = 6;          // approximate number of ticks per axis
+    protected static final float DATA_MARGIN = 0.05f;        // space between curve and frame (fraction of the range)
 
-    /** En dessous de cette taille (pixels) dans une direction, le rectangle ne zoome pas sur cet axe. */
+    /** Below this size (pixels) in one direction, the rectangle does not zoom on that axis. */
     private static final float MIN_SELECTION_PIXELS = 5f;
-    /** Nombre maximal de fenêtres mémorisées pour U / Retour arrière. */
+    /** Maximum number of windows remembered for U / Backspace. */
     private static final int MAX_ZOOM_HISTORY = 50;
-    /** Marque de la vue initiale dans l'historique (ArrayDeque n'accepte pas null). */
+    /** Marker of the initial view in the history (ArrayDeque does not accept null). */
     private static final double[] INITIAL_VIEW = new double[0];
 
     private volatile LegendPosition legendPosition = LegendPosition.BELOW;
-    private float legendBelowHeight = 0; // hauteur de la légende sous l'axe (pixels), 0 si absente
+    private float legendBelowHeight = 0; // height of the legend below the axis (pixels), 0 if absent
 
-    // Vue : zoom (1 = ajustement automatique) et panoramique (en fraction de l'étendue non zoomée)
+    // View: zoom (1 = automatic fit) and pan (as a fraction of the unzoomed range)
     protected volatile float zoom = 1f;
     protected volatile float panX = 0f, panY = 0f;
 
-    // Fenêtre de zoom {xMin, xMax, yMin, yMax}, null = vue initiale. Jamais modifiée
-    // en place (remplacée en entier) ; modifiée sous viewLock, avec l'historique.
+    // Zoom window {xMin, xMax, yMin, yMax}, null = initial view. Never modified
+    // in place (replaced as a whole); modified under viewLock, with the history.
     private volatile double[] zoomWindow;
     private final Deque<double[]> zoomHistory = new ArrayDeque<>();
     private final Object viewLock = new Object();
     private final List<ZoomListener> zoomListeners = new CopyOnWriteArrayList<>();
 
-    // Curseur (touche C) : réglages modifiables depuis n'importe quel thread
+    // Cursor (C key): settings modifiable from any thread
     private volatile boolean cursorEnabled;
-    private volatile int cursorCurveIndex;     // rang de la courbe suivie (0 = première)
-    private volatile float[] cursorPosition;   // {x, y} du point désigné, null si aucun (jamais modifié en place)
+    private volatile int cursorCurveIndex;     // position of the followed curve (0 = first)
+    private volatile float[] cursorPosition;   // {x, y} of the designated point, null if none (never modified in place)
     private final List<CursorListener> cursorListeners = new CopyOnWriteArrayList<>();
-    // Thread d'affichage uniquement : souris (pixels OpenGL, < 0 = inconnue) et point trouvé à l'image courante
+    // Rendering thread only: mouse (OpenGL pixels, < 0 = unknown) and point found in the current frame
     private float mouseX = -1, mouseY = -1;
     private boolean cursorFound;
     private float cursorPixelX, cursorPixelY;
     private float[] cursorColor;
     private String cursorLabelX, cursorLabelY;
 
-    // Rectangle de zoom en cours de tracé, en pixels OpenGL (thread d'affichage uniquement)
+    // Zoom rectangle being drawn, in OpenGL pixels (rendering thread only)
     private boolean selecting;
     private float selectionX0, selectionY0, selectionX1, selectionY1;
 
-    // Marges autour de la zone de tracé (pixels), adaptées à la taille des polices
+    // Margins around the plot area (pixels), adapted to the font size
     protected int marginLeft = 75, marginRight = 25, marginTop = 25, marginBottom = 35;
-    private float yLabelWidth = 0; // largeur de la plus longue graduation verticale (image précédente)
-    private float xLabelWidth = 0; // largeur de la plus longue graduation horizontale (image précédente)
+    private float yLabelWidth = 0; // width of the longest vertical tick label (previous frame)
+    private float xLabelWidth = 0; // width of the longest horizontal tick label (previous frame)
 
-    // Taille de la zone de tracé (pixels)
+    // Size of the plot area (pixels)
     protected int plotWidth = 1, plotHeight = 1;
 
-    // Fenêtre visible, en unités des données (recalculée à chaque image)
+    // Visible window, in data units (recomputed at each frame)
     protected double viewMinX, viewMaxX, viewMinY, viewMaxY;
 
     @SafeVarargs
@@ -116,7 +114,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     @Override
     public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
         super.reshape(drawable, x, y, width, height);
-        selecting = false; // le rectangle en cours n'a plus de sens après un redimensionnement
+        selecting = false; // the rectangle being drawn no longer makes sense after a resize
     }
 
     @Override
@@ -137,7 +135,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         double stepY = AxisTicks.niceStep((viewMaxY - viewMinY) / TARGET_TICK_COUNT);
         double origin = xOrigin();
 
-        // --- Zone de tracé : x relatif à origin, y en unités des données ---
+        // --- Plot area: x relative to origin, y in data units ---
         gl.glViewport(marginLeft, marginBottom, plotWidth, plotHeight);
         gl.glEnable(GL2.GL_SCISSOR_TEST);
         gl.glScissor(marginLeft, marginBottom, plotWidth, plotHeight);
@@ -149,7 +147,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
 
         gl.glDisable(GL2.GL_SCISSOR_TEST);
 
-        // --- Habillage (cadre, graduations), en pixels sur toute la surface ---
+        // --- Decorations (frame, tick labels), in pixels over the whole surface ---
         gl.glViewport(0, 0, width, height);
         setProjection(gl, 0, width, 0, height);
 
@@ -172,73 +170,71 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     }
 
     // ------------------------------------------------------------------
-    // Étapes fournies par les sous-classes
+    // Steps provided by the subclasses
 
-    /** Fige les données de l'image et calcule leurs bornes. */
+    /** Freezes the data of the frame and computes their bounds. */
     protected abstract void updateData();
 
     /**
-     * Calcule la fenêtre visible (viewMinX... viewMaxY) : la fenêtre de zoom
-     * si elle existe (voir {@link #zoomWindow()}), sinon à partir des bornes,
-     * du zoom et du panoramique.
+     * Computes the visible window (viewMinX... viewMaxY): the zoom window if
+     * it exists (see {@link #zoomWindow()}), otherwise from the bounds, the
+     * zoom and the pan.
      */
     protected abstract void computeView();
 
     /**
-     * Abscisse des données placée à x = 0 dans la projection de la zone de
-     * tracé (0 par défaut) : permet de garder la précision des float quand
-     * les abscisses sont grandes (temps).
+     * Data abscissa placed at x = 0 in the projection of the plot area (0 by
+     * default): keeps float precision when the abscissas are large (time).
      */
     protected double xOrigin() { return 0; }
 
     /**
-     * Référence des abscisses de la fenêtre de zoom : une abscisse x des
-     * données y est mémorisée sous la forme x - zoomXReference() (0 par
-     * défaut ; le dernier échantillon en 1D défilement, pour que la fenêtre
-     * suive le temps). Appelé dans le thread d'affichage.
+     * Reference of the zoom window abscissas: a data abscissa x is stored as
+     * x - zoomXReference() (0 by default; the last sample in 1D scroll mode,
+     * so that the window follows time). Called in the rendering thread.
      */
     protected double zoomXReference() { return 0; }
 
-    /** La molette zoome-t-elle aussi sur l'axe x quand une fenêtre de zoom existe (oui par défaut) ? */
+    /** Does the wheel also zoom on the x axis when a zoom window exists (yes by default)? */
     protected boolean wheelZoomsX() { return true; }
 
-    /** Premier point de la courbe que le curseur peut désigner (0 par défaut ; en 1D balayage, après l'espace vide). */
+    /** First point of the curve that the cursor can designate (0 by default; in 1D sweep mode, after the gap). */
     protected int firstCursorPoint(C curve) { return 0; }
 
     /**
-     * Coordonnées {x, y}, dans les unités des axes (celles de viewMinX...
-     * viewMaxY), du point i du dernier instantané de la courbe, écrites dans xy.
+     * Coordinates {x, y}, in axis units (those of viewMinX... viewMaxY), of
+     * point i of the last snapshot of the curve, written into xy.
      *
-     * @return false si ce point n'est pas dessiné
+     * @return false if this point is not drawn
      */
     protected abstract boolean cursorPoint(C curve, int i, double[] xy);
 
     /**
-     * Vrai si le curseur désigne le point dont l'abscisse est la plus proche
-     * de celle de la souris (sans tenir compte de sa hauteur), faux (par
-     * défaut) pour le point le plus proche de la souris à l'écran.
+     * True if the cursor designates the point whose abscissa is closest to
+     * the mouse abscissa (regardless of its height), false (default) for the
+     * point closest to the mouse on screen.
      */
     protected boolean cursorFollowsXOnly() { return false; }
 
-    /** Texte de l'abscisse du curseur (4 chiffres significatifs par défaut). */
+    /** Text of the cursor abscissa (4 significant digits by default). */
     protected String formatCursorX(C curve, double x) { return CurrentValues.format(x); }
 
-    /** Dessine les courbes (et leurs points s'ils sont affichés), abscisses relatives à origin. */
+    /** Draws the curves (and their points if they are displayed), abscissas relative to origin. */
     protected abstract void drawCurves(GL2 gl, double origin);
 
-    /** Droite x = 0 (axe vertical) dessinée avec la droite y = 0 (touche A) ? */
+    /** Line x = 0 (vertical axis) drawn together with the line y = 0 (A key)? */
     protected boolean hasVerticalAxis() { return false; }
 
     /**
-     * Indication d'état éventuelle, en haut à droite de la zone de tracé
-     * (coordonnées en pixels), sous les valeurs courantes.
+     * Optional status indication, at the top right of the plot area
+     * (coordinates in pixels), below the current values.
      *
-     * @param valuesHeight hauteur occupée par les valeurs courantes (0 si elles ne sont pas affichées)
+     * @param valuesHeight height used by the current values (0 if they are not displayed)
      */
     protected void drawStatus(GL2 gl, float valuesHeight) {
     }
 
-    /** Demi-étendue (avec marge) d'un axe ; gère le cas dégénéré où toutes les valeurs sont égales. */
+    /** Half range (with margin) of an axis; handles the degenerate case where all values are equal. */
     protected static float halfExtent(float min, float max) {
         float range = max - min;
         if (range > 0f) return range / 2f * (1f + 2f * DATA_MARGIN);
@@ -247,15 +243,15 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     }
 
     // ------------------------------------------------------------------
-    // Habillage
+    // Decorations
 
     /**
-     * Calcule les marges autour de la zone de tracé à partir des polices : à
-     * gauche les graduations verticales (largeur mesurée à l'image précédente),
-     * en bas les graduations horizontales et, le cas échéant, la légende, en
-     * haut et à droite juste de quoi ne pas couper les graduations placées aux
-     * bords. La marge de gauche ne diminue que nettement, pour éviter que la
-     * zone de tracé ne tremble quand la longueur des graduations varie.
+     * Computes the margins around the plot area from the fonts: on the left
+     * the vertical tick labels (width measured at the previous frame), at the
+     * bottom the horizontal tick labels and, if needed, the legend, at the
+     * top and on the right just enough not to cut the tick labels placed at
+     * the edges. The left margin only shrinks significantly, to keep the plot
+     * area from shaking when the length of the tick labels varies.
      */
     private void computeMargins() {
         legendBelowHeight = (showLegend && legendPosition == LegendPosition.BELOW)
@@ -274,11 +270,11 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         marginRight = (int) Math.max(10, Math.ceil(xLabelWidth / 2f + 4));
     }
 
-    /** Légende : dans le graphe en haut à gauche, ou en ligne(s) sous l'axe des abscisses. */
+    /** Legend: in the chart at the top left, or in row(s) below the abscissa axis. */
     private void drawLegend(GL2 gl) {
         if (!showLegend) return;
         if (legendPosition == LegendPosition.BELOW) {
-            // Tout en bas, sous les graduations de l'axe des abscisses, centrée sous la zone de tracé
+            // At the very bottom, below the abscissa tick labels, centered under the plot area
             CurveStyles.drawLegendRows(gl, text, legendFont, frameCurves, marginLeft + plotWidth / 2f,
                                        legendBelowHeight + 4, width - 20);
         } else {
@@ -286,7 +282,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         }
     }
 
-    /** Grille alignée sur les graduations (abscisses relatives à origin). */
+    /** Grid aligned on the ticks (abscissas relative to origin). */
     private void drawGrid(GL2 gl, double stepX, double stepY, double origin) {
         gl.glColor4f(0.4f, 0.4f, 0.45f, 0.3f);
         gl.glLineWidth(1f);
@@ -302,7 +298,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         gl.glEnd();
     }
 
-    /** Droites y = 0 (rouge) et, le cas échéant, x = 0 (verte), si elles sont visibles. */
+    /** Lines y = 0 (red) and, if applicable, x = 0 (green), if they are visible. */
     private void drawAxes(GL2 gl, double origin) {
         gl.glLineWidth(1.5f);
         gl.glBegin(GL2.GL_LINES);
@@ -317,7 +313,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         gl.glEnd();
     }
 
-    /** Cadre autour de la zone de tracé (coordonnées en pixels). */
+    /** Frame around the plot area (coordinates in pixels). */
     private void drawFrame(GL2 gl) {
         float left = marginLeft, bottom = marginBottom;
         float right = marginLeft + plotWidth, top = marginBottom + plotHeight;
@@ -332,8 +328,8 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     }
 
     /**
-     * Graduations (sous l'axe horizontal et à gauche de l'axe vertical),
-     * dans la police des échelles (coordonnées en pixels).
+     * Tick labels (below the horizontal axis and to the left of the vertical
+     * axis), in the scale font (coordinates in pixels).
      */
     private void drawLabels(GL2 gl, double stepX, double stepY) {
         gl.glColor3f(0.85f, 0.85f, 0.9f);
@@ -357,14 +353,14 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
             float py = marginBottom + (float) ((y - viewMinY) / (viewMaxY - viewMinY)) * plotHeight;
             text.draw(gl, label, font, marginLeft - 6 - labelWidth, py - lineHeight / 2f);
         }
-        yLabelWidth = widestY; // sert au calcul de la marge de gauche à l'image suivante
+        yLabelWidth = widestY; // used to compute the left margin at the next frame
     }
 
     /**
-     * Axes du curseur (vertical et horizontal, sur toute la zone de tracé),
-     * marque au point désigné et étiquettes des coordonnées au pied de chaque
-     * axe : x sous la zone de tracé, y à sa gauche (dans les marges quand elles
-     * sont assez grandes, sinon juste à l'intérieur de la zone de tracé).
+     * Cursor axes (vertical and horizontal, across the whole plot area),
+     * marker at the designated point and coordinate badges at the foot of
+     * each axis: x below the plot area, y to its left (in the margins when
+     * they are large enough, otherwise just inside the plot area).
      */
     private void drawCursor(GL2 gl) {
         float left = marginLeft, bottom = marginBottom, right = marginLeft + plotWidth, top = marginBottom + plotHeight;
@@ -380,7 +376,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         gl.glVertex2f(right, py);
         gl.glEnd();
 
-        // Marque au point désigné : carré plein cerclé de la couleur du fond
+        // Marker at the designated point: filled square outlined with the background color
         gl.glColor3f(0.10f, 0.11f, 0.13f);
         gl.glRectf(px - 4, py - 4, px + 4, py + 4);
         gl.glColor3f(c[0], c[1], c[2]);
@@ -399,7 +395,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         drawBadge(gl, cursorLabelY, font, c, xBadge, yBadge, wy, h);
     }
 
-    /** Étiquette : fond de la couleur de la courbe, texte de la couleur du fond du graphe. */
+    /** Badge: background in the curve color, text in the chart background color. */
     private void drawBadge(GL2 gl, String label, ChartFont font, float[] color, float x, float y, float w, float h) {
         gl.glColor4f(color[0], color[1], color[2], 0.95f);
         gl.glRectf(x, y, x + w, y + h);
@@ -407,7 +403,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         text.draw(gl, label, font, x + 4, y + 2);
     }
 
-    /** Rectangle de zoom en cours de tracé : fond translucide et contour (coordonnées en pixels). */
+    /** Zoom rectangle being drawn: translucent background and outline (coordinates in pixels). */
     private void drawSelection(GL2 gl) {
         float x0 = Math.min(selectionX0, selectionX1), x1 = Math.max(selectionX0, selectionX1);
         float y0 = Math.min(selectionY0, selectionY1), y1 = Math.max(selectionY0, selectionY1);
@@ -426,7 +422,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     // ------------------------------------------------------------------
     // Navigation
 
-    /** Bouton gauche : début d'un rectangle de zoom, s'il commence dans la zone de tracé. */
+    /** Left button: start of a zoom rectangle, if it starts in the plot area. */
     @Override
     public void press(int button, int x, int y, int width, int height) {
         float px = toPixelX(x, width), py = toPixelY(y, height);
@@ -439,10 +435,10 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         selectionY0 = selectionY1 = py;
     }
 
-    /** Bouton gauche : le second coin du rectangle suit la souris ; bouton droit : panoramique. */
+    /** Left button: the second corner of the rectangle follows the mouse; right button: pan. */
     @Override
     public void dragTo(int button, int x, int y, int dx, int dy, int width, int height, InputScale scale) {
-        mouseX = toPixelX(x, width); // le curseur suit aussi la souris pendant un glisser
+        mouseX = toPixelX(x, width); // the cursor also follows the mouse during a drag
         mouseY = toPixelY(y, height);
         if (button == LEFT_BUTTON) {
             if (selecting) {
@@ -454,17 +450,17 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         }
     }
 
-    /** Glisser avec le bouton droit : panoramique ; le contenu suit la souris. */
+    /** Drag with the right button: pan; the content follows the mouse. */
     @Override
     public void drag(int button, int dx, int dy, int width, int height, InputScale scale) {
         if (button == RIGHT_BUTTON) pan((float) dx / Math.max(1, width), (float) dy / Math.max(1, height));
     }
 
     /**
-     * Bouton gauche relâché : le rectangle devient la fenêtre de zoom. Un
-     * rectangle de moins de MIN_SELECTION_PIXELS dans une direction garde
-     * l'étendue actuelle de cet axe ; dans les deux directions, c'est un
-     * simple clic et rien ne change.
+     * Left button released: the rectangle becomes the zoom window. A
+     * rectangle smaller than MIN_SELECTION_PIXELS in one direction keeps the
+     * current range of that axis; in both directions, it is a simple click
+     * and nothing changes.
      */
     @Override
     public void release(int button, int x, int y, int width, int height) {
@@ -476,7 +472,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         boolean zoomY = Math.abs(selectionY1 - selectionY0) >= MIN_SELECTION_PIXELS;
         if (!zoomX && !zoomY) return;
 
-        // Pixels -> données, avec la vue de l'image affichée
+        // Pixels -> data, with the view of the displayed frame
         double reference = zoomXReference();
         double xa = viewMinX, xb = viewMaxX, ya = viewMinY, yb = viewMaxY;
         if (zoomX) {
@@ -491,20 +487,20 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         if (isUsable(window)) changeZoomWindow(current -> window, true);
     }
 
-    /** Souris déplacée sans bouton : position mémorisée pour le curseur. */
+    /** Mouse moved without a button: position stored for the cursor. */
     @Override
     public void move(int x, int y, int width, int height) {
         mouseX = toPixelX(x, width);
         mouseY = toPixelY(y, height);
     }
 
-    /** Tabulation utilisée quand le curseur est actif sur un graphe de plusieurs courbes. */
+    /** Tab key used when the cursor is active on a chart with several curves. */
     @Override
     public boolean usesTabKey() {
         return cursorEnabled && getCurvesCount() > 1;
     }
 
-    /** Molette : zoom d'un cran (sur la fenêtre de zoom si elle existe). */
+    /** Wheel: zoom by one step (on the zoom window if it exists). */
     @Override
     public void wheel(float amount, InputScale scale) {
         zoom(Math.signum(amount));
@@ -524,16 +520,16 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     }
 
     /**
-     * Panoramique. dx et dy sont des déplacements exprimés en fraction de la
-     * taille du composant (ce qui rend le calcul indépendant de la densité de
-     * pixels de l'écran). Le contenu suit la souris. Si une fenêtre de zoom
-     * existe, c'est elle qui est déplacée.
+     * Pan. dx and dy are displacements expressed as a fraction of the
+     * component size (which makes the computation independent of the screen
+     * pixel density). The content follows the mouse. If a zoom window exists,
+     * it is the one that moves.
      */
     public void pan(float dx, float dy) {
         if (zoomWindow != null) {
             double fx = (double) dx * width / plotWidth, fy = (double) dy * height / plotHeight;
             changeZoomWindow(w -> {
-                if (w == null) return null; // fenêtre supprimée entre-temps
+                if (w == null) return null; // window removed in the meantime
                 double shiftX = -fx * (w[1] - w[0]), shiftY = fy * (w[3] - w[2]);
                 return new double[]{w[0] + shiftX, w[1] + shiftX, w[2] + shiftY, w[3] + shiftY};
             }, false);
@@ -544,15 +540,15 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     }
 
     /**
-     * Zoom multiplicatif : steps > 0 rapproche, steps < 0 éloigne. Si une
-     * fenêtre de zoom existe, elle est réduite ou agrandie autour de son centre.
+     * Multiplicative zoom: steps > 0 zooms in, steps < 0 zooms out. If a zoom
+     * window exists, it is shrunk or enlarged around its center.
      */
     public void zoom(float steps) {
         if (zoomWindow != null) {
             double factor = Math.pow(1.15, -steps);
             boolean onX = wheelZoomsX();
             changeZoomWindow(w -> {
-                if (w == null) return null; // fenêtre supprimée entre-temps
+                if (w == null) return null; // window removed in the meantime
                 double cx = (w[0] + w[1]) / 2, hx = (w[1] - w[0]) / 2 * (onX ? factor : 1);
                 double cy = (w[2] + w[3]) / 2, hy = (w[3] - w[2]) / 2 * factor;
                 double[] scaled = {cx - hx, cx + hx, cy - hy, cy + hy};
@@ -564,7 +560,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         zoom = Math.max(1e-3f, Math.min(1e4f, zoom));
     }
 
-    /** Vue initiale : ajustement automatique (ou échelles fixes), sans fenêtre de zoom ni historique. */
+    /** Initial view: automatic fit (or fixed scales), without zoom window or history. */
     @Override
     public void resetView() {
         zoom = 1f;
@@ -575,12 +571,11 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     }
 
     // ------------------------------------------------------------------
-    // Curseur
+    // Cursor
 
     /**
-     * Active ou désactive le curseur (également avec la touche C). À
-     * l'activation, le curseur suit la première courbe. Utilisable depuis
-     * n'importe quel thread.
+     * Enables or disables the cursor (also with the C key). When enabled,
+     * the cursor follows the first curve. Usable from any thread.
      */
     public void setCursorEnabled(boolean enabled) {
         if (enabled && !cursorEnabled) cursorCurveIndex = 0;
@@ -589,13 +584,13 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
 
     public boolean isCursorEnabled() { return cursorEnabled; }
 
-    /** Courbe suivie par le curseur, par son rang dans le graphe (0 = première ; un rang absent revient à 0). */
+    /** Curve followed by the cursor, by its position in the chart (0 = first; a missing position falls back to 0). */
     public void setCursorCurveIndex(int index) { cursorCurveIndex = Math.max(0, index); }
 
-    /** Rang de la courbe suivie par le curseur. */
+    /** Position of the curve followed by the cursor. */
     public int getCursorCurveIndex() { return cursorCurveIndex; }
 
-    /** Copie des coordonnées {x, y} du point désigné par le curseur, ou null s'il n'y en a pas. */
+    /** Copy of the coordinates {x, y} of the point designated by the cursor, or null if there is none. */
     public float[] getCursorPosition() {
         float[] position = cursorPosition;
         return (position != null) ? position.clone() : null;
@@ -604,17 +599,17 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     public void addCursorListener(CursorListener listener) { if (listener != null) cursorListeners.add(listener); }
     public void removeCursorListener(CursorListener listener) { cursorListeners.remove(listener); }
 
-    /** Passe à la courbe suivante (step = 1) ou précédente (step = -1), en boucle. */
+    /** Moves to the next (step = 1) or previous (step = -1) curve, cyclically. */
     private void selectNextCursorCurve(int step) {
         int count = getCurvesCount();
         if (count > 0) cursorCurveIndex = Math.floorMod(Math.min(cursorCurveIndex, count - 1) + step, count);
     }
 
     /**
-     * Cherche, à chaque image, le point de la courbe suivie le plus proche de
-     * la souris (distance à l'écran, parmi les points visibles) : les données
-     * et la vue changent aussi sous une souris immobile. Prévient les
-     * écouteurs si le point désigné a changé.
+     * Looks, at each frame, for the point of the followed curve closest to
+     * the mouse (on-screen distance, among the visible points): the data and
+     * the view also change under a motionless mouse. Notifies the listeners
+     * if the designated point changed.
      */
     private void updateCursor() {
         cursorFound = false;
@@ -629,7 +624,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
             boolean xOnly = cursorFollowsXOnly();
             for (int i = firstCursorPoint(curve), n = curve.getSnapshotCount(); i < n; i++) {
                 if (!cursorPoint(curve, i, xy)) continue;
-                if (xy[0] < viewMinX || xy[0] > viewMaxX || xy[1] < viewMinY || xy[1] > viewMaxY) continue; // hors de la vue
+                if (xy[0] < viewMinX || xy[0] > viewMaxX || xy[1] < viewMinY || xy[1] > viewMaxY) continue; // outside the view
                 double dx = marginLeft + (xy[0] - viewMinX) * scaleX - mouseX;
                 double dy = marginBottom + (xy[1] - viewMinY) * scaleY - mouseY;
                 double d = xOnly ? dx * dx : dx * dx + dy * dy;
@@ -655,49 +650,49 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
                 try {
                     listener.cursorMoved((found != null) ? found.clone() : null);
                 } catch (RuntimeException e) {
-                    e.printStackTrace(); // une erreur dans un écouteur ne doit pas interrompre l'affichage
+                    e.printStackTrace(); // an error in a listener must not interrupt rendering
                 }
             }
         }
     }
 
     // ------------------------------------------------------------------
-    // Fenêtre de zoom
+    // Zoom window
 
     /**
-     * Fenêtre de zoom courante {xMin, xMax, yMin, yMax}, ou null. À ne pas
-     * modifier (le tableau n'est jamais modifié en place : il peut être lu
-     * sans verrou dans computeView()).
+     * Current zoom window {xMin, xMax, yMin, yMax}, or null. Not to be
+     * modified (the array is never modified in place: it can be read without
+     * a lock in computeView()).
      */
     protected final double[] zoomWindow() { return zoomWindow; }
 
-    /** Copie de la fenêtre de zoom {xMin, xMax, yMin, yMax}, ou null si la vue est la vue initiale. */
+    /** Copy of the zoom window {xMin, xMax, yMin, yMax}, or null if the view is the initial view. */
     public double[] getZoomWindow() {
         double[] window = zoomWindow;
         return (window != null) ? window.clone() : null;
     }
 
-    /** Vrai si une fenêtre de zoom est appliquée. */
+    /** True if a zoom window is applied. */
     public boolean isZoomed() { return zoomWindow != null; }
 
     /**
-     * Applique une fenêtre de zoom (mémorisée dans l'historique). En 1D, mode
-     * défilement, les abscisses sont relatives au dernier échantillon (par
-     * exemple -2 à -1 pour la seconde avant-dernière), comme celles transmises
-     * aux {@link ZoomListener}. Utilisable depuis n'importe quel thread.
+     * Applies a zoom window (stored in the history). In 1D scroll mode, the
+     * abscissas are relative to the last sample (for example -2 to -1 for the
+     * second before last), like those passed to the {@link ZoomListener}s.
+     * Usable from any thread.
      *
-     * @throws IllegalArgumentException si un minimum n'est pas strictement inférieur à son maximum
+     * @throws IllegalArgumentException if a minimum is not strictly less than its maximum
      */
     public void setZoomWindow(double xMin, double xMax, double yMin, double yMax) {
         double[] window = CurveStyles.checkScales(xMin, xMax, yMin, yMax);
-        if (!isUsable(window)) throw new IllegalArgumentException("Fenêtre de zoom trop petite pour la précision de calcul.");
+        if (!isUsable(window)) throw new IllegalArgumentException("Zoom window too small for the computation precision.");
         changeZoomWindow(current -> window, true);
     }
 
     /**
-     * Revient à la fenêtre précédente de l'historique (touche U ou Retour arrière).
+     * Goes back to the previous window of the history (U or Backspace key).
      *
-     * @return false si l'historique est vide
+     * @return false if the history is empty
      */
     public boolean undoZoom() {
         double[] restored;
@@ -711,7 +706,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         return true;
     }
 
-    /** Supprime la fenêtre de zoom et l'historique ; les écouteurs sont prévenus si une fenêtre était appliquée. */
+    /** Removes the zoom window and the history; the listeners are notified if a window was applied. */
     protected void clearZoomWindow() {
         boolean wasZoomed;
         synchronized (viewLock) {
@@ -725,7 +720,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     public void addZoomListener(ZoomListener listener) { if (listener != null) zoomListeners.add(listener); }
     public void removeZoomListener(ZoomListener listener) { zoomListeners.remove(listener); }
 
-    /** Changer d'échelles affiche les nouvelles échelles : la fenêtre de zoom est supprimée. */
+    /** Changing scales displays the new scales: the zoom window is removed. */
     @Override
     protected void setFixedScaleBounds(double... bounds) {
         super.setFixedScaleBounds(bounds);
@@ -739,10 +734,10 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     }
 
     /**
-     * Remplace la fenêtre de zoom par change(fenêtre courante), sous le
-     * verrou, puis prévient les écouteurs. Si record, la fenêtre remplacée est
-     * mémorisée dans l'historique. change reçoit null s'il n'y a pas de
-     * fenêtre ; renvoyer la fenêtre reçue ne change rien.
+     * Replaces the zoom window with change(current window), under the lock,
+     * then notifies the listeners. If record, the replaced window is stored
+     * in the history. change receives null if there is no window; returning
+     * the window received changes nothing.
      */
     private void changeZoomWindow(UnaryOperator<double[]> change, boolean record) {
         double[] window;
@@ -764,12 +759,12 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
             try {
                 listener.zoomChanged((window != null) ? window.clone() : null);
             } catch (RuntimeException e) {
-                e.printStackTrace(); // une erreur dans un écouteur ne doit pas interrompre l'affichage
+                e.printStackTrace(); // an error in a listener must not interrupt rendering
             }
         }
     }
 
-    /** Fenêtre finie dont l'étendue reste mesurable avec la précision des données (float). */
+    /** Finite window whose range remains measurable with the precision of the data (float). */
     private static boolean isUsable(double[] w) {
         for (int i = 0; i < 4; i += 2) {
             double span = w[i + 1] - w[i];
@@ -779,9 +774,9 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         return true;
     }
 
-    // Conversions : unités de la fenêtre (origine en haut à gauche) -> pixels OpenGL
-    // (origine en bas à gauche) -> unités des données. Le rapport this.width / largeur
-    // du composant prend en compte les écrans haute densité.
+    // Conversions: window units (origin at the top left) -> OpenGL pixels
+    // (origin at the bottom left) -> data units. The ratio this.width / component
+    // width takes high-density screens into account.
 
     private float toPixelX(int x, int componentWidth) {
         return (float) x * width / Math.max(1, componentWidth);
@@ -807,7 +802,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         return viewMinY + (py - marginBottom) / plotHeight * (viewMaxY - viewMinY);
     }
 
-    /** Position de la légende : dans le graphe (INSIDE) ou sous l'axe des abscisses (BELOW, par défaut). */
+    /** Legend position: in the chart (INSIDE) or below the abscissa axis (BELOW, default). */
     public void setLegendPosition(LegendPosition position) { if (position != null) legendPosition = position; }
     public LegendPosition getLegendPosition() { return legendPosition; }
 }

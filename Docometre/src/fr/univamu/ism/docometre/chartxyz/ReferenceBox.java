@@ -3,68 +3,67 @@ package fr.univamu.ism.docometre.chartxyz;
 import com.jogamp.opengl.GL2;
 
 /**
- * Boîte de repère des scènes 3D ({@link Chart3DRenderer}, {@link Surface3DRenderer}) :
- * des lignes de grille sont tracées sur les faces d'une boîte qui épouse
- * précisément la boîte englobante réelle des données (et non un cube
- * uniforme). Pour ne pas masquer les données, seules les 3 faces les plus
- * ÉLOIGNÉES de la caméra sont dessinées (une par axe) ; les 3 faces les plus
- * proches sont omises.
+ * Reference box of the 3D scenes ({@link Chart3DRenderer}, {@link Surface3DRenderer}):
+ * grid lines are drawn on the faces of a box that exactly matches the
+ * actual bounding box of the data (and not a uniform cube). So as not to
+ * hide the data, only the 3 faces FARTHEST from the camera are drawn (one
+ * per axis); the 3 closest faces are omitted.
  *
- * Les graduations (valeurs numériques) des 3 axes sont placées le long des
- * arêtes communes aux faces visibles : c'est là qu'elles restent lisibles
- * quel que soit l'angle de vue. Le dessin du texte est délégué à un
- * {@link LabelSink}, propre à chaque renderer.
+ * The tick labels (numeric values) of the 3 axes are placed along the edges
+ * shared by the visible faces: that is where they remain readable whatever
+ * the view angle. Text drawing is delegated to a {@link LabelSink}, specific
+ * to each renderer.
  */
 final class ReferenceBox {
 
-    /** Nombre d'intervalles entre graduations : TICK_COUNT + 1 étiquettes par axe. */
+    /** Number of intervals between ticks: TICK_COUNT + 1 labels per axis. */
     static final int TICK_COUNT = 5;
-    /** Nombre d'intervalles de la grille sur chaque face. */
+    /** Number of grid intervals on each face. */
     private static final int DIVISIONS = 10;
 
     private static final String[] AXIS_NAMES = {"x", "y", "z"};
     private static final float[][] AXIS_COLORS = {
-            {0.9f, 0.2f, 0.2f},  // x : rouge
-            {0.2f, 0.9f, 0.2f},  // y : vert
-            {0.3f, 0.5f, 0.95f}, // z : bleu
+            {0.9f, 0.2f, 0.2f},  // x: red
+            {0.2f, 0.9f, 0.2f},  // y: green
+            {0.3f, 0.5f, 0.95f}, // z: blue
     };
 
-    /** Dessin d'une étiquette au point (x, y, z) de la scène, dans la couleur OpenGL courante. */
+    /** Drawing of a label at the scene point (x, y, z), in the current OpenGL color. */
     interface LabelSink {
-        /** @param axisName true pour un nom d'axe ('x', 'y', 'z'), false pour une graduation */
+        /** @param axisName true for an axis name ('x', 'y', 'z'), false for a tick label */
         void label(GL2 gl, String text, float x, float y, float z, boolean axisName);
     }
 
-    // Par axe (0 = x, 1 = y, 2 = z)
+    // Per axis (0 = x, 1 = y, 2 = z)
     private final float[] min = new float[3], max = new float[3];
-    private final float[] face = new float[3]; // coordonnée de la face visible perpendiculaire à l'axe
-    private final int[] skip = new int[3];     // graduation coïncidant avec le coin commun (à omettre)
+    private final float[] face = new float[3]; // coordinate of the visible face perpendicular to the axis
+    private final int[] skip = new int[3];     // tick coinciding with the common corner (to be omitted)
 
     /**
-     * @param data       boîte englobante des données
-     * @param withMargin léger espace entre les données et la boîte (sans marge,
-     *                   la boîte correspond exactement aux bornes : échelles fixes)
-     * @param camera     position de la caméra dans le repère des données
+     * @param data       bounding box of the data
+     * @param withMargin small space between the data and the box (without a
+     *                   margin, the box matches the bounds exactly: fixed scales)
+     * @param camera     position of the camera in the data coordinate system
      */
     ReferenceBox(BoundingBox data, boolean withMargin, float[] camera) {
         float[] dataMin = {data.minX, data.minY, data.minZ};
         float[] dataMax = {data.maxX, data.maxY, data.maxZ};
         for (int a = 0; a < 3; a++) {
-            // Espace proportionnel à chaque dimension
+            // Space proportional to each dimension
             float margin = withMargin ? Math.max((dataMax[a] - dataMin[a]) * 0.08f, data.radius * 0.02f) : 0f;
             min[a] = dataMin[a] - margin;
             max[a] = dataMax[a] + margin;
             face[a] = (camera[a] > (min[a] + max[a]) / 2f) ? min[a] : max[a];
-            // Sur chaque axe, la graduation qui coïncide avec le coin commun aux 3
-            // faces visibles est omise : les 3 séries s'y superposeraient sinon.
+            // On each axis, the tick that coincides with the corner shared by the 3
+            // visible faces is omitted: the 3 series would overlap there otherwise.
             skip[a] = (face[a] == min[a]) ? 0 : TICK_COUNT;
         }
     }
 
     /**
-     * Dessine la grille des 3 faces visibles et, pour chacune, le nom de son
-     * axe, placé au-delà de l'extrémité de l'arête opposée au coin commun aux
-     * 3 faces visibles.
+     * Draws the grid of the 3 visible faces and, for each of them, the name
+     * of its axis, placed beyond the end of the edge opposite to the corner
+     * shared by the 3 visible faces.
      */
     void drawGrid(GL2 gl, LabelSink labels) {
         for (int a = 0; a < 3; a++) {
@@ -82,9 +81,9 @@ final class ReferenceBox {
         }
     }
 
-    /** Grille sur la face perpendiculaire à l'axe a (à la coordonnée face[a]). */
+    /** Grid on the face perpendicular to axis a (at coordinate face[a]). */
     private void drawFace(GL2 gl, int a) {
-        int u = (a == 0) ? 1 : 0, v = (a == 2) ? 1 : 2; // les deux autres axes, dans l'ordre
+        int u = (a == 0) ? 1 : 0, v = (a == 2) ? 1 : 2; // the two other axes, in order
         float[] p0 = new float[3], p1 = new float[3];
         p0[a] = p1[a] = face[a];
 
@@ -92,8 +91,8 @@ final class ReferenceBox {
         gl.glLineWidth(1f);
         gl.glBegin(GL2.GL_LINES);
         for (int pass = 0; pass < 2; pass++) {
-            int step = (pass == 0) ? u : v;  // axe le long duquel les lignes sont réparties
-            int along = (pass == 0) ? v : u; // axe le long duquel elles s'étendent
+            int step = (pass == 0) ? u : v;  // axis along which the lines are distributed
+            int along = (pass == 0) ? v : u; // axis along which they extend
             float delta = (max[step] - min[step]) / DIVISIONS;
             for (int i = 0; i <= DIVISIONS; i++) {
                 p0[step] = p1[step] = min[step] + i * delta;
@@ -107,10 +106,9 @@ final class ReferenceBox {
     }
 
     /**
-     * Graduations des 3 axes, le long des arêtes communes aux faces visibles.
-     * Le test de profondeur est désactivé le temps de les dessiner, pour
-     * éviter tout scintillement lié à la coïncidence exacte avec les lignes
-     * de la grille.
+     * Tick labels of the 3 axes, along the edges shared by the visible faces.
+     * The depth test is disabled while they are drawn, to avoid any
+     * flickering due to the exact coincidence with the grid lines.
      */
     void drawTickLabels(GL2 gl, LabelSink labels) {
         gl.glDisable(GL2.GL_DEPTH_TEST);
@@ -127,7 +125,7 @@ final class ReferenceBox {
         gl.glEnable(GL2.GL_DEPTH_TEST);
     }
 
-    /** Axes x (rouge), y (vert) et z (bleu) passant par l'origine, de longueur 2 * 1,3 * radius. */
+    /** x (red), y (green) and z (blue) axes through the origin, of length 2 * 1.3 * radius. */
     static void drawOriginAxes(GL2 gl, float radius) {
         float len = radius * 1.3f;
         gl.glLineWidth(1.5f);

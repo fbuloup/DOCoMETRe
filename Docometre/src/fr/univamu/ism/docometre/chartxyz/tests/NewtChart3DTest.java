@@ -3,8 +3,8 @@ package fr.univamu.ism.docometre.chartxyz.tests;
 import fr.univamu.ism.docometre.chartxyz.GLToolkit;
 
 /**
- * {@link Chart3DTest} avec NEWT, à utiliser sous macOS ; la courbe est lue
- * dans le fichier args[0] (data/sample_curve.txt par défaut).
+ * {@link Chart3DTest} with NEWT, to be used on macOS; the curve is read from
+ * the file args[0] (data/sample_curve.txt by default).
  */
 public class NewtChart3DTest {
 

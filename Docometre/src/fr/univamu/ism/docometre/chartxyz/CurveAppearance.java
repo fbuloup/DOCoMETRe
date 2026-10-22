@@ -1,21 +1,21 @@
 package fr.univamu.ism.docometre.chartxyz;
 
 /**
- * Apparence d'une courbe dans un graphe à plusieurs courbes : nom affiché
- * dans la légende, couleur, épaisseur et type de trait. Implémentée par {@link Curve1DData},
- * {@link Curve2DData} et {@link Curve3DData}.
+ * Appearance of a curve in a chart with several curves: name displayed in
+ * the legend, color, line width and line style. Implemented by
+ * {@link Curve1DData}, {@link Curve2DData} and {@link Curve3DData}.
  */
 public interface CurveAppearance {
 
-    /** Nom affiché dans la légende, ou null. */
+    /** Name displayed in the legend, or null. */
     String getName();
 
-    /** Couleur RGB (composantes entre 0 et 1), ou null pour une couleur automatique. */
+    /** RGB color (components between 0 and 1), or null for an automatic color. */
     float[] getColor();
 
-    /** Épaisseur du trait en pixels, ou 0 pour l'épaisseur par défaut du graphe. */
+    /** Line width in pixels, or 0 for the default line width of the chart. */
     float getLineWidth();
 
-    /** Type de tracé (continu, tirets...). */
+    /** Line style (solid, dashed...). */
     LineStyle getLineStyle();
 }

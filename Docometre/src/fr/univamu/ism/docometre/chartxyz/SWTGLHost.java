@@ -11,15 +11,15 @@ import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.swt.GLCanvas;
 
 /**
- * Surface OpenGL dans un GLCanvas SWT (Windows, Linux), animée dans le thread
- * de l'interface par {@link SWTAnimator}.
+ * OpenGL surface in an SWT GLCanvas (Windows, Linux), animated in the user
+ * interface thread by {@link SWTAnimator}.
  */
 final class SWTGLHost extends GLHost {
 
     private final GLCanvas canvas;
     private final SWTAnimator animator;
 
-    // État de la souris
+    // Mouse state
     private int lastX, lastY;
     private boolean leftDown, rightDown;
 
@@ -33,7 +33,7 @@ final class SWTGLHost extends GLHost {
         animator.start();
     }
 
-    /** Relie les événements souris / clavier SWT aux commandes du renderer. */
+    /** Connects the SWT mouse / keyboard events to the renderer commands. */
     private void attachInput(ChartInteraction interaction) {
         canvas.addMouseListener(new MouseAdapter() {
             @Override
@@ -50,7 +50,7 @@ final class SWTGLHost extends GLHost {
             public void mouseUp(MouseEvent e) {
                 if (e.button == ChartInteraction.LEFT_BUTTON) leftDown = false;
                 if (e.button == ChartInteraction.RIGHT_BUTTON) rightDown = false;
-                // Reçu même hors du composant : SWT capture la souris pendant le glisser
+                // Received even outside the component: SWT captures the mouse during a drag
                 Point size = canvas.getSize();
                 interaction.release(e.button, e.x, e.y, size.x, size.y);
             }
@@ -72,15 +72,15 @@ final class SWTGLHost extends GLHost {
 
         canvas.addMouseWheelListener(e -> interaction.wheel(e.count, ChartInteraction.InputScale.SWT));
 
-        // Tabulation : transmise au renderer s'il l'utilise (curseur sur plusieurs courbes),
-        // au lieu de faire passer le focus au composant suivant
+        // Tab: passed to the renderer if it uses it (cursor on several curves),
+        // instead of moving the focus to the next component
         canvas.addListener(SWT.Traverse, e -> {
             if ((e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) && interaction.usesTabKey()) {
-                e.doit = false; // la touche arrive alors en KeyDown
+                e.doit = false; // the key then arrives as KeyDown
             }
         });
 
-        // Échap et Retour arrière arrivent comme les caractères ESCAPE et BACKSPACE
+        // Escape and Backspace arrive as the ESCAPE and BACKSPACE characters
         canvas.addListener(SWT.KeyDown, e -> {
             if (e.character == SWT.TAB) {
                 interaction.keyPressed((e.stateMask & SWT.SHIFT) != 0 ? ChartInteraction.BACK_TAB : ChartInteraction.TAB);
@@ -89,9 +89,9 @@ final class SWTGLHost extends GLHost {
             }
         });
 
-        // Focus clavier dès que la souris entre dans le graphe (utile quand plusieurs
-        // graphes partagent une fenêtre), seulement si notre fenêtre est active pour
-        // ne pas voler le focus à une autre fenêtre ou à un dialogue
+        // Keyboard focus as soon as the mouse enters the chart (useful when several
+        // charts share a window), only if our window is active so as not to steal
+        // the focus from another window or a dialog
         canvas.addListener(SWT.MouseEnter, e -> {
             if (canvas.getShell() == canvas.getDisplay().getActiveShell()) {
                 canvas.forceFocus();

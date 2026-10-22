@@ -4,8 +4,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 
 /**
- * Base des graphes plans (1D et 2D) : ajoute la position de la légende, le
- * pilotage du zoom par rectangle et celui du curseur (voir {@link PlotRenderer}).
+ * Base of the plane charts (1D and 2D): adds the legend position, and the
+ * control of the rectangle zoom and of the cursor (see {@link PlotRenderer}).
  */
 public abstract class AbstractGLPlotChart<C extends CurveData<C>, R extends PlotRenderer<C>> extends AbstractGLChart<C, R> {
 
@@ -14,8 +14,8 @@ public abstract class AbstractGLPlotChart<C extends CurveData<C>, R extends Plot
     }
 
     /**
-     * Position de la légende : LegendPosition.INSIDE (dans le graphe, en haut à
-     * gauche) ou LegendPosition.BELOW (tout en bas, sous l'axe des abscisses, par défaut).
+     * Legend position: LegendPosition.INSIDE (in the chart, at the top left)
+     * or LegendPosition.BELOW (at the very bottom, below the abscissa axis, default).
      */
     public void setLegendPosition(LegendPosition position) {
         renderer.setLegendPosition(position);
@@ -25,47 +25,47 @@ public abstract class AbstractGLPlotChart<C extends CurveData<C>, R extends Plot
         return renderer.getLegendPosition();
     }
 
-    /** SWT.BOTTOM : légende sous l'axe des abscisses ; toute autre valeur : dans le graphe. */
+    /** SWT.BOTTOM: legend below the abscissa axis; any other value: in the chart. */
     public void setLegendPosition(int position) {
         renderer.setLegendPosition(position == SWT.BOTTOM ? LegendPosition.BELOW : LegendPosition.INSIDE);
     }
 
     // ------------------------------------------------------------------
-    // Zoom par rectangle
+    // Rectangle zoom
 
     /**
-     * Applique une fenêtre de zoom, comme un rectangle tracé à la souris
-     * (mémorisée dans l'historique). En 1D, mode défilement, les abscisses
-     * sont relatives au dernier échantillon (par exemple -2 à -1 pour la
-     * seconde avant-dernière) : la fenêtre suit le temps.
+     * Applies a zoom window, like a rectangle drawn with the mouse (stored in
+     * the history). In 1D scroll mode, the abscissas are relative to the last
+     * sample (for example -2 to -1 for the second before last): the window
+     * follows time.
      *
-     * @throws IllegalArgumentException si un minimum n'est pas strictement inférieur à son maximum
+     * @throws IllegalArgumentException if a minimum is not strictly less than its maximum
      */
     public void setZoomWindow(double xMin, double xMax, double yMin, double yMax) {
         renderer.setZoomWindow(xMin, xMax, yMin, yMax);
     }
 
-    /** Fenêtre de zoom courante {xMin, xMax, yMin, yMax} (copie), ou null si la vue est la vue initiale. */
+    /** Current zoom window {xMin, xMax, yMin, yMax} (copy), or null if the view is the initial view. */
     public double[] getZoomWindow() {
         return renderer.getZoomWindow();
     }
 
-    /** Vrai si une fenêtre de zoom est appliquée. */
+    /** True if a zoom window is applied. */
     public boolean isZoomed() {
         return renderer.isZoomed();
     }
 
-    /** Revient à la fenêtre précédente (également avec U ou Retour arrière) ; false si l'historique est vide. */
+    /** Goes back to the previous window (also with U or Backspace); false if the history is empty. */
     public boolean undoZoom() {
         return renderer.undoZoom();
     }
 
-    /** Revient à la vue initiale et vide l'historique des zooms (également avec R). */
+    /** Goes back to the initial view and clears the zoom history (also with R). */
     public void resetZoom() {
         renderer.resetView();
     }
 
-    /** Ajoute un écouteur des changements de fenêtre de zoom (voir {@link ZoomListener} pour le thread d'appel). */
+    /** Adds a listener of the zoom window changes (see {@link ZoomListener} for the calling thread). */
     public void addZoomListener(ZoomListener listener) {
         renderer.addZoomListener(listener);
     }
@@ -75,9 +75,9 @@ public abstract class AbstractGLPlotChart<C extends CurveData<C>, R extends Plot
     }
 
     // ------------------------------------------------------------------
-    // Curseur
+    // Cursor
 
-    /** Active ou désactive le curseur (également avec la touche C) ; à l'activation, il suit la première courbe. */
+    /** Enables or disables the cursor (also with the C key); when enabled, it follows the first curve. */
     public void setCursorEnabled(boolean enabled) {
         renderer.setCursorEnabled(enabled);
     }
@@ -86,7 +86,7 @@ public abstract class AbstractGLPlotChart<C extends CurveData<C>, R extends Plot
         return renderer.isCursorEnabled();
     }
 
-    /** Courbe suivie par le curseur, par son rang (0 = première ; également avec Tabulation / Maj + Tabulation). */
+    /** Curve followed by the cursor, by its position (0 = first; also with Tab / Shift + Tab). */
     public void setCursorCurveIndex(int index) {
         renderer.setCursorCurveIndex(index);
     }
@@ -95,12 +95,12 @@ public abstract class AbstractGLPlotChart<C extends CurveData<C>, R extends Plot
         return renderer.getCursorCurveIndex();
     }
 
-    /** Coordonnées {x, y} du point désigné par le curseur (copie), ou null s'il n'y en a pas. */
+    /** Coordinates {x, y} of the point designated by the cursor (copy), or null if there is none. */
     public float[] getCursorPosition() {
         return renderer.getCursorPosition();
     }
 
-    /** Ajoute un écouteur du curseur (voir {@link CursorListener} pour le thread d'appel). */
+    /** Adds a cursor listener (see {@link CursorListener} for the calling thread). */
     public void addCursorListener(CursorListener listener) {
         renderer.addCursorListener(listener);
     }

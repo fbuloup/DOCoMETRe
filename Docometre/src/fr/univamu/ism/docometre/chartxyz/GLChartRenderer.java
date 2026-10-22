@@ -7,15 +7,15 @@ import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
 
 /**
- * Base de tous les renderers : état OpenGL initial commun (fond sombre,
- * lignes lissées, transparence), taille de la zone d'affichage, éléments
- * d'habillage activables au clavier (axes, grille, graduations) et
- * commandes clavier communes :
+ * Base of all renderers: common initial OpenGL state (dark background,
+ * smoothed lines, transparency), size of the drawing area, decorations
+ * that can be toggled with the keyboard (axes, grid, tick labels) and
+ * common keyboard commands:
  * <ul>
- * <li>R : réinitialiser la vue</li>
- * <li>A : afficher/masquer les axes</li>
- * <li>G : afficher/masquer la grille</li>
- * <li>L : afficher/masquer les graduations</li>
+ * <li>R: reset the view</li>
+ * <li>A: show/hide the axes</li>
+ * <li>G: show/hide the grid</li>
+ * <li>L: show/hide the tick labels</li>
  * </ul>
  */
 public abstract class GLChartRenderer implements GLEventListener, ChartInteraction {
@@ -28,7 +28,7 @@ public abstract class GLChartRenderer implements GLEventListener, ChartInteracti
     protected volatile boolean showGrid = true;
     protected volatile boolean showLabel;
 
-    /** Taille de la zone d'affichage (pixels). */
+    /** Size of the drawing area (pixels). */
     protected int width = 1, height = 1;
 
     protected GLChartRenderer(boolean showAxes, boolean showLabel) {
@@ -40,7 +40,7 @@ public abstract class GLChartRenderer implements GLEventListener, ChartInteracti
     public void init(GLAutoDrawable drawable) {
         GL2 gl = drawable.getGL().getGL2();
 
-        // Configuration OpenGL de la machine, journalisée une seule fois (aide au support)
+        // OpenGL configuration of the machine, logged only once (support aid)
 		if (GL_INFO_LOGGED.compareAndSet(false, true)) {
 		    glInfo = gl.glGetString(GL2.GL_RENDERER) + " (" + gl.glGetString(GL2.GL_VENDOR) + ") - "
 		            + drawable.getContext().getGLVersion();
@@ -64,7 +64,7 @@ public abstract class GLChartRenderer implements GLEventListener, ChartInteracti
         this.height = Math.max(height, 1);
     }
 
-    /** Revient à la vue initiale (touche R). */
+    /** Goes back to the initial view (R key). */
     public abstract void resetView();
 
     @Override

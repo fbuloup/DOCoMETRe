@@ -3,19 +3,19 @@ package fr.univamu.ism.docometre.chartxyz;
 import org.eclipse.swt.widgets.Control;
 
 /**
- * Animateur pour les GLCanvas SWT : appelle repaint environ fps fois par
- * seconde, DANS le thread de l'interface SWT (Display.timerExec).
+ * Animator for SWT GLCanvas: calls repaint about fps times per second, IN
+ * the SWT user interface thread (Display.timerExec).
  *
- * Pourquoi pas FPSAnimator : avec un GLCanvas SWT, chaque image est de toute
- * façon dessinée dans le thread SWT (JOGL y renvoie l'appel par syncExec).
- * FPSAnimator, qui tourne dans son propre thread, attend alors le thread SWT
- * pendant le dessin ; si le thread SWT attend à son tour l'animateur (arrêt,
- * pause ou destruction du GLCanvas), les deux se bloquent jusqu'au délai de
- * sécurité d'une seconde de JOGL ("finishLifecycleAction ... timeout
- * reached"). Ici il n'y a pas de second thread : arrêter l'animateur ou
- * détruire le composant (directement ou via son parent) est immédiat.
+ * Why not FPSAnimator: with an SWT GLCanvas, each frame is drawn in the SWT
+ * thread anyway (JOGL forwards the call there with syncExec). FPSAnimator,
+ * which runs in its own thread, then waits for the SWT thread while drawing;
+ * if the SWT thread in turn waits for the animator (stop, pause or disposal
+ * of the GLCanvas), both block until the one-second JOGL safety timeout
+ * ("finishLifecycleAction ... timeout reached"). Here there is no second
+ * thread: stopping the animator or disposing the component (directly or
+ * through its parent) is immediate.
  *
- * Toutes les méthodes doivent être appelées depuis le thread SWT.
+ * All methods must be called from the SWT thread.
  */
 public final class SWTAnimator implements Runnable {
 
@@ -24,12 +24,12 @@ public final class SWTAnimator implements Runnable {
     private final long periodNanos;
 
     private boolean running;
-    private long nextFrame; // échéance de la prochaine image (System.nanoTime)
+    private long nextFrame; // deadline of the next frame (System.nanoTime)
 
     /**
-     * @param control composant animé : l'animation s'arrête d'elle-même quand il est détruit
-     * @param fps     cadence visée, en images par seconde
-     * @param repaint dessin d'une image (par exemple glCanvas::display)
+     * @param control animated component: the animation stops by itself when it is disposed
+     * @param fps     target frame rate, in frames per second
+     * @param repaint drawing of one frame (for example glCanvas::display)
      */
     public SWTAnimator(Control control, int fps, Runnable repaint) {
         this.control = control;
@@ -38,7 +38,7 @@ public final class SWTAnimator implements Runnable {
         control.addDisposeListener(e -> stop());
     }
 
-    /** Démarre l'animation (sans effet si elle est déjà démarrée). */
+    /** Starts the animation (no effect if it is already started). */
     public void start() {
         if (running || control.isDisposed()) return;
         running = true;
@@ -46,15 +46,15 @@ public final class SWTAnimator implements Runnable {
         control.getDisplay().timerExec(0, this);
     }
 
-    /** Arrête l'animation ; ne bloque jamais. */
+    /** Stops the animation; never blocks. */
     public void stop() {
         running = false;
-        if (!control.isDisposed()) control.getDisplay().timerExec(-1, this); // annule l'appel programmé
+        if (!control.isDisposed()) control.getDisplay().timerExec(-1, this); // cancels the scheduled call
     }
 
     public boolean isRunning() { return running; }
 
-    /** Une image, puis programmation de la suivante. */
+    /** One frame, then scheduling of the next one. */
     @Override
     public void run() {
         if (!running || control.isDisposed()) {
@@ -63,12 +63,12 @@ public final class SWTAnimator implements Runnable {
         }
         repaint.run();
 
-        // Échéance suivante ; si l'on a pris du retard (dessin trop long), on repart de maintenant
+        // Next deadline; if we are late (drawing too long), we restart from now
         long now = System.nanoTime();
         nextFrame += periodNanos;
         if (nextFrame < now) nextFrame = now;
-        // Délai d'au moins 1 ms ; sous Windows les minuteries ont une granularité d'environ 15,6 ms,
-        // les petits délais donnent donc environ 64 images/s
+        // Delay of at least 1 ms; on Windows timers have a granularity of about 15.6 ms,
+        // so small delays give about 64 frames/s
         int delayMillis = (int) Math.max(1, (nextFrame - now) / 1_000_000L);
         if (running && !control.isDisposed()) control.getDisplay().timerExec(delayMillis, this);
     }

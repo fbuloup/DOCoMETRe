@@ -4,40 +4,39 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Équivalent 2D de {@link Curve3DData} : ensemble ordonné de points (x, y)
- * stockés dans un tampon circulaire de capacité sampleFrequency * windowTimeWidth + 1
- * (voir {@link CurveData}).
+ * 2D equivalent of {@link Curve3DData}: ordered set of points (x, y) stored
+ * in a circular buffer with a capacity of sampleFrequency * windowTimeWidth + 1
+ * (see {@link CurveData}).
  */
 public class Curve2DData extends CurveData<Curve2DData> {
 
     /**
-     * Crée une courbe 2D temps réel, initialement vide ; la durée de
-     * l'historique sera celle du graphe auquel elle sera ajoutée
-     * ({@link #DEFAULT_WINDOW_TIME_WIDTH} secondes d'ici là, ou si le graphe n'en impose pas).
+     * Creates a real-time 2D curve, initially empty; the history duration
+     * will be the one of the chart it is added to ({@link #DEFAULT_WINDOW_TIME_WIDTH}
+     * seconds until then, or if the chart does not impose one).
      *
-     * @param sampleFrequency fréquence d'échantillonnage des coordonnées, en Hz
+     * @param sampleFrequency sampling frequency of the coordinates, in Hz
      */
     public Curve2DData(double sampleFrequency) {
         super(2, sampleFrequency, DEFAULT_WINDOW_TIME_WIDTH);
     }
 
     /**
-     * Crée une courbe 2D statique à partir d'une liste de points : la fenêtre
-     * a exactement la taille de la liste (fréquence nominale de 1 Hz).
-     * addSamples() reste utilisable et fait alors défiler la courbe.
-     * À afficher dans un graphe qui n'impose pas de durée d'historique : sinon
-     * la courbe serait réduite à ses historySize derniers points.
+     * Creates a static 2D curve from a list of points: the window has exactly
+     * the size of the list (nominal frequency of 1 Hz). addSamples() remains
+     * usable and then scrolls the curve. To be displayed in a chart that does
+     * not impose a history duration: otherwise the curve would be reduced to
+     * its last historySize points.
      */
     public Curve2DData(List<Point2D> points) {
-        super(2, 1, Math.max(1, checkNotEmpty(points).size() - 1)); // N points couvrent N - 1 secondes à 1 Hz
+        super(2, 1, Math.max(1, checkNotEmpty(points).size() - 1)); // N points span N - 1 seconds at 1 Hz
         addSamples(points);
         takeSnapshot();
     }
 
     /**
-     * Ajoute des échantillons temporellement consécutifs (le dernier de la
-     * liste est le plus récent). Si la fenêtre est pleine, les échantillons
-     * les plus anciens sont supprimés.
+     * Adds consecutive samples (the last one of the list is the most
+     * recent). If the window is full, the oldest samples are removed.
      */
     public synchronized void addSamples(List<Point2D> samples) {
         int n = samples.size();
@@ -49,9 +48,9 @@ public class Curve2DData extends CurveData<Curve2DData> {
     }
 
     /**
-     * Variante de {@link #addSamples(List)} prenant une voie par coordonnée :
-     * (x[i], y[i]) forme le i-ème échantillon. Les deux tableaux doivent
-     * avoir la même longueur.
+     * Variant of {@link #addSamples(List)} taking one channel per coordinate:
+     * (x[i], y[i]) forms the i-th sample. The two arrays must have the same
+     * length.
      */
     public synchronized void addSamples(float[] x, float[] y) {
         int n = x.length;
@@ -69,7 +68,7 @@ public class Curve2DData extends CurveData<Curve2DData> {
         ring[k + 1] = y;
     }
 
-    /** Renvoie une copie des points actuellement dans la fenêtre, du plus ancien au plus récent. */
+    /** Returns a copy of the points currently in the window, from the oldest to the most recent. */
     public synchronized List<Point2D> getPoints() {
         List<Point2D> points = new ArrayList<>(count());
         float[] ring = ring();
@@ -80,7 +79,7 @@ public class Curve2DData extends CurveData<Curve2DData> {
         return points;
     }
 
-    /** Coordonnées (x, y entrelacés) du dernier instantané, du plus ancien au plus récent. */
+    /** Coordinates (interleaved x, y) of the last snapshot, from the oldest to the most recent. */
     public float[] getSnapshotCoordinates() { return getSnapshotData(); }
 
     public float getCenterX() { return getCenter(0); }

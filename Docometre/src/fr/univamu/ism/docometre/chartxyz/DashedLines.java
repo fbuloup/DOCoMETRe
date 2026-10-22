@@ -6,49 +6,48 @@ import java.util.WeakHashMap;
 import com.jogamp.opengl.GL2;
 
 /**
- * Tracé des courbes en tirets (DASH, DASH_DOT, DASH_DASH_DOT) avec un motif
- * ancré sur les données.
+ * Drawing of dashed curves (DASH, DASH_DOT, DASH_DASH_DOT) with a pattern
+ * anchored on the data.
  *
- * Le pointillé natif d'OpenGL (glLineStipple) recommence le motif au premier
- * sommet de chaque glBegin. En temps réel, ce premier sommet est le plus
- * ancien échantillon de la fenêtre, qui change à chaque image : les tirets
- * semblent alors glisser le long de la courbe. Ici, chaque échantillon
- * reçoit une fois pour toutes, à son arrivée, sa position dans le motif
- * (longueur cumulée du tracé à l'écran, en pixels) : les tirets restent
- * attachés aux données.
+ * OpenGL native stippling (glLineStipple) restarts the pattern at the first
+ * vertex of each glBegin. In real time, this first vertex is the oldest
+ * sample of the window, which changes at each frame: the dashes then seem
+ * to slide along the curve. Here, each sample receives once and for all, on
+ * arrival, its position in the pattern (cumulative on-screen length of the
+ * drawing, in pixels): the dashes remain attached to the data.
  *
- * Les longueurs sont mesurées à l'échelle d'affichage du moment où les
- * échantillons arrivent. Si l'échelle change ensuite fortement (zoom,
- * ajustement automatique, facteur supérieur à 2), toutes les positions sont
- * recalculées, ce qui provoque un unique saut du motif.
+ * Lengths are measured at the display scale of the moment the samples
+ * arrive. If the scale then changes significantly (zoom, automatic fit,
+ * factor greater than 2), all the positions are recomputed, which causes a
+ * single jump of the pattern.
  *
- * Une instance est propre à un renderer et doit être utilisée depuis son
- * thread d'affichage.
+ * An instance is specific to a renderer and must be used from its rendering
+ * thread.
  */
 public final class DashedLines {
 
-    /** Émet le sommet situé entre les sommets i-1 et i de l'instantané, à la fraction f (0 = i-1, 1 = i). */
+    /** Emits the vertex located between vertices i-1 and i of the snapshot, at fraction f (0 = i-1, 1 = i). */
     public interface Emitter {
         void vertex(int i, float f);
     }
 
-    /** Longueur à l'écran, en pixels, du segment entre les sommets i-1 et i de l'instantané. */
+    /** On-screen length, in pixels, of the segment between vertices i-1 and i of the snapshot. */
     public interface SegmentLength {
         double pixels(int i);
     }
 
-    /** Indique si le segment entre les sommets i-1 et i ne doit pas être dessiné. */
+    /** Tells whether the segment between vertices i-1 and i must not be drawn. */
     public interface SegmentFilter {
         boolean skip(int i);
     }
 
-    /** Facteur d'échelle au-delà duquel les positions dans le motif sont recalculées. */
+    /** Scale factor beyond which the positions in the pattern are recomputed. */
     private static final double RESCALE_RATIO = 2.0;
 
-    /** Positions dans le motif des échantillons d'une courbe. */
+    /** Positions in the pattern of the samples of a curve. */
     private static final class Phases {
-        final double[] cumulative; // longueur cumulée (pixels), indexée par numéro absolu d'échantillon % capacité
-        long last = -1;            // numéro absolu du dernier échantillon traité
+        final double[] cumulative; // cumulative length (pixels), indexed by absolute sample number % capacity
+        long last = -1;            // absolute number of the last processed sample
         double referenceScaleX, referenceScaleY;
 
         Phases(int capacity) {
@@ -59,19 +58,19 @@ public final class DashedLines {
     private final Map<Object, Phases> phasesByCurve = new WeakHashMap<>();
 
     /**
-     * Dessine en tirets une courbe de l'instantané courant.
+     * Draws a curve of the current snapshot with dashes.
      *
-     * @param curve        la courbe (son type de trait doit être autre que SOLID)
-     * @param width        épaisseur du trait en pixels (le motif y est proportionnel)
-     * @param capacity     capacité du tampon de la courbe
-     * @param totalSamples nombre total d'échantillons reçus au moment de l'instantané
-     * @param n            nombre de points de l'instantané
-     * @param from         premier point à dessiner (les points précédents gardent leur position dans le motif)
-     * @param scaleX       échelle horizontale d'affichage (pixels par unité), sert à détecter les changements d'échelle
-     * @param scaleY       échelle verticale d'affichage (pixels par unité)
-     * @param length       longueur à l'écran de chaque segment, à l'échelle actuelle
-     * @param filter       segments à ne pas dessiner (null = tous)
-     * @param emitter      émission des sommets (couleur comprise)
+     * @param curve        the curve (its line style must be other than SOLID)
+     * @param width        line width in pixels (the pattern is proportional to it)
+     * @param capacity     buffer capacity of the curve
+     * @param totalSamples total number of samples received at the time of the snapshot
+     * @param n            number of points of the snapshot
+     * @param from         first point to draw (the previous points keep their position in the pattern)
+     * @param scaleX       horizontal display scale (pixels per unit), used to detect scale changes
+     * @param scaleY       vertical display scale (pixels per unit)
+     * @param length       on-screen length of each segment, at the current scale
+     * @param filter       segments not to draw (null = all)
+     * @param emitter      emission of the vertices (color included)
      */
     public void draw(GL2 gl, CurveAppearance curve, float width, int capacity, long totalSamples, int n, int from,
                      double scaleX, double scaleY, SegmentLength length, SegmentFilter filter, Emitter emitter) {
@@ -98,8 +97,8 @@ public final class DashedLines {
     }
 
     /**
-     * Dessine en tirets le segment droit (x0, y0) - (x1, y1), le motif
-     * commençant en (x0, y0). Sert à la légende (coordonnées en pixels).
+     * Draws the straight segment (x0, y0) - (x1, y1) with dashes, the pattern
+     * starting at (x0, y0). Used by the legend (coordinates in pixels).
      */
     public static void drawSegment(GL2 gl, LineStyle style, float width, float x0, float y0, float x1, float y1) {
         double length = Math.hypot(x1 - x0, y1 - y0);
@@ -109,12 +108,12 @@ public final class DashedLines {
         if (open[0]) gl.glEnd();
     }
 
-    /** Longueur en pixels d'un caractère du motif : proportionnelle à l'épaisseur du trait. */
+    /** Length in pixels of one character of the pattern: proportional to the line width. */
     private static double unitLength(float width) {
         return LineStyle.BASE_FACTOR * Math.max(1, Math.round(width));
     }
 
-    /** Calcule la position dans le motif des échantillons arrivés depuis l'image précédente. */
+    /** Computes the position in the pattern of the samples received since the previous frame. */
     private Phases update(Object curve, int capacity, long totalSamples, int n,
                           double scaleX, double scaleY, SegmentLength length) {
         Phases phases = phasesByCurve.get(curve);
@@ -133,7 +132,7 @@ public final class DashedLines {
 
         long start;
         if (phases.last < 0 || phases.last < first - 1 || phases.last > lastAbs || rescaled) {
-            // Premier affichage, échantillons perdus entre deux images, clear() ou changement d'échelle : on repart de zéro
+            // First display, samples lost between two frames, clear() or scale change: start again from zero
             phases.cumulative[index(first, capacity)] = 0;
             phases.referenceScaleX = scaleX;
             phases.referenceScaleY = scaleY;
@@ -150,7 +149,7 @@ public final class DashedLines {
     }
 
     private static double ratio(double a, double b) {
-        if (!(a > 0) || !(b > 0)) return 1; // échelle inconnue : pas de recalcul
+        if (!(a > 0) || !(b > 0)) return 1; // unknown scale: no recomputation
         return Math.max(a / b, b / a);
     }
 
@@ -159,11 +158,11 @@ public final class DashedLines {
     }
 
     /**
-     * Parcourt un segment de longueur len (pixels) commençant à la position
-     * p0 dans le motif, et émet les portions allumées sous forme de
-     * GL_LINE_STRIP. open[0] indique si un tronçon est ouvert : il reste
-     * ouvert d'un segment au suivant tant que le motif est allumé, pour que
-     * les tirets épais n'aient pas de coupure aux sommets.
+     * Walks a segment of length len (pixels) starting at position p0 in the
+     * pattern, and emits the "on" portions as GL_LINE_STRIP. open[0] tells
+     * whether a strip is open: it remains open from one segment to the next
+     * as long as the pattern is on, so that thick dashes have no break at
+     * the vertices.
      */
     private static void walkSegment(GL2 gl, short pattern, double unit, double p0, double len,
                                     int i, Emitter emitter, boolean[] open) {
@@ -174,7 +173,7 @@ public final class DashedLines {
         double done = 0;
         while (true) {
             int u = (int) (pos / unit);
-            if (u >= 16) { // garde-fou numérique
+            if (u >= 16) { // numerical safeguard
                 u = 0;
                 pos -= period;
             }
@@ -191,7 +190,7 @@ public final class DashedLines {
             done += step;
             pos += step;
             if (done >= len) break;
-            // Frontière de caractère atteinte à l'intérieur du segment
+            // Character boundary reached inside the segment
             boolean nextOn = ((pattern >> ((u + 1) % 16)) & 1) != 0;
             if (open[0] && !nextOn) {
                 emitter.vertex(i, (float) (done / len));

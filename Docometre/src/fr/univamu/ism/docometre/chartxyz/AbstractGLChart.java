@@ -8,15 +8,15 @@ import org.eclipse.swt.widgets.Control;
 import fr.univamu.ism.rtswtchart.IRTSWTSerie;
 
 /**
- * Base des graphes de courbes temps réel intégrés dans une interface SWT :
- * une surface OpenGL ({@link GLHost}, SWT ou NEWT selon {@link GLToolkit})
- * et un renderer ({@link CurveChartRenderer}) dont les réglages sont exposés ici.
+ * Base of the real-time curve charts embedded in an SWT user interface: an
+ * OpenGL surface ({@link GLHost}, SWT or NEWT depending on {@link GLToolkit})
+ * and a renderer ({@link CurveChartRenderer}) whose settings are exposed here.
  *
- * Les méthodes des interfaces fr.univamu.ism.rtswtchart communes à tous les
- * graphes sont aussi implémentées ici (les sous-classes déclarent l'interface).
+ * The methods of the fr.univamu.ism.rtswtchart interfaces common to all
+ * charts are also implemented here (subclasses declare the interface).
  *
- * @param <C> type des courbes
- * @param <R> type du renderer
+ * @param <C> curve type
+ * @param <R> renderer type
  */
 public abstract class AbstractGLChart<C extends CurveData<C>, R extends CurveChartRenderer<C>> implements GLComponent {
 
@@ -24,12 +24,12 @@ public abstract class AbstractGLChart<C extends CurveData<C>, R extends CurveCha
     protected final GLHost host;
 
     /**
-     * Crée la surface OpenGL dans container et démarre l'affichage. À la
-     * fermeture du graphe, ses courbes en sont retirées : elles peuvent
-     * alors être affichées dans un autre graphe.
+     * Creates the OpenGL surface in container and starts rendering. When the
+     * chart is closed, its curves are removed from it: they can then be
+     * displayed in another chart.
      *
-     * @param renderer    renderer déjà configuré (courbes, échelles)
-     * @param depthBuffer true pour une scène 3D
+     * @param renderer    renderer already configured (curves, scales)
+     * @param depthBuffer true for a 3D scene
      */
     protected AbstractGLChart(Composite container, GLToolkit toolkit, R renderer, boolean depthBuffer) {
         this.renderer = renderer;
@@ -41,7 +41,7 @@ public abstract class AbstractGLChart<C extends CurveData<C>, R extends CurveCha
 		}
     }
 
-    /** Renderer du graphe, pour les réglages qui ne sont pas exposés ici. */
+    /** Renderer of the chart, for the settings that are not exposed here. */
     public R getRenderer() { return renderer; }
 
     @Override
@@ -49,12 +49,12 @@ public abstract class AbstractGLChart<C extends CurveData<C>, R extends CurveCha
         host.close();
     }
 
-    /** Arrête l'animation : l'affichage n'est plus rafraîchi. */
+    /** Stops the animation: the display is no longer refreshed. */
     public void stopAnimator() {
         host.stopAnimation();
     }
     
-    /** Démarre l'animation : l'affichage est rafraîchi. */
+    /** Starts the animation: the display is refreshed. */
     public void startAnimator() {
         host.startAnimation();
     }
@@ -80,52 +80,52 @@ public abstract class AbstractGLChart<C extends CurveData<C>, R extends CurveCha
     }
 
     /**
-     * Ajoute une courbe au graphe (utilisable pendant l'affichage, depuis n'importe quel thread).
+     * Adds a curve to the chart (usable while rendering, from any thread).
      *
-     * @throws IllegalStateException si la courbe est déjà affichée dans un graphe
+     * @throws IllegalStateException if the curve is already displayed in a chart
      */
     public void addCurve(C curve) {
         renderer.addCurve(curve);
     }
 
-    /** Retire une courbe du graphe. */
+    /** Removes a curve from the chart. */
     public void removeCurve(C curve) {
         renderer.removeCurve(curve);
     }
 
-    /** Nombre de courbes actuellement affichées dans le graphe (utilisable depuis n'importe quel thread). */
+    /** Number of curves currently displayed in the chart (usable from any thread). */
     public int getCurvesCount() {
         return renderer.getCurvesCount();
     }
 
     /**
-     * Police des graduations des échelles ; les noms d'axes utilisent la même
-     * famille, en gras et plus grande.
+     * Font of the scale tick labels; axis names use the same family, bold
+     * and larger.
      *
-     * @param family famille ("Arial", "Helvetica", "Courier New"...) ou null pour la police du système
-     * @param size   taille en points
-     * @param style  SWT.NORMAL, SWT.BOLD, SWT.ITALIC ou SWT.BOLD | SWT.ITALIC
+     * @param family family ("Arial", "Helvetica", "Courier New"...) or null for the system font
+     * @param size   size in points
+     * @param style  SWT.NORMAL, SWT.BOLD, SWT.ITALIC or SWT.BOLD | SWT.ITALIC
      */
     public void setScaleFont(String family, int size, int style) {
         renderer.setScaleFont(new ChartFont(family, size, style));
     }
 
-    /** Police de la légende (mêmes paramètres que {@link #setScaleFont}). */
+    /** Font of the legend (same parameters as {@link #setScaleFont}). */
     public void setLegendFont(String family, int size, int style) {
         renderer.setLegendFont(new ChartFont(family, size, style));
     }
 
-    /** Échelles dynamiques, ajustées en continu aux valeurs des courbes (par défaut). */
+    /** Dynamic scales, continuously fitted to the curve values (default). */
     public void setDynamicScales() {
         renderer.setDynamicScales();
     }
 
-    /** Vrai si les échelles sont fixes. */
+    /** True if the scales are fixed. */
     public boolean hasFixedScales() {
         return renderer.hasFixedScales();
     }
 
-    /** Affiche ou masque la légende (également possible avec la touche N quand le graphe a le focus). */
+    /** Shows or hides the legend (also with the N key when the chart has the focus). */
     public void setLegendVisible(boolean visible) {
         renderer.setLegendVisible(visible);
     }
@@ -134,17 +134,17 @@ public abstract class AbstractGLChart<C extends CurveData<C>, R extends CurveCha
         return renderer.isLegendVisible();
     }
 
-    /** Cadence d'affichage réelle mesurée, en images par seconde (cible : {@link GLHost#FPS}). */
+    /** Actual measured frame rate, in frames per second (target: {@link GLHost#FPS}). */
     public double getFps() {
         return renderer.getFps();
     }
 
-    /** Affiche ou masque la cadence d'affichage dans le graphe (également avec la touche F). */
+    /** Shows or hides the frame rate in the chart (also with the F key). */
     public void setFpsVisible(boolean visible) {
         renderer.setFpsVisible(visible);
     }
 
-    /** Affiche ou masque, en haut à droite du graphe, la dernière valeur de chaque courbe (également avec la touche V). */
+    /** Shows or hides, at the top right of the chart, the last value of each curve (also with the V key). */
     public void setCurrentValuesVisible(boolean visible) {
         renderer.setCurrentValuesVisible(visible);
     }
@@ -154,8 +154,8 @@ public abstract class AbstractGLChart<C extends CurveData<C>, R extends CurveCha
     }
 
     /**
-     * Active ou désactive la réduction du nombre de points envoyés à OpenGL
-     * (activée par défaut, également avec la touche D). Le dessin est inchangé.
+     * Enables or disables the reduction of the number of points sent to
+     * OpenGL (enabled by default, also with the D key). The drawing is unchanged.
      */
     public void setDecimationEnabled(boolean enabled) {
         renderer.setDecimationEnabled(enabled);
@@ -166,7 +166,7 @@ public abstract class AbstractGLChart<C extends CurveData<C>, R extends CurveCha
     }
 
     // ------------------------------------------------------------------
-    // Méthodes communes des interfaces fr.univamu.ism.rtswtchart
+    // Methods common to the fr.univamu.ism.rtswtchart interfaces
 
     public void setAutoScale(boolean autoscale) {
         if (autoscale) setDynamicScales();
@@ -180,24 +180,24 @@ public abstract class AbstractGLChart<C extends CurveData<C>, R extends CurveCha
         setLegendVisible(value);
     }
 
-    /** Non géré : les bornes se fixent ensemble avec setFixedScales(). */
+    /** Not supported: bounds are set together with setFixedScales(). */
     public void setyMax(double value) {
     }
 
-    /** Non géré : les bornes se fixent ensemble avec setFixedScales(). */
+    /** Not supported: bounds are set together with setFixedScales(). */
     public void setyMin(double value) {
     }
 
-    /** Non géré : couleur fixe. */
+    /** Not supported: fixed color. */
     public void setGridLinesColor(Color color) {
     }
 
-    /** Non géré : couleur fixe. */
+    /** Not supported: fixed color. */
     public void setFontColor(Color color) {
     }
 
-    /** Non géré : les courbes sont créées par l'appelant puis ajoutées avec addCurve(). */
+    /** Not supported: curves are created by the caller, then added with addCurve(). */
     public IRTSWTSerie createSerie(String serieId, Color color) {
-    	throw new UnsupportedOperationException("utiliser addCurve(...)");
+    	throw new UnsupportedOperationException("use addCurve(...)");
     }
 }

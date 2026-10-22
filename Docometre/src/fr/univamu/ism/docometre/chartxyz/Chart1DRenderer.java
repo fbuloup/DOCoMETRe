@@ -5,85 +5,80 @@ import java.util.Locale;
 import com.jogamp.opengl.GL2;
 
 /**
- * Rendu OpenGL d'un ou plusieurs signaux temps réel y(t) ({@link Curve1DData}),
- * selon deux modes (voir {@link DisplayMode}) :
+ * OpenGL rendering of one or several real-time signals y(t) ({@link Curve1DData}),
+ * in two modes (see {@link DisplayMode}):
  * <ul>
- * <li>{@link DisplayMode#SWEEP} (par défaut) : balayage de type oscilloscope.
- *     L'abscisse est fixe, de 0 à windowTimeWidth secondes ; le tracé
- *     progresse de gauche à droite puis repart à gauche en remplaçant
- *     progressivement le balayage précédent. Un curseur vertical indique la
- *     position d'écriture et un court espace vide le précède.</li>
- * <li>{@link DisplayMode#SCROLL} : défilement. L'abscisse se termine au
- *     dernier échantillon reçu et glisse avec le temps.</li>
+ * <li>{@link DisplayMode#SWEEP} (default): oscilloscope-like sweep. The
+ *     abscissa is fixed, from 0 to windowTimeWidth seconds; the drawing
+ *     progresses from left to right, then starts again on the left,
+ *     progressively replacing the previous sweep. A vertical cursor shows
+ *     the write position and a short gap precedes it.</li>
+ * <li>{@link DisplayMode#SCROLL}: scrolling. The abscissa ends at the last
+ *     sample received and slides with time.</li>
  * </ul>
  *
- * Plusieurs signaux : chacun peut avoir sa propre fréquence d'échantillonnage.
- * La durée de la fenêtre (windowTimeWidth) est celle du graphe : elle est
- * imposée à toutes ses courbes, dont elle fixe la capacité. Les temps sont
- * comptés à partir du premier échantillon de chaque courbe (des voies
- * acquises ensemble sont donc alignées) ; la fenêtre se termine au dernier
- * échantillon le plus récent, toutes courbes confondues.
+ * Several signals: each one can have its own sampling frequency. The window
+ * duration (windowTimeWidth) is the one of the chart: it is imposed on all
+ * its curves, whose capacity it sets. Times are counted from the first
+ * sample of each curve (channels acquired together are therefore aligned);
+ * the window ends at the most recent last sample, all curves combined.
  *
- * En mode défilement, l'axe horizontal est le temps, en secondes depuis le
- * premier échantillon. Il couvre toujours windowTimeWidth secondes : tant
- * que la fenêtre n'est pas remplie, il va de 0 à windowTimeWidth et la
- * courbe progresse vers la droite ; ensuite, il se termine au dernier
- * échantillon reçu et défile. En mode balayage, il indique le temps écoulé
- * depuis le début du balayage en cours.
- * L'axe vertical s'ajuste automatiquement aux valeurs de la fenêtre ;
- * zoom et panoramique s'appliquent par-dessus. La touche "pause"
- * fige l'affichage sans interrompre la réception des données.
+ * In scroll mode, the horizontal axis is time, in seconds since the first
+ * sample. It always covers windowTimeWidth seconds: as long as the window
+ * is not full, it goes from 0 to windowTimeWidth and the curve progresses
+ * to the right; then, it ends at the last sample received and scrolls. In
+ * sweep mode, it shows the time elapsed since the beginning of the current
+ * sweep.
+ * The vertical axis automatically fits the values of the window; zoom and
+ * pan apply on top of it. The "pause" key freezes the display without
+ * interrupting data reception.
  *
- * Curseur (touche C, voir {@link PlotRenderer}) : il désigne l'échantillon
- * dont l'instant est le plus proche de l'abscisse de la souris, quelle que
- * soit la hauteur de celle-ci. Son abscisse est celle de
- * l'axe du temps (temps depuis le premier échantillon en défilement, position
- * dans le balayage en balayage), affichée avec la résolution de la fréquence
- * d'échantillonnage ; en balayage, les échantillons de l'espace vide ne
- * peuvent pas être désignés.
+ * Cursor (C key, see {@link PlotRenderer}): it designates the sample whose
+ * time is closest to the mouse abscissa, whatever the mouse height. Its
+ * abscissa is the one of the time axis (time since the first sample in
+ * scroll mode, position in the sweep in sweep mode), displayed with the
+ * resolution of the sampling frequency; in sweep mode, the samples of the
+ * gap cannot be designated.
  *
- * Commandes clavier propres au 1D : espace, pause / reprise ; M, bascule
- * balayage / défilement (la fenêtre de zoom est alors supprimée). Le
- * panoramique (bouton droit) déplace la vue en x et en y ; en défilement,
- * la vue décalée continue de suivre le dernier échantillon. La molette ne
- * zoome que sur y.
+ * Keyboard commands specific to 1D: space, pause / resume; M, toggles sweep
+ * / scroll (the zoom window is then removed). Pan (right button) moves the
+ * view in x and y; in scroll mode, the shifted view keeps following the
+ * last sample. The wheel only zooms on y.
  *
- * Zoom par rectangle (voir {@link PlotRenderer}) : en balayage, les
- * abscisses de la fenêtre sont des positions dans le balayage ; en
- * défilement, elles sont relatives au dernier échantillon, si bien que la
- * fenêtre suit le temps (loupe sur les dernières secondes) ; la pause
- * (espace) permet d'examiner un instant précis.
+ * Rectangle zoom (see {@link PlotRenderer}): in sweep mode, the window
+ * abscissas are positions in the sweep; in scroll mode, they are relative
+ * to the last sample, so that the window follows time (magnifier on the
+ * last seconds); pause (space) allows examining a precise moment.
  *
- * Pour garder une bonne précision même après des heures d'acquisition,
- * les positions des sommets sont calculées en double : temps relatif au
- * dernier échantillon en défilement, temps modulo la durée de balayage en
- * mode oscilloscope.
+ * To keep a good precision even after hours of acquisition, vertex
+ * positions are computed in double: time relative to the last sample in
+ * scroll mode, time modulo the sweep duration in oscilloscope mode.
  */
 public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
 
-    /** Mode d'affichage de l'axe du temps. */
+    /** Display mode of the time axis. */
     public enum DisplayMode {
-        /** Balayage de type oscilloscope : abscisse fixe [0, windowTimeWidth], le tracé repart à gauche. */
+        /** Oscilloscope-like sweep: fixed abscissa [0, windowTimeWidth], the drawing starts again on the left. */
         SWEEP,
-        /** Défilement : l'abscisse se termine au dernier échantillon et glisse avec le temps. */
+        /** Scroll: the abscissa ends at the last sample and slides with time. */
         SCROLL
     }
 
-    /** En balayage, fraction de la fenêtre laissée vide juste devant le curseur d'écriture. */
+    /** In sweep mode, fraction of the window left empty just before the write cursor. */
     private static final double SWEEP_GAP = 0.01;
-    private static final float DEFAULT_LINE_WIDTH = 1.5f; // épaisseur des courbes sans épaisseur explicite (pixels)
+    private static final float DEFAULT_LINE_WIDTH = 1.5f; // width of the curves without an explicit width (pixels)
 
     private volatile DisplayMode displayMode = DisplayMode.SWEEP;
-    private DisplayMode frameMode = DisplayMode.SWEEP; // mode figé pour l'image en cours
+    private DisplayMode frameMode = DisplayMode.SWEEP; // mode frozen for the current frame
     private volatile boolean paused = false;
 
-    // Bornes communes, recalculées à chaque image
+    // Common bounds, recomputed at each frame
     private float dataMinY = -1f, dataMaxY = 1f;
-    private double lastTime = 0;  // instant du dernier échantillon le plus récent (s)
-    private double windowTime = 1; // durée de la fenêtre pour l'image en cours (s)
+    private double lastTime = 0;  // time of the most recent last sample (s)
+    private double windowTime = 1; // window duration for the current frame (s)
 
     /**
-     * @param windowTimeWidth durée de la fenêtre affichée, en secondes, imposée à toutes les courbes
+     * @param windowTimeWidth duration of the displayed window, in seconds, imposed on all the curves
      */
     public Chart1DRenderer(double windowTimeWidth, Curve1DData... curves) {
         super(4f, curves);
@@ -91,17 +86,17 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
     }
 
     /**
-     * Graphe dont la fenêtre est la plus longue des fenêtres de ses courbes,
-     * qui gardent chacune la leur (comportement d'origine).
+     * Chart whose window is the longest of the windows of its curves, which
+     * each keep their own (original behavior).
      *
-     * @deprecated la fenêtre appartient au graphe : utiliser {@link #Chart1DRenderer(double, Curve1DData...)}
+     * @deprecated the window belongs to the chart: use {@link #Chart1DRenderer(double, Curve1DData...)}
      */
     @Deprecated
     public Chart1DRenderer(Curve1DData... curves) {
         super(4f, curves);
     }
 
-    /** Fige les données reçues depuis l'image précédente (sauf en pause : l'affichage reste figé). */
+    /** Freezes the data received since the previous frame (except in pause: the display remains frozen). */
     @Override
     protected void updateData() {
         frameMode = displayMode;
@@ -110,7 +105,7 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
         computeBounds();
     }
 
-    /** Bornes en y de l'ensemble des courbes non vides, instant du dernier échantillon et durée de la fenêtre. */
+    /** Y bounds of all the non-empty curves, time of the last sample and window duration. */
     private void computeBounds() {
         float minY = Float.MAX_VALUE, maxY = -Float.MAX_VALUE;
         double imposed = getWindowTimeWidth();
@@ -122,7 +117,7 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
             minY = Math.min(minY, curve.getMinY());
             maxY = Math.max(maxY, curve.getMaxY());
         }
-        if (minY > maxY) { // aucune donnée
+        if (minY > maxY) { // no data
             minY = -1f;
             maxY = 1f;
         }
@@ -133,10 +128,10 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
     }
 
     /**
-     * Calcule la fenêtre visible : la fenêtre de zoom si elle existe (abscisses
-     * relatives à {@link #zoomXReference()}) ; sinon [0, windowTime] en
-     * balayage, windowTime secondes se terminant au dernier échantillon en
-     * défilement, et y ajusté aux données, ou égal à l'échelle fixe si elle est définie.
+     * Computes the visible window: the zoom window if it exists (abscissas
+     * relative to {@link #zoomXReference()}); otherwise [0, windowTime] in
+     * sweep mode, windowTime seconds ending at the last sample in scroll
+     * mode, and y fitted to the data, or equal to the fixed scale if it is set.
      */
     @Override
     protected void computeView() {
@@ -156,7 +151,7 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
             viewMaxX = Math.max(windowTime, lastTime);
             viewMinX = viewMaxX - windowTime;
         }
-        // Panoramique horizontal, en fraction de la fenêtre (le contenu suit la souris)
+        // Horizontal pan, as a fraction of the window (the content follows the mouse)
         double shift = panX * windowTime;
         viewMinX += shift;
         viewMaxX += shift;
@@ -171,36 +166,36 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
     }
 
     /**
-     * Origine des abscisses OpenGL : le dernier échantillon en défilement
-     * (précision des float), le début du balayage en mode oscilloscope (les
-     * abscisses vont alors de 0 à windowTime).
+     * Origin of the OpenGL abscissas: the last sample in scroll mode (float
+     * precision), the beginning of the sweep in oscilloscope mode (the
+     * abscissas then go from 0 to windowTime).
      */
     @Override
     protected double xOrigin() {
         return (frameMode == DisplayMode.SCROLL) ? lastTime : 0;
     }
 
-    /** En défilement, la fenêtre de zoom est relative au dernier échantillon : elle suit le temps. */
+    /** In scroll mode, the zoom window is relative to the last sample: it follows time. */
     @Override
     protected double zoomXReference() {
         return (frameMode == DisplayMode.SCROLL) ? lastTime : 0;
     }
 
-    /** La molette ne zoome que sur l'axe vertical, avec ou sans fenêtre de zoom. */
+    /** The wheel only zooms on the vertical axis, with or without a zoom window. */
     @Override
     protected boolean wheelZoomsX() { return false; }
 
-    /** Le curseur suit l'abscisse de la souris : l'échantillon de même instant, quelle que soit sa hauteur. */
+    /** The cursor follows the mouse abscissa: the sample at the same time, whatever its height. */
     @Override
     protected boolean cursorFollowsXOnly() { return true; }
 
-    /** En balayage, les échantillons de l'espace vide ne sont pas dessinés : le curseur les ignore. */
+    /** In sweep mode, the samples of the gap are not drawn: the cursor ignores them. */
     @Override
     protected int firstCursorPoint(Curve1DData curve) {
         return (frameMode == DisplayMode.SWEEP) ? firstSweepSample(curve) : 0;
     }
 
-    /** Point i : temps (ou position dans le balayage) et valeur, comme au tracé. */
+    /** Point i: time (or position in the sweep) and value, as drawn. */
     @Override
     protected boolean cursorPoint(Curve1DData curve, int i, double[] xy) {
         int n = curve.getSnapshotCount();
@@ -210,14 +205,14 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
         return true;
     }
 
-    /** Temps du curseur avec autant de décimales que la période d'échantillonnage en demande (0,002 s à 500 Hz). */
+    /** Cursor time with as many decimals as the sampling period requires (0.002 s at 500 Hz). */
     @Override
     protected String formatCursorX(Curve1DData curve, double x) {
         int decimals = (int) Math.max(0, Math.min(6, Math.ceil(Math.log10(curve.getSampleFrequency()) - 1e-9)));
         return String.format(Locale.US, "%." + decimals + "f", x);
     }
 
-    /** En balayage, premier échantillon dessiné de la courbe : les plus anciens sont dans l'espace vide devant le curseur d'écriture. */
+    /** In sweep mode, first drawn sample of the curve: the oldest ones are in the gap before the write cursor. */
     private int firstSweepSample(Curve1DData curve) {
         double oldestShown = lastTime - windowTime * (1 - SWEEP_GAP);
         int n = curve.getSnapshotCount();
@@ -235,7 +230,7 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
         }
     }
 
-    /** "PAUSE", sous les valeurs courantes si elles sont affichées. */
+    /** "PAUSE", below the current values if they are displayed. */
     @Override
     protected void drawStatus(GL2 gl, float valuesHeight) {
         if (!paused) return;
@@ -246,9 +241,9 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
     }
 
     /**
-     * Dessine les courbes, chacune de sa couleur (explicite ou de la palette).
-     * Les abscisses sont en temps relatif à lastTime (le dernier échantillon
-     * le plus récent), ce qui préserve la précision des float.
+     * Draws the curves, each one in its color (explicit or from the palette).
+     * Abscissas are in time relative to lastTime (the most recent last
+     * sample), which preserves float precision.
      */
     private void drawCurvesScroll(GL2 gl) {
         for (int k = 0; k < frameCurves.size(); k++) {
@@ -266,8 +261,8 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
                         (i, f) -> gl.glVertex2f(offset - (n - i - f) * dt, values[i - 1] + f * (values[i] - values[i - 1])));
                 drawnPoints += n;
             } else if (useDecimation(n, 2 * plotWidth)) {
-                // Réduction M4 : colonne de pixels de chaque échantillon, à partir de son abscisse tracée
-                // (étendue visible et non windowTime : l'axe du temps peut être zoomé)
+                // M4 reduction: pixel column of each sample, from its drawn abscissa
+                // (visible range and not windowTime: the time axis can be zoomed)
                 double left = viewMinX - lastTime, pixelsPerSecond = plotWidth / (viewMaxX - viewMinX);
                 decimation.m4(0, n, values, i -> (long) Math.floor(((offset - (n - 1 - i) * dt) - left) * pixelsPerSecond));
                 int[] kept = decimation.indices();
@@ -291,24 +286,24 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
     }
 
     /**
-     * Tracé en tirets d'un signal (motif ancré sur les données, voir
-     * {@link DashedLines}). La longueur à l'écran d'un segment ne dépend que
-     * des échelles : elle est la même en balayage et en défilement.
+     * Dashed drawing of a signal (pattern anchored on the data, see
+     * {@link DashedLines}). The on-screen length of a segment only depends on
+     * the scales: it is the same in sweep and scroll modes.
      */
     private void drawDashed(GL2 gl, Curve1DData curve, float width, float[] values, int n, int from,
                             DashedLines.SegmentFilter filter, DashedLines.Emitter emitter) {
-        double scaleX = plotWidth / (viewMaxX - viewMinX);              // pixels par seconde (zoom compris)
-        double scaleY = plotHeight / (viewMaxY - viewMinY);          // pixels par unité
-        double dx = scaleX / curve.getSampleFrequency();                // pixels entre deux échantillons
+        double scaleX = plotWidth / (viewMaxX - viewMinX);              // pixels per second (zoom included)
+        double scaleY = plotHeight / (viewMaxY - viewMinY);          // pixels per unit
+        double dx = scaleX / curve.getSampleFrequency();                // pixels between two samples
         dashedLines.draw(gl, curve, width, curve.getSnapshotCapacity(), curve.getSnapshotTotalSamples(), n, from, scaleX, scaleY,
                 i -> Math.hypot(dx, (values[i] - values[i - 1]) * scaleY), filter, emitter);
     }
 
     /**
-     * Mode balayage : chaque échantillon d'instant t est placé en x = t modulo
-     * windowTime ; le tracé est interrompu à chaque retour à gauche. Les
-     * échantillons dont l'instant précède lastTime - windowTime * (1 - SWEEP_GAP)
-     * ne sont pas dessinés, ce qui laisse un espace vide devant le curseur.
+     * Sweep mode: each sample at time t is placed at x = t modulo windowTime;
+     * the drawing is interrupted at each return to the left. The samples
+     * whose time precedes lastTime - windowTime * (1 - SWEEP_GAP) are not
+     * drawn, which leaves a gap before the cursor.
      */
     private void drawCurvesSweep(GL2 gl, boolean withPoints) {
         for (int k = 0; k < frameCurves.size(); k++) {
@@ -317,14 +312,14 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
             int n = curve.getSnapshotCount();
             double frequency = curve.getSampleFrequency();
             double curveLast = curve.getLastSampleTime();
-            int first = firstSweepSample(curve); // les plus anciens sont dans l'espace vide
+            int first = firstSweepSample(curve); // the oldest ones are in the gap
 
             float[] color = CurveStyles.colorOf(curve, k);
             gl.glColor3f(color[0], color[1], color[2]);
             float width = CurveStyles.lineWidthOf(curve, DEFAULT_LINE_WIDTH);
             gl.glLineWidth(width);
             if (CurveStyles.isDashed(curve)) {
-                // Segments à cheval sur un retour à gauche non dessinés
+                // Segments straddling a return to the left are not drawn
                 drawDashed(gl, curve, width, values, n, first,
                         i -> Math.floor((curveLast - (n - i) / frequency) / windowTime)
                              != Math.floor((curveLast - (n - 1 - i) / frequency) / windowTime),
@@ -335,7 +330,7 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
                         });
                 drawnPoints += n - first;
             } else {
-                // Réduction M4 éventuelle : clé = (balayage, colonne de pixels dans le balayage)
+                // Optional M4 reduction: key = (sweep, pixel column in the sweep)
                 int[] kept = null;
                 int count = n - first;
                 if (useDecimation(count, 2 * plotWidth)) {
@@ -355,7 +350,7 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
                     int i = (kept == null) ? first + j : kept[j];
                     double t = curveLast - (n - 1 - i) / frequency;
                     long sweep = (long) Math.floor(t / windowTime);
-                    if (sweep != currentSweep) { // retour à gauche : nouveau tronçon
+                    if (sweep != currentSweep) { // return to the left: new strip
                         if (open) gl.glEnd();
                         gl.glBegin(GL2.GL_LINE_STRIP);
                         open = true;
@@ -379,7 +374,7 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
         }
     }
 
-    /** Mode balayage : trait vertical à la position d'écriture courante. */
+    /** Sweep mode: vertical line at the current write position. */
     private void drawSweepCursor(GL2 gl) {
         boolean any = false;
         for (Curve1DData curve : frameCurves) any |= curve.getSnapshotCount() > 0;
@@ -418,14 +413,14 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
     }
 
     /**
-     * Panoramique horizontal et vertical, comme en 2D ; le contenu suit la
-     * souris. Sans fenêtre de zoom, le zoom de la molette ne porte que sur y :
-     * le déplacement horizontal n'en dépend donc pas.
+     * Horizontal and vertical pan, as in 2D; the content follows the mouse.
+     * Without a zoom window, the wheel zoom only applies to y: the horizontal
+     * displacement therefore does not depend on it.
      */
     @Override
     public void pan(float dx, float dy) {
         if (zoomWindow() != null) {
-            super.pan(dx, dy); // la fenêtre de zoom est déplacée sur les deux axes
+            super.pan(dx, dy); // the zoom window is moved on both axes
             return;
         }
         panX -= dx * width / plotWidth;
@@ -433,26 +428,25 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
     }
 
     /**
-     * Échelle verticale fixe : l'axe vertical va exactement de yMin à yMax,
-     * quelles que soient les valeurs des courbes (ce qui dépasse est coupé
-     * par le cadre). Zoom et panoramique restent possibles ; R revient à
-     * cette échelle.
+     * Fixed vertical scale: the vertical axis goes exactly from yMin to yMax,
+     * whatever the curve values (what exceeds them is clipped by the frame).
+     * Zoom and pan remain possible; R goes back to this scale.
      */
     public void setFixedScales(double yMin, double yMax) { setFixedScaleBounds(yMin, yMax); }
 
-    /** Choisit le mode d'affichage ; un changement de mode supprime la fenêtre de zoom (abscisses incompatibles). */
+    /** Chooses the display mode; a mode change removes the zoom window (incompatible abscissas). */
     public void setDisplayMode(DisplayMode displayMode) {
         if (displayMode == null || displayMode == this.displayMode) return;
         this.displayMode = displayMode;
-        panX = 0f; // le décalage horizontal n'a pas le même sens dans les deux modes
+        panX = 0f; // the horizontal shift does not have the same meaning in both modes
         clearZoomWindow();
     }
     public DisplayMode getDisplayMode() { return displayMode; }
-    /** Bascule entre balayage (oscilloscope) et défilement. */
+    /** Toggles between sweep (oscilloscope) and scroll. */
     public void toggleDisplayMode() {
         setDisplayMode((displayMode == DisplayMode.SWEEP) ? DisplayMode.SCROLL : DisplayMode.SWEEP);
     }
 
-    /** Fige / relance l'affichage ; les données continuent d'être reçues pendant la pause. */
+    /** Freezes / resumes the display; data keep being received during the pause. */
     public void togglePause() { paused = !paused; }
 }

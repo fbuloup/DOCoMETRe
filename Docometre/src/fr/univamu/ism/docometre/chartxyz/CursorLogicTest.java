@@ -4,16 +4,16 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Test sans OpenGL de la logique du curseur (PlotRenderer, Chart1DRenderer, Chart2DRenderer). */
+/** Test without OpenGL of the cursor logic (PlotRenderer, Chart1DRenderer, Chart2DRenderer). */
 public class CursorLogicTest {
     static int failures = 0;
     static void check(String what, boolean ok) {
-        System.out.println((ok ? "OK    " : "ÉCHEC ") + what);
+        System.out.println((ok ? "OK     " : "FAILED ") + what);
         if (!ok) failures++;
     }
     static boolean near(double a, double b) { return Math.abs(a - b) < 1e-3; }
 
-    /** Composant 800 x 600 ; zone de tracé 700 x 500 à partir de (50, 40) en pixels OpenGL. */
+    /** 800 x 600 component; 700 x 500 plot area starting at (50, 40) in OpenGL pixels. */
     static void frame(PlotRenderer<?> r) throws Exception {
         r.reshape(null, 0, 0, 800, 600);
         r.marginLeft = 50; r.marginBottom = 40; r.plotWidth = 700; r.plotHeight = 500;
@@ -23,7 +23,7 @@ public class CursorLogicTest {
         update.setAccessible(true);
         update.invoke(r);
     }
-    /** Position fenêtre (origine en haut à gauche) du point (x, y) des données dans la vue courante. */
+    /** Window position (origin at the top left) of the data point (x, y) in the current view. */
     static int[] window(PlotRenderer<?> r, double x, double y) {
         double px = 50 + (x - r.viewMinX) / (r.viewMaxX - r.viewMinX) * 700;
         double py = 40 + (y - r.viewMinY) / (r.viewMaxY - r.viewMinY) * 500;
@@ -35,7 +35,7 @@ public class CursorLogicTest {
     }
 
     public static void main(String[] args) throws Exception {
-        // ---------------- 2D : deux trajectoires ----------------
+        // ---------------- 2D: two trajectories ----------------
         List<Point2D> line = new ArrayList<>(), other = new ArrayList<>();
         for (int i = 0; i <= 10; i++) {
             line.add(new Point2D(i, i / 2f));
@@ -47,46 +47,46 @@ public class CursorLogicTest {
         frame(r2);
         mouse(r2, 3.1, 1.6);
         frame(r2);
-        check("2D curseur désactivé par défaut : aucun point, aucun appel", r2.getCursorPosition() == null && events.isEmpty());
-        check("2D Tabulation non utilisée tant que le curseur est désactivé", !r2.usesTabKey());
+        check("2D cursor disabled by default: no point, no call", r2.getCursorPosition() == null && events.isEmpty());
+        check("2D Tab not used while the cursor is disabled", !r2.usesTabKey());
 
         r2.keyPressed('c');
         frame(r2);
         float[] p = r2.getCursorPosition();
-        check("2D touche C : point le plus proche de la première courbe = (3, 1.5)", p != null && near(p[0], 3) && near(p[1], 1.5));
-        check("2D écouteur appelé avec {3, 1.5}", events.size() == 1 && near(events.get(0)[0], 3) && near(events.get(0)[1], 1.5));
+        check("2D C key: closest point of the first curve = (3, 1.5)", p != null && near(p[0], 3) && near(p[1], 1.5));
+        check("2D listener called with {3, 1.5}", events.size() == 1 && near(events.get(0)[0], 3) && near(events.get(0)[1], 1.5));
         frame(r2);
-        check("2D souris immobile, données inchangées : pas de nouvel appel", events.size() == 1);
-        check("2D Tabulation utilisée (curseur actif, 2 courbes)", r2.usesTabKey());
+        check("2D motionless mouse, unchanged data: no new call", events.size() == 1);
+        check("2D Tab used (active cursor, 2 curves)", r2.usesTabKey());
 
         r2.keyPressed(ChartInteraction.TAB);
         frame(r2);
         p = r2.getCursorPosition();
-        // Distance à l'écran depuis la souris en (3.1, 1.6), échelles 63.6 px/unité en x et 90.9 en y :
-        // (4, 3) à 140 px, (5, 2.5) à 146 px, (3, 3.5) à 173 px
-        check("2D Tabulation : seconde courbe, point le plus proche à l'écran = (4, 3)", r2.getCursorCurveIndex() == 1 && near(p[0], 4) && near(p[1], 3));
+        // On-screen distance from the mouse at (3.1, 1.6), scales 63.6 px/unit in x and 90.9 in y:
+        // (4, 3) at 140 px, (5, 2.5) at 146 px, (3, 3.5) at 173 px
+        check("2D Tab: second curve, closest point on screen = (4, 3)", r2.getCursorCurveIndex() == 1 && near(p[0], 4) && near(p[1], 3));
         r2.keyPressed(ChartInteraction.TAB);
-        check("2D Tabulation en boucle : retour à la première courbe", r2.getCursorCurveIndex() == 0);
+        check("2D Tab cycles: back to the first curve", r2.getCursorCurveIndex() == 0);
         r2.keyPressed(ChartInteraction.BACK_TAB);
-        check("2D Maj + Tabulation : courbe précédente (la seconde)", r2.getCursorCurveIndex() == 1);
+        check("2D Shift + Tab: previous curve (the second one)", r2.getCursorCurveIndex() == 1);
 
         mouse(r2, 8.2, 1.0);
         frame(r2);
         p = r2.getCursorPosition();
-        check("2D la souris bouge : point le plus proche de la seconde courbe = (8, 1)", near(p[0], 8) && near(p[1], 1));
+        check("2D the mouse moves: closest point of the second curve = (8, 1)", near(p[0], 8) && near(p[1], 1));
 
         r2.setZoomWindow(0, 4, 0, 5);
         frame(r2);
         p = r2.getCursorPosition();
-        check("2D zoom : seuls les points visibles sont candidats (x <= 4)", p != null && p[0] <= 4);
+        check("2D zoom: only the visible points are candidates (x <= 4)", p != null && p[0] <= 4);
 
         r2.keyPressed('c');
         frame(r2);
-        check("2D touche C à nouveau : curseur désactivé, écouteur appelé avec null", r2.getCursorPosition() == null && events.get(events.size() - 1) == null);
+        check("2D C key again: cursor disabled, listener called with null", r2.getCursorPosition() == null && events.get(events.size() - 1) == null);
         r2.keyPressed('c');
-        check("2D réactivation : retour à la première courbe", r2.getCursorCurveIndex() == 0);
+        check("2D re-enabling: back to the first curve", r2.getCursorCurveIndex() == 0);
 
-        // ---------------- 1D défilement ----------------
+        // ---------------- 1D scroll ----------------
         Curve1DData signal = new Curve1DData(100);
         Chart1DRenderer r1 = new Chart1DRenderer(5, signal);
         float[] samples = new float[1001];
@@ -99,55 +99,55 @@ public class CursorLogicTest {
         mouse(r1, t, v);
         frame(r1);
         p = r1.getCursorPosition();
-        check("1D défilement : point désigné à t = 7.50 s", p != null && near(p[0], 7.5) && near(p[1], v));
-        check("1D abscisse affichée avec la résolution de 100 Hz : \"7.50\"", "7.50".equals(r1.formatCursorX(signal, p[0])));
-        check("1D une seule courbe : Tabulation laissée à SWT", !r1.usesTabKey());
-        mouse(r1, 6.2, r1.viewMaxY); // tout en haut de la zone de tracé, loin de la courbe
+        check("1D scroll: designated point at t = 7.50 s", p != null && near(p[0], 7.5) && near(p[1], v));
+        check("1D abscissa displayed with the 100 Hz resolution: \"7.50\"", "7.50".equals(r1.formatCursorX(signal, p[0])));
+        check("1D single curve: Tab left to SWT", !r1.usesTabKey());
+        mouse(r1, 6.2, r1.viewMaxY); // at the very top of the plot area, far from the curve
         frame(r1);
         float[] top = r1.getCursorPosition();
-        check("1D même abscisse que la souris, quelle que soit sa hauteur : t = 6.20 s", top != null && near(top[0], 6.2) && near(top[1], Math.sin(620 / 50.0)));
+        check("1D same abscissa as the mouse, whatever its height: t = 6.20 s", top != null && near(top[0], 6.2) && near(top[1], Math.sin(620 / 50.0)));
         mouse(r1, t, v);
         frame(r1);
-        signal.addSamples(new float[100]); // une seconde de zéros : la courbe défile sous la souris
+        signal.addSamples(new float[100]); // one second of zeros: the curve scrolls under the mouse
         frame(r1);
         float[] q = r1.getCursorPosition();
-        check("1D la courbe défile sous une souris immobile : le point désigné change", q != null && !(near(q[0], p[0]) && near(q[1], p[1])));
+        check("1D the curve scrolls under a motionless mouse: the designated point changes", q != null && !(near(q[0], p[0]) && near(q[1], p[1])));
 
-        // ---------------- 1D : panoramique horizontal sans fenêtre de zoom ----------------
+        // ---------------- 1D: horizontal pan without zoom window ----------------
         r1.setCursorEnabled(false);
         frame(r1);
         double minBefore = r1.viewMinX, maxBefore = r1.viewMaxX, yBefore = r1.viewMinY;
-        r1.drag(ChartInteraction.RIGHT_BUTTON, 140, 0, 800, 600, ChartInteraction.InputScale.SWT); // 140 px vers la droite
+        r1.drag(ChartInteraction.RIGHT_BUTTON, 140, 0, 800, 600, ChartInteraction.InputScale.SWT); // 140 px to the right
         frame(r1);
-        double expectedShift = 140.0 / 700 * 5; // 140 px de la zone de tracé (700 px pour 5 s)
-        check("1D bouton droit vers la droite : vue décalée de 1 s vers les instants anciens", near(r1.viewMinX, minBefore - expectedShift) && near(r1.viewMaxX, maxBefore - expectedShift) && near(r1.viewMinY, yBefore));
-        r1.wheel(3, ChartInteraction.InputScale.SWT); // zoom vertical : ne change pas la vitesse du panoramique horizontal
+        double expectedShift = 140.0 / 700 * 5; // 140 px of the plot area (700 px for 5 s)
+        check("1D right button to the right: view shifted by 1 s towards older times", near(r1.viewMinX, minBefore - expectedShift) && near(r1.viewMaxX, maxBefore - expectedShift) && near(r1.viewMinY, yBefore));
+        r1.wheel(3, ChartInteraction.InputScale.SWT); // vertical zoom: does not change the horizontal pan speed
         frame(r1);
         double min2 = r1.viewMinX;
         r1.drag(ChartInteraction.RIGHT_BUTTON, 140, 0, 800, 600, ChartInteraction.InputScale.SWT);
         frame(r1);
-        check("1D après zoom molette (y seulement), même décalage horizontal", near(r1.viewMinX, min2 - expectedShift));
+        check("1D after wheel zoom (y only), same horizontal shift", near(r1.viewMinX, min2 - expectedShift));
         r1.keyPressed('r');
         frame(r1);
-        check("1D R : retour à la vue initiale (décalage annulé)", near(r1.viewMaxX, Math.max(5, signal.getLastSampleTime())));
+        check("1D R: back to the initial view (shift cancelled)", near(r1.viewMaxX, Math.max(5, signal.getLastSampleTime())));
 
-        // ---------------- 1D balayage : l'espace vide n'est pas désignable ----------------
+        // ---------------- 1D sweep: the gap cannot be designated ----------------
         Curve1DData sweep = new Curve1DData(100);
         Chart1DRenderer rs = new Chart1DRenderer(5, sweep);
         float[] ramp = new float[801];
-        for (int i = 0; i < ramp.length; i++) ramp[i] = i / 100f; // 8 s : dernier échantillon à 8 s, curseur d'écriture à 3 s
+        for (int i = 0; i < ramp.length; i++) ramp[i] = i / 100f; // 8 s: last sample at 8 s, write cursor at 3 s
         sweep.addSamples(ramp);
         rs.setCursorEnabled(true);
         frame(rs);
         int first = rs.firstCursorPoint(sweep);
-        mouse(rs, 3.05, 3.05); // juste après le curseur d'écriture : dans l'espace vide
+        mouse(rs, 3.025, 3.025); // just after the write cursor: in the gap
         frame(rs);
         p = rs.getCursorPosition();
-        // 501 échantillons de t = 3 à 8 s ; l'espace vide (0,1 s) couvre t = 3,00 à 3,09 : 10 échantillons exclus
-        check("1D balayage : les 10 échantillons de l'espace vide sont exclus (1er désignable = 10)", first == 10);
-        check("1D balayage : le point désigné n'est pas dans l'espace vide (x hors ]3, 3.1[)", p != null && !(p[0] > 3.0001 && p[0] < 3.0999));
+        // 501 samples from t = 3 to 8 s; the gap (1% of 5 s = 0.05 s) covers t = 3.00 to 3.04: 5 samples excluded
+        check("1D sweep: the 5 samples of the gap are excluded (1st selectable = 5)", first == 5);
+        check("1D sweep: the designated point is not in the gap (x outside ]3, 3.05[)", p != null && !(p[0] > 3.0001 && p[0] < 3.0499));
 
-        System.out.println(failures == 0 ? "\nTous les tests passent." : "\n" + failures + " échec(s).");
+        System.out.println(failures == 0 ? "\nAll tests passed." : "\n" + failures + " failure(s).");
         System.exit(failures == 0 ? 0 : 1);
     }
 }

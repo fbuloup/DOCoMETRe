@@ -20,31 +20,31 @@ import org.eclipse.swt.widgets.Display;
 import com.jogamp.opengl.GL2;
 
 /**
- * Affichage de texte dans OpenGL avec n'importe quelle police du système.
+ * Text display in OpenGL with any system font.
  *
- * Chaque chaîne est dessinée une fois par SWT (GC) dans une image, convertie
- * en texture "alpha" puis affichée sur un quadrilatère en coordonnées pixels,
- * dans la couleur OpenGL courante. Les textures sont gardées en cache (les
- * moins récemment utilisées sont libérées au-delà de MAX_CACHED_TEXTS).
+ * Each string is drawn once by SWT (GC) into an image, converted into an
+ * "alpha" texture, then displayed on a quad in pixel coordinates, in the
+ * current OpenGL color. Textures are cached (the least recently used ones
+ * are released beyond MAX_CACHED_TEXTS).
  *
- * SWT n'autorise le dessin que dans son thread d'interface. Si l'affichage
- * OpenGL a lieu dans ce thread (GLCanvas SWT), le texte est préparé
- * immédiatement ; sinon (NEWT, thread de l'animateur), il est préparé de
- * manière asynchrone et apparaît à l'image suivante. En attendant, les
- * dimensions renvoyées sont des estimations.
+ * SWT only allows drawing in its user interface thread. If OpenGL rendering
+ * takes place in that thread (SWT GLCanvas), the text is prepared
+ * immediately; otherwise (NEWT, animator thread), it is prepared
+ * asynchronously and appears at the next frame. Meanwhile, the returned
+ * dimensions are estimates.
  *
- * Une instance est propre à un renderer : ses méthodes de dessin doivent
- * être appelées depuis son thread d'affichage OpenGL.
+ * An instance is specific to a renderer: its drawing methods must be called
+ * from its OpenGL rendering thread.
  */
 public final class GLText {
 
     private static final int MAX_CACHED_TEXTS = 512;
     
-    /** Nombre maximal de textes en cours de préparation 
-     * asynchrone (évite d'engorger le thread SWT).**/
+    /** Maximum number of texts being prepared
+     * asynchronously (avoids flooding the SWT thread).**/
     private static final int MAX_PENDING = 64;
 
-    /** Image d'un texte : alpha sur 8 bits, lignes de bas en haut (convention OpenGL). */
+    /** Image of a text: 8-bit alpha, rows from bottom to top (OpenGL convention). */
     private static final class Raster {
         final int width, height;
         final byte[] alpha;
@@ -56,7 +56,7 @@ public final class GLText {
         }
     }
 
-    /** Mesures d'une police, en pixels. */
+    /** Metrics of a font, in pixels. */
     private static final class FontMetrics {
         final float lineHeight, averageCharWidth;
 
@@ -90,7 +90,7 @@ public final class GLText {
 
     private static final class Entry {
         final Raster raster;
-        int texture; // 0 = pas encore créée
+        int texture; // 0 = not created yet
 
         Entry(Raster raster) { this.raster = raster; }
     }
@@ -98,27 +98,27 @@ public final class GLText {
     private Display display;
     private float pixelScale = 1f;
 
-    // Cache LRU des textures (thread OpenGL uniquement)
+    // LRU cache of the textures (OpenGL thread only)
     private final LinkedHashMap<Key, Entry> cache = new LinkedHashMap<>(64, 0.75f, true);
-    // Images préparées par le thread SWT, en attente de transfert vers le cache
+    // Images prepared by the SWT thread, waiting to be transferred to the cache
     private final Map<Key, Raster> ready = new ConcurrentHashMap<>();
     private final Set<Key> pending = ConcurrentHashMap.newKeySet();
-    private final Map<String, FontMetrics> metrics = new ConcurrentHashMap<>(); // par police et échelle
-    // Textures à libérer (retirées du cache), au prochain passage dans le thread OpenGL
+    private final Map<String, FontMetrics> metrics = new ConcurrentHashMap<>(); // per font and scale
+    // Textures to release (removed from the cache), at the next pass in the OpenGL thread
     private final java.util.List<Integer> texturesToDelete = new java.util.ArrayList<>();
 
     /**
-     * Facteur entre pixels OpenGL et points de l'interface (2 sur un écran
-     * Retina avec NEWT, 1 sinon). Les polices sont agrandies d'autant pour
-     * garder la même taille apparente.
+     * Factor between OpenGL pixels and user interface points (2 on a Retina
+     * screen with NEWT, 1 otherwise). Fonts are enlarged accordingly to keep
+     * the same apparent size.
      */
     public void setPixelScale(float pixelScale) {
         this.pixelScale = (pixelScale > 0) ? pixelScale : 1f;
     }
 
     /**
-     * Facteur pixels / points d'une surface OpenGL : celui que rapporte JOGL
-     * pour les surfaces qui le gèrent (fenêtre NEWT sur écran Retina), 1 sinon.
+     * Pixels / points factor of an OpenGL surface: the one reported by JOGL
+     * for the surfaces that support it (NEWT window on a Retina screen), 1 otherwise.
      */
     public static float surfaceScale(com.jogamp.opengl.GLAutoDrawable drawable) {
         if (drawable instanceof com.jogamp.nativewindow.ScalableSurface) {
@@ -128,12 +128,12 @@ public final class GLText {
         return 1f;
     }
 
-    /** Hauteur d'une ligne de texte dans cette police, en pixels. */
+    /** Height of a line of text in this font, in pixels. */
     public float lineHeight(ChartFont font) {
         return metricsOf(font).lineHeight;
     }
 
-    /** Largeur du texte en pixels (estimée si le texte n'est pas encore prêt). */
+    /** Width of the text in pixels (estimated if the text is not ready yet). */
     public float width(String text, ChartFont font) {
         Entry entry = entry(text, font);
         if (entry != null) return entry.raster.width;
@@ -141,8 +141,8 @@ public final class GLText {
     }
 
     /**
-     * Dessine le texte dans la couleur courante, coin inférieur gauche en
-     * (x, y). La projection courante doit être en pixels.
+     * Draws the text in the current color, lower left corner at (x, y). The
+     * current projection must be in pixels.
      */
     public void draw(GL2 gl, String text, ChartFont font, float x, float y) {
         deletePendingTextures(gl);
@@ -151,7 +151,7 @@ public final class GLText {
         Raster raster = entry.raster;
         if (entry.texture == 0) entry.texture = createTexture(gl, raster);
 
-        // Position entière : chaque pixel du texte tombe sur un pixel de l'écran (texte net)
+        // Integer position: each pixel of the text falls on a screen pixel (sharp text)
         float x0 = Math.round(x), y0 = Math.round(y);
         gl.glEnable(GL2.GL_TEXTURE_2D);
         gl.glBindTexture(GL2.GL_TEXTURE_2D, entry.texture);
@@ -166,7 +166,7 @@ public final class GLText {
         gl.glDisable(GL2.GL_TEXTURE_2D);
     }
 
-    /** Libère toutes les textures (à appeler depuis dispose() du renderer). */
+    /** Releases all the textures (to be called from the dispose() of the renderer). */
     public void dispose(GL2 gl) {
         for (Entry entry : cache.values()) {
             if (entry.texture != 0) texturesToDelete.add(entry.texture);
@@ -179,16 +179,16 @@ public final class GLText {
     // ------------------------------------------------------------------
 
     /**
-     * Prépare le texte s'il ne l'est pas déjà (immédiatement dans le thread
-     * SWT, de manière asynchrone sinon) et indique s'il est prêt à dessiner.
+     * Prepares the text if it is not already prepared (immediately in the SWT
+     * thread, asynchronously otherwise) and tells whether it is ready to draw.
      */
     public boolean prepare(String text, ChartFont font) {
         return entry(text, font) != null;
     }
 
-    /** Texte prêt à dessiner, ou null s'il est en cours de préparation. */
+    /** Text ready to draw, or null if it is being prepared. */
     private Entry entry(String text, ChartFont font) {
-    	drainReady(); // les images prêtes passent dans le cache LRU, qui est borné
+    	drainReady(); // ready images go into the LRU cache, which is bounded
     	Key key = new Key(text, font, pixelScale);
         Entry entry = cache.get(key);
         if (entry != null) return entry;
@@ -196,7 +196,7 @@ public final class GLText {
         Display swt = display();
         if (swt == null || swt.isDisposed()) return null;
         if (Display.getCurrent() != swt) {
-        	if (pending.size() < MAX_PENDING && pending.add(key)) { // ne pas inonder le thread SWT
+        	if (pending.size() < MAX_PENDING && pending.add(key)) { // do not flood the SWT thread
                 try {
 					swt.asyncExec(() -> {
 					    try {
@@ -217,7 +217,7 @@ public final class GLText {
         return entry;
     }
     
-    /** Transfère dans le cache les images préparées par le thread SWT (même celles qui ne sont plus demandées). */
+    /** Transfers the images prepared by the SWT thread into the cache (even those that are no longer requested). */
     private void drainReady() {
         if (ready.isEmpty()) return;
         for (Iterator<Map.Entry<Key, Raster>> it = ready.entrySet().iterator(); it.hasNext(); ) {
@@ -264,7 +264,7 @@ public final class GLText {
         return id[0];
     }
 
-    /** Mesures de la police (estimation tant qu'aucun texte n'a été préparé avec elle). */
+    /** Metrics of the font (estimate as long as no text has been prepared with it). */
     private FontMetrics metricsOf(ChartFont font) {
         FontMetrics m = metrics.get(metricsKey(font, pixelScale));
         if (m != null) return m;
@@ -272,7 +272,7 @@ public final class GLText {
         if (swt != null && !swt.isDisposed() && Display.getCurrent() == swt) {
             return measure(swt, font, pixelScale);
         }
-        float pixels = font.getSize() * pixelScale * 96f / 72f; // estimation (écran à 96 ppp)
+        float pixels = font.getSize() * pixelScale * 96f / 72f; // estimate (96 dpi screen)
         return new FontMetrics(pixels * 1.25f, pixels * 0.6f);
     }
 
@@ -280,7 +280,7 @@ public final class GLText {
         return font.toString() + "@" + scale;
     }
 
-    // ---------------- thread SWT uniquement ----------------
+    // ---------------- SWT thread only ----------------
 
     private Font createFont(Display swt, ChartFont font, float scale) {
         String family = font.getFamily();
@@ -313,7 +313,7 @@ public final class GLText {
     }
 
     private Raster rasterize(Display swt, Key key) {
-    	// Mesures de la police : une seule fois par police et par échelle
+    	// Font metrics: only once per font and scale
         if (!metrics.containsKey(metricsKey(key.font, key.scale))) measure(swt, key.font, key.scale);
 
         ImageData data;
@@ -334,7 +334,7 @@ public final class GLText {
             }
             int width = Math.max(1, extent.x), height = Math.max(1, extent.y);
 
-            // Texte blanc sur fond noir : la luminance devient l'opacité
+            // White text on a black background: luminance becomes opacity
             Image image = new Image(swt, width, height);
             try {
                 GC gc = new GC(image);
@@ -360,7 +360,7 @@ public final class GLText {
         int width = data.width, height = data.height;
         byte[] alpha = new byte[width * height];
         for (int y = 0; y < height; y++) {
-            int row = (height - 1 - y) * width; // OpenGL : première ligne en bas
+            int row = (height - 1 - y) * width; // OpenGL: first row at the bottom
             for (int x = 0; x < width; x++) {
                 RGB rgb = data.palette.getRGB(data.getPixel(x, y));
                 alpha[row + x] = (byte) Math.max(rgb.red, Math.max(rgb.green, rgb.blue));

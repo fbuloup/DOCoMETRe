@@ -5,8 +5,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
 /**
- * Visualisation d'une surface 3D (voir {@link Surface3DRenderer}) intégrée
- * dans une interface SWT.
+ * Display of a 3D surface (see {@link Surface3DRenderer}) embedded in an SWT
+ * user interface.
  */
 public class GLSurface implements GLComponent {
 
@@ -18,7 +18,7 @@ public class GLSurface implements GLComponent {
         host = GLHost.create(toolkit, container, true, renderer, null);
     }
 
-    /** Renderer de la surface, pour les réglages d'affichage. */
+    /** Renderer of the surface, for the display settings. */
     public Surface3DRenderer getRenderer() { return renderer; }
 
     @Override

@@ -5,33 +5,33 @@ import java.util.Objects;
 import org.eclipse.swt.SWT;
 
 /**
- * Police de caractères utilisée par un graphe (graduations, noms d'axes,
- * légende) : famille, taille en points et style. Immuable.
+ * Font used by a chart (tick labels, axis names, legend): family, size in
+ * points and style. Immutable.
  */
 public final class ChartFont {
 
-    /** Famille de police : null = police du système. */
+    /** Font family: null = system font. */
     private final String family;
-    /** Taille en points. */
+    /** Size in points. */
     private final int size;
-    /** Style SWT : SWT.NORMAL, SWT.BOLD, SWT.ITALIC ou SWT.BOLD | SWT.ITALIC. */
+    /** SWT style: SWT.NORMAL, SWT.BOLD, SWT.ITALIC or SWT.BOLD | SWT.ITALIC. */
     private final int style;
 
     /**
-     * @param family famille ("Arial", "Helvetica", "Times New Roman", "Courier New"...),
-     *               ou null pour la police du système ; une famille absente du
-     *               système est remplacée par une police par défaut
-     * @param size   taille en points (strictement positive)
-     * @param style  SWT.NORMAL, SWT.BOLD, SWT.ITALIC ou SWT.BOLD | SWT.ITALIC
+     * @param family family ("Arial", "Helvetica", "Times New Roman", "Courier New"...),
+     *               or null for the system font; a family missing from the
+     *               system is replaced by a default font
+     * @param size   size in points (strictly positive)
+     * @param style  SWT.NORMAL, SWT.BOLD, SWT.ITALIC or SWT.BOLD | SWT.ITALIC
      */
     public ChartFont(String family, int size, int style) {
-        if (size <= 0) throw new IllegalArgumentException("La taille de police doit être strictement positive.");
+        if (size <= 0) throw new IllegalArgumentException("The font size must be strictly positive.");
         this.family = family;
         this.size = size;
         this.style = style & (SWT.BOLD | SWT.ITALIC);
     }
 
-    /** Police du système, à la taille et au style donnés. */
+    /** System font, with the given size and style. */
     public ChartFont(int size, int style) {
         this(null, size, style);
     }
@@ -40,9 +40,9 @@ public final class ChartFont {
     public int getSize() { return size; }
     public int getStyle() { return style; }
 
-    /** Même famille et même style, autre taille. */
+    /** Same family and style, other size. */
     public ChartFont withSize(int newSize) { return new ChartFont(family, newSize, style); }
-    /** Même famille et même taille, autre style. */
+    /** Same family and size, other style. */
     public ChartFont withStyle(int newStyle) { return new ChartFont(family, size, newStyle); }
 
     @Override
@@ -58,7 +58,7 @@ public final class ChartFont {
 
     @Override
     public String toString() {
-        return (family != null ? family : "<système>") + " " + size + "pt"
-                + ((style & SWT.BOLD) != 0 ? " gras" : "") + ((style & SWT.ITALIC) != 0 ? " italique" : "");
+        return (family != null ? family : "<system>") + " " + size + "pt"
+                + ((style & SWT.BOLD) != 0 ? " bold" : "") + ((style & SWT.ITALIC) != 0 ? " italic" : "");
     }
 }

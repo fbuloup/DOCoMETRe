@@ -8,45 +8,43 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Représente l'ensemble ordonné de points 3D constituant la courbe à afficher,
- * ainsi que les informations géométriques utiles au rendu (centre, rayon englobant).
+ * Ordered set of 3D points forming the curve to display, together with the
+ * geometric information useful for rendering (center, bounding radius).
  *
- * Fonctionnement "temps réel" : les points sont stockés dans un tampon
- * circulaire dont la capacité vaut sampleFrequency * windowTimeWidth + 1
- * échantillons (voir {@link CurveData}). {@link #addSamples} ajoute des
- * échantillons temporellement consécutifs ; lorsque le tampon est plein,
- * les plus anciens sont écrasés par les plus récents.
+ * "Real-time" operation: the points are stored in a circular buffer whose
+ * capacity is sampleFrequency * windowTimeWidth + 1 samples (see
+ * {@link CurveData}). {@link #addSamples} adds consecutive samples; when the
+ * buffer is full, the oldest ones are overwritten by the most recent ones.
  */
 public class Curve3DData extends CurveData<Curve3DData> implements IRTSWTXYZSerie {
 
     /**
-     * Crée une courbe temps réel, initialement vide ; la durée de
-     * l'historique sera celle du graphe auquel elle sera ajoutée
-     * ({@link #DEFAULT_WINDOW_TIME_WIDTH} secondes d'ici là, ou si le graphe n'en impose pas).
+     * Creates a real-time curve, initially empty; the history duration will
+     * be the one of the chart it is added to ({@link #DEFAULT_WINDOW_TIME_WIDTH}
+     * seconds until then, or if the chart does not impose one).
      *
-     * @param sampleFrequency fréquence d'échantillonnage des coordonnées, en Hz
+     * @param sampleFrequency sampling frequency of the coordinates, in Hz
      */
     public Curve3DData(double sampleFrequency) {
         super(3, sampleFrequency, DEFAULT_WINDOW_TIME_WIDTH);
     }
 
     /**
-     * Crée une courbe statique à partir d'une liste de points (comportement
-     * d'origine) : la fenêtre a exactement la taille de la liste (fréquence
-     * nominale de 1 Hz). addSamples() reste utilisable et fait alors défiler
-     * la courbe. À afficher dans un graphe qui n'impose pas de durée
-     * d'historique : sinon la courbe serait réduite à ses historySize derniers points.
+     * Creates a static curve from a list of points (original behavior): the
+     * window has exactly the size of the list (nominal frequency of 1 Hz).
+     * addSamples() remains usable and then scrolls the curve. To be displayed
+     * in a chart that does not impose a history duration: otherwise the curve
+     * would be reduced to its last historySize points.
      */
     public Curve3DData(List<Point3D> points) {
-        super(3, 1, Math.max(1, checkNotEmpty(points).size() - 1)); // N points couvrent N - 1 secondes à 1 Hz
+        super(3, 1, Math.max(1, checkNotEmpty(points).size() - 1)); // N points span N - 1 seconds at 1 Hz
         addSamples(points);
         takeSnapshot();
     }
 
     /**
-     * Ajoute des échantillons temporellement consécutifs (le dernier de la
-     * liste est le plus récent). Si la fenêtre est pleine, les échantillons
-     * les plus anciens sont supprimés.
+     * Adds consecutive samples (the last one of the list is the most
+     * recent). If the window is full, the oldest samples are removed.
      */
     public synchronized void addSamples(List<Point3D> samples) {
         int n = samples.size();
@@ -58,9 +56,9 @@ public class Curve3DData extends CurveData<Curve3DData> implements IRTSWTXYZSeri
     }
 
     /**
-     * Variante de {@link #addSamples(List)} prenant une voie par coordonnée
-     * (x[i], y[i], z[i]) forme le i-ème échantillon. Les trois tableaux
-     * doivent avoir la même longueur.
+     * Variant of {@link #addSamples(List)} taking one channel per coordinate:
+     * (x[i], y[i], z[i]) forms the i-th sample. The three arrays must have
+     * the same length.
      */
     public synchronized void addSamples(float[] x, float[] y, float[] z) {
         int n = x.length;
@@ -80,9 +78,9 @@ public class Curve3DData extends CurveData<Curve3DData> implements IRTSWTXYZSeri
     }
 
     /**
-     * Charge une courbe depuis un fichier texte.
-     * Format attendu : une ligne par point "x y z" (séparateurs : espace, virgule ou point-virgule).
-     * Les lignes vides ou commençant par '#' sont ignorées.
+     * Loads a curve from a text file.
+     * Expected format: one line per point "x y z" (separators: space, comma or semicolon).
+     * Empty lines and lines starting with '#' are ignored.
      */
     public static Curve3DData loadFromFile(Path path) throws IOException {
         List<Point3D> points = new ArrayList<>();
@@ -97,7 +95,7 @@ public class Curve3DData extends CurveData<Curve3DData> implements IRTSWTXYZSeri
                 }
                 String[] parts = trimmed.split("[\\s,;]+");
                 if (parts.length < 3) {
-                    System.err.println("Ligne " + lineNumber + " ignorée (format invalide) : " + line);
+                    System.err.println("Line " + lineNumber + " ignored (invalid format): " + line);
                     continue;
                 }
                 try {
@@ -106,7 +104,7 @@ public class Curve3DData extends CurveData<Curve3DData> implements IRTSWTXYZSeri
                     float z = Float.parseFloat(parts[2]);
                     points.add(new Point3D(x, y, z));
                 } catch (NumberFormatException e) {
-                    System.err.println("Ligne " + lineNumber + " ignorée (nombre invalide) : " + line);
+                    System.err.println("Line " + lineNumber + " ignored (invalid number): " + line);
                 }
             }
         }
@@ -114,7 +112,7 @@ public class Curve3DData extends CurveData<Curve3DData> implements IRTSWTXYZSeri
     }
 
     /**
-     * Charge une courbe depuis une équation
+     * Builds a curve from an equation.
      */
     public static Curve3DData loadFromEquation() {
         List<Point3D> points = new ArrayList<>();
@@ -130,7 +128,7 @@ public class Curve3DData extends CurveData<Curve3DData> implements IRTSWTXYZSeri
         return new Curve3DData(points);
     }
 
-    /** Renvoie une copie des points actuellement dans la fenêtre, du plus ancien au plus récent. */
+    /** Returns a copy of the points currently in the window, from the oldest to the most recent. */
     public synchronized List<Point3D> getPoints() {
         List<Point3D> points = new ArrayList<>(count());
         float[] ring = ring();
@@ -141,10 +139,10 @@ public class Curve3DData extends CurveData<Curve3DData> implements IRTSWTXYZSeri
         return points;
     }
 
-    /** Coordonnées (x, y, z entrelacés) du dernier instantané, du plus ancien au plus récent. */
+    /** Coordinates (interleaved x, y, z) of the last snapshot, from the oldest to the most recent. */
     public float[] getSnapshotCoordinates() { return getSnapshotData(); }
 
-    /** Boîte englobante du dernier instantané (de -1 à 1 s'il est vide). */
+    /** Bounding box of the last snapshot (from -1 to 1 if it is empty). */
     public BoundingBox getBoundingBox() {
         return new BoundingBox(getMinX(), getMaxX(), getMinY(), getMaxY(), getMinZ(), getMaxZ());
     }
@@ -158,10 +156,10 @@ public class Curve3DData extends CurveData<Curve3DData> implements IRTSWTXYZSeri
     public float getMaxY() { return getMax(1); }
     public float getMinZ() { return getMin(2); }
     public float getMaxZ() { return getMax(2); }
-    /** Demi-diagonale de la boîte englobante du dernier instantané. */
+    /** Half diagonal of the bounding box of the last snapshot. */
     public float getBoundingRadius() { return getBoundingBox().radius; }
 
-    /** Sans effet : une courbe 3D a besoin des trois coordonnées (voir {@link #addPoints(Double[], Double[], Double[])}). */
+    /** No effect: a 3D curve needs the three coordinates (see {@link #addPoints(Double[], Double[], Double[])}). */
     @Override
     public void addPoints(Double[] timeValues, Double[] doubleValues) {
     }

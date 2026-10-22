@@ -1,40 +1,41 @@
 package fr.univamu.ism.docometre.chartxyz;
 
 /**
- * Signal temporel y(t) échantillonné à sampleFrequency Hz, dont seules les
- * windowTimeWidth dernières secondes sont conservées (tampon circulaire de
- * capacité sampleFrequency * windowTimeWidth + 1, voir {@link CurveData}).
+ * Time signal y(t) sampled at sampleFrequency Hz, of which only the last
+ * windowTimeWidth seconds are kept (circular buffer with a capacity of
+ * sampleFrequency * windowTimeWidth + 1, see {@link CurveData}).
  *
- * La durée windowTimeWidth est celle du graphe 1D qui affiche la courbe :
- * elle lui est imposée quand on l'ajoute au graphe (voir
- * {@link Chart1DRenderer#setWindowTimeWidth}). Avant cela, la courbe
- * conserve {@link #DEFAULT_WINDOW_TIME_WIDTH} secondes.
+ * The duration windowTimeWidth is the one of the 1D chart displaying the
+ * curve: it is imposed on the curve when it is added to the chart (see
+ * {@link Chart1DRenderer#setWindowTimeWidth}). Until then, the curve keeps
+ * {@link #DEFAULT_WINDOW_TIME_WIDTH} seconds.
  *
- * Le temps n'est pas transmis : il est déduit du rang de l'échantillon,
- * le premier échantillon reçu étant à t = 0 s, le suivant à 1 / sampleFrequency, etc.
+ * Time is not transmitted: it is derived from the sample index, the first
+ * sample received being at t = 0 s, the next one at 1 / sampleFrequency, etc.
  */
 public class Curve1DData extends CurveData<Curve1DData> {
 
     /**
-     * Crée un signal temps réel, initialement vide ; la durée conservée sera
-     * celle du graphe auquel il sera ajouté.
+     * Creates a real-time signal, initially empty; the duration kept will be
+     * the one of the chart it is added to.
      *
-     * @param sampleFrequency fréquence d'échantillonnage, en Hz
+     * @param sampleFrequency sampling frequency, in Hz
      */
     public Curve1DData(double sampleFrequency) {
         super(1, sampleFrequency, DEFAULT_WINDOW_TIME_WIDTH);
     }
 
     /**
-     * Crée un signal statique à partir de ses valeurs (la première à t = 0,
-     * la dernière à (values.length - 1) / sampleFrequency) : la durée conservée
-     * est exactement cet écart, si bien qu'aucune valeur n'est perdue. addSamples() reste utilisable et fait alors défiler le signal.
-     * À afficher dans un graphe de même durée (getWindowTimeWidth()) : une
-     * durée plus courte ne garderait que les dernières valeurs.
+     * Creates a static signal from its values (the first one at t = 0, the
+     * last one at (values.length - 1) / sampleFrequency): the duration kept
+     * is exactly that span, so no value is lost. addSamples() remains usable
+     * and then scrolls the signal.
+     * To be displayed in a chart with the same duration (getWindowTimeWidth()):
+     * a shorter duration would only keep the last values.
      *
-     * @param sampleFrequency fréquence d'échantillonnage, en Hz
-     * @param values          valeurs du signal (au moins deux)
-     * @throws IllegalArgumentException si values a moins de deux valeurs ou si sampleFrequency n'est pas strictement positive
+     * @param sampleFrequency sampling frequency, in Hz
+     * @param values          signal values (at least two)
+     * @throws IllegalArgumentException if values has fewer than two values or if sampleFrequency is not strictly positive
      */
     public Curve1DData(double sampleFrequency, float[] values) {
         super(1, sampleFrequency, durationOf(sampleFrequency, values));
@@ -43,21 +44,20 @@ public class Curve1DData extends CurveData<Curve1DData> {
     }
 
     /**
-     * Durée (s) de values.length échantillons à sampleFrequency Hz, du premier
-     * au dernier : (values.length - 1) / sampleFrequency. Méthode
-     * statique : elle peut être appelée dans l'appel au constructeur parent,
-     * avant que l'objet n'existe.
+     * Duration (s) of values.length samples at sampleFrequency Hz, from the
+     * first to the last one: (values.length - 1) / sampleFrequency. Static
+     * method: it can be called within the call to the parent constructor,
+     * before the object exists.
      */
     private static double durationOf(double sampleFrequency, float[] values) {
-        if (!(sampleFrequency > 0)) throw new IllegalArgumentException("sampleFrequency doit être strictement positive.");
-        if (values == null || values.length < 2) throw new IllegalArgumentException("Le signal doit comporter au moins deux valeurs.");
+        if (!(sampleFrequency > 0)) throw new IllegalArgumentException("sampleFrequency must be strictly positive.");
+        if (values == null || values.length < 2) throw new IllegalArgumentException("The signal must have at least two values.");
         return (values.length - 1) / sampleFrequency;
     }
 
     /**
-     * Ajoute des échantillons temporellement consécutifs (le dernier du
-     * tableau est le plus récent). Si la fenêtre est pleine, les échantillons
-     * les plus anciens sont supprimés.
+     * Adds consecutive samples (the last one of the array is the most
+     * recent). If the window is full, the oldest samples are removed.
      */
     public synchronized void addSamples(float[] values) {
         float[] ring = ring();
@@ -67,18 +67,18 @@ public class Curve1DData extends CurveData<Curve1DData> {
         commit(values.length);
     }
 
-    /** Ajoute un seul échantillon. */
+    /** Adds a single sample. */
     public void addSample(float value) {
         addSamples(new float[]{value});
     }
 
-    /** Valeurs du dernier instantané, de la plus ancienne à la plus récente. */
+    /** Values of the last snapshot, from the oldest to the most recent. */
     public float[] getSnapshotValues() { return getSnapshotData(); }
 
     /**
-     * Instant (en s) du dernier échantillon du dernier instantané, en prenant
-     * t = 0 pour le premier échantillon reçu (négatif si aucun échantillon).
-     * L'échantillon i de l'instantané est à getLastSampleTime() - (getSnapshotCount() - 1 - i) / sampleFrequency.
+     * Time (s) of the last sample of the last snapshot, taking t = 0 for the
+     * first sample received (negative if there is no sample).
+     * Sample i of the snapshot is at getLastSampleTime() - (getSnapshotCount() - 1 - i) / sampleFrequency.
      */
     @Override
     public double getLastSampleTime() { return getSnapshotLastSampleTime(); }
@@ -87,7 +87,7 @@ public class Curve1DData extends CurveData<Curve1DData> {
     public float getMaxY() { return getMax(0); }
     public float getCenterY() { return getCenter(0); }
 
-    /** Les temps (xValues) sont ignorés : ils sont déduits de la fréquence d'échantillonnage. */
+    /** The times (xValues) are ignored: they are derived from the sampling frequency. */
     @Override
     public void addPoints(Double[] xValues, Double[] yValues) {
         addSamples(toFloats(yValues));

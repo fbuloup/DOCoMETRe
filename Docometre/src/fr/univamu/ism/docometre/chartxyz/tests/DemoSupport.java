@@ -23,18 +23,18 @@ import fr.univamu.ism.docometre.chartxyz.GLComponent;
 import fr.univamu.ism.docometre.chartxyz.SurfaceData;
 
 /**
- * Outils communs aux programmes de démonstration : fenêtre et boucle
- * d'événements SWT, simulations d'acquisition, chargement des données.
+ * Tools shared by the demonstration programs: SWT window and event loop,
+ * acquisition simulations, data loading.
  */
 final class DemoSupport {
 
-    /** Un envoi toutes les 20 ms. */
+    /** One transmission every 20 ms. */
     static final int PERIOD_MS = 20;
 
     private DemoSupport() {
     }
 
-    /** Fenêtre de la taille donnée, à disposition en FillLayout. */
+    /** Window of the given size, with a FillLayout. */
     static Shell createShell(Display display, String title, int width, int height) {
         Shell shell = new Shell(display);
         shell.setText(title);
@@ -43,7 +43,7 @@ final class DemoSupport {
         return shell;
     }
 
-    /** Ouvre la fenêtre, traite les événements jusqu'à sa fermeture, puis arrête les acquisitions et libère le Display. */
+    /** Opens the window, processes the events until it is closed, then stops the acquisitions and releases the Display. */
     static void run(Shell shell, ScheduledExecutorService... acquisitions) {
         Display display = shell.getDisplay();
         shell.open();
@@ -57,8 +57,8 @@ final class DemoSupport {
     }
 
     /**
-     * Ajoute un bouton "PUSH" qui ferme le composant s'il est affiché, ou en
-     * crée un nouveau (avec factory) s'il a été fermé.
+     * Adds a "PUSH" button that closes the component if it is displayed, or
+     * creates a new one (with factory) if it has been closed.
      */
     static void addCloseReopenButton(Shell shell, GLComponent[] component, Supplier<GLComponent> factory) {
         Button button = new Button(shell, SWT.NORMAL);
@@ -77,8 +77,8 @@ final class DemoSupport {
     }
 
     /**
-     * Simulation d'acquisition 1D : sinus 1 Hz, sinus 7 Hz bruité (même
-     * fréquence d'échantillonnage) et dérive lente (fréquence de drift).
+     * 1D acquisition simulation: 1 Hz sine, noisy 7 Hz sine (same sampling
+     * frequency) and slow drift (drift frequency).
      */
     static ScheduledExecutorService startSignals(Curve1DData sine, Curve1DData noisy, Curve1DData drift) {
         ScheduledExecutorService acquisition = Executors.newSingleThreadScheduledExecutor();
@@ -106,7 +106,7 @@ final class DemoSupport {
         return acquisition;
     }
 
-    /** Simulation d'acquisition 2D : figure de Lissajous à amplitude variable et cercle qui dérive. */
+    /** 2D acquisition simulation: Lissajous figure with a varying amplitude and a drifting circle. */
     static ScheduledExecutorService startLissajous(Curve2DData lissajous, Curve2DData circle) {
         ScheduledExecutorService acquisition = Executors.newSingleThreadScheduledExecutor();
         double frequency = lissajous.getSampleFrequency();
@@ -128,7 +128,7 @@ final class DemoSupport {
         return acquisition;
     }
 
-    /** Simulation d'acquisition 3D : spirale de Lissajous dont la phase dérive lentement, et hélice. */
+    /** 3D acquisition simulation: Lissajous spiral whose phase drifts slowly, and helix. */
     static ScheduledExecutorService startSpiral(Curve3DData spiral, Curve3DData helix) {
         ScheduledExecutorService acquisition = Executors.newSingleThreadScheduledExecutor();
         double frequency = spiral.getSampleFrequency();
@@ -152,25 +152,25 @@ final class DemoSupport {
         return acquisition;
     }
 
-    /** Courbe 3D depuis le fichier args[0] (ou data/sample_curve.txt) ; null si le fichier est illisible. */
+    /** 3D curve from the file args[0] (or data/sample_curve.txt); null if the file cannot be read. */
     static Curve3DData loadCurve(String[] args) {
         String dataFile = (args.length > 0) ? args[0] : "data/sample_curve.txt";
         try {
             return Curve3DData.loadFromFile(Paths.get(dataFile));
         } catch (IOException e) {
-            System.err.println("Impossible de charger le fichier de points : " + dataFile);
+            System.err.println("Unable to load the point file: " + dataFile);
             e.printStackTrace();
             return null;
         }
     }
 
-    /** Grille depuis le fichier args[0] (ou data/sample_surface.txt) ; null si le fichier est illisible. */
+    /** Grid from the file args[0] (or data/sample_surface.txt); null if the file cannot be read. */
     static SurfaceData loadSurface(String[] args) {
         String dataFile = (args.length > 0) ? args[0] : "data/sample_surface.txt";
         try {
             return SurfaceData.loadFromFile(Paths.get(dataFile));
         } catch (IOException e) {
-            System.err.println("Impossible de charger le fichier de grille : " + dataFile);
+            System.err.println("Unable to load the grid file: " + dataFile);
             e.printStackTrace();
             return null;
         }

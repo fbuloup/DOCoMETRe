@@ -1,7 +1,7 @@
 package fr.univamu.ism.docometre.chartxyz;
 
 /**
- * Représente un point immuable dans le plan.
+ * Immutable point in the plane.
  */
 public class Point2D {
 

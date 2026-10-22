@@ -14,8 +14,8 @@ import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.util.FPSAnimator;
 
 /**
- * Surface OpenGL dans une fenêtre NEWT intégrée par NewtCanvasSWT (macOS),
- * animée par un FPSAnimator (thread propre).
+ * OpenGL surface in a NEWT window embedded by NewtCanvasSWT (macOS),
+ * animated by an FPSAnimator (its own thread).
  */
 final class NewtGLHost extends GLHost {
 
@@ -23,7 +23,7 @@ final class NewtGLHost extends GLHost {
     private final FPSAnimator animator;
     private final NewtCanvasSWT canvas;
 
-    // État de la souris
+    // Mouse state
     private int lastX, lastY;
     private boolean leftDown, rightDown;
 
@@ -34,9 +34,9 @@ final class NewtGLHost extends GLHost {
             glWindow.addGLEventListener(renderer);
             attachInput(renderer);
             created = NewtCanvasSWT.create(parent, SWT.NO_BACKGROUND, glWindow);
-            if (created == null) throw new IllegalStateException("Impossible d'intégrer la fenêtre NEWT dans SWT.");
+            if (created == null) throw new IllegalStateException("Unable to embed the NEWT window in SWT.");
         } catch (RuntimeException | Error e) {
-            glWindow.destroy(); // la fenêtre native ne doit pas survivre à l'échec
+            glWindow.destroy(); // the native window must not outlive the failure
             throw e;
         }
         canvas = created;
@@ -51,7 +51,7 @@ final class NewtGLHost extends GLHost {
 		}
     }
 
-    /** Relie les événements souris / clavier NEWT aux commandes du renderer. */
+    /** Connects the NEWT mouse / keyboard events to the renderer commands. */
     private void attachInput(ChartInteraction interaction) {
         glWindow.addMouseListener(new MouseAdapter() {
             @Override
@@ -61,13 +61,13 @@ final class NewtGLHost extends GLHost {
                 if (e.getButton() == MouseEvent.BUTTON1) leftDown = true;
                 if (e.getButton() == MouseEvent.BUTTON3) rightDown = true;
                 int button = toButton(e), x = e.getX(), y = e.getY(), w = glWindow.getWidth(), h = glWindow.getHeight();
-                // Comme le glisser, dans le thread OpenGL : appui, glisser et relâchement y sont traités dans l'ordre
+                // Like the drag, in the OpenGL thread: press, drag and release are processed there in order
                 if (button != 0) glWindow.invoke(false, d -> { interaction.press(button, x, y, w, h); return true; });
             }
 
             @Override
             public void mouseEntered(MouseEvent e) {
-                // Focus clavier dès que la souris entre dans le graphe (plusieurs graphes par fenêtre)
+                // Keyboard focus as soon as the mouse enters the chart (several charts per window)
                 glWindow.requestFocus();
             }
 
@@ -88,7 +88,7 @@ final class NewtGLHost extends GLHost {
                 int button = leftDown ? ChartInteraction.LEFT_BUTTON : rightDown ? ChartInteraction.RIGHT_BUTTON : 0;
                 if (button != 0) {
                     int x = e.getX(), y = e.getY(), w = glWindow.getWidth(), h = glWindow.getHeight();
-                    // exécuté dans le thread OpenGL au début de l'image suivante : pas d'accès concurrent au renderer
+                    // run in the OpenGL thread at the beginning of the next frame: no concurrent access to the renderer
                     glWindow.invoke(false, d -> { interaction.dragTo(button, x, y, dx, dy, w, h, ChartInteraction.InputScale.NEWT); return true; });
                 }
             }
@@ -117,14 +117,14 @@ final class NewtGLHost extends GLHost {
         });
     }
 
-    /** Bouton NEWT -> {@link ChartInteraction#LEFT_BUTTON} / {@link ChartInteraction#RIGHT_BUTTON}, 0 pour les autres. */
+    /** NEWT button -> {@link ChartInteraction#LEFT_BUTTON} / {@link ChartInteraction#RIGHT_BUTTON}, 0 for the others. */
     private static int toButton(MouseEvent e) {
         if (e.getButton() == MouseEvent.BUTTON1) return ChartInteraction.LEFT_BUTTON;
         if (e.getButton() == MouseEvent.BUTTON3) return ChartInteraction.RIGHT_BUTTON;
         return 0;
     }
 
-    /** Caractère transmis au renderer : Échap, Retour arrière et Tabulation par leur code, les autres en minuscule. */
+    /** Character passed to the renderer: Escape, Backspace and Tab by their code, the others in lower case. */
     private static char toKey(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_ESCAPE) return ChartInteraction.ESCAPE;
         if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE) return ChartInteraction.BACKSPACE;

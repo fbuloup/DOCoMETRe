@@ -1,12 +1,12 @@
 package fr.univamu.ism.docometre.chartxyz;
 
 /**
- * Boîte englobante 3D immuable, avec son centre et son rayon (demi-diagonale,
- * au moins 0,001 pour éviter une caméra dégénérée sur des données plates).
+ * Immutable 3D bounding box, with its center and its radius (half diagonal,
+ * at least 0.001 to avoid a degenerate camera on flat data).
  */
 public final class BoundingBox {
 
-    /** Boîte par défaut, de -1 à 1 sur chaque axe (données absentes). */
+    /** Default box, from -1 to 1 on each axis (no data). */
     public static final BoundingBox DEFAULT = new BoundingBox(-1f, 1f, -1f, 1f, -1f, 1f);
 
     public final float minX, maxX, minY, maxY, minZ, maxZ;
@@ -24,7 +24,7 @@ public final class BoundingBox {
         this.radius = Math.max((float) Math.sqrt(dx * dx + dy * dy + dz * dz) / 2f, 0.001f);
     }
 
-    /** Plus petite boîte contenant celle-ci et other (other peut être null). */
+    /** Smallest box containing this one and other (other can be null). */
     public BoundingBox union(BoundingBox other) {
         if (other == null) return this;
         return new BoundingBox(Math.min(minX, other.minX), Math.max(maxX, other.maxX),

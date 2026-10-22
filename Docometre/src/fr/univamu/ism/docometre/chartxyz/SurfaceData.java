@@ -8,12 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Représente une surface 3D définie par une grille régulière de points
- * (rows x cols), ainsi que les normales par sommet (pour un ombrage lisse)
- * et les informations géométriques utiles au rendu.
+ * 3D surface defined by a regular grid of points (rows x cols), together
+ * with the per-vertex normals (for smooth shading) and the geometric
+ * information useful for rendering.
  *
- * La triangulation de chaque quadrilatère (r,c)-(r,c+1)-(r+1,c)-(r+1,c+1)
- * se fait selon la diagonale (r,c)-(r+1,c+1), en deux triangles :
+ * Each quadrilateral (r,c)-(r,c+1)-(r+1,c)-(r+1,c+1) is triangulated along
+ * the diagonal (r,c)-(r+1,c+1), into two triangles:
  *   T1 = (r,c), (r+1,c), (r+1,c+1)
  *   T2 = (r,c), (r+1,c+1), (r,c+1)
  */
@@ -27,7 +27,7 @@ public class SurfaceData {
 
     public SurfaceData(Point3D[][] grid) {
         if (grid == null || grid.length < 2 || grid[0].length < 2) {
-            throw new IllegalArgumentException("La grille doit comporter au moins 2 lignes et 2 colonnes.");
+            throw new IllegalArgumentException("The grid must have at least 2 rows and 2 columns.");
         }
         this.grid = grid;
         this.rows = grid.length;
@@ -81,12 +81,12 @@ public class SurfaceData {
     }
 
     /**
-     * Charge une grille depuis un fichier texte.
-     * Format attendu :
-     *   ligne 1            : "rows cols"
-     *   lignes suivantes   : rows*cols points "x y z", en ordre ligne par ligne
-     *                        (toute la ligne 0 d'abord, puis la ligne 1, etc.)
-     * Les lignes vides ou commençant par '#' sont ignorées.
+     * Loads a grid from a text file.
+     * Expected format:
+     *   line 1             : "rows cols"
+     *   following lines    : rows*cols points "x y z", row by row
+     *                        (all of row 0 first, then row 1, etc.)
+     * Empty lines and lines starting with '#' are ignored.
      */
     public static SurfaceData loadFromFile(Path path) throws IOException {
         List<String> dataLines = new ArrayList<>();
@@ -99,20 +99,20 @@ public class SurfaceData {
             }
         }
         if (dataLines.isEmpty()) {
-            throw new IOException("Fichier vide ou sans données valides : " + path);
+            throw new IOException("Empty file or file without valid data: " + path);
         }
 
         String[] dims = dataLines.get(0).split("[\\s,;]+");
         if (dims.length < 2) {
-            throw new IOException("La première ligne doit contenir 'rows cols' : " + dataLines.get(0));
+            throw new IOException("The first line must contain 'rows cols': " + dataLines.get(0));
         }
         int rows = Integer.parseInt(dims[0]);
         int cols = Integer.parseInt(dims[1]);
 
         int expected = rows * cols;
         if (dataLines.size() - 1 < expected) {
-            throw new IOException("Nombre de points insuffisant. Attendu " + expected
-                    + ", trouvé " + (dataLines.size() - 1));
+            throw new IOException("Not enough points. Expected " + expected
+                    + ", found " + (dataLines.size() - 1));
         }
 
         Point3D[][] grid = new Point3D[rows][cols];
@@ -130,11 +130,11 @@ public class SurfaceData {
     }
 
     /**
-     * Calcule une normale lissée par sommet en moyennant les normales de
-     * toutes les faces (triangles) qui touchent ce sommet.
+     * Computes a smoothed normal per vertex by averaging the normals of all
+     * the faces (triangles) touching that vertex.
      */
     private float[][][] computeSmoothNormals() {
-        float[][] accum = new float[rows * cols][3]; // accumulateur (nx, ny, nz) par sommet
+        float[][] accum = new float[rows * cols][3]; // accumulator (nx, ny, nz) per vertex
         for (int r = 0; r < rows - 1; r++) {
             for (int c = 0; c < cols - 1; c++) {
                 Point3D p00 = grid[r][c];
@@ -194,7 +194,7 @@ public class SurfaceData {
     public float[] normal(int r, int c) { return normals[r][c]; }
     public int getRows() { return rows; }
     public int getCols() { return cols; }
-    /** Boîte englobante de la grille. */
+    /** Bounding box of the grid. */
     public BoundingBox getBoundingBox() { return bounds; }
     public float getCenterX() { return bounds.centerX; }
     public float getCenterY() { return bounds.centerY; }

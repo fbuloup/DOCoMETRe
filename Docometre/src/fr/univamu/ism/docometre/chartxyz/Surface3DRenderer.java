@@ -6,20 +6,20 @@ import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.util.gl2.GLUT;
 
 /**
- * Gère le rendu OpenGL de la surface 3D : axes, boîte de repère graduée,
- * surface triangulée avec ombrage lisse (normales par sommet) et couleur
- * dégradée selon l'altitude (y), bascule solide / filaire / les deux.
- * La caméra orbitale est partagée avec {@link Chart3DRenderer} (voir {@link OrbitCamera}).
+ * OpenGL rendering of the 3D surface: axes, graduated reference box,
+ * triangulated surface with smooth shading (per-vertex normals) and a color
+ * gradient according to the height (y), solid / wireframe / both toggle.
+ * The orbit camera is shared with {@link Chart3DRenderer} (see {@link OrbitCamera}).
  *
- * Commandes clavier, en plus de celles de {@link GLChartRenderer} :
+ * Keyboard commands, in addition to those of {@link GLChartRenderer}:
  * <ul>
- * <li>S : afficher/masquer la surface pleine (solide)</li>
- * <li>W : afficher/masquer le maillage filaire</li>
- * <li>H : activer/désactiver l'éclairage</li>
+ * <li>S: show/hide the filled (solid) surface</li>
+ * <li>W: show/hide the wireframe mesh</li>
+ * <li>H: enable/disable lighting</li>
  * </ul>
  *
- * Les étiquettes utilisent une police bitmap GLUT (glRasterPos3f +
- * glutBitmapString), qui ne dépend pas d'AWT.
+ * The labels use a GLUT bitmap font (glRasterPos3f + glutBitmapString),
+ * which does not depend on AWT.
  */
 public class Surface3DRenderer extends GLChartRenderer {
 
@@ -44,7 +44,7 @@ public class Surface3DRenderer extends GLChartRenderer {
         gl.glEnable(GL2.GL_DEPTH_TEST);
         gl.glShadeModel(GL2.GL_SMOOTH);
 
-        // Éclairage simple : une lumière directionnelle + un peu d'ambiant global
+        // Simple lighting: one directional light + a little global ambient light
         gl.glEnable(GL2.GL_LIGHT0);
         gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_DIFFUSE, new float[]{0.9f, 0.9f, 0.9f, 1f}, 0);
         gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_SPECULAR, new float[]{0.3f, 0.3f, 0.3f, 1f}, 0);
@@ -55,7 +55,7 @@ public class Surface3DRenderer extends GLChartRenderer {
         gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_SPECULAR, new float[]{0.2f, 0.2f, 0.2f, 1f}, 0);
         gl.glMaterialf(GL2.GL_FRONT_AND_BACK, GL2.GL_SHININESS, 16f);
         
-        gl.glLightModeli(GL2.GL_LIGHT_MODEL_TWO_SIDE, GL2.GL_TRUE); // les deux faces de la surface sont éclairées correctement
+        gl.glLightModeli(GL2.GL_LIGHT_MODEL_TWO_SIDE, GL2.GL_TRUE); // both sides of the surface are lit correctly
 
         if (lightingEnabled) gl.glEnable(GL2.GL_LIGHTING);
     }
@@ -66,7 +66,7 @@ public class Surface3DRenderer extends GLChartRenderer {
         gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
         
         BoundingBox bounds = surfaceData.getBoundingBox();
-        // near / far encadrent la scène à la distance courante de la caméra (zoom compris)
+        // near / far enclose the scene at the current camera distance (zoom included)
         float aspect = (float) this.width / this.height;
         float radius = bounds.radius;
         float distance = camera.distance(radius);
@@ -77,7 +77,7 @@ public class Surface3DRenderer extends GLChartRenderer {
         gl.glLoadIdentity();
         camera.lookAt(glu, radius);
 
-        // Lumière fixée dans l'espace caméra : elle "suit" la vue, toujours bien éclairée
+        // Light fixed in camera space: it "follows" the view, always well lit
         gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, new float[]{0.4f, 0.6f, 1f, 0f}, 0);
 
         camera.orbit(gl, bounds);
@@ -116,8 +116,9 @@ public class Surface3DRenderer extends GLChartRenderer {
     }
 
     /**
-     * Dessine la surface en triangles. Pleine (shaded) : ombrée, avec couleur
-     * dégradée selon l'altitude (y) ; sinon dans la couleur courante (filaire).
+     * Draws the surface as triangles. Filled (shaded): shaded, with a color
+     * gradient according to the height (y); otherwise in the current color
+     * (wireframe).
      */
     private void drawSurface(GL2 gl, boolean shaded) {
         int rows = surfaceData.getRows();
@@ -128,7 +129,7 @@ public class Surface3DRenderer extends GLChartRenderer {
         gl.glBegin(GL2.GL_TRIANGLES);
         for (int r = 0; r < rows - 1; r++) {
             for (int c = 0; c < cols - 1; c++) {
-                // Diagonale (r,c)-(r+1,c+1), voir SurfaceData
+                // Diagonal (r,c)-(r+1,c+1), see SurfaceData
                 emitVertex(gl, r, c, shaded, minY, range);
                 emitVertex(gl, r + 1, c, shaded, minY, range);
                 emitVertex(gl, r + 1, c + 1, shaded, minY, range);
@@ -146,14 +147,14 @@ public class Surface3DRenderer extends GLChartRenderer {
         if (shaded) {
             float[] n = surfaceData.normal(r, c);
             float t = (p.y - minY) / range;
-            // Dégradé du bleu (bas) au orange/rouge (haut)
+            // Gradient from blue (low) to orange/red (high)
             gl.glColor3f(0.15f + 0.75f * t, 0.4f + 0.25f * (1 - t), 0.95f - 0.75f * t);
             gl.glNormal3f(n[0], n[1], n[2]);
         }
         gl.glVertex3f(p.x, p.y, p.z);
     }
 
-    /** Positionne le curseur de rendu (raster) à (x, y, z) et y dessine une chaîne en police bitmap. */
+    /** Sets the raster position at (x, y, z) and draws a string there in a bitmap font. */
     private void drawBitmapLabel(GL2 gl, String text, float x, float y, float z, boolean axisName) {
         gl.glRasterPos3f(x, y, z);
         glut.glutBitmapString(axisName ? GLUT.BITMAP_HELVETICA_18 : GLUT.BITMAP_HELVETICA_12, text);

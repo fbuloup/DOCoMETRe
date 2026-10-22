@@ -1,20 +1,20 @@
 package fr.univamu.ism.docometre.chartxyz;
 
 /**
- * Mesure de la cadence d'affichage réelle (images par seconde) : frame() est
- * appelé au début de chaque image dessinée, et la cadence est recalculée
- * toutes les MEASURE_PERIOD_NS à partir du nombre d'images et du temps
- * réellement écoulé.
+ * Measurement of the actual frame rate (frames per second): frame() is
+ * called at the beginning of each frame drawn, and the rate is recomputed
+ * every MEASURE_PERIOD_NS from the number of frames and the time actually
+ * elapsed.
  */
 public final class FpsCounter {
 
-    private static final long MEASURE_PERIOD_NS = 500_000_000L; // 0,5 s
+    private static final long MEASURE_PERIOD_NS = 500_000_000L; // 0.5 s
 
     private long periodStart = -1;
     private int frames;
     private volatile double fps;
 
-    /** À appeler au début de chaque image (thread d'affichage). */
+    /** To be called at the beginning of each frame (rendering thread). */
     public void frame() {
         long now = System.nanoTime();
         if (periodStart < 0) {
@@ -30,6 +30,6 @@ public final class FpsCounter {
         }
     }
 
-    /** Dernière cadence mesurée, en images par seconde (0 avant la première mesure). */
+    /** Last measured frame rate, in frames per second (0 before the first measurement). */
     public double getFps() { return fps; }
 }

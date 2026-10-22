@@ -4,16 +4,16 @@ import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.glu.GLU;
 
 /**
- * Caméra en orbite autour du centre des données, commune aux graphes 3D
- * ({@link Chart3DRenderer}) et aux surfaces ({@link Surface3DRenderer}) :
- * inclinaison, rotation autour de l'axe vertical, distance proportionnelle
- * au rayon englobant et panoramique.
+ * Camera orbiting around the center of the data, shared by the 3D charts
+ * ({@link Chart3DRenderer}) and the surfaces ({@link Surface3DRenderer}):
+ * tilt, rotation around the vertical axis, distance proportional to the
+ * bounding radius, and pan.
  *
- * Navigation à la souris :
+ * Mouse navigation:
  * <ul>
- * <li>clic gauche + glisser : rotation (orbite)</li>
- * <li>clic droit + glisser : panoramique</li>
- * <li>molette : zoom avant/arrière</li>
+ * <li>left click + drag: rotation (orbit)</li>
+ * <li>right click + drag: pan</li>
+ * <li>wheel: zoom in/out</li>
  * </ul>
  */
 public final class OrbitCamera {
@@ -21,31 +21,31 @@ public final class OrbitCamera {
     private static final float DEFAULT_DISTANCE_FACTOR = 3.0f;
 
     private final float defaultRotationX, defaultRotationY;
-    private float rotationX;          // inclinaison haut/bas (degrés)
-    private float rotationY;          // rotation autour de l'axe vertical (degrés)
-    private float distanceFactor = DEFAULT_DISTANCE_FACTOR; // distance = rayon englobant * ce facteur
+    private float rotationX;          // up/down tilt (degrees)
+    private float rotationY;          // rotation around the vertical axis (degrees)
+    private float distanceFactor = DEFAULT_DISTANCE_FACTOR; // distance = bounding radius * this factor
     private float panX = 0f, panY = 0f;
 
-    /** Caméra dont la vue initiale (et celle de {@link #reset()}) a les angles donnés, en degrés. */
+    /** Camera whose initial view (and the one of {@link #reset()}) has the given angles, in degrees. */
     public OrbitCamera(float defaultRotationX, float defaultRotationY) {
         this.defaultRotationX = defaultRotationX;
         this.defaultRotationY = defaultRotationY;
         reset();
     }
 
-    /** Distance de la caméra au centre des données, pour un rayon englobant donné. */
+    /** Distance from the camera to the center of the data, for a given bounding radius. */
     public float distance(float radius) {
         return radius * distanceFactor;
     }
 
-    /** Place la caméra sur l'axe z, à distance(radius) de l'origine, regardant l'origine. */
+    /** Places the camera on the z axis, at distance(radius) from the origin, looking at the origin. */
     public void lookAt(GLU glu, float radius) {
         glu.gluLookAt(0, 0, distance(radius),
                       0, 0, 0,
                       0, 1, 0);
     }
 
-    /** Applique panoramique et rotations, puis centre les données de la boîte à l'origine. */
+    /** Applies pan and rotations, then centers the data of the box on the origin. */
     public void orbit(GL2 gl, BoundingBox box) {
         gl.glTranslatef(panX, panY, 0f);
         gl.glRotatef(rotationX, 1f, 0f, 0f);
@@ -54,25 +54,25 @@ public final class OrbitCamera {
     }
 
     /**
-     * Position de la caméra dans le repère des données, obtenue en inversant
-     * les transformations de {@link #lookAt} et {@link #orbit} (distance,
-     * panoramique, rotations). Sert à déterminer quelles faces de la boîte de
-     * repère sont les plus proches de l'utilisateur, pour ne pas les dessiner.
+     * Position of the camera in the data coordinate system, obtained by
+     * inverting the transformations of {@link #lookAt} and {@link #orbit}
+     * (distance, pan, rotations). Used to determine which faces of the
+     * reference box are closest to the user, so as not to draw them.
      */
     public float[] positionInDataSpace(BoundingBox box) {
-        // Position de la caméra juste avant panoramique/rotations (cf. lookAt)
+        // Camera position just before pan/rotations (see lookAt)
         float dx = -panX;
         float dy = -panY;
         float dz = distance(box.radius);
 
-        // Annule la rotation autour de X (inverse de glRotatef(rotationX, 1,0,0))
+        // Undoes the rotation around X (inverse of glRotatef(rotationX, 1,0,0))
         double radX = Math.toRadians(-rotationX);
         float cosX = (float) Math.cos(radX), sinX = (float) Math.sin(radX);
         float y1 = dy * cosX - dz * sinX;
         float z1 = dy * sinX + dz * cosX;
         float x1 = dx;
 
-        // Annule la rotation autour de Y (inverse de glRotatef(rotationY, 0,1,0))
+        // Undoes the rotation around Y (inverse of glRotatef(rotationY, 0,1,0))
         double radY = Math.toRadians(-rotationY);
         float cosY = (float) Math.cos(radY), sinY = (float) Math.sin(radY);
         float x2 = x1 * cosY + z1 * sinY;
@@ -81,7 +81,7 @@ public final class OrbitCamera {
         return new float[]{x2 + box.centerX, y1 + box.centerY, z2 + box.centerZ};
     }
 
-    /** Glisser : rotation (bouton gauche) ou panoramique (bouton droit). */
+    /** Drag: rotation (left button) or pan (right button). */
     public void drag(int button, int dx, int dy, ChartInteraction.InputScale scale, float radius) {
         if (button == ChartInteraction.LEFT_BUTTON) {
             rotate(dx * scale.degreesPerPixel, dy * scale.degreesPerPixel);
@@ -90,7 +90,7 @@ public final class OrbitCamera {
         }
     }
 
-    /** Molette : rapproche (amount > 0) ou éloigne la caméra. */
+    /** Wheel: moves the camera closer (amount > 0) or farther. */
     public void wheel(float amount, ChartInteraction.InputScale scale) {
         zoom(-amount * scale.zoomPerWheelUnit);
     }
@@ -101,7 +101,7 @@ public final class OrbitCamera {
         rotationX = Math.max(-89f, Math.min(89f, rotationX));
     }
 
-    /** Panoramique de (deltaX, deltaY) pixels, proportionnel au rayon englobant. */
+    /** Pan by (deltaX, deltaY) pixels, proportional to the bounding radius. */
     public void pan(float deltaX, float deltaY, float radius) {
         float scale = radius * 0.002f;
         panX += deltaX * scale;

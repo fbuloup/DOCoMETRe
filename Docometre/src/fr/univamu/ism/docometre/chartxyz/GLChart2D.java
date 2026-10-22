@@ -5,25 +5,25 @@ import org.eclipse.swt.widgets.Composite;
 import fr.univamu.ism.rtswtchart.IRTSWTXYChart;
 
 /**
- * Graphe de courbes 2D temps réel (voir {@link Chart2DRenderer}).
+ * Chart of real-time 2D curves (see {@link Chart2DRenderer}).
  */
 public class GLChart2D extends AbstractGLPlotChart<Curve2DData, Chart2DRenderer> implements IRTSWTXYChart {
 
     /**
-     * Crée le graphe avec des échelles dynamiques, ajustées en continu aux valeurs des courbes.
+     * Creates the chart with dynamic scales, continuously fitted to the curve values.
      *
-     * @param historySize durée de l'historique (longueur des traînées), en secondes, imposée à toutes les courbes
-     * @throws IllegalStateException si une courbe est déjà affichée dans un autre graphe
+     * @param historySize history duration (length of the trails), in seconds, imposed on all the curves
+     * @throws IllegalStateException if a curve is already displayed in another chart
      */
     public GLChart2D(Composite container, GLToolkit toolkit, double historySize, Curve2DData... curves) {
         super(container, toolkit, new Chart2DRenderer(historySize, curves));
     }
 
     /**
-     * Crée le graphe avec des échelles fixes pour les axes x et y (voir
+     * Creates the chart with fixed scales for the x and y axes (see
      * {@link #GLChart2D(Composite, GLToolkit, double, double, double, double, Curve2DData...)}).
      *
-     * @param historySize durée de l'historique (longueur des traînées), en secondes, imposée à toutes les courbes
+     * @param historySize history duration (length of the trails), in seconds, imposed on all the curves
      */
     public GLChart2D(Composite container, GLToolkit toolkit, double historySize, double xMin, double xMax,
                      double yMin, double yMax, Curve2DData... curves) {
@@ -31,21 +31,20 @@ public class GLChart2D extends AbstractGLPlotChart<Curve2DData, Chart2DRenderer>
     }
 
     /**
-     * Crée le graphe avec des échelles dynamiques ; chaque courbe garde sa
-     * propre durée d'historique (données statiques, par exemple).
+     * Creates the chart with dynamic scales; each curve keeps its own history
+     * duration (static data, for example).
      */
     public GLChart2D(Composite container, GLToolkit toolkit, Curve2DData... curves) {
         super(container, toolkit, new Chart2DRenderer(curves));
     }
 
     /**
-     * Crée le graphe avec des échelles fixes pour les axes x et y (chaque
-     * courbe garde sa propre durée d'historique) : elles
-     * restent égales aux bornes fournies quelles que soient les valeurs des
-     * courbes (ce qui dépasse est coupé). setDynamicScales() permet de
-     * revenir aux échelles dynamiques.
+     * Creates the chart with fixed scales for the x and y axes (each curve
+     * keeps its own history duration): they remain equal to the given bounds
+     * whatever the curve values (what exceeds them is clipped).
+     * setDynamicScales() goes back to dynamic scales.
      *
-     * @throws IllegalArgumentException si un minimum n'est pas strictement inférieur à son maximum
+     * @throws IllegalArgumentException if a minimum is not strictly less than its maximum
      */
     public GLChart2D(Composite container, GLToolkit toolkit, double xMin, double xMax, double yMin, double yMax,
                      Curve2DData... curves) {
@@ -57,25 +56,25 @@ public class GLChart2D extends AbstractGLPlotChart<Curve2DData, Chart2DRenderer>
         return renderer;
     }
 
-    /** Échelles fixes pour les axes x et y (voir le constructeur correspondant). */
+    /** Fixed scales for the x and y axes (see the corresponding constructor). */
     public void setFixedScales(double xMin, double xMax, double yMin, double yMax) {
         renderer.setFixedScales(xMin, xMax, yMin, yMax);
     }
 
     // --- IRTSWTXYChart ---
 
-    /** Durée de l'historique (longueur des traînées), en secondes, imposée à toutes les courbes du graphe. */
+    /** History duration (length of the trails), in seconds, imposed on all the curves of the chart. */
     @Override
     public void setHistorySize(double historySize) {
         renderer.setWindowTimeWidth(historySize);
     }
 
-    /** Durée de l'historique imposée aux courbes, en secondes (0 si chaque courbe garde la sienne). */
+    /** History duration imposed on the curves, in seconds (0 if each curve keeps its own). */
     public double getHistorySize() {
         return renderer.getWindowTimeWidth();
     }
 
-    /** Non géré : la fréquence d'échantillonnage est propre à chaque courbe. */
+    /** Not supported: the sampling frequency is specific to each curve. */
     @Override
     public void setSampleFrequency(double sfx) {
     }

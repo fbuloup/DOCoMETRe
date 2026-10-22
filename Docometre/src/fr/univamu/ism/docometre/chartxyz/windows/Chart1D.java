@@ -7,17 +7,17 @@ import fr.univamu.ism.docometre.chartxyz.GLChart1D;
 import fr.univamu.ism.docometre.chartxyz.GLToolkit;
 
 /**
- * Graphe 1D (signaux y(t)) dans un GLCanvas SWT, pour Windows et Linux.
- * Toutes les fonctionnalités sont dans {@link GLChart1D}.
+ * 1D chart (signals y(t)) in an SWT GLCanvas, for Windows and Linux.
+ * All the features are in {@link GLChart1D}.
  */
 public class Chart1D extends GLChart1D {
 
-    /** @param windowTimeWidth durée de la fenêtre affichée, en secondes */
+    /** @param windowTimeWidth duration of the displayed window, in seconds */
     public Chart1D(Composite container, double windowTimeWidth, Curve1DData... curves) {
         super(container, GLToolkit.SWT, windowTimeWidth, curves);
     }
 
-    /** @param windowTimeWidth durée de la fenêtre affichée, en secondes */
+    /** @param windowTimeWidth duration of the displayed window, in seconds */
     public Chart1D(Composite container, double windowTimeWidth, double yMin, double yMax, Curve1DData... curves) {
         super(container, GLToolkit.SWT, windowTimeWidth, yMin, yMax, curves);
     }

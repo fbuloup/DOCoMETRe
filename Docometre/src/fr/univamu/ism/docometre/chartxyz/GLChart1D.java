@@ -1,46 +1,40 @@
 package fr.univamu.ism.docometre.chartxyz;
 
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.swt.widgets.Composite;
 
 import fr.univamu.ism.rtswtchart.IRTSWTOscilloChart;
 
 /**
- * Graphe de signaux temps réel y(t) (voir {@link Chart1DRenderer}). La
- * durée de la fenêtre temporelle appartient au graphe et s'impose à toutes
- * ses courbes.
+ * Chart of real-time signals y(t) (see {@link Chart1DRenderer}). The
+ * duration of the time window belongs to the chart and is imposed on all its
+ * curves.
  */
 public class GLChart1D extends AbstractGLPlotChart<Curve1DData, Chart1DRenderer> implements IRTSWTOscilloChart {
 
 	public static GLChart1D createChart(Composite container, double windowTimeWidth, Curve1DData... curves) {
-		GLToolkit toolkit = GLToolkit.SWT;
-		String os = Platform.getOS();
-		if (Platform.OS_MACOSX.equals(os)) {
-			toolkit = GLToolkit.NEWT;
-		}
-		return new GLChart1D(container, toolkit, windowTimeWidth, curves);
+		return new GLChart1D(container, GLToolkit.platformDefault(), windowTimeWidth, curves);
 	}
 	
+
     /**
-     * Crée le graphe avec une ou plusieurs courbes (d'autres peuvent être
-     * ajoutées ensuite avec addCurve), avec une échelle verticale dynamique :
-     * elle s'ajuste en continu aux valeurs des courbes.
+     * Creates the chart with one or several curves (others can be added later
+     * with addCurve), with a dynamic vertical scale: it is continuously fitted
+     * to the curve values.
      *
-     * @param windowTimeWidth durée de la fenêtre affichée, en secondes
-     * @throws IllegalStateException si une courbe est déjà affichée dans un autre graphe
+     * @param windowTimeWidth duration of the displayed window, in seconds
+     * @throws IllegalStateException if a curve is already displayed in another chart
      */
     public GLChart1D(Composite container, GLToolkit toolkit, double windowTimeWidth, Curve1DData... curves) {
         super(container, toolkit, new Chart1DRenderer(windowTimeWidth, curves));
     }
 
     /**
-     * Crée le graphe avec une échelle fixe pour l'axe vertical : elle reste
-     * égale aux bornes fournies quelles que soient les valeurs des courbes
-     * (ce qui dépasse est coupé). setDynamicScales() permet de revenir à
-     * l'échelle dynamique.
+     * Creates the chart with a fixed scale for the vertical axis: it remains
+     * equal to the given bounds whatever the curve values (what exceeds them
+     * is clipped). setDynamicScales() goes back to the dynamic scale.
      *
-     * @param windowTimeWidth durée de la fenêtre affichée, en secondes
-     * @throws IllegalArgumentException si yMin n'est pas strictement inférieur à yMax
+     * @param windowTimeWidth duration of the displayed window, in seconds
+     * @throws IllegalArgumentException if yMin is not strictly less than yMax
      */
     public GLChart1D(Composite container, GLToolkit toolkit, double windowTimeWidth, double yMin, double yMax,
                      Curve1DData... curves) {
@@ -52,17 +46,17 @@ public class GLChart1D extends AbstractGLPlotChart<Curve1DData, Chart1DRenderer>
         return renderer;
     }
 
-    /** Choisit le mode d'affichage : balayage de type oscilloscope (par défaut) ou défilement. */
+    /** Chooses the display mode: oscilloscope-like sweep (default) or scroll. */
     public void setDisplayMode(Chart1DRenderer.DisplayMode displayMode) {
         renderer.setDisplayMode(displayMode);
     }
 
-    /** Échelle fixe pour l'axe vertical (voir le constructeur correspondant). */
+    /** Fixed scale for the vertical axis (see the corresponding constructor). */
     public void setFixedScales(double yMin, double yMax) {
         renderer.setFixedScales(yMin, yMax);
     }
 
-    /** Durée de la fenêtre affichée, en secondes, imposée à toutes les courbes du graphe. */
+    /** Duration of the displayed window, in seconds, imposed on all the curves of the chart. */
     @Override
     public void setWindowTimeWidth(double value) {
         renderer.setWindowTimeWidth(value);
@@ -72,7 +66,7 @@ public class GLChart1D extends AbstractGLPlotChart<Curve1DData, Chart1DRenderer>
         return renderer.getWindowTimeWidth();
     }
 
-    // --- IRTSWTOscilloChart : réglages non gérés ---
+    // --- IRTSWTOscilloChart: settings not supported ---
 
     @Override
     public void setShowCurrentValue(boolean value) {

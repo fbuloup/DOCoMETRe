@@ -7,8 +7,8 @@ import fr.univamu.ism.docometre.chartxyz.GLToolkit;
 import fr.univamu.ism.docometre.chartxyz.SurfaceData;
 
 /**
- * Surface 3D dans une fenêtre NEWT, pour macOS.
- * Toutes les fonctionnalités sont dans {@link GLSurface}.
+ * 3D surface in a NEWT window, for macOS.
+ * All the features are in {@link GLSurface}.
  */
 public class NewtSurface extends GLSurface {
 

@@ -3,33 +3,33 @@ package fr.univamu.ism.docometre.chartxyz;
 import com.jogamp.opengl.GL2;
 
 /**
- * Rendu OpenGL d'une ou plusieurs courbes 2D temps réel ({@link Curve2DData}).
+ * OpenGL rendering of one or several real-time 2D curves ({@link Curve2DData}).
  *
- * La vue s'ajuste automatiquement aux données de la fenêtre temporelle (ou
- * aux échelles fixes) ; zoom et panoramique s'appliquent par-dessus, ainsi
- * que le zoom par rectangle (voir {@link PlotRenderer}).
- * Curseur (touche C, voir {@link PlotRenderer}) : il désigne le point de la
- * trajectoire le plus proche de la souris.
- * Commande clavier propre au 2D : E, même échelle sur x et y.
+ * The view automatically fits the data of the time window (or the fixed
+ * scales); zoom and pan apply on top of it, as well as the rectangle zoom
+ * (see {@link PlotRenderer}).
+ * Cursor (C key, see {@link PlotRenderer}): it designates the point of the
+ * trajectory closest to the mouse.
+ * Keyboard command specific to 2D: E, same scale on x and y.
  */
 public class Chart2DRenderer extends PlotRenderer<Curve2DData> {
 
-    private static final float DEFAULT_LINE_WIDTH = 2f; // épaisseur des courbes sans épaisseur explicite (pixels)
+    private static final float DEFAULT_LINE_WIDTH = 2f; // width of the curves without an explicit width (pixels)
 
-    // Boîte englobante de l'ensemble des courbes, recalculée à chaque image
+    // Bounding box of all the curves, recomputed at each frame
     private float dataMinX = -1f, dataMaxX = 1f, dataMinY = -1f, dataMaxY = 1f;
 
-    private volatile boolean equalAspect = false; // même échelle sur x et y (utile pour les trajectoires)
+    private volatile boolean equalAspect = false; // same scale on x and y (useful for trajectories)
 
     /**
-     * @param historySize durée de l'historique (longueur des traînées), en secondes, imposée à toutes les courbes
+     * @param historySize history duration (length of the trails), in seconds, imposed on all the curves
      */
     public Chart2DRenderer(double historySize, Curve2DData... curves) {
         super(5f, curves);
         setWindowTimeWidth(historySize);
     }
 
-    /** Graphe dont chaque courbe garde sa propre durée d'historique (données statiques, par exemple). */
+    /** Chart in which each curve keeps its own history duration (static data, for example). */
     public Chart2DRenderer(Curve2DData... curves) {
         super(5f, curves);
     }
@@ -40,7 +40,7 @@ public class Chart2DRenderer extends PlotRenderer<Curve2DData> {
         computeBounds();
     }
 
-    /** Boîte englobante de l'ensemble des courbes non vides (de -1 à 1 s'il n'y en a aucune). */
+    /** Bounding box of all the non-empty curves (from -1 to 1 if there is none). */
     private void computeBounds() {
         float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE;
         float maxX = -Float.MAX_VALUE, maxY = -Float.MAX_VALUE;
@@ -60,23 +60,23 @@ public class Chart2DRenderer extends PlotRenderer<Curve2DData> {
     }
 
     /**
-     * Fenêtre visible : la fenêtre de zoom si elle existe, sinon les échelles
-     * fixes ou les données (avec marge), zoom et panoramique compris ; puis,
-     * si "même échelle" est active, élargissement de l'axe le plus serré.
+     * Visible window: the zoom window if it exists, otherwise the fixed
+     * scales or the data (with margin), zoom and pan included; then, if
+     * "same scale" is active, widening of the tightest axis.
      */
     @Override
     protected void computeView() {
         double halfX, halfY, centerX, centerY;
         double[] window = zoomWindow();
         double[] fixed = getFixedScaleBounds();
-        if (window != null) { // fenêtre de zoom : exactement le rectangle choisi
+        if (window != null) { // zoom window: exactly the chosen rectangle
             halfX = (window[1] - window[0]) / 2;
             halfY = (window[3] - window[2]) / 2;
             centerX = (window[0] + window[1]) / 2;
             centerY = (window[2] + window[3]) / 2;
         } else {
             double baseCenterX, baseCenterY;
-            if (fixed != null) { // échelles fixes : exactement les bornes fournies, sans marge
+            if (fixed != null) { // fixed scales: exactly the given bounds, without margin
                 halfX = (fixed[1] - fixed[0]) / 2;
                 halfY = (fixed[3] - fixed[2]) / 2;
                 baseCenterX = (fixed[0] + fixed[1]) / 2;
@@ -94,7 +94,7 @@ public class Chart2DRenderer extends PlotRenderer<Curve2DData> {
         }
 
         if (equalAspect) {
-            // Même nombre d'unités par pixel sur les deux axes : on élargit l'axe le plus "serré"
+            // Same number of units per pixel on both axes: the "tightest" axis is widened
             double unitsPerPixel = Math.max(2 * halfX / plotWidth, 2 * halfY / plotHeight);
             halfX = unitsPerPixel * plotWidth / 2;
             halfY = unitsPerPixel * plotHeight / 2;
@@ -107,7 +107,7 @@ public class Chart2DRenderer extends PlotRenderer<Curve2DData> {
     @Override
     protected boolean hasVerticalAxis() { return true; }
 
-    /** Point i de la trajectoire : ses coordonnées (x, y). */
+    /** Point i of the trajectory: its coordinates (x, y). */
     @Override
     protected boolean cursorPoint(Curve2DData curve, int i, double[] xy) {
         float[] c = curve.getSnapshotCoordinates();
@@ -118,7 +118,7 @@ public class Chart2DRenderer extends PlotRenderer<Curve2DData> {
 
     @Override
     protected void drawCurves(GL2 gl, double origin) {
-        double scaleX = plotWidth / (viewMaxX - viewMinX);   // pixels par unité
+        double scaleX = plotWidth / (viewMaxX - viewMinX);   // pixels per unit
         double scaleY = plotHeight / (viewMaxY - viewMinY);
         double left = viewMinX, bottom = viewMinY;
         drawTrajectories(gl, DEFAULT_LINE_WIDTH, (x, y, z, pixel) -> {
@@ -136,10 +136,10 @@ public class Chart2DRenderer extends PlotRenderer<Curve2DData> {
     }
 
     /**
-     * Échelles fixes : les axes vont exactement de xMin à xMax et de yMin à
-     * yMax, quelles que soient les valeurs des courbes (ce qui dépasse est
-     * coupé par le cadre). Zoom, panoramique et "même échelle" (touche E)
-     * restent possibles ; R revient à ces échelles.
+     * Fixed scales: the axes go exactly from xMin to xMax and from yMin to
+     * yMax, whatever the curve values (what exceeds them is clipped by the
+     * frame). Zoom, pan and "same scale" (E key) remain possible; R goes
+     * back to these scales.
      */
     public void setFixedScales(double xMin, double xMax, double yMin, double yMax) {
         setFixedScaleBounds(xMin, xMax, yMin, yMax);

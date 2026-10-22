@@ -12,10 +12,9 @@ import fr.univamu.ism.docometre.chartxyz.LegendPosition;
 import fr.univamu.ism.docometre.chartxyz.LineStyle;
 
 /**
- * Démonstration de l'affichage 2D temps réel de deux courbes : un thread
- * simule une acquisition à SAMPLE_FREQUENCY Hz et envoie les échantillons
- * toutes les 20 ms. Seules les WINDOW_TIME_WIDTH dernières secondes sont
- * affichées.
+ * Demonstration of the real-time 2D display of two curves: a thread
+ * simulates an acquisition at SAMPLE_FREQUENCY Hz and sends the samples every
+ * 20 ms. Only the last WINDOW_TIME_WIDTH seconds are displayed.
  */
 public class RealTimeChart2DTest {
 
@@ -28,12 +27,12 @@ public class RealTimeChart2DTest {
 
     static void run(GLToolkit toolkit) {
         Curve2DData lissajous = new Curve2DData(SAMPLE_FREQUENCY).setName("Lissajous");
-        Curve2DData circle = new Curve2DData(SAMPLE_FREQUENCY).setName("cercle").setLineStyle(LineStyle.DASH);
+        Curve2DData circle = new Curve2DData(SAMPLE_FREQUENCY).setName("circle").setLineStyle(LineStyle.DASH);
 
-        Shell shell = DemoSupport.createShell(new Display(), "Courbes 2D temps réel — SWT + JOGL (" + toolkit + ")", 1000, 700);
+        Shell shell = DemoSupport.createShell(new Display(), "Real-time 2D curves — SWT + JOGL (" + toolkit + ")", 1000, 700);
 
         GLChart2D graph = new GLChart2D(shell, toolkit, WINDOW_TIME_WIDTH, lissajous, circle);
-        graph.setLegendPosition(LegendPosition.BELOW); // légende sous l'axe des abscisses
+        graph.setLegendPosition(LegendPosition.BELOW); // legend below the abscissa axis
 
         ScheduledExecutorService acquisition = DemoSupport.startLissajous(lissajous, circle);
         DemoSupport.run(shell, acquisition);

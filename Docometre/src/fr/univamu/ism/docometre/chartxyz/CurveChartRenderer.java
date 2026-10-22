@@ -11,60 +11,59 @@ import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
 
 /**
- * Base des renderers de courbes temps réel (1D, 2D et 3D) : liste des
- * courbes (modifiable depuis n'importe quel thread), instantané des données
- * à chaque image, texte (polices, légende, valeurs courantes, cadence
- * d'affichage), réduction du nombre de points, échelles fixes ou
- * dynamiques, durée de l'historique imposée aux courbes. Commandes clavier,
- * en plus de celles de {@link GLChartRenderer} :
+ * Base of the real-time curve renderers (1D, 2D and 3D): list of curves
+ * (modifiable from any thread), data snapshot at each frame, text (fonts,
+ * legend, current values, frame rate), reduction of the number of points,
+ * fixed or dynamic scales, history duration imposed on the curves. Keyboard
+ * commands, in addition to those of {@link GLChartRenderer}:
  * <ul>
- * <li>P : afficher/masquer les points</li>
- * <li>N : afficher/masquer la légende</li>
- * <li>F : afficher/masquer la cadence d'affichage (images/s)</li>
- * <li>V : afficher/masquer les valeurs courantes des courbes</li>
- * <li>D : activer/désactiver la réduction du nombre de points tracés</li>
+ * <li>P: show/hide the points</li>
+ * <li>N: show/hide the legend</li>
+ * <li>F: show/hide the frame rate (frames/s)</li>
+ * <li>V: show/hide the current values of the curves</li>
+ * <li>D: enable/disable the reduction of the number of points drawn</li>
  * </ul>
  *
- * @param <C> type des courbes affichées
+ * @param <C> type of the displayed curves
  */
 public abstract class CurveChartRenderer<C extends CurveData<C>> extends GLChartRenderer {
 
-    /** Distance minimale à l'écran (pixels) entre deux points tracés, quand la réduction par distance est activée. */
+    /** Minimum on-screen distance (pixels) between two drawn points, when distance-based reduction is enabled. */
     private static final double MIN_POINT_DISTANCE = 0.5;
 
-    // Courbes affichées ; la liste peut être modifiée depuis n'importe quel thread
+    // Displayed curves; the list can be modified from any thread
     private final List<C> curves = new CopyOnWriteArrayList<>();
-    protected List<C> frameCurves = new ArrayList<>(); // courbes figées pour l'image en cours
+    protected List<C> frameCurves = new ArrayList<>(); // curves frozen for the current frame
 
-    protected final GLText text = new GLText(); // texte en police du système (graduations, noms d'axes, légende)
+    protected final GLText text = new GLText(); // text in a system font (tick labels, axis names, legend)
     private final float pointSize;
 
-    // Polices réglables (voir setScaleFont / setLegendFont)
+    // Adjustable fonts (see setScaleFont / setLegendFont)
     protected volatile ChartFont scaleFont = new ChartFont(9, SWT.NORMAL);
     protected volatile ChartFont legendFont = new ChartFont(9, SWT.NORMAL);
-    protected volatile boolean showLegend = true; // légende affichée (si au moins une courbe a un nom)
+    protected volatile boolean showLegend = true; // legend displayed (if at least one curve has a name)
     protected volatile boolean showPoints = false;
 
-    private final FpsCounter fpsCounter = new FpsCounter(); // cadence d'affichage réelle
+    private final FpsCounter fpsCounter = new FpsCounter(); // actual frame rate
     private volatile boolean showFps = false;
-    private int displayedPoints;      // valeur affichée avec la cadence (mise à jour en même temps qu'elle)
+    private int displayedPoints;      // value displayed with the frame rate (updated at the same time)
     private double displayedFps = -1;
-    protected int drawnPoints;        // points envoyés à OpenGL pendant l'image en cours
+    protected int drawnPoints;        // points sent to OpenGL during the current frame
 
-    protected final Decimation decimation = new Decimation(); // réduction du nombre de points envoyés à OpenGL
+    protected final Decimation decimation = new Decimation(); // reduction of the number of points sent to OpenGL
     private volatile boolean decimationEnabled = true;
-    private final CurrentValues currentValues = new CurrentValues(); // textes des valeurs courantes
+    private final CurrentValues currentValues = new CurrentValues(); // texts of the current values
     private volatile boolean showCurrentValues = false;
-    protected final DashedLines dashedLines = new DashedLines(); // tirets ancrés sur les données
+    protected final DashedLines dashedLines = new DashedLines(); // dashes anchored on the data
 
-    // Durée de l'historique (s) imposée à toutes les courbes ; 0 = chaque courbe garde la sienne
+    // History duration (s) imposed on all curves; 0 = each curve keeps its own
     private volatile double windowTimeWidth;
 
-    // Échelles fixes {min1, max1, min2, max2...}, ou null pour des échelles dynamiques (ajustées aux données)
+    // Fixed scales {min1, max1, min2, max2...}, or null for dynamic scales (fitted to the data)
     private volatile double[] fixedScales;
 
     /**
-     * @param pointSize taille des points (touche P), en pixels
+     * @param pointSize size of the points (P key), in pixels
      */
     @SafeVarargs
     protected CurveChartRenderer(float pointSize, C... curves) {
@@ -73,15 +72,15 @@ public abstract class CurveChartRenderer<C extends CurveData<C>> extends GLChart
         try {
             for (C curve : curves) addCurve(curve);
         } catch (RuntimeException e) {
-            removeAllCurves(); // graphe non créé : les courbes déjà rattachées sont libérées
+            removeAllCurves(); // chart not created: the curves already attached are released
             throw e;
         }
     }
 
     /**
-     * Ajoute une courbe au graphe (utilisable pendant l'affichage, depuis n'importe quel thread).
+     * Adds a curve to the chart (usable while rendering, from any thread).
      *
-     * @throws IllegalStateException si la courbe est déjà affichée dans un graphe (celui-ci compris)
+     * @throws IllegalStateException if the curve is already displayed in a chart (this one included)
      */
     public void addCurve(C curve) {
         curve.attach(this);
@@ -91,35 +90,35 @@ public abstract class CurveChartRenderer<C extends CurveData<C>> extends GLChart
     }
 
     /**
-     * Durée de l'historique, en secondes, imposée à toutes les courbes du
-     * graphe, présentes et futures (leur capacité devient fréquence x durée + 1 ;
-     * les échantillons les plus récents sont conservés). En 1D, c'est la
-     * largeur de l'axe du temps ; en 2D et 3D, la longueur des traînées.
-     * Utilisable pendant l'affichage, depuis n'importe quel thread.
+     * History duration, in seconds, imposed on all the curves of the chart,
+     * present and future (their capacity becomes frequency x duration + 1;
+     * the most recent samples are kept). In 1D, it is the width of the time
+     * axis; in 2D and 3D, the length of the trails.
+     * Usable while rendering, from any thread.
      */
     public void setWindowTimeWidth(double windowTimeWidth) {
         if (!(windowTimeWidth > 0) || Double.isInfinite(windowTimeWidth)) {
-            throw new IllegalArgumentException("windowTimeWidth doit être strictement positive.");
+            throw new IllegalArgumentException("windowTimeWidth must be strictly positive.");
         }
         this.windowTimeWidth = windowTimeWidth;
         for (C curve : getCurves()) curve.setWindowTimeWidth(windowTimeWidth);
     }
 
-    /** Durée de l'historique imposée aux courbes, en secondes (0 si chaque courbe garde la sienne). */
+    /** History duration imposed on the curves, in seconds (0 if each curve keeps its own). */
     public double getWindowTimeWidth() { return windowTimeWidth; }
 
-    /** Retire une courbe du graphe ; elle peut ensuite être ajoutée à un autre graphe. */
+    /** Removes a curve from the chart; it can then be added to another chart. */
     public void removeCurve(C curve) {
         if (curves.remove(curve)) curve.detach(this);
     }
 
-    /** Retire toutes les courbes du graphe (appelé à sa fermeture). */
+    /** Removes all the curves from the chart (called when it is closed). */
     public void removeAllCurves() {
         for (C curve : curves) removeCurve(curve);
     }
-    /** Courbes actuellement affichées. */
+    /** Curves currently displayed. */
     public List<C> getCurves() { return new ArrayList<>(curves); }
-    /** Nombre de courbes actuellement affichées (sans copier la liste). */
+    /** Number of curves currently displayed (without copying the list). */
     public int getCurvesCount() { return curves.size(); }
 
     @Override
@@ -130,7 +129,7 @@ public abstract class CurveChartRenderer<C extends CurveData<C>> extends GLChart
 
     @Override
     public void dispose(GLAutoDrawable drawable) {
-        text.dispose(drawable.getGL().getGL2()); // textures des textes
+        text.dispose(drawable.getGL().getGL2()); // text textures
     }
 
     @Override
@@ -139,13 +138,13 @@ public abstract class CurveChartRenderer<C extends CurveData<C>> extends GLChart
         text.setPixelScale(GLText.surfaceScale(drawable));
     }
 
-    /** À appeler au début de chaque image : mesure de la cadence et remise à zéro du compte de points. */
+    /** To be called at the beginning of each frame: frame rate measurement and reset of the point count. */
     protected void beginFrame() {
         fpsCounter.frame();
         drawnPoints = 0;
     }
 
-    /** Fige les courbes et les données reçues depuis l'image précédente. */
+    /** Freezes the curves and the data received since the previous frame. */
     protected void snapshotCurves() {
         frameCurves = new ArrayList<>(curves);
         for (C curve : frameCurves) curve.takeSnapshot();
@@ -163,33 +162,32 @@ public abstract class CurveChartRenderer<C extends CurveData<C>> extends GLChart
         }
     }
 
-    /** Réduction appliquée si elle est activée, si les points ne sont pas affichés et si la courbe a plus de minCount points. */
+    /** Reduction applied if it is enabled, if the points are not displayed and if the curve has more than minCount points. */
     protected boolean useDecimation(int pointCount, int minCount) {
         return decimationEnabled && !showPoints && pointCount > minCount;
     }
 
     // ------------------------------------------------------------------
-    // Habillage commun (coordonnées en pixels)
+    // Common decorations (coordinates in pixels)
 
-    /** Cadence d'affichage réelle et nombre de points tracés, alignés à droite sur xRight, dans la police des échelles. */
+    /** Actual frame rate and number of points drawn, right-aligned on xRight, in the scale font. */
     protected void drawFps(GL2 gl, float xRight, float y) {
         if (!showFps) return;
         double fps = fpsCounter.getFps();
-        if (fps != displayedFps) { // le nombre de points est mis à jour en même temps que la cadence (2 fois par seconde)
+        if (fps != displayedFps) { // the number of points is updated together with the frame rate (twice per second)
             displayedFps = fps;
             displayedPoints = drawnPoints;
         }
-        String label = String.format(Locale.US, "%.1f i/s · %d pts", fps, displayedPoints);
+        String label = String.format(Locale.US, "%.1f fps · %d pts", fps, displayedPoints);
         gl.glColor3f(1f, 0.75f, 0.2f);
         text.draw(gl, label, scaleFont, xRight - text.width(label, scaleFont), y);
     }
 
     /**
-     * Valeurs courantes (le dernier échantillon de chaque courbe), alignées à
-     * droite sur xRight sous yTop, dans la couleur de chaque courbe et la
-     * police des échelles.
+     * Current values (the last sample of each curve), right-aligned on xRight
+     * below yTop, in the color of each curve and the scale font.
      *
-     * @return la hauteur occupée en pixels (0 si rien n'est affiché)
+     * @return the height used in pixels (0 if nothing is displayed)
      */
     protected float drawCurrentValues(GL2 gl, float xRight, float yTop) {
         if (!showCurrentValues) return 0;
@@ -199,24 +197,24 @@ public abstract class CurveChartRenderer<C extends CurveData<C>> extends GLChart
     }
 
     // ------------------------------------------------------------------
-    // Tracé des trajectoires (courbes 2D et 3D)
+    // Drawing of trajectories (2D and 3D curves)
 
-    /** Projection à l'écran (pixels) d'un point des données ; false si elle est inconnue (point derrière la caméra). */
+    /** On-screen projection (pixels) of a data point; false if it is unknown (point behind the camera). */
     protected interface ScreenProjection {
         boolean project(float x, float y, float z, double[] out);
     }
 
     /**
-     * Dessine les courbes 2D ou 3D. Une courbe seule et sans couleur explicite
-     * garde le dégradé bleu -> orange ; sinon chaque courbe a sa couleur
-     * (explicite ou de la palette) et s'estompe vers ses échantillons les
-     * plus anciens. Les courbes en tirets ont un motif ancré sur les données ;
-     * les autres sont réduites (si la réduction est activée) en ne gardant
-     * que les points distants d'au moins MIN_POINT_DISTANCE pixel à l'écran.
+     * Draws the 2D or 3D curves. A single curve without an explicit color
+     * keeps the blue -> orange gradient; otherwise each curve has its color
+     * (explicit or from the palette) and fades towards its oldest samples.
+     * Dashed curves have a pattern anchored on the data; the others are
+     * reduced (if reduction is enabled) by keeping only the points at least
+     * MIN_POINT_DISTANCE pixel apart on screen.
      *
-     * @param projection projection des points à l'écran (z = 0 en 2D)
-     * @param scaleX     échelle horizontale d'affichage, sert à détecter les changements d'échelle des tirets
-     * @param scaleY     échelle verticale d'affichage
+     * @param projection on-screen projection of the points (z = 0 in 2D)
+     * @param scaleX     horizontal display scale, used to detect scale changes for the dashes
+     * @param scaleY     vertical display scale
      */
     protected void drawTrajectories(GL2 gl, float defaultLineWidth, ScreenProjection projection, double scaleX, double scaleY) {
         for (int k = 0; k < frameCurves.size(); k++) {
@@ -261,7 +259,7 @@ public abstract class CurveChartRenderer<C extends CurveData<C>> extends GLChart
         }
     }
 
-    /** Points de toutes les courbes 2D ou 3D, en blanc. */
+    /** Points of all the 2D or 3D curves, in white. */
     protected void drawTrajectoryPoints(GL2 gl) {
         gl.glColor3f(1f, 1f, 1f);
         gl.glBegin(GL2.GL_POINTS);
@@ -273,14 +271,14 @@ public abstract class CurveChartRenderer<C extends CurveData<C>> extends GLChart
         gl.glEnd();
     }
 
-    /** Sommet i d'un tableau de coordonnées entrelacées (2 ou 3 par point). */
+    /** Vertex i of an array of interleaved coordinates (2 or 3 per point). */
     private static void vertex(GL2 gl, float[] c, int dim, int i) {
         int k = dim * i;
         if (dim == 2) gl.glVertex2f(c[k], c[k + 1]);
         else gl.glVertex3f(c[k], c[k + 1], c[k + 2]);
     }
 
-    /** Sommet situé entre les points i-1 et i, à la fraction f (0 = i-1, 1 = i). */
+    /** Vertex located between points i-1 and i, at fraction f (0 = i-1, 1 = i). */
     private static void interpolatedVertex(GL2 gl, float[] c, int dim, int i, float f) {
         int a = dim * (i - 1), b = dim * i;
         float x = c[a] + f * (c[b] - c[a]);
@@ -290,56 +288,56 @@ public abstract class CurveChartRenderer<C extends CurveData<C>> extends GLChart
     }
 
     // ------------------------------------------------------------------
-    // Échelles
+    // Scales
 
-    /** Mémorise des échelles fixes {min1, max1, min2, max2...}, après vérification. */
+    /** Stores fixed scales {min1, max1, min2, max2...}, after checking them. */
     protected void setFixedScaleBounds(double... bounds) {
         fixedScales = CurveStyles.checkScales(bounds);
     }
-    /** Échelles fixes courantes, ou null si elles sont dynamiques. */
+    /** Current fixed scales, or null if they are dynamic. */
     protected double[] getFixedScaleBounds() { return fixedScales; }
-    /** Échelles dynamiques, ajustées en continu aux valeurs des courbes (par défaut). */
+    /** Dynamic scales, continuously fitted to the curve values (default). */
     public void setDynamicScales() { fixedScales = null; }
-    /** Vrai si les échelles sont fixes. */
+    /** True if the scales are fixed. */
     public boolean hasFixedScales() { return fixedScales != null; }
 
     // ------------------------------------------------------------------
-    // Réglages
+    // Settings
 
-    /** Police des graduations des échelles. */
+    /** Font of the scale tick labels. */
     public void setScaleFont(ChartFont font) { if (font != null) scaleFont = font; }
     public ChartFont getScaleFont() { return scaleFont; }
-    /** Police de la légende. */
+    /** Font of the legend. */
     public void setLegendFont(ChartFont font) { if (font != null) legendFont = font; }
     public ChartFont getLegendFont() { return legendFont; }
 
     public void togglePoints() { showPoints = !showPoints; }
 
-    /** Affiche ou masque la légende (prise en compte à l'image suivante). */
+    /** Shows or hides the legend (applied at the next frame). */
     public void setLegendVisible(boolean visible) { showLegend = visible; }
     public boolean isLegendVisible() { return showLegend; }
-    /** Bascule l'affichage de la légende (touche N). */
+    /** Toggles the legend display (N key). */
     public void toggleLegend() { showLegend = !showLegend; }
 
-    /** Cadence d'affichage réelle mesurée, en images par seconde. */
+    /** Actual measured frame rate, in frames per second. */
     public double getFps() { return fpsCounter.getFps(); }
-    /** Affiche ou masque la cadence d'affichage dans le graphe (touche F). */
+    /** Shows or hides the frame rate in the chart (F key). */
     public void setFpsVisible(boolean visible) { showFps = visible; }
     public boolean isFpsVisible() { return showFps; }
     public void toggleFps() { showFps = !showFps; }
 
     /**
-     * Active ou désactive la réduction du nombre de points envoyés à OpenGL
-     * (activée par défaut, touche D). Le dessin à l'écran est inchangé ; les
-     * courbes en tirets et l'affichage des points (touche P) ne sont pas réduits.
+     * Enables or disables the reduction of the number of points sent to
+     * OpenGL (enabled by default, D key). The on-screen drawing is unchanged;
+     * dashed curves and the points display (P key) are not reduced.
      */
     public void setDecimationEnabled(boolean enabled) { decimationEnabled = enabled; }
     public boolean isDecimationEnabled() { return decimationEnabled; }
     public void toggleDecimation() { decimationEnabled = !decimationEnabled; }
-    /** Nombre de points envoyés à OpenGL pour tracer les courbes lors de la dernière image. */
+    /** Number of points sent to OpenGL to draw the curves during the last frame. */
     public int getDrawnPointCount() { return drawnPoints; }
 
-    /** Affiche ou masque les valeurs courantes des courbes, en haut à droite (touche V). */
+    /** Shows or hides the current values of the curves, at the top right (V key). */
     public void setCurrentValuesVisible(boolean visible) { showCurrentValues = visible; }
     public boolean isCurrentValuesVisible() { return showCurrentValues; }
     public void toggleCurrentValues() { showCurrentValues = !showCurrentValues; }

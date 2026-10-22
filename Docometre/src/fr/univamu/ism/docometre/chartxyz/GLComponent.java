@@ -4,12 +4,12 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Control;
 
 /**
- * Composant OpenGL intégré dans une interface SWT (graphe ou surface) :
- * mise en page et cycle de vie.
+ * OpenGL component embedded in an SWT user interface (chart or surface):
+ * layout and life cycle.
  */
 public interface GLComponent {
 
-    /** Arrête l'animation et détruit le composant. */
+    /** Stops the animation and destroys the component. */
     void close();
 
     boolean isDisposed();

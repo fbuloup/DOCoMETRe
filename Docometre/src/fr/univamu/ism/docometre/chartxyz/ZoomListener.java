@@ -1,23 +1,23 @@
 package fr.univamu.ism.docometre.chartxyz;
 
 /**
- * Écouteur des changements de fenêtre de zoom d'un graphe 1D ou 2D (voir
+ * Listener of the zoom window changes of a 1D or 2D chart (see
  * {@link PlotRenderer#addZoomListener}).
  *
- * L'appel a lieu dans le thread qui a provoqué le changement : le thread
- * d'affichage OpenGL pour les commandes souris et clavier (thread SWT avec
- * {@link GLToolkit#SWT}, thread de l'animateur avec {@link GLToolkit#NEWT}),
- * le thread appelant pour les méthodes de l'API. Pour agir sur des widgets
- * SWT depuis l'écouteur, passer par Display.asyncExec.
+ * The call takes place in the thread that caused the change: the OpenGL
+ * rendering thread for mouse and keyboard commands (SWT thread with
+ * {@link GLToolkit#SWT}, animator thread with {@link GLToolkit#NEWT}), the
+ * calling thread for the API methods. To act on SWT widgets from the
+ * listener, use Display.asyncExec.
  */
 @FunctionalInterface
 public interface ZoomListener {
 
     /**
-     * @param window nouvelle fenêtre {xMin, xMax, yMin, yMax} (copie), ou
-     *               null pour le retour à la vue initiale. En 1D, mode
-     *               défilement, les abscisses sont relatives au dernier
-     *               échantillon (négatives) : la fenêtre suit le temps.
+     * @param window new window {xMin, xMax, yMin, yMax} (copy), or null when
+     *               going back to the initial view. In 1D scroll mode, the
+     *               abscissas are relative to the last sample (negative):
+     *               the window follows time.
      */
     void zoomChanged(double[] window);
 }
