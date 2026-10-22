@@ -292,7 +292,6 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 		}
 		Control[] children = chartsContainer.getChildren();
 		for (Control control : children) {
-			System.out.println("Dispose : " + control.getClass().getCanonicalName());
 			control.dispose();
 		}
 	}
