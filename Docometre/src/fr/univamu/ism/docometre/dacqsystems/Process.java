@@ -42,6 +42,7 @@
 package fr.univamu.ism.docometre.dacqsystems;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -55,6 +56,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -62,6 +64,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.ApplicationActionBarAdvisor;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
@@ -87,6 +90,8 @@ public abstract class Process extends AbstractElement implements ModuleBehaviour
 	private transient IResource logFile;
 
 	private transient IResource outputFolder;
+
+	protected boolean deletionDecision;
 
 	public ScriptSegment getInitializeBlocksContainer() {
 		return getScript().getInitializeBlocksContainer();
@@ -212,32 +217,29 @@ public abstract class Process extends AbstractElement implements ModuleBehaviour
 			// This is a process test
 			parent = resource.getParent();
 			outputFolder = ((IContainer)parent).findMember("test." + resource.getName().replaceAll(Activator.processFileExtension, ""));
+			boolean askDeletion = false;
 			if(outputFolder != null) {
-				
+				askDeletion = true;
 				PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
-					
 					@Override
 					public void run() {
 						String message = NLS.bind(DocometreMessages.DeleteProcessTestDialogMessage, resource.getName().replaceAll(Activator.processFileExtension, ""));
-						if(MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), DocometreMessages.DeleteProcessTestDialogTitle, message)) {
-							try {
-								outputFolder.delete(true, null);
-							} catch (CoreException e) {
-								e.printStackTrace();
-								Activator.logErrorMessage(e.getMessage());
-							}
-						}
+						deletionDecision = MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), DocometreMessages.DeleteProcessTestDialogTitle, message);
+						if(deletionDecision) ApplicationActionBarAdvisor.deleteResourcesAction.runOnThisResources(new IResource[] {outputFolder});
 					}
 				});
-				
-				
 			}
-//			if(outputFolder == null) {
+			if(askDeletion && !deletionDecision) throw new OperationCanceledException(DocometreMessages.OperationCanceledByUser);
+			if(askDeletion && deletionDecision && outputFolder.exists()) {
+				String message = NLS.bind(DocometreMessages.OutputFolderStillExists, outputFolder.getFullPath().toOSString());
+				throw new IOException(message + " still exists !");
+			}
+			if(!outputFolder.exists()) {
 				outputFolder = ((IContainer)parent).getFolder(new Path("test." + resource.getName().replaceAll(Activator.processFileExtension, "")));
 				((IFolder)outputFolder).create(true, true, null);
 				ResourceProperties.setTypePersistentProperty(outputFolder, ResourceType.PROCESS_TEST.toString());
 				ResourceProperties.setAssociatedProcessProperty(outputFolder, resource.getFullPath().toOSString());
-//			}
+			}
 		}
 		// Clear errors
 		if(errorMarkers != null) errorMarkers.clear();

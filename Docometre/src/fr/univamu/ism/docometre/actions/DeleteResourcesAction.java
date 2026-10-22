@@ -90,6 +90,7 @@ public class DeleteResourcesAction extends Action implements ISelectionListener,
 	private IResource[] resources;
 	private IWorkbenchWindow window;
 	private Object object;
+	private boolean askConfirmation = true;
 
 	public DeleteResourcesAction(IWorkbenchWindow window) {
 		setId("DeleteResourcesAction"); //$NON-NLS-1$
@@ -107,7 +108,9 @@ public class DeleteResourcesAction extends Action implements ISelectionListener,
 		Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
 		String title = DocometreMessages.DeleteAction_Title;
 		String message = DocometreMessages.DeleteAction_Message;
-		if(MessageDialog.openQuestion(shell, title, message)) {
+		boolean doRun = true;
+		if(askConfirmation) doRun = MessageDialog.openQuestion(shell, title, message);
+		if(doRun) {
 			
 			try {
 				PlatformUI.getWorkbench().getProgressService().busyCursorWhile(new IRunnableWithProgress() {
@@ -281,5 +284,15 @@ public class DeleteResourcesAction extends Action implements ISelectionListener,
 	public void dispose() {
 		window.getSelectionService().removeSelectionListener(this);
 	}
+	
+	public void runOnThisResources(IResource[] resourcesToDelete) {
+		askConfirmation = false;
+		IResource[] saveSelectedResources = resources;
+		resources = resourcesToDelete;
+		run();
+		resources = saveSelectedResources;
+		askConfirmation = true;
+	}
+
 
 }

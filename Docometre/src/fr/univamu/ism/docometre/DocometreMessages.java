@@ -190,6 +190,7 @@ public final class DocometreMessages extends NLS {
 	public static String When;
 	public static String DeleteProcessTestDialogTitle;
 	public static String DeleteProcessTestDialogMessage;
+	public static String OutputFolderStillExists;
 
 	/*Trials label and start mode*/
 	public static String Trial;
