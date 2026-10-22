@@ -1535,6 +1535,7 @@ public class ArduinoUnoProcess extends Process {
 			String fullQualifiedBoardName = "arduino:avr:uno";
 			if(isRelease4Wifi) fullQualifiedBoardName = "arduino:renesas_uno:unor4wifi";
 			String inoHexFilePath = resourcePath + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + ".ino.hex";
+			if(isRelease4Wifi) inoHexFilePath = resourcePath + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + ".ino.bin";
 			previousINOHexFilePath = inoHexFilePath;
 			String arduinoCLIPATH = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH);
 			cmd = arduinoCLIPATH + " upload -p " + devicePath + " --fqbn " + fullQualifiedBoardName + " -i " + inoHexFilePath;
