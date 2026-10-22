@@ -44,8 +44,9 @@ import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.ExperimentScheduler;
 import fr.univamu.ism.docometre.editors.PartNameRefresher;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
+import fr.univamu.ism.docometre.editors.DataEditorActionBarContributor.IDataEditorActionBarContribution;
 
-public class GL2DataEditor extends EditorPart implements PartNameRefresher, IPartListener2 {
+public class GL2DataEditor extends EditorPart implements PartNameRefresher, IPartListener2, IDataEditorActionBarContribution {
 	
 	public static String ID = "Docometre.GL2DataEditor";
 	
@@ -250,6 +251,41 @@ public class GL2DataEditor extends EditorPart implements PartNameRefresher, IPar
 		chart.close();
 		getSite().getPage().removePartListener(this);
 		super.dispose();
+	}
+
+	@Override
+	public void panLeft() {
+		chart.getRenderer().pan(-0.1f, 0);
+	}
+
+	@Override
+	public void panRight() {
+		chart.getRenderer().pan(0.1f, 0);
+	}
+
+	@Override
+	public void panUp() {
+		chart.getRenderer().pan(0, 0.1f);
+	}
+
+	@Override
+	public void panDown() {
+		chart.getRenderer().pan(0, -0.1f);
+	}
+
+	@Override
+	public void zoomIn() {
+		chart.getRenderer().zoom(1f);
+	}
+
+	@Override
+	public void zoomOut() {
+		chart.getRenderer().zoom(-1f);
+	}
+
+	@Override
+	public void reset() {
+		chart.getRenderer().resetView();
 	}
 
 }

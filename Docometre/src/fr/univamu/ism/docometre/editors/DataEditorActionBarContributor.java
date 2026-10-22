@@ -46,7 +46,6 @@ import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.SubToolBarManager;
-import org.eclipse.swt.SWT;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IPerspectiveListener;
@@ -59,6 +58,16 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.IImageKeys;
 
 public class DataEditorActionBarContributor extends EditorActionBarContributor implements IPerspectiveListener {
+	
+	public interface IDataEditorActionBarContribution {
+		public void panLeft();
+		public void panRight();
+		public void panUp();
+		public void panDown();
+		public void zoomIn();
+		public void zoomOut();
+		public void reset();
+	}
 	
 //	private class EditGraphAction extends Action {
 //		public EditGraphAction() {
@@ -86,7 +95,7 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 		}
 		@Override
 		public void run() {
-			editor.getChart().pan(10, SWT.LEFT);
+			editor.panLeft();
 		}
 	}
 	
@@ -97,7 +106,7 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 		}
 		@Override
 		public void run() {
-			editor.getChart().pan(10, SWT.UP);
+			editor.panUp();
 		}
 	}
 	
@@ -108,7 +117,7 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 		}
 		@Override
 		public void run() {
-			editor.getChart().pan(10, SWT.DOWN);
+			editor.panDown();
 		}
 	}
 	
@@ -119,7 +128,7 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 		}
 		@Override
 		public void run() {
-			editor.getChart().pan(10, SWT.RIGHT);
+			editor.panRight();
 		}
 	}
 	
@@ -130,7 +139,7 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 		}
 		@Override
 		public void run() {
-			editor.getChart().zoomIn();
+			editor.zoomIn();
 		}
 	}
 	
@@ -141,7 +150,7 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 		}
 		@Override
 		public void run() {
-			editor.getChart().zoomOut();
+			editor.zoomOut();
 		}
 	}
 
@@ -152,13 +161,11 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 		}
 		@Override
 		public void run() {
-			editor.getChart().reset();
-			editor.getChart().redraw();
-			editor.getChart().update();
+			editor.reset();
 		}
 	}
 	
-	private DataEditor editor;
+	private IDataEditorActionBarContribution editor;
 //	private ActionContributionItem editGraphActionContributionItem;
 	private ActionContributionItem autoScaleGraphActionContributionItem;
 	private ActionContributionItem zoomInGraphActionContributionItem;
@@ -207,8 +214,8 @@ public class DataEditorActionBarContributor extends EditorActionBarContributor i
 	@Override
 	public void setActiveEditor(IEditorPart targetEditor) {
 		editor = null;
-		if(!(targetEditor instanceof DataEditor)) return;
-		editor = (DataEditor) targetEditor;
+		if(!(targetEditor instanceof IDataEditorActionBarContribution)) return;
+		editor = (IDataEditorActionBarContribution) targetEditor;
 		updateVisibilities(false);
 	}
 

@@ -70,7 +70,7 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
     }
 
     /** En balayage, fraction de la fenêtre laissée vide juste devant le curseur d'écriture. */
-    private static final double SWEEP_GAP = 0.02;
+    private static final double SWEEP_GAP = 0.01;
     private static final float DEFAULT_LINE_WIDTH = 1.5f; // épaisseur des courbes sans épaisseur explicite (pixels)
 
     private volatile DisplayMode displayMode = DisplayMode.SWEEP;

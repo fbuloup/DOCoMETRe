@@ -88,13 +88,14 @@ import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.ExperimentScheduler;
+import fr.univamu.ism.docometre.editors.DataEditorActionBarContributor.IDataEditorActionBarContribution;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 import fr.univamu.ism.nswtchart.CursorMarkerListener;
 import fr.univamu.ism.nswtchart.Window;
 import fr.univamu.ism.nswtchart.XYSWTChart;
 import fr.univamu.ism.nswtchart.XYSWTSerie;
 
-public class DataEditor extends EditorPart implements PartNameRefresher, CursorMarkerListener {
+public class DataEditor extends EditorPart implements PartNameRefresher, CursorMarkerListener, IDataEditorActionBarContribution {
 	
 	public static String ID = "Docometre.DataEditor";
 	
@@ -527,6 +528,43 @@ public class DataEditor extends EditorPart implements PartNameRefresher, CursorM
 		ApplicationActionBarAdvisor.deltaContributionItem.setVisible(showCursor);
 		ApplicationActionBarAdvisor.cursorContributionItem.getParent().update(true);
 		
+	}
+
+	@Override
+	public void panLeft() {
+		getChart().pan(10, SWT.LEFT);
+	}
+
+	@Override
+	public void panRight() {
+		getChart().pan(10, SWT.RIGHT);
+	}
+
+	@Override
+	public void panUp() {
+		getChart().pan(10, SWT.UP);
+	}
+
+	@Override
+	public void panDown() {
+		getChart().pan(10, SWT.DOWN);
+	}
+
+	@Override
+	public void zoomIn() {
+		getChart().zoomIn();
+	}
+
+	@Override
+	public void zoomOut() {
+		getChart().zoomOut();
+	}
+
+	@Override
+	public void reset() {
+		getChart().reset();
+		getChart().redraw();
+		getChart().update();
 	}
 
 }
