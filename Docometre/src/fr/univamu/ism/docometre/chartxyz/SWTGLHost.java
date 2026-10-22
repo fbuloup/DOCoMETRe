@@ -43,7 +43,7 @@ final class SWTGLHost extends GLHost {
                 if (e.button == ChartInteraction.LEFT_BUTTON) leftDown = true;
                 if (e.button == ChartInteraction.RIGHT_BUTTON) rightDown = true;
                 Point size = canvas.getSize();
-                interaction.press(e.button, e.x, e.y, size.x, size.y);
+                interaction.press(e.button, modifiers(e), e.x, e.y, size.x, size.y);
             }
 
             @Override
@@ -58,7 +58,7 @@ final class SWTGLHost extends GLHost {
             @Override
             public void mouseDoubleClick(MouseEvent e) {
                 Point size = canvas.getSize();
-                interaction.doubleClick(e.button, e.x, e.y, size.x, size.y);
+                interaction.doubleClick(e.button, modifiers(e), e.x, e.y, size.x, size.y);
             }
         });
 
@@ -105,6 +105,11 @@ final class SWTGLHost extends GLHost {
         });
 
         canvas.setFocus();
+    }
+
+    /** Modifier keys of an SWT mouse event: Ctrl, or Command on macOS. */
+    private static int modifiers(MouseEvent e) {
+        return ((e.stateMask & (SWT.CTRL | SWT.COMMAND)) != 0) ? ChartInteraction.CTRL : 0;
     }
 
     @Override

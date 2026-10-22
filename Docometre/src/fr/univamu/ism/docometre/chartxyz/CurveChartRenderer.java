@@ -72,7 +72,10 @@ public abstract class CurveChartRenderer<C extends CurveData<C>> extends GLChart
         try {
             for (C curve : curves) addCurve(curve);
         } catch (RuntimeException e) {
-            removeAllCurves(); // chart not created: the curves already attached are released
+            // chart not created: the curves already attached are released (without curveRemoved:
+            // the subclasses are not initialized yet)
+            for (C curve : this.curves) curve.detach(this);
+            this.curves.clear();
             throw e;
         }
     }
@@ -109,8 +112,20 @@ public abstract class CurveChartRenderer<C extends CurveData<C>> extends GLChart
 
     /** Removes a curve from the chart; it can then be added to another chart. */
     public void removeCurve(C curve) {
-        if (curves.remove(curve)) curve.detach(this);
+        int index = curves.indexOf(curve);
+        if (index >= 0 && curves.remove(curve)) {
+            curve.detach(this);
+            curveRemoved(curve, index);
+        }
     }
+
+    /**
+     * Called after the removal of a curve (in the calling thread), to release
+     * what belongs to it. Does nothing by default.
+     *
+     * @param index position the curve had in the chart
+     */
+    protected void curveRemoved(C curve, int index) { }
 
     /** Removes all the curves from the chart (called when it is closed). */
     public void removeAllCurves() {

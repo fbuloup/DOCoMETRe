@@ -132,4 +132,88 @@ public abstract class AbstractGLPlotChart<C extends CurveData<C>, R extends Plot
     public void removeStaticCursorListener(StaticCursorListener listener) {
         renderer.removeStaticCursorListener(listener);
     }
+
+    // ------------------------------------------------------------------
+    // Markers (1D charts)
+
+    /** Label of the markers added with Ctrl + double click in cursor mode ("Default" by default). */
+    public void setCurrentMarkerLabel(String label) {
+        renderer.setCurrentMarkerLabel(label);
+    }
+
+    public String getCurrentMarkerLabel() {
+        return renderer.getCurrentMarkerLabel();
+    }
+
+    /** Adds a marker to the group (curve, label), in the color of the curve; false if the group already has it. */
+    public boolean addMarker(C curve, String label, double x, double y) {
+        return renderer.addMarker(curve, label, x, y);
+    }
+
+    /** Adds markers {x, y} to the group (curve, label) (markers already present are skipped). */
+    public void addMarkersGroup(C curve, String label, double[][] coordinates) {
+        renderer.addMarkersGroup(curve, label, coordinates);
+    }
+
+    /** Removes a marker of the group (curve, label); the group disappears with its last marker. */
+    public boolean removeMarker(C curve, String label, double x, double y) {
+        return renderer.removeMarker(curve, label, x, y);
+    }
+
+    /** Removes the group (curve, label). */
+    public boolean removeMarkersGroup(C curve, String label) {
+        return renderer.removeMarkersGroup(curve, label);
+    }
+
+    /** Removes all the markers, of all the curves. */
+    public void clearMarkers() {
+        renderer.clearMarkers();
+    }
+
+    /** Removes all the markers of a curve. */
+    public void clearMarkers(C curve) {
+        renderer.clearMarkers(curve);
+    }
+
+    /** Curves that have markers, in the order of the chart. */
+    public java.util.List<C> getMarkersCurves() {
+        return renderer.getMarkersCurves();
+    }
+
+    /** Labels of the marker groups of a curve, in creation order. */
+    public java.util.List<String> getMarkersLabels(C curve) {
+        return renderer.getMarkersLabels(curve);
+    }
+
+    /** Markers {x, y} of the group (curve, label) (copy), or null if there is no such group. */
+    public double[][] getMarkersGroup(C curve, String label) {
+        return renderer.getMarkersGroup(curve, label);
+    }
+
+    /** Listener of the markers added (see {@link MarkerAddedListener} for the calling thread). */
+    public void addMarkerAddedListener(MarkerAddedListener<C> listener) {
+        renderer.addMarkerAddedListener(listener);
+    }
+
+    public void removeMarkerAddedListener(MarkerAddedListener<C> listener) {
+        renderer.removeMarkerAddedListener(listener);
+    }
+
+    /** Listener of the markers removed (see {@link MarkerRemovedListener} for the calling thread). */
+    public void addMarkerRemovedListener(MarkerRemovedListener<C> listener) {
+        renderer.addMarkerRemovedListener(listener);
+    }
+
+    public void removeMarkerRemovedListener(MarkerRemovedListener<C> listener) {
+        renderer.removeMarkerRemovedListener(listener);
+    }
+
+    /** Listener of the current marker label (see {@link CurrentMarkerLabelListener} for the calling thread). */
+    public void addCurrentMarkerLabelListener(CurrentMarkerLabelListener listener) {
+        renderer.addCurrentMarkerLabelListener(listener);
+    }
+
+    public void removeCurrentMarkerLabelListener(CurrentMarkerLabelListener listener) {
+        renderer.removeCurrentMarkerLabelListener(listener);
+    }
 }

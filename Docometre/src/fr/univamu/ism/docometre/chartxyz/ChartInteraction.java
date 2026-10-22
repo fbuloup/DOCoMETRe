@@ -15,6 +15,9 @@ public interface ChartInteraction {
     /** Right mouse button. */
     int RIGHT_BUTTON = 3;
 
+    /** Modifier flag: Ctrl key (or Command on macOS) held down. */
+    int CTRL = 1;
+
     /** Character passed to {@link #keyPressed} for the Escape key. */
     char ESCAPE = '\u001b';
     /** Character passed to {@link #keyPressed} for the Backspace key. */
@@ -79,8 +82,18 @@ public interface ChartInteraction {
     default void doubleClick(int button, int x, int y, int width, int height) {
     }
 
+    /** Double click with modifier keys ({@link #CTRL}...). By default, the modifiers are ignored. */
+    default void doubleClick(int button, int modifiers, int x, int y, int width, int height) {
+        doubleClick(button, x, y, width, height);
+    }
+
     /** Button pressed at (x, y). No effect by default. */
     default void press(int button, int x, int y, int width, int height) {
+    }
+
+    /** Button pressed with modifier keys ({@link #CTRL}...). By default, the modifiers are ignored. */
+    default void press(int button, int modifiers, int x, int y, int width, int height) {
+        press(button, x, y, width, height);
     }
 
     /** Button released at (x, y) (possibly outside the component). No effect by default. */

@@ -1,9 +1,13 @@
 package fr.univamu.ism.docometre.chartxyz;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Deque;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.UnaryOperator;
 
@@ -51,6 +55,26 @@ import com.jogamp.opengl.GLAutoDrawable;
  * removes it. {@link StaticCursorListener}s receive its position and the
  * differences.
  *
+ * Markers (charts where {@link #supportsMarkers()} is true, 1D): points
+ * identified by a label ("Max", "Min"...) and placed on a curve, whose color
+ * they take. The markers of a curve with the same label form a group,
+ * identified by (curve, label): two curves can have groups with the same
+ * label (they are distinct groups). A marker is drawn as a dotted vertical
+ * line, a diamond on the point and the label at the foot of the line, on the
+ * abscissa axis (no coordinates). In cursor mode, Ctrl + left double click
+ * adds a marker with the current label ({@link #setCurrentMarkerLabel},
+ * "Default" by default) on the point designated by the cursor, to the group
+ * of the curve followed by the cursor; adding a marker that already exists
+ * in its group (same coordinates) is ignored. A double click on a marker
+ * label removes that marker (the group disappears with its last marker);
+ * Ctrl + click on a label makes it the current label. Leaving the cursor
+ * mode keeps the markers; removing a curve from the chart removes its
+ * markers. Groups can also be managed with {@link #addMarkersGroup} and
+ * {@link #removeMarkersGroup}. {@link MarkerAddedListener}s and
+ * {@link MarkerRemovedListener}s are told about each marker added or
+ * removed, {@link CurrentMarkerLabelListener}s about each change of the
+ * current label.
+ *
  * Each frame follows the same sequence ({@link #display}); subclasses
  * provide the data update, the visible window and the curve drawing.
  *
@@ -97,11 +121,13 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
 
     /** Static cursor: point frozen by a double click, in axis units, with its color and badge texts. */
     private static final class StaticCursor {
+        final Object curve; // curve of the point (removed with it)
         final double x, y;
         final float[] color;
         final String labelX, labelY;
 
-        StaticCursor(double x, double y, float[] color, String labelX, String labelY) {
+        StaticCursor(Object curve, double x, double y, float[] color, String labelX, String labelY) {
+            this.curve = curve;
             this.x = x;
             this.y = y;
             this.color = color;
@@ -111,6 +137,46 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     }
 
     private volatile StaticCursor staticCursor; // null = none
+
+    /** Label of the new markers until {@link #setCurrentMarkerLabel} is called. */
+    public static final String DEFAULT_MARKER_LABEL = "Default";
+    /** Marker: point in data units (in 1D, x = absolute time) on a curve, with the label of its group. */
+    private final class Marker {
+        final C curve;
+        final String label;
+        final double x, y;
+
+        Marker(C curve, String label, double x, double y) {
+            this.curve = curve;
+            this.label = label;
+            this.x = x;
+            this.y = y;
+        }
+    }
+
+    /** Label of a marker drawn in the current frame, with its badge {x, y, w, h} (for clicks). */
+    private final class MarkerBadge {
+        final Marker marker;
+        final float[] color;
+        final float[] rect;
+
+        MarkerBadge(Marker marker, float[] color, float[] rect) {
+            this.marker = marker;
+            this.color = color;
+            this.rect = rect;
+        }
+    }
+
+    // Marker groups by curve, then by label in creation order; guarded by markersLock (API usable from any thread)
+    private final Map<C, Map<String, List<Marker>>> markerGroups = new HashMap<>();
+    private final Object markersLock = new Object();
+    private volatile String currentMarkerLabel = DEFAULT_MARKER_LABEL;
+    // Rendering thread only: marker requested by Ctrl + double click, badges drawn in the current frame
+    private boolean markerRequested;
+    private List<MarkerBadge> markerBadges = new ArrayList<>();
+    private final List<MarkerAddedListener<C>> markerAddedListeners = new CopyOnWriteArrayList<>();
+    private final List<MarkerRemovedListener<C>> markerRemovedListeners = new CopyOnWriteArrayList<>();
+    private final List<CurrentMarkerLabelListener> currentMarkerLabelListeners = new CopyOnWriteArrayList<>();
     private final List<StaticCursorListener> staticCursorListeners = new CopyOnWriteArrayList<>();
     // Last state notified to the static cursor listeners (rendering thread only)
     private StaticCursor notifiedStaticCursor;
@@ -189,6 +255,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         drawFps(gl, marginLeft + plotWidth - 6, marginBottom + 4);
         float valuesHeight = drawCurrentValues(gl, marginLeft + plotWidth - 6, marginBottom + plotHeight - 6);
         drawStatus(gl, valuesHeight);
+        drawMarkers(gl);
         drawCursors(gl);
         if (selecting) drawSelection(gl);
     }
@@ -247,6 +314,19 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
      * point closest to the mouse on screen.
      */
     protected boolean cursorFollowsXOnly() { return false; }
+
+    /** Are the markers (Ctrl + double click in cursor mode) available on this chart (no by default)? */
+    protected boolean supportsMarkers() { return false; }
+
+    /**
+     * Data abscissa of a marker placed on point i of the curve, whose axis
+     * abscissa is axisX (axisX by default; in 1D, the absolute time, so that
+     * the marker remains attached to its sample whatever the display mode).
+     */
+    protected double markerDataX(C curve, int i, double axisX) { return axisX; }
+
+    /** Axis abscissa of a marker of data abscissa dataX, or NaN if it is not displayed (identity by default). */
+    protected double markerAxisX(double dataX) { return dataX; }
 
     /** Is the static cursor (double click in cursor mode) available on this chart (no by default)? */
     protected boolean supportsStaticCursor() { return false; }
@@ -537,6 +617,19 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     // ------------------------------------------------------------------
     // Navigation
 
+    /** Ctrl + left click on a marker label: that label becomes the current marker label. */
+    @Override
+    public void press(int button, int modifiers, int x, int y, int width, int height) {
+        if (button == LEFT_BUTTON && (modifiers & CTRL) != 0) {
+            MarkerBadge badge = markerBadgeAt(toPixelX(x, width), toPixelY(y, height));
+            if (badge != null) {
+                setCurrentMarkerLabel(badge.marker.label);
+                return;
+            }
+        }
+        press(button, x, y, width, height);
+    }
+
     /** Left button: start of a zoom rectangle, if it starts in the plot area. */
     @Override
     public void press(int button, int x, int y, int width, int height) {
@@ -609,10 +702,33 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
      */
     @Override
     public void doubleClick(int button, int x, int y, int width, int height) {
-        if (button != LEFT_BUTTON || !cursorEnabled || !supportsStaticCursor()) return;
-        mouseX = toPixelX(x, width);
-        mouseY = toPixelY(y, height);
-        staticCursorRequested = true;
+        doubleClick(button, 0, x, y, width, height);
+    }
+
+    /**
+     * Left double click: on a marker label, removes that marker (with or
+     * without cursor mode); otherwise, in cursor mode, Ctrl + double click
+     * adds a marker and a plain double click places the static cursor, on
+     * the point designated by the cursor at the double click position (at
+     * the next frame).
+     */
+    @Override
+    public void doubleClick(int button, int modifiers, int x, int y, int width, int height) {
+        if (button != LEFT_BUTTON) return;
+        float px = toPixelX(x, width), py = toPixelY(y, height);
+        MarkerBadge badge = markerBadgeAt(px, py);
+        if (badge != null) {
+            removeMarker(badge.marker.curve, badge.marker.label, badge.marker.x, badge.marker.y);
+            return;
+        }
+        if (!cursorEnabled) return;
+        mouseX = px;
+        mouseY = py;
+        if ((modifiers & CTRL) != 0) {
+            if (supportsMarkers()) markerRequested = true;
+        } else if (supportsStaticCursor()) {
+            staticCursorRequested = true;
+        }
     }
 
     /** Mouse moved without a button: position stored for the cursor. */
@@ -774,6 +890,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
             double scaleX = plotWidth / (viewMaxX - viewMinX), scaleY = plotHeight / (viewMaxY - viewMinY);
             double[] xy = new double[2];
             double best = Double.POSITIVE_INFINITY, bestX = 0, bestY = 0;
+            int bestIndex = -1;
             boolean xOnly = cursorFollowsXOnly();
             for (int i = firstCursorPoint(curve), n = curve.getSnapshotCount(); i < n; i++) {
                 if (!cursorPoint(curve, i, xy)) continue;
@@ -785,6 +902,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
                     best = d;
                     bestX = xy[0];
                     bestY = xy[1];
+                    bestIndex = i;
                 }
             }
             if (best < Double.POSITIVE_INFINITY) {
@@ -797,11 +915,17 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
                 found = new float[]{(float) bestX, (float) bestY};
                 cursorCurve = curve;
                 if (staticCursorRequested) { // double click: the static cursor is placed on this point
-                    staticCursor = new StaticCursor(bestX, bestY, cursorColor, cursorLabelX, cursorLabelY);
+                    staticCursor = new StaticCursor(curve, bestX, bestY, cursorColor, cursorLabelX, cursorLabelY);
+                }
+                if (markerRequested) { // Ctrl + double click: marker with the current label on this point
+                    // not strict: the curve may have left the chart since the beginning of the frame
+                    Marker added = addMarkerSilently(curve, currentMarkerLabel, markerDataX(curve, bestIndex, bestX), bestY, false);
+                    if (added != null) notifyMarkerAdded(added);
                 }
             }
         }
         staticCursorRequested = false;
+        markerRequested = false;
         if (!Arrays.equals(found, cursorPosition)) {
             cursorPosition = found;
             for (CursorListener listener : cursorListeners) {
@@ -835,6 +959,318 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
                 e.printStackTrace(); // an error in a listener must not interrupt rendering
             }
         }
+    }
+
+    // ------------------------------------------------------------------
+    // Markers
+
+    /**
+     * Label given to the markers added with Ctrl + double click (also set by
+     * Ctrl + click on a marker label). Null or blank: {@link #DEFAULT_MARKER_LABEL}.
+     * The {@link CurrentMarkerLabelListener}s are notified if the label changes.
+     */
+    public void setCurrentMarkerLabel(String label) {
+        String newLabel = (label == null || label.trim().isEmpty()) ? DEFAULT_MARKER_LABEL : label;
+        synchronized (markersLock) {
+            if (newLabel.equals(currentMarkerLabel)) return;
+            currentMarkerLabel = newLabel;
+        }
+        for (CurrentMarkerLabelListener listener : currentMarkerLabelListeners) {
+            try {
+                listener.currentMarkerLabelChanged(newLabel);
+            } catch (RuntimeException e) {
+                e.printStackTrace(); // an error in a listener must not interrupt rendering
+            }
+        }
+    }
+
+    public String getCurrentMarkerLabel() { return currentMarkerLabel; }
+
+    /**
+     * Adds a marker to the group (curve, label), drawn in the color of the
+     * curve (data units: in 1D, x is the time since the first sample,
+     * whatever the display mode).
+     *
+     * @return false if the group already has a marker with these coordinates (nothing is added)
+     * @throws IllegalArgumentException if the curve is not in the chart or the label is empty
+     */
+    public boolean addMarker(C curve, String label, double x, double y) {
+        checkMarkerLabel(label);
+        Marker added = addMarkerSilently(curve, label, x, y, true);
+        if (added == null) return false;
+        notifyMarkerAdded(added);
+        return true;
+    }
+
+    /**
+     * Adds markers to the group (curve, label), which is created if needed
+     * (markers already present are skipped). The listeners are notified for
+     * each marker added.
+     *
+     * @param coordinates coordinates {x, y} of each marker, in data units
+     * @throws IllegalArgumentException if the curve is not in the chart or the label is empty
+     */
+    public void addMarkersGroup(C curve, String label, double[][] coordinates) {
+        checkMarkerLabel(label);
+        List<Marker> added = new ArrayList<>();
+        for (double[] xy : coordinates) {
+            Marker marker = addMarkerSilently(curve, label, xy[0], xy[1], true);
+            if (marker != null) added.add(marker);
+        }
+        for (Marker marker : added) notifyMarkerAdded(marker);
+    }
+
+    private static void checkMarkerLabel(String label) {
+        if (label == null || label.trim().isEmpty()) throw new IllegalArgumentException("The marker label cannot be empty.");
+    }
+
+    /**
+     * Adds a marker without notifying the listeners. The presence of the curve
+     * is checked under markersLock: a curve being removed (see
+     * {@link #curveRemoved}) cannot keep markers.
+     *
+     * @param strict throws if the curve is not in the chart (otherwise, returns null)
+     * @return the marker added, or null if it already exists
+     */
+    private Marker addMarkerSilently(C curve, String label, double x, double y, boolean strict) {
+        synchronized (markersLock) {
+            if (curve == null || !getCurves().contains(curve)) {
+                if (strict) throw new IllegalArgumentException("The curve is not in the chart.");
+                return null;
+            }
+            List<Marker> group = markerGroups.computeIfAbsent(curve, k -> new LinkedHashMap<>())
+                    .computeIfAbsent(label, k -> new ArrayList<>());
+            for (Marker marker : group) {
+                if (sameCoordinate(marker.x, x) && sameCoordinate(marker.y, y)) return null;
+            }
+            Marker marker = new Marker(curve, label, x, y);
+            group.add(marker);
+            return marker;
+        }
+    }
+
+    /** Removes a marker of the group (curve, label); the group disappears with its last marker. @return false if there was no such marker */
+    public boolean removeMarker(C curve, String label, double x, double y) {
+        List<Marker> removed = new ArrayList<>();
+        synchronized (markersLock) {
+            Map<String, List<Marker>> groups = markerGroups.get(curve);
+            List<Marker> group = (groups != null) ? groups.get(label) : null;
+            if (group == null) return false;
+            group.removeIf(m -> {
+                boolean same = sameCoordinate(m.x, x) && sameCoordinate(m.y, y);
+                if (same) removed.add(m);
+                return same;
+            });
+            if (group.isEmpty()) {
+                groups.remove(label);
+                if (groups.isEmpty()) markerGroups.remove(curve);
+            }
+        }
+        for (Marker marker : removed) notifyMarkerRemoved(marker);
+        return !removed.isEmpty();
+    }
+
+    /** Removes the group of markers (curve, label). @return false if there was no such group */
+    public boolean removeMarkersGroup(C curve, String label) {
+        List<Marker> removed;
+        synchronized (markersLock) {
+            Map<String, List<Marker>> groups = markerGroups.get(curve);
+            removed = (groups != null) ? groups.remove(label) : null;
+            if (removed == null) return false;
+            if (groups.isEmpty()) markerGroups.remove(curve);
+        }
+        for (Marker marker : removed) notifyMarkerRemoved(marker);
+        return true;
+    }
+
+    /** Removes all the markers, of all the curves. */
+    public void clearMarkers() {
+        List<Marker> removed = new ArrayList<>();
+        synchronized (markersLock) {
+            for (Map<String, List<Marker>> groups : markerGroups.values()) {
+                for (List<Marker> group : groups.values()) removed.addAll(group);
+            }
+            markerGroups.clear();
+        }
+        for (Marker marker : removed) notifyMarkerRemoved(marker);
+    }
+
+    /** Removes all the markers of a curve. */
+    public void clearMarkers(C curve) {
+        List<Marker> removed = new ArrayList<>();
+        synchronized (markersLock) {
+            Map<String, List<Marker>> groups = markerGroups.remove(curve);
+            if (groups == null) return;
+            for (List<Marker> group : groups.values()) removed.addAll(group);
+        }
+        for (Marker marker : removed) notifyMarkerRemoved(marker);
+    }
+
+    /**
+     * A curve leaves the chart: its markers are removed (and notified), the
+     * cursor stays on its curve if it is still there (otherwise it goes back
+     * to the first curve), and the static cursor is removed if it was on it.
+     */
+    @Override
+    protected void curveRemoved(C curve, int index) {
+        clearMarkers(curve);
+        int cursorIndex = cursorCurveIndex;
+        if (cursorIndex == index) cursorCurveIndex = 0;
+        else if (cursorIndex > index) cursorCurveIndex = cursorIndex - 1;
+        StaticCursor fixed = staticCursor;
+        if (fixed != null && fixed.curve == curve) staticCursor = null;
+    }
+
+    public void addMarkerAddedListener(MarkerAddedListener<C> listener) { if (listener != null) markerAddedListeners.add(listener); }
+    public void removeMarkerAddedListener(MarkerAddedListener<C> listener) { markerAddedListeners.remove(listener); }
+    public void addMarkerRemovedListener(MarkerRemovedListener<C> listener) { if (listener != null) markerRemovedListeners.add(listener); }
+    public void removeMarkerRemovedListener(MarkerRemovedListener<C> listener) { markerRemovedListeners.remove(listener); }
+    public void addCurrentMarkerLabelListener(CurrentMarkerLabelListener listener) { if (listener != null) currentMarkerLabelListeners.add(listener); }
+    public void removeCurrentMarkerLabelListener(CurrentMarkerLabelListener listener) { currentMarkerLabelListeners.remove(listener); }
+
+    /** Notifies the addition of a marker; called outside markersLock. */
+    private void notifyMarkerAdded(Marker marker) {
+        for (MarkerAddedListener<C> listener : markerAddedListeners) {
+            try {
+                listener.markerAdded(marker.curve, marker.label, marker.x, marker.y);
+            } catch (RuntimeException e) {
+                e.printStackTrace(); // an error in a listener must not interrupt rendering
+            }
+        }
+    }
+
+    /** Notifies the removal of a marker; called outside markersLock. */
+    private void notifyMarkerRemoved(Marker marker) {
+        for (MarkerRemovedListener<C> listener : markerRemovedListeners) {
+            try {
+                listener.markerRemoved(marker.curve, marker.label, marker.x, marker.y);
+            } catch (RuntimeException e) {
+                e.printStackTrace(); // an error in a listener must not interrupt rendering
+            }
+        }
+    }
+
+    /** Curves that have markers, in the order of the chart. */
+    public List<C> getMarkersCurves() {
+        List<C> result = new ArrayList<>();
+        synchronized (markersLock) {
+            for (C curve : getCurves()) {
+                if (markerGroups.containsKey(curve)) result.add(curve);
+            }
+        }
+        return result;
+    }
+
+    /** Labels of the marker groups of a curve, in creation order (empty list if it has none). */
+    public List<String> getMarkersLabels(C curve) {
+        synchronized (markersLock) {
+            Map<String, List<Marker>> groups = markerGroups.get(curve);
+            return (groups != null) ? new ArrayList<>(groups.keySet()) : new ArrayList<>();
+        }
+    }
+
+    /** Coordinates {x, y} of the markers of the group (curve, label) (copy, in data units), or null if there is no such group. */
+    public double[][] getMarkersGroup(C curve, String label) {
+        synchronized (markersLock) {
+            Map<String, List<Marker>> groups = markerGroups.get(curve);
+            List<Marker> group = (groups != null) ? groups.get(label) : null;
+            if (group == null) return null;
+            double[][] coordinates = new double[group.size()][];
+            for (int i = 0; i < coordinates.length; i++) coordinates[i] = new double[]{group.get(i).x, group.get(i).y};
+            return coordinates;
+        }
+    }
+
+    /** Same coordinate, to the precision of the computations (markers placed on the same sample are identical). */
+    private static boolean sameCoordinate(double a, double b) {
+        return Math.abs(a - b) <= 1e-9 * Math.max(1, Math.max(Math.abs(a), Math.abs(b)));
+    }
+
+    /** Badge of the marker label under the pixel (px, py) in the current frame (the last one drawn wins), or null. */
+    private MarkerBadge markerBadgeAt(float px, float py) {
+        List<MarkerBadge> badges = markerBadges;
+        for (int i = badges.size() - 1; i >= 0; i--) {
+            float[] r = badges.get(i).rect;
+            if (px >= r[0] && px <= r[0] + r[2] && py >= r[1] && py <= r[1] + r[3]) return badges.get(i);
+        }
+        return null;
+    }
+
+    /**
+     * Markers visible in the view: dotted vertical line and diamond in the
+     * color of their curve, label at the foot of the line (badges shifted
+     * horizontally when they overlap; those of the current label are
+     * outlined).
+     */
+    private void drawMarkers(GL2 gl) {
+        List<MarkerBadge> badges = new ArrayList<>();
+        List<C> curves = frameCurves;
+        List<Marker> markers = new ArrayList<>();
+        List<float[]> colors = new ArrayList<>();
+        synchronized (markersLock) {
+            for (int k = 0; k < curves.size(); k++) { // curves of the frame: those removed since are not drawn
+                Map<String, List<Marker>> groups = markerGroups.get(curves.get(k));
+                if (groups == null) continue;
+                float[] color = CurveStyles.colorOf(curves.get(k), k);
+                for (List<Marker> group : groups.values()) {
+                    for (Marker marker : group) {
+                        markers.add(marker);
+                        colors.add(color);
+                    }
+                }
+            }
+        }
+        ChartFont font = scaleFont;
+        float h = text.lineHeight(font) + 4;
+        String current = currentMarkerLabel;
+        float bottom = marginBottom, top = marginBottom + plotHeight;
+        for (int m = 0; m < markers.size(); m++) {
+            Marker marker = markers.get(m);
+            float[] c = colors.get(m);
+            double ax = markerAxisX(marker.x);
+            if (Double.isNaN(ax) || ax < viewMinX || ax > viewMaxX) continue;
+            float px = (float) (marginLeft + (ax - viewMinX) * plotWidth / (viewMaxX - viewMinX));
+
+            gl.glColor4f(c[0], c[1], c[2], 0.7f);
+            gl.glLineWidth(1f);
+            gl.glEnable(GL2.GL_LINE_STIPPLE);
+            gl.glLineStipple(1, (short) 0x3333);
+            gl.glBegin(GL2.GL_LINES);
+            gl.glVertex2f(px, bottom);
+            gl.glVertex2f(px, top);
+            gl.glEnd();
+            gl.glDisable(GL2.GL_LINE_STIPPLE);
+
+            if (marker.y >= viewMinY && marker.y <= viewMaxY) { // diamond on the point
+                float py = (float) (marginBottom + (marker.y - viewMinY) * plotHeight / (viewMaxY - viewMinY));
+                gl.glColor3f(c[0], c[1], c[2]);
+                gl.glBegin(GL2.GL_POLYGON);
+                gl.glVertex2f(px, py - 5);
+                gl.glVertex2f(px + 5, py);
+                gl.glVertex2f(px, py + 5);
+                gl.glVertex2f(px - 5, py);
+                gl.glEnd();
+            }
+
+            float[] rect = xBadge(marker.label, px, font, h);
+            for (MarkerBadge placed : badges) separate(rect, placed.rect, 0, width);
+            badges.add(new MarkerBadge(marker, c, rect));
+        }
+        for (MarkerBadge badge : badges) {
+            float[] r = badge.rect;
+            drawBadge(gl, badge.marker.label, font, badge.color, r[0], r[1], r[2], r[3]);
+            if (badge.marker.label.equals(current)) { // current label: outlined badge
+                gl.glColor3f(1f, 1f, 1f);
+                gl.glLineWidth(1f);
+                gl.glBegin(GL2.GL_LINE_LOOP);
+                gl.glVertex2f(r[0], r[1]);
+                gl.glVertex2f(r[0] + r[2], r[1]);
+                gl.glVertex2f(r[0] + r[2], r[1] + r[3]);
+                gl.glVertex2f(r[0], r[1] + r[3]);
+                gl.glEnd();
+            }
+        }
+        markerBadges = badges;
     }
 
     // ------------------------------------------------------------------

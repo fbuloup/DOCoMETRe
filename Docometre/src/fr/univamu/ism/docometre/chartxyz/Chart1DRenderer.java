@@ -40,6 +40,10 @@ import com.jogamp.opengl.GL2;
  * resolution of the sampling frequency; in sweep mode, the samples of the
  * gap cannot be designated.
  *
+ * Markers (see {@link PlotRenderer}): in cursor mode, Ctrl + left double
+ * click adds a marker with the current label; its abscissa is the absolute
+ * time of the sample (time since the first sample), in both display modes.
+ *
  * Static cursor: in cursor mode, a left double click freezes a static cursor
  * on the designated sample; the differences Δx (time) and Δy between the
  * two cursors are displayed next to the moving cursor (see {@link PlotRenderer}).
@@ -196,6 +200,28 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
     /** The static cursor (double click in cursor mode) is available in 1D. */
     @Override
     protected boolean supportsStaticCursor() { return true; }
+
+    /** The markers (Ctrl + double click in cursor mode) are available in 1D. */
+    @Override
+    protected boolean supportsMarkers() { return true; }
+
+    /** A marker stores the absolute time of its sample: it remains attached to it in both display modes. */
+    @Override
+    protected double markerDataX(Curve1DData curve, int i, double axisX) {
+        int n = curve.getSnapshotCount();
+        return curve.getLastSampleTime() - (n - 1 - i) / curve.getSampleFrequency();
+    }
+
+    /**
+     * Axis abscissa of a marker: its time in scroll mode; in sweep mode, its
+     * position in the sweep if its time is in the displayed sweep, otherwise NaN.
+     */
+    @Override
+    protected double markerAxisX(double time) {
+        if (frameMode == DisplayMode.SCROLL) return time;
+        if (time > lastTime || time < lastTime - windowTime * (1 - SWEEP_GAP)) return Double.NaN;
+        return time - Math.floor(time / windowTime) * windowTime;
+    }
 
     /** In sweep mode, the samples of the gap are not drawn: the cursor ignores them. */
     @Override

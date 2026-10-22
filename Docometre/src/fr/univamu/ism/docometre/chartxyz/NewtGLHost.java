@@ -62,7 +62,8 @@ final class NewtGLHost extends GLHost {
                 if (e.getButton() == MouseEvent.BUTTON3) rightDown = true;
                 int button = toButton(e), x = e.getX(), y = e.getY(), w = glWindow.getWidth(), h = glWindow.getHeight();
                 // Like the drag, in the OpenGL thread: press, drag and release are processed there in order
-                if (button != 0) glWindow.invoke(false, d -> { interaction.press(button, x, y, w, h); return true; });
+                int modifiers = modifiers(e);
+                if (button != 0) glWindow.invoke(false, d -> { interaction.press(button, modifiers, x, y, w, h); return true; });
             }
 
             @Override
@@ -83,7 +84,8 @@ final class NewtGLHost extends GLHost {
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() != 2) return;
                 int button = toButton(e), x = e.getX(), y = e.getY(), w = glWindow.getWidth(), h = glWindow.getHeight();
-                if (button != 0) glWindow.invoke(false, d -> { interaction.doubleClick(button, x, y, w, h); return true; });
+                int modifiers = modifiers(e);
+                if (button != 0) glWindow.invoke(false, d -> { interaction.doubleClick(button, modifiers, x, y, w, h); return true; });
             }
 
             @Override
@@ -137,6 +139,11 @@ final class NewtGLHost extends GLHost {
         if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE) return ChartInteraction.BACKSPACE;
         if (e.getKeyCode() == KeyEvent.VK_TAB) return e.isShiftDown() ? ChartInteraction.BACK_TAB : ChartInteraction.TAB;
         return Character.toLowerCase(e.getKeyChar());
+    }
+
+    /** Modifier keys of a NEWT mouse event: Ctrl, or Command on macOS. */
+    private static int modifiers(MouseEvent e) {
+        return (e.isControlDown() || e.isMetaDown()) ? ChartInteraction.CTRL : 0;
     }
 
     @Override
