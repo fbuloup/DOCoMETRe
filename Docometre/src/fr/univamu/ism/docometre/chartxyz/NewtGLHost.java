@@ -80,6 +80,13 @@ final class NewtGLHost extends GLHost {
             }
 
             @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() != 2) return;
+                int button = toButton(e), x = e.getX(), y = e.getY(), w = glWindow.getWidth(), h = glWindow.getHeight();
+                if (button != 0) glWindow.invoke(false, d -> { interaction.doubleClick(button, x, y, w, h); return true; });
+            }
+
+            @Override
             public void mouseDragged(MouseEvent e) {
                 int dx = e.getX() - lastX;
                 int dy = e.getY() - lastY;

@@ -75,6 +75,10 @@ public interface ChartInteraction {
         return false;
     }
 
+    /** Double click at (x, y) (after the press / release events of both clicks). No effect by default. */
+    default void doubleClick(int button, int x, int y, int width, int height) {
+    }
+
     /** Button pressed at (x, y). No effect by default. */
     default void press(int button, int x, int y, int width, int height) {
     }

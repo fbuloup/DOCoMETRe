@@ -113,6 +113,77 @@ public class CursorLogicTest {
         float[] q = r1.getCursorPosition();
         check("1D the curve scrolls under a motionless mouse: the designated point changes", q != null && !(near(q[0], p[0]) && near(q[1], p[1])));
 
+        // ---------------- 1D: static cursor (double click in cursor mode) ----------------
+        r1.setCursorEnabled(false);
+        frame(r1);
+        int[] at = window(r1, 7.0, 0);
+        r1.doubleClick(ChartInteraction.LEFT_BUTTON, at[0], at[1], 800, 600);
+        frame(r1);
+        check("1D double click without cursor mode: no static cursor", r1.getStaticCursorPosition() == null);
+        List<float[][]> staticEvents = new ArrayList<>();
+        r1.addStaticCursorListener((position, d) -> staticEvents.add(new float[][]{position, d}));
+        r1.setCursorEnabled(true);
+        double t1 = r1.viewMinX + 2.5, t2 = r1.viewMinX + 3.0; // two times in the visible window
+        at = window(r1, t1, 0);
+        r1.doubleClick(ChartInteraction.LEFT_BUTTON, at[0], at[1], 800, 600);
+        frame(r1);
+        float[] fixed = r1.getStaticCursorPosition();
+        check("1D double click: static cursor placed on the sample at the mouse abscissa", fixed != null && near(fixed[0], t1));
+        float[][] last = staticEvents.get(staticEvents.size() - 1);
+        check("1D static listener: position on placement, delta = (0, 0)", last[0] != null && near(last[0][0], t1)
+                && last[1] != null && near(last[1][0], 0) && near(last[1][1], 0));
+        int eventsBefore = staticEvents.size();
+        frame(r1);
+        check("1D static listener: no call when nothing changes", staticEvents.size() == eventsBefore);
+        mouse(r1, t2, 0);
+        frame(r1);
+        float[] delta = r1.getCursorDelta(), moving = r1.getCursorPosition();
+        check("1D mouse moved: delta = moving - static (dx = 0.5 s)", delta != null && near(delta[0], 0.5)
+                && near(delta[1], moving[1] - fixed[1]));
+        last = staticEvents.get(staticEvents.size() - 1);
+        check("1D static listener: called with the new delta", near(last[1][0], 0.5) && near(last[1][1], delta[1]));
+        at = window(r1, t2, 0);
+        r1.doubleClick(ChartInteraction.LEFT_BUTTON, at[0], at[1], 800, 600);
+        frame(r1);
+        check("1D second double click: static cursor moved", near(r1.getStaticCursorPosition()[0], t2) && near(r1.getCursorDelta()[0], 0));
+        r1.keyPressed('c');
+        check("1D cursor mode disabled: static cursor removed", r1.getStaticCursorPosition() == null && r1.getCursorDelta() == null);
+        frame(r1);
+        last = staticEvents.get(staticEvents.size() - 1);
+        check("1D static listener: called with (null, null) on removal", last[0] == null && last[1] == null);
+        r1.keyPressed('c');
+        frame(r1);
+        r1.doubleClick(ChartInteraction.LEFT_BUTTON, at[0], at[1], 800, 600);
+        frame(r1);
+        r1.keyPressed('m');
+        check("1D M key (mode change): static cursor removed", r1.getStaticCursorPosition() == null);
+        r1.keyPressed('m');
+        r2.setCursorEnabled(true);
+        frame(r2);
+        at = window(r2, 3, 1.5);
+        r2.doubleClick(ChartInteraction.LEFT_BUTTON, at[0], at[1], 800, 600);
+        frame(r2);
+        check("2D: no static cursor (1D only)", r2.getStaticCursorPosition() == null);
+
+        // ---------------- Badge overlap: the static badge is moved beside the moving one ----------------
+        Method separate = PlotRenderer.class.getDeclaredMethod("separate", float[].class, float[].class, int.class, float.class);
+        separate.setAccessible(true);
+        float[] a = {10, 100, 40, 16}, b = {12, 104, 40, 16};
+        separate.invoke(null, a, b, 1, 600f);
+        check("Y badges overlapping: static badge moved just below the moving one (y = 86)", near(a[1], 86) && near(a[0], 10));
+        a = new float[]{10, 590, 40, 16};
+        b = new float[]{10, 582, 40, 16};
+        separate.invoke(null, a, b, 1, 600f);
+        check("Y badges at the top edge: static badge moved to the other side (y = 564)", near(a[1], 564));
+        a = new float[]{300, 5, 50, 16};
+        b = new float[]{280, 5, 50, 16};
+        separate.invoke(null, a, b, 0, 800f);
+        check("X badges overlapping: static badge moved just to the right (x = 332)", near(a[0], 332));
+        a = new float[]{10, 100, 40, 16};
+        b = new float[]{10, 300, 40, 16};
+        separate.invoke(null, a, b, 1, 600f);
+        check("Badges not overlapping: unchanged", near(a[1], 100));
+
         // ---------------- 1D: horizontal pan without zoom window ----------------
         r1.setCursorEnabled(false);
         frame(r1);

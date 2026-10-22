@@ -42,6 +42,15 @@ import com.jogamp.opengl.GLAutoDrawable;
  * Tab to the previous one. {@link CursorListener}s receive the coordinates
  * {x, y} of the designated point.
  *
+ * Static cursor (charts where {@link #supportsStaticCursor()} is true, 1D):
+ * while the cursor is active, a left double click freezes a second cursor
+ * on the point designated at that moment (dashed axes and badges in the
+ * color of its curve). The differences Δx and Δy between the moving cursor
+ * and the static cursor are then displayed next to the moving cursor.
+ * Another double click moves the static cursor; disabling the cursor also
+ * removes it. {@link StaticCursorListener}s receive its position and the
+ * differences.
+ *
  * Each frame follows the same sequence ({@link #display}); subclasses
  * provide the data update, the visible window and the curve drawing.
  *
@@ -84,6 +93,29 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     private float cursorPixelX, cursorPixelY;
     private float[] cursorColor;
     private String cursorLabelX, cursorLabelY;
+    private C cursorCurve; // curve followed in the current frame (formatting of the deltas)
+
+    /** Static cursor: point frozen by a double click, in axis units, with its color and badge texts. */
+    private static final class StaticCursor {
+        final double x, y;
+        final float[] color;
+        final String labelX, labelY;
+
+        StaticCursor(double x, double y, float[] color, String labelX, String labelY) {
+            this.x = x;
+            this.y = y;
+            this.color = color;
+            this.labelX = labelX;
+            this.labelY = labelY;
+        }
+    }
+
+    private volatile StaticCursor staticCursor; // null = none
+    private final List<StaticCursorListener> staticCursorListeners = new CopyOnWriteArrayList<>();
+    // Last state notified to the static cursor listeners (rendering thread only)
+    private StaticCursor notifiedStaticCursor;
+    private float[] notifiedDelta;
+    private boolean staticCursorRequested;     // double click received, placed at the next frame (rendering thread only)
 
     // Zoom rectangle being drawn, in OpenGL pixels (rendering thread only)
     private boolean selecting;
@@ -157,7 +189,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         drawFps(gl, marginLeft + plotWidth - 6, marginBottom + 4);
         float valuesHeight = drawCurrentValues(gl, marginLeft + plotWidth - 6, marginBottom + plotHeight - 6);
         drawStatus(gl, valuesHeight);
-        if (cursorFound) drawCursor(gl);
+        drawCursors(gl);
         if (selecting) drawSelection(gl);
     }
 
@@ -215,6 +247,9 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
      * point closest to the mouse on screen.
      */
     protected boolean cursorFollowsXOnly() { return false; }
+
+    /** Is the static cursor (double click in cursor mode) available on this chart (no by default)? */
+    protected boolean supportsStaticCursor() { return false; }
 
     /** Text of the cursor abscissa (4 significant digits by default). */
     protected String formatCursorX(C curve, double x) { return CurrentValues.format(x); }
@@ -357,42 +392,122 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     }
 
     /**
-     * Cursor axes (vertical and horizontal, across the whole plot area),
-     * marker at the designated point and coordinate badges at the foot of
-     * each axis: x below the plot area, y to its left (in the margins when
-     * they are large enough, otherwise just inside the plot area).
+     * Moving cursor and static cursor: axes across the plot area (dashed for
+     * the static cursor), marker at the designated point and coordinate
+     * badges at the foot of each axis (x below the plot area, y to its left,
+     * in the margins when they are large enough, otherwise just inside the
+     * plot area). The badges of the moving cursor keep their place; those of
+     * the static cursor are shifted when they would overlap them. The static
+     * cursor is drawn even when the moving cursor designates no point, but
+     * not when its point is outside the view.
      */
-    private void drawCursor(GL2 gl) {
+    private void drawCursors(GL2 gl) {
+        StaticCursor fixed = cursorEnabled ? staticCursor : null;
+        float[] fixedPixel = (fixed != null) ? toVisiblePixel(fixed.x, fixed.y) : null;
+        if (fixedPixel == null && !cursorFound) return;
+
+        // Axes and markers: the static cursor first (below), then the moving one
+        if (fixedPixel != null) drawAxesAndMarker(gl, fixedPixel[0], fixedPixel[1], fixed.color, true);
+        if (cursorFound) drawAxesAndMarker(gl, cursorPixelX, cursorPixelY, cursorColor, false);
+
+        ChartFont font = scaleFont;
+        float h = text.lineHeight(font) + 4;
+        float[] movingX = cursorFound ? xBadge(cursorLabelX, cursorPixelX, font, h) : null;
+        float[] movingY = cursorFound ? yBadge(cursorLabelY, cursorPixelY, font, h) : null;
+        if (fixedPixel != null) {
+            float[] fixedX = xBadge(fixed.labelX, fixedPixel[0], font, h);
+            float[] fixedY = yBadge(fixed.labelY, fixedPixel[1], font, h);
+            if (movingX != null) separate(fixedX, movingX, 0, width);  // horizontal shift on the abscissa axis
+            if (movingY != null) separate(fixedY, movingY, 1, height); // vertical shift on the ordinate axis
+            drawBadge(gl, fixed.labelX, font, fixed.color, fixedX[0], fixedX[1], fixedX[2], fixedX[3]);
+            drawBadge(gl, fixed.labelY, font, fixed.color, fixedY[0], fixedY[1], fixedY[2], fixedY[3]);
+        }
+        if (cursorFound) {
+            drawBadge(gl, cursorLabelX, font, cursorColor, movingX[0], movingX[1], movingX[2], movingX[3]);
+            drawBadge(gl, cursorLabelY, font, cursorColor, movingY[0], movingY[1], movingY[2], movingY[3]);
+            if (fixed != null) drawDelta(gl, fixed);
+        }
+    }
+
+    /** Pixel position of the point (x, y) in axis units, or null if it is outside the view. */
+    private float[] toVisiblePixel(double x, double y) {
+        if (x < viewMinX || x > viewMaxX || y < viewMinY || y > viewMaxY) return null;
+        return new float[]{(float) (marginLeft + (x - viewMinX) * plotWidth / (viewMaxX - viewMinX)),
+                           (float) (marginBottom + (y - viewMinY) * plotHeight / (viewMaxY - viewMinY))};
+    }
+
+    /** Badge {x, y, w, h} of an abscissa, centered under px, below the plot area. */
+    private float[] xBadge(String label, float px, ChartFont font, float h) {
+        float w = text.width(label, font) + 8;
+        float x = Math.max(0, Math.min(width - w, px - w / 2));
+        float y = (marginBottom >= h + 2) ? marginBottom - h - 1 : marginBottom + 1;
+        return new float[]{x, y, w, h};
+    }
+
+    /** Badge {x, y, w, h} of an ordinate, centered on py, to the left of the plot area. */
+    private float[] yBadge(String label, float py, ChartFont font, float h) {
+        float w = text.width(label, font) + 8;
+        float x = (marginLeft >= w + 2) ? marginLeft - w - 1 : marginLeft + 1;
+        float y = Math.max(0, Math.min(height - h, py - h / 2));
+        return new float[]{x, y, w, h};
+    }
+
+    /**
+     * If badge a overlaps badge b, moves a along the axis (0 = x, 1 = y) just
+     * beside b, on the side of its own center, or on the other side if it
+     * would leave the surface [0, limit]. Badges are {x, y, w, h}.
+     */
+    private static void separate(float[] a, float[] b, int axis, float limit) {
+        if (!overlap(a, b)) return;
+        int size = axis + 2;
+        float before = b[axis] - a[size] - 2, after = b[axis] + b[size] + 2;
+        boolean towardsAfter = a[axis] + a[size] / 2 >= b[axis] + b[size] / 2;
+        float position = towardsAfter ? after : before;
+        if (position < 0 || position + a[size] > limit) position = towardsAfter ? before : after;
+        a[axis] = Math.max(0, Math.min(limit - a[size], position));
+    }
+
+    private static boolean overlap(float[] a, float[] b) {
+        return a[0] < b[0] + b[2] && b[0] < a[0] + a[2] && a[1] < b[1] + b[3] && b[1] < a[1] + a[3];
+    }
+
+    /** Differences between the moving cursor and the static cursor, in a badge next to the moving cursor. */
+    private void drawDelta(GL2 gl, StaticCursor fixed) {
+        float[] moving = cursorPosition;
+        if (moving == null || cursorCurve == null) return;
+        String label = "\u0394x = " + formatCursorX(cursorCurve, moving[0] - fixed.x)
+                + "   \u0394y = " + CurrentValues.format(moving[1] - fixed.y);
+        ChartFont font = scaleFont;
+        float w = text.width(label, font) + 8, h = text.lineHeight(font) + 4;
+        // Above and to the right of the marker, kept inside the plot area
+        float x = Math.max(marginLeft + 1, Math.min(marginLeft + plotWidth - w - 1, cursorPixelX + 10));
+        float y = Math.max(marginBottom + 1, Math.min(marginBottom + plotHeight - h - 1, cursorPixelY + 10));
+        drawBadge(gl, label, font, new float[]{0.85f, 0.85f, 0.9f}, x, y, w, h);
+    }
+
+    /** Cursor axes across the plot area (dashed for the static cursor) and marker at the point (px, py). */
+    private void drawAxesAndMarker(GL2 gl, float px, float py, float[] c, boolean dashed) {
         float left = marginLeft, bottom = marginBottom, right = marginLeft + plotWidth, top = marginBottom + plotHeight;
-        float px = cursorPixelX, py = cursorPixelY;
-        float[] c = cursorColor;
 
         gl.glColor4f(c[0], c[1], c[2], 0.8f);
         gl.glLineWidth(1f);
+        if (dashed) {
+            gl.glEnable(GL2.GL_LINE_STIPPLE);
+            gl.glLineStipple(1, (short) 0x0F0F);
+        }
         gl.glBegin(GL2.GL_LINES);
         gl.glVertex2f(px, bottom);
         gl.glVertex2f(px, top);
         gl.glVertex2f(left, py);
         gl.glVertex2f(right, py);
         gl.glEnd();
+        if (dashed) gl.glDisable(GL2.GL_LINE_STIPPLE);
 
         // Marker at the designated point: filled square outlined with the background color
         gl.glColor3f(0.10f, 0.11f, 0.13f);
         gl.glRectf(px - 4, py - 4, px + 4, py + 4);
         gl.glColor3f(c[0], c[1], c[2]);
         gl.glRectf(px - 3, py - 3, px + 3, py + 3);
-
-        ChartFont font = scaleFont;
-        float h = text.lineHeight(font) + 4;
-        float wx = text.width(cursorLabelX, font) + 8;
-        float xBadge = Math.max(0, Math.min(width - wx, px - wx / 2));
-        float yBadge = (marginBottom >= h + 2) ? marginBottom - h - 1 : marginBottom + 1;
-        drawBadge(gl, cursorLabelX, font, c, xBadge, yBadge, wx, h);
-
-        float wy = text.width(cursorLabelY, font) + 8;
-        xBadge = (marginLeft >= wy + 2) ? marginLeft - wy - 1 : marginLeft + 1;
-        yBadge = Math.max(0, Math.min(height - h, py - h / 2));
-        drawBadge(gl, cursorLabelY, font, c, xBadge, yBadge, wy, h);
     }
 
     /** Badge: background in the curve color, text in the chart background color. */
@@ -487,6 +602,19 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         if (isUsable(window)) changeZoomWindow(current -> window, true);
     }
 
+    /**
+     * Left double click in cursor mode: the static cursor is placed (or moved)
+     * on the point designated by the cursor at the double click position, at
+     * the next frame.
+     */
+    @Override
+    public void doubleClick(int button, int x, int y, int width, int height) {
+        if (button != LEFT_BUTTON || !cursorEnabled || !supportsStaticCursor()) return;
+        mouseX = toPixelX(x, width);
+        mouseY = toPixelY(y, height);
+        staticCursorRequested = true;
+    }
+
     /** Mouse moved without a button: position stored for the cursor. */
     @Override
     public void move(int x, int y, int width, int height) {
@@ -579,8 +707,32 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
      */
     public void setCursorEnabled(boolean enabled) {
         if (enabled && !cursorEnabled) cursorCurveIndex = 0;
+        if (!enabled) staticCursor = null; // disabling the cursor also removes the static cursor
         cursorEnabled = enabled;
     }
+
+    /** Coordinates {x, y} of the static cursor (copy), or null if there is none. */
+    public float[] getStaticCursorPosition() {
+        StaticCursor fixed = staticCursor;
+        return (fixed != null) ? new float[]{(float) fixed.x, (float) fixed.y} : null;
+    }
+
+    /**
+     * Differences {Δx, Δy} between the moving cursor and the static cursor,
+     * or null if one of them is missing.
+     */
+    public float[] getCursorDelta() {
+        StaticCursor fixed = staticCursor;
+        float[] moving = cursorPosition;
+        if (fixed == null || moving == null) return null;
+        return new float[]{(float) (moving[0] - fixed.x), (float) (moving[1] - fixed.y)};
+    }
+
+    /** Removes the static cursor (the moving cursor remains). */
+    public void clearStaticCursor() { staticCursor = null; }
+
+    public void addStaticCursorListener(StaticCursorListener listener) { if (listener != null) staticCursorListeners.add(listener); }
+    public void removeStaticCursorListener(StaticCursorListener listener) { staticCursorListeners.remove(listener); }
 
     public boolean isCursorEnabled() { return cursorEnabled; }
 
@@ -613,6 +765,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
      */
     private void updateCursor() {
         cursorFound = false;
+        cursorCurve = null;
         float[] found = null;
         List<C> curves = frameCurves;
         if (cursorEnabled && mouseX >= 0 && !curves.isEmpty()) {
@@ -642,8 +795,13 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
                 cursorLabelX = formatCursorX(curve, bestX);
                 cursorLabelY = CurrentValues.format(bestY);
                 found = new float[]{(float) bestX, (float) bestY};
+                cursorCurve = curve;
+                if (staticCursorRequested) { // double click: the static cursor is placed on this point
+                    staticCursor = new StaticCursor(bestX, bestY, cursorColor, cursorLabelX, cursorLabelY);
+                }
             }
         }
+        staticCursorRequested = false;
         if (!Arrays.equals(found, cursorPosition)) {
             cursorPosition = found;
             for (CursorListener listener : cursorListeners) {
@@ -652,6 +810,29 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
                 } catch (RuntimeException e) {
                     e.printStackTrace(); // an error in a listener must not interrupt rendering
                 }
+            }
+        }
+        notifyStaticCursor(found);
+    }
+
+    /**
+     * Notifies the static cursor listeners when the static cursor is placed,
+     * moved or removed, or when the differences with the moving cursor
+     * (position found) change.
+     */
+    private void notifyStaticCursor(float[] moving) {
+        StaticCursor fixed = staticCursor;
+        float[] delta = (fixed != null && moving != null)
+                ? new float[]{(float) (moving[0] - fixed.x), (float) (moving[1] - fixed.y)} : null;
+        if (fixed == notifiedStaticCursor && Arrays.equals(delta, notifiedDelta)) return;
+        notifiedStaticCursor = fixed;
+        notifiedDelta = delta;
+        float[] position = (fixed != null) ? new float[]{(float) fixed.x, (float) fixed.y} : null;
+        for (StaticCursorListener listener : staticCursorListeners) {
+            try {
+                listener.staticCursorChanged((position != null) ? position.clone() : null, (delta != null) ? delta.clone() : null);
+            } catch (RuntimeException e) {
+                e.printStackTrace(); // an error in a listener must not interrupt rendering
             }
         }
     }

@@ -54,6 +54,12 @@ final class SWTGLHost extends GLHost {
                 Point size = canvas.getSize();
                 interaction.release(e.button, e.x, e.y, size.x, size.y);
             }
+
+            @Override
+            public void mouseDoubleClick(MouseEvent e) {
+                Point size = canvas.getSize();
+                interaction.doubleClick(e.button, e.x, e.y, size.x, size.y);
+            }
         });
 
         canvas.addMouseMoveListener(e -> {

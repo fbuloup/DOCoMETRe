@@ -108,4 +108,28 @@ public abstract class AbstractGLPlotChart<C extends CurveData<C>, R extends Plot
     public void removeCursorListener(CursorListener listener) {
         renderer.removeCursorListener(listener);
     }
+
+    /** Coordinates {x, y} of the static cursor (copy), or null if there is none (1D charts, double click in cursor mode). */
+    public float[] getStaticCursorPosition() {
+        return renderer.getStaticCursorPosition();
+    }
+
+    /** Differences {Δx, Δy} between the moving cursor and the static cursor, or null if one of them is missing. */
+    public float[] getCursorDelta() {
+        return renderer.getCursorDelta();
+    }
+
+    /** Removes the static cursor (the moving cursor remains). */
+    public void clearStaticCursor() {
+        renderer.clearStaticCursor();
+    }
+
+    /** Adds a static cursor listener (see {@link StaticCursorListener} for the calling thread). */
+    public void addStaticCursorListener(StaticCursorListener listener) {
+        renderer.addStaticCursorListener(listener);
+    }
+
+    public void removeStaticCursorListener(StaticCursorListener listener) {
+        renderer.removeStaticCursorListener(listener);
+    }
 }

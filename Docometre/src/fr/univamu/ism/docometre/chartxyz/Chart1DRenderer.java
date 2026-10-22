@@ -40,6 +40,10 @@ import com.jogamp.opengl.GL2;
  * resolution of the sampling frequency; in sweep mode, the samples of the
  * gap cannot be designated.
  *
+ * Static cursor: in cursor mode, a left double click freezes a static cursor
+ * on the designated sample; the differences Δx (time) and Δy between the
+ * two cursors are displayed next to the moving cursor (see {@link PlotRenderer}).
+ *
  * Keyboard commands specific to 1D: space, pause / resume; M, toggles sweep
  * / scroll (the zoom window is then removed). Pan (right button) moves the
  * view in x and y; in scroll mode, the shifted view keeps following the
@@ -188,6 +192,10 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
     /** The cursor follows the mouse abscissa: the sample at the same time, whatever its height. */
     @Override
     protected boolean cursorFollowsXOnly() { return true; }
+
+    /** The static cursor (double click in cursor mode) is available in 1D. */
+    @Override
+    protected boolean supportsStaticCursor() { return true; }
 
     /** In sweep mode, the samples of the gap are not drawn: the cursor ignores them. */
     @Override
@@ -440,6 +448,7 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
         this.displayMode = displayMode;
         panX = 0f; // the horizontal shift does not have the same meaning in both modes
         clearZoomWindow();
+        clearStaticCursor(); // its abscissa does not have the same meaning in both modes either
     }
     public DisplayMode getDisplayMode() { return displayMode; }
     /** Toggles between sweep (oscilloscope) and scroll. */
