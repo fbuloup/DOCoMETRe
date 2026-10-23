@@ -6,6 +6,8 @@ import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
 
+import fr.univamu.ism.docometre.Activator;
+
 /**
  * Base of all renderers: common initial OpenGL state (dark background,
  * smoothed lines, transparency), size of the drawing area, decorations
@@ -45,6 +47,7 @@ public abstract class GLChartRenderer implements GLEventListener, ChartInteracti
 		    glInfo = gl.glGetString(GL2.GL_RENDERER) + " (" + gl.glGetString(GL2.GL_VENDOR) + ") - "
 		            + drawable.getContext().getGLVersion();
 		    LOGGER.log(System.Logger.Level.INFO, "OpenGL : " + glInfo);
+		    Activator.logInfoMessage("OpenGL : " + glInfo, getClass());
 		}
         
         gl.glClearColor(0.10f, 0.11f, 0.13f, 1f);
