@@ -61,7 +61,8 @@ import com.jogamp.opengl.GLAutoDrawable;
  * identified by (curve, label): two curves can have groups with the same
  * label (they are distinct groups). A marker is drawn as a dotted vertical
  * line, a diamond on the point and the label at the foot of the line, on the
- * abscissa axis (no coordinates). In cursor mode, Ctrl + left double click
+ * abscissa axis (no coordinates), moved aside when a cursor label or another
+ * marker label occupies its place. In cursor mode, Ctrl + left double click
  * adds a marker with the current label ({@link #setCurrentMarkerLabel},
  * "Default" by default) on the point designated by the cursor, to the group
  * of the curve followed by the cursor; adding a marker that already exists
@@ -495,9 +496,8 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         float[] movingX = cursorFound ? xBadge(cursorLabelX, cursorPixelX, font, h) : null;
         float[] movingY = cursorFound ? yBadge(cursorLabelY, cursorPixelY, font, h) : null;
         if (fixedPixel != null) {
-            float[] fixedX = xBadge(fixed.labelX, fixedPixel[0], font, h);
+            float[] fixedX = fixedXBadge(fixed, fixedPixel, movingX, font, h);
             float[] fixedY = yBadge(fixed.labelY, fixedPixel[1], font, h);
-            if (movingX != null) separate(fixedX, movingX, 0, width);  // horizontal shift on the abscissa axis
             if (movingY != null) separate(fixedY, movingY, 1, height); // vertical shift on the ordinate axis
             drawBadge(gl, fixed.labelX, font, fixed.color, fixedX[0], fixedX[1], fixedX[2], fixedX[3]);
             drawBadge(gl, fixed.labelY, font, fixed.color, fixedY[0], fixedY[1], fixedY[2], fixedY[3]);
@@ -517,6 +517,61 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     }
 
     /** Badge {x, y, w, h} of an abscissa, centered under px, below the plot area. */
+    /** Abscissa badge of the static cursor, shifted horizontally if it overlaps the one of the moving cursor (movingX, or null). */
+    private float[] fixedXBadge(StaticCursor fixed, float[] fixedPixel, float[] movingX, ChartFont font, float h) {
+        float[] fixedX = xBadge(fixed.labelX, fixedPixel[0], font, h);
+        if (movingX != null) separate(fixedX, movingX, 0, width);
+        return fixedX;
+    }
+
+    /**
+     * Abscissa badges of the cursors, as drawCursors places them (moving
+     * cursor, then static cursor): the marker labels move aside to leave
+     * them visible.
+     */
+    private List<float[]> cursorXBadges(ChartFont font, float h) {
+        List<float[]> result = new ArrayList<>(2);
+        StaticCursor fixed = cursorEnabled ? staticCursor : null;
+        float[] fixedPixel = (fixed != null) ? toVisiblePixel(fixed.x, fixed.y) : null;
+        float[] movingX = cursorFound ? xBadge(cursorLabelX, cursorPixelX, font, h) : null;
+        if (movingX != null) result.add(movingX);
+        if (fixedPixel != null) result.add(fixedXBadge(fixed, fixedPixel, movingX, font, h));
+        return result;
+    }
+
+    /**
+     * Moves the badge rect horizontally to the free position closest to its
+     * own (overlapping none of the obstacles): candidates are its position
+     * and the positions just before and just after each obstacle. If there
+     * is no free position, the badge stays in place.
+     */
+    private void placeXBadge(float[] rect, List<float[]> obstacles) {
+        float origin = rect[0], best = origin, bestDistance = Float.POSITIVE_INFINITY;
+        float maxX = Math.max(0, width - rect[2]);
+        float[] candidates = new float[1 + 2 * obstacles.size()];
+        candidates[0] = origin;
+        for (int i = 0; i < obstacles.size(); i++) {
+            float[] o = obstacles.get(i);
+            candidates[2 * i + 1] = o[0] - rect[2] - 2;
+            candidates[2 * i + 2] = o[0] + o[2] + 2;
+        }
+        for (float candidate : candidates) {
+            if (candidate < 0 || candidate > maxX) continue;
+            float distance = Math.abs(candidate - origin);
+            if (distance >= bestDistance) continue;
+            rect[0] = candidate;
+            boolean free = true;
+            for (float[] o : obstacles) {
+                if (overlap(rect, o)) { free = false; break; }
+            }
+            if (free) {
+                best = candidate;
+                bestDistance = distance;
+            }
+        }
+        rect[0] = best;
+    }
+
     private float[] xBadge(String label, float px, ChartFont font, float h) {
         float w = text.width(label, font) + 8;
         float x = Math.max(0, Math.min(width - w, px - w / 2));
@@ -1198,9 +1253,10 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
 
     /**
      * Markers visible in the view: dotted vertical line and diamond in the
-     * color of their curve, label at the foot of the line (badges shifted
-     * horizontally when they overlap; those of the current label are
-     * outlined).
+     * color of their curve, label at the foot of the line (those of the
+     * current label are outlined). The cursor abscissa labels stay in place:
+     * the marker labels move horizontally to the nearest free position, to
+     * avoid them and each other.
      */
     private void drawMarkers(GL2 gl) {
         List<MarkerBadge> badges = new ArrayList<>();
@@ -1224,6 +1280,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         float h = text.lineHeight(font) + 4;
         String current = currentMarkerLabel;
         float bottom = marginBottom, top = marginBottom + plotHeight;
+        List<float[]> obstacles = cursorXBadges(font, h); // the cursor labels stay in place, the marker labels move aside
         for (int m = 0; m < markers.size(); m++) {
             Marker marker = markers.get(m);
             float[] c = colors.get(m);
@@ -1253,7 +1310,8 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
             }
 
             float[] rect = xBadge(marker.label, px, font, h);
-            for (MarkerBadge placed : badges) separate(rect, placed.rect, 0, width);
+            placeXBadge(rect, obstacles);
+            obstacles.add(rect);
             badges.add(new MarkerBadge(marker, c, rect));
         }
         for (MarkerBadge badge : badges) {
