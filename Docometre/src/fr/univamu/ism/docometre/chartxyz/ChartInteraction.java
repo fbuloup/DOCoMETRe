@@ -33,7 +33,7 @@ public interface ChartInteraction {
      */
     enum InputScale {
         SWT(0.5f, 0.1f),
-        NEWT(0.05f, 0.01f);
+        NEWT(0.5f, 0.1f);
 
         /** Rotation of the 3D camera, in degrees per pixel of displacement. */
         public final float degreesPerPixel;
