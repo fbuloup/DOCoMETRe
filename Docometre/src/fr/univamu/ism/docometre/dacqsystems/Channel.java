@@ -48,6 +48,13 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.ui.PlatformUI;
+
+import fr.univamu.ism.docometre.Activator;
+
 /**
  * This class represent a module channel 
  */
@@ -151,6 +158,25 @@ public abstract class Channel extends AbstractElement implements ChannelObservab
 	@Override
 	public int compareTo(Channel channel) {
 		return getProperty(ChannelProperties.NAME).compareTo(channel.getProperty(ChannelProperties.NAME));
+	}
+	
+	protected void deleteChannelFile(IFolder outputFolder, String fileName) {
+		IResource savedDataFile = outputFolder.findMember(fileName);
+		if(savedDataFile != null) {
+			PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+				@Override
+				public void run() {
+					Activator.closeEditor(savedDataFile);
+				}
+			});
+			try {
+				savedDataFile.delete(true, null);
+				savedDataFile.refreshLocal(IResource.DEPTH_ZERO, null);
+			} catch (CoreException e) {
+				Activator.logErrorMessageWithCause(e);
+				e.printStackTrace();
+			}
+		}
 	}
 	
 }
