@@ -12,19 +12,23 @@ import fr.univamu.ism.docometre.chartxyz.Chart1DRenderer;
 import fr.univamu.ism.docometre.chartxyz.Curve1DData;
 import fr.univamu.ism.docometre.chartxyz.Curve2DData;
 import fr.univamu.ism.docometre.chartxyz.Curve3DData;
+import fr.univamu.ism.docometre.chartxyz.GLChart1D;
+import fr.univamu.ism.docometre.chartxyz.GLChart2D;
+import fr.univamu.ism.docometre.chartxyz.GLChart3D;
+import fr.univamu.ism.docometre.chartxyz.GLToolkit;
 import fr.univamu.ism.docometre.chartxyz.LegendPosition;
 import fr.univamu.ism.docometre.chartxyz.LineStyle;
-import fr.univamu.ism.docometre.chartxyz.windows.Chart1D;
-import fr.univamu.ism.docometre.chartxyz.windows.Chart2D;
-import fr.univamu.ism.docometre.chartxyz.windows.Chart3D;
 
+/**
+ * Static chart test. Platform independent.
+ */
 public class StaticChartsTest {
 	
     public static void main(String[] args) {
     	
     	Display display = new Display();
         Shell shell = new Shell(display);
-        shell.setText("Static signals — SWT + JOGL");
+        shell.setText("Static signals — SWT + JOGL (Linux, Mac or Windows)");
         shell.setSize(1000, 500);
         shell.setLayout(new GridLayout(2, true));
     	
@@ -46,7 +50,7 @@ public class StaticChartsTest {
         Curve2DData circle = new Curve2DData(sf3).setName("circle").setLineStyle(LineStyle.DASH);
         circle.addSamples(dataCircleX, dataCircleY);
         // Chart
-        Chart2D graph2D = new Chart2D(shell, wtw2, lissajous, circle);
+        GLChart2D graph2D = new GLChart2D(shell, GLToolkit.platformDefault(), wtw2, lissajous, circle);
         graph2D.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         graph2D.setLegendPosition(LegendPosition.BELOW); // legend below the abscissa axis
 
@@ -70,7 +74,7 @@ public class StaticChartsTest {
         spiral.addSamples(spiralX,  spiralY, spiralZ);
         helix.addSamples(helixX, helixY, helixZ);
         // Chart
-        Chart3D graph3D = new Chart3D(shell, wtw3, spiral, helix);
+        GLChart3D graph3D = new GLChart3D(shell, GLToolkit.platformDefault(), wtw3, spiral, helix);
         graph3D.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         graph3D.setLegendFont(null, 11, SWT.BOLD); // system font, bold
         
@@ -96,7 +100,7 @@ public class StaticChartsTest {
         Curve1DData noisy = new Curve1DData(sf1, dataNoisy).setName("7 Hz sine + noise").setLineWidth(1);
         Curve1DData drift = new Curve1DData(sf2, dataDrift).setName("drift (100 Hz)").setLineWidth(2).setLineStyle(LineStyle.DASH_DOT);
         // Chart
-        Chart1D graph1D = new Chart1D(shell, wtw1, sine, noisy, drift);
+        GLChart1D graph1D = new GLChart1D(shell, GLToolkit.platformDefault(), wtw1, sine, noisy, drift);
         // Very important because the sweep mode removes some points in front of the write cursor
         graph1D.setDisplayMode(Chart1DRenderer.DisplayMode.SCROLL); 
         graph1D.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
