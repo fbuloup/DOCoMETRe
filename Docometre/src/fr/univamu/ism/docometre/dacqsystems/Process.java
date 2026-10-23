@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.log4j.Appender;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
@@ -234,7 +235,7 @@ public abstract class Process extends AbstractElement implements ModuleBehaviour
 				String message = NLS.bind(DocometreMessages.OutputFolderStillExists, outputFolder.getFullPath().toOSString());
 				throw new IOException(message + " still exists !");
 			}
-			if(!outputFolder.exists()) {
+			if(outputFolder == null || !outputFolder.exists()) {
 				outputFolder = ((IContainer)parent).getFolder(new Path("test." + resource.getName().replaceAll(Activator.processFileExtension, "")));
 				((IFolder)outputFolder).create(true, true, null);
 				ResourceProperties.setTypePersistentProperty(outputFolder, ResourceType.PROCESS_TEST.toString());
@@ -278,7 +279,9 @@ public abstract class Process extends AbstractElement implements ModuleBehaviour
 	
 	private void refreshLogFile(IResource resource) throws Exception {
 		Logger logger = Logger.getLogger(Process.class);
-		logger.getAppender(resource.getFullPath().toOSString() + " Diary").close();
+		if(logger == null) return;
+		Appender appender = logger.getAppender(resource.getFullPath().toOSString() + " Diary");
+		if(appender != null) appender.close();
 		IResource parent = resource;
 		String fileName = DocometreMessages.Diary + Activator.logFileExtension;
 		if(ResourceType.isProcess(resource)) {
