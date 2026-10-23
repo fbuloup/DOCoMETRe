@@ -234,12 +234,22 @@ public class Chart3DRenderer extends CurveChartRenderer<Curve3DData> {
         camera.wheel(amount, scale);
     }
 
-    public void rotate(float deltaX, float deltaY) { camera.rotate(deltaX, deltaY); }
-    public void pan(float deltaX, float deltaY) { camera.pan(deltaX, deltaY, bounds.radius); }
-    public void zoom(float amount) { camera.zoom(amount); }
+    public void rotate(float deltaX, float deltaY) { 
+    	camera.rotate(deltaX, deltaY); 
+    }
+    
+    public void pan(float deltaX, float deltaY) { 
+    	camera.pan(deltaX, deltaY, bounds.radius); 
+    }
+    
+    public void zoom(float amount) { 
+    	camera.zoom(amount); 
+    }
 
     @Override
-    public void resetView() { camera.reset(); }
+    public void resetView() { 
+    	camera.reset(); 
+    }
 
     /**
      * Fixed scales: the reference box and the tick labels go exactly from
