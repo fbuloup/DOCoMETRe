@@ -163,6 +163,7 @@ public class RunStopHandler extends AbstractHandler implements IElementUpdater, 
 		else stop = true;
 		boolean stopNow = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.STOP_TRIAL_NOW);
 		if(!stopNow && stop) {
+			if(!ExperimentScheduler.getInstance().isRunning()) return;
 			enabled = false;
 			refreshCommand();
 			ApplicationActionBarAdvisor.pausePendingContributionItem.setText(DocometreMessages.PausePending);
