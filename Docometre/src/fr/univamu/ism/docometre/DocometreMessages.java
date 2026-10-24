@@ -428,6 +428,7 @@ public final class DocometreMessages extends NLS {
 	public static String ImageChartFileNameLabel;
 	public static String ImageChartFileNameTooltip;
 	public static String ImpossibleToCreate3DChartMessage;
+	public static String DifferentSampleFrequencies;
 	
 	public static String rangeMaxAmplitude_Title;
 	public static String rangeMaxAmplitude_Tooltip;

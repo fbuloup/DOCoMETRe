@@ -75,6 +75,7 @@ import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.chartxyz.editors.GLChannelEditor;
 import fr.univamu.ism.docometre.chartxyz.editors.GLDataEditor;
 import fr.univamu.ism.docometre.chartxyz.editors.GLXYChartEditor;
+import fr.univamu.ism.docometre.chartxyz.editors.GLXYZChartEditor;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ui.dacqconfigurationeditor.ADWinDACQConfigurationEditor;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor.ADWinProcessEditor;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.dacqconfigurationeditor.ArduinoUnoDACQConfigurationEditor;
@@ -177,7 +178,10 @@ public class OpenEditorAction extends Action implements ISelectionListener, IWor
 					else editorID = XYChartEditor.ID;
 				}
 				
-				if(ResourceType.isXYZChart(resource)) editorID = XYZChartEditor.ID;
+				if(ResourceType.isXYZChart(resource)) {
+					if(Activator.useOpenGLV2()) editorID = GLXYZChartEditor.ID;
+					else editorID = XYZChartEditor.ID;
+				}
 				
 				if(ResourceType.isCustomerFunction(resource)) openEditor(resource, CustomerFunctionEditor.ID);
 				else if(ResourceType.isFunction(resource)) openEditor(resource, CustomerFunctionEditor.ID);

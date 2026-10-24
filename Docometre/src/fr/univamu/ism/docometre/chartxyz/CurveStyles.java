@@ -111,6 +111,17 @@ public final class CurveStyles {
      * oldest, 1 = most recent): blue -> orange gradient if gradient, otherwise
      * the curve color, fading towards the old samples if fading.
      */
+    /** Circle of radius r centered on (x, y), in pixels: filled (GL_POLYGON) or outline (GL_LINE_LOOP). */
+    static void drawCircle(GL2 gl, int mode, float x, float y, float r) {
+        int segments = 24;
+        gl.glBegin(mode);
+        for (int i = 0; i < segments; i++) {
+            double a = 2 * Math.PI * i / segments;
+            gl.glVertex2f(x + (float) (r * Math.cos(a)), y + (float) (r * Math.sin(a)));
+        }
+        gl.glEnd();
+    }
+
     static void vertexColor(GL2 gl, boolean gradient, boolean fading, float[] color, float t) {
         if (gradient) {
             gl.glColor3f(0.2f + 0.8f * t, 0.55f + 0.25f * (1 - t), 1.0f - 0.8f * t);

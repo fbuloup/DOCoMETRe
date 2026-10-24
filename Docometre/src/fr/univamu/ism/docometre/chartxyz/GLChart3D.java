@@ -8,6 +8,25 @@ import org.eclipse.swt.widgets.Composite;
 public class GLChart3D extends AbstractGLChart<Curve3DData, Chart3DRenderer> implements IRTSWTXYZChart {
 
     /**
+     * Creates the chart with the default toolkit of the platform and dynamic
+     * scales (see {@link #GLChart3D(Composite, GLToolkit, double, Curve3DData...)}).
+     *
+     * @param historySize history duration (length of the trails), in seconds, imposed on all the curves
+     */
+    public static GLChart3D createChart(Composite container, double historySize, Curve3DData... curves) {
+        return new GLChart3D(container, GLToolkit.platformDefault(), historySize, curves);
+    }
+
+    /**
+     * Creates the chart with the default toolkit of the platform and dynamic
+     * scales; each curve keeps its own history duration (static data, for
+     * example: see {@link #GLChart3D(Composite, GLToolkit, Curve3DData...)}).
+     */
+    public static GLChart3D createChart(Composite container, Curve3DData... curves) {
+        return new GLChart3D(container, GLToolkit.platformDefault(), curves);
+    }
+
+    /**
      * Creates the chart with dynamic scales, continuously fitted to the curve values.
      *
      * @param historySize history duration (length of the trails), in seconds, imposed on all the curves
@@ -58,6 +77,86 @@ public class GLChart3D extends AbstractGLChart<Curve3DData, Chart3DRenderer> imp
     /** Fixed scales for the x, y and z axes (see the corresponding constructor). */
     public void setFixedScales(double xMin, double xMax, double yMin, double yMax, double zMin, double zMax) {
         renderer.setFixedScales(xMin, xMax, yMin, yMax, zMin, zMax);
+    }
+
+    /** Bounds of the displayed box {xMin, xMax, yMin, yMax, zMin, zMax} (last frame, copy), or null before the first frame. */
+    public double[] getBounds() {
+        return renderer.getBounds();
+    }
+
+    // --- Markers ---
+
+    /** Adds markers {x, y, z} to the group (curve, label) (see {@link Chart3DRenderer#addMarkersGroup}). */
+    public void addMarkersGroup(Curve3DData curve, String label, double[][] coordinates) {
+        renderer.addMarkersGroup(curve, label, coordinates);
+    }
+
+    public boolean removeMarkersGroup(Curve3DData curve, String label) {
+        return renderer.removeMarkersGroup(curve, label);
+    }
+
+    public void clearMarkers(Curve3DData curve) {
+        renderer.clearMarkers(curve);
+    }
+
+    public java.util.List<Curve3DData> getMarkersCurves() {
+        return renderer.getMarkersCurves();
+    }
+
+    public java.util.List<String> getMarkersLabels(Curve3DData curve) {
+        return renderer.getMarkersLabels(curve);
+    }
+
+    public double[][] getMarkersGroup(Curve3DData curve, String label) {
+        return renderer.getMarkersGroup(curve, label);
+    }
+
+    /** Shows (default) or hides all the markers (they are kept). */
+    public void setMarkersVisible(boolean visible) {
+        renderer.setMarkersVisible(visible);
+    }
+
+    public boolean isMarkersVisible() {
+        return renderer.isMarkersVisible();
+    }
+
+    /** Shows (default) or hides the marker labels (the circles remain). */
+    public void setMarkerLabelsVisible(boolean visible) {
+        renderer.setMarkerLabelsVisible(visible);
+    }
+
+    public boolean isMarkerLabelsVisible() {
+        return renderer.isMarkerLabelsVisible();
+    }
+
+    /** Radius of the marker circles, in pixels (5 by default). */
+    public void setMarkerSize(int size) {
+        renderer.setMarkerSize(size);
+    }
+
+    public int getMarkerSize() {
+        return renderer.getMarkerSize();
+    }
+
+    // --- Camera ---
+
+    /** Camera state, to save and restore a point of view (see {@link OrbitCamera#getState()}). */
+    public float[] getCameraState() {
+        return renderer.getCameraState();
+    }
+
+    /** Restores a camera state given by {@link #getCameraState()}. */
+    public void setCameraState(float[] state) {
+        renderer.setCameraState(state);
+    }
+
+    /** Adds a camera listener (see {@link CameraListener} for the calling thread). */
+    public void addCameraListener(CameraListener listener) {
+        renderer.addCameraListener(listener);
+    }
+
+    public void removeCameraListener(CameraListener listener) {
+        renderer.removeCameraListener(listener);
     }
 
     // --- IRTSWTXYZChart ---

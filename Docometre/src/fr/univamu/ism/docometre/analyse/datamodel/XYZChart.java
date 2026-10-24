@@ -69,6 +69,7 @@ public class XYZChart extends XYChart {
 	private String zAxisGridStyle;
 	private RGB zAxisGridColor;
 	private Coord3d viewPoint;
+	private float[] cameraState; // point of view of GLXYZChartEditor (chartxyz OrbitCamera state), null: default view
 	
 	
 	public XYZChart() {
@@ -233,6 +234,19 @@ public class XYZChart extends XYChart {
 	
 	public Coord3d getViewPoint() {
 		return viewPoint;
+	}
+	
+	/**
+	 * Point of view of GLXYZChartEditor: state of the chartxyz camera (see
+	 * OrbitCamera.getState()), or null for the default point of view (charts
+	 * saved before this field existed).
+	 */
+	public float[] getCameraState() {
+		return (cameraState != null) ? cameraState.clone() : null;
+	}
+	
+	public void setCameraState(float[] cameraState) {
+		this.cameraState = (cameraState != null) ? cameraState.clone() : null;
 	}
 	
 }

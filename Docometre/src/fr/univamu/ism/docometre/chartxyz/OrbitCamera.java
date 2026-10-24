@@ -129,6 +129,34 @@ public final class OrbitCamera {
     /** Pan (x, y) applied in front of the rotations, in data units (for the tests). */
     float[] getPan() { return new float[]{panX, panY}; }
 
+    /** Number of values of a camera state (see {@link #getState()}). */
+    public static final int STATE_LENGTH = 5;
+
+    /**
+     * State of the camera, to save and restore a point of view:
+     * {tilt (degrees), rotation around the vertical axis (degrees), distance
+     * factor (distance / bounding radius), pan x, pan y (data units)}.
+     */
+    public float[] getState() {
+        return new float[]{rotationX, rotationY, distanceFactor, panX, panY};
+    }
+
+    /**
+     * Restores a state given by {@link #getState()} (the tilt and the
+     * distance are limited as with the mouse).
+     *
+     * @throws IllegalArgumentException if the state is null, has not {@link #STATE_LENGTH} values or a value is not finite
+     */
+    public void setState(float[] state) {
+        if (state == null || state.length != STATE_LENGTH) throw new IllegalArgumentException("A camera state has " + STATE_LENGTH + " values.");
+        for (float value : state) if (!Float.isFinite(value)) throw new IllegalArgumentException("Camera state not finite.");
+        rotationX = Math.max(-89f, Math.min(89f, state[0]));
+        rotationY = state[1];
+        distanceFactor = Math.max(0.5f, Math.min(20f, state[2]));
+        panX = state[3];
+        panY = state[4];
+    }
+
     public void zoom(float amount) {
         distanceFactor += amount;
         distanceFactor = Math.max(0.5f, Math.min(20f, distanceFactor));

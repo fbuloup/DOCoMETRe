@@ -322,6 +322,14 @@ public abstract class CurveChartRenderer<C extends CurveData<C>> extends GLChart
         }
     }
 
+    /** Badge: background in the curve color, text in the chart background color (coordinates in pixels). */
+    protected void drawBadge(GL2 gl, String label, ChartFont font, float[] color, float x, float y, float w, float h) {
+        gl.glColor4f(color[0], color[1], color[2], 0.95f);
+        gl.glRectf(x, y, x + w, y + h);
+        gl.glColor3f(0.10f, 0.11f, 0.13f);
+        text.draw(gl, label, font, x + 4, y + 2);
+    }
+
     /** Reduction applied if it is enabled, if the points are not displayed and if the curve has more than minCount points. */
     protected boolean useDecimation(int pointCount, int minCount) {
         return decimationEnabled && !showPoints && pointCount > minCount;

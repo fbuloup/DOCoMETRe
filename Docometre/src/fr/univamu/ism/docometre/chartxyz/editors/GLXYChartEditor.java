@@ -13,6 +13,7 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelection;
@@ -53,6 +54,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
 
+import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.GetResourceLabelDelegate;
@@ -130,6 +132,7 @@ public class GLXYChartEditor extends EditorPart implements ISelectionChangedList
 	private ListViewer trialsListViewer;
 	private GLChart2D chart;
 	private final Map<String, Series> seriesMap = new LinkedHashMap<>(); // series of the chart by curve name, in creation order
+	private final Set<String> frequencyErrors = new HashSet<>(); // keys whose error of sampling frequencies has been logged
 	private Text xMinText;
 	private Text xMaxText;
 	private Text yMinText;
@@ -237,6 +240,11 @@ public class GLXYChartEditor extends EditorPart implements ISelectionChangedList
 						Object[] items = ((IStructuredSelection)selection).toArray();
 						Channel xSignal = (Channel)items[0];
 						Channel ySignal = (Channel)items[1];
+						String error = SampleFrequencies.check(xSignal, ySignal);
+						if(error != null) {
+							MessageDialog.openError(container.getShell(), DocometreMessages.AddCurvesDialog_ShellTitle, error);
+							return;
+						}
 						xyChartData.addCurve(xSignal, ySignal);
 						setDirty(true);
 						refreshTrialsListFrontEndCutsCategories();
@@ -720,6 +728,7 @@ public class GLXYChartEditor extends EditorPart implements ISelectionChangedList
 		Set<String> keys = xyChartData.getCurvesIDs();
 		for (String key : keys) {
 			Channel[] channels = xyChartData.getXYChannels(key);
+			if(!sameSampleFrequencies(key, channels)) continue;
 			MathEngine mathEngine = MathEngineFactory.getMathEngine();
 			double[] xValues;
 			if(channels[0] instanceof TimeChannel) xValues = ((TimeChannel)channels[0]).getValues(trialNumber);
@@ -744,6 +753,18 @@ public class GLXYChartEditor extends EditorPart implements ISelectionChangedList
 			seriesMap.put(seriesID, series);
 			updateChartMarkers(curve, series);
 		}
+	}
+
+	/**
+	 * True if the signals of the curve have the same sampling frequency;
+	 * otherwise (chart saved before the check), the curve is not displayed
+	 * and the error is logged once.
+	 */
+	private boolean sameSampleFrequencies(String key, Channel[] channels) {
+		String error = SampleFrequencies.check(channels);
+		if(error == null) return true;
+		if(frequencyErrors.add(key)) Activator.logErrorMessage(error);
+		return false;
 	}
 
 	/**

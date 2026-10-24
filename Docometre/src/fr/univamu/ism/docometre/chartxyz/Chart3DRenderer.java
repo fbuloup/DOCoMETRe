@@ -7,7 +7,11 @@ import com.jogamp.opengl.glu.GLU;
 import org.eclipse.swt.SWT;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * OpenGL rendering of one or several real-time 3D curves ({@link Curve3DData}),
@@ -19,6 +23,19 @@ import java.util.List;
  * produce incorrect rendering on some configurations. The labels are
  * projected on screen while the scene is drawn, then drawn in a final 2D
  * pass.
+ *
+ * Markers: points identified by a label and placed on a curve, whose color
+ * they take; the markers of a curve with the same label form a group
+ * (curve, label). They are only displayed (no mouse action): a circle filled
+ * in white, outlined in the color of the curve, drawn over the scene, with
+ * the label next to it ({@link #addMarkersGroup}, {@link #setMarkersVisible},
+ * {@link #setMarkerLabelsVisible}, {@link #setMarkerSize}). Removing a curve
+ * removes its markers. With fixed scales, the markers outside the box are
+ * not drawn.
+ *
+ * The camera state ({@link #getCameraState}, {@link #setCameraState}) allows
+ * a point of view to be saved and restored; {@link CameraListener}s are told
+ * about its changes.
  */
 public class Chart3DRenderer extends CurveChartRenderer<Curve3DData> {
 
@@ -49,6 +66,18 @@ public class Chart3DRenderer extends CurveChartRenderer<Curve3DData> {
     private BoundingBox bounds = BoundingBox.DEFAULT;
     private double[] frameFixedScales; // fixed scales frozen for the current frame
     private float aspect = 1f;         // width / height of the drawing area
+    private volatile double[] displayedBounds; // bounds of the last frame {xMin, xMax, yMin, yMax, zMin, zMax}
+
+    // Markers: groups by curve, then by label in creation order ({x, y, z} each); guarded by markersLock
+    private final Map<Curve3DData, Map<String, List<double[]>>> markerGroups = new LinkedHashMap<>();
+    private final Object markersLock = new Object();
+    private volatile boolean markersVisible = true;
+    private volatile boolean markerLabelsVisible = true;
+    private volatile int markerSize = PlotRenderer.DEFAULT_MARKER_SIZE;
+
+    // Camera: listeners, and state of the previous frame (rendering thread only; null before the first frame)
+    private final List<CameraListener> cameraListeners = new CopyOnWriteArrayList<>();
+    private float[] previousCameraState;
 
     /**
      * @param historySize history duration (length of the trails), in seconds, imposed on all the curves
@@ -86,6 +115,8 @@ public class Chart3DRenderer extends CurveChartRenderer<Curve3DData> {
         labels.clear();
         snapshotCurves();
         computeBounds();
+        displayedBounds = new double[]{bounds.minX, bounds.maxX, bounds.minY, bounds.maxY, bounds.minZ, bounds.maxZ};
+        notifyCamera();
 
         // The projection depends on the bounding radius, which varies in real time:
         // it is therefore recomputed at each frame (and not only in reshape()).
@@ -216,10 +247,193 @@ public class Chart3DRenderer extends CurveChartRenderer<Curve3DData> {
             gl.glColor4f(label.color[0], label.color[1], label.color[2], label.color[3]);
             text.draw(gl, label.text, label.font, (float) label.x, (float) label.y);
         }
+        drawMarkers(gl);
         if (showLegend) CurveStyles.drawLegend(gl, text, legendFont, frameCurves, 16, height - 10);
         drawFps(gl, width - 10, 8);
         drawCurrentValues(gl, width - 10, height - 10);
         gl.glEnable(GL2.GL_DEPTH_TEST);
+    }
+
+    // --- Bounds ---
+
+    /**
+     * Bounds of the box displayed by the last frame (data or fixed scales)
+     * {xMin, xMax, yMin, yMax, zMin, zMax} (copy), or null before the first
+     * frame.
+     */
+    public double[] getBounds() {
+        double[] b = displayedBounds;
+        return (b != null) ? b.clone() : null;
+    }
+
+    // --- Markers ---
+
+    /**
+     * Adds markers to the group (curve, label), which is created if needed
+     * (markers already present are skipped).
+     *
+     * @param coordinates coordinates {x, y, z} of each marker, in data units
+     * @throws IllegalArgumentException if the curve is not in the chart, the label is empty or a marker has not 3 coordinates
+     */
+    public void addMarkersGroup(Curve3DData curve, String label, double[][] coordinates) {
+        if (label == null || label.trim().isEmpty()) throw new IllegalArgumentException("The marker label cannot be empty.");
+        for (double[] xyz : coordinates) {
+            if (xyz == null || xyz.length != 3) throw new IllegalArgumentException("A 3D marker has 3 coordinates.");
+        }
+        synchronized (markersLock) {
+            if (curve == null || !getCurves().contains(curve)) throw new IllegalArgumentException("The curve is not in the chart.");
+            List<double[]> group = markerGroups.computeIfAbsent(curve, c -> new LinkedHashMap<>()).computeIfAbsent(label, l -> new ArrayList<>());
+            for (double[] xyz : coordinates) {
+                boolean present = false;
+                for (double[] marker : group) present |= Arrays.equals(marker, xyz);
+                if (!present) group.add(xyz.clone());
+            }
+        }
+    }
+
+    /** Removes the group (curve, label); false if it does not exist. */
+    public boolean removeMarkersGroup(Curve3DData curve, String label) {
+        synchronized (markersLock) {
+            Map<String, List<double[]>> groups = markerGroups.get(curve);
+            if (groups == null || groups.remove(label) == null) return false;
+            if (groups.isEmpty()) markerGroups.remove(curve);
+            return true;
+        }
+    }
+
+    /** Removes all the markers of the curve. */
+    public void clearMarkers(Curve3DData curve) {
+        synchronized (markersLock) {
+            markerGroups.remove(curve);
+        }
+    }
+
+    /** Curves that have markers. */
+    public List<Curve3DData> getMarkersCurves() {
+        synchronized (markersLock) {
+            return new ArrayList<>(markerGroups.keySet());
+        }
+    }
+
+    /** Labels of the marker groups of the curve, in creation order. */
+    public List<String> getMarkersLabels(Curve3DData curve) {
+        synchronized (markersLock) {
+            Map<String, List<double[]>> groups = markerGroups.get(curve);
+            return (groups != null) ? new ArrayList<>(groups.keySet()) : new ArrayList<>();
+        }
+    }
+
+    /** Coordinates {x, y, z} of the markers of the group (curve, label) (copy), or null if there is no such group. */
+    public double[][] getMarkersGroup(Curve3DData curve, String label) {
+        synchronized (markersLock) {
+            Map<String, List<double[]>> groups = markerGroups.get(curve);
+            List<double[]> group = (groups != null) ? groups.get(label) : null;
+            if (group == null) return null;
+            double[][] coordinates = new double[group.size()][];
+            for (int i = 0; i < coordinates.length; i++) coordinates[i] = group.get(i).clone();
+            return coordinates;
+        }
+    }
+
+    /** The markers of a removed curve are removed. */
+    @Override
+    protected void curveRemoved(Curve3DData curve, int index) {
+        super.curveRemoved(curve, index);
+        clearMarkers(curve);
+    }
+
+    /** Shows (default) or hides all the markers (they are kept). Usable from any thread. */
+    public void setMarkersVisible(boolean visible) { markersVisible = visible; }
+    public boolean isMarkersVisible() { return markersVisible; }
+
+    /** Shows (default) or hides the marker labels (the circles remain). Usable from any thread. */
+    public void setMarkerLabelsVisible(boolean visible) { markerLabelsVisible = visible; }
+    public boolean isMarkerLabelsVisible() { return markerLabelsVisible; }
+
+    /** Radius of the marker circles, in pixels (5 by default, limited to [1, 50]). Usable from any thread. */
+    public void setMarkerSize(int size) { markerSize = Math.max(1, Math.min(50, size)); }
+    public int getMarkerSize() { return markerSize; }
+
+    /**
+     * Markers of the curves of the frame, over the scene (2D pass, in
+     * pixels): circle filled in white and outlined in the curve color, label
+     * next to the point, below on the right.
+     */
+    private void drawMarkers(GL2 gl) {
+        if (!markersVisible) return;
+        List<double[]> points = new ArrayList<>();
+        List<String> names = new ArrayList<>();
+        List<float[]> colors = new ArrayList<>();
+        synchronized (markersLock) {
+            for (Curve3DData curve : frameCurves) { // curves of the frame: those removed since are not drawn
+                Map<String, List<double[]>> groups = markerGroups.get(curve);
+                if (groups == null) continue;
+                float[] color = CurveStyles.colorOf(curve);
+                for (Map.Entry<String, List<double[]>> group : groups.entrySet()) {
+                    for (double[] marker : group.getValue()) {
+                        points.add(marker);
+                        names.add(group.getKey());
+                        colors.add(color);
+                    }
+                }
+            }
+        }
+        double[] f = frameFixedScales;
+        float r = markerSize;
+        ChartFont font = scaleFont;
+        float h = text.lineHeight(font) + 4;
+        double[] screen = new double[2];
+        for (int m = 0; m < points.size(); m++) {
+            double[] p = points.get(m);
+            if (f != null && (p[0] < f[0] || p[0] > f[1] || p[1] < f[2] || p[1] > f[3] || p[2] < f[4] || p[2] > f[5])) continue; // outside the box
+            if (!project((float) p[0], (float) p[1], (float) p[2], screen)) continue; // behind the camera
+            float px = (float) screen[0], py = (float) screen[1];
+            float[] c = colors.get(m);
+            gl.glColor3f(1f, 1f, 1f);
+            CurveStyles.drawCircle(gl, GL2.GL_POLYGON, px, py, r);
+            gl.glColor3f(c[0], c[1], c[2]);
+            gl.glLineWidth(1.5f);
+            CurveStyles.drawCircle(gl, GL2.GL_LINE_LOOP, px, py, r);
+            gl.glLineWidth(1f);
+            if (markerLabelsVisible) {
+                String label = names.get(m);
+                drawBadge(gl, label, font, c, px + r + 1, py - r - h, text.width(label, font) + 8, h);
+            }
+        }
+    }
+
+    // --- Camera ---
+
+    /**
+     * Camera state, to save and restore a point of view (see
+     * {@link OrbitCamera#getState()}).
+     */
+    public float[] getCameraState() { return camera.getState(); }
+
+    /**
+     * Restores a camera state given by {@link #getCameraState()}.
+     *
+     * @throws IllegalArgumentException if the state is not valid (see {@link OrbitCamera#setState})
+     */
+    public void setCameraState(float[] state) { camera.setState(state); }
+
+    /** Adds a camera listener (see {@link CameraListener} for the calling thread). */
+    public void addCameraListener(CameraListener listener) { if (listener != null) cameraListeners.add(listener); }
+    public void removeCameraListener(CameraListener listener) { cameraListeners.remove(listener); }
+
+    /** Notifies the camera listeners if the camera changed since the previous frame (not at the first frame). */
+    private void notifyCamera() {
+        float[] state = camera.getState();
+        float[] previous = previousCameraState;
+        previousCameraState = state;
+        if (previous == null || Arrays.equals(previous, state)) return;
+        for (CameraListener listener : cameraListeners) {
+            try {
+                listener.cameraChanged(state.clone());
+            } catch (RuntimeException e) {
+                e.printStackTrace(); // an error in a listener must not interrupt rendering
+            }
+        }
     }
 
     // --- Navigation ---

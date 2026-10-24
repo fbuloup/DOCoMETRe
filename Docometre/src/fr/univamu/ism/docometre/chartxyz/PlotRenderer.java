@@ -730,14 +730,6 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         gl.glRectf(px - 3, py - 3, px + 3, py + 3);
     }
 
-    /** Badge: background in the curve color, text in the chart background color. */
-    private void drawBadge(GL2 gl, String label, ChartFont font, float[] color, float x, float y, float w, float h) {
-        gl.glColor4f(color[0], color[1], color[2], 0.95f);
-        gl.glRectf(x, y, x + w, y + h);
-        gl.glColor3f(0.10f, 0.11f, 0.13f);
-        text.draw(gl, label, font, x + 4, y + 2);
-    }
-
     /** Zoom rectangle being drawn: translucent background and outline (coordinates in pixels). */
     private void drawSelection(GL2 gl) {
         float x0 = Math.min(selectionX0, selectionX1), x1 = Math.max(selectionX0, selectionX1);
@@ -1670,10 +1662,10 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
             boolean isSelected = selected != null && marker.matches(selected.curve, selected.label, selected.x, selected.y);
             float r = markerSize + (isSelected ? 2 : 0);
             gl.glColor3f(1f, 1f, 1f);
-            drawCircle(gl, GL2.GL_POLYGON, px, py, r);
+            CurveStyles.drawCircle(gl, GL2.GL_POLYGON, px, py, r);
             gl.glColor3f(c[0], c[1], c[2]);
             gl.glLineWidth(isSelected ? 3f : 1.5f);
-            drawCircle(gl, GL2.GL_LINE_LOOP, px, py, r);
+            CurveStyles.drawCircle(gl, GL2.GL_LINE_LOOP, px, py, r);
             gl.glLineWidth(1f);
             if (!labels) continue;
             float w = text.width(marker.label, font) + 8;
@@ -1688,17 +1680,6 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         }
         if (selectedBadge != null) drawMarkerBadge(gl, selectedBadge, font, 2.5f); // above the others
         markerBadges = badges;
-    }
-
-    /** Circle of radius r centered on (x, y), in pixels: filled (GL_POLYGON) or outline (GL_LINE_LOOP). */
-    private static void drawCircle(GL2 gl, int mode, float x, float y, float r) {
-        int segments = 24;
-        gl.glBegin(mode);
-        for (int i = 0; i < segments; i++) {
-            double a = 2 * Math.PI * i / segments;
-            gl.glVertex2f(x + (float) (r * Math.cos(a)), y + (float) (r * Math.sin(a)));
-        }
-        gl.glEnd();
     }
 
     /** Label of a marker, outlined in white if outline > 0 (line width: 1 for the current label, thicker for the selected marker). */
