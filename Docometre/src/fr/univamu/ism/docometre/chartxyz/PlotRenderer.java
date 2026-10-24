@@ -964,7 +964,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
                 cursorFound = true;
                 cursorPixelX = (float) (marginLeft + (bestX - viewMinX) * scaleX);
                 cursorPixelY = (float) (marginBottom + (bestY - viewMinY) * scaleY);
-                cursorColor = CurveStyles.colorOf(curve, index);
+                cursorColor = CurveStyles.colorOf(curve);
                 cursorLabelX = formatCursorX(curve, bestX);
                 cursorLabelY = CurrentValues.format(bestY);
                 found = new float[]{(float) bestX, (float) bestY};
@@ -1267,7 +1267,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
             for (int k = 0; k < curves.size(); k++) { // curves of the frame: those removed since are not drawn
                 Map<String, List<Marker>> groups = markerGroups.get(curves.get(k));
                 if (groups == null) continue;
-                float[] color = CurveStyles.colorOf(curves.get(k), k);
+                float[] color = CurveStyles.colorOf(curves.get(k));
                 for (List<Marker> group : groups.values()) {
                     for (Marker marker : group) {
                         markers.add(marker);

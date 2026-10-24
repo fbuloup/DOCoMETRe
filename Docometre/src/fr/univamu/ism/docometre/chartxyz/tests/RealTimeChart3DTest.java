@@ -30,8 +30,8 @@ public class RealTimeChart3DTest {
 
         GLChart3D chart = new GLChart3D(shell, toolkit, WINDOW_TIME_WIDTH);
 
-        Curve3DData spiral = new Curve3DData(SAMPLE_FREQUENCY).setName("spiral");
-        Curve3DData helix = new Curve3DData(SAMPLE_FREQUENCY).setName("helix").setLineStyle(LineStyle.DASH_DASH_DOT).setLineWidth(2);
+        Curve3DData spiral = new Curve3DData("spiral", SAMPLE_FREQUENCY);
+        Curve3DData helix = new Curve3DData("helix", SAMPLE_FREQUENCY).setLineStyle(LineStyle.DASH_DASH_DOT).setLineWidth(2);
         chart.addCurve(helix);
         chart.addCurve(spiral);
 

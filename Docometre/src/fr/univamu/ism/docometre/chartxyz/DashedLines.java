@@ -72,7 +72,7 @@ public final class DashedLines {
      * @param filter       segments not to draw (null = all)
      * @param emitter      emission of the vertices (color included)
      */
-    public void draw(GL2 gl, CurveAppearance curve, float width, int capacity, long totalSamples, int n, int from,
+    void draw(GL2 gl, CurveAppearance curve, float width, int capacity, long totalSamples, int n, int from,
                      double scaleX, double scaleY, SegmentLength length, SegmentFilter filter, Emitter emitter) {
         Phases phases = update(curve, capacity, totalSamples, n, scaleX, scaleY, length);
         if (n < 2) return;

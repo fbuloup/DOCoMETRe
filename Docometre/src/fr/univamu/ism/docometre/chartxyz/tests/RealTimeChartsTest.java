@@ -37,15 +37,15 @@ public class RealTimeChartsTest {
     private static final double WINDOW_TIME_WIDTH3 = 5;    // s
 
     public static void main(String[] args) {
-        Curve1DData sine = new Curve1DData(FAST_FREQUENCY).setName("1 Hz sine").setLineWidth(3);
-        Curve1DData noisy = new Curve1DData(FAST_FREQUENCY).setName("7 Hz sine + noise").setLineWidth(1);
-        Curve1DData drift = new Curve1DData(SLOW_FREQUENCY).setName("drift (100 Hz)").setLineWidth(2).setLineStyle(LineStyle.DASH_DOT);
+        Curve1DData sine = new Curve1DData("1 Hz sine", FAST_FREQUENCY).setLineWidth(3);
+        Curve1DData noisy = new Curve1DData("7 Hz sine + noise", FAST_FREQUENCY).setLineWidth(1);
+        Curve1DData drift = new Curve1DData("drift (100 Hz)", SLOW_FREQUENCY).setLineWidth(2).setLineStyle(LineStyle.DASH_DOT);
 
-        Curve2DData lissajous = new Curve2DData(SAMPLE_FREQUENCY2).setName("Lissajous");
-        Curve2DData circle = new Curve2DData(SAMPLE_FREQUENCY2).setName("circle").setLineStyle(LineStyle.DASH);
+        Curve2DData lissajous = new Curve2DData("Lissajous", SAMPLE_FREQUENCY2);
+        Curve2DData circle = new Curve2DData("circle", SAMPLE_FREQUENCY2).setLineStyle(LineStyle.DASH);
 
-        Curve3DData spiral = new Curve3DData(SAMPLE_FREQUENCY3).setName("spiral");
-        Curve3DData helix = new Curve3DData(SAMPLE_FREQUENCY3).setName("helix").setLineStyle(LineStyle.DASH_DASH_DOT).setLineWidth(2);
+        Curve3DData spiral = new Curve3DData("spiral", SAMPLE_FREQUENCY3);
+        Curve3DData helix = new Curve3DData("helix", SAMPLE_FREQUENCY3).setLineStyle(LineStyle.DASH_DASH_DOT).setLineWidth(2);
         
         Display display = new Display();
         Shell shell = new Shell(display);
@@ -73,7 +73,7 @@ public class RealTimeChartsTest {
 
         ScheduledExecutorService acquisition3D = DemoSupport.startSpiral(spiral, helix);
 
-        Curve1DData last = new Curve1DData(FAST_FREQUENCY).setName("1 Hz sine").setLineWidth(3);
+        Curve1DData last = new Curve1DData("1 Hz sine", FAST_FREQUENCY).setLineWidth(3);
         float[] a = new float[5000];
         for (int i = 0; i < 5000; i++) {
             double t = i / SAMPLE_FREQUENCY2;

@@ -23,21 +23,29 @@ public class Curve3DData extends CurveData<Curve3DData> implements IRTSWTXYZSeri
      * be the one of the chart it is added to ({@link #DEFAULT_WINDOW_TIME_WIDTH}
      * seconds until then, or if the chart does not impose one).
      *
+     * @param name            name of the curve (not null nor blank), unique in its chart
      * @param sampleFrequency sampling frequency of the coordinates, in Hz
      */
-    public Curve3DData(double sampleFrequency) {
-        super(3, sampleFrequency, DEFAULT_WINDOW_TIME_WIDTH);
+    public Curve3DData(String name, double sampleFrequency) {
+        super(name, 3, sampleFrequency, DEFAULT_WINDOW_TIME_WIDTH);
     }
 
     /**
-     * Creates a static curve from a list of points (original behavior): the
-     * window has exactly the size of the list (nominal frequency of 1 Hz).
-     * addSamples() remains usable and then scrolls the curve. To be displayed
-     * in a chart that does not impose a history duration: otherwise the curve
-     * would be reduced to its last historySize points.
+     * Creates a static curve from its points (the first one at t = 0, the
+     * last one at (points.size() - 1) / sampleFrequency): the duration kept
+     * is exactly that span, so no point is lost. addSamples() remains usable
+     * and then scrolls the curve.
+     * To be displayed in a chart with the same duration (getWindowTimeWidth()),
+     * or that does not impose one: a shorter duration would only keep the
+     * last points.
+     *
+     * @param name            name of the curve (not null nor blank), unique in its chart
+     * @param sampleFrequency sampling frequency of the points, in Hz
+     * @param points          points of the curve (at least two)
+     * @throws IllegalArgumentException if the name is blank, if there are fewer than two points or if sampleFrequency is not strictly positive
      */
-    public Curve3DData(List<Point3D> points) {
-        super(3, 1, Math.max(1, checkNotEmpty(points).size() - 1)); // N points span N - 1 seconds at 1 Hz
+    public Curve3DData(String name, double sampleFrequency, List<Point3D> points) {
+        super(name, 3, sampleFrequency, durationOf(sampleFrequency, (points != null) ? points.size() : 0));
         addSamples(points);
         takeSnapshot();
     }
@@ -81,8 +89,11 @@ public class Curve3DData extends CurveData<Curve3DData> implements IRTSWTXYZSeri
      * Loads a curve from a text file.
      * Expected format: one line per point "x y z" (separators: space, comma or semicolon).
      * Empty lines and lines starting with '#' are ignored.
+     *
+     * @param name            name of the curve
+     * @param sampleFrequency sampling frequency of the points, in Hz
      */
-    public static Curve3DData loadFromFile(Path path) throws IOException {
+    public static Curve3DData loadFromFile(String name, double sampleFrequency, Path path) throws IOException {
         List<Point3D> points = new ArrayList<>();
         try (BufferedReader reader = Files.newBufferedReader(path)) {
             String line;
@@ -108,13 +119,16 @@ public class Curve3DData extends CurveData<Curve3DData> implements IRTSWTXYZSeri
                 }
             }
         }
-        return new Curve3DData(points);
+        return new Curve3DData(name, sampleFrequency, points);
     }
 
     /**
      * Builds a curve from an equation.
+     *
+     * @param name            name of the curve
+     * @param sampleFrequency sampling frequency of the points, in Hz
      */
-    public static Curve3DData loadFromEquation() {
+    public static Curve3DData loadFromEquation(String name, double sampleFrequency) {
         List<Point3D> points = new ArrayList<>();
         double t = -Math.PI*2;
         double dt = Math.PI*4/100000;
@@ -125,7 +139,7 @@ public class Curve3DData extends CurveData<Curve3DData> implements IRTSWTXYZSeri
             points.add(new Point3D(x, y, z));
             t = t + dt;
         }
-        return new Curve3DData(points);
+        return new Curve3DData(name, sampleFrequency, points);
     }
 
     /** Returns a copy of the points currently in the window, from the oldest to the most recent. */

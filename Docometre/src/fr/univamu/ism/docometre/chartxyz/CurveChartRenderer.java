@@ -3,6 +3,8 @@ package fr.univamu.ism.docometre.chartxyz;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.swt.SWT;
@@ -31,8 +33,15 @@ public abstract class CurveChartRenderer<C extends CurveData<C>> extends GLChart
     /** Minimum on-screen distance (pixels) between two drawn points, when distance-based reduction is enabled. */
     private static final double MIN_POINT_DISTANCE = 0.5;
 
-    // Displayed curves; the list can be modified from any thread
+    // Displayed curves, in the order they were added (legend, Tab, drawing order), and the same curves by
+    // name (unique). Modified together under curvesLock, from any thread; read without lock.
     private final List<C> curves = new CopyOnWriteArrayList<>();
+    private final Map<String, C> curvesByName = new ConcurrentHashMap<>();
+    // Weight of each palette color: number of curves of the chart displayed in that color, automatic or
+    // not (guarded by curvesLock). A curve in automatic color receives a color of minimal weight.
+    private final int[] colorWeights = new int[CurveStyles.getPaletteSize()];
+    // Lock order: curvesLock, then the monitor of a curve (see CurveData.setName and setColor)
+    private final Object curvesLock = new Object();
     protected List<C> frameCurves = new ArrayList<>(); // curves frozen for the current frame
 
     protected final GLText text = new GLText(); // text in a system font (tick labels, axis names, legend)
@@ -41,7 +50,7 @@ public abstract class CurveChartRenderer<C extends CurveData<C>> extends GLChart
     // Adjustable fonts (see setScaleFont / setLegendFont)
     protected volatile ChartFont scaleFont = new ChartFont(9, SWT.NORMAL);
     protected volatile ChartFont legendFont = new ChartFont(9, SWT.NORMAL);
-    protected volatile boolean showLegend = true; // legend displayed (if at least one curve has a name)
+    protected volatile boolean showLegend = true; // legend displayed (if there is at least one curve)
     protected volatile boolean showPoints = false;
 
     private final FpsCounter fpsCounter = new FpsCounter(); // actual frame rate
@@ -74,22 +83,123 @@ public abstract class CurveChartRenderer<C extends CurveData<C>> extends GLChart
         } catch (RuntimeException e) {
             // chart not created: the curves already attached are released (without curveRemoved:
             // the subclasses are not initialized yet)
-            for (C curve : this.curves) curve.detach(this);
+            for (C curve : this.curves) {
+                synchronized (curve) {
+                    if (curve.isAutomaticColor()) curve.assignColor(null, true);
+                    curve.detach(this);
+                }
+            }
             this.curves.clear();
+            this.curvesByName.clear();
+            java.util.Arrays.fill(colorWeights, 0);
             throw e;
         }
     }
 
     /**
      * Adds a curve to the chart (usable while rendering, from any thread).
+     * Its name must be unique in the chart: otherwise nothing is changed.
+     * A curve in automatic color receives the palette color used by the
+     * fewest curves of the chart (the first one of the palette in case of a
+     * tie); its color then no longer changes when other curves are added or
+     * removed.
      *
-     * @throws IllegalStateException if the curve is already displayed in a chart (this one included)
+     * @throws IllegalStateException    if the curve is already displayed in a chart (this one included)
+     * @throws IllegalArgumentException if another curve of the chart has the same name
      */
     public void addCurve(C curve) {
-        curve.attach(this);
-        double window = windowTimeWidth;
-        if (window > 0) curve.setWindowTimeWidth(window);
-        curves.add(curve);
+        synchronized (curvesLock) {
+            synchronized (curve) { // its name cannot change during the check (see CurveData.setName)
+                curve.attach(this);
+                String name = curve.getName();
+                if (curvesByName.putIfAbsent(name, curve) != null) {
+                    curve.detach(this);
+                    throw new IllegalArgumentException("The chart already has a curve named \"" + name + "\".");
+                }
+                if (curve.isAutomaticColor()) curve.assignColor(takeAutomaticColor(), true);
+                else countColor(curve.color(), 1);
+            }
+            double window = windowTimeWidth;
+            if (window > 0) curve.setWindowTimeWidth(window);
+            curves.add(curve);
+        }
+    }
+
+    /**
+     * Renames a curve of this chart (called by {@link CurveData#setName}),
+     * checking that the new name is not used by another curve.
+     *
+     * @return false if the curve is no longer in this chart (nothing done)
+     * @throws IllegalArgumentException if another curve of the chart has this name
+     */
+    @SuppressWarnings("unchecked")
+    boolean renameCurve(CurveData<?> curve, String name) {
+        synchronized (curvesLock) {
+            synchronized (curve) {
+                if (!curve.isOwnedBy(this)) return false;
+                String old = curve.getName();
+                if (old.equals(name)) return true;
+                if (curvesByName.putIfAbsent(name, (C) curve) != null) {
+                    throw new IllegalArgumentException("The chart already has a curve named \"" + name + "\".");
+                }
+                curvesByName.remove(old);
+                curve.assignName(name);
+                return true;
+            }
+        }
+    }
+
+    /**
+     * Changes the color of a curve of this chart (called by
+     * {@link CurveData#setColor} and {@link CurveData#setAutomaticColor}):
+     * the weight of its old color decreases, the one of its new color
+     * increases (palette colors only).
+     *
+     * @param color new color, or null for an automatic color (a color of minimal weight)
+     * @return false if the curve is no longer in this chart (nothing done)
+     */
+    boolean recolorCurve(CurveData<?> curve, CurveColor color) {
+        synchronized (curvesLock) {
+            synchronized (curve) {
+                if (!curve.isOwnedBy(this)) return false;
+                countColor(curve.color(), -1);
+                if (color == null) {
+                    curve.assignColor(takeAutomaticColor(), true);
+                } else {
+                    countColor(color, 1);
+                    curve.assignColor(color, false);
+                }
+                return true;
+            }
+        }
+    }
+
+    /** Palette color of minimal weight (the first one in case of a tie), whose weight is increased (curvesLock held). */
+    private CurveColor takeAutomaticColor() {
+        int best = 0;
+        for (int i = 1; i < colorWeights.length; i++) {
+            if (colorWeights[i] < colorWeights[best]) best = i;
+        }
+        colorWeights[best]++;
+        return CurveStyles.paletteColor(best);
+    }
+
+    /** Adds delta to the weight of the color if it is a palette color (curvesLock held). */
+    private void countColor(CurveColor color, int delta) {
+        int index = CurveStyles.paletteIndex(color);
+        if (index >= 0) colorWeights[index] += delta;
+    }
+
+    /** Copy of the weights of the palette colors (tests). */
+    int[] getColorWeights() {
+        synchronized (curvesLock) {
+            return colorWeights.clone();
+        }
+    }
+
+    /** Curve of the chart with this name, or null. Usable from any thread. */
+    public C getCurve(String name) {
+        return (name != null) ? curvesByName.get(name) : null;
     }
 
     /**
@@ -110,12 +220,40 @@ public abstract class CurveChartRenderer<C extends CurveData<C>> extends GLChart
     /** History duration imposed on the curves, in seconds (0 if each curve keeps its own). */
     public double getWindowTimeWidth() { return windowTimeWidth; }
 
-    /** Removes a curve from the chart; it can then be added to another chart. */
-    public void removeCurve(C curve) {
-        int index = curves.indexOf(curve);
-        if (index >= 0 && curves.remove(curve)) {
-            curve.detach(this);
-            curveRemoved(curve, index);
+    /**
+     * Removes a curve from the chart; it can then be added to another chart,
+     * and its name is available again in this one.
+     *
+     * @return false if the curve was not in the chart
+     */
+    public boolean removeCurve(C curve) {
+        int index;
+        synchronized (curvesLock) {
+            index = curves.indexOf(curve);
+            if (index < 0) return false;
+            curves.remove(index);
+            curvesByName.remove(curve.getName(), curve);
+            synchronized (curve) {
+                countColor(curve.color(), -1); // palette color: one curve fewer, automatic or not
+                if (curve.isAutomaticColor()) curve.assignColor(null, true); // chosen again in its next chart
+                curve.detach(this);
+            }
+        }
+        curveRemoved(curve, index); // outside the lock: listeners may be called
+        return true;
+    }
+
+    /**
+     * Removes the curve with this name from the chart (see {@link #removeCurve(CurveData)}).
+     *
+     * @return false if the chart has no curve with this name
+     */
+    public boolean removeCurve(String name) {
+        while (true) {
+            C curve = getCurve(name);
+            if (curve == null) return false;
+            if (removeCurve(curve)) return true;
+            // removed or renamed meanwhile by another thread: look again
         }
     }
 
@@ -239,8 +377,8 @@ public abstract class CurveChartRenderer<C extends CurveData<C>> extends GLChart
             float[] c = curve.getSnapshotData();
             int dim = curve.getDimension();
             int n = curve.getSnapshotCount();
-            boolean gradient = curve.getColor() == null && frameCurves.size() == 1;
-            float[] color = CurveStyles.colorOf(curve, k);
+            boolean gradient = curve.isAutomaticColor() && frameCurves.size() == 1;
+            float[] color = CurveStyles.colorOf(curve);
             Decimation.ScreenPosition position = (i, out) ->
                     projection.project(c[dim * i], c[dim * i + 1], (dim > 2) ? c[dim * i + 2] : 0f, out);
 

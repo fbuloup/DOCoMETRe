@@ -30,9 +30,9 @@ public class RealTimeChart1DTest {
     }
 
     static void run(GLToolkit toolkit) {
-        Curve1DData sine = new Curve1DData(FAST_FREQUENCY).setName("1 Hz sine").setLineWidth(3);
-        Curve1DData noisy = new Curve1DData(FAST_FREQUENCY).setName("7 Hz sine + noise").setLineWidth(1);
-        Curve1DData drift = new Curve1DData(SLOW_FREQUENCY).setName("drift (100 Hz)").setLineWidth(2).setLineStyle(LineStyle.DASH_DOT);
+        Curve1DData sine = new Curve1DData("1 Hz sine", FAST_FREQUENCY).setLineWidth(3);
+        Curve1DData noisy = new Curve1DData("7 Hz sine + noise", FAST_FREQUENCY).setLineWidth(1);
+        Curve1DData drift = new Curve1DData("drift (100 Hz)", SLOW_FREQUENCY).setLineWidth(2).setLineStyle(LineStyle.DASH_DOT);
 
         Shell shell = DemoSupport.createShell(new Display(), "Real-time signals — SWT + JOGL (" + toolkit + ")", 1000, 500);
 

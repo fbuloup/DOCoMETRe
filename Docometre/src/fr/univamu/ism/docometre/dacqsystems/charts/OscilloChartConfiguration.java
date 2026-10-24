@@ -331,8 +331,7 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 			
 			IRTSWTSerie rtswtSerie = null;
 			if(Activator.useOpenGLV2()) {
-				rtswtSerie = new Curve1DData(Double.parseDouble(sfString));
-				((Curve1DData)rtswtSerie).setName(serieID);
+				rtswtSerie = new Curve1DData(serieID, Double.parseDouble(sfString));
 				((Curve1DData)rtswtSerie).setLineWidth(thickness);
 				((Curve1DData)rtswtSerie).setLineStyle(lineStyle);
 				((Curve1DData)rtswtSerie).setColor(serieColor.getRed()/255,serieColor.getGreen()/255,serieColor.getBlue()/255);

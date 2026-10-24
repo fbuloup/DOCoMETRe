@@ -15,7 +15,7 @@ import fr.univamu.ism.docometre.chartxyz.GLToolkit;
 public class Chart3DTest {
 
     public static void main(String[] args) {
-        run(GLToolkit.SWT, Curve3DData.loadFromEquation());
+        run(GLToolkit.SWT, Curve3DData.loadFromEquation("3D curve", 1));
     }
 
     static void run(GLToolkit toolkit, Curve3DData curveData) {

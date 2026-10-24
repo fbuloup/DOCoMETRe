@@ -202,7 +202,7 @@ public class Chart3DRenderer extends CurveChartRenderer<Curve3DData> {
 
     /**
      * Final 2D pass, in pixels, over the 3D scene: tick labels and axis
-     * names, then legend at the top left (if at least one curve has a name),
+     * names, then legend at the top left (if there is at least one curve),
      * frame rate and current values.
      */
     private void drawOverlay(GL2 gl) {

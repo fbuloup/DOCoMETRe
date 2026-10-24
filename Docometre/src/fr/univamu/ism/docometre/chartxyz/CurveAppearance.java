@@ -1,17 +1,14 @@
 package fr.univamu.ism.docometre.chartxyz;
 
 /**
- * Appearance of a curve in a chart with several curves: name displayed in
- * the legend, color, line width and line style. Implemented by
- * {@link Curve1DData}, {@link Curve2DData} and {@link Curve3DData}.
+ * Appearance of a curve used by the rendering helpers (internal): name
+ * displayed in the legend, line width and line style. Implemented by
+ * {@link CurveData}; the color is read with {@link CurveStyles#colorOf}.
  */
-public interface CurveAppearance {
+interface CurveAppearance {
 
-    /** Name displayed in the legend, or null. */
+    /** Name displayed in the legend. */
     String getName();
-
-    /** RGB color (components between 0 and 1), or null for an automatic color. */
-    float[] getColor();
 
     /** Line width in pixels, or 0 for the default line width of the chart. */
     float getLineWidth();

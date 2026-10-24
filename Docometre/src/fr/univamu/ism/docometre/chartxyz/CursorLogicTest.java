@@ -41,7 +41,7 @@ public class CursorLogicTest {
             line.add(new Point2D(i, i / 2f));
             other.add(new Point2D(i, 5 - i / 2f));
         }
-        Chart2DRenderer r2 = new Chart2DRenderer(new Curve2DData(line), new Curve2DData(other));
+        Chart2DRenderer r2 = new Chart2DRenderer(new Curve2DData("line", 1, line), new Curve2DData("other", 1, other));
         List<float[]> events = new ArrayList<>();
         r2.addCursorListener(events::add);
         frame(r2);
@@ -87,7 +87,7 @@ public class CursorLogicTest {
         check("2D re-enabling: back to the first curve", r2.getCursorCurveIndex() == 0);
 
         // ---------------- 1D scroll ----------------
-        Curve1DData signal = new Curve1DData(100);
+        Curve1DData signal = new Curve1DData("signal", 100);
         Chart1DRenderer r1 = new Chart1DRenderer(5, signal);
         float[] samples = new float[1001];
         for (int i = 0; i < samples.length; i++) samples[i] = (float) Math.sin(i / 50.0);
@@ -203,7 +203,7 @@ public class CursorLogicTest {
         check("1D R: back to the initial view (shift cancelled)", near(r1.viewMaxX, Math.max(5, signal.getLastSampleTime())));
 
         // ---------------- 1D sweep: the gap cannot be designated ----------------
-        Curve1DData sweep = new Curve1DData(100);
+        Curve1DData sweep = new Curve1DData("sweep", 100);
         Chart1DRenderer rs = new Chart1DRenderer(5, sweep);
         float[] ramp = new float[801];
         for (int i = 0; i < ramp.length; i++) ramp[i] = i / 100f; // 8 s: last sample at 8 s, write cursor at 3 s

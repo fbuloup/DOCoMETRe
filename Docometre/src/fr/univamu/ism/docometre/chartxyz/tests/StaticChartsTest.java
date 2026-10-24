@@ -45,9 +45,9 @@ public class StaticChartsTest {
             dataCircleX[i] = (float) (0.3 * Math.cos(2 * Math.PI * 0.5 * t) + 0.5 * Math.sin(0.2 * t));
             dataCircleY[i] = (float) (0.3 * Math.sin(2 * Math.PI * 0.5 * t));
         }
-        Curve2DData lissajous = new Curve2DData(sf3).setName("Lissajous");
+        Curve2DData lissajous = new Curve2DData("Lissajous", sf3);
         lissajous.addSamples(dataLissajouX, dataLissajouY);
-        Curve2DData circle = new Curve2DData(sf3).setName("circle").setLineStyle(LineStyle.DASH);
+        Curve2DData circle = new Curve2DData("circle", sf3).setLineStyle(LineStyle.DASH);
         circle.addSamples(dataCircleX, dataCircleY);
         // Chart
         GLChart2D graph2D = new GLChart2D(shell, GLToolkit.platformDefault(), wtw2, lissajous, circle);
@@ -58,8 +58,8 @@ public class StaticChartsTest {
         // Curves
         double sf4 = 1000;
         double wtw3 = 15;
-        Curve3DData spiral = new Curve3DData(sf4).setName("spiral");
-        Curve3DData helix = new Curve3DData(sf4).setName("helix").setLineStyle(LineStyle.DASH_DASH_DOT).setLineWidth(2);
+        Curve3DData spiral = new Curve3DData("spiral", sf4);
+        Curve3DData helix = new Curve3DData("helix", sf4).setLineStyle(LineStyle.DASH_DASH_DOT).setLineWidth(2);
         float[] spiralX = new float[(int)(wtw3*sf4)], spiralY = new float[(int)(wtw3*sf4)], spiralZ = new float[(int)(wtw3*sf4)];
         float[] helixX = new float[(int)(wtw3*sf4)], helixY = new float[(int)(wtw3*sf4)], helixZ = new float[(int)(wtw3*sf4)];
         for (int i = 0; i < spiralX.length; i++) {
@@ -96,9 +96,9 @@ public class StaticChartsTest {
         	double t = i / sf2;
         	dataDrift[i] = (float) (0.8 * Math.sin(2 * Math.PI * 0.05 * t));
 		}
-        Curve1DData sine = new Curve1DData(sf1, dataSine).setName("1 Hz sine").setLineWidth(3);
-        Curve1DData noisy = new Curve1DData(sf1, dataNoisy).setName("7 Hz sine + noise").setLineWidth(1);
-        Curve1DData drift = new Curve1DData(sf2, dataDrift).setName("drift (100 Hz)").setLineWidth(2).setLineStyle(LineStyle.DASH_DOT);
+        Curve1DData sine = new Curve1DData("1 Hz sine", sf1, dataSine).setLineWidth(3);
+        Curve1DData noisy = new Curve1DData("7 Hz sine + noise", sf1, dataNoisy).setLineWidth(1);
+        Curve1DData drift = new Curve1DData("drift (100 Hz)", sf2, dataDrift).setLineWidth(2).setLineStyle(LineStyle.DASH_DOT);
         // Chart
         GLChart1D graph1D = new GLChart1D(shell, GLToolkit.platformDefault(), wtw1, sine, noisy, drift);
         // Very important because the sweep mode removes some points in front of the write cursor

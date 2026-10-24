@@ -25,8 +25,11 @@ import fr.univamu.ism.rtswtchart.IRTSWTSerie;
  * adding it to a second chart throws an exception). It becomes available
  * again when it is removed from its chart or when that chart is closed.
  *
- * The appearance (name, color, line width, line style) is common to all
- * curves; its setters return the curve itself (type T) to chain calls.
+ * Every curve has a name, given to the constructor and changeable with
+ * {@link #setName}: it identifies the curve in its chart, where it must be
+ * unique (see {@link CurveChartRenderer#getCurve(String)}). The appearance
+ * (name, color, line width, line style) is common to all curves; its setters
+ * return the curve itself (type T) to chain calls.
  *
  * @param <T> concrete curve type
  */
@@ -54,9 +57,12 @@ public abstract class CurveData<T extends CurveData<T>> implements CurveAppearan
     private long snapshotTotalSamples = 0;
     private final float[] min, max; // bounds of the snapshot, per coordinate
 
-    // Appearance in a chart with several curves (optional)
+    // Name (unique in the chart; written under the monitor of the curve, see setName) and appearance
     private volatile String name;
-    private volatile float[] color; // null = automatic color according to the curve position
+    // Displayed color: given by setColor, or chosen by the chart (automatic color; null outside a chart).
+    // Written under the monitor of the curve (and the lock of its chart, see CurveChartRenderer.recolorCurve).
+    private volatile CurveColor color;
+    private volatile boolean automaticColor = true;
     private volatile float lineWidth = 0f; // 0 = default line width of the chart
     private volatile LineStyle lineStyle = LineStyle.SOLID;
 
@@ -66,11 +72,14 @@ public abstract class CurveData<T extends CurveData<T>> implements CurveAppearan
     /**
      * Creates a real-time curve, initially empty.
      *
+     * @param name            name of the curve (not null nor blank), unique in its chart
      * @param dimension       number of coordinates per sample (1, 2 or 3)
      * @param sampleFrequency sampling frequency, in Hz
      * @param windowTimeWidth duration of the history kept and displayed, in seconds
+     * @throws IllegalArgumentException if the name is null or blank, or if sampleFrequency is not strictly positive
      */
-    protected CurveData(int dimension, double sampleFrequency, double windowTimeWidth) {
+    protected CurveData(String name, int dimension, double sampleFrequency, double windowTimeWidth) {
+        this.name = checkName(name);
         if (!(sampleFrequency > 0)) {
             throw new IllegalArgumentException("sampleFrequency must be strictly positive.");
         }
@@ -83,6 +92,25 @@ public abstract class CurveData<T extends CurveData<T>> implements CurveAppearan
         this.min = new float[dimension];
         this.max = new float[dimension];
         takeSnapshot();
+    }
+
+    /** Checks a curve name (not null nor blank) and returns it. */
+    static String checkName(String name) {
+        if (name == null || name.trim().isEmpty()) throw new IllegalArgumentException("The curve name cannot be empty.");
+        return name;
+    }
+
+    /**
+     * Duration (s) of n samples at sampleFrequency Hz, from the first to the
+     * last one: (n - 1) / sampleFrequency. Static method: it can be called
+     * within the call to the parent constructor, before the object exists.
+     *
+     * @throws IllegalArgumentException if n is less than 2 or if sampleFrequency is not strictly positive
+     */
+    protected static double durationOf(double sampleFrequency, int n) {
+        if (!(sampleFrequency > 0)) throw new IllegalArgumentException("sampleFrequency must be strictly positive.");
+        if (n < 2) throw new IllegalArgumentException("A static curve must have at least two samples.");
+        return (n - 1) / sampleFrequency;
     }
 
     private static void checkWindowTimeWidth(double windowTimeWidth) {
@@ -133,6 +161,16 @@ public abstract class CurveData<T extends CurveData<T>> implements CurveAppearan
                     + "a curve can only belong to one chart.");
         }
         this.owner = owner;
+    }
+
+    /** True if the curve is displayed in the chart owner. */
+    synchronized boolean isOwnedBy(Object owner) {
+        return this.owner == owner;
+    }
+
+    /** Changes the name without any check: called by the chart, under its lock and the monitor of the curve. */
+    void assignName(String name) {
+        this.name = name;
     }
 
     /** Detaches the curve from owner (no effect if it does not belong to it). */
@@ -303,17 +341,91 @@ public abstract class CurveData<T extends CurveData<T>> implements CurveAppearan
     // ------------------------------------------------------------------
     // Appearance
 
-    /** Name displayed in the legend (null = no name). Returns this to chain calls. */
-    public T setName(String name) { this.name = name; return self(); }
+    /**
+     * Changes the name of the curve (displayed in the legend). In a chart,
+     * the name must remain unique: if another curve of the chart already has
+     * this name, the name is not changed. Usable from any thread. Returns
+     * this to chain calls.
+     *
+     * @throws IllegalArgumentException if the name is null or blank, or if another curve of its chart has this name
+     */
+    public T setName(String name) {
+        checkName(name);
+        while (true) {
+            Object chart;
+            synchronized (this) {
+                if (owner == null) { // not in a chart: nothing to compare with
+                    this.name = name;
+                    return self();
+                }
+                chart = owner;
+            }
+            // In a chart: checked and changed under its lock; false if the curve left it meanwhile (retry)
+            if (((CurveChartRenderer<?>) chart).renameCurve(this, name)) return self();
+        }
+    }
     @Override
     public String getName() { return name; }
 
-    /** RGB color (components between 0 and 1). Returns this to chain calls. */
-    public T setColor(float r, float g, float b) { this.color = new float[]{r, g, b}; return self(); }
-    /** Goes back to the automatic color (palette, according to the curve position in the chart). */
-    public T setAutomaticColor() { this.color = null; return self(); }
-    @Override
-    public float[] getColor() { return color; }
+    /**
+     * Color of the curve, components between 0 and 255. It no longer changes
+     * automatically. Usable from any thread. Returns this to chain calls.
+     *
+     * @throws IllegalArgumentException if a component is outside 0..255
+     */
+    public T setColor(int r, int g, int b) {
+        changeColor(new CurveColor(r, g, b));
+        return self();
+    }
+
+    /**
+     * Goes back to the automatic color: in a chart, the palette color used by
+     * the fewest curves (see {@link CurveStyles#getPaletteColor}); outside a
+     * chart, the color is chosen when the curve is added to one. Usable from
+     * any thread. Returns this to chain calls.
+     */
+    public T setAutomaticColor() {
+        changeColor(null);
+        return self();
+    }
+
+    /** Changes the color (null = automatic color); in a chart, under its lock, so that its color weights remain right. */
+    private void changeColor(CurveColor newColor) {
+        while (true) {
+            Object chart;
+            synchronized (this) {
+                if (owner == null) { // not in a chart: no weight to update
+                    assignColor(newColor, newColor == null);
+                    return;
+                }
+                chart = owner;
+            }
+            if (((CurveChartRenderer<?>) chart).recolorCurve(this, newColor)) return;
+            // the curve left its chart meanwhile: retry
+        }
+    }
+
+    /**
+     * Color {r, g, b} (0..255) actually displayed (copy): the one given by
+     * {@link #setColor} or the automatic one; null for a curve in automatic
+     * color that is in no chart (its color is chosen when it is added).
+     */
+    public int[] getColor() {
+        CurveColor c = color;
+        return (c != null) ? c.toRGB() : null;
+    }
+
+    /** True if the color is chosen automatically in the palette (default), false after {@link #setColor}. */
+    public boolean isAutomaticColor() { return automaticColor; }
+
+    /** Displayed color (internal: rendering and color weights of the chart). */
+    CurveColor color() { return color; }
+
+    /** Changes the color without any check: called under the monitor of the curve (and the lock of its chart). */
+    void assignColor(CurveColor color, boolean automatic) {
+        this.color = color;
+        this.automaticColor = automatic;
+    }
 
     /**
      * Line width in pixels (1, 2, 3...), or 0 to go back to the default line
@@ -369,13 +481,5 @@ public abstract class CurveData<T extends CurveData<T>> implements CurveAppearan
         for (int other : others) {
             if (other != n) throw new IllegalArgumentException("The coordinate arrays must have the same length.");
         }
-    }
-
-    /** Checks that a list of points is not empty. */
-    protected static <L extends java.util.List<?>> L checkNotEmpty(L points) {
-        if (points == null || points.isEmpty()) {
-            throw new IllegalArgumentException("The list of points cannot be empty.");
-        }
-        return points;
     }
 }

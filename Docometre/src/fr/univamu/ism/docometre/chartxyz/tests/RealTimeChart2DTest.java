@@ -26,8 +26,8 @@ public class RealTimeChart2DTest {
     }
 
     static void run(GLToolkit toolkit) {
-        Curve2DData lissajous = new Curve2DData(SAMPLE_FREQUENCY).setName("Lissajous");
-        Curve2DData circle = new Curve2DData(SAMPLE_FREQUENCY).setName("circle").setLineStyle(LineStyle.DASH);
+        Curve2DData lissajous = new Curve2DData("Lissajous", SAMPLE_FREQUENCY);
+        Curve2DData circle = new Curve2DData("circle", SAMPLE_FREQUENCY).setLineStyle(LineStyle.DASH);
 
         Shell shell = DemoSupport.createShell(new Display(), "Real-time 2D curves — SWT + JOGL (" + toolkit + ")", 1000, 700);
 

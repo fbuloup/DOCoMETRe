@@ -25,7 +25,7 @@ public class ZoomLogicTest {
 
     public static void main(String[] args) {
         // ---------------- 2D ----------------
-        Chart2DRenderer r2 = new Chart2DRenderer(new Curve2DData(Arrays.asList(new Point2D(0, 0), new Point2D(10, 5))));
+        Chart2DRenderer r2 = new Chart2DRenderer(new Curve2DData("line", 1, Arrays.asList(new Point2D(0, 0), new Point2D(10, 5))));
         List<double[]> events = new ArrayList<>();
         r2.addZoomListener(w -> events.add(w));
         layout(r2);
@@ -97,7 +97,7 @@ public class ZoomLogicTest {
         check("2D window too small rejected", refused);
 
         // ---------------- 1D scroll: the magnifier follows time ----------------
-        Curve1DData signal = new Curve1DData(100);
+        Curve1DData signal = new Curve1DData("signal", 100);
         Chart1DRenderer r1 = new Chart1DRenderer(5, signal);
         List<double[]> events1 = new ArrayList<>();
         r1.addZoomListener(w1 -> events1.add(w1));

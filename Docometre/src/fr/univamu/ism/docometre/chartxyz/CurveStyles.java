@@ -11,17 +11,25 @@ import com.jogamp.opengl.GL2;
  */
 public final class CurveStyles {
 
-    /** Palette readable on a dark background, used in the order the curves are added. */
-    private static final float[][] PALETTE = {
-            {0.35f, 0.75f, 1.00f}, // blue
-            {1.00f, 0.60f, 0.20f}, // orange
-            {0.45f, 0.90f, 0.45f}, // green
-            {0.95f, 0.40f, 0.50f}, // pinkish red
-            {0.75f, 0.55f, 1.00f}, // purple
-            {1.00f, 0.90f, 0.30f}, // yellow
-            {0.30f, 0.90f, 0.90f}, // cyan
-            {0.90f, 0.90f, 0.90f}, // light gray
+    /**
+     * Palette readable on a dark background (0..255 components). In a chart,
+     * a curve in automatic color receives the palette color used by the
+     * fewest curves (the first one in this order in case of a tie), see
+     * {@link CurveChartRenderer#addCurve}.
+     */
+    private static final CurveColor[] PALETTE = {
+            new CurveColor(89, 191, 255),  // blue
+            new CurveColor(255, 153, 51),  // orange
+            new CurveColor(115, 230, 115), // green
+            new CurveColor(242, 102, 128), // pinkish red
+            new CurveColor(191, 140, 255), // purple
+            new CurveColor(255, 230, 76),  // yellow
+            new CurveColor(76, 230, 230),  // cyan
+            new CurveColor(230, 230, 230), // light gray
     };
+
+    /** Color of a curve in automatic color that is in no chart (normally never drawn). */
+    private static final CurveColor NO_COLOR = new CurveColor(128, 128, 128);
 
     private static final int LEGEND_SWATCH_WIDTH = 36;  // pixels (long enough to show the line pattern)
 
@@ -42,25 +50,42 @@ public final class CurveStyles {
         return bounds.clone();
     }
 
-    /** Default color of the curve at position index. */
-    public static float[] defaultColor(int index) {
-        return PALETTE[index % PALETTE.length];
+    /** Number of colors of the palette (8). */
+    public static int getPaletteSize() {
+        return PALETTE.length;
     }
 
-    /** Effective color of a curve: its explicit color, otherwise the palette color for its position. */
-    public static float[] colorOf(CurveAppearance curve, int index) {
-        float[] color = curve.getColor();
-        return (color != null) ? color : defaultColor(index);
+    /** Color {r, g, b} (0..255) of the palette at position index (copy). */
+    public static int[] getPaletteColor(int index) {
+        return PALETTE[index].toRGB();
+    }
+
+    static CurveColor paletteColor(int index) {
+        return PALETTE[index];
+    }
+
+    /** Position of the color in the palette, or -1 if it is not a palette color (or null). */
+    static int paletteIndex(CurveColor color) {
+        for (int i = 0; i < PALETTE.length; i++) {
+            if (PALETTE[i].sameAs(color)) return i;
+        }
+        return -1;
+    }
+
+    /** OpenGL color {r, g, b} (0..1) of a curve, computed when its color changed. */
+    static float[] colorOf(CurveData<?> curve) {
+        CurveColor color = curve.color();
+        return (color != null) ? color.gl : NO_COLOR.gl;
     }
 
     /** Effective line width of a curve: its explicit width, otherwise defaultWidth. */
-    public static float lineWidthOf(CurveAppearance curve, float defaultWidth) {
+    static float lineWidthOf(CurveAppearance curve, float defaultWidth) {
         float width = curve.getLineWidth();
         return (width > 0f) ? width : defaultWidth;
     }
 
     /** Tells whether a curve is drawn with dashes (line style other than SOLID). */
-    public static boolean isDashed(CurveAppearance curve) {
+    static boolean isDashed(CurveAppearance curve) {
         LineStyle style = curve.getLineStyle();
         return style != null && !style.isSolid();
     }
@@ -70,7 +95,7 @@ public final class CurveStyles {
      * oldest, 1 = most recent): blue -> orange gradient if gradient, otherwise
      * the curve color fading towards the old samples.
      */
-    public static void vertexColor(GL2 gl, boolean gradient, float[] color, float t) {
+    static void vertexColor(GL2 gl, boolean gradient, float[] color, float t) {
         if (gradient) {
             gl.glColor3f(0.2f + 0.8f * t, 0.55f + 0.25f * (1 - t), 1.0f - 0.8f * t);
         } else {
@@ -81,11 +106,11 @@ public final class CurveStyles {
     /**
      * Draws the legend (a colored line followed by the name, one row per
      * curve), in the given font, with its top left corner at (x, yTop). The
-     * current projection must be in pixels. Nothing is drawn if no curve has
-     * a name; unnamed curves then appear as "curve n".
+     * current projection must be in pixels. Nothing is drawn if there is no
+     * curve.
      */
-    public static void drawLegend(GL2 gl, GLText text, ChartFont font, List<? extends CurveAppearance> curves, float x, float yTop) {
-        if (!hasAnyName(curves)) return;
+    static void drawLegend(GL2 gl, GLText text, ChartFont font, List<? extends CurveData<?>> curves, float x, float yTop) {
+        if (curves.isEmpty()) return;
         float textWidth = 0;
         for (int i = 0; i < curves.size(); i++) {
             textWidth = Math.max(textWidth, text.width(labelOf(curves.get(i), i), font));
@@ -112,10 +137,10 @@ public final class CurveStyles {
 
     /**
      * Height, in pixels, of the inline legend drawn by {@link #drawLegendRows}
-     * for an available width maxWidth; 0 if no curve has a name (the legend
-     * is then not drawn).
+     * for an available width maxWidth; 0 if there is no curve (the legend is
+     * then not drawn).
      */
-    public static float legendRowsHeight(GLText text, ChartFont font, List<? extends CurveAppearance> curves, float maxWidth) {
+    static float legendRowsHeight(GLText text, ChartFont font, List<? extends CurveData<?>> curves, float maxWidth) {
         List<float[]> rows = layoutRows(text, font, curves, maxWidth);
         return rows.size() * legendRowHeight(text, font, curves);
     }
@@ -124,9 +149,9 @@ public final class CurveStyles {
      * Draws the legend in row(s): the entries (line + name) follow each other
      * horizontally, each row is centered on xCenter, and a new row starts
      * when the width maxWidth is reached. yTop is the top of the first row.
-     * Nothing is drawn if no curve has a name.
+     * Nothing is drawn if there is no curve.
      */
-    public static void drawLegendRows(GL2 gl, GLText text, ChartFont font, List<? extends CurveAppearance> curves,
+    static void drawLegendRows(GL2 gl, GLText text, ChartFont font, List<? extends CurveData<?>> curves,
                                       float xCenter, float yTop, float maxWidth) {
         List<float[]> rows = layoutRows(text, font, curves, maxWidth);
         float rowHeight = legendRowHeight(text, font, curves);
@@ -143,9 +168,9 @@ public final class CurveStyles {
     }
 
     /** Splits the entries into rows at most maxWidth wide: {start, excluded end, width} per row. */
-    private static List<float[]> layoutRows(GLText text, ChartFont font, List<? extends CurveAppearance> curves, float maxWidth) {
+    private static List<float[]> layoutRows(GLText text, ChartFont font, List<? extends CurveData<?>> curves, float maxWidth) {
         List<float[]> rows = new ArrayList<>();
-        if (!hasAnyName(curves)) return rows;
+        if (curves.isEmpty()) return rows;
         int start = 0;
         float rowWidth = 0;
         for (int i = 0; i < curves.size(); i++) {
@@ -161,16 +186,8 @@ public final class CurveStyles {
         return rows;
     }
 
-    /** The legend is only drawn if at least one curve has a name. */
-    private static boolean hasAnyName(List<? extends CurveAppearance> curves) {
-        for (CurveAppearance curve : curves) {
-            if (curve.getName() != null) return true;
-        }
-        return false;
-    }
-
     /** Height of a legend row: the font height, or the line width if it is larger. */
-    private static float legendRowHeight(GLText text, ChartFont font, List<? extends CurveAppearance> curves) {
+    private static float legendRowHeight(GLText text, ChartFont font, List<? extends CurveData<?>> curves) {
         float height = text.lineHeight(font) + 2;
         for (CurveAppearance curve : curves) height = Math.max(height, legendLineWidth(curve) + 6);
         return height;
@@ -188,13 +205,13 @@ public final class CurveStyles {
      * @param values one formatted value per curve (null = row omitted), see {@link CurrentValues}
      * @return the height used in pixels (0 if nothing is drawn)
      */
-    public static float drawCurrentValues(GL2 gl, GLText text, ChartFont font, List<? extends CurveAppearance> curves,
+    static float drawCurrentValues(GL2 gl, GLText text, ChartFont font, List<? extends CurveData<?>> curves,
                                           String[] values, float xRight, float yTop) {
         float lineHeight = text.lineHeight(font) + 2;
         int row = 0;
         for (int i = 0; i < values.length && i < curves.size(); i++) {
             if (values[i] == null) continue;
-            float[] color = colorOf(curves.get(i), i);
+            float[] color = colorOf(curves.get(i));
             gl.glColor3f(color[0], color[1], color[2]);
             row++;
             text.draw(gl, values[i], font, xRight - text.width(values[i], font), yTop - row * lineHeight);
@@ -203,8 +220,8 @@ public final class CurveStyles {
     }
 
     /** One legend entry: a line with the style, color and width of the curve, then its name. */
-    private static void drawEntry(GL2 gl, GLText text, ChartFont font, CurveAppearance curve, int index, float x, float middle) {
-        float[] color = colorOf(curve, index);
+    private static void drawEntry(GL2 gl, GLText text, ChartFont font, CurveData<?> curve, int index, float x, float middle) {
+        float[] color = colorOf(curve);
         gl.glColor3f(color[0], color[1], color[2]);
         // Width bounded to remain readable
         float width = legendLineWidth(curve);
@@ -226,6 +243,6 @@ public final class CurveStyles {
     }
 
     private static String labelOf(CurveAppearance curve, int index) {
-        return (curve.getName() != null) ? curve.getName() : "curve " + (index + 1);
+        return curve.getName();
     }
 }

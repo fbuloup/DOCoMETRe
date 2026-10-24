@@ -19,10 +19,11 @@ public class Curve1DData extends CurveData<Curve1DData> {
      * Creates a real-time signal, initially empty; the duration kept will be
      * the one of the chart it is added to.
      *
+     * @param name            name of the signal (not null nor blank), unique in its chart
      * @param sampleFrequency sampling frequency, in Hz
      */
-    public Curve1DData(double sampleFrequency) {
-        super(1, sampleFrequency, DEFAULT_WINDOW_TIME_WIDTH);
+    public Curve1DData(String name, double sampleFrequency) {
+        super(name, 1, sampleFrequency, DEFAULT_WINDOW_TIME_WIDTH);
     }
 
     /**
@@ -33,26 +34,15 @@ public class Curve1DData extends CurveData<Curve1DData> {
      * To be displayed in a chart with the same duration (getWindowTimeWidth()):
      * a shorter duration would only keep the last values.
      *
+     * @param name            name of the signal (not null nor blank), unique in its chart
      * @param sampleFrequency sampling frequency, in Hz
      * @param values          signal values (at least two)
-     * @throws IllegalArgumentException if values has fewer than two values or if sampleFrequency is not strictly positive
+     * @throws IllegalArgumentException if the name is blank, if values has fewer than two values or if sampleFrequency is not strictly positive
      */
-    public Curve1DData(double sampleFrequency, float[] values) {
-        super(1, sampleFrequency, durationOf(sampleFrequency, values));
+    public Curve1DData(String name, double sampleFrequency, float[] values) {
+        super(name, 1, sampleFrequency, durationOf(sampleFrequency, (values != null) ? values.length : 0));
         addSamples(values);
         takeSnapshot();
-    }
-
-    /**
-     * Duration (s) of values.length samples at sampleFrequency Hz, from the
-     * first to the last one: (values.length - 1) / sampleFrequency. Static
-     * method: it can be called within the call to the parent constructor,
-     * before the object exists.
-     */
-    private static double durationOf(double sampleFrequency, float[] values) {
-        if (!(sampleFrequency > 0)) throw new IllegalArgumentException("sampleFrequency must be strictly positive.");
-        if (values == null || values.length < 2) throw new IllegalArgumentException("The signal must have at least two values.");
-        return (values.length - 1) / sampleFrequency;
     }
 
     /**

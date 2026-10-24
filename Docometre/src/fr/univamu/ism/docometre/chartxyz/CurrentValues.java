@@ -29,7 +29,7 @@ public final class CurrentValues {
      *
      * @param value formatted current value of the curve at position k, or null if it has no data
      */
-    public String[] update(GLText text, ChartFont font, List<? extends CurveAppearance> curves, IntFunction<String> value) {
+    String[] update(GLText text, ChartFont font, List<? extends CurveAppearance> curves, IntFunction<String> value) {
         long now = System.nanoTime();
         boolean refresh = now - lastRefresh >= REFRESH_PERIOD_NS;
         if (refresh) lastRefresh = now;

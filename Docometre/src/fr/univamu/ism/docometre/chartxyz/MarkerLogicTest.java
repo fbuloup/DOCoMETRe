@@ -38,7 +38,7 @@ public class MarkerLogicTest {
     }
 
     public static void main(String[] args) throws Exception {
-        Curve1DData signal = new Curve1DData(100);
+        Curve1DData signal = new Curve1DData("signal", 100);
         Chart1DRenderer r = new Chart1DRenderer(5, signal);
         float[] samples = new float[1001];
         for (int i = 0; i < samples.length; i++) samples[i] = (float) Math.sin(i / 50.0);
@@ -94,7 +94,7 @@ public class MarkerLogicTest {
         frame(r);
         check("Scroll: marker shown at its time", near(r.markerAxisX(7.0), 7.0));
 
-        Chart2DRenderer r2 = new Chart2DRenderer(new Curve2DData(Arrays.asList(new Point2D(0, 0), new Point2D(10, 5))));
+        Chart2DRenderer r2 = new Chart2DRenderer(new Curve2DData("line", 1, Arrays.asList(new Point2D(0, 0), new Point2D(10, 5))));
         r2.setCursorEnabled(true);
         frame(r2);
         int[] at2 = window(r2, 5, 2.5);
@@ -165,11 +165,11 @@ public class MarkerLogicTest {
         try { r.addMarker(signal, " ", 0, 0); } catch (IllegalArgumentException e) { thrown = true; }
         check("Empty label refused", thrown);
         thrown = false;
-        try { r.addMarker(new Curve1DData(100), "A", 0, 0); } catch (IllegalArgumentException e) { thrown = true; }
+        try { r.addMarker(new Curve1DData("other", 100), "A", 0, 0); } catch (IllegalArgumentException e) { thrown = true; }
         check("Curve not in the chart refused", thrown && r.getMarkersCurves().isEmpty());
 
         // Groups belong to a curve
-        Curve1DData a = new Curve1DData(100).setName("a"), b = new Curve1DData(100).setName("b"), c = new Curve1DData(100).setName("c");
+        Curve1DData a = new Curve1DData("a", 100), b = new Curve1DData("b", 100), c = new Curve1DData("c", 100);
         float[] sa = new float[501], sb = new float[501], sc = new float[501];
         for (int i = 0; i < sa.length; i++) {
             sa[i] = (float) Math.sin(i / 50.0);

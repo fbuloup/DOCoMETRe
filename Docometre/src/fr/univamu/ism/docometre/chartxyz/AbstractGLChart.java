@@ -81,16 +81,28 @@ public abstract class AbstractGLChart<C extends CurveData<C>, R extends CurveCha
 
     /**
      * Adds a curve to the chart (usable while rendering, from any thread).
+     * Its name must be unique in the chart: otherwise nothing is changed.
      *
-     * @throws IllegalStateException if the curve is already displayed in a chart
+     * @throws IllegalStateException    if the curve is already displayed in a chart
+     * @throws IllegalArgumentException if another curve of the chart has the same name
      */
     public void addCurve(C curve) {
         renderer.addCurve(curve);
     }
 
-    /** Removes a curve from the chart. */
-    public void removeCurve(C curve) {
-        renderer.removeCurve(curve);
+    /** Removes a curve from the chart. @return false if the curve was not in the chart */
+    public boolean removeCurve(C curve) {
+        return renderer.removeCurve(curve);
+    }
+
+    /** Removes the curve with this name from the chart. @return false if the chart has no curve with this name */
+    public boolean removeCurve(String name) {
+        return renderer.removeCurve(name);
+    }
+
+    /** Curve of the chart with this name, or null (usable from any thread). */
+    public C getCurve(String name) {
+        return renderer.getCurve(name);
     }
 
     /** Number of curves currently displayed in the chart (usable from any thread). */

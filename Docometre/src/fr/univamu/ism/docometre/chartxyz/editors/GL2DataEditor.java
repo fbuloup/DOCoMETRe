@@ -191,7 +191,7 @@ public class GL2DataEditor extends EditorPart implements PartNameRefresher, IPar
 				return;
 			}
 			
-			curveData = new Curve1DData(sf, values).setName(dataFile.getFullPath().toOSString());
+			curveData = new Curve1DData(dataFile.getFullPath().toOSString(), sf, values);
 			
 			message = NLS.bind(DocometreMessages.NumberSamplesReadMessage, values.length, channelNameToFind);
 			Activator.logInfoMessage(message, getClass());

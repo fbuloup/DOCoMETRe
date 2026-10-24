@@ -288,7 +288,7 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
             int n = curve.getSnapshotCount();
             float dt = (float) (1.0 / curve.getSampleFrequency());
             float offset = (float) (curve.getLastSampleTime() - lastTime); // <= 0
-            float[] color = CurveStyles.colorOf(curve, k);
+            float[] color = CurveStyles.colorOf(curve);
             gl.glColor3f(color[0], color[1], color[2]);
             if (CurveStyles.isDashed(curve)) {
                 drawDashed(gl, curve, width, values, n, 0, null,
@@ -348,7 +348,7 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
             double curveLast = curve.getLastSampleTime();
             int first = firstSweepSample(curve); // the oldest ones are in the gap
 
-            float[] color = CurveStyles.colorOf(curve, k);
+            float[] color = CurveStyles.colorOf(curve);
             gl.glColor3f(color[0], color[1], color[2]);
             float width = CurveStyles.lineWidthOf(curve, DEFAULT_LINE_WIDTH);
             gl.glLineWidth(width);

@@ -156,7 +156,7 @@ final class DemoSupport {
     static Curve3DData loadCurve(String[] args) {
         String dataFile = (args.length > 0) ? args[0] : "data/sample_curve.txt";
         try {
-            return Curve3DData.loadFromFile(Paths.get(dataFile));
+            return Curve3DData.loadFromFile("3D curve", 1, Paths.get(dataFile));
         } catch (IOException e) {
             System.err.println("Unable to load the point file: " + dataFile);
             e.printStackTrace();

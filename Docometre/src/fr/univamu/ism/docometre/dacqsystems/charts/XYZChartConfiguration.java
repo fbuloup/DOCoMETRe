@@ -362,8 +362,7 @@ public class XYZChartConfiguration extends ChartConfiguration {
 			if(serieStyle == SWT.LINE_DASHDOTDOT) lineStyle = LineStyle.DASH_DASH_DOT;
 	
 			double sfx = Double.parseDouble(sfxString);
-			IRTSWTXYZSerie rtswtSerie = new Curve3DData(sfx);
-			((Curve3DData)rtswtSerie).setName(zSerieID + "(" + xSerieID + ", " + ySerieID + ")");
+			IRTSWTXYZSerie rtswtSerie = new Curve3DData(zSerieID + "(" + xSerieID + ", " + ySerieID + ")", sfx);
 			((Curve3DData)rtswtSerie).setLineWidth(thickness);
 			((Curve3DData)rtswtSerie).setLineStyle(lineStyle);
 			((Curve3DData)rtswtSerie).setColor(serieColor.getRed()/255,serieColor.getGreen()/255,serieColor.getBlue()/255);
