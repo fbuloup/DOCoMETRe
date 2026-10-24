@@ -466,7 +466,7 @@
             name="CustomerFunctionEditor">
       </editor>
       <editor
-            class="fr.univamu.ism.docometre.chartxyz.editors.GL2DataEditor"
+            class="fr.univamu.ism.docometre.chartxyz.editors.GLDataEditor"
             contributorClass="fr.univamu.ism.docometre.editors.DataEditorActionBarContributor"
             default="false"
             icon="icons/samples.gif"

@@ -48,14 +48,14 @@ import fr.univamu.ism.docometre.editors.PartNameRefresher;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.editors.DataEditorActionBarContributor.IDataEditorActionBarContribution;
 
-public class GL2DataEditor extends EditorPart implements PartNameRefresher, IPartListener2, IDataEditorActionBarContribution {
+public class GLDataEditor extends EditorPart implements PartNameRefresher, IPartListener2, IDataEditorActionBarContribution {
 	
 	public static String ID = "Docometre.GL2DataEditor";
 	
 	private GLChart1D chart;
 	private Curve1DData curveData;
 
-	public GL2DataEditor() {
+	public GLDataEditor() {
 		// TODO Auto-generated constructor stub
 	}
 
