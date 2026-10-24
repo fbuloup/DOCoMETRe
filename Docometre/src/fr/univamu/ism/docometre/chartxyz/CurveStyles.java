@@ -109,13 +109,13 @@ public final class CurveStyles {
     /**
      * Color of a vertex according to its position t along the curve (0 =
      * oldest, 1 = most recent): blue -> orange gradient if gradient, otherwise
-     * the curve color fading towards the old samples.
+     * the curve color, fading towards the old samples if fading.
      */
-    static void vertexColor(GL2 gl, boolean gradient, float[] color, float t) {
+    static void vertexColor(GL2 gl, boolean gradient, boolean fading, float[] color, float t) {
         if (gradient) {
             gl.glColor3f(0.2f + 0.8f * t, 0.55f + 0.25f * (1 - t), 1.0f - 0.8f * t);
         } else {
-            gl.glColor4f(color[0], color[1], color[2], 0.25f + 0.75f * t);
+            gl.glColor4f(color[0], color[1], color[2], fading ? 0.25f + 0.75f * t : 1f);
         }
     }
 

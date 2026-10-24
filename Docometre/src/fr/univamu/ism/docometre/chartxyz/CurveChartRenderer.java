@@ -61,6 +61,7 @@ public abstract class CurveChartRenderer<C extends CurveData<C>> extends GLChart
 
     protected final Decimation decimation = new Decimation(); // reduction of the number of points sent to OpenGL
     private volatile boolean decimationEnabled = true;
+    private volatile boolean trailFading = true; // 2D and 3D curves fade towards their oldest samples
     private final CurrentValues currentValues = new CurrentValues(); // texts of the current values
     private volatile boolean showCurrentValues = false;
     protected final DashedLines dashedLines = new DashedLines(); // dashes anchored on the data
@@ -366,7 +367,8 @@ public abstract class CurveChartRenderer<C extends CurveData<C>> extends GLChart
     /**
      * Draws the 2D or 3D curves. A single curve without an explicit color
      * keeps the blue -> orange gradient; otherwise each curve has its color
-     * (explicit or from the palette) and fades towards its oldest samples.
+     * (explicit or from the palette) and fades towards its oldest samples
+     * (unless the fading is disabled: see {@link #setTrailFading}).
      * Dashed curves have a pattern anchored on the data; the others are
      * reduced (if reduction is enabled) by keeping only the points at least
      * MIN_POINT_DISTANCE pixel apart on screen.
@@ -376,6 +378,7 @@ public abstract class CurveChartRenderer<C extends CurveData<C>> extends GLChart
      * @param scaleY     vertical display scale
      */
     protected void drawTrajectories(GL2 gl, float defaultLineWidth, ScreenProjection projection, double scaleX, double scaleY) {
+        boolean fading = trailFading;
         for (int k = 0; k < frameCurves.size(); k++) {
             C curve = frameCurves.get(k);
             float width = CurveStyles.lineWidthOf(curve, defaultLineWidth);
@@ -394,7 +397,7 @@ public abstract class CurveChartRenderer<C extends CurveData<C>> extends GLChart
                         i -> (position.project(i - 1, a) && position.project(i, b)) ? Math.hypot(b[0] - a[0], b[1] - a[1]) : 0,
                         null,
                         (i, f) -> {
-                            CurveStyles.vertexColor(gl, gradient, color, (n <= 1) ? 1f : (i - 1 + f) / (n - 1));
+                            CurveStyles.vertexColor(gl, gradient, fading, color, (n <= 1) ? 1f : (i - 1 + f) / (n - 1));
                             interpolatedVertex(gl, c, dim, i, f);
                         });
                 drawnPoints += n;
@@ -409,7 +412,7 @@ public abstract class CurveChartRenderer<C extends CurveData<C>> extends GLChart
                 gl.glBegin(GL2.GL_LINE_STRIP);
                 for (int j = 0; j < count; j++) {
                     int i = (kept == null) ? j : kept[j];
-                    CurveStyles.vertexColor(gl, gradient, color, (n <= 1) ? 1f : (float) i / (n - 1));
+                    CurveStyles.vertexColor(gl, gradient, fading, color, (n <= 1) ? 1f : (float) i / (n - 1));
                     vertex(gl, c, dim, i);
                 }
                 gl.glEnd();
@@ -500,6 +503,16 @@ public abstract class CurveChartRenderer<C extends CurveData<C>> extends GLChart
      */
     public void setDecimationEnabled(boolean enabled) { setOption(DisplayOption.DECIMATION, enabled, () -> decimationEnabled, v -> decimationEnabled = v); }
     public boolean isDecimationEnabled() { return decimationEnabled; }
+
+    /**
+     * Enables (default) or disables the fading of the 2D and 3D curves
+     * towards their oldest samples (trails of real-time data). Disabled, the
+     * curves are drawn with a uniform color (static data, for example); the
+     * blue -> orange gradient of a single curve without explicit color is
+     * kept. No effect on 1D charts. Usable from any thread.
+     */
+    public void setTrailFading(boolean fading) { trailFading = fading; }
+    public boolean isTrailFading() { return trailFading; }
     public void toggleDecimation() { toggleOption(DisplayOption.DECIMATION, () -> decimationEnabled, v -> decimationEnabled = v); }
     /** Number of points sent to OpenGL to draw the curves during the last frame. */
     public int getDrawnPointCount() { return drawnPoints; }

@@ -93,7 +93,7 @@ public class Chart3DRenderer extends CurveChartRenderer<Curve3DData> {
         float distance = camera.distance(radius);
         gl.glMatrixMode(GL2.GL_PROJECTION);
         gl.glLoadIdentity();
-        glu.gluPerspective(45.0, aspect, Math.max(distance - 2f * radius, distance * 0.01f), distance + 2f * radius);
+        glu.gluPerspective(OrbitCamera.FIELD_OF_VIEW, aspect, Math.max(distance - 2f * radius, distance * 0.01f), distance + 2f * radius);
         gl.glMatrixMode(GL2.GL_MODELVIEW);
         gl.glLoadIdentity();
         camera.lookAt(glu, radius);
@@ -241,6 +241,26 @@ public class Chart3DRenderer extends CurveChartRenderer<Curve3DData> {
     public void pan(float deltaX, float deltaY) { 
     	camera.pan(deltaX, deltaY, bounds.radius); 
     }
+
+    /** Moves the view by steps of a tenth of the visible height (also with the arrow keys), see {@link OrbitCamera#panStep}. */
+    public void panStep(int stepsX, int stepsY) {
+        camera.panStep(stepsX, stepsY, bounds.radius);
+    }
+
+    /** Arrow keys: pan, as a drag with the right button. */
+    @Override
+    public void keyPressed(char key) {
+        switch (key) {
+            case ARROW_LEFT: panStep(-1, 0); break;
+            case ARROW_RIGHT: panStep(1, 0); break;
+            case ARROW_UP: panStep(0, 1); break;
+            case ARROW_DOWN: panStep(0, -1); break;
+            default: super.keyPressed(key); break;
+        }
+    }
+
+    /** Camera of the chart (for the tests). */
+    OrbitCamera camera() { return camera; }
     
     public void zoom(float amount) { 
     	camera.zoom(amount); 

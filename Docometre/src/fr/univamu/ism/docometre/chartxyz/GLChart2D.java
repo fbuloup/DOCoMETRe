@@ -10,6 +10,25 @@ import fr.univamu.ism.rtswtchart.IRTSWTXYChart;
 public class GLChart2D extends AbstractGLPlotChart<Curve2DData, Chart2DRenderer> implements IRTSWTXYChart {
 
     /**
+     * Creates the chart with the default toolkit of the platform and dynamic
+     * scales (see {@link #GLChart2D(Composite, GLToolkit, double, Curve2DData...)}).
+     *
+     * @param historySize history duration (length of the trails), in seconds, imposed on all the curves
+     */
+    public static GLChart2D createChart(Composite container, double historySize, Curve2DData... curves) {
+        return new GLChart2D(container, GLToolkit.platformDefault(), historySize, curves);
+    }
+
+    /**
+     * Creates the chart with the default toolkit of the platform and dynamic
+     * scales; each curve keeps its own history duration (static data, for
+     * example: see {@link #GLChart2D(Composite, GLToolkit, Curve2DData...)}).
+     */
+    public static GLChart2D createChart(Composite container, Curve2DData... curves) {
+        return new GLChart2D(container, GLToolkit.platformDefault(), curves);
+    }
+
+    /**
      * Creates the chart with dynamic scales, continuously fitted to the curve values.
      *
      * @param historySize history duration (length of the trails), in seconds, imposed on all the curves

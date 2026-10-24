@@ -127,6 +127,13 @@ public class Chart2DRenderer extends PlotRenderer<Curve2DData> {
     @Override
     protected boolean hasVerticalAxis() { return true; }
 
+    /** Markers on the trajectories: circle on the point, label next to it. */
+    @Override
+    protected boolean supportsMarkers() { return true; }
+
+    @Override
+    protected boolean markersOnPoints() { return true; }
+
     /** Point i of the trajectory: its coordinates (x, y). */
     @Override
     protected boolean cursorPoint(Curve2DData curve, int i, double[] xy) {

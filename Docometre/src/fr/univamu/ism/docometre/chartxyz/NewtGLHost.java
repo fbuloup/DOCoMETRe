@@ -138,8 +138,12 @@ final class NewtGLHost extends GLHost {
         return 0;
     }
 
-    /** Character passed to the renderer: Escape, Backspace and Tab by their code, the others in lower case. */
+    /** Character passed to the renderer: Escape, Backspace, Tab and the arrows by their code, the others in lower case. */
     private static char toKey(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_LEFT) return ChartInteraction.ARROW_LEFT;
+        if (e.getKeyCode() == KeyEvent.VK_RIGHT) return ChartInteraction.ARROW_RIGHT;
+        if (e.getKeyCode() == KeyEvent.VK_UP) return ChartInteraction.ARROW_UP;
+        if (e.getKeyCode() == KeyEvent.VK_DOWN) return ChartInteraction.ARROW_DOWN;
         if (e.getKeyCode() == KeyEvent.VK_ESCAPE) return ChartInteraction.ESCAPE;
         if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE) return ChartInteraction.BACKSPACE;
         if (e.getKeyCode() == KeyEvent.VK_TAB) return e.isShiftDown() ? ChartInteraction.BACK_TAB : ChartInteraction.TAB;

@@ -480,6 +480,14 @@
             id="Docometre.GLChannelEditor"
             name="GLChannelEditor">
       </editor>
+      <editor
+            class="fr.univamu.ism.docometre.chartxyz.editors.GLXYChartEditor"
+            contributorClass="fr.univamu.ism.docometre.analyse.editors.ChannelEditorActionBarContributor"
+            default="false"
+            icon="icons/XYChartIcon.png"
+            id="Docometre.GLXYChartEditor"
+            name="GLXYChartEditor">
+      </editor>
    </extension>
    <extension
          point="org.eclipse.ui.decorators">

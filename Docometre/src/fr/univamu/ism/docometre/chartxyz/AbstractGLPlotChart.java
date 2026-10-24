@@ -60,6 +60,14 @@ public abstract class AbstractGLPlotChart<C extends CurveData<C>, R extends Plot
         return renderer.undoZoom();
     }
 
+    /**
+     * Moves the view by steps of a tenth of its width / height (also with the
+     * arrow keys): stepsX > 0 to the right, stepsY > 0 upwards.
+     */
+    public void panStep(int stepsX, int stepsY) {
+        renderer.panStep(stepsX, stepsY);
+    }
+
     /** Goes back to the initial view and clears the zoom history (also with R). */
     public void resetZoom() {
         renderer.resetView();
@@ -72,6 +80,24 @@ public abstract class AbstractGLPlotChart<C extends CurveData<C>, R extends Plot
 
     public void removeZoomListener(ZoomListener listener) {
         renderer.removeZoomListener(listener);
+    }
+
+    /**
+     * Adds a listener of the displayed view (see {@link ViewListener}): also
+     * told about the wheel zoom and the pan without zoom window, and about
+     * the automatic fit.
+     */
+    public void addViewListener(ViewListener listener) {
+        renderer.addViewListener(listener);
+    }
+
+    public void removeViewListener(ViewListener listener) {
+        renderer.removeViewListener(listener);
+    }
+
+    /** Bounds {xMin, xMax, yMin, yMax} of the view displayed by the last frame (copy), or null before the first frame. */
+    public double[] getView() {
+        return renderer.getView();
     }
 
     // ------------------------------------------------------------------
@@ -134,7 +160,34 @@ public abstract class AbstractGLPlotChart<C extends CurveData<C>, R extends Plot
     }
 
     // ------------------------------------------------------------------
-    // Markers (1D charts)
+    // Markers (1D and 2D charts)
+
+    /** Shows (default) or hides all the markers (they are kept). */
+    public void setMarkersVisible(boolean visible) {
+        renderer.setMarkersVisible(visible);
+    }
+
+    public boolean isMarkersVisible() {
+        return renderer.isMarkersVisible();
+    }
+
+    /** Shows (default) or hides the marker labels (the symbols remain). */
+    public void setMarkerLabelsVisible(boolean visible) {
+        renderer.setMarkerLabelsVisible(visible);
+    }
+
+    public boolean isMarkerLabelsVisible() {
+        return renderer.isMarkerLabelsVisible();
+    }
+
+    /** Size of the marker symbols in pixels: half-diagonal of the diamond in 1D, radius of the circle in 2D (5 by default). */
+    public void setMarkerSize(int size) {
+        renderer.setMarkerSize(size);
+    }
+
+    public int getMarkerSize() {
+        return renderer.getMarkerSize();
+    }
 
     /** Label of the markers added with Ctrl + double click in cursor mode ("Default" by default). */
     public void setCurrentMarkerLabel(String label) {

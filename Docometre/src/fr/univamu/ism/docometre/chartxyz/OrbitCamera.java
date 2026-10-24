@@ -13,12 +13,18 @@ import com.jogamp.opengl.glu.GLU;
  * <ul>
  * <li>left click + drag: rotation (orbit)</li>
  * <li>right click + drag: pan</li>
+ * <li>arrow keys: pan by a tenth of the visible height ({@link #panStep}),
+ * the view moves in the direction of the arrow</li>
  * <li>wheel: zoom in/out</li>
  * </ul>
  */
 public final class OrbitCamera {
 
     private static final float DEFAULT_DISTANCE_FACTOR = 3.0f;
+    /** Vertical field of view of the 3D charts (gluPerspective), in degrees. */
+    static final double FIELD_OF_VIEW = 45.0;
+    /** Fraction of the visible height moved by one step of {@link #panStep} (arrow keys). */
+    public static final float PAN_STEP = 0.1f;
 
     private final float defaultRotationX, defaultRotationY;
     private float rotationX;          // up/down tilt (degrees)
@@ -107,6 +113,21 @@ public final class OrbitCamera {
         panX += deltaX * scale;
         panY -= deltaY * scale;
     }
+
+    /**
+     * Moves the view by steps of {@link #PAN_STEP} of the height visible at
+     * the center of the data (it follows the zoom): stepsX > 0 to the right,
+     * stepsY > 0 upwards, in screen directions (the content moves the other
+     * way, as with a drag in the opposite direction).
+     */
+    public void panStep(int stepsX, int stepsY, float radius) {
+        float visibleHeight = (float) (2 * distance(radius) * Math.tan(Math.toRadians(FIELD_OF_VIEW / 2)));
+        panX -= stepsX * PAN_STEP * visibleHeight;
+        panY -= stepsY * PAN_STEP * visibleHeight;
+    }
+
+    /** Pan (x, y) applied in front of the rotations, in data units (for the tests). */
+    float[] getPan() { return new float[]{panX, panY}; }
 
     public void zoom(float amount) {
         distanceFactor += amount;

@@ -100,7 +100,8 @@ public class MarkerLogicTest {
         int[] at2 = window(r2, 5, 2.5);
         r2.doubleClick(ChartInteraction.LEFT_BUTTON, ChartInteraction.CTRL, at2[0], at2[1], 800, 600);
         frame(r2);
-        check("2D: no markers (1D only)", r2.getMarkersCurves().isEmpty());
+        check("2D: Ctrl + double click adds a marker on a point of the trajectory", r2.getMarkersCurves().size() == 1
+                && r2.getMarkersGroup(r2.getCurves().get(0), PlotRenderer.DEFAULT_MARKER_LABEL).length == 1);
 
         // Listeners: one notification per marker, with the parameters of addMarker / removeMarker
         List<String> events = new ArrayList<>();

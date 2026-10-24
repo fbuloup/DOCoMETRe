@@ -26,6 +26,14 @@ public interface ChartInteraction {
     char TAB = '\t';
     /** Character passed to {@link #keyPressed} for Shift + Tab (private use character). */
     char BACK_TAB = '\uE000';
+    /** Character passed to {@link #keyPressed} for the Left arrow key (private use character). */
+    char ARROW_LEFT = '\uE001';
+    /** Character passed to {@link #keyPressed} for the Right arrow key (private use character). */
+    char ARROW_RIGHT = '\uE002';
+    /** Character passed to {@link #keyPressed} for the Up arrow key (private use character). */
+    char ARROW_UP = '\uE003';
+    /** Character passed to {@link #keyPressed} for the Down arrow key (private use character). */
+    char ARROW_DOWN = '\uE004';
 
     /**
      * Toolkit-specific factors: mouse displacements and wheel steps do not
@@ -109,7 +117,8 @@ public interface ChartInteraction {
 
     /**
      * Keyboard key (lower-case character, {@link #ESCAPE}, {@link #BACKSPACE},
-     * {@link #TAB} or {@link #BACK_TAB}); no effect if it is not handled.
+     * {@link #TAB}, {@link #BACK_TAB}, {@link #ARROW_LEFT}, {@link #ARROW_RIGHT},
+     * {@link #ARROW_UP} or {@link #ARROW_DOWN}); no effect if it is not handled.
      */
     void keyPressed(char key);
 }

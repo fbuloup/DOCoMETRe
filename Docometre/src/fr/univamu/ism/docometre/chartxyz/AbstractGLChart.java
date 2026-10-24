@@ -44,6 +44,9 @@ public abstract class AbstractGLChart<C extends CurveData<C>, R extends CurveCha
     /** Renderer of the chart, for the settings that are not exposed here. */
     public R getRenderer() { return renderer; }
 
+    /** SWT control holding the OpenGL surface (drag and drop target, menus, focus...). */
+    public Control getControl() { return host.getControl(); }
+
     @Override
     public void close() {
         host.close();
@@ -225,6 +228,19 @@ public abstract class AbstractGLChart<C extends CurveData<C>, R extends CurveCha
 
     public boolean isDecimationEnabled() {
         return renderer.isDecimationEnabled();
+    }
+
+    /**
+     * Enables (default) or disables the fading of the 2D and 3D curves
+     * towards their oldest samples; disabled, the curves have a uniform
+     * color. No effect on 1D charts.
+     */
+    public void setTrailFading(boolean fading) {
+        renderer.setTrailFading(fading);
+    }
+
+    public boolean isTrailFading() {
+        return renderer.isTrailFading();
     }
 
     // ------------------------------------------------------------------

@@ -34,6 +34,8 @@ import com.jogamp.opengl.GLAutoDrawable;
  * <ul>
  * <li>left button + drag: rectangle zoom</li>
  * <li>right button + drag: pan</li>
+ * <li>arrow keys: pan by a tenth of the view ({@link #panStep}), the view
+ * moves in the direction of the arrow</li>
  * <li>Escape: cancels the rectangle being drawn</li>
  * <li>U or Backspace: goes back to the previous window</li>
  * <li>R: goes back to the initial view (also clears the history)</li>
@@ -62,14 +64,18 @@ import com.jogamp.opengl.GLAutoDrawable;
  * removes it. {@link StaticCursorListener}s receive its position and the
  * differences.
  *
- * Markers (charts where {@link #supportsMarkers()} is true, 1D): points
- * identified by a label ("Max", "Min"...) and placed on a curve, whose color
- * they take. The markers of a curve with the same label form a group,
+ * Markers (charts where {@link #supportsMarkers()} is true, 1D and 2D):
+ * points identified by a label ("Max", "Min"...) and placed on a curve, whose
+ * color they take. The markers of a curve with the same label form a group,
  * identified by (curve, label): two curves can have groups with the same
- * label (they are distinct groups). A marker is drawn as a dotted vertical
- * line, a diamond on the point and the label at the foot of the line, on the
- * abscissa axis (no coordinates), moved aside when a cursor label or another
- * marker label occupies its place. In cursor mode, Ctrl + left double click
+ * label (they are distinct groups). In 1D, a marker is drawn as a dotted
+ * vertical line, a diamond on the point and the label at the foot of the
+ * line, on the abscissa axis (no coordinates), moved aside when a cursor
+ * label or another marker label occupies its place; in 2D
+ * ({@link #markersOnPoints()}), as a circle filled in white on the point,
+ * with the label next to it. The markers, their labels and the size of
+ * their symbols can be set ({@link #setMarkersVisible},
+ * {@link #setMarkerLabelsVisible}, {@link #setMarkerSize}). In cursor mode, Ctrl + left double click
  * adds a marker with the current label ({@link #setCurrentMarkerLabel},
  * "Default" by default) on the point designated by the cursor, to the group
  * of the curve followed by the cursor; adding a marker that already exists
@@ -122,6 +128,10 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     private final Deque<double[]> zoomHistory = new ArrayDeque<>();
     private final Object viewLock = new Object();
     private final List<ZoomListener> zoomListeners = new CopyOnWriteArrayList<>();
+    private final List<ViewListener> viewListeners = new CopyOnWriteArrayList<>();
+    // Last view notified to the view listeners (rendering thread only)
+    private double[] notifiedView;
+    private boolean notifiedAutomatic;
 
     // Cursor (C key): settings modifiable from any thread
     private volatile boolean cursorEnabled;
@@ -155,6 +165,8 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
 
     private volatile StaticCursor staticCursor; // null = none
 
+    /** Size of the marker symbols until {@link #setMarkerSize} is called, in pixels. */
+    public static final int DEFAULT_MARKER_SIZE = 5;
     /** Label of the new markers until {@link #setCurrentMarkerLabel} is called. */
     public static final String DEFAULT_MARKER_LABEL = "Default";
     /** Marker: point in data units (in 1D, x = absolute time) on a curve, with the label of its group. */
@@ -196,6 +208,9 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     private final Object markersLock = new Object();
     private volatile String currentMarkerLabel = DEFAULT_MARKER_LABEL;
     private volatile boolean markersInteractive = true; // mouse actions on the markers (add, remove, select)
+    private volatile boolean markersVisible = true;
+    private volatile boolean markerLabelsVisible = true;
+    private volatile int markerSize = DEFAULT_MARKER_SIZE;
     // Rendering thread only: marker requested by Ctrl + double click, badges drawn in the current frame
     private boolean markerRequested;
     private List<MarkerBadge> markerBadges = new ArrayList<>();
@@ -251,6 +266,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         updateData();
         computeMargins(); // plotWidth and plotHeight included
         computeView();
+        notifyView();
         updateCursor();
 
         double stepX = AxisTicks.niceStep((viewMaxX - viewMinX) / TARGET_TICK_COUNT);
@@ -340,6 +356,21 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
 
     /** Are the markers (Ctrl + double click in cursor mode) available on this chart (no by default)? */
     protected boolean supportsMarkers() { return false; }
+
+    /**
+     * True if the markers are drawn on their point only (circle, label next
+     * to it: 2D), false (default) for a vertical line with the label at the
+     * foot of the line, on the abscissa axis (1D).
+     */
+    protected boolean markersOnPoints() { return false; }
+
+    /**
+     * True if the view of the frame is the initial view: no zoom window, no
+     * wheel zoom and no pan (subclasses add their own zoom state).
+     */
+    protected boolean isAutomaticView() {
+        return zoomWindow == null && zoom == 1f && panX == 0f && panY == 0f;
+    }
 
     /**
      * Data abscissa of a marker placed on point i of the curve, whose axis
@@ -876,6 +907,10 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
             case 'u':
             case BACKSPACE: undoZoom(); break;
             case 'c': toggleCursor(); break;
+            case ARROW_LEFT: panStep(-1, 0); break;
+            case ARROW_RIGHT: panStep(1, 0); break;
+            case ARROW_UP: panStep(0, 1); break;
+            case ARROW_DOWN: panStep(0, -1); break;
             case TAB: if (cursorEnabled) selectNextCursorCurve(1); break;
             case BACK_TAB: if (cursorEnabled) selectNextCursorCurve(-1); break;
             default: super.keyPressed(key); break;
@@ -900,6 +935,21 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         }
         panX -= dx * width / plotWidth / zoom;
         panY += dy * height / plotHeight / zoom;
+    }
+
+    /** Fraction of the view moved by one step of {@link #panStep} (arrow keys). */
+    public static final float PAN_STEP = 0.1f;
+
+    /**
+     * Moves the view by steps of {@link #PAN_STEP} of its width / height
+     * (arrow keys): stepsX > 0 to the right, stepsY > 0 upwards (the content
+     * moves the other way). If a zoom window exists, it is the one that
+     * moves.
+     */
+    public void panStep(int stepsX, int stepsY) {
+        if (width <= 0 || height <= 0 || plotWidth <= 0 || plotHeight <= 0) return; // layout not known yet
+        // pan() takes displacements of the content, as a fraction of the component size (downwards for y)
+        pan(-stepsX * PAN_STEP * plotWidth / width, stepsY * PAN_STEP * plotHeight / height);
     }
 
     /** True if the mouse is over the plot area (last position received, in the layout of the last frame). */
@@ -1221,6 +1271,28 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     public boolean isMarkersInteractive() { return markersInteractive; }
 
     /**
+     * Shows (default) or hides all the markers; hidden markers are kept and
+     * their labels cannot be clicked. Usable from any thread.
+     */
+    public void setMarkersVisible(boolean visible) { markersVisible = visible; }
+    public boolean isMarkersVisible() { return markersVisible; }
+
+    /**
+     * Shows (default) or hides the marker labels (the symbols remain); hidden
+     * labels cannot be clicked. Usable from any thread.
+     */
+    public void setMarkerLabelsVisible(boolean visible) { markerLabelsVisible = visible; }
+    public boolean isMarkerLabelsVisible() { return markerLabelsVisible; }
+
+    /**
+     * Size of the marker symbols, in pixels: half-diagonal of the diamond in
+     * 1D, radius of the circle in 2D ({@link #DEFAULT_MARKER_SIZE} by default,
+     * limited to [1, 50]). Usable from any thread.
+     */
+    public void setMarkerSize(int size) { markerSize = Math.max(1, Math.min(50, size)); }
+    public int getMarkerSize() { return markerSize; }
+
+    /**
      * Adds a marker to the group (curve, label), drawn in the color of the
      * curve (data units: in 1D, x is the time since the first sample,
      * whatever the display mode).
@@ -1468,6 +1540,14 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
      */
     private void drawMarkers(GL2 gl) {
         List<MarkerBadge> badges = new ArrayList<>();
+        if (!markersVisible) {
+            markerBadges = badges;
+            return;
+        }
+        if (markersOnPoints()) {
+            drawPointMarkers(gl, badges);
+            return;
+        }
         List<C> curves = frameCurves;
         List<Marker> markers = new ArrayList<>();
         List<float[]> colors = new ArrayList<>();
@@ -1514,7 +1594,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
 
             if (marker.y >= viewMinY && marker.y <= viewMaxY) { // diamond on the point (larger and outlined when selected)
                 float py = (float) (marginBottom + (marker.y - viewMinY) * plotHeight / (viewMaxY - viewMinY));
-                float d = isSelected ? 8 : 5;
+                float d = markerSize + (isSelected ? 3 : 0);
                 gl.glColor3f(c[0], c[1], c[2]);
                 gl.glBegin(GL2.GL_POLYGON);
                 gl.glVertex2f(px, py - d);
@@ -1534,6 +1614,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
                 }
             }
 
+            if (!markerLabelsVisible) continue;
             float[] rect = xBadge(marker.label, px, font, h);
             placeXBadge(rect, obstacles);
             obstacles.add(rect);
@@ -1546,6 +1627,78 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         }
         if (selectedBadge != null) drawMarkerBadge(gl, selectedBadge, font, 2.5f); // above the others
         markerBadges = badges;
+    }
+
+    /**
+     * Markers drawn on their point (2D): circle filled in white and outlined
+     * in the color of their curve (larger and thicker for the selected
+     * marker), label next to the point, below on the right (those of the
+     * current label are outlined).
+     */
+    private void drawPointMarkers(GL2 gl, List<MarkerBadge> badges) {
+        List<C> curves = frameCurves;
+        List<Marker> markers = new ArrayList<>();
+        List<float[]> colors = new ArrayList<>();
+        synchronized (markersLock) {
+            for (int k = 0; k < curves.size(); k++) { // curves of the frame: those removed since are not drawn
+                Map<String, List<Marker>> groups = markerGroups.get(curves.get(k));
+                if (groups == null) continue;
+                float[] color = CurveStyles.colorOf(curves.get(k));
+                for (List<Marker> group : groups.values()) {
+                    for (Marker marker : group) {
+                        markers.add(marker);
+                        colors.add(color);
+                    }
+                }
+            }
+        }
+        ChartFont font = scaleFont;
+        float h = text.lineHeight(font) + 4;
+        String current = currentMarkerLabel;
+        Marker selected = selectedMarker;
+        MarkerBadge selectedBadge = null;
+        boolean labels = markerLabelsVisible;
+        gl.glEnable(GL2.GL_SCISSOR_TEST); // symbols clipped by the plot area
+        gl.glScissor(marginLeft, marginBottom, plotWidth, plotHeight);
+        for (int m = 0; m < markers.size(); m++) {
+            Marker marker = markers.get(m);
+            double ax = markerAxisX(marker.x);
+            if (Double.isNaN(ax) || ax < viewMinX || ax > viewMaxX || marker.y < viewMinY || marker.y > viewMaxY) continue;
+            float[] c = colors.get(m);
+            float px = (float) (marginLeft + (ax - viewMinX) * plotWidth / (viewMaxX - viewMinX));
+            float py = (float) (marginBottom + (marker.y - viewMinY) * plotHeight / (viewMaxY - viewMinY));
+            boolean isSelected = selected != null && marker.matches(selected.curve, selected.label, selected.x, selected.y);
+            float r = markerSize + (isSelected ? 2 : 0);
+            gl.glColor3f(1f, 1f, 1f);
+            drawCircle(gl, GL2.GL_POLYGON, px, py, r);
+            gl.glColor3f(c[0], c[1], c[2]);
+            gl.glLineWidth(isSelected ? 3f : 1.5f);
+            drawCircle(gl, GL2.GL_LINE_LOOP, px, py, r);
+            gl.glLineWidth(1f);
+            if (!labels) continue;
+            float w = text.width(marker.label, font) + 8;
+            float[] rect = {px + r + 1, py - r - h, w, h};
+            MarkerBadge badge = new MarkerBadge(marker, c, rect);
+            badges.add(badge);
+            if (isSelected) selectedBadge = badge;
+        }
+        gl.glDisable(GL2.GL_SCISSOR_TEST);
+        for (MarkerBadge badge : badges) {
+            if (badge != selectedBadge) drawMarkerBadge(gl, badge, font, badge.marker.label.equals(current) ? 1f : 0f);
+        }
+        if (selectedBadge != null) drawMarkerBadge(gl, selectedBadge, font, 2.5f); // above the others
+        markerBadges = badges;
+    }
+
+    /** Circle of radius r centered on (x, y), in pixels: filled (GL_POLYGON) or outline (GL_LINE_LOOP). */
+    private static void drawCircle(GL2 gl, int mode, float x, float y, float r) {
+        int segments = 24;
+        gl.glBegin(mode);
+        for (int i = 0; i < segments; i++) {
+            double a = 2 * Math.PI * i / segments;
+            gl.glVertex2f(x + (float) (r * Math.cos(a)), y + (float) (r * Math.sin(a)));
+        }
+        gl.glEnd();
     }
 
     /** Label of a marker, outlined in white if outline > 0 (line width: 1 for the current label, thicker for the selected marker). */
@@ -1627,6 +1780,45 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
 
     public void addZoomListener(ZoomListener listener) { if (listener != null) zoomListeners.add(listener); }
     public void removeZoomListener(ZoomListener listener) { zoomListeners.remove(listener); }
+
+    /**
+     * Adds a listener of the displayed view (see {@link ViewListener}): unlike
+     * the {@link ZoomListener}s, it is also told about the wheel zoom and the
+     * pan without zoom window, and about the automatic fit. A new listener
+     * receives the view of the next frame.
+     */
+    public void addViewListener(ViewListener listener) {
+        if (listener == null) return;
+        viewListeners.add(listener);
+        notifiedView = null; // the next frame notifies the current view
+    }
+    public void removeViewListener(ViewListener listener) { viewListeners.remove(listener); }
+
+    /** Bounds {xMin, xMax, yMin, yMax} of the view displayed by the last frame (copy), or null before the first frame. */
+    public double[] getView() {
+        double[] view = displayedView;
+        return (view != null) ? view.clone() : null;
+    }
+
+    private volatile double[] displayedView; // never modified in place
+
+    /** Notifies the view listeners if the view of the frame differs from the last one notified. */
+    private void notifyView() {
+        double[] view = {viewMinX, viewMaxX, viewMinY, viewMaxY};
+        displayedView = view;
+        if (viewListeners.isEmpty()) return;
+        boolean automatic = isAutomaticView();
+        if (Arrays.equals(view, notifiedView) && automatic == notifiedAutomatic) return;
+        notifiedView = view;
+        notifiedAutomatic = automatic;
+        for (ViewListener listener : viewListeners) {
+            try {
+                listener.viewChanged(view.clone(), automatic);
+            } catch (RuntimeException e) {
+                e.printStackTrace(); // an error in a listener must not interrupt rendering
+            }
+        }
+    }
 
     /** Changing scales displays the new scales: the zoom window is removed. */
     @Override

@@ -78,6 +78,7 @@ import fr.univamu.ism.docometre.analyse.datamodel.XYZChart;
 import fr.univamu.ism.docometre.analyse.wizard.SelectChannelsWizard;
 import fr.univamu.ism.docometre.analyse.wizard.SelectChannelsWizard.ChannelsNumber;
 import fr.univamu.ism.docometre.chartxyz.editors.GLChannelEditor;
+import fr.univamu.ism.docometre.chartxyz.editors.GLXYChartEditor;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
 public class ChannelEditorActionBarContributor extends EditorActionBarContributor implements IPerspectiveListener {
@@ -137,7 +138,7 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 			}
 			
 			ChannelsNumber channelsNumber = ChannelsNumber.ONE;
-			if(chartEditor instanceof XYChartEditor) {
+			if(chartEditor instanceof XYChartEditor || chartEditor instanceof GLXYChartEditor) {
 				channelsNumber = ChannelsNumber.TWO;
 				signals.add(Channel.timeChannel);
 			}

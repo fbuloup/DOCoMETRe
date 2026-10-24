@@ -80,15 +80,22 @@ final class SWTGLHost extends GLHost {
 
         // Tab: passed to the renderer if it uses it (cursor on several curves),
         // instead of moving the focus to the next component
+        // The arrow keys stay in the chart (pan) instead of moving the focus
         canvas.addListener(SWT.Traverse, e -> {
             if ((e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) && interaction.usesTabKey()) {
                 e.doit = false; // the key then arrives as KeyDown
+            }
+            if (e.detail == SWT.TRAVERSE_ARROW_NEXT || e.detail == SWT.TRAVERSE_ARROW_PREVIOUS) {
+                e.doit = false;
             }
         });
 
         // Escape and Backspace arrive as the ESCAPE and BACKSPACE characters
         canvas.addListener(SWT.KeyDown, e -> {
-            if (e.character == SWT.TAB) {
+            char arrow = toArrow(e.keyCode);
+            if (arrow != 0) {
+                interaction.keyPressed(arrow);
+            } else if (e.character == SWT.TAB) {
                 interaction.keyPressed((e.stateMask & SWT.SHIFT) != 0 ? ChartInteraction.BACK_TAB : ChartInteraction.TAB);
             } else {
                 interaction.keyPressed(Character.toLowerCase(e.character));
@@ -107,6 +114,17 @@ final class SWTGLHost extends GLHost {
         });
 
         canvas.setFocus();
+    }
+
+    /** SWT key code of an arrow key -> ChartInteraction.ARROW_..., 0 for the other keys. */
+    private static char toArrow(int keyCode) {
+        switch (keyCode) {
+            case SWT.ARROW_LEFT: return ChartInteraction.ARROW_LEFT;
+            case SWT.ARROW_RIGHT: return ChartInteraction.ARROW_RIGHT;
+            case SWT.ARROW_UP: return ChartInteraction.ARROW_UP;
+            case SWT.ARROW_DOWN: return ChartInteraction.ARROW_DOWN;
+            default: return 0;
+        }
     }
 
     /** Modifier keys of an SWT mouse event: Ctrl, or Command on macOS. */
