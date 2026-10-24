@@ -77,7 +77,8 @@ public class GLChannelEditor extends EditorPart implements TrialsEditor, Chart2D
 	@Override
 	public void update() {
 		if(channel.isModified() && channel.isSignal()) {
-			((GLSignalContainerEditor)container).update();
+			if(container instanceof GLSignalContainerEditor) ((GLSignalContainerEditor)container).update();
+			if(container instanceof GLCategoryContainerEditor) ((GLCategoryContainerEditor)container).update();
 		}
 	}
 
@@ -147,6 +148,11 @@ public class GLChannelEditor extends EditorPart implements TrialsEditor, Chart2D
 			GLChart1D chart = (GLChart1D) signalEditor.getChart();
 			chart.getRenderer().pan(-0.1f, 0);
 		}
+		if(container instanceof GLCategoryContainerEditor) {
+			GLCategoryContainerEditor categoryEditor = (GLCategoryContainerEditor)container;
+			GLChart1D chart = (GLChart1D) categoryEditor.getChart();
+			chart.getRenderer().pan(-0.1f, 0);
+		}
 	}
 
 	@Override
@@ -154,6 +160,11 @@ public class GLChannelEditor extends EditorPart implements TrialsEditor, Chart2D
 		if(container instanceof GLSignalContainerEditor) {
 			GLSignalContainerEditor signalEditor = (GLSignalContainerEditor)container;
 			GLChart1D chart = (GLChart1D) signalEditor.getChart();
+			chart.getRenderer().pan(0.1f, 0);
+		}
+		if(container instanceof GLCategoryContainerEditor) {
+			GLCategoryContainerEditor categoryEditor = (GLCategoryContainerEditor)container;
+			GLChart1D chart = (GLChart1D) categoryEditor.getChart();
 			chart.getRenderer().pan(0.1f, 0);
 		}
 	}
@@ -165,6 +176,11 @@ public class GLChannelEditor extends EditorPart implements TrialsEditor, Chart2D
 			GLChart1D chart = (GLChart1D) signalEditor.getChart();
 			chart.getRenderer().pan(0, -0.1f);
 		}
+		if(container instanceof GLCategoryContainerEditor) {
+			GLCategoryContainerEditor categoryEditor = (GLCategoryContainerEditor)container;
+			GLChart1D chart = (GLChart1D) categoryEditor.getChart();
+			chart.getRenderer().pan(0, -0.1f);
+		}
 	}
 
 	@Override
@@ -172,6 +188,11 @@ public class GLChannelEditor extends EditorPart implements TrialsEditor, Chart2D
 		if(container instanceof GLSignalContainerEditor) {
 			GLSignalContainerEditor signalEditor = (GLSignalContainerEditor)container;
 			GLChart1D chart = (GLChart1D) signalEditor.getChart();
+			chart.getRenderer().pan(0, 0.1f);
+		}
+		if(container instanceof GLCategoryContainerEditor) {
+			GLCategoryContainerEditor categoryEditor = (GLCategoryContainerEditor)container;
+			GLChart1D chart = (GLChart1D) categoryEditor.getChart();
 			chart.getRenderer().pan(0, 0.1f);
 		}
 	}
@@ -183,6 +204,11 @@ public class GLChannelEditor extends EditorPart implements TrialsEditor, Chart2D
 			GLChart1D chart = (GLChart1D) signalEditor.getChart();
 			chart.getRenderer().zoom(1f);
 		}
+		if(container instanceof GLCategoryContainerEditor) {
+			GLCategoryContainerEditor categoryEditor = (GLCategoryContainerEditor)container;
+			GLChart1D chart = (GLChart1D) categoryEditor.getChart();
+			chart.getRenderer().zoom(1f);
+		}
 	}
 
 	@Override
@@ -192,6 +218,11 @@ public class GLChannelEditor extends EditorPart implements TrialsEditor, Chart2D
 			GLChart1D chart = (GLChart1D) signalEditor.getChart();
 			chart.getRenderer().zoom(-1f);
 		}
+		if(container instanceof GLCategoryContainerEditor) {
+			GLCategoryContainerEditor categoryEditor = (GLCategoryContainerEditor)container;
+			GLChart1D chart = (GLChart1D) categoryEditor.getChart();
+			chart.getRenderer().zoom(-1f);
+		}
 	}
 
 	@Override
@@ -199,6 +230,11 @@ public class GLChannelEditor extends EditorPart implements TrialsEditor, Chart2D
 		if(container instanceof GLSignalContainerEditor) {
 			GLSignalContainerEditor signalEditor = (GLSignalContainerEditor)container;
 			GLChart1D chart = (GLChart1D) signalEditor.getChart();
+			chart.getRenderer().resetView();
+		}
+		if(container instanceof GLCategoryContainerEditor) {
+			GLCategoryContainerEditor categoryEditor = (GLCategoryContainerEditor)container;
+			GLChart1D chart = (GLChart1D) categoryEditor.getChart();
 			chart.getRenderer().resetView();
 		}
 	}

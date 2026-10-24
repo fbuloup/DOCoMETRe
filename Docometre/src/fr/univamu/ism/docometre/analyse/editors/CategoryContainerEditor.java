@@ -68,6 +68,7 @@ import org.eclipse.swtchart.ILineSeries.PlotSymbolType;
 import org.eclipse.swtchart.ISeries.SeriesType;
 import org.eclipse.swtchart.extensions.charts.InteractiveChart;
 
+import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
@@ -93,7 +94,12 @@ public class CategoryContainerEditor extends Composite implements ISelectionChan
 		gl.marginHeight = 5;
 		gl.marginWidth = 5;
 		
-		chart = ChannelEditorWidgetsFactory.createChart(this, 1, true, false);
+		Object chartObject = ChannelEditorWidgetsFactory.createChart(this, 1, true, false);
+		if(!(chartObject instanceof InteractiveChart)) {
+			Activator.logErrorMessage("Error while trying to create chart");
+			return;
+		}
+		chart = (InteractiveChart) chartObject;
 		ChannelEditorWidgetsFactory.createSeparator(this, false, true, 1, SWT.VERTICAL);
 		
 		new MarkersManager(this);

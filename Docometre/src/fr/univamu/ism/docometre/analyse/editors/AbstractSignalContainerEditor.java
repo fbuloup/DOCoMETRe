@@ -215,7 +215,7 @@ public abstract class AbstractSignalContainerEditor extends Composite implements
 		channelContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 		
 		if(!createChart(channelContainer)) {
-			Activator.logErrorMessage("");
+			Activator.logErrorMessage("Error while trying to create chart");
 			return;
 		}
 		
