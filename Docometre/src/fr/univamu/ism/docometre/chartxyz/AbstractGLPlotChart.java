@@ -190,6 +190,28 @@ public abstract class AbstractGLPlotChart<C extends CurveData<C>, R extends Plot
         return renderer.getMarkersGroup(curve, label);
     }
 
+    /**
+     * Highlights a marker of the group (curve, label), designated by its
+     * coordinates (data units), for example the marker selected in a list.
+     */
+    public void setSelectedMarker(C curve, String label, double x, double y) {
+        renderer.setSelectedMarker(curve, label, x, y);
+    }
+
+    /** No more highlighted marker. */
+    public void clearSelectedMarker() {
+        renderer.clearSelectedMarker();
+    }
+
+    /** Listener of the markers selected with Ctrl + click on their label (see {@link MarkerSelectedListener}). */
+    public void addMarkerSelectedListener(MarkerSelectedListener<C> listener) {
+        renderer.addMarkerSelectedListener(listener);
+    }
+
+    public void removeMarkerSelectedListener(MarkerSelectedListener<C> listener) {
+        renderer.removeMarkerSelectedListener(listener);
+    }
+
     /** Listener of the markers added (see {@link MarkerAddedListener} for the calling thread). */
     public void addMarkerAddedListener(MarkerAddedListener<C> listener) {
         renderer.addMarkerAddedListener(listener);

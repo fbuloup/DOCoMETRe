@@ -7,7 +7,8 @@ import com.jogamp.opengl.GL2;
  *
  * The view automatically fits the data of the time window (or the fixed
  * scales); zoom and pan apply on top of it, as well as the rectangle zoom
- * (see {@link PlotRenderer}).
+ * (see {@link PlotRenderer}). The wheel zooms on both axes around the
+ * point under the mouse.
  * Cursor (C key, see {@link PlotRenderer}): it designates the point of the
  * trajectory closest to the mouse.
  * Keyboard command specific to 2D: E, same scale on x and y.
@@ -102,6 +103,25 @@ public class Chart2DRenderer extends PlotRenderer<Curve2DData> {
 
         viewMinX = centerX - halfX; viewMaxX = centerX + halfX;
         viewMinY = centerY - halfY; viewMaxY = centerY + halfY;
+    }
+
+    /**
+     * Same zoom on both axes; the pan is adjusted so that the anchor keeps
+     * its position on the screen. With "same scale" (E), the widening of the
+     * tightest axis is proportional: the anchor stays in place too.
+     */
+    @Override
+    protected void zoomView(double factor, double ax, double ay) {
+        double centerX = (viewMinX + viewMaxX) / 2, centerY = (viewMinY + viewMaxY) / 2;
+        float newZoom = clampZoom(zoom * factor);
+        double f = newZoom / zoom; // actual factor (limited zoom)
+        // Unit of panX / panY: twice the unzoomed half range of each axis, as in computeView
+        double[] fixed = getFixedScaleBounds();
+        double halfX = (fixed != null) ? (fixed[1] - fixed[0]) / 2 : halfExtent(dataMinX, dataMaxX);
+        double halfY = (fixed != null) ? (fixed[3] - fixed[2]) / 2 : halfExtent(dataMinY, dataMaxY);
+        if (halfX > 0) panX += (float) ((ax + (centerX - ax) / f - centerX) / (2 * halfX));
+        if (halfY > 0) panY += (float) ((ay + (centerY - ay) / f - centerY) / (2 * halfY));
+        zoom = newZoom;
     }
 
     @Override

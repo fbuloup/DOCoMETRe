@@ -1013,5 +1013,11 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		chart.redraw();
 		updateRange();
 	}
+
+	@Override
+	public void update() {
+		// TODO Auto-generated method stub
+		
+	}
 	
 }

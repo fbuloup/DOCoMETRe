@@ -17,16 +17,32 @@ public final class CurveStyles {
      * fewest curves (the first one in this order in case of a tie), see
      * {@link CurveChartRenderer#addCurve}.
      */
-    private static final CurveColor[] PALETTE = {
-            new CurveColor(89, 191, 255),  // blue
-            new CurveColor(255, 153, 51),  // orange
-            new CurveColor(115, 230, 115), // green
-            new CurveColor(242, 102, 128), // pinkish red
-            new CurveColor(191, 140, 255), // purple
-            new CurveColor(255, 230, 76),  // yellow
-            new CurveColor(76, 230, 230),  // cyan
-            new CurveColor(230, 230, 230), // light gray
-    };
+	public static final CurveColor[] PALETTE = {
+	        new CurveColor(89, 191, 255),  // blue
+	        new CurveColor(255, 153, 51),  // orange
+	        new CurveColor(115, 230, 115), // green
+	        new CurveColor(242, 102, 128), // pinkish red
+	        new CurveColor(191, 140, 255), // purple
+	        new CurveColor(255, 230, 76),  // yellow
+	        new CurveColor(76, 230, 230),  // cyan
+	        new CurveColor(230, 230, 230), // light gray
+	        new CurveColor(156, 152, 94),  // olive
+	        new CurveColor(39, 169, 132),  // teal green
+	        new CurveColor(253, 184, 221), // light pink
+	        new CurveColor(255, 181, 161), // peach
+	        new CurveColor(43, 164, 179),  // petrol blue
+	        new CurveColor(110, 145, 251), // cornflower blue
+	        new CurveColor(234, 115, 78),  // terracotta
+	        new CurveColor(235, 199, 145), // sand
+	        new CurveColor(221, 233, 171), // pale lime
+	        new CurveColor(186, 195, 255), // lavender
+	        new CurveColor(98, 166, 65),   // leaf green
+	        new CurveColor(200, 126, 179), // mauve
+	        new CurveColor(187, 141, 98),  // caramel
+	        new CurveColor(62, 254, 201),  // mint
+	        new CurveColor(173, 191, 73),  // pistachio
+	        new CurveColor(144, 194, 147), // sage
+	};
 
     /** Color of a curve in automatic color that is in no chart (normally never drawn). */
     private static final CurveColor NO_COLOR = new CurveColor(128, 128, 128);
@@ -187,7 +203,7 @@ public final class CurveStyles {
     }
 
     /** Height of a legend row: the font height, or the line width if it is larger. */
-    private static float legendRowHeight(GLText text, ChartFont font, List<? extends CurveData<?>> curves) {
+    static float legendRowHeight(GLText text, ChartFont font, List<? extends CurveData<?>> curves) {
         float height = text.lineHeight(font) + 2;
         for (CurveAppearance curve : curves) height = Math.max(height, legendLineWidth(curve) + 6);
         return height;

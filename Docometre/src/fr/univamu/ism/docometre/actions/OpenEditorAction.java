@@ -72,6 +72,7 @@ import fr.univamu.ism.docometre.analyse.editors.XYZChartEditor;
 import fr.univamu.ism.docometre.analyse.editors.functioneditor.CustomerFunctionEditor;
 import fr.univamu.ism.docometre.analyse.views.FunctionsView;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
+import fr.univamu.ism.docometre.chartxyz.editors.GLChannelEditor;
 import fr.univamu.ism.docometre.chartxyz.editors.GLDataEditor;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ui.dacqconfigurationeditor.ADWinDACQConfigurationEditor;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor.ADWinProcessEditor;
@@ -161,7 +162,10 @@ public class OpenEditorAction extends Action implements ISelectionListener, IWor
 				
 				if(ResourceType.isParameters(resource)) openEditor(resource, ParametersEditor.ID);
 				
-				if(ResourceType.isChannel(resource)) openEditor(resource, ChannelEditor.ID);
+				if(ResourceType.isChannel(resource)) {
+					if(Activator.useOpenGLV2()) openEditor(resource, GLChannelEditor.ID);
+					else openEditor(resource, ChannelEditor.ID);
+				}
 				
 				if(ResourceType.isDataProcessing(resource)) editorID = DataProcessEditor.ID;
 				

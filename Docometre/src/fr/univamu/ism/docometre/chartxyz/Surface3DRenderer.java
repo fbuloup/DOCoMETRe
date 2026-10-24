@@ -189,7 +189,18 @@ public class Surface3DRenderer extends GLChartRenderer {
     @Override
     public void resetView() { camera.reset(); }
 
-    public void toggleSolid() { showSolid = !showSolid; }
-    public void toggleWireframe() { showWireframe = !showWireframe; }
-    public void toggleLighting() { lightingEnabled = !lightingEnabled; }
+    /** Shows or hides the solid surface (also with the S key). */
+    public void setSolidVisible(boolean visible) { setOption(DisplayOption.SOLID, visible, () -> showSolid, v -> showSolid = v); }
+    public boolean isSolidVisible() { return showSolid; }
+    public void toggleSolid() { toggleOption(DisplayOption.SOLID, () -> showSolid, v -> showSolid = v); }
+
+    /** Shows or hides the wireframe (also with the W key). */
+    public void setWireframeVisible(boolean visible) { setOption(DisplayOption.WIREFRAME, visible, () -> showWireframe, v -> showWireframe = v); }
+    public boolean isWireframeVisible() { return showWireframe; }
+    public void toggleWireframe() { toggleOption(DisplayOption.WIREFRAME, () -> showWireframe, v -> showWireframe = v); }
+
+    /** Enables or disables the lighting (also with the H key). */
+    public void setLightingEnabled(boolean enabled) { setOption(DisplayOption.LIGHTING, enabled, () -> lightingEnabled, v -> lightingEnabled = v); }
+    public boolean isLightingEnabled() { return lightingEnabled; }
+    public void toggleLighting() { toggleOption(DisplayOption.LIGHTING, () -> lightingEnabled, v -> lightingEnabled = v); }
 }

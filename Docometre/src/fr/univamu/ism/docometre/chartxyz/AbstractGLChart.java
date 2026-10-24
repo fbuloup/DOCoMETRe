@@ -100,9 +100,28 @@ public abstract class AbstractGLChart<C extends CurveData<C>, R extends CurveCha
         return renderer.removeCurve(name);
     }
 
+    /**
+     * Removes all the curves from the chart, as {@link #removeCurve(CurveData)}
+     * one by one: they can be added to another chart, their names are
+     * available again, their markers are removed (and notified).
+     */
+    public void removeAllCurves() {
+        renderer.removeAllCurves();
+    }
+
     /** Curve of the chart with this name, or null (usable from any thread). */
     public C getCurve(String name) {
         return renderer.getCurve(name);
+    }
+
+    /** Curves of the chart, in the order they were added (copy, usable from any thread). */
+    public java.util.List<C> getCurves() {
+        return renderer.getCurves();
+    }
+
+    /** Names of the curves of the chart, in the order they were added (copy, usable from any thread). */
+    public java.util.List<String> getCurvesNames() {
+        return renderer.getCurvesNames();
     }
 
     /** Number of curves currently displayed in the chart (usable from any thread). */
@@ -144,6 +163,37 @@ public abstract class AbstractGLChart<C extends CurveData<C>, R extends CurveCha
 
     public boolean isLegendVisible() {
         return renderer.isLegendVisible();
+    }
+
+    /**
+     * Shows or hides the points of the curves (also with the P key). While
+     * they are shown, the reduction of the number of points drawn is
+     * disabled, so that every sample appears.
+     */
+    public void setPointsVisible(boolean visible) {
+        renderer.setPointsVisible(visible);
+    }
+
+    public boolean isPointsVisible() {
+        return renderer.isPointsVisible();
+    }
+
+    /** Toggles the display of the points (as the P key). */
+    public void togglePoints() {
+        renderer.togglePoints();
+    }
+
+    /**
+     * Adds a listener told about each change of a display option (points,
+     * legend, grid... see {@link DisplayOption}), with the keyboard or the
+     * API; see {@link DisplayOptionListener} for the calling thread.
+     */
+    public void addDisplayOptionListener(DisplayOptionListener listener) {
+        renderer.addDisplayOptionListener(listener);
+    }
+
+    public void removeDisplayOptionListener(DisplayOptionListener listener) {
+        renderer.removeDisplayOptionListener(listener);
     }
 
     /** Actual measured frame rate, in frames per second (target: {@link GLHost#FPS}). */

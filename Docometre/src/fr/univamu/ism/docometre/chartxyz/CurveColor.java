@@ -6,13 +6,13 @@ package fr.univamu.ism.docometre.chartxyz;
  * reference is enough to change a color: the rendering thread always sees a
  * complete color.
  */
-final class CurveColor {
+public final class CurveColor {
 
     final int r, g, b;
     final float[] gl; // {r, g, b} / 255, never modified
 
     /** @throws IllegalArgumentException if a component is outside 0..255 */
-    CurveColor(int r, int g, int b) {
+    public CurveColor(int r, int g, int b) {
         if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
             throw new IllegalArgumentException("The color components must be between 0 and 255: (" + r + ", " + g + ", " + b + ").");
         }
@@ -27,7 +27,7 @@ final class CurveColor {
     }
 
     /** Copy of the 0..255 components. */
-    int[] toRGB() {
+    public int[] toRGB() {
         return new int[]{r, g, b};
     }
 }

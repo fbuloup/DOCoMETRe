@@ -50,7 +50,7 @@ import fr.univamu.ism.docometre.editors.DataEditorActionBarContributor.IDataEdit
 
 public class GLDataEditor extends EditorPart implements PartNameRefresher, IPartListener2, IDataEditorActionBarContribution {
 	
-	public static String ID = "Docometre.GL2DataEditor";
+	public static String ID = "Docometre.GLDataEditor";
 	
 	private GLChart1D chart;
 	private Curve1DData curveData;

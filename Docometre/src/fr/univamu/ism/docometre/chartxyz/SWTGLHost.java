@@ -98,6 +98,8 @@ final class SWTGLHost extends GLHost {
         // Keyboard focus as soon as the mouse enters the chart (useful when several
         // charts share a window), only if our window is active so as not to steal
         // the focus from another window or a dialog
+        canvas.addListener(SWT.MouseExit, e -> interaction.exit());
+
         canvas.addListener(SWT.MouseEnter, e -> {
             if (canvas.getShell() == canvas.getDisplay().getActiveShell()) {
                 canvas.forceFocus();

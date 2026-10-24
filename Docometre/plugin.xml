@@ -470,8 +470,15 @@
             contributorClass="fr.univamu.ism.docometre.editors.DataEditorActionBarContributor"
             default="false"
             icon="icons/samples.gif"
-            id="Docometre.GL2DataEditor"
-            name="GL2DataEditor">
+            id="Docometre.GLDataEditor"
+            name="GLDataEditor">
+      </editor>
+      <editor
+            class="fr.univamu.ism.docometre.chartxyz.editors.GLChannelEditor"
+            contributorClass="fr.univamu.ism.docometre.analyse.editors.ChannelEditorActionBarContributor"
+            default="false"
+            id="Docometre.GLChannelEditor"
+            name="GLChannelEditor">
       </editor>
    </extension>
    <extension

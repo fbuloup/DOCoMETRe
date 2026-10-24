@@ -21,6 +21,20 @@ public class GLSurface implements GLComponent {
     /** Renderer of the surface, for the display settings. */
     public Surface3DRenderer getRenderer() { return renderer; }
 
+    /**
+     * Adds a listener told about each change of a display option (solid,
+     * wireframe, lighting, axes, grid, labels; see {@link DisplayOption}),
+     * with the keyboard or the API; see {@link DisplayOptionListener} for the
+     * calling thread.
+     */
+    public void addDisplayOptionListener(DisplayOptionListener listener) {
+        renderer.addDisplayOptionListener(listener);
+    }
+
+    public void removeDisplayOptionListener(DisplayOptionListener listener) {
+        renderer.removeDisplayOptionListener(listener);
+    }
+
     @Override
     public void close() {
         host.close();

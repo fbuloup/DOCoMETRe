@@ -269,8 +269,14 @@ public abstract class CurveChartRenderer<C extends CurveData<C>> extends GLChart
     public void removeAllCurves() {
         for (C curve : curves) removeCurve(curve);
     }
-    /** Curves currently displayed. */
+    /** Curves currently displayed, in the order they were added (copy). */
     public List<C> getCurves() { return new ArrayList<>(curves); }
+    /** Names of the curves currently displayed, in the order they were added (copy). */
+    public List<String> getCurvesNames() {
+        List<String> names = new ArrayList<>(curves.size());
+        for (C curve : curves) names.add(curve.getName());
+        return names;
+    }
     /** Number of curves currently displayed (without copying the list). */
     public int getCurvesCount() { return curves.size(); }
 
@@ -464,34 +470,42 @@ public abstract class CurveChartRenderer<C extends CurveData<C>> extends GLChart
     public void setLegendFont(ChartFont font) { if (font != null) legendFont = font; }
     public ChartFont getLegendFont() { return legendFont; }
 
-    public void togglePoints() { showPoints = !showPoints; }
+    /**
+     * Shows or hides the points of the curves (applied at the next frame).
+     * While they are shown, the reduction of the number of points drawn is
+     * disabled, so that every sample appears.
+     */
+    public void setPointsVisible(boolean visible) { setOption(DisplayOption.POINTS, visible, () -> showPoints, v -> showPoints = v); }
+    public boolean isPointsVisible() { return showPoints; }
+    /** Toggles the display of the points (P key). */
+    public void togglePoints() { toggleOption(DisplayOption.POINTS, () -> showPoints, v -> showPoints = v); }
 
     /** Shows or hides the legend (applied at the next frame). */
-    public void setLegendVisible(boolean visible) { showLegend = visible; }
+    public void setLegendVisible(boolean visible) { setOption(DisplayOption.LEGEND, visible, () -> showLegend, v -> showLegend = v); }
     public boolean isLegendVisible() { return showLegend; }
     /** Toggles the legend display (N key). */
-    public void toggleLegend() { showLegend = !showLegend; }
+    public void toggleLegend() { toggleOption(DisplayOption.LEGEND, () -> showLegend, v -> showLegend = v); }
 
     /** Actual measured frame rate, in frames per second. */
     public double getFps() { return fpsCounter.getFps(); }
     /** Shows or hides the frame rate in the chart (F key). */
-    public void setFpsVisible(boolean visible) { showFps = visible; }
+    public void setFpsVisible(boolean visible) { setOption(DisplayOption.FPS, visible, () -> showFps, v -> showFps = v); }
     public boolean isFpsVisible() { return showFps; }
-    public void toggleFps() { showFps = !showFps; }
+    public void toggleFps() { toggleOption(DisplayOption.FPS, () -> showFps, v -> showFps = v); }
 
     /**
      * Enables or disables the reduction of the number of points sent to
      * OpenGL (enabled by default, D key). The on-screen drawing is unchanged;
      * dashed curves and the points display (P key) are not reduced.
      */
-    public void setDecimationEnabled(boolean enabled) { decimationEnabled = enabled; }
+    public void setDecimationEnabled(boolean enabled) { setOption(DisplayOption.DECIMATION, enabled, () -> decimationEnabled, v -> decimationEnabled = v); }
     public boolean isDecimationEnabled() { return decimationEnabled; }
-    public void toggleDecimation() { decimationEnabled = !decimationEnabled; }
+    public void toggleDecimation() { toggleOption(DisplayOption.DECIMATION, () -> decimationEnabled, v -> decimationEnabled = v); }
     /** Number of points sent to OpenGL to draw the curves during the last frame. */
     public int getDrawnPointCount() { return drawnPoints; }
 
     /** Shows or hides the current values of the curves, at the top right (V key). */
-    public void setCurrentValuesVisible(boolean visible) { showCurrentValues = visible; }
+    public void setCurrentValuesVisible(boolean visible) { setOption(DisplayOption.CURRENT_VALUES, visible, () -> showCurrentValues, v -> showCurrentValues = v); }
     public boolean isCurrentValuesVisible() { return showCurrentValues; }
-    public void toggleCurrentValues() { showCurrentValues = !showCurrentValues; }
+    public void toggleCurrentValues() { toggleOption(DisplayOption.CURRENT_VALUES, () -> showCurrentValues, v -> showCurrentValues = v); }
 }

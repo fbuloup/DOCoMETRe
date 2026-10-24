@@ -10,7 +10,6 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
-import fr.univamu.ism.docometre.analyse.editors.ChannelEditor;
 import fr.univamu.ism.docometre.analyse.editors.Chart2D3DBehaviour;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.views.ExperimentsView;
@@ -42,10 +41,8 @@ public final class UpdateWorkbenchDelegate {
 						IEditorReference[] editorsRefs = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
 						for (IEditorReference editorRef : editorsRefs) {
 							IEditorPart editor = editorRef.getEditor(false);
-							if(editor instanceof ChannelEditor) {
-								((ChannelEditor)editor).update();
-							}
 							if(editor instanceof Chart2D3DBehaviour) {
+								((Chart2D3DBehaviour)editor).update();
 								((Chart2D3DBehaviour)editor).redraw();
 							}
 						}
@@ -61,10 +58,8 @@ public final class UpdateWorkbenchDelegate {
 				IEditorReference[] editorsRefs = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
 				for (IEditorReference editorRef : editorsRefs) {
 					IEditorPart editor = editorRef.getEditor(false);
-					if(editor instanceof ChannelEditor) {
-						((ChannelEditor)editor).update();
-					}
 					if(editor instanceof Chart2D3DBehaviour) {
+						((Chart2D3DBehaviour)editor).update();
 						((Chart2D3DBehaviour)editor).redraw();
 					}
 				}

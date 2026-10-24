@@ -73,6 +73,11 @@ final class NewtGLHost extends GLHost {
             }
 
             @Override
+            public void mouseExited(MouseEvent e) {
+                glWindow.invoke(false, d -> { interaction.exit(); return true; });
+            }
+
+            @Override
             public void mouseReleased(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON1) leftDown = false;
                 if (e.getButton() == MouseEvent.BUTTON3) rightDown = false;

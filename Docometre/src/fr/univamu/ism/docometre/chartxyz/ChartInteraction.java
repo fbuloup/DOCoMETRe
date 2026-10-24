@@ -69,6 +69,10 @@ public interface ChartInteraction {
     default void move(int x, int y, int width, int height) {
     }
 
+    /** The mouse left the component. No effect by default. */
+    default void exit() {
+    }
+
     /**
      * True if the Tab key must be passed to {@link #keyPressed} rather than
      * moving the keyboard focus to the next component (checked by the SWT

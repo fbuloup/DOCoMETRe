@@ -39,6 +39,7 @@
  * Contributors:
  *  - Frank Buloup - frank.buloup@univ-amu.fr - initial API and implementation [25/03/2020]
  ******************************************************************************/
+
 package fr.univamu.ism.docometre.analyse.handlers;
 
 import java.lang.reflect.InvocationTargetException;
@@ -88,6 +89,7 @@ import fr.univamu.ism.docometre.analyse.editors.ChannelEditor;
 import fr.univamu.ism.docometre.analyse.editors.XYChartEditor;
 import fr.univamu.ism.docometre.analyse.editors.XYZChartEditor;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
+import fr.univamu.ism.docometre.chartxyz.editors.GLChannelEditor;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.preferences.MathEnginePreferencesConstants;
 import fr.univamu.ism.docometre.views.ExperimentsView;
@@ -97,10 +99,12 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 	private class SaveSubjectsDialog extends Dialog {
 
 		private HashedMap<IResource, Boolean> mustSaveSubjects;
+		private List<IResource> subjects;
 
-		protected SaveSubjectsDialog(Shell parentShell, HashedMap<IResource, Boolean> mustSaveSubjects) {
+		protected SaveSubjectsDialog(Shell parentShell, HashedMap<IResource, Boolean> mustSaveSubjects, List<IResource> subjects) {
 			super(parentShell);
 			this.mustSaveSubjects = mustSaveSubjects;
+			this.subjects = subjects;
 		}
 		
 		@Override
@@ -120,7 +124,7 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 					return super.getText(element);
 				}
 			});
-			subjectsListViewer.setInput(selectedSubjects.toArray());
+			subjectsListViewer.setInput(subjects.toArray());
 			subjectsListViewer.getTable().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 			subjectsListViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 				@Override
@@ -177,8 +181,11 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 		}
 		cancel = false;
 		boolean cancelModified = false;
+		// Copy of the selection: closing editors, progress dialogs and view refreshes can change the
+		// workbench selection during this method, and selectionChanged() then modifies selectedSubjects
+		List<IResource> subjects = new ArrayList<>(selectedSubjects);
 		HashedMap<IResource, Boolean> mustSaveSubjects = new HashedMap<>(); 
-		for (IResource subject : selectedSubjects) {
+		for (IResource subject : subjects) {
 			boolean loaded = MathEngineFactory.getMathEngine().isSubjectLoaded(subject);
 			if(loaded) {
 				boolean modified = ResourceProperties.isSubjectModified(subject);
@@ -187,7 +194,7 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 		}
 		
 		if(mustSaveSubjects.size() > 0) {
-			SaveSubjectsDialog saveSubjectsDialog = new SaveSubjectsDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), mustSaveSubjects);
+			SaveSubjectsDialog saveSubjectsDialog = new SaveSubjectsDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), mustSaveSubjects, subjects);
 			int response = saveSubjectsDialog.open();
 			if(response == Window.CANCEL) {
 				mustSaveSubjects.clear();
@@ -195,7 +202,7 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 			}
 		}
 		
-		for (IResource subject : selectedSubjects) {
+		for (IResource subject : subjects) {
 			boolean loaded = MathEngineFactory.getMathEngine().isSubjectLoaded(subject);
 			String loadUnloadName = subject.getFullPath().segment(0) + "." + subject.getFullPath().segment(1);
 			if(loaded) {
@@ -205,13 +212,13 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 					}
 				}
 				closeEditors(subject);
-				unloadSubject(subject, loadUnloadName);
-			} else loadSubject(subject, loadUnloadName);
+				unloadSubject(subject, loadUnloadName, subjects.size() > 1);
+			} else loadSubject(subject, loadUnloadName, subjects.size() > 1);
 			
 			
 			if(cancel) break;
 		}
-		for (IResource subject : selectedSubjects) {
+		for (IResource subject : subjects) {
 			try {
 				if(subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) != null && subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN) instanceof ChannelsContainer) {
 					ChannelsContainer channelsContainer = (ChannelsContainer)subject.getSessionProperty(ResourceProperties.CHANNELS_LIST_QN);
@@ -243,7 +250,8 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 	}
 	
 	public void resetSelection(List<IResource> selectedSubjects) {
-		this.selectedSubjects = selectedSubjects;
+		// Copy: selectionChanged() clears this list, it must not clear the caller's one
+		this.selectedSubjects = new ArrayList<>(selectedSubjects);
 	}
 	
 	private void saveSubject(IResource subject) {
@@ -270,7 +278,7 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 	private void closeEditors(IResource subject) {
 		IEditorReference[] editorsReferences = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
 		for (IEditorReference editorReference : editorsReferences) {
-			if(editorReference.getId().equals(ChannelEditor.ID)) {
+			if(editorReference.getId().equals(ChannelEditor.ID) || editorReference.getId().equals(GLChannelEditor.ID)) {
 				try {
 					Object object = ((ResourceEditorInput)editorReference.getEditorInput()).getObject();
 					Channel channel = (Channel)object;
@@ -297,10 +305,10 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 		}
 	}
 	
-	private void unloadSubject(IResource subject, String loadUnloadName) {
+	private void unloadSubject(IResource subject, String loadUnloadName, boolean cancelable) {
 		ProgressMonitorDialog progressMonitorDialog = new ProgressMonitorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
 		try {
-			progressMonitorDialog.run(true, selectedSubjects.size()>1, new IRunnableWithProgress() {
+			progressMonitorDialog.run(true, cancelable, new IRunnableWithProgress() {
 				@Override
 				public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 					try {
@@ -324,10 +332,10 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 		}
 	}
 	
-	private void loadSubject(IResource subject, String loadUnloadName) {
+	private void loadSubject(IResource subject, String loadUnloadName, boolean cancelable) {
 		ProgressMonitorDialog progressMonitorDialog = new ProgressMonitorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
 		try {
-			progressMonitorDialog.run(true, selectedSubjects.size()>1, new IRunnableWithProgress() {
+			progressMonitorDialog.run(true, cancelable, new IRunnableWithProgress() {
 				@Override
 				public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 					monitor.beginTask(DocometreMessages.LoadingSubject+ "\"" + loadUnloadName + "\". " + DocometreMessages.PleaseWait, IProgressMonitor.UNKNOWN);

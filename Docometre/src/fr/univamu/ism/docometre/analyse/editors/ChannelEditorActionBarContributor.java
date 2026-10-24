@@ -77,6 +77,7 @@ import fr.univamu.ism.docometre.analyse.datamodel.TimeChannel;
 import fr.univamu.ism.docometre.analyse.datamodel.XYZChart;
 import fr.univamu.ism.docometre.analyse.wizard.SelectChannelsWizard;
 import fr.univamu.ism.docometre.analyse.wizard.SelectChannelsWizard.ChannelsNumber;
+import fr.univamu.ism.docometre.chartxyz.editors.GLChannelEditor;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
 public class ChannelEditorActionBarContributor extends EditorActionBarContributor implements IPerspectiveListener {
@@ -419,7 +420,7 @@ private class ZoomFitAction extends Action {
 		previousTrialActionContributionItem.setVisible(true);
 		if(editor instanceof Chart2D3DBehaviour) {
 			chartEditor = (Chart2D3DBehaviour) editor;
-			boolean visible = !(editor instanceof ChannelEditor);
+			boolean visible = !(editor instanceof ChannelEditor) && !(editor instanceof GLChannelEditor);
 			addCurveActionContributionItem.setVisible(visible);
 			removeCurveActionContributionItem.setVisible(visible);
 			upActionContributionItem.setVisible(true);

@@ -62,5 +62,6 @@ public interface Chart2D3DBehaviour {
 	void zoomIn();
 	void zoomOut();
 	void zoomToFit();
+	void update();
 
 }

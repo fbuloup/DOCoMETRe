@@ -1276,5 +1276,11 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 	public void mouseClicked(com.jogamp.newt.event.MouseEvent e) {
 		System.out.println("mouseClicked");
 	}
+
+	@Override
+	public void update() {
+		// TODO Auto-generated method stub
+		
+	}
 	
 }

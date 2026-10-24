@@ -51,6 +51,43 @@ public class GLChart1D extends AbstractGLPlotChart<Curve1DData, Chart1DRenderer>
         renderer.setDisplayMode(displayMode);
     }
 
+    public Chart1DRenderer.DisplayMode getDisplayMode() {
+        return renderer.getDisplayMode();
+    }
+
+    /** Listener of the display mode, sweep or scroll (M key or {@link #setDisplayMode}). */
+    public void addDisplayModeListener(DisplayModeListener listener) {
+        renderer.addDisplayModeListener(listener);
+    }
+
+    public void removeDisplayModeListener(DisplayModeListener listener) {
+        renderer.removeDisplayModeListener(listener);
+    }
+
+    /** Freezes / resumes the display (also with the space key); data keep being received. */
+    public void setPaused(boolean paused) {
+        renderer.setPaused(paused);
+    }
+
+    public boolean isPaused() {
+        return renderer.isPaused();
+    }
+
+    /**
+     * Label of the abscissa axis, at the right end of the axis, at the height
+     * of the legend ("t(s)" by default). Null or blank: no label; if the
+     * legend is not displayed below the axis either, the space is given back
+     * to the plot area.
+     */
+    public void setXAxisLabel(String label) {
+        renderer.setXAxisLabel(label);
+    }
+
+    /** Label of the abscissa axis, or null if there is none. */
+    public String getXAxisLabel() {
+        return renderer.getXAxisLabel();
+    }
+
     /** Fixed scale for the vertical axis (see the corresponding constructor). */
     public void setFixedScales(double yMin, double yMax) {
         renderer.setFixedScales(yMin, yMax);

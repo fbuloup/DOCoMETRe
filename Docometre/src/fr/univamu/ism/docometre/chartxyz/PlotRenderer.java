@@ -19,7 +19,10 @@ import com.jogamp.opengl.GLAutoDrawable;
  * area (orthographic projection in data units, clipped with a scissor)
  * surrounded by margins in pixels where the tick labels are written. Ticks
  * fall on "round" values (1, 2 or 5 x 10^n). The view automatically fits
- * the data; zoom and pan apply on top of this automatic fit.
+ * the data; zoom and pan apply on top of this automatic fit. The wheel
+ * zooms on both axes around the point under the mouse, which stays in
+ * place (around the center of the view if the mouse is outside the plot
+ * area).
  *
  * Rectangle zoom: with the left button held down, the window to display is
  * drawn with the mouse (shown while moving) and applied on release. A very
@@ -44,7 +47,9 @@ import com.jogamp.opengl.GLAutoDrawable;
  * the foot of each cursor axis, on the abscissa and ordinate axes. The
  * cursor first follows the first curve; Tab moves to the next one, Shift +
  * Tab to the previous one. {@link CursorListener}s receive the coordinates
- * {x, y} of the designated point.
+ * {x, y} of the designated point. The cursors (moving and static) are only
+ * shown while the mouse is over the plot area: in the margins, the marker
+ * labels stay in place and can be clicked.
  *
  * Static cursor (charts where {@link #supportsStaticCursor()} is true, 1D):
  * while the cursor is active, a left double click freezes a second cursor
@@ -68,7 +73,8 @@ import com.jogamp.opengl.GLAutoDrawable;
  * of the curve followed by the cursor; adding a marker that already exists
  * in its group (same coordinates) is ignored. A double click on a marker
  * label removes that marker (the group disappears with its last marker);
- * Ctrl + click on a label makes it the current label. Leaving the cursor
+ * Ctrl + click on a label makes it the current label and highlights that
+ * marker ({@link MarkerSelectedListener}s are notified). Leaving the cursor
  * mode keeps the markers; removing a curve from the chart removes its
  * markers. Groups can also be managed with {@link #addMarkersGroup} and
  * {@link #removeMarkersGroup}. {@link MarkerAddedListener}s and
@@ -95,6 +101,13 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
 
     private volatile LegendPosition legendPosition = LegendPosition.BELOW;
     private float legendBelowHeight = 0; // height of the legend below the axis (pixels), 0 if absent
+    // Row below the abscissa tick labels (legend BELOW and/or axis label), recomputed at each frame
+    /** Horizontal space between the legend and the abscissa axis label (pixels). */
+    private static final float AXIS_LABEL_GAP = 20;
+    private float bottomRowsHeight = 0;     // height of the row(s) below the tick labels (pixels), 0 if none
+    private float bottomFirstRowHeight = 0; // height of the first of these rows (the axis label is centered on it)
+    private float legendBelowMaxWidth;      // available width of the legend below the axis
+    private String frameXAxisLabel;         // abscissa axis label drawn in the current frame, or null
 
     // View: zoom (1 = automatic fit) and pan (as a fraction of the unzoomed range)
     protected volatile float zoom = 1f;
@@ -153,7 +166,14 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
             this.x = x;
             this.y = y;
         }
+
+        boolean matches(C curve, String label, double x, double y) {
+            return this.curve == curve && this.label.equals(label) && sameCoordinate(this.x, x) && sameCoordinate(this.y, y);
+        }
     }
+
+    /** Highlighted marker (see {@link #setSelectedMarker}), or null; never modified in place. */
+    private volatile Marker selectedMarker;
 
     /** Label of a marker drawn in the current frame, with its badge {x, y, w, h} (for clicks). */
     private final class MarkerBadge {
@@ -178,6 +198,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     private final List<MarkerAddedListener<C>> markerAddedListeners = new CopyOnWriteArrayList<>();
     private final List<MarkerRemovedListener<C>> markerRemovedListeners = new CopyOnWriteArrayList<>();
     private final List<CurrentMarkerLabelListener> currentMarkerLabelListeners = new CopyOnWriteArrayList<>();
+    private final List<MarkerSelectedListener<C>> markerSelectedListeners = new CopyOnWriteArrayList<>();
     private final List<StaticCursorListener> staticCursorListeners = new CopyOnWriteArrayList<>();
     // Last state notified to the static cursor listeners (rendering thread only)
     private StaticCursor notifiedStaticCursor;
@@ -224,9 +245,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         gl.glClear(GL2.GL_COLOR_BUFFER_BIT);
 
         updateData();
-        computeMargins();
-        plotWidth = Math.max(1, width - marginLeft - marginRight);
-        plotHeight = Math.max(1, height - marginBottom - marginTop);
+        computeMargins(); // plotWidth and plotHeight included
         computeView();
         updateCursor();
 
@@ -253,6 +272,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         drawFrame(gl);
         if (showLabel) drawLabels(gl, stepX, stepY);
         drawLegend(gl);
+        drawXAxisLabel(gl);
         drawFps(gl, marginLeft + plotWidth - 6, marginBottom + 4);
         float valuesHeight = drawCurrentValues(gl, marginLeft + plotWidth - 6, marginBottom + plotHeight - 6);
         drawStatus(gl, valuesHeight);
@@ -295,8 +315,6 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
      */
     protected double zoomXReference() { return 0; }
 
-    /** Does the wheel also zoom on the x axis when a zoom window exists (yes by default)? */
-    protected boolean wheelZoomsX() { return true; }
 
     /** First point of the curve that the cursor can designate (0 by default; in 1D sweep mode, after the gap). */
     protected int firstCursorPoint(C curve) { return 0; }
@@ -362,28 +380,50 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     // Decorations
 
     /**
-     * Computes the margins around the plot area from the fonts: on the left
-     * the vertical tick labels (width measured at the previous frame), at the
-     * bottom the horizontal tick labels and, if needed, the legend, at the
-     * top and on the right just enough not to cut the tick labels placed at
-     * the edges. The left margin only shrinks significantly, to keep the plot
-     * area from shaking when the length of the tick labels varies.
+     * Abscissa axis label, drawn at the right end of the axis, at the height
+     * of the legend below the axis (null = none). Shown with the tick labels
+     * (L key). None by default; see {@link Chart1DRenderer#setXAxisLabel}.
+     */
+    protected String xAxisLabel() { return null; }
+
+    /**
+     * Computes the margins around the plot area from the fonts, and the size
+     * of the plot area: on the left the vertical tick labels (width measured
+     * at the previous frame), at the bottom the horizontal tick labels and,
+     * if needed, a row for the legend (BELOW) and the axis label, at the top
+     * and on the right just enough not to cut the tick labels placed at the
+     * edges. The left margin only shrinks significantly, to keep the plot
+     * area from shaking when the length of the tick labels varies. Without
+     * legend below the axis and without axis label, the row is not reserved.
      */
     private void computeMargins() {
-        legendBelowHeight = (showLegend && legendPosition == LegendPosition.BELOW)
-                ? CurveStyles.legendRowsHeight(text, legendFont, frameCurves, width - 20) : 0;
-        float legendSpace = (legendBelowHeight > 0) ? legendBelowHeight + 6 : 0;
+        float tickHeight = text.lineHeight(scaleFont);
         if (!showLabel) {
             marginLeft = marginRight = marginTop = 15;
-            marginBottom = (int) Math.ceil(15 + legendSpace);
-            return;
+        } else {
+            int neededLeft = (int) Math.ceil(Math.max(yLabelWidth, text.width("-0.00", scaleFont)) + 12);
+            if (neededLeft > marginLeft || neededLeft < marginLeft * 0.8f) marginLeft = neededLeft;
+            marginTop = (int) Math.max(10, Math.ceil(tickHeight / 2f + 4));
+            marginRight = (int) Math.max(10, Math.ceil(xLabelWidth / 2f + 4));
         }
-        float tickHeight = text.lineHeight(scaleFont);
-        int neededLeft = (int) Math.ceil(Math.max(yLabelWidth, text.width("-0.00", scaleFont)) + 12);
-        if (neededLeft > marginLeft || neededLeft < marginLeft * 0.8f) marginLeft = neededLeft;
-        marginBottom = (int) Math.ceil(tickHeight + 10 + legendSpace);
-        marginTop = (int) Math.max(10, Math.ceil(tickHeight / 2f + 4));
-        marginRight = (int) Math.max(10, Math.ceil(xLabelWidth / 2f + 4));
+        plotWidth = Math.max(1, width - marginLeft - marginRight);
+
+        // Row below the tick labels: legend centered under the plot area, axis label at its right end
+        String label = showLabel ? xAxisLabel() : null;
+        frameXAxisLabel = label;
+        boolean legendBelow = showLegend && legendPosition == LegendPosition.BELOW && !frameCurves.isEmpty();
+        float labelRowHeight = (label != null) ? text.lineHeight(legendFont) + 2 : 0;
+        // The legend, centered on the plot area, stops before the label (several rows if needed)
+        legendBelowMaxWidth = (label != null)
+                ? Math.max(1, plotWidth - 2 * (text.width(label, legendFont) + AXIS_LABEL_GAP))
+                : width - 20;
+        legendBelowHeight = legendBelow ? CurveStyles.legendRowsHeight(text, legendFont, frameCurves, legendBelowMaxWidth) : 0;
+        bottomFirstRowHeight = legendBelow ? CurveStyles.legendRowHeight(text, legendFont, frameCurves) : labelRowHeight;
+        bottomRowsHeight = Math.max(legendBelowHeight, labelRowHeight);
+        float rowsSpace = (bottomRowsHeight > 0) ? bottomRowsHeight + 6 : 0;
+
+        marginBottom = (int) Math.ceil((showLabel ? tickHeight + 10 : 15) + rowsSpace);
+        plotHeight = Math.max(1, height - marginBottom - marginTop);
     }
 
     /** Legend: in the chart at the top left, or in row(s) below the abscissa axis. */
@@ -392,10 +432,20 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         if (legendPosition == LegendPosition.BELOW) {
             // At the very bottom, below the abscissa tick labels, centered under the plot area
             CurveStyles.drawLegendRows(gl, text, legendFont, frameCurves, marginLeft + plotWidth / 2f,
-                                       legendBelowHeight + 4, width - 20);
+                                       bottomRowsHeight + 4, legendBelowMaxWidth);
         } else {
             CurveStyles.drawLegend(gl, text, legendFont, frameCurves, marginLeft + 12, marginBottom + plotHeight - 6);
         }
+    }
+
+    /** Abscissa axis label: right-aligned on the end of the axis, centered on the first row below the tick labels. */
+    private void drawXAxisLabel(GL2 gl) {
+        String label = frameXAxisLabel;
+        if (label == null) return;
+        ChartFont font = legendFont;
+        float middle = bottomRowsHeight + 4 - bottomFirstRowHeight / 2f;
+        gl.glColor3f(0.85f, 0.85f, 0.9f); // as the names of the legend
+        text.draw(gl, label, font, marginLeft + plotWidth - text.width(label, font), middle - text.lineHeight(font) / 2f);
     }
 
     /** Grid aligned on the ticks (abscissas relative to origin). */
@@ -483,7 +533,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
      * not when its point is outside the view.
      */
     private void drawCursors(GL2 gl) {
-        StaticCursor fixed = cursorEnabled ? staticCursor : null;
+        StaticCursor fixed = visibleStaticCursor();
         float[] fixedPixel = (fixed != null) ? toVisiblePixel(fixed.x, fixed.y) : null;
         if (fixedPixel == null && !cursorFound) return;
 
@@ -531,7 +581,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
      */
     private List<float[]> cursorXBadges(ChartFont font, float h) {
         List<float[]> result = new ArrayList<>(2);
-        StaticCursor fixed = cursorEnabled ? staticCursor : null;
+        StaticCursor fixed = visibleStaticCursor();
         float[] fixedPixel = (fixed != null) ? toVisiblePixel(fixed.x, fixed.y) : null;
         float[] movingX = cursorFound ? xBadge(cursorLabelX, cursorPixelX, font, h) : null;
         if (movingX != null) result.add(movingX);
@@ -677,8 +727,11 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     public void press(int button, int modifiers, int x, int y, int width, int height) {
         if (button == LEFT_BUTTON && (modifiers & CTRL) != 0) {
             MarkerBadge badge = markerBadgeAt(toPixelX(x, width), toPixelY(y, height));
-            if (badge != null) {
-                setCurrentMarkerLabel(badge.marker.label);
+            if (badge != null) { // Ctrl + click on a marker label: current label and selected marker
+                Marker marker = badge.marker;
+                setCurrentMarkerLabel(marker.label);
+                selectedMarker = marker;
+                notifyMarkerSelected(marker);
                 return;
             }
         }
@@ -793,16 +846,23 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         mouseY = toPixelY(y, height);
     }
 
+    /** Mouse out of the component: the cursors are hidden (as outside the plot area). */
+    @Override
+    public void exit() {
+        mouseX = -1;
+        mouseY = -1;
+    }
+
     /** Tab key used when the cursor is active on a chart with several curves. */
     @Override
     public boolean usesTabKey() {
         return cursorEnabled && getCurvesCount() > 1;
     }
 
-    /** Wheel: zoom by one step (on the zoom window if it exists). */
+    /** Wheel: zoom by one step around the point under the mouse (on the zoom window if it exists). */
     @Override
     public void wheel(float amount, InputScale scale) {
-        zoom(Math.signum(amount));
+        zoomAround(Math.signum(amount), mouseDataPosition());
     }
 
     @Override
@@ -811,7 +871,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
             case ESCAPE: selecting = false; break;
             case 'u':
             case BACKSPACE: undoZoom(); break;
-            case 'c': setCursorEnabled(!cursorEnabled); break;
+            case 'c': toggleCursor(); break;
             case TAB: if (cursorEnabled) selectNextCursorCurve(1); break;
             case BACK_TAB: if (cursorEnabled) selectNextCursorCurve(-1); break;
             default: super.keyPressed(key); break;
@@ -838,25 +898,83 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         panY += dy * height / plotHeight / zoom;
     }
 
+    /** True if the mouse is over the plot area (last position received, in the layout of the last frame). */
+    protected final boolean mouseInPlotArea() {
+        float px = mouseX, py = mouseY;
+        return px >= marginLeft && px <= marginLeft + plotWidth && py >= marginBottom && py <= marginBottom + plotHeight;
+    }
+
     /**
-     * Multiplicative zoom: steps > 0 zooms in, steps < 0 zooms out. If a zoom
-     * window exists, it is shrunk or enlarged around its center.
+     * Static cursor to draw: it exists, the cursor mode is enabled and the
+     * mouse is over the plot area (it is hidden, not removed, when the mouse
+     * leaves it), or null.
+     */
+    private StaticCursor visibleStaticCursor() {
+        return (cursorEnabled && mouseInPlotArea()) ? staticCursor : null;
+    }
+
+    /**
+     * Data coordinates {x, y} of the mouse in the view of the last frame, or
+     * null if the mouse position is unknown or outside the plot area.
+     */
+    protected final double[] mouseDataPosition() {
+        float px = mouseX, py = mouseY;
+        if (!mouseInPlotArea()) return null;
+        return new double[]{
+                viewMinX + (px - marginLeft) / plotWidth * (viewMaxX - viewMinX),
+                viewMinY + (py - marginBottom) / plotHeight * (viewMaxY - viewMinY)};
+    }
+
+    /**
+     * Scales the zoom window by factor (&lt; 1: zoom in) around the point
+     * (anchorX, anchorY), in data units: this point stays at the same place
+     * on the screen. No effect without zoom window.
+     */
+    protected final void scaleZoomWindow(double factor, double anchorX, double anchorY) {
+        double ax = anchorX - zoomXReference();
+        changeZoomWindow(w -> {
+            if (w == null) return null; // window removed in the meantime
+            double[] scaled = {ax + (w[0] - ax) * factor, ax + (w[1] - ax) * factor,
+                               anchorY + (w[2] - anchorY) * factor, anchorY + (w[3] - anchorY) * factor};
+            return isUsable(scaled) ? scaled : w;
+        }, false);
+    }
+
+    /**
+     * Multiplicative zoom on both axes around the center of the view: steps
+     * > 0 zooms in, steps < 0 zooms out (on the zoom window if it exists).
      */
     public void zoom(float steps) {
+        zoomAround(steps, null);
+    }
+
+    /**
+     * Zoom on both axes by 1.15^steps; the point at (x, y) in data units
+     * stays at the same place on the screen (null: the center of the view).
+     * If a zoom window exists, it is the one that is scaled.
+     */
+    protected final void zoomAround(float steps, double[] at) {
+        if (steps == 0) return;
+        double factor = Math.pow(1.15, steps);
+        double ax = (at != null) ? at[0] : (viewMinX + viewMaxX) / 2;
+        double ay = (at != null) ? at[1] : (viewMinY + viewMaxY) / 2;
         if (zoomWindow != null) {
-            double factor = Math.pow(1.15, -steps);
-            boolean onX = wheelZoomsX();
-            changeZoomWindow(w -> {
-                if (w == null) return null; // window removed in the meantime
-                double cx = (w[0] + w[1]) / 2, hx = (w[1] - w[0]) / 2 * (onX ? factor : 1);
-                double cy = (w[2] + w[3]) / 2, hy = (w[3] - w[2]) / 2 * factor;
-                double[] scaled = {cx - hx, cx + hx, cy - hy, cy + hy};
-                return isUsable(scaled) ? scaled : w;
-            }, false);
+            scaleZoomWindow(1 / factor, ax, ay);
             return;
         }
-        zoom *= (float) Math.pow(1.15, steps);
-        zoom = Math.max(1e-3f, Math.min(1e4f, zoom));
+        zoomView(factor, ax, ay);
+    }
+
+    /**
+     * Zoom without zoom window, by factor (> 1: zoom in), keeping the point
+     * (anchorX, anchorY) at the same place on the screen: updates the zoom
+     * and pan of the view.
+     */
+    protected abstract void zoomView(double factor, double anchorX, double anchorY);
+
+    /** Zoom factor limited to [1e-3, 1e4]. */
+    protected static float clampZoom(double zoom) {
+        return (float) Math.max(1e-3, Math.min(1e4, zoom));
     }
 
     /** Initial view: automatic fit (or fixed scales), without zoom window or history. */
@@ -877,8 +995,17 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
      * the cursor follows the first curve. Usable from any thread.
      */
     public void setCursorEnabled(boolean enabled) {
-        if (enabled && !cursorEnabled) cursorCurveIndex = 0;
-        if (!enabled) staticCursor = null; // disabling the cursor also removes the static cursor
+        setOption(DisplayOption.CURSOR, enabled, () -> cursorEnabled, this::applyCursorEnabled);
+    }
+
+    /** Toggles the cursor mode (C key). */
+    public void toggleCursor() {
+        toggleOption(DisplayOption.CURSOR, () -> cursorEnabled, this::applyCursorEnabled);
+    }
+
+    private void applyCursorEnabled(boolean enabled) {
+        if (enabled) cursorCurveIndex = 0;
+        else staticCursor = null; // disabling the cursor also removes the static cursor
         cursorEnabled = enabled;
     }
 
@@ -939,7 +1066,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         cursorCurve = null;
         float[] found = null;
         List<C> curves = frameCurves;
-        if (cursorEnabled && mouseX >= 0 && !curves.isEmpty()) {
+        if (cursorEnabled && mouseInPlotArea() && !curves.isEmpty()) { // hidden when the mouse leaves the plot area
             int index = (cursorCurveIndex < curves.size()) ? cursorCurveIndex : 0;
             C curve = curves.get(index);
             double scaleX = plotWidth / (viewMaxX - viewMinX), scaleY = plotHeight / (viewMaxY - viewMinY);
@@ -1138,6 +1265,22 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         return true;
     }
 
+    /**
+     * Highlights a marker (solid and thicker line, larger diamond, label with
+     * a thick outline), for example the marker selected in a list of the
+     * application. The marker is designated by its values: it is highlighted
+     * as long as the group (curve, label) has a marker with these coordinates,
+     * even if the markers are removed and added again. Usable from any thread.
+     */
+    public void setSelectedMarker(C curve, String label, double x, double y) {
+        selectedMarker = (curve == null || label == null) ? null : new Marker(curve, label, x, y);
+    }
+
+    /** No more highlighted marker. */
+    public void clearSelectedMarker() {
+        selectedMarker = null;
+    }
+
     /** Removes all the markers, of all the curves. */
     public void clearMarkers() {
         List<Marker> removed = new ArrayList<>();
@@ -1182,6 +1325,19 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     public void removeMarkerRemovedListener(MarkerRemovedListener<C> listener) { markerRemovedListeners.remove(listener); }
     public void addCurrentMarkerLabelListener(CurrentMarkerLabelListener listener) { if (listener != null) currentMarkerLabelListeners.add(listener); }
     public void removeCurrentMarkerLabelListener(CurrentMarkerLabelListener listener) { currentMarkerLabelListeners.remove(listener); }
+    public void addMarkerSelectedListener(MarkerSelectedListener<C> listener) { if (listener != null) markerSelectedListeners.add(listener); }
+    public void removeMarkerSelectedListener(MarkerSelectedListener<C> listener) { markerSelectedListeners.remove(listener); }
+
+    /** Notifies the selection of a marker with Ctrl + click on its label. */
+    private void notifyMarkerSelected(Marker marker) {
+        for (MarkerSelectedListener<C> listener : markerSelectedListeners) {
+            try {
+                listener.markerSelected(marker.curve, marker.label, marker.x, marker.y);
+            } catch (RuntimeException e) {
+                e.printStackTrace(); // an error in a listener must not interrupt rendering
+            }
+        }
+    }
 
     /** Notifies the addition of a marker; called outside markersLock. */
     private void notifyMarkerAdded(Marker marker) {
@@ -1279,6 +1435,8 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         ChartFont font = scaleFont;
         float h = text.lineHeight(font) + 4;
         String current = currentMarkerLabel;
+        Marker selected = selectedMarker;
+        MarkerBadge selectedBadge = null;
         float bottom = marginBottom, top = marginBottom + plotHeight;
         List<float[]> obstacles = cursorXBadges(font, h); // the cursor labels stay in place, the marker labels move aside
         for (int m = 0; m < markers.size(); m++) {
@@ -1287,48 +1445,71 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
             double ax = markerAxisX(marker.x);
             if (Double.isNaN(ax) || ax < viewMinX || ax > viewMaxX) continue;
             float px = (float) (marginLeft + (ax - viewMinX) * plotWidth / (viewMaxX - viewMinX));
+            boolean isSelected = selected != null && marker.matches(selected.curve, selected.label, selected.x, selected.y);
 
-            gl.glColor4f(c[0], c[1], c[2], 0.7f);
-            gl.glLineWidth(1f);
-            gl.glEnable(GL2.GL_LINE_STIPPLE);
-            gl.glLineStipple(1, (short) 0x3333);
+            // Vertical line: dotted, solid and thicker for the selected marker
+            gl.glColor4f(c[0], c[1], c[2], isSelected ? 1f : 0.7f);
+            gl.glLineWidth(isSelected ? 2.5f : 1f);
+            if (!isSelected) {
+                gl.glEnable(GL2.GL_LINE_STIPPLE);
+                gl.glLineStipple(1, (short) 0x3333);
+            }
             gl.glBegin(GL2.GL_LINES);
             gl.glVertex2f(px, bottom);
             gl.glVertex2f(px, top);
             gl.glEnd();
             gl.glDisable(GL2.GL_LINE_STIPPLE);
 
-            if (marker.y >= viewMinY && marker.y <= viewMaxY) { // diamond on the point
+            if (marker.y >= viewMinY && marker.y <= viewMaxY) { // diamond on the point (larger and outlined when selected)
                 float py = (float) (marginBottom + (marker.y - viewMinY) * plotHeight / (viewMaxY - viewMinY));
+                float d = isSelected ? 8 : 5;
                 gl.glColor3f(c[0], c[1], c[2]);
                 gl.glBegin(GL2.GL_POLYGON);
-                gl.glVertex2f(px, py - 5);
-                gl.glVertex2f(px + 5, py);
-                gl.glVertex2f(px, py + 5);
-                gl.glVertex2f(px - 5, py);
+                gl.glVertex2f(px, py - d);
+                gl.glVertex2f(px + d, py);
+                gl.glVertex2f(px, py + d);
+                gl.glVertex2f(px - d, py);
                 gl.glEnd();
+                if (isSelected) {
+                    gl.glColor3f(1f, 1f, 1f);
+                    gl.glLineWidth(1.5f);
+                    gl.glBegin(GL2.GL_LINE_LOOP);
+                    gl.glVertex2f(px, py - d);
+                    gl.glVertex2f(px + d, py);
+                    gl.glVertex2f(px, py + d);
+                    gl.glVertex2f(px - d, py);
+                    gl.glEnd();
+                }
             }
 
             float[] rect = xBadge(marker.label, px, font, h);
             placeXBadge(rect, obstacles);
             obstacles.add(rect);
-            badges.add(new MarkerBadge(marker, c, rect));
+            MarkerBadge badge = new MarkerBadge(marker, c, rect);
+            badges.add(badge);
+            if (isSelected) selectedBadge = badge;
         }
         for (MarkerBadge badge : badges) {
-            float[] r = badge.rect;
-            drawBadge(gl, badge.marker.label, font, badge.color, r[0], r[1], r[2], r[3]);
-            if (badge.marker.label.equals(current)) { // current label: outlined badge
-                gl.glColor3f(1f, 1f, 1f);
-                gl.glLineWidth(1f);
-                gl.glBegin(GL2.GL_LINE_LOOP);
-                gl.glVertex2f(r[0], r[1]);
-                gl.glVertex2f(r[0] + r[2], r[1]);
-                gl.glVertex2f(r[0] + r[2], r[1] + r[3]);
-                gl.glVertex2f(r[0], r[1] + r[3]);
-                gl.glEnd();
-            }
+            if (badge != selectedBadge) drawMarkerBadge(gl, badge, font, badge.marker.label.equals(current) ? 1f : 0f);
         }
+        if (selectedBadge != null) drawMarkerBadge(gl, selectedBadge, font, 2.5f); // above the others
         markerBadges = badges;
+    }
+
+    /** Label of a marker, outlined in white if outline > 0 (line width: 1 for the current label, thicker for the selected marker). */
+    private void drawMarkerBadge(GL2 gl, MarkerBadge badge, ChartFont font, float outline) {
+        float[] r = badge.rect;
+        drawBadge(gl, badge.marker.label, font, badge.color, r[0], r[1], r[2], r[3]);
+        if (outline <= 0) return;
+        gl.glColor3f(1f, 1f, 1f);
+        gl.glLineWidth(outline);
+        gl.glBegin(GL2.GL_LINE_LOOP);
+        gl.glVertex2f(r[0], r[1]);
+        gl.glVertex2f(r[0] + r[2], r[1]);
+        gl.glVertex2f(r[0] + r[2], r[1] + r[3]);
+        gl.glVertex2f(r[0], r[1] + r[3]);
+        gl.glEnd();
+        gl.glLineWidth(1f);
     }
 
     // ------------------------------------------------------------------

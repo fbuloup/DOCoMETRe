@@ -1,6 +1,8 @@
 package fr.univamu.ism.docometre.chartxyz;
 
+import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.jogamp.opengl.GL2;
 
@@ -40,6 +42,9 @@ import com.jogamp.opengl.GL2;
  * resolution of the sampling frequency; in sweep mode, the samples of the
  * gap cannot be designated.
  *
+ * Abscissa axis label ({@link #setXAxisLabel}, "t(s)" by default): at the
+ * right end of the time axis, at the height of the legend below the axis.
+ *
  * Markers (see {@link PlotRenderer}): in cursor mode, Ctrl + left double
  * click adds a marker with the current label; its abscissa is the absolute
  * time of the sample (time since the first sample), in both display modes.
@@ -51,7 +56,9 @@ import com.jogamp.opengl.GL2;
  * Keyboard commands specific to 1D: space, pause / resume; M, toggles sweep
  * / scroll (the zoom window is then removed). Pan (right button) moves the
  * view in x and y; in scroll mode, the shifted view keeps following the
- * last sample. The wheel only zooms on y.
+ * last sample. The wheel zooms on both axes around the point under the
+ * mouse, which stays in place (on the zoom window if it exists); in scroll
+ * mode, the zoomed view keeps following the last sample.
  *
  * Rectangle zoom (see {@link PlotRenderer}): in sweep mode, the window
  * abscissas are positions in the sweep; in scroll mode, they are relative
@@ -75,10 +82,17 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
     /** In sweep mode, fraction of the window left empty just before the write cursor. */
     private static final double SWEEP_GAP = 0.01;
     private static final float DEFAULT_LINE_WIDTH = 1.5f; // width of the curves without an explicit width (pixels)
+    /** Abscissa axis label until {@link #setXAxisLabel} is called. */
+    public static final String DEFAULT_X_AXIS_LABEL = "t(s)";
+
+    private volatile String xAxisLabel = DEFAULT_X_AXIS_LABEL; // null = no label
 
     private volatile DisplayMode displayMode = DisplayMode.SWEEP;
     private DisplayMode frameMode = DisplayMode.SWEEP; // mode frozen for the current frame
     private volatile boolean paused = false;
+    private volatile float zoomX = 1f; // horizontal zoom without zoom window (1 = windowTime seconds displayed)
+    private final List<DisplayModeListener> displayModeListeners = new CopyOnWriteArrayList<>();
+    private final Object displayModeLock = new Object(); // mode changes and their detection are atomic
 
     // Common bounds, recomputed at each frame
     private float dataMinY = -1f, dataMaxY = 1f;
@@ -152,17 +166,12 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
             viewMaxY = window[3];
             return;
         }
-        if (frameMode == DisplayMode.SWEEP) {
-            viewMinX = 0;
-            viewMaxX = windowTime;
-        } else {
-            viewMaxX = Math.max(windowTime, lastTime);
-            viewMinX = viewMaxX - windowTime;
-        }
-        // Horizontal pan, as a fraction of the window (the content follows the mouse)
-        double shift = panX * windowTime;
-        viewMinX += shift;
-        viewMaxX += shift;
+        double baseMaxX = (frameMode == DisplayMode.SWEEP) ? windowTime : Math.max(windowTime, lastTime);
+        // Horizontal pan, as a fraction of the window, and horizontal zoom around the center
+        double centerX = baseMaxX - windowTime / 2 + panX * windowTime;
+        double halfX = windowTime / 2 / zoomX;
+        viewMinX = centerX - halfX;
+        viewMaxX = centerX + halfX;
 
         double[] fixed = getFixedScaleBounds();
         float halfY = (fixed != null) ? (float) ((fixed[1] - fixed[0]) / 2) : halfExtent(dataMinY, dataMaxY);
@@ -188,10 +197,6 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
     protected double zoomXReference() {
         return (frameMode == DisplayMode.SCROLL) ? lastTime : 0;
     }
-
-    /** The wheel only zooms on the vertical axis, with or without a zoom window. */
-    @Override
-    protected boolean wheelZoomsX() { return false; }
 
     /** The cursor follows the mouse abscissa: the sample at the same time, whatever its height. */
     @Override
@@ -446,19 +451,39 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
         }
     }
 
-    /**
-     * Horizontal and vertical pan, as in 2D; the content follows the mouse.
-     * Without a zoom window, the wheel zoom only applies to y: the horizontal
-     * displacement therefore does not depend on it.
-     */
+    /** Horizontal and vertical pan, as in 2D; the content follows the mouse. */
     @Override
     public void pan(float dx, float dy) {
         if (zoomWindow() != null) {
             super.pan(dx, dy); // the zoom window is moved on both axes
             return;
         }
-        panX -= dx * width / plotWidth;
+        panX -= dx * width / plotWidth / zoomX;
         super.pan(0f, dy);
+    }
+
+    /**
+     * Zoom on x (zoomX) and y (zoom); the pan is adjusted so that the anchor
+     * keeps its position on the screen.
+     */
+    @Override
+    protected void zoomView(double factor, double ax, double ay) {
+        double centerX = (viewMinX + viewMaxX) / 2, centerY = (viewMinY + viewMaxY) / 2;
+        float newZoomX = clampZoom(zoomX * factor), newZoomY = clampZoom(zoom * factor);
+        double fx = newZoomX / zoomX, fy = newZoomY / zoom; // actual factors (limited zoom)
+        double unzoomedHalfY = (viewMaxY - viewMinY) / 2 * zoom; // unit of panY: twice this half range
+        // New centers so that the anchor keeps its position on the screen
+        panX += (float) ((ax + (centerX - ax) / fx - centerX) / windowTime);
+        if (unzoomedHalfY > 0) panY += (float) ((ay + (centerY - ay) / fy - centerY) / (2 * unzoomedHalfY));
+        zoomX = newZoomX;
+        zoom = newZoomY;
+    }
+
+    /** Initial view: also cancels the horizontal zoom. */
+    @Override
+    public void resetView() {
+        super.resetView();
+        zoomX = 1f;
     }
 
     /**
@@ -468,20 +493,72 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
      */
     public void setFixedScales(double yMin, double yMax) { setFixedScaleBounds(yMin, yMax); }
 
-    /** Chooses the display mode; a mode change removes the zoom window (incompatible abscissas). */
+    /**
+     * Label of the abscissa axis, drawn at the right end of the axis, at the
+     * height of the legend below the axis, in the legend font ("t(s)" by
+     * default). Null or blank: no label; if the legend is not displayed below
+     * the axis either, the space of the row is given back to the plot area.
+     * Usable from any thread.
+     */
+    public void setXAxisLabel(String label) {
+        xAxisLabel = (label == null || label.trim().isEmpty()) ? null : label;
+    }
+
+    /** Label of the abscissa axis, or null if there is none. */
+    public String getXAxisLabel() { return xAxisLabel; }
+
+    @Override
+    protected String xAxisLabel() { return xAxisLabel; }
+
+    /**
+     * Chooses the display mode; a mode change removes the zoom window
+     * (incompatible abscissas) and is notified to the {@link DisplayModeListener}s.
+     */
     public void setDisplayMode(DisplayMode displayMode) {
-        if (displayMode == null || displayMode == this.displayMode) return;
+        if (displayMode == null) return;
+        synchronized (displayModeLock) {
+            if (displayMode == this.displayMode) return;
+            applyDisplayMode(displayMode);
+        }
+        notifyDisplayMode(displayMode);
+    }
+
+    public DisplayMode getDisplayMode() { return displayMode; }
+
+    /** Toggles between sweep (oscilloscope) and scroll (M key). */
+    public void toggleDisplayMode() {
+        DisplayMode mode;
+        synchronized (displayModeLock) {
+            mode = (displayMode == DisplayMode.SWEEP) ? DisplayMode.SCROLL : DisplayMode.SWEEP;
+            applyDisplayMode(mode);
+        }
+        notifyDisplayMode(mode);
+    }
+
+    private void applyDisplayMode(DisplayMode displayMode) {
         this.displayMode = displayMode;
         panX = 0f; // the horizontal shift does not have the same meaning in both modes
         clearZoomWindow();
         clearStaticCursor(); // its abscissa does not have the same meaning in both modes either
     }
-    public DisplayMode getDisplayMode() { return displayMode; }
-    /** Toggles between sweep (oscilloscope) and scroll. */
-    public void toggleDisplayMode() {
-        setDisplayMode((displayMode == DisplayMode.SWEEP) ? DisplayMode.SCROLL : DisplayMode.SWEEP);
+
+    /** Adds a display mode listener (see {@link DisplayModeListener} for the calling thread). */
+    public void addDisplayModeListener(DisplayModeListener listener) { if (listener != null) displayModeListeners.add(listener); }
+    public void removeDisplayModeListener(DisplayModeListener listener) { displayModeListeners.remove(listener); }
+
+    /** Called outside displayModeLock. */
+    private void notifyDisplayMode(DisplayMode mode) {
+        for (DisplayModeListener listener : displayModeListeners) {
+            try {
+                listener.displayModeChanged(mode);
+            } catch (RuntimeException e) {
+                e.printStackTrace(); // an error in a listener must not interrupt rendering
+            }
+        }
     }
 
-    /** Freezes / resumes the display; data keep being received during the pause. */
-    public void togglePause() { paused = !paused; }
+    /** Freezes / resumes the display (also with the space key); data keep being received during the pause. */
+    public void setPaused(boolean paused) { setOption(DisplayOption.PAUSE, paused, () -> this.paused, v -> this.paused = v); }
+    public boolean isPaused() { return paused; }
+    public void togglePause() { toggleOption(DisplayOption.PAUSE, () -> paused, v -> paused = v); }
 }

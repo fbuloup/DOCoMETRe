@@ -68,18 +68,12 @@ public class ChannelEditor extends EditorPart implements TrialsEditor, Chart2D3D
 	private Channel channel;
 	private Composite container;
 
-	public ChannelEditor() {
-		
-	}
-
 	@Override
 	public void doSave(IProgressMonitor monitor) {
-
 	}
 
 	@Override
 	public void doSaveAs() {
-		// TODO Auto-generated method stub
 	}
 	
 	protected Channel getChannel() {
@@ -144,6 +138,7 @@ public class ChannelEditor extends EditorPart implements TrialsEditor, Chart2D3D
 			((TrialNavigator)container).gotoPreviousTrial();
 	}
 	
+	@Override
 	public void update() {
 		if(getChannel().isModified() && getChannel().isSignal()) {
 			((SignalContainerEditor)container).update();

@@ -61,6 +61,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 
+import fr.univamu.ism.docometre.chartxyz.CurveStyles;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
 /**
@@ -83,25 +84,34 @@ public class DocometreApplication implements IApplication {
 	
 	public static String WORKSPACE_PATH;
 	
-	private static RGB[] rgbs = new RGB[] { 
-			new RGB(0xFF, 0x00, 0x00),
-			new RGB(0x00, 0xFF, 0x00),
-			new RGB(0x00, 0x00, 0xFF),
-			new RGB(0xFF, 0xFF, 0x00),
-			new RGB(0x00, 0xFF, 0xFF),
-			new RGB(0xFF, 0x00, 0xFF),
-			new RGB(0xFF, 0x80, 0x00),
-			new RGB(0x80, 0x80, 0x80),
-			new RGB(0xA0, 0x60, 0x20),
-			new RGB(0x60, 0xA0, 0x20),
-			new RGB(0x20, 0x60, 0xA0),
-			new RGB(0x6D, 0x1D, 0x73),
-			new RGB(0xFF, 0xAA, 0x00),
-			new RGB(0x99, 0x91, 0x26),
-			new RGB(0xFF, 0x80, 0x91),
-			new RGB(0x36, 0xB8, 0xD9)
-		};
-	private static int maxColors = rgbs.length;;
+//	private static RGB[] rgbs = new RGB[] { 
+//			new RGB(CurveStyles.PALETTE[0]., 0, 0)
+//			,  // blue
+//            new RGB(255, 153, 51),  // orange
+//            new RGB(115, 230, 115), // green
+//            new RGB(242, 102, 128), // pinkish red
+//            new RGB(191, 140, 255), // purple
+//            new RGB(255, 230, 76),  // yellow
+//            new RGB(76, 230, 230),  // cyan
+//            new RGB(230, 230, 230), // light gray
+//			new RGB(255,   0,   0),
+//			new RGB(  0, 255,   0),
+//			new RGB(  0,   0, 255),
+//			new RGB(255, 255,   0),
+//			new RGB(  0, 255, 255),
+//			new RGB(255,   0, 255),
+//			new RGB(255, 128,   0),
+//			new RGB(128, 128, 128),
+//			new RGB(160,  96,  32),
+//			new RGB( 96, 160,  32),
+//			new RGB( 32,  96, 160),
+//			new RGB(109,  29, 115),
+//			new RGB(255, 170,   0),
+//			new RGB(153, 145,  38),
+//			new RGB(255, 128, 145),
+//			new RGB( 54, 184, 217)
+//		};
+//	private static int maxColors = rgbs.length;;
 
 	/*
 	 * (non-Javadoc)
@@ -123,8 +133,9 @@ public class DocometreApplication implements IApplication {
 		JFaceResources.getColorRegistry().put(ORANGE, new RGB(255, 102, 0));
 		JFaceResources.getColorRegistry().put(MAROON, new RGB(122, 0, 0));
 		
-		for (int i = 0; i < rgbs.length; i++) {
-			JFaceResources.getColorRegistry().put(String.valueOf(i), rgbs[i]);
+		for (int i = 0; i < CurveStyles.PALETTE.length; i++) {
+			RGB rgbData = new RGB(CurveStyles.PALETTE[i].toRGB()[0], CurveStyles.PALETTE[i].toRGB()[1], CurveStyles.PALETTE[i].toRGB()[2]);
+			JFaceResources.getColorRegistry().put(String.valueOf(i), rgbData);
 		}
 		
 		boolean workspaceOK = false;
@@ -212,7 +223,7 @@ public class DocometreApplication implements IApplication {
 	
 	public static Color getColor(Byte index) {
 		if(index < 0) index = 0;
-		index = (byte) (index % maxColors);
+		index = (byte) (index % CurveStyles.PALETTE.length);
 		Color color = JFaceResources.getColorRegistry().get(index.toString());
 		return color;
 	}

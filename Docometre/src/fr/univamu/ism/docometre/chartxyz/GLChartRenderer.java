@@ -1,6 +1,10 @@
 package fr.univamu.ism.docometre.chartxyz;
 
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
@@ -19,6 +23,8 @@ import fr.univamu.ism.docometre.Activator;
  * <li>G: show/hide the grid</li>
  * <li>L: show/hide the tick labels</li>
  * </ul>
+ * The {@link DisplayOptionListener}s are told about each change of a display
+ * option (see {@link DisplayOption}), made with the keyboard or the API.
  */
 public abstract class GLChartRenderer implements GLEventListener, ChartInteraction {
 
@@ -32,6 +38,9 @@ public abstract class GLChartRenderer implements GLEventListener, ChartInteracti
 
     /** Size of the drawing area (pixels). */
     protected int width = 1, height = 1;
+
+    private final List<DisplayOptionListener> displayOptionListeners = new CopyOnWriteArrayList<>();
+    private final Object optionsLock = new Object(); // option changes and their detection are atomic
 
     protected GLChartRenderer(boolean showAxes, boolean showLabel) {
         this.showAxes = showAxes;
@@ -81,11 +90,64 @@ public abstract class GLChartRenderer implements GLEventListener, ChartInteracti
         }
     }
 
-    public void toggleAxes() { showAxes = !showAxes; }
-    public void toggleGrid() { showGrid = !showGrid; }
-    public void toggleLabel() { showLabel = !showLabel; }
+    /** Shows or hides the axes (also with the A key). */
+    public void setAxesVisible(boolean visible) { setOption(DisplayOption.AXES, visible, () -> showAxes, v -> showAxes = v); }
+    public boolean isAxesVisible() { return showAxes; }
+    public void toggleAxes() { toggleOption(DisplayOption.AXES, () -> showAxes, v -> showAxes = v); }
+
+    /** Shows or hides the grid (also with the G key). */
+    public void setGridVisible(boolean visible) { setOption(DisplayOption.GRID, visible, () -> showGrid, v -> showGrid = v); }
+    public boolean isGridVisible() { return showGrid; }
+    public void toggleGrid() { toggleOption(DisplayOption.GRID, () -> showGrid, v -> showGrid = v); }
+
+    /** Shows or hides the tick labels (also with the L key). */
+    public void setLabelsVisible(boolean visible) { setOption(DisplayOption.LABELS, visible, () -> showLabel, v -> showLabel = v); }
+    public boolean isLabelsVisible() { return showLabel; }
+    public void toggleLabel() { toggleOption(DisplayOption.LABELS, () -> showLabel, v -> showLabel = v); }
 
     public void setGridVisibility(boolean value) {
-        showGrid = value;
+        setGridVisible(value);
+    }
+
+    // ------------------------------------------------------------------
+    // Display options
+
+    /** Adds a display option listener (see {@link DisplayOptionListener} for the calling thread). */
+    public void addDisplayOptionListener(DisplayOptionListener listener) { if (listener != null) displayOptionListeners.add(listener); }
+    public void removeDisplayOptionListener(DisplayOptionListener listener) { displayOptionListeners.remove(listener); }
+
+    /**
+     * Gives the value to an option and notifies the listeners if it changed.
+     *
+     * @param current reads the option
+     * @param apply   writes the option (with its side effects), under the options lock
+     */
+    protected final void setOption(DisplayOption option, boolean value, BooleanSupplier current, Consumer<Boolean> apply) {
+        synchronized (optionsLock) {
+            if (current.getAsBoolean() == value) return;
+            apply.accept(value);
+        }
+        notifyDisplayOption(option, value);
+    }
+
+    /** Inverts an option and notifies the listeners (see {@link #setOption}). */
+    protected final void toggleOption(DisplayOption option, BooleanSupplier current, Consumer<Boolean> apply) {
+        boolean value;
+        synchronized (optionsLock) {
+            value = !current.getAsBoolean();
+            apply.accept(value);
+        }
+        notifyDisplayOption(option, value);
+    }
+
+    /** Called outside the options lock. */
+    private void notifyDisplayOption(DisplayOption option, boolean value) {
+        for (DisplayOptionListener listener : displayOptionListeners) {
+            try {
+                listener.displayOptionChanged(option, value);
+            } catch (RuntimeException e) {
+                e.printStackTrace(); // an error in a listener must not interrupt rendering
+            }
+        }
     }
 }

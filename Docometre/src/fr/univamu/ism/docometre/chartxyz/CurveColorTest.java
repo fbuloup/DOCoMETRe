@@ -35,8 +35,8 @@ public class CurveColorTest {
 
     public static void main(String[] args) throws Exception {
         // Palette and integer API
-        check("Palette of 8 colors, first one blue (89, 191, 255)",
-                CurveStyles.getPaletteSize() == 8 && Arrays.equals(palette(0), new int[]{89, 191, 255}));
+        check("Palette of " + CurveStyles.getPaletteSize() + " colors (at least 3), first one blue (89, 191, 255)",
+                CurveStyles.getPaletteSize() >= 3 && Arrays.equals(palette(0), new int[]{89, 191, 255}));
         int[] copy = palette(0);
         copy[0] = 0;
         check("getPaletteColor returns a copy", palette(0)[0] == 89);
@@ -65,13 +65,16 @@ public class CurveColorTest {
         r.addCurve(d);
         check("New curve d: orange, the free color of minimal weight", is(d, 1) && weightsConsistent(r));
 
-        // Ninth curve: all the weights are 1, first color of the palette
+        // One curve more than the palette: all the weights are 1, first color of the palette
+        int paletteSize = CurveStyles.getPaletteSize();
         List<Curve1DData> more = new ArrayList<>();
-        for (int i = 0; i < 5; i++) { Curve1DData m = curve("m" + i); more.add(m); r.addCurve(m); }
-        check("Eight curves: the eight colors, once each", Arrays.equals(r.getColorWeights(), new int[]{1, 1, 1, 1, 1, 1, 1, 1}));
+        for (int i = 0; i < paletteSize - 3; i++) { Curve1DData m = curve("m" + i); more.add(m); r.addCurve(m); }
+        int[] ones = new int[paletteSize];
+        Arrays.fill(ones, 1);
+        check(paletteSize + " curves: the " + paletteSize + " colors, once each", Arrays.equals(r.getColorWeights(), ones));
         Curve1DData ninth = curve("ninth");
         r.addCurve(ninth);
-        check("Ninth curve: blue (all the weights equal)", is(ninth, 0) && r.getColorWeights()[0] == 2);
+        check("One more curve: blue (all the weights equal)", is(ninth, 0) && r.getColorWeights()[0] == 2);
 
         // setColor towards a palette color: weights follow, even if the curve is not in automatic color
         r.removeCurve(ninth);

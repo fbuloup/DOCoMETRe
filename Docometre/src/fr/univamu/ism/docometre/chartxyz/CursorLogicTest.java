@@ -192,12 +192,13 @@ public class CursorLogicTest {
         frame(r1);
         double expectedShift = 140.0 / 700 * 5; // 140 px of the plot area (700 px for 5 s)
         check("1D right button to the right: view shifted by 1 s towards older times", near(r1.viewMinX, minBefore - expectedShift) && near(r1.viewMaxX, maxBefore - expectedShift) && near(r1.viewMinY, yBefore));
-        r1.wheel(3, ChartInteraction.InputScale.SWT); // vertical zoom: does not change the horizontal pan speed
+        r1.wheel(3, ChartInteraction.InputScale.SWT); // zoom on both axes: the content still follows the mouse
         frame(r1);
-        double min2 = r1.viewMinX;
+        double min2 = r1.viewMinX, zoomedShift = 140.0 / 700 * (r1.viewMaxX - r1.viewMinX);
         r1.drag(ChartInteraction.RIGHT_BUTTON, 140, 0, 800, 600, ChartInteraction.InputScale.SWT);
         frame(r1);
-        check("1D after wheel zoom (y only), same horizontal shift", near(r1.viewMinX, min2 - expectedShift));
+        check("1D after wheel zoom (x and y), shift of 140 px of the zoomed view",
+                zoomedShift < expectedShift && near(r1.viewMinX, min2 - zoomedShift));
         r1.keyPressed('r');
         frame(r1);
         check("1D R: back to the initial view (shift cancelled)", near(r1.viewMaxX, Math.max(5, signal.getLastSampleTime())));
@@ -217,6 +218,44 @@ public class CursorLogicTest {
         // 501 samples from t = 3 to 8 s; the gap (1% of 5 s = 0.05 s) covers t = 3.00 to 3.04: 5 samples excluded
         check("1D sweep: the 5 samples of the gap are excluded (1st selectable = 5)", first == 5);
         check("1D sweep: the designated point is not in the gap (x outside ]3, 3.05[)", p != null && !(p[0] > 3.0001 && p[0] < 3.0499));
+
+        // ---------------- Cursors hidden outside the plot area ----------------
+        Curve1DData h = new Curve1DData("h", 100);
+        float[] hv = new float[501];
+        for (int i = 0; i < hv.length; i++) hv[i] = (float) Math.sin(i / 30.0);
+        h.addSamples(hv);
+        Chart1DRenderer rh = new Chart1DRenderer(5, h);
+        rh.setDisplayMode(Chart1DRenderer.DisplayMode.SCROLL);
+        rh.setCursorEnabled(true);
+        frame(rh);
+        mouse(rh, 2.0, 0);
+        frame(rh);
+        int[] atH = window(rh, 2.0, 0);
+        rh.doubleClick(ChartInteraction.LEFT_BUTTON, 0, atH[0], atH[1], 800, 600); // static cursor at 2 s
+        frame(rh);
+        mouse(rh, 3.0, 0);
+        frame(rh);
+        Method visibleStatic = PlotRenderer.class.getDeclaredMethod("visibleStaticCursor");
+        visibleStatic.setAccessible(true);
+        check("mouse over the plot area: moving and static cursors shown",
+                rh.getCursorPosition() != null && visibleStatic.invoke(rh) != null);
+        rh.move(50 + 350, 600 - 20, 800, 600); // below the plot area, in the abscissa labels zone
+        frame(rh);
+        check("mouse in the abscissa labels zone: both cursors hidden",
+                rh.getCursorPosition() == null && visibleStatic.invoke(rh) == null);
+        check("static cursor only hidden: still there", rh.getStaticCursorPosition() != null && rh.isCursorEnabled());
+        mouse(rh, 3.0, 0);
+        frame(rh);
+        check("mouse back over the plot area: both cursors shown again",
+                rh.getCursorPosition() != null && visibleStatic.invoke(rh) != null);
+        rh.exit();
+        frame(rh);
+        check("mouse out of the component: both cursors hidden",
+                rh.getCursorPosition() == null && visibleStatic.invoke(rh) == null);
+        rh.doubleClick(ChartInteraction.LEFT_BUTTON, 0, 50 + 350, 600 - 20, 800, 600); // double click in the margin
+        frame(rh);
+        float[] fixedH = rh.getStaticCursorPosition();
+        check("double click outside the plot area: static cursor not moved", fixedH != null && Math.abs(fixedH[0] - 2.0) < 1e-3);
 
         System.out.println(failures == 0 ? "\nAll tests passed." : "\n" + failures + " failure(s).");
         System.exit(failures == 0 ? 0 : 1);
