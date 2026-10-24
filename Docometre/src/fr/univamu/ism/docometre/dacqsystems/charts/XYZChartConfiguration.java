@@ -365,7 +365,7 @@ public class XYZChartConfiguration extends ChartConfiguration {
 			IRTSWTXYZSerie rtswtSerie = new Curve3DData(zSerieID + "(" + xSerieID + ", " + ySerieID + ")", sfx);
 			((Curve3DData)rtswtSerie).setLineWidth(thickness);
 			((Curve3DData)rtswtSerie).setLineStyle(lineStyle);
-			((Curve3DData)rtswtSerie).setColor(serieColor.getRed()/255,serieColor.getGreen()/255,serieColor.getBlue()/255);
+			((Curve3DData)rtswtSerie).setColor(serieColor.getRed(),serieColor.getGreen(),serieColor.getBlue());
 			
 			String os = Platform.getOS();
 			if (Platform.OS_WIN32.equals(os)) {

@@ -334,7 +334,7 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 				rtswtSerie = new Curve1DData(serieID, Double.parseDouble(sfString));
 				((Curve1DData)rtswtSerie).setLineWidth(thickness);
 				((Curve1DData)rtswtSerie).setLineStyle(lineStyle);
-				((Curve1DData)rtswtSerie).setColor(serieColor.getRed()/255,serieColor.getGreen()/255,serieColor.getBlue()/255);
+				((Curve1DData)rtswtSerie).setColor(serieColor.getRed(),serieColor.getGreen(),serieColor.getBlue());
 				String os = Platform.getOS();
 				if (Platform.OS_WIN32.equals(os)) {
 					((Chart1D)rtswtOscilloChart).addCurve((Curve1DData)rtswtSerie);

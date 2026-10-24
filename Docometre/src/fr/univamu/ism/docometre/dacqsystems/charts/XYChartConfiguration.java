@@ -334,7 +334,7 @@ public class XYChartConfiguration extends ChartConfiguration {
 				rtswtSerie = new Curve2DData(ySerieID + "(" + xSerieID + ")", sfx);
 				((Curve2DData)rtswtSerie).setLineWidth(thickness);
 				((Curve2DData)rtswtSerie).setLineStyle(lineStyle);
-				((Curve2DData)rtswtSerie).setColor(serieColor.getRed()/255,serieColor.getGreen()/255,serieColor.getBlue()/255);
+				((Curve2DData)rtswtSerie).setColor(serieColor.getRed(),serieColor.getGreen(),serieColor.getBlue());
 				String os = Platform.getOS();
 				if (Platform.OS_WIN32.equals(os)) {
 					((Chart2D)rtswtxyChart).addCurve((Curve2DData)rtswtSerie);
