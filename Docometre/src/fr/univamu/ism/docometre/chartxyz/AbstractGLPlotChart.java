@@ -141,6 +141,18 @@ public abstract class AbstractGLPlotChart<C extends CurveData<C>, R extends Plot
         renderer.setCurrentMarkerLabel(label);
     }
 
+    /**
+     * Enables (default) or disables the mouse actions on the markers (add,
+     * remove, select): when disabled, the markers are only displayed.
+     */
+    public void setMarkersInteractive(boolean interactive) {
+        renderer.setMarkersInteractive(interactive);
+    }
+
+    public boolean isMarkersInteractive() {
+        return renderer.isMarkersInteractive();
+    }
+
     public String getCurrentMarkerLabel() {
         return renderer.getCurrentMarkerLabel();
     }

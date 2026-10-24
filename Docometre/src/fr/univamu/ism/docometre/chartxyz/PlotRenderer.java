@@ -45,7 +45,9 @@ import com.jogamp.opengl.GLAutoDrawable;
  * 1D, the point with the same abscissa as the mouse, see
  * {@link #cursorFollowsXOnly()}). Its coordinates are displayed in badges at
  * the foot of each cursor axis, on the abscissa and ordinate axes. The
- * cursor first follows the first curve; Tab moves to the next one, Shift +
+ * cursor follows a curve that has visible points: the first one when it is
+ * enabled, or when the followed curve leaves the view (zoom, pan); Tab moves
+ * to the next visible curve, Shift +
  * Tab to the previous one. {@link CursorListener}s receive the coordinates
  * {x, y} of the designated point. The cursors (moving and static) are only
  * shown while the mouse is over the plot area: in the margins, the marker
@@ -74,7 +76,8 @@ import com.jogamp.opengl.GLAutoDrawable;
  * in its group (same coordinates) is ignored. A double click on a marker
  * label removes that marker (the group disappears with its last marker);
  * Ctrl + click on a label makes it the current label and highlights that
- * marker ({@link MarkerSelectedListener}s are notified). Leaving the cursor
+ * marker ({@link MarkerSelectedListener}s are notified); these mouse
+ * actions can be disabled ({@link #setMarkersInteractive}). Leaving the cursor
  * mode keeps the markers; removing a curve from the chart removes its
  * markers. Groups can also be managed with {@link #addMarkersGroup} and
  * {@link #removeMarkersGroup}. {@link MarkerAddedListener}s and
@@ -192,6 +195,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     private final Map<C, Map<String, List<Marker>>> markerGroups = new HashMap<>();
     private final Object markersLock = new Object();
     private volatile String currentMarkerLabel = DEFAULT_MARKER_LABEL;
+    private volatile boolean markersInteractive = true; // mouse actions on the markers (add, remove, select)
     // Rendering thread only: marker requested by Ctrl + double click, badges drawn in the current frame
     private boolean markerRequested;
     private List<MarkerBadge> markerBadges = new ArrayList<>();
@@ -725,7 +729,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     /** Ctrl + left click on a marker label: that label becomes the current marker label. */
     @Override
     public void press(int button, int modifiers, int x, int y, int width, int height) {
-        if (button == LEFT_BUTTON && (modifiers & CTRL) != 0) {
+        if (button == LEFT_BUTTON && (modifiers & CTRL) != 0 && markersInteractive) {
             MarkerBadge badge = markerBadgeAt(toPixelX(x, width), toPixelY(y, height));
             if (badge != null) { // Ctrl + click on a marker label: current label and selected marker
                 Marker marker = badge.marker;
@@ -824,7 +828,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     public void doubleClick(int button, int modifiers, int x, int y, int width, int height) {
         if (button != LEFT_BUTTON) return;
         float px = toPixelX(x, width), py = toPixelY(y, height);
-        MarkerBadge badge = markerBadgeAt(px, py);
+        MarkerBadge badge = markersInteractive ? markerBadgeAt(px, py) : null;
         if (badge != null) {
             removeMarker(badge.marker.curve, badge.marker.label, badge.marker.x, badge.marker.y);
             return;
@@ -833,7 +837,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         mouseX = px;
         mouseY = py;
         if ((modifiers & CTRL) != 0) {
-            if (supportsMarkers()) markerRequested = true;
+            if (supportsMarkers() && markersInteractive) markerRequested = true;
         } else if (supportsStaticCursor()) {
             staticCursorRequested = true;
         }
@@ -1049,10 +1053,50 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     public void addCursorListener(CursorListener listener) { if (listener != null) cursorListeners.add(listener); }
     public void removeCursorListener(CursorListener listener) { cursorListeners.remove(listener); }
 
-    /** Moves to the next (step = 1) or previous (step = -1) curve, cyclically. */
+    /**
+     * Moves to the next (step = 1) or previous (step = -1) curve, cyclically,
+     * skipping the curves without any visible point (if no other curve is
+     * visible, the followed curve does not change; if no curve is visible,
+     * moves to the next one anyway).
+     */
     private void selectNextCursorCurve(int step) {
-        int count = getCurvesCount();
-        if (count > 0) cursorCurveIndex = Math.floorMod(Math.min(cursorCurveIndex, count - 1) + step, count);
+        List<C> curves = frameCurves;
+        int count = curves.size();
+        if (count == 0) return;
+        int start = Math.min(cursorCurveIndex, count - 1);
+        for (int k = 1; k <= count; k++) {
+            int i = Math.floorMod(start + k * step, count);
+            if (closestPoint(curves.get(i)) != null) {
+                cursorCurveIndex = i;
+                return;
+            }
+        }
+        cursorCurveIndex = Math.floorMod(start + step, count);
+    }
+
+    /**
+     * Point of the curve designated by the mouse, among its points visible in
+     * the view of the frame: {x, y, index of the point}, or null if the curve
+     * has no visible point.
+     */
+    private double[] closestPoint(C curve) {
+        double scaleX = plotWidth / (viewMaxX - viewMinX), scaleY = plotHeight / (viewMaxY - viewMinY);
+        double[] xy = new double[2];
+        double best = Double.POSITIVE_INFINITY;
+        double[] result = null;
+        boolean xOnly = cursorFollowsXOnly();
+        for (int i = firstCursorPoint(curve), n = curve.getSnapshotCount(); i < n; i++) {
+            if (!cursorPoint(curve, i, xy)) continue;
+            if (xy[0] < viewMinX || xy[0] > viewMaxX || xy[1] < viewMinY || xy[1] > viewMaxY) continue; // outside the view
+            double dx = marginLeft + (xy[0] - viewMinX) * scaleX - mouseX;
+            double dy = marginBottom + (xy[1] - viewMinY) * scaleY - mouseY;
+            double d = xOnly ? dx * dx : dx * dx + dy * dy;
+            if (d < best) {
+                best = d;
+                result = new double[]{xy[0], xy[1], i};
+            }
+        }
+        return result;
     }
 
     /**
@@ -1069,25 +1113,23 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         if (cursorEnabled && mouseInPlotArea() && !curves.isEmpty()) { // hidden when the mouse leaves the plot area
             int index = (cursorCurveIndex < curves.size()) ? cursorCurveIndex : 0;
             C curve = curves.get(index);
-            double scaleX = plotWidth / (viewMaxX - viewMinX), scaleY = plotHeight / (viewMaxY - viewMinY);
-            double[] xy = new double[2];
-            double best = Double.POSITIVE_INFINITY, bestX = 0, bestY = 0;
-            int bestIndex = -1;
-            boolean xOnly = cursorFollowsXOnly();
-            for (int i = firstCursorPoint(curve), n = curve.getSnapshotCount(); i < n; i++) {
-                if (!cursorPoint(curve, i, xy)) continue;
-                if (xy[0] < viewMinX || xy[0] > viewMaxX || xy[1] < viewMinY || xy[1] > viewMaxY) continue; // outside the view
-                double dx = marginLeft + (xy[0] - viewMinX) * scaleX - mouseX;
-                double dy = marginBottom + (xy[1] - viewMinY) * scaleY - mouseY;
-                double d = xOnly ? dx * dx : dx * dx + dy * dy;
-                if (d < best) {
-                    best = d;
-                    bestX = xy[0];
-                    bestY = xy[1];
-                    bestIndex = i;
+            double[] point = closestPoint(curve);
+            if (point == null) {
+                // No visible point of the followed curve (zoom, pan, curve elsewhere): the first visible curve is followed
+                for (int k = 0; k < curves.size() && point == null; k++) {
+                    if (k == index) continue;
+                    point = closestPoint(curves.get(k));
+                    if (point != null) {
+                        index = k;
+                        curve = curves.get(k);
+                        cursorCurveIndex = k;
+                    }
                 }
             }
-            if (best < Double.POSITIVE_INFINITY) {
+            if (point != null) {
+                double scaleX = plotWidth / (viewMaxX - viewMinX), scaleY = plotHeight / (viewMaxY - viewMinY);
+                double bestX = point[0], bestY = point[1];
+                int bestIndex = (int) point[2];
                 cursorFound = true;
                 cursorPixelX = (float) (marginLeft + (bestX - viewMinX) * scaleX);
                 cursorPixelY = (float) (marginBottom + (bestY - viewMinY) * scaleY);
@@ -1167,6 +1209,16 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     }
 
     public String getCurrentMarkerLabel() { return currentMarkerLabel; }
+
+    /**
+     * Enables (default) or disables the mouse actions on the markers: adding
+     * (Ctrl + double click in cursor mode), removing (double click on a
+     * label) and selecting (Ctrl + click on a label). When disabled, the
+     * markers are only displayed; the methods of the API remain usable.
+     * Usable from any thread.
+     */
+    public void setMarkersInteractive(boolean interactive) { markersInteractive = interactive; }
+    public boolean isMarkersInteractive() { return markersInteractive; }
 
     /**
      * Adds a marker to the group (curve, label), drawn in the color of the
