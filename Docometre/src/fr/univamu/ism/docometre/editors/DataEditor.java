@@ -429,10 +429,6 @@ public class DataEditor extends EditorPart implements PartNameRefresher, CursorM
 		if(chart.getSeries().length == 0) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().closeEditor(this, false);
 	}
 	
-	public XYSWTChart getChart() {
-		return chart;
-	}
-	
 	@Override
 	public void refreshPartName() {
 		Object object = ((ResourceEditorInput)getEditorInput()).getObject();
@@ -532,39 +528,39 @@ public class DataEditor extends EditorPart implements PartNameRefresher, CursorM
 
 	@Override
 	public void panLeft() {
-		getChart().pan(10, SWT.LEFT);
+		chart.pan(10, SWT.LEFT);
 	}
 
 	@Override
 	public void panRight() {
-		getChart().pan(10, SWT.RIGHT);
+		chart.pan(10, SWT.RIGHT);
 	}
 
 	@Override
 	public void panUp() {
-		getChart().pan(10, SWT.UP);
+		chart.pan(10, SWT.UP);
 	}
 
 	@Override
 	public void panDown() {
-		getChart().pan(10, SWT.DOWN);
+		chart.pan(10, SWT.DOWN);
 	}
 
 	@Override
 	public void zoomIn() {
-		getChart().zoomIn();
+		chart.zoomIn();
 	}
 
 	@Override
 	public void zoomOut() {
-		getChart().zoomOut();
+		chart.zoomOut();
 	}
 
 	@Override
 	public void reset() {
-		getChart().reset();
-		getChart().redraw();
-		getChart().update();
+		chart.reset();
+		chart.redraw();
+		chart.update();
 	}
 
 }
