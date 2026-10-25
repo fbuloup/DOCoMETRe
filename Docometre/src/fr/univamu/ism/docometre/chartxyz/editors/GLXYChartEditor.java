@@ -2,6 +2,7 @@ package fr.univamu.ism.docometre.chartxyz.editors;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -67,6 +68,7 @@ import fr.univamu.ism.docometre.analyse.datamodel.TimeChannel;
 import fr.univamu.ism.docometre.analyse.datamodel.XYChart;
 import fr.univamu.ism.docometre.analyse.editors.Chart2D3DBehaviour;
 import fr.univamu.ism.docometre.analyse.editors.FrontEndCutsHandler;
+import fr.univamu.ism.docometre.analyse.editors.MarkersChangeListener;
 import fr.univamu.ism.docometre.analyse.editors.RangeHandler;
 import fr.univamu.ism.docometre.analyse.editors.TrialsEditor;
 import fr.univamu.ism.docometre.chartxyz.Curve2DData;
@@ -91,9 +93,10 @@ import fr.univamu.ism.docometre.editors.ResourceEditorInput;
  * Markers: as in the SWTChart version, the markers of the x signal (if it is
  * not the time) and of the y signal are only displayed, as circles on the
  * points of the curves (one group (curve, label) per series): the mouse
- * actions on the markers of the chart are disabled.
+ * actions on the markers of the chart are disabled. They follow the changes
+ * made in the other editors (see {@link #markersChanged(Channel)}).
  */
-public class GLXYChartEditor extends EditorPart implements ISelectionChangedListener, Chart2D3DBehaviour, TrialsEditor {
+public class GLXYChartEditor extends EditorPart implements ISelectionChangedListener, Chart2D3DBehaviour, TrialsEditor, MarkersChangeListener {
 
 	public static String ID = "Docometre.GLXYChartEditor";
 
@@ -132,7 +135,7 @@ public class GLXYChartEditor extends EditorPart implements ISelectionChangedList
 	private ListViewer trialsListViewer;
 	private GLChart2D chart;
 	private final Map<String, Series> seriesMap = new LinkedHashMap<>(); // series of the chart by curve name, in creation order
-	private final Set<String> frequencyErrors = new HashSet<>(); // keys whose error of sampling frequencies has been logged
+	private final Map<String, String> frequencyChecks = new HashMap<>(); // key -> error of sampling frequencies ("" if none), logged once
 	private Text xMinText;
 	private Text xMaxText;
 	private Text yMinText;
@@ -206,6 +209,8 @@ public class GLXYChartEditor extends EditorPart implements ISelectionChangedList
 		chart.setMarkerSize(xyChartData.getMarkersSize());
 		if(!xyChartData.isAutoScale()) applyRange(); // before the first frame: the initial view is never notified as current
 
+		ChartPartListener.install(this, chart);
+		
 		// The view listener may be called outside the SWT thread (NEWT): the editor is updated with asyncExec
 		Display display = parent.getDisplay();
 		chart.addViewListener((view, automatic) -> display.asyncExec(() -> viewChanged(view, automatic)));
@@ -538,7 +543,6 @@ public class GLXYChartEditor extends EditorPart implements ISelectionChangedList
 	}
 
 	protected void updateSeriesColorsHandler() {
-		MathEngine mathEngine = MathEngineFactory.getMathEngine();
 		boolean sameColor = xyChartData.isUseSameColorForSameCategory();
 		ArrayList<String> categories = new ArrayList<>();
 		List<?> selectedTrials = trialsListViewer.getStructuredSelection().toList();
@@ -546,7 +550,7 @@ public class GLXYChartEditor extends EditorPart implements ISelectionChangedList
 			Series series = entry.getValue();
 			int index;
 			if(sameColor) {
-				String category = mathEngine.getCategoryForTrialNumber(series.ySignal, series.trialNumber);
+				String category = MathEngineFactory.getMathEngine().getCategoryForTrialNumber(series.ySignal, series.trialNumber);
 				if(categories.indexOf(category) == -1) categories.add(category);
 				index = categories.indexOf(category);
 			} else index = selectedTrials.indexOf(series.trialNumber);
@@ -558,6 +562,7 @@ public class GLXYChartEditor extends EditorPart implements ISelectionChangedList
 
 	@Override
 	public void refreshTrialsListFrontEndCutsCategories() {
+		clearFrequencyChecks(); // curves added or removed
 		updateCategories();
 		if(xyChartData.getNbCurves() == 0) {
 			trialsListViewer.setInput(null);
@@ -627,7 +632,6 @@ public class GLXYChartEditor extends EditorPart implements ISelectionChangedList
 	public void selectionChanged(SelectionChangedEvent event) {
 		if(trialsCategoriesTabFolder.getSelection() == trialsTabItem && categoriesListViewer != null) {
 			categoriesListViewer.setSelection(StructuredSelection.EMPTY);
-			categoriesListViewer.refresh();
 		}
 		if(trialsListViewer.getStructuredSelection().isEmpty()) {
 			removeAllSeries();
@@ -640,18 +644,12 @@ public class GLXYChartEditor extends EditorPart implements ISelectionChangedList
 				if(!trialSelected) removeSeriesFromChart(trialNumberInChart);
 			}
 
-			// Add series
-			for (Integer selectedTrialNumber : selectedTrialsNumbers) {
-				if(!chartHasAlreadyThisTrial(selectedTrialNumber) || isDirty()) {
-					removeSeriesFromChart(selectedTrialNumber); // built again (curve names are unique)
-					addSeriesToChart(selectedTrialNumber);
-				}
-			}
+			// Add the missing series (the series already displayed are kept)
+			for (Integer selectedTrialNumber : selectedTrialsNumbers) addSeriesToChart(selectedTrialNumber);
 			xyChartData.setSelectedTrialsNumbers(trialsListViewer.getStructuredSelection().toList());
 		}
 
 		if(!xyChartData.isAutoScale()) applyRange(); // otherwise the initial view follows the data
-		trialsListViewer.refresh();
 		updateSeriesColorsHandler();
 		setDirty(true);
 	}
@@ -723,35 +721,63 @@ public class GLXYChartEditor extends EditorPart implements ISelectionChangedList
 		}
 	}
 
+	/** Adds the series of the trial that are not displayed yet (one per couple of signals). */
 	private void addSeriesToChart(Integer trialNumber) {
-		// Get x and Y values for this signal and trial
-		Set<String> keys = xyChartData.getCurvesIDs();
-		for (String key : keys) {
+		for (String key : xyChartData.getCurvesIDs()) {
+			String seriesID = key + "." + trialNumber;
+			if(chart.getCurve(seriesID) != null) continue; // already displayed
 			Channel[] channels = xyChartData.getXYChannels(key);
 			if(!sameSampleFrequencies(key, channels)) continue;
-			MathEngine mathEngine = MathEngineFactory.getMathEngine();
-			double[] xValues;
-			if(channels[0] instanceof TimeChannel) xValues = ((TimeChannel)channels[0]).getValues(trialNumber);
-			else xValues = mathEngine.getYValuesForSignal(channels[0], trialNumber);
-			double[] yValues = mathEngine.getYValuesForSignal(channels[1], trialNumber);
-			//
-			if(yValues == null || xValues == null || yValues.length == 0 || xValues.length == 0) return;
+			double[][] values = readValues(channels, trialNumber);
+			if(values == null) continue;
+			double[] xValues = values[0], yValues = values[1];
 			// Samples between the cuts: index i of the values = sample baseFrontCut + i
 			Channel refChannel = (channels[0] instanceof TimeChannel) ? channels[1] : channels[0];
-			int baseFrontCut = mathEngine.getFrontCut(refChannel, trialNumber);
+			int baseFrontCut = MathEngineFactory.getMathEngine().getFrontCut(refChannel, trialNumber);
 			int from = Math.max(0, xyChartData.getFrontCut() - baseFrontCut);
 			int to = Math.min(Math.min(xValues.length, yValues.length) - 1, xyChartData.getEndCut() - baseFrontCut);
 			if(to - from < 1) continue; // fewer than two points
 			List<Point2D> points = new ArrayList<>(to - from + 1);
 			for (int i = from; i <= to; i++) points.add(new Point2D((float) xValues[i], (float) yValues[i]));
-			double sf = mathEngine.getSampleFrequency(refChannel);
+			double sf = MathEngineFactory.getMathEngine().getSampleFrequency(refChannel);
 			// Add Series
-			String seriesID = key + "." + trialNumber;
 			Curve2DData curve = new Curve2DData(seriesID, (sf > 0) ? sf : 1, points);
 			chart.addCurve(curve);
 			Series series = new Series(key, channels[0], channels[1], trialNumber);
 			seriesMap.put(seriesID, series);
-			updateChartMarkers(curve, series);
+			updateChartMarkers(curve, series, xValues, yValues);
+		}
+	}
+
+	/**
+	 * Values {x, y} of the signals for the trial (x: time values if x is the
+	 * time), or null if one of them has no value (not kept by the values
+	 * cache of the MathEngine).
+	 */
+	private static double[][] readValues(Channel[] channels, int trialNumber) {
+		MathEngine mathEngine = MathEngineFactory.getMathEngine();
+		double[] xValues;
+		if(channels[0] instanceof TimeChannel) xValues = ((TimeChannel)channels[0]).getValues(trialNumber);
+		else xValues = mathEngine.getYValuesForSignal(channels[0], trialNumber);
+		double[] yValues = mathEngine.getYValuesForSignal(channels[1], trialNumber);
+		if(yValues == null || xValues == null || yValues.length == 0 || xValues.length == 0) return null;
+		return new double[][] {xValues, yValues};
+	}
+
+	/**
+	 * Markers of the signal changed in another editor (SWT thread): the
+	 * markers of the curves of this signal are read again (the curves are
+	 * kept).
+	 */
+	@Override
+	public void markersChanged(Channel signal) {
+		if(chart == null || chart.isDisposed() || signal == null) return;
+		for (Map.Entry<String, Series> entry : seriesMap.entrySet()) {
+			Series series = entry.getValue();
+			if(!signal.equals(series.xSignal) && !signal.equals(series.ySignal)) continue;
+			Curve2DData curve = chart.getCurve(entry.getKey());
+			double[][] values = readValues(new Channel[] {series.xSignal, series.ySignal}, series.trialNumber);
+			if(curve != null && values != null) updateChartMarkers(curve, series, values[0], values[1]);
 		}
 	}
 
@@ -761,71 +787,72 @@ public class GLXYChartEditor extends EditorPart implements ISelectionChangedList
 	 * and the error is logged once.
 	 */
 	private boolean sameSampleFrequencies(String key, Channel[] channels) {
-		String error = SampleFrequencies.check(channels);
-		if(error == null) return true;
-		if(frequencyErrors.add(key)) Activator.logErrorMessage(error);
-		return false;
+		if(!frequencyChecks.containsKey(key)) { // checked once per couple of signals
+			String error = SampleFrequencies.check(channels);
+			if(error != null) Activator.logErrorMessage(error);
+			frequencyChecks.put(key, (error != null) ? error : "");
+		}
+		return frequencyChecks.get(key).isEmpty();
 	}
 
 	/**
 	 * Markers of the x signal (if it is not the time) and of the y signal for
 	 * the trial of this curve, placed on the points of the curve (one group
 	 * per label), as in MarkersManager: markers outside the cuts are skipped.
+	 * xValues and yValues: values of the signals for the trial (x: time
+	 * values if x is the time).
 	 */
-	private void updateChartMarkers(Curve2DData curve, Series series) {
+	private void updateChartMarkers(Curve2DData curve, Series series, double[] xValues, double[] yValues) {
 		for (String label : chart.getMarkersLabels(curve)) chart.removeMarkersGroup(curve, label);
 		Map<String, List<double[]>> groups = new LinkedHashMap<>();
-		if(!(series.xSignal instanceof TimeChannel)) collectMarkers(series, true, groups);
-		collectMarkers(series, false, groups);
+		if(!(series.xSignal instanceof TimeChannel)) collectMarkers(series, true, yValues, groups);
+		collectMarkers(series, false, xValues, groups);
 		for (Map.Entry<String, List<double[]>> group : groups.entrySet()) {
 			chart.addMarkersGroup(curve, group.getKey(), group.getValue().toArray(new double[0][]));
 		}
 	}
 
-	private void collectMarkers(Series series, boolean xMarkers, Map<String, List<double[]>> groups) {
-		MathEngine mathEngine = MathEngineFactory.getMathEngine();
+	/** Markers of the x (xMarkers) or y signal; values: values of the other signal, for the other coordinate. */
+	private void collectMarkers(Series series, boolean xMarkers, double[] values, Map<String, List<double[]>> groups) {
 		Channel xSignal = series.xSignal, ySignal = series.ySignal;
 		int trialNumber = series.trialNumber;
-		double sf = mathEngine.getSampleFrequency((xSignal instanceof TimeChannel) ? ySignal : xSignal);
+		double sf = MathEngineFactory.getMathEngine().getSampleFrequency((xSignal instanceof TimeChannel) ? ySignal : xSignal);
 		Channel markersSignal = xMarkers ? xSignal : ySignal;
-		String[] labels = mathEngine.getMarkersGroupsLabels(markersSignal);
-		if(labels == null) return;
-		double[] values = null; // values of the other signal, for the other coordinate
-		int baseFrontCut = 0;
-		for (String label : labels) {
-			double[][] markers = mathEngine.getMarkers(label, markersSignal);
-			if(markers == null) continue;
-			for (double[] marker : markers) {
+		// Values of the other signal: index i = sample baseFrontCut + i (time values: front cut of y)
+		Channel valuesSignal = (xMarkers || xSignal instanceof TimeChannel) ? ySignal : xSignal;
+		int baseFrontCut = MathEngineFactory.getMathEngine().getFrontCut(valuesSignal, trialNumber);
+		for (Map.Entry<String, double[][]> group : markersGroups(markersSignal).entrySet()) {
+			for (double[] marker : group.getValue()) {
 				if(((int) marker[0]) != trialNumber) continue;
 				int sampleIndex = (int) (sf * marker[1]);
 				if(sampleIndex <= xyChartData.getFrontCut() || sampleIndex >= xyChartData.getEndCut()) continue;
-				if(values == null) {
-					if(xMarkers) {
-						values = mathEngine.getYValuesForSignal(ySignal, trialNumber);
-						baseFrontCut = mathEngine.getFrontCut(ySignal, trialNumber);
-					} else if(xSignal instanceof TimeChannel) {
-						values = ((TimeChannel)xSignal).getValues(trialNumber);
-						baseFrontCut = mathEngine.getFrontCut(ySignal, trialNumber);
-					} else {
-						values = mathEngine.getYValuesForSignal(xSignal, trialNumber);
-						baseFrontCut = mathEngine.getFrontCut(xSignal, trialNumber);
-					}
-					if(values == null) return;
-				}
 				int index = sampleIndex - baseFrontCut;
 				if(index < 0 || index >= values.length) continue;
 				double[] point = xMarkers ? new double[] {marker[2], values[index]} : new double[] {values[index], marker[2]};
-				groups.computeIfAbsent(label, k -> new ArrayList<>()).add(point);
+				groups.computeIfAbsent(group.getKey(), k -> new ArrayList<>()).add(point);
 			}
 		}
 	}
 
-	private boolean chartHasAlreadyThisTrial(Integer trialNumber) {
-		for (String seriesID : xyChartData.getSeriesIDsPrefixes()) {
-			seriesID = seriesID + "." + trialNumber;
-			if(chart.getCurve(seriesID) != null) return true;
+	/** Forgets the checks of the sampling frequencies (curves added or removed, data processed). */
+	private void clearFrequencyChecks() {
+		frequencyChecks.clear();
+	}
+
+	/**
+	 * Marker groups of the signal: label -> markers {trial, time, value}, in
+	 * the order of the labels (read through the values cache of the
+	 * MathEngine, see ChannelsContainer).
+	 */
+	private static Map<String, double[][]> markersGroups(Channel signal) {
+		Map<String, double[][]> groups = new LinkedHashMap<>();
+		String[] labels = MathEngineFactory.getMathEngine().getMarkersGroupsLabels(signal);
+		if(labels == null) return groups;
+		for (String label : labels) {
+			double[][] markers = MathEngineFactory.getMathEngine().getMarkers(label, signal);
+			if(markers != null) groups.put(label, markers);
 		}
-		return false;
+		return groups;
 	}
 
 	@Override
@@ -898,14 +925,9 @@ public class GLXYChartEditor extends EditorPart implements ISelectionChangedList
 		return xyChartData;
 	}
 
-	/** The chart is drawn continuously: the markers are read again (they may have changed in MathEngine). */
+	/** Nothing to do: the chart is drawn continuously (the data are read again by update()). */
 	@Override
 	public void redraw() {
-		if(chart == null || chart.isDisposed()) return;
-		for (Map.Entry<String, Series> entry : seriesMap.entrySet()) {
-			Curve2DData curve = chart.getCurve(entry.getKey());
-			if(curve != null) updateChartMarkers(curve, entry.getValue());
-		}
 	}
 
 	@Override
@@ -1013,8 +1035,19 @@ public class GLXYChartEditor extends EditorPart implements ISelectionChangedList
 	}
 
 	@Override
+	/**
+	 * Data processed (MathEngine values, markers, categories may have
+	 * changed): the values are read again and the series built again.
+	 */
 	public void update() {
-		redraw();
+		if(chart == null || chart.isDisposed()) return;
+		clearFrequencyChecks();
+		Set<Integer> trials = getTrialsInChart();
+		removeAllSeries();
+		for (Integer trialNumber : trials) addSeriesToChart(trialNumber);
+		updateSeriesColorsHandler();
+		trialsListViewer.refresh(); // categories of the trials
+		if(categoriesListViewer != null) categoriesListViewer.refresh();
 	}
 
 }

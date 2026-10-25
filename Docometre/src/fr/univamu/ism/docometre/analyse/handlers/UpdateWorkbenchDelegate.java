@@ -9,8 +9,10 @@ import org.eclipse.ui.PlatformUI;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
+import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
 import fr.univamu.ism.docometre.analyse.editors.Chart2D3DBehaviour;
+import fr.univamu.ism.docometre.analyse.editors.MarkersChangeListener;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 
@@ -49,6 +51,23 @@ public final class UpdateWorkbenchDelegate {
 					}
 				}
 			});
+	}
+	
+	/**
+	 * Markers of the signal added or removed (marker or markers group): the
+	 * open editors that display them (MarkersChangeListener) update them.
+	 */
+	public static void updateMarkers(Channel signal) {
+		PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+			@Override
+			public void run() {
+				IEditorReference[] editorsRefs = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
+				for (IEditorReference editorRef : editorsRefs) {
+					IEditorPart editor = editorRef.getEditor(false);
+					if(editor instanceof MarkersChangeListener) ((MarkersChangeListener)editor).markersChanged(signal);
+				}
+			}
+		});
 	}
 	
 	public static void updateCharts() {

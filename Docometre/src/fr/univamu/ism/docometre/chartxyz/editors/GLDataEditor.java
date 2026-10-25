@@ -26,8 +26,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IPartListener2;
-import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
 
@@ -48,7 +46,7 @@ import fr.univamu.ism.docometre.editors.PartNameRefresher;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.editors.DataEditorActionBarContributor.IDataEditorActionBarContribution;
 
-public class GLDataEditor extends EditorPart implements PartNameRefresher, IPartListener2, IDataEditorActionBarContribution {
+public class GLDataEditor extends EditorPart implements PartNameRefresher/*, IPartListener2*/, IDataEditorActionBarContribution {
 	
 	public static String ID = "Docometre.GLDataEditor";
 	
@@ -77,7 +75,7 @@ public class GLDataEditor extends EditorPart implements PartNameRefresher, IPart
 		setSite(site);
 		IFile dataFile = (IFile) ((ResourceEditorInput) getEditorInput()).getObject();
 		loadData(dataFile);
-		site.getPage().addPartListener(this);
+//		site.getPage().addPartListener(this);
 	}
 
 	@Override
@@ -103,6 +101,7 @@ public class GLDataEditor extends EditorPart implements PartNameRefresher, IPart
 		}
 		chart = GLChart1D.createChart(parent, curveData.getWindowTimeWidth(), curveData);
 		chart.setDisplayMode(Chart1DRenderer.DisplayMode.SCROLL); 
+		ChartPartListener.install(this, chart);
 		refreshPartName();
 	}
 
@@ -241,24 +240,24 @@ public class GLDataEditor extends EditorPart implements PartNameRefresher, IPart
 		return sf;
 	}
 	
-	@Override
-	public void partActivated(IWorkbenchPartReference partRef) {
-		if(chart != null && partRef == getSite().getPage().getReference(this)) {
-			chart.startAnimator();
-		}
-	}
-	
-	@Override
-	public void partDeactivated(IWorkbenchPartReference partRef) {
-		if(chart != null && partRef == getSite().getPage().getReference(this)) {
-			chart.stopAnimator();
-		}
-	}
+//	@Override
+//	public void partActivated(IWorkbenchPartReference partRef) {
+//		if(chart != null && partRef == getSite().getPage().getReference(this)) {
+//			chart.startAnimator();
+//		}
+//	}
+//	
+//	@Override
+//	public void partDeactivated(IWorkbenchPartReference partRef) {
+//		if(chart != null && partRef == getSite().getPage().getReference(this)) {
+//			chart.stopAnimator();
+//		}
+//	}
 	
 	@Override
 	public void dispose() {
 		if (chart != null) chart.close();
-		getSite().getPage().removePartListener(this);
+//		getSite().getPage().removePartListener(this);
 		super.dispose();
 	}
 

@@ -988,10 +988,12 @@ public final class DocometreMessages extends NLS {
 	public static String PressEnterFrontCut;
 	public static String PressEnterEndCut;
 	public static String SubjectNotLoaded;
+	public static String AssociatedResourcesNotFoundXY;
 	
-	// XY Chart
+	// XYZ Chart
 	public static String NewXYZChartWizard_PageTitle;
 	public static String NewXYZChartWizard_PageMessage;
+	public static String AssociatedResourcesNotFoundXYZ;
 	
 	// Data processing editor page editor titles
 	public static String MathEngineEditorTitle;

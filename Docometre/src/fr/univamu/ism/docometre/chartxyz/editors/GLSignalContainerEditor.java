@@ -14,6 +14,7 @@ import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.analyse.editors.AbstractSignalContainerEditor;
 import fr.univamu.ism.docometre.analyse.editors.ChannelEditorWidgetsFactory;
+import fr.univamu.ism.docometre.analyse.handlers.UpdateWorkbenchDelegate;
 import fr.univamu.ism.docometre.chartxyz.Curve1DData;
 import fr.univamu.ism.docometre.chartxyz.DisplayOption;
 import fr.univamu.ism.docometre.chartxyz.GLChart1D;
@@ -201,6 +202,7 @@ public class GLSignalContainerEditor extends AbstractSignalContainerEditor {
 			mathEngine.addMarker(label, trialNumber, xValue, yValues[index], signal);
 			mathEngine.setUpdateChannelsCache(signal.getSubject(), true);
 			updateMarkersGroup(markersGroupLabel, trialNumber, xValue, yValues[index]);
+			UpdateWorkbenchDelegate.updateMarkers(signal); // XY and XYZ charts of this signal
 		} else if(!isGroup) {
 			Activator.logWarningMessage("Select or create a markers group before adding a marker.");
 		}
@@ -218,6 +220,7 @@ public class GLSignalContainerEditor extends AbstractSignalContainerEditor {
 		mathEngine.setUpdateChannelsCache(signal.getSubject(), true);
 		updateMarkersGroup(markersGroupLabel);
 		if(chart.getCurve(curve.getName()) == curve) updateChartMarkers(curve);
+		UpdateWorkbenchDelegate.updateMarkers(signal); // XY and XYZ charts of this signal
 	}
 
 	/** Chart time of a MathEngine time: time since the first displayed sample, from the sample index. */

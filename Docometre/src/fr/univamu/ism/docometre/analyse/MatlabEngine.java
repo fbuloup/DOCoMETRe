@@ -364,6 +364,7 @@ public final class MatlabEngine implements MathEngine {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
 		}
+		ChannelsContainer.clearValuesCache(); // the values read before may have changed
 	}
 
 	@Override
@@ -389,6 +390,7 @@ public final class MatlabEngine implements MathEngine {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
 		}
+		ChannelsContainer.clearValuesCache(); // the values read before may have changed
 	}
 
 	@Override
@@ -435,8 +437,7 @@ public final class MatlabEngine implements MathEngine {
 		return false;
 	}
 	
-	@Override
-	public String getCriteriaForCategory(IResource category) {
+	private String readCriteriaForCategory(IResource category) {
 		try {
 			if(!isCategory(category)) return null;
 			Object[] responses = matlabController.returningEval(getFullPath(category) + ".Criteria", 1);
@@ -452,7 +453,11 @@ public final class MatlabEngine implements MathEngine {
 	}
 
 	@Override
-	public Integer[] getTrialsListForCategory(IResource category) {
+	public String getCriteriaForCategory(IResource category) {
+		return ChannelsContainer.getCachedValue(category, "Criteria", () -> readCriteriaForCategory(category));
+	}
+
+	private Integer[] readTrialsListForCategory(IResource category) {
 		try {
 			if(!isCategory(category)) return new Integer[0];
 			Object[] responses = matlabController.returningEval(getFullPath(category) + ".TrialsList", 1);
@@ -470,6 +475,12 @@ public final class MatlabEngine implements MathEngine {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	@Override
+	public Integer[] getTrialsListForCategory(IResource category) {
+		Integer[] trials = ChannelsContainer.getCachedValue(category, "TrialsList", () -> readTrialsListForCategory(category));
+		return (trials != null) ? trials.clone() : null; // the cached values must not be modified
 	}
 
 	@Override
@@ -492,8 +503,7 @@ public final class MatlabEngine implements MathEngine {
 		return null;
 	}
 	
-	@Override
-	public int getTrialsNumber(Channel signal) {
+	private Integer readTrialsNumber(Channel signal) {
 		try {
 			String variableName = "nbTrials_" + (new Date()).getTime();
 			matlabController.eval(variableName + " = size(" + getFullPath(signal) + ".Values" + ");");
@@ -505,11 +515,16 @@ public final class MatlabEngine implements MathEngine {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
 		}
-		return 0;
+		return null;
 	}
 
 	@Override
-	public double getSampleFrequency(Channel signal) {
+	public int getTrialsNumber(Channel signal) {
+		Integer value = ChannelsContainer.getCachedValue(signal, "TrialsNumber", () -> readTrialsNumber(signal));
+		return (value != null) ? value : 0;
+	}
+
+	private Double readSampleFrequency(Channel signal) {
 		try {
 			Object[] responses = matlabController.returningEval(getFullPath(signal) + ".SampleFrequency", 1);
 			double sf = ((double[]) responses[0])[0];
@@ -518,11 +533,16 @@ public final class MatlabEngine implements MathEngine {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
 		}
-		return 0;
+		return null;
 	}
 
 	@Override
-	public int getSamplesNumber(Channel signal, int trialNumber) {
+	public double getSampleFrequency(Channel signal) {
+		Double value = ChannelsContainer.getCachedValue(signal, "SampleFrequency", () -> readSampleFrequency(signal));
+		return (value != null) ? value : 0;
+	}
+
+	private Integer readSamplesNumber(Channel signal, int trialNumber) {
 		try {
 			Object[] responses = matlabController.returningEval(getFullPath(signal) + ".NbSamples(" + trialNumber + ")", 1);
 			int value = (int) ((double[]) responses[0])[0];
@@ -531,11 +551,16 @@ public final class MatlabEngine implements MathEngine {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
 		}
-		return 0;
+		return null;
 	}
 
 	@Override
-	public int getFrontCut(Channel signal, int trialNumber) {
+	public int getSamplesNumber(Channel signal, int trialNumber) {
+		Integer value = ChannelsContainer.getCachedValue(signal, "NbSamples(" + trialNumber + ")", () -> readSamplesNumber(signal, trialNumber));
+		return (value != null) ? value : 0;
+	}
+
+	private Integer readFrontCut(Channel signal, int trialNumber) {
 		try {
 			Object[] responses = matlabController.returningEval(getFullPath(signal) + ".FrontCut(" + trialNumber + ")", 1);
 			int value = (int) ((double[]) responses[0])[0];
@@ -544,11 +569,16 @@ public final class MatlabEngine implements MathEngine {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
 		}
-		return 0;
+		return null;
 	}
 
 	@Override
-	public int getEndCut(Channel signal, int trialNumber) {
+	public int getFrontCut(Channel signal, int trialNumber) {
+		Integer value = ChannelsContainer.getCachedValue(signal, "FrontCut(" + trialNumber + ")", () -> readFrontCut(signal, trialNumber));
+		return (value != null) ? value : 0;
+	}
+
+	private Integer readEndCut(Channel signal, int trialNumber) {
 		try {
 			Object[] responses = matlabController.returningEval(getFullPath(signal) + ".EndCut(" + trialNumber + ")", 1);
 			int value = (int) ((double[]) responses[0])[0];
@@ -557,7 +587,13 @@ public final class MatlabEngine implements MathEngine {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
 		}
-		return 0;
+		return null;
+	}
+
+	@Override
+	public int getEndCut(Channel signal, int trialNumber) {
+		Integer value = ChannelsContainer.getCachedValue(signal, "EndCut(" + trialNumber + ")", () -> readEndCut(signal, trialNumber));
+		return (value != null) ? value : 0;
 	}
 
 	@Override
@@ -568,6 +604,7 @@ public final class MatlabEngine implements MathEngine {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
 		}
+		ChannelsContainer.clearValuesCache(); // the values read before may have changed
 	}
 	
 	private void runScript(String code) {
@@ -588,7 +625,7 @@ public final class MatlabEngine implements MathEngine {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
 		}
-		
+		ChannelsContainer.clearValuesCache(); // the values read before may have changed
 	}
 	
 	@Override
@@ -631,7 +668,7 @@ public final class MatlabEngine implements MathEngine {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
 		}
-		
+		ChannelsContainer.clearValuesCache(); // the values read before may have changed
 	}
 
 	@Override
@@ -676,6 +713,7 @@ public final class MatlabEngine implements MathEngine {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
 		}
+		ChannelsContainer.clearValuesCache(); // the values read before may have changed
 	}
 	
 	@Override
@@ -702,10 +740,10 @@ public final class MatlabEngine implements MathEngine {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
 		}
+		ChannelsContainer.clearValuesCache(); // the values read before may have changed
 	}
 
-	@Override
-	public double[][] getMarkers(String markersGroupLabel, Channel signal) {
+	private double[][] readMarkers(String markersGroupLabel, Channel signal) {
 		try {
 			if("".equals(markersGroupLabel)) return new double[0][0];
 			String fullSignalName = getFullPath(signal);
@@ -725,7 +763,16 @@ public final class MatlabEngine implements MathEngine {
 			e.printStackTrace();
 		}
 		
-		return new double[0][0];
+		return null;
+	}
+
+	@Override
+	public double[][] getMarkers(String markersGroupLabel, Channel signal) {
+		double[][] markers = ChannelsContainer.getCachedValue(signal, "Markers(" + markersGroupLabel + ")", () -> readMarkers(markersGroupLabel, signal));
+		if(markers == null) return new double[0][0];
+		double[][] copy = new double[markers.length][]; // the cached values must not be modified
+		for (int i = 0; i < markers.length; i++) copy[i] = markers[i].clone();
+		return copy;
 	}
 
 	@Override
@@ -746,6 +793,7 @@ public final class MatlabEngine implements MathEngine {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
 		}
+		ChannelsContainer.clearValuesCache(); // the values read before may have changed
 	}
 	
 	@Override
@@ -806,6 +854,7 @@ public final class MatlabEngine implements MathEngine {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
 		}
+		ChannelsContainer.clearValuesCache(); // the values read before may have changed
 	}
 
 	@Override

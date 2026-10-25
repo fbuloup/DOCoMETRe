@@ -43,6 +43,7 @@ package fr.univamu.ism.docometre.analyse.datamodel;
 
 import java.util.HashMap;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -55,6 +56,7 @@ import org.jzy3d.maths.Coord3d;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 
 public class XYZChart extends XYChart {
@@ -138,10 +140,10 @@ public class XYZChart extends XYChart {
 			IResource zSubject = zProject.findMember(zSubjectName);
 			
 			if(xSubject == null || ySubject == null || zSubject == null) {
-				String message = "Impossible to find one or more of these resources :\n";
-				message += "Associated resource for " + xFullChannelName + " is " + xSubject + "\n";
-				message += "Associated resource for " + yFullChannelName + " is " + ySubject + "\n";
-				message += "Associated resource for " + zFullChannelName + " is " + zSubject + "\n";
+				removeCurve(seriesID);
+				IResource xyzChartFile = ObjectsController.getResourceForObject(this);
+				ObjectsController.serialize((IFile) xyzChartFile, this);
+				String message = NLS.bind(DocometreMessages.AssociatedResourcesNotFoundXYZ, new Object[] {xFullChannelName, xSubject, yFullChannelName, ySubject, zFullChannelName, zSubject});
 				Activator.logErrorMessage(message);
 				continue;
 			}

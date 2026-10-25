@@ -16,6 +16,7 @@ import fr.univamu.ism.docometre.analyse.datamodel.XYChart;
 import fr.univamu.ism.docometre.analyse.editors.Chart2D3DBehaviour;
 import fr.univamu.ism.docometre.analyse.editors.TrialNavigator;
 import fr.univamu.ism.docometre.analyse.editors.TrialsEditor;
+import fr.univamu.ism.docometre.chartxyz.AbstractGLChart;
 import fr.univamu.ism.docometre.chartxyz.GLChart1D;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 
@@ -45,9 +46,11 @@ public class GLChannelEditor extends EditorPart implements TrialsEditor, Chart2D
 	public void createPartControl(Composite parent) {
 		if(channel != null && channel.isSignal()) {
 			container = new GLSignalContainerEditor(parent, SWT.BORDER, this);
+			ChartPartListener.install(this, (AbstractGLChart<?, ?>) ((GLSignalContainerEditor)container).getChart());
 		}
 		if(channel != null && channel.isCategory()) {
 			container = new GLCategoryContainerEditor(parent, SWT.BORDER, this);
+			ChartPartListener.install(this, (AbstractGLChart<?, ?>) ((GLCategoryContainerEditor)container).getChart());
 		}
 	}
 	

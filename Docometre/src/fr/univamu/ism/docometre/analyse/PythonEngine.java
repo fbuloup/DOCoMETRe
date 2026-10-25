@@ -278,7 +278,7 @@ public class PythonEngine implements MathEngine {
 //			e.printStackTrace();
 //			Activator.logErrorMessageWithCause(e);
 //		}
-
+		ChannelsContainer.clearValuesCache(); // the values read before may have changed
 	}
 
 	@Override
@@ -296,12 +296,13 @@ public class PythonEngine implements MathEngine {
 			String prefixKey = experimentName + "\\.";
 			pythonController.getPythonEntryPoint().unload(prefixKey);
 		}
+		ChannelsContainer.clearValuesCache(); // the values read before may have changed
 	}
 
 	@Override
 	public boolean exist(String variableName) {
 		String cmd = "'" + variableName + "'" + " in docometre.experiments.keys()";
-		String response = evaluate(cmd);
+		String response = evaluateInEngine(cmd);
 		return "True".equals(response);
 	}
 	
@@ -342,8 +343,7 @@ public class PythonEngine implements MathEngine {
 		return values.equalsIgnoreCase("true") || values.equalsIgnoreCase("1");
 	}
 
-	@Override
-	public String getCriteriaForCategory(IResource category) {
+	private String readCriteriaForCategory(IResource category) {
 		String fullName = getFullPath(category);
 		String expression = "docometre.experiments[\"" + fullName + ".Criteria\"]";
 		String value = pythonController.getPythonEntryPoint().evaluate(expression);
@@ -351,7 +351,11 @@ public class PythonEngine implements MathEngine {
 	}
 
 	@Override
-	public Integer[] getTrialsListForCategory(IResource category) {
+	public String getCriteriaForCategory(IResource category) {
+		return ChannelsContainer.getCachedValue(category, "Criteria", () -> readCriteriaForCategory(category));
+	}
+
+	private Integer[] readTrialsListForCategory(IResource category) {
 		String fullName = getFullPath(category);
 		String expression = "docometre.experiments[\"" + fullName + ".TrialsList\"]";
 		byte[] byteValues = pythonController.getPythonEntryPoint().getVector(expression, PythonEntryPoint.DATA_TYPE_INT, -1, -1, -1);
@@ -362,6 +366,12 @@ public class PythonEngine implements MathEngine {
 		intBuffer.get(values);
     	Arrays.sort(values);
     	return Arrays.stream(values).boxed().toArray(Integer[]::new);
+	}
+
+	@Override
+	public Integer[] getTrialsListForCategory(IResource category) {
+		Integer[] trials = ChannelsContainer.getCachedValue(category, "TrialsList", () -> readTrialsListForCategory(category));
+		return (trials != null) ? trials.clone() : null; // the cached values must not be modified
 	}
 
 	@Override
@@ -383,8 +393,7 @@ public class PythonEngine implements MathEngine {
     	return values;
 	}
 	
-	@Override
-	public int getTrialsNumber(Channel signal) {
+	private Integer readTrialsNumber(Channel signal) {
 		String fullName = getFullPath(signal);
 		String expression = "len(docometre.experiments[\"" + fullName + ".Values\"])";
 		String value = pythonController.getPythonEntryPoint().evaluate(expression);
@@ -392,7 +401,12 @@ public class PythonEngine implements MathEngine {
 	}
 
 	@Override
-	public double getSampleFrequency(Channel signal) {
+	public int getTrialsNumber(Channel signal) {
+		Integer value = ChannelsContainer.getCachedValue(signal, "TrialsNumber", () -> readTrialsNumber(signal));
+		return (value != null) ? value : 0;
+	}
+
+	private Double readSampleFrequency(Channel signal) {
 		String fullName = getFullPath(signal);
 		String expression = "docometre.experiments[\"" + fullName + ".SampleFrequency\"]";
 		String value = pythonController.getPythonEntryPoint().evaluate(expression);
@@ -400,7 +414,12 @@ public class PythonEngine implements MathEngine {
 	}
 
 	@Override
-	public int getSamplesNumber(Channel signal, int trialNumber) {
+	public double getSampleFrequency(Channel signal) {
+		Double value = ChannelsContainer.getCachedValue(signal, "SampleFrequency", () -> readSampleFrequency(signal));
+		return (value != null) ? value : 0;
+	}
+
+	private Integer readSamplesNumber(Channel signal, int trialNumber) {
 		String fullName = getFullPath(signal);
 //		String expression = "docometre.experiments[\"" + fullName + ".NbSamples." + trialNumber + "\"]";
 		String expression = "docometre.experiments[\"" + fullName + ".NbSamples\"][" + (trialNumber-1) + "]" ;
@@ -409,7 +428,12 @@ public class PythonEngine implements MathEngine {
 	}
 
 	@Override
-	public int getFrontCut(Channel signal, int trialNumber) {
+	public int getSamplesNumber(Channel signal, int trialNumber) {
+		Integer value = ChannelsContainer.getCachedValue(signal, "NbSamples(" + trialNumber + ")", () -> readSamplesNumber(signal, trialNumber));
+		return (value != null) ? value : 0;
+	}
+
+	private Integer readFrontCut(Channel signal, int trialNumber) {
 		String fullName = getFullPath(signal);
 //		String expression = "docometre.experiments[\"" + fullName + ".FrontCut." + trialNumber + "\"]";
 		String expression = "docometre.experiments[\"" + fullName + ".FrontCut\"][" + (trialNumber-1) + "]" ;
@@ -418,7 +442,12 @@ public class PythonEngine implements MathEngine {
 	}
 
 	@Override
-	public int getEndCut(Channel signal, int trialNumber) {
+	public int getFrontCut(Channel signal, int trialNumber) {
+		Integer value = ChannelsContainer.getCachedValue(signal, "FrontCut(" + trialNumber + ")", () -> readFrontCut(signal, trialNumber));
+		return (value != null) ? value : 0;
+	}
+
+	private Integer readEndCut(Channel signal, int trialNumber) {
 		String fullName = getFullPath(signal);
 //		String expression = "docometre.experiments[\"" + fullName + ".EndCut." + trialNumber + "\"]";
 		String expression = "docometre.experiments[\"" + fullName + ".EndCut\"][" + (trialNumber-1) + "]" ;
@@ -427,8 +456,15 @@ public class PythonEngine implements MathEngine {
 	}
 
 	@Override
+	public int getEndCut(Channel signal, int trialNumber) {
+		Integer value = ChannelsContainer.getCachedValue(signal, "EndCut(" + trialNumber + ")", () -> readEndCut(signal, trialNumber));
+		return (value != null) ? value : 0;
+	}
+
+	@Override
 	public void runScript(String code, boolean runInMainThread) {
 		pythonController.getPythonEntryPoint().runScript(code, runInMainThread);
+		ChannelsContainer.clearValuesCache(); // the values read before may have changed
 	}
 
 	@Override
@@ -439,6 +475,7 @@ public class PythonEngine implements MathEngine {
 		channelName = experimentName + "\\." + subjectName + "\\." + channelName;
 		pythonController.getPythonEntryPoint().unload(channelName);
 		channel.setModified(true);
+		ChannelsContainer.clearValuesCache(); // the values read before may have changed
 	}
 	
 	@Override
@@ -466,6 +503,7 @@ public class PythonEngine implements MathEngine {
 		expression = "docometre.experiments[\"" + channelName + ".MarkersGroup_"+ markersGroupLabel + "_Values\"] = numpy.zeros((0,3));";
 		pythonController.getPythonEntryPoint().runScript(expression, false);
 		signal.setModified(true);
+		ChannelsContainer.clearValuesCache(); // the values read before may have changed
 	}
 
 
@@ -501,6 +539,7 @@ public class PythonEngine implements MathEngine {
 		expression = channelName + "\\.MarkersGroup_" + markersGroupLabel; 
 		pythonController.getPythonEntryPoint().unload(expression);
 		signal.setModified(true);
+		ChannelsContainer.clearValuesCache(); // the values read before may have changed
 	}
 	
 	@Override
@@ -511,10 +550,10 @@ public class PythonEngine implements MathEngine {
 		expression = expression + " = numpy.vstack([" + expression + ", " + valuesString + "]);";
 		pythonController.getPythonEntryPoint().runScript(expression, false);
 		signal.setModified(true);
+		ChannelsContainer.clearValuesCache(); // the values read before may have changed
 	}
 
-	@Override
-	public double[][] getMarkers(String markersGroupLabel, Channel signal) {
+	private double[][] readMarkers(String markersGroupLabel, Channel signal) {
 		if("".equals(markersGroupLabel)) return new double[0][0];
 		String channelName = getFullPath(signal);
 		String expression = "docometre.experiments[\"" + channelName + ".MarkersGroup_" + markersGroupLabel + "_Values\"]";
@@ -536,6 +575,15 @@ public class PythonEngine implements MathEngine {
 	}
 
 	@Override
+	public double[][] getMarkers(String markersGroupLabel, Channel signal) {
+		double[][] markers = ChannelsContainer.getCachedValue(signal, "Markers(" + markersGroupLabel + ")", () -> readMarkers(markersGroupLabel, signal));
+		if(markers == null) return new double[0][0];
+		double[][] copy = new double[markers.length][]; // the cached values must not be modified
+		for (int i = 0; i < markers.length; i++) copy[i] = markers[i].clone();
+		return copy;
+	}
+
+	@Override
 	public void deleteMarker(String markersGroupLabel, int trialNumber, double xValue, double yValue, Channel signal) {
 		String channelName = getFullPath(signal);
 		String x = "docometre.experiments[\"" + channelName + ".MarkersGroup_" + markersGroupLabel + "_Values\"]";
@@ -553,7 +601,7 @@ public class PythonEngine implements MathEngine {
 		int markersGroupNumber = getMarkersGroupNumber(markersGroupLabel, signal) + 1;
 		if(values.length == 0) deleteMarkersGroup(markersGroupNumber, signal);
 		signal.setModified(true);
-		
+		ChannelsContainer.clearValuesCache(); // the values read before may have changed
 	}
 	
 	@Override
@@ -596,7 +644,7 @@ public class PythonEngine implements MathEngine {
 		expression = channelName + "\\.Feature_" + featureLabel; 
 		pythonController.getPythonEntryPoint().unload(expression);
 		signal.setModified(true);
-		
+		ChannelsContainer.clearValuesCache(); // the values read before may have changed
 	}
 
 	@Override
@@ -662,6 +710,13 @@ public class PythonEngine implements MathEngine {
 
 	@Override
 	public String evaluate(String command) {
+		String result = evaluateInEngine(command);
+		ChannelsContainer.clearValuesCache(); // command of the user: the values read before may have changed
+		return result;
+	}
+
+	/** Evaluation for the reads of the engine itself: the values cache is kept. */
+	private String evaluateInEngine(String command) {
 		return pythonController.getPythonEntryPoint().evaluate(command);
 	}
 
@@ -671,7 +726,7 @@ public class PythonEngine implements MathEngine {
 		Set<IResource> createdOrModifiedSubjects = new HashSet<>();
 		try {
 			String[] createdOrModifiedChannels = null;
-			String createdOrModifiedChannelsString = evaluate("docometre.experiments['createdOrModifiedChannels']");
+			String createdOrModifiedChannelsString = evaluateInEngine("docometre.experiments['createdOrModifiedChannels']");
 			if(createdOrModifiedChannelsString != null && !"".equals(createdOrModifiedChannelsString)) {
 				createdOrModifiedChannels = createdOrModifiedChannelsString.split(":");
 				IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
@@ -687,7 +742,7 @@ public class PythonEngine implements MathEngine {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
 		} finally {
-			evaluate("docometre.experiments.pop('createdOrModifiedChannels', None)");
+			evaluateInEngine("docometre.experiments.pop('createdOrModifiedChannels', None)");
 		}
 		
 		return new IResource[0];
@@ -697,14 +752,14 @@ public class PythonEngine implements MathEngine {
 	public String getErrorMessages() {
 		try {
 			if(!exist("ErrorMessages")) return null;
-			String errorMessages = "\n" + evaluate("docometre.experiments['ErrorMessages']");
+			String errorMessages = "\n" + evaluateInEngine("docometre.experiments['ErrorMessages']");
 			errorMessages = errorMessages.replaceAll("\\|", "\n");
 			return errorMessages;
 		} catch (Exception e) {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
 		} finally {
-			evaluate("docometre.experiments.pop('ErrorMessages', None)");
+			evaluateInEngine("docometre.experiments.pop('ErrorMessages', None)");
 		}
 		return null;
 	}

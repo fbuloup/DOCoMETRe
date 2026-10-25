@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -60,6 +61,7 @@ import org.eclipse.swtchart.LineStyle;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 
@@ -300,9 +302,10 @@ public class XYChart extends AbstractElement {
 			IResource ySubject = yProject.findMember(ySubjectName);
 			
 			if(xSubject == null || ySubject == null ) {
-				String message = "Impossible to find one or more of these resources :\n";
-				message += "Associated resource for " + xFullChannelName + " is " + xSubject + "\n";
-				message += "Associated resource for " + yFullChannelName + " is " + ySubject + "\n";
+				removeCurve(seriesID);
+				IResource xyChartFile = ObjectsController.getResourceForObject(this);
+				ObjectsController.serialize((IFile) xyChartFile, this);
+				String message = NLS.bind(DocometreMessages.AssociatedResourcesNotFoundXY, new Object[] {xFullChannelName, xSubject, yFullChannelName, ySubject});
 				Activator.logErrorMessage(message);
 				continue;
 			}
