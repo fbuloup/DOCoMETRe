@@ -84,7 +84,7 @@ public class MathEngineCommandView extends ViewPart implements IDocumentListener
 	private TextViewer messagesViewer;
 	private boolean autoScroll = true ;
 	private ArrayList<String> cmdsArrayList = new ArrayList<String>(0);
-	private int cmdIndex = 1;
+	private int cmdIndex = 0; // position in the history: cmdsArrayList.size() = new command (empty field)
 	
 	private class ScrollLockAction extends Action {
 		public ScrollLockAction() {
@@ -145,12 +145,16 @@ public class MathEngineCommandView extends ViewPart implements IDocumentListener
 			
 			@Override
 			public void keyPressed(KeyEvent e) {
-				if(e.keyCode == SWT.CR){
-					sendCommandHandler();
-				}
 				if(e.keyCode == SWT.ARROW_DOWN || e.keyCode == SWT.ARROW_UP) {
-					if(e.keyCode == SWT.ARROW_DOWN) cmdIndex = (cmdIndex < cmdsArrayList.size()) ? cmdIndex + 1 : cmdIndex;	
-					if(e.keyCode == SWT.ARROW_UP) cmdIndex = (cmdIndex > 0) ? cmdIndex - 1 : 0;
+					// Beyond the first command or the end of the history: beep, the position does not change
+					boolean atLimit = (e.keyCode == SWT.ARROW_DOWN) ? cmdIndex >= cmdsArrayList.size() : cmdIndex <= 0;
+					if(atLimit) {
+						commandText.getDisplay().beep();
+						e.doit = false;
+						return;
+					}
+					if(e.keyCode == SWT.ARROW_DOWN) cmdIndex++;
+					if(e.keyCode == SWT.ARROW_UP) cmdIndex--;
 					String cmd = "";
 					if(cmdIndex < cmdsArrayList.size()) cmd = cmdsArrayList.get(cmdIndex);
 					commandText.setText(cmd);
@@ -160,6 +164,15 @@ public class MathEngineCommandView extends ViewPart implements IDocumentListener
 				
 			}
 		});
+		// Enter (main keyboard or keypad) sends the command: default selection of the text field,
+		// emitted by SWT on every platform (keyCode SWT.CR misses the keypad Enter key, SWT.KEYPAD_CR)
+		commandText.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+				sendCommandHandler();
+			}
+		});
+		
 		sendCommandButton = new Button(parent, SWT.FLAT);
 		sendCommandButton.setText(DocometreMessages.sendButtonTitle);
 		sendCommandButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
@@ -191,7 +204,8 @@ public class MathEngineCommandView extends ViewPart implements IDocumentListener
 //				messagesViewer.getTextWidget().append("\n");
 //				messagesViewer.getTextWidget().append("\n");
 				commandText.setText("");
-				cmdsArrayList.add(cmd);
+				// A command identical to the previous one is not stored again
+				if(cmdsArrayList.isEmpty() || !cmdsArrayList.get(cmdsArrayList.size() - 1).equals(cmd)) cmdsArrayList.add(cmd);
 				cmdIndex = cmdsArrayList.size();
 			} catch (Exception e) {
 				messagesViewer.getTextWidget().append(e.getMessage());
