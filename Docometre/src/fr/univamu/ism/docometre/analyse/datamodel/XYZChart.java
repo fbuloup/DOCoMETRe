@@ -116,7 +116,7 @@ public class XYZChart extends XYChart {
 		}
 		for (String seriesID : getSeriesIDsPrefixes()) {
 			
-			//pro.sub.chann(pro.sub.chann)
+			//pro.sub.chann(pro.sub.chann, pro.sub.chann)
 			
 			String zFullChannelName = seriesID.split("\\(")[0];
 			String xFullChannelName = seriesID.split("\\(")[1].split(",")[0];
@@ -137,6 +137,14 @@ public class XYZChart extends XYChart {
 			IProject zProject = ResourcesPlugin.getWorkspace().getRoot().getProject(zProjectName);
 			IResource zSubject = zProject.findMember(zSubjectName);
 			
+			if(xSubject == null || ySubject == null || zSubject == null) {
+				String message = "Impossible to find one or more of these resources :\n";
+				message += "Associated resource for " + xFullChannelName + " is " + xSubject + "\n";
+				message += "Associated resource for " + yFullChannelName + " is " + ySubject + "\n";
+				message += "Associated resource for " + zFullChannelName + " is " + zSubject + "\n";
+				Activator.logErrorMessage(message);
+				continue;
+			}
 			
 			if(MathEngineFactory.getMathEngine().isSubjectLoaded(xSubject) && MathEngineFactory.getMathEngine().isSubjectLoaded(ySubject) && MathEngineFactory.getMathEngine().isSubjectLoaded(zSubject)) {
 				Channel xChannel = MathEngineFactory.getMathEngine().getChannelWithName(xSubject, xFullChannelName.split("\\.")[2]);

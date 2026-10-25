@@ -299,6 +299,14 @@ public class XYChart extends AbstractElement {
 			IProject yProject = ResourcesPlugin.getWorkspace().getRoot().getProject(yProjectName);
 			IResource ySubject = yProject.findMember(ySubjectName);
 			
+			if(xSubject == null || ySubject == null ) {
+				String message = "Impossible to find one or more of these resources :\n";
+				message += "Associated resource for " + xFullChannelName + " is " + xSubject + "\n";
+				message += "Associated resource for " + yFullChannelName + " is " + ySubject + "\n";
+				Activator.logErrorMessage(message);
+				continue;
+			}
+			
 			
 			if(MathEngineFactory.getMathEngine().isSubjectLoaded(xSubject) && MathEngineFactory.getMathEngine().isSubjectLoaded(ySubject)) {
 				Channel yChannel = MathEngineFactory.getMathEngine().getChannelWithName(ySubject, yFullChannelName.split("\\.")[2]);
