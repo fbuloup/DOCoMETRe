@@ -90,6 +90,8 @@ import fr.univamu.ism.docometre.analyse.editors.XYChartEditor;
 import fr.univamu.ism.docometre.analyse.editors.XYZChartEditor;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.chartxyz.editors.GLChannelEditor;
+import fr.univamu.ism.docometre.chartxyz.editors.GLXYChartEditor;
+import fr.univamu.ism.docometre.chartxyz.editors.GLXYZChartEditor;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.preferences.MathEnginePreferencesConstants;
 import fr.univamu.ism.docometre.views.ExperimentsView;
@@ -290,7 +292,9 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 					e.printStackTrace();
 				}
 			}
-			if(editorReference.getId().equals(XYChartEditor.ID) || editorReference.getId().equals(XYZChartEditor.ID)) {
+			boolean check = editorReference.getId().equals(XYChartEditor.ID) || editorReference.getId().equals(XYZChartEditor.ID);
+			check = check || editorReference.getId().equals(GLXYChartEditor.ID) || editorReference.getId().equals(GLXYZChartEditor.ID);
+			if(check) {
 				try {
 					Object object = ((ResourceEditorInput)editorReference.getEditorInput()).getObject();
 					XYChart xyChart = (XYChart)object;
