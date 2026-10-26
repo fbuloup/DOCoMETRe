@@ -109,11 +109,11 @@ import jssc.SerialPortList;
 @SuppressWarnings("restriction")
 public class ArduinoUnoProcess extends Process {
 	
-	private transient static double displayTimeRate = 0.1; 
+	private static double displayTimeRate = 0.1; 
 
-	public transient static final long serialVersionUID = DACQConfiguration.serialVersionUID;
-	public transient static String previousINOHexFilePath = "";
-	public transient static boolean forceUpload = false;
+	public static final long serialVersionUID = DACQConfiguration.serialVersionUID;
+	public static String previousINOHexFilePath = "";
+	public static boolean forceUpload = false;
 	
 //	private static String processPathForMacOSX(String path) {
 //		if(Platform.getOS().equals(Platform.OS_MACOSX)) {
