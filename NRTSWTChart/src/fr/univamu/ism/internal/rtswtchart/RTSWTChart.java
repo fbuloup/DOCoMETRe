@@ -310,7 +310,7 @@ public abstract class RTSWTChart extends Composite implements ControlListener, I
 	 * Initialize Graphic library
 	 */
 	private void glInit() {
-		System.out.println("Initializing OpenGL context ... ");
+//		System.out.println("Initializing OpenGL context ... ");
 		chartArea.setCurrent();
 		if (chartAreaGLContext == null) chartAreaGLContext = GLDrawableFactory.getFactory(glProfile).createExternalGLContext();
 		chartAreaGLContext.makeCurrent();
@@ -329,7 +329,7 @@ public abstract class RTSWTChart extends Composite implements ControlListener, I
 		chartAreaGLContext.getGL().getGL2().glLoadIdentity();
 		chartAreaGLContext.release();
 		glInitialized = true;
-		System.out.println("Initializing OpenGL context ... Done");
+//		System.out.println("Initializing OpenGL context ... Done");
 	}
 
 	@Override
