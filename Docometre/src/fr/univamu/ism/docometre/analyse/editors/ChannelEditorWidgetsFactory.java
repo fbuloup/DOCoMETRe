@@ -57,6 +57,9 @@ import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.chartxyz.Chart1DRenderer;
+import fr.univamu.ism.docometre.chartxyz.Curve1DData;
+import fr.univamu.ism.docometre.chartxyz.GLChart1D;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
 public final class ChannelEditorWidgetsFactory {
@@ -106,31 +109,43 @@ public final class ChannelEditorWidgetsFactory {
 		separator.setLayoutData(new GridData(SWT.FILL, SWT.FILL, grabExcessHorizontal, grabExcessVertical, horizontalSpan, 1));
 	}
 
-	public static InteractiveChart createChart(Composite parent, int horizontalSpan, boolean isTimeDomain, boolean isFrequencyDomain) {
-		InteractiveChart chart = new InteractiveChart(parent, SWT.BORDER);
-		boolean showCursor = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.SHOW_CURSOR);
-		boolean showMarker = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.SHOW_MARKER);
-		chart.setShowCursor(showCursor);
-		chart.setShowMarker(showMarker);
-		chart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, horizontalSpan, 1));
-		chart.setBackground(colorBlack);
-		chart.getPlotArea().setBackground(colorBlack);
-		chart.getLegend().setBackground(colorBlack);
-		chart.getLegend().setForeground(colorWhite);
-		IAxis[] axes = chart.getAxisSet().getAxes();
-		for (IAxis axe : axes) {
-			axe.getTick().setForeground(colorWhite);
+	public static Object createChart(Composite parent, int horizontalSpan, boolean isTimeDomain, boolean isFrequencyDomain) {
+		if(!Activator.useOpenGLV2()) {
+			InteractiveChart chart = new InteractiveChart(parent, SWT.BORDER);
+			boolean showCursor = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.SHOW_CURSOR);
+			boolean showMarker = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.SHOW_MARKER);
+			chart.setShowCursor(showCursor);
+			chart.setShowMarker(showMarker);
+			chart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, horizontalSpan, 1));
+			chart.setBackground(colorBlack);
+			chart.getPlotArea().setBackground(colorBlack);
+			chart.getLegend().setBackground(colorBlack);
+			chart.getLegend().setForeground(colorWhite);
+			IAxis[] axes = chart.getAxisSet().getAxes();
+			for (IAxis axe : axes) {
+				axe.getTick().setForeground(colorWhite);
+			}
+			chart.getTitle().setVisible(false);
+			chart.getAxisSet().getXAxes()[0].getTitle().setForeground(colorWhite);
+			String xAxislabel = DocometreMessages.XAxisLabelTime;
+			if(isFrequencyDomain && !isTimeDomain) xAxislabel = DocometreMessages.XAxisLabelFrequency;
+			if(isFrequencyDomain && isTimeDomain) xAxislabel = DocometreMessages.XAxisLabelTimeFrequency;
+			chart.getAxisSet().getXAxes()[0].getTitle().setText(xAxislabel);
+			chart.getAxisSet().getYAxes()[0].getTitle().setVisible(false);
+			chart.getLegend().setPosition(SWT.BOTTOM);
+			chart.setSelectionRectangleColor(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_RED));
+			return chart;
+		} else {
+			GLChart1D chart = GLChart1D.createChart(parent, 1, new Curve1DData[0]);
+			chart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, horizontalSpan, 1));
+			String xAxislabel = DocometreMessages.XAxisLabelTime;
+			if(isFrequencyDomain && !isTimeDomain) xAxislabel = DocometreMessages.XAxisLabelFrequency;
+			if(isFrequencyDomain && isTimeDomain) xAxislabel = DocometreMessages.XAxisLabelTimeFrequency;
+			chart.setXAxisLabel(xAxislabel);
+			chart.setDisplayMode(Chart1DRenderer.DisplayMode.SCROLL); 
+			return chart;
 		}
-		chart.getTitle().setVisible(false);
-		chart.getAxisSet().getXAxes()[0].getTitle().setForeground(colorWhite);
-		String xAxislabel = DocometreMessages.XAxisLabelTime;
-		if(isFrequencyDomain && !isTimeDomain) xAxislabel = DocometreMessages.XAxisLabelFrequency;
-		if(isFrequencyDomain && isTimeDomain) xAxislabel = DocometreMessages.XAxisLabelTimeFrequency;
-		chart.getAxisSet().getXAxes()[0].getTitle().setText(xAxislabel);
-		chart.getAxisSet().getYAxes()[0].getTitle().setVisible(false);
-		chart.getLegend().setPosition(SWT.BOTTOM);
-		chart.setSelectionRectangleColor(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_RED));
-		return chart;
+		
 	}
 
 }

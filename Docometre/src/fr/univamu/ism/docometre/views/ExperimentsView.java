@@ -120,6 +120,7 @@ import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.PartListenerAdapter;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.dacqsystems.ExperimentScheduler;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.handlers.RunStopHandler;
 
@@ -624,6 +625,7 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 	@Override
 	public void perspectiveActivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
 		experimentsTreeViewer.refresh();
+		enableTree();
 	}
 
 	@Override
@@ -641,6 +643,10 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 	@Override
 	public void propertyChange(PropertyChangeEvent event) {
 		ExperimentsView.refresh(null, null);
+	}
+
+	public void enableTree() {
+		experimentsTreeViewer.getTree().setEnabled(!ExperimentScheduler.getInstance().isRunning());
 	}
 
 }

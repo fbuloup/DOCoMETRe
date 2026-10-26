@@ -187,9 +187,7 @@ public class ArduinoUnoProcess extends Process {
 					appendToEventDiary(channel.getProperty(ChannelProperties.NAME));
 				}
 				appendToEventDiary("\n");
-				Thread.sleep(2000);
-				timeBefore = System.currentTimeMillis()/1000d;
-				serialPort.writeString("r");
+				Thread.sleep(100);
 			} catch (Exception e) {
 				Activator.logErrorMessageWithCause(e);
 				try {
@@ -203,12 +201,24 @@ public class ArduinoUnoProcess extends Process {
 
 		@Override
 		protected IStatus run(IProgressMonitor monitor) {
-			getThread().setPriority(Thread.MAX_PRIORITY);
-			double processBeginTime = System.currentTimeMillis()/1000d;
-			String date = new SimpleDateFormat("EEE d MMM yyyy HH:mm:ss", Locale.getDefault()).format(new Date());
-			appendToEventDiary(date);
-			appendToEventDiary("Starting " + ObjectsController.getResourceForObject(ArduinoUnoProcess.this).getName() + " at " + Double.toString(processBeginTime) + " sec.\n");
+			
+			double processBeginTime = 0;
+			
 			try {
+				getThread().setPriority(Thread.MAX_PRIORITY);
+				
+				serialPort.purgePort(SerialPort.PURGE_RXCLEAR | SerialPort.PURGE_TXCLEAR);
+				serialPort.purgePort(SerialPort.PURGE_RXABORT | SerialPort.PURGE_RXCLEAR);
+				
+				timeBefore = System.currentTimeMillis()/1000d;
+				serialPort.writeString("r");
+				
+				processBeginTime = System.currentTimeMillis()/1000d;
+				String date = new SimpleDateFormat("EEE d MMM yyyy HH:mm:ss", Locale.getDefault()).format(new Date());
+				appendToEventDiary(date);
+				appendToEventDiary("Starting " + ObjectsController.getResourceForObject(ArduinoUnoProcess.this).getName() + " at " + Double.toString(processBeginTime) + " sec.\n");
+				
+				
 				while(!terminate) {
 					if(monitor.isCanceled()) {
 						forceTermination = true;
@@ -325,6 +335,9 @@ public class ArduinoUnoProcess extends Process {
 		                    } else {
 		                    	if(b == 's') {
 		                    		appendToEventDiary("\nReceived stop 's' char");
+		                    		appendToEventDiary("\nSend first 's' char in reply");
+		                    		serialPort.writeByte((byte) 's');
+		                    		Thread.sleep(300);
 		                    		stopReceived = true;
 		                    		forceTermination = true;// Just to send s in reply as Arduino is waiting for it.
 		                    	} else message.append((char)b);
@@ -332,9 +345,15 @@ public class ArduinoUnoProcess extends Process {
 		            	}
 	    			}
 	    			if(forceTermination) {
-	    				if(!stopReceived) serialPort.writeByte((byte) 's');
-	    				Thread.sleep(30);// Wait 30ms to be sure Arduino is waiting for 's' char to restart
+	    				if(!stopReceived) {
+	    					appendToEventDiary("\nStop 's' char not received !");
+                    		appendToEventDiary("\nSend 's' char");
+	    					serialPort.writeByte((byte) 's');
+	    					Thread.sleep(300);// Wait 30ms to be sure Arduino is waiting for 's' char to restart
+	    				}
+	    				appendToEventDiary("\nSend second 's' char to start reset");
 	    				serialPort.writeByte((byte) 's');
+	    				Thread.sleep(300);
 	    				forceTermination = false;
 	    				terminate = true;
 	    			}
@@ -1461,6 +1480,9 @@ public class ArduinoUnoProcess extends Process {
 		IResource processResource = ObjectsController.getResourceForObject(this);
 		String resourcePath = processResource.getParent().getLocation().toOSString() + File.separatorChar + "BinSource" + File.separator + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + File.separator + "Build" + File.separator;
 		String inoHexFilePath = resourcePath + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + ".ino.hex";
+		String arduinoUnoRelease = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
+		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
+		if(isRelease4Wifi) inoHexFilePath = resourcePath + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + ".ino.bin";
 		if(previousINOHexFilePath.equals(inoHexFilePath) && !forceUpload) {
 			appendToEventDiary("Process " + processResource.getFullPath() + " was already loaded\n" );
 			return true;
@@ -1535,6 +1557,7 @@ public class ArduinoUnoProcess extends Process {
 			String fullQualifiedBoardName = "arduino:avr:uno";
 			if(isRelease4Wifi) fullQualifiedBoardName = "arduino:renesas_uno:unor4wifi";
 			String inoHexFilePath = resourcePath + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + ".ino.hex";
+			if(isRelease4Wifi) inoHexFilePath = resourcePath + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + ".ino.bin";
 			previousINOHexFilePath = inoHexFilePath;
 			String arduinoCLIPATH = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH);
 			cmd = arduinoCLIPATH + " upload -p " + devicePath + " --fqbn " + fullQualifiedBoardName + " -i " + inoHexFilePath;

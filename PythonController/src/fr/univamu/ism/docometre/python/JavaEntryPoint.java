@@ -43,7 +43,8 @@ package fr.univamu.ism.docometre.python;
 
 public class JavaEntryPoint {
 	
-	private PythonEntryPoint pythonEntryPoint;
+	// Set by a Py4J thread and read by the thread waiting for Python to start
+	private volatile PythonEntryPoint pythonEntryPoint;
 	
 	public PythonEntryPoint getPythonEntryPoint() {
 		return pythonEntryPoint;

@@ -55,6 +55,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -165,12 +166,11 @@ public class ADWinChannel extends Channel {
 			this.suffix = suffix;
 			boolean isStimulus = false;
 			boolean isTransfered = false;
-//			boolean isRecorded = false;
 			String fileName = prefix + getProperty(ChannelProperties.NAME) + suffix;
-
+			IFolder outputFolder = process.getOutputFolder();
 			IPath wsPath = new Path(Platform.getInstanceLocation().getURL().getPath());
 //			IResource processResource = ObjectsController.getResourceForObject(process);
-			String directoryName = wsPath.toOSString() + process.getOutputFolder().getFullPath().toOSString();
+			String directoryName = wsPath.toOSString() + outputFolder.getFullPath().toOSString();
 			isTransfered = Boolean.valueOf(getProperty(ChannelProperties.TRANSFER));
 			
 			if(module instanceof ADWinAnOutModule) {
@@ -207,6 +207,9 @@ public class ADWinChannel extends Channel {
 				}
 			} else if(isTransfered) {
 				fileName = fileName + ".samples";
+				
+				deleteChannelFile(outputFolder, fileName);
+				
 				file = new File(directoryName + File.separator + fileName);
 				outputFile = new FileOutputStream(directoryName + File.separator + fileName);
 				fileChannel = outputFile.getChannel();

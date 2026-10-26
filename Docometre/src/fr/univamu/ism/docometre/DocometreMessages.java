@@ -94,6 +94,7 @@ public final class DocometreMessages extends NLS {
 	public static String TrialsParameters;
 	public static String Charts2DOptions;
 	public static String UseOpenGLForRTSWTChart;
+	public static String UsedRTChartLibrary;
 	public static String RestartToApplyChanges;
 	
 	public static String RootPreferencePage_Label;
@@ -188,6 +189,7 @@ public final class DocometreMessages extends NLS {
 	public static String When;
 	public static String DeleteProcessTestDialogTitle;
 	public static String DeleteProcessTestDialogMessage;
+	public static String OutputFolderStillExists;
 
 	/*Trials label and start mode*/
 	public static String Trial;
@@ -418,11 +420,14 @@ public final class DocometreMessages extends NLS {
 	public static String OscilloChartLabel;
 	public static String ScrollChartLabel;
 	public static String XYChartLabel;
+	public static String XYZChartLabel;
 	public static String GaugeChartLabel;
 	public static String TankChartLabel;
 	public static String ImageChartLabel;
 	public static String ImageChartFileNameLabel;
 	public static String ImageChartFileNameTooltip;
+	public static String ImpossibleToCreate3DChartMessage;
+	public static String DifferentSampleFrequencies;
 	
 	public static String rangeMaxAmplitude_Title;
 	public static String rangeMaxAmplitude_Tooltip;
@@ -487,6 +492,11 @@ public final class DocometreMessages extends NLS {
 	public static String yMaxAmplitude_Tooltip;
 	public static String yMinAmplitude_Title;
 	public static String yMinAmplitude_Tooltip;
+
+	public static String zMaxAmplitude_Title;
+	public static String zMaxAmplitude_Tooltip;
+	public static String zMinAmplitude_Title;
+	public static String zMinAmplitude_Tooltip;
 	
 	public static String DecreaseVSpan_Tooltip;
 	public static String IncreaseVSpan_Tooltip;
@@ -525,6 +535,8 @@ public final class DocometreMessages extends NLS {
 	public static String XChannelName_Tooltip;
 	public static String YChannelName_Label;
 	public static String YChannelName_Tooltip;
+	public static String ZChannelName_Label;
+	public static String ZChannelName_Tooltip;
 	
 	/* Charts preference */
 	public static String SHOW_CURSOR;
@@ -975,10 +987,12 @@ public final class DocometreMessages extends NLS {
 	public static String PressEnterFrontCut;
 	public static String PressEnterEndCut;
 	public static String SubjectNotLoaded;
+	public static String AssociatedResourcesNotFoundXY;
 	
-	// XY Chart
+	// XYZ Chart
 	public static String NewXYZChartWizard_PageTitle;
 	public static String NewXYZChartWizard_PageMessage;
+	public static String AssociatedResourcesNotFoundXYZ;
 	
 	// Data processing editor page editor titles
 	public static String MathEngineEditorTitle;

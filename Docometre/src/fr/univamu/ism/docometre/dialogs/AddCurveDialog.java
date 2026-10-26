@@ -79,6 +79,9 @@ import fr.univamu.ism.docometre.dacqsystems.charts.OscilloChartConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.charts.XYChartConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.charts.XYCurveConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.charts.XYCurveConfigurationProperties;
+import fr.univamu.ism.docometre.dacqsystems.charts.XYZChartConfiguration;
+import fr.univamu.ism.docometre.dacqsystems.charts.XYZCurveConfiguration;
+import fr.univamu.ism.docometre.dacqsystems.charts.XYZCurveConfigurationProperties;
 
 public class AddCurveDialog extends TitleAreaDialog {
 	
@@ -89,6 +92,7 @@ public class AddCurveDialog extends TitleAreaDialog {
 
 	private IStructuredSelection xSelection;
 	private IStructuredSelection ySelection;
+	private IStructuredSelection zSelection;
 
 	public AddCurveDialog(Shell parentShell, DACQConfiguration dacqConfiguration, ChartConfiguration chartConfiguration) {
 		super(parentShell);
@@ -156,10 +160,11 @@ public class AddCurveDialog extends TitleAreaDialog {
 				}
 			});
 		}
-		if(chartConfiguration instanceof XYChartConfiguration) {
+		if(chartConfiguration instanceof XYChartConfiguration || chartConfiguration instanceof XYZChartConfiguration) {
 			Composite container = new Composite(parent, SWT.NORMAL);
 			container.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-			container.setLayout(new GridLayout(2, true));
+			if(chartConfiguration instanceof XYChartConfiguration) container.setLayout(new GridLayout(2, true));
+			else if(chartConfiguration instanceof XYZChartConfiguration) container.setLayout(new GridLayout(3, true));
 			
 			Label xLabel = new Label(container, SWT.NORMAL);
 			xLabel.setText(XYCurveConfigurationProperties.X_CHANNEL_NAME.getLabel() + " :");
@@ -168,6 +173,34 @@ public class AddCurveDialog extends TitleAreaDialog {
 			Label yLabel = new Label(container, SWT.NORMAL);
 			yLabel.setText(XYCurveConfigurationProperties.Y_CHANNEL_NAME.getLabel() + " :");
 			yLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+			
+			if(chartConfiguration instanceof XYZChartConfiguration) {
+				Label zLabel = new Label(container, SWT.NORMAL);
+				zLabel.setText(XYZCurveConfigurationProperties.Z_CHANNEL_NAME.getLabel() + " :");
+				zLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+			}
+			
+			// Get all transfered channels
+			ArrayList<Channel> channels = new ArrayList<Channel>(0);
+			channels.addAll(Arrays.asList(dacqConfiguration.getTransferedChannels()));
+			// Remove the one already used 
+			CurveConfiguration[] curvesConfigurations = chartConfiguration.getCurvesConfiguration();
+			for (CurveConfiguration curveConfiguration : curvesConfigurations) {
+				if(curveConfiguration instanceof XYCurveConfiguration) {
+					Channel xCurrentChannel = ((XYCurveConfiguration)curveConfiguration).getXChannel();
+					Channel yCurrentChannel = ((XYCurveConfiguration)curveConfiguration).getYChannel();
+					channels.remove(xCurrentChannel);
+					channels.remove(yCurrentChannel);
+				}
+				if(curveConfiguration instanceof XYZCurveConfiguration) {
+					Channel xCurrentChannel = ((XYZCurveConfiguration)curveConfiguration).getXChannel();
+					Channel yCurrentChannel = ((XYZCurveConfiguration)curveConfiguration).getYChannel();
+					Channel zCurrentChannel = ((XYZCurveConfiguration)curveConfiguration).getZChannel();
+					channels.remove(xCurrentChannel);
+					channels.remove(yCurrentChannel);
+					channels.remove(zCurrentChannel);
+				}
+			}
 			
 			ListViewer xChannelsListViewer = new ListViewer(container, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
 			xChannelsListViewer.getList().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -180,6 +213,22 @@ public class AddCurveDialog extends TitleAreaDialog {
 			});
 			xChannelsListViewer.setComparator(new ViewerComparator());
 			
+			xChannelsListViewer.setInput(channels.toArray(new Channel[channels.size()]));
+			xChannelsListViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+				@Override
+				public void selectionChanged(SelectionChangedEvent event) {
+					xSelection = (IStructuredSelection) xChannelsListViewer.getSelection();
+				}
+			});
+			xChannelsListViewer.addDoubleClickListener(new IDoubleClickListener() {
+				@Override
+				public void doubleClick(DoubleClickEvent event) {
+					boolean notNull = xSelection != null && ySelection != null;
+					if(chartConfiguration instanceof XYZChartConfiguration) notNull = notNull && zSelection != null;
+					if(notNull) buttonPressed(IDialogConstants.OK_ID); 
+				}
+			});
+			
 			ListViewer yChannelsListViewer = new ListViewer(container, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
 			yChannelsListViewer.getList().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 			yChannelsListViewer.setContentProvider(new ArrayContentProvider());
@@ -191,33 +240,6 @@ public class AddCurveDialog extends TitleAreaDialog {
 			});
 			yChannelsListViewer.setComparator(new ViewerComparator());
 			
-			// Get all transfered channels
-			ArrayList<Channel> channels = new ArrayList<Channel>(0);
-			channels.addAll(Arrays.asList(dacqConfiguration.getTransferedChannels()));
-			// Remove the one already used 
-			CurveConfiguration[] curvesConfigurations = chartConfiguration.getCurvesConfiguration();
-			for (CurveConfiguration curveConfiguration : curvesConfigurations) {
-				Channel xCurrentChannel = ((XYCurveConfiguration)curveConfiguration).getXChannel();
-				Channel yCurrentChannel = ((XYCurveConfiguration)curveConfiguration).getYChannel();
-				channels.remove(xCurrentChannel);
-				channels.remove(yCurrentChannel);
-			}
-			
-			xChannelsListViewer.setInput(channels.toArray(new Channel[channels.size()]));
-			xChannelsListViewer.addSelectionChangedListener(new ISelectionChangedListener() {
-				@Override
-				public void selectionChanged(SelectionChangedEvent event) {
-					xSelection = (IStructuredSelection) xChannelsListViewer.getSelection();
-				}
-			});
-			xChannelsListViewer.addDoubleClickListener(new IDoubleClickListener() {
-				@Override
-				public void doubleClick(DoubleClickEvent event) {
-					if(xSelection != null && ySelection != null)
-					buttonPressed(IDialogConstants.OK_ID); 
-				}
-			});
-			
 			yChannelsListViewer.setInput(channels.toArray(new Channel[channels.size()]));
 			yChannelsListViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 				@Override
@@ -228,16 +250,48 @@ public class AddCurveDialog extends TitleAreaDialog {
 			yChannelsListViewer.addDoubleClickListener(new IDoubleClickListener() {
 				@Override
 				public void doubleClick(DoubleClickEvent event) {
-					if(xSelection != null && ySelection != null)
+					boolean notNull = xSelection != null && ySelection != null;
+					if(chartConfiguration instanceof XYZChartConfiguration) notNull = notNull && zSelection != null;
 					buttonPressed(IDialogConstants.OK_ID); 
 				}
 			});
+			
+			if(chartConfiguration instanceof XYZChartConfiguration) {
+				ListViewer zChannelsListViewer = new ListViewer(container, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
+				zChannelsListViewer.getList().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+				zChannelsListViewer.setContentProvider(new ArrayContentProvider());
+				zChannelsListViewer.setLabelProvider(new LabelProvider() {
+					@Override
+					public String getText(Object element) {
+						return ((Channel)element).getProperty(ChannelProperties.NAME);
+					}
+				});
+				zChannelsListViewer.setComparator(new ViewerComparator());
+				
+				zChannelsListViewer.setInput(channels.toArray(new Channel[channels.size()]));
+				zChannelsListViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+					@Override
+					public void selectionChanged(SelectionChangedEvent event) {
+						zSelection = (IStructuredSelection) zChannelsListViewer.getSelection();
+					}
+				});
+				zChannelsListViewer.addDoubleClickListener(new IDoubleClickListener() {
+					@Override
+					public void doubleClick(DoubleClickEvent event) {
+						if(xSelection != null && ySelection != null && zSelection != null)
+						buttonPressed(IDialogConstants.OK_ID); 
+					}
+				});
+			}
 		}
 	}
 	
 	public IStructuredSelection getSelection() {
 		if(chartConfiguration instanceof XYChartConfiguration) {
 			selection = new StructuredSelection(new Object[] {xSelection.getFirstElement(), ySelection.getFirstElement()});
+		}
+		if(chartConfiguration instanceof XYZChartConfiguration) {
+			selection = new StructuredSelection(new Object[] {xSelection.getFirstElement(), ySelection.getFirstElement(), zSelection.getFirstElement()});
 		}
 		return selection;
 	}

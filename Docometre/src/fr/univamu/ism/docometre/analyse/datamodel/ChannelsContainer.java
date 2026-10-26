@@ -43,6 +43,9 @@ package fr.univamu.ism.docometre.analyse.datamodel;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
@@ -63,6 +66,12 @@ public final class ChannelsContainer {
 	static HashMap<String,  ArrayList<Channel>> channelsMarkersCache = new HashMap<>();
 	static HashMap<String,  ArrayList<Channel>> channelsFeaturesCache = new HashMap<>();
 	static HashMap<String,  ArrayList<Channel>> channelsFrontEndCutsCache = new HashMap<>();
+	
+	// Values read from the MathEngine (sampling frequencies, front / end cuts, markers, categories...):
+	// subject -> key -> value. Each read is one or several round trips to Matlab or Python. Cleared
+	// with the channels cache (setUpdateChannelsCache(true)) and by the MathEngine after each write.
+	// Usable from any thread.
+	private static final Map<String, Map<String, Object>> valuesCache = new ConcurrentHashMap<>();
 	
 	public ChannelsContainer(IFolder subject) {
 		this.subject = subject;
@@ -91,11 +100,49 @@ public final class ChannelsContainer {
 	}
 	
 	public void setUpdateChannelsCache(boolean update) {
+		if(update) clearValuesCache(subject);
 		if(MathEngineFactory.getMathEngine().isSubjectLoaded(subject)) updateChannelsCache.put(subject.getFullPath().toPortableString(), update);
 		else removeChannelsCache();
 	}
 	
+	/**
+	 * Value of the channel (or category) read from the MathEngine: the
+	 * cached value if it exists, otherwise the value given by loader, cached
+	 * if it is not null (null: read error, read again next time). Without
+	 * subject (time channel...), loader is always called.
+	 * 
+	 * @param key name of the value for this channel, for example "FrontCut(3)"
+	 */
+	public static <T> T getCachedValue(IResource channel, String key, Supplier<T> loader) {
+		IResource subject = (channel instanceof Channel) ? ((Channel)channel).getSubject() : null;
+		if(subject == null) return loader.get();
+		return getCachedSubjectValue(subject, ((Channel)channel).getFullName() + "#" + key, loader);
+	}
+	
+	/** Value of the subject read from the MathEngine (see {@link #getCachedValue(IResource, String, Supplier)}). */
+	@SuppressWarnings("unchecked")
+	public static <T> T getCachedSubjectValue(IResource subject, String key, Supplier<T> loader) {
+		if(subject == null) return loader.get();
+		Map<String, Object> values = valuesCache.computeIfAbsent(subject.getFullPath().toPortableString(), k -> new ConcurrentHashMap<>());
+		Object value = values.get(key);
+		if(value != null) return (T) value;
+		T newValue = loader.get(); // outside any lock: the loader may read other cached values
+		if(newValue != null) values.put(key, newValue);
+		return newValue;
+	}
+	
+	/** Forgets the values read from the MathEngine for the subject. */
+	public static void clearValuesCache(IResource subject) {
+		if(subject != null) valuesCache.remove(subject.getFullPath().toPortableString());
+	}
+	
+	/** Forgets all the values read from the MathEngine (after a write in the MathEngine: script, markers...). */
+	public static void clearValuesCache() {
+		valuesCache.clear();
+	}
+	
 	private void removeChannelsCache() {
+		clearValuesCache(subject);
 		channelsCache.remove(subject.getFullPath().toPortableString());
 		channelsMarkersCache.remove(subject.getFullPath().toPortableString());
 		channelsFeaturesCache.remove(subject.getFullPath().toPortableString());

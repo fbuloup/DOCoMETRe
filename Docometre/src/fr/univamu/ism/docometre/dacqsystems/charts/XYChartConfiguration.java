@@ -43,6 +43,7 @@ package fr.univamu.ism.docometre.dacqsystems.charts;
 
 import java.nio.FloatBuffer;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -61,13 +62,16 @@ import org.eclipse.ui.forms.widgets.Hyperlink;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.FontUtil;
+import fr.univamu.ism.docometre.chartxyz.Curve2DData;
+import fr.univamu.ism.docometre.chartxyz.LineStyle;
+import fr.univamu.ism.docometre.chartxyz.macos.NewtChart2D;
+import fr.univamu.ism.docometre.chartxyz.windows.Chart2D;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyHandler;
 import fr.univamu.ism.docometre.dacqsystems.Property;
 import fr.univamu.ism.docometre.editors.ResourceEditor;
 import fr.univamu.ism.docometre.editors.ModulePage.ModuleSectionPart;
-import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 import fr.univamu.ism.rtswtchart.IRTSWTSerie;
 import fr.univamu.ism.rtswtchart.IRTSWTXYChart;
 import fr.univamu.ism.rtswtchart.RTSWTChartsFactory;
@@ -146,7 +150,6 @@ public class XYChartConfiguration extends ChartConfiguration {
 			}
 		});
 		
-		boolean useOpenGL = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_OPENGL_FOR_RTSWT_CHART);
 		page.createLabel(container, DocometreMessages.Font_Title, DocometreMessages.Font_Tooltip);
 		value = getProperty(XYChartConfigurationProperties.FONT);
 		value = value==null?FontUtil.getDefaultFontName():value;
@@ -159,20 +162,20 @@ public class XYChartConfiguration extends ChartConfiguration {
 		fontBoldButton = page.createButton(container, "Bold", SWT.CHECK, 1, 1);
 		fontBoldButton.setSelection(fontBold);
 		fontBoldButton.addSelectionListener(new ModifyPropertyHandler(XYChartConfigurationProperties.FONT_BOLD, this, fontBoldButton, XYChartConfigurationProperties.FONT_BOLD.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
-		fontBoldButton.setEnabled(!useOpenGL);
+		fontBoldButton.setEnabled(!Activator.useOpenGLV1());
 		
 		value = getProperty(XYChartConfigurationProperties.FONT_ITALIC);
 		boolean fontItalic = Boolean.valueOf(value);
 		fontItalicButton = page.createButton(container, "Italic", SWT.CHECK, 1, 1);
 		fontItalicButton.setSelection(fontItalic);
 		fontItalicButton.addSelectionListener(new ModifyPropertyHandler(XYChartConfigurationProperties.FONT_ITALIC, this, fontItalicButton, XYChartConfigurationProperties.FONT_ITALIC.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
-		fontItalicButton.setEnabled(!useOpenGL);
+		fontItalicButton.setEnabled(!Activator.useOpenGLV1());
 		
 		page.createLabel(container, DocometreMessages.Size_Title, DocometreMessages.Size_Tooltip);
 		fontSizeText = page.createText(container, getProperty(XYChartConfigurationProperties.FONT_SIZE), SWT.NONE, 1, 1);
 		fontSizeText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		fontSizeText.addModifyListener(new ModifyPropertyHandler(XYChartConfigurationProperties.FONT_SIZE, this, fontSizeText, XYChartConfigurationProperties.FONT_SIZE.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
-		fontSizeText.setEnabled(!useOpenGL);
+		fontSizeText.setEnabled(!Activator.useOpenGLV1());
 		
 		Color chartColor = ChartConfigurationProperties.getColor(this, ChartConfigurationProperties.COLOR);
 		chartColorButton = page.createColorDialogButton(container, "...", SWT.PUSH | SWT.FLAT, 1, 1);
@@ -219,7 +222,6 @@ public class XYChartConfiguration extends ChartConfiguration {
 		if(!validate) return;
 		if(property == XYChartConfigurationProperties.AUTO_SCALE) {
 			updateWidget(autoScaleButton, (XYChartConfigurationProperties)property);
-
 			yAmpMaxText.setEnabled(!autoScaleButton.getSelection());
 			yAmpMinText.setEnabled(!autoScaleButton.getSelection());
 			xAmpMaxText.setEnabled(!autoScaleButton.getSelection());
@@ -281,15 +283,20 @@ public class XYChartConfiguration extends ChartConfiguration {
 		Color chartColor = ChartConfigurationProperties.getColor(this, ChartConfigurationProperties.COLOR);
 		
 		IRTSWTXYChart rtswtxyChart = null;
-		boolean useOpenGL = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_OPENGL_FOR_RTSWT_CHART);
-		if(useOpenGL) rtswtxyChart = RTSWTChartsFactory.createOpenGLXYChart(chartContainer, SWT.DOUBLE_BUFFERED, fontName, fontStyle, fontSize);
+		if(Activator.useOpenGLV1()) rtswtxyChart = RTSWTChartsFactory.createOpenGLXYChart(chartContainer, SWT.DOUBLE_BUFFERED, fontName, fontStyle, fontSize);
+		else if(Activator.useOpenGLV2()) {
+			String os = Platform.getOS();
+			if (Platform.OS_WIN32.equals(os)) {
+				rtswtxyChart = new Chart2D(chartContainer, xMin, xMax, yMin, yMax, new Curve2DData[0]);
+			} else if (Platform.OS_LINUX.equals(os)) {
+				rtswtxyChart = new Chart2D(chartContainer, xMin, xMax, yMin, yMax, new Curve2DData[0]);
+			} else if (Platform.OS_MACOSX.equals(os)) {
+				rtswtxyChart = new NewtChart2D(chartContainer, xMin, xMax, yMin, yMax, new Curve2DData[0]);
+			}
+		}
 		else rtswtxyChart = RTSWTChartsFactory.createPureSWTXYChart(chartContainer, SWT.DOUBLE_BUFFERED, fontName, fontStyle, fontSize);;
 		rtswtxyChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, hSpan, vSpan));
 		rtswtxyChart.setAutoScale(autoscale);
-		rtswtxyChart.setxMax(xMax);
-		rtswtxyChart.setxMin(xMin);
-		rtswtxyChart.setyMax(yMax);
-		rtswtxyChart.setyMin(yMin);
 		rtswtxyChart.setGridVisibility(true);
 		rtswtxyChart.setLegendVisibility(true);
 		rtswtxyChart.setLegendPosition(SWT.BOTTOM);
@@ -314,24 +321,33 @@ public class XYChartConfiguration extends ChartConfiguration {
 				continue;
 			}
 			
-//			int serieStyle = CurveConfigurationProperties.getStyle(xyCurveConfiguration);
-//			int serieWidth = Integer.parseInt(xyCurveConfiguration.getProperty(CurveConfigurationProperties.WIDTH));
-//			BasicStroke stroke = new BasicStroke(serieWidth);
-//			int lineWidth = serieWidth + 13;
-//			int emptyWidth = serieWidth + 3;
-//			if(serieStyle == SWT.LINE_DASH) 
-//				stroke = new BasicStroke(serieWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1.0f, new float[] {lineWidth, emptyWidth}, 0.0f);
-//			if(serieStyle == SWT.LINE_DOT) 
-//				stroke = new BasicStroke(serieWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1.0f, new float[] {emptyWidth, emptyWidth}, 0.0f);
-//			if(serieStyle == SWT.LINE_DASHDOT) 
-//				stroke = new BasicStroke(serieWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1.0f, new float[] {lineWidth, serieWidth, emptyWidth, serieWidth}, 0.0f);
-//			if(serieStyle == SWT.LINE_DASHDOTDOT) 
-//				stroke = new BasicStroke(serieWidth, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 1.0f, new float[] {lineWidth, emptyWidth, emptyWidth, emptyWidth, emptyWidth, emptyWidth}, 0.0f);
-	
+			int serieStyle = CurveConfigurationProperties.getStyle(xyCurveConfiguration);
+			LineStyle lineStyle = LineStyle.SOLID;
+			if(serieStyle == SWT.LINE_DASH) lineStyle = LineStyle.DASH;
+			if(serieStyle == SWT.LINE_DOT) lineStyle = LineStyle.DASH_DOT;
+			if(serieStyle == SWT.LINE_DASHDOT) lineStyle = LineStyle.DASH_DOT;
+			if(serieStyle == SWT.LINE_DASHDOTDOT) lineStyle = LineStyle.DASH_DASH_DOT;
+			
+			IRTSWTSerie rtswtSerie = null;
 			double sfx = Double.parseDouble(sfxString);
-			rtswtxyChart.setSampleFrequency(sfx);
-			IRTSWTSerie rtswtSerie = rtswtxyChart.createSerie(ySerieID + "(" + xSerieID + ")", serieColor);
-			rtswtSerie.setThickness(thickness);
+			if(Activator.useOpenGLV2()) {
+				rtswtSerie = new Curve2DData(ySerieID + "(" + xSerieID + ")", sfx);
+				((Curve2DData)rtswtSerie).setLineWidth(thickness);
+				((Curve2DData)rtswtSerie).setLineStyle(lineStyle);
+				((Curve2DData)rtswtSerie).setColor(serieColor.getRed(),serieColor.getGreen(),serieColor.getBlue());
+				String os = Platform.getOS();
+				if (Platform.OS_WIN32.equals(os)) {
+					((Chart2D)rtswtxyChart).addCurve((Curve2DData)rtswtSerie);
+				} else if (Platform.OS_LINUX.equals(os)) {
+					((Chart2D)rtswtxyChart).addCurve((Curve2DData)rtswtSerie);
+				} else if (Platform.OS_MACOSX.equals(os)) {
+					((NewtChart2D)rtswtxyChart).addCurve((Curve2DData)rtswtSerie);
+				}
+			} else {
+				rtswtxyChart.setSampleFrequency(sfx);
+				rtswtSerie = rtswtxyChart.createSerie(ySerieID + "(" + xSerieID + ")", serieColor);
+				rtswtSerie.setThickness(thickness);
+			}
 			xyCurveConfiguration.setSerie(rtswtSerie);
 		}
 

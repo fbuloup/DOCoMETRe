@@ -42,7 +42,6 @@
 package fr.univamu.ism.docometre.dacqsystems.arduinouno;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -51,6 +50,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 import org.apache.log4j.Logger;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -135,74 +135,43 @@ public class ArduinoUnoChannel extends Channel {
 	@Override
 	public void open(Process process, String prefix, String suffix) {
 		try {
-			 
 			boolean isStimulus = false;
-			boolean isTransfered = false;
-//			boolean isRecorded = false;
+			boolean isTransfered = Boolean.valueOf(getProperty(ChannelProperties.TRANSFER));
 			String fileName = prefix + getProperty(ChannelProperties.NAME) + suffix;
-
 			IPath wsPath = new Path(Platform.getInstanceLocation().getURL().getPath());
 //			IResource processResource = ObjectsController.getResourceForObject(process);
-			String directoryName = wsPath.toOSString() + process.getOutputFolder().getFullPath().toOSString();
+			IFolder outputFolder = process.getOutputFolder();
+			String directoryName = wsPath.toOSString() + outputFolder.getFullPath().toOSString();
+			
+			// For now no stimulus signals with Arduino
 			if(this instanceof ArduinoUnoVariable) {
 				isStimulus = false;
-				isTransfered = Boolean.valueOf(getProperty(ChannelProperties.TRANSFER));
-				if(isTransfered) {
-					fileName = fileName + ".samples";
-					file = new File(directoryName + File.separator + fileName);
-					outputFile = new FileOutputStream(directoryName + File.separator + fileName);
-					fileChannel = outputFile.getChannel();
-				}
-			}
-			if(module instanceof ArduinoUnoAnInModule || module instanceof ArduinoUnoADS1115Module) {
-				isStimulus = false;
-				isTransfered = Boolean.valueOf(getProperty(ChannelProperties.TRANSFER));
-				if(isTransfered) {
-					fileName = fileName + ".samples";
-					file = new File(directoryName + File.separator + fileName);
-					outputFile = new FileOutputStream(directoryName + File.separator + fileName);
-					fileChannel = outputFile.getChannel();
-				}
 			}
 			if(module instanceof ArduinoUnoAnOutModule) {
-				//isStimulus = Boolean.valueOf(getProperty(ArduinoUnoAnOutModule.STIMULUS));
-				isTransfered = Boolean.valueOf(getProperty(ChannelProperties.TRANSFER));
-				if(isStimulus) {
-					fileName = fileName + ".values";
-					inputFile = new FileInputStream(directoryName + File.separator + fileName);
-					fileChannel = inputFile.getChannel();
-				}
-				else if(isTransfered) {
-					fileName = fileName + ".samples";
-					file = new File(directoryName + File.separator + fileName);
-					outputFile = new FileOutputStream(directoryName + File.separator + fileName);
-					fileChannel = outputFile.getChannel();
-				}
+				isStimulus = false;
 			}
 			if(module instanceof ArduinoUnoDigInOutModule) {
-				//isStimulus = Boolean.valueOf(getProperty(ADWinDigInOutChannelProperties.STIMULUS));
-				isTransfered = Boolean.valueOf(getProperty(ChannelProperties.TRANSFER));
-				if(isStimulus) {
-					fileName = fileName + ".values";
-					inputFile = new FileInputStream(directoryName + File.separator + fileName);
-					fileChannel = inputFile.getChannel();
-				}
-				else if(isTransfered) {
-					fileName = fileName + ".samples";
-					file = new File(directoryName + File.separator + fileName);
-					outputFile = new FileOutputStream(directoryName + File.separator + fileName);
-					fileChannel = outputFile.getChannel();
-				}
+				isStimulus = false;
 			}
+			
+			if(isStimulus) {
+				// Cannot happen
+			} else if(isTransfered) {
+				fileName = fileName + ".samples";
+				deleteChannelFile(outputFolder, fileName);
+				file = new File(directoryName + File.separator + fileName);
+				outputFile = new FileOutputStream(directoryName + File.separator + fileName);
+				fileChannel = outputFile.getChannel();
+			}
+			
 			double sf = Double.parseDouble(getProperty(ChannelProperties.SAMPLE_FREQUENCY));
 			int nbSamples = (int)Math.max(1, 30.0 * 0.001*sf);
 			displayBuffer =  FloatBuffer.allocate(nbSamples);
 		} catch (FileNotFoundException e) {
 			Logger.getLogger(Process.class).error("Exception", e);
 		}
-
 	}
-
+		
 	@Override
 	public void close(Process process) {
 		try {

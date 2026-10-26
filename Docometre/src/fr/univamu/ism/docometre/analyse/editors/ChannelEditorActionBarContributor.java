@@ -77,6 +77,10 @@ import fr.univamu.ism.docometre.analyse.datamodel.TimeChannel;
 import fr.univamu.ism.docometre.analyse.datamodel.XYZChart;
 import fr.univamu.ism.docometre.analyse.wizard.SelectChannelsWizard;
 import fr.univamu.ism.docometre.analyse.wizard.SelectChannelsWizard.ChannelsNumber;
+import fr.univamu.ism.docometre.chartxyz.editors.GLChannelEditor;
+import fr.univamu.ism.docometre.chartxyz.editors.GLXYChartEditor;
+import fr.univamu.ism.docometre.chartxyz.editors.GLXYZChartEditor;
+import fr.univamu.ism.docometre.chartxyz.editors.SampleFrequencies;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
 public class ChannelEditorActionBarContributor extends EditorActionBarContributor implements IPerspectiveListener {
@@ -136,16 +140,22 @@ public class ChannelEditorActionBarContributor extends EditorActionBarContributo
 			}
 			
 			ChannelsNumber channelsNumber = ChannelsNumber.ONE;
-			if(chartEditor instanceof XYChartEditor) {
+			if(chartEditor instanceof XYChartEditor || chartEditor instanceof GLXYChartEditor) {
 				channelsNumber = ChannelsNumber.TWO;
 				signals.add(Channel.timeChannel);
 			}
-			if(chartEditor instanceof XYZChartEditor) channelsNumber = ChannelsNumber.THREE;
+			if(chartEditor instanceof XYZChartEditor || chartEditor instanceof GLXYZChartEditor) channelsNumber = ChannelsNumber.THREE;
 			SelectChannelsWizard selectChannelsWizard = new SelectChannelsWizard(channelsNumber, signals.toArray(new Channel[signals.size()]));
 			Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
 			WizardDialog selectChannelsWizardDialog = new WizardDialog(shell, selectChannelsWizard);
 			if(selectChannelsWizardDialog.open() == Dialog.OK) {
 				Channel[] channels = selectChannelsWizard.getSelectedChannels();
+				// The samples of the signals are paired by sample number: same sampling frequency required
+				String error = SampleFrequencies.check(channels);
+				if(error != null) {
+					MessageDialog.openError(shell, DocometreMessages.AddCurvesDialog_ShellTitle, error);
+					return;
+				}
 				Channel xSignal = (Channel) channels[0];
 				Channel ySignal = (Channel) channels[0];
 				Channel zSignal = (Channel) channels[0];
@@ -287,7 +297,8 @@ private class ZoomFitAction extends Action {
 		
 		@Override
 		public void run() {
-			((XYZChartEditor)chartEditor).turnLeft();
+			if(chartEditor instanceof XYZChartEditor) ((XYZChartEditor)chartEditor).turnLeft();
+			if(chartEditor instanceof GLXYZChartEditor) ((GLXYZChartEditor)chartEditor).turnLeft();
 		}
 	}
 	
@@ -298,7 +309,8 @@ private class ZoomFitAction extends Action {
 		
 		@Override
 		public void run() {
-			((XYZChartEditor)chartEditor).turnRight();
+			if(chartEditor instanceof XYZChartEditor) ((XYZChartEditor)chartEditor).turnRight();
+			if(chartEditor instanceof GLXYZChartEditor) ((GLXYZChartEditor)chartEditor).turnRight();
 		}
 	}
 	
@@ -419,7 +431,7 @@ private class ZoomFitAction extends Action {
 		previousTrialActionContributionItem.setVisible(true);
 		if(editor instanceof Chart2D3DBehaviour) {
 			chartEditor = (Chart2D3DBehaviour) editor;
-			boolean visible = !(editor instanceof ChannelEditor);
+			boolean visible = !(editor instanceof ChannelEditor) && !(editor instanceof GLChannelEditor);
 			addCurveActionContributionItem.setVisible(visible);
 			removeCurveActionContributionItem.setVisible(visible);
 			upActionContributionItem.setVisible(true);
@@ -429,7 +441,7 @@ private class ZoomFitAction extends Action {
 			zoomInActionContributionItem.setVisible(true);
 			zoomOutActionContributionItem.setVisible(true);
 			zoomFitActionContributionItem.setVisible(true);
-			visible = (editor instanceof XYZChartEditor);
+			visible = (editor instanceof XYZChartEditor) || (editor instanceof GLXYZChartEditor);
 			turnLeftActionContributionItem.setVisible(visible);
 			turnRightActionContributionItem.setVisible(visible);
 		}

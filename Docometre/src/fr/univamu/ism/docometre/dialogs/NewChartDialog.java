@@ -48,6 +48,8 @@ import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -57,6 +59,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
+import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.dacqsystems.charts.ChartTypes;
 
@@ -96,6 +99,12 @@ public class NewChartDialog extends TitleAreaDialog {
 		chartTypeComboViewer.setLabelProvider(new LabelProvider());
 		chartTypeComboViewer.setInput(ChartTypes.values());
 		chartTypeComboViewer.setSelection(new StructuredSelection(ChartTypes.OSCILLO_CHART));
+		chartTypeComboViewer.setFilters(new ViewerFilter() {
+			@Override
+			public boolean select(Viewer viewer, Object parentElement, Object element) {
+				return Activator.useOpenGLV2() || !element.equals(ChartTypes.XYZ_CHART);
+			}
+		});
 		
 		return area;
 	}

@@ -90,6 +90,7 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
+import fr.univamu.ism.docometre.dacqsystems.ExperimentScheduler;
 import fr.univamu.ism.docometre.views.ExperimentsLabelDecorator;
 import fr.univamu.ism.docometre.views.ExperimentsViewerSorter;
 
@@ -310,7 +311,8 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 
 	@Override
 	public void perspectiveActivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
-		if(perspective.getId().equals(AnalysePerspective.id)) updateInput(SelectedExprimentContributionItem.selectedExperiment);
+		if(perspective.getId().equals(AnalysePerspective.ID)) updateInput(SelectedExprimentContributionItem.selectedExperiment);
+		enableTree();
 	}
 
 	@Override
@@ -341,6 +343,10 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 	@Override
 	public void propertyChange(PropertyChangeEvent event) {
 		SubjectsView.refresh();
+	}
+
+	public void enableTree() {
+		subjectsTreeViewer.getTree().setEnabled(!ExperimentScheduler.getInstance().isRunning());
 	}
 	
 }

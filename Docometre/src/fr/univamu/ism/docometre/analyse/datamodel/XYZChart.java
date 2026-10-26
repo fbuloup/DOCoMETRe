@@ -43,6 +43,7 @@ package fr.univamu.ism.docometre.analyse.datamodel;
 
 import java.util.HashMap;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -55,6 +56,7 @@ import org.jzy3d.maths.Coord3d;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 
 public class XYZChart extends XYChart {
@@ -69,6 +71,7 @@ public class XYZChart extends XYChart {
 	private String zAxisGridStyle;
 	private RGB zAxisGridColor;
 	private Coord3d viewPoint;
+	private float[] cameraState; // point of view of GLXYZChartEditor (chartxyz OrbitCamera state), null: default view
 	
 	
 	public XYZChart() {
@@ -115,7 +118,7 @@ public class XYZChart extends XYChart {
 		}
 		for (String seriesID : getSeriesIDsPrefixes()) {
 			
-			//pro.sub.chann(pro.sub.chann)
+			//pro.sub.chann(pro.sub.chann, pro.sub.chann)
 			
 			String zFullChannelName = seriesID.split("\\(")[0];
 			String xFullChannelName = seriesID.split("\\(")[1].split(",")[0];
@@ -136,6 +139,14 @@ public class XYZChart extends XYChart {
 			IProject zProject = ResourcesPlugin.getWorkspace().getRoot().getProject(zProjectName);
 			IResource zSubject = zProject.findMember(zSubjectName);
 			
+			if(xSubject == null || ySubject == null || zSubject == null) {
+				removeCurve(seriesID);
+				IResource xyzChartFile = ObjectsController.getResourceForObject(this);
+				ObjectsController.serialize((IFile) xyzChartFile, this);
+				String message = NLS.bind(DocometreMessages.AssociatedResourcesNotFoundXYZ, new Object[] {xFullChannelName, xSubject, yFullChannelName, ySubject, zFullChannelName, zSubject});
+				Activator.logErrorMessage(message);
+				continue;
+			}
 			
 			if(MathEngineFactory.getMathEngine().isSubjectLoaded(xSubject) && MathEngineFactory.getMathEngine().isSubjectLoaded(ySubject) && MathEngineFactory.getMathEngine().isSubjectLoaded(zSubject)) {
 				Channel xChannel = MathEngineFactory.getMathEngine().getChannelWithName(xSubject, xFullChannelName.split("\\.")[2]);
@@ -233,6 +244,19 @@ public class XYZChart extends XYChart {
 	
 	public Coord3d getViewPoint() {
 		return viewPoint;
+	}
+	
+	/**
+	 * Point of view of GLXYZChartEditor: state of the chartxyz camera (see
+	 * OrbitCamera.getState()), or null for the default point of view (charts
+	 * saved before this field existed).
+	 */
+	public float[] getCameraState() {
+		return (cameraState != null) ? cameraState.clone() : null;
+	}
+	
+	public void setCameraState(float[] cameraState) {
+		this.cameraState = (cameraState != null) ? cameraState.clone() : null;
 	}
 	
 }

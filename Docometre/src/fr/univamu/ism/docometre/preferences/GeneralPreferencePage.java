@@ -42,6 +42,7 @@
 package fr.univamu.ism.docometre.preferences;
 
 import org.eclipse.jface.preference.BooleanFieldEditor;
+import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.jface.preference.IntegerFieldEditor;
@@ -110,9 +111,20 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
 		});
 		addField(showWorkspaceDialogFieldEditor);
 		
-		BooleanFieldEditor useOpenGLForRTSWTChartFiledEditor = new BooleanFieldEditor(GeneralPreferenceConstants.USE_OPENGL_FOR_RTSWT_CHART,
-				DocometreMessages.UseOpenGLForRTSWTChart, getFieldEditorParent());
-		addField(useOpenGLForRTSWTChartFiledEditor);
+//		BooleanFieldEditor useOpenGLForRTSWTChartFiledEditor = new BooleanFieldEditor(GeneralPreferenceConstants.USE_OPENGL_FOR_RTSWT_CHART,
+//				DocometreMessages.UseOpenGLForRTSWTChart, getFieldEditorParent());
+//		addField(useOpenGLForRTSWTChartFiledEditor);
+		
+		// For backward compatibility
+		Activator.initRTSWTChartLibraryPreference();
+		String[][] namesValues = new String[][] {
+		    {GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT, GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT},
+		    {GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT_OPENGL_V1, GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT_OPENGL_V1},
+		    {GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT_OPENGL_V2, GeneralPreferenceConstants.RTSWT_CHART_LIBRARY_SWT_OPENGL_V2},
+		};
+		ComboFieldEditor rtChartsLibraryFieldEditor = new ComboFieldEditor(GeneralPreferenceConstants.RTSWT_CHART_LIBRARY, 
+				DocometreMessages.UsedRTChartLibrary, namesValues, getFieldEditorParent());
+		addField(rtChartsLibraryFieldEditor);
 		
 		IntegerFieldEditor undoLimitFieldEditor = new IntegerFieldEditor(GeneralPreferenceConstants.PREF_UNDO_LIMIT,
 				DocometreMessages.GeneralPreferences_UndoLimit, getFieldEditorParent());
@@ -248,6 +260,9 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
 		if(event.getSource() instanceof BooleanFieldEditor) {
 			BooleanFieldEditor booleanFieldEditor = (BooleanFieldEditor) event.getSource();
 			if(GeneralPreferenceConstants.USE_OPENGL_FOR_RTSWT_CHART.equals(booleanFieldEditor.getPreferenceName())) {
+				setErrorMessage(DocometreMessages.RestartToApplyChanges);
+			}
+			if(GeneralPreferenceConstants.RTSWT_CHART_LIBRARY.equals(booleanFieldEditor.getPreferenceName())) {
 				setErrorMessage(DocometreMessages.RestartToApplyChanges);
 				
 			}

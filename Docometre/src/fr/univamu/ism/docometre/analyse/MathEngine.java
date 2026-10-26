@@ -43,7 +43,9 @@ package fr.univamu.ism.docometre.analyse;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
@@ -133,12 +135,16 @@ public interface MathEngine {
 	}
 	
 	default String[] getMarkersGroupsLabels(Channel signal) {
-		int nbMarkersGroups = getNbMarkersGroups(signal);
-		String[] markersGroupsLabels = new String[nbMarkersGroups];
-		for (int i = 0; i < markersGroupsLabels.length; i++) {
-			markersGroupsLabels[i] = getMarkersGroupLabel(i + 1, signal);
-		}
-		return markersGroupsLabels;
+		// Read once (round trips to the engine) until the values cache of the subject is cleared
+		String[] labels = ChannelsContainer.getCachedValue(signal, "MarkersGroupsLabels", () -> {
+			int nbMarkersGroups = getNbMarkersGroups(signal);
+			String[] markersGroupsLabels = new String[nbMarkersGroups];
+			for (int i = 0; i < markersGroupsLabels.length; i++) {
+				markersGroupsLabels[i] = getMarkersGroupLabel(i + 1, signal);
+			}
+			return markersGroupsLabels;
+		});
+		return labels.clone(); // the cached values must not be modified
 	}
 	
 	default String[] getFeaturesLabels(Channel signal) {
@@ -376,14 +382,27 @@ public interface MathEngine {
 	
 	default String getCategoryForTrialNumber(Channel channel, int trialNumber) {
 		IResource subject = channel.getSubject();
-		Channel[] categories = getCategories(subject);
-		for (Channel category : categories) {
-			Integer[] trials = getTrialsListForCategory(category);
-			if(Arrays.asList(trials).contains(trialNumber)) {
-				return getCriteriaForCategory(category);
+		// Category of each trial of the subject, read once for all its trials (each category is
+		// a few round trips to the engine) until the values cache of the subject is cleared
+		Map<Integer, String> trialsCategories = ChannelsContainer.getCachedSubjectValue(subject, "TrialsCategories", () -> {
+			Map<Integer, String> categoriesByTrial = new HashMap<>();
+			Channel[] categories = getCategories(subject);
+			if(categories == null) return null;
+			for (Channel category : categories) {
+				Integer[] trials = getTrialsListForCategory(category);
+				if(trials == null) continue;
+				String criteria = null;
+				for (Integer trial : trials) {
+					if(trial == null || categoriesByTrial.containsKey(trial)) continue; // first category of the trial
+					if(criteria == null) criteria = getCriteriaForCategory(category);
+					categoriesByTrial.put(trial, (criteria != null) ? criteria : "");
+				}
 			}
-		}
-		return "";
+			return categoriesByTrial;
+		});
+		if(trialsCategories == null) return "";
+		String category = trialsCategories.get(trialNumber);
+		return (category != null) ? category : "";
 	}
 	
 	default String[] getProposal() {

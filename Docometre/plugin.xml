@@ -465,6 +465,37 @@
             id="Docometre.CustomerFunctionEditor"
             name="CustomerFunctionEditor">
       </editor>
+      <editor
+            class="fr.univamu.ism.docometre.chartxyz.editors.GLDataEditor"
+            contributorClass="fr.univamu.ism.docometre.editors.DataEditorActionBarContributor"
+            default="false"
+            icon="icons/samples.gif"
+            id="Docometre.GLDataEditor"
+            name="GLDataEditor">
+      </editor>
+      <editor
+            class="fr.univamu.ism.docometre.chartxyz.editors.GLChannelEditor"
+            contributorClass="fr.univamu.ism.docometre.analyse.editors.ChannelEditorActionBarContributor"
+            default="false"
+            id="Docometre.GLChannelEditor"
+            name="GLChannelEditor">
+      </editor>
+      <editor
+            class="fr.univamu.ism.docometre.chartxyz.editors.GLXYChartEditor"
+            contributorClass="fr.univamu.ism.docometre.analyse.editors.ChannelEditorActionBarContributor"
+            default="false"
+            icon="icons/XYChartIcon.png"
+            id="Docometre.GLXYChartEditor"
+            name="GLXYChartEditor">
+      </editor>
+      <editor
+            class="fr.univamu.ism.docometre.chartxyz.editors.GLXYZChartEditor"
+            contributorClass="fr.univamu.ism.docometre.analyse.editors.ChannelEditorActionBarContributor"
+            default="false"
+            icon="icons/XYZChartIcon.png"
+            id="Docometre.GLXYZChartEditor"
+            name="GLXYZChartEditor">
+      </editor>
    </extension>
    <extension
          point="org.eclipse.ui.decorators">

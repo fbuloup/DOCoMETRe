@@ -20,11 +20,11 @@ public class CachedLogger implements ILogListener {
 	}
 
 	@Override
-	public void logging(IStatus status, String plugin) {
+	public synchronized void logging(IStatus status, String plugin) { // may be called from any thread (e.g. Python output)
 		cachedLog.add(status);
 	}
 	
-	public IStatus get() {
+	public synchronized IStatus get() {
 		if(cachedLog.size() == 0) return null;
 		IStatus status = cachedLog.get(0);
 		cachedLog.remove(0);

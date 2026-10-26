@@ -88,18 +88,19 @@ import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.ExperimentScheduler;
+import fr.univamu.ism.docometre.editors.DataEditorActionBarContributor.IDataEditorActionBarContribution;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 import fr.univamu.ism.nswtchart.CursorMarkerListener;
 import fr.univamu.ism.nswtchart.Window;
 import fr.univamu.ism.nswtchart.XYSWTChart;
 import fr.univamu.ism.nswtchart.XYSWTSerie;
 
-public class DataEditor extends EditorPart implements PartNameRefresher, CursorMarkerListener {
+public class DataEditor extends EditorPart implements PartNameRefresher, CursorMarkerListener, IDataEditorActionBarContribution {
 	
 	public static String ID = "Docometre.DataEditor";
 	
 //	private InteractiveChart chart;
-	XYSWTChart chart;
+	private XYSWTChart chart;
 
 	public DataEditor() {
 		// TODO Auto-generated constructor stub
@@ -428,10 +429,6 @@ public class DataEditor extends EditorPart implements PartNameRefresher, CursorM
 		if(chart.getSeries().length == 0) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().closeEditor(this, false);
 	}
 	
-	public XYSWTChart getChart() {
-		return chart;
-	}
-	
 	@Override
 	public void refreshPartName() {
 		Object object = ((ResourceEditorInput)getEditorInput()).getObject();
@@ -527,6 +524,43 @@ public class DataEditor extends EditorPart implements PartNameRefresher, CursorM
 		ApplicationActionBarAdvisor.deltaContributionItem.setVisible(showCursor);
 		ApplicationActionBarAdvisor.cursorContributionItem.getParent().update(true);
 		
+	}
+
+	@Override
+	public void panLeft() {
+		chart.pan(10, SWT.LEFT);
+	}
+
+	@Override
+	public void panRight() {
+		chart.pan(10, SWT.RIGHT);
+	}
+
+	@Override
+	public void panUp() {
+		chart.pan(10, SWT.UP);
+	}
+
+	@Override
+	public void panDown() {
+		chart.pan(10, SWT.DOWN);
+	}
+
+	@Override
+	public void zoomIn() {
+		chart.zoomIn();
+	}
+
+	@Override
+	public void zoomOut() {
+		chart.zoomOut();
+	}
+
+	@Override
+	public void reset() {
+		chart.reset();
+		chart.redraw();
+		chart.update();
 	}
 
 }

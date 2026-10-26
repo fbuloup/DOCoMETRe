@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -60,6 +61,7 @@ import org.eclipse.swtchart.LineStyle;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 
@@ -298,6 +300,15 @@ public class XYChart extends AbstractElement {
 			String ySubjectName = yFullChannelName.split("\\.")[1];
 			IProject yProject = ResourcesPlugin.getWorkspace().getRoot().getProject(yProjectName);
 			IResource ySubject = yProject.findMember(ySubjectName);
+			
+			if(xSubject == null || ySubject == null ) {
+				removeCurve(seriesID);
+				IResource xyChartFile = ObjectsController.getResourceForObject(this);
+				ObjectsController.serialize((IFile) xyChartFile, this);
+				String message = NLS.bind(DocometreMessages.AssociatedResourcesNotFoundXY, new Object[] {xFullChannelName, xSubject, yFullChannelName, ySubject});
+				Activator.logErrorMessage(message);
+				continue;
+			}
 			
 			
 			if(MathEngineFactory.getMathEngine().isSubjectLoaded(xSubject) && MathEngineFactory.getMathEngine().isSubjectLoaded(ySubject)) {

@@ -154,15 +154,20 @@ public class ResourceEditorInput implements IEditorInput, IPersistableElement {
 	}
 	
 	public boolean isEditing(Object object) {
-		if(this.object.equals(object)) return true;
+		if(this.object.equals(object)) {
+			return true;
+		}
 		Object[] objects = editedObjects.toArray();
 		for (Object localObject : objects) {
-			if(localObject.equals(object)) return true;
+			if(localObject.equals(object)) {
+				return true;
+			}
 		}
 		if(this.object instanceof Channel && object instanceof Channel) {
 			Channel localChannel = (Channel)this.object;
 			Channel channel = (Channel)object;
-			return localChannel.equals(channel);
+			boolean sameNames =  localChannel.equals(channel);
+			return sameNames;
 		} else if(this.object instanceof IFile && object instanceof IFile) {
 			IFile localFile = (IFile)this.object;
 			IFile file = (IFile)object;

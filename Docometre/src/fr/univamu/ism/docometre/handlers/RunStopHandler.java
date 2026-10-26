@@ -51,6 +51,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.window.Window;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IPerspectiveListener;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -60,16 +61,19 @@ import org.eclipse.ui.internal.WorkbenchWindow;
 import org.eclipse.ui.menus.UIElement;
 
 import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.AnalysePerspective;
 import fr.univamu.ism.docometre.ApplicationActionBarAdvisor;
 import fr.univamu.ism.docometre.DesignPerspective;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.dacqsystems.ExperimentScheduler;
 import fr.univamu.ism.docometre.dialogs.StopTrialDialog;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 import fr.univamu.ism.docometre.views.ExperimentsView;
+import fr.univamu.ism.docometre.views.RealTimeChartsView;
 
 @SuppressWarnings("restriction")
 public class RunStopHandler extends AbstractHandler implements IElementUpdater, IPerspectiveListener {
@@ -159,16 +163,33 @@ public class RunStopHandler extends AbstractHandler implements IElementUpdater, 
 		else stop = true;
 		boolean stopNow = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.STOP_TRIAL_NOW);
 		if(!stopNow && stop) {
+			if(!ExperimentScheduler.getInstance().isRunning()) return;
 			enabled = false;
 			refreshCommand();
 			ApplicationActionBarAdvisor.pausePendingContributionItem.setText(DocometreMessages.PausePending);
 		}
-		if(stop) ExperimentScheduler.getInstance().stop(false);
+		if(stop) {
+			ExperimentScheduler.getInstance().stop(false);
+			RealTimeChartsView.removeAllCharts(false);
+			IViewPart viewPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(ExperimentsView.ID);
+			if(viewPart != null && viewPart instanceof ExperimentsView) {
+				ExperimentsView experimentsView = (ExperimentsView)viewPart;
+				experimentsView.enableTree();
+			}
+			viewPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(SubjectsView.ID);
+			if(viewPart != null && viewPart instanceof SubjectsView) {
+				SubjectsView subjectsView = (SubjectsView)viewPart;
+				subjectsView.enableTree();
+			}
+		}
 	}
 	
 	@Override
 	public void perspectiveActivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
-		if(perspective.getId().equals(DesignPerspective.ID) && ExperimentScheduler.getInstance().isRunning()) stop();
+		if(perspective.getId().equals(DesignPerspective.ID) && ExperimentScheduler.getInstance().isRunning()) 
+			stop();
+		if(perspective.getId().equals(AnalysePerspective.ID) && ExperimentScheduler.getInstance().isRunning()) 
+			stop();
 	}
 
 	@Override

@@ -8,6 +8,7 @@ import time;
 import struct;
 import argparse;
 import queue;
+import threading;
 import matplotlib;
 
 class DOCoMETRe(object):
@@ -18,17 +19,19 @@ class DOCoMETRe(object):
 	def __init__(self, gateway):
 	 	self.gateway = gateway;
 	 	self.experiments = dict();
-	 	if(jvmMode): gateway.jvm.System.out.println("In __init__ gateway");
+	 	if(jvmMode): print("In __init__ gateway");
 
 	def shutDownServer(self, object):
-		if(jvmMode): self.gateway.jvm.System.out.println("In shutdown server");
-		pass;
+		if(jvmMode): print("In shutdown server");
+		# Ask the main thread to leave its loop and to shut down the gateway
+		if(jvmMode): callback_queue.put(None);
 
 	def toString(self):
-		if(jvmMode): self.gateway.jvm.System.out.println("In toString");
+		if(jvmMode): print("In toString");
 		return "This is DOCoMETRe Python Entry Point";
 
 	def loadData(self, dataType, loadName, dataFilesList, sessionsProperties):
+		sessionsProperties = self.decodeSessionsProperties(sessionsProperties);
 		if(dataType == "DOCOMETRE"):
 			self.loadDataDocometre(loadName, dataFilesList, sessionsProperties);
 		elif(dataType == "OPTITRACK_TYPE_1"):
@@ -36,110 +39,109 @@ class DOCoMETRe(object):
 		elif(dataType == "OPTITRACK_TYPE_2"):
 			self.loadDataOptitrackType2(loadName, dataFilesList);
 		else:
-			if(jvmMode): self.gateway.jvm.System.out.println("Data files format not handeled with Python");
+			if(jvmMode): print("Data files format not handeled with Python");
+
+	def decodeSessionsProperties(self, sessionsProperties):
+		# Java sends sessions properties as a single string "key<US>value<RS>key<US>value..."
+		# (see PythonEngine.encodeSessionsProperties()) : reading a Java map would cost a Java round trip for each access.
+		# A dictionary (standalone mode) is returned as is.
+		if not isinstance(sessionsProperties, str): return sessionsProperties;
+		properties = dict();
+		if sessionsProperties == "": return properties;
+		for record in sessionsProperties.split("\u001e"):
+			key, separator, value = record.partition("\u001f");
+			properties[key] = value;
+		return properties;
 
 	def loadDataDocometre(self, loadName, dataFilesList, sessionsProperties):
-		if(jvmMode): self.gateway.jvm.System.out.println("In loadDataDocometre");
+		if(jvmMode): print("In loadDataDocometre");
 		if ".sau" in dataFilesList:
-			if(jvmMode): self.gateway.jvm.System.out.println("For now, sau files are not handeled with Python");
+			if(jvmMode): print("For now, sau files are not handeled with Python");
 		elif ".samples" in dataFilesList:
 			self.loadDataDocometreSAMPLES(loadName, dataFilesList, sessionsProperties);
 		elif ".adw" in dataFilesList:
 			self.loadDataDocometreADW(loadName, dataFilesList);
 		else:
-			if(jvmMode): self.gateway.jvm.System.out.println("Data files format not handeled with Python");
+			if(jvmMode): print("Data files format not handeled with Python");
 	
 	def loadDataDocometreADW(self, loadName, dataFilesList):
 		if(jvmMode):
-			self.gateway.jvm.System.out.println("In loadDataDocometreADW");
-			self.gateway.jvm.System.out.println(dataFilesList);
+			print("In loadDataDocometreADW");
+			print(dataFilesList);
 		
-		file = open(dataFilesList, "rb")
-		
-		# Nb channels
-		nbChannels = struct.unpack('i', file.read(4))[0]
-		channelsNames = self.read_names(file, nbChannels)
-	
-		# Nb sessions
-		nbSessions = struct.unpack('i', file.read(4))[0]
-		sessionsNames = self.read_names(file, nbSessions)
-		
-		# Nb conditions
-		nbConditions = struct.unpack('i', file.read(4))[0]
-		conditionsNames = self.read_names(file, nbConditions)
-		
-		# Nb seq. type
-		nbSeqTypes = struct.unpack('i', file.read(4))[0]
-		seqTypesNames = self.read_names(file, nbSeqTypes)
-		
-		# Nb trials
-		nbTrials = struct.unpack('i', file.read(4))[0]
-		
-		nbTotalCategories = nbSessions*nbConditions*nbSeqTypes
-		
-		criteria = ["" for _ in range(nbTrials)]
 		createdCategories = dict();
+		# For each channel : trial index -> samples
+		channelsValues = dict();
+		channelsSampleFrequency = dict();
 		
-		for currentTrialNumber in range(nbTrials):
-			currentSession = struct.unpack('i', file.read(4))[0]
-			currentCondition = struct.unpack('i', file.read(4))[0]
-			currentSeqType = struct.unpack('i', file.read(4))[0]
-			nbChannelsInTrial = struct.unpack('i', file.read(4))[0]
-			criteria = sessionsNames[currentSession-1] + '_' + seqTypesNames[currentSeqType-1]
-			if criteria in createdCategories:
-			    append = False
-			    trialsList = createdCategories[criteria]
-			    if isinstance(trialsList, numpy.ndarray):
-			        if int(currentTrialNumber + 1) not in trialsList:
-			            append = True
-			    if append:
-			        trialsList = numpy.append(trialsList, currentTrialNumber+1)
-			else:
-			    trialsList = numpy.array(currentTrialNumber+1)
-			createdCategories[criteria] = trialsList
-			if nbChannelsInTrial > 0:
-			    for currentChannelNumber in range(nbChannelsInTrial):
-			        channelNumber = struct.unpack('i', file.read(4))[0] - 1
-			        channelName = channelsNames[channelNumber]
-			        sampleFrequency = struct.unpack('f', file.read(4))[0]
-			        nbSamples = struct.unpack('i', file.read(4))[0]
-			        if nbSamples > 0:
-			            newValues = numpy.fromfile(file, dtype="float32", count=nbSamples)
-			            try:
-			                values = self.experiments[loadName + "." + channelName + "." + "Values"]
-			                currentNbSamples = values.shape[1]
-			                if(currentNbSamples > nbSamples):
-			                	newValues.resize((1, currentNbSamples), refcheck=False)
-			                elif(currentNbSamples < nbSamples):
-			                	values.resize((nbTrials, nbSamples), refcheck=False)
-			                self.experiments[loadName + "." + channelName + "." + "Values"][currentTrialNumber][:] = newValues
-			            except KeyError:
-			                self.experiments[loadName + "." + channelName + "." + "Values"] = numpy.zeros((int(nbTrials), int(nbSamples)))
-			                self.experiments[loadName + "." + channelName + "." + "NbSamples"] = nbSamples*numpy.ones(int(nbTrials))
-			                self.experiments[loadName + "." + channelName + "." + "FrontCut"] = numpy.zeros(int(nbTrials))
-			                self.experiments[loadName + "." + channelName + "." + "EndCut"] = nbSamples*numpy.ones(int(nbTrials))
-			                self.experiments[loadName + "." + channelName + "." + "Values"][currentTrialNumber][:] = newValues
-			            self.experiments[loadName + "." + channelName + "." + "EndCut"][currentTrialNumber] = nbSamples
-			            self.experiments[loadName + "." + channelName + "." + "isSignal"] = '1'
-			            self.experiments[loadName + "." + channelName + "." + "isCategory"] = '0'
-			            self.experiments[loadName + "." + channelName + "." + "isEvent"] = '0'
-			            self.experiments[loadName + "." + channelName + "." + "NbFeatures"] = '0'
-			            self.experiments[loadName + "." + channelName + "." + "NbMarkersGroups"] = '0'
-			            self.experiments[loadName + "." + channelName + "." + "SampleFrequency"] = sampleFrequency
+		with open(dataFilesList, "rb") as file:
+			
+			# Nb channels
+			nbChannels = struct.unpack('i', file.read(4))[0]
+			channelsNames = self.read_names(file, nbChannels)
+		
+			# Nb sessions
+			nbSessions = struct.unpack('i', file.read(4))[0]
+			sessionsNames = self.read_names(file, nbSessions)
+			
+			# Nb conditions
+			nbConditions = struct.unpack('i', file.read(4))[0]
+			conditionsNames = self.read_names(file, nbConditions)
+			
+			# Nb seq. type
+			nbSeqTypes = struct.unpack('i', file.read(4))[0]
+			seqTypesNames = self.read_names(file, nbSeqTypes)
+			
+			# Nb trials
+			nbTrials = struct.unpack('i', file.read(4))[0]
+			
+			for currentTrialNumber in range(nbTrials):
+				currentSession = struct.unpack('i', file.read(4))[0]
+				currentCondition = struct.unpack('i', file.read(4))[0]
+				currentSeqType = struct.unpack('i', file.read(4))[0]
+				nbChannelsInTrial = struct.unpack('i', file.read(4))[0]
+				criteria = sessionsNames[currentSession-1] + '_' + seqTypesNames[currentSeqType-1]
+				trialsList = createdCategories.setdefault(criteria, list())
+				if currentTrialNumber + 1 not in trialsList:
+					trialsList.append(currentTrialNumber + 1)
+				for currentChannelNumber in range(nbChannelsInTrial):
+					channelNumber = struct.unpack('i', file.read(4))[0] - 1
+					channelName = channelsNames[channelNumber]
+					sampleFrequency = struct.unpack('f', file.read(4))[0]
+					nbSamples = struct.unpack('i', file.read(4))[0]
+					if nbSamples > 0:
+						channelsValues.setdefault(channelName, dict())[currentTrialNumber] = numpy.fromfile(file, dtype="float32", count=nbSamples)
+						channelsSampleFrequency[channelName] = sampleFrequency
+		
+		# Values arrays are created once the maximum number of samples of each channel is known :
+		# trials may not have the same number of samples
+		for channelName, trialsValues in channelsValues.items():
+			prefix = loadName + "." + channelName + "."
+			maximumSamples = max(len(trialValues) for trialValues in trialsValues.values())
+			values = numpy.zeros((nbTrials, maximumSamples))
+			nbSamples = numpy.zeros(nbTrials)
+			for trialIndex, trialValues in trialsValues.items():
+				values[trialIndex, 0:len(trialValues)] = trialValues
+				nbSamples[trialIndex] = len(trialValues)
+			self.experiments[prefix + "Values"] = values
+			self.experiments[prefix + "NbSamples"] = nbSamples
+			self.experiments[prefix + "FrontCut"] = numpy.zeros(nbTrials)
+			self.experiments[prefix + "EndCut"] = nbSamples.copy()
+			self.experiments[prefix + "isSignal"] = '1'
+			self.experiments[prefix + "isCategory"] = '0'
+			self.experiments[prefix + "isEvent"] = '0'
+			self.experiments[prefix + "NbFeatures"] = '0'
+			self.experiments[prefix + "NbMarkersGroups"] = '0'
+			self.experiments[prefix + "SampleFrequency"] = channelsSampleFrequency[channelName]
 			
 		n = 1
 		for criteria in createdCategories:
-		    values = createdCategories[criteria];
-		    self.experiments[loadName + ".Category" + str(n) + ".Criteria"] = criteria
-		    self.experiments[loadName + ".Category" + str(n) + ".TrialsList"] = values
-		    self.experiments[loadName + ".Category" + str(n) + ".isSignal"] = "0"
-		    self.experiments[loadName + ".Category" + str(n) + ".isCategory"] = "1"
-		    self.experiments[loadName + ".Category" + str(n) + ".isEvent"] = "0"
-		    n = n + 1
-		
-		# self.experiments[loadName + ".Criteria.Names"] = criteria
-		
-		file.close()
+			self.experiments[loadName + ".Category" + str(n) + ".Criteria"] = criteria
+			self.experiments[loadName + ".Category" + str(n) + ".TrialsList"] = numpy.array(createdCategories[criteria])
+			self.experiments[loadName + ".Category" + str(n) + ".isSignal"] = "0"
+			self.experiments[loadName + ".Category" + str(n) + ".isCategory"] = "1"
+			self.experiments[loadName + ".Category" + str(n) + ".isEvent"] = "0"
+			n = n + 1
 	
 	def read_names(self, file_handle, nb_names):
 	    names = ["" for _ in range(nb_names)]
@@ -153,7 +155,7 @@ class DOCoMETRe(object):
 	    return names
 
 	def loadDataOptitrackType1(self, loadName, dataFilesAbsolutePath):
-		if(jvmMode): self.gateway.jvm.System.out.println("In loadDataOptitrackType1");
+		if(jvmMode): print("In loadDataOptitrackType1");
 		
 		createdCategories = dict();
 		createdChannelsNames = list();
@@ -257,7 +259,7 @@ class DOCoMETRe(object):
 			n+=1;
 			
 	def loadDataOptitrackType2(self, loadName, dataFilesAbsolutePath):
-		if(jvmMode): self.gateway.jvm.System.out.println("In loadDataOptitrackType2");
+		if(jvmMode): print("In loadDataOptitrackType2");
 		
 		createdCategories = dict();
 		createdChannelsNames = list();
@@ -283,8 +285,7 @@ class DOCoMETRe(object):
 		for p in range(0, len(channelsPrefix)):
 			channelsPrefix[p] = re.sub(":.*", "", channelsPrefix[p]).strip();
 			if(jvmMode): 
-				self.gateway.jvm.System.out.print("Channel prefix " + str(p) + " : ");
-				self.gateway.jvm.System.out.println(channelsPrefix[p].strip());
+				print("Channel prefix " + str(p) + " : " + channelsPrefix[p].strip());
 		fid.readline();
 		fid.readline();
 		fid.readline();
@@ -296,8 +297,7 @@ class DOCoMETRe(object):
 			if tempValue2 != "Time (Seconds)" and tempValue2 != "Frame" and tempValue2 != "" :
 				channelNames.append(channelsPrefix[prefixIndex] + "_" + tempValue2.strip());
 				if(jvmMode): 
-					self.gateway.jvm.System.out.print("Add channel name : ");
-					self.gateway.jvm.System.out.println(channelsPrefix[prefixIndex] + "_" + tempValue2.strip());
+					print("Add channel name : " + channelsPrefix[prefixIndex] + "_" + tempValue2.strip());
 				prefixIndex+=1;
 		fid.close();
 		
@@ -329,8 +329,7 @@ class DOCoMETRe(object):
 				values[trialNumber - 1][0:sizeData] = data[:, numChannel];
 				numChannel+=1;
 				if(jvmMode): 
-					self.gateway.jvm.System.out.print("Create channel : ");
-					self.gateway.jvm.System.out.println(channelName);
+					print("Create channel : " + channelName);
 						
 			
 		self.experiments[loadName + ".Category1.Criteria"] = "Session1";
@@ -340,8 +339,8 @@ class DOCoMETRe(object):
 		self.experiments[loadName + ".Category1.isEvent"] = "0";		
 				
 	def loadDataDocometreSAMPLES(self, loadName, dataFilesList, sessionsProperties):
-		if(jvmMode): self.gateway.jvm.System.out.println("In loadDataDocometreSAMPLES");
-		# if(jvmMode): self.gateway.jvm.System.out.println(sessionsProperties)
+		if(jvmMode): print("In loadDataDocometreSAMPLES");
+		# if(jvmMode): print(sessionsProperties);
 
 		prefix_QN = "_DATA_FILES_NAMES_PREFIX";
 		baseTrialsNumber_QN = "_BASE_TRIALS_NUMBER";
@@ -357,7 +356,7 @@ class DOCoMETRe(object):
 		paddWithLastValue = sessionsProperties["PADD_WITH_LAST_VALUE_RATHER_THAN_ZERO"];
 		if(jvmMode):
 			if paddWithLastValue == "true":
-				self.gateway.jvm.System.out.println("Padd empty samples with last value");
+				print("Padd empty samples with last value");
 
 		for n in range(0, nbDataFiles):
 			segments = dataFiles[n].split(os.path.sep);
@@ -367,14 +366,14 @@ class DOCoMETRe(object):
 			trialName = segments[len(segments) - 2];
 			key = os.path.dirname(os.path.abspath(dataFiles[n]))
 			process = sessionsProperties[key + "_PROCESS"];
-			# if(jvmMode): self.gateway.jvm.System.out.println("nbDataFiles : " + str(nbDataFiles) + " fichier : " + str(n+1) + " sessionName : " + sessionName + " process : " + process + " - " + dataFiles[n]);
+			# if(jvmMode): print("nbDataFiles : " + str(nbDataFiles) + " fichier : " + str(n+1) + " sessionName : " + sessionName + " process : " + process + " - " + dataFiles[n]);
 			criteria = sessionName + "." + process;
 			if sessionName + prefix_QN in sessionsProperties:
 				if sessionsProperties[sessionName + prefix_QN] != "":
 					criteria = sessionsProperties[sessionName + prefix_QN];
 					criteria = criteria + "." + sessionName + "." + process;
-			# if(jvmMode): self.gateway.jvm.System.out.println("nbDataFiles : " + str(nbDataFiles) + " fichier : " + str(n+1) + " critere : " + criteria);
-			# if(jvmMode): self.gateway.jvm.System.out.println(str(n) + " - " + dataFiles[n]);
+			# if(jvmMode): print("nbDataFiles : " + str(nbDataFiles) + " fichier : " + str(n+1) + " critere : " + criteria);
+			# if(jvmMode): print(str(n) + " - " + dataFiles[n]);
 			trialNumber = trialName.split("\u00b0")[1];
 			system = sessionsProperties[key + "_SYSTEM"];
 			baseTrialsNumber = sessionsProperties[sessionName + baseTrialsNumber_QN];
@@ -405,7 +404,7 @@ class DOCoMETRe(object):
 					#if(jvmMode): self.gateway.jvm.System.out.println(ListConverter().convert(trialsList.tolist(), gateway._gateway_client));
 			else:
 				trialsList = numpy.array(int(trialNumber));
-				#if(jvmMode): self.gateway.jvm.System.out.println(trialsList);
+				#if(jvmMode): print(trialsList);
 
 			createdCategories[criteria] = trialsList;
 
@@ -430,7 +429,7 @@ class DOCoMETRe(object):
 			#	data = data[1::2];
 
 			sizeData = len(data);
-			#if(jvmMode): self.gateway.jvm.System.out.println("sizeData : " + str(sizeData));
+			#if(jvmMode): print("sizeData : " + str(sizeData));
 			key = loadName + "." + channelName + ".NbSamples";
 			self.experiments[key][int(trialNumber) - 1] = sizeData;
 			key = loadName + "." + channelName + ".FrontCut";
@@ -438,7 +437,7 @@ class DOCoMETRe(object):
 			key = loadName + "." + channelName + ".EndCut";
 			self.experiments[key][int(trialNumber) - 1] = sizeData;
 			values = self.experiments[loadName + "." + channelName + ".Values"];
-			#if(jvmMode): self.gateway.jvm.System.out.println("size values : " + str(len(values[int(trialNumber) - 1])));
+			#if(jvmMode): print("size values : " + str(len(values[int(trialNumber) - 1])));
 			values[int(trialNumber) - 1][0:sizeData] = data;
 			if paddWithLastValue == "true":
 				values[int(trialNumber) - 1][sizeData-1:] = data[sizeData-1];
@@ -454,20 +453,19 @@ class DOCoMETRe(object):
 			n = n + 1;
 			
 	def evaluate(self, expression):
-		# if(jvmMode): self.gateway.jvm.System.out.println("Evaluate : " + expression);
+		# if(jvmMode): print("Evaluate : " + expression);
 		return str(eval(expression));
 	
 	def unload(self, fullName):
-		code = "import re\n";
-		code = code + "keysToDelete = {key for key in docometre.experiments.keys() if re.match('^" + fullName + "', key) != None}\n"
-		code = code + "for key in keysToDelete:\n";
-		code = code + "\tdocometre.experiments.pop(key)";
-		exec(code);
+		# fullName is a regular expression (dots escaped by Java) : it is used directly, not inserted in generated code
+		keysToDelete = [key for key in self.experiments.keys() if re.match("^" + fullName, key) != None];
+		for key in keysToDelete:
+			self.experiments.pop(key);
 		
 	def getChannels(self, subjectFullName):
-		channels = list({k:v for k,v in self.experiments.copy().items() if re.search("^" + subjectFullName + "\.\w+\.isSignal$", k)});
-		channels  = [re.sub("\.\w+$", "", channel) for channel in channels];
-		channels  = [re.sub("^\w+\.\w+\.", "", channel) for channel in channels];
+		channels = list({k:v for k,v in self.experiments.copy().items() if re.search("^" + subjectFullName + r"\.\w+\.isSignal$", k)});
+		channels  = [re.sub(r"\.\w+$", "", channel) for channel in channels];
+		channels  = [re.sub(r"^\w+\.\w+\.", "", channel) for channel in channels];
 		return ",".join(channels);
 	
 	def getVector(self, expression, dataType, trialNumber, frontCut, endCut):
@@ -483,11 +481,15 @@ class DOCoMETRe(object):
 	
 	def runScript(self, code, runInMainThread):
 		if(jvmMode): 
-			gateway.jvm.System.out.println("Run script in main thread : " + str(runInMainThread));
-			gateway.jvm.System.out.println("Script code : " + code);
+			print("Run script in main thread : " + str(runInMainThread));
+			print("Script code : " + code);
 		if runInMainThread:
-			if(jvmMode): gateway.jvm.System.out.println("Add callback to queue");
-			callback_queue.put(lambda: runScriptMainThread(code))
+			if(jvmMode): print("Add callback to queue");
+			# Wait for the end of the script so that Java reads up to date values, and send back its error if any
+			task = MainThreadTask(code);
+			callback_queue.put(task);
+			task.done.wait();
+			if task.error is not None: raise task.error;
 		else:
 			exec(code);
 		
@@ -497,7 +499,7 @@ class DOCoMETRe(object):
 		file = open(dataFilesFullPath + 'save.data','w');
 		for key,value in subject.items():
 			# Remove Experiment.Subject prefix
-			newKey = re.sub("^\w+\.\w+\.", "", key); 
+			newKey = re.sub(r"^\w+\.\w+\.", "", key); 
 			if isinstance(value, str):
 				file.write(newKey);
 				file.write('\n');
@@ -529,10 +531,7 @@ class DOCoMETRe(object):
 				file.write('list.str(' + ':'.join(value) + ')');
 				file.write('\n');
 			else:				
-				if(jvmMode): 
-					self.gateway.jvm.System.out.print("Type not handled : " + type(value).__name__);
-					self.gateway.jvm.System.out.println(" for key : " + key);
-				else: print("Type not handled : " + type(value) + " for key : " + key);
+				print("Type not handled : " + type(value).__name__ + " for key : " + key);
 				
 		file.close();
 		
@@ -565,8 +564,8 @@ class DOCoMETRe(object):
 					ndArrayFile.close();
 					subject[key] = value;		
 				elif(value.startswith('list.str')):
-						value = re.sub("^list\.str\(", "", value);
-						value = re.sub("\)$", "", value);
+						value = re.sub(r"^list\.str\(", "", value);
+						value = re.sub(r"\)$", "", value);
 						subject[key] = value.split(":");
 				key = file.readline().strip();
 	
@@ -576,7 +575,7 @@ class DOCoMETRe(object):
 			os.chdir(previousWD);
 			
 		if(jvmMode): 
-			self.gateway.jvm.System.out.println("WD : " + os.getcwd());
+			print("WD : " + os.getcwd());
 			
 	def rename(self, keyRegExp, keyReplace):
 		subDict = {k:v for k,v in docometre.experiments.items() if re.search(keyRegExp, k) != None}
@@ -584,18 +583,18 @@ class DOCoMETRe(object):
 			newKey = re.sub(keyRegExp, keyReplace, key);
 			docometre.experiments[newKey] = docometre.experiments.pop(key);
 		subDict = {k:v for k,v in docometre.experiments.items() if re.search(keyRegExp, k) != None}
-		keyReplace = "^" + re.sub("\.", "\.", keyReplace);
+		keyReplace = "^" + re.sub(r"\.", r"\.", keyReplace);
 		subDict2 = {k:v for k,v in docometre.experiments.items() if re.search(keyReplace, k) != None}
 		#if(jvmMode): 
-		#	self.gateway.jvm.System.out.println("Is dict empty : " + str(any(subDict)) + " for " + keyRegExp);
-		#	self.gateway.jvm.System.out.println("Is dict empty : " + str(any(subDict2)) + " for " + keyReplace);
+		#	print("Is dict empty : " + str(any(subDict)) + " for " + keyRegExp);
+		#	print("Is dict empty : " + str(any(subDict2)) + " for " + keyReplace);
 		return (not(any(subDict)) and any(subDict2))
 
 	def getLoadedSubjects(self):
-		keys = {k for k,v in docometre.experiments.items() if re.search('^\w+\.\w+\.\w+\.isSignal', k) != None};
+		keys = {k for k,v in docometre.experiments.items() if re.search(r'^\w+\.\w+\.\w+\.isSignal', k) != None};
 		loadedSubjects = set();
 		for key in keys:
-			newKey = re.sub("\.\w+\.isSignal$", "", key);
+			newKey = re.sub(r"\.\w+\.isSignal$", "", key);
 			loadedSubjects.add(newKey);
 		if(len(loadedSubjects) > 0):
 			return ":".join(loadedSubjects);
@@ -605,8 +604,25 @@ class DOCoMETRe(object):
 		implements = ["fr.univamu.ism.docometre.python.PythonEntryPoint"]
 		
 def runScriptMainThread(code):
-    if(jvmMode): gateway.jvm.System.out.println("In runScriptMainThread : " + code);
+    if(jvmMode): print("In runScriptMainThread : " + code);
     exec(code)
+
+class MainThreadTask(object):
+	# A script to be run by the main thread, which signals its end to the waiting gateway thread
+
+	def __init__(self, code):
+		self.code = code;
+		self.error = None;
+		self.done = threading.Event();
+
+	def __call__(self):
+		try:
+			runScriptMainThread(self.code);
+		except BaseException as error:
+			# Never leave the main loop because of a script error : it is sent back to Java
+			self.error = error;
+		finally:
+			self.done.set();
 
 if __name__ == "__main__":
 	
@@ -630,8 +646,15 @@ if __name__ == "__main__":
 		gateway.entry_point.setPythonEntryPoint(docometre);	
 		while True:
 			callback = callback_queue.get(block=True) # Block until a callback is available
+			if callback is None: break; # Sent by shutDownServer
 			callback()		
-			gateway.jvm.System.out.println("Callback called");
+			print("Callback called");
+		# Let shutDownServer answer Java before closing the gateway
+		time.sleep(0.1);
+		try:
+			gateway.shutdown();
+		except Exception as error:
+			print("Error while shutting down gateway : " + str(error));
 		
 	if(not jvmMode):
 		docometre = DOCoMETRe(None);

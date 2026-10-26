@@ -5,7 +5,6 @@ import java.util.TreeSet;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.widgets.Display;
 
-import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 import fr.univamu.ism.rtswtchart.RTSWTChartFonts;
 
 public final class FontUtil {
@@ -15,8 +14,7 @@ public final class FontUtil {
 	}
 	
 	public static String[] getAvailableFontsNames() {
-		boolean useOpenGL = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_OPENGL_FOR_RTSWT_CHART);
-		if(useOpenGL) {
+		if(Activator.useOpenGLV1()) {
 			return RTSWTChartFonts.getAvailableFontsNames();
 		} else {
 			FontData[] fontDatas = getFontList();
@@ -29,8 +27,7 @@ public final class FontUtil {
 	}
 	
 	public static String getAvailableFontsNames(boolean forRegExp) {
-		boolean useOpenGL = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_OPENGL_FOR_RTSWT_CHART);
-		if(useOpenGL) {
+		if(Activator.useOpenGLV1()) {
 			if(forRegExp) return RTSWTChartFonts.getRegExp();
 			return RTSWTChartFonts.getAvailableValues();
 		} else {
@@ -46,8 +43,7 @@ public final class FontUtil {
 	}
 	
 	public static String getDefaultFontName() {
-		boolean useOpenGL = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_OPENGL_FOR_RTSWT_CHART);
-		if(useOpenGL) {
+		if(Activator.useOpenGLV1()) {
 			return RTSWTChartFonts.getAvailableFontsNames()[0];
 		} else {
 			FontData[] fontDatas = getFontList();

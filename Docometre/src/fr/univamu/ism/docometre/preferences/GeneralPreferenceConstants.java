@@ -100,6 +100,12 @@ public class GeneralPreferenceConstants {
 	
 	public static final String USE_OPENGL_FOR_RTSWT_CHART = "USE_OPENGL_FOR_RTSWT_CHART";
 	
+	public static final String RTSWT_CHART_LIBRARY = "RTSWT_CHART_LIBRARY";
+	
 	public static final String EDITORS_FONT_SIZE = "EDITORS_FONT_SIZE";
+	
+	public static final String RTSWT_CHART_LIBRARY_SWT = "SWT";
+	public static final String RTSWT_CHART_LIBRARY_SWT_OPENGL_V1 = "SWT + OpenGL v1";
+	public static final String RTSWT_CHART_LIBRARY_SWT_OPENGL_V2 = "SWT + OpenGL v2";
 	
 }

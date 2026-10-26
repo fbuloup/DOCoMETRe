@@ -7,10 +7,7 @@ public interface IRTSWTXYChart {
 	public void setLayoutData(GridData gridData);
 	public GridData getLayoutData();
 	public void setAutoScale(boolean autoscale);
-	public void setxMax(double xMax);
-	public void setxMin(double xMin);
-	public void setyMax(double value);
-	public void setyMin(double value);
+	public void setFixedScales(double xMin, double xMax, double yMin, double yMax);
 	public void setGridVisibility(boolean value);
 	public void setLegendVisibility(boolean value);
 	public void setLegendPosition(int position);
