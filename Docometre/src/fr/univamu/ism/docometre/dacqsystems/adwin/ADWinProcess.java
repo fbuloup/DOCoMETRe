@@ -48,7 +48,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -110,6 +109,7 @@ import fr.univamu.ism.process.ScriptSegmentType;
 public class ADWinProcess extends Process {
 
 	public static final long serialVersionUID = DACQConfiguration.serialVersionUID;
+	public static String previousADWINBinFilePath = "";
 	
 	public static File createADBasicFile(IResource processFile, Process process, String adbasicFilePath) {
 		try {
@@ -715,7 +715,7 @@ public class ADWinProcess extends Process {
 	}
 
 	@Override
-	public void stop() throws ADwinCommunicationError, UnknownHostException {
+	public void stop() throws ADwinCommunicationError, IOException {
 		int processNumberInt = Integer.parseInt(getProperty(ADWinProcessProperties.PROCESS_NUMBER));	
 		((ADWinDACQConfiguration)getDACQConfiguration()).getADwinDevice().Stop_Process(processNumberInt);
 		int processSatus = 1;
@@ -726,10 +726,17 @@ public class ADWinProcess extends Process {
 			timeOut = (System.currentTimeMillis() - startTime > 100);
 		}
 		if(timeOut) {
-			appendToEventDiary("Time out (100ms) on stopping ADWin process : force boot !");
-			String status = BootDelegate.boot((ADWinDACQConfiguration) getDACQConfiguration(), this, true);
-			if(status.equals(BootDelegate.BOOTED)) appendToEventDiary(ADWinMessages.ADWinDiary_Booted);
-			if(status.equals(BootDelegate.ALREADY_BOOTED)) appendToEventDiary(ADWinMessages.ADWinDiary_AlreadyBooted);
+			appendToEventDiary("Time out (100ms) on stopping ADWin process : clear process force boot !");
+			((ADWinDACQConfiguration)getDACQConfiguration()).getADwinDevice().Clear_Process(processNumberInt);
+			previousADWINBinFilePath = "";
+			startTime = System.currentTimeMillis();
+			while(!timeOut) {
+				timeOut = (System.currentTimeMillis() - startTime > 100);
+			}
+			boot();
+//			String status = BootDelegate.boot((ADWinDACQConfiguration) getDACQConfiguration(), this, true);
+//			if(status.equals(BootDelegate.BOOTED)) appendToEventDiary(ADWinMessages.ADWinDiary_Booted);
+//			if(status.equals(BootDelegate.ALREADY_BOOTED)) appendToEventDiary(ADWinMessages.ADWinDiary_AlreadyBooted);
 		}
 		
 	}
@@ -969,7 +976,12 @@ public class ADWinProcess extends Process {
 		binaryFilePath = binaryFilePath + processFile.getParent().getFullPath().toOSString();
 		binaryFilePath = binaryFilePath + File.separator + "BinSource" + File.separator + processFile.getName().replaceAll(Activator.processFileExtension + "$", "");
 		appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_Loading, binaryFilePath));
-		LoadProcessDelegate.loadProcess(binaryFilePath, getProperty(ADWinProcessProperties.PROCESS_NUMBER), (ADWinDACQConfiguration) getDACQConfiguration(), this);
+		if(previousADWINBinFilePath.equals(binaryFilePath)) {
+			appendToEventDiary("Process " + processFile.getFullPath() + " was already loaded" );
+		} else {
+			LoadProcessDelegate.loadProcess(binaryFilePath, getProperty(ADWinProcessProperties.PROCESS_NUMBER), (ADWinDACQConfiguration) getDACQConfiguration(), this);
+			previousADWINBinFilePath = binaryFilePath;
+		}
 //		String filePath = null;
 //		if (getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.CPU_TYPE).contentEquals(ADWinDACQConfigurationProperties.I))
 //			filePath = binaryFilePath + ".t9" + getProperty(ADWinProcessProperties.PROCESS_NUMBER);
@@ -983,37 +995,18 @@ public class ADWinProcess extends Process {
 	
 	/**
 	 * This method allows to boot the ADWIN before loading any process
+	 * @throws IOException 
 	 */
-	public void boot() throws UnknownHostException, ADwinCommunicationError {
-		
-		String status = BootDelegate.boot((ADWinDACQConfiguration) getDACQConfiguration(), this, false);
-		if(status.equals(BootDelegate.BOOTED)) appendToEventDiary(ADWinMessages.ADWinDiary_Booted);
-		if(status.equals(BootDelegate.ALREADY_BOOTED)) appendToEventDiary(ADWinMessages.ADWinDiary_AlreadyBooted);
-		
-//		String ADWinBTL = getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.BTL_FILE);
-//		String IP = getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.IP_ADDRESS);
-//		int portNumber = Integer.valueOf(getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.PORT_NUMBER));
-//		// If there is no adwin device create and configure it
-//		if (((ADWinDACQConfiguration)getDACQConfiguration()).getADwinDevice() == null){
-//			((ADWinDACQConfiguration)getDACQConfiguration()).setADwinDevice(new ADwinDevice());
-//			((ADWinDACQConfiguration)getDACQConfiguration()).getADwinDevice().Remove_Entry(0x01);
-//			((ADWinDACQConfiguration)getDACQConfiguration()).getADwinDevice().Add_Entry(0x01, InetAddress.getByName(IP) , "", 1, portNumber);
-//			((ADWinDACQConfiguration)getDACQConfiguration()).getADwinDevice().Set_DeviceNo(0x01);
-//	    }
-//		
-//		// test if ADwin is already booted
-//		boolean isAdwinBooted;
-//		try {
-//			@SuppressWarnings("unused")// Test if a call to Get_FPar responds, if not it means that ADWin is not booted
-//			float time = ((ADWinDACQConfiguration)getDACQConfiguration()).getADwinDevice().Get_FPar(1);
-//			isAdwinBooted = true;
-//		} catch (Exception e) {
-//			isAdwinBooted = false;
-//		}
-//		if(!isAdwinBooted){
-//			((ADWinDACQConfiguration)getDACQConfiguration()).getADwinDevice().Boot(ADWinBTL);
-//			appendToEventDiary(ADWinMessages.ADWinDiary_Booted);
-//		} else appendToEventDiary(ADWinMessages.ADWinDiary_AlreadyBooted);
+	public void boot() throws ADwinCommunicationError, IOException {
+		BootDelegate.ADwinBootState state = BootDelegate.boot((ADWinDACQConfiguration) getDACQConfiguration());
+		if(state == BootDelegate.ADwinBootState.WRONG_BTL_FOR_CPU || state == BootDelegate.ADwinBootState.NOT_RESPONDING) {
+			appendToEventDiary(ADWinMessages.ADWinDiary_ImpossibleToBoot + state);
+			throw new ADwinCommunicationError(ADWinMessages.ADWinDiary_ImpossibleToBoot + state);
+		}
+		if(state == BootDelegate.ADwinBootState.WAS_ALREADY_BOOTED_UNKNOWN_BTL) appendToEventDiary(ADWinMessages.ADWinDiary_AlreadyBooted);
+		if(state == BootDelegate.ADwinBootState.WAS_ALREADY_BOOTED_WITH_THIS_BTL) appendToEventDiary(ADWinMessages.ADWinDiary_AlreadyBooted);
+		if(state == BootDelegate.ADwinBootState.BOOTED_UNKNOWN_BTL) appendToEventDiary(ADWinMessages.ADWinDiary_Booted);
+		if(state == BootDelegate.ADwinBootState.BOOTED_WITH_THIS_BTL) appendToEventDiary(ADWinMessages.ADWinDiary_Booted);
 	}
 	
 	@Override
@@ -1021,16 +1014,16 @@ public class ADWinProcess extends Process {
 		try {
 			boot();
 			loadProcess();
-			int processNumberInt = Integer.parseInt(getProperty(ADWinProcessProperties.PROCESS_NUMBER));	
 			RealTimeLoopJob realTimeLoopJob = new RealTimeLoopJob(DocometreMessages.RunningProcess);
 			open(this, prefix, suffix);
 			//generation();
-//		for (int i = 0; i < getDACQConfiguration().getModulesNumber(); i++) {
-//			ModuleBehaviour module = getDACQConfiguration().getModule(i);
-//			module.open(this);
-//			module.generation();
-//		}
+//			for (int i = 0; i < getDACQConfiguration().getModulesNumber(); i++) {
+//				ModuleBehaviour module = getDACQConfiguration().getModule(i);
+//				module.open(this);
+//				module.generation();
+//			}
 			pushParametersToADWinProcess();
+			int processNumberInt = Integer.parseInt(getProperty(ADWinProcessProperties.PROCESS_NUMBER));
 			((ADWinDACQConfiguration)getDACQConfiguration()).getADwinDevice().Start_Process(processNumberInt);
 			return realTimeLoopJob;
 		} catch (Exception e) {

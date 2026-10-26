@@ -305,6 +305,9 @@ public class ADWinMessages extends NLS {
 	public static String ADWinDiary_Mean;
 	public static String ADWinDiary_Total;
 	public static String ADWinDiary_TimeSinceLastProcessStopped;
+	public static String ADWinDiary_ErrorLoadingProcess;
+	public static String ADWinDiary_LoadingProcess;
+	public static String ADWinDiary_ImpossibleToBoot;
 	
 	/*
 	 * Diary scanner

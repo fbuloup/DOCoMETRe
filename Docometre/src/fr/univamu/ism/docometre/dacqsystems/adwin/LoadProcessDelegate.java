@@ -57,20 +57,17 @@ public class LoadProcessDelegate {
 		if (cpuType.contentEquals(ADWinDACQConfigurationProperties.II)) filePath = binaryFilePath + ".tB" + processNumber;
 		File file = new File(filePath);
 		if(filePath != null && file.exists()) {
-			boolean forceBoot = false;
 			try {
-				if(adWinProcess != null) adWinProcess.appendToEventDiary("Loading process file : " + file.getAbsolutePath());
+				if(adWinProcess != null) adWinProcess.appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_LoadingProcess, file.getAbsolutePath()));
 				adwinDacqConfiguration.getADwinDevice().Load_Process(file.getAbsolutePath());
 			} catch (ADwinCommunicationError e) {
-				forceBoot = true;
+				if(adWinProcess != null) {
+					adWinProcess.appendToEventDiary(ADWinMessages.ADWinDiary_ErrorLoadingProcess);
+					adWinProcess.boot();
+					adwinDacqConfiguration.getADwinDevice().Load_Process(file.getAbsolutePath());
+				}
 			}
-			if(forceBoot) {
-				if(adWinProcess != null) adWinProcess.appendToEventDiary("Error while loading process file. Let's try to force boot ADwin !");
-				BootDelegate.boot(adwinDacqConfiguration, adWinProcess, true);
-				adwinDacqConfiguration.getADwinDevice().Load_Process(file.getAbsolutePath());
-			}
-		} else 
-			throw new Exception(NLS.bind(DocometreMessages.ADBasicBinaryFileNotFound, filePath)  );	
+		} else throw new Exception(NLS.bind(DocometreMessages.ADBasicBinaryFileNotFound, filePath)  );	
 		
 	}
 	

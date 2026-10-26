@@ -41,51 +41,81 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.adwin;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.zip.CRC32;
 
 import de.adwin.driver.ADwinCommunicationError;
 import de.adwin.driver.ADwinDevice;
+import fr.univamu.ism.docometre.Activator;
 
 public class BootDelegate {
 	
-	public static String ALREADY_BOOTED = "ALREADY_BOOTED";
-	public static String BOOTED = "BOOTED";
+	public enum ADwinBootState { 
+		NOT_RESPONDING, 
+		WRONG_BTL_FOR_CPU, 
+		BOOTED_UNKNOWN_BTL, 
+		BOOTED_WITH_THIS_BTL, 
+		WAS_ALREADY_BOOTED_UNKNOWN_BTL, 
+		WAS_ALREADY_BOOTED_WITH_THIS_BTL
+	}
 	
-	public static String boot(ADWinDACQConfiguration adWinDACQConfiguration, ADWinProcess adWinProcess, boolean force) throws UnknownHostException, ADwinCommunicationError {
-		
-		String ADWinBTL = adWinDACQConfiguration.getProperty(ADWinDACQConfigurationProperties.BTL_FILE);
-		String IP = adWinDACQConfiguration.getProperty(ADWinDACQConfigurationProperties.IP_ADDRESS);
-		int portNumber = Integer.valueOf(adWinDACQConfiguration.getProperty(ADWinDACQConfigurationProperties.PORT_NUMBER));
-		// If there is no adwin device create and configure it
-		if (adWinDACQConfiguration.getADwinDevice() == null){
-			adWinDACQConfiguration.setADwinDevice(new ADwinDevice());
-			adWinDACQConfiguration.getADwinDevice().Remove_Entry(0x01);
-			adWinDACQConfiguration.getADwinDevice().Add_Entry(0x01, InetAddress.getByName(IP) , "", 1, portNumber);
-			adWinDACQConfiguration.getADwinDevice().Set_DeviceNo(0x01);
-	    }
-		
-		// test if ADwin is already booted
-		boolean isAdwinBooted;
+	private static final int BOOT_SIGNATURE_PAR = 70;
+	
+	private static ADwinDevice adwinDevice;
+
+	private static int processorFromBTLName(String btlPath) {
+		Matcher m = Pattern.compile("adwin(\\d+)\\.btl$").matcher(new File(btlPath).getName().toLowerCase());
+		return m.find() ? Integer.parseInt(m.group(1)) : -1;
+	}
+	
+	public static void bootAndSign(String btlPath) throws ADwinCommunicationError, IOException {
+		adwinDevice.Boot(btlPath);
+		adwinDevice.Set_Par(BOOT_SIGNATURE_PAR, btlSignature(btlPath));
+	}
+
+	private static int btlSignature(String btlPath) throws IOException {
+		CRC32 crc = new CRC32();
+		crc.update(Files.readAllBytes(Paths.get(btlPath)));
+		int s = (int) crc.getValue();
+		return s == 0 ? 1 : s;                                     // 0 = value after a fresh boot
+	}
+	
+	private static ADwinBootState getBootState(ADwinDevice device, String btlPath, boolean firstAttempt) throws IOException {
+		int expectedCPU = processorFromBTLName(btlPath);
 		try {
-			@SuppressWarnings("unused")// Test if a call to Get_FPar responds, if not it means that ADWin is not booted
-			float time = adWinDACQConfiguration.getADwinDevice().Get_FPar(1);
-			int processNumberInt = Integer.parseInt(adWinProcess.getProperty(ADWinProcessProperties.PROCESS_NUMBER));
-			int processStatus = adWinDACQConfiguration.getADwinDevice().Process_Status(processNumberInt);
-			if(processStatus == -1) isAdwinBooted = false;
-			else isAdwinBooted = true;
-		} catch (Exception e) {
-			isAdwinBooted = false;
+			if (device.Test_Version() != 0) return ADwinBootState.NOT_RESPONDING;
+			if (expectedCPU > 0 && device.Processor_Type() != expectedCPU) return ADwinBootState.WRONG_BTL_FOR_CPU;
+			int signature = device.Get_Par(BOOT_SIGNATURE_PAR);
+			if(!firstAttempt) return signature == btlSignature(btlPath) ? ADwinBootState.BOOTED_WITH_THIS_BTL : ADwinBootState.BOOTED_UNKNOWN_BTL;
+			else return signature == btlSignature(btlPath) ? ADwinBootState.WAS_ALREADY_BOOTED_WITH_THIS_BTL : ADwinBootState.WAS_ALREADY_BOOTED_UNKNOWN_BTL;
+		} catch (ADwinCommunicationError e) {
+			Activator.logErrorMessageWithCause(e);
+			return ADwinBootState.NOT_RESPONDING;
 		}
-		if(!isAdwinBooted || force){
-			if(!force && adWinProcess != null) adWinProcess.appendToEventDiary("Booting with " + ADWinBTL + "...");
-			if(force && adWinProcess != null) adWinProcess.appendToEventDiary("Force booting with " + ADWinBTL + "...");
-			adWinDACQConfiguration.getADwinDevice().Boot(ADWinBTL);
-			if(adWinProcess != null) adWinProcess.appendToEventDiary("... OK !");
-			return BOOTED;
-			//appendToEventDiary(ADWinMessages.ADWinDiary_Booted);
-		} else return ALREADY_BOOTED; 
-			//appendToEventDiary(ADWinMessages.ADWinDiary_AlreadyBooted);
+	}
+	
+	public static ADwinBootState boot(ADWinDACQConfiguration adWinDACQConfiguration) throws ADwinCommunicationError, IOException {
+		if(adwinDevice == null) {
+			String IP = adWinDACQConfiguration.getProperty(ADWinDACQConfigurationProperties.IP_ADDRESS);
+			int portNumber = Integer.valueOf(adWinDACQConfiguration.getProperty(ADWinDACQConfigurationProperties.PORT_NUMBER));
+			adwinDevice = new ADwinDevice();
+			adwinDevice.Add_Entry(0x01, InetAddress.getByName(IP) , "", 1, portNumber);
+			adwinDevice.Set_DeviceNo(0x01);
+		}
+		adWinDACQConfiguration.setADwinDevice(adwinDevice);
+		String ADWinBTL = adWinDACQConfiguration.getProperty(ADWinDACQConfigurationProperties.BTL_FILE);
+		ADwinBootState bootState = getBootState(adwinDevice, ADWinBTL, true);
+		if(bootState == ADwinBootState.NOT_RESPONDING) {
+			bootAndSign(ADWinBTL);
+			bootState = getBootState(adwinDevice, ADWinBTL, false);
+		}
+		return bootState;
 	}
 
 }
