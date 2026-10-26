@@ -160,6 +160,10 @@ public class ADWinProcess extends Process {
 				String date = new SimpleDateFormat("EEE d MMM yyyy HH:mm:ss", Locale.getDefault()).format(new Date());
 				appendToEventDiary(date);
 				appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_StartingAt,  ObjectsController.getResourceForObject(ADWinProcess.this).getName(), processBeginTime));
+				if(Process.processEndTime > -1) {
+					double dt = processBeginTime - Process.processEndTime;
+					appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_TimeSinceLastProcessStopped, dt));
+				}
 				while(active){
 					
 					active  = ((ADWinDACQConfiguration)ADWinProcess.this.getDACQConfiguration()).getADwinDevice().Process_Status(processNumberInt) == 1;
@@ -225,6 +229,7 @@ public class ADWinProcess extends Process {
 					}
 				});
 				double processEndTime = System.currentTimeMillis()/1000d;
+				Process.processEndTime = processEndTime;
 				if(ObjectsController.getResourceForObject(ADWinProcess.this) != null) {
 					appendToEventDiary(Activator.NEW_LINE + NLS.bind(ADWinMessages.ADWinDiary_Ending, ObjectsController.getResourceForObject(ADWinProcess.this).getName(), processEndTime));
 					appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_Approximative, ObjectsController.getResourceForObject(ADWinProcess.this).getName(), (processEndTime-processBeginTime)));

@@ -304,6 +304,7 @@ public class ADWinMessages extends NLS {
 	public static String ADWinDiary_TryIncreaseBufferSize;
 	public static String ADWinDiary_Mean;
 	public static String ADWinDiary_Total;
+	public static String ADWinDiary_TimeSinceLastProcessStopped;
 	
 	/*
 	 * Diary scanner

@@ -78,6 +78,8 @@ public abstract class Process extends AbstractElement implements ModuleBehaviour
 
 	public static final long serialVersionUID = AbstractElement.serialVersionUID;
 	
+	public static double processEndTime = -1;
+	
 	private Script script;
 	
 	private transient DACQConfiguration dacqConfiguration;
