@@ -30,11 +30,11 @@ if compute:\n\
 		\t\tindices2 = numpy.where(docometre.experiments["inputMarker2_Values"][:,0] == (trialNumber+1))[0];\n\
 		\t\t# if both indices exist\n\
 		\t\tif(indices1.size > 0 and indices2.size > 0):\n\
-			\t\t\t# Get time and amplitude values from current trial\n\
-			\t\t\ttimeValues1 = docometre.experiments["inputMarker1_Values"][indices1,1];\n\
-			\t\t\ttimeValues2 = docometre.experiments["inputMarker2_Values"][indices2,1];\n\
-			\t\t\tampValues1 = docometre.experiments["inputMarker1_Values"][indices1,2];\n\
-			\t\t\tampValues2 = docometre.experiments["inputMarker2_Values"][indices2,2];\n\
+			\t\t\t# Get time and amplitude values from current trial (first marker of each group : a scalar, not an array)\n\
+			\t\t\ttimeValues1 = docometre.experiments["inputMarker1_Values"][indices1[0],1];\n\
+			\t\t\ttimeValues2 = docometre.experiments["inputMarker2_Values"][indices2[0],1];\n\
+			\t\t\tampValues1 = docometre.experiments["inputMarker1_Values"][indices1[0],2];\n\
+			\t\t\tampValues2 = docometre.experiments["inputMarker2_Values"][indices2[0],2];\n\
 			\t\t\t# Compute differences\n\
 			\t\t\tif "Amplitude" == "difference":\n\
 				\t\t\t\tdocometre.experiments["inputSignal.Feature_featureLabel_Values"][trialNumber] = ampValues2 - ampValues1;\n\
@@ -48,4 +48,4 @@ else:\n\
 	\tif "ErrorMessages" in docometre.experiments.keys():\n\
 		\t\tdocometre.experiments["ErrorMessages"] = docometre.experiments["ErrorMessages"] + "|" + datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S:%f')[:-3] + " - From Markers Difference function -> A feature with this label already exists : featureLabel";\n\
 	\telse:\n\
-		\t\tdocometre.experiments["ErrorMessages"] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S:%f')[:-3] + " - From Markers Difference function -> A feature with this label already exists : featureLabel (inputSignal)";\n\
+		\t\tdocometre.experiments["ErrorMessages"] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S:%f')[:-3] + " - From Markers Difference function -> A feature with this label already exists : featureLabel (inputSignal)";\n\

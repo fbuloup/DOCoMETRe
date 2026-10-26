@@ -52,6 +52,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
@@ -117,6 +118,8 @@ public class PythonEngine implements MathEngine {
 					IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
 					int javaPort = preferenceStore.getInt(MathEnginePreferencesConstants.PY4J_JAVA_PORT);
 					int pythonPort = preferenceStore.getInt(MathEnginePreferencesConstants.PY4J_PYTHON_PORT);
+					// Python standard and error outputs are also shown in Docometre messages view
+					pythonController.setOutputListener(PythonEngine::logPythonOutput);
 					if(pythonController.startServer(pythonLocation, pythonScriptsLocation, timeOut, monitor, javaPort, pythonPort)) {
 						if(!monitor.isCanceled()) {
 							String cmd = "import os;os.chdir('" + workspacePath + "')";
@@ -137,16 +140,8 @@ public class PythonEngine implements MathEngine {
 		};
 		
 		startPythonInnerJob.schedule();
-		long t0 = System.currentTimeMillis();
-		long t1 = t0;
-		
 		monitor.beginTask(DocometreMessages.MathEngineStarting, timeOut*1000 + 1000);
-		while(startPythonInnerJob.getState() != Job.RUNNING);
-		while(startPythonInnerJob.getState() == Job.RUNNING) {
-			t1 = System.currentTimeMillis();
-			monitor.worked((int)(t1 - t0));
-			t0 = t1;
-		}
+		waitForJob(startPythonInnerJob, monitor);
 		String message = DocometreMessages.MathEngineStarted + " (Python)";
 		if(startPythonInnerJob.getResult() != null && startPythonInnerJob.getResult().isOK()) {
 			Activator.logInfoMessage(getPythonVersion(), PythonController.class);
@@ -184,16 +179,8 @@ public class PythonEngine implements MathEngine {
 		};
 		
 		stopPythonInnerJob.schedule();
-		long t0 = System.currentTimeMillis();
-		long t1 = t0;
-		
 		monitor.beginTask(DocometreMessages.MathEngineStopping, timeOut*1000 + 1000);
-		while(stopPythonInnerJob.getState() != Job.RUNNING);
-		while(stopPythonInnerJob.getState() == Job.RUNNING) {
-			t1 = System.currentTimeMillis();
-			monitor.worked((int)(t1 - t0));
-			t0 = t1;
-		}
+		waitForJob(stopPythonInnerJob, monitor);
 		
 		if(stopPythonInnerJob.getResult() != null && stopPythonInnerJob.getResult().isOK()) {
 			Activator.logInfoMessage(DocometreMessages.MathEngineStopped, PythonController.class);
@@ -201,6 +188,36 @@ public class PythonEngine implements MathEngine {
 		}
 
 		return Status.OK_STATUS;
+	}
+
+	// Python error : traceback or "XxxError: message" / "XxxException: message" at line start
+	private static final Pattern PYTHON_ERROR_PATTERN = Pattern.compile("^(Traceback \\(most recent call last\\)|[\\w.]*(Error|Exception): )", Pattern.MULTILINE);
+	// Python warning : "file:line: XxxWarning: message"
+	private static final Pattern PYTHON_WARNING_PATTERN = Pattern.compile("\\w+Warning: ");
+
+	private static void logPythonOutput(String output) {
+		// Output may contain scripts code (e.g. "ErrorMessages" keys) : only real Python errors and warnings are searched
+		if(PYTHON_ERROR_PATTERN.matcher(output).find()) Activator.logErrorMessage("Python : " + output);
+		else if(PYTHON_WARNING_PATTERN.matcher(output).find()) Activator.logWarningMessage("Python : " + output);
+		else Activator.logInfoMessage(output, PythonEngine.class);
+	}
+
+	/*
+	 * Wait for the job to finish without busy waiting, reporting elapsed time to the monitor.
+	 * Cancelling the monitor cancels the job.
+	 */
+	private void waitForJob(Job job, IProgressMonitor monitor) {
+		long t0 = System.currentTimeMillis();
+		try {
+			while(!job.join(100, null)) {
+				long t1 = System.currentTimeMillis();
+				monitor.worked((int)(t1 - t0));
+				t0 = t1;
+				if(monitor.isCanceled()) job.cancel();
+			}
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
 	}
 
 	@Override
@@ -226,7 +243,7 @@ public class PythonEngine implements MathEngine {
 		String experimentName = subject.getFullPath().segment(0);
 		String subjectName = subject.getFullPath().segment(1);
 		String prefixKey = experimentName + "\\." + subjectName;
-		String expression = "len({k:v for k,v in docometre.experiments.items() if re.search(\"^" + prefixKey + "\\.\", k)}) > 0";
+		String expression = "len({k:v for k,v in docometre.experiments.items() if re.search(r\"^" + prefixKey + "\\.\", k)}) > 0"; // raw string : the regular expression contains backslashes
 		return pythonController.getPythonEntryPoint().evaluate(expression).equalsIgnoreCase("true");
 	}
 
@@ -264,9 +281,10 @@ public class PythonEngine implements MathEngine {
 				if(isOptitrackType1 || isOptitrackType2) {
 					// If all data files are OPTITRACK_TYPE_1 or 2
 					String optitrackType = isOptitrackType1 ? "OPTITRACK_TYPE_1" : "OPTITRACK_TYPE_2"; 
-					pythonController.getPythonEntryPoint().loadData(optitrackType, loadName, dataFilesList, sessionsProperties);
+					pythonController.getPythonEntryPoint().loadData(optitrackType, loadName, dataFilesList, encodeSessionsProperties(sessionsProperties));
 				} else {
-					pythonController.getPythonEntryPoint().loadData("DOCOMETRE", loadName, dataFilesList, sessionsProperties);
+					// Sent as a single string : a Java map would cost a Java round trip for each access from Python
+					pythonController.getPythonEntryPoint().loadData("DOCOMETRE", loadName, dataFilesList, encodeSessionsProperties(sessionsProperties));
 				}
 				
 			}
@@ -279,6 +297,20 @@ public class PythonEngine implements MathEngine {
 //			Activator.logErrorMessageWithCause(e);
 //		}
 		ChannelsContainer.clearValuesCache(); // the values read before may have changed
+	}
+
+	/*
+	 * Encode sessions properties as "key<US>value<RS>key<US>value..." where US (U+001F) and RS (U+001E)
+	 * are the ASCII unit and record separators, which can not appear in paths or properties values.
+	 * Decoded by decodeSessionsProperties() in DOCoMETRe.py.
+	 */
+	private static String encodeSessionsProperties(Map<String, String> sessionsProperties) {
+		StringBuilder stringBuilder = new StringBuilder();
+		for (Map.Entry<String, String> entry : sessionsProperties.entrySet()) {
+			if(stringBuilder.length() > 0) stringBuilder.append('\u001E');
+			stringBuilder.append(entry.getKey()).append('\u001F').append(entry.getValue() == null ? "" : entry.getValue());
+		}
+		return stringBuilder.toString();
 	}
 
 	@Override
