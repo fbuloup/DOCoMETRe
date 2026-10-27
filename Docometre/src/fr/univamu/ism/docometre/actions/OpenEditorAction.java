@@ -223,7 +223,10 @@ public class OpenEditorAction extends Action implements ISelectionListener, IWor
 				}
 			}
 			if(foundEditorReference != null) {
-				window.getActivePage().activate(foundEditorReference.getPart(true));
+				IWorkbenchPart part = foundEditorReference.getPart(true);
+				// activate() does nothing, not even bring to top, if the workbench already considers the part as active
+				window.getActivePage().bringToTop(part);
+				window.getActivePage().activate(part);
 			}
 			else {
 				window.getActivePage().openEditor(new ResourceEditorInput(object), editorID);

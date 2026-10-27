@@ -73,6 +73,7 @@ import org.osgi.framework.Version;
 import fr.univamu.ism.docometre.analyse.editors.DataProcessEditor;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor.ADWinProcessEditor;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.processeditor.ArduinoUnoProcessEditor;
+import fr.univamu.ism.docometre.chartxyz.editors.GLDataEditor;
 import fr.univamu.ism.docometre.editors.DataEditor;
 import fr.univamu.ism.docometre.editors.PartNameRefresher;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
@@ -339,6 +340,7 @@ public class Activator extends AbstractUIPlugin {
 				if(object != null && resourceEditorInput.isEditing(object)) {
 					if(resourceEditorInput.removeEditedObject(object)) {
 						if(editorReferences[i].getEditor(false) instanceof DataEditor) ((DataEditor)editorReferences[i].getEditor(false)).removeTrace(object);
+						if(editorReferences[i].getEditor(false) instanceof GLDataEditor) ((GLDataEditor)editorReferences[i].getEditor(false)).removeTrace(object);
 					}
 					if(resourceEditorInput.canCloseEditor()) {
 						if(editorReferences[i].getEditor(false) != null) editorReferences[i].getEditor(false).getSite().getPage().closeEditor(editorReferences[i].getEditor(false), false);

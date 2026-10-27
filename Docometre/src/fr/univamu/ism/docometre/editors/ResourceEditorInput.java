@@ -61,6 +61,7 @@ import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.analyse.datamodel.XYChart;
 import fr.univamu.ism.docometre.analyse.datamodel.XYZChart;
+import fr.univamu.ism.docometre.chartxyz.editors.GLDataEditor;
 import fr.univamu.ism.nswtchart.Window;
 
 public class ResourceEditorInput implements IEditorInput, IPersistableElement {
@@ -217,7 +218,12 @@ public class ResourceEditorInput implements IEditorInput, IPersistableElement {
 		IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findEditor(this);
 		if(editor instanceof DataEditor) {
 			Window window = ((DataEditor)editor).getWindow();
-			memento.putString(EditorsPersitenceElementFactory.dataEditorWindow, window.toString());
+			if(window != null) memento.putString(EditorsPersitenceElementFactory.dataEditorWindow, window.toString());
+		}
+		if(editor instanceof GLDataEditor) {
+			// Only a view changed by the user is saved: otherwise, the initial view is displayed again
+			Window window = ((GLDataEditor)editor).getWindow();
+			if(window != null) memento.putString(EditorsPersitenceElementFactory.dataEditorWindow, window.toString());
 		}
 	}
 
