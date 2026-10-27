@@ -187,7 +187,7 @@ public class ArduinoUnoProcess extends Process {
 					appendToEventDiary(channel.getProperty(ChannelProperties.NAME));
 				}
 				appendToEventDiary("\n");
-				Thread.sleep(100);
+//				Thread.sleep(100);
 			} catch (Exception e) {
 				Activator.logErrorMessageWithCause(e);
 				try {
@@ -214,6 +214,10 @@ public class ArduinoUnoProcess extends Process {
 				serialPort.writeString("r");
 				
 				processBeginTime = System.currentTimeMillis()/1000d;
+				if(Process.processEndTime > -1) {
+					double dt = processBeginTime - Process.processEndTime;
+					appendToEventDiary(NLS.bind(ArduinoUnoMessages.ArduinoDiary_TimeSinceLastProcessStopped, dt));
+				}
 				String date = new SimpleDateFormat("EEE d MMM yyyy HH:mm:ss", Locale.getDefault()).format(new Date());
 				appendToEventDiary(date);
 				appendToEventDiary("Starting " + ObjectsController.getResourceForObject(ArduinoUnoProcess.this).getName() + " at " + Double.toString(processBeginTime) + " sec.\n");
@@ -380,6 +384,7 @@ public class ArduinoUnoProcess extends Process {
 					return new Status(Status.ERROR, Activator.PLUGIN_ID, "Error closing port: " + e.getMessage());
 				}
 				double processEndTime = System.currentTimeMillis()/1000d;
+				Process.processEndTime = processEndTime;
 				appendToEventDiary(ObjectsController.getResourceForObject(ArduinoUnoProcess.this).getName() + " duration (s) is about : " + Double.toString(processEndTime - processBeginTime));
 				appendToEventDiary("End time : " + Double.toString(processEndTime) + " sec.\n");
 				

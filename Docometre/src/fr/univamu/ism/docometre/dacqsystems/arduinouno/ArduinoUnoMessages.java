@@ -193,6 +193,11 @@ public class ArduinoUnoMessages extends NLS {
 	 */
 	public static String arduinoRevisionNotSpecified;
 	public static String fixArduinoRevisionProperty;
+	
+	/*
+	 * Diary
+	 */
+	public static String ArduinoDiary_TimeSinceLastProcessStopped;
 
 	static {
 		NLS.initializeMessages(BUNDLE_NAME, ArduinoUnoMessages.class);
