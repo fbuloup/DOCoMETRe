@@ -95,6 +95,7 @@ import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfigurationProperti
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinMessages;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinModuleProperties;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinModulesList;
+import fr.univamu.ism.docometre.dacqsystems.adwin.BootDelegate;
 import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyHandler;
 import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyOperation;
 import fr.univamu.ism.docometre.dacqsystems.adwin.calibration.CalibrateMonitorDialog;
@@ -495,6 +496,13 @@ public class ADwinDACQGeneralConfigurationPage extends ModulePage {
 				updateWidget(cpuCombo, (ADWinDACQConfigurationProperties)property);
 			if(property == ADWinDACQConfigurationProperties.GLOBAL_FREQUENCY)
 				updateWidget(globalFrequencyHyperlink, (ADWinDACQConfigurationProperties)property);
+
+			boolean resetADwinDevice = (property == ADWinDACQConfigurationProperties.IP_ADDRESS) || (property == ADWinDACQConfigurationProperties.BTL_FILE);
+			resetADwinDevice = resetADwinDevice || (property == ADWinDACQConfigurationProperties.CPU_TYPE) || (property == ADWinDACQConfigurationProperties.DEVICE_NUMBER);
+			resetADwinDevice = resetADwinDevice || (property == ADWinDACQConfigurationProperties.PORT_NUMBER) || (property == ADWinDACQConfigurationProperties.SYSTEM_TYPE);
+			if(resetADwinDevice) {
+				BootDelegate.adwinDevice = null;
+			}
 		}
 		if(property instanceof DACQConfigurationProperties) {
 			if(property == DACQConfigurationProperties.UPDATE_MODULE) {

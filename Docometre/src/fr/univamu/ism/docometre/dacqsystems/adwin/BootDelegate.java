@@ -58,6 +58,7 @@ public class BootDelegate {
 	
 	public enum ADwinBootState { 
 		NOT_RESPONDING, 
+		NOT_BOOTED,
 		WRONG_BTL_FOR_CPU, 
 		BOOTED_UNKNOWN_BTL, 
 		BOOTED_WITH_THIS_BTL, 
@@ -65,9 +66,9 @@ public class BootDelegate {
 		WAS_ALREADY_BOOTED_WITH_THIS_BTL
 	}
 	
-	private static final int BOOT_SIGNATURE_PAR = 70;
+	private static final int BOOT_SIGNATURE_PAR = 79;// par_80 is used with CAN module
 	
-	private static ADwinDevice adwinDevice;
+	public static ADwinDevice adwinDevice;
 
 	private static int processorFromBTLName(String btlPath) {
 		Matcher m = Pattern.compile("adwin(\\d+)\\.btl$").matcher(new File(btlPath).getName().toLowerCase());
@@ -75,6 +76,7 @@ public class BootDelegate {
 	}
 	
 	public static void bootAndSign(String btlPath) throws ADwinCommunicationError, IOException {
+		ADWinProcess.previousADWINBinFilePath = "";
 		adwinDevice.Boot(btlPath);
 		adwinDevice.Set_Par(BOOT_SIGNATURE_PAR, btlSignature(btlPath));
 	}
@@ -89,7 +91,13 @@ public class BootDelegate {
 	private static ADwinBootState getBootState(ADwinDevice device, String btlPath, boolean firstAttempt) throws IOException {
 		int expectedCPU = processorFromBTLName(btlPath);
 		try {
-			if (device.Test_Version() != 0) return ADwinBootState.NOT_RESPONDING;
+			try {
+				device.Test_Version();
+				device.Processor_Type();
+				if(device.Process_Status(1) == -1) return ADwinBootState.NOT_BOOTED;
+			} catch (Exception e) {
+				return ADwinBootState.NOT_BOOTED;
+			}
 			if (expectedCPU > 0 && device.Processor_Type() != expectedCPU) return ADwinBootState.WRONG_BTL_FOR_CPU;
 			int signature = device.Get_Par(BOOT_SIGNATURE_PAR);
 			if(!firstAttempt) return signature == btlSignature(btlPath) ? ADwinBootState.BOOTED_WITH_THIS_BTL : ADwinBootState.BOOTED_UNKNOWN_BTL;
@@ -105,13 +113,14 @@ public class BootDelegate {
 			String IP = adWinDACQConfiguration.getProperty(ADWinDACQConfigurationProperties.IP_ADDRESS);
 			int portNumber = Integer.valueOf(adWinDACQConfiguration.getProperty(ADWinDACQConfigurationProperties.PORT_NUMBER));
 			adwinDevice = new ADwinDevice();
+			adwinDevice.Remove_Entry(0x01);
 			adwinDevice.Add_Entry(0x01, InetAddress.getByName(IP) , "", 1, portNumber);
 			adwinDevice.Set_DeviceNo(0x01);
 		}
 		adWinDACQConfiguration.setADwinDevice(adwinDevice);
 		String ADWinBTL = adWinDACQConfiguration.getProperty(ADWinDACQConfigurationProperties.BTL_FILE);
 		ADwinBootState bootState = getBootState(adwinDevice, ADWinBTL, true);
-		if(bootState == ADwinBootState.NOT_RESPONDING) {
+		if(bootState == ADwinBootState.NOT_BOOTED) {
 			bootAndSign(ADWinBTL);
 			bootState = getBootState(adwinDevice, ADWinBTL, false);
 		}
