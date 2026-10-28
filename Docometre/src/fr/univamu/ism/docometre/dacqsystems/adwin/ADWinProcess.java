@@ -54,6 +54,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -63,8 +64,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -88,6 +93,7 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ApplicationActionBarAdvisor;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ObjectsController;
+import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
@@ -96,6 +102,7 @@ import fr.univamu.ism.docometre.dacqsystems.DocometreBuilder;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.ModuleBehaviour;
 import fr.univamu.ism.docometre.dacqsystems.Process;
+import fr.univamu.ism.docometre.dacqsystems.TrialTimings;
 import fr.univamu.ism.docometre.dacqsystems.functions.FunctionsUtil;
 import fr.univamu.ism.docometre.dacqsystems.ui.ProcessEditor;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ui.dacqconfigurationeditor.ADWinDACQConfigurationEditor;
@@ -151,6 +158,8 @@ public class ADWinProcess extends Process {
 		@Override
 		protected IStatus run(IProgressMonitor monitor) {
 			double processBeginTime = 0;
+			// Timing trace of the loop iterations (see TrialTimings)
+			long iterations = 0, lastIterationNanos = 0, maxIterationNanos = 0;
 			try {
 				getThread().setPriority(Thread.MAX_PRIORITY);
 				int processNumberInt = Integer.parseInt(ADWinProcess.this.getProperty(ADWinProcessProperties.PROCESS_NUMBER));	
@@ -165,7 +174,10 @@ public class ADWinProcess extends Process {
 					appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_TimeSinceLastProcessStopped, dt));
 				}
 				while(active){
-					
+
+					TrialTimings.firstLoopIteration();
+					long iterationStart = TrialTimings.trace ? System.nanoTime() : 0;
+
 					active  = ((ADWinDACQConfiguration)ADWinProcess.this.getDACQConfiguration()).getADwinDevice().Process_Status(processNumberInt) == 1;
 					
 					if(startTimeDialog == 0) {
@@ -216,12 +228,22 @@ public class ADWinProcess extends Process {
 							ApplicationActionBarAdvisor.workloadTimeContributionItem.setText(NLS.bind(DocometreMessages.Workload_Time, workload, time));
 						}
 					});
+
+					if(TrialTimings.trace) {
+						iterations++;
+						lastIterationNanos = System.nanoTime() - iterationStart;
+						if(lastIterationNanos > maxIterationNanos) maxIterationNanos = lastIterationNanos;
+					}
 				}
 			} catch (ADwinCommunicationError e) {
 				appendToEventDiary(e.getMessage());
 			} finally {
+				TrialTimings.processEnded();
+				TrialTimings.loopSummary(iterations, lastIterationNanos, maxIterationNanos);
+				logInitDuration();
 				// CLOSE
 				ADWinProcess.this.close();
+				TrialTimings.step("ADWinProcess.close() (channels files)");
 				PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
 					@Override
 					public void run() {
@@ -716,7 +738,8 @@ public class ADWinProcess extends Process {
 
 	@Override
 	public void stop() throws ADwinCommunicationError, IOException {
-		int processNumberInt = Integer.parseInt(getProperty(ADWinProcessProperties.PROCESS_NUMBER));	
+		long stopStartNanos = System.nanoTime();
+		int processNumberInt = Integer.parseInt(getProperty(ADWinProcessProperties.PROCESS_NUMBER));
 		((ADWinDACQConfiguration)getDACQConfiguration()).getADwinDevice().Stop_Process(processNumberInt);
 		int processSatus = 1;
 		boolean timeOut = false;
@@ -738,7 +761,28 @@ public class ADWinProcess extends Process {
 //			if(status.equals(BootDelegate.BOOTED)) appendToEventDiary(ADWinMessages.ADWinDiary_Booted);
 //			if(status.equals(BootDelegate.ALREADY_BOOTED)) appendToEventDiary(ADWinMessages.ADWinDiary_AlreadyBooted);
 		}
-		
+		TrialTimings.stopMeasured(System.nanoTime() - stopStartNanos, timeOut);
+	}
+
+	/*
+	 * Timing trace : duration of the INIT section of the ADbasic process that has
+	 * just ended, stored by the generated code in FPAR_79 (in timer ticks).
+	 */
+	private void logInitDuration() {
+		if(!TrialTimings.trace) return;
+		try {
+			float ticks = ((ADWinDACQConfiguration)getDACQConfiguration()).getADwinDevice().Get_FPar(TrialTimings.INIT_DURATION_FPAR);
+			if(ticks < 0) {
+				TrialTimings.log("ADwin INIT section duration : unknown (process compiled without the INIT timer, recompile it)");
+				return;
+			}
+			// Timer tick : 25 ns for T9 (CPU I), 3.3 ns for T11 (CPU II), as for GLOBALDELAY
+			String cpuType = getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.CPU_TYPE);
+			double tickNanos = ADWinDACQConfigurationProperties.I.equals(cpuType) ? 25 : 3.3;
+			TrialTimings.log(String.format("ADwin INIT section duration : %.3f ms (%.0f ticks)", ticks * tickNanos / 1e6, ticks));
+		} catch (ADwinCommunicationError e) {
+			TrialTimings.log("ADwin INIT section duration : unable to read FPAR_" + TrialTimings.INIT_DURATION_FPAR + " (" + e.getMessage() + ")");
+		}
 	}
 	
 	public static String processPathForMacOSX(String path) {
@@ -883,7 +927,9 @@ public class ADWinProcess extends Process {
 				code = code + "DIM FEG AS LONG\n";
 				code = code + "DIM INDEX AS LONG\n";
 				code = code + "DIM TERMINATE_PROCESS AS SHORT\n";
-				
+				if(TrialTimings.trace) 
+					code = code + "DIM DOCO_INIT_TIMER AS LONG ' Timing trace : start of INIT section\n";
+
 				code = code + getCurrentProcess().getScript().getInitializeCode(this, ADWinCodeSegmentProperties.DECLARATION);
 				code = code + getCurrentProcess().getScript().getLoopCode(this, ADWinCodeSegmentProperties.DECLARATION);
 				code = code + getCurrentProcess().getScript().getFinalizeCode(this, ADWinCodeSegmentProperties.DECLARATION);
@@ -893,6 +939,8 @@ public class ADWinProcess extends Process {
 		if (segment == ADWinCodeSegmentProperties.INITIALIZATION){
 			String cpuType = getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.CPU_TYPE);
 			code = "\nLOWINIT:\n";
+			if(TrialTimings.trace) 
+				code = code + "DOCO_INIT_TIMER = READ_TIMER() ' Timing trace : start of INIT section\n";
 			code = code + "\nFEG = " + getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.GLOBAL_FREQUENCY) + "\n";
 			if(cpuType.equals(ADWinDACQConfigurationProperties.I)) code = code + "GLOBALDELAY = 10^9/(FEG*25)\n";
 			else if(cpuType.equals(ADWinDACQConfigurationProperties.II)) code = code + "GLOBALDELAY = 10^9/(FEG*3.3)\n";
@@ -908,7 +956,12 @@ public class ADWinProcess extends Process {
 		}
 		
 		if (segment == ADWinCodeSegmentProperties.ACQUISITION){
-			code = "\nEVENT:\n";
+			// Timing trace : end of INIT section (modules, variables and initialization script included)
+			
+			if(TrialTimings.trace) {
+				code = "\nFPAR_" + TrialTimings.INIT_DURATION_FPAR + " = READ_TIMER() - DOCO_INIT_TIMER ' Timing trace : INIT section duration in timer ticks\n";
+				code = code + "\nEVENT:\n";
+			} else code = "\nEVENT:\n";
 			code = code + "\ntime = INDEX/FEG\n";
 			if (!(getProperty(ADWinProcessProperties.DURATION).equals(ADWinProcessProperties.DURATION_NOT_SPECIFIED))){
 				code = code + "IF (time > " + getProperty(ADWinProcessProperties.DURATION) + ") THEN\n";  
@@ -1013,9 +1066,12 @@ public class ADWinProcess extends Process {
 	public Job execute(String prefix, String suffix) throws Exception {
 		try {
 			boot();
+			TrialTimings.step("ADWinProcess.boot()");
 			loadProcess();
+			TrialTimings.step("ADWinProcess.loadProcess()");
 			RealTimeLoopJob realTimeLoopJob = new RealTimeLoopJob(DocometreMessages.RunningProcess);
 			open(this, prefix, suffix);
+			TrialTimings.step("ADWinProcess.open() (channels files)");
 			//generation();
 //			for (int i = 0; i < getDACQConfiguration().getModulesNumber(); i++) {
 //				ModuleBehaviour module = getDACQConfiguration().getModule(i);
@@ -1023,8 +1079,12 @@ public class ADWinProcess extends Process {
 //				module.generation();
 //			}
 			pushParametersToADWinProcess();
+			TrialTimings.step("ADWinProcess.pushParametersToADWinProcess()");
 			int processNumberInt = Integer.parseInt(getProperty(ADWinProcessProperties.PROCESS_NUMBER));
+			// Timing trace : -1 = INIT section duration not (yet) written by the process
+			if(TrialTimings.trace) ((ADWinDACQConfiguration)getDACQConfiguration()).getADwinDevice().Set_FPar(TrialTimings.INIT_DURATION_FPAR, -1);
 			((ADWinDACQConfiguration)getDACQConfiguration()).getADwinDevice().Start_Process(processNumberInt);
+			TrialTimings.end("Start_Process");
 			return realTimeLoopJob;
 		} catch (Exception e) {
 			close();
@@ -1081,6 +1141,45 @@ public class ADWinProcess extends Process {
 		for (int i = 0; i < getDACQConfiguration().getModulesNumber(); i++) {
 			ModuleBehaviour module = getDACQConfiguration().getModule(i);
 			module.close();
+		}
+		refreshChannelsFiles(variables);
+	}
+
+	/*
+	 * Refreshes the output folder ONCE for all the channels just closed, and
+	 * sets the type of the recorded samples files. Done in a single workspace
+	 * operation : only one resource change notification is sent.
+	 * (Previously, each recorded channel refreshed the whole output folder and
+	 * each not recorded channel deleted its resource : N workspace operations.)
+	 */
+	private void refreshChannelsFiles(ADWinVariable[] variables) {
+		IFolder outputFolder = getOutputFolder();
+		if(outputFolder == null || !outputFolder.exists()) return;
+		List<String> recordedFilesNames = new ArrayList<>();
+		for (ADWinVariable variable : variables) {
+			if(variable.getRecordedFileName() != null) recordedFilesNames.add(variable.getRecordedFileName());
+		}
+		for (int i = 0; i < getDACQConfiguration().getModulesNumber(); i++) {
+			ModuleBehaviour module = getDACQConfiguration().getModule(i);
+			if(!(module instanceof Module)) continue;
+			for (Channel channel : ((Module)module).getChannels()) {
+				if(channel instanceof ADWinChannel && ((ADWinChannel)channel).getRecordedFileName() != null)
+					recordedFilesNames.add(((ADWinChannel)channel).getRecordedFileName());
+			}
+		}
+		IWorkspace workspace = ResourcesPlugin.getWorkspace();
+		IWorkspaceRunnable refreshRunnable = monitor -> {
+			outputFolder.refreshLocal(IResource.DEPTH_ONE, monitor);
+			for (String fileName : recordedFilesNames) {
+				IResource fileResource = outputFolder.findMember(fileName);
+				if(fileResource != null) ResourceProperties.setTypePersistentProperty(fileResource, ResourceType.SAMPLES.toString());
+			}
+		};
+		try {
+			workspace.run(refreshRunnable, workspace.getRuleFactory().refreshRule(outputFolder), IWorkspace.AVOID_UPDATE, null);
+		} catch (CoreException e) {
+			e.printStackTrace();
+			Activator.logErrorMessageWithCause(e);
 		}
 	}
 

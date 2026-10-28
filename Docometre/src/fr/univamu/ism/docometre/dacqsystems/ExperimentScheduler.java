@@ -115,15 +115,19 @@ public class ExperimentScheduler {
 			}
 			process = (Process) object;
 			int priority = Thread.currentThread().getPriority();
+			TrialTimings.step("RunProcessJob started (process deserialized)");
 			try {
 				process.preExecute((trial==null)?processFile:trial);
+				TrialTimings.step("Process.preExecute()");
 				PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
 					@Override
 					public void run() {
+						TrialTimings.step("UI thread available (syncExec wait)");
 						RealTimeChartsView realTimeChartsView = (RealTimeChartsView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(RealTimeChartsView.ID);
 						if(realTimeChartsView != null) realTimeChartsView.updateCharts(process);
 					}
 				});
+				TrialTimings.step("RealTimeChartsView.updateCharts()");
 				
 				// Manage suffix data files names
 				String prefix = "";
@@ -156,6 +160,7 @@ public class ExperimentScheduler {
 //						monitor.setCanceled(false);
 //					}
 				}
+				TrialTimings.step("RealTimeLoopJob finished");
 //				Thread.currentThread().setPriority(priority);
 //				process.postExecute((trial==null)?processFile:trial);
 //				process.refreshLogFile((trial==null)?processFile:trial);
@@ -167,6 +172,7 @@ public class ExperimentScheduler {
 			} finally {
 				try {
 					process.postExecute((trial==null)?processFile:trial);
+					TrialTimings.step("Process.postExecute() (diary, markers)");
 				} catch (Exception e) {
 					Activator.logErrorMessageWithCause(e);
 					e.printStackTrace();
@@ -219,6 +225,7 @@ public class ExperimentScheduler {
 						runProcessJob = new RunProcessJob(process, currentTrial);
 						runProcessJob.schedule();
 						runProcessJob.join();
+						TrialTimings.step("RunProcessJob joined");
 						PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
 							@Override
 							public void run() {
@@ -270,6 +277,7 @@ public class ExperimentScheduler {
 							}
 							else running = true;
 						} else running = false;
+						TrialTimings.step("Trial validation + next trial (dialogs included)");
 					}
 				}
 			}

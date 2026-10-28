@@ -53,6 +53,7 @@ import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.Module;
+import fr.univamu.ism.docometre.dacqsystems.TrialTimings;
 
 @SuppressWarnings("restriction")
 public class RecoveryDelegate {
@@ -78,6 +79,7 @@ public class RecoveryDelegate {
 				try {
 					int nbData = adwinDevice.Fifo_Full(transferNum);
 					if (nbData > 0){
+						TrialTimings.dataReceived(channel.getProperty(ChannelProperties.NAME), module instanceof ADWinCANModule);
 						float[] signal = process.getData(transferNum, nbData);
 						channel.addSamples(signal);
 						process.appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_Recovering, new Object[] {transferNum, channel.getProperty(ChannelProperties.NAME), nbData}));

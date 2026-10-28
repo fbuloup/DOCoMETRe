@@ -56,8 +56,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
@@ -65,8 +63,6 @@ import org.eclipse.osgi.util.NLS;
 
 import de.adwin.driver.ADwinCommunicationError;
 import fr.univamu.ism.docometre.Activator;
-import fr.univamu.ism.docometre.ResourceProperties;
-import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
@@ -90,6 +86,7 @@ public class ADWinChannel extends Channel {
 	transient long observersLastPosition;
 	transient long totalReadSamples;
 	transient long fileSize;
+	transient private String recordedFileName;
 	
 	public ADWinChannel(Module module) {
 		super(module);
@@ -254,24 +251,14 @@ public class ADWinChannel extends Channel {
 				isStimulus = Boolean.valueOf(getProperty(ADWinVariableProperties.STIMULUS));
 			}
 			
+			recordedFileName = null;
 			if(!isStimulus) {
 				if(fileChannel != null) {
 					fileChannel.close();
-					if(!isRecorded && file != null) {
-						file.delete();
-						IResource fileResource = process.getOutputFolder().findMember(file.getName());
-						if(fileResource != null) fileResource.delete(true, null);
-					}
-					if(isRecorded && file != null) {
-						 try {
-							process.getOutputFolder().refreshLocal(IResource.DEPTH_ONE, null);
-						} catch (CoreException e) {
-							e.printStackTrace();
-							Activator.logErrorMessageWithCause(e);
-						}
-						IResource fileResource = process.getOutputFolder().findMember(file.getName());
-						ResourceProperties.setTypePersistentProperty(fileResource, ResourceType.SAMPLES.toString());
-					}
+					// The workspace is refreshed only once for all channels, by ADWinProcess.close() :
+					// a deleted file disappears from the workspace and recordedFileName gets its type
+					if(!isRecorded && file != null) file.delete();
+					if(isRecorded && file != null) recordedFileName = file.getName();
 				}
 			} else {
 				if(isRecorded) {
@@ -297,9 +284,17 @@ public class ADWinChannel extends Channel {
 					}
 				}
 			}
-		} catch (IOException | CoreException e) {
+		} catch (IOException e) {
 			Logger.getLogger(Process.class).error("Exception", e);
 		}
+	}
+
+	/**
+	 * Name of the samples file written by this channel during the last run, null
+	 * if this channel did not record (to be used after {@link #close(Process)})
+	 */
+	public String getRecordedFileName() {
+		return recordedFileName;
 	}
 	
 	public void notifyChannelObservers() {
