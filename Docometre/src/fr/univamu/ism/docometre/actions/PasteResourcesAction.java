@@ -42,29 +42,34 @@
 package fr.univamu.ism.docometre.actions;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
-import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.dnd.TransferData;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchPart;
@@ -85,12 +90,8 @@ public class PasteResourcesAction extends Action implements ISelectionListener, 
 	private IWorkbenchWindow window;
 	private CopyResourcesAction copyResourcesAction;
 	private IContainer destinationResource;
-	private IPath newResourcePath;
-	private boolean copyLogAndDataFiles;
-	private Object clipboardData;
 	private Clipboard clipboard;
-	int choiceID = 0;
-	
+
 	public PasteResourcesAction(IWorkbenchWindow window, CopyResourcesAction copyResourcesAction) {
 		clipboard = new Clipboard(PlatformUI.getWorkbench().getDisplay());
 		setId("PasteResourcesAction"); //$NON-NLS-1$
@@ -100,138 +101,157 @@ public class PasteResourcesAction extends Action implements ISelectionListener, 
 		this.copyResourcesAction = copyResourcesAction;
 		setText(DocometreMessages.PasteAction_Text);
         setToolTipText(DocometreMessages.PasteAction_Text);
-        setImageDescriptor(Activator.getSharedImageDescriptor(ISharedImages.IMG_TOOL_PASTE)); 
-        setDisabledImageDescriptor(Activator.getSharedImageDescriptor(ISharedImages.IMG_TOOL_PASTE_DISABLED)); 
+        setImageDescriptor(Activator.getSharedImageDescriptor(ISharedImages.IMG_TOOL_PASTE));
+        setDisabledImageDescriptor(Activator.getSharedImageDescriptor(ISharedImages.IMG_TOOL_PASTE_DISABLED));
 	}
-	
+
 	@Override
 	public void run() {
-		try {
-			PlatformUI.getWorkbench().getProgressService().busyCursorWhile(new IRunnableWithProgress() {
-				@Override
-				public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-					if(!destinationResource.exists()) return;
-					try {
-						destinationResource.refreshLocal(IResource.DEPTH_INFINITE, monitor);
-					} catch (CoreException e) {
-						Activator.logErrorMessageWithCause(e);
-						e.printStackTrace();
-					}
-					clipboardData = null;
-					PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
-						@Override
-						public void run() {
-							clipboardData = clipboard.getContents(FileTransfer.getInstance());
-							if(clipboardData == null) clipboardData = clipboard.getContents(TextTransfer.getInstance());
-						}
-					});
-					IResource[] resources = new IResource[0];
-					boolean fromDocometre = (clipboardData instanceof String) && CopyResourcesAction.UUIDString.equals(clipboardData);
-					if(!fromDocometre) {
-						// Copy from clip board if data available
-						if(clipboardData instanceof String[]) {
-							String[] filesPath = (String[])clipboardData;
-							try {
-								copyFromClipboard(destinationResource, filesPath, monitor);
-								destinationResource.refreshLocal(IResource.DEPTH_INFINITE, monitor);
-								ExperimentsView.refresh(destinationResource, null);
-							} catch (Exception e) {
-								e.printStackTrace();
-								Activator.logErrorMessageWithCause(e);
-							}
-						}
-					} else {
-						CopyLogDataFilesDialog.saveChoice = false;
-						choiceID = -1;
-						// Copy from internal resources
-						//One or more resources already exist in destination
-						resources = copyResourcesAction.getCopiedResources();
-						ArrayList<IResource> newResources = new ArrayList<IResource>();
-						for (IResource resource : resources) {
-							try {
-								if(resource.equals(destinationResource)) {
-									Activator.logWarningMessage(DocometreMessages.ImpossibleToCopyResourceInItself);
-									continue;
-								}
-									
-								if(CopyLogDataFilesDialog.saveChoice) choiceID = CopyLogDataFilesDialog.choiceID;
-								if(choiceID == IDialogConstants.CANCEL_ID) continue;
-								resource.refreshLocal(IResource.DEPTH_INFINITE, monitor);
-								newResourcePath = destinationResource.getFullPath().append(resource.getName());
-								IResource newResource = destinationResource.findMember(newResourcePath.makeRelativeTo(destinationResource.getFullPath()));
-								int n = 1;
-								while (newResource != null) {
-									String fileExtension = resource.getFullPath().getFileExtension();
-									String resourceName = resource.getFullPath().removeFileExtension().lastSegment();
-									newResourcePath = destinationResource.getFullPath().append(resourceName + "_Copy_" + n + ((fileExtension == null) ? "" : "." + fileExtension));
-									newResource = destinationResource.findMember(newResourcePath.makeRelativeTo(destinationResource.getFullPath()));
-									n++;
-								}
-								copyLogAndDataFiles = ResourceType.isSamples(resource) || ResourceType.isLog(resource);
-								if(ResourceType.isContainer(resource) && !CopyLogDataFilesDialog.saveChoice) {
-									PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
-										@Override
-										public void run() {
-											CopyLogDataFilesDialog copyLogDataFilesDialog = new CopyLogDataFilesDialog(PlatformUI.getWorkbench().getDisplay().getActiveShell());
-											choiceID = copyLogDataFilesDialog.open();
-										}
-									});
-								}
-								if(choiceID == IDialogConstants.CANCEL_ID) continue;
-								doCopy(resource, newResourcePath, destinationResource, copyLogAndDataFiles || CopyLogDataFilesDialog.copyLogAndDataFile(), monitor);
-								newResource = destinationResource.findMember(newResourcePath.makeRelativeTo(destinationResource.getFullPath()));
-								newResources.add(newResource);
-							} catch (CoreException e) {
-								e.printStackTrace();
-								Activator.logErrorMessageWithCause(e);
-							}
-						}
-						resources = newResources.toArray(new IResource[newResources.size()]);
-						ExperimentsView.refresh(destinationResource, resources);
-					}
-				}
+		if(destinationResource == null || !destinationResource.exists()) return;
+		// Keep destination : selection may change while dialogs are open
+		IContainer destination = destinationResource;
+		Shell shell = window.getShell();
+		// We are in UI thread : read clipboard directly
+		Object clipboardData = clipboard.getContents(FileTransfer.getInstance());
+		if(clipboardData == null) clipboardData = clipboard.getContents(TextTransfer.getInstance());
+		boolean fromDocometre = (clipboardData instanceof String) && clipboardData.equals(CopyResourcesAction.UUIDString);
 
+		if(fromDocometre) {
+			// Copy from internal resources
+			ArrayList<IResource> resources = getResourcesToCopy(copyResourcesAction.getCopiedResources(), destination);
+			// Ask all questions before starting the copy, not in the middle of it
+			boolean[] copyLogAndDataFiles = askCopyLogAndDataFiles(shell, resources);
+			if(copyLogAndDataFiles == null) return;
+			ArrayList<IResource> newResources = new ArrayList<>();
+			runWithProgress(shell, new IWorkspaceRunnable() {
+				@Override
+				public void run(IProgressMonitor monitor) throws CoreException {
+					copyResources(resources, copyLogAndDataFiles, destination, newResources, monitor);
+				}
 			});
-		} catch (InvocationTargetException | InterruptedException e) {
-			Activator.logErrorMessageWithCause(e);
-			e.printStackTrace();
+			ExperimentsView.refresh(destination, newResources.toArray(new IResource[newResources.size()]));
+		} else if(clipboardData instanceof String[]) {
+			// Copy from clip board (files from OS)
+			String[] filesPath = (String[])clipboardData;
+			runWithProgress(shell, new IWorkspaceRunnable() {
+				@Override
+				public void run(IProgressMonitor monitor) throws CoreException {
+					copyFromClipboard(destination, filesPath, monitor);
+				}
+			});
+			ExperimentsView.refresh(destination, null);
 		}
 	}
-	
-	private void copyFromClipboard(IContainer destinationResource, String[] filesPath, IProgressMonitor monitor) throws Exception {
-		for (String filePath : filesPath) {
-			IPath source = Path.fromOSString(filePath);
-			IPath destination = Path.fromOSString(destinationResource.getLocation().toOSString()); 
-			destination = destination.append(Path.fromOSString(source.lastSegment()));
-			if(source.toFile().isDirectory()) {
-				// If source file is folder, create it in destination if not exists and then copy content
-				if(!destination.toFile().exists()) destination.toFile().mkdirs();
-				IFolder folder = destinationResource.getFolder(destination.makeRelativeTo(destinationResource.getLocation()));
-				folder.create(true, true, monitor);
-				String[] files = source.toFile().list();
-				for (int i = 0; i < files.length; i++) {
-					files[i] = source.toOSString() + File.separator + files[i];
+
+	/*
+	 * Run workspace operation in a modal and cancelable progress dialog.
+	 * All resource changes are notified only once, at the end of the operation.
+	 */
+	private void runWithProgress(Shell shell, IWorkspaceRunnable workspaceRunnable) {
+		try {
+			new ProgressMonitorDialog(shell).run(true, true, new IRunnableWithProgress() {
+				@Override
+				public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+					try {
+						// Workspace root rule : sources and destination may be anywhere in the workspace
+						ResourcesPlugin.getWorkspace().run(workspaceRunnable, ResourcesPlugin.getWorkspace().getRoot(), IWorkspace.AVOID_UPDATE, monitor);
+					} catch (OperationCanceledException e) {
+						throw new InterruptedException();
+					} catch (CoreException e) {
+						throw new InvocationTargetException(e);
+					}
 				}
-				copyFromClipboard(folder, files, monitor);
-			} else {
-				java.nio.file.Path src = Paths.get(filePath);
-				java.nio.file.Path dest = Paths.get(destination.toPortableString());
-				Files.copy(src, dest, StandardCopyOption.REPLACE_EXISTING);
+			});
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+			Activator.logErrorMessageWithCause(e);
+		} catch (InterruptedException e) {
+			// Cancelled by user : resources already copied are kept
+		}
+	}
+
+	private ArrayList<IResource> getResourcesToCopy(IResource[] copiedResources, IContainer destination) {
+		ArrayList<IResource> resources = new ArrayList<>();
+		if(copiedResources == null) return resources;
+		for (IResource resource : copiedResources) {
+			if(!resource.exists()) continue;
+			// Impossible to copy a resource in itself or in one of its children (infinite recursion)
+			if(resource.getFullPath().isPrefixOf(destination.getFullPath())) {
+				Activator.logWarningMessage(DocometreMessages.ImpossibleToCopyResourceInItself);
+				continue;
+			}
+			resources.add(resource);
+		}
+		return resources;
+	}
+
+	/*
+	 * Return, for each resource, true if log and data files must be copied, or null if user cancelled
+	 */
+	private boolean[] askCopyLogAndDataFiles(Shell shell, ArrayList<IResource> resources) {
+		boolean[] copyLogAndDataFiles = new boolean[resources.size()];
+		CopyLogDataFilesDialog.saveChoice = false;
+		int choiceID = -1;
+		for (int i = 0; i < copyLogAndDataFiles.length; i++) {
+			IResource resource = resources.get(i);
+			if(!ResourceType.isContainer(resource)) {
+				// A log or data file explicitly selected is always copied
+				copyLogAndDataFiles[i] = true;
+				continue;
+			}
+			if(!CopyLogDataFilesDialog.saveChoice) choiceID = new CopyLogDataFilesDialog(shell).open();
+			if(choiceID == IDialogConstants.CANCEL_ID) return null;
+			copyLogAndDataFiles[i] = choiceID == IDialogConstants.YES_ID;
+		}
+		return copyLogAndDataFiles;
+	}
+
+	private void copyResources(ArrayList<IResource> resources, boolean[] copyLogAndDataFiles, IContainer destination, ArrayList<IResource> newResources, IProgressMonitor monitor) throws CoreException {
+		SubMonitor subMonitor = SubMonitor.convert(monitor, DocometreMessages.PasteAction_Text, 10*resources.size() + 1);
+		// Only direct children of destination are needed to compute new names
+		destination.refreshLocal(IResource.DEPTH_ONE, subMonitor.split(1));
+		for (int i = 0; i < copyLogAndDataFiles.length; i++) {
+			IResource resource = resources.get(i);
+			try {
+				resource.refreshLocal(IResource.DEPTH_INFINITE, subMonitor.split(1));
+				IPath newResourcePath = getNewResourcePath(resource, destination);
+				doCopy(resource, newResourcePath, copyLogAndDataFiles[i], subMonitor.split(9));
+				IResource newResource = destination.findMember(newResourcePath.makeRelativeTo(destination.getFullPath()));
+				if(newResource != null) newResources.add(newResource);
+			} catch (CoreException e) {
+				// Log error and continue with next resource
+				e.printStackTrace();
+				Activator.logErrorMessageWithCause(e);
 			}
 		}
 	}
-	
-	protected void doCopy(IResource originResource, IPath newResourcePath, IContainer destinationResource, boolean copyLogAndDataFiles, IProgressMonitor progressMonitor) throws CoreException {
+
+	private IPath getNewResourcePath(IResource resource, IContainer destination) {
+		IPath newResourcePath = destination.getFullPath().append(resource.getName());
+		IResource newResource = destination.findMember(resource.getName());
+		int n = 1;
+		while (newResource != null) {
+			String fileExtension = resource.getFullPath().getFileExtension();
+			String resourceName = resource.getFullPath().removeFileExtension().lastSegment();
+			newResourcePath = destination.getFullPath().append(resourceName + "_Copy_" + n + ((fileExtension == null) ? "" : "." + fileExtension));
+			newResource = destination.findMember(newResourcePath.makeRelativeTo(destination.getFullPath()));
+			n++;
+		}
+		return newResourcePath;
+	}
+
+	protected void doCopy(IResource originResource, IPath newResourcePath, boolean copyLogAndDataFiles, IProgressMonitor progressMonitor) throws CoreException {
 		if(ResourceType.isContainer(originResource)) {
+			IResource[] resources = ((IContainer)originResource).members();
+			SubMonitor subMonitor = SubMonitor.convert(progressMonitor, resources.length + 1);
+			subMonitor.subTask(originResource.getFullPath().toString());
 			// Create new container
 			IFolder folder = ResourcesPlugin.getWorkspace().getRoot().getFolder(newResourcePath);
-			folder.create(true, true, progressMonitor);
+			folder.create(true, true, subMonitor.split(1));
 			ResourceProperties.clonePersistentProperties(originResource, folder);
-			// Copy members
-			IResource[] resources = ((IContainer)originResource).members();
+			// Copy members : split() throws OperationCanceledException if user cancelled
 			for (IResource resource : resources) {
-				newResourcePath = folder.getFullPath().append(resource.getName());
-				doCopy(resource, newResourcePath, folder, copyLogAndDataFiles, progressMonitor);
+				doCopy(resource, folder.getFullPath().append(resource.getName()), copyLogAndDataFiles, subMonitor.split(1));
 			}
 		} else {
 			// Copy file
@@ -242,15 +262,55 @@ public class PasteResourcesAction extends Action implements ISelectionListener, 
 		}
 	}
 
+	private void copyFromClipboard(IContainer destination, String[] filesPath, IProgressMonitor monitor) throws CoreException {
+		SubMonitor subMonitor = SubMonitor.convert(monitor, DocometreMessages.PasteAction_Text, 2*filesPath.length + 1);
+		File destinationFolder = destination.getLocation().toFile();
+		ArrayList<String> copiedNames = new ArrayList<>();
+		for (String filePath : filesPath) {
+			File source = new File(filePath);
+			File target = new File(destinationFolder, source.getName());
+			// Impossible to copy a folder in itself or in one of its children (infinite recursion)
+			if(target.toPath().toAbsolutePath().normalize().startsWith(source.toPath().toAbsolutePath().normalize())) {
+				Activator.logWarningMessage(DocometreMessages.ImpossibleToCopyResourceInItself);
+				continue;
+			}
+			try {
+				subMonitor.subTask(source.getName());
+				copyFile(source, target, subMonitor.split(1));
+				copiedNames.add(source.getName());
+			} catch (IOException e) {
+				// Log error and continue with next file
+				e.printStackTrace();
+				Activator.logErrorMessageWithCause(e);
+			}
+		}
+		// Synchronize workspace with copied files only, not whole destination tree
+		destination.refreshLocal(IResource.DEPTH_ONE, subMonitor.split(1));
+		for (String copiedName : copiedNames) {
+			IResource newResource = destination.findMember(copiedName);
+			if(newResource != null) newResource.refreshLocal(IResource.DEPTH_INFINITE, subMonitor.split(1));
+		}
+	}
+
+	private void copyFile(File source, File destination, IProgressMonitor monitor) throws IOException {
+		if(monitor.isCanceled()) throw new OperationCanceledException();
+		if(source.isDirectory()) {
+			// If source file is folder, create it in destination if not exists and then copy content
+			if(!destination.exists()) destination.mkdirs();
+			File[] files = source.listFiles();
+			if(files == null) return;
+			SubMonitor subMonitor = SubMonitor.convert(monitor, files.length);
+			for (File file : files) copyFile(file, new File(destination, file.getName()), subMonitor.split(1));
+		} else {
+			Files.copy(source.toPath(), destination.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		}
+	}
+
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
 		setEnabled(false);
 		if(part instanceof ExperimentsView || part instanceof SubjectsView) {
-			// If clipboard not empty, copy from it
-			Clipboard clipboard = new Clipboard(Display.getCurrent());
-			Object fileData = clipboard.getContents(FileTransfer.getInstance());
-			clipboard.dispose();
 			destinationResource = null;
-			if(selection.isEmpty() && part instanceof ExperimentsView) 
+			if(selection.isEmpty() && part instanceof ExperimentsView)
 				destinationResource = ResourcesPlugin.getWorkspace().getRoot();
 			else if(selection.isEmpty() && part instanceof SubjectsView) {
 				destinationResource = ((SubjectsView)part).getInput();
@@ -258,13 +318,23 @@ public class PasteResourcesAction extends Action implements ISelectionListener, 
 				Object element = ((IStructuredSelection) selection).getFirstElement();
 				if(element instanceof IContainer) destinationResource = (IContainer) element;
 			}
-			setEnabled(destinationResource != null && (copyResourcesAction.notEmpty() || fileData != null));
+			setEnabled(destinationResource != null && (copyResourcesAction.notEmpty() || clipboardContainsFiles()));
 		}
 	}
-	
+
+	/*
+	 * Only check available types : clipboard contents is not read on each selection change
+	 */
+	private boolean clipboardContainsFiles() {
+		for (TransferData transferData : clipboard.getAvailableTypes()) {
+			if(FileTransfer.getInstance().isSupportedType(transferData)) return true;
+		}
+		return false;
+	}
+
 	public void dispose() {
 		window.getSelectionService().removeSelectionListener(this);
 		clipboard.dispose();
 	}
-	
+
 }

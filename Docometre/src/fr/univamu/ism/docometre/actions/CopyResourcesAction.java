@@ -45,9 +45,8 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -89,46 +88,31 @@ public class CopyResourcesAction extends Action implements ISelectionListener, I
 	
 	@Override
 	public void run() {
-		try {
-			// Remove from selected resources those which are children of the others
-			ArrayList<IResource> cleanedResources = new ArrayList<IResource>(0);
-			// First path to get all selected containers
-			for (int i = 0; i < resources.length; i++) if(resources[i] instanceof IContainer) cleanedResources.add(resources[i]);
-			ArrayList<IResource> files = new ArrayList<>();
-			// Second path to get all files
-			for (int i = 0; i < resources.length; i++) if(resources[i] instanceof IFile) files.add(resources[i]);
-			//Third path to remove all contained files
-			if(cleanedResources.size() > 0) files = removeContainedFiles(cleanedResources, files);
-			// Add these files to copied resources
-			cleanedResources.addAll(files);
-			// Convert to array
-			copiedResources = cleanedResources.toArray(new IResource[cleanedResources.size()]);
-			UUIDString = UUID.randomUUID().toString();
-			clipboard.setContents(new Object[] {UUIDString}, new Transfer[] {TextTransfer.getInstance()});
-		} catch (CoreException e) {
-			e.printStackTrace();
-			Activator.logErrorMessageWithCause(e);
-			copiedResources = null;
+		// Remove from selected resources those which are children of the others
+		// Only paths are compared : no access to workspace tree nor file system
+		ArrayList<IResource> containers = new ArrayList<>();
+		ArrayList<IResource> files = new ArrayList<>();
+		for (IResource resource : resources) {
+			if(isContainedInOtherSelectedResource(resource)) continue;
+			// Keep containers first, then files, as before
+			if(resource instanceof IContainer) containers.add(resource);
+			else files.add(resource);
 		}
+		containers.addAll(files);
+		copiedResources = containers.toArray(new IResource[containers.size()]);
+		UUIDString = UUID.randomUUID().toString();
+		clipboard.setContents(new Object[] {UUIDString}, new Transfer[] {TextTransfer.getInstance()});
 	}
 
-	private ArrayList<IResource> removeContainedFiles(ArrayList<IResource> containers, ArrayList<IResource> files) throws CoreException {
-		ArrayList<IResource> cleanedFiles = new ArrayList<>();
-		// First path remove all file contained in those containers
-		for (IResource file : files) for (IResource container : containers) {
-			if(((IContainer)container).findMember(file.getFullPath().lastSegment()) == null) {
-				if(!cleanedFiles.contains(file)) cleanedFiles.add(file);
-			}
+	private boolean isContainedInOtherSelectedResource(IResource resource) {
+		IPath path = resource.getFullPath();
+		for (IResource otherResource : resources) {
+			if(!(otherResource instanceof IContainer)) continue;
+			IPath otherPath = otherResource.getFullPath();
+			// isPrefixOf returns true for equal paths : exclude resource itself
+			if(!otherPath.equals(path) && otherPath.isPrefixOf(path)) return true;
 		}
-		// Second path : get all containers in those containers
-		ArrayList<IResource> newContainers = new ArrayList<>();
-		for (IResource container : containers) {
-			IResource[] members = ((IContainer)container).members();
-			for (IResource member : members) if(member instanceof IContainer) newContainers.add(member);
-		}
-		// Third path : restart with these new containers
-		if(newContainers.size() > 0) cleanedFiles = removeContainedFiles(newContainers, cleanedFiles);
-		return cleanedFiles;
+		return false;
 	}
 
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
