@@ -73,7 +73,7 @@ public class ValidateTrialsAutoHandler extends MarkTrialsHandler {
 	protected static void applyValue(IResource[] resources, TrialValidateMode value) throws CoreException {
 		for (IResource resource : resources) {
 			if(ResourceType.isTrial(resource)) ResourceProperties.setTrialValidateMode(resource, value);
-			else applyValue(((IContainer)resource).members(), value);
+			else  if(resource instanceof IContainer) applyValue(((IContainer)resource).members(), value);
 		}
 	}
 	

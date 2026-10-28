@@ -73,7 +73,7 @@ public class MarkTrialsAutoHandler extends MarkTrialsHandler {
 	protected static void applyValue(IResource[] resources, TrialStartMode value) throws CoreException {
 		for (IResource resource : resources) {
 			if(ResourceType.isTrial(resource)) ResourceProperties.setTrialStartMode(resource, value);
-			else applyValue(((IContainer)resource).members(), value);
+			else if(resource instanceof IContainer) applyValue(((IContainer)resource).members(), value);
 		}
 	}
 	
