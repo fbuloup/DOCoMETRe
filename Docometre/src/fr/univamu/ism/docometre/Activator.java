@@ -71,6 +71,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.Version;
 
 import fr.univamu.ism.docometre.analyse.editors.DataProcessEditor;
+import fr.univamu.ism.docometre.dacqsystems.TrialTimings;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor.ADWinProcessEditor;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.processeditor.ArduinoUnoProcessEditor;
 import fr.univamu.ism.docometre.chartxyz.editors.GLDataEditor;
@@ -160,6 +161,7 @@ public class Activator extends AbstractUIPlugin {
 		Activator.getDefault().getLog().addLogListener(CachedLogger.getInstance());
 		String[] args = Platform.getApplicationArgs();
 		if(Arrays.asList(args).contains("-debugObjectHandler")) ObjectsController.debug = true;
+		if(Arrays.asList(args).contains("-traceTrialTimings")) TrialTimings.trace = true;
 	}
 
 	/*
