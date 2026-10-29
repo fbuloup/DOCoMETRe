@@ -75,10 +75,10 @@ import org.eclipse.ui.part.MultiPageEditorPart;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreApplication;
+import fr.univamu.ism.docometre.DocometreSharedColors;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.PartListenerAdapter;
 import fr.univamu.ism.docometre.annotations.DocometreAnnotationAccesExtension;
-import fr.univamu.ism.docometre.annotations.DocometreSharedTextColors;
 import fr.univamu.ism.docometre.annotations.ErrorAnnotation;
 import fr.univamu.ism.docometre.annotations.WarningAnnotation;
 import fr.univamu.ism.docometre.dacqsystems.DocometreBuilder;
@@ -166,16 +166,16 @@ public class SourceEditor extends EditorPart {
 		lineAnnotationRuler.addDecorator(1, arc);
 		// Overview column
 		OverviewRuler overviewRuler = new OverviewRuler(docometreAnnotationAccesExtension, 13,
-				DocometreSharedTextColors.getInstance());
+				DocometreSharedColors.getInstance());
 		overviewRuler.addAnnotationType(ErrorAnnotation.TYPE_ERROR);
 		overviewRuler.addAnnotationType(WarningAnnotation.TYPE_WARNING);
 		overviewRuler.addHeaderAnnotationType(ErrorAnnotation.TYPE_ERROR);
 		overviewRuler.addHeaderAnnotationType(WarningAnnotation.TYPE_WARNING);
 		overviewRuler.setAnnotationTypeColor(ErrorAnnotation.TYPE_ERROR,
-				DocometreSharedTextColors.getInstance().getColor(new RGB(255, 0, 0)));
+				DocometreSharedColors.getInstance().getColor(new RGB(255, 0, 0)));
 		overviewRuler.setAnnotationTypeLayer(ErrorAnnotation.TYPE_ERROR, IAnnotationAccessExtension.DEFAULT_LAYER);
 		overviewRuler.setAnnotationTypeColor(WarningAnnotation.TYPE_WARNING,
-				DocometreSharedTextColors.getInstance().getColor(new RGB(255, 255, 0)));
+				DocometreSharedColors.getInstance().getColor(new RGB(255, 255, 0)));
 		overviewRuler.setAnnotationTypeLayer(WarningAnnotation.TYPE_WARNING, IAnnotationAccessExtension.DEFAULT_LAYER);
 
 		sourceViewer = new SourceViewer(sourceContainer, lineAnnotationRuler, overviewRuler, true,

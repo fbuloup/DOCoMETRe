@@ -80,11 +80,11 @@ import org.eclipse.ui.part.EditorPart;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreApplication;
+import fr.univamu.ism.docometre.DocometreSharedColors;
 import fr.univamu.ism.docometre.GetResourceLabelDelegate;
 import fr.univamu.ism.docometre.PartListenerAdapter;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.annotations.DocometreAnnotationAccesExtension;
-import fr.univamu.ism.docometre.annotations.DocometreSharedTextColors;
 import fr.univamu.ism.docometre.annotations.ErrorAnnotation;
 import fr.univamu.ism.docometre.annotations.WarningAnnotation;
 import fr.univamu.ism.docometre.dacqsystems.DocometreBuilder;
@@ -161,14 +161,14 @@ public class DiaryEditor extends EditorPart implements PartNameRefresher {
 			lineNumberRulerColumn.setFont(DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 			
 			// Overview column
-			OverviewRuler overviewRuler = new OverviewRuler(docometreAnnotationAccesExtension, 13, DocometreSharedTextColors.getInstance());
+			OverviewRuler overviewRuler = new OverviewRuler(docometreAnnotationAccesExtension, 13, DocometreSharedColors.getInstance());
 			overviewRuler.addAnnotationType(ErrorAnnotation.TYPE_ERROR); 
 			overviewRuler.addAnnotationType(WarningAnnotation.TYPE_WARNING);
 			overviewRuler.addHeaderAnnotationType(ErrorAnnotation.TYPE_ERROR);
 			overviewRuler.addHeaderAnnotationType(WarningAnnotation.TYPE_WARNING);
-			overviewRuler.setAnnotationTypeColor(ErrorAnnotation.TYPE_ERROR,   DocometreSharedTextColors.getInstance().getColor(new RGB(255, 0, 0))); 
+			overviewRuler.setAnnotationTypeColor(ErrorAnnotation.TYPE_ERROR,   DocometreSharedColors.getInstance().getColor(new RGB(255, 0, 0))); 
 			overviewRuler.setAnnotationTypeLayer(ErrorAnnotation.TYPE_ERROR, IAnnotationAccessExtension.DEFAULT_LAYER); 
-			overviewRuler.setAnnotationTypeColor(WarningAnnotation.TYPE_WARNING,   DocometreSharedTextColors.getInstance().getColor(new RGB(255, 255, 0))); 
+			overviewRuler.setAnnotationTypeColor(WarningAnnotation.TYPE_WARNING,   DocometreSharedColors.getInstance().getColor(new RGB(255, 255, 0))); 
 			overviewRuler.setAnnotationTypeLayer(WarningAnnotation.TYPE_WARNING, IAnnotationAccessExtension.DEFAULT_LAYER); 
 			
 			sourceViewer = new SourceViewer(parent, lineAnnotationRuler, overviewRuler, true, SWT.V_SCROLL | SWT.H_SCROLL);

@@ -50,6 +50,7 @@ import org.eclipse.nebula.visualization.widgets.figures.GaugeFigure;
 import org.eclipse.nebula.visualization.widgets.figures.TankFigure;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -59,10 +60,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.widgets.Hyperlink;
 
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.DocometreSharedColors;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyHandler;
@@ -269,7 +270,8 @@ public class MeterChartConfiguration extends ChartConfiguration {
 		
 		meterContainer = new Canvas(container, SWT.BORDER);
 		meterContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, hSpan, vSpan));
-		meterContainer.setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_BLACK));
+		meterContainer.setBackground(DocometreSharedColors.getInstance().getColor(new RGB(25, 28, 33)));
+		meterContainer.setForeground(DocometreSharedColors.getInstance().getColor(new RGB(217, 217, 229)));
 		
 		LightweightSystem lws = new LightweightSystem(meterContainer);
 		
@@ -286,8 +288,8 @@ public class MeterChartConfiguration extends ChartConfiguration {
 			((GaugeFigure)meterFigure).setLoLevel(levelLow);
 			((GaugeFigure)meterFigure).setHihiLevel(levelHighHigh);
 			((GaugeFigure)meterFigure).setHiLevel(levelHigh);
-			meterFigure.setBackgroundColor(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_BLACK));
-			meterFigure.setForegroundColor(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
+			meterFigure.setBackgroundColor(meterContainer.getBackground());
+			meterFigure.setForegroundColor(meterContainer.getForeground());
 			((GaugeFigure)meterFigure).setNeedleColor(chartColor);
 			((GaugeFigure)meterFigure).setTitle(meterCurvesConfigurations[0].getChannel().getID());
 		}
@@ -302,8 +304,8 @@ public class MeterChartConfiguration extends ChartConfiguration {
 			((TankFigure)meterFigure).setLoLevel(levelLow);
 			((TankFigure)meterFigure).setHihiLevel(levelHighHigh);
 			((TankFigure)meterFigure).setHiLevel(levelHigh);
-			meterFigure.setBackgroundColor(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_BLACK));
-			meterFigure.setForegroundColor(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
+			meterFigure.setBackgroundColor(meterContainer.getBackground());
+			meterFigure.setForegroundColor(meterContainer.getForeground());
 			((TankFigure)meterFigure).setFillColor(chartColor);
 			((TankFigure)meterFigure).setTitle(meterCurvesConfigurations[0].getChannel().getID());
 		}

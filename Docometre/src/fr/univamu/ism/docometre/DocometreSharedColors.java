@@ -39,7 +39,7 @@
  * Contributors:
  *  - Frank Buloup - frank.buloup@univ-amu.fr - initial API and implementation [25/03/2020]
  ******************************************************************************/
-package fr.univamu.ism.docometre.annotations;
+package fr.univamu.ism.docometre;
 
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.source.ISharedTextColors;
@@ -47,15 +47,15 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.ui.PlatformUI;
 
-public class DocometreSharedTextColors implements ISharedTextColors {
+public class DocometreSharedColors implements ISharedTextColors {
 
-	private static DocometreSharedTextColors docometreSharedTextColors;
+	private static DocometreSharedColors docometreSharedTextColors;
 	
-	private DocometreSharedTextColors() {
+	private DocometreSharedColors() {
 	}
 	
-	public static DocometreSharedTextColors getInstance() {
-		if (docometreSharedTextColors == null) docometreSharedTextColors = new DocometreSharedTextColors();
+	public static DocometreSharedColors getInstance() {
+		if (docometreSharedTextColors == null) docometreSharedTextColors = new DocometreSharedColors();
 		return docometreSharedTextColors;
 	}
 
