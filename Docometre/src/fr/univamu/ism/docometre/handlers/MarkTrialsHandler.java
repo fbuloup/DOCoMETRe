@@ -41,20 +41,41 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.handlers;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.LinkedHashSet;
+
 import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceProxy;
+import org.eclipse.core.resources.IResourceProxyVisitor;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.handlers.HandlerUtil;
 
+import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.views.DescriptionView;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 
 public abstract class MarkTrialsHandler extends AbstractHandler implements ISelectionListener {
-	
+
 	protected IFolder[] resources;
 
 	public MarkTrialsHandler() {
@@ -62,7 +83,95 @@ public abstract class MarkTrialsHandler extends AbstractHandler implements ISele
 		IViewPart experimentsView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(ExperimentsView.ID);
 		if(experimentsView != null) selectionChanged(experimentsView, experimentsView.getSite().getSelectionProvider().getSelection());
 	}
-	
+
+	/*
+	 * Return true if trial already has the value to apply : nothing to write
+	 */
+	protected abstract boolean hasValue(IResource trial);
+
+	/*
+	 * Apply value to trial
+	 */
+	protected abstract void applyValue(IResource trial);
+
+	@Override
+	public Object execute(ExecutionEvent event) throws ExecutionException {
+		Shell shell = HandlerUtil.getActiveShell(event);
+		// The selection may change while the dialog is open : work on a copy
+		IFolder[] folders = resources.clone();
+		try {
+			// Modal dialog : UI is blocked, work is done in a non UI thread and can be cancelled
+			new ProgressMonitorDialog(shell).run(true, true, new IRunnableWithProgress() {
+				@Override
+				public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+					try {
+						markTrials(folders, monitor);
+					} catch (OperationCanceledException e) {
+						throw new InterruptedException();
+					} catch (CoreException e) {
+						throw new InvocationTargetException(e);
+					}
+				}
+			});
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+			Activator.logErrorMessageWithCause(e);
+		} catch (InterruptedException e) {
+			// Cancelled by user : trials already marked stay marked
+		} finally {
+			// Refresh UI only once, whatever the result
+			refreshViews(folders);
+		}
+		return null;
+	}
+
+	private void markTrials(IFolder[] folders, IProgressMonitor monitor) throws CoreException {
+		SubMonitor subMonitor = SubMonitor.convert(monitor, DocometreMessages.MarkTrialsTaskTitle, 10);
+
+		// 1. Collect trials : a set avoids duplicates when a trial and its session are both selected
+		LinkedHashSet<IResource> trials = new LinkedHashSet<>();
+		SubMonitor collectMonitor = subMonitor.split(1);
+		for (IFolder folder : folders) {
+			folder.accept(new IResourceProxyVisitor() {
+				@Override
+				public boolean visit(IResourceProxy proxy) throws CoreException {
+					if(collectMonitor.isCanceled()) throw new OperationCanceledException();
+					// Trials are folders : no need to look at files
+					if(proxy.getType() == IResource.FILE) return false;
+					IResource resource = proxy.requestResource();
+					if(ResourceType.isTrial(resource)) {
+						trials.add(resource);
+						return false;
+					}
+					return true;
+				}
+			}, IResource.NONE);
+		}
+
+		// 2. Apply value : each persistent property change is written on disk, so skip unchanged trials
+		SubMonitor applyMonitor = subMonitor.split(9).setWorkRemaining(trials.size());
+		for (IResource trial : trials) {
+			// split() throws OperationCanceledException if user cancelled
+			applyMonitor.split(1);
+			if(!hasValue(trial)) applyValue(trial);
+		}
+	}
+
+	protected void refreshViews(IResource[] resources) {
+		// Refresh parents only once : each refresh updates all decorations of experiments view
+		LinkedHashSet<IContainer> parents = new LinkedHashSet<>();
+		for (IResource resource : resources) parents.add(resource.getParent());
+		for (IContainer parent : parents) ExperimentsView.refresh(parent, null);
+	}
+
+	protected void refreshDescriptionView() {
+		IViewPart viewPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(DescriptionView.ID);
+		if(viewPart != null) {
+			DescriptionView descriptionView = (DescriptionView) viewPart;
+			descriptionView.refreshCompletion();
+		}
+	}
+
 	@Override
 	public boolean isEnabled() {
 		return resources != null && resources.length > 0;
@@ -84,7 +193,7 @@ public abstract class MarkTrialsHandler extends AbstractHandler implements ISele
 			}
 		}
 	}
-	
+
 	@Override
 	public void dispose() {
 		IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();

@@ -41,30 +41,26 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.handlers;
 
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 
-import fr.univamu.ism.docometre.Activator;
-import fr.univamu.ism.docometre.views.ExperimentsView;
+import fr.univamu.ism.docometre.ResourceProperties;
 
 public class MarkTrialsUnDoneHandler extends MarkTrialsHandler {
-	
+
 	@Override
-	public Object execute(ExecutionEvent event) throws ExecutionException {
-		try {
-			MarkTrialsDoneHandler.applyValue(resources, false);
-			MarkTrialsDoneHandler.refreshDescriptionView();
-		} catch (CoreException e) {
-			Activator.logErrorMessageWithCause(e);
-			e.printStackTrace();
-		} finally {
-			for (IResource resource : resources) {
-				ExperimentsView.refresh(resource, null);
-			}
-		}
-		return  null;
+	protected boolean hasValue(IResource trial) {
+		return !ResourceProperties.isTrialDone(trial);
+	}
+
+	@Override
+	protected void applyValue(IResource trial) {
+		ResourceProperties.setTrialState(trial, false);
+	}
+
+	@Override
+	protected void refreshViews(IResource[] resources) {
+		super.refreshViews(resources);
+		refreshDescriptionView();
 	}
 
 }

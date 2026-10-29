@@ -41,90 +41,30 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.handlers;
 
-import org.eclipse.core.commands.AbstractHandler;
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.ISelectionListener;
-import org.eclipse.ui.IViewPart;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
 
-import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ResourceProperties;
-import fr.univamu.ism.docometre.ResourceType;
-import fr.univamu.ism.docometre.views.ExperimentsView;
 
-public class ResetTrialsHandler extends AbstractHandler implements ISelectionListener {
+/*
+ * Toggle state (done/undone) of selected trials or of all trials of selected sessions
+ */
+public class ResetTrialsHandler extends MarkTrialsHandler {
 
-	private IFolder[] trialsOrSessions;
+	@Override
+	protected boolean hasValue(IResource trial) {
+		// Toggle : value always changes
+		return false;
+	}
 	
-	public ResetTrialsHandler() {
-		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().addSelectionListener(this);
-		IViewPart experimentsView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(ExperimentsView.ID);
-		if(experimentsView != null) selectionChanged(experimentsView, experimentsView.getSite().getSelectionProvider().getSelection());
-	}
-
 	@Override
-	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
-		if(part instanceof ExperimentsView) {
-			if (selection instanceof IStructuredSelection) {
-				Object[] elements = ((IStructuredSelection) selection).toArray();
-				trialsOrSessions = new IFolder[0];
-				for (int i = 0; i < elements.length; i++) {
-					if(!(elements[i] instanceof IFolder)) return;
-				}
-				trialsOrSessions = new IFolder[elements.length];
-				for (int i = 0; i < elements.length; i++) {
-					trialsOrSessions[i] = (IFolder)elements[i];
-				}
-			}
-		}
+	protected void applyValue(IResource trial) {
+		ResourceProperties.setTrialState(trial, !ResourceProperties.isTrialDone(trial));
 	}
-
-
+	
 	@Override
-	public void dispose() {
-		IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-		if(window != null) {
-			window.getSelectionService().removeSelectionListener(this);
-		}
+	protected void refreshViews(IResource[] resources) {
+		super.refreshViews(resources);
+		refreshDescriptionView();
 	}
-
-	@Override
-	public Object execute(ExecutionEvent event) throws ExecutionException {
-		ExperimentsView view = (ExperimentsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(ExperimentsView.ID);
-		for (IFolder trialOrSession : trialsOrSessions) {
-			if(ResourceType.isTrial(trialOrSession)) {
-				ResourceProperties.setTrialState(trialOrSession, !ResourceProperties.isTrialDone(trialOrSession));
-				view.refreshInput(trialOrSession.getParent().getParent(), new Object[] {trialOrSession});
-			}
-			if(ResourceType.isSession(trialOrSession)) {
-				IResource[] trials = new IResource[0];
-				try {
-					trials = trialOrSession.members();
-					for (IResource trial : trials) ResourceProperties.setTrialState(trial, !ResourceProperties.isTrialDone(trial));
-				} catch (CoreException e) {
-					e.printStackTrace();
-					Activator.logErrorMessageWithCause(e);
-				} finally {
-					view.refreshInput(trialOrSession.getParent(), trials);
-				}
-			}
-		}
-		
-		return null;
-	}
-
-	@Override
-	public boolean isEnabled() {
-		return trialsOrSessions != null && trialsOrSessions.length > 0;
-	}
-
 
 }

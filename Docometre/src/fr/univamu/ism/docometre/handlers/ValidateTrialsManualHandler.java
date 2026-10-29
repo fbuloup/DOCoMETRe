@@ -41,30 +41,21 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.handlers;
 
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 
-import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.TrialValidateMode;
-import fr.univamu.ism.docometre.views.ExperimentsView;
 
 public class ValidateTrialsManualHandler extends MarkTrialsHandler {
 	
 	@Override
-	public Object execute(ExecutionEvent event) throws ExecutionException {
-		try {
-			ValidateTrialsAutoHandler.applyValue(resources, TrialValidateMode.MANUAL);
-		} catch (CoreException e) {
-			Activator.logErrorMessageWithCause(e);
-			e.printStackTrace();
-		} finally {
-			for (IResource resource : resources) {
-				ExperimentsView.refresh(resource, null);
-			}
-		}
-		return null;
+	protected boolean hasValue(IResource trial) {
+		return ResourceProperties.getTrialValidateMode(trial) == TrialValidateMode.MANUAL;
+	}
+	
+	@Override
+	protected void applyValue(IResource trial) {
+		ResourceProperties.setTrialValidateMode(trial, TrialValidateMode.MANUAL);
 	}
 	
 }

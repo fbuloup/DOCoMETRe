@@ -197,6 +197,8 @@ public final class DocometreMessages extends NLS {
 	public static String Auto;
 	public static String StartPrefix;
 	public static String ValidatePrefix;
+	// Mark trials
+	public static String MarkTrialsTaskTitle;
 
 	/*New Resource Wizard*/
 	public static String NewResourceWizardWindowTitle;

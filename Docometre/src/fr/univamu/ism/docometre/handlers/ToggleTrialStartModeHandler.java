@@ -41,95 +41,27 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.handlers;
 
-import org.eclipse.core.commands.AbstractHandler;
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.ISelectionListener;
-import org.eclipse.ui.IViewPart;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
 
-import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ResourceProperties;
-import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.TrialStartMode;
-import fr.univamu.ism.docometre.views.ExperimentsView;
 
-public class ToggleTrialStartModeHandler extends AbstractHandler implements ISelectionListener {
-	
-	private IFolder[] trialsOrSessions;
-	
-	public ToggleTrialStartModeHandler() {
-		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().addSelectionListener(this);
-		IViewPart experimentsView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(ExperimentsView.ID);
-		if(experimentsView != null) selectionChanged(experimentsView, experimentsView.getSite().getSelectionProvider().getSelection());
-	}
+/*
+ * Toggle start mode (auto/manual) of selected trials or of all trials of selected sessions
+ */
+public class ToggleTrialStartModeHandler extends MarkTrialsHandler {
 
 	@Override
-	public Object execute(ExecutionEvent event) throws ExecutionException {
-		ExperimentsView view = (ExperimentsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(ExperimentsView.ID);
-		for (IFolder trialOrSession : trialsOrSessions) {
-			if(ResourceType.isTrial(trialOrSession)) {
-				TrialStartMode startMode = ResourceProperties.getTrialStartMode(trialOrSession);
-				TrialStartMode newStartMode = startMode.equals(TrialStartMode.AUTO)? TrialStartMode.MANUAL: TrialStartMode.AUTO;
-				ResourceProperties.setTrialStartMode(trialOrSession, newStartMode);
-				view.refreshInput(trialOrSession.getParent(), new Object[] {trialOrSession});
-			}
-			if(ResourceType.isSession(trialOrSession)) {
-				IResource[] trials = new IResource[0];
-				try {
-					trials = trialOrSession.members();
-					for (IResource trial : trials) {
-						TrialStartMode startMode = ResourceProperties.getTrialStartMode(trial);
-						TrialStartMode newStartMode = startMode.equals(TrialStartMode.AUTO)? TrialStartMode.MANUAL: TrialStartMode.AUTO;
-						ResourceProperties.setTrialStartMode(trial, newStartMode);
-					}
-				} catch (CoreException e) {
-					e.printStackTrace();
-					Activator.logErrorMessageWithCause(e);
-				} finally {
-					view.refreshInput(trialOrSession, trials);
-				}
-			}
-		}
-		
-		return null;
-	}
-
-	@Override
-	public void dispose() {
-		IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-		if(window != null) {
-			window.getSelectionService().removeSelectionListener(this);
-		}
+	protected boolean hasValue(IResource trial) {
+		// Toggle : value always changes
+		return false;
 	}
 	
 	@Override
-	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
-		if(part instanceof ExperimentsView) {
-			if (selection instanceof IStructuredSelection) {
-				Object[] elements = ((IStructuredSelection) selection).toArray();
-				trialsOrSessions = new IFolder[0];
-				for (int i = 0; i < elements.length; i++) {
-					if(!(elements[i] instanceof IFolder)) return;
-				}
-				trialsOrSessions = new IFolder[elements.length];
-				for (int i = 0; i < elements.length; i++) {
-					trialsOrSessions[i] = (IFolder)elements[i];
-				}
-			}
-		}
-	}
-	
-	@Override
-	public boolean isEnabled() {
-		return trialsOrSessions != null && trialsOrSessions.length > 0;
+	protected void applyValue(IResource trial) {
+		TrialStartMode startMode = ResourceProperties.getTrialStartMode(trial);
+		TrialStartMode newStartMode = startMode.equals(TrialStartMode.AUTO) ? TrialStartMode.MANUAL : TrialStartMode.AUTO;
+		ResourceProperties.setTrialStartMode(trial, newStartMode);
 	}
 
 }
