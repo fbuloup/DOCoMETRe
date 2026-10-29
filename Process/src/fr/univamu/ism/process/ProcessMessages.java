@@ -53,6 +53,10 @@ public final class ProcessMessages extends NLS {
 	public static String IfBlockWithoutFalseBranch;
 	public static String DoBlockWithoutEndFunction;
 	public static String DoBlockWithoutStartFunction;
+	public static String SeveralStartBlocks;
+	public static String BranchLeavesConditionalBlock;
+	public static String BranchLeavesDoBLock;
+	public static String BlockGeneratedSeveralTimes;
 	public static String ExecutedEachLoop;
 	public static String ExecutedOneTimeAfter;
 	public static String ExecutedOneTimeBefore;

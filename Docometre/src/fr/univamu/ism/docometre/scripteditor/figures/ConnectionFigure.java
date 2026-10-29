@@ -42,6 +42,7 @@
 package fr.univamu.ism.docometre.scripteditor.figures;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.eclipse.draw2d.AbsoluteBendpoint;
 import org.eclipse.draw2d.Bendpoint;
@@ -56,7 +57,10 @@ import org.eclipse.draw2d.PolygonDecoration;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.ShortestPathConnectionRouter;
 import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Path;
+import org.eclipse.swt.widgets.Display;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.IImageKeys;
@@ -74,13 +78,24 @@ public class ConnectionFigure extends PolylineConnection {
 	private Label trueLabel = new Label("True", trueImage);
 	private Label falseLabel = new Label("False", falseImage);
 	private Label doLoopLabel = new Label(doLoopImage);
+	// Label currently displayed in the middle of the connection, null if none
+	private Label currentLabel;
 	private BlocksConnection blocksConnection;
-	private IFigure blocksLayer;
+	// Routers are created once : creating them at each update would recompute paths each time
+	private CurvedConnectionRouter shortestPathCurvedRouter;
+	private CurvedConnectionRouter bendpointCurvedRouter;
+	private Point doMiddlePoint;
+	// Horizontal distance between do loop return and blocks
+	private static final int LOOP_OFFSET = 30;
 	
 	public ConnectionFigure(IFigure blocksLayer, BlocksConnection blocksConnection) {
 		super();
 		this.blocksConnection = blocksConnection;
-		this.blocksLayer = blocksLayer;
+		ShortestPathConnectionRouter shortestPathConnectionRouter = new ShortestPathConnectionRouter(blocksLayer);
+		// Give more room around blocks so that curves do not overlap them
+		shortestPathConnectionRouter.setSpacing(15);
+		shortestPathCurvedRouter = new CurvedConnectionRouter(shortestPathConnectionRouter);
+		bendpointCurvedRouter = new CurvedConnectionRouter(new BendpointConnectionRouter());
 		setLayoutManager(new DelegatingLayout());
 		PolygonDecoration decoration = new PolygonDecoration();
 		decoration.setTemplate(PolygonDecoration.TRIANGLE_TIP);
@@ -88,18 +103,46 @@ public class ConnectionFigure extends PolylineConnection {
 		setTargetDecoration(decoration);
 	}
 	
-	
 	@Override
-	protected void paintChildren(Graphics graphics) {
-		super.paintChildren(graphics);
-		updateConnection();
-		repaint();
+	protected void outlineShape(Graphics graphics) {
+		graphics.setAntialias(SWT.ON);
+		List<double[]> bezierSegments = null;
+		if(getConnectionRouter() instanceof CurvedConnectionRouter) bezierSegments = ((CurvedConnectionRouter)getConnectionRouter()).getBezierSegments(this);
+		if(bezierSegments == null || bezierSegments.isEmpty()) {
+			super.outlineShape(graphics);
+			return;
+		}
+		// Draw exact Bézier curves with floating point coordinates
+		Path path = new Path(Display.getCurrent());
+		try {
+			double[] firstSegment = bezierSegments.get(0);
+			path.moveTo((float)firstSegment[0], (float)firstSegment[1]);
+			for (double[] s : bezierSegments) path.cubicTo((float)s[2], (float)s[3], (float)s[4], (float)s[5], (float)s[6], (float)s[7]);
+			graphics.drawPath(path);
+		} catch (RuntimeException e) {
+			// Path not supported by this graphics (e.g. no advanced graphics) : draw sampled polyline
+			super.outlineShape(graphics);
+		} finally {
+			path.dispose();
+		}
 	}
 	
+	/*
+	 * Router and label depend on blocks positions, if branches and do loop end. 
+	 * They are updated each time the connection is validated : when one of its blocks moves 
+	 * or when a command has been executed, undone or redone (see BlocksConnectionEditPart).
+	 */
+	@Override
+	public void layout() {
+		updateConnection();
+		super.layout();
+	}
+	
+	/*
+	 * Must only change router, routing constraint and label when needed : 
+	 * any change revalidates the connection and calls layout() again
+	 */
 	private void updateConnection() {
-		if(getChildren().indexOf(trueLabel) != -1) remove(trueLabel);
-		if(getChildren().indexOf(falseLabel) != -1) remove(falseLabel);
-		if(getChildren().indexOf(doLoopLabel) != -1) remove(doLoopLabel);
 		if(blocksConnection.sourceBlock instanceof IfBlock) {
 			setIfConnection();
 		} else if(blocksConnection.targetBlock instanceof DoBlock) {
@@ -107,13 +150,32 @@ public class ConnectionFigure extends PolylineConnection {
 			Block block = blocksConnection.sourceBlock;
 			if(block.isLastBlockOf(doBlock)) {
 				setDoConnection();
-			} else setSimpleConnection();
-		} else setSimpleConnection();
+			} else {
+				setSimpleConnection();
+				setLabel(null);
+			}
+		} else {
+			setSimpleConnection();
+			setLabel(null);
+		}
+	}
+	
+	private void setLabel(Label label) {
+		if(label == currentLabel) return;
+		if(currentLabel != null) remove(currentLabel);
+		currentLabel = label;
+		if(label != null) add(label, new ConnectionLocator(this, ConnectionLocator.MIDDLE));
+	}
+
+	private void setAnchorsSide(int side) {
+		if(getSourceAnchor() instanceof PerpendicularAnchor) ((PerpendicularAnchor)getSourceAnchor()).setForcedSide(side);
+		if(getTargetAnchor() instanceof PerpendicularAnchor) ((PerpendicularAnchor)getTargetAnchor()).setForcedSide(side);
 	}
 
 	private void setSimpleConnection() {
-		ShortestPathConnectionRouter connectionRouter = new ShortestPathConnectionRouter(blocksLayer);
-		setConnectionRouter(connectionRouter);
+		doMiddlePoint = null;
+		setAnchorsSide(PerpendicularAnchor.AUTOMATIC);
+		setConnectionRouter(shortestPathCurvedRouter);
 	}
 	
 	private void setIfConnection() {
@@ -121,26 +183,32 @@ public class ConnectionFigure extends PolylineConnection {
 		IfBlock sourceIfBlock = (IfBlock)blocksConnection.sourceBlock;
 		if(sourceIfBlock.getNextTrueBranchBlock() == blocksConnection.targetBlock) {
 			// Decorate with true icon
-			add(trueLabel, new ConnectionLocator(this, ConnectionLocator.MIDDLE));
+			setLabel(trueLabel);
 		} else if(sourceIfBlock.getNextFalseBranchBlock() == blocksConnection.targetBlock) {
 			// Decorate with false icon
-			add(falseLabel, new ConnectionLocator(this, ConnectionLocator.MIDDLE));
-		}
+			setLabel(falseLabel);
+		} else setLabel(null);
 	}
 	
 	private void setDoConnection() {
-		int deltaX = 40*(int)Math.signum(blocksConnection.targetBlock.getX() - blocksConnection.sourceBlock.getX());
-		BendpointConnectionRouter bendpointConnectionRouter = new BendpointConnectionRouter();
-		int x0 = blocksConnection.sourceBlock.getX() + blocksConnection.sourceBlock.getWidth()/2;
-		int y0 = blocksConnection.sourceBlock.getY() + blocksConnection.sourceBlock.getHeight()/2;
-		int x1 = blocksConnection.targetBlock.getX() + blocksConnection.targetBlock.getWidth()/2;
-		int y1 = blocksConnection.targetBlock.getY() + blocksConnection.targetBlock.getHeight()/2;
-		Point middlePoint = new Point((x0+x1)/2 + deltaX, (y0+y1)/2);
-		AbsoluteBendpoint absoluteBendpoint = new AbsoluteBendpoint(middlePoint);
-		bendpointConnectionRouter.setConstraint(this, Arrays.asList(new Bendpoint[] {absoluteBendpoint}));
-		setConnectionRouter(bendpointConnectionRouter);
+		Block source = blocksConnection.sourceBlock;
+		Block target = blocksConnection.targetBlock;
+		// Loop return leaves last block and reaches do block on the same side (side of the do block, left if aligned), 
+		// going around blocks so that it does not overlap the forward connections
+		boolean onLeft = target.getX() <= source.getX();
+		int x = onLeft ? Math.min(source.getX(), target.getX()) - LOOP_OFFSET : Math.max(source.getX() + source.getWidth(), target.getX() + target.getWidth()) + LOOP_OFFSET;
+		int y0 = source.getY() + source.getHeight()/2;
+		int y1 = target.getY() + target.getHeight()/2;
+		Point middlePoint = new Point(x, (y0+y1)/2);
+		setAnchorsSide(onLeft ? PerpendicularAnchor.LEFT : PerpendicularAnchor.RIGHT);
+		setConnectionRouter(bendpointCurvedRouter);
+		if(!middlePoint.equals(doMiddlePoint)) {
+			doMiddlePoint = middlePoint;
+			AbsoluteBendpoint absoluteBendpoint = new AbsoluteBendpoint(middlePoint);
+			setRoutingConstraint(Arrays.asList(new Bendpoint[] {absoluteBendpoint}));
+		}
 		// Decorate with loop icon
-		add(doLoopLabel, new ConnectionLocator(this, ConnectionLocator.MIDDLE));
+		setLabel(doLoopLabel);
 	}
 
 }

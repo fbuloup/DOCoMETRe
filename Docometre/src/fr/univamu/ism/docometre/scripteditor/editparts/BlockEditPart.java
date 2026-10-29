@@ -44,7 +44,6 @@ package fr.univamu.ism.docometre.scripteditor.editparts;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.draw2d.ChopboxAnchor;
 import org.eclipse.draw2d.ConnectionAnchor;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.gef.ConnectionEditPart;
@@ -71,6 +70,7 @@ import fr.univamu.ism.process.Operator;
 import fr.univamu.ism.process.ScriptSegment;
 import fr.univamu.ism.process.SizeAndLocationListener;
 import fr.univamu.ism.docometre.scripteditor.figures.BlockFigure;
+import fr.univamu.ism.docometre.scripteditor.figures.PerpendicularAnchor;
 import fr.univamu.ism.docometre.scripteditor.actions.EditBlockAction;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.scripteditor.actions.AssignFunctionAction;
@@ -294,7 +294,7 @@ public class BlockEditPart extends AbstractGraphicalEditPart implements SizeAndL
 //				return new TopLeftAnchor(((GraphicalEditPart)blocksConnectionEditPart.getSource()).getFigure());
 //			}
 //		}
-		return new ChopboxAnchor(getFigure());
+		return new PerpendicularAnchor(getFigure());
 	}
 
 	/*
@@ -312,7 +312,7 @@ public class BlockEditPart extends AbstractGraphicalEditPart implements SizeAndL
 //				return new BottomLeftAnchor(((GraphicalEditPart)blocksConnectionEditPart.getTarget()).getFigure());
 //			}
 //		}
-		return new ChopboxAnchor(getFigure());
+		return new PerpendicularAnchor(getFigure());
 	}
 
 	/*
@@ -320,7 +320,7 @@ public class BlockEditPart extends AbstractGraphicalEditPart implements SizeAndL
 	 */
 	@Override
 	public ConnectionAnchor getSourceConnectionAnchor(Request request) {
-		if(request instanceof CreateConnectionRequest) return new ChopboxAnchor(getFigure());
+		if(request instanceof CreateConnectionRequest) return new PerpendicularAnchor(getFigure());
 		return null;
 	}
 
@@ -331,7 +331,7 @@ public class BlockEditPart extends AbstractGraphicalEditPart implements SizeAndL
 			Command command = createConnectionRequest.getStartCommand();
 			if(command instanceof CreateConnectionCommand) {
 				CreateConnectionCommand createConnectionCommand = (CreateConnectionCommand) command;
-				if(createConnectionCommand.isValidTarget(getModel())) return new ChopboxAnchor(getFigure());
+				if(createConnectionCommand.isValidTarget(getModel())) return new PerpendicularAnchor(getFigure());
 			}
 		}
 		return null;

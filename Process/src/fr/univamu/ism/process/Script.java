@@ -42,7 +42,14 @@
 package fr.univamu.ism.process;
 
 import java.io.Serializable;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -99,6 +106,27 @@ public class Script implements Serializable {
 	 * 
 	 */
 	private transient boolean indentCode = true;
+	
+	/*
+	 * Code generation state, used to detect blocks structure errors (see generateSegmentCode())
+	 */
+	private static class GenerationFrame {
+		// IF or DO block whose branch or body is being generated
+		private Block owner;
+		// Block ending this branch or body
+		private Block stopBlock;
+		private GenerationFrame(Block owner, Block stopBlock) {
+			this.owner = owner;
+			this.stopBlock = stopBlock;
+		}
+	}
+	private transient Deque<GenerationFrame> generationFrames = new ArrayDeque<>();
+	private transient Set<Block> generatedBlocks = new HashSet<>();
+	private transient Set<Block> duplicatedBlocks = new HashSet<>();
+	// IF and DO blocks already reported : a block generated several times must be reported once
+	private transient Set<Block> reportedBlocks = new HashSet<>();
+	// Blocks whose branch leaves an enclosing IF block, with their warning
+	private transient Map<Block, IStatus> branchLeavesBlockStatus = new LinkedHashMap<>();
 	
 	public static Script getSampleScript() {
 		return SampleScript1.getSampleScript();
@@ -216,18 +244,8 @@ public class Script implements Serializable {
 	 * @return the first loop block
 	 */
 	public Block getFirstInitializeBlock() {
-		for (int i = 0; i < initializeBlocks.getBlocks().size(); i++) {
-			Block currentBlock = initializeBlocks.getBlocks().get(i);
-			if(currentBlock.getPreviousBlocks().size() == 0) return currentBlock;
-			if(currentBlock instanceof DoBlock) {
-				DoBlock doBlock = (DoBlock)currentBlock;
-				if(doBlock.getPreviousBlocks().size() == 1) {
-					Block previousBlock = doBlock.getPreviousBlocks().get(0);
-					if(doBlock.getEndBlock() == previousBlock) return currentBlock;
-				}
-			}
-		}
-		return null;
+		List<Block> startBlocks = getStartBlocks(initializeBlocks);
+		return startBlocks.isEmpty() ? null : startBlocks.get(0);
 	}
 	
 	/**
@@ -235,8 +253,7 @@ public class Script implements Serializable {
 	 * @return the initialize code
 	 */
 	public String getInitializeCode(Object context, Object step) throws Exception {
-		Block firstBlock = getFirstInitializeBlock();
-		String code = generateCode(firstBlock, null, context, step);
+		String code = generateSegmentCode(initializeBlocks, context, step);
 		String initialIndent = "";
 		if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess)) {
 			if(!"DECLARATION".equals(step.toString())) initialIndent = "\t\t";
@@ -276,16 +293,8 @@ public class Script implements Serializable {
 	 * @return the first loop block
 	 */
 	public Block getFirstLoopBlock() {
-		for (int i = 0; i < loopBlocks.getBlocks().size(); i++) {
-			Block currentBlock = loopBlocks.getBlocks().get(i);
-			if(currentBlock.getPreviousBlocks().size() == 0) return currentBlock;
-			if(currentBlock instanceof DoBlock && currentBlock.getPreviousBlocks().size() == 1) {
-				DoBlock doBlock = (DoBlock)currentBlock;
-				Block previousBlock = currentBlock.getPreviousBlocks().get(0);
-				if(previousBlock.isLastBlockOf(doBlock)) return doBlock;
-			}
-		}
-		return null;
+		List<Block> startBlocks = getStartBlocks(loopBlocks);
+		return startBlocks.isEmpty() ? null : startBlocks.get(0);
 	}
 	
 	/**
@@ -293,8 +302,7 @@ public class Script implements Serializable {
 	 * @return the loop code
 	 */
 	public String getLoopCode(Object context, Object step, Object...objects) throws Exception {
-		Block firstBlock = getFirstLoopBlock();
-		String code = generateCode(firstBlock, null, context, step, objects);
+		String code = generateSegmentCode(loopBlocks, context, step, objects);
 		String initialIndent = "";
 		if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess)) {
 			if(!"DECLARATION".equals(step.toString())) initialIndent = "\t\t";
@@ -334,23 +342,8 @@ public class Script implements Serializable {
 	 * @return the first loop block
 	 */
 	public Block getFirstFinalizeBlock() {
-//		for (int i = 0; i < finalizeBlocks.getBlocks().size(); i++) {
-//			Block currentBlock = finalizeBlocks.getBlocks().get(i);
-//			if(currentBlock.getPreviousBlocks().size() == 0) return currentBlock;
-//		}
-//		return null;
-		
-		
-		for (int i = 0; i < finalizeBlocks.getBlocks().size(); i++) {
-			Block currentBlock = finalizeBlocks.getBlocks().get(i);
-			if(currentBlock.getPreviousBlocks().size() == 0) return currentBlock;
-			if(currentBlock instanceof DoBlock && currentBlock.getPreviousBlocks().size() == 1) {
-				DoBlock doBlock = (DoBlock)currentBlock;
-				Block previousBlock = currentBlock.getPreviousBlocks().get(0);
-				if(previousBlock.isLastBlockOf(doBlock)) return doBlock;
-			}
-		}
-		return null;
+		List<Block> startBlocks = getStartBlocks(finalizeBlocks);
+		return startBlocks.isEmpty() ? null : startBlocks.get(0);
 	}
 	
 	/**
@@ -358,14 +351,99 @@ public class Script implements Serializable {
 	 * @return the finalize code
 	 */
 	public String getFinalizeCode(Object context, Object step) throws Exception {
-		Block firstBlock = getFirstFinalizeBlock();
-		String code = generateCode(firstBlock, null, context, step);
+		String code = generateSegmentCode(finalizeBlocks, context, step);
 		String initialIndent = "";
 		if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess)) {
 			if(!"DECLARATION".equals(step.toString())) initialIndent = "\t\t";
 		}
 //		initialIndent =  step.equals(ArduinounoCodeSegmentProperties.DECLARATION)? initialIndent: "";
 		return indentCode(context, code, initialIndent);
+	}
+	
+	/*
+	 * Start blocks of a segment : blocks without previous block, or DO blocks whose only previous block is their end block.
+	 * Comments are never connected : they are not start blocks.
+	 */
+	private List<Block> getStartBlocks(ScriptSegment scriptSegment) {
+		List<Block> startBlocks = new ArrayList<Block>(0);
+		for (Block block : scriptSegment.getBlocks()) {
+			if(block instanceof Comment) continue;
+			if(block.getPreviousBlocks().size() == 0) startBlocks.add(block);
+			else if(block instanceof DoBlock && block.getPreviousBlocks().size() == 1 && block.getPreviousBlocks().get(0).isLastBlockOf((DoBlock) block)) startBlocks.add(block);
+		}
+		return startBlocks;
+	}
+	
+	/*
+	 * Warnings must only be reported for script segments steps. Steps are compared by identity : 
+	 * ADwin and Arduino Uno use their own steps whose names are the same as segments names 
+	 * (e.g. INITIALIZATION, LOOP or FINALIZATION), so the same warning would be reported several times.
+	 */
+	private static boolean isScriptSegmentStep(Object step) {
+		return step == ScriptSegmentType.INITIALIZE || step == ScriptSegmentType.LOOP || step == ScriptSegmentType.FINALIZE;
+	}
+	
+	private String getBlockName(Block block, Object context) {
+		return String.valueOf(block.getName(context)).replaceAll("\n", " ");
+	}
+	
+	/*
+	 * Generate code of a segment from its start block and warn about blocks structure errors :
+	 * - several start blocks : only the first one is used, the others are ignored,
+	 * - a branch leaves its IF block or its DO loop, loops overlap, or a block is generated several times : generated code is wrong.
+	 */
+	private String generateSegmentCode(ScriptSegment scriptSegment, Object context, Object step, Object...objects) {
+		boolean displayWarning = isScriptSegmentStep(step);
+		// IF and DO blocks set their status during generation, others blocks status are only set below
+		for (Block block : scriptSegment.getBlocks()) block.setStatus(null);
+		List<Block> startBlocks = getStartBlocks(scriptSegment);
+		if(startBlocks.size() > 1) {
+			String ignoredBlocks = "";
+			for (int i = 1; i < startBlocks.size(); i++) ignoredBlocks = ignoredBlocks + (i > 1 ? ", " : "") + "\"" + getBlockName(startBlocks.get(i), context) + "\"";
+			String message = NLS.bind(ProcessMessages.SeveralStartBlocks, new Object[] {step.toString(), getBlockName(startBlocks.get(0), context), ignoredBlocks});
+			IStatus status = new Status(Status.WARNING, Activator.PLUGIN_ID, message);
+			if(displayWarning) addGenerationCodeStatus(status);
+			for (int i = 1; i < startBlocks.size(); i++) startBlocks.get(i).setStatus(status);
+		}
+		generationFrames = new ArrayDeque<>();
+		generatedBlocks = new HashSet<>();
+		duplicatedBlocks = new HashSet<>();
+		reportedBlocks = new HashSet<>();
+		branchLeavesBlockStatus = new LinkedHashMap<>();
+		String code = generateCode(startBlocks.isEmpty() ? null : startBlocks.get(0), null, context, step, objects);
+		// Statuses are set after generation : a block generated several times resets its own status
+		for (Map.Entry<Block, IStatus> entry : branchLeavesBlockStatus.entrySet()) {
+			if(displayWarning) addGenerationCodeStatus(entry.getValue());
+			entry.getKey().setStatus(entry.getValue());
+		}
+		// Duplicated blocks are a consequence of a branch leaving its IF or DO block : warn only if not already done
+		if(branchLeavesBlockStatus.isEmpty()) {
+			for (Block block : duplicatedBlocks) {
+				String message = NLS.bind(ProcessMessages.BlockGeneratedSeveralTimes, step.toString(), getBlockName(block, context));
+				IStatus status = new Status(Status.WARNING, Activator.PLUGIN_ID, message);
+				if(displayWarning) addGenerationCodeStatus(status);
+				block.setStatus(status);
+			}
+		}
+		return code;
+	}
+	
+	/*
+	 * Called each time a block is about to be generated
+	 */
+	private void checkBlockGeneration(Block block, Object context, Object step) {
+		if(!generatedBlocks.add(block)) duplicatedBlocks.add(block);
+		// Block ending an enclosing IF or DO block is reached from a nested IF or DO block : a branch leaves its block, or loops overlap
+		GenerationFrame innerFrame = generationFrames.peek();
+		for (GenerationFrame frame : generationFrames) {
+			if(frame != innerFrame && frame.stopBlock == block) {
+				if(branchLeavesBlockStatus.containsKey(innerFrame.owner)) return;
+				String pattern = frame.owner instanceof DoBlock ? ProcessMessages.BranchLeavesDoBLock : ProcessMessages.BranchLeavesConditionalBlock;
+				String message = NLS.bind(pattern, new Object[] {step.toString(), getBlockName(block, context), getBlockName(frame.owner, context), getBlockName(innerFrame.owner, context)});
+				branchLeavesBlockStatus.put(innerFrame.owner, new Status(Status.WARNING, Activator.PLUGIN_ID, message));
+				return;
+			}
+		}
 	}
 	
 	/**
@@ -379,7 +457,8 @@ public class Script implements Serializable {
 		//if(!isScriptSegmentType) return "";
 		String code = "";
 		if(block == stopBlock) return "";
-		boolean displayWarning = step.toString().equals(ScriptSegmentType.INITIALIZE.toString()) || step.toString().equals(ScriptSegmentType.LOOP.toString()) || step.toString().equals(ScriptSegmentType.FINALIZE.toString());
+		if(block != null) checkBlockGeneration(block, context, step);
+		boolean displayWarning = isScriptSegmentStep(step);
 		if(block instanceof IfBlock /*&& isScriptSegmentType*/) {
 			IfBlock ifBlock = (IfBlock)block;
 			code = ifBlock.getCode(context, step, objects);
@@ -387,23 +466,25 @@ public class Script implements Serializable {
 			if(ifBlock.getNextTrueBranchBlock() == null) {
 				String message = NLS.bind(ProcessMessages.IfBlockWithoutTrueBranch, step.toString(), code.replaceAll("\n$", ""));
 				IStatus status = new Status(Status.WARNING, Activator.PLUGIN_ID, message);
-				if(displayWarning) addGenerationCodeStatus(status);
+				if(displayWarning && reportedBlocks.add(ifBlock)) addGenerationCodeStatus(status);
 				ifBlock.setStatus(status);
 			} else if(ifBlock.getNextFalseBranchBlock() == null) {
 				String message = NLS.bind(ProcessMessages.IfBlockWithoutFalseBranch, step.toString(), code.replaceAll("\n$", ""));
 				IStatus status = new Status(Status.WARNING, Activator.PLUGIN_ID, message);
-				if(displayWarning) addGenerationCodeStatus(status);
+				if(displayWarning && reportedBlocks.add(ifBlock)) addGenerationCodeStatus(status);
 				ifBlock.setStatus(status);
 			} else ifBlock.setStatus(null);
 			//Find endif bloc
 			Block endifBlock = ifBlock.getEndBlock();
 			//generate code till this endif bloc from true branch
+			generationFrames.push(new GenerationFrame(ifBlock, endifBlock));
 			code = code + generateCode(ifBlock.getNextTrueBranchBlock(), endifBlock, context, step, objects);
 			if(context.getClass().getSimpleName().equals(Activator.ADWinProcess) && isScriptSegmentType) code = code + "ELSE\n";
 			if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess) && isScriptSegmentType) code = code + "} else {\n";
 			if(context.getClass().getSimpleName().equals(Activator.Script) && isScriptSegmentType) code = code + "else\n";
 			//generate code till this endif bloc from false branch
 			code = code + generateCode(ifBlock.getNextFalseBranchBlock(), endifBlock, context, step, objects);
+			generationFrames.pop();
 			if(context.getClass().getSimpleName().equals(Activator.ADWinProcess) && isScriptSegmentType) code = code + "ENDIF\n";
 			if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess) && isScriptSegmentType) code = code + "} // End if .. else\n";
 			if(context.getClass().getSimpleName().equals(Activator.Script) && isScriptSegmentType) code = code + "end\n";
@@ -420,14 +501,16 @@ public class Script implements Serializable {
 			if(endDoBlock == null ) {
 				String message = NLS.bind(ProcessMessages.DoBlockWithoutEndFunction, step.toString());
 				IStatus status = new Status(Status.WARNING, Activator.PLUGIN_ID,  message);
-				if(displayWarning) addGenerationCodeStatus(status);
+				if(displayWarning && reportedBlocks.add(doBlock)) addGenerationCodeStatus(status);
 				doBlock.setStatus(status);
 			} else doBlock.setStatus(null);
 			if(endDoBlock != null) {
 				//generate code till this end do bloc
+				generationFrames.push(new GenerationFrame(doBlock, endDoBlock));
 				code = code + generateCode(doBlock.getNextBlock(), endDoBlock, context, step, objects);
 				//generate code for this end do bloc
 				code = code + generateCode(endDoBlock, endDoBlock.getNextBlock(), context, step, objects);
+				generationFrames.pop();
 			}
 			//generate close do bloc
 			code = code + doBlock.getCode(context, step, objects);
@@ -438,7 +521,7 @@ public class Script implements Serializable {
 				else { 
 					String message = NLS.bind(ProcessMessages.DoBlockWithoutStartFunction, step.toString());
 					IStatus status = new Status(Status.WARNING, Activator.PLUGIN_ID, message);
-					if(displayWarning) addGenerationCodeStatus(status);
+					if(displayWarning && reportedBlocks.add(doBlock)) addGenerationCodeStatus(status);
 					doBlock.setStatus(status);
 				}
 			}

@@ -47,6 +47,8 @@ import org.eclipse.gef.Request;
 import org.eclipse.gef.RequestConstants;
 import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.commands.CommandStack;
+import org.eclipse.gef.commands.CommandStackEvent;
+import org.eclipse.gef.commands.CommandStackEventListener;
 import org.eclipse.gef.editparts.AbstractConnectionEditPart;
 import org.eclipse.gef.editpolicies.ConnectionEditPolicy;
 import org.eclipse.gef.editpolicies.ConnectionEndpointEditPolicy;
@@ -67,7 +69,7 @@ import fr.univamu.ism.process.ScriptSegment;
  * @author frank
  *
  */
-public class BlocksConnectionEditPart extends AbstractConnectionEditPart {
+public class BlocksConnectionEditPart extends AbstractConnectionEditPart implements CommandStackEventListener {
 	
 	private IFigure blocksLayer;
 	private ScriptSegment scriptSegment;
@@ -86,6 +88,27 @@ public class BlocksConnectionEditPart extends AbstractConnectionEditPart {
 	@Override
 	protected IFigure createFigure() {
 		return new ConnectionFigure(blocksLayer, getModel());
+	}
+	
+	@Override
+	public void activate() {
+		super.activate();
+		getViewer().getEditDomain().getCommandStack().addCommandStackEventListener(this);
+	}
+	
+	@Override
+	public void deactivate() {
+		getViewer().getEditDomain().getCommandStack().removeCommandStackEventListener(this);
+		super.deactivate();
+	}
+	
+	/*
+	 * If branches switch and do loop end change are not notified by the model :
+	 * connection figure is revalidated, and so updated, after each command execution, undo or redo
+	 */
+	@Override
+	public void stackChanged(CommandStackEvent event) {
+		if(event.isPostChangeEvent()) getFigure().revalidate();
 	}
 	
 	/**
