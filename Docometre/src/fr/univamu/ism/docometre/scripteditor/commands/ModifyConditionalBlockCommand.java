@@ -41,6 +41,7 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.scripteditor.commands;
 
+import org.eclipse.gef.EditPartViewer;
 import org.eclipse.gef.commands.Command;
 
 import fr.univamu.ism.docometre.Activator;
@@ -58,12 +59,13 @@ public class ModifyConditionalBlockCommand extends Command {
 		private String oldLeftOperand;
 		private Operator oldOperator;
 		private String oldRightOperand;
-		private BlockEditPart blockEditPart;
+		// Viewer, not block edit part which is replaced when block is deleted then restored
+		private EditPartViewer viewer;
 		private ScriptSegment scriptSegment;
 
 		public ModifyConditionalBlockCommand(BlockEditPart blockEditPart, String leftOperand, Operator operator, String rightOperand) {
 			this.conditionalBlock = (ConditionalBlock) blockEditPart.getModel();
-			this.blockEditPart = blockEditPart;
+			this.viewer = blockEditPart.getViewer();
 			this.leftOperand = leftOperand;
 			this.operator = operator;
 			this.rightOperand = rightOperand;
@@ -79,7 +81,7 @@ public class ModifyConditionalBlockCommand extends Command {
 			conditionalBlock.setLeftOperand(leftOperand);
 			conditionalBlock.setOperator(operator);
 			conditionalBlock.setRightOperand(rightOperand);
-			blockEditPart.updateFigureLabel();
+			updateFigureLabel();
 		}
 		
 		@Override
@@ -88,7 +90,12 @@ public class ModifyConditionalBlockCommand extends Command {
 			conditionalBlock.setLeftOperand(oldLeftOperand);
 			conditionalBlock.setOperator(oldOperator);
 			conditionalBlock.setRightOperand(oldRightOperand);
-			blockEditPart.updateFigureLabel();
+			updateFigureLabel();
+		}
+		
+		private void updateFigureLabel() {
+			BlockEditPart blockEditPart = BlockEditPart.getBlockEditPart(viewer, conditionalBlock);
+			if(blockEditPart != null) blockEditPart.updateFigureLabel();
 		}
 		
 		private void activateSegmentProcessEditor() {

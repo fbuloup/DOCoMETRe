@@ -48,6 +48,7 @@ import org.eclipse.draw2d.ConnectionAnchor;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.gef.ConnectionEditPart;
 import org.eclipse.gef.DefaultEditDomain;
+import org.eclipse.gef.EditPartViewer;
 import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.NodeEditPart;
@@ -111,6 +112,15 @@ public class BlockEditPart extends AbstractGraphicalEditPart implements SizeAndL
 	
 	public void updateFigureLabel() {
 		figure.updateLabel();
+	}
+	
+	/**
+	 * Commands must not keep a block edit part : it is replaced when its block is deleted then restored by undo.
+	 * @return the edit part currently displaying this block in this viewer, or null if the block is not displayed
+	 */
+	public static BlockEditPart getBlockEditPart(EditPartViewer viewer, Block block) {
+		Object editPart = viewer.getEditPartRegistry().get(block);
+		return editPart instanceof BlockEditPart ? (BlockEditPart) editPart : null;
 	}
 	
 	/*

@@ -44,6 +44,7 @@ package fr.univamu.ism.docometre.scripteditor.commands;
 import java.util.HashMap;
 import java.util.Set;
 
+import org.eclipse.gef.EditPartViewer;
 import org.eclipse.gef.commands.Command;
 
 import fr.univamu.ism.docometre.Activator;
@@ -57,12 +58,13 @@ public class ModifyFunctionalBlockCommand extends Command {
 	private Function function;
 	private HashMap<String, String> newProperties = new HashMap<>();
 	private HashMap<String, String> oldProperties = new HashMap<>();
-	private BlockEditPart blockEditPart;
+	// Viewer, not block edit part which is replaced when block is deleted then restored
+	private EditPartViewer viewer;
 
 	public ModifyFunctionalBlockCommand(BlockEditPart blockEditPart) {
 		this.scriptSegment = (ScriptSegment) blockEditPart.getParent().getModel();
 		this.function = (Function) blockEditPart.getModel();
-		this.blockEditPart = blockEditPart;
+		this.viewer = blockEditPart.getViewer();
 		// Copy transient properties in new properties
 		Set<String> keySet = function.getTransientProperties().keySet();
 		for (String key : keySet) {
@@ -82,7 +84,7 @@ public class ModifyFunctionalBlockCommand extends Command {
 		for (String key : keySet) {
 			function.setProperty(key, newProperties.get(key));
 		}
-		blockEditPart.updateFigureLabel();
+		updateFigureLabel();
 	}
 	
 	@Override
@@ -94,8 +96,14 @@ public class ModifyFunctionalBlockCommand extends Command {
 		} else for (String key : keySet) {
 			function.setProperty(key, oldProperties.get(key));
 		}
-		blockEditPart.updateFigureLabel();
+		updateFigureLabel();
 	}
+	
+	private void updateFigureLabel() {
+		BlockEditPart blockEditPart = BlockEditPart.getBlockEditPart(viewer, function);
+		if(blockEditPart != null) blockEditPart.updateFigureLabel();
+	}
+
 	
 	private void activateSegmentProcessEditor() {
 		Activator.activateScriptSegmentEditor(scriptSegment);
