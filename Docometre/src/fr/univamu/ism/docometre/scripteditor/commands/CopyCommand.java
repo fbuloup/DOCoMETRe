@@ -44,25 +44,38 @@ package fr.univamu.ism.docometre.scripteditor.commands;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.gef.EditPart;
 import org.eclipse.gef.commands.Command;
-import org.eclipse.gef.ui.actions.Clipboard;
 
+import fr.univamu.ism.docometre.scripteditor.actions.GlobalDeclarationsClipboard;
+import fr.univamu.ism.docometre.scripteditor.actions.ScriptClipboard;
 import fr.univamu.ism.docometre.scripteditor.editparts.BlockEditPart;
-import fr.univamu.ism.process.Block;
+import fr.univamu.ism.docometre.scripteditor.editparts.GlobalDeclarationsEditPart;
+import fr.univamu.ism.process.GlobalDeclarations;
 
 public class CopyCommand extends Command {
 
-	private ArrayList<Block> blocks = new ArrayList<Block>();
+	// Blocks and global declarations
+	private ArrayList<Object> contents = new ArrayList<Object>();
+	private GlobalDeclarations.Content globalDeclarationsContent;
+	private Object context;
 	
-	public CopyCommand(List<BlockEditPart> blockEditParts) {
-		for (BlockEditPart blockEditPart : blockEditParts) {
-			blocks.add(blockEditPart.getModel());
+	public CopyCommand(List<EditPart> editParts) {
+		for (EditPart editPart : editParts) {
+			if(editPart instanceof BlockEditPart) contents.add(((BlockEditPart)editPart).getModel());
+			if(editPart instanceof GlobalDeclarationsEditPart) {
+				globalDeclarationsContent = ((GlobalDeclarationsEditPart)editPart).getModel().getContent();
+				context = ((GlobalDeclarationsEditPart)editPart).getContext();
+				contents.add(globalDeclarationsContent);
+			}
 		}
 	}
 	
 	@Override
 	public void execute() {
-		Clipboard.getDefault().setContents(blocks);
+		// Global declarations are also copied as source code text, to be pasted in an external editor
+		String text = globalDeclarationsContent == null ? null : GlobalDeclarationsClipboard.toText(globalDeclarationsContent, context);
+		ScriptClipboard.setContents(contents, text);
 	}
 	
 	@Override

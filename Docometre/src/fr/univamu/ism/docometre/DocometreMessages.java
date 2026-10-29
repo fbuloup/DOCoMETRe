@@ -1236,6 +1236,38 @@ public final class DocometreMessages extends NLS {
 	public static String ImpossibleToMerge;
 	public static String NbTrialsNotEquals;
 	public static String MergeDone;
+	public static String ModifyGlobalDeclarationsText;
+	public static String GlobalDeclarationsFigureToolTip;
+	public static String GlobalDeclarationsDialogTitle;
+	public static String GlobalDeclarationsDialogMessage;
+	public static String GlobalDeclarationsConstantsTab;
+	public static String GlobalDeclarationsSubroutinesTab;
+	public static String GlobalDeclarationsNameColumn;
+	public static String GlobalDeclarationsValueColumn;
+	public static String GlobalDeclarationsCommentColumn;
+	public static String GlobalDeclarationsParametersLabel;
+	public static String GlobalDeclarationsAddButton;
+	public static String GlobalDeclarationsRemoveButton;
+	public static String GlobalDeclarationsCopyButton;
+	public static String GlobalDeclarationsPasteButton;
+	public static String GlobalDeclarationsEmptyName;
+	public static String GlobalDeclarationsInvalidName;
+	public static String GlobalDeclarationsReservedName;
+	public static String GlobalDeclarationsDuplicateName;
+	public static String GlobalDeclarationsEmptyValue;
+	public static String GlobalDeclarationsPasteConflictTitle;
+	public static String GlobalDeclarationsPasteConflictMessage;
+	public static String GlobalDeclarationsReplaceButton;
+	public static String GlobalDeclarationsKeepButton;
+	public static String GlobalDeclarationsNothingToPaste;
+	public static String GlobalDeclarationsPastedText;
+	public static String GlobalDeclarationsIgnoredLines;
+	public static String GlobalDeclarationsLibrariesTab;
+	public static String GlobalDeclarationsFileColumn;
+	public static String GlobalDeclarationsEmptyLibrary;
+	public static String GlobalDeclarationsInvalidLibrary;
+	public static String GlobalDeclarationsDuplicateLibrary;
+	public static String GlobalDeclarationsMoreItems;
 	
 	static {
 		// load message values from bundle file

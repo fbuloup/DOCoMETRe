@@ -48,6 +48,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.draw2d.ScalableFreeformLayeredPane;
+import org.eclipse.draw2d.ToolTipHelper;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw2d.zoom.ZoomListener;
 import org.eclipse.gef.ContextMenuProvider;
@@ -307,6 +308,9 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 	private EditBlockAction editBlockAction;
 	private DeactivateBlockAction deactivateBlockAction;
 
+	// Tooltips (global declarations summary, blocks warnings) are hidden after this delay in ms, or as soon as mouse leaves their figure
+	private static final int TOOLTIP_HIDE_DELAY = 30000;
+	
 	private PaletteDrawer paletteDrawer;
 	private RulerComposite rulerComp;
 //	protected Process process;
@@ -443,6 +447,8 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 	@Override
 	protected void configureGraphicalViewer() {
 		super.configureGraphicalViewer();
+		// Default delay is 5 s, too short to read global declarations summary. It is read when viewer tooltip helper is created.
+		ToolTipHelper.setDefaultHideDelay(TOOLTIP_HIDE_DELAY);
 		getGraphicalViewer().setEditPartFactory(new ScriptEditPartFactory());
 		getGraphicalViewer().setRootEditPart(new ScalableFreeformRootEditPart());
 		getGraphicalViewer().setKeyHandler(new GraphicalViewerKeyHandler(getGraphicalViewer()));

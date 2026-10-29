@@ -88,7 +88,6 @@ public class DoBlock extends ConditionalBlock {
 				return;
 			}
 		}
-		System.out.println(getPreviousBlocksIsLastBlockInDoBlock());
 	}
 	
 	/**
@@ -96,7 +95,6 @@ public class DoBlock extends ConditionalBlock {
 	 */
 	public void unsetEndBlock() {
 		for (int i = 0; i < getPreviousBlocks().size(); i++) getPreviousBlocksIsLastBlockInDoBlock().set(i, false);
-		System.out.println(getPreviousBlocksIsLastBlockInDoBlock());
 	}
 	
 	/**

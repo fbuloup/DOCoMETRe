@@ -108,6 +108,15 @@ public class Script implements Serializable {
 	private transient boolean indentCode = true;
 	
 	/*
+	 * Global declarations, see GlobalDeclarations. Only standard Java types are serialized so that 
+	 * processes stay readable by previous versions. These fields are null in processes saved by previous versions.
+	 */
+	private ArrayList<String[]> globalLibraries;
+	private ArrayList<String[]> globalConstants;
+	private ArrayList<String[]> globalSubroutines;
+	private transient GlobalDeclarations globalDeclarations;
+	
+	/*
 	 * Code generation state, used to detect blocks structure errors (see generateSegmentCode())
 	 */
 	private static class GenerationFrame {
@@ -188,6 +197,36 @@ public class Script implements Serializable {
 //		this.finalizeBlocks.setBlocks(finalizeBlocks);
 //	}
 
+	/**
+	 * Global libraries, constants and subroutines of this script
+	 */
+	public GlobalDeclarations getGlobalDeclarations() {
+		if(globalDeclarations == null) globalDeclarations = new GlobalDeclarations(this);
+		return globalDeclarations;
+	}
+	
+	List<String[]> getGlobalLibrariesValues() {
+		if(globalLibraries == null) globalLibraries = new ArrayList<>();
+		return globalLibraries;
+	}
+	
+	List<String[]> getGlobalConstantsValues() {
+		if(globalConstants == null) globalConstants = new ArrayList<>();
+		return globalConstants;
+	}
+	
+	List<String[]> getGlobalSubroutinesValues() {
+		if(globalSubroutines == null) globalSubroutines = new ArrayList<>();
+		return globalSubroutines;
+	}
+	
+	void setGlobalDeclarationsValues(ArrayList<String[]> libraries, ArrayList<String[]> constants, ArrayList<String[]> subroutines) {
+		globalLibraries = libraries;
+		globalConstants = constants;
+		globalSubroutines = subroutines;
+		notifyBlocksListener();
+	}
+	
 	//Logic methods
 	/**
 	 * Helper method which delete a connection between two blocks

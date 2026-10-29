@@ -110,6 +110,7 @@ import fr.univamu.ism.docometre.dacqsystems.adwin.ui.dialogs.ParametersDialog;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor.ADWinProcessEditor;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 import fr.univamu.ism.process.Block;
+import fr.univamu.ism.process.GlobalDeclarations;
 import fr.univamu.ism.process.ScriptSegment;
 import fr.univamu.ism.process.ScriptSegmentType;
 
@@ -691,6 +692,8 @@ public class ADWinProcess extends Process {
 			if(segments[i].equals(ADWinCodeSegmentProperties.DECLARATION)) {
 				// Variables declaration
 				code = code + VariablesCodeGenerationDelegate.getCode(this, ADWinCodeSegmentProperties.DECLARATION);
+				// Global subroutines may use any declared variable
+				code = code + getGlobalSubroutinesCode();
 			}
 			if(segments[i].equals(ADWinCodeSegmentProperties.INITIALIZATION)) {
 				// Variables initialization
@@ -915,6 +918,7 @@ public class ADWinProcess extends Process {
 				
 //			code = code + "#INCLUDE " + processPathForMacOSX(getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH) + File.separator +  "DOCOLIB.INC\n");
 			
+			code = code + getGlobalLibrariesCode();
 			code = code + getCurrentProcess().getScript().getInitializeCode(this, ADWinCodeSegmentProperties.INCLUDE);
 			code = code + getCurrentProcess().getScript().getLoopCode(this, ADWinCodeSegmentProperties.INCLUDE);
 			code = code + getCurrentProcess().getScript().getFinalizeCode(this, ADWinCodeSegmentProperties.INCLUDE);
@@ -924,6 +928,7 @@ public class ADWinProcess extends Process {
 		if (segment == ADWinCodeSegmentProperties.DECLARATION){
 				code = "\n#DEFINE PI 4*ARCTAN(1)";
 				code = code + "\n#DEFINE time FPAR_" + getProperty(ADWinProcessProperties.PROCESS_NUMBER) + "\n";
+				code = code + getGlobalConstantsCode();
 				code = code + "DIM FEG AS LONG\n";
 				code = code + "DIM INDEX AS LONG\n";
 				code = code + "DIM TERMINATE_PROCESS AS SHORT\n";
@@ -1103,6 +1108,50 @@ public class ADWinProcess extends Process {
 			ModuleBehaviour module = getDACQConfiguration().getModule(i);
 			module.reset();
 		}
+	}
+	
+	/*
+	 * Global libraries declared in INITIALIZE segment editor, at the beginning of the code after system libraries
+	 */
+	private String getGlobalLibrariesCode() {
+		List<GlobalDeclarations.Library> libraries = getCurrentProcess().getScript().getGlobalDeclarations().getLibraries();
+		if(libraries.isEmpty()) return "";
+		String code = "REM ******** Global libraries\n";
+		for (GlobalDeclarations.Library library : libraries) {
+			if(!library.getComment().isEmpty()) code = code + "REM " + library.getComment() + "\n";
+			code = code + "#INCLUDE " + library.getFile() + "\n";
+		}
+		return code;
+	}
+	
+	/*
+	 * Global constants declared in INITIALIZE segment editor
+	 */
+	private String getGlobalConstantsCode() {
+		List<GlobalDeclarations.Constant> constants = getCurrentProcess().getScript().getGlobalDeclarations().getConstants();
+		if(constants.isEmpty()) return "";
+		String code = "\nREM ******** Global constants\n";
+		for (GlobalDeclarations.Constant constant : constants) {
+			if(!constant.getComment().isEmpty()) code = code + "REM " + constant.getComment() + "\n";
+			code = code + "#DEFINE " + constant.getName() + " " + constant.getValue() + "\n";
+		}
+		return code;
+	}
+	
+	/*
+	 * Global subroutines declared in INITIALIZE segment editor, after variables declaration and before first program section
+	 */
+	private String getGlobalSubroutinesCode() {
+		List<GlobalDeclarations.Subroutine> subroutines = getCurrentProcess().getScript().getGlobalDeclarations().getSubroutines();
+		if(subroutines.isEmpty()) return "";
+		String code = "\nREM ******** Global subroutines\n\n";
+		for (GlobalDeclarations.Subroutine subroutine : subroutines) {
+			code = code + "SUB " + subroutine.getName() + "(" + subroutine.getParameters() + ")\n";
+			String body = subroutine.getBody().stripTrailing();
+			if(!body.isEmpty()) for (String line : body.split("\\R")) code = code + "\t" + line + "\n";
+			code = code + "ENDSUB\n\n";
+		}
+		return code;
 	}
 	
 	public void recovery() {

@@ -41,20 +41,29 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.scripteditor.actions;
 
-import java.util.ArrayList;
+import java.util.List;
 
+import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.commands.CommandStack;
-import org.eclipse.gef.ui.actions.Clipboard;
 import org.eclipse.gef.ui.actions.SelectionAction;
+import org.eclipse.jface.window.Window;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.actions.ActionFactory;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.dialogs.GlobalDeclarationsDialog;
+import fr.univamu.ism.docometre.editors.ResourceEditorInput;
+import fr.univamu.ism.docometre.scripteditor.actions.GlobalDeclarationsClipboard.PastedDeclarations;
+import fr.univamu.ism.docometre.scripteditor.commands.ModifyGlobalDeclarationsCommand;
 import fr.univamu.ism.docometre.scripteditor.commands.PasteCommand;
 import fr.univamu.ism.process.Block;
+import fr.univamu.ism.process.GlobalDeclarations;
 import fr.univamu.ism.process.ScriptSegment;
+import fr.univamu.ism.process.ScriptSegmentType;
 
 public class PasteAction extends SelectionAction {
 
@@ -75,22 +84,54 @@ public class PasteAction extends SelectionAction {
 		setId(ActionFactory.PASTE.getId());
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	protected boolean calculateEnabled() {
-		ArrayList<Object> objects = (ArrayList<Object>) Clipboard.getDefault().getContents();
-		if(objects == null || objects.isEmpty()) return false;
-		for (Object object : objects) {
-			if(!(object instanceof Block)) return false;
-		}
-		return true;
+		// Global declarations can only be pasted in INITIALIZE segment
+		return hasBlocks() || (isInitializeSegment() && GlobalDeclarationsClipboard.getPastedDeclarations(getContext()) != null);
+	}
+	
+	private boolean hasBlocks() {
+		Object contents = ScriptClipboard.getContents();
+		if(!(contents instanceof List)) return false;
+		for (Object object : (List<?>)contents) if(object instanceof Block) return true;
+		return false;
+	}
+	
+	private Object getContext() {
+		return ((ResourceEditorInput)((IEditorPart)getWorkbenchPart()).getEditorInput()).getObject();
+	}
+	
+	private boolean isInitializeSegment() {
+		return scriptSegment != null && scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.INITIALIZE);
 	}
 
 	@Override
 	public void run() {
 //		getWorkbenchPart().getAdapter(GraphicalViewer.class)
-		PasteCommand pasteCommand = new PasteCommand(scriptSegment);
-		commandStack.execute(pasteCommand);
+		Object context = getContext();
+		PastedDeclarations pastedDeclarations = isInitializeSegment() ? GlobalDeclarationsClipboard.getPastedDeclarations(context) : null;
+		Command command = null;
+		// Blocks of internal clipboard are older than source code text copied in an external editor
+		if(hasBlocks() && (pastedDeclarations == null || !pastedDeclarations.isFromText())) command = new PasteCommand(scriptSegment);
+		// Pasted global declarations are merged with global declarations of this process
+		if(pastedDeclarations != null) {
+			Shell shell = getWorkbenchPart().getSite().getShell();
+			GlobalDeclarations globalDeclarations = scriptSegment.getScript().getGlobalDeclarations();
+			GlobalDeclarations.Content mergedContent = GlobalDeclarationsClipboard.merge(shell, globalDeclarations.getContent(), pastedDeclarations.getContent(), GlobalDeclarationsClipboard.isCaseSensitive(context));
+			if(mergedContent == null) return;
+			// Declarations read from external source code are reviewed before being added
+			if(pastedDeclarations.isFromText()) {
+				GlobalDeclarationsDialog dialog = new GlobalDeclarationsDialog(shell, context, mergedContent);
+				dialog.setPasteReport(pastedDeclarations.getIgnoredLines());
+				if(dialog.open() != Window.OK) return;
+				mergedContent = dialog.getContent();
+			}
+			if(!mergedContent.equals(globalDeclarations.getContent())) {
+				Command modifyCommand = new ModifyGlobalDeclarationsCommand(scriptSegment, mergedContent);
+				command = command == null ? modifyCommand : command.chain(modifyCommand);
+			}
+		}
+		if(command != null) commandStack.execute(command);
 	}
 	
 }

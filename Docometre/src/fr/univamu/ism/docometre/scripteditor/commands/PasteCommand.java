@@ -42,10 +42,11 @@
 package fr.univamu.ism.docometre.scripteditor.commands;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.gef.commands.Command;
-import org.eclipse.gef.ui.actions.Clipboard;
 
+import fr.univamu.ism.docometre.scripteditor.actions.ScriptClipboard;
 import fr.univamu.ism.process.Block;
 import fr.univamu.ism.process.ScriptSegment;
 import fr.univamu.ism.process.ScriptSegmentType;
@@ -58,9 +59,10 @@ public class PasteCommand extends Command {
 	private ArrayList<Block> clonedBlocks;
 	private ScriptSegment scriptSegment;
 
-	@SuppressWarnings("unchecked")
 	public PasteCommand(ScriptSegment scriptSegment) {
-		ArrayList<Block> blocks = (ArrayList<Block>) Clipboard.getDefault().getContents();
+		// Clipboard may also contain global declarations, see PasteAction
+		ArrayList<Block> blocks = new ArrayList<Block>();
+		for (Object object : (List<?>) ScriptClipboard.getContents()) if(object instanceof Block) blocks.add((Block) object);
 		clonedBlocks = fr.univamu.ism.process.Activator.clone(blocks);
 		this.scriptSegment = scriptSegment;
 		boolean repast = true;

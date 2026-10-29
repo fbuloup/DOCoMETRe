@@ -95,12 +95,12 @@ public interface IImageKeys {
 	public static final String APPLY_DEFAULT_SETTINGS_ICON = "icons/setting.png"; //$NON-NLS-1$
 	
 	//Process editor
-	public static final String IF_BLOCK_16_ICON = "icons/IF_16.png"; //$NON-NLS-1$
-	public static final String IF_BLOCK_32_ICON = "icons/IF_32.png"; //$NON-NLS-1$
-	public static final String DO_BLOCK_16_ICON = "icons/DO_16.png"; //$NON-NLS-1$
-	public static final String DO_BLOCK_32_ICON = "icons/DO_32.png"; //$NON-NLS-1$
-	public static final String FUNCTION_BLOCK_16_ICON = "icons/FUNCTION_16.png"; //$NON-NLS-1$
-	public static final String FUNCTION_BLOCK_32_ICON = "icons/FUNCTION_32.png"; //$NON-NLS-1$
+	public static final String IF_BLOCK_16_ICON = "icons/conditionalBlock_16.png"; //$NON-NLS-1$
+	public static final String IF_BLOCK_32_ICON = "icons/conditionalBlock_32.png"; //$NON-NLS-1$
+	public static final String DO_BLOCK_16_ICON = "icons/doBlock_16.png"; //$NON-NLS-1$
+	public static final String DO_BLOCK_32_ICON = "icons/doBlock_32.png"; //$NON-NLS-1$
+	public static final String FUNCTION_BLOCK_16_ICON = "icons/functionBlock_16.png"; //$NON-NLS-1$
+	public static final String FUNCTION_BLOCK_32_ICON = "icons/functionBlock_32.png"; //$NON-NLS-1$
 	public static final String COMMENT_BLOCK_16_ICON = "icons/comment_16.png"; //$NON-NLS-1$
 	public static final String COMMENT_BLOCK_32_ICON = "icons/comment_32.png"; //$NON-NLS-1$
 	public static final String NEW_CONNECTION_16_ICON = "icons/newConnection_16.png"; //$NON-NLS-1$
@@ -211,6 +211,9 @@ public interface IImageKeys {
 	
 	public static final String FUNCTION_ICON = "icons/function.gif"; //$NON-NLS-1$
 	public static final String CUSTOMER_FUNCTION_ICON = "icons/customerFunction.gif"; //$NON-NLS-1$
+	public static final String LIBRARY_ICON = "icons/library.png"; //$NON-NLS-1$
+	public static final String CONSTANT_ICON = "icons/constant.png"; //$NON-NLS-1$
+	public static final String SUBROUTINE_ICON = "icons/subroutine.png"; //$NON-NLS-1$
 	public static final String MAIN_PROPERTY_ICON = "icons/mainProperty.png"; //$NON-NLS-1$
 	public static final String INNER_PROPERTY_ICON = "icons/innerProperty.png"; //$NON-NLS-1$
 	
