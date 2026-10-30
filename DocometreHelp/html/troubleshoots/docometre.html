@@ -8,6 +8,48 @@
 
 <body>
 <h1>Troubleshoots with DOCoMETRe</h1>
+<h2>How to debug timing during acquisition ?</h2>
+<p>When trials follow one another, you may want to know how long DOCoMETRe takes between the end of a trial
+and the start of the next one, and where this time is spent (charts creation, files, boot of the system...).
+To get these measures, add <b>-traceTrialTimings</b> argument to program command line.</p>
+
+<p>This argument is a program argument, not a Java virtual machine one : in <b>DOCoMETRe.ini</b> file,
+it must be on its own line <b>before</b> the <b>-vmargs</b> line :</p>
+<pre>
+-startup
+../Eclipse/plugins/org.eclipse.equinox.launcher_1.6.100.v20201223-0822.jar
+--launcher.library
+../Eclipse/plugins/org.eclipse.equinox.launcher.cocoa.macosx.x86_64_1.2.100.v20210209-1541
+<b>-traceTrialTimings</b>
+-vmargs
+--add-modules=ALL-SYSTEM
+-Xmx2048m
+-XstartOnFirstThread
+</pre>
+<p>As for the debugging options below, take a backup of <b>DOCoMETRe.ini</b> before any change.</p>
+
+<p>Each measure is then written as an information message in the log file of the workspace
+(<b>workspace/.metadata/.log</b>), prefixed by <b>[TIMING]</b>. These measures are currently made with ADWin systems.
+Without this argument, nothing is measured nor written : the acquisition is not slowed down.</p>
+
+<p>The following measures are written for each trial :</p>
+<ul>
+  <li><b>End of the trial</b> : the time origin (t = 0) is the end of the process on the acquisition system.
+  Then a summary of the real-time loop is written (number of iterations, duration of the last and of the longest iteration),
+  as well as the duration of the INIT section of the ADbasic process (if it is unknown, recompile the process).</li>
+  <li><b>Steps between two trials</b> : for each step (channels files closed, end of the real-time loop job,
+  post execution with diary and markers, trial validation and next trial with its dialogs, process preparation,
+  real-time charts creation, boot of the system, process loading, channels files opening, parameters sent to the system,
+  process start), the duration of the step and the total time since t = 0 are written.</li>
+  <li><b>Start of the next trial</b> : the delays, after the start of the process, of the first real-time loop iteration
+  and of the first data received (first CAN data and first other data).</li>
+  <li><b>Process stop</b> : the duration of the first call to stop the process. A call longer than 100 ms is reported as a
+  <b>TIME OUT</b> : the process is then cleared, the system is booted again and the process will be loaded again at next start,
+  which makes the start of the next trial longer.</li>
+</ul>
+
+<p>Remove this argument once the debugging is over, in order to keep the log file small.</p>
+
 <h2>How to add Objects Controller messages ?</h2>
 <p>Simply add -debugObjectHandler argument to program command line.</p>
 
