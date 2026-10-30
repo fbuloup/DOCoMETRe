@@ -245,7 +245,7 @@ public final class MatlabCodeScanner extends RuleBasedScanner {
 	private static List<IRule>  getNumbersScanner(DataProcessScriptSourceEditor dataProcessScriptSourceEditor) {
 		List<IRule> rules= new ArrayList<IRule>();
 		
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLACK), 
+		TextAttribute attribute = new TextAttribute(null, 
 														null, SWT.BOLD,
 														DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, dataProcessScriptSourceEditor.getFontSize()));
 		
@@ -277,7 +277,7 @@ public final class MatlabCodeScanner extends RuleBasedScanner {
 	}
 	
 	private static IToken geDefaultTextAttributeToken(DataProcessScriptSourceEditor dataProcessScriptSourceEditor) {
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLACK),
+		TextAttribute attribute = new TextAttribute(null,
 				ThemeColors.getBackgroundColor(), SWT.NORMAL,
 				DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, dataProcessScriptSourceEditor.getFontSize()));
 		IToken token = new Token(attribute);

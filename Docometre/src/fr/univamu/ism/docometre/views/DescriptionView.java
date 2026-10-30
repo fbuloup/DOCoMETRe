@@ -44,7 +44,6 @@ package fr.univamu.ism.docometre.views;
 import java.util.Arrays;
 
 import org.eclipse.core.resources.IResource;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
@@ -76,22 +75,16 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.GetResourceLabelDelegate;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.ThemeColors;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 
 public class DescriptionView extends ViewPart implements ISelectionListener, IPartListener {
 	
 	private static int COMPLETION_HEIGHT = 15;
 	
-	// Colors IDs
-	private static final String BACKGROUND_COLOR = "BACKGROUND_COLOR";
-	private static final String BORDER_COLOR = "BORDER_COLOR";
-	private static final String MARK_TRIAL_COLOR = "MARK_TRIAL_COLOR";
-	
-	static {
-		JFaceResources.getColorRegistry().put(BORDER_COLOR, new RGB(139,0,0));
-		JFaceResources.getColorRegistry().put(BACKGROUND_COLOR, new RGB(255, 255, 255));
-		JFaceResources.getColorRegistry().put(MARK_TRIAL_COLOR, new RGB(139,0,0));
-	}
+	// Default colors (light theme), see ThemeColors
+	private static final RGB BACKGROUND_RGB = new RGB(255, 255, 255);
+	private static final RGB MARK_TRIAL_RGB = new RGB(139,0,0);
 
 	class Completion extends Canvas implements PaintListener {
 		private IResource resource;
@@ -116,9 +109,9 @@ public class DescriptionView extends ViewPart implements ISelectionListener, IPa
 			Rectangle rectangle = new Rectangle(0, 0, nbTrials==0?100:nbTrials, COMPLETION_HEIGHT);
 			Image image = new Image(getDisplay(), rectangle);
 			GC gc = new GC(image);
-			gc.setBackground(JFaceResources.getColorRegistry().get(BACKGROUND_COLOR));
+			gc.setBackground(ThemeColors.getColor(ThemeColors.COMPLETION_BACKGROUND_COLOR, BACKGROUND_RGB));
 			gc.fillRectangle(0, 0, image.getBounds().width , image.getBounds().height );
-			gc.setForeground(JFaceResources.getColorRegistry().get(MARK_TRIAL_COLOR));
+			gc.setForeground(ThemeColors.getColor(ThemeColors.COMPLETION_MARK_COLOR, MARK_TRIAL_RGB));
 			int lastUndoneTrial = 0;
 			
 			boolean isFollowing = false;
@@ -153,7 +146,7 @@ public class DescriptionView extends ViewPart implements ISelectionListener, IPa
 			gc.dispose();
 			
 			// Draw black round rectangle
-			e.gc.setForeground(JFaceResources.getColorRegistry().get(BORDER_COLOR));
+			e.gc.setForeground(ThemeColors.getColor(ThemeColors.COMPLETION_MARK_COLOR, MARK_TRIAL_RGB));
 			e.gc.setLineWidth(1);
 			e.gc.drawRoundRectangle(0, 0, getClientArea().width - 1, getClientArea().height - 1, 6, 6);
 

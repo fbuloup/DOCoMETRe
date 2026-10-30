@@ -16,3 +16,31 @@ ColorDefinition#fr-univamu-ism-docometre-LINE_NUMBER_FOREGROUND_COLOR {
 ColorDefinition#fr-univamu-ism-docometre-LINE_NUMBER_BACKGROUND_COLOR {
 	color: #000000;
 }
+
+ColorDefinition#fr-univamu-ism-docometre-COMPLETION_BACKGROUND_COLOR {
+	color: #3C3F41;
+}
+
+ColorDefinition#fr-univamu-ism-docometre-COMPLETION_MARK_COLOR {
+	color: #E14545;
+}
+
+ColorDefinition#fr-univamu-ism-docometre-SYNTAX_RED_COLOR {
+	color: #FF6B6B;
+}
+
+ColorDefinition#fr-univamu-ism-docometre-SYNTAX_GREEN_COLOR {
+	color: #6AAB73;
+}
+
+ColorDefinition#fr-univamu-ism-docometre-SYNTAX_BLUE_COLOR {
+	color: #7AA6FF;
+}
+
+ColorDefinition#fr-univamu-ism-docometre-SYNTAX_ORANGE_COLOR {
+	color: #FF8C3C;
+}
+
+ColorDefinition#fr-univamu-ism-docometre-SYNTAX_MAROON_COLOR {
+	color: #D69D85;
+}

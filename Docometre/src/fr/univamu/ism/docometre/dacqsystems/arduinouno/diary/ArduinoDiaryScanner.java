@@ -52,15 +52,10 @@ import org.eclipse.jface.text.rules.MultiLineRule;
 import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.DocometreApplication;
 
 public class ArduinoDiaryScanner extends RuleBasedScanner {
-	
-	private static Color backgroundColor;
-	private static Color foregroundColor;
 	
 	private static final String HEADER_START = "Process";
 	private static final String HEADER_FOOTER_END = "sec.";
@@ -80,14 +75,12 @@ public class ArduinoDiaryScanner extends RuleBasedScanner {
 		rules.add(getFooterScanner());
 		rules.add(getHeaderScanner());
 		setRules(rules.toArray(new IRule[rules.size()]));
-		backgroundColor = PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
-		foregroundColor = PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND);
 	}
 	
 	
 	public static IRule getRecoveringChannelScanner() {
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.ORANGE), 
-				backgroundColor, 
+				null, 
 				   									SWT.NORMAL, 
 				   									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
@@ -96,7 +89,7 @@ public class ArduinoDiaryScanner extends RuleBasedScanner {
 	
 	public static IRule getAtWorkloadScanner() {
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.GREEN), 
-				backgroundColor, 
+				null, 
 				   									SWT.NORMAL, 
 				   									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
@@ -104,8 +97,8 @@ public class ArduinoDiaryScanner extends RuleBasedScanner {
 	}
 	
 	public static IRule getHeaderScanner() {
-		TextAttribute attribute = new TextAttribute(foregroundColor, 
-					backgroundColor, 
+		TextAttribute attribute = new TextAttribute(null, 
+					null, 
 					SWT.NORMAL, 
 					DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
@@ -114,7 +107,7 @@ public class ArduinoDiaryScanner extends RuleBasedScanner {
 	
 	public static IRule getReceivedStopScanner() {
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.MAROON), 
-					backgroundColor, 
+					null, 
 					SWT.NORMAL, 
 					DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
@@ -123,7 +116,7 @@ public class ArduinoDiaryScanner extends RuleBasedScanner {
 	
 	public static IRule getFooterScanner() {
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLUE), 
-					backgroundColor, 
+					null, 
 					SWT.NORMAL, 
 					DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);
@@ -132,7 +125,7 @@ public class ArduinoDiaryScanner extends RuleBasedScanner {
 	
 	public static IRule getErrorScanner() {
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.RED), 
-				backgroundColor, 
+				null, 
 				   									SWT.NORMAL, 
 				   									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 		IToken token = new Token(attribute);

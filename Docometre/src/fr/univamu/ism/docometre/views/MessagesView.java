@@ -46,7 +46,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocumentListener;
@@ -56,7 +55,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.PlatformUI;
@@ -71,8 +69,8 @@ import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
 public class MessagesView extends ViewPart implements ILogListener, IDocumentListener {
 	
-	private static Color WARNING_COLOR = JFaceResources.getResources().createColor(new RGB(204,102,0));
-	private static Color ERROR_COLOR = JFaceResources.getResources().createColor(new RGB(250, 0, 0));
+	private static RGB WARNING_RGB = new RGB(204,102,0);
+	private static RGB ERROR_RGB = new RGB(250, 0, 0);
 	
 	private class ScrollLockAction extends Action {
 		public ScrollLockAction() {
@@ -198,8 +196,8 @@ public class MessagesView extends ViewPart implements ILogListener, IDocumentLis
 //			if(status.getSeverity() == IStatus.WARNING) styleRange.fontStyle = SWT.BOLD;
 //			if(status.getSeverity() == IStatus.ERROR) styleRange.fontStyle = SWT.BOLD;
 		if(status.getSeverity() == IStatus.INFO) styleRange.foreground = messagesViewer.getTextWidget().getForeground();
-		if(status.getSeverity() == IStatus.WARNING) styleRange.foreground = WARNING_COLOR;
-		if(status.getSeverity() == IStatus.ERROR) styleRange.foreground = ERROR_COLOR;
+		if(status.getSeverity() == IStatus.WARNING) styleRange.foreground = ThemeColors.getColor(ThemeColors.CONSOLE_WARNING_COLOR, WARNING_RGB);
+		if(status.getSeverity() == IStatus.ERROR) styleRange.foreground = ThemeColors.getColor(ThemeColors.CONSOLE_ERROR_COLOR, ERROR_RGB);
 		
 		messagesViewer.getTextWidget().setStyleRange(styleRange);
 		

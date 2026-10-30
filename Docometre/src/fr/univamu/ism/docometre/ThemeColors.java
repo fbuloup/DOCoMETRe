@@ -61,6 +61,10 @@ public final class ThemeColors {
 	public static final String CONSOLE_ERROR_COLOR = "fr.univamu.ism.docometre.CONSOLE_ERROR_COLOR";
 	public static final String LINE_NUMBER_FOREGROUND_COLOR = "fr.univamu.ism.docometre.LINE_NUMBER_FOREGROUND_COLOR";
 	public static final String LINE_NUMBER_BACKGROUND_COLOR = "fr.univamu.ism.docometre.LINE_NUMBER_BACKGROUND_COLOR";
+	public static final String COMPLETION_BACKGROUND_COLOR = "fr.univamu.ism.docometre.COMPLETION_BACKGROUND_COLOR";
+	public static final String COMPLETION_MARK_COLOR = "fr.univamu.ism.docometre.COMPLETION_MARK_COLOR";
+	// Syntax colors : SYNTAX_COLOR_PREFIX + DocometreApplication color name (RED, GREEN...) + "_COLOR"
+	public static final String SYNTAX_COLOR_PREFIX = "fr.univamu.ism.docometre.SYNTAX_";
 	
 	/*
 	 * Same rule as Eclipse ThemeEngine.restore() : theme saved in preferences

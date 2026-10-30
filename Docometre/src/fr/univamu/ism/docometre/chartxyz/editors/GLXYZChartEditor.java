@@ -224,7 +224,6 @@ public class GLXYZChartEditor extends EditorPart implements ISelectionChangedLis
 		gl.marginWidth = 1;
 		gl.verticalSpacing = 1;
 		container2.setLayout(gl);
-		container2.setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
 
 		trialsCategoriesTabFolder = new CTabFolder(container2, SWT.BOTTOM | SWT.FLAT | SWT.BORDER | SWT.MULTI);
 		trialsCategoriesTabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));

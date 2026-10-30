@@ -192,7 +192,7 @@ public class PythonCodeScanner extends RuleBasedScanner {
 	private static List<IRule>  getNumbersScanner(DataProcessScriptSourceEditor dataProcessScriptSourceEditor) {
 		List<IRule> rules= new ArrayList<IRule>();
 		
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLACK), null, SWT.BOLD);
+		TextAttribute attribute = new TextAttribute(null, null, SWT.BOLD);
 		
 	    IToken numberToken = new Token(attribute);
 	    
@@ -254,7 +254,7 @@ public class PythonCodeScanner extends RuleBasedScanner {
 	}
 	
 	private static IToken geDefaultTextAttributeToken(DataProcessScriptSourceEditor dataProcessScriptSourceEditor) {
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLACK),
+		TextAttribute attribute = new TextAttribute(null,
 				ThemeColors.getBackgroundColor(), SWT.NORMAL,
 				DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, dataProcessScriptSourceEditor.getFontSize()));
 		IToken token = new Token(attribute);

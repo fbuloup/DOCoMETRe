@@ -84,6 +84,7 @@ import fr.univamu.ism.docometre.DocometreSharedColors;
 import fr.univamu.ism.docometre.GetResourceLabelDelegate;
 import fr.univamu.ism.docometre.PartListenerAdapter;
 import fr.univamu.ism.docometre.ResourceProperties;
+import fr.univamu.ism.docometre.ThemeColors;
 import fr.univamu.ism.docometre.annotations.DocometreAnnotationAccesExtension;
 import fr.univamu.ism.docometre.annotations.ErrorAnnotation;
 import fr.univamu.ism.docometre.annotations.WarningAnnotation;
@@ -149,7 +150,7 @@ public class DiaryEditor extends EditorPart implements PartNameRefresher {
 			lineAnnotationRuler.setModel(annotationModel);
 			// Lines numbers column
 			LineNumberRulerColumn lineNumberRulerColumn = new LineNumberRulerColumn();
-			lineNumberRulerColumn.setForeground(PlatformUI.createDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND));
+			lineNumberRulerColumn.setForeground(ThemeColors.getColor(ThemeColors.LINE_NUMBER_FOREGROUND_COLOR, new RGB(0, 0, 0)));
 			lineAnnotationRuler.addDecorator(0,lineNumberRulerColumn);
 			// Annotation column
 			DocometreAnnotationAccesExtension docometreAnnotationAccesExtension = new DocometreAnnotationAccesExtension();
