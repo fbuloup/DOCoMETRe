@@ -46,6 +46,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.resource.ColorRegistry;
@@ -83,6 +84,11 @@ public final class ThemeColors {
 	public static final String DARK_THEME_ID = "org.eclipse.e4.ui.css.theme.e4_dark";
 	
 	private static boolean darkTheme;
+	
+	// Style sheet added by the help server to every help topic (org.eclipse.help.base preference)
+	private static final String HELP_PREFERENCES_NODE = "org.eclipse.help.base";
+	private static final String HELP_TOPIC_CSS_KEY = "topic_css";
+	private static final String HELP_DARK_TOPIC_CSS = "/DocometreHelp/css/dark_topic.css";
 	
 	// Eclipse dark theme colors for dialogs (DARK_BACKGROUND and DARK_FOREGROUND)
 	private static final RGB DARK_BACKGROUND_RGB = new RGB(0x48, 0x48, 0x4C);
@@ -163,6 +169,17 @@ public final class ThemeColors {
 		String themeId = InstanceScope.INSTANCE.getNode(THEME_PREFERENCES_NODE).get(THEME_ID_KEY, null);
 		if(themeId != null) return themeId.contains("dark");
 		return Display.isSystemDarkTheme();
+	}
+	
+	/*
+	 * Help topics (DocometreHelp html pages) have no style sheet : in dark theme, the help server adds
+	 * DocometreHelp/css/dark_topic.css to each of them. The theme of DOCoMETRe is used rather than
+	 * the CSS prefers-color-scheme media feature, which depends on the browser (system theme, or
+	 * not supported) and not on the theme of DOCoMETRe.
+	 */
+	public static void setHelpTheme(boolean dark) {
+		// Default scope : not saved, the theme is read again at each startup
+		if(dark) DefaultScope.INSTANCE.getNode(HELP_PREFERENCES_NODE).put(HELP_TOPIC_CSS_KEY, HELP_DARK_TOPIC_CSS);
 	}
 	
 	/*

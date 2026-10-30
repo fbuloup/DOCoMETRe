@@ -207,6 +207,7 @@ public class DocometreApplication implements IApplication {
 		ThemeColors.removePersistedThemeColors();
 		ThemeColors.setDarkTheme(ThemeColors.isDarkThemeAtStartup());
 		ThemeColors.setWindowsNativeTheme(ThemeColors.isDarkTheme());
+		ThemeColors.setHelpTheme(ThemeColors.isDarkTheme());
 		try {
 			int returnCode = PlatformUI.createAndRunWorkbench(display, new ApplicationWorkbenchAdvisor());
 			Activator.logInfoMessage("createAndRunWorkbench return code : " + returnCode, getClass());

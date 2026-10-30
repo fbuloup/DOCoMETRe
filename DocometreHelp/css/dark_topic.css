@@ -1,0 +1,24 @@
+/* DOCoMETRe help topics in dark theme.
+ * Added to every help topic by the help server (org.eclipse.help.base/topic_css preference),
+ * set at startup by ThemeColors.setHelpTheme() when DOCoMETRe uses the dark theme.
+ * Background and text: same colors as the Eclipse help dark theme (org.eclipse.help.base/doc/darkTheme.css). */
+
+body {
+	color: #F0F0F0;
+	background: #3D3D3D;
+}
+
+a:link,
+a:visited {
+	color: #8AB4F8;
+}
+
+pre,
+code {
+	color: #E6E6E6;
+}
+
+/* Warnings written in pure red (style="color:rgba(255,0,0,1);"): lighter red, readable on a dark background */
+[style*="255,0,0"] {
+	color: #FF6B6B !important;
+}
