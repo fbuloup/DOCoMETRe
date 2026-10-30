@@ -73,6 +73,11 @@ public final class ThemeColors {
 	// Syntax colors : SYNTAX_COLOR_PREFIX + DocometreApplication color name (RED, GREEN...) + "_COLOR"
 	public static final String SYNTAX_COLOR_PREFIX = "fr.univamu.ism.docometre.SYNTAX_";
 	
+	// Preference where Eclipse theme engine saves selected theme, read at startup
+	public static final String THEME_PREFERENCES_NODE = "org.eclipse.e4.ui.css.swt.theme";
+	public static final String THEME_ID_KEY = "themeid";
+	public static final String DARK_THEME_ID = "org.eclipse.e4.ui.css.theme.e4_dark";
+	
 	private static boolean darkTheme;
 	
 	// Eclipse dark theme colors for dialogs (DARK_BACKGROUND and DARK_FOREGROUND)
@@ -96,11 +101,11 @@ public final class ThemeColors {
 	 */
 	public static boolean isDarkThemeBeforeStartup(String workspace) {
 		if(workspace != null && !workspace.isEmpty()) {
-			File prefsFile = new File(workspace, ".metadata/.plugins/org.eclipse.core.runtime/.settings/org.eclipse.e4.ui.css.swt.theme.prefs");
+			File prefsFile = new File(workspace, ".metadata/.plugins/org.eclipse.core.runtime/.settings/" + THEME_PREFERENCES_NODE + ".prefs");
 			Properties properties = new Properties();
 			try (FileInputStream prefsInputStream = new FileInputStream(prefsFile)) {
 				properties.load(prefsInputStream);
-				String themeId = properties.getProperty("themeid");
+				String themeId = properties.getProperty(THEME_ID_KEY);
 				if(themeId != null) return themeId.contains("dark");
 			} catch (IOException e) {
 				// No theme saved in this workspace
@@ -127,7 +132,7 @@ public final class ThemeColors {
 	 * Workspace location must be set before calling this method.
 	 */
 	public static boolean isDarkThemeAtStartup() {
-		String themeId = InstanceScope.INSTANCE.getNode("org.eclipse.e4.ui.css.swt.theme").get("themeid", null);
+		String themeId = InstanceScope.INSTANCE.getNode(THEME_PREFERENCES_NODE).get(THEME_ID_KEY, null);
 		if(themeId != null) return themeId.contains("dark");
 		return Display.isSystemDarkTheme();
 	}
