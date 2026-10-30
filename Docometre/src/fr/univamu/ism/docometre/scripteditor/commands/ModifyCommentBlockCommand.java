@@ -41,6 +41,7 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.scripteditor.commands;
 
+import org.eclipse.gef.EditPartViewer;
 import org.eclipse.gef.commands.Command;
 
 import fr.univamu.ism.docometre.Activator;
@@ -50,14 +51,15 @@ import fr.univamu.ism.process.ScriptSegment;
 
 public class ModifyCommentBlockCommand extends Command {
 	
-	private BlockEditPart blockEditPart;
+	// Viewer, not block edit part which is replaced when block is deleted then restored
+	private EditPartViewer viewer;
 	private Comment comment;
 	private ScriptSegment scriptSegment;
 	private String commentString;
 	private String oldCommentString;
 	
 	public ModifyCommentBlockCommand(BlockEditPart blockEditPart, String commentString) {
-		this.blockEditPart = blockEditPart;
+		this.viewer = blockEditPart.getViewer();
 		this.comment = (Comment) blockEditPart.getModel();
 		this.commentString = commentString;
 		this.scriptSegment = (ScriptSegment) blockEditPart.getParent().getModel();
@@ -68,15 +70,21 @@ public class ModifyCommentBlockCommand extends Command {
 	public void execute() {
 		activateSegmentProcessEditor();
 		comment.setComment(commentString);
-		blockEditPart.updateFigureLabel();
+		updateFigureLabel();
 	}
 	
 	@Override
 	public void undo() {
 		activateSegmentProcessEditor();
 		comment.setComment(oldCommentString);
-		blockEditPart.updateFigureLabel();
+		updateFigureLabel();
 	}
+	
+	private void updateFigureLabel() {
+		BlockEditPart blockEditPart = BlockEditPart.getBlockEditPart(viewer, comment);
+		if(blockEditPart != null) blockEditPart.updateFigureLabel();
+	}
+
 	
 	private void activateSegmentProcessEditor() {
 		Activator.activateScriptSegmentEditor(scriptSegment);

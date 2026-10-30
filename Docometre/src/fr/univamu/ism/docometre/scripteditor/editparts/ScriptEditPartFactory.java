@@ -46,6 +46,7 @@ import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPartFactory;
 
 import fr.univamu.ism.process.Block;
+import fr.univamu.ism.process.GlobalDeclarations;
 import fr.univamu.ism.process.ScriptSegment;
 import fr.univamu.ism.docometre.scripteditor.connections.model.BlocksConnection;
 
@@ -56,6 +57,7 @@ public class ScriptEditPartFactory implements EditPartFactory {
 		EditPart editPart = null;
 		if(model instanceof ScriptSegment) editPart = new ScriptSegmentEditPart((ScriptSegment) model);
 		if(model instanceof Block) editPart = new BlockEditPart((Block) model);
+		if(model instanceof GlobalDeclarations) editPart = new GlobalDeclarationsEditPart((GlobalDeclarations) model);
 		if(model instanceof BlocksConnection) {
 			ScriptSegmentEditPart scriptSegmentEditPart = (ScriptSegmentEditPart)((BlockEditPart)context).getParent();
 			IFigure blocksLayer = scriptSegmentEditPart.getBlocksLayer();

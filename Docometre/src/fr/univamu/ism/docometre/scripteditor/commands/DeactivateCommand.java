@@ -41,6 +41,7 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.scripteditor.commands;
 
+import org.eclipse.gef.EditPartViewer;
 import org.eclipse.gef.commands.Command;
 
 import fr.univamu.ism.docometre.Activator;
@@ -52,10 +53,11 @@ public class DeactivateCommand extends Command {
 	
 	private Block block;
 	private ScriptSegment scriptSegment;
-	private BlockEditPart blockEditPart;
+	// Viewer, not block edit part which is replaced when block is deleted then restored
+	private EditPartViewer viewer;
 	
 	public DeactivateCommand(ScriptSegment scriptSegment, BlockEditPart blockEditPart) {
-		this.blockEditPart = blockEditPart;
+		this.viewer = blockEditPart.getViewer();
 		this.block = blockEditPart.getModel();
 		this.scriptSegment = scriptSegment;
 	}
@@ -64,14 +66,19 @@ public class DeactivateCommand extends Command {
 	public void execute() {
 		activateSegmentProcessEditor();
 		block.setActivated(!block.isActivated());
-		blockEditPart.refresh();
+		refresh();
 	}
 	
 	@Override
 	public void undo() {
 		activateSegmentProcessEditor();
 		block.setActivated(!block.isActivated());
-		blockEditPart.refresh();
+		refresh();
+	}
+	
+	private void refresh() {
+		BlockEditPart blockEditPart = BlockEditPart.getBlockEditPart(viewer, block);
+		if(blockEditPart != null) blockEditPart.refresh();
 	}
 	
 	private void activateSegmentProcessEditor() {

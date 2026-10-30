@@ -43,11 +43,11 @@ package fr.univamu.ism.docometre.scripteditor.commands;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.gef.ConnectionEditPart;
 import org.eclipse.gef.DefaultEditDomain;
 import org.eclipse.gef.commands.Command;
-import org.eclipse.gef.commands.CommandStack;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.dacqsystems.functions.CustomerFunction;
@@ -56,23 +56,30 @@ import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
 import fr.univamu.ism.docometre.scripteditor.connections.model.BlocksConnection;
 import fr.univamu.ism.docometre.scripteditor.editparts.BlockEditPart;
 import fr.univamu.ism.process.Block;
+import fr.univamu.ism.process.DoBlock;
 import fr.univamu.ism.process.Function;
 import fr.univamu.ism.process.Script;
 import fr.univamu.ism.process.ScriptSegment;
 import fr.univamu.ism.process.ScriptSegmentType;
 
+/**
+ * Replace the function of a block by a new function, with the same connections.
+ * Block edit part is only used to create this command : it is replaced when the function is swapped.
+ * Connections commands are executed, undone and redone by this command, not by the command stack,
+ * so that undo and redo always apply to this command only.
+ */
 public class AssignFunctionBlockCommand extends Command {
 	
-	private BlockEditPart blockEditPart;
 	private Function oldFunction;
 	private Function newFunction;
 	private Script script;
 	private ScriptSegment scriptSegment;
-	private ArrayList<Command> deleteConnectionsCommands;
-	private ArrayList<Command> createConnectionsCommands;
-	private CommandStack commandStack;
-	private ArrayList<Block> targetBlocks;
-	private ArrayList<Block> sourceBlocks;
+	private List<Command> deleteConnectionsCommands = new ArrayList<>();
+	private List<Command> createConnectionsCommands;
+	private List<Block> targetBlocks = new ArrayList<>();
+	private List<Block> sourceBlocks = new ArrayList<>();
+	// DO blocks whose end block is the old function : it must be the new function
+	private List<DoBlock> endedDoBlocks = new ArrayList<>();
 
 	public AssignFunctionBlockCommand(BlockEditPart blockEditPart, String functionClassName, String name) {
 		try {
@@ -96,29 +103,22 @@ public class AssignFunctionBlockCommand extends Command {
 			oldFunction = ((Function) blockEditPart.getModel());
 			script = oldFunction.getScript();
 			newFunction.setSizeAndLocation(oldFunction.getSizeAndLocation());
-			this.blockEditPart = blockEditPart;
-			this.scriptSegment = (ScriptSegment) blockEditPart.getParent().getModel();;
-			commandStack = blockEditPart.getRoot().getViewer().getEditDomain().getCommandStack();
+			this.scriptSegment = (ScriptSegment) blockEditPart.getParent().getModel();
 			
-			// Save target blocks of the block
-			targetBlocks = new ArrayList<Block>(0);
+			// Save target blocks of the block and create source connections deletion commands
 			for (Object element : blockEditPart.getSourceConnections()) {
-				ConnectionEditPart connectionEditPart = (ConnectionEditPart)element;
-				targetBlocks.add(((BlocksConnection)connectionEditPart.getModel()).targetBlock);
+				BlocksConnection connection = (BlocksConnection)((ConnectionEditPart)element).getModel();
+				targetBlocks.add(connection.targetBlock);
+				deleteConnectionsCommands.add(new DeleteConnectionCommand(scriptSegment, connection));
+				if(connection.targetBlock instanceof DoBlock && oldFunction.isLastBlockOf((DoBlock) connection.targetBlock)) 
+					endedDoBlocks.add((DoBlock) connection.targetBlock);
 			}
-			// Save source block of this block
-			sourceBlocks = new ArrayList<Block>(0);
+			// Save source blocks of the block and create target connections deletion commands
 			for (Object element : blockEditPart.getTargetConnections()) {
-				ConnectionEditPart connectionEditPart = (ConnectionEditPart)element;
-				sourceBlocks.add(((BlocksConnection)connectionEditPart.getModel()).sourceBlock);
+				BlocksConnection connection = (BlocksConnection)((ConnectionEditPart)element).getModel();
+				sourceBlocks.add(connection.sourceBlock);
+				deleteConnectionsCommands.add(new DeleteConnectionCommand(scriptSegment, connection));
 			}
-
-			// Create connection deletion commands
-			deleteConnectionsCommands = new ArrayList<>(0);
-			deleteConnectionsCommands();
-			
-			// Create connections with swapped function
-			createConnectionsCommands = new ArrayList<>(0);
 			
 		} catch (Exception e) {
 			Activator.logErrorMessageWithCause(e);
@@ -126,86 +126,60 @@ public class AssignFunctionBlockCommand extends Command {
 		}
 	}
 	
-	private void deleteConnectionsCommands() {
-		// Delete source connections : deleteConnectionCommand
-		for (Object element : blockEditPart.getSourceConnections()) {
-			ConnectionEditPart connectionEditPart = (ConnectionEditPart)element;
-			BlocksConnection connection = (BlocksConnection)connectionEditPart.getModel();
-			deleteConnectionsCommands.add(new DeleteConnectionCommand(scriptSegment, connection));
-		}
-		// Delete target connections : deleteConnectionCommand
-		for (Object element : blockEditPart.getTargetConnections()) {
-			ConnectionEditPart connectionEditPart = (ConnectionEditPart)element;
-			BlocksConnection connection = (BlocksConnection)connectionEditPart.getModel();
-			deleteConnectionsCommands.add(new DeleteConnectionCommand(scriptSegment, connection));
-		}
+	@Override
+	public boolean canExecute() {
+		return oldFunction != null && newFunction != null;
 	}
 	
+	/*
+	 * Connections of new function are created once it replaces old function in the script
+	 */
 	private void createConnectionsCommands() {
+		createConnectionsCommands = new ArrayList<>();
 		for (Block sourceBlock : sourceBlocks) {
 			CreateConnectionCommand createConnectionCommand = new CreateConnectionCommand(scriptSegment, sourceBlock);
-			createConnectionCommand.setTarget(blockEditPart.getModel());
+			createConnectionCommand.setTarget(newFunction);
 			createConnectionsCommands.add(createConnectionCommand);
 		}
-		// Target blocks
 		for (Block targetBlock : targetBlocks) {
-			CreateConnectionCommand createConnectionCommand = new CreateConnectionCommand(scriptSegment, blockEditPart.getModel());
+			CreateConnectionCommand createConnectionCommand = new CreateConnectionCommand(scriptSegment, newFunction);
 			createConnectionCommand.setTarget(targetBlock);
 			createConnectionsCommands.add(createConnectionCommand);
 		}
 	}
 	
-	private void doChainExecute(ArrayList<Command> commands) {
-		// Chain and execute commands
-		if(commands.size() > 0) {
-			Command command = commands.get(0);
-			for (int i = 1; i < commands.size(); i++) {
-				command = command.chain(commands.get(i));
-			}
-			commandStack.execute(command);
-		}
-	}
-	
-	private void swappFunctions(Function function1, Function function2) {
+	private void swapFunctions(Function function1, Function function2) {
 		if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.INITIALIZE)) script.removeInitializeBlock(function1);
 		if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.LOOP)) script.removeLoopBlock(function1);
 		if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.FINALIZE)) script.removeFinalizeBlock(function1);
-//		if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.DATA_PROCESSING)) script.removeLoopBlock(function1);
 		
-		blockEditPart.setModel(function2);
 		function1.setScript(null);
 		function2.setScript(script);
 		
 		if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.INITIALIZE)) script.addInitializeBlock(function2);
 		if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.LOOP)) script.addLoopBlock(function2);
 		if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.FINALIZE)) script.addFinalizeBlock(function2);
-//		if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.DATA_PROCESSING)) script.addLoopBlock(function2);
-		if(function2 != null) script.selectBlocks(new Block[] {function2});
+		script.selectBlocks(new Block[] {function2});
 	}
 	
 	@Override
 	public void execute() {
 		activateSegmentProcessEditor();
-		doChainExecute(deleteConnectionsCommands);
-		swappFunctions(oldFunction, newFunction);
-		createConnectionsCommands();
-		doChainExecute(createConnectionsCommands);
-	}
-	
-	@Override
-	public void redo() {
-		activateSegmentProcessEditor();
-		commandStack.redo();
-		swappFunctions(oldFunction, newFunction);
-		commandStack.redo();
+		for (Command command : deleteConnectionsCommands) command.execute();
+		swapFunctions(oldFunction, newFunction);
+		if(createConnectionsCommands == null) createConnectionsCommands();
+		for (Command command : createConnectionsCommands) command.execute();
+		for (DoBlock doBlock : endedDoBlocks) doBlock.setEndBlock(newFunction);
 	}
 	
 	@Override
 	public void undo() {
 		activateSegmentProcessEditor();
-		commandStack.undo();
-		swappFunctions(newFunction, oldFunction);
-		commandStack.undo();
+		for (int i = createConnectionsCommands.size() - 1; i >= 0; i--) createConnectionsCommands.get(i).undo();
+		swapFunctions(newFunction, oldFunction);
+		// Connections are restored in their initial order, so that next blocks keep their initial order
+		for (Command command : deleteConnectionsCommands) command.undo();
+		for (DoBlock doBlock : endedDoBlocks) doBlock.setEndBlock(oldFunction);
 	}
 	
 	private void activateSegmentProcessEditor() {

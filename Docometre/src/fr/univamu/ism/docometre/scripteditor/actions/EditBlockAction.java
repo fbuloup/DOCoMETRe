@@ -61,6 +61,7 @@ import fr.univamu.ism.docometre.dialogs.FunctionalBlockConfigurationDialog;
 import fr.univamu.ism.docometre.editors.AbstractScriptSegmentEditor;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.scripteditor.editparts.BlockEditPart;
+import fr.univamu.ism.docometre.scripteditor.editparts.GlobalDeclarationsEditPart;
 import fr.univamu.ism.process.Block;
 import fr.univamu.ism.process.Comment;
 import fr.univamu.ism.process.ConditionalBlock;
@@ -92,6 +93,10 @@ public class EditBlockAction extends SelectionAction {
 	
 	@Override
 	public void run() {
+		if(getSelectedObjects().get(0) instanceof GlobalDeclarationsEditPart) {
+			((GlobalDeclarationsEditPart)getSelectedObjects().get(0)).edit();
+			return;
+		}
 		if(!(getSelectedObjects().get(0) instanceof BlockEditPart)) return;
 		BlockEditPart selectedBlockEditPart = (BlockEditPart) getSelectedObjects().get(0);
 		Block block = selectedBlockEditPart.getModel();
@@ -140,6 +145,7 @@ public class EditBlockAction extends SelectionAction {
 		List selectedObjects = getSelectedObjects();
 		if(selectedObjects.size() == 1) {
 			if(selectedObjects.get(0) instanceof BlockEditPart) return true;
+			if(selectedObjects.get(0) instanceof GlobalDeclarationsEditPart) return true;
 		}
 		return false;
 	}

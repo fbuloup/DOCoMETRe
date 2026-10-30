@@ -44,6 +44,7 @@ package fr.univamu.ism.docometre.scripteditor.actions;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.gef.EditPart;
 import org.eclipse.gef.ui.actions.SelectionAction;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchPart;
@@ -53,6 +54,7 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.scripteditor.commands.CopyCommand;
 import fr.univamu.ism.docometre.scripteditor.editparts.BlockEditPart;
+import fr.univamu.ism.docometre.scripteditor.editparts.GlobalDeclarationsEditPart;
 
 public class CopyAction extends SelectionAction {
 
@@ -73,22 +75,22 @@ public class CopyAction extends SelectionAction {
 	protected boolean calculateEnabled() {
 		List<?> objects = getSelectedObjects();
 		if(objects == null || objects.isEmpty()) return false;
+		boolean somethingToCopy = false;
 		for (Object object : objects) {
-			if(!(object instanceof BlockEditPart)) {
-				return false;
-			}
+			if(object instanceof BlockEditPart) somethingToCopy = true;
+			else if(object instanceof GlobalDeclarationsEditPart) somethingToCopy = somethingToCopy || !((GlobalDeclarationsEditPart)object).getModel().isEmpty();
+			else return false;
 		}
-		return true;
+		return somethingToCopy;
 	}
 	
 	@Override
 	public void run() {
 		List<?> objectsList  = getSelectedObjects();
-		List<BlockEditPart> selectedObjects = new ArrayList<BlockEditPart>(0);
+		List<EditPart> selectedObjects = new ArrayList<EditPart>(0);
 		for (int i = 0; i < objectsList.size(); i++) {
-			if(objectsList.get(i) == null || !(objectsList.get(i) instanceof BlockEditPart)) continue;
-			BlockEditPart blockEditPart = (BlockEditPart) objectsList.get(i);
-			selectedObjects.add(blockEditPart);
+			if(objectsList.get(i) instanceof BlockEditPart || objectsList.get(i) instanceof GlobalDeclarationsEditPart) 
+				selectedObjects.add((EditPart) objectsList.get(i));
 		}
 		CopyCommand copyCommand = new CopyCommand(selectedObjects);
 		copyCommand.execute();

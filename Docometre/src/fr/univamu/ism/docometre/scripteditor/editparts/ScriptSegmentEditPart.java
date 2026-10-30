@@ -58,6 +58,7 @@ import org.eclipse.gef.SnapToHelper;
 import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
 import org.eclipse.gef.editparts.ScalableFreeformRootEditPart;
+import org.eclipse.gef.editpolicies.NonResizableEditPolicy;
 import org.eclipse.gef.editpolicies.SnapFeedbackPolicy;
 import org.eclipse.gef.editpolicies.XYLayoutEditPolicy;
 import org.eclipse.gef.requests.ChangeBoundsRequest;
@@ -65,6 +66,7 @@ import org.eclipse.gef.requests.CreateRequest;
 import org.eclipse.jface.viewers.StructuredSelection;
 
 import fr.univamu.ism.process.Block;
+import fr.univamu.ism.process.GlobalDeclarations;
 import fr.univamu.ism.process.ScriptSegment;
 import fr.univamu.ism.process.BlocksListener;
 import fr.univamu.ism.process.ScriptSegmentType;
@@ -101,11 +103,15 @@ public class ScriptSegmentEditPart extends AbstractGraphicalEditPart implements 
 		return blocksLayer;
 	}
 	
+	/*
+	 * Blocks, and global declarations for INITIALIZE segment
+	 */
 	@Override
-	protected List<Block> getModelChildren() {
+	protected List<Object> getModelChildren() {
 		ScriptSegment blocksContainer =  getModel();
-		List<Block> blocks = blocksContainer.getBlocks();
-		return blocks;
+		List<Object> children = new ArrayList<Object>(blocksContainer.getBlocks());
+		if(blocksContainer.getScriptSegmentType().equals(ScriptSegmentType.INITIALIZE)) children.add(0, blocksContainer.getScript().getGlobalDeclarations());
+		return children;
 	}
 	
 	@Override
@@ -125,7 +131,19 @@ public class ScriptSegmentEditPart extends AbstractGraphicalEditPart implements 
 		installEditPolicy(EditPolicy.LAYOUT_ROLE, new XYLayoutEditPolicy() {
 			@Override
 			protected Command createChangeConstraintCommand(ChangeBoundsRequest request, EditPart child, Object constraint) {
+				// Global declarations cannot be moved
+				if(child.getModel() instanceof GlobalDeclarations) return null;
 				return new MoveAndResizeBlocCommand( scriptSegment, (Block) child.getModel(), (Rectangle)constraint);
+			}
+			@Override
+			protected EditPolicy createChildEditPolicy(EditPart child) {
+				// Global declarations can be selected but neither moved nor resized
+				if(child.getModel() instanceof GlobalDeclarations) {
+					NonResizableEditPolicy editPolicy = new NonResizableEditPolicy();
+					editPolicy.setDragAllowed(false);
+					return editPolicy;
+				}
+				return super.createChildEditPolicy(child);
 			}
 			@Override
 			protected Command getCreateCommand(CreateRequest request) {
