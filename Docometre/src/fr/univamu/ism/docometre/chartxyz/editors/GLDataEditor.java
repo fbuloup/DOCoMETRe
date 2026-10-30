@@ -120,6 +120,8 @@ public class GLDataEditor extends EditorPart implements PartNameRefresher/*, IPa
 		// The window is the longest signal duration: all the signals are displayed from t = 0
 		double windowTimeWidth = curves.stream().mapToDouble(Curve1DData::getWindowTimeWidth).max().getAsDouble();
 		chart = GLChart1D.createChart(parent, windowTimeWidth, curves.toArray(new Curve1DData[curves.size()]));
+		chart.setMarkersInteractive(false);
+		chart.setMarkersMenuItemsVisible(false);
 		chart.setDisplayMode(Chart1DRenderer.DisplayMode.SCROLL); 
 		ChartPartListener.install(this, chart);
 		// The view listener is called by the rendering thread: only the view is stored
