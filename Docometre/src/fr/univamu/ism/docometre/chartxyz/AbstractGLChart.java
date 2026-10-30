@@ -8,6 +8,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 
@@ -302,7 +303,7 @@ public abstract class AbstractGLChart<C extends CurveData<C>, R extends CurveCha
         if (!contextMenuEnabled || control == null || control.isDisposed()) return;
         if (contextMenu == null || contextMenu.isDisposed()) {
             Menu menu = new Menu(control); // owned by the shell: disposed with the control
-            control.addListener(SWT.Dispose, e -> menu.dispose());
+            control.addListener(SWT.Dispose, e -> disposeContextMenu(menu));
             contextMenu = menu;
         }
         if (contextMenu.isVisible()) return;
@@ -311,6 +312,23 @@ public abstract class AbstractGLChart<C extends CurveData<C>, R extends CurveCha
         if (contextMenu.getItemCount() == 0) return;
         contextMenu.setLocation(location);
         contextMenu.setVisible(true);
+    }
+
+    /**
+     * Disposes the context menu of a disposed chart. The chart can be disposed
+     * while its menu is open (real-time charts recreated at each trial): on
+     * Windows and macOS, the system then displays the menu in its own modal
+     * loop, in which the disposal takes place. The menu is closed first, and
+     * disposed once this loop is over.
+     */
+    private static void disposeContextMenu(Menu menu) {
+        if (menu.isDisposed()) return;
+        Display display = menu.getDisplay();
+        menu.setVisible(false);
+        if (display.isDisposed()) return;
+        display.asyncExec(() -> {
+            if (!menu.isDisposed()) menu.dispose();
+        });
     }
 
     /**

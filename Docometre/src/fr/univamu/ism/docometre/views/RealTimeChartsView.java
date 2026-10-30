@@ -311,7 +311,10 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 		for (ChartConfiguration chartConfiguration : chartsConfigurations) {
 			chartConfiguration.createChart(chartsContainer);
 		}
-		chartsContainer.requestLayout();
+		// Immediate layout, not deferred: if a chart context menu was open, this method runs in the modal
+		// loop of the menu (Windows, macOS), after which a deferred layout may wait for the next event
+		// (the new charts would remain invisible until the window is resized, for example)
+		chartsContainer.layout(true, true);
 		chartsContainer.setFocus();
 	}
 
