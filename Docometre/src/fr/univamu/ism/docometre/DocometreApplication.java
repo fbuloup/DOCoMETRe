@@ -231,7 +231,7 @@ public class DocometreApplication implements IApplication {
 	}
 	
 	public static Color getColor(String colorName) {
-		// Colors used for syntax highlighting may be redefined by theme (see Docometre.theme)
+		// Colors used for syntax highlighting may be redefined by theme (see plugin.xml and css/docometre-dark.css)
 		RGB themeRGB = ThemeColors.getRGB(ThemeColors.SYNTAX_COLOR_PREFIX + colorName + "_COLOR", null);
 		if(themeRGB != null) return getColor(themeRGB);
 		return JFaceResources.getColorRegistry().get(colorName);

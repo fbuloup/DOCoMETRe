@@ -54,7 +54,7 @@ import org.eclipse.ui.themes.IThemeManager;
 public final class ThemeColors {
 	
 	/*
-	 * Colors defined in Docometre.theme plugin.xml (light values)
+	 * Colors defined in plugin.xml (light values)
 	 * and css/docometre-dark.css (dark values)
 	 */
 	public static final String CONSOLE_WARNING_COLOR = "fr.univamu.ism.docometre.CONSOLE_WARNING_COLOR";
