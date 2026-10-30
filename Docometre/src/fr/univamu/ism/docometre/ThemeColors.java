@@ -41,10 +41,13 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre;
 
+import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.themes.IThemeManager;
 
@@ -54,11 +57,36 @@ public final class ThemeColors {
 	 * Colors defined in Docometre.theme plugin.xml (light values)
 	 * and css/docometre-dark.css (dark values)
 	 */
-	public static final String CONSOLE_INFO_COLOR = "fr.univamu.ism.docometre.CONSOLE_INFO_COLOR";
 	public static final String CONSOLE_WARNING_COLOR = "fr.univamu.ism.docometre.CONSOLE_WARNING_COLOR";
 	public static final String CONSOLE_ERROR_COLOR = "fr.univamu.ism.docometre.CONSOLE_ERROR_COLOR";
 	public static final String LINE_NUMBER_FOREGROUND_COLOR = "fr.univamu.ism.docometre.LINE_NUMBER_FOREGROUND_COLOR";
 	public static final String LINE_NUMBER_BACKGROUND_COLOR = "fr.univamu.ism.docometre.LINE_NUMBER_BACKGROUND_COLOR";
+	
+	/*
+	 * Same rule as Eclipse ThemeEngine.restore() : theme saved in preferences
+	 * if any, otherwise dark theme if system is dark.
+	 * Workspace location must be set before calling this method.
+	 */
+	public static boolean isDarkThemeAtStartup() {
+		String themeId = InstanceScope.INSTANCE.getNode("org.eclipse.e4.ui.css.swt.theme").get("themeid", null);
+		if(themeId != null) return themeId.contains("dark");
+		return Display.isSystemDarkTheme();
+	}
+	
+	/*
+	 * On Windows, native widgets (scroll bars, tree expanders, unfocused selection...)
+	 * are dark only if SWT OS.setTheme(true) is called before they are created.
+	 * OS is internal to SWT win32 fragment, hence reflection.
+	 */
+	public static void setWindowsNativeTheme(boolean dark) {
+		if(!"win32".equals(SWT.getPlatform())) return;
+		try {
+			Class<?> osClass = Class.forName("org.eclipse.swt.internal.win32.OS");
+			osClass.getMethod("setTheme", boolean.class).invoke(null, dark);
+		} catch (ReflectiveOperationException | LinkageError e) {
+			Activator.logErrorMessageWithCause(new Exception("Unable to set Windows native theme", e));
+		}
+	}
 	
 	/*
 	 * Return RGB of color symbolicName from current theme, or defaultRGB if not defined

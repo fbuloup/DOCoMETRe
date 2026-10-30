@@ -18,10 +18,6 @@ public class DocometreConsole extends MessageConsole implements ILogListener {
 	
 	private static RGB WARNING_RGB = new RGB(204,102,0);
 	private static RGB ERROR_RGB = new RGB(250, 0, 0);
-	private static RGB INFO_RGB = new RGB(0, 0, 0);
-	private static String infoColorCodeConsole;
-	private static String warninColorCodeConsole;
-	private static String errorColorCodeConsole;
 	
 	private static DocometreConsole docometreConsole;
 	
@@ -43,28 +39,30 @@ public class DocometreConsole extends MessageConsole implements ILogListener {
 //		IViewPart consoleView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(IConsoleConstants.ID_CONSOLE_VIEW);
 //		if(consoleView != null)
 //			consoleView.getSite().getPage().addPartListener(this);
-		infoColorCodeConsole = getColorCodeConsole(ThemeColors.getRGB(ThemeColors.CONSOLE_INFO_COLOR, INFO_RGB));
-		warninColorCodeConsole = getColorCodeConsole(ThemeColors.getRGB(ThemeColors.CONSOLE_WARNING_COLOR, WARNING_RGB));
-		errorColorCodeConsole = getColorCodeConsole(ThemeColors.getRGB(ThemeColors.CONSOLE_ERROR_COLOR, ERROR_RGB));
 	}
 	
 	private static String getColorCodeConsole(RGB rgb) {
 		return "\u001b[38;2;" + rgb.red + ";" + rgb.green + ";" + rgb.blue + "m";
 	}
+	
+	// Reset to console default color, so that following messages are not colored
+	private static final String RESET_CODE_CONSOLE = "\u001b[0m";
 
 	@Override
 	public void logging(IStatus status, String plugin) {
 
 		String message = status.getPlugin() + " : " + status.getMessage();
 		
+		// Info messages use console default color, which follows the theme
 		if(status.getSeverity() == IStatus.INFO) {
-			docometreConsole.newMessageStream().println(infoColorCodeConsole + message);
+			docometreConsole.newMessageStream().println(message);
 		}
+		// Theme colors are read here, once theme is applied
 		if(status.getSeverity() == IStatus.WARNING) {
-			docometreConsole.newMessageStream().println(warninColorCodeConsole + message);
+			docometreConsole.newMessageStream().println(getColorCodeConsole(ThemeColors.getRGB(ThemeColors.CONSOLE_WARNING_COLOR, WARNING_RGB)) + message + RESET_CODE_CONSOLE);
 		}
 		if(status.getSeverity() == IStatus.ERROR) {
-			docometreConsole.newMessageStream().println(errorColorCodeConsole + message);
+			docometreConsole.newMessageStream().println(getColorCodeConsole(ThemeColors.getRGB(ThemeColors.CONSOLE_ERROR_COLOR, ERROR_RGB)) + message + RESET_CODE_CONSOLE);
 		}
 		
 	}

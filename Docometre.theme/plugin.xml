@@ -11,12 +11,6 @@
       </themeElementCategory>
       <colorDefinition
             categoryId="fr.univamu.ism.docometre.themeElementCategory"
-            id="fr.univamu.ism.docometre.CONSOLE_INFO_COLOR"
-            label="Console : information"
-            value="0,0,0">
-      </colorDefinition>
-      <colorDefinition
-            categoryId="fr.univamu.ism.docometre.themeElementCategory"
             id="fr.univamu.ism.docometre.CONSOLE_WARNING_COLOR"
             label="Console : avertissement"
             value="204,102,0">

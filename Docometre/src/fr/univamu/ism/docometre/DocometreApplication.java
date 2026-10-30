@@ -188,6 +188,7 @@ public class DocometreApplication implements IApplication {
 			return EXIT_ERROR;
 		}
 		WORKSPACE_PATH = workspace;
+		ThemeColors.setWindowsNativeTheme(ThemeColors.isDarkThemeAtStartup());
 		try {
 			int returnCode = PlatformUI.createAndRunWorkbench(display, new ApplicationWorkbenchAdvisor());
 			Activator.logInfoMessage("createAndRunWorkbench return code : " + returnCode, getClass());
