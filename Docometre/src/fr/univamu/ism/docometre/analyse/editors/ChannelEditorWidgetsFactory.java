@@ -43,6 +43,7 @@ package fr.univamu.ism.docometre.analyse.editors;
 
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseWheelListener;
@@ -50,6 +51,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
@@ -116,33 +118,52 @@ public final class ChannelEditorWidgetsFactory {
 	}
 
 	/*
-	 * Creates, in panel parent grid and just before panel (column between chart and panel),
-	 * a button to hide or show panel. Panel must have GridData layout data.
-	 * Shown or hidden state is shared by all channel editors.
+	 * Sash of editors SashForm is made visible by theme stylesheets (css/docometre-*.css)
 	 */
-	public static void createShowHidePanelButton(Control panel) {
-		ToolBar toolBar = new ToolBar(panel.getParent(), SWT.FLAT | SWT.VERTICAL);
+	public static void configureSashForm(SashForm sashForm) {
+		sashForm.setSashWidth(5);
+		sashForm.setData("org.eclipse.e4.ui.css.CssClassName", "DocometreSashForm");
+	}
+	
+	/*
+	 * Creates in sashForm the pane holding the chart (first column) and the show/hide panel button
+	 */
+	public static Composite createChartPane(SashForm sashForm) {
+		Composite chartPane = new Composite(sashForm, SWT.NONE);
+		GridLayout chartPaneLayout = new GridLayout(2, false);
+		chartPaneLayout.marginHeight = 0;
+		chartPaneLayout.marginWidth = 0;
+		chartPaneLayout.horizontalSpacing = 2;
+		chartPane.setLayout(chartPaneLayout);
+		return chartPane;
+	}
+	
+	/*
+	 * Creates, in last column of chartPane grid layout, a button to hide or show the panel
+	 * on the right of sashForm (sashForm children : chartPane, panel).
+	 * Shown or hidden state is saved in preferenceKey (shared by editors of the same kind).
+	 */
+	public static void createShowHidePanelButton(SashForm sashForm, Composite chartPane, String preferenceKey) {
+		ToolBar toolBar = new ToolBar(chartPane, SWT.FLAT | SWT.VERTICAL);
 		toolBar.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, false, true));
-		toolBar.moveAbove(panel);
 		ToolItem toolItem = new ToolItem(toolBar, SWT.PUSH);
 		IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
-		setPanelVisible(panel, toolItem, preferenceStore.getBoolean(GeneralPreferenceConstants.SHOW_CHANNEL_EDITOR_PANEL));
+		setPanelVisible(sashForm, chartPane, toolItem, preferenceStore.getBoolean(preferenceKey));
 		toolItem.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				boolean visible = !panel.getVisible();
-				setPanelVisible(panel, toolItem, visible);
-				preferenceStore.setValue(GeneralPreferenceConstants.SHOW_CHANNEL_EDITOR_PANEL, visible);
+				// Panel is hidden when chart pane is maximized
+				boolean visible = sashForm.getMaximizedControl() != null;
+				setPanelVisible(sashForm, chartPane, toolItem, visible);
+				preferenceStore.setValue(preferenceKey, visible);
 			}
 		});
 	}
 	
-	private static void setPanelVisible(Control panel, ToolItem toolItem, boolean visible) {
-		panel.setVisible(visible);
-		((GridData) panel.getLayoutData()).exclude = !visible;
+	private static void setPanelVisible(SashForm sashForm, Control chartPane, ToolItem toolItem, boolean visible) {
+		sashForm.setMaximizedControl(visible ? null : chartPane);
 		toolItem.setText(visible ? "\u00BB" : "\u00AB"); // » : hide panel on the right, « : show it
 		toolItem.setToolTipText(visible ? DocometreMessages.HidePanelTooltip : DocometreMessages.ShowPanelTooltip);
-		panel.getParent().layout(true);
 	}
 	
 	public static Object createChart(Composite parent, int horizontalSpan, boolean isTimeDomain, boolean isFrequencyDomain) {

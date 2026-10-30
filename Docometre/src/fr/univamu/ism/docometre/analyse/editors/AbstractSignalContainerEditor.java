@@ -72,6 +72,7 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.nebula.widgets.pgroup.PGroup;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseWheelListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -97,6 +98,7 @@ import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
 import fr.univamu.ism.docometre.analyse.handlers.UpdateWorkbenchDelegate;
+import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
 /**
  * Common part of the signal editors: chart of the selected trials, trials
@@ -210,17 +212,19 @@ public abstract class AbstractSignalContainerEditor extends Composite implements
 		gl.horizontalSpacing = 0;
 		gl.verticalSpacing = 2;
 		
-		Composite channelContainer = new Composite(this, SWT.NORMAL);
-		channelContainer.setLayout(createCompactGridLayout(3));
+		// Chart pane (chart and show/hide button) | trials list, resizable
+		SashForm channelContainer = new SashForm(this, SWT.HORIZONTAL);
 		channelContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
+		ChannelEditorWidgetsFactory.configureSashForm(channelContainer);
+		Composite chartPane = new Composite(channelContainer, SWT.NORMAL);
+		chartPane.setLayout(createCompactGridLayout(2));
 		
-		if(!createChart(channelContainer)) {
+		if(!createChart(chartPane)) {
 			Activator.logErrorMessage("Error while trying to create chart");
 			return;
 		}
 		
 		trialsListViewer = new ListViewer(channelContainer, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
-		trialsListViewer.getList().setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
 		int trialsNumber = MathEngineFactory.getMathEngine().getTrialsNumber(getChannel());
 		Integer[] trials = IntStream.rangeClosed(1, trialsNumber).boxed().toArray(Integer[]::new);
 		trialsListViewer.setContentProvider(new ArrayContentProvider());
@@ -234,7 +238,8 @@ public abstract class AbstractSignalContainerEditor extends Composite implements
 		});
 		trialsListViewer.setInput(trials);
 		trialsListViewer.addSelectionChangedListener(this);
-		ChannelEditorWidgetsFactory.createShowHidePanelButton(trialsListViewer.getList());
+		channelContainer.setWeights(new int[] {85, 15});
+		ChannelEditorWidgetsFactory.createShowHidePanelButton(channelContainer, chartPane, GeneralPreferenceConstants.SHOW_CHANNEL_EDITOR_PANEL);
 		
 		PGroup pGroupInfos = new PGroup(this, SWT.SMOOTH);
 		pGroupInfos.setText(DocometreMessages.ChannelEditorGroupLabel);

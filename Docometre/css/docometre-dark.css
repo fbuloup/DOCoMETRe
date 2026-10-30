@@ -72,3 +72,9 @@ ChannelViewer, ChartContainer, ConditionalBlockArea, SpinnerValue, MyCCombo {
 	background-color: #2F2F2F;
 	color: #AAAAAA;
 }
+
+/* Sash of DOCoMETRe editors SashForm (chart | panel) : visible, to resize */
+.MPart .DocometreSashForm > Sash,
+.DocometreSashForm > Sash {
+	background-color: #5A5A5A;
+}

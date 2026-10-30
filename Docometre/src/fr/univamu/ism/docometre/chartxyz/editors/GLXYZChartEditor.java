@@ -60,6 +60,7 @@ import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.analyse.datamodel.XYChart;
 import fr.univamu.ism.docometre.analyse.datamodel.XYZChart;
 import fr.univamu.ism.docometre.analyse.editors.Chart2D3DBehaviour;
+import fr.univamu.ism.docometre.analyse.editors.ChannelEditorWidgetsFactory;
 import fr.univamu.ism.docometre.analyse.editors.FrontEndCutsHandler;
 import fr.univamu.ism.docometre.analyse.editors.MarkersChangeListener;
 import fr.univamu.ism.docometre.analyse.editors.RangeHandler;
@@ -68,6 +69,7 @@ import fr.univamu.ism.docometre.chartxyz.Curve3DData;
 import fr.univamu.ism.docometre.chartxyz.GLChart3D;
 import fr.univamu.ism.docometre.chartxyz.Point3D;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
+import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
 /**
  * XYZ chart editor with an OpenGL chart (chartxyz): OpenGL version of
@@ -129,6 +131,7 @@ public class GLXYZChartEditor extends EditorPart implements ISelectionChangedLis
 
 	private XYZChart xyzChartData;
 	private SashForm container;
+	private Composite chartPane;
 	private ListViewer trialsListViewer;
 	private GLChart3D chart;
 	private final Map<String, Series> seriesMap = new LinkedHashMap<>(); // series of the chart by curve name, in creation order
@@ -201,7 +204,11 @@ public class GLXYZChartEditor extends EditorPart implements ISelectionChangedLis
 			return;
 		}
 
-		chart = GLChart3D.createChart(container); // each curve keeps its own duration: all the points are displayed
+		// Chart pane : chart and show/hide panel button
+		ChannelEditorWidgetsFactory.configureSashForm(container);
+		chartPane = ChannelEditorWidgetsFactory.createChartPane(container);
+		chart = GLChart3D.createChart(chartPane); // each curve keeps its own duration: all the points are displayed
+		chart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		chart.setLegendVisible(xyzChartData.isLegendVisible()); // colors and grid styles of the data model: not supported by chartxyz
 		chart.setTrailFading(false); // static data: curves with a uniform color
 		chart.setMarkersVisible(xyzChartData.isShowMarkers());
@@ -459,8 +466,8 @@ public class GLXYZChartEditor extends EditorPart implements ISelectionChangedLis
 			}
 		});
 
-		container.setSashWidth(3);
 		container.setWeights(new int[] {80, 20});
+		ChannelEditorWidgetsFactory.createShowHidePanelButton(container, chartPane, GeneralPreferenceConstants.SHOW_CHART_EDITOR_PANEL);
 
 		refreshTrialsListFrontEndCutsCategories();
 		setDirty(false);

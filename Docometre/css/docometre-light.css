@@ -1,0 +1,7 @@
+/* DOCoMETRe styles added to Eclipse light themes (classic and default) */
+
+/* Sash of DOCoMETRe editors SashForm (chart | panel) : visible, to resize */
+.MPart .DocometreSashForm > Sash,
+.DocometreSashForm > Sash {
+	background-color: #C8C8C8;
+}

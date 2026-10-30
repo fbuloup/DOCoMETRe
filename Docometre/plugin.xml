@@ -3723,13 +3723,22 @@
       </colorDefinition>
    </extension>
 
-   <!-- Dark values of DOCoMETRe colors, added to Eclipse dark theme -->
+   <!-- DOCoMETRe styles added to Eclipse themes (dark values of DOCoMETRe colors, sashes...) -->
    <extension
          point="org.eclipse.e4.ui.css.swt.theme">
       <stylesheet
             uri="css/docometre-dark.css">
          <themeid
                refid="org.eclipse.e4.ui.css.theme.e4_dark">
+         </themeid>
+      </stylesheet>
+      <stylesheet
+            uri="css/docometre-light.css">
+         <themeid
+               refid="org.eclipse.e4.ui.css.theme.e4_classic">
+         </themeid>
+         <themeid
+               refid="org.eclipse.e4.ui.css.theme.e4_default">
          </themeid>
       </stylesheet>
    </extension>

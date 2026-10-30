@@ -118,6 +118,7 @@ import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
 import fr.univamu.ism.docometre.analyse.datamodel.TimeChannel;
 import fr.univamu.ism.docometre.analyse.datamodel.XYChart;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
+import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
 public class XYChartEditor extends EditorPart implements ISelectionChangedListener, IMarkersManager, ZoomListener, TrialsEditor, ChartPropertiesListener, Chart2D3DBehaviour {
 	
@@ -143,6 +144,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 	
 	private XYChart xyChartData;
 	private SashForm container;
+	private Composite chartPane;
 	private ListViewer trialsListViewer;
 	private InteractiveChart chart;
 	private Text xMinText;
@@ -211,7 +213,11 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 			return;
 		}
 		
-		chart = new InteractiveChart(container, SWT.NONE);
+		// Chart pane : chart and show/hide panel button
+		ChannelEditorWidgetsFactory.configureSashForm(container);
+		chartPane = ChannelEditorWidgetsFactory.createChartPane(container);
+		chart = new InteractiveChart(chartPane, SWT.NONE);
+		chart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		chart.setBackground(xyChartData.getBackGroundColor());
 		chart.getPlotArea().setBackground(xyChartData.getPlotAreaBackGroundColor());
 		new MarkersManager(this);
@@ -565,8 +571,8 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 			}
 		});
 		
-		container.setSashWidth(3);
 		container.setWeights(new int[] {75, 25});
+		ChannelEditorWidgetsFactory.createShowHidePanelButton(container, chartPane, GeneralPreferenceConstants.SHOW_CHART_EDITOR_PANEL);
 		
 		refreshTrialsListFrontEndCutsCategories();
 //		trialsListViewer.setSelection(new StructuredSelection(xyChartData.getSelectedTrialsNumbers()));

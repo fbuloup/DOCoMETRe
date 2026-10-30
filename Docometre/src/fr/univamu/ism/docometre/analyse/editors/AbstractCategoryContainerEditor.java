@@ -71,6 +71,7 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.analyse.MathEngine;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
+import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
 /**
  * Common part of the category editors: chart of the selected signals for the
@@ -136,19 +137,24 @@ public abstract class AbstractCategoryContainerEditor extends Composite implemen
 
 	/** Builds the editor; to be called at the end of the constructor of the subclasses. */
 	protected final void createContents() {
-		setLayout(new GridLayout(3, false));
+		setLayout(new GridLayout(1, false));
 		GridLayout gl = (GridLayout)getLayout();
 		gl.horizontalSpacing = 5;
 		gl.verticalSpacing = 0;
 		gl.marginHeight = 5;
 		gl.marginWidth = 5;
 		
-		if(!createChart(this)) {
+		// Chart pane (chart and show/hide button) | category container, resizable
+		SashForm mainSashForm = new SashForm(this, SWT.HORIZONTAL);
+		mainSashForm.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		ChannelEditorWidgetsFactory.configureSashForm(mainSashForm);
+		Composite chartPane = ChannelEditorWidgetsFactory.createChartPane(mainSashForm);
+		
+		if(!createChart(chartPane)) {
 			Activator.logErrorMessage("Error while trying to create chart");
 			return;
 		}
-		Composite categoryContainer = new Composite(this, SWT.NORMAL);
-		categoryContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true));
+		Composite categoryContainer = new Composite(mainSashForm, SWT.NORMAL);
 		categoryContainer.setLayout(new GridLayout(2, false));
 		GridLayout gl2 = (GridLayout)categoryContainer.getLayout();
 		gl2.horizontalSpacing = 5;
@@ -198,8 +204,8 @@ public abstract class AbstractCategoryContainerEditor extends Composite implemen
 		
 		sashForm.setWeights(new int[] {70,30});
 		
-		// Replaces former separator between chart and category container
-		ChannelEditorWidgetsFactory.createShowHidePanelButton(categoryContainer);
+		mainSashForm.setWeights(new int[] {80, 20});
+		ChannelEditorWidgetsFactory.createShowHidePanelButton(mainSashForm, chartPane, GeneralPreferenceConstants.SHOW_CHANNEL_EDITOR_PANEL);
 	}
 
 	// ------------------------------------------------------------------

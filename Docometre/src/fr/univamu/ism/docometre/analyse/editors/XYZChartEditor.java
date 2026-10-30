@@ -132,6 +132,7 @@ import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
 import fr.univamu.ism.docometre.analyse.datamodel.XYChart;
 import fr.univamu.ism.docometre.analyse.datamodel.XYZChart;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
+import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
 public class XYZChartEditor extends EditorPart implements ISelectionChangedListener, /*IMarkersManager,*/ ZoomListener, TrialsEditor, ChartPropertiesListener, Chart2D3DBehaviour, IViewPointChangedListener, MouseListener {
 	
@@ -156,6 +157,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 	
 	private XYZChart xyzChartData;
 	private SashForm container;
+	private Composite chartPane;
 	private ListViewer trialsListViewer;
 	private Text xMinText;
 	private Text xMaxText;
@@ -241,8 +243,12 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 			container.setFocus();
 			return;
 		}
-		chartContainer = new Composite(container, SWT.NONE);
+		// Chart pane : chart and show/hide panel button
+		ChannelEditorWidgetsFactory.configureSashForm(container);
+		chartPane = ChannelEditorWidgetsFactory.createChartPane(container);
+		chartContainer = new Composite(chartPane, SWT.NONE);
 		chartContainer.setLayout(new FillLayout());
+		chartContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
 		Settings.getInstance().setHardwareAccelerated(true);
 		chart = SWTChartFactory.chart(chartContainer, Quality.Nicest());
@@ -687,8 +693,8 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 			}
 		});
 		
-		container.setSashWidth(3);
 		container.setWeights(new int[] {80, 20});
+		ChannelEditorWidgetsFactory.createShowHidePanelButton(container, chartPane, GeneralPreferenceConstants.SHOW_CHART_EDITOR_PANEL);
 		
 		refreshTrialsListFrontEndCutsCategories();
 //		trialsListViewer.setSelection(new StructuredSelection(xyzChartData.getSelectedTrialsNumbers()));
