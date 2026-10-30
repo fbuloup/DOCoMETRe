@@ -78,7 +78,6 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -286,7 +285,6 @@ public class OrganizeSessionWizardPage extends WizardPage {
 		selectDistributionMethodTabFolder = new CTabFolder(rightContainer, SWT.TOP | SWT.BORDER);
 		selectDistributionMethodTabFolder.setBorderVisible(true);
 		selectDistributionMethodTabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
-		selectDistributionMethodTabFolder.setSelectionBackground(Display.getCurrent().getSystemColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND_GRADIENT));
 		
 		selectedTrialsTabItem = new CTabItem(selectDistributionMethodTabFolder, SWT.NONE);
 		selectedTrialsTabItem.setText(DocometreMessages.OrganizeSessionWizardPage_selectedTrialsTabItem);
