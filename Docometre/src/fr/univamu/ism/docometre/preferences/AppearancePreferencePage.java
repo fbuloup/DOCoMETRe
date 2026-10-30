@@ -20,12 +20,14 @@ import org.osgi.service.prefs.BackingStoreException;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.Languages;
 import fr.univamu.ism.docometre.ThemeColors;
 
 /*
  * Theme selection : system, light or dark.
  * Eclipse theme engine API is not public : selected theme is saved in the preference
  * read by the theme engine at startup (no preference means follow system).
+ * Language selection : system or one of available languages (see Languages).
  */
 public class AppearancePreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
 
@@ -35,6 +37,10 @@ public class AppearancePreferencePage extends PreferencePage implements IWorkben
 
 	private Combo themeCombo;
 	private int initialSelection;
+	private Combo languageCombo;
+	// SYSTEM followed by available languages, in language combo order
+	private String[] languages;
+	private int initialLanguageSelection;
 
 	@Override
 	public void init(IWorkbench workbench) {
@@ -60,12 +66,32 @@ public class AppearancePreferencePage extends PreferencePage implements IWorkben
 		if(themeId == null) initialSelection = SYSTEM;
 		else initialSelection = themeId.contains("dark") ? DARK : LIGHT;
 		themeCombo.select(initialSelection);
+		
+		Label languageLabel = new Label(container, SWT.NONE);
+		languageLabel.setText(DocometreMessages.AppearancePreferences_Language);
+		languageLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+		
+		languageCombo = new Combo(container, SWT.READ_ONLY);
+		languageCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		String[] availableLanguages = Languages.getAvailableLanguages();
+		languages = new String[availableLanguages.length + 1];
+		languages[0] = Languages.SYSTEM;
+		System.arraycopy(availableLanguages, 0, languages, 1, availableLanguages.length);
+		languageCombo.add(DocometreMessages.AppearancePreferences_SystemLanguage);
+		for (String language : availableLanguages) languageCombo.add(Languages.getLanguageName(language));
+		
+		// Preferred language may not be available anymore : system is then selected
+		initialLanguageSelection = 0;
+		String preferredLanguage = Languages.getPreferredLanguage();
+		for (int i = 0; i < languages.length; i++) if(languages[i].equals(preferredLanguage)) initialLanguageSelection = i;
+		languageCombo.select(initialLanguageSelection);
 
 		return container;
 	}
 
 	@Override
 	public boolean performOk() {
+		boolean restart = false;
 		int selection = themeCombo.getSelectionIndex();
 		if(selection != initialSelection) {
 			IEclipsePreferences themePreferences = getThemePreferences();
@@ -79,14 +105,25 @@ public class AppearancePreferencePage extends PreferencePage implements IWorkben
 			}
 			initialSelection = selection;
 			// Theme is applied at startup : restart is needed
-			if(MessageDialog.openQuestion(getShell(), DocometreMessages.AppearancePreferences_RestartTitle, DocometreMessages.AppearancePreferences_RestartQuestion)) {
-				getShell().getDisplay().asyncExec(new Runnable() {
-					@Override
-					public void run() {
-						PlatformUI.getWorkbench().restart();
-					}
-				});
-			}
+			restart = MessageDialog.openQuestion(getShell(), DocometreMessages.AppearancePreferences_RestartTitle, DocometreMessages.AppearancePreferences_RestartQuestion);
+		}
+		int languageSelection = languageCombo.getSelectionIndex();
+		if(languageSelection != initialLanguageSelection) {
+			String language = languages[languageSelection];
+			Languages.setPreferredLanguage(language);
+			initialLanguageSelection = languageSelection;
+			// Language is applied at startup : relaunch with new language is needed
+			if(!restart) restart = MessageDialog.openQuestion(getShell(), DocometreMessages.AppearancePreferences_LanguageRestartTitle, DocometreMessages.AppearancePreferences_LanguageRestartQuestion);
+		}
+		if(restart) {
+			// Relaunch with preferred language (current -nl argument may come from a previous language choice)
+			Languages.requestRelaunch(Languages.getPreferredLanguage());
+			getShell().getDisplay().asyncExec(new Runnable() {
+				@Override
+				public void run() {
+					PlatformUI.getWorkbench().restart();
+				}
+			});
 		}
 		return super.performOk();
 	}

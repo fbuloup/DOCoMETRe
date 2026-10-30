@@ -123,6 +123,13 @@ public class DocometreApplication implements IApplication {
 	 * IApplicationContext)
 	 */
 	public Object start(IApplicationContext context) throws Exception {
+		// Language is set by framework at startup : relaunch if chosen language is not current one
+		String relaunchCommandLine = Languages.getStartupRelaunchCommandLine();
+		if(relaunchCommandLine != null) {
+			System.setProperty(IApplicationContext.EXIT_DATA_PROPERTY, relaunchCommandLine);
+			return IApplication.EXIT_RELAUNCH;
+		}
+		
 		Display display = PlatformUI.createDisplay();
 		
 		JFaceResources.getFontRegistry().put(COURIER_NEW, new FontData[]{ new FontData("Courier New", 12, SWT.NORMAL)});
@@ -212,7 +219,8 @@ public class DocometreApplication implements IApplication {
 			int returnCode = PlatformUI.createAndRunWorkbench(display, new ApplicationWorkbenchAdvisor());
 			Activator.logInfoMessage("createAndRunWorkbench return code : " + returnCode, getClass());
 			if (returnCode == PlatformUI.RETURN_RESTART)
-				return IApplication.EXIT_RESTART;
+				// Relaunch is requested by appearance preferences to apply chosen language
+				return Languages.isRelaunchRequested() ? IApplication.EXIT_RELAUNCH : IApplication.EXIT_RESTART;
 			else
 				return IApplication.EXIT_OK;
 		} finally {

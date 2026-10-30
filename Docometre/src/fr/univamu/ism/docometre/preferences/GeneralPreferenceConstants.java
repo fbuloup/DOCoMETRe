@@ -57,6 +57,7 @@ public class GeneralPreferenceConstants {
 	public static final String MAX_RECENT_WORKSPACES = "MAX_RECENT_WORKSPACES";
 	public static final String RECENT_WORKSPACES = "RECENT_WORKSPACES";
 	public static final String SELECTED_WORKSPACE = "SELECTED_WORKSPACE";
+	public static final String LANGUAGE = "LANGUAGE";
 	public static final String SHOW_TRADITIONAL_STYLE_TABS = "SHOW_TRADITIONAL_STYLE_TABS";
 	public static final String WINE_FULL_PATH = "WINE_FULL_PATH";
 	public static final String USE_DOCKER = "USE_DOCKER";
