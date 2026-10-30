@@ -36,6 +36,7 @@ public abstract class AbstractGLChart<C extends CurveData<C>, R extends CurveCha
 
     private Menu contextMenu; // created at the first opening, SWT thread only
     private volatile boolean contextMenuEnabled = true;
+    private volatile boolean markersMenuItemsVisible = true;
 
     /**
      * Creates the OpenGL surface in container and starts rendering. When the
@@ -281,6 +282,18 @@ public abstract class AbstractGLChart<C extends CurveData<C>, R extends CurveCha
     }
 
     /**
+     * Shows (default) or hides the marker items of the context menu, for the
+     * charts that never have markers (real-time display, for example).
+     */
+    public void setMarkersMenuItemsVisible(boolean visible) {
+        markersMenuItemsVisible = visible;
+    }
+
+    public boolean isMarkersMenuItemsVisible() {
+        return markersMenuItemsVisible;
+    }
+
+    /**
      * Builds the context menu from the current state of the chart and shows
      * it at location (display coordinates). To be called in the SWT thread.
      */
@@ -302,7 +315,8 @@ public abstract class AbstractGLChart<C extends CurveData<C>, R extends CurveCha
 
     /**
      * Fills the context menu, section by section (separated by a line):
-     * mode, curves, markers, decorations, rendering and view. Subclasses
+     * mode, curves, markers (unless hidden, see
+     * {@link #setMarkersMenuItemsVisible}), decorations, rendering and view. Subclasses
      * complete the sections that concern them; the items show the change
      * they make ("Show the legend" / "Hide the legend"...) and, when there
      * is one, the equivalent key.
@@ -312,7 +326,7 @@ public abstract class AbstractGLChart<C extends CurveData<C>, R extends CurveCha
         addMenuSeparator(menu);
         fillCurvesMenuItems(menu);
         addMenuSeparator(menu);
-        fillMarkersMenuItems(menu);
+        if (markersMenuItemsVisible) fillMarkersMenuItems(menu);
         addMenuSeparator(menu);
         fillDecorationsMenuItems(menu);
         addMenuSeparator(menu);

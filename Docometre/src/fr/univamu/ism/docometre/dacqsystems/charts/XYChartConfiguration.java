@@ -62,6 +62,7 @@ import org.eclipse.ui.forms.widgets.Hyperlink;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.FontUtil;
+import fr.univamu.ism.docometre.chartxyz.AbstractGLPlotChart;
 import fr.univamu.ism.docometre.chartxyz.Curve2DData;
 import fr.univamu.ism.docometre.chartxyz.LineStyle;
 import fr.univamu.ism.docometre.chartxyz.macos.NewtChart2D;
@@ -304,6 +305,12 @@ public class XYChartConfiguration extends ChartConfiguration {
 		rtswtxyChart.setGridLinesColor(chartColor);
 		rtswtxyChart.setFontColor(chartColor);
 		rtswtxyChart.setWaitForAllSeriesToRedraw(true);
+		if(rtswtxyChart instanceof AbstractGLPlotChart) {
+			// Real-time display: no markers, neither with the mouse nor in the context menu
+			AbstractGLPlotChart<?, ?> glChart = (AbstractGLPlotChart<?, ?>) rtswtxyChart;
+			glChart.setMarkersInteractive(false);
+			glChart.setMarkersMenuItemsVisible(false);
+		}
 		
 		// Create curves
 		for (CurveConfiguration curveConfiguration : curvesConfigurations) {

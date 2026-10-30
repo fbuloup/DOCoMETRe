@@ -62,6 +62,7 @@ import org.eclipse.ui.forms.widgets.Hyperlink;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.FontUtil;
+import fr.univamu.ism.docometre.chartxyz.AbstractGLPlotChart;
 import fr.univamu.ism.docometre.chartxyz.Curve1DData;
 import fr.univamu.ism.docometre.chartxyz.LineStyle;
 import fr.univamu.ism.docometre.chartxyz.macos.NewtChart1D;
@@ -311,6 +312,12 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 		rtswtOscilloChart.setLegendPosition(SWT.BOTTOM);
 		rtswtOscilloChart.setGridLinesColor(chartColor);
 		rtswtOscilloChart.setFontColor(chartColor);
+		if(rtswtOscilloChart instanceof AbstractGLPlotChart) {
+			// Real-time display: no markers, neither with the mouse nor in the context menu
+			AbstractGLPlotChart<?, ?> glChart = (AbstractGLPlotChart<?, ?>) rtswtOscilloChart;
+			glChart.setMarkersInteractive(false);
+			glChart.setMarkersMenuItemsVisible(false);
+		}
 		
 		// Create curves
 		for (CurveConfiguration curveConfiguration : curvesConfigurations) {

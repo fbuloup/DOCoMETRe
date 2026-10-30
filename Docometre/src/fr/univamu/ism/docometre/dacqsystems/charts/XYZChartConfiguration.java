@@ -63,6 +63,7 @@ import org.eclipse.ui.forms.widgets.Hyperlink;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.FontUtil;
+import fr.univamu.ism.docometre.chartxyz.AbstractGLChart;
 import fr.univamu.ism.docometre.chartxyz.Curve3DData;
 import fr.univamu.ism.docometre.chartxyz.IRTSWTXYZChart;
 import fr.univamu.ism.docometre.chartxyz.IRTSWTXYZSerie;
@@ -335,6 +336,8 @@ public class XYZChartConfiguration extends ChartConfiguration {
 //		rtswtxyzChart.setScaleFont(fontName, fontSize, fontStyle);
 		rtswtxyzChart.setLegendVisibility(true);
 		rtswtxyzChart.setHistorySize(historySize);
+		// Real-time display: no markers in the context menu
+		if(rtswtxyzChart instanceof AbstractGLChart) ((AbstractGLChart<?, ?>) rtswtxyzChart).setMarkersMenuItemsVisible(false);
 		// Create curves
 		for (CurveConfiguration curveConfiguration : curvesConfigurations) {
 			XYZCurveConfiguration xyzCurveConfiguration = (XYZCurveConfiguration)curveConfiguration;
