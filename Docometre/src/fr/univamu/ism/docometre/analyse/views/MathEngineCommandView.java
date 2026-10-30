@@ -47,6 +47,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocumentListener;
@@ -193,6 +194,8 @@ public class MathEngineCommandView extends ViewPart implements IDocumentListener
 		messagesViewer.getTextWidget().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 3, 1));
 		// CSS id, so that dark theme gives it the same colors as console view (see css/docometre-dark.css)
 		messagesViewer.getTextWidget().setData("org.eclipse.e4.ui.css.id", "DocometreMathEngineConsole");
+		// Same font as console view (TextConsole default font)
+		messagesViewer.getTextWidget().setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
 		getViewSite().getActionBars().getToolBarManager().add(new ClearConsoleAction());
 		getViewSite().getActionBars().getToolBarManager().add(new ScrollLockAction());
 	}
