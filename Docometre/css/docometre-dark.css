@@ -45,6 +45,13 @@ ColorDefinition#fr-univamu-ism-docometre-SYNTAX_MAROON_COLOR {
 	color: #CCCCCC;
 }
 
+/* Meter charts (gauge, tank) : same colors as the OpenGL charts, as set in MeterChartConfiguration
+ * (otherwise the canvas takes the dark theme Canvas colors, different from those of the figure) */
+#DocometreMeterChart {
+	background-color: #191C21;
+	color: #D9D9E5;
+}
+
 /* DOCoMETRe composites : CSS type selectors match the exact class name,
  * not subclasses of Composite, so they must be listed here (as Eclipse does for its own) */
 SignalContainerEditor, CategoryContainerEditor, GLSignalContainerEditor, GLCategoryContainerEditor,

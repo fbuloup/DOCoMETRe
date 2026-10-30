@@ -270,6 +270,10 @@ public class MeterChartConfiguration extends ChartConfiguration {
 		
 		meterContainer = new Canvas(container, SWT.BORDER);
 		meterContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, hSpan, vSpan));
+		// Same colors as the OpenGL charts. The dark theme styles every Canvas after its creation, which
+		// would change the canvas colors (painted around the figure) but not the figure ones: this CSS id
+		// gives the canvas these colors in docometre-dark.css
+		meterContainer.setData("org.eclipse.e4.ui.css.id", "DocometreMeterChart");
 		meterContainer.setBackground(DocometreSharedColors.getInstance().getColor(new RGB(25, 28, 33)));
 		meterContainer.setForeground(DocometreSharedColors.getInstance().getColor(new RGB(217, 217, 229)));
 		
