@@ -44,3 +44,9 @@ ColorDefinition#fr-univamu-ism-docometre-SYNTAX_ORANGE_COLOR {
 ColorDefinition#fr-univamu-ism-docometre-SYNTAX_MAROON_COLOR {
 	color: #D69D85;
 }
+
+/* Math engine console : same colors as Eclipse console view */
+#DocometreMathEngineConsole {
+	background-color: #2F2F2F;
+	color: #CCCCCC;
+}

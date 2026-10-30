@@ -191,6 +191,8 @@ public class MathEngineCommandView extends ViewPart implements IDocumentListener
 		messagesViewer.setDocument(new Document());
 		messagesViewer.getDocument().addDocumentListener(this);
 		messagesViewer.getTextWidget().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 3, 1));
+		// CSS id, so that dark theme gives it the same colors as console view (see Docometre.theme)
+		messagesViewer.getTextWidget().setData("org.eclipse.e4.ui.css.id", "DocometreMathEngineConsole");
 		getViewSite().getActionBars().getToolBarManager().add(new ClearConsoleAction());
 		getViewSite().getActionBars().getToolBarManager().add(new ScrollLockAction());
 	}
