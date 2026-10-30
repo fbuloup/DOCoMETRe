@@ -193,6 +193,8 @@ public class DescriptionView extends ViewPart implements ISelectionListener, IPa
 		
 		descriptionStyledText = new StyledText(parent, styles);
 		descriptionStyledText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		// CSS id, so that dark theme gives it the same colors as console view (see css/docometre-dark.css)
+		descriptionStyledText.setData("org.eclipse.e4.ui.css.id", "DocometreDescriptionText");
 		descriptionStyledText.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {

@@ -37,8 +37,10 @@ ColorDefinition#fr-univamu-ism-docometre-SYNTAX_MAROON_COLOR {
 	color: #D69D85;
 }
 
-/* Math engine console : same colors as Eclipse console view */
-#DocometreMathEngineConsole {
+/* Math engine console and description view text : same colors as Eclipse console view
+ * (Eclipse dark theme gives a lighter background to StyledText in views) */
+#DocometreMathEngineConsole,
+#DocometreDescriptionText {
 	background-color: #2F2F2F;
 	color: #CCCCCC;
 }
