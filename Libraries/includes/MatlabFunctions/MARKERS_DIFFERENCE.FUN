@@ -1,7 +1,9 @@
 MENU_TITLE = Markers difference
 DESCRIPTION = Compute amplitude or time difference between two markers (M2-M1)
 MENU_TITLE_FR = Différence de marqueurs
+MENU_TITLE_PL = Różnica znaczników
 DESCRIPTION_FR = Calcule la différence temporelle ou d'amplitude entre deux marqueurs (M2-M1)
+DESCRIPTION_PL = Oblicza różnicę amplitudy lub czasu między dwoma znacznikami (M2-M1)
 
 # Now start specific matlab function 
 FUNCTION_CODE = % Compute Markers difference\n\

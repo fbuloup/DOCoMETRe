@@ -1,7 +1,9 @@
 MENU_TITLE = Maxima
 DESCRIPTION = Mark all peaks
 MENU_TITLE_FR = Maxima
+MENU_TITLE_PL = Maksima
 DESCRIPTION_FR = Marque tous les pics
+DESCRIPTION_PL = Oznacza wszystkie szczyty
 
 # Now start specific python function 
 FUNCTION_CODE = # Compute find peaks\n\

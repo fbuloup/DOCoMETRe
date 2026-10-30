@@ -1,7 +1,9 @@
 MENU_TITLE = Butterworth high pass filter (filtfilt)
 DESCRIPTION = As 'filtfilt' function is used, resulting order will be twice the provided one (filtfilt)
 MENU_TITLE_FR = Filtre passe haut de Butterworth (filtfilt)
+MENU_TITLE_PL = Filtr górnoprzepustowy Butterwortha (filtfilt)
 DESCRIPTION_FR = Comme la fonction 'filtfilt' est utilisée, l'ordre résultant sera le double de celui fourni (filtfilt)
+DESCRIPTION_PL = Ponieważ używana jest funkcja 'filtfilt', wynikowy rząd będzie dwukrotnie większy od podanego (filtfilt)
 
 # Now start specific matlab function 
 FUNCTION_CODE = % Compute high pass Butterworth filter\n\

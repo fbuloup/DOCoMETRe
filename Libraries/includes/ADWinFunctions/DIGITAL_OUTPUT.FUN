@@ -1,7 +1,9 @@
 MENU_TITLE = Generate digital output value
 DESCRIPTION =  Generate digital output value Asynchronously (immediate)
 MENU_TITLE_FR = Générer une sortie digitale
+MENU_TITLE_PL = Generowanie wartości wyjścia cyfrowego
 DESCRIPTION_FR = Génère une sortie digitale de manière asynchrone (immédiat)
+DESCRIPTION_PL = Generowanie wartości wyjścia cyfrowego w trybie asynchronicznym (natychmiastowym)
 # Several segments are available in ADBascic code :
 # HEADER, INCLUDE, DECLARATION, INITIALIZATION, ACQUISITION, RECOVERY, TRANSFER, EVENT, GENERATION and FINISH
 # The ADBasic function code you need to add in any segments INITIALIZATION, EVENT or FINISH may require contributions to any other segment.

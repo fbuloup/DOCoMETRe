@@ -1,7 +1,9 @@
 MENU_TITLE = Compute expression(s)
 DESCRIPTION = Compute given expression(d)
 MENU_TITLE_FR = Calculer une ou des expressions
+MENU_TITLE_PL = Obliczanie wyrażeń
 DESCRIPTION_FR = Calcule la ou les expressions fournies
+DESCRIPTION_PL = Oblicza podane wyrażenie lub wyrażenia
 # Several segments are available in Arduino code :
 # INCLUDE, DEFINE, DECLARATION, INITIALIZATION, ACQUISITION, RECOVERY, LOOP, TRANSFER, GENERATION, FUNCTION, FINALIZE
 # The Arduino function code you need to add in any segments INITIALIZATION, LOOP or FINALIZE may require contributions to any other segment.

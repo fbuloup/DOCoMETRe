@@ -2,8 +2,11 @@ MENU_TITLE = Markers Group Transfert
 DESCRIPTION = This fonction creates markers group on input signal.\n\ 
 Markers time values come from input markers group.
 MENU_TITLE_FR = Transférer un groupe de marqueurs
+MENU_TITLE_PL = Transfer grupy znaczników
 DESCRIPTION_FR = Cette fonction crée un groupe de marqueur sur le signal d'entrée.\n\
 Les valeurs temporelles proviennent du groupe de marqueurs d'entrée.
+DESCRIPTION_PL = Ta funkcja tworzy grupę znaczników na sygnale wejściowym.\n\
+Wartości czasowe znaczników pochodzą z wejściowej grupy znaczników.
 
 # Now start specific python function 
 FUNCTION_CODE = # Compute Markers Group Transfert\n\

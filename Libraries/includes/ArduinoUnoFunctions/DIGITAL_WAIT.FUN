@@ -1,7 +1,9 @@
 MENU_TITLE = Digital Wait
 DESCRIPTION =  Wait as long as a digital input has the given value
 MENU_TITLE_FR = Attente digitale
+MENU_TITLE_PL = Oczekiwanie cyfrowe
 DESCRIPTION_FR = Attendre tant qu'une entrée digitale a la valeur donnée
+DESCRIPTION_PL = Czekaj, dopóki wejście cyfrowe ma zadaną wartość
 # Several segments are available in ArduinoUno code :
 # INCLUDE, DEFINE, DECLARATION, INITIALIZATION, ACQUISITION, RECOVERY, LOOP, TRANSFER, GENERATION, FINALIZE, FUNCTION
 # The Arduino function code you need to add in segment INITIALIZATION, LOOP or FINALIZE may require contributions to any other segment.

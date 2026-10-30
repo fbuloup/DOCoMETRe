@@ -1,7 +1,9 @@
 MENU_TITLE = Acquire digital input value
 DESCRIPTION =  Acquire digital input value asynchronously (immediate)
 MENU_TITLE_FR = Acquérir une entrée digitale
+MENU_TITLE_PL = Akwizycja wartości wejścia cyfrowego
 DESCRIPTION_FR = Acquérir une entrée digitale de manière asynchrone (immédiat)
+DESCRIPTION_PL = Akwizycja wartości wejścia cyfrowego w trybie asynchronicznym (natychmiastowym)
 # Several segments are available in ADBascic code :
 # HEADER, INCLUDE, DECLARATION, INITIALIZATION, ACQUISITION, RECOVERY, TRANSFER, EVENT, GENERATION and FINISH
 # The ADBasic function code you need to add in any segments INITIALIZATION, EVENT or FINISH may require contributions to any other segment.

@@ -1,7 +1,9 @@
 MENU_TITLE = 1D Median filter (medfilt1)
 DESCRIPTION = 1D Median filter (use medfilt1 function)
 MENU_TITLE_FR = Filtre médian 1D (medfilt1)
+MENU_TITLE_PL = Filtr medianowy 1D (medfilt1)
 DESCRIPTION_FR = Filtre médian 1D (utilise la fonction medfilt1) 
+DESCRIPTION_PL = Filtr medianowy 1D (używa funkcji medfilt1)
 
 # Now start specific matlab function 
 FUNCTION_CODE = % Compute median filter\n\

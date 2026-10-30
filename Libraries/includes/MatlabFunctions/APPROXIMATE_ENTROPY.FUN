@@ -1,7 +1,9 @@
 MENU_TITLE = Approximate Entropy
 DESCRIPTION = Compute Signal approximate Sample Entropy 
 MENU_TITLE_FR = Appoximation de l'Entropie d'échantillons
+MENU_TITLE_PL = Entropia przybliżona
 DESCRIPTION_FR = Calcule l'Approximation de l'entropie d'échantillons
+DESCRIPTION_PL = Oblicza przybliżoną entropię próbkową sygnału
 # Now start specific matlab function 
 
 FUNCTION_CODE = % Compute SE feature\n\

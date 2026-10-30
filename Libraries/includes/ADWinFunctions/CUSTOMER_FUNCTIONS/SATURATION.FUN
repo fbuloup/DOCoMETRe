@@ -1,22 +1,24 @@
 # This is a custom/user function example
 # You can use it as inspiration to create
 # your own functions
-﻿MENU_TITLE = Saturation
+MENU_TITLE = Saturation
 DESCRIPTION = Saturation
 MENU_TITLE_FR = Saturation
+MENU_TITLE_PL = Nasycenie
 DESCRIPTION_FR = Saturation
+DESCRIPTION_PL = Nasycenie
 # It'a user function if USER_FUNCTION key exists 
 # and its value is 1 or YES or yes or YeS...
 USER_FUNCTION = YES 
 PARAMETERS_NUMBER = 4
 PARAMETER_1 = NAME = input, TYPE = TEXT:^(?!\s*$).+, LABEL = "Input :",\
-LABEL_FR = "Entrée :"
+LABEL_FR = "Entrée :", LABEL_PL = "Wejście :"
 PARAMETER_2 = NAME = output, TYPE = TEXT:^(?!\s*$).+, LABEL = "Output :",\
-LABEL_FR = "Output :"
+LABEL_FR = "Output :", LABEL_PL = "Wyjście :"
 PARAMETER_3 = NAME = maxSaturationValue, TYPE = TEXT:^(?!\s*$).+, LABEL = "Max. saturation value :",\
-LABEL_FR = "Valeur max. de la saturation :"
+LABEL_FR = "Valeur max. de la saturation :", LABEL_PL = "Maks. wartość nasycenia :"
 PARAMETER_4 = NAME = minSaturationValue, TYPE = TEXT:^(?!\s*$).+, LABEL = "Min. saturation value :",\
-LABEL_FR = "Valeur min. de la saturation :"
+LABEL_FR = "Valeur min. de la saturation :", LABEL_PL = "Min. wartość nasycenia :"
 # Several segments are available in ADBascic code :
 # HEADER, INCLUDE, DECLARATION, INITIALIZATION, ACQUISITION, RECOVERY, TRANSFER, EVENT, GENERATION and FINISH
 # The ADBasic function code you need to add in any segments INITIALIZATION, EVENT or FINISH may require contributions to any other segment.

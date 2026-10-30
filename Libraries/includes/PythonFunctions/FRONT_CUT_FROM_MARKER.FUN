@@ -1,7 +1,9 @@
 MENU_TITLE = Modify "Front Cut" from marker
 DESCRIPTION = This function modify front cut value of selected signal from marker.
 MENU_TITLE_FR = Modifier l'"Avant coupe" à partir d'un marqueur
+MENU_TITLE_PL = Zmiana "przycięcia początku" na podstawie znacznika
 DESCRIPTION_FR = Cette fonction modifie l'"Avant coupe" du signal sélectionné à partir d'un marqueur.
+DESCRIPTION_PL = Ta funkcja zmienia wartość przycięcia początku wybranego sygnału na podstawie znacznika.
 
 # Now start specific python function 
 FUNCTION_CODE = # Compute Front Cut from marker\n\

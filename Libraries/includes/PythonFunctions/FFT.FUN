@@ -1,7 +1,9 @@
 MENU_TITLE = FFT
 DESCRIPTION = Compute Single Sided FFT (real-valued signal) 
 MENU_TITLE_FR = FFT
+MENU_TITLE_PL = FFT
 DESCRIPTION_FR = Calcule la FFT monolatérale (signal à valeurs réelles)
+DESCRIPTION_PL = Oblicza jednostronną FFT (sygnał o wartościach rzeczywistych)
 
 # Now start specific matlab function 
 FUNCTION_CODE = # Compute FFT\n\

@@ -1,7 +1,9 @@
 MENU_TITLE = Median filter
 DESCRIPTION = Apply median filter to selected input
 MENU_TITLE_FR = Filtre médian
+MENU_TITLE_PL = Filtr medianowy
 DESCRIPTION_FR = Applique un filtre médian sur l'entrée sélectionnée
+DESCRIPTION_PL = Stosuje filtr medianowy do wybranego wejścia
 # Several segments are available in ADBascic code :
 # HEADER, INCLUDE, DECLARATION, INITIALIZATION, ACQUISITION, RECOVERY, TRANSFER, EVENT, GENERATION and FINISH
 # The ADBasic function code you need to add in any segments INITIALIZATION, EVENT or FINISH may require contributions to any other segment.

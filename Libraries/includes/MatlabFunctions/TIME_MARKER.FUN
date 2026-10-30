@@ -1,7 +1,9 @@
 MENU_TITLE = Timer marker
 DESCRIPTION = Mark input signal at specific time value
 MENU_TITLE_FR = Marqueur temporel
+MENU_TITLE_PL = Znacznik czasowy
 DESCRIPTION_FR = Marque le signal d'entrée à un valeur temporelle spécifique
+DESCRIPTION_PL = Oznacza sygnał wejściowy w określonej chwili czasu
 
 # Now start specific matlab function 
 FUNCTION_CODE = % Compute Time marker\n\

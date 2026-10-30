@@ -1,7 +1,9 @@
 MENU_TITLE = Write float value to serial port
 DESCRIPTION = Convert a float value to ASCII string and write result to selected serial port
 MENU_TITLE_FR = Écrire un flottant sur un port série
+MENU_TITLE_PL = Zapis wartości zmiennoprzecinkowej do portu szeregowego
 DESCRIPTION_FR = Convertir un flottant en chaine de caractères ASCII et l'écrire sur le port série sélectionné
+DESCRIPTION_PL = Konwertuje wartość zmiennoprzecinkową na ciąg ASCII i zapisuje wynik do wybranego portu szeregowego
 # Several segments are available in ADBascic code :
 # HEADER, INCLUDE, DECLARATION, INITIALIZATION, ACQUISITION, RECOVERY, TRANSFER, EVENT, GENERATION and FINISH
 # The ADBasic function code you need to add in any segments INITIALIZATION, EVENT or FINISH may require contributions to any other segment.

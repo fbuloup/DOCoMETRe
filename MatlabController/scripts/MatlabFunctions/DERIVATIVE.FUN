@@ -1,7 +1,9 @@
 MENU_TITLE = Derivative
 DESCRIPTION = Compute derivative using diff 
 MENU_TITLE_FR = Dérivée
+MENU_TITLE_PL = Pochodna
 DESCRIPTION_FR = Calcul de la dérivé en utilisant diff
+DESCRIPTION_PL = Oblicza pochodną za pomocą diff
 
 # Now start specific matlab function 
 FUNCTION_CODE = % Compute Derivative\n\

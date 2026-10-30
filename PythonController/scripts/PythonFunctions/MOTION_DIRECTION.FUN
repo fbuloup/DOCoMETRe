@@ -3,6 +3,8 @@ DESCRIPTION = This function computes the motion direction between two markers. T
 for each point of the curve formed by the two input signals and with respect to the starting marker. 
 DESCRIPTION_FR = Cette fonction calcule la direction du mouvement entre deux marqueurs. Cette direction est calculée\n\
 pour chaque point de la courbe formée par les deux signaux d'entrée et par rapport au marqueur d'origine.  
+DESCRIPTION_PL = Ta funkcja oblicza kierunek ruchu między dwoma znacznikami. Kierunek ten jest obliczany\n\
+dla każdego punktu krzywej utworzonej przez dwa sygnały wejściowe względem znacznika początkowego.
 # Now start specific python function 
 FUNCTION_CODE = # Compute Motion Direction\n\
 import math;\n\

@@ -1,7 +1,9 @@
 MENU_TITLE = Threshold markings
 DESCRIPTION = Marks all amplitudes where threshold is crossed
 MENU_TITLE_FR = Marquage de seuils
+MENU_TITLE_PL = Oznaczanie progów
 DESCRIPTION_FR = Marque toutes le amplitudes ou le seuil est traversé
+DESCRIPTION_PL = Oznacza wszystkie amplitudy, w których próg jest przekraczany
 
 # Now start specific python function 
 FUNCTION_CODE = # Compute threshold markings\n\

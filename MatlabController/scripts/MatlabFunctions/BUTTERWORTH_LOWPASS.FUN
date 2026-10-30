@@ -1,7 +1,9 @@
 MENU_TITLE = Butterworth low pass filter
 DESCRIPTION = Butterworth low pass filter
 MENU_TITLE_FR = Filtre passe bas de Butterworth
+MENU_TITLE_PL = Filtr dolnoprzepustowy Butterwortha
 DESCRIPTION_FR = Filtre passe bas de Butterworth
+DESCRIPTION_PL = Filtr dolnoprzepustowy Butterwortha
 
 # Now start specific matlab function 
 FUNCTION_CODE = % Compute low pass Butterworth filter\n\

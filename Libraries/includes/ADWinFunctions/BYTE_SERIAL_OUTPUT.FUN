@@ -2,8 +2,11 @@ MENU_TITLE = Write bytes to serial port
 DESCRIPTION = Write bytes (eight bits velues) to selected serial port\n\
 e.g. : channelName or 63 or feH or 11B or 255,58H,101B
 MENU_TITLE_FR = Écrire des octets sur un port série
+MENU_TITLE_PL = Zapis bajtów do portu szeregowego
 DESCRIPTION_FR = Écrire des octets (8 bits) sur le port série sélectionné\n\
 e.g. : channelName ou 63 ou feH ou 11B ou 255,58H,101B
+DESCRIPTION_PL = Zapisuje bajty (wartości ośmiobitowe) do wybranego portu szeregowego\n\
+np. : channelName lub 63 lub feH lub 11B lub 255,58H,101B
 # Several segments are available in ADBascic code :
 # HEADER, INCLUDE, DECLARATION, INITIALIZATION, ACQUISITION, RECOVERY, TRANSFER, EVENT, GENERATION and FINISH
 # The ADBasic function code you need to add in any segments INITIALIZATION, EVENT or FINISH may require contributions to any other segment.

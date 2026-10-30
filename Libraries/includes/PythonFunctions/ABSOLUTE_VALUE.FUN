@@ -1,7 +1,9 @@
 MENU_TITLE = Absolute value
 DESCRIPTION = Compute absolute value of signal (rectification)
 MENU_TITLE_FR = Valeur absolue
+MENU_TITLE_PL = Wartość bezwzględna
 DESCRIPTION_FR = Calcule la valeur absolue du signal (rectification)
+DESCRIPTION_PL = Oblicza wartość bezwzględną sygnału (prostowanie)
 
 # Now start specific python function
 FUNCTION_CODE = # Compute absolute value\n\

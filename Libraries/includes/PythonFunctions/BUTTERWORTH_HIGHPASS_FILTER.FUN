@@ -1,7 +1,9 @@
 MENU_TITLE = Butterworth high pass filter (filter)
 DESCRIPTION = Butterworth high pass filter (filter)
 MENU_TITLE_FR = Filtre passe haut de Butterworth (filter)
+MENU_TITLE_PL = Filtr górnoprzepustowy Butterwortha (filter)
 DESCRIPTION_FR = Filtre passe haut de Butterworth (filter)
+DESCRIPTION_PL = Filtr górnoprzepustowy Butterwortha (filter)
 
 # Now start specific python function 
 FUNCTION_CODE = # Compute high pass Butterworth filter\n\

@@ -1,7 +1,9 @@
 MENU_TITLE = Remove pulses
 DESCRIPTION = Suppress pulses with predefined amplitude and duration
 MENU_TITLE_FR = Supprimer les impulsions
+MENU_TITLE_PL = Usuwanie impulsów
 DESCRIPTION_FR = Supprimer les impulsions d'amplitude et de durée déterminées
+DESCRIPTION_PL = Usuwa impulsy o zadanej amplitudzie i czasie trwania
 
 # Now start specific Python function 
 FUNCTION_CODE = # Remove pulses\n\

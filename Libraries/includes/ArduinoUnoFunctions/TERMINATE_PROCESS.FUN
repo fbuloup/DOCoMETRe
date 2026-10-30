@@ -1,7 +1,9 @@
 MENU_TITLE = Terminate process
 DESCRIPTION = Terminate current process
 MENU_TITLE_FR = Arrêter le processus
+MENU_TITLE_PL = Zakończenie procesu
 DESCRIPTION_FR = Arrête le processus courant
+DESCRIPTION_PL = Kończy bieżący proces
 # Several segments are available in Arduino code :
 # INCLUDE, DEFINE, DECLARATION, INITIALIZATION, ACQUISITION, RECOVERY, LOOP, TRANSFER, GENERATION, FUNCTION, FINALIZE
 # The ADBasic function code you need to add in any segments INITIALIZATION, LOOP or FINALIZE may require contributions to any other segment.

@@ -1,7 +1,9 @@
 MENU_TITLE = Analog Wait
 DESCRIPTION = Wait for an analog input to go through a given value
 MENU_TITLE_FR = Attente analogique
+MENU_TITLE_PL = Oczekiwanie analogowe
 DESCRIPTION_FR = Attendre qu'une entrée analogique passe une valeur donnée
+DESCRIPTION_PL = Czekaj, aż wejście analogowe przekroczy zadaną wartość
 # Several segments are available in ADBascic code :
 # HEADER, INCLUDE, DECLARATION, INITIALIZATION, ACQUISITION, RECOVERY, TRANSFER, EVENT, GENERATION and FINISH
 # The ADBasic function code you need to add in any segments INITIALIZATION, EVENT or FINISH may require contributions to any other segment.

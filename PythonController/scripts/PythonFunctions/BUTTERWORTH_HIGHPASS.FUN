@@ -1,7 +1,9 @@
 MENU_TITLE = Butterworth high pass filter
 DESCRIPTION = As 'filtfilt' function is used, resulting order will be twice the provided one
 MENU_TITLE_FR = Filtre passe haut de Butterworth
+MENU_TITLE_PL = Filtr górnoprzepustowy Butterwortha
 DESCRIPTION_FR = Comme la fonction 'filtfilt' est utilisée, l'ordre résultant sera le double de celui fourni
+DESCRIPTION_PL = Ponieważ używana jest funkcja 'filtfilt', wynikowy rząd będzie dwukrotnie większy od podanego
 
 # Now start specific python function 
 FUNCTION_CODE = # Compute high pass Butterworth filter\n\

@@ -1,7 +1,9 @@
 MENU_TITLE = Generate analog output value
 DESCRIPTION =  Generate analog output value Asynchronously (immediate)
 MENU_TITLE_FR = Générer une sortie analogique
+MENU_TITLE_PL = Generowanie wartości wyjścia analogowego
 DESCRIPTION_FR = Génère une sortie analogique de manière asynchrone (immédiat)
+DESCRIPTION_PL = Generowanie wartości wyjścia analogowego w trybie asynchronicznym (natychmiastowym)
 # Several segments are available in ADBascic code :
 # HEADER, INCLUDE, DECLARATION, INITIALIZATION, ACQUISITION, RECOVERY, TRANSFER, EVENT, GENERATION and FINISH
 # The ADBasic function code you need to add in any segments INITIALIZATION, EVENT or FINISH may require contributions to any other segment.

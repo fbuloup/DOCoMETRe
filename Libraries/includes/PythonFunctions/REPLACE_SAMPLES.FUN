@@ -1,5 +1,7 @@
 MENU_TITLE_FR = Remplacer les valeurs d'échantillons
+MENU_TITLE_PL = Zastępowanie wartości próbek
 DESCRIPTION_FR = Remplace les valeurs d'une série d'échantillons par la valeur d'un autre échantillon
+DESCRIPTION_PL = Zastępuje wartości serii próbek wartością innej próbki
 MENU_TITLE = Replace samples values
 DESCRIPTION = Replace the values ​​of a series of samples with the value of another sample
 

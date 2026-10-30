@@ -1,7 +1,9 @@
 MENU_TITLE = Digital Wait
 DESCRIPTION =  Wait for a digital input to be a given value
 MENU_TITLE_FR = Attente digitale
+MENU_TITLE_PL = Oczekiwanie cyfrowe
 DESCRIPTION_FR = Attentre qu'une entrée digitale ait une valeur donnée
+DESCRIPTION_PL = Czekaj, aż wejście cyfrowe przyjmie zadaną wartość
 # Several segments are available in ADBascic code :
 # HEADER, INCLUDE, DECLARATION, INITIALIZATION, ACQUISITION, RECOVERY, TRANSFER, EVENT, GENERATION and FINISH
 # The ADBasic function code you need to add in any segments INITIALIZATION, EVENT or FINISH may require contributions to any other segment.

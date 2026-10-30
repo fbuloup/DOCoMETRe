@@ -1,7 +1,9 @@
 MENU_TITLE = Export Markers
 DESCRIPTION = Export selected markers to text file type CSV
 MENU_TITLE_FR = Export de marqueurs
+MENU_TITLE_PL = Eksport znaczników
 DESCRIPTION_FR = Exporte les marqueurs sélectionnés dans un fichier texte type CSV
+DESCRIPTION_PL = Eksportuje wybrane znaczniki do pliku tekstowego typu CSV
 
 # Now start specific matlab function 
 FUNCTION_CODE = % Add categories infos to files (delete files if exist)\n\

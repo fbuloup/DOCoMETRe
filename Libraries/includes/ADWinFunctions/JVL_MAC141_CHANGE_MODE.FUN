@@ -1,7 +1,9 @@
 MENU_TITLE = Change Servomotor Mode
 DESCRIPTION = Change Servomotor mode to Passive, Velocity, Position etc.
 MENU_TITLE_FR = Changer le Mode du Servomoteur
+MENU_TITLE_PL = Zmiana trybu serwomotoru
 DESCRIPTION_FR = Changer le mode du Servomoteur vers Passif, Vitesse, Position etc.
+DESCRIPTION_PL = Zmienia tryb serwomotoru na pasywny, prędkości, pozycji itp.
 # Several segments are available in ADBascic code :
 # HEADER, INCLUDE, DECLARATION, INITIALIZATION, ACQUISITION, RECOVERY, TRANSFER, EVENT, GENERATION and FINISH
 # The ADBasic function code you need to add in any segments INITIALIZATION, EVENT or FINISH may require contributions to any other segment.

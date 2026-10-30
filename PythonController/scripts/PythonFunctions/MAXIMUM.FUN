@@ -1,7 +1,9 @@
 MENU_TITLE = Maximum
 DESCRIPTION = Mark maximum amplitude
 MENU_TITLE_FR = Maximum
+MENU_TITLE_PL = Maksimum
 DESCRIPTION_FR = Marque l'amplitude maximale
+DESCRIPTION_PL = Oznacza amplitudę maksymalną
 
 # Now start specific python function 
 FUNCTION_CODE = # Compute Maximum marker\n\
