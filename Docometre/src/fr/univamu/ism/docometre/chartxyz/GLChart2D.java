@@ -1,7 +1,9 @@
 package fr.univamu.ism.docometre.chartxyz;
 
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Menu;
 
+import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.rtswtchart.IRTSWTXYChart;
 
 /**
@@ -78,6 +80,33 @@ public class GLChart2D extends AbstractGLPlotChart<Curve2DData, Chart2DRenderer>
     /** Fixed scales for the x and y axes (see the corresponding constructor). */
     public void setFixedScales(double xMin, double xMax, double yMin, double yMax) {
         renderer.setFixedScales(xMin, xMax, yMin, yMax);
+    }
+
+    /** Same scale on the x and y axes (also with the E key), useful for trajectories; disabled by default. */
+    public void setEqualAspect(boolean equalAspect) {
+        renderer.setEqualAspect(equalAspect);
+    }
+
+    public boolean isEqualAspect() {
+        return renderer.isEqualAspect();
+    }
+
+    // --- Context menu ---
+
+    /** Adds the fading of the trails. */
+    @Override
+    protected void fillRenderingMenuItems(Menu menu) {
+        super.fillRenderingMenuItems(menu);
+        addToggleMenuItem(menu, isTrailFading(), DocometreMessages.ChartMenu_EnableTrailFading,
+                DocometreMessages.ChartMenu_DisableTrailFading, null, this::setTrailFading);
+    }
+
+    /** Adds the same scale on x and y (E key), before the zoom items. */
+    @Override
+    protected void fillViewMenuItems(Menu menu) {
+        addToggleMenuItem(menu, isEqualAspect(), DocometreMessages.ChartMenu_EqualAspect,
+                DocometreMessages.ChartMenu_IndependentAspect, "E", this::setEqualAspect);
+        super.fillViewMenuItems(menu);
     }
 
     // --- IRTSWTXYChart ---

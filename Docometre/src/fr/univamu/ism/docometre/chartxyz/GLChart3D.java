@@ -1,6 +1,10 @@
 package fr.univamu.ism.docometre.chartxyz;
 
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+
+import fr.univamu.ism.docometre.DocometreMessages;
 
 /**
  * Chart of real-time 3D curves (see {@link Chart3DRenderer}).
@@ -157,6 +161,27 @@ public class GLChart3D extends AbstractGLChart<Curve3DData, Chart3DRenderer> imp
 
     public void removeCameraListener(CameraListener listener) {
         renderer.removeCameraListener(listener);
+    }
+
+    // --- Context menu ---
+
+    /** Markers and their labels. */
+    @Override
+    protected void fillMarkersMenuItems(Menu menu) {
+        super.fillMarkersMenuItems(menu);
+        addToggleMenuItem(menu, isMarkersVisible(), DocometreMessages.ChartMenu_ShowMarkers,
+                DocometreMessages.ChartMenu_HideMarkers, null, this::setMarkersVisible);
+        MenuItem labels = addToggleMenuItem(menu, isMarkerLabelsVisible(), DocometreMessages.ChartMenu_ShowMarkerLabels,
+                DocometreMessages.ChartMenu_HideMarkerLabels, null, this::setMarkerLabelsVisible);
+        labels.setEnabled(isMarkersVisible());
+    }
+
+    /** Adds the fading of the trails. */
+    @Override
+    protected void fillRenderingMenuItems(Menu menu) {
+        super.fillRenderingMenuItems(menu);
+        addToggleMenuItem(menu, isTrailFading(), DocometreMessages.ChartMenu_EnableTrailFading,
+                DocometreMessages.ChartMenu_DisableTrailFading, null, this::setTrailFading);
     }
 
     // --- IRTSWTXYZChart ---

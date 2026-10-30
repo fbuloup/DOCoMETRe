@@ -1,7 +1,9 @@
 package fr.univamu.ism.docometre.chartxyz;
 
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Menu;
 
+import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.rtswtchart.IRTSWTOscilloChart;
 
 /**
@@ -101,6 +103,19 @@ public class GLChart1D extends AbstractGLPlotChart<Curve1DData, Chart1DRenderer>
 
     public double getWindowTimeWidth() {
         return renderer.getWindowTimeWidth();
+    }
+
+    // --- Context menu ---
+
+    /** Adds the pause (space key) and the display mode (M key) to the cursor. */
+    @Override
+    protected void fillModeMenuItems(Menu menu) {
+        super.fillModeMenuItems(menu);
+        addToggleMenuItem(menu, isPaused(), DocometreMessages.ChartMenu_Pause, DocometreMessages.ChartMenu_Resume,
+                DocometreMessages.ChartMenu_SpaceKey, this::setPaused);
+        boolean sweep = getDisplayMode() == Chart1DRenderer.DisplayMode.SWEEP;
+        addMenuItem(menu, sweep ? DocometreMessages.ChartMenu_ScrollMode : DocometreMessages.ChartMenu_SweepMode, "M",
+                () -> setDisplayMode(sweep ? Chart1DRenderer.DisplayMode.SCROLL : Chart1DRenderer.DisplayMode.SWEEP));
     }
 
     // --- IRTSWTOscilloChart: settings not supported ---

@@ -1,5 +1,8 @@
 package fr.univamu.ism.docometre.chartxyz;
 
+import java.util.function.Consumer;
+
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
@@ -23,6 +26,13 @@ public abstract class GLHost {
     public static final int FPS = 60;
 
     /**
+     * Largest mouse displacement, in window units, between the press and the
+     * release of the right button for a click: beyond it, it is a drag (pan)
+     * and the context menu is not requested.
+     */
+    protected static final int CLICK_TOLERANCE = 3;
+
+    /**
      * Creates the OpenGL surface in parent and starts the animation.
      *
      * @param depthBuffer true for a 3D scene (24-bit depth buffer)
@@ -41,6 +51,7 @@ public abstract class GLHost {
 
     private Runnable onClose;
     private boolean closed;
+    private volatile Consumer<Point> contextMenuHandler;
 
     /** GL2 profile, double buffering, 4x antialiasing and, if requested, depth buffer. */
     private static GLCapabilities capabilities(boolean depthBuffer) {
@@ -50,6 +61,28 @@ public abstract class GLHost {
         capabilities.setSampleBuffers(true);
         capabilities.setNumSamples(4);
         return capabilities;
+    }
+
+    /**
+     * Action run, in the SWT thread, when a context menu is requested: right
+     * click without drag, or menu key of the keyboard. It receives the
+     * location of the menu, in display coordinates (null = none).
+     */
+    public void setContextMenuHandler(Consumer<Point> handler) {
+        contextMenuHandler = handler;
+    }
+
+    /** True if a context menu handler is set. */
+    protected final boolean hasContextMenuHandler() {
+        return contextMenuHandler != null;
+    }
+
+    /** Requests the context menu at (x, y), in the coordinates of the SWT component; to be called in the SWT thread. */
+    protected final void requestContextMenu(int x, int y) {
+        Consumer<Point> handler = contextMenuHandler;
+        Control control = getControl();
+        if (handler == null || closed || control == null || control.isDisposed()) return;
+        handler.accept(control.toDisplay(x, y));
     }
 
     /** SWT component containing the OpenGL surface (for layout). */

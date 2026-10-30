@@ -22,6 +22,8 @@ final class SWTGLHost extends GLHost {
     // Mouse state
     private int lastX, lastY;
     private boolean leftDown, rightDown;
+    private int rightPressX, rightPressY;
+    private boolean rightDragged; // the right button moved beyond CLICK_TOLERANCE: pan, no context menu
 
     SWTGLHost(Composite parent, GLCapabilities capabilities, GLChartRenderer renderer) {
         canvas = new GLCanvas(parent, SWT.NO_BACKGROUND, capabilities, null);
@@ -41,7 +43,12 @@ final class SWTGLHost extends GLHost {
                 lastX = e.x;
                 lastY = e.y;
                 if (e.button == ChartInteraction.LEFT_BUTTON) leftDown = true;
-                if (e.button == ChartInteraction.RIGHT_BUTTON) rightDown = true;
+                if (e.button == ChartInteraction.RIGHT_BUTTON) {
+                    rightDown = true;
+                    rightPressX = e.x;
+                    rightPressY = e.y;
+                    rightDragged = false;
+                }
                 Point size = canvas.getSize();
                 interaction.press(e.button, modifiers(e), e.x, e.y, size.x, size.y);
             }
@@ -53,6 +60,8 @@ final class SWTGLHost extends GLHost {
                 // Received even outside the component: SWT captures the mouse during a drag
                 Point size = canvas.getSize();
                 interaction.release(e.button, e.x, e.y, size.x, size.y);
+                // Right click without drag: context menu
+                if (e.button == ChartInteraction.RIGHT_BUTTON && !rightDragged && !leftDown) requestContextMenu(e.x, e.y);
             }
 
             @Override
@@ -67,6 +76,9 @@ final class SWTGLHost extends GLHost {
             int dy = e.y - lastY;
             lastX = e.x;
             lastY = e.y;
+            if (rightDown && (Math.abs(e.x - rightPressX) > CLICK_TOLERANCE || Math.abs(e.y - rightPressY) > CLICK_TOLERANCE)) {
+                rightDragged = true;
+            }
             int button = leftDown ? ChartInteraction.LEFT_BUTTON : rightDown ? ChartInteraction.RIGHT_BUTTON : 0;
             Point size = canvas.getSize();
             if (button != 0) {
@@ -77,6 +89,20 @@ final class SWTGLHost extends GLHost {
         });
 
         canvas.addMouseWheelListener(e -> interaction.wheel(e.count, ChartInteraction.InputScale.SWT));
+
+        // Context menu: with the mouse, opened on the release of the right button (see mouseUp)
+        // so that the right drag (pan) keeps working; with the keyboard (menu key, Shift + F10),
+        // opened at the mouse position if it is over the chart, otherwise at its center
+        canvas.addListener(SWT.MenuDetect, e -> {
+            if (!hasContextMenuHandler()) return; // menu of the SWT component, if the application gave one
+            e.doit = false;
+            if (e.detail != SWT.MENU_KEYBOARD) return;
+            Point size = canvas.getSize();
+            Point mouse = canvas.toControl(canvas.getDisplay().getCursorLocation());
+            boolean inside = mouse.x >= 0 && mouse.y >= 0 && mouse.x < size.x && mouse.y < size.y;
+            if (inside) requestContextMenu(mouse.x, mouse.y);
+            else requestContextMenu(size.x / 2, size.y / 2);
+        });
 
         // Tab: passed to the renderer if it uses it (cursor on several curves),
         // instead of moving the focus to the next component

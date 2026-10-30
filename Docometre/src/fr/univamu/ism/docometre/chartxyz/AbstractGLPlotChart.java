@@ -2,10 +2,15 @@ package fr.univamu.ism.docometre.chartxyz;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+
+import fr.univamu.ism.docometre.DocometreMessages;
 
 /**
  * Base of the plane charts (1D and 2D): adds the legend position, and the
- * control of the rectangle zoom and of the cursor (see {@link PlotRenderer}).
+ * control of the rectangle zoom and of the cursor (see {@link PlotRenderer}),
+ * and the corresponding items of the context menu.
  */
 public abstract class AbstractGLPlotChart<C extends CurveData<C>, R extends PlotRenderer<C>> extends AbstractGLChart<C, R> {
 
@@ -302,5 +307,48 @@ public abstract class AbstractGLPlotChart<C extends CurveData<C>, R extends Plot
 
     public void removeCurrentMarkerLabelListener(CurrentMarkerLabelListener listener) {
         renderer.removeCurrentMarkerLabelListener(listener);
+    }
+
+    // ------------------------------------------------------------------
+    // Context menu
+
+    /** Cursor (C key) and removal of the static cursor if there is one. */
+    @Override
+    protected void fillModeMenuItems(Menu menu) {
+        super.fillModeMenuItems(menu);
+        addToggleMenuItem(menu, isCursorEnabled(), DocometreMessages.ChartMenu_ShowCursor,
+                DocometreMessages.ChartMenu_HideCursor, "C", this::setCursorEnabled);
+        if (getStaticCursorPosition() != null) {
+            addMenuItem(menu, DocometreMessages.ChartMenu_ClearStaticCursor, null, this::clearStaticCursor);
+        }
+    }
+
+    /** Adds the legend position, after the legend. */
+    @Override
+    protected void fillCurvesMenuItems(Menu menu) {
+        super.fillCurvesMenuItems(menu);
+        boolean below = getLegendPosition() == LegendPosition.BELOW;
+        MenuItem item = addMenuItem(menu, below ? DocometreMessages.ChartMenu_LegendInside : DocometreMessages.ChartMenu_LegendBelow,
+                null, () -> setLegendPosition(below ? LegendPosition.INSIDE : LegendPosition.BELOW));
+        item.setEnabled(isLegendVisible());
+    }
+
+    /** Markers and their labels. */
+    @Override
+    protected void fillMarkersMenuItems(Menu menu) {
+        super.fillMarkersMenuItems(menu);
+        addToggleMenuItem(menu, isMarkersVisible(), DocometreMessages.ChartMenu_ShowMarkers,
+                DocometreMessages.ChartMenu_HideMarkers, null, this::setMarkersVisible);
+        MenuItem labels = addToggleMenuItem(menu, isMarkerLabelsVisible(), DocometreMessages.ChartMenu_ShowMarkerLabels,
+                DocometreMessages.ChartMenu_HideMarkerLabels, null, this::setMarkerLabelsVisible);
+        labels.setEnabled(isMarkersVisible());
+    }
+
+    /** Previous zoom window (U key), then initial view. */
+    @Override
+    protected void fillViewMenuItems(Menu menu) {
+        MenuItem undo = addMenuItem(menu, DocometreMessages.ChartMenu_UndoZoom, "U", this::undoZoom);
+        undo.setEnabled(isZoomed());
+        super.fillViewMenuItems(menu);
     }
 }

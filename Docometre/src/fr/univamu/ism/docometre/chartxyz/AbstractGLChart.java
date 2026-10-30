@@ -1,10 +1,17 @@
 package fr.univamu.ism.docometre.chartxyz;
 
+import java.util.function.Consumer;
+
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 
+import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.rtswtchart.IRTSWTSerie;
 
 /**
@@ -15,6 +22,10 @@ import fr.univamu.ism.rtswtchart.IRTSWTSerie;
  * The methods of the fr.univamu.ism.rtswtchart interfaces common to all
  * charts are also implemented here (subclasses declare the interface).
  *
+ * A right click without drag on the chart (or the menu key) opens a context
+ * menu, rebuilt at each opening from the current state of the chart, whose
+ * items depend on the type of chart (see {@link #fillContextMenu}).
+ *
  * @param <C> curve type
  * @param <R> renderer type
  */
@@ -22,6 +33,9 @@ public abstract class AbstractGLChart<C extends CurveData<C>, R extends CurveCha
 
     protected final R renderer;
     protected final GLHost host;
+
+    private Menu contextMenu; // created at the first opening, SWT thread only
+    private volatile boolean contextMenuEnabled = true;
 
     /**
      * Creates the OpenGL surface in container and starts rendering. When the
@@ -39,6 +53,7 @@ public abstract class AbstractGLChart<C extends CurveData<C>, R extends CurveCha
 			renderer.removeAllCurves();
 			throw e;
 		}
+        host.setContextMenuHandler(this::showContextMenu);
     }
 
     /** Renderer of the chart, for the settings that are not exposed here. */
@@ -149,6 +164,11 @@ public abstract class AbstractGLChart<C extends CurveData<C>, R extends CurveCha
         renderer.setLegendFont(new ChartFont(family, size, style));
     }
 
+    /** True if the frame rate is shown in the chart. */
+    public boolean isFpsVisible() {
+        return renderer.isFpsVisible();
+    }
+
     /** Dynamic scales, continuously fitted to the curve values (default). */
     public void setDynamicScales() {
         renderer.setDynamicScales();
@@ -241,6 +261,137 @@ public abstract class AbstractGLChart<C extends CurveData<C>, R extends CurveCha
 
     public boolean isTrailFading() {
         return renderer.isTrailFading();
+    }
+
+    // ------------------------------------------------------------------
+    // Context menu
+
+    /**
+     * Enables (default) or disables the context menu of the chart (right
+     * click without drag, menu key). Disabled, a menu given by the
+     * application to the SWT control ({@link #getControl()}) is shown instead.
+     */
+    public void setContextMenuEnabled(boolean enabled) {
+        contextMenuEnabled = enabled;
+        host.setContextMenuHandler(enabled ? this::showContextMenu : null);
+    }
+
+    public boolean isContextMenuEnabled() {
+        return contextMenuEnabled;
+    }
+
+    /**
+     * Builds the context menu from the current state of the chart and shows
+     * it at location (display coordinates). To be called in the SWT thread.
+     */
+    public void showContextMenu(Point location) {
+        Control control = getControl();
+        if (!contextMenuEnabled || control == null || control.isDisposed()) return;
+        if (contextMenu == null || contextMenu.isDisposed()) {
+            Menu menu = new Menu(control); // owned by the shell: disposed with the control
+            control.addListener(SWT.Dispose, e -> menu.dispose());
+            contextMenu = menu;
+        }
+        if (contextMenu.isVisible()) return;
+        for (MenuItem item : contextMenu.getItems()) item.dispose();
+        fillContextMenu(contextMenu);
+        if (contextMenu.getItemCount() == 0) return;
+        contextMenu.setLocation(location);
+        contextMenu.setVisible(true);
+    }
+
+    /**
+     * Fills the context menu, section by section (separated by a line):
+     * mode, curves, markers, decorations, rendering and view. Subclasses
+     * complete the sections that concern them; the items show the change
+     * they make ("Show the legend" / "Hide the legend"...) and, when there
+     * is one, the equivalent key.
+     */
+    protected void fillContextMenu(Menu menu) {
+        fillModeMenuItems(menu);
+        addMenuSeparator(menu);
+        fillCurvesMenuItems(menu);
+        addMenuSeparator(menu);
+        fillMarkersMenuItems(menu);
+        addMenuSeparator(menu);
+        fillDecorationsMenuItems(menu);
+        addMenuSeparator(menu);
+        fillRenderingMenuItems(menu);
+        addMenuSeparator(menu);
+        fillViewMenuItems(menu);
+    }
+
+    /** Interaction modes (cursor, pause...): none by default. */
+    protected void fillModeMenuItems(Menu menu) {
+    }
+
+    /** Legend, last values and points of the curves. */
+    protected void fillCurvesMenuItems(Menu menu) {
+        addToggleMenuItem(menu, isLegendVisible(), DocometreMessages.ChartMenu_ShowLegend,
+                DocometreMessages.ChartMenu_HideLegend, "N", this::setLegendVisible);
+        addToggleMenuItem(menu, isCurrentValuesVisible(), DocometreMessages.ChartMenu_ShowCurrentValues,
+                DocometreMessages.ChartMenu_HideCurrentValues, "V", this::setCurrentValuesVisible);
+        addToggleMenuItem(menu, isPointsVisible(), DocometreMessages.ChartMenu_ShowPoints,
+                DocometreMessages.ChartMenu_HidePoints, "P", this::setPointsVisible);
+    }
+
+    /** Markers: none by default. */
+    protected void fillMarkersMenuItems(Menu menu) {
+    }
+
+    /** Grid, axes and tick labels. */
+    protected void fillDecorationsMenuItems(Menu menu) {
+        addToggleMenuItem(menu, renderer.isGridVisible(), DocometreMessages.ChartMenu_ShowGrid,
+                DocometreMessages.ChartMenu_HideGrid, "G", renderer::setGridVisible);
+        addToggleMenuItem(menu, renderer.isAxesVisible(), DocometreMessages.ChartMenu_ShowAxes,
+                DocometreMessages.ChartMenu_HideAxes, "A", renderer::setAxesVisible);
+        addToggleMenuItem(menu, renderer.isLabelsVisible(), DocometreMessages.ChartMenu_ShowTickLabels,
+                DocometreMessages.ChartMenu_HideTickLabels, "L", renderer::setLabelsVisible);
+    }
+
+    /** Frame rate and reduction of the number of points drawn. */
+    protected void fillRenderingMenuItems(Menu menu) {
+        addToggleMenuItem(menu, isFpsVisible(), DocometreMessages.ChartMenu_ShowFps,
+                DocometreMessages.ChartMenu_HideFps, "F", this::setFpsVisible);
+        addToggleMenuItem(menu, isDecimationEnabled(), DocometreMessages.ChartMenu_EnableDecimation,
+                DocometreMessages.ChartMenu_DisableDecimation, "D", this::setDecimationEnabled);
+    }
+
+    /** Initial view. */
+    protected void fillViewMenuItems(Menu menu) {
+        addMenuItem(menu, DocometreMessages.ChartMenu_ResetView, "R", renderer::resetView);
+    }
+
+    /**
+     * Adds to menu an item that runs action.
+     *
+     * @param key equivalent key, shown next to the text (null = none)
+     */
+    protected static MenuItem addMenuItem(Menu menu, String text, String key, Runnable action) {
+        MenuItem item = new MenuItem(menu, SWT.PUSH);
+        item.setText(key == null ? text : text + '\t' + key);
+        item.addListener(SWT.Selection, e -> action.run());
+        return item;
+    }
+
+    /**
+     * Adds to menu an item that inverts a setting: its text is the one of the
+     * change it makes, textWhenOff if the setting is off (show, enable...),
+     * textWhenOn otherwise (hide, disable...).
+     *
+     * @param state  current state of the setting
+     * @param key    equivalent key, shown next to the text (null = none)
+     * @param setter receives the new state
+     */
+    protected static MenuItem addToggleMenuItem(Menu menu, boolean state, String textWhenOff, String textWhenOn,
+                                                String key, Consumer<Boolean> setter) {
+        return addMenuItem(menu, state ? textWhenOn : textWhenOff, key, () -> setter.accept(!state));
+    }
+
+    /** Adds a separator to menu, unless it is empty or already ends with one. */
+    protected static void addMenuSeparator(Menu menu) {
+        int count = menu.getItemCount();
+        if (count > 0 && (menu.getItem(count - 1).getStyle() & SWT.SEPARATOR) == 0) new MenuItem(menu, SWT.SEPARATOR);
     }
 
     // ------------------------------------------------------------------

@@ -1279,6 +1279,43 @@ public final class DocometreMessages extends NLS {
 	public static String GlobalDeclarationsInvalidLibrary;
 	public static String GlobalDeclarationsDuplicateLibrary;
 	public static String GlobalDeclarationsMoreItems;
+
+	public static String ChartMenu_ShowCursor;
+	public static String ChartMenu_HideCursor;
+	public static String ChartMenu_ClearStaticCursor;
+	public static String ChartMenu_Pause;
+	public static String ChartMenu_Resume;
+	public static String ChartMenu_SpaceKey;
+	public static String ChartMenu_ScrollMode;
+	public static String ChartMenu_SweepMode;
+	public static String ChartMenu_ShowLegend;
+	public static String ChartMenu_HideLegend;
+	public static String ChartMenu_LegendInside;
+	public static String ChartMenu_LegendBelow;
+	public static String ChartMenu_ShowCurrentValues;
+	public static String ChartMenu_HideCurrentValues;
+	public static String ChartMenu_ShowPoints;
+	public static String ChartMenu_HidePoints;
+	public static String ChartMenu_ShowMarkers;
+	public static String ChartMenu_HideMarkers;
+	public static String ChartMenu_ShowMarkerLabels;
+	public static String ChartMenu_HideMarkerLabels;
+	public static String ChartMenu_ShowGrid;
+	public static String ChartMenu_HideGrid;
+	public static String ChartMenu_ShowAxes;
+	public static String ChartMenu_HideAxes;
+	public static String ChartMenu_ShowTickLabels;
+	public static String ChartMenu_HideTickLabels;
+	public static String ChartMenu_ShowFps;
+	public static String ChartMenu_HideFps;
+	public static String ChartMenu_EnableDecimation;
+	public static String ChartMenu_DisableDecimation;
+	public static String ChartMenu_EnableTrailFading;
+	public static String ChartMenu_DisableTrailFading;
+	public static String ChartMenu_EqualAspect;
+	public static String ChartMenu_IndependentAspect;
+	public static String ChartMenu_UndoZoom;
+	public static String ChartMenu_ResetView;
 	
 	static {
 		// load message values from bundle file

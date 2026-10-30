@@ -172,5 +172,8 @@ public class Chart2DRenderer extends PlotRenderer<Curve2DData> {
         setFixedScaleBounds(xMin, xMax, yMin, yMax);
     }
 
+    /** Same scale on x and y (also with the E key). */
+    public void setEqualAspect(boolean equalAspect) { this.equalAspect = equalAspect; }
+    public boolean isEqualAspect() { return equalAspect; }
     public void toggleEqualAspect() { equalAspect = !equalAspect; }
 }

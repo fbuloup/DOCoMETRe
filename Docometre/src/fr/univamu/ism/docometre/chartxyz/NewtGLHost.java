@@ -26,6 +26,8 @@ final class NewtGLHost extends GLHost {
     // Mouse state
     private int lastX, lastY;
     private boolean leftDown, rightDown;
+    private int rightPressX, rightPressY;
+    private boolean rightDragged; // the right button moved beyond CLICK_TOLERANCE: pan, no context menu
 
     NewtGLHost(Composite parent, GLCapabilities capabilities, GLChartRenderer renderer) {
         glWindow = GLWindow.create(capabilities);
@@ -59,7 +61,12 @@ final class NewtGLHost extends GLHost {
                 lastX = e.getX();
                 lastY = e.getY();
                 if (e.getButton() == MouseEvent.BUTTON1) leftDown = true;
-                if (e.getButton() == MouseEvent.BUTTON3) rightDown = true;
+                if (e.getButton() == MouseEvent.BUTTON3) {
+                    rightDown = true;
+                    rightPressX = e.getX();
+                    rightPressY = e.getY();
+                    rightDragged = false;
+                }
                 int button = toButton(e), x = e.getX(), y = e.getY(), w = glWindow.getWidth(), h = glWindow.getHeight();
                 // Like the drag, in the OpenGL thread: press, drag and release are processed there in order
                 int modifiers = modifiers(e);
@@ -83,6 +90,8 @@ final class NewtGLHost extends GLHost {
                 if (e.getButton() == MouseEvent.BUTTON3) rightDown = false;
                 int button = toButton(e), x = e.getX(), y = e.getY(), w = glWindow.getWidth(), h = glWindow.getHeight();
                 if (button != 0) glWindow.invoke(false, d -> { interaction.release(button, x, y, w, h); return true; });
+                // Right click without drag: context menu, opened in the SWT thread
+                if (button == ChartInteraction.RIGHT_BUTTON && !rightDragged && !leftDown) showContextMenu(x, y);
             }
 
             @Override
@@ -99,6 +108,9 @@ final class NewtGLHost extends GLHost {
                 int dy = e.getY() - lastY;
                 lastX = e.getX();
                 lastY = e.getY();
+                if (rightDown && (Math.abs(e.getX() - rightPressX) > CLICK_TOLERANCE || Math.abs(e.getY() - rightPressY) > CLICK_TOLERANCE)) {
+                    rightDragged = true;
+                }
                 int button = leftDown ? ChartInteraction.LEFT_BUTTON : rightDown ? ChartInteraction.RIGHT_BUTTON : 0;
                 if (button != 0) {
                     int x = e.getX(), y = e.getY(), w = glWindow.getWidth(), h = glWindow.getHeight();
@@ -129,6 +141,13 @@ final class NewtGLHost extends GLHost {
             	glWindow.invoke(false, d -> { interaction.keyPressed(key); return true; });
             }
         });
+    }
+
+    /** Requests the context menu at (x, y) (window units of the NEWT window) in the SWT thread. */
+    private void showContextMenu(int x, int y) {
+        NewtCanvasSWT swtCanvas = canvas;
+        if (!hasContextMenuHandler() || swtCanvas == null || swtCanvas.isDisposed()) return;
+        swtCanvas.getDisplay().asyncExec(() -> requestContextMenu(x, y));
     }
 
     /** NEWT button -> {@link ChartInteraction#LEFT_BUTTON} / {@link ChartInteraction#RIGHT_BUTTON}, 0 for the others. */
