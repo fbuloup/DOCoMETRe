@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cheatsheet
+      title="Instalacja ADBasic [Mac OS X]">
+   <intro>
+      <description>
+         <b>Witamy w przewodniku instalacji ADBasic w systemie Mac OS X</b>
+			<br/><br/>
+			Aby korzystać z systemów sprzedawanych przez firmę JAGER GmbH,
+			takich jak ADwin Pro lub Gold, należy zainstalować oprogramowanie
+			ADBasic. Pozwala ono tworzyć i kompilować programy dla
+			tych systemów, a także dostarcza sterownik do komunikacji z nimi.
+			Oprogramowanie jest dostarczane przez tę samą firmę i można je pobrać
+			z jej strony internetowej (http://www.adwin.de).
+			Sposób instalacji zależy jednak od systemu, w którym chcesz
+			używać DOCoMETRe. Ten przewodnik pomoże Ci zainstalować ADBasic w systemie
+			Mac OS X.
+      </description>
+   </intro>
+   <item
+   		 skip="false"
+         title="Opis problemu">
+         <description>
+         Oprogramowanie ADBasic nie jest wieloplatformowe : zostało napisane wyłącznie do
+         uruchamiania w systemie Windows i nie może działać bezpośrednio w Mac OS ani w Linux. Istnieje
+         jednak możliwość uruchamiania aplikacji Windows na komputerach Mac lub w systemie Linux za pomocą
+         <b>Wine</b>. Przed zainstalowaniem <b>Wine</b> trzeba spełnić kilka wymagań wstępnych.
+         Aby uzyskać więcej informacji o oprogramowaniu <b>Wine</b>, kliknij poniższy przycisk.
+         </description>
+          <command
+               required="false"
+               serialization="Docometre.cheatsheet.OpenURLHandler(Docometre.cheatsheet.OpenURLHandler.Value=https://www.winehq.org)"/>
+   
+   </item>
+   <item
+   		 skip="false"
+         title="Wymagania przed instalacją Wine">
+         <description>
+         W systemie Mac OS X oprogramowanie <b>Wine</b> wymaga <b>XQuartz</b>, a <b>Gatekeeper</b> nie może być aktywny podczas instalacji.
+         Aby wyłączyć <b>Gatekeeper</b>, uruchom w terminalu następujące polecenie :
+         <br/><br/>
+         <b>sudo spctl --master-disable</b>
+         <br/><br/>
+         Po zakończeniu instalacji <b>Wine</b> możesz przywrócić początkową konfigurację, ponownie włączając <b>Gatekeeper</b> :
+         <br/><br/>
+         <b>sudo spctl --master-enable</b>
+         <br/><br/>
+         
+         Aby zainstalować <b>XQuartz</b>, kliknij poniższy przycisk, a następnie pobierz i zainstaluj powiązany plik <b>dmg</b>.
+         
+         </description>
+         <command
+               required="false"
+               serialization="Docometre.cheatsheet.OpenURLHandler(Docometre.cheatsheet.OpenURLHandler.Value=https://www.xquartz.org)"/>
+   </item>
+   <item
+         title="Instalacja Wine">
+      <description>
+         Gdy <b>Gatekeeper</b> jest wyłączony, a <b>XQuartz</b> zainstalowany, możesz zainstalować <b>Wine</b>, klikając
+         poniższy przycisk, aby pobrać i zainstalować powiązany plik <b>pkg</b>. Najlepiej wybierz wersję <b>"Wine Stable"</b>.
+      </description>
+            <command
+               required="false"
+               serialization="Docometre.cheatsheet.OpenURLHandler(Docometre.cheatsheet.OpenURLHandler.Value=https://dl.winehq.org/wine-builds/macosx/download.html)"/>
+   </item>
+    <item
+         title="Instalacja ADBasic">
+      <description>
+         Możesz teraz zainstalować ADBasic, postępując zgodnie z przewodnikiem dla systemu Windows.
+      </description>
+            <command
+               required="false"
+              serialization="Docometre.cheatsheet.OpenURLHandler(Docometre.cheatsheet.OpenURLHandler.Value=cheatsheet:Docometre.ADBasicInstallWindowsCheatSheet)"/>
+   </item>
+</cheatsheet>
