@@ -45,11 +45,11 @@ public class GLChannelEditor extends EditorPart implements TrialsEditor, Chart2D
 	@Override
 	public void createPartControl(Composite parent) {
 		if(channel != null && channel.isSignal()) {
-			container = new GLSignalContainerEditor(parent, SWT.BORDER, this);
+			container = new GLSignalContainerEditor(parent, SWT.NONE, this);
 			ChartPartListener.install(this, (AbstractGLChart<?, ?>) ((GLSignalContainerEditor)container).getChart());
 		}
 		if(channel != null && channel.isCategory()) {
-			container = new GLCategoryContainerEditor(parent, SWT.BORDER, this);
+			container = new GLCategoryContainerEditor(parent, SWT.NONE, this);
 			ChartPartListener.install(this, (AbstractGLChart<?, ?>) ((GLCategoryContainerEditor)container).getChart());
 		}
 	}

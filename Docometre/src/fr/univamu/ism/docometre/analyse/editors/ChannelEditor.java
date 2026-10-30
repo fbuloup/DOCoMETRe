@@ -108,10 +108,10 @@ public class ChannelEditor extends EditorPart implements TrialsEditor, Chart2D3D
 	@Override
 	public void createPartControl(Composite parent) {
 		if(channel != null && channel.isSignal()) {
-			container = new SignalContainerEditor(parent, SWT.BORDER, this);
+			container = new SignalContainerEditor(parent, SWT.NONE, this);
 		}
 		if(channel != null && channel.isCategory()) {
-			container = new CategoryContainerEditor(parent, SWT.BORDER, this);
+			container = new CategoryContainerEditor(parent, SWT.NONE, this);
 		}
 	}
 
