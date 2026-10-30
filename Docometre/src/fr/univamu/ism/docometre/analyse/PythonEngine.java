@@ -80,6 +80,7 @@ import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 import fr.univamu.ism.docometre.preferences.MathEnginePreferencesConstants;
 import fr.univamu.ism.docometre.python.PythonController;
 import fr.univamu.ism.docometre.python.PythonEntryPoint;
+import py4j.Py4JException;
 
 public class PythonEngine implements MathEngine {
 	
@@ -244,7 +245,13 @@ public class PythonEngine implements MathEngine {
 		String subjectName = subject.getFullPath().segment(1);
 		String prefixKey = experimentName + "\\." + subjectName;
 		String expression = "len({k:v for k,v in docometre.experiments.items() if re.search(r\"^" + prefixKey + "\\.\", k)}) > 0"; // raw string : the regular expression contains backslashes
-		return pythonController.getPythonEntryPoint().evaluate(expression).equalsIgnoreCase("true");
+		try {
+			return pythonController.getPythonEntryPoint().evaluate(expression).equalsIgnoreCase("true");
+		} catch (Py4JException e) {
+			// Engine stopped while evaluating (e.g. application closing) : subject is not loaded anymore
+			if(!isStarted()) return false;
+			throw e;
+		}
 	}
 
 	@Override
