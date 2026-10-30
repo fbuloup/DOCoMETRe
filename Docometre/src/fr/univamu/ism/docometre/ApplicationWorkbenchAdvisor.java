@@ -108,8 +108,8 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 	
 	/*
 	 * Icons declared in plugin.xml (commands, views...) do not follow theme :
-	 * in dark theme, use their light variant (e.g. icons/XYChartIcon_dark.png), if any.
-	 * In light theme, restore original icons (application model is persisted).
+	 * in dark theme, use their light variant (e.g. icons/pan_dark.png), if any.
+	 * Otherwise restore original icons (application model is persisted).
 	 */
 	private void updateIconsForTheme() {
 		MApplication application = PlatformUI.getWorkbench().getService(MApplication.class);
@@ -122,13 +122,11 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 			MUILabel uiLabel = (MUILabel) eObject;
 			String iconURI = uiLabel.getIconURI();
 			if(iconURI == null || !iconURI.startsWith(prefix)) continue;
-			String path = iconURI.substring(prefix.length());
-			if(ThemeColors.isDarkTheme()) {
-				String darkPath = Activator.getDarkImagePath(path);
-				if(FileLocator.find(Activator.getDefault().getBundle(), new Path(darkPath), null) != null) uiLabel.setIconURI(prefix + darkPath);
-			} else if(path.contains("_dark.")) {
-				uiLabel.setIconURI(prefix + path.replace("_dark.", "."));
-			}
+			// Original icon path (model may hold a dark variant from previous session)
+			String path = iconURI.substring(prefix.length()).replace("_dark.", ".");
+			String darkPath = Activator.getDarkImagePath(path);
+			if(ThemeColors.isDarkTheme() && FileLocator.find(Activator.getDefault().getBundle(), new Path(darkPath), null) != null) path = darkPath;
+			if(!iconURI.equals(prefix + path)) uiLabel.setIconURI(prefix + path);
 		}
 	}
 	
