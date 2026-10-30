@@ -233,7 +233,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 		container = new SashForm(parent, SWT.HORIZONTAL);
 
 		if(!xyzChartData.initialize()) {
-			Label errorLabel = new Label(container, SWT.BORDER);
+			Label errorLabel = new Label(container, SWT.NONE);
 			errorLabel.setText(DocometreMessages.SomethingWentWrong);
 			errorLabel.setForeground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_RED));
 			container.setSashWidth(0);
@@ -241,7 +241,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 			container.setFocus();
 			return;
 		}
-		chartContainer = new Composite(container, SWT.BORDER);
+		chartContainer = new Composite(container, SWT.NONE);
 		chartContainer.setLayout(new FillLayout());
 		
 		Settings.getInstance().setHardwareAccelerated(true);
@@ -364,7 +364,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 //			}
 //		});
 		
-		Composite container2 = new Composite(container, SWT.BORDER);
+		Composite container2 = new Composite(container, SWT.NONE);
 		GridLayout gl = new GridLayout();
 		gl.marginHeight = 1;
 		gl.marginWidth = 1;

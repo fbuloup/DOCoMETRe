@@ -202,7 +202,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 		container = new SashForm(parent, SWT.HORIZONTAL);
 		
 		if(!xyChartData.initialize()) {
-			Label errorLabel = new Label(container, SWT.BORDER);
+			Label errorLabel = new Label(container, SWT.NONE);
 			errorLabel.setText(DocometreMessages.SomethingWentWrong);
 			errorLabel.setForeground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_RED));
 			container.setSashWidth(0);
@@ -211,7 +211,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 			return;
 		}
 		
-		chart = new InteractiveChart(container, SWT.BORDER);
+		chart = new InteractiveChart(container, SWT.NONE);
 		chart.setBackground(xyChartData.getBackGroundColor());
 		chart.getPlotArea().setBackground(xyChartData.getPlotAreaBackGroundColor());
 		new MarkersManager(this);
@@ -286,7 +286,7 @@ public class XYChartEditor extends EditorPart implements ISelectionChangedListen
 			}
 		});
 		
-		Composite container2 = new Composite(container, SWT.BORDER);
+		Composite container2 = new Composite(container, SWT.NONE);
 		GridLayout gl = new GridLayout();
 		gl.marginHeight = 1;
 		gl.marginWidth = 1;

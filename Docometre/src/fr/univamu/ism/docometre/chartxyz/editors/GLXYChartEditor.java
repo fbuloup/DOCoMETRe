@@ -194,7 +194,7 @@ public class GLXYChartEditor extends EditorPart implements ISelectionChangedList
 		container = new SashForm(parent, SWT.HORIZONTAL);
 
 		if(!xyChartData.initialize()) {
-			Label errorLabel = new Label(container, SWT.BORDER);
+			Label errorLabel = new Label(container, SWT.NONE);
 			errorLabel.setText(DocometreMessages.SomethingWentWrong);
 			errorLabel.setForeground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_RED));
 			container.setSashWidth(0);
@@ -261,7 +261,7 @@ public class GLXYChartEditor extends EditorPart implements ISelectionChangedList
 			}
 		});
 
-		Composite container2 = new Composite(container, SWT.BORDER);
+		Composite container2 = new Composite(container, SWT.NONE);
 		GridLayout gl = new GridLayout();
 		gl.marginHeight = 1;
 		gl.marginWidth = 1;
