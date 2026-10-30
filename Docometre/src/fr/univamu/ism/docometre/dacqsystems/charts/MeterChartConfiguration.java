@@ -268,7 +268,7 @@ public class MeterChartConfiguration extends ChartConfiguration {
 		double levelLowLow = Double.parseDouble(value);
 		Color chartColor = ChartConfigurationProperties.getColor(this, ChartConfigurationProperties.COLOR);
 		
-		meterContainer = new Canvas(container, SWT.BORDER);
+		meterContainer = new Canvas(container, SWT.NORMAL);
 		meterContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, hSpan, vSpan));
 		// Same colors as the OpenGL charts. The dark theme styles every Canvas after its creation, which
 		// would change the canvas colors (painted around the figure) but not the figure ones: this CSS id
