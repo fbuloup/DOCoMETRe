@@ -229,8 +229,8 @@
             name="%PrefPage_General">
       </page>
       <page
-            class="org.eclipse.ui.internal.dialogs.ViewsPreferencePage"
-            id="org.eclipse.ui.preferencePages.Views"
+            class="fr.univamu.ism.docometre.preferences.AppearancePreferencePage"
+            id="Docometre.AppearancePreferencePage"
             name="%PrefPage_Appearance">
       </page>
       <page

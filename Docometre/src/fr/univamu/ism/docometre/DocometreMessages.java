@@ -82,6 +82,10 @@ public final class DocometreMessages extends NLS {
 
 	/*Preferences*/
 	public static String GeneralPreferences_Description;
+	public static String AppearancePreferences_Description;
+	public static String AppearancePreferences_Theme;
+	public static String AppearancePreferences_RestartTitle;
+	public static String AppearancePreferences_RestartQuestion;
 	public static String GeneralPreferences_UndoLimit;
 	public static String GeneralPreferences_XMLSerialization;
 	public static String GeneralPreferences_ConfirmUndo;

@@ -40,7 +40,8 @@ Require-Bundle: org.eclipse.ui;bundle-version="3.108.0",
  org.eclipse.platform;bundle-version="4.35.0",
  org.eclipse.nebula.widgets.pgroup;bundle-version="1.0.0",
  org.eclipse.e4.ui.model.workbench,
- org.eclipse.emf.ecore
+ org.eclipse.emf.ecore,
+ org.eclipse.e4.ui.css.swt.theme
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Bundle-Localization: OSGI-INF/l10n/bundle
