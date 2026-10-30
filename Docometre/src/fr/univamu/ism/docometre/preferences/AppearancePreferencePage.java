@@ -6,6 +6,7 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.PreferencePage;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -113,7 +114,13 @@ public class AppearancePreferencePage extends PreferencePage implements IWorkben
 			Languages.setPreferredLanguage(language);
 			initialLanguageSelection = languageSelection;
 			// Language is applied at startup : relaunch with new language is needed
-			if(!restart) restart = MessageDialog.openQuestion(getShell(), DocometreMessages.AppearancePreferences_LanguageRestartTitle, DocometreMessages.AppearancePreferences_LanguageRestartQuestion);
+			if(Languages.isRelaunchPossible()) {
+				if(!restart) restart = MessageDialog.openQuestion(getShell(), DocometreMessages.AppearancePreferences_LanguageRestartTitle, DocometreMessages.AppearancePreferences_LanguageRestartQuestion);
+			} else {
+				// Launched from Eclipse IDE : language must be set in launch configuration (default PDE argument is -nl ${target.nl})
+				String argument = Languages.SYSTEM.equals(language) ? "${target.nl}" : language;
+				MessageDialog.openInformation(getShell(), DocometreMessages.AppearancePreferences_LanguageRestartTitle, NLS.bind(DocometreMessages.AppearancePreferences_LanguageNoRelaunchMessage, argument));
+			}
 		}
 		if(restart) {
 			// Relaunch with preferred language (current -nl argument may come from a previous language choice)

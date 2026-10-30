@@ -86,6 +86,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
         DocometreConsole.createInstance();
 		Activator.logInfoMessage(DocometreMessages.CurrentWorkspace + DocometreApplication.WORKSPACE_PATH, DocometreApplication.class);
         Activator.logInfoMessage("Locale : " + Locale.getDefault(),  getClass());
+        Activator.logInfoMessage("Preferred language : " + Languages.getPreferredLanguage() + " - Language argument (-nl) : " + Languages.getLanguageArgument() + " - Relaunch possible : " + Languages.isRelaunchPossible(),  getClass());
 		Activator.logInfoMessage(DocometreMessages.RuntimeFolder + System.getProperty("user.dir"), getClass());
         try {
 			if(Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.REDIRECT_STD_ERR_OUT_TO_FILE)) {

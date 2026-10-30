@@ -93,6 +93,7 @@ public final class DocometreMessages extends NLS {
 	public static String AppearancePreferences_SystemLanguage;
 	public static String AppearancePreferences_LanguageRestartTitle;
 	public static String AppearancePreferences_LanguageRestartQuestion;
+	public static String AppearancePreferences_LanguageNoRelaunchMessage;
 	public static String GeneralPreferences_UndoLimit;
 	public static String GeneralPreferences_XMLSerialization;
 	public static String GeneralPreferences_ConfirmUndo;

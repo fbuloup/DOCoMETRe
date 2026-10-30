@@ -144,6 +144,13 @@ public final class Languages {
 		return true;
 	}
 	
+	/*
+	 * Relaunch is only possible with DOCoMETRe launcher : not when launched from Eclipse IDE
+	 */
+	public static boolean isRelaunchPossible() {
+		return System.getProperty(PROP_VM) != null && System.getProperty(PROP_COMMANDS) != null;
+	}
+	
 	public static boolean isRelaunchRequested() {
 		return relaunchRequested;
 	}
@@ -151,7 +158,7 @@ public final class Languages {
 	/*
 	 * Value of -nl program argument, null if none
 	 */
-	private static String getLanguageArgument() {
+	public static String getLanguageArgument() {
 		String commands = System.getProperty(PROP_COMMANDS);
 		if(commands == null) return null;
 		String[] arguments = commands.split(NEW_LINE);
