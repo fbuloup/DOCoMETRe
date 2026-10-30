@@ -211,7 +211,7 @@ public abstract class AbstractSignalContainerEditor extends Composite implements
 		gl.verticalSpacing = 2;
 		
 		Composite channelContainer = new Composite(this, SWT.NORMAL);
-		channelContainer.setLayout(createCompactGridLayout(2));
+		channelContainer.setLayout(createCompactGridLayout(3));
 		channelContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 		
 		if(!createChart(channelContainer)) {
@@ -234,6 +234,7 @@ public abstract class AbstractSignalContainerEditor extends Composite implements
 		});
 		trialsListViewer.setInput(trials);
 		trialsListViewer.addSelectionChangedListener(this);
+		ChannelEditorWidgetsFactory.createShowHidePanelButton(trialsListViewer.getList());
 		
 		PGroup pGroupInfos = new PGroup(this, SWT.SMOOTH);
 		pGroupInfos.setText(DocometreMessages.ChannelEditorGroupLabel);

@@ -147,8 +147,6 @@ public abstract class AbstractCategoryContainerEditor extends Composite implemen
 			Activator.logErrorMessage("Error while trying to create chart");
 			return;
 		}
-		ChannelEditorWidgetsFactory.createSeparator(this, false, true, 1, SWT.VERTICAL);
-		
 		Composite categoryContainer = new Composite(this, SWT.NORMAL);
 		categoryContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true));
 		categoryContainer.setLayout(new GridLayout(2, false));
@@ -199,6 +197,9 @@ public abstract class AbstractCategoryContainerEditor extends Composite implemen
 		signalsListViewer.addSelectionChangedListener(this);
 		
 		sashForm.setWeights(new int[] {70,30});
+		
+		// Replaces former separator between chart and category container
+		ChannelEditorWidgetsFactory.createShowHidePanelButton(categoryContainer);
 	}
 
 	// ------------------------------------------------------------------

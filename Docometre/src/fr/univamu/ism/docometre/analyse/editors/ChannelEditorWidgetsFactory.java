@@ -43,14 +43,20 @@ package fr.univamu.ism.docometre.analyse.editors;
 
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseWheelListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.swtchart.IAxis;
 import org.eclipse.swtchart.extensions.charts.InteractiveChart;
 import org.eclipse.ui.PlatformUI;
@@ -109,6 +115,36 @@ public final class ChannelEditorWidgetsFactory {
 		separator.setLayoutData(new GridData(SWT.FILL, SWT.FILL, grabExcessHorizontal, grabExcessVertical, horizontalSpan, 1));
 	}
 
+	/*
+	 * Creates, in panel parent grid and just before panel (column between chart and panel),
+	 * a button to hide or show panel. Panel must have GridData layout data.
+	 * Shown or hidden state is shared by all channel editors.
+	 */
+	public static void createShowHidePanelButton(Control panel) {
+		ToolBar toolBar = new ToolBar(panel.getParent(), SWT.FLAT | SWT.VERTICAL);
+		toolBar.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, false, true));
+		toolBar.moveAbove(panel);
+		ToolItem toolItem = new ToolItem(toolBar, SWT.PUSH);
+		IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
+		setPanelVisible(panel, toolItem, preferenceStore.getBoolean(GeneralPreferenceConstants.SHOW_CHANNEL_EDITOR_PANEL));
+		toolItem.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				boolean visible = !panel.getVisible();
+				setPanelVisible(panel, toolItem, visible);
+				preferenceStore.setValue(GeneralPreferenceConstants.SHOW_CHANNEL_EDITOR_PANEL, visible);
+			}
+		});
+	}
+	
+	private static void setPanelVisible(Control panel, ToolItem toolItem, boolean visible) {
+		panel.setVisible(visible);
+		((GridData) panel.getLayoutData()).exclude = !visible;
+		toolItem.setText(visible ? "\u00BB" : "\u00AB"); // » : hide panel on the right, « : show it
+		toolItem.setToolTipText(visible ? DocometreMessages.HidePanelTooltip : DocometreMessages.ShowPanelTooltip);
+		panel.getParent().layout(true);
+	}
+	
 	public static Object createChart(Composite parent, int horizontalSpan, boolean isTimeDomain, boolean isFrequencyDomain) {
 		if(!Activator.useOpenGLV2()) {
 			InteractiveChart chart = new InteractiveChart(parent, SWT.BORDER);

@@ -960,6 +960,8 @@ public final class DocometreMessages extends NLS {
 	public static String DeleteFeatureDialogMessage;
 	public static String MarkerLabelInvalid;
 	public static String SameColorForSameTrialLabel;
+	public static String HidePanelTooltip;
+	public static String ShowPanelTooltip;
 	public static String ChannelEditorGroupLabel;
 
 	// Data processing editor wizard
