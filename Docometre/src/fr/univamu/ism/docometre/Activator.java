@@ -202,7 +202,7 @@ public class Activator extends AbstractUIPlugin {
 		return imageDescriptor;
 	}
 	
-	private static String getDarkImagePath(String path) {
+	public static String getDarkImagePath(String path) {
 		int dotIndex = path.lastIndexOf('.');
 		if(dotIndex < 0) return path + "_dark";
 		return path.substring(0, dotIndex) + "_dark" + path.substring(dotIndex);

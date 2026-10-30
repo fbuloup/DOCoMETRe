@@ -45,16 +45,22 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.e4.ui.model.application.MApplication;
+import org.eclipse.e4.ui.model.application.ui.MUILabel;
+import org.eclipse.emf.common.util.TreeIterator;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceManager;
@@ -94,7 +100,42 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 	}
 	
 	@Override
+	public void preStartup() {
+		super.preStartup();
+		// Menus and toolbars contributed in plugin.xml are in application model now, not yet rendered
+		updateIconsForTheme();
+	}
+	
+	/*
+	 * Icons declared in plugin.xml (commands, views...) do not follow theme :
+	 * in dark theme, use their light variant (e.g. icons/XYChartIcon_dark.png), if any.
+	 * In light theme, restore original icons (application model is persisted).
+	 */
+	private void updateIconsForTheme() {
+		MApplication application = PlatformUI.getWorkbench().getService(MApplication.class);
+		if(application == null) return;
+		String prefix = "platform:/plugin/" + Activator.PLUGIN_ID + "/";
+		TreeIterator<EObject> iterator = ((EObject) application).eAllContents();
+		while (iterator.hasNext()) {
+			EObject eObject = iterator.next();
+			if(!(eObject instanceof MUILabel)) continue;
+			MUILabel uiLabel = (MUILabel) eObject;
+			String iconURI = uiLabel.getIconURI();
+			if(iconURI == null || !iconURI.startsWith(prefix)) continue;
+			String path = iconURI.substring(prefix.length());
+			if(ThemeColors.isDarkTheme()) {
+				String darkPath = Activator.getDarkImagePath(path);
+				if(FileLocator.find(Activator.getDefault().getBundle(), new Path(darkPath), null) != null) uiLabel.setIconURI(prefix + darkPath);
+			} else if(path.contains("_dark.")) {
+				uiLabel.setIconURI(prefix + path.replace("_dark.", "."));
+			}
+		}
+	}
+	
+	@Override
 	public void postStartup() {
+		// Model elements restored from previous session and already rendered
+		updateIconsForTheme();
 		PreferenceManager preferenceManager = PlatformUI.getWorkbench().getPreferenceManager( );
 		preferenceManager.remove( "org.eclipse.equinox.security.ui.category" ); //$NON-NLS-1$
 		preferenceManager.remove( "org.eclipse.equinox.security.ui.storage" ); //$NON-NLS-1$

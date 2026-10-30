@@ -147,6 +147,7 @@ public interface IImageKeys {
 	public static final String AUTO_SCALE_ICON = "icons/autoscale.gif"; //$NON-NLS-1$
 	public static final String EDIT_GRAPH_ICON = "icons/editGraph.gif"; //$NON-NLS-1$
 	public static final String PAN_ICON = "icons/pan.png"; //$NON-NLS-1$
+	public static final String MATH_ENGINE_ICON = "icons/mathEngine.png"; //$NON-NLS-1$
 	public static final String CALIBRATION_MONITORING_ICON = "icons/calibrationMonitoring.png"; //$NON-NLS-1$
 	public static final String ON_ICON = "icons/ON.png"; //$NON-NLS-1$
 	public static final String OFF_ICON = "icons/OFF.png"; //$NON-NLS-1$

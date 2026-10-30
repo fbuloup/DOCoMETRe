@@ -132,6 +132,8 @@ public class MathEngineCommandView extends ViewPart implements IDocumentListener
 
 	@Override
 	public void createPartControl(Composite parent) {
+		// View icon from plugin.xml does not follow theme
+		setTitleImage(Activator.getImage(IImageKeys.MATH_ENGINE_ICON));
 		parent.setLayout(new GridLayout(3, false));
 		Label commandLabel = new Label(parent, SWT.NONE);
 		commandLabel.setText(DocometreMessages.commandTitle);
