@@ -204,6 +204,7 @@ public class DocometreApplication implements IApplication {
 		}
 		WORKSPACE_PATH = workspace;
 		display.removeFilter(SWT.Show, darkShellListener);
+		ThemeColors.removePersistedThemeColors();
 		ThemeColors.setDarkTheme(ThemeColors.isDarkThemeAtStartup());
 		ThemeColors.setWindowsNativeTheme(ThemeColors.isDarkTheme());
 		try {

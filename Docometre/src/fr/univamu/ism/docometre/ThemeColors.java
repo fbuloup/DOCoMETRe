@@ -46,6 +46,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.JFaceResources;
@@ -61,6 +62,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.themes.IThemeManager;
+import org.osgi.service.prefs.BackingStoreException;
 
 public final class ThemeColors {
 	
@@ -95,6 +97,30 @@ public final class ThemeColors {
 	
 	public static void setDarkTheme(boolean darkTheme) {
 		ThemeColors.darkTheme = darkTheme;
+	}
+	
+	/*
+	 * Colors of theme elements (tabs, DOCoMETRe colors...) must come from current theme only.
+	 * A previous theme may have left its colors in workbench preferences (e.g. when switching theme with
+	 * Eclipse appearance page) : they would then be used as user colors with any theme (e.g. dark tabs
+	 * in light theme). DOCoMETRe has no colors preference page, so these colors are removed.
+	 * Workspace location must be set before calling this method.
+	 */
+	public static void removePersistedThemeColors() {
+		IEclipsePreferences workbenchPreferences = InstanceScope.INSTANCE.getNode("org.eclipse.ui.workbench");
+		try {
+			boolean removed = false;
+			for (String key : workbenchPreferences.keys()) {
+				if(!key.startsWith("fr.univamu.ism.docometre.") && !key.startsWith("org.eclipse.ui.workbench.")) continue;
+				// Colors only (r,g,b), not fonts
+				if(!workbenchPreferences.get(key, "").matches("\\d{1,3},\\d{1,3},\\d{1,3}")) continue;
+				workbenchPreferences.remove(key);
+				removed = true;
+			}
+			if(removed) workbenchPreferences.flush();
+		} catch (BackingStoreException e) {
+			Activator.logErrorMessageWithCause(e);
+		}
 	}
 	
 	/*
