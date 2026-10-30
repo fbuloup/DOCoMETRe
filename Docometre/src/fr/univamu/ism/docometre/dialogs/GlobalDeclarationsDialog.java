@@ -66,6 +66,8 @@ import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -74,8 +76,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.TabFolder;
-import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Text;
 
@@ -251,23 +251,24 @@ public class GlobalDeclarationsDialog extends TitleAreaDialog {
 	@Override
 	protected Control createDialogArea(Composite parent) {
 		Composite area = (Composite) super.createDialogArea(parent);
-		TabFolder tabFolder = new TabFolder(area, SWT.NONE);
+		CTabFolder tabFolder = new CTabFolder(area, SWT.NONE);
 		tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
-		TabItem librariesTabItem = new TabItem(tabFolder, SWT.NONE);
+		CTabItem librariesTabItem = new CTabItem(tabFolder, SWT.NONE);
 		librariesTabItem.setText(DocometreMessages.GlobalDeclarationsLibrariesTab);
 		librariesTabItem.setImage(Activator.getImage(IImageKeys.LIBRARY_ICON));
 		librariesTabItem.setControl(createLibrariesArea(tabFolder));
 		
-		TabItem constantsTabItem = new TabItem(tabFolder, SWT.NONE);
+		CTabItem constantsTabItem = new CTabItem(tabFolder, SWT.NONE);
 		constantsTabItem.setText(DocometreMessages.GlobalDeclarationsConstantsTab);
 		constantsTabItem.setImage(Activator.getImage(IImageKeys.CONSTANT_ICON));
 		constantsTabItem.setControl(createConstantsArea(tabFolder));
 		
-		TabItem subroutinesTabItem = new TabItem(tabFolder, SWT.NONE);
+		CTabItem subroutinesTabItem = new CTabItem(tabFolder, SWT.NONE);
 		subroutinesTabItem.setText(DocometreMessages.GlobalDeclarationsSubroutinesTab);
 		subroutinesTabItem.setImage(Activator.getImage(IImageKeys.SUBROUTINE_ICON));
 		subroutinesTabItem.setControl(createSubroutinesArea(tabFolder));
+		tabFolder.setSelection(0);
 		
 		return area;
 	}

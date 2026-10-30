@@ -78,6 +78,8 @@ import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.ModifyEvent;
@@ -90,8 +92,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.TabFolder;
-import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.ISharedImages;
 
@@ -137,11 +137,11 @@ public final class ExpressionFunction extends GenericFunction {
 			return container;
 		}
 		
-		TabFolder tabFolder = new TabFolder(container, SWT.NONE);
+		CTabFolder tabFolder = new CTabFolder(container, SWT.NONE);
 		tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		TabItem expressionsTabItem = new TabItem(tabFolder, SWT.BORDER);
+		CTabItem expressionsTabItem = new CTabItem(tabFolder, SWT.NONE);
 		expressionsTabItem.setText(DocometreMessages.expressionsListTitle);
-		TabItem sourceTabItem = new TabItem(tabFolder, SWT.BORDER);
+		CTabItem sourceTabItem = new CTabItem(tabFolder, SWT.NONE);
 		sourceTabItem.setText(DocometreMessages.sourceCodeTitle);
 		
 		Composite expressionsContainer = createExpressionsTabItem(tabFolder, context);
@@ -149,6 +149,7 @@ public final class ExpressionFunction extends GenericFunction {
 		
 		expressionsTabItem.setControl(expressionsContainer);
 		sourceTabItem.setControl(sourceContainer);
+		tabFolder.setSelection(0);
 		
 		Composite commentContainer = new Composite(container, SWT.NORMAL);
 		commentContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -188,7 +189,7 @@ public final class ExpressionFunction extends GenericFunction {
 		return expressions.toArray(new String[expressions.size()]);
 	}
 	
-	private Composite createSourceTabItem(TabFolder tabFolder, Object context) {
+	private Composite createSourceTabItem(CTabFolder tabFolder, Object context) {
 		
 		sourceViewer = new SourceViewer(tabFolder, null, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
 		sourceViewer.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -308,7 +309,7 @@ public final class ExpressionFunction extends GenericFunction {
 		return sourceViewer.getTextWidget();
 	}
 
-	private Composite createExpressionsTabItem(TabFolder tabFolder, Object context) {
+	private Composite createExpressionsTabItem(CTabFolder tabFolder, Object context) {
 		Composite expressionsContainer = new Composite(tabFolder, SWT.NORMAL);
 		expressionsContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		expressionsContainer.setLayout(new GridLayout(3, false));
