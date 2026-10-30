@@ -1,0 +1,22 @@
+/* DOCoMETRe colors for Eclipse dark theme (org.eclipse.e4.ui.css.theme.e4_dark).
+ * Light values are defined in plugin.xml (org.eclipse.ui.themes colorDefinition). */
+
+ColorDefinition#fr-univamu-ism-docometre-CONSOLE_INFO_COLOR {
+	color: #FFFFFF;
+}
+
+ColorDefinition#fr-univamu-ism-docometre-CONSOLE_WARNING_COLOR {
+	color: #CC6600;
+}
+
+ColorDefinition#fr-univamu-ism-docometre-CONSOLE_ERROR_COLOR {
+	color: #E14545;
+}
+
+ColorDefinition#fr-univamu-ism-docometre-LINE_NUMBER_FOREGROUND_COLOR {
+	color: #FFFFFF;
+}
+
+ColorDefinition#fr-univamu-ism-docometre-LINE_NUMBER_BACKGROUND_COLOR {
+	color: #000000;
+}

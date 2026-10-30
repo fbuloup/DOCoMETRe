@@ -229,6 +229,11 @@
             name="%PrefPage_General">
       </page>
       <page
+            class="org.eclipse.ui.internal.dialogs.ViewsPreferencePage"
+            id="org.eclipse.ui.preferencePages.Views"
+            name="%PrefPage_Appearance">
+      </page>
+      <page
             category="Docometre.SystemsPreferencePage"
             class="fr.univamu.ism.docometre.preferences.DefaultADWinSystemPreferencePage"
             id="Docometre.DefaultADWinSystemPreferencePage"

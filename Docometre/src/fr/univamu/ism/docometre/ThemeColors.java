@@ -41,11 +41,41 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre;
 
+import org.eclipse.jface.resource.ColorRegistry;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.themes.IThemeManager;
 
 public final class ThemeColors {
+	
+	/*
+	 * Colors defined in Docometre.theme plugin.xml (light values)
+	 * and css/docometre-dark.css (dark values)
+	 */
+	public static final String CONSOLE_INFO_COLOR = "fr.univamu.ism.docometre.CONSOLE_INFO_COLOR";
+	public static final String CONSOLE_WARNING_COLOR = "fr.univamu.ism.docometre.CONSOLE_WARNING_COLOR";
+	public static final String CONSOLE_ERROR_COLOR = "fr.univamu.ism.docometre.CONSOLE_ERROR_COLOR";
+	public static final String LINE_NUMBER_FOREGROUND_COLOR = "fr.univamu.ism.docometre.LINE_NUMBER_FOREGROUND_COLOR";
+	public static final String LINE_NUMBER_BACKGROUND_COLOR = "fr.univamu.ism.docometre.LINE_NUMBER_BACKGROUND_COLOR";
+	
+	/*
+	 * Return RGB of color symbolicName from current theme, or defaultRGB if not defined
+	 */
+	public static RGB getRGB(String symbolicName, RGB defaultRGB) {
+		if(!PlatformUI.isWorkbenchRunning()) return defaultRGB;
+		ColorRegistry colorRegistry = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
+		RGB rgb = colorRegistry.getRGB(symbolicName);
+		return rgb != null ? rgb : defaultRGB;
+	}
+	
+	/*
+	 * Return color symbolicName from current theme, or defaultRGB color if not defined
+	 */
+	public static Color getColor(String symbolicName, RGB defaultRGB) {
+		return JFaceResources.getResources().createColor(getRGB(symbolicName, defaultRGB));
+	}
 	
 	public static Color getBackgroundColor() {
 		IThemeManager themeManager = PlatformUI.getWorkbench().getThemeManager();

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <!-- DOCoMETRe colors : default values are those of the light theme -->
+   <extension
+         point="org.eclipse.ui.themes">
+      <themeElementCategory
+            id="fr.univamu.ism.docometre.themeElementCategory"
+            label="DOCoMETRe">
+      </themeElementCategory>
+      <colorDefinition
+            categoryId="fr.univamu.ism.docometre.themeElementCategory"
+            id="fr.univamu.ism.docometre.CONSOLE_INFO_COLOR"
+            label="Console : information"
+            value="0,0,0">
+      </colorDefinition>
+      <colorDefinition
+            categoryId="fr.univamu.ism.docometre.themeElementCategory"
+            id="fr.univamu.ism.docometre.CONSOLE_WARNING_COLOR"
+            label="Console : avertissement"
+            value="204,102,0">
+      </colorDefinition>
+      <colorDefinition
+            categoryId="fr.univamu.ism.docometre.themeElementCategory"
+            id="fr.univamu.ism.docometre.CONSOLE_ERROR_COLOR"
+            label="Console : erreur"
+            value="250,0,0">
+      </colorDefinition>
+      <colorDefinition
+            categoryId="fr.univamu.ism.docometre.themeElementCategory"
+            id="fr.univamu.ism.docometre.LINE_NUMBER_FOREGROUND_COLOR"
+            label="Numéros de ligne : texte"
+            value="0,0,0">
+      </colorDefinition>
+      <colorDefinition
+            categoryId="fr.univamu.ism.docometre.themeElementCategory"
+            id="fr.univamu.ism.docometre.LINE_NUMBER_BACKGROUND_COLOR"
+            label="Numéros de ligne : fond"
+            value="255,255,255">
+      </colorDefinition>
+   </extension>
+
+   <!-- Dark values of DOCoMETRe colors, added to Eclipse dark theme -->
+   <extension
+         point="org.eclipse.e4.ui.css.swt.theme">
+      <stylesheet
+            uri="css/docometre-dark.css">
+         <themeid
+               refid="org.eclipse.e4.ui.css.theme.e4_dark">
+         </themeid>
+      </stylesheet>
+   </extension>
+
+</plugin>

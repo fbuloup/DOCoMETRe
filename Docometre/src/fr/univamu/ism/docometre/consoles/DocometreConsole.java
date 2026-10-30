@@ -5,24 +5,20 @@ import java.nio.charset.StandardCharsets;
 import org.eclipse.core.runtime.ILogListener;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleConstants;
 import org.eclipse.ui.console.MessageConsole;
 
 import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.ThemeColors;
 
 public class DocometreConsole extends MessageConsole implements ILogListener {
 	
-	private static Color WARNING_COLOR = JFaceResources.getResources().createColor(new RGB(204,102,0));
-	private static Color ERROR_COLOR = JFaceResources.getResources().createColor(new RGB(250, 0, 0));
-	private static Color ERROR_COLOR_DARK = JFaceResources.getResources().createColor(new RGB(225, 69, 69));
-	private static Color INFO_COLOR_DARK = JFaceResources.getResources().createColor(new RGB(255, 255, 255));
-	private static Color INFO_COLOR = JFaceResources.getResources().createColor(new RGB(0, 0, 0));
+	private static RGB WARNING_RGB = new RGB(204,102,0);
+	private static RGB ERROR_RGB = new RGB(250, 0, 0);
+	private static RGB INFO_RGB = new RGB(0, 0, 0);
 	private static String infoColorCodeConsole;
 	private static String warninColorCodeConsole;
 	private static String errorColorCodeConsole;
@@ -47,15 +43,13 @@ public class DocometreConsole extends MessageConsole implements ILogListener {
 //		IViewPart consoleView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(IConsoleConstants.ID_CONSOLE_VIEW);
 //		if(consoleView != null)
 //			consoleView.getSite().getPage().addPartListener(this);
-		if(Display.isSystemDarkTheme()) {
-			infoColorCodeConsole = "\u001b[38;2;" + INFO_COLOR_DARK.getRed() + ";" + INFO_COLOR_DARK.getGreen() + ";" + INFO_COLOR_DARK.getBlue() + "m";
-			warninColorCodeConsole = "\u001b[38;2;" + WARNING_COLOR.getRed() + ";" + WARNING_COLOR.getGreen() + ";" + WARNING_COLOR.getBlue() + "m";
-			errorColorCodeConsole = "\u001b[38;2;" + ERROR_COLOR_DARK.getRed() + ";" + ERROR_COLOR.getGreen() + ";" + ERROR_COLOR.getBlue() + "m";
-		} else {
-			infoColorCodeConsole = "\u001b[38;2;" + INFO_COLOR.getRed() + ";" + INFO_COLOR.getGreen() + ";" + INFO_COLOR.getBlue() + "m";
-			warninColorCodeConsole = "\u001b[38;2;" + WARNING_COLOR.getRed() + ";" + WARNING_COLOR.getGreen() + ";" + WARNING_COLOR.getBlue() + "m";
-			errorColorCodeConsole = "\u001b[38;2;" + ERROR_COLOR.getRed() + ";" + ERROR_COLOR.getGreen() + ";" + ERROR_COLOR.getBlue() + "m";
-		}
+		infoColorCodeConsole = getColorCodeConsole(ThemeColors.getRGB(ThemeColors.CONSOLE_INFO_COLOR, INFO_RGB));
+		warninColorCodeConsole = getColorCodeConsole(ThemeColors.getRGB(ThemeColors.CONSOLE_WARNING_COLOR, WARNING_RGB));
+		errorColorCodeConsole = getColorCodeConsole(ThemeColors.getRGB(ThemeColors.CONSOLE_ERROR_COLOR, ERROR_RGB));
+	}
+	
+	private static String getColorCodeConsole(RGB rgb) {
+		return "\u001b[38;2;" + rgb.red + ";" + rgb.green + ";" + rgb.blue + "m";
 	}
 
 	@Override
