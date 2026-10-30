@@ -103,10 +103,14 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
 
     /** Below this size (pixels) in one direction, the rectangle does not zoom on that axis. */
     private static final float MIN_SELECTION_PIXELS = 5f;
-    /** Maximum number of windows remembered for U / Backspace. */
+    /** Maximum number of views remembered for U / Backspace. */
     private static final int MAX_ZOOM_HISTORY = 50;
-    /** Marker of the initial view in the history (ArrayDeque does not accept null). */
-    private static final double[] INITIAL_VIEW = new double[0];
+    /**
+     * Largest delay between two wheel steps (or {@link #zoom} calls) of the
+     * same gesture, in nanoseconds: a gesture is stored as a single step of
+     * the zoom history.
+     */
+    private static final long ZOOM_GESTURE_NANOS = 500_000_000L;
 
     private volatile LegendPosition legendPosition = LegendPosition.BELOW;
     private float legendBelowHeight = 0; // height of the legend below the axis (pixels), 0 if absent
@@ -125,8 +129,10 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     // Zoom window {xMin, xMax, yMin, yMax}, null = initial view. Never modified
     // in place (replaced as a whole); modified under viewLock, with the history.
     private volatile double[] zoomWindow;
-    private final Deque<double[]> zoomHistory = new ArrayDeque<>();
+    private final Deque<ViewState> zoomHistory = new ArrayDeque<>();
     private final Object viewLock = new Object();
+    private long lastZoomStepNanos;  // time of the last wheel step, under viewLock
+    private boolean zoomGesture;     // a wheel gesture is stored at the top of the history, under viewLock
     private final List<ZoomListener> zoomListeners = new CopyOnWriteArrayList<>();
     private final List<ViewListener> viewListeners = new CopyOnWriteArrayList<>();
     // Last view notified to the view listeners (rendering thread only)
@@ -886,9 +892,15 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         return cursorEnabled && getCurvesCount() > 1;
     }
 
-    /** Wheel: zoom by one step around the point under the mouse (on the zoom window if it exists). */
+    /**
+     * Wheel: zoom by one step around the point under the mouse (on the zoom
+     * window if it exists). The steps of a gesture form a single step of the
+     * zoom history (U key).
+     */
     @Override
     public void wheel(float amount, InputScale scale) {
+        if (amount == 0) return;
+        recordZoomGesture();
         zoomAround(Math.signum(amount), mouseDataPosition());
     }
 
@@ -989,8 +1001,12 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     /**
      * Multiplicative zoom on both axes around the center of the view: steps
      * > 0 zooms in, steps < 0 zooms out (on the zoom window if it exists).
+     * Stored in the zoom history like the wheel: calls in quick succession
+     * form a single step.
      */
     public void zoom(float steps) {
+        if (steps == 0) return;
+        recordZoomGesture();
         zoomAround(steps, null);
     }
 
@@ -1717,6 +1733,13 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     /** True if a zoom window is applied. */
     public boolean isZoomed() { return zoomWindow != null; }
 
+    /** True if the zoom history is not empty: {@link #undoZoom()} has a view to go back to. */
+    public boolean canUndoZoom() {
+        synchronized (viewLock) {
+            return !zoomHistory.isEmpty();
+        }
+    }
+
     /**
      * Applies a zoom window (stored in the history). In 1D scroll mode, the
      * abscissas are relative to the last sample (for example -2 to -1 for the
@@ -1732,19 +1755,27 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     }
 
     /**
-     * Goes back to the previous window of the history (U or Backspace key).
+     * Goes back to the previous view of the history (U or Backspace key):
+     * the view before the last zoom rectangle, wheel gesture or zoom window
+     * applied with the API. The listeners are notified if the zoom window changes.
      *
      * @return false if the history is empty
      */
     public boolean undoZoom() {
-        double[] restored;
+        double[] replaced, restored;
         synchronized (viewLock) {
             if (zoomHistory.isEmpty()) return false;
-            double[] previous = zoomHistory.pop();
-            restored = (previous == INITIAL_VIEW) ? null : previous;
+            ViewState previous = zoomHistory.pop();
+            zoomGesture = false;
+            replaced = zoomWindow;
+            restored = previous.window;
             zoomWindow = restored;
+            zoom = previous.zoom;
+            panX = previous.panX;
+            panY = previous.panY;
+            restoreExtraZoomState(previous.extra);
         }
-        fireZoomChanged(restored);
+        if (restored != replaced) fireZoomChanged(restored);
         return true;
     }
 
@@ -1755,6 +1786,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
             wasZoomed = zoomWindow != null;
             zoomWindow = null;
             zoomHistory.clear();
+            zoomGesture = false;
         }
         if (wasZoomed) fireZoomChanged(null);
     }
@@ -1826,13 +1858,57 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
             double[] current = zoomWindow;
             window = change.apply(current);
             if (window == current) return;
-            if (record) {
-                zoomHistory.push((current != null) ? current : INITIAL_VIEW);
-                while (zoomHistory.size() > MAX_ZOOM_HISTORY) zoomHistory.removeLast();
-            }
+            if (record) pushViewState();
             zoomWindow = window;
         }
         fireZoomChanged(window);
+    }
+
+    /**
+     * Stores the current view in the history at the first step of a wheel
+     * gesture (or of a series of {@link #zoom} calls): steps less than
+     * ZOOM_GESTURE_NANOS apart, without another change of the history in
+     * between, belong to the same gesture.
+     */
+    private void recordZoomGesture() {
+        long now = System.nanoTime();
+        synchronized (viewLock) {
+            boolean sameGesture = zoomGesture && now - lastZoomStepNanos <= ZOOM_GESTURE_NANOS;
+            if (!sameGesture) pushViewState();
+            zoomGesture = true;
+            lastZoomStepNanos = now;
+        }
+    }
+
+    /** Stores the current view at the top of the history (under viewLock); ends the current wheel gesture. */
+    private void pushViewState() {
+        zoomHistory.push(new ViewState(zoomWindow, zoom, panX, panY, saveExtraZoomState()));
+        while (zoomHistory.size() > MAX_ZOOM_HISTORY) zoomHistory.removeLast();
+        zoomGesture = false;
+    }
+
+    /**
+     * Zoom state of the subclass without zoom window, stored in the history
+     * with the zoom and the pan (null by default: none).
+     */
+    protected float[] saveExtraZoomState() { return null; }
+
+    /** Restores a state given by {@link #saveExtraZoomState()} (under the view lock). */
+    protected void restoreExtraZoomState(float[] state) { }
+
+    /** View stored in the zoom history: zoom window (null if none), zoom and pan without window. */
+    private static final class ViewState {
+        final double[] window;
+        final float zoom, panX, panY;
+        final float[] extra;
+
+        ViewState(double[] window, float zoom, float panX, float panY, float[] extra) {
+            this.window = window;
+            this.zoom = zoom;
+            this.panX = panX;
+            this.panY = panY;
+            this.extra = extra;
+        }
     }
 
     private void fireZoomChanged(double[] window) {

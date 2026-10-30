@@ -60,7 +60,12 @@ public abstract class AbstractGLPlotChart<C extends CurveData<C>, R extends Plot
         return renderer.isZoomed();
     }
 
-    /** Goes back to the previous window (also with U or Backspace); false if the history is empty. */
+    /** True if {@link #undoZoom()} has a view to go back to (rectangle, wheel or zoom window of the API). */
+    public boolean canUndoZoom() {
+        return renderer.canUndoZoom();
+    }
+
+    /** Goes back to the view before the last zoom (also with U or Backspace); false if the history is empty. */
     public boolean undoZoom() {
         return renderer.undoZoom();
     }
@@ -348,7 +353,7 @@ public abstract class AbstractGLPlotChart<C extends CurveData<C>, R extends Plot
     @Override
     protected void fillViewMenuItems(Menu menu) {
         MenuItem undo = addMenuItem(menu, DocometreMessages.ChartMenu_UndoZoom, "U", this::undoZoom);
-        undo.setEnabled(isZoomed());
+        undo.setEnabled(canUndoZoom());
         super.fillViewMenuItems(menu);
     }
 }

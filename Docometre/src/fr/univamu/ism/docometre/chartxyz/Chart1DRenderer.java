@@ -214,6 +214,13 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
     @Override
     protected boolean isAutomaticView() { return super.isAutomaticView() && zoomX == 1f; }
 
+    /** The horizontal zoom is stored in the zoom history. */
+    @Override
+    protected float[] saveExtraZoomState() { return new float[]{zoomX}; }
+
+    @Override
+    protected void restoreExtraZoomState(float[] state) { if (state != null) zoomX = state[0]; }
+
     /** A marker stores the absolute time of its sample: it remains attached to it in both display modes. */
     @Override
     protected double markerDataX(Curve1DData curve, int i, double axisX) {

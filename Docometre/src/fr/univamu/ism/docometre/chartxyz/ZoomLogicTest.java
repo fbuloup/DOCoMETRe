@@ -67,7 +67,7 @@ public class ZoomLogicTest {
         r2.release(ChartInteraction.LEFT_BUTTON, 400, 400, 800, 600);
         check("2D Escape cancels the rectangle", Arrays.equals(r2.getZoomWindow(), w2));
 
-        // Wheel and pan (right button) act on the window, without history
+        // Wheel and pan (right button) act on the window; the wheel is stored in the history, not the pan
         r2.move(5, 5, 800, 600); // mouse outside the plot area: zoom around the center
         r2.wheel(1, ChartInteraction.InputScale.SWT);
         double[] w3 = r2.getZoomWindow();
@@ -78,12 +78,15 @@ public class ZoomLogicTest {
         r2.dragTo(ChartInteraction.LEFT_BUTTON, 500, 300, 80, 0, 800, 600, ChartInteraction.InputScale.SWT);
         check("2D left drag without selection: no more pan", Arrays.equals(r2.getZoomWindow(), w4));
 
-        // History: U goes back to w (the zoom before w2), Backspace to the initial view
+        // History: U goes back to w2 (before the wheel, the pan is also undone), then w (the zoom
+        // before w2), Backspace to the initial view
+        r2.keyPressed('u');
+        check("2D U: window before the wheel", Arrays.equals(r2.getZoomWindow(), w2));
         r2.keyPressed('u');
         check("2D U: previous window", Arrays.equals(r2.getZoomWindow(), w));
         r2.keyPressed(ChartInteraction.BACKSPACE);
         check("2D Backspace: initial view", r2.getZoomWindow() == null && events.get(events.size() - 1) == null);
-        check("2D history empty afterwards", !r2.undoZoom());
+        check("2D history empty afterwards", !r2.canUndoZoom() && !r2.undoZoom());
 
         // R clears window and history
         r2.setZoomWindow(1, 2, 1, 2);
@@ -203,6 +206,46 @@ public class ZoomLogicTest {
         rw.keyPressed('r');
         rw.computeView();
         check("1D R: horizontal zoom cancelled", near(rw.viewMaxX - rw.viewMinX, 5));
+        check("1D R: empty history", !rw.canUndoZoom());
+
+        // ---------------- Wheel in the history (U key) ----------------
+        rw.computeView();
+        double[] initial = {rw.viewMinX, rw.viewMaxX, rw.viewMinY, rw.viewMaxY};
+        rw.move(50 + 210, wy(400), 800, 600);
+        for (int i = 0; i < 4; i++) { rw.wheel(1, ChartInteraction.InputScale.SWT); rw.computeView(); } // one gesture
+        double[] gesture1 = {rw.viewMinX, rw.viewMaxX, rw.viewMinY, rw.viewMaxY};
+        check("1D wheel without window: undo available", rw.canUndoZoom() && !rw.isZoomed());
+        try { Thread.sleep(600); } catch (InterruptedException e) { }
+        rw.wheel(1, ChartInteraction.InputScale.SWT); // second gesture, after a pause
+        rw.wheel(1, ChartInteraction.InputScale.SWT);
+        rw.keyPressed('u');
+        rw.computeView();
+        check("1D U: back to the end of the first gesture",
+                near(rw.viewMinX, gesture1[0]) && near(rw.viewMaxX, gesture1[1]) && near(rw.viewMinY, gesture1[2]) && near(rw.viewMaxY, gesture1[3]));
+        rw.keyPressed('u');
+        rw.computeView();
+        check("1D U: the steps of the first gesture are undone together (horizontal zoom included)",
+                near(rw.viewMinX, initial[0]) && near(rw.viewMaxX, initial[1]) && near(rw.viewMinY, initial[2]) && near(rw.viewMaxY, initial[3]));
+        check("1D history empty afterwards", !rw.canUndoZoom());
+
+        // A rectangle between two wheel steps ends the gesture: each is undone separately
+        Chart2DRenderer rg = new Chart2DRenderer(new Curve2DData("line", 1, Arrays.asList(new Point2D(0, 0), new Point2D(10, 5))));
+        layout(rg);
+        rg.zoom(1);
+        rg.computeView();
+        double[] afterZoom = {rg.viewMinX, rg.viewMaxX};
+        rg.setZoomWindow(1, 2, 1, 2);
+        rg.wheel(1, ChartInteraction.InputScale.SWT);
+        double[] scaled = rg.getZoomWindow();
+        check("2D wheel after a rectangle: window scaled", scaled != null && near((scaled[1] - scaled[0]) * 1.15, 1));
+        rg.undoZoom();
+        check("2D U: window before the wheel", Arrays.equals(rg.getZoomWindow(), new double[]{1, 2, 1, 2}));
+        rg.undoZoom();
+        rg.computeView();
+        check("2D U: view zoomed by zoom(), without window", !rg.isZoomed() && near(rg.viewMinX, afterZoom[0]) && near(rg.viewMaxX, afterZoom[1]));
+        rg.undoZoom();
+        rg.computeView();
+        check("2D U: initial view", near(rg.viewMinX, -0.5) && near(rg.viewMaxX, 10.5) && !rg.canUndoZoom());
 
         System.out.println(failures == 0 ? "\nAll tests passed." : "\n" + failures + " failure(s).");
         System.exit(failures == 0 ? 0 : 1);
