@@ -158,7 +158,7 @@ public abstract class AbstractCategoryContainerEditor extends Composite implemen
 		gl2.marginHeight = 0;
 		gl2.marginWidth = 0;
 		
-		Button sameColorButton = new Button(categoryContainer, SWT.CHECK | SWT.BORDER);
+		Button sameColorButton = new Button(categoryContainer, SWT.CHECK);
 		sameColorButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 		sameColorButton.setText(DocometreMessages.SameColorForSameTrialLabel);
 		sameColorButton.addSelectionListener(new SelectionAdapter() {
