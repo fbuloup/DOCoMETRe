@@ -99,7 +99,8 @@ public class CustomerFunction extends GenericFunction {
 	private static final String LABEL = "LABEL";
 	private static final String CONTROL_DECORATION = "CONTROL_DECORATION";
 	
-	private static final String countrySuffix = "_" + Locale.getDefault().getCountry();
+	// Translated keys use language code as suffix (e.g. MENU_TITLE_FR) : don't use country as it may be empty (e.g. -nl fr)
+	private static final String countrySuffix = "_" + Locale.getDefault().getLanguage().toUpperCase(Locale.ROOT);
 	private static final String PARAMETERS_NUMBER_KEY = "PARAMETERS_NUMBER";
 	private static final String PARAMETER_KEY = "PARAMETER_";
 	private static final String NAME_KEY = "NAME";
