@@ -41,12 +41,19 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
+
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.themes.IThemeManager;
@@ -68,6 +75,10 @@ public final class ThemeColors {
 	
 	private static boolean darkTheme;
 	
+	// Eclipse dark theme colors for dialogs (DARK_BACKGROUND and DARK_FOREGROUND)
+	private static final RGB DARK_BACKGROUND_RGB = new RGB(0x48, 0x48, 0x4C);
+	private static final RGB DARK_FOREGROUND_RGB = new RGB(0xEE, 0xEE, 0xEE);
+	
 	/*
 	 * Dark theme or not, as computed at startup (theme change requires restart)
 	 */
@@ -77,6 +88,37 @@ public final class ThemeColors {
 	
 	public static void setDarkTheme(boolean darkTheme) {
 		ThemeColors.darkTheme = darkTheme;
+	}
+	
+	/*
+	 * Same rule as isDarkThemeAtStartup(), before workspace location is set :
+	 * theme preference is read from workspace preferences file.
+	 */
+	public static boolean isDarkThemeBeforeStartup(String workspace) {
+		if(workspace != null && !workspace.isEmpty()) {
+			File prefsFile = new File(workspace, ".metadata/.plugins/org.eclipse.core.runtime/.settings/org.eclipse.e4.ui.css.swt.theme.prefs");
+			Properties properties = new Properties();
+			try (FileInputStream prefsInputStream = new FileInputStream(prefsFile)) {
+				properties.load(prefsInputStream);
+				String themeId = properties.getProperty("themeid");
+				if(themeId != null) return themeId.contains("dark");
+			} catch (IOException e) {
+				// No theme saved in this workspace
+			}
+		}
+		return Display.isSystemDarkTheme();
+	}
+	
+	/*
+	 * Before workbench is started, CSS theme engine is not available :
+	 * apply dark theme dialog colors to control and its children.
+	 */
+	public static void applyDarkColors(Control control) {
+		control.setBackground(JFaceResources.getResources().createColor(DARK_BACKGROUND_RGB));
+		control.setForeground(JFaceResources.getResources().createColor(DARK_FOREGROUND_RGB));
+		if(control instanceof Composite) {
+			for (Control child : ((Composite) control).getChildren()) applyDarkColors(child);
+		}
 	}
 	
 	/*

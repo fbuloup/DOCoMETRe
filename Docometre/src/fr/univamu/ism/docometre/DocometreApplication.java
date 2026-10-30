@@ -58,6 +58,9 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 
@@ -138,6 +141,18 @@ public class DocometreApplication implements IApplication {
 			JFaceResources.getColorRegistry().put(String.valueOf(i), rgbData);
 		}
 		
+		// Workbench CSS theme engine is not started yet : dialogs shown before workbench
+		// (workspace selection, errors) are made dark here, using last selected workspace theme
+		ThemeColors.setDarkTheme(ThemeColors.isDarkThemeBeforeStartup(ChooseWorkspaceData.getInstance().getSelection()));
+		ThemeColors.setWindowsNativeTheme(ThemeColors.isDarkTheme());
+		Listener darkShellListener = new Listener() {
+			@Override
+			public void handleEvent(Event event) {
+				if(event.widget instanceof Shell) ThemeColors.applyDarkColors((Shell) event.widget);
+			}
+		};
+		if(ThemeColors.isDarkTheme()) display.addFilter(SWT.Show, darkShellListener);
+		
 		boolean workspaceOK = false;
 		String workspace = "";
 		while(!workspaceOK) {
@@ -188,6 +203,7 @@ public class DocometreApplication implements IApplication {
 			return EXIT_ERROR;
 		}
 		WORKSPACE_PATH = workspace;
+		display.removeFilter(SWT.Show, darkShellListener);
 		ThemeColors.setDarkTheme(ThemeColors.isDarkThemeAtStartup());
 		ThemeColors.setWindowsNativeTheme(ThemeColors.isDarkTheme());
 		try {
