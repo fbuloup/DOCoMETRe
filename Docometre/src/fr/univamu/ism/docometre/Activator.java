@@ -194,9 +194,18 @@ public class Activator extends AbstractUIPlugin {
 	 */
 	public static ImageDescriptor getImageDescriptor(String pluginID, String path) {
 		Bundle bundle = Platform.getBundle(pluginID);
-        URL url = FileLocator.find(bundle, new Path(path), null);
+		URL url = null;
+		// In dark theme, use light variant of icon if any (e.g. icons/pan_dark.png)
+		if(ThemeColors.isDarkTheme()) url = FileLocator.find(bundle, new Path(getDarkImagePath(path)), null);
+		if(url == null) url = FileLocator.find(bundle, new Path(path), null);
         ImageDescriptor imageDescriptor = ImageDescriptor.createFromURL(url);
 		return imageDescriptor;
+	}
+	
+	private static String getDarkImagePath(String path) {
+		int dotIndex = path.lastIndexOf('.');
+		if(dotIndex < 0) return path + "_dark";
+		return path.substring(0, dotIndex) + "_dark" + path.substring(dotIndex);
 	}
 	
 	/*

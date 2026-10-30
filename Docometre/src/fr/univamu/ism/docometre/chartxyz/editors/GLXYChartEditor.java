@@ -59,6 +59,7 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.GetResourceLabelDelegate;
+import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.analyse.MathEngine;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
@@ -174,6 +175,8 @@ public class GLXYChartEditor extends EditorPart implements ISelectionChangedList
 		xyChartData = ((XYChart)((ResourceEditorInput)input).getObject());
 		IResource resource = ObjectsController.getResourceForObject(xyChartData);
 		setPartName(GetResourceLabelDelegate.getLabel(resource));
+		// Editor icon from plugin.xml does not follow theme
+		setTitleImage(Activator.getImage(IImageKeys.XYChart_ICON));
 	}
 
 	@Override

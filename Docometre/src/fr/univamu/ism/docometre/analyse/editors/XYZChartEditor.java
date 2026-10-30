@@ -121,6 +121,7 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.GetResourceLabelDelegate;
+import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.analyse.MathEngine;
@@ -209,6 +210,8 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 		xyzChartData = ((XYZChart)((ResourceEditorInput)input).getObject());
 		IResource resource = ObjectsController.getResourceForObject(xyzChartData);
 		setPartName(GetResourceLabelDelegate.getLabel(resource));
+		// Editor icon from plugin.xml does not follow theme
+		setTitleImage(Activator.getImage(IImageKeys.XYZChart_ICON));
 	}
 
 	@Override

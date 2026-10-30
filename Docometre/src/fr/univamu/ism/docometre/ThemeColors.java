@@ -66,6 +66,19 @@ public final class ThemeColors {
 	// Syntax colors : SYNTAX_COLOR_PREFIX + DocometreApplication color name (RED, GREEN...) + "_COLOR"
 	public static final String SYNTAX_COLOR_PREFIX = "fr.univamu.ism.docometre.SYNTAX_";
 	
+	private static boolean darkTheme;
+	
+	/*
+	 * Dark theme or not, as computed at startup (theme change requires restart)
+	 */
+	public static boolean isDarkTheme() {
+		return darkTheme;
+	}
+	
+	public static void setDarkTheme(boolean darkTheme) {
+		ThemeColors.darkTheme = darkTheme;
+	}
+	
 	/*
 	 * Same rule as Eclipse ThemeEngine.restore() : theme saved in preferences
 	 * if any, otherwise dark theme if system is dark.
