@@ -150,7 +150,6 @@ public class DiaryEditor extends EditorPart implements PartNameRefresher {
 			lineAnnotationRuler.setModel(annotationModel);
 			// Lines numbers column
 			LineNumberRulerColumn lineNumberRulerColumn = new LineNumberRulerColumn();
-			lineNumberRulerColumn.setForeground(ThemeColors.getColor(ThemeColors.LINE_NUMBER_FOREGROUND_COLOR, new RGB(0, 0, 0)));
 			lineAnnotationRuler.addDecorator(0,lineNumberRulerColumn);
 			// Annotation column
 			DocometreAnnotationAccesExtension docometreAnnotationAccesExtension = new DocometreAnnotationAccesExtension();
@@ -173,6 +172,7 @@ public class DiaryEditor extends EditorPart implements PartNameRefresher {
 			overviewRuler.setAnnotationTypeLayer(WarningAnnotation.TYPE_WARNING, IAnnotationAccessExtension.DEFAULT_LAYER); 
 			
 			sourceViewer = new SourceViewer(parent, lineAnnotationRuler, overviewRuler, true, SWT.V_SCROLL | SWT.H_SCROLL);
+			ThemeColors.useTextColors(lineNumberRulerColumn, sourceViewer.getTextWidget());
 			sourceViewer.getTextWidget().setEditable(false);
 		    sourceViewer.getTextWidget().setFont(DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
 			

@@ -18,7 +18,6 @@ import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
@@ -122,9 +121,9 @@ public class CustomerFunctionEditor extends EditorPart implements PartNameRefres
 		document = new Document();
 		CompositeRuler lineAnnotationRuler = new CompositeRuler();
 		LineNumberRulerColumn lineNumberRulerColumn = new LineNumberRulerColumn();
-		lineNumberRulerColumn.setForeground(ThemeColors.getColor(ThemeColors.LINE_NUMBER_FOREGROUND_COLOR, new RGB(0, 0, 0)));
 		lineAnnotationRuler.addDecorator(0, lineNumberRulerColumn);
 		sourceViewer = new SourceViewer(parent, lineAnnotationRuler, null, false, SWT.V_SCROLL | SWT.H_SCROLL);
+		ThemeColors.useTextColors(lineNumberRulerColumn, sourceViewer.getTextWidget());
 		sourceViewer.setDocument(document);
 		sourceViewer.setEditable(false);
 	    sourceViewer.getTextWidget().setFont(DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));

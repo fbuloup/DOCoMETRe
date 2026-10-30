@@ -60,8 +60,6 @@ import org.eclipse.swt.custom.CaretEvent;
 import org.eclipse.swt.custom.CaretListener;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -78,6 +76,7 @@ import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.DocometreSharedColors;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.PartListenerAdapter;
+import fr.univamu.ism.docometre.ThemeColors;
 import fr.univamu.ism.docometre.annotations.DocometreAnnotationAccesExtension;
 import fr.univamu.ism.docometre.annotations.ErrorAnnotation;
 import fr.univamu.ism.docometre.annotations.WarningAnnotation;
@@ -253,13 +252,7 @@ public class SourceEditor extends EditorPart {
 		
 		getSite().setSelectionProvider(sourceViewer);
 		
-		sourceViewer.getTextWidget().addPaintListener(new PaintListener() {
-			@Override
-			public void paintControl(PaintEvent e) {
-				lineNumberRulerColumn.setBackground(sourceViewer.getTextWidget().getBackground());
-				lineNumberRulerColumn.setForeground(sourceViewer.getTextWidget().getForeground());
-			}
-		});
+		ThemeColors.useTextColors(lineNumberRulerColumn, sourceViewer.getTextWidget());
 		
 
 	}

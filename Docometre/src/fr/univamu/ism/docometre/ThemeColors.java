@@ -49,7 +49,11 @@ import java.util.Properties;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.text.source.LineNumberRulerColumn;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Composite;
@@ -66,8 +70,6 @@ public final class ThemeColors {
 	 */
 	public static final String CONSOLE_WARNING_COLOR = "fr.univamu.ism.docometre.CONSOLE_WARNING_COLOR";
 	public static final String CONSOLE_ERROR_COLOR = "fr.univamu.ism.docometre.CONSOLE_ERROR_COLOR";
-	public static final String LINE_NUMBER_FOREGROUND_COLOR = "fr.univamu.ism.docometre.LINE_NUMBER_FOREGROUND_COLOR";
-	public static final String LINE_NUMBER_BACKGROUND_COLOR = "fr.univamu.ism.docometre.LINE_NUMBER_BACKGROUND_COLOR";
 	public static final String COMPLETION_BACKGROUND_COLOR = "fr.univamu.ism.docometre.COMPLETION_BACKGROUND_COLOR";
 	public static final String COMPLETION_MARK_COLOR = "fr.univamu.ism.docometre.COMPLETION_MARK_COLOR";
 	// Syntax colors : SYNTAX_COLOR_PREFIX + DocometreApplication color name (RED, GREEN...) + "_COLOR"
@@ -150,6 +152,26 @@ public final class ThemeColors {
 		} catch (ReflectiveOperationException | LinkageError e) {
 			Activator.logErrorMessageWithCause(new Exception("Unable to set Windows native theme", e));
 		}
+	}
+	
+	/*
+	 * Line numbers column takes text widget colors, which are set by theme CSS after creation
+	 * (otherwise line numbers column background is system list background, white on Windows)
+	 */
+	public static void useTextColors(LineNumberRulerColumn lineNumberRulerColumn, StyledText textWidget) {
+		textWidget.addPaintListener(new PaintListener() {
+			private Color background;
+			private Color foreground;
+			@Override
+			public void paintControl(PaintEvent e) {
+				if(textWidget.getBackground().equals(background) && textWidget.getForeground().equals(foreground)) return;
+				background = textWidget.getBackground();
+				foreground = textWidget.getForeground();
+				lineNumberRulerColumn.setBackground(background);
+				lineNumberRulerColumn.setForeground(foreground);
+				lineNumberRulerColumn.redraw();
+			}
+		});
 	}
 	
 	/*

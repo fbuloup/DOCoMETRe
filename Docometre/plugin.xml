@@ -3669,18 +3669,6 @@
       </colorDefinition>
       <colorDefinition
             categoryId="fr.univamu.ism.docometre.themeElementCategory"
-            id="fr.univamu.ism.docometre.LINE_NUMBER_FOREGROUND_COLOR"
-            label="Numéros de ligne : texte"
-            value="0,0,0">
-      </colorDefinition>
-      <colorDefinition
-            categoryId="fr.univamu.ism.docometre.themeElementCategory"
-            id="fr.univamu.ism.docometre.LINE_NUMBER_BACKGROUND_COLOR"
-            label="Numéros de ligne : fond"
-            value="255,255,255">
-      </colorDefinition>
-      <colorDefinition
-            categoryId="fr.univamu.ism.docometre.themeElementCategory"
             id="fr.univamu.ism.docometre.COMPLETION_BACKGROUND_COLOR"
             label="Description : fond de la barre d&apos;avancement"
             value="255,255,255">
