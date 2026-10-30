@@ -53,8 +53,12 @@ import com.jogamp.opengl.GL2;
  * on the designated sample; the differences Δx (time) and Δy between the
  * two cursors are displayed next to the moving cursor (see {@link PlotRenderer}).
  *
+ * Real time ({@link #setRealTime}, default): the sweep mode and the pause
+ * are only available for real-time signals. Otherwise (signals loaded from
+ * files, for example), the display is in scroll mode, without pause.
+ *
  * Keyboard commands specific to 1D: space, pause / resume; M, toggles sweep
- * / scroll (the zoom window is then removed). Pan (right button) moves the
+ * / scroll (the zoom window is then removed), in real time only. Pan (right button) moves the
  * view in x and y; in scroll mode, the shifted view keeps following the
  * last sample. The wheel zooms on both axes around the point under the
  * mouse, which stays in place (on the zoom window if it exists); in scroll
@@ -90,6 +94,7 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
     private volatile DisplayMode displayMode = DisplayMode.SWEEP;
     private DisplayMode frameMode = DisplayMode.SWEEP; // mode frozen for the current frame
     private volatile boolean paused = false;
+    private volatile boolean realTime = true; // sweep mode and pause available
     private volatile float zoomX = 1f; // horizontal zoom without zoom window (1 = windowTime seconds displayed)
     private final List<DisplayModeListener> displayModeListeners = new CopyOnWriteArrayList<>();
     private final Object displayModeLock = new Object(); // mode changes and their detection are atomic
@@ -522,13 +527,37 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
     protected String xAxisLabel() { return xAxisLabel; }
 
     /**
+     * Real-time signals (true, default): the sweep mode (M key) and the pause
+     * (space key) are available. Otherwise (signals loaded from files, for
+     * example), the display goes to scroll mode, the pause is removed, and
+     * both are no longer available: {@link #setDisplayMode}(SWEEP),
+     * {@link #setPaused}(true) and their keys have no effect. The changes are
+     * notified to the listeners. Usable from any thread.
+     */
+    public void setRealTime(boolean realTime) {
+        boolean scroll;
+        synchronized (displayModeLock) {
+            this.realTime = realTime;
+            scroll = !realTime && displayMode != DisplayMode.SCROLL;
+            if (scroll) applyDisplayMode(DisplayMode.SCROLL);
+        }
+        if (scroll) notifyDisplayMode(DisplayMode.SCROLL);
+        if (!realTime) setOption(DisplayOption.PAUSE, false, () -> paused, v -> paused = v);
+    }
+
+    /** True if the signals are real-time ones: sweep mode and pause available. */
+    public boolean isRealTime() { return realTime; }
+
+    /**
      * Chooses the display mode; a mode change removes the zoom window
      * (incompatible abscissas) and is notified to the {@link DisplayModeListener}s.
+     * The sweep mode is ignored if the signals are not real-time ones (see {@link #setRealTime}).
      */
     public void setDisplayMode(DisplayMode displayMode) {
         if (displayMode == null) return;
         synchronized (displayModeLock) {
             if (displayMode == this.displayMode) return;
+            if (displayMode == DisplayMode.SWEEP && !realTime) return;
             applyDisplayMode(displayMode);
         }
         notifyDisplayMode(displayMode);
@@ -536,10 +565,11 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
 
     public DisplayMode getDisplayMode() { return displayMode; }
 
-    /** Toggles between sweep (oscilloscope) and scroll (M key). */
+    /** Toggles between sweep (oscilloscope) and scroll (M key); no effect if the signals are not real-time ones. */
     public void toggleDisplayMode() {
         DisplayMode mode;
         synchronized (displayModeLock) {
+            if (!realTime) return;
             mode = (displayMode == DisplayMode.SWEEP) ? DisplayMode.SCROLL : DisplayMode.SWEEP;
             applyDisplayMode(mode);
         }
@@ -568,8 +598,18 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
         }
     }
 
-    /** Freezes / resumes the display (also with the space key); data keep being received during the pause. */
-    public void setPaused(boolean paused) { setOption(DisplayOption.PAUSE, paused, () -> this.paused, v -> this.paused = v); }
+    /**
+     * Freezes / resumes the display (also with the space key); data keep being
+     * received during the pause. The pause is ignored if the signals are not
+     * real-time ones (see {@link #setRealTime}).
+     */
+    public void setPaused(boolean paused) {
+        if (paused && !realTime) return;
+        setOption(DisplayOption.PAUSE, paused, () -> this.paused, v -> this.paused = v);
+    }
     public boolean isPaused() { return paused; }
-    public void togglePause() { toggleOption(DisplayOption.PAUSE, () -> paused, v -> paused = v); }
+    public void togglePause() {
+        if (!realTime) return;
+        toggleOption(DisplayOption.PAUSE, () -> paused, v -> paused = v);
+    }
 }

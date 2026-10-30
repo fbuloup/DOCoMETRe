@@ -65,7 +65,6 @@ import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
-import fr.univamu.ism.docometre.chartxyz.Chart1DRenderer;
 import fr.univamu.ism.docometre.chartxyz.Curve1DData;
 import fr.univamu.ism.docometre.chartxyz.GLChart1D;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
@@ -199,7 +198,7 @@ public final class ChannelEditorWidgetsFactory {
 			if(isFrequencyDomain && !isTimeDomain) xAxislabel = DocometreMessages.XAxisLabelFrequency;
 			if(isFrequencyDomain && isTimeDomain) xAxislabel = DocometreMessages.XAxisLabelTimeFrequency;
 			chart.setXAxisLabel(xAxislabel);
-			chart.setDisplayMode(Chart1DRenderer.DisplayMode.SCROLL); 
+			chart.setRealTime(false); // signals loaded from files: scroll mode, no sweep mode nor pause
 			return chart;
 		}
 		

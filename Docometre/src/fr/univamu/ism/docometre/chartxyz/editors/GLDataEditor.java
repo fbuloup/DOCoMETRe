@@ -42,7 +42,6 @@ import fr.univamu.ism.docometre.GetResourceLabelDelegate;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
-import fr.univamu.ism.docometre.chartxyz.Chart1DRenderer;
 import fr.univamu.ism.docometre.chartxyz.Curve1DData;
 import fr.univamu.ism.docometre.chartxyz.GLChart1D;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
@@ -122,7 +121,7 @@ public class GLDataEditor extends EditorPart implements PartNameRefresher/*, IPa
 		chart = GLChart1D.createChart(parent, windowTimeWidth, curves.toArray(new Curve1DData[curves.size()]));
 		chart.setMarkersInteractive(false);
 		chart.setMarkersMenuItemsVisible(false);
-		chart.setDisplayMode(Chart1DRenderer.DisplayMode.SCROLL); 
+		chart.setRealTime(false); // signals loaded from files: scroll mode, no sweep mode nor pause
 		ChartPartListener.install(this, chart);
 		// The view listener is called by the rendering thread: only the view is stored
 		chart.addViewListener((view, automatic) -> userView = automatic ? null : view);

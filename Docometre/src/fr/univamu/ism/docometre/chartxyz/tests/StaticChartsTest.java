@@ -8,7 +8,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
-import fr.univamu.ism.docometre.chartxyz.Chart1DRenderer;
 import fr.univamu.ism.docometre.chartxyz.Curve1DData;
 import fr.univamu.ism.docometre.chartxyz.Curve2DData;
 import fr.univamu.ism.docometre.chartxyz.Curve3DData;
@@ -101,8 +100,8 @@ public class StaticChartsTest {
         Curve1DData drift = new Curve1DData("drift (100 Hz)", sf2, dataDrift).setLineWidth(2).setLineStyle(LineStyle.DASH_DOT);
         // Chart
         GLChart1D graph1D = new GLChart1D(shell, GLToolkit.platformDefault(), wtw1, sine, noisy, drift);
-        // Very important because the sweep mode removes some points in front of the write cursor
-        graph1D.setDisplayMode(Chart1DRenderer.DisplayMode.SCROLL); 
+        // Static data: scroll mode, without sweep mode (it removes some points in front of the write cursor) nor pause
+        graph1D.setRealTime(false);
         graph1D.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
         graph1D.setScaleFont("Courier New", 10, SWT.NORMAL);
         graph1D.setLegendFont(null, 11, SWT.BOLD); // system font, bold

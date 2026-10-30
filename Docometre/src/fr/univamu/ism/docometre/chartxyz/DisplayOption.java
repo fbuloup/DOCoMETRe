@@ -23,7 +23,7 @@ public enum DisplayOption {
     DECIMATION,
     /** Cursor mode, 1D and 2D charts (C). */
     CURSOR,
-    /** Pause of the display, 1D charts (space). */
+    /** Pause of the display, 1D charts of real-time signals (space). */
     PAUSE,
     /** Solid surface, surfaces (S). */
     SOLID,

@@ -48,7 +48,21 @@ public class GLChart1D extends AbstractGLPlotChart<Curve1DData, Chart1DRenderer>
         return renderer;
     }
 
-    /** Chooses the display mode: oscilloscope-like sweep (default) or scroll. */
+    /**
+     * Real-time signals (true, default): the sweep mode and the pause are
+     * available, with the keyboard and the context menu. Otherwise (signals
+     * loaded from files, for example), the chart goes to scroll mode,
+     * without pause (see {@link Chart1DRenderer#setRealTime}).
+     */
+    public void setRealTime(boolean realTime) {
+        renderer.setRealTime(realTime);
+    }
+
+    public boolean isRealTime() {
+        return renderer.isRealTime();
+    }
+
+    /** Chooses the display mode: oscilloscope-like sweep (default) or scroll; the sweep mode needs real-time signals. */
     public void setDisplayMode(Chart1DRenderer.DisplayMode displayMode) {
         renderer.setDisplayMode(displayMode);
     }
@@ -66,7 +80,7 @@ public class GLChart1D extends AbstractGLPlotChart<Curve1DData, Chart1DRenderer>
         renderer.removeDisplayModeListener(listener);
     }
 
-    /** Freezes / resumes the display (also with the space key); data keep being received. */
+    /** Freezes / resumes the display (also with the space key); data keep being received. Real-time signals only. */
     public void setPaused(boolean paused) {
         renderer.setPaused(paused);
     }
@@ -107,10 +121,11 @@ public class GLChart1D extends AbstractGLPlotChart<Curve1DData, Chart1DRenderer>
 
     // --- Context menu ---
 
-    /** Adds the pause (space key) and the display mode (M key) to the cursor. */
+    /** Adds the pause (space key) and the display mode (M key) to the cursor, for real-time signals. */
     @Override
     protected void fillModeMenuItems(Menu menu) {
         super.fillModeMenuItems(menu);
+        if (!isRealTime()) return;
         addToggleMenuItem(menu, isPaused(), DocometreMessages.ChartMenu_Pause, DocometreMessages.ChartMenu_Resume,
                 DocometreMessages.ChartMenu_SpaceKey, this::setPaused);
         boolean sweep = getDisplayMode() == Chart1DRenderer.DisplayMode.SWEEP;

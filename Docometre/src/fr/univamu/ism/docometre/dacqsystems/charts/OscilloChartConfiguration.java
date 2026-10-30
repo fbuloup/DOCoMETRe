@@ -64,6 +64,7 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.FontUtil;
 import fr.univamu.ism.docometre.chartxyz.AbstractGLPlotChart;
 import fr.univamu.ism.docometre.chartxyz.Curve1DData;
+import fr.univamu.ism.docometre.chartxyz.GLChart1D;
 import fr.univamu.ism.docometre.chartxyz.LineStyle;
 import fr.univamu.ism.docometre.chartxyz.macos.NewtChart1D;
 import fr.univamu.ism.docometre.chartxyz.windows.Chart1D;
@@ -318,6 +319,8 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 			glChart.setMarkersInteractive(false);
 			glChart.setMarkersMenuItemsVisible(false);
 		}
+		// Real-time signals: sweep mode and pause available (keyboard and context menu)
+		if(rtswtOscilloChart instanceof GLChart1D) ((GLChart1D) rtswtOscilloChart).setRealTime(true);
 		
 		// Create curves
 		for (CurveConfiguration curveConfiguration : curvesConfigurations) {
