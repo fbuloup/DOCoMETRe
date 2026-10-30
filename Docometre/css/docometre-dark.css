@@ -50,3 +50,25 @@ ColorDefinition#fr-univamu-ism-docometre-SYNTAX_MAROON_COLOR {
 	background-color: #2F2F2F;
 	color: #CCCCCC;
 }
+
+/* DOCoMETRe composites : CSS type selectors match the exact class name,
+ * not subclasses of Composite, so they must be listed here (as Eclipse does for its own) */
+SignalContainerEditor, CategoryContainerEditor, GLSignalContainerEditor, GLCategoryContainerEditor,
+ChannelViewer, ChartContainer, ConditionalBlockArea, SpinnerValue, MyCCombo {
+	background-color: '#org-eclipse-ui-workbench-DARK_BACKGROUND';
+	color: '#org-eclipse-ui-workbench-DARK_FOREGROUND';
+}
+
+/* In views and editors : same colors as Eclipse dark theme part composites */
+.MPart SignalContainerEditor,
+.MPart CategoryContainerEditor,
+.MPart GLSignalContainerEditor,
+.MPart GLCategoryContainerEditor,
+.MPart ChannelViewer,
+.MPart ChartContainer,
+.MPart ConditionalBlockArea,
+.MPart SpinnerValue,
+.MPart MyCCombo {
+	background-color: #2F2F2F;
+	color: #AAAAAA;
+}
