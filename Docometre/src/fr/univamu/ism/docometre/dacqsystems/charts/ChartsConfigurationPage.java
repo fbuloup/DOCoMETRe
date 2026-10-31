@@ -394,7 +394,8 @@ public class ChartsConfigurationPage extends ModulePage {
 		tableConfigurationSection.setVisible(true);
 		tableViewer.getTable().setVisible(true);
 		if(currentSelectedChartConfiguration instanceof OscilloChartConfiguration) createOscilloCurvesSection();			
-		if(currentSelectedChartConfiguration instanceof XYChartConfiguration) createXYCurvesSection();
+		if(currentSelectedChartConfiguration instanceof Cursor2DChartConfiguration) createCursorCurvesSection();
+		else if(currentSelectedChartConfiguration instanceof XYChartConfiguration) createXYCurvesSection();
 		if(currentSelectedChartConfiguration instanceof XYZChartConfiguration) createXYZCurvesSection();
 		if(currentSelectedChartConfiguration instanceof MeterChartConfiguration) createMeterCurveSection();			
 		if(currentSelectedChartConfiguration instanceof ImageChartConfiguration) tableConfigurationSection.setVisible(false);
@@ -669,6 +670,111 @@ public class ChartsConfigurationPage extends ModulePage {
 		tableViewer.setContentProvider(new ArrayContentProvider());
 		tableViewer.setInput(currentSelectedChartConfiguration.getCurvesConfiguration());
 		
+	}
+	
+	/*
+	 * Curves of a cursor 2D chart : X and Y channels, then the symbol of the last value
+	 * (shape, size, fill color, outline color and width, image file when the shape is IMAGE)
+	 */
+	private void createCursorCurvesSection() {
+		TableColumnLayout  curvesTableColumnLayout = (TableColumnLayout) tableConfigurationContainer.getLayout();
+		
+		TableViewerColumn xChannelNameTableViewerColumn = createColumn(XYCurveConfigurationProperties.X_CHANNEL_NAME.getTooltip(), curvesTableColumnLayout, XYCurveConfigurationProperties.X_CHANNEL_NAME, 150, 0);
+		xChannelNameTableViewerColumn.setEditingSupport(null);
+		xChannelNameTableViewerColumn.setLabelProvider(new CursorCurveLabelProvider(XYCurveConfigurationProperties.X_CHANNEL_NAME));
+		
+		TableViewerColumn yChannelNameTableViewerColumn = createColumn(XYCurveConfigurationProperties.Y_CHANNEL_NAME.getTooltip(), curvesTableColumnLayout, XYCurveConfigurationProperties.Y_CHANNEL_NAME, 150, 0);
+		yChannelNameTableViewerColumn.setEditingSupport(null);
+		yChannelNameTableViewerColumn.setLabelProvider(new CursorCurveLabelProvider(XYCurveConfigurationProperties.Y_CHANNEL_NAME));
+		
+		TableViewerColumn shapeTableViewerColumn = createColumn(CursorCurveConfigurationProperties.SHAPE.getTooltip(), curvesTableColumnLayout, CursorCurveConfigurationProperties.SHAPE, defaultColumnWidth + 20, 2);
+		shapeTableViewerColumn.setLabelProvider(new CursorCurveLabelProvider(CursorCurveConfigurationProperties.SHAPE));
+		
+		TableViewerColumn sizeTableViewerColumn = createColumn(CursorCurveConfigurationProperties.SIZE.getTooltip(), curvesTableColumnLayout, CursorCurveConfigurationProperties.SIZE, defaultColumnWidth, 3);
+		sizeTableViewerColumn.setLabelProvider(new CursorCurveLabelProvider(CursorCurveConfigurationProperties.SIZE));
+		
+		final TableViewerColumn fillColorTableViewerColumn = createColumn(DocometreMessages.CursorFillColor_Tooltip, curvesTableColumnLayout, CurveConfigurationProperties.COLOR, defaultColumnWidth, 1);
+		fillColorTableViewerColumn.setLabelProvider(new CellLabelProvider() {
+			@Override
+			public void update(ViewerCell cell) {
+				if(!(cell.getElement() instanceof CursorCurveConfiguration)) return;
+				CursorCurveConfiguration curve = (CursorCurveConfiguration)cell.getElement();
+				cell.setImage(createColorImage(CurveConfigurationProperties.getColor(curve).getRGB(), fillColorTableViewerColumn));
+			}
+		});
+		
+		final TableViewerColumn outlineColorTableViewerColumn = createColumn(CursorCurveConfigurationProperties.OUTLINE_COLOR.getTooltip(), curvesTableColumnLayout, CursorCurveConfigurationProperties.OUTLINE_COLOR, defaultColumnWidth + 40, 4);
+		outlineColorTableViewerColumn.setLabelProvider(new CellLabelProvider() {
+			@Override
+			public void update(ViewerCell cell) {
+				if(!(cell.getElement() instanceof CursorCurveConfiguration)) return;
+				CursorCurveConfiguration curve = (CursorCurveConfiguration)cell.getElement();
+				cell.setImage(createColorImage(CursorCurveConfigurationProperties.getOutlineColor(curve).getRGB(), outlineColorTableViewerColumn));
+			}
+		});
+		
+		TableViewerColumn outlineWidthTableViewerColumn = createColumn(CursorCurveConfigurationProperties.OUTLINE_WIDTH.getTooltip(), curvesTableColumnLayout, CursorCurveConfigurationProperties.OUTLINE_WIDTH, defaultColumnWidth + 40, 5);
+		outlineWidthTableViewerColumn.setLabelProvider(new CursorCurveLabelProvider(CursorCurveConfigurationProperties.OUTLINE_WIDTH));
+		
+		TableViewerColumn imageTableViewerColumn = createColumn(CursorCurveConfigurationProperties.IMAGE_FILE.getTooltip(), curvesTableColumnLayout, CursorCurveConfigurationProperties.IMAGE_FILE, 250, 6);
+		imageTableViewerColumn.setLabelProvider(new CursorCurveLabelProvider(CursorCurveConfigurationProperties.IMAGE_FILE));
+		
+		if(tableViewer.getContentProvider() != null) tableViewer.setInput(null);
+		configureSorter(new CurvesComparator(), tableViewer.getTable().getColumn(0));
+		tableViewer.setContentProvider(new ArrayContentProvider());
+		tableViewer.setInput(currentSelectedChartConfiguration.getCurvesConfiguration());
+	}
+	
+	/*
+	 * Text of a property of a cursor curve
+	 */
+	private static class CursorCurveLabelProvider extends CellLabelProvider {
+		private Property property;
+		public CursorCurveLabelProvider(Property property) {
+			this.property = property;
+		}
+		@Override
+		public void update(ViewerCell cell) {
+			if(!(cell.getElement() instanceof CursorCurveConfiguration)) return;
+			String value = ((CursorCurveConfiguration)cell.getElement()).getProperty(property);
+			cell.setText(value == null ? "" : value);
+		}
+	}
+	
+	/*
+	 * Square filled with rgb, as in the color columns of the other charts (disposed with the column)
+	 */
+	private Image createColorImage(RGB rgb, TableViewerColumn column) {
+		GC gc = new GC(tableViewer.getTable());
+        FontMetrics fm = gc.getFontMetrics();
+        int size = fm.getAscent();
+        gc.dispose();
+        int indent = 6;
+        int extent = tableViewer.getTable().getItemHeight() - 1;
+        if (size > extent) size = extent;
+        int width = indent + size;
+        int height = extent;
+        int xoffset = indent;
+        int yoffset = (height - size) / 2;
+        RGB black = new RGB(0, 0, 0);
+        PaletteData dataPalette = new PaletteData(new RGB[] { black, black, rgb });
+        ImageData data = new ImageData(width, height, 4, dataPalette);
+        data.transparentPixel = 0;
+        int end = size - 1;
+        for (int y = 0; y < size; y++) {
+            for (int x = 0; x < size; x++) {
+                if (x == 0 || y == 0 || x == end || y == end) data.setPixel(x + xoffset, y + yoffset, 1);
+                else data.setPixel(x + xoffset, y + yoffset, 2);
+            }
+        }
+        Image image = new Image(PlatformUI.getWorkbench().getDisplay(), data);
+        column.getColumn().addDisposeListener(new DisposeListener() {
+			@Override
+			public void widgetDisposed(DisposeEvent e) {
+				image.dispose();
+			}
+		});
+        return image;
 	}
 	
 	private void createXYZCurvesSection() {

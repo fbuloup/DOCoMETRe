@@ -41,6 +41,8 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.charts;
 
+import java.io.File;
+
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.IOperationHistory;
 import org.eclipse.core.commands.operations.IUndoContext;
@@ -50,6 +52,7 @@ import org.eclipse.jface.viewers.CheckboxCellEditor;
 import org.eclipse.jface.viewers.ColorCellEditor;
 import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.ComboBoxViewerCellEditor;
+import org.eclipse.jface.viewers.DialogCellEditor;
 import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.ICellEditorValidator;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -59,6 +62,8 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.Activator;
@@ -114,6 +119,37 @@ public class CurveEditionSupport extends EditingSupport implements PropertyObser
 			cellEditor = new TextCellEditor((Composite) viewer.getControl());
 			cellEditor.setValidator(new Validator(CurveConfigurationProperties.WIDTH.getRegExp()));
 		}
+		if(property == CursorCurveConfigurationProperties.SHAPE) {
+			cellEditor = new ComboBoxViewerCellEditor((Composite) viewer.getControl(), SWT.READ_ONLY);
+			((ComboBoxViewerCellEditor)cellEditor).setContentProvider(new ArrayContentProvider());
+			((ComboBoxViewerCellEditor)cellEditor).setLabelProvider(new LabelProvider());
+			((ComboBoxViewerCellEditor)cellEditor).setInput(CursorCurveConfigurationProperties.SHAPES);
+			cellEditor.setValidator(new Validator(CursorCurveConfigurationProperties.SHAPE.getRegExp()));
+		}
+		if(property == CursorCurveConfigurationProperties.SIZE || property == CursorCurveConfigurationProperties.OUTLINE_WIDTH) {
+			cellEditor = new TextCellEditor((Composite) viewer.getControl());
+			cellEditor.setValidator(new Validator(property.getRegExp()));
+		}
+		if(property == CursorCurveConfigurationProperties.OUTLINE_COLOR) {
+			cellEditor = new ColorCellEditor((Composite) viewer.getControl());
+		}
+		if(property == CursorCurveConfigurationProperties.IMAGE_FILE) {
+			cellEditor = new DialogCellEditor((Composite) viewer.getControl()) {
+				@Override
+				protected Object openDialogBox(Control cellEditorWindow) {
+					FileDialog fileDialog = new FileDialog(cellEditorWindow.getShell(), SWT.OPEN);
+					fileDialog.setText(DocometreMessages.CursorImageDialog_Title);
+					fileDialog.setFilterExtensions(new String[] {"*.png;*.PNG;*.jpg;*.JPG;*.jpeg;*.JPEG;*.gif;*.bmp", "*.*"});
+					File currentFile = CursorCurveConfigurationProperties.resolveImageFile((String)getValue());
+					if(currentFile != null && currentFile.getParentFile() != null && currentFile.getParentFile().isDirectory()) {
+						fileDialog.setFilterPath(currentFile.getParent());
+						fileDialog.setFileName(currentFile.getName());
+					}
+					String path = fileDialog.open();
+					return (path == null) ? null : CursorCurveConfigurationProperties.toImageFileProperty(path);
+				}
+			};
+		}
 		if(property == OscilloCurveConfigurationProperties.DISPLAY_CURRENT_VALUES) {
 			cellEditor = new CheckboxCellEditor((Composite) viewer.getControl());
 			cellEditor.setValidator(new Validator(OscilloCurveConfigurationProperties.DISPLAY_CURRENT_VALUES.getRegExp()));
@@ -146,7 +182,8 @@ public class CurveEditionSupport extends EditingSupport implements PropertyObser
 		if(!((element instanceof CurveConfiguration) || (element instanceof OscilloCurveConfiguration) || (element instanceof MeterCurveConfiguration))) return null;
 		if(getCellEditor(element) instanceof ColorCellEditor) {
 			RGB rgbValue = new RGB(255, 255, 255);
-			if(element instanceof CurveConfiguration) rgbValue = CurveConfigurationProperties.getColor((CurveConfiguration)element).getRGB();
+			if(property == CursorCurveConfigurationProperties.OUTLINE_COLOR && element instanceof CursorCurveConfiguration) rgbValue = CursorCurveConfigurationProperties.getOutlineColor((CursorCurveConfiguration)element).getRGB();
+			else if(element instanceof CurveConfiguration) rgbValue = CurveConfigurationProperties.getColor((CurveConfiguration)element).getRGB();
 			return rgbValue;
 		}
 		if(getCellEditor(element) instanceof CheckboxCellEditor) {
@@ -155,7 +192,8 @@ public class CurveEditionSupport extends EditingSupport implements PropertyObser
 			if(element instanceof MeterCurveConfiguration) value = ((MeterCurveConfiguration)element).getProperty(property);
 			return "true".equals(value) ? true : false;
 		}
-		return ((CurveConfiguration)element).getProperty(property);
+		String value = ((CurveConfiguration)element).getProperty(property);
+		return (value == null) ? "" : value;
 	}
 
 	@Override
@@ -167,6 +205,17 @@ public class CurveEditionSupport extends EditingSupport implements PropertyObser
 				ModifyPropertyOperation modifyPropertyOperation = new ModifyPropertyOperation(getViewer().getControl(), label, property, (AbstractElement)element, value.toString(), undoContext);
 				getViewer().getControl().setData(Integer.toString(modifyPropertyOperation.hashCode()), ((TableViewer)getViewer()).getTable().getSelectionIndex());
 				operationHistory.execute(modifyPropertyOperation, null, null);
+				// An image has been chosen : it becomes the symbol of the cursor
+				if(property == CursorCurveConfigurationProperties.IMAGE_FILE && !value.toString().isEmpty() && element instanceof CursorCurveConfiguration) {
+					CursorCurveConfiguration curve = (CursorCurveConfiguration)element;
+					if(!CursorCurveConfigurationProperties.IMAGE.equals(curve.getProperty(CursorCurveConfigurationProperties.SHAPE))) {
+						Property shape = CursorCurveConfigurationProperties.SHAPE;
+						label = NLS.bind(DocometreMessages.ModifyPropertyOperation_Label, shape.getLabel() + " : " + element.toString());
+						ModifyPropertyOperation modifyShapeOperation = new ModifyPropertyOperation(getViewer().getControl(), label, shape, curve, CursorCurveConfigurationProperties.IMAGE, undoContext);
+						getViewer().getControl().setData(Integer.toString(modifyShapeOperation.hashCode()), ((TableViewer)getViewer()).getTable().getSelectionIndex());
+						operationHistory.execute(modifyShapeOperation, null, null);
+					}
+				}
 			} catch (ExecutionException e) {
 				e.printStackTrace();
 				Activator.logErrorMessageWithCause(e);

@@ -94,8 +94,22 @@ public class XYChartConfiguration extends ChartConfiguration {
 	transient private Button chartColorButton;
 
 	public XYChartConfiguration() {
-		super(ChartTypes.XY_CHART);
+		this(ChartTypes.XY_CHART);
+	}
+	
+	/*
+	 * For the charts based on the XY chart configuration (see Cursor2DChartConfiguration)
+	 */
+	protected XYChartConfiguration(ChartTypes chartType) {
+		super(chartType);
 		XYChartConfigurationProperties.populateProperties(this);
+	}
+	
+	/*
+	 * True if the history size can be configured (displayed in the chart configuration container)
+	 */
+	protected boolean hasHistorySize() {
+		return true;
 	}
 
 	@Override
@@ -184,6 +198,7 @@ public class XYChartConfiguration extends ChartConfiguration {
 		chartColorButton.setBackground(chartColor);
 		chartColorButton.addSelectionListener(new ModifyPropertyHandler(ChartConfigurationProperties.COLOR, this, chartColorButton, ChartConfigurationProperties.COLOR.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
 		
+		if(!hasHistorySize()) return;
 		page.createLabel(container, DocometreMessages.HistorySize_Title, DocometreMessages.HistorySize_Tooltip);
 		historySizeText = page.createText(container, getProperty(XYChartConfigurationProperties.HISTORY_SIZE), SWT.NONE, 6, 1);
 		historySizeText.addModifyListener(page.getGeneralConfigurationModifyListener());
@@ -240,7 +255,7 @@ public class XYChartConfiguration extends ChartConfiguration {
 			updateWidget(fontCombo, (XYChartConfigurationProperties)property);
 		if(property == XYChartConfigurationProperties.FONT_SIZE)
 			updateWidget(fontSizeText, (XYChartConfigurationProperties)property);
-		if(property == XYChartConfigurationProperties.HISTORY_SIZE)
+		if(property == XYChartConfigurationProperties.HISTORY_SIZE && historySizeText != null)
 			updateWidget(historySizeText, (XYChartConfigurationProperties)property);
 		if(property == ChartConfigurationProperties.COLOR)
 			updateColordialogButton();
