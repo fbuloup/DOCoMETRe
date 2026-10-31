@@ -1,0 +1,191 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Acquire Perspective</title>
+<style type="text/css">
+	table { border-collapse: collapse; margin-bottom: 1em; }
+	th, td { border: 1px solid #A0A0A0; padding: 4px 8px; text-align: left; vertical-align: top; }
+	kbd { border: 1px solid #A0A0A0; border-radius: 3px; padding: 0px 4px; font-family: monospace; }
+</style>
+</head>
+
+<body>
+	<h1>Acquire Perspective</h1>
+
+	<p>The Acquire perspective is the one used to run an experiment: it
+		launches acquisition processes on the real time system (ADwin,
+		Arduino) and displays acquired signals in real time charts. It is made
+		of four parts:</p>
+	<ul>
+		<li>the <a href="#toolbar">tool bar</a>, used to select the item to run, to move
+			between trials and to start or stop acquisition;</li>
+		<li>the <a href="#statezone">state zone</a>, at the top of the window, which
+			shows what is going to run or is running (item, experiment, subject,
+			session, trial and process);</li>
+		<li>the <a href="#charts">real time charts zone</a>, which occupies the rest of
+			the window;</li>
+		<li>the <a href="#statusbar">status bar</a>, at the bottom of the window,
+			which shows real time system workload, elapsed time and messages.</li>
+	</ul>
+	<p>All the actions needed during acquisition can also be done from the
+		keyboard: see <a href="#shortcuts">keyboard shortcuts</a> and
+		<a href="#fullscreen">full screen mode</a>.</p>
+
+	<h2><a name="toolbar">Tool bar</a></h2>
+
+	<p>When the Acquire perspective is active, the main tool bar contains
+		the following buttons, from left to right:</p>
+	<table>
+		<tr>
+			<th>Button</th>
+			<th>Action</th>
+		</tr>
+		<tr>
+			<td>Select item to run</td>
+			<td>Opens a dialog to choose what to run: a process, a subject, a
+				session or a trial. The item can also be selected in the
+				Experiments view. The chosen item is displayed in the state zone
+				("Item to run").</td>
+		</tr>
+		<tr>
+			<td>Go to beginning</td>
+			<td>Moves to the first trial to run.</td>
+		</tr>
+		<tr>
+			<td>Previous trial</td>
+			<td>Moves to the previous trial.</td>
+		</tr>
+		<tr>
+			<td>Next trial</td>
+			<td>Moves to the next trial. When there is no next trial, the
+				first runnable trial not yet done is chosen.</td>
+		</tr>
+		<tr>
+			<td>Go to end</td>
+			<td>Moves to the last trial to run.</td>
+		</tr>
+		<tr>
+			<td>Run / Stop</td>
+			<td>Runs the selected item. While the experiment is running, this
+				button becomes a Stop button. Shortcut: <kbd>F9</kbd>.</td>
+		</tr>
+	</table>
+	<p>The trials navigation buttons change the trial that will be run next
+		(it is displayed in the state zone). The Run / Stop button is
+		disabled when the selected item cannot be run (for example a trial with
+		no associated process).</p>
+
+	<h2><a name="statezone">State zone</a></h2>
+
+	<p>The state zone is the line just above the charts. It gives:</p>
+	<ul>
+		<li><b>Item to run</b>: full path of the selected item (process,
+			subject, session or trial);</li>
+		<li><b>Experiment</b>, <b>Subject</b>, <b>Session</b>: where the trial
+			to run belongs;</li>
+		<li><b>Trial</b>: current trial, followed by the number of trials in
+			the session;</li>
+		<li><b>Process</b>: name of the acquisition process run by this
+			trial.</li>
+	</ul>
+	<p>"N.A." (not available) is displayed when a value does not apply,
+		for example the subject when a process is run on its own.</p>
+
+	<h2><a name="charts">Real time charts zone</a></h2>
+
+	<p>Charts are created at the beginning of each trial, from the charts
+		defined in the acquisition configuration file associated with the
+		process (oscilloscope, XY, XYZ, gauge, tank or image charts). Their
+		arrangement (number of columns, horizontal and vertical spanning) is
+		also defined in this file. Charts of the last trial stay displayed when
+		acquisition is over.</p>
+	<p>This zone can be displayed alone on the whole screen: see
+		<a href="#fullscreen">full screen mode</a>.</p>
+
+	<h2><a name="statusbar">Status bar</a></h2>
+
+	<p>During acquisition, the status bar at the bottom of the window shows:</p>
+	<ul>
+		<li><b>Workload : xx% - Time : yy</b>: real time system processor
+			workload and elapsed time of the current trial. A workload close to
+			100% means the real time loop period is too short for what the
+			process has to do.</li>
+		<li><b>Pause pending...</b>: a pause has been requested (see
+			<kbd>Pause</kbd> below); the experiment will stop after the current
+			trial.</li>
+		<li>error messages, for example when data are lost during transfer
+			between the real time system and the computer. Details are then
+			written in the process diary.</li>
+	</ul>
+
+	<h2><a name="shortcuts">Keyboard shortcuts</a></h2>
+
+	<p>The following shortcuts are only active in the Acquire perspective.
+		<kbd>F9</kbd> and <kbd>F11</kbd> are ignored when a dialog is opened
+		(trial validation, next trial, stop confirmation...).</p>
+	<table>
+		<tr>
+			<th>Shortcut</th>
+			<th>Action</th>
+		</tr>
+		<tr>
+			<td><kbd>F9</kbd><br/>or <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd>
+				(<kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd> on macOS)</td>
+			<td>Run the selected item, or stop it if the experiment is running
+				(same as the Run / Stop button).</td>
+		</tr>
+		<tr>
+			<td><kbd>Esc</kbd></td>
+			<td>Stop the running experiment.</td>
+		</tr>
+		<tr>
+			<td><kbd>Pause</kbd><br/>or <kbd>Cmd</kbd>+<kbd>P</kbd> on macOS</td>
+			<td>Pause the running experiment: the current trial is completed,
+				then the experiment stops ("Pause pending..." is shown in the
+				status bar). Run it again to go on with the next trials.</td>
+		</tr>
+		<tr>
+			<td><kbd>F11</kbd><br/>or <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd>
+				(<kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd> on macOS)</td>
+			<td>Enter or leave <a href="#fullscreen">full screen mode</a>.</td>
+		</tr>
+	</table>
+	<p>When stopping (<kbd>Esc</kbd> or <kbd>F9</kbd>), a confirmation
+		dialog may be displayed and the trial is stopped immediately or at its
+		end, depending on DOCoMETRe preferences.</p>
+	<p>On laptop keyboards, function keys may require the <kbd>Fn</kbd> key
+		to be pressed: the alternative shortcuts avoid this.</p>
+
+	<h2><a name="fullscreen">Full screen mode</a></h2>
+
+	<p>Full screen mode displays the real time charts alone on the whole
+		screen, for example on a screen in front of the subject. The window
+		goes full screen and the following elements are hidden:</p>
+	<ul>
+		<li>window title bar and borders;</li>
+		<li>menu bar (on macOS, it appears again when the mouse reaches the
+			top of the screen);</li>
+		<li>tool bar and perspectives bar;</li>
+		<li>state zone;</li>
+		<li>status bar.</li>
+	</ul>
+	<p>Keyboard shortcuts still work in full screen mode, and dialogs
+		displayed between trials appear over the charts. Full screen mode can
+		be entered before or during acquisition. It is automatically left when
+		another perspective is selected.</p>
+	<p>A typical use is:</p>
+	<ol>
+		<li>select the item to run (tool bar or Experiments view);</li>
+		<li>press <kbd>F11</kbd> to display charts in full screen;</li>
+		<li>press <kbd>F9</kbd> to run the experiment;</li>
+		<li>press <kbd>Esc</kbd> or <kbd>F9</kbd> to stop it, or
+			<kbd>Pause</kbd> to stop after the current trial;</li>
+		<li>press <kbd>F11</kbd> to come back to the normal display.</li>
+	</ol>
+	<p>The full screen is displayed on the screen where the window is:
+		move the window to the right screen before pressing <kbd>F11</kbd>.</p>
+
+</body>
+</html>

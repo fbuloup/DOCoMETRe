@@ -41,8 +41,17 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.views;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.eclipse.core.commands.NotEnabledException;
+import org.eclipse.core.commands.NotHandledException;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.e4.ui.model.application.ui.basic.MTrimBar;
+import org.eclipse.e4.ui.model.application.ui.basic.MTrimmedWindow;
+import org.eclipse.e4.ui.model.application.ui.basic.MWindow;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -51,11 +60,14 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IPerspectiveListener;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.part.ViewPart;
 
 import fr.univamu.ism.docometre.AcquirePerspective;
@@ -89,6 +101,13 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 
 	private static Composite chartsContainer;
 
+	private Composite container;
+	
+	// Full screen mode : only charts are visible (no menu bar, tool bars, status bar nor state container)
+	private boolean fullScreen;
+	private Menu savedMenuBar;
+	private List<MTrimBar> hiddenTrimBars = new ArrayList<>();
+
 	public RealTimeChartsView() {
 		// TODO Auto-generated constructor stub
 	}
@@ -96,7 +115,7 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 	@Override
 	public void createPartControl(Composite parent) {
 		
-		Composite container = new Composite(parent, SWT.NONE);
+		container = new Composite(parent, SWT.NONE);
 		container.setLayout(new GridLayout());
 		
 		container.getDisplay().addFilter(SWT.KeyUp, new Listener() {
@@ -105,6 +124,15 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 				IPerspectiveDescriptor currentPerspective = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getPerspective();
 				boolean checkPerspcetive = currentPerspective.getId().equals(AcquirePerspective.id);
 				boolean isRunning = ExperimentScheduler.getInstance().isRunning();
+				// Shortcuts below are ignored when a dialog is opened
+				boolean workbenchShellActive = !container.isDisposed() && event.display.getActiveShell() == getSite().getShell();
+				boolean mod1Shift = ((event.stateMask & SWT.MOD1) != 0) && ((event.stateMask & SWT.SHIFT) != 0);
+				if(event.keyCode == SWT.F11 || (mod1Shift && event.keyCode == 'f')) {
+					if(checkPerspcetive && workbenchShellActive) setFullScreen(!fullScreen);
+				}
+				if(event.keyCode == SWT.F9 || (mod1Shift && (event.keyCode == SWT.CR || event.keyCode == SWT.KEYPAD_CR))) {
+					if(checkPerspcetive && workbenchShellActive) runStop();
+				}
 				if(event.keyCode == SWT.ESC) {
 					if(checkPerspcetive && isRunning) RunStopHandler.stop();
 				}
@@ -173,7 +201,7 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 		processLabelValue.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, true, true));
 		processLabelValue.setText(DocometreMessages.NotAvailable_Label);
 		
-		chartsContainer = new Composite(container, SWT.BORDER);
+		chartsContainer = new Composite(container, SWT.NONE);
 		chartsContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
 		IResource resource = ExperimentsView.currentSelectedResource;
@@ -242,8 +270,73 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 		
 	}
 	
+	/*
+	 * Run or stop selected item, as run/stop button of the main tool bar (which is hidden in full screen mode)
+	 */
+	private void runStop() {
+		IHandlerService handlerService = getSite().getService(IHandlerService.class);
+		if(handlerService == null) return;
+		try {
+			handlerService.executeCommand(RunStopHandler.COMMAND_ID, null);
+		} catch (NotEnabledException | NotHandledException e) {
+			// Nothing to run or stop pending : ignore shortcut
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+		}
+	}
+	
+	public boolean isFullScreen() {
+		return fullScreen;
+	}
+	
+	/*
+	 * Full screen mode : workbench window is set full screen and everything except charts is hidden.
+	 * Workbench window is kept (no other shell) in order to keep active workbench window available
+	 * during acquisition (dialogs, views lookups...), and charts are only resized, not reparented.
+	 */
+	public void setFullScreen(boolean fullScreen) {
+		if(this.fullScreen == fullScreen) return;
+		Shell shell = getSite().getShell();
+		if(shell == null || shell.isDisposed()) return;
+		if(fullScreen && (container == null || container.isDisposed())) return;
+		this.fullScreen = fullScreen;
+		MWindow window = getSite().getWorkbenchWindow().getService(MWindow.class);
+		if(fullScreen) {
+			hiddenTrimBars.clear();
+			if(window instanceof MTrimmedWindow) {
+				for (MTrimBar trimBar : ((MTrimmedWindow)window).getTrimBars()) {
+					if(trimBar.isVisible()) {
+						trimBar.setVisible(false);
+						hiddenTrimBars.add(trimBar);
+					}
+				}
+			}
+			// On macOS, menu bar is automatically hidden in full screen mode
+			if(!Platform.OS_MACOSX.equals(Platform.getOS())) {
+				savedMenuBar = shell.getMenuBar();
+				shell.setMenuBar(null);
+			}
+		} else {
+			for (MTrimBar trimBar : hiddenTrimBars) trimBar.setVisible(true);
+			hiddenTrimBars.clear();
+			if(savedMenuBar != null && !savedMenuBar.isDisposed()) shell.setMenuBar(savedMenuBar);
+			savedMenuBar = null;
+		}
+		shell.setFullScreen(fullScreen);
+		if(container != null && !container.isDisposed()) {
+			((GridData)stateContainer.getLayoutData()).exclude = fullScreen;
+			stateContainer.setVisible(!fullScreen);
+			GridLayout containerLayout = (GridLayout)container.getLayout();
+			containerLayout.marginWidth = fullScreen ? 0 : 5;
+			containerLayout.marginHeight = fullScreen ? 0 : 5;
+			chartsContainer.setFocus();
+		}
+		shell.layout(true, true);
+	}
+	
 	@Override
 	public void dispose() {
+		setFullScreen(false);
 		PlatformUI.getWorkbench().getActiveWorkbenchWindow().removePerspectiveListener(this);
 		super.dispose();
 	}
@@ -276,6 +369,7 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 				removeAllCharts(false);
 			}
 		} else {
+			setFullScreen(false);
 			if(!ExperimentScheduler.getInstance().isRunning()) 
 				removeAllCharts(false);
 		}

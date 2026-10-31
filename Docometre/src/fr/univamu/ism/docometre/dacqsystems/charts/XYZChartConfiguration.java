@@ -46,6 +46,7 @@ import java.nio.FloatBuffer;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -174,14 +175,14 @@ public class XYZChartConfiguration extends ChartConfiguration {
 		
 		value = getProperty(XYZChartConfigurationProperties.FONT_BOLD);
 		boolean fontBold = Boolean.valueOf(value);
-		fontBoldButton = page.createButton(container, "Bold", SWT.CHECK, 1, 1);
+		fontBoldButton = page.createButton(container, DocometreMessages.Bold_Title, SWT.CHECK, 1, 1);
 		fontBoldButton.setSelection(fontBold);
 		fontBoldButton.addSelectionListener(new ModifyPropertyHandler(XYZChartConfigurationProperties.FONT_BOLD, this, fontBoldButton, XYZChartConfigurationProperties.FONT_BOLD.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
 		fontBoldButton.setEnabled(!Activator.useOpenGLV1());
 		
 		value = getProperty(XYZChartConfigurationProperties.FONT_ITALIC);
 		boolean fontItalic = Boolean.valueOf(value);
-		fontItalicButton = page.createButton(container, "Italic", SWT.CHECK, 1, 1);
+		fontItalicButton = page.createButton(container, DocometreMessages.Italic_Title, SWT.CHECK, 1, 1);
 		fontItalicButton.setSelection(fontItalic);
 		fontItalicButton.addSelectionListener(new ModifyPropertyHandler(XYZChartConfigurationProperties.FONT_ITALIC, this, fontItalicButton, XYZChartConfigurationProperties.FONT_ITALIC.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
 		fontItalicButton.setEnabled(!Activator.useOpenGLV1());
@@ -326,7 +327,7 @@ public class XYZChartConfiguration extends ChartConfiguration {
 			text.setText(DocometreMessages.ImpossibleToCreate3DChartMessage);
 			text.setBackground(chartContainer.getBackground());
 			text.setForeground(JFaceColors.getErrorText(null));
-			Activator.logErrorMessage("Impossible to use 3D chart without SWT + OpenGL v2 library !");
+			Activator.logErrorMessage(DocometreMessages.ImpossibleToCreate3DChartMessage);
 			return;
 		}
 		rtswtxyzChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, hSpan, vSpan));
@@ -349,11 +350,14 @@ public class XYZChartConfiguration extends ChartConfiguration {
 			String sfxString = xyzCurveConfiguration.getXChannel().getProperty(ChannelProperties.SAMPLE_FREQUENCY);
 			String sfyString = xyzCurveConfiguration.getYChannel().getProperty(ChannelProperties.SAMPLE_FREQUENCY);
 			String sfzString = xyzCurveConfiguration.getZChannel().getProperty(ChannelProperties.SAMPLE_FREQUENCY);
-			if(!sfxString.equals(sfyString) || !sfxString.equals(sfzString) || !sfyString.equals(sfzString)) {
-				Activator.logErrorMessage("Sample frequency for channel " + xSerieID + " is " + sfxString + "Hz");
-				Activator.logErrorMessage("Sample frequency for channel " + ySerieID + " is " + sfyString + "Hz");
-				Activator.logErrorMessage("Sample frequency for channel " + zSerieID + " is " + sfzString + "Hz");
-				Activator.logErrorMessage("Channels with different sample frequencies cannot be displayed in XYZ chart !");
+			double sfx = Double.parseDouble(sfxString);
+			double sfy = Double.parseDouble(sfyString);
+			double sfz = Double.parseDouble(sfzString);
+			if(sfx != sfy || sfx != sfz) {
+				Activator.logErrorMessage(NLS.bind(DocometreMessages.ChannelSampleFrequency, xSerieID, sfxString));
+				Activator.logErrorMessage(NLS.bind(DocometreMessages.ChannelSampleFrequency, ySerieID, sfyString));
+				Activator.logErrorMessage(NLS.bind(DocometreMessages.ChannelSampleFrequency, zSerieID, sfzString));
+				Activator.logErrorMessage(DocometreMessages.XYZChartDifferentFrequencies);
 				continue;
 			}
 			
@@ -364,7 +368,6 @@ public class XYZChartConfiguration extends ChartConfiguration {
 			if(serieStyle == SWT.LINE_DASHDOT) lineStyle = LineStyle.DASH_DOT;
 			if(serieStyle == SWT.LINE_DASHDOTDOT) lineStyle = LineStyle.DASH_DASH_DOT;
 	
-			double sfx = Double.parseDouble(sfxString);
 			IRTSWTXYZSerie rtswtSerie = new Curve3DData(zSerieID + "(" + xSerieID + ", " + ySerieID + ")", sfx);
 			((Curve3DData)rtswtSerie).setLineWidth(thickness);
 			((Curve3DData)rtswtSerie).setLineStyle(lineStyle);

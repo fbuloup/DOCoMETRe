@@ -4,4 +4,6 @@
  <toc label="Data Acquisition Concepts" link_to="toc.xml#dataacquisition"> 
  	<topic label="Introduction"  href="html/dataacquisition/maintopic.html"> 
  	</topic>
+ 	<topic label="Acquire Perspective"  href="html/dataacquisition/acquireperspective.html"> 
+ 	</topic>
  </toc>

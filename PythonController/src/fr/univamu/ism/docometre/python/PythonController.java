@@ -129,6 +129,8 @@ public final class PythonController  {
 	}
 	
 	public void stopServer(int timeOut) throws InterruptedException {
+		// Engine seen as stopped from now on : no more calls to Python (e.g. labels decorations refreshed by subjects unloading)
+		isStarted = false;
 		try {
 			PythonEntryPoint pythonEntryPoint = getPythonEntryPoint();
 			if(pythonEntryPoint != null) pythonEntryPoint.shutDownServer(this);

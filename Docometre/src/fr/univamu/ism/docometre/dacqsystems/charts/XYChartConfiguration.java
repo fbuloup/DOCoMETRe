@@ -45,6 +45,7 @@ import java.nio.FloatBuffer;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -94,8 +95,22 @@ public class XYChartConfiguration extends ChartConfiguration {
 	transient private Button chartColorButton;
 
 	public XYChartConfiguration() {
-		super(ChartTypes.XY_CHART);
+		this(ChartTypes.XY_CHART);
+	}
+	
+	/*
+	 * For the charts based on the XY chart configuration (see Cursor2DChartConfiguration)
+	 */
+	protected XYChartConfiguration(ChartTypes chartType) {
+		super(chartType);
 		XYChartConfigurationProperties.populateProperties(this);
+	}
+	
+	/*
+	 * True if the history size can be configured (displayed in the chart configuration container)
+	 */
+	protected boolean hasHistorySize() {
+		return true;
 	}
 
 	@Override
@@ -160,14 +175,14 @@ public class XYChartConfiguration extends ChartConfiguration {
 		
 		value = getProperty(XYChartConfigurationProperties.FONT_BOLD);
 		boolean fontBold = Boolean.valueOf(value);
-		fontBoldButton = page.createButton(container, "Bold", SWT.CHECK, 1, 1);
+		fontBoldButton = page.createButton(container, DocometreMessages.Bold_Title, SWT.CHECK, 1, 1);
 		fontBoldButton.setSelection(fontBold);
 		fontBoldButton.addSelectionListener(new ModifyPropertyHandler(XYChartConfigurationProperties.FONT_BOLD, this, fontBoldButton, XYChartConfigurationProperties.FONT_BOLD.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
 		fontBoldButton.setEnabled(!Activator.useOpenGLV1());
 		
 		value = getProperty(XYChartConfigurationProperties.FONT_ITALIC);
 		boolean fontItalic = Boolean.valueOf(value);
-		fontItalicButton = page.createButton(container, "Italic", SWT.CHECK, 1, 1);
+		fontItalicButton = page.createButton(container, DocometreMessages.Italic_Title, SWT.CHECK, 1, 1);
 		fontItalicButton.setSelection(fontItalic);
 		fontItalicButton.addSelectionListener(new ModifyPropertyHandler(XYChartConfigurationProperties.FONT_ITALIC, this, fontItalicButton, XYChartConfigurationProperties.FONT_ITALIC.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
 		fontItalicButton.setEnabled(!Activator.useOpenGLV1());
@@ -184,6 +199,7 @@ public class XYChartConfiguration extends ChartConfiguration {
 		chartColorButton.setBackground(chartColor);
 		chartColorButton.addSelectionListener(new ModifyPropertyHandler(ChartConfigurationProperties.COLOR, this, chartColorButton, ChartConfigurationProperties.COLOR.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
 		
+		if(!hasHistorySize()) return;
 		page.createLabel(container, DocometreMessages.HistorySize_Title, DocometreMessages.HistorySize_Tooltip);
 		historySizeText = page.createText(container, getProperty(XYChartConfigurationProperties.HISTORY_SIZE), SWT.NONE, 6, 1);
 		historySizeText.addModifyListener(page.getGeneralConfigurationModifyListener());
@@ -240,7 +256,7 @@ public class XYChartConfiguration extends ChartConfiguration {
 			updateWidget(fontCombo, (XYChartConfigurationProperties)property);
 		if(property == XYChartConfigurationProperties.FONT_SIZE)
 			updateWidget(fontSizeText, (XYChartConfigurationProperties)property);
-		if(property == XYChartConfigurationProperties.HISTORY_SIZE)
+		if(property == XYChartConfigurationProperties.HISTORY_SIZE && historySizeText != null)
 			updateWidget(historySizeText, (XYChartConfigurationProperties)property);
 		if(property == ChartConfigurationProperties.COLOR)
 			updateColordialogButton();
@@ -320,11 +336,13 @@ public class XYChartConfiguration extends ChartConfiguration {
 			Color serieColor = CurveConfigurationProperties.getColor(xyCurveConfiguration);
 			int thickness = Integer.parseInt(xyCurveConfiguration.getProperty(CurveConfigurationProperties.WIDTH));
 			String sfxString = xyCurveConfiguration.getXChannel().getProperty(ChannelProperties.SAMPLE_FREQUENCY);
-			String sfyString = xyCurveConfiguration.getXChannel().getProperty(ChannelProperties.SAMPLE_FREQUENCY);
-			if(!sfxString.equals(sfyString)) {
-				Activator.logErrorMessage("Sample frequency for channel " + xSerieID + " is " + sfxString + "Hz");
-				Activator.logErrorMessage("Sample frequency for channel " + ySerieID + " is " + sfyString + "Hz");
-				Activator.logErrorMessage("Channels with different sample frequencies cannot be displayed in XY chart !");
+			String sfyString = xyCurveConfiguration.getYChannel().getProperty(ChannelProperties.SAMPLE_FREQUENCY);
+			double sfx = Double.parseDouble(sfxString);
+			double sfy = Double.parseDouble(sfyString);
+			if(sfx != sfy) {
+				Activator.logErrorMessage(NLS.bind(DocometreMessages.ChannelSampleFrequency, xSerieID, sfxString));
+				Activator.logErrorMessage(NLS.bind(DocometreMessages.ChannelSampleFrequency, ySerieID, sfyString));
+				Activator.logErrorMessage(DocometreMessages.XYChartDifferentFrequencies);
 				continue;
 			}
 			
@@ -336,7 +354,6 @@ public class XYChartConfiguration extends ChartConfiguration {
 			if(serieStyle == SWT.LINE_DASHDOTDOT) lineStyle = LineStyle.DASH_DASH_DOT;
 			
 			IRTSWTSerie rtswtSerie = null;
-			double sfx = Double.parseDouble(sfxString);
 			if(Activator.useOpenGLV2()) {
 				rtswtSerie = new Curve2DData(ySerieID + "(" + xSerieID + ")", sfx);
 				((Curve2DData)rtswtSerie).setLineWidth(thickness);
