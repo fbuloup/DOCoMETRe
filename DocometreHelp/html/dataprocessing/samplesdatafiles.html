@@ -1,34 +1,47 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"> 
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 
- <html>
- <head>
- 	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
- 	<title>Data Processing</title>
- </head>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Samples Data Files</title>
+</head>
 
- <body>
- <h1>Samples Data Files</h1>
- 
- <p>
- This is the default data file format. It is a binary file containing samples values. <br>The file name must at least hold the channel name and the trial number.
- It can also contain a prefix and a session name. 
- </p>
- 
- <p>Here are two examples of such a file name : </p>
- <pre>
- prefix.ChannelName.SessionName.T32.samples
- ChannelName.T32.samples
- </pre>
- <p>You can find below a Matlab code to read this kinf of file :</p>
- <pre>
+<body>
+	<h1>Samples Data Files</h1>
+
+	<p>This is the default data file format: the format of the data acquired
+		with DOCoMETRe. A samples file (<code>*.samples</code>) is a binary file
+		that contains the values of one channel for one trial, as 32 bits
+		floating point numbers (IEEE 754, little endian), without header. It is
+		written in the folder of the trial (see
+		<a href="../designperspective/subjectsessiontrial.html#datafiles">Data
+		files</a>).</p>
+	<p>The file name holds the name of the channel. According to the options of
+		the session, it can also hold a prefix, the name of the session and the
+		trial number, separated by dots. Here are three examples of file
+		names:</p>
+	<pre>
+ChannelName.samples
+ChannelName.SessionName.T32.samples
+prefix.ChannelName.SessionName.T32.samples
+	</pre>
+	<p>When a subject is loaded, the trial number is read from the name of the
+		trial folder (<code>Trial n&deg;32</code>), the channel name from the
+		file name, and the sample frequency from the DACQ configuration of the
+		process associated with the trial.</p>
+	<p>You can find below a Matlab code to read this kind of file:</p>
+	<pre>
 fileHandle = fopen(dataFileName, 'r');
-data = fread(fileHandle, 'float32')';       
+data = fread(fileHandle, 'float32')';
 fclose(fileHandle);
- </pre>
-
- <p>And below a Python code to read this kind of file using Numpy library :</p>
- <pre>
- data = numpy.fromfile(dataFileName, dtype="float32");
-</pre>
- </body>
- </html>
+	</pre>
+	<p>And below a Python code to read this kind of file using the Numpy
+		library:</p>
+	<pre>
+data = numpy.fromfile(dataFileName, dtype="float32")
+	</pre>
+	<p>Samples files can also be displayed without loading the subject with the
+		<a href="../designperspective/dataeditor.html">data editor</a> of the
+		Design perspective.</p>
+</body>
+</html>

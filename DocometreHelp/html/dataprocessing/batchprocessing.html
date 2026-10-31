@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Batch Processing</title>
+<style type="text/css">
+	table { border-collapse: collapse; margin-bottom: 1em; }
+	th, td { border: 1px solid #A0A0A0; padding: 4px 8px; text-align: left; vertical-align: top; }
+</style>
+</head>
+
+<body>
+	<h1>Batch Processing</h1>
+
+	<p>A <a href="dataprocessingfiles.html">data processing file</a> is built
+		and tuned on one subject. A batch processing file
+		(<code>*.batchdataprocess</code>) applies one or several data processing
+		files to a list of subjects: for each subject, the name of the subject
+		used in the processing files is replaced by the name of the processed
+		subject.</p>
+
+	<h2><a name="create">Creating a batch processing file</a></h2>
+
+	<p>Select the experiment (or a folder) in the Subjects view and use the
+		<b>New batch processing file</b> button. A double click on the file opens
+		its editor.</p>
+
+	<h2><a name="editor">Batch processing editor</a></h2>
+
+	<p>The editor shows an Introduction section and two lists:</p>
+	<ul>
+		<li><b>Data Processing</b>: the processing files to apply, in this
+			order;</li>
+		<li><b>Subjects</b>: the subjects to process, in this order.</li>
+	</ul>
+	<p>Each list has the following buttons:</p>
+	<table>
+		<tr><th>Button</th><th>Action</th></tr>
+		<tr><td>Add</td><td>Opens a dialog to select the processing files or the
+			subjects to add.</td></tr>
+		<tr><td>Delete</td><td>Removes the selected items from the list (the files
+			are not deleted).</td></tr>
+		<tr><td>Up, Down</td><td>Change the order of the selected items.</td></tr>
+		<tr><td>Enable/Disable</td><td>A disabled processing is not applied; a
+			disabled subject is not processed.</td></tr>
+		<tr><td>Run selected process (Data Processing list)</td><td>Applies only
+			the selected processing to the enabled subjects.</td></tr>
+	</table>
+	<p>Options:</p>
+	<ul>
+		<li><b>Load subjects automatically when necessary</b>: subjects that are
+			not loaded are loaded before being processed (from their saved data
+			if "Always load subject from saved data" is checked in the Math Engine
+			preferences, from their raw data otherwise). Without this option,
+			subjects that are not loaded are skipped;</li>
+		<li><b>Save and unload subjects automatically when they were automatically
+			loaded</b>: once processed, these subjects are saved (if modified) and
+			unloaded, which keeps the memory of the engine low when there are many
+			subjects;</li>
+		<li><b>Run in main thread (override processes properties)</b>: runs all
+			the processing in the main thread of Python, whatever the setting of
+			each processing file (needed for Matplotlib figures).</li>
+	</ul>
+	<p>The <b>Save processing script as...</b> button writes the whole code
+		generated for all the subjects in a script file (choose a destination
+		folder and a file name), for example to run it outside DOCoMETRe or to
+		check it.</p>
+
+	<h2><a name="run">Running a batch processing</a></h2>
+
+	<p>Start the math engine, select the batch processing file in the Subjects
+		view (or activate its editor) and press <b>Run selected data
+		processes</b>. For each enabled subject, in the order of the list, all
+		the enabled processing files are applied in their order. Progress is
+		shown in a dialog ("Loading subject...", "Processing subject...",
+		"Saving subject...") and errors are written in the Console view.</p>
+
+	<h2><a name="tips">Tips</a></h2>
+
+	<ul>
+		<li>Use the same signal names in all the subjects: processing files refer
+			to signals by their names.</li>
+		<li>Put the processing that changes data (filters, cuts) and the one that
+			computes markers and features in separate files: they can then be run
+			again independently.</li>
+		<li>Put the export functions (Export Markers, Export Features) in a last
+			processing file, or use <a href="exportdata.html">Export data...</a>
+			once all the subjects are processed.</li>
+	</ul>
+
+</body>
+</html>

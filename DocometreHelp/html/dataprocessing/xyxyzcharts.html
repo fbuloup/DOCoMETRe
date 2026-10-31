@@ -1,0 +1,87 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>XY and 3D Charts</title>
+<style type="text/css">
+	table { border-collapse: collapse; margin-bottom: 1em; }
+	th, td { border: 1px solid #A0A0A0; padding: 4px 8px; text-align: left; vertical-align: top; }
+	kbd { border: 1px solid #A0A0A0; border-radius: 3px; padding: 0px 4px; font-family: monospace; }
+</style>
+</head>
+
+<body>
+	<h1>XY and 3D Charts</h1>
+
+	<p>XY charts (<code>*.chart</code>) display a signal as a function of
+		another one, for example the Y coordinate of a marker as a function of
+		its X coordinate to see a trajectory, or a signal as a function of time.
+		3D charts (<code>*.chart3D</code>) display three signals in space. A
+		chart file keeps its curves, its trials, its cuts and its scales: once
+		configured on a subject, it can be opened again later, and its curves
+		can come from several subjects.</p>
+
+	<h2><a name="create">Creating a chart</a></h2>
+
+	<p>Select the experiment (or a folder) in the Subjects view and use the
+		<b>New XY chart</b> or <b>New 3D chart</b> button. Give the name of the
+		chart; it opens in its editor. The subjects whose signals are displayed
+		must be loaded and the math engine started; the curves whose signals
+		cannot be found are removed from the chart when it is opened.</p>
+
+	<h2><a name="curves">Adding and removing curves</a></h2>
+
+	<ul>
+		<li>The <b>Add curve</b> button of the tool bar opens a dialog that lists
+			the signals of the loaded subjects (type in the text field to filter
+			them): select the signal of the X axis, then the signal of the Y axis
+			(then of the Z axis for a 3D chart). For an XY chart, the X signal can
+			be <code>time</code>.</li>
+		<li>Two signals can also be selected in the Subjects view and dropped
+			onto an XY chart: the first one is the X signal, the second one the Y
+			signal.</li>
+		<li>The <b>Remove curve(s)</b> button opens a dialog to select the
+			curves to remove.</li>
+	</ul>
+	<p>The signals of a curve are paired sample by sample: they must have the
+		same sample frequency, otherwise the curve is refused. A curve is drawn
+		for each selected trial.</p>
+
+	<h2><a name="editor">Chart editor</a></h2>
+
+	<p>On the right of the chart, the editor contains:</p>
+	<ul>
+		<li>two tabs to choose what is displayed: <b>Trials</b> (list of the
+			trials, with their category) and <b>Categories</b> (selecting
+			categories selects their trials);</li>
+		<li><b>Graphical Front/End cuts values</b>: number of samples removed at
+			the beginning (front cut) and at the end (end cut) of the curves.
+			Change them with the mouse wheel or type a value and press
+			<kbd>Enter</kbd>. These cuts only apply to the chart, not to the
+			signals;</li>
+		<li><b>Scales values</b> (XY charts): X min., X max., Y min. and Y max.
+			(type a value and press <kbd>Enter</kbd>), and <b>Auto scale</b> to
+			fit the scales to the curves. Zooming or panning in the chart updates
+			these values;</li>
+		<li><b>Show markers</b>, marker <b>Size</b> and <b>Show markers
+			labels</b>: markers of the displayed signals are drawn on the curves
+			(they cannot be edited in a chart);</li>
+		<li><b>Same color for same category trials</b>.</li>
+	</ul>
+	<p>The tool bar contains the previous / next trial, add / remove curve,
+		zoom and pan buttons, and, for 3D charts, turn left and turn right.
+		Save the chart (File &gt; Save) to keep its configuration.</p>
+
+	<h2><a name="commands">Mouse and keyboard</a></h2>
+
+	<p>With the "SWT + OpenGL v2" chart library (general preferences), the XY
+		chart has the commands of the
+		<a href="../designperspective/dataeditor.html#gldataeditor">OpenGL data
+		editor</a>: wheel and rectangle zoom, right button pan, arrow keys,
+		<kbd>R</kbd> to go back to the initial view (automatic scale), context
+		menu. In 3D charts, drag with the left button to rotate the view, with
+		the right button to pan, and use the wheel to zoom.</p>
+
+</body>
+</html>

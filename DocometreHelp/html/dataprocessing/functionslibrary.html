@@ -1,0 +1,175 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Standard Functions Library</title>
+<style type="text/css">
+	table { border-collapse: collapse; margin-bottom: 1em; }
+	th, td { border: 1px solid #A0A0A0; padding: 4px 8px; text-align: left; vertical-align: top; }
+</style>
+</head>
+
+<body>
+	<h1>Standard Functions Library</h1>
+
+	<p>The following functions can be assigned to the function blocks of a
+		<a href="dataprocessingfiles.html">data processing file</a> (right click
+		&gt; Assign). Each one exists for Python and for Matlab; the code
+		generated for the engine in use can be read in the Source code tab of the
+		editor, and the code of each function in the Functions view (see
+		<a href="userfunctions.html">User functions</a>).</p>
+	<p>Unless otherwise stated, a function works on one <b>input signal</b>
+		and on the trials given in its <b>trials list</b> (see
+		<a href="dataprocessingfiles.html#configuration">Configuring a
+		function</a>). Functions that create a signal name it after the input
+		signal followed by the <b>output signal suffix</b>; functions that place
+		markers add them to the group whose <b>label</b> is given. Many
+		functions work between two markers ("From" and "To"): the beginning of
+		the signal, the end of the signal or a markers group.</p>
+
+	<h2><a name="signals">Signals</a></h2>
+
+	<table>
+		<tr><th>Function</th><th>Description</th><th>Specific parameters</th></tr>
+		<tr><td>Modify Front Cut, Modify End Cut</td>
+			<td>Change the front cut or the end cut of the signal: duration, at the
+				beginning or at the end of the trials, that is not displayed in
+				charts.</td>
+			<td>Front cut or end cut, in seconds.</td></tr>
+		<tr><td>Modify Front Cut from marker, Modify End Cut from marker</td>
+			<td>Set the front cut or the end cut of each trial at the time of a
+				marker.</td>
+			<td>Markers group.</td></tr>
+		<tr><td>Motion Distance</td>
+			<td>Distance travelled along the curve formed by two signals (X and Y
+				coordinates of a marker, for example), between two markers.</td>
+			<td>Two input signals, From and To markers.</td></tr>
+		<tr><td>Motion Direction</td>
+			<td>Direction of the motion, for each point of the curve formed by two
+				signals, with respect to the starting marker.</td>
+			<td>Two input signals, From and To markers.</td></tr>
+		<tr><td>Absolute value</td>
+			<td>Absolute value of the signal (rectification).</td><td>-</td></tr>
+		<tr><td>Derivative</td>
+			<td>Derivative of the signal.</td><td>-</td></tr>
+		<tr><td>1-D Interpolation</td>
+			<td>Creates a signal whose samples between two times are replaced by an
+				interpolation between these two points.</td>
+			<td>Start time, stop time, method.</td></tr>
+		<tr><td>Duplicate</td>
+			<td>Creates a copy of the signal.</td><td>-</td></tr>
+		<tr><td>Change Sample Frequency</td>
+			<td>Changes the sample frequency of one or several signals (for example
+				when it was wrong in the data files).</td>
+			<td>Signals, new frequency (Hz).</td></tr>
+		<tr><td>Replace samples values</td>
+			<td>Replaces the values of a series of samples with the value of
+				another sample.</td>
+			<td>From index, to index, replacement index.</td></tr>
+		<tr><td>FFT</td>
+			<td>Single sided spectrum of the signal: the result is a frequency
+				domain signal, displayed as a function of frequency.</td>
+			<td>-</td></tr>
+	</table>
+
+	<h3><a name="filtering">Signals &gt; Filtering</a></h3>
+
+	<table>
+		<tr><th>Function</th><th>Description</th><th>Specific parameters</th></tr>
+		<tr><td>Butterworth low pass filter (filtfilt), Butterworth high pass
+				filter (filtfilt)</td>
+			<td>Zero phase Butterworth filters (forward and backward filtering):
+				the resulting order is twice the given one.</td>
+			<td>Order, cut off frequency (Hz).</td></tr>
+		<tr><td>Butterworth low pass filter (filter), Butterworth high pass filter
+				(filter)</td>
+			<td>Causal Butterworth filters (forward filtering only, with a phase
+				shift).</td>
+			<td>Order, cut off frequency (Hz).</td></tr>
+		<tr><td>Remove pulses</td>
+			<td>Suppresses pulses (artefacts) of given amplitude and duration.</td>
+			<td>Maximum pulse duration (s), minimum pulse amplitude.</td></tr>
+		<tr><td>1D Median filter (medfilt1)</td>
+			<td>Median filter.</td><td>Order.</td></tr>
+	</table>
+
+	<h2><a name="markers">Markers</a></h2>
+
+	<table>
+		<tr><th>Function</th><th>Description</th><th>Specific parameters</th></tr>
+		<tr><td>Timer marker</td>
+			<td>Marks the signal at a given time, or on its last sample.</td>
+			<td>Time (s), Mark last sample.</td></tr>
+		<tr><td>Maximum, Minimum</td>
+			<td>Marks the maximum (or minimum) amplitude of each trial between two
+				markers.</td>
+			<td>From and To markers.</td></tr>
+		<tr><td>Maxima, Minima</td>
+			<td>Marks all the peaks (or all the minima) between two markers.</td>
+			<td>From and To markers, height, threshold, distance, prominence.</td></tr>
+		<tr><td>Find amplitude backward, Find amplitude forward</td>
+			<td>Searches, backward from a marker (to the beginning or the front
+				cut) or forward from a marker (to the end or the end cut), the time
+				when the signal reaches a given amplitude, and marks it.</td>
+			<td>Amplitude value, From and To markers.</td></tr>
+		<tr><td>Threshold markings</td>
+			<td>Marks all the times when the signal crosses a threshold.</td>
+			<td>Threshold, bypass time (time after a detection during which a new
+				detection is ignored), From and To markers.</td></tr>
+		<tr><td>Markers Group Transfert</td>
+			<td>Creates a markers group on the input signal at the times of an
+				existing markers group (of another signal, for example).</td>
+			<td>Source markers group.</td></tr>
+	</table>
+
+	<h2><a name="features">Features</a></h2>
+
+	<table>
+		<tr><th>Function</th><th>Description</th><th>Specific parameters</th></tr>
+		<tr><td>Mean</td>
+			<td>Mean of the signal between two markers, for each trial (feature
+				MEAN).</td>
+			<td>From and To markers.</td></tr>
+		<tr><td>Markers difference</td>
+			<td>Amplitude or time difference between two markers (M2 - M1), for each
+				trial.</td>
+			<td>Marker 1, marker 2, difference type, feature label, signal in which
+				the feature is placed.</td></tr>
+	</table>
+
+	<h3><a name="complexity">Features &gt; Complexity</a></h3>
+
+	<table>
+		<tr><th>Function</th><th>Description</th><th>Specific parameters</th></tr>
+		<tr><td>Sample Entropy, Approximate Entropy, Multiscale Sample Entropy</td>
+			<td>Complexity of the signal between two markers, stored as features.
+				With Python, they need the <code>EntropyHub</code> package.</td>
+			<td>From and To markers.</td></tr>
+	</table>
+
+	<h2><a name="export">Export</a></h2>
+
+	<table>
+		<tr><th>Function</th><th>Description</th><th>Specific parameters</th></tr>
+		<tr><td>Export Markers, Export Features</td>
+			<td>Write the selected markers groups (or features) of the loaded
+				subjects in CSV text files, each time the processing is run. See
+				also <a href="exportdata.html">Exporting data</a>.</td>
+			<td>Markers or features to export (with a filter, Select all, Unselect
+				all), destination folder (relative to the workspace or absolute
+				path), separator.</td></tr>
+	</table>
+
+	<h2><a name="others">Other functions</a></h2>
+
+	<ul>
+		<li><b>Compute expression(s)</b>: free Python or Matlab code (see
+			<a href="dataprocessingfiles.html#expression">Compute
+			expression(s)</a>);</li>
+		<li><b>Customer functions</b>: <a href="userfunctions.html">user
+			functions</a> found in the user scripts location of the engine.</li>
+	</ul>
+
+</body>
+</html>

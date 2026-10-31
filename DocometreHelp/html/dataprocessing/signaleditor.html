@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Signal and Category Editors</title>
+<style type="text/css">
+	table { border-collapse: collapse; margin-bottom: 1em; }
+	th, td { border: 1px solid #A0A0A0; padding: 4px 8px; text-align: left; vertical-align: top; }
+	kbd { border: 1px solid #A0A0A0; border-radius: 3px; padding: 0px 4px; font-family: monospace; }
+</style>
+</head>
+
+<body>
+	<h1>Signal and Category Editors</h1>
+
+	<p>A double click on a signal of a loaded subject, in the Subjects view,
+		opens the <b>signal editor</b>: it displays the trials of the signal and
+		gives access to its cuts, markers and features. A double click on a
+		category opens the <b>category editor</b>, which displays several
+		signals for the trials of the category.</p>
+	<p>As for the <a href="../designperspective/dataeditor.html">data editor</a>,
+		the chart is drawn with OpenGL when the "SWT + OpenGL v2" real time chart
+		library is selected in the general preferences, and with SWT otherwise.
+		Editors show the values held by the math engine: they are updated when
+		a processing modifies the subject.</p>
+
+	<h2><a name="signaleditor">Signal editor</a></h2>
+
+	<p>The signal editor is made of:</p>
+	<ul>
+		<li>the <b>chart</b> of the selected trials, as a function of time (or of
+			frequency for the result of an FFT). Only the samples between the
+			front cut and the end cut of each trial are displayed;</li>
+		<li>the <b>trials list</b>, on the right of the chart: each trial is
+			shown with its category, for example
+			<code>Trial n&deg;12 [Session1.Pointing]</code>. Select the trials to
+			display (several trials can be selected with <kbd>Ctrl</kbd> or
+			<kbd>Shift</kbd>). The button between the chart and the list hides or
+			shows the list;</li>
+		<li>the <b>Informations (trials, features and markers)</b> panel, under
+			the chart, which can be collapsed. It is described below.</li>
+	</ul>
+	<p>The <b>Previous trial</b> and <b>Next trial</b> buttons of the tool bar
+		display the previous or next trial; zoom and pan buttons are also added
+		to the tool bar.</p>
+
+	<h3>General infos</h3>
+	<ul>
+		<li>signal name, subject, experiment, sample frequency (or frequency
+			step for a frequency domain signal) and number of trials;</li>
+		<li><b>Same color for same category trials</b>: trials of the same
+			category are drawn with the same color;</li>
+		<li><b>Keep scale when trials change</b>: the scales are not fitted again
+			when other trials are selected, which makes comparisons easier;</li>
+		<li><b>Show samples</b>: draws a point on each sample.</li>
+	</ul>
+
+	<h3>Trials</h3>
+	<p>For the trial chosen with the Trial spinner: front cut and end cut
+		(indexes of the first and last displayed samples), number of samples
+		and duration (or maximum frequency).</p>
+
+	<h3>Markers group</h3>
+	<p>Markers are points of the trials (see the <a href="datamodel.html#signals">data
+		model</a>), gathered in groups identified by a label. They are usually
+		created by functions of the <a href="functionslibrary.html#markers">library</a>
+		(maxima, threshold crossings...), but can also be placed by hand:</p>
+	<ul>
+		<li><b>Group name</b>: selects the markers group displayed and edited.
+			The "+" button creates a new group (a dialog asks for its label, which
+			must be a valid name), the "x" button deletes the selected group and
+			all its markers;</li>
+		<li><b>Trial n&deg;</b>: lists the markers of the group, by trial and in
+			time order. Selecting one shows its X (time) and Y (amplitude)
+			values and the number of markers of the group in its trial, and
+			highlights it in the chart; the "x" button deletes it.</li>
+	</ul>
+
+	<h3>Features</h3>
+	<p>Features are single values per trial (mean, difference between two
+		markers...). Choose a feature in <b>Name</b> and a trial number to read
+		its value; the "x" button deletes the feature from all the trials.</p>
+	<p>Deleting markers or features modifies the loaded subject: save it to
+		keep the change (see <a href="subjects.html#save">Saving
+		subjects</a>).</p>
+
+	<h3>Chart commands (OpenGL)</h3>
+	<p>The OpenGL chart has the same mouse and keyboard commands as the
+		<a href="../designperspective/dataeditor.html#gldataeditor">OpenGL data
+		editor</a> (wheel and rectangle zoom, pan, <kbd>C</kbd> for the cursor,
+		<kbd>R</kbd> to reset the view, context menu...). In cursor mode, markers
+		can also be edited in the chart:</p>
+	<ul>
+		<li><kbd>Ctrl</kbd> + left double click adds, on the point designated by
+			the cursor, a marker of the group selected in the editor (choose or
+			create a group first);</li>
+		<li>a double click on the label of a marker deletes it;</li>
+		<li><kbd>Ctrl</kbd> + click on the label of a marker selects its group
+			and the marker in the editor.</li>
+	</ul>
+	<p>The context menu of the chart also shows or hides the markers and their
+		labels.</p>
+
+	<h3>Chart commands (SWT)</h3>
+	<p>The SWT chart has the commands of the
+		<a href="../designperspective/dataeditor.html#swtdataeditor">SWT data
+		editor</a>. When the cursor is displayed (context menu, or "Show cursor
+		(Time charts)" in the general preferences), a double click adds a marker
+		of the selected group on the curve of the cursor.</p>
+
+	<h2><a name="categoryeditor">Category editor</a></h2>
+
+	<p>The category editor displays, in a single chart, several signals of the
+		subject for several trials of a category. On its right, it shows the
+		criteria of the category, the list of the <b>trials</b> of the category
+		and the list of the <b>signals</b> of the subject: select the trials and
+		the signals to display. "Same colors for same trial" draws all the
+		signals of a trial with the same color. Markers of the displayed
+		signals are shown, but cannot be edited in this editor.</p>
+
+</body>
+</html>
