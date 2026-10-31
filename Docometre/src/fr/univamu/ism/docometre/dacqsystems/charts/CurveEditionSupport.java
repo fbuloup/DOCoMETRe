@@ -122,7 +122,12 @@ public class CurveEditionSupport extends EditingSupport implements PropertyObser
 		if(property == CursorCurveConfigurationProperties.SHAPE) {
 			cellEditor = new ComboBoxViewerCellEditor((Composite) viewer.getControl(), SWT.READ_ONLY);
 			((ComboBoxViewerCellEditor)cellEditor).setContentProvider(new ArrayContentProvider());
-			((ComboBoxViewerCellEditor)cellEditor).setLabelProvider(new LabelProvider());
+			((ComboBoxViewerCellEditor)cellEditor).setLabelProvider(new LabelProvider() {
+				@Override
+				public String getText(Object element) {
+					return CursorCurveConfigurationProperties.getShapeLabel((String)element);
+				}
+			});
 			((ComboBoxViewerCellEditor)cellEditor).setInput(CursorCurveConfigurationProperties.SHAPES);
 			cellEditor.setValidator(new Validator(CursorCurveConfigurationProperties.SHAPE.getRegExp()));
 		}
@@ -140,6 +145,7 @@ public class CurveEditionSupport extends EditingSupport implements PropertyObser
 					FileDialog fileDialog = new FileDialog(cellEditorWindow.getShell(), SWT.OPEN);
 					fileDialog.setText(DocometreMessages.CursorImageDialog_Title);
 					fileDialog.setFilterExtensions(new String[] {"*.png;*.PNG;*.jpg;*.JPG;*.jpeg;*.JPEG;*.gif;*.bmp", "*.*"});
+					fileDialog.setFilterNames(new String[] {DocometreMessages.CursorImageFilterName, DocometreMessages.CursorAllFilesFilterName});
 					File currentFile = CursorCurveConfigurationProperties.resolveImageFile((String)getValue());
 					if(currentFile != null && currentFile.getParentFile() != null && currentFile.getParentFile().isDirectory()) {
 						fileDialog.setFilterPath(currentFile.getParent());

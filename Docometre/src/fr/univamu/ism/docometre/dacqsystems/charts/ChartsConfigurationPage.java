@@ -688,7 +688,14 @@ public class ChartsConfigurationPage extends ModulePage {
 		yChannelNameTableViewerColumn.setLabelProvider(new CursorCurveLabelProvider(XYCurveConfigurationProperties.Y_CHANNEL_NAME));
 		
 		TableViewerColumn shapeTableViewerColumn = createColumn(CursorCurveConfigurationProperties.SHAPE.getTooltip(), curvesTableColumnLayout, CursorCurveConfigurationProperties.SHAPE, defaultColumnWidth + 20, 2);
-		shapeTableViewerColumn.setLabelProvider(new CursorCurveLabelProvider(CursorCurveConfigurationProperties.SHAPE));
+		shapeTableViewerColumn.setLabelProvider(new CellLabelProvider() {
+			@Override
+			public void update(ViewerCell cell) {
+				if(!(cell.getElement() instanceof CursorCurveConfiguration)) return;
+				CursorCurveConfiguration curve = (CursorCurveConfiguration)cell.getElement();
+				cell.setText(CursorCurveConfigurationProperties.getShapeLabel(curve.getProperty(CursorCurveConfigurationProperties.SHAPE)));
+			}
+		});
 		
 		TableViewerColumn sizeTableViewerColumn = createColumn(CursorCurveConfigurationProperties.SIZE.getTooltip(), curvesTableColumnLayout, CursorCurveConfigurationProperties.SIZE, defaultColumnWidth, 3);
 		sizeTableViewerColumn.setLabelProvider(new CursorCurveLabelProvider(CursorCurveConfigurationProperties.SIZE));

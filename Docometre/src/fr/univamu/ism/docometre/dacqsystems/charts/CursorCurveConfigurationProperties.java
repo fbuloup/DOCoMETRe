@@ -79,6 +79,25 @@ public class CursorCurveConfigurationProperties extends Property {
 		return shapes;
 	}
 	
+	/*
+	 * Translated label of a value of SHAPE (the value itself if it is unknown)
+	 */
+	public static String getShapeLabel(String shape) {
+		if(shape == null) return "";
+		switch (shape) {
+		case "CIRCLE": return DocometreMessages.CursorShape_CIRCLE;
+		case "SQUARE": return DocometreMessages.CursorShape_SQUARE;
+		case "DIAMOND": return DocometreMessages.CursorShape_DIAMOND;
+		case "TRIANGLE": return DocometreMessages.CursorShape_TRIANGLE;
+		case "TRIANGLE_DOWN": return DocometreMessages.CursorShape_TRIANGLE_DOWN;
+		case "PLUS": return DocometreMessages.CursorShape_PLUS;
+		case "CROSS": return DocometreMessages.CursorShape_CROSS;
+		case "STAR": return DocometreMessages.CursorShape_STAR;
+		case IMAGE: return DocometreMessages.CursorShape_IMAGE;
+		default: return shape;
+		}
+	}
+	
 	public static void populateProperties(CursorCurveConfiguration cursorCurveConfiguration){
 		cursorCurveConfiguration.setProperty(SHAPE, CursorShape.CIRCLE.name());
 		cursorCurveConfiguration.setProperty(SIZE, "15");

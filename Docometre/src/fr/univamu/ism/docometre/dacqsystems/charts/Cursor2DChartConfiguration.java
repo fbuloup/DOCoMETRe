@@ -45,12 +45,14 @@ import java.io.File;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 
 import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.chartxyz.CursorShape;
 import fr.univamu.ism.docometre.chartxyz.CursorStyle;
 import fr.univamu.ism.docometre.chartxyz.Curve2DData;
@@ -90,7 +92,7 @@ public class Cursor2DChartConfiguration extends XYChartConfiguration {
 	@Override
 	public void createChart(Composite chartContainer) {
 		if(!Activator.useOpenGLV2()) {
-			Activator.logWarningMessage("Cursor 2D charts require the OpenGL V2 charts : displayed as a XY chart.");
+			Activator.logWarningMessage(DocometreMessages.Cursor2DChartOpenGLV1Warning);
 			super.createChart(chartContainer);
 			return;
 		}
@@ -127,9 +129,9 @@ public class Cursor2DChartConfiguration extends XYChartConfiguration {
 			String sfxString = cursorCurveConfiguration.getXChannel().getProperty(ChannelProperties.SAMPLE_FREQUENCY);
 			String sfyString = cursorCurveConfiguration.getYChannel().getProperty(ChannelProperties.SAMPLE_FREQUENCY);
 			if(!sfxString.equals(sfyString)) {
-				Activator.logErrorMessage("Sample frequency for channel " + xSerieID + " is " + sfxString + "Hz");
-				Activator.logErrorMessage("Sample frequency for channel " + ySerieID + " is " + sfyString + "Hz");
-				Activator.logErrorMessage("Channels with different sample frequencies cannot be displayed in cursor 2D chart !");
+				Activator.logErrorMessage(NLS.bind(DocometreMessages.CursorChannelSampleFrequency, xSerieID, sfxString));
+				Activator.logErrorMessage(NLS.bind(DocometreMessages.CursorChannelSampleFrequency, ySerieID, sfyString));
+				Activator.logErrorMessage(DocometreMessages.Cursor2DChartDifferentFrequencies);
 				continue;
 			}
 			Color color = CurveConfigurationProperties.getColor(cursorCurveConfiguration);
@@ -155,16 +157,16 @@ public class Cursor2DChartConfiguration extends XYChartConfiguration {
 				try {
 					return CursorStyle.image(file.getPath(), size);
 				} catch (IllegalArgumentException e) {
-					Activator.logErrorMessage("Cursor image cannot be read : " + file.getPath() + " (" + e.getMessage() + ")");
+					Activator.logErrorMessage(NLS.bind(DocometreMessages.CursorImageUnreadable, file.getPath(), e.getMessage()));
 				}
-			} else Activator.logErrorMessage("No image file for the cursor of " + cursorCurveConfiguration.getYChannel().getID() + "(" + cursorCurveConfiguration.getXChannel().getID() + ")");
+			} else Activator.logErrorMessage(NLS.bind(DocometreMessages.CursorNoImageFile, cursorCurveConfiguration.getYChannel().getID() + "(" + cursorCurveConfiguration.getXChannel().getID() + ")"));
 			shapeName = CursorShape.CIRCLE.name();
 		}
 		CursorShape shape = CursorShape.CIRCLE;
 		try {
 			if(shapeName != null) shape = CursorShape.valueOf(shapeName);
 		} catch (IllegalArgumentException e) {
-			Activator.logErrorMessage("Unknown cursor shape : " + shapeName);
+			Activator.logErrorMessage(NLS.bind(DocometreMessages.CursorUnknownShape, shapeName));
 		}
 		CursorStyle style = CursorStyle.shape(shape, size);
 		float outlineWidth = parseFloat(cursorCurveConfiguration.getProperty(CursorCurveConfigurationProperties.OUTLINE_WIDTH), 0);
