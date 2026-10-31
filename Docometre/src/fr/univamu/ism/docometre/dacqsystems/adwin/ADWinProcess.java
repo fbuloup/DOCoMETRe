@@ -1456,40 +1456,60 @@ public class ADWinProcess extends Process {
 	}
 
 	private void postManageParameters(IResource resource) throws Exception {
-		if(ResourceType.isTrial(resource)) {
-			ADWinDACQConfiguration adwinDacqConfiguration = (ADWinDACQConfiguration) getDACQConfiguration();
-			ADWinVariable[] propagatedParameters = adwinDacqConfiguration.getPropagatedParameters();
-			if(propagatedParameters.length > 0) {
-				// Read parameters file and replace next trial line when parameter must be propagated
-				List<String> lines = Files.readAllLines(FileSystems.getDefault().getPath(parametersFile.getLocation().toOSString()), StandardCharsets.UTF_8);
-				if(lines.size() - 1 >= currentTrialNumber + 1) {
-					String parametersNames = lines.get(0);
-					String parametersValues = lines.get(currentTrialNumber + 1); 
-					parametersNames = parametersNames.replaceAll("[\\s|\\u00A0]+", "");
-					parametersValues = parametersValues.replaceAll("[\\s|\\u00A0]+", "");
-					String[] parametersNamesArray = parametersNames.split(";|:|,");
-					String[] parametersValuesArray = parametersValues.split(";|:|,");
-					float[] data = getParametersFromADWinProcess();
-					String dataString = "";
-					int indexParameterName = 0;
-					for (String parameterName : parametersNamesArray) {
-						Set<ADWinVariable> variables = currentTrialParameters.keySet();
-						int indexVariablesName = 0;
-						for (ADWinVariable variable : variables) {
-							if(variable.getProperty(ChannelProperties.NAME).equalsIgnoreCase(parameterName)) {
-								if(variable.isParameterPropagated()) dataString = dataString + data[indexVariablesName] + ";";
-								else dataString = dataString + parametersValuesArray[indexParameterName] + ";";
-								break;
-							} else indexVariablesName++;
-						}
-						indexParameterName++;
-					}
-					dataString = dataString.replaceAll(";$", "");
-					lines.set(currentTrialNumber + 1, dataString);
-					Files.write(Paths.get(parametersFile.getLocationURI()), String.join(System.getProperty("line.separator"), lines).getBytes(), StandardOpenOption.TRUNCATE_EXISTING , StandardOpenOption.WRITE);
+		if(!ResourceType.isTrial(resource)) return;
+		ADWinDACQConfiguration adwinDacqConfiguration = (ADWinDACQConfiguration) getDACQConfiguration();
+		ADWinVariable[] propagatedParameters = adwinDacqConfiguration.getPropagatedParameters();
+		if(propagatedParameters.length == 0 || parametersFile == null) return;
+		// Read parameters file and replace next trial values of propagated parameters
+		List<String> lines = Files.readAllLines(FileSystems.getDefault().getPath(parametersFile.getLocation().toOSString()), StandardCharsets.UTF_8);
+		// Physical indexes of uncommented lines : the lines read by preManageParameters (see removeComments).
+		// First uncommented line holds parameters names, uncommented line N + 1 holds values of trial N.
+		List<Integer> uncommentedLinesIndexes = getUncommentedLinesIndexes(lines);
+		if(uncommentedLinesIndexes.size() - 1 < currentTrialNumber + 1) return;
+		int nextTrialLineIndex = uncommentedLinesIndexes.get(currentTrialNumber + 1);
+		String nextTrialLine = lines.get(nextTrialLineIndex);
+		// Comment at the end of next trial line is kept
+		String comment = nextTrialLine.indexOf("#") > -1 ? nextTrialLine.substring(nextTrialLine.indexOf("#")) : "";
+		String parametersNames = lines.get(uncommentedLinesIndexes.get(0)).replaceAll("#.*$", "");
+		String parametersValues = nextTrialLine.replaceAll("#.*$", "");
+		parametersNames = parametersNames.replaceAll("[\\s|\\u00A0]+", "");
+		parametersValues = parametersValues.replaceAll("[\\s|\\u00A0]+", "");
+		String[] parametersNamesArray = parametersNames.split(";|:|,");
+		String[] parametersValuesArray = parametersValues.split(";|:|,");
+		// Values read from ADwin, in the same order as currentTrialParameters (see pushParametersToADWinProcess)
+		float[] data = getParametersFromADWinProcess();
+		if(data == null) return;
+		List<ADWinVariable> variables = new ArrayList<>(currentTrialParameters.keySet());
+		StringBuilder dataString = new StringBuilder();
+		for (int indexParameterName = 0; indexParameterName < parametersNamesArray.length; indexParameterName++) {
+			String parameterName = parametersNamesArray[indexParameterName];
+			// By default, keep next trial value (not propagated parameters, string parameters, other columns)
+			String value = indexParameterName < parametersValuesArray.length ? parametersValuesArray[indexParameterName] : "";
+			for (int indexVariable = 0; indexVariable < variables.size(); indexVariable++) {
+				ADWinVariable variable = variables.get(indexVariable);
+				if(variable.getProperty(ChannelProperties.NAME).equalsIgnoreCase(parameterName)) {
+					if(variable.isParameterPropagated()) value = String.valueOf(data[indexVariable]);
+					break;
 				}
 			}
+			if(indexParameterName > 0) dataString.append(";");
+			dataString.append(value);
 		}
+		if(!comment.isEmpty()) dataString.append(" ").append(comment);
+		lines.set(nextTrialLineIndex, dataString.toString());
+		Files.write(Paths.get(parametersFile.getLocationURI()), String.join(System.getProperty("line.separator"), lines).getBytes(StandardCharsets.UTF_8), StandardOpenOption.TRUNCATE_EXISTING , StandardOpenOption.WRITE);
+		parametersFile.refreshLocal(IResource.DEPTH_ZERO, null);
+	}
+
+	/*
+	 * Indexes of the lines kept by removeComments : lines that do not start with a comment
+	 */
+	private List<Integer> getUncommentedLinesIndexes(List<String> lines) {
+		List<Integer> indexes = new ArrayList<>();
+		for (int i = 0; i < lines.size(); i++) {
+			if(!lines.get(i).startsWith("#")) indexes.add(i);
+		}
+		return indexes;
 	}
 
 }

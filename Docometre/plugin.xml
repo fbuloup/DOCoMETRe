@@ -1004,7 +1004,7 @@
                   style="push">
             </command>
             <menu
-                  label="Associer au système">
+                  label="%AssociateWithSystem.label">
                <visibleWhen
                      checkEnabled="false">
                   <with
@@ -1921,7 +1921,7 @@
                label="%AssociateWith.label">
          </menu>
          <menu
-               label="Associer au système">
+               label="%AssociateWithSystem.label">
             <visibleWhen
                   checkEnabled="false">
                <with

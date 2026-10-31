@@ -243,7 +243,7 @@ target;perturbation
 	<p>See <a href="../advancedconcepts/parametersfileformat.html">What is
 		parameters file format ?</a> for more details. A double click on a
 		parameters file opens it in the parameters editor, which has two tabs:
-		<b>Fichier brut</b> (the raw text of the file) and <b>Tableau</b> (a
+		<b>Raw file</b> (the text of the file) and <b>Table</b> (a
 		table of the values, with buttons to add lines after the selected
 		lines and to remove the selected lines).</p>
 	<p>Before each trial, the line of the trial is read and the value of
@@ -254,9 +254,9 @@ target;perturbation
 	<p>When a parameter is <b>propagated</b>, its value at the end of a trial
 		is read from the real time system and written in the parameters file,
 		in the line of the next trial. This is useful to keep and update a
-		value along a session (an adaptive threshold, for example). As
-		values are written back by line number, avoid comment lines between
-		the lines of values of a file that contains propagated parameters.</p>
+		value along a session (an adaptive threshold, for example). Only the
+		values of propagated parameters are replaced: the other values of the
+		line, the comments and the other lines of the file are kept.</p>
 	<p>Parameters are only available with ADwin systems. When a process is
 		<a href="processtest.html">tested</a> on its own, parameters values are
 		asked in a dialog.</p>
