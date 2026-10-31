@@ -178,7 +178,8 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		if(!MathEngineFactory.getMathEngine().isStarted()) {
-			Activator.logInfoMessage(DocometreMessages.PleaseStartMathEngineFirst, getClass());
+			if(selectedSubjects != null && !selectedSubjects.isEmpty())
+				Activator.logInfoMessage(DocometreMessages.PleaseStartMathEngineFirst, getClass());
 			return null;
 		}
 		cancel = false;
