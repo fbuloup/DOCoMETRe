@@ -128,14 +128,16 @@ public class Cursor2DChartConfiguration extends XYChartConfiguration {
 			String ySerieID = cursorCurveConfiguration.getYChannel().getID();
 			String sfxString = cursorCurveConfiguration.getXChannel().getProperty(ChannelProperties.SAMPLE_FREQUENCY);
 			String sfyString = cursorCurveConfiguration.getYChannel().getProperty(ChannelProperties.SAMPLE_FREQUENCY);
-			if(!sfxString.equals(sfyString)) {
+			double sfx = Double.parseDouble(sfxString);
+			double sfy = Double.parseDouble(sfyString);
+			if(sfx != sfy) {
 				Activator.logErrorMessage(NLS.bind(DocometreMessages.CursorChannelSampleFrequency, xSerieID, sfxString));
 				Activator.logErrorMessage(NLS.bind(DocometreMessages.CursorChannelSampleFrequency, ySerieID, sfyString));
 				Activator.logErrorMessage(DocometreMessages.Cursor2DChartDifferentFrequencies);
 				continue;
 			}
 			Color color = CurveConfigurationProperties.getColor(cursorCurveConfiguration);
-			Curve2DData curve = new Curve2DData(ySerieID + "(" + xSerieID + ")", Double.parseDouble(sfxString));
+			Curve2DData curve = new Curve2DData(ySerieID + "(" + xSerieID + ")", sfx);
 			curve.setColor(color.getRed(), color.getGreen(), color.getBlue());
 			chart.addCurve(curve);
 			chart.setCursorStyle(curve, createCursorStyle(cursorCurveConfiguration));

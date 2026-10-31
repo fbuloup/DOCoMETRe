@@ -335,8 +335,10 @@ public class XYChartConfiguration extends ChartConfiguration {
 			Color serieColor = CurveConfigurationProperties.getColor(xyCurveConfiguration);
 			int thickness = Integer.parseInt(xyCurveConfiguration.getProperty(CurveConfigurationProperties.WIDTH));
 			String sfxString = xyCurveConfiguration.getXChannel().getProperty(ChannelProperties.SAMPLE_FREQUENCY);
-			String sfyString = xyCurveConfiguration.getXChannel().getProperty(ChannelProperties.SAMPLE_FREQUENCY);
-			if(!sfxString.equals(sfyString)) {
+			String sfyString = xyCurveConfiguration.getYChannel().getProperty(ChannelProperties.SAMPLE_FREQUENCY);
+			double sfx = Double.parseDouble(sfxString);
+			double sfy = Double.parseDouble(sfyString);
+			if(sfx != sfy) {
 				Activator.logErrorMessage("Sample frequency for channel " + xSerieID + " is " + sfxString + "Hz");
 				Activator.logErrorMessage("Sample frequency for channel " + ySerieID + " is " + sfyString + "Hz");
 				Activator.logErrorMessage("Channels with different sample frequencies cannot be displayed in XY chart !");
@@ -351,7 +353,6 @@ public class XYChartConfiguration extends ChartConfiguration {
 			if(serieStyle == SWT.LINE_DASHDOTDOT) lineStyle = LineStyle.DASH_DASH_DOT;
 			
 			IRTSWTSerie rtswtSerie = null;
-			double sfx = Double.parseDouble(sfxString);
 			if(Activator.useOpenGLV2()) {
 				rtswtSerie = new Curve2DData(ySerieID + "(" + xSerieID + ")", sfx);
 				((Curve2DData)rtswtSerie).setLineWidth(thickness);

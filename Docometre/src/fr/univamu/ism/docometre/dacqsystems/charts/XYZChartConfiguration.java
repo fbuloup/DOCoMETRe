@@ -349,7 +349,10 @@ public class XYZChartConfiguration extends ChartConfiguration {
 			String sfxString = xyzCurveConfiguration.getXChannel().getProperty(ChannelProperties.SAMPLE_FREQUENCY);
 			String sfyString = xyzCurveConfiguration.getYChannel().getProperty(ChannelProperties.SAMPLE_FREQUENCY);
 			String sfzString = xyzCurveConfiguration.getZChannel().getProperty(ChannelProperties.SAMPLE_FREQUENCY);
-			if(!sfxString.equals(sfyString) || !sfxString.equals(sfzString) || !sfyString.equals(sfzString)) {
+			double sfx = Double.parseDouble(sfxString);
+			double sfy = Double.parseDouble(sfyString);
+			double sfz = Double.parseDouble(sfzString);
+			if(sfx != sfy || sfx != sfz) {
 				Activator.logErrorMessage("Sample frequency for channel " + xSerieID + " is " + sfxString + "Hz");
 				Activator.logErrorMessage("Sample frequency for channel " + ySerieID + " is " + sfyString + "Hz");
 				Activator.logErrorMessage("Sample frequency for channel " + zSerieID + " is " + sfzString + "Hz");
@@ -364,7 +367,6 @@ public class XYZChartConfiguration extends ChartConfiguration {
 			if(serieStyle == SWT.LINE_DASHDOT) lineStyle = LineStyle.DASH_DOT;
 			if(serieStyle == SWT.LINE_DASHDOTDOT) lineStyle = LineStyle.DASH_DASH_DOT;
 	
-			double sfx = Double.parseDouble(sfxString);
 			IRTSWTXYZSerie rtswtSerie = new Curve3DData(zSerieID + "(" + xSerieID + ", " + ySerieID + ")", sfx);
 			((Curve3DData)rtswtSerie).setLineWidth(thickness);
 			((Curve3DData)rtswtSerie).setLineStyle(lineStyle);
