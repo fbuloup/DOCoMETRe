@@ -78,7 +78,7 @@ import fr.univamu.ism.docometre.views.RealTimeChartsView;
 @SuppressWarnings("restriction")
 public class RunStopHandler extends AbstractHandler implements IElementUpdater, IPerspectiveListener {
 	
-	private static String COMMAND_ID = "RunStopCommand";
+	public static final String COMMAND_ID = "RunStopCommand";
 	
 	private static boolean enabled;
 	private static boolean stop = false;

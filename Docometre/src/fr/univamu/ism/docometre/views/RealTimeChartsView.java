@@ -44,6 +44,8 @@ package fr.univamu.ism.docometre.views;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.commands.NotEnabledException;
+import org.eclipse.core.commands.NotHandledException;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Platform;
@@ -65,6 +67,7 @@ import org.eclipse.ui.IPerspectiveListener;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.part.ViewPart;
 
 import fr.univamu.ism.docometre.AcquirePerspective;
@@ -121,8 +124,14 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 				IPerspectiveDescriptor currentPerspective = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getPerspective();
 				boolean checkPerspcetive = currentPerspective.getId().equals(AcquirePerspective.id);
 				boolean isRunning = ExperimentScheduler.getInstance().isRunning();
-				if(event.keyCode == SWT.F11 || (((event.stateMask & SWT.MOD1) != 0) && ((event.stateMask & SWT.SHIFT) != 0) && (event.keyCode == 'f'))) {
-					if(checkPerspcetive && !container.isDisposed()) setFullScreen(!fullScreen);
+				// Shortcuts below are ignored when a dialog is opened
+				boolean workbenchShellActive = !container.isDisposed() && event.display.getActiveShell() == getSite().getShell();
+				boolean mod1Shift = ((event.stateMask & SWT.MOD1) != 0) && ((event.stateMask & SWT.SHIFT) != 0);
+				if(event.keyCode == SWT.F11 || (mod1Shift && event.keyCode == 'f')) {
+					if(checkPerspcetive && workbenchShellActive) setFullScreen(!fullScreen);
+				}
+				if(event.keyCode == SWT.F9 || (mod1Shift && (event.keyCode == SWT.CR || event.keyCode == SWT.KEYPAD_CR))) {
+					if(checkPerspcetive && workbenchShellActive) runStop();
 				}
 				if(event.keyCode == SWT.ESC) {
 					if(checkPerspcetive && isRunning) RunStopHandler.stop();
@@ -259,6 +268,21 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 
 		stateContainer.layout(true);
 		
+	}
+	
+	/*
+	 * Run or stop selected item, as run/stop button of the main tool bar (which is hidden in full screen mode)
+	 */
+	private void runStop() {
+		IHandlerService handlerService = getSite().getService(IHandlerService.class);
+		if(handlerService == null) return;
+		try {
+			handlerService.executeCommand(RunStopHandler.COMMAND_ID, null);
+		} catch (NotEnabledException | NotHandledException e) {
+			// Nothing to run or stop pending : ignore shortcut
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+		}
 	}
 	
 	public boolean isFullScreen() {
