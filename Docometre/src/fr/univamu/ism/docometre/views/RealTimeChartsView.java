@@ -201,7 +201,7 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 		processLabelValue.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, true, true));
 		processLabelValue.setText(DocometreMessages.NotAvailable_Label);
 		
-		chartsContainer = new Composite(container, SWT.BORDER);
+		chartsContainer = new Composite(container, SWT.NONE);
 		chartsContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
 		IResource resource = ExperimentsView.currentSelectedResource;
