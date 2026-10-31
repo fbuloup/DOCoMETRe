@@ -1,0 +1,470 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>DACQ Configuration</title>
+<style type="text/css">
+	table { border-collapse: collapse; margin-bottom: 1em; }
+	th, td { border: 1px solid #A0A0A0; padding: 4px 8px; text-align: left; vertical-align: top; }
+	kbd { border: 1px solid #A0A0A0; border-radius: 3px; padding: 0px 4px; font-family: monospace; }
+</style>
+</head>
+
+<body>
+	<h1>DACQ Configuration</h1>
+
+	<p>A DACQ (data acquisition) configuration file (<code>*.daqconf</code>)
+		describes the real time system used for an experiment: how to reach
+		it from the computer, the global frequency of its real time loop, its
+		modules and their channels, the variables used by the processes and
+		the charts displayed in real time during acquisition. Each
+		<a href="dacqprocess.html">process</a> is associated with one DACQ
+		configuration and can only use the channels and variables declared in
+		it.</p>
+	<p>Contents of this page:</p>
+	<ul>
+		<li><a href="#create">Creating a DACQ configuration</a></li>
+		<li><a href="#editor">The DACQ configuration editor</a></li>
+		<li><a href="#general">General tab</a> (<a href="#generaladwin">ADwin</a>,
+			<a href="#generalarduino">Arduino Uno</a>)</li>
+		<li><a href="#modules">Modules tabs</a></li>
+		<li><a href="#variables">Variables tab</a></li>
+		<li><a href="#charts">Charts tab</a></li>
+		<li><a href="#calibration">Calibration and monitoring (ADwin)</a></li>
+	</ul>
+
+	<h2><a name="create">Creating a DACQ configuration</a></h2>
+
+	<p>Select an experiment or a folder in the Experiments view, then use
+		File &gt; New &gt; DACQ Configuration (or the corresponding tool bar
+		button, or the New sub-menu of the context menu). The wizard asks
+		for:</p>
+	<ul>
+		<li>the <b>name</b> of the configuration and its <b>description</b>;</li>
+		<li>the <b>system</b>: ADWin or Arduino UNO;</li>
+		<li>whether this configuration must be the <b>default</b> one of the
+			experiment ("Set this DAQ Configuration as default"): the default
+			configuration is pre-selected when a new process is created.</li>
+	</ul>
+	<p>The new configuration is initialized with the default system
+		configuration defined in the preferences (Options &gt; Preferences...
+		&gt; Systems &gt; Default ADWin System or Default Arduino Uno System).
+		Configuring these preferences once for your laboratory avoids typing
+		paths, addresses and modules again for each new configuration.</p>
+
+	<h2><a name="editor">The DACQ configuration editor</a></h2>
+
+	<p>A double click on a configuration opens its editor. It is made of
+		several tabs, displayed at the bottom of the editor:</p>
+	<ul>
+		<li><a href="#general">General</a>: access to the system, global
+			frequency and list of modules;</li>
+		<li><a href="#charts">Charts</a>: real time charts displayed in the
+			Acquire perspective;</li>
+		<li><a href="#variables">Variables</a>: variables of the real time
+			system;</li>
+		<li>one tab per <a href="#modules">module</a> declared in the General
+			tab (analog inputs, analog outputs, digital inputs/outputs...).</li>
+	</ul>
+	<p>Each field shows a tooltip that explains it. A field with an invalid
+		value is decorated with an error icon, and the error overlay is shown
+		on the editor tab and on the configuration in the Experiments view.
+		Most modifications can be undone (Edit &gt; Undo). Save the
+		configuration with <kbd>Ctrl</kbd>+<kbd>S</kbd>
+		(<kbd>Cmd</kbd>+<kbd>S</kbd> on macOS): when Options &gt; Build
+		automatically is checked, all the processes associated with this
+		configuration are compiled again.</p>
+
+	<h2><a name="general">General tab</a></h2>
+
+	<p>The General tab has two sections: the general parameters of the
+		system and the list of its modules. Its title bar contains a
+		<b>Set this configuration as default</b> button which copies the
+		current values into the preferences (Default ADWin System or Default
+		Arduino Uno System): they will be used to initialize the next
+		configurations.</p>
+
+	<h3><a name="generaladwin">ADwin systems</a></h3>
+
+	<table>
+		<tr>
+			<th>Field</th>
+			<th>Description</th>
+		</tr>
+		<tr>
+			<td>ADBasic compiler path</td>
+			<td>Path to the ADbasic compiler (installed with the ADwin
+				software).</td>
+		</tr>
+		<tr>
+			<td>Bootloader file path</td>
+			<td>Path to the boot loader file (<code>*.btl</code>) that matches
+				the processor of the system.</td>
+		</tr>
+		<tr>
+			<td>ADBasic libraries path</td>
+			<td>Folder of the DOCoMETRe ADbasic libraries (read only, use the
+				Browse... button). A warning is displayed when these libraries
+				are older than the version of DOCoMETRe.</td>
+		</tr>
+		<tr>
+			<td>ADBasic version</td>
+			<td>Major version of ADbasic.</td>
+		</tr>
+		<tr>
+			<td>TCPIP server device number</td>
+			<td>Only required when the computer is not directly connected to the
+				ADwin system.</td>
+		</tr>
+		<tr>
+			<td>ADWin device IP address</td>
+			<td>IPv4 address of the system (usual case of a direct Ethernet
+				connection). Browse... searches the reachable devices of the
+				network.</td>
+		</tr>
+		<tr>
+			<td>ADwin device TCPIP port, ADwin device number</td>
+			<td>Port and device number as declared in the ADwin driver
+				installation (ADconfig).</td>
+		</tr>
+		<tr>
+			<td>Time Out value (in msec.)</td>
+			<td>Time out of the communications between the computer and the
+				system.</td>
+		</tr>
+		<tr>
+			<td>Device type, CPU type</td>
+			<td>ADwin Pro or Gold, processor I or II.</td>
+		</tr>
+		<tr>
+			<td>Global Frequency</td>
+			<td>Frequency of the real time loop (see <a href="#frequency">below</a>).</td>
+		</tr>
+	</table>
+	<p>The title bar of the tab also contains a <b>Calibration, monitoring</b>
+		button (see <a href="#calibration">below</a>).</p>
+	<p>The <b>Modules configuration</b> section lists the modules of the
+		system. Use the "+" button to add modules (a dialog lists the
+		available types: Analog inputs, Analog outputs, Digital
+		inputs/outputs, RS232, CAN) and the "x" button to delete the selected
+		modules. For each module, the table gives:</p>
+	<ul>
+		<li><b>Module Type</b>;</li>
+		<li><b>Module number</b>: address of the module in the system. Two
+			modules of the same type must have different numbers;</li>
+		<li><b>Module revision</b>: A, B, C...</li>
+	</ul>
+	<p>Each module added in this table gets its own tab in the editor.</p>
+
+	<h3><a name="generalarduino">Arduino Uno systems</a></h3>
+
+	<table>
+		<tr>
+			<th>Field</th>
+			<th>Description</th>
+		</tr>
+		<tr>
+			<td>Arduino Uno Libraries path</td>
+			<td>Folder of the DOCoMETRe Arduino libraries.</td>
+		</tr>
+		<tr>
+			<td>Builder path, AVRDude path</td>
+			<td>Paths to the arduino-builder and avrdude tools of the Arduino
+				IDE, used to compile and upload the processes.</td>
+		</tr>
+		<tr>
+			<td>Use command line tool</td>
+			<td>When checked, the arduino-cli tool is used instead of
+				arduino-builder and avrdude. Its path is then given in
+				<b>arduino-cli path</b>.</td>
+		</tr>
+		<tr>
+			<td>Revision</td>
+			<td>Revision of the board: R3 or R4_WIFI (Arduino Uno R4 WiFi).</td>
+		</tr>
+		<tr>
+			<td>Serial port name</td>
+			<td>Serial port of the board, for example <code>COM3</code> or
+				<code>/dev/cu.usbmodem1101</code>. Browse... lists the
+				available ports.</td>
+		</tr>
+		<tr>
+			<td>Baud rate</td>
+			<td>Speed of the serial link.</td>
+		</tr>
+		<tr>
+			<td>Global Frequency</td>
+			<td>Frequency of the real time loop (see <a href="#frequency">below</a>).
+				If the requested frequency cannot be obtained exactly with the
+				timers of the board, a message gives the frequency that will
+				actually be used.</td>
+		</tr>
+	</table>
+	<p>The <b>Modules</b> section lists the modules of the board: Analog
+		inputs, Analog outputs, Digital inputs/outputs and ADS1115 modules
+		(four 16 bits analog inputs on the I2C bus, up to four modules).</p>
+
+	<h3><a name="frequency">Global frequency</a></h3>
+
+	<p>The global frequency is the frequency of the real time loop: the
+		Event (or Loop) segment of the processes is executed once per period.
+		The sample frequency of each channel or variable must be a
+		sub-multiple of the global frequency. Click on the link that displays
+		the global frequency to change it.</p>
+
+	<h2><a name="modules">Modules tabs</a></h2>
+
+	<p>Each module tab is made of a <b>general configuration</b> section for
+		the module (when it has parameters), an explanation section, and a
+		<b>channels configuration</b> table where channels are added ("+"
+		button) or deleted ("x" button). The following columns are common to
+		most channels:</p>
+	<table>
+		<tr>
+			<th>Column</th>
+			<th>Description</th>
+		</tr>
+		<tr>
+			<td>Name</td>
+			<td>Name of the channel. It is used in processes, in charts and as
+				the name of the samples file. It must be unique in the
+				configuration.</td>
+		</tr>
+		<tr>
+			<td>S.F.</td>
+			<td>Sample frequency of the channel, sub-multiple of the global
+				frequency.</td>
+		</tr>
+		<tr>
+			<td>C.N.</td>
+			<td>Channel number: physical input or output of the module.</td>
+		</tr>
+		<tr>
+			<td>T</td>
+			<td>Transfer: values of the channel are transferred from the real
+				time system to the computer (needed to display or record them).</td>
+		</tr>
+		<tr>
+			<td>A.T.</td>
+			<td>Auto transfer (ADwin): the transfer code is generated
+				automatically. Otherwise, place Transfer functions in the
+				processes.</td>
+		</tr>
+		<tr>
+			<td>T.N.</td>
+			<td>Transfer number: unique number used for the transfer, generated
+				automatically.</td>
+		</tr>
+		<tr>
+			<td>Rec.</td>
+			<td>Record: transferred values are saved in a samples file
+				(<code>ChannelName.samples</code>) in the trial folder.</td>
+		</tr>
+		<tr>
+			<td>B.S.</td>
+			<td>Buffer size: size of the buffer used to transfer samples. Increase
+				it when the diary reports data losses.</td>
+		</tr>
+	</table>
+	<p>Specific parameters of each type of module:</p>
+	<table>
+		<tr>
+			<th>Module</th>
+			<th>Specific parameters</th>
+		</tr>
+		<tr>
+			<td>Analog inputs (ADwin)</td>
+			<td>Module: maximum and minimum amplitude (&plusmn;10V, &plusmn;5V or
+				0-10V), single ended or differential inputs.<br/>
+				Channels: <b>Gain</b> (1, 2, 4 or 8), and calibration values:
+				<b>Unit</b> (physical unit of the sensor), <b>UMax</b> /
+				<b>UMin</b> (values in physical unit) and <b>AMax</b> /
+				<b>AMin</b> (corresponding values in electrical unit).</td>
+		</tr>
+		<tr>
+			<td>Analog outputs (ADwin)</td>
+			<td>Module: maximum and minimum amplitude.<br/>
+				Channels: <b>Stimulus</b>, checked when output values are read
+				from a stimulus file (see the Stimulus function of the
+				<a href="dacqprocess.html#functions">processes</a> and
+				<a href="../advancedconcepts/createstimulusfile.html">How to create
+				stimulus file with Matlab or Python ?</a>).</td>
+		</tr>
+		<tr>
+			<td>Digital inputs/outputs (ADwin)</td>
+			<td>Channels: <b>Inp./Out.</b> (input or output) and <b>Stimulus</b>
+				(for outputs). On ADwin Gold and ADwin Pro DIO32 Rev. B, channels 1
+				to 16 are inputs and 17 to 32 are outputs.</td>
+		</tr>
+		<tr>
+			<td>CAN (ADwin)</td>
+			<td>Name, interface number, <b>system type</b> (CODAMOTION,
+				OPTITRACK, GYROSCOPE, TIMESTAMP, their combinations, or NOT
+				SPECIFIED), frequency, markers number (Codamotion and Optitrack),
+				mode, message objects and identifiers. When the system type is
+				specified, the channels are created and handled by DOCoMETRe
+				(baud rate forced to 1 Mbit/s, global frequency of at least
+				15kHz). With NOT SPECIFIED, the ADbasic code must be written in
+				the processes.</td>
+		</tr>
+		<tr>
+			<td>RS232 (ADwin)</td>
+			<td>Name, interface number, system type (ICE or NOT SPECIFIED),
+				frequency (the global frequency must be a multiple of it),
+				transfer speed, data bits, stop bits, parity and flow control.
+				The channels table lists the channels sent through the serial
+				link ("+" opens a dialog to select them).</td>
+		</tr>
+		<tr>
+			<td>Analog inputs (Arduino)</td>
+			<td>Module: <b>Analog reference</b> (DEFAULT, INTERNAL, EXTERNAL
+				for R3, AR_DEFAULT, AR_EXTERNAL for R4).<br/>
+				Channels: <b>Used</b> (the channels of the board are listed;
+				check the ones you use), calibration values (Unit, UMax, UMin,
+				AMax, AMin).</td>
+		</tr>
+		<tr>
+			<td>Analog outputs, digital inputs/outputs (Arduino)</td>
+			<td>Channels: <b>Used</b>, and for digital channels
+				<b>Inp./Out.</b> (input or output).</td>
+		</tr>
+		<tr>
+			<td>ADS1115 (Arduino)</td>
+			<td>Module: I2C <b>address</b> (0x48, 0x49, 0x4A or 0x4B),
+				<b>mode</b> (0: continuous, for one channel; 1: single shot,
+				recommended for several channels) and <b>conversion time</b> (0
+				to 7, 7 being the fastest, about 2.7ms).<br/>
+				Channels: Used, <b>Gain</b> of the amplifier (0 for 2/3, 1, 2, 4,
+				8 or 16) and calibration values.</td>
+		</tr>
+	</table>
+	<p>When a channel is removed or no longer transferred, the curves that
+		display it in the Charts tab are removed. After a modification of the
+		calibration values, recompile the processes associated with the
+		configuration.</p>
+
+	<h2><a name="variables">Variables tab</a></h2>
+
+	<p>Variables are memory spaces of the real time system that processes
+		use to implement their algorithms (counters, states, computed
+		values...). They can also be transferred and recorded like channels.
+		The table of the Variables tab gives, for each variable:</p>
+	<table>
+		<tr>
+			<th>Column</th>
+			<th>Description</th>
+		</tr>
+		<tr>
+			<td>Name, S.F., T, A.T., T.N., Rec., B.S.</td>
+			<td>Same meaning as for <a href="#modules">channels</a> (A.T.,
+				T.N. and B.S. are only used with ADwin).</td>
+		</tr>
+		<tr>
+			<td>Type</td>
+			<td>ADwin: float, int or string. Arduino: bool, char, int, long or
+				float.</td>
+		</tr>
+		<tr>
+			<td>Size</td>
+			<td>1 for a scalar, more for an array. Arrays cannot be
+				transferred.</td>
+		</tr>
+		<tr>
+			<td>Parameter (ADwin)</td>
+			<td>The variable is a parameter: its value is set before each
+				trial, from the <a href="subjectsessiontrial.html#parameters">parameters
+				file</a> of the session (or from a dialog when a process is
+				<a href="processtest.html">tested</a>). Parameters are used to
+				build generic processes, for example one process for several
+				experimental conditions. A parameter cannot be an array and is
+				not transferred.</td>
+		</tr>
+		<tr>
+			<td>Propagate (ADwin)</td>
+			<td>For a parameter: its value at the end of a trial is written in
+				the parameters file as the value of the next trial.</td>
+		</tr>
+		<tr>
+			<td>Stimulus (ADwin)</td>
+			<td>Values of the variable are read from a stimulus file.</td>
+		</tr>
+	</table>
+
+	<h2><a name="charts">Charts tab</a></h2>
+
+	<p>The Charts tab defines the charts displayed in the
+		<a href="../dataacquisition/acquireperspective.html">Acquire
+		perspective</a> while a process associated with this configuration is
+		running. It has two sections.</p>
+	<p>The <b>Charts</b> section lists the charts. Its buttons add a chart
+		(a dialog asks for its type), delete the selected charts, move the
+		selected chart up or down and configure the <b>charts layout</b>
+		(number of columns, horizontal and vertical span of each chart, order
+		of the charts). The following types of charts are available:</p>
+	<table>
+		<tr>
+			<th>Type</th>
+			<th>Description and properties</th>
+		</tr>
+		<tr>
+			<td>Oscillo. Chart</td>
+			<td>Signals as a function of time. Time width (seconds), auto scale
+				or maximum and minimum amplitudes, font, display of current
+				values.</td>
+		</tr>
+		<tr>
+			<td>XY Chart</td>
+			<td>A signal as a function of another one (both with the same sample
+				frequency). X and Y maximum and minimum amplitudes, auto scale,
+				history size.</td>
+		</tr>
+		<tr>
+			<td>XYZ Chart</td>
+			<td>3D trajectory of three signals. Requires the "SWT + OpenGL v2"
+				real time chart library (General preferences).</td>
+		</tr>
+		<tr>
+			<td>Cursor 2D Chart</td>
+			<td>Last (x, y) values only, drawn as a symbol (circle, square,
+				diamond, triangles, plus, cross, star or image) whose size and
+				colors are configurable, for example to show a target and a
+				cursor to a subject. Requires the "SWT + OpenGL v2" library.</td>
+		</tr>
+		<tr>
+			<td>Gauge Chart, Tank Chart</td>
+			<td>Current value of a signal on a gauge or a tank. Minimum and
+				maximum values, and Low Low, Low, High, High High thresholds that
+				can be shown.</td>
+		</tr>
+		<tr>
+			<td>Image Chart</td>
+			<td>Images whose generic file name is given; they must be present in
+				the session folders. This type of chart is still being
+				developed.</td>
+		</tr>
+	</table>
+	<p>The <b>Curves</b> section lists the curves of the selected chart. Its
+		buttons add curves (a dialog lists the transferred channels and
+		variables) or delete the selected ones. For each curve, the table
+		gives the channel name (X, Y and Z channels for XY and XYZ charts),
+		its color, its line style and width, and the specific properties of
+		the chart type (symbol of a cursor 2D chart, for example).</p>
+
+	<h2><a name="calibration">Calibration and monitoring (ADwin)</a></h2>
+
+	<p>The <b>Calibration, monitoring</b> button of the General tab opens a
+		dialog that shows the inputs and outputs of the system. After the
+		proceed button has been pressed, the inputs are monitored and the
+		outputs take the values given in the dialog: set these values before
+		starting the monitoring. For each analog input, the minimum and
+		maximum electrical values can be captured from the current value
+		(buttons Capture Min Value and Capture Max Value) or typed (validate
+		with <kbd>Enter</kbd>), and the corresponding physical values typed:
+		they become the calibration values (UMin, UMax, AMin, AMax) of the
+		channel. "Show calibrated values" displays the values in physical
+		unit. When the calibration has been modified, do not forget to save
+		the configuration and to recompile the associated processes.</p>
+
+</body>
+</html>

@@ -1,0 +1,240 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>DACQ Process</title>
+<style type="text/css">
+	table { border-collapse: collapse; margin-bottom: 1em; }
+	th, td { border: 1px solid #A0A0A0; padding: 4px 8px; text-align: left; vertical-align: top; }
+	kbd { border: 1px solid #A0A0A0; border-radius: 3px; padding: 0px 4px; font-family: monospace; }
+</style>
+</head>
+
+<body>
+	<h1>DACQ Process</h1>
+
+	<p>A DACQ (data acquisition) process file (<code>*.process</code>) is the
+		program run by the real time system during a trial. It is not written
+		as text: it is built with graphical blocks (functions, conditions,
+		loops) linked together, from which DOCoMETRe generates the ADbasic
+		code (ADwin) or the C code (Arduino) and compiles it. A process is
+		always associated with a <a href="dacqconfiguration.html">DACQ
+		configuration</a>, whose channels and variables it uses.</p>
+	<p>Contents of this page:</p>
+	<ul>
+		<li><a href="#create">Creating a process</a></li>
+		<li><a href="#segments">Process editor and its tabs</a></li>
+		<li><a href="#palette">Palette and blocks</a></li>
+		<li><a href="#functions">Functions</a></li>
+		<li><a href="#globals">Global declarations</a></li>
+		<li><a href="#source">Source code tab</a></li>
+		<li><a href="#compile">Compilation</a></li>
+	</ul>
+
+	<h2><a name="create">Creating a process</a></h2>
+
+	<p>Select an experiment or a folder in the Experiments view, then use
+		File &gt; New &gt; DACQ Process (or the corresponding tool bar button).
+		The wizard asks for the name of the process, its description and its
+		<b>associated DAQ configuration</b> (the default configuration of the
+		experiment is pre-selected). The association can be changed later
+		with the <b>Associate with...</b> sub-menu of the context menu; in
+		that case, check that the channels used by the process exist in the
+		new configuration.</p>
+	<p>A process can be opened only if its associated configuration exists:
+		the system of the configuration (ADwin or Arduino) defines the editor
+		used.</p>
+
+	<h2><a name="segments">Process editor and its tabs</a></h2>
+
+	<p>The execution of a process is split into three segments, each one
+		edited in its own tab (tabs at the bottom of the editor):</p>
+	<table>
+		<tr>
+			<th>Tab (ADwin / Arduino)</th>
+			<th>When is it executed ?</th>
+			<th>Typical use</th>
+		</tr>
+		<tr>
+			<td>Initialize / Initialize</td>
+			<td>Once, before the real time loop starts.</td>
+			<td>Initial values of variables and outputs, configuration of
+				devices. This tab also shows the
+				<a href="#globals">global declarations</a>.</td>
+		</tr>
+		<tr>
+			<td>Event / Loop</td>
+			<td>At each period of the real time loop (the period is the inverse
+				of the global frequency of the DACQ configuration).</td>
+			<td>Acquisition of inputs, computations, generation of outputs,
+				transfers, conditions to end the process.</td>
+		</tr>
+		<tr>
+			<td>Finalize / Finalize</td>
+			<td>Once, after the last loop.</td>
+			<td>Reset of outputs, final computations.</td>
+		</tr>
+		<tr>
+			<td>ADBasic source code / Arduino Uno source code</td>
+			<td>-</td>
+			<td>Read only view of the generated code (see
+				<a href="#source">below</a>).</td>
+		</tr>
+	</table>
+	<p>In the segments, the variable <code>time</code> (<code>rtTime</code>
+		on Arduino Uno R4 WiFi) gives the time, in seconds, elapsed since the
+		beginning of the real time loop: it is managed by DOCoMETRe and can be
+		used in conditions and expressions (for example to stop the process
+		after a given duration).</p>
+
+	<h2><a name="palette">Palette and blocks</a></h2>
+
+	<p>Each segment tab is a drawing area with a palette on its side. The
+		palette contains selection tools (selection, marquee selection) and the
+		<b>Elements</b> drawer:</p>
+	<table>
+		<tr>
+			<th>Element</th>
+			<th>Description</th>
+		</tr>
+		<tr>
+			<td>Connection Creation</td>
+			<td>Links a block to the next one: click on the first block, then on
+				the next one. The connections define the order of execution.</td>
+		</tr>
+		<tr>
+			<td>If block</td>
+			<td>Conditional block: "IF left operand operator right operand".
+				Operators are &gt;, &gt;=, &lt;, &lt;=, = and &lt;&gt;. It has
+				two outgoing connections: the true branch and the false
+				branch.</td>
+		</tr>
+		<tr>
+			<td>Do block</td>
+			<td>Loop block: the blocks between the DO block and its end function
+				are repeated until (ADwin) or while (Arduino) the condition is
+				true. Link the DO block to its first function, link the end
+				function back to the DO block, then double click on this last
+				link to specify the end function.</td>
+		</tr>
+		<tr>
+			<td>Function block</td>
+			<td>Executes a <a href="#functions">function</a> (acquisition,
+				generation, filter, expression, transfer...). A new function
+				block is not yet assigned: right click &gt; Assign to choose its
+				function.</td>
+		</tr>
+		<tr>
+			<td>Comment block</td>
+			<td>Free text, ignored by the code generation.</td>
+		</tr>
+	</table>
+	<p>Blocks are created by selecting an element in the palette and clicking
+		in the drawing area; they can be moved and resized with the mouse. The
+		first block of a segment is the one that has no incoming connection:
+		a segment must have only one start block (otherwise a warning says
+		which one is used). Structure errors (IF block without true or false
+		branch, DO block without end function, branches that leave their
+		block...) are reported as warnings with an explanation of how to fix
+		them.</p>
+	<p>A <b>double click</b> on a block opens its configuration dialog
+		(parameters of the function, condition of an IF or DO block, text of a
+		comment). In text fields, <kbd>Ctrl</kbd>+<kbd>Space</kbd> displays the
+		list of the available channels and variables.</p>
+	<p>The context menu of the drawing area contains:</p>
+	<ul>
+		<li>Copy, Paste, Undo, Redo (also with the usual shortcuts); blocks can
+			be copied from one process to another;</li>
+		<li>Edit... (same as a double click) and <b>Assign</b> (function of a
+			function block);</li>
+		<li><b>Toggle activated state</b>: a deactivated block is ignored by the
+			code generation, which is useful to test variants of a process;</li>
+		<li>Delete (also with <kbd>Del</kbd> or <kbd>Backspace</kbd>);</li>
+		<li>Zoom to Fit page and Zoom to 25%, 50%, 100%, 200%, 300%;</li>
+		<li><b>Show grid</b> and <b>Block alignment helper</b> (snap to grid).
+			Zoom, grid and alignment states are saved with the process.</li>
+	</ul>
+
+	<h2><a name="functions">Functions</a></h2>
+
+	<p>The Assign sub-menu lists the functions available for the system of
+		the process. Each function has its own configuration dialog
+		(channels to use, values, parameters). The main functions are:</p>
+	<table>
+		<tr>
+			<th>Function</th>
+			<th>ADwin</th>
+			<th>Arduino</th>
+		</tr>
+		<tr><td>Acquire analog input, Acquire digital input value</td><td>yes</td><td>yes</td></tr>
+		<tr><td>Generate analog output value</td><td>yes</td><td>-</td></tr>
+		<tr><td>Generate digital output value</td><td>yes</td><td>yes</td></tr>
+		<tr><td>Analog Wait, Digital Wait (wait for an input to reach a value)</td><td>yes</td><td>yes</td></tr>
+		<tr><td>Compute expression(s)</td><td>yes</td><td>yes</td></tr>
+		<tr><td>Terminate process</td><td>yes</td><td>yes</td></tr>
+		<tr><td>Transfer (send a channel or variable to the computer, when it is not auto transferred)</td><td>yes</td><td>-</td></tr>
+		<tr><td>Stimulus (generate an output from a stimulus file)</td><td>yes</td><td>-</td></tr>
+		<tr><td>Averaging filter, Median filter, Binary median filter, Filtered derivator</td><td>yes</td><td>-</td></tr>
+		<tr><td>Serial port functions (read a byte, write bytes, ASCII characters, float or long values)</td><td>yes</td><td>-</td></tr>
+		<tr><td>JVL MAC141 servomotor functions (change mode, read and write registers)</td><td>yes</td><td>-</td></tr>
+	</table>
+	<p>User functions (<code>*.FUN</code> files) are listed in the Customer
+		functions sub-menu. They are created with File &gt; New &gt; User
+		function, or found in the user libraries folder: see
+		<a href="../advancedconcepts/dataacquisitionfunction.html">How to create
+		my own dacq. user function ?</a> and
+		<a href="../advancedconcepts/variabledeclaration.html">What if I need to
+		declare variable in user function ?</a>. The Stimulus function reads a
+		file of 32 bits floating point values: see
+		<a href="../advancedconcepts/createstimulusfile.html">How to create
+		stimulus file with Matlab or Python ?</a>.</p>
+
+	<h2><a name="globals">Global declarations</a></h2>
+
+	<p>The Initialize tab shows a <b>Global declarations</b> box that
+		summarizes the libraries, constants and subroutines declared for the
+		process (its tooltip lists them). They can be used in all the segments.
+		A double click on the box opens the Global declarations dialog, with
+		three tabs:</p>
+	<ul>
+		<li><b>Libraries</b>: files to include (<code>#INCLUDE file</code> in
+			ADbasic; <code>&lt;file.h&gt;</code> or <code>"file.h"</code> in
+			C);</li>
+		<li><b>Constants</b>: name, value and comment of each constant
+			(<code>#DEFINE</code> in ADbasic, <code>#define</code> in C);</li>
+		<li><b>Subroutines</b>: name, parameters and body of subroutines
+			(<code>SUB ... ENDSUB</code> in ADbasic, <code>void name(...)
+			{...}</code> in C).</li>
+	</ul>
+	<p>Names must start with a letter or "_" and contain only letters,
+		digits and "_"; they cannot be the name of a channel, of a variable
+		or of a predefined constant. Selected declarations can be copied and
+		pasted into the dialog of another process; text containing
+		declarations can also be pasted.</p>
+
+	<h2><a name="source">Source code tab</a></h2>
+
+	<p>The last tab shows the code generated from the blocks, the global
+		declarations and the DACQ configuration. It is read only: modify the
+		blocks to change it. Compilation errors are marked in the margin.
+		<kbd>Ctrl</kbd>+<kbd>F</kbd> (<kbd>Cmd</kbd>+<kbd>F</kbd> on macOS)
+		opens a find dialog. The generated code can also be opened in the
+		editor of the system with the <b>Open with system editor</b> command of
+		the context menu.</p>
+
+	<h2><a name="compile">Compilation</a></h2>
+
+	<p>A process must be compiled before it can be run. Compilation is
+		automatic when the process is saved and Options &gt; Build
+		automatically is checked; otherwise use Compile in the context menu or
+		Options &gt; Compile... Compilation uses the paths given in the
+		<a href="dacqconfiguration.html#general">General tab</a> of the DACQ
+		configuration. Errors are written in the Console view and shown with
+		an error overlay on the process; warnings about the blocks structure
+		are shown with a warning overlay.</p>
+	<p>Once compiled, a process can be <a href="processtest.html">tested on
+		its own</a> before being associated with trials.</p>
+
+</body>
+</html>

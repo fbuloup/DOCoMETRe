@@ -4,6 +4,20 @@
  <toc label="Data Acquisition Concepts" link_to="toc.xml#dataacquisition"> 
  	<topic label="Introduction"  href="html/dataacquisition/maintopic.html"> 
  	</topic>
+ 	<topic label="Design Perspective"  href="html/designperspective/designperspective.html"> 
+ 		<topic label="DACQ Configuration"  href="html/designperspective/dacqconfiguration.html"> 
+ 		</topic>
+ 		<topic label="DACQ Process"  href="html/designperspective/dacqprocess.html"> 
+ 		</topic>
+ 		<topic label="Testing a Process"  href="html/designperspective/processtest.html"> 
+ 		</topic>
+ 		<topic label="Subjects, Sessions and Trials"  href="html/designperspective/subjectsessiontrial.html"> 
+ 		</topic>
+ 		<topic label="Data Editor"  href="html/designperspective/dataeditor.html"> 
+ 		</topic>
+ 		<topic label="Import and Export"  href="html/designperspective/importexport.html"> 
+ 		</topic>
+ 	</topic>
  	<topic label="Acquire Perspective"  href="html/dataacquisition/acquireperspective.html"> 
  	</topic>
  </toc>

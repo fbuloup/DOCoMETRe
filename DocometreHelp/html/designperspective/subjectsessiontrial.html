@@ -1,0 +1,357 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Subjects, Sessions and Trials</title>
+<style type="text/css">
+	table { border-collapse: collapse; margin-bottom: 1em; }
+	th, td { border: 1px solid #A0A0A0; padding: 4px 8px; text-align: left; vertical-align: top; }
+	kbd { border: 1px solid #A0A0A0; border-radius: 3px; padding: 0px 4px; font-family: monospace; }
+	pre { margin-left: 2em; }
+</style>
+</head>
+
+<body>
+	<h1>Subjects, Sessions and Trials</h1>
+
+	<p>The experimental protocol is described in the Experiments view by a
+		tree of three levels:</p>
+	<ul>
+		<li>a <b>subject</b> is a participant of the experiment. It is created
+			in an experiment or in a folder and contains sessions;</li>
+		<li>a <b>session</b> is a set of trials run in sequence (for example a
+			familiarization session followed by a test session). It contains
+			trials and possibly a parameters file;</li>
+		<li>a <b>trial</b> is one run of a process. It is associated with the
+			process to run and, once run, contains the diary and the data files
+			of this run.</li>
+	</ul>
+	<p>Contents of this page:</p>
+	<ul>
+		<li><a href="#subjects">Subjects</a></li>
+		<li><a href="#sessions">Sessions</a> and
+			<a href="#organize">organization of the trials</a></li>
+		<li><a href="#trials">Trials</a>: start and validate modes, state</li>
+		<li><a href="#run">Running subjects, sessions and trials</a></li>
+		<li><a href="#datafiles">Data files</a></li>
+		<li><a href="#parameters">Parameters files</a></li>
+		<li><a href="#diaries">Diaries (log files)</a></li>
+	</ul>
+
+	<h2><a name="subjects">Subjects</a></h2>
+
+	<p>Select an experiment or a folder, then use File &gt; New &gt; Subject
+		(or the corresponding tool bar button) and give the name and the
+		description of the subject. The label of a subject in the Experiments
+		view gives the percentage of its trials already done, for example
+		<code>Subject1 [25%]</code>.</p>
+	<p>Subjects can also be created from data acquired by other systems (ADW
+		files, Optitrack files, data organized in columns): see
+		<a href="importexport.html">Import and export</a>.</p>
+
+	<h2><a name="sessions">Sessions</a></h2>
+
+	<p>Select a subject, then use File &gt; New &gt; Session. The wizard has
+		two pages. The first one asks for:</p>
+	<ul>
+		<li>the <b>name</b> and the <b>description</b> of the session;</li>
+		<li>the number of <b>trials</b> to create;</li>
+		<li>how to name the <b>data files</b> of the trials (see
+			<a href="#datafiles">Data files</a>): "Use this prefix", "Use session
+			name as suffix" and "Use trial number as suffix". An example of file
+			name is displayed.</li>
+	</ul>
+	<p>The second page, <b>Organize this session</b>, associates processes
+		with the trials (see <a href="#organize">below</a>). The session and
+		its trials are created when Finish is pressed.</p>
+	<p>The properties and the organization of an existing session can be
+		changed with <b>Edit session</b> in the context menu (or Edit
+		menu).</p>
+	<p>Sessions can also be imported from a text file that describes them
+		(trials, start and validate modes, processes): select a subject, use
+		File &gt; Import... and choose "Sessions configuration file". The
+		format of this file is described in
+		<a href="../advancedconcepts/fileformatsessionimportation.html">What is
+		file format for sessions importation ?</a>.</p>
+
+	<h3><a name="organize">Organization of the trials</a></h3>
+
+	<p>The Organize this session page lists, on the left, the processes of
+		the experiment (<b>Available processes</b>). Move the processes you
+		want to use to the <b>Selected processes</b> list (Add selection, Add
+		all, Remove selection, Remove all), then assign them to the trials
+		with one of the two tabs:</p>
+	<ul>
+		<li><b>Assign by trials selection</b>: type the list of trials
+			concerned, for example <code>1-10,12,14,20-25</code>, and choose to
+			assign them according to the list of selected processes (in order,
+			cyclically), to a random distribution, or to a random distribution
+			without identical consecutive trials;</li>
+		<li><b>Assign by packet trials</b>: give a packet size (number of
+			consecutive trials); each packet of trials gets one process,
+			according to the list of selected processes or to a random
+			distribution.</li>
+	</ul>
+	<p>Press Apply to compute the association: the Results list shows the
+		process of each trial. Trials can also be associated with a process
+		later, with the Associate with... sub-menu of the context menu.</p>
+
+	<h2><a name="trials">Trials</a></h2>
+
+	<p>Trials are folders named <code>Trial n&deg;N</code>
+		(<code>Essai n&deg;N</code> in French), where N is the trial number.
+		They are created with their session, or with File &gt; New &gt;
+		Trial(s) when a session is selected: type <code>Trial n&deg;10</code>
+		to create trial 10, or <code>Trial n&deg;10:30</code> to create trials
+		10 to 30.</p>
+	<p>The label of a trial gives its modes and its associated process, for
+		example <code>Trial n&deg;3 [S.Man.][V.Auto.] [/MyExperiment/MyProcess]</code>,
+		and its icon shows whether it has been done:</p>
+	<table>
+		<tr>
+			<th>Property</th>
+			<th>Values</th>
+			<th>Meaning</th>
+		</tr>
+		<tr>
+			<td>Start mode</td>
+			<td><code>S.Man.</code> (default) or <code>S.Auto.</code>
+				(<code>D.Man.</code> / <code>D.Auto.</code> in French)</td>
+			<td>Manual: before this trial is started, a dialog asks "Do you want
+				to start next trial ?". Automatic: the trial starts as soon as
+				the previous one is over.</td>
+		</tr>
+		<tr>
+			<td>Validate mode</td>
+			<td><code>V.Man.</code> (default) or <code>V.Auto.</code></td>
+			<td>Manual: at the end of the trial, a dialog asks "Do you want to
+				validate this trial ?" with the answers Yes (the trial is marked
+				as done), No (the trial stays undone and the next trial is
+				prepared) and No and redo it now (the trial is run again).
+				Automatic: the trial is marked as done without question.</td>
+		</tr>
+		<tr>
+			<td>State</td>
+			<td>done or undone</td>
+			<td>A trial is done once it has been validated. Done trials are
+				skipped when trials are run in sequence.</td>
+		</tr>
+		<tr>
+			<td>Associated process</td>
+			<td>path of a process</td>
+			<td>Process run by the trial. A trial without process cannot be
+				run.</td>
+		</tr>
+	</table>
+	<p>These properties are changed with the following commands of the
+		context menu, which apply to the selected trials or to all the trials
+		of the selected sessions:</p>
+	<ul>
+		<li><b>Toggle trials states</b>, <b>Mark trials as done</b>, <b>Mark
+			trials as undone</b>: for example to run again trials already done;</li>
+		<li><b>Toggle trials start modes</b>, <b>Start trials automatically</b>,
+			<b>Start trials manually</b>;</li>
+		<li><b>Validate trials automatically</b>, <b>Validate trials
+			manually</b>;</li>
+		<li><b>Associate with...</b>: associates the selected trials with a
+			process;</li>
+		<li><b>Delete diary and data files...</b>: removes the results of the
+			selected trials, sessions or subjects (this cannot be undone).</li>
+	</ul>
+	<p>The options of the Trials parameters group (Options &gt;
+		Preferences... &gt; General) apply to all the trials: "Validate trials
+		automatically" and "Start trials automatically" override the modes of
+		the trials, while "Stop trial immediately when asked" and "Do not ask
+		for confirmation when stopping a trial" define what happens when a
+		running trial is stopped.</p>
+
+	<h2><a name="run">Running subjects, sessions and trials</a></h2>
+
+	<p>Subjects, sessions and trials are run in the
+		<a href="../dataacquisition/acquireperspective.html">Acquire
+		perspective</a>, after being selected in the Experiments view (or with
+		the Select item to run button):</p>
+	<ul>
+		<li>a <b>trial</b> runs this trial;</li>
+		<li>a <b>session</b> starts with its first trial not yet done;</li>
+		<li>a <b>subject</b> starts with its first trial not yet done.</li>
+	</ul>
+	<p>The run then goes on with the next trials not yet done of the session,
+		according to their start and validate modes, until all the trials of
+		the session have been done, or until the run is stopped or paused.
+		The percentages displayed in the labels of the session and of the
+		subject are updated as trials are done.</p>
+
+	<h2><a name="datafiles">Data files</a></h2>
+
+	<p>At the end of a trial, the trial folder contains:</p>
+	<ul>
+		<li>the <a href="#diaries">diary</a> of the trial,
+			<code>diary.log</code> (<code>journal.log</code> in French);</li>
+		<li>one samples file per recorded channel or variable (Rec. column of
+			the DACQ configuration), which contains its values as 32 bits
+			floating point numbers (see
+			<a href="../advancedconcepts/datafilewithmatlaborpython.html">How to
+			open samples data files with Matlab or Python ?</a>).</li>
+	</ul>
+	<p>The name of a samples file is made of the name of the channel and,
+		according to the options of the session, of a prefix and suffixes
+		separated by dots:</p>
+<pre>
+[prefix.]ChannelName[.SessionName][.TN].samples
+</pre>
+	<p>For example, with the prefix <code>S01</code>, both suffixes, the
+		channel <code>Force</code>, the session <code>Learning</code> and trial
+		12: <code>S01.Force.Learning.T12.samples</code>. Prefixes and suffixes
+		are useful to keep unique names when data files of several sessions or
+		subjects are gathered outside DOCoMETRe. When a session is renamed,
+		DOCoMETRe can also rename its data files.</p>
+	<p>A double click on a samples file opens it in the
+		<a href="dataeditor.html">data editor</a>. For processing in the
+		Analyse perspective, subjects are loaded by the math engine from these
+		files.</p>
+
+	<h2><a name="parameters">Parameters files</a></h2>
+
+	<p>With ADwin systems, variables of the DACQ configuration can be
+		declared as <b>parameters</b> (see the
+		<a href="dacqconfiguration.html#variables">Variables tab</a>). Their
+		values are then sent to the real time system just before each trial
+		starts. A single process can thus be used for several experimental
+		conditions (target position, perturbation amplitude, delay...), the
+		conditions of each trial being given in a parameters file.</p>
+	<p>To create a parameters file, select a session and use File &gt; New
+		&gt; Parameters file... The new file (<code>*.params</code>) is
+		created in the session with explanations in comments. Each session
+		whose trials use parameters must contain one parameters file.</p>
+	<p>The file is a text file:</p>
+	<ul>
+		<li>"#" starts a comment, until the end of the line;</li>
+		<li>the first uncommented line gives the names of the parameters;</li>
+		<li>the following uncommented lines give the values of the parameters
+			for trial 1, trial 2, etc.;</li>
+		<li>values are separated by ";", "," or ":".</li>
+	</ul>
+<pre>
+# Target position (cm) and perturbation (0/1)
+target;perturbation
+10;0
+15;0
+10;1
+</pre>
+	<p>See <a href="../advancedconcepts/parametersfileformat.html">What is
+		parameters file format ?</a> for more details. A double click on a
+		parameters file opens it in the parameters editor, which has two tabs:
+		<b>Fichier brut</b> (the raw text of the file) and <b>Tableau</b> (a
+		table of the values, with buttons to add lines after the selected
+		lines and to remove the selected lines).</p>
+	<p>Before each trial, the line of the trial is read and the value of
+		each parameter is pushed to the real time system. The trial is not run,
+		and an error is reported, when the session has no parameters file,
+		when a parameter of the configuration is not found in the first line,
+		or when the file has no line for the trial.</p>
+	<p>When a parameter is <b>propagated</b>, its value at the end of a trial
+		is read from the real time system and written in the parameters file,
+		in the line of the next trial. This is useful to keep and update a
+		value along a session (an adaptive threshold, for example). As
+		values are written back by line number, avoid comment lines between
+		the lines of values of a file that contains propagated parameters.</p>
+	<p>Parameters are only available with ADwin systems. When a process is
+		<a href="processtest.html">tested</a> on its own, parameters values are
+		asked in a dialog.</p>
+
+	<h2><a name="diaries">Diaries (log files)</a></h2>
+
+	<p>Each run of a process writes an events diary (<code>*.log</code>
+		file):</p>
+	<ul>
+		<li>for a trial: <code>diary.log</code> in the trial folder;</li>
+		<li>for a process test: <code>ProcessName_diary.log</code> next to the
+			process.</li>
+	</ul>
+	<p>The diary is replaced each time the trial or the process is run
+		again. A double click opens it in the <b>diary editor</b>, a read only
+		text editor with line numbers. Errors detected during the run (data
+		losses, communication errors) are marked in the left margin and in
+		the overview ruler on the right (hover over the marker to read the
+		message); the diary, the trial and its parent folders are then
+		decorated with an error overlay in the Experiments view. In the diary
+		editor, <kbd>Ctrl</kbd>+<kbd>F</kbd> opens a find dialog and
+		<kbd>Ctrl</kbd>+<kbd>=</kbd> / <kbd>Ctrl</kbd>+<kbd>-</kbd> increase or
+		decrease the font size (<kbd>Cmd</kbd> instead of <kbd>Ctrl</kbd> on
+		macOS).</p>
+
+	<h3>ADwin diaries</h3>
+
+	<p>An ADwin diary reports the communications between the computer and
+		the ADwin system during the run:</p>
+	<table>
+		<tr>
+			<th>Line</th>
+			<th>Meaning</th>
+		</tr>
+		<tr>
+			<td>ADWin booted / ADWin was already booted, Loading ...</td>
+			<td>Start up of the system and loading of the compiled process.</td>
+		</tr>
+		<tr>
+			<td>Time since last process stopped</td>
+			<td>Time elapsed since the end of the previous run.</td>
+		</tr>
+		<tr>
+			<td>Starting ... at ... sec.</td>
+			<td>Start of the process.</td>
+		</tr>
+		<tr>
+			<td>Time between two adwin dialogs</td>
+			<td>Period of the exchanges between the computer and the system.</td>
+		</tr>
+		<tr>
+			<td>Recovering channel number : N (name) - Buffer size : n</td>
+			<td>Number of samples of a channel transferred from the system to
+				the computer during an exchange.</td>
+		</tr>
+		<tr>
+			<td>Init. generation buffer, Generating channel number : N (name)</td>
+			<td>Samples of a stimulus sent to the system.</td>
+		</tr>
+		<tr>
+			<td>Recovery time, Generation time, Display time</td>
+			<td>Time spent to transfer samples, to send stimulus samples and to
+				update the real time charts.</td>
+		</tr>
+		<tr>
+			<td>Data loss for channel number : N (name) at t</td>
+			<td>Samples have been lost: the computer did not read them fast
+				enough. This line is marked as an error, with the advice to
+				increase the buffer size (B.S.) of the channel.</td>
+		</tr>
+		<tr>
+			<td>No more data to generate for ...</td>
+			<td>The stimulus file is shorter than the run.</td>
+		</tr>
+		<tr>
+			<td>Ending ... at ... sec., Approximative ... duration is ...</td>
+			<td>End and duration of the process.</td>
+		</tr>
+	</table>
+	<p>When an ADwin diary is displayed, the diary editor adds statistics to
+		the lines: the running <b>Mean</b> of the times (time between dialogs,
+		recovery, generation and display times) and the running <b>Total</b>
+		of the samples recovered or generated for each channel.</p>
+
+	<h3>Arduino diaries</h3>
+
+	<p>An Arduino diary gives the date, the time since the last run, the
+		start time of the process, the list of transferred channels and,
+		about every second, the total number of samples transferred for each
+		channel with the time and the workload of the board. It ends with the
+		messages exchanged to stop the board. Lines starting with "ERROR" report
+		messages received from the board that could not be decoded; they are
+		marked as errors.</p>
+	<p>Other messages (information, warnings and errors of DOCoMETRe) are
+		written in the Console view.</p>
+
+</body>
+</html>

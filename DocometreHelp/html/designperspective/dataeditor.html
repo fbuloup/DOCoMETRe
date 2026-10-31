@@ -1,0 +1,182 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Data Editor</title>
+<style type="text/css">
+	table { border-collapse: collapse; margin-bottom: 1em; }
+	th, td { border: 1px solid #A0A0A0; padding: 4px 8px; text-align: left; vertical-align: top; }
+	kbd { border: 1px solid #A0A0A0; border-radius: 3px; padding: 0px 4px; font-family: monospace; }
+</style>
+</head>
+
+<body>
+	<h1>Data Editor</h1>
+
+	<p>The data editor displays the content of samples files
+		(<code>*.samples</code>), that is the signals recorded in a trial or
+		in a <a href="processtest.html">process test</a>, as a function of
+		time. It is a quick way to check acquired data without loading the
+		subject in the Analyse perspective. The data editor does not modify
+		the files.</p>
+
+	<h2><a name="open">Opening signals</a></h2>
+
+	<ul>
+		<li>Double click on a samples file in the Experiments view (or select
+			it and use File &gt; Open). Each samples file opens its own
+			editor.</li>
+		<li>To display several signals in the same editor, drag other samples
+			files from the Experiments view and drop them onto the opened
+			editor. The name of the editor is then followed by "(...)" and its
+			tooltip lists the displayed files.</li>
+	</ul>
+	<p>Samples are read as 32 bits floating point numbers. To build the time
+		axis, the data editor needs the sample frequency of the signal: it is
+		found in the DACQ configuration of the process associated with the
+		trial (or with the process test). If it cannot be found (file copied
+		from elsewhere, channel renamed, process no longer associated...), a
+		dialog asks for the sample frequency; Cancel does not display the
+		signal. The number of samples read is written in the Console view.</p>
+
+	<h2><a name="versions">Two versions of the data editor</a></h2>
+
+	<p>DOCoMETRe uses one of two data editors, according to the real time
+		chart library chosen in Options &gt; Preferences... &gt; General
+		("Real time chart library", restart needed after a change):</p>
+	<ul>
+		<li>with "SWT + OpenGL v2", the <a href="#gldataeditor">OpenGL data
+			editor</a> (GLDataEditor) is used: it is fast, even with very long
+			signals, and offers more display options;</li>
+		<li>with "SWT" or "SWT + OpenGL v1", the <a href="#swtdataeditor">SWT
+			data editor</a> (DataEditor) is used.</li>
+	</ul>
+	<p>In both cases, the main tool bar gets the following buttons while a
+		data editor is active: <b>Zoom in</b>, <b>Zoom out</b>, <b>Autoscale</b>
+		(back to the whole signals), <b>Left</b>, <b>Up</b>, <b>Down</b> and
+		<b>Right panning</b>. Data editors still opened when DOCoMETRe is
+		closed are opened again at the next start, with their signals and
+		their view.</p>
+
+	<h2><a name="gldataeditor">OpenGL data editor</a></h2>
+
+	<p>All the signals are displayed from t = 0; the horizontal axis covers
+		the duration of the longest signal and the view automatically fits
+		the data. Mouse commands:</p>
+	<table>
+		<tr>
+			<th>Mouse</th>
+			<th>Action</th>
+		</tr>
+		<tr>
+			<td>Wheel</td>
+			<td>Zooms in or out on both axes, around the point under the
+				mouse.</td>
+		</tr>
+		<tr>
+			<td>Left button + drag</td>
+			<td>Rectangle zoom: the rectangle drawn with the mouse becomes the
+				view when the button is released. A very narrow rectangle zooms
+				on one axis only.</td>
+		</tr>
+		<tr>
+			<td>Right button + drag</td>
+			<td>Moves (pans) the view.</td>
+		</tr>
+		<tr>
+			<td>Left double click (cursor displayed)</td>
+			<td>Freezes a static cursor on the current point: the differences
+				&Delta;x and &Delta;y between the moving cursor and the static
+				cursor are then displayed. Another double click moves the static
+				cursor.</td>
+		</tr>
+		<tr>
+			<td>Right click</td>
+			<td>Opens the context menu (see <a href="#glmenu">below</a>).</td>
+		</tr>
+	</table>
+	<p>Keyboard commands (click in the chart first to give it the
+		focus):</p>
+	<table>
+		<tr>
+			<th>Key</th>
+			<th>Action</th>
+		</tr>
+		<tr><td><kbd>C</kbd></td><td>Shows or hides the cursor. The cursor
+			follows the point of a curve at the abscissa of the mouse and its
+			coordinates are displayed on the axes.</td></tr>
+		<tr><td><kbd>Tab</kbd>, <kbd>Shift</kbd>+<kbd>Tab</kbd></td><td>Cursor
+			on the next / previous curve.</td></tr>
+		<tr><td>Arrow keys</td><td>Pan by a tenth of the view.</td></tr>
+		<tr><td><kbd>U</kbd> or <kbd>Backspace</kbd></td><td>Back to the
+			previous view (undo zoom).</td></tr>
+		<tr><td><kbd>R</kbd></td><td>Back to the initial view.</td></tr>
+		<tr><td><kbd>Esc</kbd></td><td>Cancels the rectangle being drawn.</td></tr>
+		<tr><td><kbd>N</kbd></td><td>Shows or hides the legend.</td></tr>
+		<tr><td><kbd>V</kbd></td><td>Shows or hides the last value of each
+			curve.</td></tr>
+		<tr><td><kbd>P</kbd></td><td>Shows or hides the points (samples).</td></tr>
+		<tr><td><kbd>G</kbd>, <kbd>A</kbd>, <kbd>L</kbd></td><td>Show or hide
+			the grid, the axes, the tick labels.</td></tr>
+		<tr><td><kbd>D</kbd></td><td>Enables or disables the decimation (only
+			part of the points are drawn when they are too close on the
+			screen).</td></tr>
+		<tr><td><kbd>F</kbd></td><td>Shows or hides the frame rate.</td></tr>
+	</table>
+	<p><a name="glmenu">The context menu</a> gives the same commands: show /
+		hide the cursor, remove the static cursor, show / hide the legend,
+		legend inside or below the chart, last value, points, grid, axes,
+		tick labels, frame rate, decimation, undo the zoom and reset the
+		view.</p>
+
+	<h2><a name="swtdataeditor">SWT data editor</a></h2>
+
+	<table>
+		<tr>
+			<th>Mouse / key</th>
+			<th>Action</th>
+		</tr>
+		<tr>
+			<td>Left button + drag</td>
+			<td>Rectangle zoom.</td>
+		</tr>
+		<tr>
+			<td>Arrow keys</td>
+			<td>Pan by a tenth of the view (a hundredth with
+				<kbd>Ctrl</kbd>).</td>
+		</tr>
+		<tr>
+			<td><kbd>Tab</kbd></td>
+			<td>Cursor on the next curve.</td>
+		</tr>
+		<tr>
+			<td>Double click (cursor displayed)</td>
+			<td>Places the marker on the curve of the cursor.</td>
+		</tr>
+		<tr>
+			<td><kbd>Esc</kbd></td>
+			<td>Hides the cursor and the marker, cancels the rectangle being
+				drawn.</td>
+		</tr>
+		<tr>
+			<td>Right click</td>
+			<td>Context menu: Show legend, Legend position (top or bottom),
+				Adjust X, Y scales (or X scale, or Y scale only), Show grid, Show
+				axis, Show cursor, Series thickness, Show samples, Symbol samples
+				(square or round) and Symbol size.</td>
+		</tr>
+	</table>
+	<p>When the cursor is displayed, the status bar gives the coordinates of
+		the cursor, of the marker and their difference (&Delta;). The cursor is
+		displayed at opening when "Show cursor (Time charts)" is checked in
+		the general preferences.</p>
+
+	<h2><a name="analyse">Going further</a></h2>
+
+	<p>The data editor only displays raw samples files. To filter signals,
+		place markers, compute features or export data, load the subject in
+		the Analyse perspective (see the Data Processing chapter).</p>
+
+</body>
+</html>
