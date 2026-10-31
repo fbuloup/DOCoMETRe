@@ -45,6 +45,7 @@ import java.nio.FloatBuffer;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -174,14 +175,14 @@ public class XYChartConfiguration extends ChartConfiguration {
 		
 		value = getProperty(XYChartConfigurationProperties.FONT_BOLD);
 		boolean fontBold = Boolean.valueOf(value);
-		fontBoldButton = page.createButton(container, "Bold", SWT.CHECK, 1, 1);
+		fontBoldButton = page.createButton(container, DocometreMessages.Bold_Title, SWT.CHECK, 1, 1);
 		fontBoldButton.setSelection(fontBold);
 		fontBoldButton.addSelectionListener(new ModifyPropertyHandler(XYChartConfigurationProperties.FONT_BOLD, this, fontBoldButton, XYChartConfigurationProperties.FONT_BOLD.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
 		fontBoldButton.setEnabled(!Activator.useOpenGLV1());
 		
 		value = getProperty(XYChartConfigurationProperties.FONT_ITALIC);
 		boolean fontItalic = Boolean.valueOf(value);
-		fontItalicButton = page.createButton(container, "Italic", SWT.CHECK, 1, 1);
+		fontItalicButton = page.createButton(container, DocometreMessages.Italic_Title, SWT.CHECK, 1, 1);
 		fontItalicButton.setSelection(fontItalic);
 		fontItalicButton.addSelectionListener(new ModifyPropertyHandler(XYChartConfigurationProperties.FONT_ITALIC, this, fontItalicButton, XYChartConfigurationProperties.FONT_ITALIC.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
 		fontItalicButton.setEnabled(!Activator.useOpenGLV1());
@@ -339,9 +340,9 @@ public class XYChartConfiguration extends ChartConfiguration {
 			double sfx = Double.parseDouble(sfxString);
 			double sfy = Double.parseDouble(sfyString);
 			if(sfx != sfy) {
-				Activator.logErrorMessage("Sample frequency for channel " + xSerieID + " is " + sfxString + "Hz");
-				Activator.logErrorMessage("Sample frequency for channel " + ySerieID + " is " + sfyString + "Hz");
-				Activator.logErrorMessage("Channels with different sample frequencies cannot be displayed in XY chart !");
+				Activator.logErrorMessage(NLS.bind(DocometreMessages.ChannelSampleFrequency, xSerieID, sfxString));
+				Activator.logErrorMessage(NLS.bind(DocometreMessages.ChannelSampleFrequency, ySerieID, sfyString));
+				Activator.logErrorMessage(DocometreMessages.XYChartDifferentFrequencies);
 				continue;
 			}
 			

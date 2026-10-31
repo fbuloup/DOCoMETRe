@@ -458,7 +458,9 @@ public final class DocometreMessages extends NLS {
 	public static String CursorShape_STAR;
 	public static String CursorShape_IMAGE;
 	public static String Cursor2DChartOpenGLV1Warning;
-	public static String CursorChannelSampleFrequency;
+	public static String ChannelSampleFrequency;
+	public static String XYChartDifferentFrequencies;
+	public static String XYZChartDifferentFrequencies;
 	public static String Cursor2DChartDifferentFrequencies;
 	public static String CursorImageUnreadable;
 	public static String CursorNoImageFile;

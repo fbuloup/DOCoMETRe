@@ -131,8 +131,8 @@ public class Cursor2DChartConfiguration extends XYChartConfiguration {
 			double sfx = Double.parseDouble(sfxString);
 			double sfy = Double.parseDouble(sfyString);
 			if(sfx != sfy) {
-				Activator.logErrorMessage(NLS.bind(DocometreMessages.CursorChannelSampleFrequency, xSerieID, sfxString));
-				Activator.logErrorMessage(NLS.bind(DocometreMessages.CursorChannelSampleFrequency, ySerieID, sfyString));
+				Activator.logErrorMessage(NLS.bind(DocometreMessages.ChannelSampleFrequency, xSerieID, sfxString));
+				Activator.logErrorMessage(NLS.bind(DocometreMessages.ChannelSampleFrequency, ySerieID, sfyString));
 				Activator.logErrorMessage(DocometreMessages.Cursor2DChartDifferentFrequencies);
 				continue;
 			}
