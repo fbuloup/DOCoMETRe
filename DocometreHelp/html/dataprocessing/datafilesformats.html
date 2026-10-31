@@ -1,14 +1,62 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"> 
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 
- <html>
- <head>
- 	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
- 	<title>Data Processing</title>
- </head>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Supported Data Files Formats</title>
+<style type="text/css">
+	table { border-collapse: collapse; margin-bottom: 1em; }
+	th, td { border: 1px solid #A0A0A0; padding: 4px 8px; text-align: left; vertical-align: top; }
+</style>
+</head>
 
- <body>
- <h1>Supported Data Files formats</h1>
+<body>
+	<h1>Supported Data Files Formats</h1>
 
+	<p>When a subject is <a href="subjects.html">loaded</a>, DOCoMETRe reads
+		its data files and builds its <a href="datamodel.html">data model</a> in
+		the math engine. The following formats are supported:</p>
+	<table>
+		<tr>
+			<th>Format</th>
+			<th>Origin</th>
+			<th>Math engines</th>
+		</tr>
+		<tr>
+			<td><a href="samplesdatafiles.html">Samples files</a>
+				(<code>*.samples</code>)</td>
+			<td>Data acquired with DOCoMETRe: one file per recorded channel, in
+				each trial folder.</td>
+			<td>Python, Matlab</td>
+		</tr>
+		<tr>
+			<td><a href="adwdatafiles.html">ADW files</a> (<code>*.adw</code>)</td>
+			<td>One file per subject, from DOCoMETRe version 2 or written by File
+				&gt; Export to ADW file(s). Imported in the experiment with File
+				&gt; Import... (type "Subject from ADW data file").</td>
+			<td>Python, Matlab</td>
+		</tr>
+		<tr>
+			<td><a href="optitrackcsvfiles.html">Optitrack CSV files</a> (type 1 and
+				type 2)</td>
+			<td>Marker coordinates exported by Optitrack motion capture systems.
+				Imported with File &gt; Import... (types "Optitrack type 1" and
+				"Optitrack type 2").</td>
+			<td>Python, Matlab</td>
+		</tr>
+		<tr>
+			<td>Data organized in columns (text files)</td>
+			<td>Text files where each column is a signal, in a folder per subject
+				(<code>SubjectName/data_Conditions.txt</code>). Imported with File
+				&gt; Import... (type "Data organized in columns"): the wizard asks
+				for the separator of the columns and, if wanted, for the name and the
+				sample frequency of each signal, which are written in the first two
+				lines of the files.</td>
+			<td>Matlab only</td>
+		</tr>
+	</table>
+	<p>See also <a href="../designperspective/importexport.html">Import and
+		export</a> in the Design perspective chapter.</p>
 
- </body>
- </html>
+</body>
+</html>

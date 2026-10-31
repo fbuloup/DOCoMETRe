@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Testing a Process</title>
+<style type="text/css">
+	table { border-collapse: collapse; margin-bottom: 1em; }
+	th, td { border: 1px solid #A0A0A0; padding: 4px 8px; text-align: left; vertical-align: top; }
+	kbd { border: 1px solid #A0A0A0; border-radius: 3px; padding: 0px 4px; font-family: monospace; }
+	pre { margin-left: 2em; }
+</style>
+</head>
+
+<body>
+	<h1>Testing a Process</h1>
+
+	<p>A <a href="dacqprocess.html">process</a> can be run on its own,
+		without subject, session or trial. This is the best way to check a
+		process while it is being developed: wiring of sensors, sample
+		frequencies, real time charts, ending conditions, workload of the
+		real time system... Data acquired during a test are kept in a
+		<b>process test</b> folder, so that they can be inspected exactly like
+		the data of a trial.</p>
+
+	<h2><a name="run">Running a test</a></h2>
+
+	<ol>
+		<li>Connect the real time system and check that the DACQ configuration
+			associated with the process can reach it (IP address for ADwin,
+			serial port for Arduino).</li>
+		<li>Save and compile the process (automatic when Options &gt; Build
+			automatically is checked), and fix compilation errors if any: the
+			compiled process is the one loaded into the real time system.</li>
+		<li>Select the process in the Experiments view.</li>
+		<li>Switch to the <a href="../dataacquisition/acquireperspective.html">Acquire
+			perspective</a>: the process is displayed as the item to run. It can
+			also be chosen there with the Select item to run button.</li>
+		<li>Press Run (<kbd>F9</kbd>). The real time charts defined in the
+			Charts tab of the DACQ configuration are displayed.</li>
+		<li>The test ends when the process terminates (Terminate process
+			function, for example) or when it is stopped (<kbd>Esc</kbd> or
+			<kbd>F9</kbd>).</li>
+	</ol>
+	<p>Unlike a trial, a test is run only once: there is no validation dialog
+		and no next trial.</p>
+
+	<h2><a name="parameters">Parameters</a></h2>
+
+	<p>When the DACQ configuration declares parameters (ADwin only, see the
+		<a href="dacqconfiguration.html#variables">Variables tab</a>), a test
+		has no parameters file to read their values from. A <b>Parameters
+		values</b> dialog is displayed before the test starts: type the value
+		of each parameter and press OK (Cancel cancels the test). These values
+		are saved in the DACQ configuration and proposed again at the next
+		test.</p>
+
+	<h2><a name="results">Results of a test</a></h2>
+
+	<p>A test creates the following resources next to the process (in the
+		same experiment or folder):</p>
+	<ul>
+		<li>a folder named <code>test.ProcessName</code>, of type <b>Process
+			test</b>, associated with the process. It contains one samples file
+			per recorded channel or variable, named
+			<code>ChannelName.samples</code> (no prefix nor suffix, unlike the
+			<a href="subjectsessiontrial.html#datafiles">data files of a
+			trial</a>);</li>
+		<li>a diary named <code>ProcessName_diary.log</code>
+			(<code>ProcessName_journal.log</code> in French), which reports the
+			events of the run (see <a href="subjectsessiontrial.html#diaries">Diaries</a>).</li>
+	</ul>
+<pre>
+MyExperiment
+   MyProcess [/MyExperiment/MyConfiguration]
+   MyProcess_diary.log
+   test.MyProcess
+      Force.samples
+      Position.samples
+</pre>
+	<p>Back in the Design perspective, open the samples files with a double
+		click to display them in the <a href="dataeditor.html">data
+		editor</a>: the sample frequency of each signal is found in the DACQ
+		configuration of the process. Open the diary to check that no data
+		have been lost and to read the duration and timings of the run.</p>
+	<p>When a test is run again, the diary is replaced. If the
+		<code>test.ProcessName</code> folder already exists, DOCoMETRe asks
+		whether it can be deleted: answer Yes to run the test (previous
+		results are lost), or No to cancel it (for example to rename or copy
+		the folder first). A test folder can also be deleted with Delete in
+		the context menu.</p>
+
+	<h2><a name="tips">Tips</a></h2>
+
+	<ul>
+		<li>Look at the workload displayed in the status bar of the Acquire
+			perspective: a workload close to 100% means that the period of the
+			real time loop is too short for the process.</li>
+		<li>If the diary reports data losses, increase the buffer size (B.S.)
+			of the corresponding channels in the DACQ configuration.</li>
+		<li>Deactivating blocks (context menu &gt; Toggle activated state in the
+			process editor) is a quick way to test variants of a process.</li>
+		<li>To check the timings of a run in detail, see
+			<a href="../troubleshoots/docometre.html">Troubleshoots with
+			DOCoMETRe</a> (<code>-traceTrialTimings</code> option) and
+			<a href="../troubleshoots/timingConsideration.html">General
+			consideration on micro-controllers</a>.</li>
+	</ul>
+
+</body>
+</html>

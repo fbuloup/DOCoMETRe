@@ -1258,6 +1258,8 @@ public final class DocometreMessages extends NLS {
 	// ParametersTableEditor
 	public static String AddLines;
 	public static String RemoveLines;
+	public static String ParametersEditor_RawFileTab;
+	public static String ParametersEditor_TableTab;
 	
 	// ExportToADW Handler 
 	public static String ExportToADWJob_Title;

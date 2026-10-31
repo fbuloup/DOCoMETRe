@@ -1,0 +1,492 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Design Perspective</title>
+<style type="text/css">
+	table { border-collapse: collapse; margin-bottom: 1em; }
+	th, td { border: 1px solid #A0A0A0; padding: 4px 8px; text-align: left; vertical-align: top; }
+	kbd { border: 1px solid #A0A0A0; border-radius: 3px; padding: 0px 4px; font-family: monospace; }
+	pre { margin-left: 2em; }
+</style>
+</head>
+
+<body>
+	<h1>Design Perspective</h1>
+
+	<p>The Design perspective is the one used to prepare an experiment
+		before running it in the <a href="../dataacquisition/acquireperspective.html">Acquire
+		perspective</a>. In this perspective you describe the real time
+		system (ADwin or Arduino), you write the acquisition processes,
+		you organize the experimental protocol (subjects, sessions and
+		trials) and you can inspect the files created during acquisition
+		(data files and diaries).</p>
+	<p>This page describes the perspective as a whole and the different
+		kinds of files and folders you will handle. The following pages give
+		more details:</p>
+	<ul>
+		<li><a href="dacqconfiguration.html">DACQ configuration</a>: description
+			of the real time system and of its tabs;</li>
+		<li><a href="dacqprocess.html">DACQ process</a>: the program run by
+			the real time system and the tabs of its editor;</li>
+		<li><a href="processtest.html">Testing a process</a>: running a process
+			on its own, without subject, session or trial;</li>
+		<li><a href="subjectsessiontrial.html">Subjects, sessions and trials</a>:
+			organization of the protocol, parameters files and diaries;</li>
+		<li><a href="dataeditor.html">Data editor</a>: display of acquired
+			signals (samples files);</li>
+		<li><a href="importexport.html">Import and export</a>: exchange of
+			experiments, configurations, processes, data and sessions with
+			other computers or software.</li>
+	</ul>
+
+	<h2><a name="layout">Layout of the perspective</a></h2>
+
+	<p>The Design perspective is made of the following parts:</p>
+	<ul>
+		<li>the <b>Experiments view</b>, on the left, which shows all the
+			experiments of the workspace as a tree (see
+			<a href="#experimentsview">below</a>). The Functions view
+			(Options &gt; Show... &gt; Functions View) can be opened in the
+			same place;</li>
+		<li>the <b>Description view</b>, under the Experiments view, which
+			shows the description of the selected resource. The description is
+			given when the resource is created; it can be changed with Edit &gt;
+			Edit description;</li>
+		<li>the <b>editors area</b>, in the center, where files are opened
+			(configurations, processes, parameters files, diaries, data
+			files...). Several editors can be opened at the same time, each one
+			in its own tab. An editor whose content has been modified shows a
+			"*" before its name: save it with File &gt; Save
+			(<kbd>Ctrl</kbd>+<kbd>S</kbd>, <kbd>Cmd</kbd>+<kbd>S</kbd> on macOS)
+			or File &gt; Save all;</li>
+		<li>the <b>Console view</b>, under the editors area, where DOCoMETRe
+			writes information, warning and error messages (compilation,
+			loading of data files, etc.).</li>
+	</ul>
+	<p>Views can be closed, moved or resized; Options &gt; Show... opens
+		the Experiments, Description and Functions views again.</p>
+
+	<h2><a name="toolbar">Tool bar</a></h2>
+
+	<p>When the Design perspective is active, the main tool bar contains
+		the following buttons, from left to right:</p>
+	<table>
+		<tr>
+			<th>Button</th>
+			<th>Action</th>
+		</tr>
+		<tr>
+			<td>Save / Save all</td>
+			<td>Save the active editor, or all the modified editors.</td>
+		</tr>
+		<tr>
+			<td>New experiment</td>
+			<td>Creates a new experiment at the root of the workspace.</td>
+		</tr>
+		<tr>
+			<td>New DACQ configuration</td>
+			<td>Creates a data acquisition configuration file in the selected
+				experiment or folder (see <a href="dacqconfiguration.html">DACQ
+				configuration</a>).</td>
+		</tr>
+		<tr>
+			<td>New DACQ process</td>
+			<td>Creates a data acquisition process in the selected experiment
+				or folder (see <a href="dacqprocess.html">DACQ process</a>).</td>
+		</tr>
+		<tr>
+			<td>New subject, New session, New trial(s)</td>
+			<td>Create a subject in the selected experiment or folder, a
+				session in the selected subject, or trials in the selected
+				session (see <a href="subjectsessiontrial.html">Subjects, sessions
+				and trials</a>).</td>
+		</tr>
+		<tr>
+			<td>New data processing, New batch processing file</td>
+			<td>Create <a href="../dataprocessing/dataprocessingfiles.html">data processing</a>
+				and <a href="../dataprocessing/batchprocessing.html">batch processing</a> files,
+				used in the Analyse perspective.</td>
+		</tr>
+		<tr>
+			<td>New folder</td>
+			<td>Creates a folder in the selected experiment or folder, to
+				group configurations, processes, subjects...</td>
+		</tr>
+		<tr>
+			<td>New XY chart, New 3D chart</td>
+			<td>Create <a href="../dataprocessing/xyxyzcharts.html">chart files</a> used to
+				display processed data in the Analyse perspective.</td>
+		</tr>
+		<tr>
+			<td>New user function</td>
+			<td>Creates a user function file (see
+				<a href="../advancedconcepts/dataacquisitionfunction.html">How to create
+				my own dacq. user function ?</a>).</td>
+		</tr>
+		<tr>
+			<td>Import...</td>
+			<td>Opens the import wizard (see <a href="importexport.html">Import
+				and export</a>).</td>
+		</tr>
+	</table>
+	<p>The same commands are available in the File &gt; New menu and in the
+		New sub-menu of the Experiments view context menu. A command is
+		disabled when the selected resource cannot contain the new resource
+		(for example, a session can only be created in a subject).</p>
+	<p>When a data editor is active, zoom and pan buttons are added to the
+		tool bar (see <a href="dataeditor.html">Data editor</a>).</p>
+
+	<h2><a name="experimentsview">Experiments view</a></h2>
+
+	<p>The Experiments view shows the content of the workspace: each
+		experiment is a folder of the workspace, and each element of the tree
+		is a file or a folder on the disk. DOCoMETRe associates a <b>type</b>
+		with each of them (configuration, process, subject, session, trial...)
+		which defines its icon, its label and what can be done with it.</p>
+	<ul>
+		<li>a double click on a folder expands or collapses it; a double click
+			on a file opens it in the corresponding editor (File &gt; Open does
+			the same for the selected files);</li>
+		<li>the tool bar of the view contains Undo/Redo (for operations such as
+			rename or description changes), <b>Collapse all</b> and <b>Link with
+			editor</b> (when checked, the file of the active editor is selected
+			in the tree);</li>
+		<li>a right click opens the context menu, whose content depends on the
+			selected resources (see <a href="#contextmenu">below</a>);</li>
+		<li>samples files can be dragged from the view and dropped onto an
+			opened data editor to display several signals together.</li>
+	</ul>
+	<p>Some information is added to the labels of the tree:</p>
+	<table>
+		<tr>
+			<th>Resource</th>
+			<th>Label and decorations</th>
+		</tr>
+		<tr>
+			<td>DACQ configuration</td>
+			<td>Name followed by the system, for example
+				<code>MyConfiguration [ADWin]</code> or
+				<code>MyConfiguration [Arduino UNO]</code>. The default
+				configuration of the experiment is marked with an overlay icon.</td>
+		</tr>
+		<tr>
+			<td>DACQ process</td>
+			<td>Name followed by the path of its associated DACQ configuration,
+				for example <code>MyProcess [/MyExperiment/MyConfiguration]</code>,
+				or "No associated DAQ file".</td>
+		</tr>
+		<tr>
+			<td>Subject, session</td>
+			<td>Name followed by the percentage of trials already done, for
+				example <code>Session1 [40%]</code>.</td>
+		</tr>
+		<tr>
+			<td>Trial</td>
+			<td>Name followed by its start mode, its validate mode and its
+				associated process, for example
+				<code>Trial n&deg;3 [S.Man.][V.Auto.] [/MyExperiment/MyProcess]</code>.
+				Its icon shows whether the trial has been done or not.</td>
+		</tr>
+		<tr>
+			<td>Any resource</td>
+			<td>An error (or warning) overlay is displayed on a resource that
+				contains an error (or warning), for example a process that does
+				not compile or a diary that reports a data loss. The overlay is
+				also displayed on all the parent folders.</td>
+		</tr>
+	</table>
+
+	<h2><a name="resourcestypes">Files and folders types</a></h2>
+
+	<p>The following table lists the types of resources handled in the
+		Design perspective. Most of them are created with DOCoMETRe commands;
+		files copied into the workspace by other means get their type from
+		their extension (Refresh, <kbd>F5</kbd>, makes them appear). The type
+		of an untyped resource can be forced with Edit &gt; Set type...</p>
+	<table>
+		<tr>
+			<th>Type</th>
+			<th>On the disk</th>
+			<th>Description</th>
+		</tr>
+		<tr>
+			<td>Experiment</td>
+			<td>Folder at the root of the workspace</td>
+			<td>Contains everything related to an experiment: configurations,
+				processes, subjects, data processing files...</td>
+		</tr>
+		<tr>
+			<td>Folder</td>
+			<td>Folder</td>
+			<td>Used to organize the content of an experiment. It can contain
+				configurations, processes, subjects and other folders.</td>
+		</tr>
+		<tr>
+			<td>DACQ configuration</td>
+			<td><code>*.daqconf</code> file</td>
+			<td>Description of the real time system: modules, channels,
+				variables and real time charts. See
+				<a href="dacqconfiguration.html">DACQ configuration</a>.</td>
+		</tr>
+		<tr>
+			<td>DACQ process</td>
+			<td><code>*.process</code> file</td>
+			<td>Program run by the real time system, built with graphical blocks
+				and associated with a DACQ configuration. See
+				<a href="dacqprocess.html">DACQ process</a>.</td>
+		</tr>
+		<tr>
+			<td>Subject</td>
+			<td>Folder</td>
+			<td>A participant of the experiment. Contains sessions.</td>
+		</tr>
+		<tr>
+			<td>Session</td>
+			<td>Folder</td>
+			<td>A set of trials run in sequence. Contains trials and possibly a
+				parameters file.</td>
+		</tr>
+		<tr>
+			<td>Trial</td>
+			<td>Folder named <code>Trial n&deg;N</code></td>
+			<td>One run of a process. After acquisition, it contains the diary
+				and the samples files of the trial. See
+				<a href="subjectsessiontrial.html">Subjects, sessions and
+				trials</a>.</td>
+		</tr>
+		<tr>
+			<td>Process test</td>
+			<td>Folder named <code>test.ProcessName</code></td>
+			<td>Created when a process is run on its own. Contains the samples
+				files of the test. See <a href="processtest.html">Testing a
+				process</a>.</td>
+		</tr>
+		<tr>
+			<td>Parameters file</td>
+			<td><code>*.params</code> file</td>
+			<td>Values of the parameters for each trial of a session (ADwin
+				only). See <a href="subjectsessiontrial.html#parameters">Parameters
+				files</a>.</td>
+		</tr>
+		<tr>
+			<td>Log file (diary)</td>
+			<td><code>*.log</code> file</td>
+			<td>Events diary written during the run of a process: start and end
+				times, transfers, data losses... See
+				<a href="subjectsessiontrial.html#diaries">Diaries</a>.</td>
+		</tr>
+		<tr>
+			<td>Samples file</td>
+			<td><code>*.samples</code> file</td>
+			<td>Values of one recorded channel, as 32 bits floating point
+				numbers. Opened with the <a href="dataeditor.html">data
+				editor</a>.</td>
+		</tr>
+		<tr>
+			<td>ADW file, Optitrack files, column data files, CSV files</td>
+			<td><code>*.adw</code>, <code>*.csv</code>, <code>*.txt</code> files</td>
+			<td>Data files from other sources, imported in a subject (see
+				<a href="importexport.html">Import and export</a> and
+				<a href="../dataprocessing/datafilesformats.html">Supported data files
+				formats</a>).</td>
+		</tr>
+		<tr>
+			<td>Data processing, batch data processing</td>
+			<td><code>*.dataprocess</code>, <code>*.batchdataprocess</code> files</td>
+			<td>Processing applied to loaded subjects in the Analyse
+				perspective.</td>
+		</tr>
+		<tr>
+			<td>XY chart, 3D chart</td>
+			<td><code>*.chart</code>, <code>*.chart3D</code> files</td>
+			<td>Charts of processed data, used in the Analyse perspective (see
+				<a href="../dataprocessing/xyxyzcharts.html">XY and 3D charts</a>).</td>
+		</tr>
+		<tr>
+			<td>User function</td>
+			<td><code>*.FUN</code> file</td>
+			<td>Function that can be assigned to a function block of a process
+				(see <a href="../advancedconcepts/dataacquisitionfunction.html">How to
+				create my own dacq. user function ?</a>).</td>
+		</tr>
+		<tr>
+			<td>Saved data</td>
+			<td><code>save.data</code>, <code>save.mat</code>, <code>*.numpy</code> files</td>
+			<td>Subject data saved by the math engine in the Analyse
+				perspective.</td>
+		</tr>
+	</table>
+	<p>A typical experiment looks like this:</p>
+<pre>
+MyExperiment
+   MyConfiguration [ADWin]
+   MyProcess [/MyExperiment/MyConfiguration]
+   test.MyProcess
+      Channel1.samples
+   MyProcess_diary.log
+   Subject1 [50%]
+      Session1 [50%]
+         Session1.params
+         Trial n&deg;1 [S.Man.][V.Man.] [/MyExperiment/MyProcess]
+            diary.log
+            Channel1.samples
+            Channel2.samples
+         Trial n&deg;2 [S.Man.][V.Man.] [/MyExperiment/MyProcess]
+</pre>
+	<p>Names of diaries depend on the language of DOCoMETRe
+		(<code>diary.log</code> in English, <code>journal.log</code> in
+		French).</p>
+
+	<h2><a name="associations">Associations between resources</a></h2>
+
+	<p>Resources are linked together:</p>
+	<ul>
+		<li>a <b>DACQ configuration</b> is associated with a system (ADwin or
+			Arduino UNO) when it is created (the "Associate with system"
+			sub-menu of the Edit menu or of the context menu changes it);</li>
+		<li>each <b>process</b> is associated with a DACQ configuration of
+			the same experiment: it can only use the channels and variables
+			declared in this configuration. The association is chosen when the
+			process is created; it can be changed later by selecting one or
+			several processes and choosing the configuration in the
+			<b>Associate with...</b> sub-menu of the context menu;</li>
+		<li>each <b>trial</b> is associated with a process: this is the
+			process run when the trial is run. The association is made when the
+			session is created or edited, or by selecting trials and choosing
+			the process in the <b>Associate with...</b> sub-menu.</li>
+	</ul>
+	<p>One configuration of each experiment can be marked as the default
+		one (context menu &gt; Set as default): it is pre-selected when a new
+		process is created.</p>
+
+	<h2><a name="contextmenu">Context menu of the Experiments view</a></h2>
+
+	<p>The context menu contains the following commands, when they apply to
+		the selected resources:</p>
+	<table>
+		<tr>
+			<th>Command</th>
+			<th>Action</th>
+		</tr>
+		<tr>
+			<td>New</td>
+			<td>Same commands as the tool bar (see <a href="#toolbar">above</a>).</td>
+		</tr>
+		<tr>
+			<td>Open...</td>
+			<td>Opens the selected files in their editor.</td>
+		</tr>
+		<tr>
+			<td>Open with system editor</td>
+			<td>Opens the source code generated for the selected process in the
+				editor of the system: ADbasic editor for ADwin (<code>*.bas</code>
+				file), Arduino IDE for Arduino (<code>*.ino</code> sketch).</td>
+		</tr>
+		<tr>
+			<td>Compile</td>
+			<td>Generates and compiles the code of the selected processes.</td>
+		</tr>
+		<tr>
+			<td>Set as default</td>
+			<td>Makes the selected DACQ configuration the default one of its
+				experiment.</td>
+		</tr>
+		<tr>
+			<td>Edit description</td>
+			<td>Edits the description of the selected resource in the
+				Description view.</td>
+		</tr>
+		<tr>
+			<td>Rename... (<kbd>F2</kbd>), Refresh (<kbd>F5</kbd>)</td>
+			<td>Rename the selected resource, or reload the content of the
+				disk. Renaming a configuration or a process updates the
+				associations that refer to it. A trial must keep a name of the
+				form <code>Trial n&deg;N</code>.</td>
+		</tr>
+		<tr>
+			<td>Associate with...</td>
+			<td>Associates the selected processes with a DACQ configuration, or
+				the selected trials (or process tests) with a process.</td>
+		</tr>
+		<tr>
+			<td>Associate with system</td>
+			<td>Associates the selected DACQ configurations with ADwin or
+				Arduino UNO.</td>
+		</tr>
+		<tr>
+			<td>Set type...</td>
+			<td>Forces the type of the selected resources.</td>
+		</tr>
+		<tr>
+			<td>Edit session</td>
+			<td>Changes the properties of the selected session and the
+				organization of its trials.</td>
+		</tr>
+		<tr>
+			<td>Toggle trials states, Toggle trials start modes, Mark trials as
+				done / undone, Start trials automatically / manually, Validate
+				trials automatically / manually</td>
+			<td>Change the state and the modes of the selected trials, or of all
+				the trials of the selected sessions (see
+				<a href="subjectsessiontrial.html#trials">Trials</a>).</td>
+		</tr>
+		<tr>
+			<td>Delete diary and data files...</td>
+			<td>Deletes the diaries and samples files of the selected trials,
+				sessions or subjects.</td>
+		</tr>
+		<tr>
+			<td>Copy, Paste, Delete</td>
+			<td>Copy, paste or delete the selected resources. When trials,
+				sessions or subjects (or any folder) are pasted, DOCoMETRe asks
+				whether diaries and data files must be copied too.</td>
+		</tr>
+	</table>
+
+	<h2><a name="workflow">Typical workflow</a></h2>
+
+	<ol>
+		<li>Create an experiment (New experiment).</li>
+		<li>Create a <a href="dacqconfiguration.html">DACQ configuration</a>,
+			choose the system and describe its modules, channels, variables and
+			real time charts.</li>
+		<li>Create one or several <a href="dacqprocess.html">DACQ processes</a>
+			associated with this configuration and build their algorithm with
+			graphical blocks.</li>
+		<li>Compile the processes and <a href="processtest.html">test</a> them
+			on their own.</li>
+		<li>Create the <a href="subjectsessiontrial.html">subjects, sessions and
+			trials</a> of the protocol, associate a process with each trial and,
+			if needed, add parameters files.</li>
+		<li>Run the subjects, sessions or trials in the
+			<a href="../dataacquisition/acquireperspective.html">Acquire
+			perspective</a>.</li>
+		<li>Come back to the Design perspective to check diaries and to
+			inspect acquired signals with the <a href="dataeditor.html">data
+			editor</a>, then process them in the
+			<a href="../dataprocessing/maintopic.html">Analyse perspective</a>.</li>
+	</ol>
+
+	<h2><a name="build">Compilation</a></h2>
+
+	<p>The code of a process is generated from its blocks and from its
+		DACQ configuration, then compiled with the tools of the system
+		(ADbasic compiler for ADwin, arduino-builder/avrdude or arduino-cli
+		for Arduino). Compilation is done:</p>
+	<ul>
+		<li>automatically, each time a process or a DACQ configuration is
+			saved, when Options &gt; Build automatically is checked (all the
+			processes associated with a saved configuration are compiled
+			again);</li>
+		<li>on request, with Compile in the context menu (selected processes)
+			or Options &gt; Compile... (all the processes of the chosen
+			experiments).</li>
+	</ul>
+	<p>Compilation errors are written in the Console view and shown with an
+		error overlay on the process, on its editor tab and on the parent
+		folders.</p>
+
+</body>
+</html>

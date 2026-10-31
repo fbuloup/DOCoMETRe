@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>User Functions</title>
+<style type="text/css">
+	table { border-collapse: collapse; margin-bottom: 1em; }
+	th, td { border: 1px solid #A0A0A0; padding: 4px 8px; text-align: left; vertical-align: top; }
+	kbd { border: 1px solid #A0A0A0; border-radius: 3px; padding: 0px 4px; font-family: monospace; }
+	pre { margin-left: 2em; }
+</style>
+</head>
+
+<body>
+	<h1>User Functions</h1>
+
+	<p>When the <a href="functionslibrary.html">standard functions library</a>
+		does not provide what you need, or when the same expressions are used
+		again and again, you can write your own functions for the math engine.
+		A user function is a text file (<code>*.FUN</code>) with the same format
+		as the user functions of the acquisition processes (see
+		<a href="../advancedconcepts/dataacquisitionfunction.html">How to create
+		my own dacq. user function ?</a>), whose code is written in Python or in
+		Matlab.</p>
+
+	<h2><a name="where">Where are user functions ?</a></h2>
+
+	<p>The functions proposed in the Customer functions sub-menu of the Assign
+		menu of a data processing file are those of the <b>user scripts
+		location</b> of the math engine in use (Options &gt; Preferences... &gt;
+		Math Engine &gt; Python or Matlab, see <a href="mathengine.html">Math
+		engines</a>). A function file stored elsewhere is not proposed.</p>
+	<p>Choosing a folder of the workspace (a folder of an experiment, for
+		example) as user scripts location makes the functions visible in the
+		Experiments and Subjects views too, and exports them with the
+		experiment.</p>
+
+	<h2><a name="functionsview">Functions view</a></h2>
+
+	<p>The Functions view (Options &gt; Show... &gt; Functions View) lists all
+		the functions known by DOCoMETRe, in folders: ADwin functions and user
+		functions, Arduino Uno functions and user functions, Python functions and
+		user functions, Matlab functions and user functions. A double click on a
+		function opens it in the <b>Functions editor</b>: the code of the
+		standard functions can be read there, which is a good starting point
+		for your own functions. New user function in the context menu of a user
+		functions folder creates a new function file in this folder.</p>
+
+	<h2><a name="create">Writing a user function</a></h2>
+
+	<p>A user function can also be created with the <b>New user function</b>
+		button (in the selected folder of the Subjects or Experiments view). The
+		new file contains <code>USER_FUNCTION = YES</code>. In the Functions
+		editor, <kbd>Ctrl</kbd>+<kbd>Space</kbd> proposes the keys of the file
+		format and the types of parameters:</p>
+	<table>
+		<tr><th>Key</th><th>Description</th></tr>
+		<tr><td><code>MENU_TITLE</code> (<code>MENU_TITLE_FR</code>...)</td>
+			<td>Title of the function in the Assign menu.</td></tr>
+		<tr><td><code>DESCRIPTION</code> (<code>DESCRIPTION_FR</code>...)</td>
+			<td>Tooltip of the function in the menu.</td></tr>
+		<tr><td><code>USER_FUNCTION</code></td>
+			<td><code>YES</code> for a user function.</td></tr>
+		<tr><td><code>PARAMETERS_NUMBER</code></td>
+			<td>Number of parameters of the function.</td></tr>
+		<tr><td><code>PARAMETER_N</code></td>
+			<td>Definition of parameter N: <code>NAME</code>, <code>TYPE</code>
+				(TEXT, with an initial value and a regular expression to check
+				the value, FILE, FOLDER or COMBO) and <code>LABEL</code> displayed
+				in the configuration dialog.</td></tr>
+		<tr><td><code>FUNCTION_CODE</code></td>
+			<td>Code of the function (lines ended with <code>\n\</code>). Each
+				occurrence of the name of a parameter is replaced by the value
+				given in the configuration dialog.</td></tr>
+	</table>
+	<p>Example of a Python user function that multiplies a signal by a
+		gain, in place:</p>
+<pre>
+MENU_TITLE = Gain
+DESCRIPTION = Multiply a signal by a gain
+USER_FUNCTION = YES
+PARAMETERS_NUMBER = 2
+PARAMETER_1 = NAME = signalName, TYPE = TEXT:^(?!\s*$).+$, LABEL = "Signal full name :"
+PARAMETER_2 = NAME = gainValue, TYPE = TEXT[1.0]:[+-]?(\d+\.?\d*|\d*\.\d+), LABEL = "Gain :"
+FUNCTION_CODE = docometre.experiments["signalName.Values"] = gainValue * docometre.experiments["signalName.Values"];\n\
+if not("createdOrModifiedChannels" in docometre.experiments.keys()):\n\
+\tdocometre.experiments["createdOrModifiedChannels"] = "signalName";\n\
+else:\n\
+\tdocometre.experiments["createdOrModifiedChannels"] = docometre.experiments["createdOrModifiedChannels"] + ":signalName";
+</pre>
+	<p>The last lines tell DOCoMETRe that the signal has been modified, so that
+		the subject is marked as modified (see
+		<a href="dataprocessingfiles.html#expression">Compute
+		expression(s)</a>).</p>
+	<p>Use the full names of signals (<code>Experiment.Subject.Signal</code>,
+		see the <a href="datamodel.html">Data model</a>) as parameter values; a
+		<a href="batchprocessing.html">batch processing</a> replaces the subject
+		in these names. Save the file: the function is then proposed in the
+		Customer functions sub-menu.</p>
+
+</body>
+</html>

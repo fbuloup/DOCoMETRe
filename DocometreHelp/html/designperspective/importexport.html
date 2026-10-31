@@ -1,0 +1,182 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Import and Export</title>
+<style type="text/css">
+	table { border-collapse: collapse; margin-bottom: 1em; }
+	th, td { border: 1px solid #A0A0A0; padding: 4px 8px; text-align: left; vertical-align: top; }
+	kbd { border: 1px solid #A0A0A0; border-radius: 3px; padding: 0px 4px; font-family: monospace; }
+</style>
+</head>
+
+<body>
+	<h1>Import and Export</h1>
+
+	<p>DOCoMETRe keeps its experiments in a workspace folder, but also adds
+		to each file and folder properties that are not stored in the files
+		themselves (types, associations between processes and
+		configurations, trials modes and states, descriptions...). This is why
+		experiments must be exchanged with the export and import commands
+		described below, rather than by copying folders with the file
+		manager of the system.</p>
+	<p>Contents of this page:</p>
+	<ul>
+		<li><a href="#import">Import wizard</a> and
+			<a href="#importtypes">what can be imported</a></li>
+		<li><a href="#exportexperiment">Exporting an experiment</a></li>
+		<li><a href="#exportadw">Exporting subjects to ADW files</a></li>
+		<li><a href="#copypaste">Copying resources inside the workspace</a></li>
+	</ul>
+
+	<h2><a name="import">Import wizard</a></h2>
+
+	<p>Select, in the Experiments view, the resource that will receive the
+		imported files, then use File &gt; Import... (or the Import button of
+		the tool bar). The wizard shows:</p>
+	<ul>
+		<li><b>Destination</b>: the selected experiment, folder or subject (or
+			the workspace root when nothing is selected);</li>
+		<li><b>Type</b>: the type of resource to import. The proposed types
+			depend on the destination (see <a href="#importtypes">below</a>);</li>
+		<li><b>Parent folder</b>: the folder of the disk that contains the files
+			to import (Browse... to choose it);</li>
+		<li>a tree of the files and folders of the parent folder that match the
+			chosen type: select the ones to import (several can be selected),
+			then press Finish.</li>
+	</ul>
+	<p>Files cannot be imported from inside the current workspace: use copy
+		and paste in the Experiments view instead (see
+		<a href="#copypaste">below</a>).</p>
+
+	<h2><a name="importtypes">What can be imported</a></h2>
+
+	<table>
+		<tr>
+			<th>Destination</th>
+			<th>Type</th>
+			<th>Result</th>
+		</tr>
+		<tr>
+			<td>Nothing selected (workspace root)</td>
+			<td>Experiment (*.zip, *.tar)</td>
+			<td>Creates a new experiment from an archive made with
+				<a href="#exportexperiment">Export Experiment</a>, with all the
+				DOCoMETRe properties of its resources. The experiment takes the
+				name of the archive: import is refused if an experiment with
+				this name already exists.</td>
+		</tr>
+		<tr>
+			<td>Experiment or folder</td>
+			<td>DACQ Configuration</td>
+			<td>Copies <code>*.daqconf</code> files. Their system (ADwin or
+				Arduino UNO) is detected automatically.</td>
+		</tr>
+		<tr>
+			<td>Experiment or folder</td>
+			<td>Data acquisition process</td>
+			<td>Copies <code>*.process</code> files. If the label of an imported
+				process shows "No associated DAQ file", associate it with a
+				configuration with the Associate with... sub-menu of the context
+				menu.</td>
+		</tr>
+		<tr>
+			<td>Experiment or folder</td>
+			<td>Data processing</td>
+			<td>Copies <code>*.dataprocess</code> files.</td>
+		</tr>
+		<tr>
+			<td>Experiment or folder</td>
+			<td>Subject from ADW data file</td>
+			<td>Creates a subject from each selected <code>*.adw</code> file
+				(see <a href="../dataprocessing/adwdatafiles.html">ADW data
+				files</a>).</td>
+		</tr>
+		<tr>
+			<td>Experiment</td>
+			<td>Subject of a tree structure - Optitrack type 1 or type 2</td>
+			<td>Creates subjects and sessions from folders of Optitrack CSV files
+				(type 1: <code>SubjectMCond/data_N.csv</code>, type 2:
+				<code>SubjectM/trial_N.csv</code>); select the subjects folders
+				(see <a href="../dataprocessing/optitrackcsvfiles.html">Optitrack CSV
+				files</a>).</td>
+		</tr>
+		<tr>
+			<td>Experiment</td>
+			<td>Subject of a tree structure - Data organized in columns</td>
+			<td>Creates subjects from folders of text files whose columns are
+				signals (<code>SubjectName/data_Conditions.txt</code>); select the
+				subjects folders. Dialogs ask for the separator of the columns
+				and, if wanted, for the name and the sample frequency of each
+				signal.</td>
+		</tr>
+		<tr>
+			<td>Subject</td>
+			<td>Sessions configuration file (*.ini, *.txt, *.properties)</td>
+			<td>Creates the sessions and trials described in the file, with their
+				start and validate modes and their processes (see
+				<a href="../advancedconcepts/fileformatsessionimportation.html">What
+				is file format for sessions importation ?</a>). A session that
+				already exists in the subject is not imported.</td>
+		</tr>
+	</table>
+	<p>Subjects created from ADW, Optitrack or column data files are then
+		processed in the <a href="../dataprocessing/maintopic.html">Analyse
+		perspective</a> (see <a href="../dataprocessing/datafilesformats.html">Supported
+		data files formats</a>).</p>
+
+	<h2><a name="exportexperiment">Exporting an experiment</a></h2>
+
+	<p>File &gt; Export Experiment... saves an experiment in an archive, for
+		example to back it up, to send it to a colleague or to move it to
+		the computer that runs the real time system. The wizard asks
+		for:</p>
+	<ul>
+		<li>the <b>experiment</b> to export;</li>
+		<li>the <b>destination</b> file (Browse... to choose it; it must not
+			exist yet);</li>
+		<li>the <b>options</b>: Save in zip format or Save in tar format,
+			Compress, and <b>Export with data</b> (checked by default; when
+			unchecked, data files - samples, ADW, Optitrack, column, CSV and
+			saved data files - are not included, which gives a much smaller
+			archive with the configurations, the processes, the protocol and
+			the diaries);</li>
+		<li><b>Export only selected subjects</b>: when checked, select in the
+			list the subjects to export.</li>
+	</ul>
+	<p>The archive contains the files of the experiment and a properties file
+		that holds the DOCoMETRe properties of each resource; they are
+		restored when the archive is imported in another workspace (Import...
+		with nothing selected, type Experiment). The name of the archive
+		becomes the name of the imported experiment: <b>do not rename an
+		exported archive</b>, as this could lead to importation errors.</p>
+
+	<h2><a name="exportadw">Exporting subjects to ADW files</a></h2>
+
+	<p>When subjects are selected, File &gt; Export to ADW file(s) writes
+		the samples files of each selected subject in one ADW file
+		(<code>SubjectName.adw</code>) in a folder chosen with a dialog. An
+		existing file is not overwritten (an error is written in the Console
+		view). This format can be read by other
+		analysis software (see <a href="../dataprocessing/adwdatafiles.html">ADW
+		data files</a>).</p>
+	<p>Processed data of loaded subjects (signals, events, features) are
+		exported from the Analyse perspective with File &gt; Export data...
+		(see <a href="../dataprocessing/exportdata.html">Exporting data</a>).</p>
+
+	<h2><a name="copypaste">Copying resources inside the workspace</a></h2>
+
+	<p>Inside the workspace, configurations, processes, subjects, sessions,
+		trials and folders are duplicated with Copy and Paste in the
+		Experiments view (<kbd>Ctrl</kbd>+<kbd>C</kbd> /
+		<kbd>Ctrl</kbd>+<kbd>V</kbd>, <kbd>Cmd</kbd> on macOS), even between
+		experiments; their DOCoMETRe properties are copied too. When folders
+		are pasted, a dialog asks whether diaries and data files must be
+		copied as well: answer No to reuse a protocol (subjects, sessions and
+		trials with their processes) for new acquisitions. When resources with
+		the same names already exist in the destination, DOCoMETRe asks
+		whether they must be overwritten.</p>
+
+</body>
+</html>

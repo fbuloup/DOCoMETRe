@@ -1004,7 +1004,7 @@
                   style="push">
             </command>
             <menu
-                  label="Associer au système">
+                  label="%AssociateWithSystem.label">
                <visibleWhen
                      checkEnabled="false">
                   <with
@@ -1921,7 +1921,7 @@
                label="%AssociateWith.label">
          </menu>
          <menu
-               label="Associer au système">
+               label="%AssociateWithSystem.label">
             <visibleWhen
                   checkEnabled="false">
                <with
@@ -3658,55 +3658,55 @@
       <colorDefinition
             categoryId="fr.univamu.ism.docometre.themeElementCategory"
             id="fr.univamu.ism.docometre.CONSOLE_WARNING_COLOR"
-            label="Console : avertissement"
+            label="%ThemeColor.ConsoleWarning.label"
             value="204,102,0">
       </colorDefinition>
       <colorDefinition
             categoryId="fr.univamu.ism.docometre.themeElementCategory"
             id="fr.univamu.ism.docometre.CONSOLE_ERROR_COLOR"
-            label="Console : erreur"
+            label="%ThemeColor.ConsoleError.label"
             value="250,0,0">
       </colorDefinition>
       <colorDefinition
             categoryId="fr.univamu.ism.docometre.themeElementCategory"
             id="fr.univamu.ism.docometre.COMPLETION_BACKGROUND_COLOR"
-            label="Description : fond de la barre d&apos;avancement"
+            label="%ThemeColor.CompletionBackground.label"
             value="255,255,255">
       </colorDefinition>
       <colorDefinition
             categoryId="fr.univamu.ism.docometre.themeElementCategory"
             id="fr.univamu.ism.docometre.COMPLETION_MARK_COLOR"
-            label="Description : essais non réalisés"
+            label="%ThemeColor.CompletionMark.label"
             value="139,0,0">
       </colorDefinition>
       <colorDefinition
             categoryId="fr.univamu.ism.docometre.themeElementCategory"
             id="fr.univamu.ism.docometre.SYNTAX_RED_COLOR"
-            label="Coloration syntaxique : rouge"
+            label="%ThemeColor.SyntaxRed.label"
             value="202,0,42">
       </colorDefinition>
       <colorDefinition
             categoryId="fr.univamu.ism.docometre.themeElementCategory"
             id="fr.univamu.ism.docometre.SYNTAX_GREEN_COLOR"
-            label="Coloration syntaxique : vert"
+            label="%ThemeColor.SyntaxGreen.label"
             value="61,119,91">
       </colorDefinition>
       <colorDefinition
             categoryId="fr.univamu.ism.docometre.themeElementCategory"
             id="fr.univamu.ism.docometre.SYNTAX_BLUE_COLOR"
-            label="Coloration syntaxique : bleu"
+            label="%ThemeColor.SyntaxBlue.label"
             value="0,0,255">
       </colorDefinition>
       <colorDefinition
             categoryId="fr.univamu.ism.docometre.themeElementCategory"
             id="fr.univamu.ism.docometre.SYNTAX_ORANGE_COLOR"
-            label="Coloration syntaxique : orange"
+            label="%ThemeColor.SyntaxOrange.label"
             value="255,102,0">
       </colorDefinition>
       <colorDefinition
             categoryId="fr.univamu.ism.docometre.themeElementCategory"
             id="fr.univamu.ism.docometre.SYNTAX_MAROON_COLOR"
-            label="Coloration syntaxique : marron"
+            label="%ThemeColor.SyntaxMaroon.label"
             value="122,0,0">
       </colorDefinition>
    </extension>

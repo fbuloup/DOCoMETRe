@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Loading Subjects</title>
+<style type="text/css">
+	table { border-collapse: collapse; margin-bottom: 1em; }
+	th, td { border: 1px solid #A0A0A0; padding: 4px 8px; text-align: left; vertical-align: top; }
+	kbd { border: 1px solid #A0A0A0; border-radius: 3px; padding: 0px 4px; font-family: monospace; }
+	pre { margin-left: 2em; }
+</style>
+</head>
+
+<body>
+	<h1>Loading Subjects</h1>
+
+	<p>In the Analyse perspective, the data of a subject can only be
+		displayed and processed once the subject has been <b>loaded</b> in the
+		<a href="mathengine.html">math engine</a>. Loading reads all the data
+		files of the subject and gathers them in the
+		<a href="datamodel.html">data model</a>: one matrix of values per
+		signal, with one line per trial.</p>
+
+	<h2><a name="experiment">Selecting the experiment</a></h2>
+
+	<p>The Subjects view shows one experiment at a time. Use the <b>Select
+		experiment</b> button of the tool bar (or of the context menu) and choose
+		the experiment in the list. Its name is displayed in the status bar and
+		is remembered for the next start of DOCoMETRe.</p>
+
+	<h2><a name="load">Loading and unloading subjects</a></h2>
+
+	<p>Start the math engine, select one or several subjects in the Subjects
+		view (or in the Experiments view) and press <b>Load/unload selected
+		subjects</b>. Selected subjects that are not loaded are loaded, the
+		others are unloaded. Once loaded, a subject is decorated with an overlay
+		and can be expanded to show its signals, categories and events.</p>
+	<p>The following data files of the subject are read (see
+		<a href="datafilesformats.html">Supported data files formats</a>):</p>
+	<ul>
+		<li>the samples files of all its trials (data acquired with
+			DOCoMETRe);</li>
+		<li>ADW files, Optitrack files and files of data organized in columns
+			(data imported in the subject). Column data files can only be loaded
+			with Matlab.</li>
+	</ul>
+
+	<h3><a name="trials">Trials numbering and categories</a></h3>
+
+	<p>For samples files, the trials of all the sessions of the subject are
+		numbered one after the other: the sessions are taken in alphabetical
+		order of their names, and the trials of a session follow those of the
+		previous session. For example, with a session <code>A_Familiarization</code>
+		of 10 trials and a session <code>B_Test</code> of 30 trials, trial 1 of
+		session B_Test is trial 11 of the subject.</p>
+	<p>The trials are grouped in <b>categories</b>: a category is created for
+		each couple (session, process), named
+		<code>SessionName.ProcessName</code> (preceded by the data files prefix
+		of the session if any). A category thus gathers all the trials of a
+		session run with the same process, that is with the same experimental
+		condition. Categories are listed under the loaded subject and are used
+		to select trials in the editors.</p>
+	<p>Signals of a subject have as many lines as the total number of trials
+		of its sessions, and as many columns as the longest trial: shorter
+		trials are completed with zeros, or with their last value when "Padd
+		with last value rather than zero" is checked in the Math Engine
+		preferences. The real number of samples of each trial is kept in the
+		<code>NbSamples</code> element of the signal.</p>
+
+	<h3><a name="saveddata">Loading from saved data</a></h3>
+
+	<p>When a subject has been <a href="#save">saved</a>, DOCoMETRe asks
+		whether it must be loaded from its raw data files (answer Yes: the
+		results of previous processing are not loaded) or from its saved data
+		(answer No: the subject is restored as it was saved, with its processed
+		signals, markers and features). Check "Always load subject from saved
+		data" in the Math Engine preferences to load saved data without
+		question.</p>
+
+	<h2><a name="save">Saving subjects</a></h2>
+
+	<p>Processing modifies the data of the loaded subjects in the math engine
+		only. A modified subject is decorated with a "modified" overlay. To keep
+		these modifications, select the subject in the Subjects view and use
+		File &gt; Save (or Save all). The data are written in the folder of the
+		subject:</p>
+	<ul>
+		<li>with Python: <code>save.data</code> and <code>data_N.numpy</code>
+			files;</li>
+		<li>with Matlab: <code>save.mat</code>.</li>
+	</ul>
+	<p>When modified subjects are unloaded (or when the math engine is
+		stopped), a dialog lists them: check the subjects to save, then press
+		Terminate (Cancel cancels the unloading).</p>
+	<p>Saved data only depend on the math engine that wrote them: a subject
+		saved with Python must be loaded with Python to retrieve its saved
+		data.</p>
+
+	<h2><a name="merge">Merging data of subjects</a></h2>
+
+	<p>Merge data (context menu of the Subjects view) copies the signals of a
+		loaded subject into another loaded subject, for example to gather data
+		recorded by two different systems for the same participant. In the
+		dialog, add couples "Merge data from" / "To" subjects. A merge is
+		refused when the two subjects do not have the same number of trials,
+		when a signal of the first subject already exists in the second one, or
+		when a subject is merged with itself; the reason is written in the
+		Console view.</p>
+
+</body>
+</html>

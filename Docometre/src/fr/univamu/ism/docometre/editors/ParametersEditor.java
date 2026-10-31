@@ -57,6 +57,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.MultiPageEditorPart;
 
 import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.GetResourceLabelDelegate;
 
 public class ParametersEditor extends MultiPageEditorPart implements PartNameRefresher, IPageChangedListener {
@@ -139,11 +140,11 @@ private ParametersTableEditor parametersTableEditor;
 		try {
 			parametersRawEditor = new ParametersRawEditor(this);
 			int pageIndex = addPage(parametersRawEditor, getEditorInput());
-			setPageText(pageIndex, "Fichier brut");
+			setPageText(pageIndex, DocometreMessages.ParametersEditor_RawFileTab);
 			
 			parametersTableEditor = new ParametersTableEditor(this);
 			pageIndex = addPage(parametersTableEditor, getEditorInput());
-			setPageText(pageIndex, "Tableau");
+			setPageText(pageIndex, DocometreMessages.ParametersEditor_TableTab);
 			
 		} catch (PartInitException e) {
 			Activator.logErrorMessageWithCause(e);
