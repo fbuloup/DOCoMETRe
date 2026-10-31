@@ -15,8 +15,8 @@ public class ImageChartConfigurationProperties extends Property {
 	public static ImageChartConfiguration clone(ImageChartConfiguration imageChartConfiguration) {
 		ImageChartConfiguration newImageChartConfiguration = new ImageChartConfiguration();
 		ChartConfigurationProperties.clone(imageChartConfiguration, newImageChartConfiguration);
-		imageChartConfiguration.setProperty(IMAGES_FILE_NAME, new String(imageChartConfiguration.getProperty(IMAGES_FILE_NAME)));
-		return imageChartConfiguration;
+		newImageChartConfiguration.setProperty(IMAGES_FILE_NAME, new String(imageChartConfiguration.getProperty(IMAGES_FILE_NAME)));
+		return newImageChartConfiguration;
 	}
 	
 	private ImageChartConfigurationProperties(String key, String label, String tooltip, String regExp) {

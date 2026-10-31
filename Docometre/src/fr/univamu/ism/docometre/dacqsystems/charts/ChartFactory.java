@@ -63,6 +63,7 @@ public final class ChartFactory {
 			break;
 		case IMAGE_CHART:
 			chartConfiguration = new ImageChartConfiguration();
+			break;
 		default:
 			break;
 		}
