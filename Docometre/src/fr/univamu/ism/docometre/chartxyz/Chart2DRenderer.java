@@ -17,8 +17,8 @@ public class Chart2DRenderer extends PlotRenderer<Curve2DData> {
 
     private static final float DEFAULT_LINE_WIDTH = 2f; // width of the curves without an explicit width (pixels)
 
-    // Bounding box of all the curves, recomputed at each frame
-    private float dataMinX = -1f, dataMaxX = 1f, dataMinY = -1f, dataMaxY = 1f;
+    // Bounding box of all the curves, recomputed at each frame (see computeBounds)
+    protected float dataMinX = -1f, dataMaxX = 1f, dataMinY = -1f, dataMaxY = 1f;
 
     private volatile boolean equalAspect = false; // same scale on x and y (useful for trajectories)
 
@@ -41,8 +41,11 @@ public class Chart2DRenderer extends PlotRenderer<Curve2DData> {
         computeBounds();
     }
 
-    /** Bounding box of all the non-empty curves (from -1 to 1 if there is none). */
-    private void computeBounds() {
+    /**
+     * Computes the bounding box of the frame (dataMinX... dataMaxY): the one
+     * of all the non-empty curves (from -1 to 1 if there is none).
+     */
+    protected void computeBounds() {
         float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE;
         float maxX = -Float.MAX_VALUE, maxY = -Float.MAX_VALUE;
         boolean empty = true;

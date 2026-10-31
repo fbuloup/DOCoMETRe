@@ -73,10 +73,16 @@ public final class XYChartConfigurationProperties extends Property {
 	}
 
 	public static XYChartConfiguration clone(XYChartConfiguration xyChartConfiguration) {
-		XYChartConfiguration newXYChartConfiguration = new XYChartConfiguration();
+		return copy(xyChartConfiguration, new XYChartConfiguration());
+	}
+	
+	/*
+	 * Copies the properties and the curves of xyChartConfiguration into newXYChartConfiguration
+	 */
+	public static XYChartConfiguration copy(XYChartConfiguration xyChartConfiguration, XYChartConfiguration newXYChartConfiguration) {
 		ChartConfigurationProperties.clone(xyChartConfiguration, newXYChartConfiguration);
-		newXYChartConfiguration.setProperty(X_MAX, new String(xyChartConfiguration.getProperty(Y_MAX)));
-		newXYChartConfiguration.setProperty(X_MIN, new String(xyChartConfiguration.getProperty(Y_MIN)));
+		newXYChartConfiguration.setProperty(X_MAX, new String(xyChartConfiguration.getProperty(X_MAX)));
+		newXYChartConfiguration.setProperty(X_MIN, new String(xyChartConfiguration.getProperty(X_MIN)));
 		newXYChartConfiguration.setProperty(Y_MAX, new String(xyChartConfiguration.getProperty(Y_MAX)));
 		newXYChartConfiguration.setProperty(Y_MIN, new String(xyChartConfiguration.getProperty(Y_MIN)));
 		newXYChartConfiguration.setProperty(AUTO_SCALE, new String(xyChartConfiguration.getProperty(AUTO_SCALE)));
