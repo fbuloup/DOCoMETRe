@@ -29,7 +29,7 @@ it must be on its own line <b>before</b> the <b>-vmargs</b> line :</p>
 <p>As for the debugging options below, take a backup of <b>DOCoMETRe.ini</b> before any change.</p>
 
 <p>Each measure is then written as an information message in the log file of the workspace
-(<b>workspace/.metadata/.log</b>), prefixed by <b>[TIMING]</b>. These measures are currently made with ADWin systems.
+(<b>workspace/.metadata/.log</b>), prefixed by <b>[TIMING]</b>. These measures are made with ADWin and Arduino Uno systems.
 Without this argument, nothing is measured nor written : the acquisition is not slowed down.</p>
 
 <p>The following measures are written for each trial :</p>
@@ -43,6 +43,12 @@ Without this argument, nothing is measured nor written : the acquisition is not 
   process start), the duration of the step and the total time since t = 0 are written.</li>
   <li><b>Start of the next trial</b> : the delays, after the start of the process, of the first real-time loop iteration
   and of the first data received (first CAN data and first other data).</li>
+  <li><b>Arduino Uno specific measures</b> : the time origin (t = 0) is the end of the process signaled by the Arduino
+  ('s' char received) or the stop requested by the user. Then the stop handshake with the Arduino ('s' chars and waits) and
+  the serial port closing are measured as steps. Between two trials, the upload of the process (if needed), the serial port
+  opening and the channels files opening are measured; the start is the 'r' char sent to the Arduino.
+  As the real-time loop polls the serial port, only the iterations which read bytes are counted in its summary.
+  There is no INIT section duration.</li>
   <li><b>Process stop</b> : the duration of the first call to stop the process. A call longer than 100 ms is reported as a
   <b>TIME OUT</b> : the process is then cleared, the system is booted again and the process will be loaded again at next start,
   which makes the start of the next trial longer.</li>

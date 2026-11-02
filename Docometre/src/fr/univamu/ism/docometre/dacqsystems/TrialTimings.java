@@ -134,8 +134,17 @@ public final class TrialTimings {
 
 	/** Summary of the real-time loop, logged when the process has ended. */
 	public static void loopSummary(long iterations, long lastIterationNanos, long maxIterationNanos) {
+		loopSummary("real-time loop", "(the end is detected up to one iteration late)", iterations, lastIterationNanos, maxIterationNanos);
+	}
+
+	/**
+	 * Summary of the real-time loop, logged when the process has ended.
+	 * @param label what is counted as an iteration
+	 * @param comment comment added at the end of the message
+	 */
+	public static void loopSummary(String label, String comment, long iterations, long lastIterationNanos, long maxIterationNanos) {
 		if (!trace) return;
-		log(String.format("real-time loop : %d iterations, last = %.1f ms, max = %.1f ms (the end is detected up to one iteration late)",
-				iterations, lastIterationNanos / 1e6, maxIterationNanos / 1e6));
+		log(String.format("%s : %d iterations, last = %.1f ms, max = %.1f ms %s",
+				label, iterations, lastIterationNanos / 1e6, maxIterationNanos / 1e6, comment));
 	}
 }
