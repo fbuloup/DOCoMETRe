@@ -49,8 +49,13 @@ public interface IImageKeys {
 	public static final String ERROR_ANNOTATION_ICON = "icons/errorAnnotation.gif"; //$NON-NLS-1$
 	public static final String WARNING_ANNOTATION_ICON= "icons/warningAnnotation.gif"; //$NON-NLS-1$
 	
-	public static final String ERROR_DECORATOR = "ERROR_DECORATOR"; //$NON-NLS-1$
-	public static final String WARNING_DECORATOR = "WARNING_DECORATOR"; //$NON-NLS-1$
+//	public static final String ERROR_DECORATOR = "ERROR_DECORATOR"; //$NON-NLS-1$
+//	public static final String WARNING_DECORATOR = "WARNING_DECORATOR"; //$NON-NLS-1$
+	
+	public static final String PROCESS_ERROR_DECORATOR = "PROCESS_ERROR_DECORATOR";
+	public static final String PROCESS_WARNING_DECORATOR = "PROCESS_WARNING_DECORATOR";
+	public static final String DACQ_CONFIGURATION_ERROR_DECORATOR = "DACQ_CONFIGURATION_ERROR_DECORATOR";
+	public static final String DACQ_CONFIGURATION_WARNING_DECORATOR = "DACQ_CONFIGURATION_WARNING_DECORATOR";
 	
 	//Experiments View
 	public static final String EXPERIMENT_ICON = "icons/experiment.gif"; //$NON-NLS-1$

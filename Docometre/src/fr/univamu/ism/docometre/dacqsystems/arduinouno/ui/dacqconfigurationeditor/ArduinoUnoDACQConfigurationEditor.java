@@ -90,11 +90,11 @@ public class ArduinoUnoDACQConfigurationEditor extends ResourceEditor implements
 		if(JFaceResources.getImageRegistry().get(IImageKeys.DACQ_CONFIGURATION_ICON) == null) {
 			JFaceResources.getImageRegistry().put(IImageKeys.DACQ_CONFIGURATION_ICON, Activator.getImage(IImageKeys.DACQ_CONFIGURATION_ICON));
 		}
-		if(JFaceResources.getImageRegistry().get(IImageKeys.ERROR_DECORATOR) == null) {
-			JFaceResources.getImageRegistry().put(IImageKeys.ERROR_DECORATOR, new DecorationOverlayIcon(JFaceResources.getImageRegistry().get(IImageKeys.DACQ_CONFIGURATION_ICON), Activator.getImageDescriptor(IImageKeys.ERROR_ICON), IDecoration.BOTTOM_LEFT));
+		if(JFaceResources.getImageRegistry().get(IImageKeys.DACQ_CONFIGURATION_ERROR_DECORATOR) == null) {
+			JFaceResources.getImageRegistry().put(IImageKeys.DACQ_CONFIGURATION_ERROR_DECORATOR, new DecorationOverlayIcon(JFaceResources.getImageRegistry().get(IImageKeys.DACQ_CONFIGURATION_ICON), Activator.getImageDescriptor(IImageKeys.ERROR_ICON), IDecoration.BOTTOM_LEFT));
 		}
-		if(JFaceResources.getImageRegistry().get(IImageKeys.WARNING_DECORATOR) == null) {
-			JFaceResources.getImageRegistry().put(IImageKeys.WARNING_DECORATOR, new DecorationOverlayIcon(JFaceResources.getImageRegistry().get(IImageKeys.DACQ_CONFIGURATION_ICON), Activator.getImageDescriptor(IImageKeys.WARNING_ICON), IDecoration.BOTTOM_LEFT));
+		if(JFaceResources.getImageRegistry().get(IImageKeys.DACQ_CONFIGURATION_ERROR_DECORATOR) == null) {
+			JFaceResources.getImageRegistry().put(IImageKeys.DACQ_CONFIGURATION_ERROR_DECORATOR, new DecorationOverlayIcon(JFaceResources.getImageRegistry().get(IImageKeys.DACQ_CONFIGURATION_ICON), Activator.getImageDescriptor(IImageKeys.WARNING_ICON), IDecoration.BOTTOM_LEFT));
 		}
 		
 		IResource resource = ObjectsController.getResourceForObject(getDACQConfiguration());
@@ -214,8 +214,8 @@ public class ArduinoUnoDACQConfigurationEditor extends ResourceEditor implements
 		try {
 			IResource dacqConfResource = ObjectsController.getResourceForObject(getDACQConfiguration());
 			int severity = dacqConfResource.findMaxProblemSeverity(null, true, IResource.DEPTH_INFINITE);
-			if(severity == IMarker.SEVERITY_ERROR) setTitleImage(JFaceResources.getImageRegistry().get(IImageKeys.ERROR_DECORATOR));
-			if(severity == IMarker.SEVERITY_WARNING) setTitleImage(JFaceResources.getImageRegistry().get(IImageKeys.WARNING_DECORATOR));
+			if(severity == IMarker.SEVERITY_ERROR) setTitleImage(JFaceResources.getImageRegistry().get(IImageKeys.DACQ_CONFIGURATION_ERROR_DECORATOR));
+			if(severity == IMarker.SEVERITY_WARNING) setTitleImage(JFaceResources.getImageRegistry().get(IImageKeys.DACQ_CONFIGURATION_WARNING_DECORATOR));
 			if(severity == -1) setTitleImage(JFaceResources.getImageRegistry().get(IImageKeys.DACQ_CONFIGURATION_ICON));
 			((ArduinoUnoDACQGeneralConfigurationPage)arduinoUnoGeneralConfigurationPage).updateDecorationsControls();
 		} catch (Exception e) {

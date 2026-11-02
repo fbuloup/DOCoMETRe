@@ -95,12 +95,12 @@ public class ProcessEditor extends MultiPageEditorPart implements IPageChangedLi
 			JFaceResources.getImageRegistry().put(IImageKeys.PROCESS_ICON, Activator.getImage(IImageKeys.PROCESS_ICON));
 		}
 		
-		if(JFaceResources.getImageRegistry().get(IImageKeys.ERROR_DECORATOR) == null) {
-			JFaceResources.getImageRegistry().put(IImageKeys.ERROR_DECORATOR, new DecorationOverlayIcon(JFaceResources.getImageRegistry().get(IImageKeys.PROCESS_ICON), Activator.getImageDescriptor(IImageKeys.ERROR_ICON), IDecoration.BOTTOM_LEFT));
+		if(JFaceResources.getImageRegistry().get(IImageKeys.PROCESS_ERROR_DECORATOR) == null) {
+			JFaceResources.getImageRegistry().put(IImageKeys.PROCESS_ERROR_DECORATOR, new DecorationOverlayIcon(JFaceResources.getImageRegistry().get(IImageKeys.PROCESS_ICON), Activator.getImageDescriptor(IImageKeys.ERROR_ICON), IDecoration.BOTTOM_LEFT));
 		}
 		
-		if(JFaceResources.getImageRegistry().get(IImageKeys.WARNING_DECORATOR) == null) {
-			JFaceResources.getImageRegistry().put(IImageKeys.WARNING_DECORATOR, new DecorationOverlayIcon(JFaceResources.getImageRegistry().get(IImageKeys.PROCESS_ICON), Activator.getImageDescriptor(IImageKeys.WARNING_ICON), IDecoration.BOTTOM_LEFT));
+		if(JFaceResources.getImageRegistry().get(IImageKeys.PROCESS_WARNING_DECORATOR) == null) {
+			JFaceResources.getImageRegistry().put(IImageKeys.PROCESS_WARNING_DECORATOR, new DecorationOverlayIcon(JFaceResources.getImageRegistry().get(IImageKeys.PROCESS_ICON), Activator.getImageDescriptor(IImageKeys.WARNING_ICON), IDecoration.BOTTOM_LEFT));
 		}
 		
 		IResource resource = ObjectsController.getResourceForObject(getProcess());
@@ -206,8 +206,8 @@ public class ProcessEditor extends MultiPageEditorPart implements IPageChangedLi
 		try {
 			IResource process = ObjectsController.getResourceForObject(getProcess());
 			int severity = process.findMaxProblemSeverity(DocometreBuilder.MARKER_ID, true, IResource.DEPTH_INFINITE);
-			if(severity == IMarker.SEVERITY_ERROR) setTitleImage(JFaceResources.getImageRegistry().get(IImageKeys.ERROR_DECORATOR));
-			if(severity == IMarker.SEVERITY_WARNING) setTitleImage(JFaceResources.getImageRegistry().get(IImageKeys.WARNING_DECORATOR));
+			if(severity == IMarker.SEVERITY_ERROR) setTitleImage(JFaceResources.getImageRegistry().get(IImageKeys.PROCESS_ERROR_DECORATOR));
+			if(severity == IMarker.SEVERITY_WARNING) setTitleImage(JFaceResources.getImageRegistry().get(IImageKeys.PROCESS_WARNING_DECORATOR));
 			if(severity == -1) setTitleImage(JFaceResources.getImageRegistry().get(IImageKeys.PROCESS_ICON));
 			if(sourceEditor != null) {
 				sourceEditor.updateMarkers();

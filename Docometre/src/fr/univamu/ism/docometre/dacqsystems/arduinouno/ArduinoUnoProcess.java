@@ -46,9 +46,12 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
@@ -1151,6 +1154,25 @@ public class ArduinoUnoProcess extends Process {
 		deleteSketchDirectory(outputFolderFile);
 	}
 	
+	/*
+	 * Read a text file trying UTF-8 first (strict), then falling back to the platform native encoding.
+	 * Never throws MalformedInputException : unmappable bytes are replaced.
+	 */
+	private static String readTextWithFallback(File file) throws IOException {
+		byte[] bytes = Files.readAllBytes(file.toPath());
+		try {
+			return StandardCharsets.UTF_8.newDecoder()
+					.onMalformedInput(CodingErrorAction.REPORT)
+					.onUnmappableCharacter(CodingErrorAction.REPORT)
+					.decode(ByteBuffer.wrap(bytes)).toString();
+		} catch (CharacterCodingException e) {
+			Charset charset = Charset.defaultCharset();
+			String nativeEncoding = System.getProperty("native.encoding");
+			if(nativeEncoding != null && Charset.isSupported(nativeEncoding)) charset = Charset.forName(nativeEncoding);
+			return new String(bytes, charset);
+		}
+	}
+	
 	@Override
 	public void compile(IProgressMonitor progressMonitor) throws Exception {
 		cleanBuild();
@@ -1209,10 +1231,13 @@ public class ArduinoUnoProcess extends Process {
 	    progressMonitor.subTask(DocometreMessages.ArduinoUnoProcess_GetCompileErrorsMessage);
 	    processResource.deleteMarkers(null, true, IResource.DEPTH_INFINITE);
 	    Pattern pattern = Pattern.compile("^(.+):(\\d+):(\\d+):\\s+error:\\s+(.*)$");
-		BufferedReader fReader = Files.newBufferedReader(Paths.get(compileFile.getAbsolutePath()), StandardCharsets.UTF_8);
+		// compile.txt is written by shell redirection : its encoding depends on the OS/console
+		// (e.g. cp1252/cp850 on Windows with accented paths or localized messages), not always UTF-8.
+		String compileOutput = compileFile.exists() ? readTextWithFallback(compileFile) : "";
 		String compileString = "";
 		boolean errorDetected = false;
-		while((line = fReader.readLine()) != null){
+		for (String compileLine : compileOutput.split("\\R")) {
+			line = compileLine;
 			Matcher matcher = pattern.matcher(line);
 			errorDetected = errorDetected || matcher.matches();
 			if (matcher.matches()) {
@@ -1223,7 +1248,6 @@ public class ArduinoUnoProcess extends Process {
 			}
 			compileString = compileString + line + "\n";
 		}
-		fReader.close();
 		
 		Activator.logInfoMessage(compileString, ArduinoUnoProcess.class);
 

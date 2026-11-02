@@ -100,12 +100,12 @@ public class ADWinDACQConfigurationEditor extends ResourceEditor implements Prop
 			JFaceResources.getImageRegistry().put(IImageKeys.DACQ_CONFIGURATION_ICON, Activator.getImage(IImageKeys.DACQ_CONFIGURATION_ICON));
 		}
 		
-		if(JFaceResources.getImageRegistry().get(IImageKeys.ERROR_DECORATOR) == null) {
-			JFaceResources.getImageRegistry().put(IImageKeys.ERROR_DECORATOR, new DecorationOverlayIcon(JFaceResources.getImageRegistry().get(IImageKeys.DACQ_CONFIGURATION_ICON), Activator.getImageDescriptor(IImageKeys.ERROR_ICON), IDecoration.BOTTOM_LEFT));
+		if(JFaceResources.getImageRegistry().get(IImageKeys.DACQ_CONFIGURATION_ERROR_DECORATOR) == null) {
+			JFaceResources.getImageRegistry().put(IImageKeys.DACQ_CONFIGURATION_ERROR_DECORATOR, new DecorationOverlayIcon(JFaceResources.getImageRegistry().get(IImageKeys.DACQ_CONFIGURATION_ICON), Activator.getImageDescriptor(IImageKeys.ERROR_ICON), IDecoration.BOTTOM_LEFT));
 		}
 		
-		if(JFaceResources.getImageRegistry().get(IImageKeys.WARNING_DECORATOR) == null) {
-			JFaceResources.getImageRegistry().put(IImageKeys.WARNING_DECORATOR, new DecorationOverlayIcon(JFaceResources.getImageRegistry().get(IImageKeys.DACQ_CONFIGURATION_ICON), Activator.getImageDescriptor(IImageKeys.WARNING_ICON), IDecoration.BOTTOM_LEFT));
+		if(JFaceResources.getImageRegistry().get(IImageKeys.DACQ_CONFIGURATION_WARNING_DECORATOR) == null) {
+			JFaceResources.getImageRegistry().put(IImageKeys.DACQ_CONFIGURATION_WARNING_DECORATOR, new DecorationOverlayIcon(JFaceResources.getImageRegistry().get(IImageKeys.DACQ_CONFIGURATION_ICON), Activator.getImageDescriptor(IImageKeys.WARNING_ICON), IDecoration.BOTTOM_LEFT));
 		}
 		
 		IResource resource = ObjectsController.getResourceForObject(getDACQConfiguration());
@@ -238,8 +238,8 @@ public class ADWinDACQConfigurationEditor extends ResourceEditor implements Prop
 		try {
 			IResource dacqConfResource = ObjectsController.getResourceForObject(getDACQConfiguration());
 			int severity = dacqConfResource.findMaxProblemSeverity(null, true, IResource.DEPTH_INFINITE);
-			if(severity == IMarker.SEVERITY_ERROR) setTitleImage(JFaceResources.getImageRegistry().get(IImageKeys.ERROR_DECORATOR));
-			if(severity == IMarker.SEVERITY_WARNING) setTitleImage(JFaceResources.getImageRegistry().get(IImageKeys.WARNING_DECORATOR));
+			if(severity == IMarker.SEVERITY_ERROR) setTitleImage(JFaceResources.getImageRegistry().get(IImageKeys.DACQ_CONFIGURATION_ERROR_DECORATOR));
+			if(severity == IMarker.SEVERITY_WARNING) setTitleImage(JFaceResources.getImageRegistry().get(IImageKeys.DACQ_CONFIGURATION_WARNING_DECORATOR));
 			if(severity == -1) setTitleImage(JFaceResources.getImageRegistry().get(IImageKeys.DACQ_CONFIGURATION_ICON));
 			((ADwinDACQGeneralConfigurationPage)adwinGeneralConfigurationPage).updateDecorationsControls();
 		} catch (Exception e) {
