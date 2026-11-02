@@ -103,10 +103,15 @@ public class ArduinoUnoDigInOutModule extends Module {
 			}
 			
 			if (segment == ArduinoUnoCodeSegmentProperties.INITIALIZATION) {
+				// Initial values, as after a board reset : the process can be restarted by software
 				if(isUsed && (isInput | isInputPullUp)) {
+					code = code + "\t\t" + name + " = 0;\n";
+					code = code + "\t\tacquire_" + name + "_index = " + frequencyRatio + ";\n";
 					if(isInput) code = code + "\t\tpinMode(" + channelNumber + ", INPUT);\n";
 					if(isInputPullUp) code = code + "\t\tpinMode(" + channelNumber + ", INPUT_PULLUP);\n";
 				} else if(isUsed && !(isInput | isInputPullUp)) {
+					code = code + "\t\t" + name + " = 0;\n";
+					code = code + "\t\tgenerate_" + name + "_index = " + frequencyRatio + ";\n";
 					code = code + "\t\tpinMode(" + channelNumber + ", OUTPUT);\n";
 				}
 			}

@@ -96,6 +96,9 @@ public class ArduinoUnoAnInModule extends Module {
 			
 			if (segment == ArduinoUnoCodeSegmentProperties.INITIALIZATION) {
 				if(isUsed) {
+					// Initial values, as after a board reset : the process can be restarted by software
+					code = code + "\t\t" + name + " = 0;\n";
+					code = code + "\t\tacquire_" + name + "_index = " + frequencyRatio + ";\n";
 				}
 			}
 			

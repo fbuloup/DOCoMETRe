@@ -58,16 +58,29 @@ public class VariablesCodeGenerationDelegate {
 		return "";
 	}
 
+	/*
+	 * Initial values of the variables, as after a board reset (global variables are then
+	 * zero) : the process can be restarted by software, without board reset.
+	 */
 	private static String getInitialisationCode() {
 		String  code = "";
 		ArduinoUnoVariable[] variables = ((ArduinoUnoDACQConfiguration)process.getDACQConfiguration()).getVariables();
+		String gsfProcess = ((ArduinoUnoDACQConfiguration)process.getDACQConfiguration()).getProperty(ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY);
+		float gsfFloat = Float.parseFloat(gsfProcess);
 		for (ArduinoUnoVariable variable : variables) {
-//			String name = variable.getProperty(ChannelProperties.NAME);
+			String name = variable.getProperty(ChannelProperties.NAME);
+			String size = variable.getProperty(ArduinoUnoVariableProperties.SIZE);
 			String transfer = variable.getProperty(ChannelProperties.TRANSFER);
 			boolean isTransfered = Boolean.valueOf(transfer);
+			if("1".equals(size)) code = code + "\t\t" + name + " = 0;\n";
+			else code = code + "\t\tmemset(" + name + ", 0, sizeof(" + name + "));\n";
 			if(isTransfered) {
+				float sfFloat = Float.parseFloat(variable.getProperty(ChannelProperties.SAMPLE_FREQUENCY));
+				int frequencyRatio = (int) (gsfFloat/sfFloat);
+				code = code + "\t\ttransfer_" + name + " = " + frequencyRatio + ";\n";
 			}
 		}
+		if(!code.isEmpty()) code = "\t\t// Initial values of the variables (as after a board reset : the process can be restarted by software)\n" + code;
 		return code + "\n";
 	}
 
