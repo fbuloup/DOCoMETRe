@@ -45,7 +45,9 @@ Without this argument, nothing is measured nor written : the acquisition is not 
   and of the first data received (first CAN data and first other data).</li>
   <li><b>Arduino Uno specific measures</b> : the time origin (t = 0) is the end of the process signaled by the Arduino
   ('s' char received) or the stop requested by the user. Then the stop handshake with the Arduino ('s' chars and waits) and
-  the serial port closing are measured as steps. Between two trials, the upload of the process (if needed), the serial port
+  the serial port closing are measured as steps. During the handshake, the delay of the 's' reply of the Arduino (stop requested
+  by the user) and the delay of its restart ('w' char sent when it waits for the next start) are written. If the 'w' char is
+  not received, the process has been compiled with a previous version : compile it again. Between two trials, the upload of the process (if needed), the serial port
   opening and the channels files opening are measured; the start is the 'r' char sent to the Arduino.
   As the real-time loop polls the serial port, only the iterations which read bytes are counted in its summary.
   There is no INIT section duration.</li>
