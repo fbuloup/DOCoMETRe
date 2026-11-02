@@ -93,8 +93,8 @@ public class ArduinoUnoDACQConfigurationEditor extends ResourceEditor implements
 		if(JFaceResources.getImageRegistry().get(IImageKeys.DACQ_CONFIGURATION_ERROR_DECORATOR) == null) {
 			JFaceResources.getImageRegistry().put(IImageKeys.DACQ_CONFIGURATION_ERROR_DECORATOR, new DecorationOverlayIcon(JFaceResources.getImageRegistry().get(IImageKeys.DACQ_CONFIGURATION_ICON), Activator.getImageDescriptor(IImageKeys.ERROR_ICON), IDecoration.BOTTOM_LEFT));
 		}
-		if(JFaceResources.getImageRegistry().get(IImageKeys.DACQ_CONFIGURATION_ERROR_DECORATOR) == null) {
-			JFaceResources.getImageRegistry().put(IImageKeys.DACQ_CONFIGURATION_ERROR_DECORATOR, new DecorationOverlayIcon(JFaceResources.getImageRegistry().get(IImageKeys.DACQ_CONFIGURATION_ICON), Activator.getImageDescriptor(IImageKeys.WARNING_ICON), IDecoration.BOTTOM_LEFT));
+		if(JFaceResources.getImageRegistry().get(IImageKeys.DACQ_CONFIGURATION_WARNING_DECORATOR) == null) {
+			JFaceResources.getImageRegistry().put(IImageKeys.DACQ_CONFIGURATION_WARNING_DECORATOR, new DecorationOverlayIcon(JFaceResources.getImageRegistry().get(IImageKeys.DACQ_CONFIGURATION_ICON), Activator.getImageDescriptor(IImageKeys.WARNING_ICON), IDecoration.BOTTOM_LEFT));
 		}
 		
 		IResource resource = ObjectsController.getResourceForObject(getDACQConfiguration());
