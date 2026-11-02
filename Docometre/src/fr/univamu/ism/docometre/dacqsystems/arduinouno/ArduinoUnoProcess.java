@@ -55,6 +55,7 @@ import java.nio.file.Files;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -63,6 +64,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -90,6 +92,8 @@ import fr.univamu.ism.docometre.ApplicationActionBarAdvisor;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ObjectsController;
+import fr.univamu.ism.docometre.ResourceProperties;
+import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
@@ -943,6 +947,48 @@ public class ArduinoUnoProcess extends Process {
 		for (int i = 0; i < getDACQConfiguration().getModulesNumber(); i++) {
 			ModuleBehaviour module = getDACQConfiguration().getModule(i);
 			module.close();
+		}
+		// The workspace is refreshed by postExecute (see refreshChannelsFiles)
+	}
+	
+	@Override
+	protected void postExecuteInWorkspaceOperation(IResource resource) throws Exception {
+		refreshChannelsFiles();
+		super.postExecuteInWorkspaceOperation(resource);
+	}
+	
+	/*
+	 * Refreshes the output folder ONCE for all the channels closed by close(), and
+	 * sets the type of the recorded samples files. Called by postExecute, within its
+	 * single workspace operation (with diary modifications) : only one resource change
+	 * notification is sent.
+	 * (Previously, each recorded channel refreshed the whole output folder and
+	 * each not recorded channel deleted its resource : N workspace operations.)
+	 */
+	private void refreshChannelsFiles() {
+		IFolder outputFolder = getOutputFolder();
+		if(outputFolder == null || !outputFolder.exists()) return;
+		List<String> recordedFilesNames = new ArrayList<>();
+		for (ArduinoUnoVariable variable : ((ArduinoUnoDACQConfiguration)getDACQConfiguration()).getVariables()) {
+			if(variable.getRecordedFileName() != null) recordedFilesNames.add(variable.getRecordedFileName());
+		}
+		for (int i = 0; i < getDACQConfiguration().getModulesNumber(); i++) {
+			ModuleBehaviour module = getDACQConfiguration().getModule(i);
+			if(!(module instanceof Module)) continue;
+			for (Channel channel : ((Module)module).getChannels()) {
+				if(channel instanceof ArduinoUnoChannel && ((ArduinoUnoChannel)channel).getRecordedFileName() != null)
+					recordedFilesNames.add(((ArduinoUnoChannel)channel).getRecordedFileName());
+			}
+		}
+		try {
+			outputFolder.refreshLocal(IResource.DEPTH_ONE, null);
+			for (String fileName : recordedFilesNames) {
+				IResource fileResource = outputFolder.findMember(fileName);
+				if(fileResource != null) ResourceProperties.setTypePersistentProperty(fileResource, ResourceType.SAMPLES.toString());
+			}
+		} catch (CoreException e) {
+			e.printStackTrace();
+			Activator.logErrorMessageWithCause(e);
 		}
 	}
 
