@@ -54,6 +54,8 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -83,6 +85,9 @@ public abstract class Process extends AbstractElement implements ModuleBehaviour
 	public static final long serialVersionUID = AbstractElement.serialVersionUID;
 	
 	public static double processEndTime = -1;
+	
+	// Size of the diary buffer (see preExecute)
+	private static final int DIARY_BUFFER_SIZE = 64*1024;
 	
 	private Script script;
 	
@@ -275,6 +280,12 @@ public abstract class Process extends AbstractElement implements ModuleBehaviour
 		fileAppender.setThreshold(DiaryLogLevel.DIARY);
 		fileAppender.setAppend(true);
 		fileAppender.setEncoding("UTF-8");
+		// Buffered diary : during the trial, the real time loop writes several lines per
+		// iteration. Without buffer, each line is written and flushed to the disk
+		// immediately. The buffer is flushed when the appender is closed (see refreshLogFile).
+		fileAppender.setBufferedIO(true);
+		fileAppender.setBufferSize(DIARY_BUFFER_SIZE);
+		fileAppender.setImmediateFlush(false);
 		fileAppender.activateOptions();
 		logger.addAppender(fileAppender);
 	}
@@ -306,7 +317,34 @@ public abstract class Process extends AbstractElement implements ModuleBehaviour
 		createErrorMarkers();
 	}
 	
+	/**
+	 * Called after the execution of the process, before the next one can be started.
+	 * All the workspace modifications of {@link #postExecuteInWorkspaceOperation(IResource)}
+	 * are done in a single workspace operation : one resource change notification
+	 * (deferred) instead of one per modification.
+	 * This method returns when all these modifications are done.
+	 */
 	public void postExecute(IResource resource) throws Exception {
+		Exception[] failure = new Exception[1];
+		IWorkspace workspace = ResourcesPlugin.getWorkspace();
+		IWorkspaceRunnable postExecuteRunnable = monitor -> {
+			try {
+				postExecuteInWorkspaceOperation(resource);
+			} catch (Exception e) {
+				failure[0] = e;
+			}
+		};
+		workspace.run(postExecuteRunnable, resource.getProject(), IWorkspace.AVOID_UPDATE, null);
+		if(failure[0] != null) throw failure[0];
+	}
+	
+	/**
+	 * Workspace modifications done after the execution of the process
+	 * (diary refresh and markers by default). Runs within the single workspace
+	 * operation of {@link #postExecute(IResource)} : sub classes override this method
+	 * to add their own modifications to this operation.
+	 */
+	protected void postExecuteInWorkspaceOperation(IResource resource) throws Exception {
 		refreshLogFile(resource);
 	}
 

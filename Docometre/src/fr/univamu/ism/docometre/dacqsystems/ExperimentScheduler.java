@@ -81,20 +81,27 @@ public class ExperimentScheduler {
 	public static String dataFilePathNameSeparator = ".";
 	public static String dataFilePathNameSeparator_RegExpSplitter = "\\.";
 	
-	private RunProcessJob runProcessJob;
+	// Period of the stop request check while waiting for the end of the real time loop job
+	private static final long STOP_CHECK_PERIOD_MS = 20;
+	// Period between two calls to Process.stop() if the process is still running
+	private static final long STOP_RETRY_PERIOD_MS = 1000;
+	
+	// Accessed from several threads (UI, scheduler and process jobs)
+	private volatile RunProcessJob runProcessJob;
 	
 	private IResource selectedResource;
 	private IResource currentSession;
 	private IResource currentTrial;
 	private  boolean runProcess;
-	private boolean running;
+	private volatile boolean running;
 	
 	private class RunProcessJob extends Job {
 		
 		private IResource processFile;
 		private IResource trial;
 		private Process process;
-		private boolean stop;
+		// Set by the UI thread, read by this job : volatile so that the request is seen
+		private volatile boolean stop;
 
 		public RunProcessJob(IResource processFile, IResource trial) {
 			super("Scheduling : " + processFile.getName());
@@ -144,16 +151,17 @@ public class ExperimentScheduler {
 				
 				Job realTimeLoopJob = process.execute(prefix, suffix);
 				realTimeLoopJob.schedule();
-				boolean timeOut = false;
-				long startTime = System.currentTimeMillis();
-				while(realTimeLoopJob.getState() != Job.RUNNING && !timeOut) {
-					timeOut = (System.currentTimeMillis() - startTime > 1000);
-				};
-				if(timeOut) Activator.logErrorMessage("Time out on scheduling realTimeLoopJob");
-				while(realTimeLoopJob.getState() == Job.RUNNING) {
-					if(stop) {
-						process.stop();
+				// Wait for the end of the real time loop job without busy wait (a busy wait
+				// would use a whole CPU core during the trial, in competition with the real
+				// time loop and UI threads). The stop request is checked periodically. The
+				// process is asked to stop once, and again only if it is still running
+				// STOP_RETRY_PERIOD_MS later.
+				long lastStopCallNanos = -1;
+				while(!realTimeLoopJob.join(STOP_CHECK_PERIOD_MS, null)) {
+					if(stop && (lastStopCallNanos < 0 || System.nanoTime() - lastStopCallNanos > STOP_RETRY_PERIOD_MS*1000000L)) {
 						returnStatus = new Status(IStatus.CANCEL, Activator.PLUGIN_ID, null);
+						process.stop();
+						lastStopCallNanos = System.nanoTime();
 					}
 //					if(monitor.isCanceled()) { CANNOT CANCEL THIS JOB - ONLY Real time Job can be canceled
 //						stop = true;
@@ -172,7 +180,7 @@ public class ExperimentScheduler {
 			} finally {
 				try {
 					process.postExecute((trial==null)?processFile:trial);
-					TrialTimings.step("Process.postExecute() (diary, markers)");
+					TrialTimings.step("Process.postExecute() (files, diary, markers)");
 				} catch (Exception e) {
 					Activator.logErrorMessageWithCause(e);
 					e.printStackTrace();

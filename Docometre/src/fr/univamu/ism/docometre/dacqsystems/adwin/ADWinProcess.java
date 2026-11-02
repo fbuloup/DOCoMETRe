@@ -67,9 +67,6 @@ import java.util.regex.Pattern;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.IWorkspaceRunnable;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -150,6 +147,10 @@ public class ADWinProcess extends Process {
 
 	private class RealTimeLoopJob extends Job {
 
+		// Minimum period between two refreshes of the workload and time in the status line.
+		// Refreshing at each iteration (50 to 200 Hz) costs two ADwin requests and floods the UI thread.
+		private static final long STATUS_LINE_REFRESH_PERIOD_NANOS = 200_000_000L;
+		
 		private float time = 0;
 		
 		public RealTimeLoopJob(String name) {
@@ -161,9 +162,11 @@ public class ADWinProcess extends Process {
 			double processBeginTime = 0;
 			// Timing trace of the loop iterations (see TrialTimings)
 			long iterations = 0, lastIterationNanos = 0, maxIterationNanos = 0;
+			long lastStatusLineRefreshNanos = 0;
+			int processNumberInt = -1;
 			try {
 				getThread().setPriority(Thread.MAX_PRIORITY);
-				int processNumberInt = Integer.parseInt(ADWinProcess.this.getProperty(ADWinProcessProperties.PROCESS_NUMBER));	
+				processNumberInt = Integer.parseInt(ADWinProcess.this.getProperty(ADWinProcessProperties.PROCESS_NUMBER));
 				int processStatus = ((ADWinDACQConfiguration)ADWinProcess.this.getDACQConfiguration()).getADwinDevice().Process_Status(processNumberInt);
 				boolean active = processStatus == 1;
 				processBeginTime = System.currentTimeMillis()/1000d;
@@ -219,16 +222,22 @@ public class ADWinProcess extends Process {
 					timeAfter = System.currentTimeMillis()/1000d;
 					appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_DisplayTime, (timeAfter - timeBefore)));
 					
-					time = ((ADWinDACQConfiguration)ADWinProcess.this.getDACQConfiguration()).getADwinDevice().Get_FPar(1);
-					int workload = ((ADWinDACQConfiguration)ADWinProcess.this.getDACQConfiguration()).getADwinDevice().Workload();
-					PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
-						@Override
-						public void run() {
-//							StatusLineManager statusLineManger = ((WorkbenchWindow)PlatformUI.getWorkbench().getActiveWorkbenchWindow()).getStatusLineManager();
-//							statusLineManger.setMessage(NLS.bind(DocometreMessages.Workload_Time, workload, formater.format(realTime)));
-							ApplicationActionBarAdvisor.workloadTimeContributionItem.setText(NLS.bind(DocometreMessages.Workload_Time, workload, time));
-						}
-					});
+					long now = System.nanoTime();
+					if(now - lastStatusLineRefreshNanos >= STATUS_LINE_REFRESH_PERIOD_NANOS) {
+						lastStatusLineRefreshNanos = now;
+						// time is FPAR_<process number> (see ADWinCodeSegmentProperties.DECLARATION)
+						time = ((ADWinDACQConfiguration)ADWinProcess.this.getDACQConfiguration()).getADwinDevice().Get_FPar(processNumberInt);
+						int workload = ((ADWinDACQConfiguration)ADWinProcess.this.getDACQConfiguration()).getADwinDevice().Workload();
+						float currentTime = time;
+						PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+							@Override
+							public void run() {
+//								StatusLineManager statusLineManger = ((WorkbenchWindow)PlatformUI.getWorkbench().getActiveWorkbenchWindow()).getStatusLineManager();
+//								statusLineManger.setMessage(NLS.bind(DocometreMessages.Workload_Time, workload, formater.format(realTime)));
+								ApplicationActionBarAdvisor.workloadTimeContributionItem.setText(NLS.bind(DocometreMessages.Workload_Time, workload, currentTime));
+							}
+						});
+					}
 
 					if(TrialTimings.trace) {
 						iterations++;
@@ -245,10 +254,17 @@ public class ADWinProcess extends Process {
 				// CLOSE
 				ADWinProcess.this.close();
 				TrialTimings.step("ADWinProcess.close() (channels files)");
+				// The status line is refreshed periodically during the loop : display the final time
+				try {
+					if(processNumberInt > 0) time = ((ADWinDACQConfiguration)ADWinProcess.this.getDACQConfiguration()).getADwinDevice().Get_FPar(processNumberInt);
+				} catch (ADwinCommunicationError e) {
+					// Keep the last time read
+				}
+				float finalTime = time;
 				PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
 					@Override
 					public void run() {
-						ApplicationActionBarAdvisor.workloadTimeContributionItem.setText(NLS.bind(DocometreMessages.Workload_Time, "0", time));
+						ApplicationActionBarAdvisor.workloadTimeContributionItem.setText(NLS.bind(DocometreMessages.Workload_Time, "0", finalTime));
 					}
 				});
 				double processEndTime = System.currentTimeMillis()/1000d;
@@ -1191,13 +1207,14 @@ public class ADWinProcess extends Process {
 			ModuleBehaviour module = getDACQConfiguration().getModule(i);
 			module.close();
 		}
-		refreshChannelsFiles(variables);
+		// The workspace is refreshed by postExecute (see refreshChannelsFiles)
 	}
 
 	/*
-	 * Refreshes the output folder ONCE for all the channels just closed, and
-	 * sets the type of the recorded samples files. Done in a single workspace
-	 * operation : only one resource change notification is sent.
+	 * Refreshes the output folder ONCE for all the channels closed by close(), and
+	 * sets the type of the recorded samples files. Called by postExecute, within its
+	 * single workspace operation (with diary and parameters file modifications) :
+	 * only one resource change notification is sent.
 	 * (Previously, each recorded channel refreshed the whole output folder and
 	 * each not recorded channel deleted its resource : N workspace operations.)
 	 */
@@ -1216,16 +1233,12 @@ public class ADWinProcess extends Process {
 					recordedFilesNames.add(((ADWinChannel)channel).getRecordedFileName());
 			}
 		}
-		IWorkspace workspace = ResourcesPlugin.getWorkspace();
-		IWorkspaceRunnable refreshRunnable = monitor -> {
-			outputFolder.refreshLocal(IResource.DEPTH_ONE, monitor);
+		try {
+			outputFolder.refreshLocal(IResource.DEPTH_ONE, null);
 			for (String fileName : recordedFilesNames) {
 				IResource fileResource = outputFolder.findMember(fileName);
 				if(fileResource != null) ResourceProperties.setTypePersistentProperty(fileResource, ResourceType.SAMPLES.toString());
 			}
-		};
-		try {
-			workspace.run(refreshRunnable, workspace.getRuleFactory().refreshRule(outputFolder), IWorkspace.AVOID_UPDATE, null);
 		} catch (CoreException e) {
 			e.printStackTrace();
 			Activator.logErrorMessageWithCause(e);
@@ -1249,8 +1262,10 @@ public class ADWinProcess extends Process {
 	}
 	
 	@Override
-	public void postExecute(IResource resource) throws Exception {
-		super.postExecute(resource);
+	protected void postExecuteInWorkspaceOperation(IResource resource) throws Exception {
+		// Same order as before grouping : channels files, diary and markers, parameters file
+		refreshChannelsFiles(((ADWinDACQConfiguration)getDACQConfiguration()).getVariables());
+		super.postExecuteInWorkspaceOperation(resource);
 		postManageParameters(resource);
 	}
 	
