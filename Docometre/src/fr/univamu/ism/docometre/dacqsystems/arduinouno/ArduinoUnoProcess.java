@@ -160,12 +160,16 @@ public class ArduinoUnoProcess extends Process {
 	
 	private class RealTimeLoopJob extends Job {
 
-		// End handshake with the Arduino (see run()) : maximum waiting times. They are
-		// the durations of the fixed waits used before : the handshake is never longer.
+		// End handshake with the Arduino (see run()) : maximum waiting times. The PC only
+		// waits until the expected char is received : these durations are reached only
+		// if the char never comes (process compiled before the handshake, board issue).
 		// Maximum wait for the 's' char of the Arduino after a stop requested by the user
+		// (same as the former fixed wait)
 		private static final long STOP_REPLY_TIMEOUT_MS = 300;
-		// Maximum wait for the 'w' char sent by the Arduino when it has restarted and waits for 'r'
-		private static final long READY_TIMEOUT_MS = 600;
+		// Maximum wait for the 'w' char sent by the Arduino when it has restarted and waits
+		// for 'r'. Measured restart : about 530 ms after the watchdog reset : 1000 ms gives a
+		// margin for slower boards (the former fixed waits, 600 ms, left only about 70 ms).
+		private static final long READY_TIMEOUT_MS = 1000;
 		
 		private SerialPort serialPort;
 		private boolean terminate;
