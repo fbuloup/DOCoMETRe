@@ -51,15 +51,10 @@ import java.nio.FloatBuffer;
 
 import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 
-import fr.univamu.ism.docometre.Activator;
-import fr.univamu.ism.docometre.ResourceProperties;
-import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
@@ -75,6 +70,7 @@ public class ArduinoUnoChannel extends Channel {
 	transient private FloatBuffer displayBuffer;
 	transient private boolean notify = false;
 	transient private String channelID = "";
+	transient private String recordedFileName;
 
 	public ArduinoUnoChannel(Module module) {
 		super(module);
@@ -174,30 +170,28 @@ public class ArduinoUnoChannel extends Channel {
 		
 	@Override
 	public void close(Process process) {
+		recordedFileName = null;
 		try {
 			if(fileChannel != null) {
 				fileChannel.close();
+				// The workspace is refreshed only once for all channels, by ArduinoUnoProcess.postExecute :
+				// a deleted file disappears from the workspace and recordedFileName gets its type
 				boolean isRecorded = Boolean.valueOf(getProperty(ChannelProperties.RECORD));
-				if(!isRecorded && file != null) {
-					file.delete();
-					IResource fileResource = process.getOutputFolder().findMember(file.getName());
-					if(fileResource != null) fileResource.delete(true, null);
-				}
-				if(isRecorded && file != null) {
-					 try {
-						process.getOutputFolder().refreshLocal(IResource.DEPTH_ONE, null);
-					} catch (CoreException e) {
-						e.printStackTrace();
-						Activator.logErrorMessageWithCause(e);
-					}
-					IResource fileResource = process.getOutputFolder().findMember(file.getName());
-					ResourceProperties.setTypePersistentProperty(fileResource, ResourceType.SAMPLES.toString());
-				}
+				if(!isRecorded && file != null) file.delete();
+				if(isRecorded && file != null) recordedFileName = file.getName();
 			}
 			if(displayBuffer != null) displayBuffer.clear();
-		} catch (IOException | CoreException e) {
+		} catch (IOException e) {
 			Logger.getLogger(Process.class).error("Exception", e);
 		}
+	}
+	
+	/**
+	 * Name of the samples file written by this channel during the last run, null
+	 * if this channel did not record (to be used after {@link #close(Process)})
+	 */
+	public String getRecordedFileName() {
+		return recordedFileName;
 	}
 
 	@Override

@@ -58,9 +58,13 @@ public class OscilloCurveConfiguration extends CurveConfiguration implements Pro
 	
 	private Channel channel;
 	
-	transient private IRTSWTSerie serie;
+	// Set by the UI thread, read by the real time loop thread
+	transient private volatile IRTSWTSerie serie;
 	transient double sampleFrequency;
 	transient private double previousTime = 0;
+	// Points received by the real time loop thread, added to the serie by the UI thread
+	transient private PendingPoints pendingPoints;
+	transient private UIRefreshScheduler refreshScheduler;
 
 	public OscilloCurveConfiguration(Channel channel) {
 		this.channel = channel;
@@ -121,6 +125,26 @@ public class OscilloCurveConfiguration extends CurveConfiguration implements Pro
 	public void setSerie(IRTSWTSerie serie) {
 		this.serie = serie;
 		previousTime = 0;
+		getPendingPoints().clear();
+	}
+	
+	private synchronized PendingPoints getPendingPoints() {
+		if(pendingPoints == null) pendingPoints = new PendingPoints();
+		return pendingPoints;
+	}
+	
+	private synchronized UIRefreshScheduler getRefreshScheduler() {
+		if(refreshScheduler == null) refreshScheduler = new UIRefreshScheduler(this::addPendingPointsToSerie);
+		return refreshScheduler;
+	}
+	
+	/*
+	 * UI thread : adds all the points received since the previous refresh to the serie (one rendering)
+	 */
+	private void addPendingPointsToSerie() {
+		Double[][] points = getPendingPoints().drain();
+		IRTSWTSerie currentSerie = serie;
+		if(points != null && currentSerie != null) currentSerie.addPoints(points[0], points[1]);
 	}
 
 	@Override
@@ -139,7 +163,9 @@ public class OscilloCurveConfiguration extends CurveConfiguration implements Pro
 					timeValues[i] = previousTime;
 					previousTime = timeValues[i] + 1f/sampleFrequency;
 				}
-				serie.addPoints(timeValues, doubleValues);
+				// Does not block the real time loop : the serie is updated later by the UI thread
+				getPendingPoints().add(timeValues, doubleValues);
+				getRefreshScheduler().request();
 			}
 		}
 		

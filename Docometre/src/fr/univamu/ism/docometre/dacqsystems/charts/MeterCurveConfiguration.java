@@ -48,7 +48,6 @@ import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.LightweightSystem;
 import org.eclipse.nebula.visualization.widgets.figures.GaugeFigure;
 import org.eclipse.nebula.visualization.widgets.figures.TankFigure;
-import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
@@ -63,8 +62,12 @@ public class MeterCurveConfiguration extends CurveConfiguration implements Prope
 	
 	private Channel channel;
 
-	private transient Figure oneChannelFigure;
+	// Set by the UI thread, read by the real time loop thread
+	private transient volatile Figure oneChannelFigure;
 	private transient LightweightSystem lws;
+	// Last value received by the real time loop thread, displayed by the UI thread
+	private transient volatile Double lastValue;
+	private transient UIRefreshScheduler refreshScheduler;
 
 	public MeterCurveConfiguration(Channel channel) {
 		this.channel = channel;
@@ -114,6 +117,27 @@ public class MeterCurveConfiguration extends CurveConfiguration implements Prope
 	
 	public void setChart(Figure oneChannelFigure) {
 		this.oneChannelFigure = oneChannelFigure;
+		lastValue = null;
+	}
+	
+	private synchronized UIRefreshScheduler getRefreshScheduler() {
+		if(refreshScheduler == null) refreshScheduler = new UIRefreshScheduler(this::displayLastValue);
+		return refreshScheduler;
+	}
+	
+	/*
+	 * UI thread : displays the last value received
+	 */
+	private void displayLastValue() {
+		Double value = lastValue;
+		Figure figure = oneChannelFigure;
+		if(value == null || figure == null) return;
+		if(!((MeterChartConfiguration)chartConfiguration).isVisible()) {
+			((MeterChartConfiguration)chartConfiguration).setVisible(true);
+		}
+		if(figure instanceof GaugeFigure) ((GaugeFigure)figure).setValue(value);
+		if(figure instanceof TankFigure) ((TankFigure)figure).setValue(value);
+		lws.getUpdateManager().performUpdate();
 	}
 	
 	public void setLigthWeightSystem(LightweightSystem lws) {
@@ -131,17 +155,9 @@ public class MeterCurveConfiguration extends CurveConfiguration implements Prope
 				doubleValues[i] = (double) floatBuffer.get(i);
 			}
 			if(values.length > 0) {
-				PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
-					@Override
-					public void run() {
-						if(!((MeterChartConfiguration)chartConfiguration).isVisible()) {
-							((MeterChartConfiguration)chartConfiguration).setVisible(true);
-						}
-						if(oneChannelFigure instanceof GaugeFigure)	((GaugeFigure)oneChannelFigure).setValue(doubleValues[doubleValues.length - 1]);
-						if(oneChannelFigure instanceof TankFigure)	((TankFigure)oneChannelFigure).setValue(doubleValues[doubleValues.length - 1]);
-						lws.getUpdateManager().performUpdate();
-					}
-				});
+				// Does not block the real time loop : the value is displayed later by the UI thread
+				lastValue = doubleValues[doubleValues.length - 1];
+				getRefreshScheduler().request();
 			}
 		}
 	}

@@ -55,6 +55,7 @@ import java.nio.file.Files;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -63,6 +64,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -90,6 +92,8 @@ import fr.univamu.ism.docometre.ApplicationActionBarAdvisor;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ObjectsController;
+import fr.univamu.ism.docometre.ResourceProperties;
+import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
@@ -97,6 +101,7 @@ import fr.univamu.ism.docometre.dacqsystems.DocometreBuilder;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.ModuleBehaviour;
 import fr.univamu.ism.docometre.dacqsystems.Process;
+import fr.univamu.ism.docometre.dacqsystems.TrialTimings;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinMessages;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.dacqconfigurationeditor.ArduinoUnoDACQConfigurationEditor;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.processeditor.ArduinoUnoProcessEditor;
@@ -115,6 +120,9 @@ import jssc.SerialPortList;
 public class ArduinoUnoProcess extends Process {
 	
 	private static double displayTimeRate = 0.1; 
+	
+	// Message sent by the Arduino when it has (re)started and waits for 'r' char (see end handshake in RealTimeLoopJob)
+	private static final String READY_MESSAGE = "w";
 
 	public static final long serialVersionUID = DACQConfiguration.serialVersionUID;
 	public static String previousINOHexFilePath = "";
@@ -152,6 +160,17 @@ public class ArduinoUnoProcess extends Process {
 	
 	private class RealTimeLoopJob extends Job {
 
+		// End handshake with the Arduino (see run()) : maximum waiting times. The PC only
+		// waits until the expected char is received : these durations are reached only
+		// if the char never comes (process compiled before the handshake, board issue).
+		// Maximum wait for the 's' char of the Arduino after a stop requested by the user
+		// (same as the former fixed wait)
+		private static final long STOP_REPLY_TIMEOUT_MS = 300;
+		// Maximum wait for the 'w' char sent by the Arduino when it has restarted and waits
+		// for 'r'. Measured restart : about 530 ms after the watchdog reset : 1000 ms gives a
+		// margin for slower boards (the former fixed waits, 600 ms, left only about 70 ms).
+		private static final long READY_TIMEOUT_MS = 1000;
+		
 		private SerialPort serialPort;
 		private boolean terminate;
 		private StringBuilder message;
@@ -167,6 +186,9 @@ public class ArduinoUnoProcess extends Process {
 		private double timeBefore;
 		private double timeAfter;
 //		private String channelName;
+		// Timing trace (see TrialTimings)
+		private boolean processEndTraced;
+		private boolean firstDataTraced;
 
 		public RealTimeLoopJob(String name) {
 			super(name);
@@ -208,15 +230,19 @@ public class ArduinoUnoProcess extends Process {
 		protected IStatus run(IProgressMonitor monitor) {
 			
 			double processBeginTime = 0;
+			// Timing trace of the loop iterations (see TrialTimings)
+			long iterations = 0, lastIterationNanos = 0, maxIterationNanos = 0;
 			
 			try {
 				getThread().setPriority(Thread.MAX_PRIORITY);
 				
 				serialPort.purgePort(SerialPort.PURGE_RXCLEAR | SerialPort.PURGE_TXCLEAR);
 				serialPort.purgePort(SerialPort.PURGE_RXABORT | SerialPort.PURGE_RXCLEAR);
+				TrialTimings.step("RealTimeLoopJob started (serial port purged)");
 				
 				timeBefore = System.currentTimeMillis()/1000d;
 				serialPort.writeString("r");
+				TrialTimings.end("Start : 'r' sent to Arduino");
 				
 				processBeginTime = System.currentTimeMillis()/1000d;
 				if(Process.processEndTime > -1) {
@@ -229,17 +255,22 @@ public class ArduinoUnoProcess extends Process {
 				
 				
 				while(!terminate) {
+					TrialTimings.firstLoopIteration();
 					if(monitor.isCanceled()) {
 						forceTermination = true;
 						monitor.setCanceled(false);
 					}
 	    			if(serialPort.getInputBufferBytesCount() > 0) {
+	    				// Timing trace : only the iterations which read bytes are measured (the loop polls the serial port)
+	    				long iterationStart = TrialTimings.trace ? System.nanoTime() : 0;
 	    				byte[] bytes = serialPort.readBytes();
 		            	for (byte b: bytes) {
 		                    if ( (b == '\r' || b == '\n') && message.length() > 0 && !terminate) {
 		                    	String messageString = message.toString().replaceAll("\\r", "").replaceAll("\\n", "");
 		                    	if(messageString.length() == 0) continue;
 		                    	message.setLength(0);
+		                    	// 'w' : the board has restarted and waits for 'r' (see end handshake), not a data message
+		                    	if(READY_MESSAGE.equals(messageString)) continue;
 		                    	String[] segments = messageString.split(":");
 		                    	
 			                    if(segments.length != 2 && segments.length != 3) {
@@ -319,6 +350,10 @@ public class ArduinoUnoProcess extends Process {
 //				                    		timeBefore = System.currentTimeMillis()/1000d;
 //											transferedChannelsOrderedByTransferNumber[trsfrNum - 1].addSamples(new float[] {time, value});
 										transferedChannelsOrderedByTransferNumber[trsfrNum - 1].addSamples(new float[] {value});
+										if(TrialTimings.trace && !firstDataTraced) {
+											firstDataTraced = true;
+											TrialTimings.dataReceived(transferedChannelsOrderedByTransferNumber[trsfrNum - 1].getProperty(ChannelProperties.NAME), false);
+										}
 //			                    			channelName = transferedChannelsOrderedByTransferNumber[trsfrNum - 1].getProperty(ChannelProperties.NAME);
 										nbSamples[trsfrNum - 1] +=1;
 										transferedChannelsOrderedByTransferNumber[trsfrNum - 1].notifyChannelObservers();
@@ -343,26 +378,57 @@ public class ArduinoUnoProcess extends Process {
 			                    
 		                    } else {
 		                    	if(b == 's') {
+		                    		if(TrialTimings.trace && !processEndTraced) {
+		                    			processEndTraced = true;
+		                    			TrialTimings.processEnded();
+		                    			TrialTimings.log("end of process signaled by Arduino ('s' received)");
+		                    		}
 		                    		appendToEventDiary("\nReceived stop 's' char");
-		                    		appendToEventDiary("\nSend first 's' char in reply");
-		                    		serialPort.writeByte((byte) 's');
-		                    		Thread.sleep(300);
 		                    		stopReceived = true;
-		                    		forceTermination = true;// Just to send s in reply as Arduino is waiting for it.
+		                    		forceTermination = true;// To send 's' in reply (end handshake) as Arduino is waiting for it.
 		                    	} else message.append((char)b);
 		                    }
 		            	}
+		            	// The end handshake is measured separately
+		            	if(TrialTimings.trace && !stopReceived) {
+		            		iterations++;
+		            		lastIterationNanos = System.nanoTime() - iterationStart;
+		            		if(lastIterationNanos > maxIterationNanos) maxIterationNanos = lastIterationNanos;
+		            	}
 	    			}
 	    			if(forceTermination) {
+	    				if(TrialTimings.trace && !processEndTraced) {
+	    					processEndTraced = true;
+	    					TrialTimings.processEnded();
+	    					TrialTimings.log("forced termination (stop requested, 's' not received from Arduino)");
+	    				}
+	    				// End handshake. At the end of its process, the Arduino sends 's' then waits
+	    				// for 's' to restart (watchdog reset). When it has restarted, it sends 'w' and
+	    				// waits for 'r' (next start). Before, fixed waits were used (300 ms after each
+	    				// 's' sent) : now the PC waits for these chars, with the same maximum durations.
 	    				if(!stopReceived) {
+	    					// Stop requested by the user : first 's' to terminate the process,
+	    					// then wait for the 's' of the Arduino (process terminated)
 	    					appendToEventDiary("\nStop 's' char not received !");
                     		appendToEventDiary("\nSend 's' char");
 	    					serialPort.writeByte((byte) 's');
-	    					Thread.sleep(300);// Wait 30ms to be sure Arduino is waiting for 's' char to restart
+	    					long replyStartNanos = System.nanoTime();
+	    					boolean replyReceived = waitForChar('s', STOP_REPLY_TIMEOUT_MS);
+	    					double replyDelayMs = (System.nanoTime() - replyStartNanos)/1e6;
+	    					if(replyReceived) appendToEventDiary("\nReceived stop 's' char after " + String.format("%.1f", replyDelayMs) + " ms");
+	    					else appendToEventDiary("\nStop 's' char not received after " + STOP_REPLY_TIMEOUT_MS + " ms");
+	    					TrialTimings.log("Arduino stop reply ('s') " + (replyReceived ? "received after " + String.format("%.1f", replyDelayMs) + " ms" : "not received (time out " + STOP_REPLY_TIMEOUT_MS + " ms)"));
 	    				}
-	    				appendToEventDiary("\nSend second 's' char to start reset");
+	    				// 's' to restart the Arduino, then wait for its 'w' : restarted and ready for next start
+	    				appendToEventDiary("\nSend 's' char to start reset");
 	    				serialPort.writeByte((byte) 's');
-	    				Thread.sleep(300);
+	    				long resetStartNanos = System.nanoTime();
+	    				boolean ready = waitForChar(READY_MESSAGE.charAt(0), READY_TIMEOUT_MS);
+	    				double readyDelayMs = (System.nanoTime() - resetStartNanos)/1e6;
+	    				if(ready) appendToEventDiary("\nArduino restarted ('w' char received) after " + String.format("%.1f", readyDelayMs) + " ms");
+	    				else appendToEventDiary("\nArduino restart ('w' char) not received after " + READY_TIMEOUT_MS + " ms : compile and upload the process again to get it");
+	    				TrialTimings.log("Arduino restart ('w') " + (ready ? "received after " + String.format("%.1f", readyDelayMs) + " ms" : "not received (time out " + READY_TIMEOUT_MS + " ms, process compiled before ? compile it again)"));
+	    				TrialTimings.step("stop handshake with Arduino ('s' chars and waits)");
 	    				forceTermination = false;
 	    				terminate = true;
 	    			}
@@ -381,9 +447,17 @@ public class ArduinoUnoProcess extends Process {
 				});
                 return new Status(Status.ERROR, Activator.PLUGIN_ID, "Error receiving string from port: " + e.getMessage());
 			} finally {
+				if(TrialTimings.trace && !processEndTraced) {
+					// Loop ended by an error
+					processEndTraced = true;
+					TrialTimings.processEnded();
+				}
+				TrialTimings.loopSummary("real-time loop (iterations which read bytes)", "", iterations, lastIterationNanos, maxIterationNanos);
 				ArduinoUnoProcess.this.close();
+				TrialTimings.step("ArduinoUnoProcess.close() (channels files)");
 				try {
 					serialPort.closePort();
+					TrialTimings.step("serial port closed");
 				} catch (SerialPortException e) {
 					Activator.logErrorMessageWithCause(e);
 					return new Status(Status.ERROR, Activator.PLUGIN_ID, "Error closing port: " + e.getMessage());
@@ -415,6 +489,22 @@ public class ArduinoUnoProcess extends Process {
 		
 		public void forceTermination() {
 			forceTermination = true;
+		}
+		
+		/*
+		 * Reads the serial port, byte per byte (the next bytes are kept for the next
+		 * call), until the expected char is received or the time out is reached.
+		 * Returns true if the char has been received.
+		 */
+		private boolean waitForChar(char expectedChar, long timeOutMs) throws SerialPortException, InterruptedException {
+			long deadline = System.nanoTime() + timeOutMs*1_000_000L;
+			while(System.nanoTime() < deadline) {
+				if(serialPort.getInputBufferBytesCount() > 0) {
+					byte[] bytes = serialPort.readBytes(1);
+					if(bytes != null && bytes.length > 0 && bytes[0] == expectedChar) return true;
+				} else Thread.sleep(1);
+			}
+			return false;
 		}
 		
 	}
@@ -568,6 +658,9 @@ public class ArduinoUnoProcess extends Process {
 			}
 			String baudRate = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.BAUD_RATE);
 			code = code + "\t\tSerial.begin(" + baudRate + ");\n";
+			code = code + "\t\t// Tell the PC that the board has (re)started and waits for 'r' char (end handshake)\n";
+			code = code + "\t\tSerial.println('" + READY_MESSAGE + "');\n";
+			code = code + "\t\tSerial.flush();\n";
 			code = code + "\t\twhile (!startLoop) {\n";
 			code = code + "\t\t\t\tif(Serial.available()) {\n";
 			code = code + "\t\t\t\t\t\tstartLoop = ((char)Serial.read()) == 'r';\n";
@@ -943,6 +1036,48 @@ public class ArduinoUnoProcess extends Process {
 		for (int i = 0; i < getDACQConfiguration().getModulesNumber(); i++) {
 			ModuleBehaviour module = getDACQConfiguration().getModule(i);
 			module.close();
+		}
+		// The workspace is refreshed by postExecute (see refreshChannelsFiles)
+	}
+	
+	@Override
+	protected void postExecuteInWorkspaceOperation(IResource resource) throws Exception {
+		refreshChannelsFiles();
+		super.postExecuteInWorkspaceOperation(resource);
+	}
+	
+	/*
+	 * Refreshes the output folder ONCE for all the channels closed by close(), and
+	 * sets the type of the recorded samples files. Called by postExecute, within its
+	 * single workspace operation (with diary modifications) : only one resource change
+	 * notification is sent.
+	 * (Previously, each recorded channel refreshed the whole output folder and
+	 * each not recorded channel deleted its resource : N workspace operations.)
+	 */
+	private void refreshChannelsFiles() {
+		IFolder outputFolder = getOutputFolder();
+		if(outputFolder == null || !outputFolder.exists()) return;
+		List<String> recordedFilesNames = new ArrayList<>();
+		for (ArduinoUnoVariable variable : ((ArduinoUnoDACQConfiguration)getDACQConfiguration()).getVariables()) {
+			if(variable.getRecordedFileName() != null) recordedFilesNames.add(variable.getRecordedFileName());
+		}
+		for (int i = 0; i < getDACQConfiguration().getModulesNumber(); i++) {
+			ModuleBehaviour module = getDACQConfiguration().getModule(i);
+			if(!(module instanceof Module)) continue;
+			for (Channel channel : ((Module)module).getChannels()) {
+				if(channel instanceof ArduinoUnoChannel && ((ArduinoUnoChannel)channel).getRecordedFileName() != null)
+					recordedFilesNames.add(((ArduinoUnoChannel)channel).getRecordedFileName());
+			}
+		}
+		try {
+			outputFolder.refreshLocal(IResource.DEPTH_ONE, null);
+			for (String fileName : recordedFilesNames) {
+				IResource fileResource = outputFolder.findMember(fileName);
+				if(fileResource != null) ResourceProperties.setTypePersistentProperty(fileResource, ResourceType.SAMPLES.toString());
+			}
+		} catch (CoreException e) {
+			e.printStackTrace();
+			Activator.logErrorMessageWithCause(e);
 		}
 	}
 
@@ -1513,7 +1648,10 @@ public class ArduinoUnoProcess extends Process {
 
 	@Override
 	public void stop() throws Exception {
+		long stopStartNanos = System.nanoTime();
 		realTimeLoopJob.forceTermination();
+		// No time out : the termination (handshake with Arduino) is done by the real time loop
+		TrialTimings.stopMeasured(System.nanoTime() - stopStartNanos, false);
 	}
 
 	@Override
@@ -1522,12 +1660,16 @@ public class ArduinoUnoProcess extends Process {
 		boolean processLoaded = false;
 		try {
 			processLoaded = loadProcess();
+			TrialTimings.step("ArduinoUnoProcess.loadProcess() (upload if needed)");
 			if(processLoaded) {
 				// Create Job
 				realTimeLoopJob = new RealTimeLoopJob(DocometreMessages.RunningProcess);
+				TrialTimings.step("RealTimeLoopJob created (serial port opened)");
 				// Open modules and variables
 				open(this, prefix, suffix);
+				TrialTimings.step("ArduinoUnoProcess.open() (channels files)");
 				generation();
+				TrialTimings.step("ArduinoUnoProcess.generation()");
 				return realTimeLoopJob;
 			} else throw new Exception("Impossible to load process.");
 		} catch (Exception e) {
