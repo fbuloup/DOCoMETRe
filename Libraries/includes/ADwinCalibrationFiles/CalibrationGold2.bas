@@ -21,7 +21,7 @@ DIM bitPattern AS LONG
 
 INIT :
 
-GLOBALDELAY = 10^9/(1000*3.3)
+GLOBALDELAY = 3*10^8/1000 ' T11 timer at 300 MHz (10/3 ns) : 10^9/(1000*3.3) gave a period 1 % too long
 
 'Entrées analogiques
 par_1=0'Numéro de l'entrée analogique 1 .. 32

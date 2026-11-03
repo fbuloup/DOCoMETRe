@@ -43,7 +43,7 @@ par_8=0'Valeur associ�e � la sortie num�rique s�lectionn�e 0 ou 1
 'par_11=0
 'par_12=0 'SE ou DIFF
 par_14=1 'gain des entr�es analogiques 1,2,4 ou 8
-GLOBALDELAY = 10^9/(1000*3.3)
+GLOBALDELAY = 3*10^8/1000 ' T11 timer at 300 MHz (10/3 ns) : 10^9/(1000*3.3) gave a period 1 % too long
 
 'par_12  : 0, mode SE ou 1, mode DIFF
 SE_DIFF(1,par_12)
