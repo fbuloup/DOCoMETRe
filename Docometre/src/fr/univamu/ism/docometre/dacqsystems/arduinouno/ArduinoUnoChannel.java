@@ -180,6 +180,12 @@ public class ArduinoUnoChannel extends Channel {
 				if(!isRecorded && file != null) file.delete();
 				if(isRecorded && file != null) recordedFileName = file.getName();
 			}
+			// Last samples received since the last notification (display buffer not full) :
+			// given to the charts too, they would otherwise never be displayed
+			if(displayBuffer != null && displayBuffer.position() > 0 && channelObserversList != null) {
+				for (int i = 0; i < channelObserversList.size(); i++)
+					channelObserversList.get(i).update(displayBuffer, getID());
+			}
 			if(displayBuffer != null) displayBuffer.clear();
 		} catch (IOException e) {
 			Logger.getLogger(Process.class).error("Exception", e);

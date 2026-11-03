@@ -167,8 +167,9 @@ public class ArduinoUnoProcess extends Process {
 		// (same as the former fixed wait)
 		private static final long STOP_REPLY_TIMEOUT_MS = 300;
 		// Maximum wait for the 'w' char sent by the Arduino when it has restarted and waits
-		// for 'r'. Measured restart : about 530 ms after the watchdog reset : 1000 ms gives a
-		// margin for slower boards (the former fixed waits, 600 ms, left only about 70 ms).
+		// for 'r'. The process is now restarted by software (a few ms). A process compiled
+		// before restarts with a board reset (watchdog) : measured about 530 ms, 1000 ms
+		// gives a margin for slower boards.
 		private static final long READY_TIMEOUT_MS = 1000;
 		
 		private SerialPort serialPort;
@@ -403,9 +404,10 @@ public class ArduinoUnoProcess extends Process {
 	    					TrialTimings.log("forced termination (stop requested, 's' not received from Arduino)");
 	    				}
 	    				// End handshake. At the end of its process, the Arduino sends 's' then waits
-	    				// for 's' to restart (watchdog reset). When it has restarted, it sends 'w' and
-	    				// waits for 'r' (next start). Before, fixed waits were used (300 ms after each
-	    				// 's' sent) : now the PC waits for these chars, with the same maximum durations.
+	    				// for 's' to restart (by software, see restartProcess() in the generated code ;
+	    				// board reset by the watchdog for a process compiled before). When it has
+	    				// restarted, it sends 'w' and waits for 'r' (next start). Before, fixed waits
+	    				// were used (300 ms after each 's' sent) : now the PC waits for these chars.
 	    				if(!stopReceived) {
 	    					// Stop requested by the user : first 's' to terminate the process,
 	    					// then wait for the 's' of the Arduino (process terminated)
@@ -600,8 +602,15 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "unsigned long timeIndex;\n\n";
 			code = code + "// Start loop when true\n";
 			code = code + "bool startLoop;\n\n";
-			code = code + "// Start WDT when true\n";
-			code = code + "bool startWDT;\n\n";
+			code = code + "// Restart requested when true : end of process and 's' char received.\n";
+			code = code + "// The process is then restarted by software (see loop() and restartProcess()),\n";
+			code = code + "// without board reset (a board reset takes about 0.5 s).\n";
+			code = code + "volatile bool restartRequested;\n\n";
+			code = code + "// True until the end of the first start of the process (one-time initializations)\n";
+			code = code + "bool firstStart = true;\n\n";
+			code = code + "void startProcess();\n";
+			code = code + "void restartProcess();\n";
+			code = code + "void finalize();\n\n";
 			code = code + "// Stop loop when true\n";
 			code = code + "bool terminateProcess;\n\n";
 //			code = code + "// First loop flag\n";
@@ -621,6 +630,7 @@ public class ArduinoUnoProcess extends Process {
 		
 		if(segment == ArduinoUnoCodeSegmentProperties.INITIALIZATION) {
 			code = "void setup() {\n";
+			code = code + "\t\t// One-time initializations (done again only after a board reset)\n";
 			
 			if(isRelease3) {
 				code = code + "\t\t// ADC CONFIGURATON\n";
@@ -639,8 +649,18 @@ public class ArduinoUnoProcess extends Process {
 				code = code + "\t\tADCSRA  =  bit (ADEN) | 1*bit (ADPS2) | 0*bit (ADPS1) | 0*bit (ADPS0);\n";
 			}
 			if(isRelease4Wifi) code = code + "\t\tanalogReadResolution(14);\n";
+			if(((ArduinoUnoDACQConfiguration)getDACQConfiguration()).hasADS1115Module()) {
+				code = code + "\t\t// Start I2C interface\n";
+				code = code + "\t\tWire.begin();\n";
+			}
+			String baudRate = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.BAUD_RATE);
+			code = code + "\t\tSerial.begin(" + baudRate + ");\n";
+			code = code + "\t\tstartProcess();\n";
+			code = code + "}\n\n";
 			
-			
+			code = code + "// Start of the process : called by setup() and, at the end of each process,\n";
+			code = code + "// by restartProcess(). Everything the process uses is initialized here, as after a board reset.\n";
+			code = code + "void startProcess() {\n";
 			double gf = Double.parseDouble(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY));
 			int value = (int)(displayTimeRate*gf);
 			if(value == 0) value = 1;
@@ -651,13 +671,8 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "\t\ttimeIndex = 0;\n";
 			code = code + "\t\tterminateProcess = false;\n";
 			code = code + "\t\tstartLoop = false;\n";
-			code = code + "\t\tstartWDT = false;\n";
-			if(((ArduinoUnoDACQConfiguration)getDACQConfiguration()).hasADS1115Module()) {
-				code = code + "\t\t// Start I2C interface\n";
-				code = code + "\t\tWire.begin();\n";
-			}
-			String baudRate = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.BAUD_RATE);
-			code = code + "\t\tSerial.begin(" + baudRate + ");\n";
+			code = code + "\t\trestartRequested = false;\n";
+			if(isRelease4Wifi) code = code + "\t\tglobalSerialMessage = \"\";\n";
 			code = code + "\t\t// Tell the PC that the board has (re)started and waits for 'r' char (end handshake)\n";
 			code = code + "\t\tSerial.println('" + READY_MESSAGE + "');\n";
 			code = code + "\t\tSerial.flush();\n";
@@ -694,13 +709,9 @@ public class ArduinoUnoProcess extends Process {
 			
 			
 			code = code + "\t\tif(terminateProcess) {\n";
-			code = code + "\t\t\t\tif(Serial.available())\n";
-			code = code + "\t\t\t\t\t\tstartWDT = ((char)Serial.read()) == 's';\n";
-			code = code + "\t\t\t\tif(startWDT) {\n";
-			
-			if(isRelease4Wifi) code = code + "\t\t\t\t\t\tWDT.begin(15);\n";
-			if(isRelease3) code = code + "\t\t\t\t\t\twdt_enable(WDTO_15MS);\n";
-			code = code + "\t\t\t\t\t\tstartWDT = false;\n";
+			code = code + "\t\t\t\t// End of process : 's' char from the PC requests the restart (done by loop())\n";
+			code = code + "\t\t\t\tif(Serial.available()) {\n";
+			code = code + "\t\t\t\t\t\tif(((char)Serial.read()) == 's') restartRequested = true;\n";
 			code = code + "\t\t\t\t}\n";
 			code = code + "\t\t\t\treturn;\n";
 			code = code + "\t\t}\n";
@@ -816,8 +827,24 @@ public class ArduinoUnoProcess extends Process {
 //			code = code + "\t\t}\n\n";
 			code = code + "}\n\n";
 
+			code = code + "// Restart of the process by software, at the end of the process ('s' char received) :\n";
+			code = code + "// real time loop stopped, outputs as after a board reset, then startProcess()\n";
+			code = code + "void restartProcess() {\n";
+			if(isRelease3) {
+				code = code + "\t\t// Stop timer 1 (real time loop) and clear a pending compare interrupt\n";
+				code = code + "\t\tTIMSK1 &= ~(1 << OCIE1A);\n";
+				code = code + "\t\tTCCR1B = 0;\n";
+				code = code + "\t\tTIFR1 = (1 << OCF1A);\n";
+			}
+			if(isRelease4Wifi) {
+				code = code + "\t\t// Stop real time loop timer\n";
+				code = code + "\t\trealtimeLoop_Timer.stop();\n";
+			}
+			code = code + getOutputsResetCode();
+			code = code + "\t\tstartProcess();\n";
+			code = code + "}\n\n";
+			
 			code = code + "void loop() {\n";
-			if(isRelease3) code = code + "\t\t// Nothing to do !\n";
 			if(isRelease4Wifi) {
 				code = code + "\t\tif(!globalSerialMessage.equals(\"\")) {\n";
 				code = code + "\t\t\t\tSerial.print(globalSerialMessage);\n";
@@ -834,6 +861,7 @@ public class ArduinoUnoProcess extends Process {
 			    code = code + "\t\t\t\t}\n";
 				code = code + "\t\t}\n";
 			}
+			code = code + "\t\tif(restartRequested) restartProcess();\n";
 			code = code + "}\n\n";
 		}
 		
@@ -952,6 +980,37 @@ public class ArduinoUnoProcess extends Process {
 		return code;
 	}
 
+	/*
+	 * Code of restartProcess() putting the outputs used by the process as after a board
+	 * reset : digital outputs in high impedance (input) - pinMode(OUTPUT) is done again by
+	 * the modules initialization in startProcess(), the output is then LOW as after a reset -
+	 * and analog outputs to 0. The pin mode of analog outputs is not changed : on R4, a DAC
+	 * pin whose mode is changed after its first analogWrite is no more connected to the DAC.
+	 */
+	private String getOutputsResetCode() {
+		String code = "";
+		for (int i = 0; i < getDACQConfiguration().getModulesNumber(); i++) {
+			ModuleBehaviour module = getDACQConfiguration().getModule(i);
+			if(!(module instanceof ArduinoUnoDigInOutModule) && !(module instanceof ArduinoUnoAnOutModule)) continue;
+			for (Channel channel : ((Module)module).getChannels()) {
+				if(!Boolean.valueOf(channel.getProperty(ArduinoUnoChannelProperties.USED))) continue;
+				String channelNumber = channel.getProperty(ChannelProperties.CHANNEL_NUMBER);
+				if(module instanceof ArduinoUnoAnOutModule) {
+					code = code + "\t\tanalogWrite(" + channelNumber + ", 0);\n";
+				} else {
+					String inOut = channel.getProperty(ArduinoUnoDigInOutChannelProperties.IN_OUT);
+					boolean isOutput = !ArduinoUnoDigInOutChannelProperties.INPUT.equals(inOut) && !ArduinoUnoDigInOutChannelProperties.INPUT_PULLUP.equals(inOut);
+					if(isOutput) {
+						code = code + "\t\tdigitalWrite(" + channelNumber + ", LOW);\n";
+						code = code + "\t\tpinMode(" + channelNumber + ", INPUT);\n";
+					}
+				}
+			}
+		}
+		if(!code.isEmpty()) code = "\t\t// Outputs as after a board reset\n" + code;
+		return code;
+	}
+	
 	/*
 	 * Global libraries declared in INITIALIZE segment editor, at the beginning of the code after system libraries
 	 */
@@ -1158,27 +1217,33 @@ public class ArduinoUnoProcess extends Process {
 					if(values[0] == 64) code = code + "\t\tTCCR1B |= (1 << CS11) | (1 << CS10);\n";;
 					if(values[0] == 256) code = code + "\t\tTCCR1B |= (1 << CS12);\n";;
 					if(values[0] == 1024) code = code + "\t\tTCCR1B |= (1 << CS12) | (1 << CS10);\n";;
-					code = code + "\t\t// Enable timer compare interrupt\n";
+					code = code + "\t\t// Clear a pending compare interrupt (restart) and enable timer compare interrupt\n";
+					code = code + "\t\tTIFR1 = (1 << OCF1A);\n";
 					code = code + "\t\tTIMSK1 |= (1 << OCIE1A);\n";
 					code = code + "\t\t// Enable interrupts\n";
 					code = code + "\t\tsei();\n";
+					code = code + "\t\tfirstStart = false;\n";
 				}
 				if(isRelease4Wifi) {
 					String sf = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY);
 					code = code + "\t\tbool realtimeLoop_Timer_Started = true;\n";
-					code = code + "\t\tuint8_t timerType = GPT_TIMER;\n";
-					code = code + "\t\tint8_t timerIndex = FspTimer::get_available_timer(timerType);\n";
-					code = code + "\t\tif (timerIndex < 0) timerIndex = FspTimer::get_available_timer(timerType, true);\n";
-					code = code + "\t\trealtimeLoop_Timer_Started = (timerIndex >= 0);\n";
-					code = code + "\t\tFspTimer::force_use_of_pwm_reserved_timer();\n";
-					code = code + "\t\trealtimeLoop_Timer_Started = realtimeLoop_Timer_Started && realtimeLoop_Timer.begin(TIMER_MODE_PERIODIC, timerType, timerIndex, " + sf + ", 0.0f, processing);\n";
-					code = code + "\t\trealtimeLoop_Timer_Started = realtimeLoop_Timer_Started && realtimeLoop_Timer.setup_overflow_irq();\n";
-					code = code + "\t\trealtimeLoop_Timer_Started = realtimeLoop_Timer_Started && realtimeLoop_Timer.open();\n";
+					code = code + "\t\t// The timer is configured once : at restart, it has only been stopped (see restartProcess())\n";
+					code = code + "\t\tif(firstStart) {\n";
+					code = code + "\t\t\t\tuint8_t timerType = GPT_TIMER;\n";
+					code = code + "\t\t\t\tint8_t timerIndex = FspTimer::get_available_timer(timerType);\n";
+					code = code + "\t\t\t\tif (timerIndex < 0) timerIndex = FspTimer::get_available_timer(timerType, true);\n";
+					code = code + "\t\t\t\trealtimeLoop_Timer_Started = (timerIndex >= 0);\n";
+					code = code + "\t\t\t\tFspTimer::force_use_of_pwm_reserved_timer();\n";
+					code = code + "\t\t\t\trealtimeLoop_Timer_Started = realtimeLoop_Timer_Started && realtimeLoop_Timer.begin(TIMER_MODE_PERIODIC, timerType, timerIndex, " + sf + ", 0.0f, processing);\n";
+					code = code + "\t\t\t\trealtimeLoop_Timer_Started = realtimeLoop_Timer_Started && realtimeLoop_Timer.setup_overflow_irq();\n";
+					code = code + "\t\t\t\trealtimeLoop_Timer_Started = realtimeLoop_Timer_Started && realtimeLoop_Timer.open();\n";
+					code = code + "\t\t}\n";
 					code = code + "\t\trealtimeLoop_Timer_Started = realtimeLoop_Timer_Started && realtimeLoop_Timer.start();\n";
 					code = code + "\t\tif(!realtimeLoop_Timer_Started) {\n";
 					code = code + "\t\t\t\tSerial.println(\"Error : unable to start real time loop timer !\");\n";
 					code = code + "\t\t\t\twhile(true);\n";
 					code = code + "\t\t}\n";
+					code = code + "\t\tfirstStart = false;\n";
 				}
 			}
 			if(segments[i].equals(ArduinoUnoCodeSegmentProperties.TRANSFER)) {
