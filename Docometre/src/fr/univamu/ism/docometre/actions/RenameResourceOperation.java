@@ -124,6 +124,9 @@ public class RenameResourceOperation extends AbstractOperation {
 	}
 	
 	private IStatus performOperation(String name) {
+		// Reset statuses : they stay null if renaming fails before they are computed
+		renameDataFilesStatus = null;
+		renameInMathEngineStatus = null;
 		try {
 			ProgressMonitorDialog progressMonitorDialog = new ProgressMonitorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
 			progressMonitorDialog.run(true, false, new IRunnableWithProgress() {
@@ -179,7 +182,8 @@ public class RenameResourceOperation extends AbstractOperation {
 						Object associatedObject = ResourceProperties.getObjectSessionProperty(resource);
 						// if associatedObject is null, we must try to deserialize resource
 						boolean removeHandle = false;
-						if(associatedObject == null && resource instanceof IFile) {
+						// Only typed resources are DOCoMETRe models : untyped files (ANY), e.g. a user text file, must not be deserialized
+						if(associatedObject == null && resource instanceof IFile && ResourceType.getResourceType(resource) != ResourceType.ANY) {
 							associatedObject = ObjectsController.deserialize((IFile)resource);
 							removeHandle = true;
 						}
@@ -271,15 +275,15 @@ public class RenameResourceOperation extends AbstractOperation {
 					
 				}
 			});
-			if(renameDataFilesStatus.isOK() && renameInMathEngineStatus.isOK()) return Status.OK_STATUS;
+			if(renameDataFilesStatus != null && renameDataFilesStatus.isOK() && renameInMathEngineStatus != null && renameInMathEngineStatus.isOK()) return Status.OK_STATUS;
 		} catch (InvocationTargetException | InterruptedException e) {
 			e.printStackTrace();
 			Activator.logErrorMessageWithCause(e);
 		}
 		String message = NLS.bind(DocometreMessages.ErrorRenamingResource, performOldName, performNewName);
 		MultiStatus multiStatus = new MultiStatus(Activator.PLUGIN_ID, IStatus.ERROR, message);
-		if(!renameDataFilesStatus.isOK()) multiStatus.add(renameDataFilesStatus);
-		if(!renameInMathEngineStatus.isOK()) multiStatus.add(renameInMathEngineStatus);
+		if(renameDataFilesStatus != null && !renameDataFilesStatus.isOK()) multiStatus.add(renameDataFilesStatus);
+		if(renameInMathEngineStatus != null && !renameInMathEngineStatus.isOK()) multiStatus.add(renameInMathEngineStatus);
 		return multiStatus;
 	}
 	
