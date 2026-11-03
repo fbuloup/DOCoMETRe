@@ -6,16 +6,79 @@
       provider-name="ISM">
 
    <description>
-      -- 2026-10-21
+      -- 2026-11-03
 ADDED :
-* INPUT_PULLUP to available signals in digital wait function (ArduinoUno)
-* Compile results are written to a file for arduinoUno compilation processes
+* New OpenGL charts library (1D, 2D and 3D charts, &quot;OpenGL V2&quot;) :
+real-time mode, decimation, zoom, pan (mouse, keyboard arrows,
+toolbar), cursors, markers, context menus, curves names and colors
+* Real-time charts : XYZ chart, Cursor 2D chart (last values only,
+configurable symbols), sweep mode and pause, display of last values,
+full screen mode (F11), chart library preference (SWT, OpenGL V1,
+OpenGL V2)
+* Analyse : data, channel, XY, XYZ and categories editors with the
+OpenGL charts (drop, zoom, focus), resizable and hideable side panel
+* Dark theme support and new Appearance preference page (theme and
+language)
+* Polish translation (messages and functions), translation of the
+new charts messages
+* Help : Acquire, Design and Analyse perspectives pages, timing
+debug during acquisition
+* Includes, constants and subprograms in processes (ADwin and
+Arduino Uno)
+* Script editor : curved connections between blocks
+* Trials management commands improved
+* Copy, paste and clean run in a modal and cancelable progress
+dialog
+* F9 shortcut to run/stop the selected item in Acquire perspective
+* Math engines : num. pad Enter and history in console, Python engine
+improved, Matlab engine faster
+* Compile errors written to the console
+* Improved ADwin boot and reset, improved Arduino Uno serial
+communication
+* Trial timings trace for debugging (-traceTrialTimings, ADwin and
+Arduino Uno), time between processes in the diary
+* Shorter delay between trials (ADwin and Arduino Uno) : no busy
+wait, non-blocking real-time charts, buffered diary, single workspace
+operation at the end of a trial, status line refreshed every 200 ms
+* Arduino Uno : end of trial handshake without fixed waits and
+restart of the process by software (delay between trials from about
+680 ms to about 55 ms)
+* Process test : output folder deleted if it exists, recorded file
+deleted when a channel is opened
+* OpenGL and GPU information in the log
+* Development : target platform (Eclipse 2025-03), ADwin library
+sources and Javadoc
+FIXED :
+* ADwin CPU II (T11) : wrong GLOBALDELAY, actual sample frequency
+1 % lower than the configured one (processes and calibration
+processes)
+* Real-time charts : last samples of each trial not displayed
+* Real-time charts : not visible after a trial change with a context
+menu open, UI updated after the scheduler was stopped, font height
+* Arduino Uno R4 : upload needs the bin file (hex file is for R3)
+* Propagation of parameters
+* Wrong icons : process editor with compile error, Arduino Uno DACQ
+configuration editor with warnings
+* Sample frequencies of XY, XYZ and Cursor 2D curves compared as
+numbers
+* Python engine seen as stopped as soon as its shutdown begins
+* Messages : wrong French message, NLS keys, duplicate keys,
+translated functions keys suffix, batch processing explanation text,
+message displayed when no subjects are loaded
+* NPE (process, OpenGL charts, script editor commands),
+ClassCastException in trials management commands
+-- 2026-10-21
+ADDED :
+* INPUT_PULLUP to available signals in digital wait function
+(ArduinoUno)
+* Compile results are written to a file for arduinoUno compilation
+processes
 * More baud rate choices for ArduinoUno in dacq conf file
 FIXED :
 * Chart font was not updated in RT SWT XY chart
 * NPE in DocometreConsolePageParticipant.java
-* Print float using dtostre with UnoR4 is not possible. Must use snprintf.
-
+* Print float using dtostre with UnoR4 is not possible. Must
+use snprintf.
 -- 2026-10-15
 ADDED :
 * Update Installation doc.
