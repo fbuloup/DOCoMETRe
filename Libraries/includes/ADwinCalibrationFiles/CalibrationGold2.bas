@@ -5,11 +5,11 @@
 ' Control_long_Delays_for_Stop   = No
 ' Priority                       = High
 ' Version                        = 1
-' ADbasic_Version                = 6.0.0
+' ADbasic_Version                = 6.4.0
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Stacksize                      = 1000
-' Info_Last_Save                 = FRANK-PC  frank-PC\frank
+' Info_Last_Save                 = PREC3650BULOUP  PREC3650BULOUP\buloup
 '<Header End>
 #Include ADwinGoldII.Inc
 

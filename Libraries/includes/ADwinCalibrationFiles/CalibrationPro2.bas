@@ -5,10 +5,11 @@
 ' Control_long_Delays_for_Stop   = No
 ' Priority                       = High
 ' Version                        = 1
-' ADbasic_Version                = 5.0.2
+' ADbasic_Version                = 6.4.0
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = PC64  PC64\buloup
+' Stacksize                      = 1000
+' Info_Last_Save                 = PREC3650BULOUP  PREC3650BULOUP\buloup
 '<Header End>
 #include adwinpro1.inc
 #include adwinpro2.inc
@@ -56,10 +57,10 @@ par_13=P2_GET_DIGOUT_LONG(1) 'Lecture etat initial des ESnum
 
 EVENT :
 'Acquisition entr�e analogique
-IF (par_1>0) then	  	
+IF (par_1>0) then      
   bits_AnIn = shift_left(LOG(par_14)/LOG(2),5) + par_1 - 1
 
-  set_mux(1,bits_AnIn)		
+  set_mux(1,bits_AnIn)    
   P1_sleep(1400)
   start_conv(1)
   wait_eoc(1)"
