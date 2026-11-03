@@ -41,6 +41,9 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.charts;
 
+import java.util.ArrayList;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.swt.widgets.Display;
@@ -57,11 +60,17 @@ import org.eclipse.ui.PlatformUI;
  * Now the observers buffer the samples and call {@link #request()}, which never blocks :
  * the refresh runnable is executed later by the UI thread, at most once every
  * {@link #REFRESH_PERIOD_MS} ms, with all the samples received in the meantime.
+ * <p>
+ * At the end of a trial, {@link #flushAll()} executes at once the pending refreshes :
+ * the last samples are displayed before the charts are created again for the next trial.
  */
 public final class UIRefreshScheduler {
 	
 	/** Minimum period between two refreshes (25 Hz) */
 	public static final int REFRESH_PERIOD_MS = 40;
+	
+	// Instances whose refresh is scheduled and not yet executed (see flushAll)
+	private static final Set<UIRefreshScheduler> scheduledInstances = ConcurrentHashMap.newKeySet();
 	
 	private final AtomicBoolean scheduled = new AtomicBoolean(false);
 	private final Runnable refreshRunnable;
@@ -80,19 +89,48 @@ public final class UIRefreshScheduler {
 	 */
 	public void request() {
 		if(!scheduled.compareAndSet(false, true)) return;
-		Display display = PlatformUI.isWorkbenchRunning() ? PlatformUI.getWorkbench().getDisplay() : Display.getDefault();
+		Display display = getDisplay();
 		if(display == null || display.isDisposed()) {
 			scheduled.set(false);
 			return;
 		}
+		scheduledInstances.add(this);
 		display.asyncExec(() -> {
 			if(display.isDisposed()) return;
-			display.timerExec(REFRESH_PERIOD_MS, () -> {
-				// Reset before refreshing : data received during the refresh will lead to a new refresh
-				scheduled.set(false);
-				refreshRunnable.run();
-			});
+			display.timerExec(REFRESH_PERIOD_MS, this::refresh);
 		});
+	}
+	
+	/*
+	 * UI thread : executes the refresh. Without effect if it has already been executed by
+	 * flushAll() (the refresh runnable then finds no new data : it would be harmless anyway).
+	 */
+	private void refresh() {
+		// Reset before refreshing : data received during the refresh will lead to a new refresh
+		scheduled.set(false);
+		scheduledInstances.remove(this);
+		refreshRunnable.run();
+	}
+	
+	/**
+	 * Executes at once, in the UI thread, all the scheduled refreshes, and waits for their
+	 * end. Called at the end of a trial : the last samples are given to the charts before
+	 * they are created again for the next trial (they would otherwise not be displayed).
+	 */
+	public static void flushAll() {
+		if(scheduledInstances.isEmpty()) return;
+		Display display = getDisplay();
+		if(display == null || display.isDisposed()) return;
+		display.syncExec(() -> {
+			for (UIRefreshScheduler scheduler : new ArrayList<>(scheduledInstances)) {
+				if(scheduler.scheduled.get()) scheduler.refresh();
+				else scheduledInstances.remove(scheduler);
+			}
+		});
+	}
+	
+	private static Display getDisplay() {
+		return PlatformUI.isWorkbenchRunning() ? PlatformUI.getWorkbench().getDisplay() : Display.getDefault();
 	}
 	
 }

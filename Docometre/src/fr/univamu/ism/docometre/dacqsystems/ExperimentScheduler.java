@@ -69,6 +69,7 @@ import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.TrialStartMode;
 import fr.univamu.ism.docometre.TrialValidateMode;
+import fr.univamu.ism.docometre.dacqsystems.charts.UIRefreshScheduler;
 import fr.univamu.ism.docometre.dialogs.NextTrialDialog;
 import fr.univamu.ism.docometre.dialogs.ValidateTrialDialog;
 import fr.univamu.ism.docometre.handlers.RunStopHandler;
@@ -169,6 +170,10 @@ public class ExperimentScheduler {
 //					}
 				}
 				TrialTimings.step("RealTimeLoopJob finished");
+				// Last samples of the trial given at once to the real-time charts : they are
+				// displayed before the charts are created again for the next trial
+				UIRefreshScheduler.flushAll();
+				TrialTimings.step("Real-time charts : last samples displayed");
 //				Thread.currentThread().setPriority(priority);
 //				process.postExecute((trial==null)?processFile:trial);
 //				process.refreshLogFile((trial==null)?processFile:trial);
