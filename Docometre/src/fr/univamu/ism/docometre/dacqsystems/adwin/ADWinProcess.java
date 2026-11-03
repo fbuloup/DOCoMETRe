@@ -795,9 +795,9 @@ public class ADWinProcess extends Process {
 				TrialTimings.log("ADwin INIT section duration : unknown (process compiled without the INIT timer, recompile it)");
 				return;
 			}
-			// Timer tick : 25 ns for T9 (CPU I), 3.3 ns for T11 (CPU II), as for GLOBALDELAY
+			// Timer tick, as for GLOBALDELAY : 25 ns for T9 (CPU I, 40 MHz), 10/3 ns for T11 (CPU II, 300 MHz)
 			String cpuType = getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.CPU_TYPE);
-			double tickNanos = ADWinDACQConfigurationProperties.I.equals(cpuType) ? 25 : 3.3;
+			double tickNanos = ADWinDACQConfigurationProperties.I.equals(cpuType) ? 25 : 10.0/3.0;
 			TrialTimings.log(String.format("ADwin INIT section duration : %.3f ms (%.0f ticks)", ticks * tickNanos / 1e6, ticks));
 		} catch (ADwinCommunicationError e) {
 			TrialTimings.log("ADwin INIT section duration : unable to read FPAR_" + TrialTimings.INIT_DURATION_FPAR + " (" + e.getMessage() + ")");
@@ -963,8 +963,11 @@ public class ADWinProcess extends Process {
 			if(TrialTimings.trace) 
 				code = code + "DOCO_INIT_TIMER = READ_TIMER() ' Timing trace : start of INIT section\n";
 			code = code + "\nFEG = " + getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.GLOBAL_FREQUENCY) + "\n";
+			// GLOBALDELAY in timer ticks : T9 (CPU I) at 40 MHz (25 ns), T11 (CPU II) at 300 MHz (10/3 ns).
+			// For CPU II, 10^9/(FEG*3.3) gave a period 1 % too long (tick of 3.3 ns instead of 3.333... ns) :
+			// actual sample frequency 1 % lower than FEG.
 			if(cpuType.equals(ADWinDACQConfigurationProperties.I)) code = code + "GLOBALDELAY = 10^9/(FEG*25)\n";
-			else if(cpuType.equals(ADWinDACQConfigurationProperties.II)) code = code + "GLOBALDELAY = 10^9/(FEG*3.3)\n";
+			else if(cpuType.equals(ADWinDACQConfigurationProperties.II)) code = code + "GLOBALDELAY = 3*10^8/FEG\n";
 			code = code + "INDEX = 0\n";
 			code = code + "TERMINATE_PROCESS = 0\n";
 			code = code + "time = 0\n";
