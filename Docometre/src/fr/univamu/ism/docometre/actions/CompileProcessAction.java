@@ -102,7 +102,6 @@ public class CompileProcessAction extends Action implements ISelectionListener, 
 			} finally {
 				if(removeDACQHandle) ObjectsController.removeHandle(process.getDACQConfiguration());
 				if(removeProcessHandle) ObjectsController.removeHandle(process);
-				ExperimentsView.refresh(resource.getProject(), new IResource[] {resource});
 			}
 			if(exception == null) {
 				String message = NLS.bind(DocometreMessages.CompileProcessAction_CompileOK, resource.getName().replaceAll(Activator.processFileExtension, ""));
