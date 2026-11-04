@@ -65,6 +65,7 @@ import fr.univamu.ism.docometre.FontUtil;
 import fr.univamu.ism.docometre.chartxyz.AbstractGLPlotChart;
 import fr.univamu.ism.docometre.chartxyz.Curve1DData;
 import fr.univamu.ism.docometre.chartxyz.GLChart1D;
+import fr.univamu.ism.docometre.chartxyz.LegendPosition;
 import fr.univamu.ism.docometre.chartxyz.LineStyle;
 import fr.univamu.ism.docometre.chartxyz.macos.NewtChart1D;
 import fr.univamu.ism.docometre.chartxyz.windows.Chart1D;
@@ -91,6 +92,12 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 	transient private Button fontItalicButton;
 	transient private Text fontSizeText;
 	transient private Button chartColorButton;
+	// Display options only available with "SWT + OpenGL v2" library
+	transient private Button showLegendButton;
+	transient private Button legendInsideButton;
+	transient private Button showGridButton;
+	transient private Button showAxesButton;
+	transient private Button showTickLabelsButton;
 
 	public OscilloChartConfiguration() {
 		super(ChartTypes.OSCILLO_CHART);
@@ -109,28 +116,41 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 	}
 	
 	public void populateChartConfigurationContainer(Composite container, ChartsConfigurationPage page, ModuleSectionPart generalConfigurationSectionPart) {
-		container.setLayout(new GridLayout(7, false));
+		// 8 columns : the first seven for the general options, 
+		// the last one for the display options only available with "SWT + OpenGL v2" library
+		container.setLayout(new GridLayout(8, false));
 		
 		page.createLabel(container, DocometreMessages.TimeWidth_Title, DocometreMessages.TimeWidth_Tooltip);
 		timeWidthText = page.createText(container, getProperty(OscilloChartConfigurationProperties.TIME_WIDTH), SWT.NONE, 6, 1);
 		timeWidthText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		timeWidthText.addModifyListener(new ModifyPropertyHandler(OscilloChartConfigurationProperties.TIME_WIDTH, this, timeWidthText, OscilloChartConfigurationProperties.TIME_WIDTH.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		showLegendButton = createGL2OptionButton(container, page, OscilloChartConfigurationProperties.SHOW_LEGEND);
 		
 		autoScaleButton = page.createButton(container, DocometreMessages.AutoScale_Title, SWT.CHECK, 7, 1);
 		String value = getProperty(OscilloChartConfigurationProperties.AUTO_SCALE);
 		boolean autoScale = Boolean.valueOf(value);
 		autoScaleButton.setSelection(autoScale);
 		autoScaleButton.addSelectionListener(new ModifyPropertyHandler(OscilloChartConfigurationProperties.AUTO_SCALE, OscilloChartConfiguration.this, autoScaleButton, OscilloChartConfigurationProperties.AUTO_SCALE.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		legendInsideButton = createGL2OptionButton(container, page, OscilloChartConfigurationProperties.LEGEND_INSIDE);
+		legendInsideButton.setEnabled(Activator.useOpenGLV2() && showLegendButton.getSelection());
+		showLegendButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				legendInsideButton.setEnabled(Activator.useOpenGLV2() && showLegendButton.getSelection());
+			}
+		});
 		
 		page.createLabel(container, DocometreMessages.MaxAmplitude_Title, DocometreMessages.MaxAmplitude_Tooltip);
 		ampMaxText = page.createText(container, getProperty(OscilloChartConfigurationProperties.Y_MAX), SWT.NONE, 6, 1); 
 		ampMaxText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		ampMaxText.addModifyListener(new ModifyPropertyHandler(OscilloChartConfigurationProperties.Y_MAX, this, ampMaxText, OscilloChartConfigurationProperties.Y_MAX.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		showGridButton = createGL2OptionButton(container, page, OscilloChartConfigurationProperties.SHOW_GRID);
 		
 		page.createLabel(container, DocometreMessages.MinAmplitude_Title, DocometreMessages.MinAmplitude_Tooltip);
 		ampMinText = page.createText(container, getProperty(OscilloChartConfigurationProperties.Y_MIN), SWT.NONE, 6, 1); 
 		ampMinText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		ampMinText.addModifyListener(new ModifyPropertyHandler(OscilloChartConfigurationProperties.Y_MIN, this, ampMinText, OscilloChartConfigurationProperties.Y_MIN.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		showAxesButton = createGL2OptionButton(container, page, OscilloChartConfigurationProperties.SHOW_AXES);
 		
 		autoScaleButton.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -173,13 +193,36 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 		chartColorButton.setToolTipText(DocometreMessages.Color_Tooltip);
 		chartColorButton.setBackground(chartColor);
 		chartColorButton.addSelectionListener(new ModifyPropertyHandler(ChartConfigurationProperties.COLOR, this, chartColorButton, ChartConfigurationProperties.COLOR.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		showTickLabelsButton = createGL2OptionButton(container, page, OscilloChartConfigurationProperties.SHOW_TICK_LABELS);
 		
-		displayCurrentValuesButton = page.createButton(container, DocometreMessages.DisplayValues_Title, SWT.CHECK, 6, 1);
+		String message;
+		String messageTooltip;
+		if(Activator.useOpenGLV2()) {
+			message = DocometreMessages.DisplayValues_Title_OpenGLV2;
+			messageTooltip = DocometreMessages.DisplayValues_Tooltip_OpenGLV2;
+		} else {
+			message = DocometreMessages.DisplayValues_Title;
+			messageTooltip = DocometreMessages.DisplayValues_Tooltip;
+		}
+		displayCurrentValuesButton = page.createButton(container, message, SWT.CHECK, 8, 1);
+		displayCurrentValuesButton.setToolTipText(messageTooltip);
 		value = getProperty(OscilloChartConfigurationProperties.DISPLAY_CURRENT_VALUES);
 		boolean displayCurrentValues = Boolean.valueOf(value);
 		displayCurrentValuesButton.setSelection(displayCurrentValues);
 		displayCurrentValuesButton.addSelectionListener(new ModifyPropertyHandler(OscilloChartConfigurationProperties.DISPLAY_CURRENT_VALUES, OscilloChartConfiguration.this, displayCurrentValuesButton, OscilloChartConfigurationProperties.DISPLAY_CURRENT_VALUES.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
 		
+	}
+	
+	/*
+	 * Helper method to create a check button for a display option only available with "SWT + OpenGL v2" library
+	 */
+	private Button createGL2OptionButton(Composite container, ChartsConfigurationPage page, OscilloChartConfigurationProperties property) {
+		Button button = page.createButton(container, property.getLabel(), SWT.CHECK, 1, 1);
+		button.setToolTipText(property.getTooltip());
+		button.setSelection(Boolean.parseBoolean(OscilloChartConfigurationProperties.getValue(this, property)));
+		button.addSelectionListener(new ModifyPropertyHandler(property, this, button, property.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		button.setEnabled(Activator.useOpenGLV2());
+		return button;
 	}
 	
 	/*
@@ -232,6 +275,18 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 			updateWidget(fontSizeText, (OscilloChartConfigurationProperties)property);
 		if(property == ChartConfigurationProperties.COLOR)
 			updateColordialogButton();
+		if(property == OscilloChartConfigurationProperties.SHOW_LEGEND) {
+			updateWidget(showLegendButton, (OscilloChartConfigurationProperties)property);
+			legendInsideButton.setEnabled(Activator.useOpenGLV2() && showLegendButton.getSelection());
+		}
+		if(property == OscilloChartConfigurationProperties.LEGEND_INSIDE)
+			updateWidget(legendInsideButton, (OscilloChartConfigurationProperties)property);
+		if(property == OscilloChartConfigurationProperties.SHOW_GRID)
+			updateWidget(showGridButton, (OscilloChartConfigurationProperties)property);
+		if(property == OscilloChartConfigurationProperties.SHOW_AXES)
+			updateWidget(showAxesButton, (OscilloChartConfigurationProperties)property);
+		if(property == OscilloChartConfigurationProperties.SHOW_TICK_LABELS)
+			updateWidget(showTickLabelsButton, (OscilloChartConfigurationProperties)property);
 	}
 	
 	public CurveConfiguration[] createCurvesConfiguration(IStructuredSelection selection) {
@@ -289,6 +344,12 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 		if(value == null || "".equals(value)) value = "12";
 		int fontSize = Integer.parseInt(value);
 		Color chartColor = ChartConfigurationProperties.getColor(this, ChartConfigurationProperties.COLOR);
+		// Display options only available with "SWT + OpenGL v2" library
+		boolean showLegend = Boolean.parseBoolean(OscilloChartConfigurationProperties.getValue(this, OscilloChartConfigurationProperties.SHOW_LEGEND));
+		boolean legendInside = Boolean.parseBoolean(OscilloChartConfigurationProperties.getValue(this, OscilloChartConfigurationProperties.LEGEND_INSIDE));
+		boolean showGrid = Boolean.parseBoolean(OscilloChartConfigurationProperties.getValue(this, OscilloChartConfigurationProperties.SHOW_GRID));
+		boolean showAxes = Boolean.parseBoolean(OscilloChartConfigurationProperties.getValue(this, OscilloChartConfigurationProperties.SHOW_AXES));
+		boolean showTickLabels = Boolean.parseBoolean(OscilloChartConfigurationProperties.getValue(this, OscilloChartConfigurationProperties.SHOW_TICK_LABELS));
 		
 		IRTSWTOscilloChart rtswtOscilloChart = null;
 		if(Activator.useOpenGLV1()) rtswtOscilloChart = RTSWTChartsFactory.createOpenGLOscilloChart(chartContainer, SWT.DOUBLE_BUFFERED, fontName, fontStyle, fontSize);
@@ -318,6 +379,12 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 			AbstractGLPlotChart<?, ?> glChart = (AbstractGLPlotChart<?, ?>) rtswtOscilloChart;
 			glChart.setMarkersInteractive(false);
 			glChart.setMarkersMenuItemsVisible(false);
+			// Display options of the "SWT + OpenGL v2" library
+			glChart.setLegendVisible(showLegend);
+			glChart.setLegendPosition(legendInside ? LegendPosition.INSIDE : LegendPosition.BELOW);
+			glChart.getRenderer().setGridVisible(showGrid);
+			glChart.getRenderer().setAxesVisible(showAxes);
+			glChart.getRenderer().setLabelsVisible(showTickLabels);
 		}
 		// Real-time signals: sweep mode and pause available (keyboard and context menu)
 		if(rtswtOscilloChart instanceof GLChart1D) ((GLChart1D) rtswtOscilloChart).setRealTime(true);

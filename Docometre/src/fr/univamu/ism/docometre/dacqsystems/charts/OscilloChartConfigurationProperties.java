@@ -56,6 +56,12 @@ public final class OscilloChartConfigurationProperties extends Property {
 	public static final OscilloChartConfigurationProperties FONT_BOLD = new OscilloChartConfigurationProperties("OscilloChartConfigurationProperties.FONT_BOLD", DocometreMessages.Bold_Title, DocometreMessages.Bold_Tooltip, "^(true|false)$", "true:false");
 	public static final OscilloChartConfigurationProperties FONT_ITALIC = new OscilloChartConfigurationProperties("OscilloChartConfigurationProperties.FONT_ITALIC", DocometreMessages.Italic_Title, DocometreMessages.Italic_Tooltip, "^(true|false)$", "true:false");
 	public static final OscilloChartConfigurationProperties FONT_SIZE = new OscilloChartConfigurationProperties("OscilloChartConfigurationProperties.FONT_SIZE", DocometreMessages.Size_Title,  DocometreMessages.Size_Tooltip, "^(([1-9][0-9]*)|(0))(?:\\.[0-9]+)?$");
+	// Display options only available with "SWT + OpenGL v2" library
+	public static final OscilloChartConfigurationProperties SHOW_LEGEND = new OscilloChartConfigurationProperties("OscilloChartConfigurationProperties.SHOW_LEGEND", DocometreMessages.ShowLegend_Title, DocometreMessages.ShowLegend_Tooltip, "^(true|false)$", "true:false");
+	public static final OscilloChartConfigurationProperties LEGEND_INSIDE = new OscilloChartConfigurationProperties("OscilloChartConfigurationProperties.LEGEND_INSIDE", DocometreMessages.LegendInside_Title, DocometreMessages.LegendInside_Tooltip, "^(true|false)$", "true:false");
+	public static final OscilloChartConfigurationProperties SHOW_GRID = new OscilloChartConfigurationProperties("OscilloChartConfigurationProperties.SHOW_GRID", DocometreMessages.ShowGrid_Title, DocometreMessages.ShowGrid_Tooltip, "^(true|false)$", "true:false");
+	public static final OscilloChartConfigurationProperties SHOW_AXES = new OscilloChartConfigurationProperties("OscilloChartConfigurationProperties.SHOW_AXES", DocometreMessages.ShowAxes_Title, DocometreMessages.ShowAxes_Tooltip, "^(true|false)$", "true:false");
+	public static final OscilloChartConfigurationProperties SHOW_TICK_LABELS = new OscilloChartConfigurationProperties("OscilloChartConfigurationProperties.SHOW_TICK_LABELS", DocometreMessages.ShowTickLabels_Title, DocometreMessages.ShowTickLabels_Tooltip, "^(true|false)$", "true:false");
 	
 	public static void populateProperties(OscilloChartConfiguration oscilloChartConfiguration){
 		ChartConfigurationProperties.populateProperties(oscilloChartConfiguration);
@@ -68,6 +74,30 @@ public final class OscilloChartConfigurationProperties extends Property {
 		oscilloChartConfiguration.setProperty(FONT_BOLD, "true");
 		oscilloChartConfiguration.setProperty(FONT_ITALIC, "false");
 		oscilloChartConfiguration.setProperty(FONT_SIZE, "12");
+		oscilloChartConfiguration.setProperty(SHOW_LEGEND, getDefaultValue(SHOW_LEGEND));
+		oscilloChartConfiguration.setProperty(LEGEND_INSIDE, getDefaultValue(LEGEND_INSIDE));
+		oscilloChartConfiguration.setProperty(SHOW_GRID, getDefaultValue(SHOW_GRID));
+		oscilloChartConfiguration.setProperty(SHOW_AXES, getDefaultValue(SHOW_AXES));
+		oscilloChartConfiguration.setProperty(SHOW_TICK_LABELS, getDefaultValue(SHOW_TICK_LABELS));
+	}
+	
+	/*
+	 * Default values of the display options only available with "SWT + OpenGL v2" library.
+	 * They are the same as the default values of this library.
+	 */
+	private static String getDefaultValue(OscilloChartConfigurationProperties property) {
+		if(property == SHOW_LEGEND || property == SHOW_GRID || property == SHOW_TICK_LABELS) return "true";
+		if(property == LEGEND_INSIDE || property == SHOW_AXES) return "false";
+		return null;
+	}
+	
+	/**
+	 * Returns the value of the property, or its default value if this property 
+	 * is not yet defined (e.g. configuration created with a previous version).
+	 */
+	public static String getValue(OscilloChartConfiguration oscilloChartConfiguration, OscilloChartConfigurationProperties property) {
+		String value = oscilloChartConfiguration.getProperty(property);
+		return value == null ? getDefaultValue(property) : value;
 	}
 
 	public static OscilloChartConfiguration clone(OscilloChartConfiguration oscilloChartConfiguration) {
@@ -85,6 +115,11 @@ public final class OscilloChartConfigurationProperties extends Property {
 		else newOscilloChartConfiguration.setProperty(FONT_ITALIC, new String(oscilloChartConfiguration.getProperty(FONT_ITALIC)));
 		if(oscilloChartConfiguration.getProperty(FONT_SIZE) == null) oscilloChartConfiguration.setProperty(FONT_SIZE, "12");
 		else newOscilloChartConfiguration.setProperty(FONT_SIZE, new String(oscilloChartConfiguration.getProperty(FONT_SIZE)));
+		newOscilloChartConfiguration.setProperty(SHOW_LEGEND, new String(getValue(oscilloChartConfiguration, SHOW_LEGEND)));
+		newOscilloChartConfiguration.setProperty(LEGEND_INSIDE, new String(getValue(oscilloChartConfiguration, LEGEND_INSIDE)));
+		newOscilloChartConfiguration.setProperty(SHOW_GRID, new String(getValue(oscilloChartConfiguration, SHOW_GRID)));
+		newOscilloChartConfiguration.setProperty(SHOW_AXES, new String(getValue(oscilloChartConfiguration, SHOW_AXES)));
+		newOscilloChartConfiguration.setProperty(SHOW_TICK_LABELS, new String(getValue(oscilloChartConfiguration, SHOW_TICK_LABELS)));
 		CurveConfiguration[] curveConfigurations = oscilloChartConfiguration.getCurvesConfiguration();
 		for (CurveConfiguration curveConfiguration : curveConfigurations) {
 			try {

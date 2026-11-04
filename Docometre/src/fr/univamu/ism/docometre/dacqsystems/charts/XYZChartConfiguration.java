@@ -95,6 +95,12 @@ public class XYZChartConfiguration extends ChartConfiguration {
 	transient private Text fontSizeText;
 	transient private Text historySizeText;
 	transient private Button chartColorButton;
+	// Display options only available with "SWT + OpenGL v2" library
+	transient private Button showLegendButton;
+	transient private Button displayCurrentValuesButton;
+	transient private Button showGridButton;
+	transient private Button showAxesButton;
+	transient private Button showTickLabelsButton;
 
 	public XYZChartConfiguration() {
 		super(ChartTypes.XYZ_CHART);
@@ -115,41 +121,48 @@ public class XYZChartConfiguration extends ChartConfiguration {
 
 	@Override
 	public void populateChartConfigurationContainer(Composite container, ChartsConfigurationPage page, ModuleSectionPart generalConfigurationSectionPart) {
-		container.setLayout(new GridLayout(7, false));
+		// 8 columns : the first seven for the general options, 
+		// the last one for the display options only available with "SWT + OpenGL v2" library
+		container.setLayout(new GridLayout(8, false));
 		
 		autoScaleButton = page.createButton(container, DocometreMessages.AutoScale_Title, SWT.CHECK, 7, 1);
 		String value = getProperty(XYZChartConfigurationProperties.AUTO_SCALE);
 		boolean autoScale = Boolean.valueOf(value);
 		autoScaleButton.setSelection(autoScale);
 		autoScaleButton.addSelectionListener(new ModifyPropertyHandler(XYZChartConfigurationProperties.AUTO_SCALE, XYZChartConfiguration.this, autoScaleButton, XYZChartConfigurationProperties.AUTO_SCALE.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		showLegendButton = createGL2OptionButton(container, page, XYZChartConfigurationProperties.SHOW_LEGEND);
 		
 		page.createLabel(container, DocometreMessages.xMaxAmplitude_Title, DocometreMessages.xMaxAmplitude_Tooltip);
 		xAmpMaxText = page.createText(container, getProperty(XYZChartConfigurationProperties.X_MAX), SWT.NONE, 6, 1); 
 		xAmpMaxText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		xAmpMaxText.addModifyListener(new ModifyPropertyHandler(XYZChartConfigurationProperties.X_MAX, this, xAmpMaxText, XYZChartConfigurationProperties.X_MAX.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		displayCurrentValuesButton = createGL2OptionButton(container, page, XYZChartConfigurationProperties.DISPLAY_CURRENT_VALUES);
 		
 		page.createLabel(container, DocometreMessages.xMinAmplitude_Title, DocometreMessages.xMinAmplitude_Tooltip);
 		xAmpMinText = page.createText(container, getProperty(XYZChartConfigurationProperties.X_MIN), SWT.NONE, 6, 1); 
 		xAmpMinText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		xAmpMinText.addModifyListener(new ModifyPropertyHandler(XYZChartConfigurationProperties.X_MIN, this, xAmpMinText, XYZChartConfigurationProperties.X_MIN.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		showGridButton = createGL2OptionButton(container, page, XYZChartConfigurationProperties.SHOW_GRID);
 		
 		page.createLabel(container, DocometreMessages.yMaxAmplitude_Title, DocometreMessages.yMaxAmplitude_Tooltip);
 		yAmpMaxText = page.createText(container, getProperty(XYZChartConfigurationProperties.Y_MAX), SWT.NONE, 6, 1); 
 		yAmpMaxText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		yAmpMaxText.addModifyListener(new ModifyPropertyHandler(XYZChartConfigurationProperties.Y_MAX, this, yAmpMaxText, XYZChartConfigurationProperties.Y_MAX.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		showAxesButton = createGL2OptionButton(container, page, XYZChartConfigurationProperties.SHOW_AXES);
 		
 		page.createLabel(container, DocometreMessages.yMinAmplitude_Title, DocometreMessages.yMinAmplitude_Tooltip);
 		yAmpMinText = page.createText(container, getProperty(XYZChartConfigurationProperties.Y_MIN), SWT.NONE, 6, 1); 
 		yAmpMinText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		yAmpMinText.addModifyListener(new ModifyPropertyHandler(XYZChartConfigurationProperties.Y_MIN, this, yAmpMinText, XYZChartConfigurationProperties.Y_MIN.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		showTickLabelsButton = createGL2OptionButton(container, page, XYZChartConfigurationProperties.SHOW_TICK_LABELS);
 		
 		page.createLabel(container, DocometreMessages.zMaxAmplitude_Title, DocometreMessages.zMaxAmplitude_Tooltip);
-		zAmpMaxText = page.createText(container, getProperty(XYZChartConfigurationProperties.Z_MAX), SWT.NONE, 6, 1); 
+		zAmpMaxText = page.createText(container, getProperty(XYZChartConfigurationProperties.Z_MAX), SWT.NONE, 7, 1); 
 		zAmpMaxText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		zAmpMaxText.addModifyListener(new ModifyPropertyHandler(XYZChartConfigurationProperties.Z_MAX, this, zAmpMaxText, XYZChartConfigurationProperties.Z_MAX.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
 		
 		page.createLabel(container, DocometreMessages.zMinAmplitude_Title, DocometreMessages.zMinAmplitude_Tooltip);
-		zAmpMinText = page.createText(container, getProperty(XYZChartConfigurationProperties.Z_MIN), SWT.NONE, 6, 1); 
+		zAmpMinText = page.createText(container, getProperty(XYZChartConfigurationProperties.Z_MIN), SWT.NONE, 7, 1); 
 		zAmpMinText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		zAmpMinText.addModifyListener(new ModifyPropertyHandler(XYZChartConfigurationProperties.Z_MIN, this, zAmpMinText, XYZChartConfigurationProperties.Z_MIN.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
 		
@@ -198,12 +211,25 @@ public class XYZChartConfiguration extends ChartConfiguration {
 		chartColorButton.setToolTipText(DocometreMessages.Color_Tooltip);
 		chartColorButton.setBackground(chartColor);
 		chartColorButton.addSelectionListener(new ModifyPropertyHandler(ChartConfigurationProperties.COLOR, this, chartColorButton, ChartConfigurationProperties.COLOR.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		page.createLabel(container, "", null); // Empty cell of the last column
 		
 		page.createLabel(container, DocometreMessages.HistorySize_Title, DocometreMessages.HistorySize_Tooltip);
-		historySizeText = page.createText(container, getProperty(XYZChartConfigurationProperties.HISTORY_SIZE), SWT.NONE, 6, 1);
+		historySizeText = page.createText(container, getProperty(XYZChartConfigurationProperties.HISTORY_SIZE), SWT.NONE, 7, 1);
 		historySizeText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		historySizeText.addModifyListener(new ModifyPropertyHandler(XYZChartConfigurationProperties.HISTORY_SIZE, this, historySizeText, XYZChartConfigurationProperties.HISTORY_SIZE.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
 		
+	}
+	
+	/*
+	 * Helper method to create a check button for a display option only available with "SWT + OpenGL v2" library
+	 */
+	private Button createGL2OptionButton(Composite container, ChartsConfigurationPage page, XYZChartConfigurationProperties property) {
+		Button button = page.createButton(container, property.getLabel(), SWT.CHECK, 1, 1);
+		button.setToolTipText(property.getTooltip());
+		button.setSelection(Boolean.parseBoolean(XYZChartConfigurationProperties.getValue(this, property)));
+		button.addSelectionListener(new ModifyPropertyHandler(property, this, button, property.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		button.setEnabled(Activator.useOpenGLV2());
+		return button;
 	}
 	
 	/*
@@ -266,6 +292,16 @@ public class XYZChartConfiguration extends ChartConfiguration {
 			updateWidget(historySizeText, (XYZChartConfigurationProperties)property);
 		if(property == ChartConfigurationProperties.COLOR)
 			updateColordialogButton();
+		if(property == XYZChartConfigurationProperties.SHOW_LEGEND)
+			updateWidget(showLegendButton, (XYZChartConfigurationProperties)property);
+		if(property == XYZChartConfigurationProperties.DISPLAY_CURRENT_VALUES)
+			updateWidget(displayCurrentValuesButton, (XYZChartConfigurationProperties)property);
+		if(property == XYZChartConfigurationProperties.SHOW_GRID)
+			updateWidget(showGridButton, (XYZChartConfigurationProperties)property);
+		if(property == XYZChartConfigurationProperties.SHOW_AXES)
+			updateWidget(showAxesButton, (XYZChartConfigurationProperties)property);
+		if(property == XYZChartConfigurationProperties.SHOW_TICK_LABELS)
+			updateWidget(showTickLabelsButton, (XYZChartConfigurationProperties)property);
 	}
 
 	@Override
@@ -308,6 +344,12 @@ public class XYZChartConfiguration extends ChartConfiguration {
 		if(value == null || "".equals(value)) value = "1";
 		double historySize = Double.parseDouble(value);
 //		Color chartColor = ChartConfigurationProperties.getColor(this, ChartConfigurationProperties.COLOR);
+		// Display options only available with "SWT + OpenGL v2" library
+		boolean showLegend = Boolean.parseBoolean(XYZChartConfigurationProperties.getValue(this, XYZChartConfigurationProperties.SHOW_LEGEND));
+		boolean displayCurrentValues = Boolean.parseBoolean(XYZChartConfigurationProperties.getValue(this, XYZChartConfigurationProperties.DISPLAY_CURRENT_VALUES));
+		boolean showGrid = Boolean.parseBoolean(XYZChartConfigurationProperties.getValue(this, XYZChartConfigurationProperties.SHOW_GRID));
+		boolean showAxes = Boolean.parseBoolean(XYZChartConfigurationProperties.getValue(this, XYZChartConfigurationProperties.SHOW_AXES));
+		boolean showTickLabels = Boolean.parseBoolean(XYZChartConfigurationProperties.getValue(this, XYZChartConfigurationProperties.SHOW_TICK_LABELS));
 		
 		IRTSWTXYZChart rtswtxyzChart = null;
 		if(Activator.useOpenGLV2()) {
@@ -332,13 +374,20 @@ public class XYZChartConfiguration extends ChartConfiguration {
 		}
 		rtswtxyzChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, hSpan, vSpan));
 		rtswtxyzChart.setAutoScale(autoscale);
-		rtswtxyzChart.setGridVisibility(true);
+		rtswtxyzChart.setGridVisibility(showGrid);
 //		rtswtxyzChart.setLegendFont(fontName, fontSize, fontStyle);
 //		rtswtxyzChart.setScaleFont(fontName, fontSize, fontStyle);
-		rtswtxyzChart.setLegendVisibility(true);
+		rtswtxyzChart.setLegendVisibility(showLegend);
 		rtswtxyzChart.setHistorySize(historySize);
 		// Real-time display: no markers in the context menu
-		if(rtswtxyzChart instanceof AbstractGLChart) ((AbstractGLChart<?, ?>) rtswtxyzChart).setMarkersMenuItemsVisible(false);
+		if(rtswtxyzChart instanceof AbstractGLChart) {
+			AbstractGLChart<?, ?> glChart = (AbstractGLChart<?, ?>) rtswtxyzChart;
+			glChart.setMarkersMenuItemsVisible(false);
+			// Display options of the "SWT + OpenGL v2" library (no legend position in 3D : always at the top left)
+			glChart.setCurrentValuesVisible(displayCurrentValues);
+			glChart.getRenderer().setAxesVisible(showAxes);
+			glChart.getRenderer().setLabelsVisible(showTickLabels);
+		}
 		// Create curves
 		for (CurveConfiguration curveConfiguration : curvesConfigurations) {
 			XYZCurveConfiguration xyzCurveConfiguration = (XYZCurveConfiguration)curveConfiguration;

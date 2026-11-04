@@ -517,6 +517,8 @@ public final class DocometreMessages extends NLS {
 	public static String Font_Tooltip;
 	public static String DisplayValues_Title;
 	public static String DisplayValues_Tooltip;
+	public static String DisplayValues_Title_OpenGLV2;
+	public static String DisplayValues_Tooltip_OpenGLV2;
 	public static String DisplayValuesCurves_Title;
 	public static String DisplayValuesCurves_Tooltip;
 	public static String Size_Title;
@@ -527,6 +529,17 @@ public final class DocometreMessages extends NLS {
 	public static String Italic_Tooltip;
 	public static String HistorySize_Title;
 	public static String HistorySize_Tooltip;
+	// Display options only available with "SWT + OpenGL v2" library
+	public static String ShowLegend_Title;
+	public static String ShowLegend_Tooltip;
+	public static String LegendInside_Title;
+	public static String LegendInside_Tooltip;
+	public static String ShowGrid_Title;
+	public static String ShowGrid_Tooltip;
+	public static String ShowAxes_Title;
+	public static String ShowAxes_Tooltip;
+	public static String ShowTickLabels_Title;
+	public static String ShowTickLabels_Tooltip;
 
 	public static String xMaxAmplitude_Title;
 	public static String xMaxAmplitude_Tooltip;

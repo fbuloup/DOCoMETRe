@@ -57,6 +57,13 @@ public final class XYChartConfigurationProperties extends Property {
 	public static final XYChartConfigurationProperties FONT_ITALIC = new XYChartConfigurationProperties("XYChartConfigurationProperties.FONT_ITALIC", DocometreMessages.Italic_Title, DocometreMessages.Italic_Tooltip, "^(true|false)$", "true:false");
 	public static final XYChartConfigurationProperties FONT_SIZE = new XYChartConfigurationProperties("XYChartConfigurationProperties.FONT_SIZE", DocometreMessages.Size_Title, DocometreMessages.Size_Tooltip, "^(([1-9][0-9]*)|(0))(?:\\.[0-9]+)?$");
 	public static final XYChartConfigurationProperties HISTORY_SIZE = new XYChartConfigurationProperties("XYChartConfigurationProperties.HISTORY_SIZE", DocometreMessages.HistorySize_Title, DocometreMessages.HistorySize_Tooltip, "^(([1-9][0-9]*)|(0))(?:\\.[0-9]+)?$");
+	// Display options only available with "SWT + OpenGL v2" library
+	public static final XYChartConfigurationProperties SHOW_LEGEND = new XYChartConfigurationProperties("XYChartConfigurationProperties.SHOW_LEGEND", DocometreMessages.ShowLegend_Title, DocometreMessages.ShowLegend_Tooltip, "^(true|false)$", "true:false");
+	public static final XYChartConfigurationProperties LEGEND_INSIDE = new XYChartConfigurationProperties("XYChartConfigurationProperties.LEGEND_INSIDE", DocometreMessages.LegendInside_Title, DocometreMessages.LegendInside_Tooltip, "^(true|false)$", "true:false");
+	public static final XYChartConfigurationProperties DISPLAY_CURRENT_VALUES = new XYChartConfigurationProperties("XYChartConfigurationProperties.DISPLAY_CURRENT_VALUES", DocometreMessages.DisplayValuesCurves_Title, DocometreMessages.DisplayValuesCurves_Tooltip, "^(true|false)$", "true:false");
+	public static final XYChartConfigurationProperties SHOW_GRID = new XYChartConfigurationProperties("XYChartConfigurationProperties.SHOW_GRID", DocometreMessages.ShowGrid_Title, DocometreMessages.ShowGrid_Tooltip, "^(true|false)$", "true:false");
+	public static final XYChartConfigurationProperties SHOW_AXES = new XYChartConfigurationProperties("XYChartConfigurationProperties.SHOW_AXES", DocometreMessages.ShowAxes_Title, DocometreMessages.ShowAxes_Tooltip, "^(true|false)$", "true:false");
+	public static final XYChartConfigurationProperties SHOW_TICK_LABELS = new XYChartConfigurationProperties("XYChartConfigurationProperties.SHOW_TICK_LABELS", DocometreMessages.ShowTickLabels_Title, DocometreMessages.ShowTickLabels_Tooltip, "^(true|false)$", "true:false");
 	
 	public static void populateProperties(XYChartConfiguration xyChartConfiguration){
 		ChartConfigurationProperties.populateProperties(xyChartConfiguration);
@@ -70,6 +77,31 @@ public final class XYChartConfigurationProperties extends Property {
 		xyChartConfiguration.setProperty(FONT_ITALIC, "false");
 		xyChartConfiguration.setProperty(FONT_SIZE, "12");
 		xyChartConfiguration.setProperty(HISTORY_SIZE, "1");
+		xyChartConfiguration.setProperty(SHOW_LEGEND, getDefaultValue(SHOW_LEGEND));
+		xyChartConfiguration.setProperty(LEGEND_INSIDE, getDefaultValue(LEGEND_INSIDE));
+		xyChartConfiguration.setProperty(DISPLAY_CURRENT_VALUES, getDefaultValue(DISPLAY_CURRENT_VALUES));
+		xyChartConfiguration.setProperty(SHOW_GRID, getDefaultValue(SHOW_GRID));
+		xyChartConfiguration.setProperty(SHOW_AXES, getDefaultValue(SHOW_AXES));
+		xyChartConfiguration.setProperty(SHOW_TICK_LABELS, getDefaultValue(SHOW_TICK_LABELS));
+	}
+	
+	/*
+	 * Default values of the display options only available with "SWT + OpenGL v2" library.
+	 * They are the same as the default values of this library.
+	 */
+	private static String getDefaultValue(XYChartConfigurationProperties property) {
+		if(property == SHOW_LEGEND || property == SHOW_GRID || property == SHOW_TICK_LABELS) return "true";
+		if(property == LEGEND_INSIDE || property == DISPLAY_CURRENT_VALUES || property == SHOW_AXES) return "false";
+		return null;
+	}
+	
+	/**
+	 * Returns the value of the property, or its default value if this property 
+	 * is not yet defined (e.g. configuration created with a previous version).
+	 */
+	public static String getValue(XYChartConfiguration xyChartConfiguration, XYChartConfigurationProperties property) {
+		String value = xyChartConfiguration.getProperty(property);
+		return value == null ? getDefaultValue(property) : value;
 	}
 
 	public static XYChartConfiguration clone(XYChartConfiguration xyChartConfiguration) {
@@ -91,6 +123,12 @@ public final class XYChartConfigurationProperties extends Property {
 		newXYChartConfiguration.setProperty(FONT_ITALIC, new String(xyChartConfiguration.getProperty(FONT_ITALIC)));
 		newXYChartConfiguration.setProperty(FONT_SIZE, new String(xyChartConfiguration.getProperty(FONT_SIZE)));
 		newXYChartConfiguration.setProperty(HISTORY_SIZE, new String(xyChartConfiguration.getProperty(HISTORY_SIZE)));
+		newXYChartConfiguration.setProperty(SHOW_LEGEND, new String(getValue(xyChartConfiguration, SHOW_LEGEND)));
+		newXYChartConfiguration.setProperty(LEGEND_INSIDE, new String(getValue(xyChartConfiguration, LEGEND_INSIDE)));
+		newXYChartConfiguration.setProperty(DISPLAY_CURRENT_VALUES, new String(getValue(xyChartConfiguration, DISPLAY_CURRENT_VALUES)));
+		newXYChartConfiguration.setProperty(SHOW_GRID, new String(getValue(xyChartConfiguration, SHOW_GRID)));
+		newXYChartConfiguration.setProperty(SHOW_AXES, new String(getValue(xyChartConfiguration, SHOW_AXES)));
+		newXYChartConfiguration.setProperty(SHOW_TICK_LABELS, new String(getValue(xyChartConfiguration, SHOW_TICK_LABELS)));
 		CurveConfiguration[] curveConfigurations = xyChartConfiguration.getCurvesConfiguration();
 		for (CurveConfiguration curveConfiguration : curveConfigurations) {
 			try {

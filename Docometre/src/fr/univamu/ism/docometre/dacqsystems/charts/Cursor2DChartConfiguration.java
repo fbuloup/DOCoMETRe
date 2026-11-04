@@ -120,6 +120,8 @@ public class Cursor2DChartConfiguration extends XYChartConfiguration {
 		// Real-time display: no markers, neither with the mouse nor in the context menu
 		chart.setMarkersInteractive(false);
 		chart.setMarkersMenuItemsVisible(false);
+		// Display options of the "SWT + OpenGL v2" library
+		applyGL2DisplayOptions(chart);
 		
 		// Create curves
 		for (CurveConfiguration curveConfiguration : curvesConfigurations) {

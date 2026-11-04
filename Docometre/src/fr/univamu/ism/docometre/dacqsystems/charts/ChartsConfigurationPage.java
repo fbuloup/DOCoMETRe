@@ -540,26 +540,27 @@ public class ChartsConfigurationPage extends ModulePage {
 			}
 		});
 		
-		
-		TableViewerColumn curveDisplayValueTableViewerColumn = createColumn(OscilloCurveConfigurationProperties.DISPLAY_CURRENT_VALUES.getTooltip(), curvesTableColumnLayout, OscilloCurveConfigurationProperties.DISPLAY_CURRENT_VALUES, defaultColumnWidth + 100, 4);
-		curveDisplayValueTableViewerColumn.setLabelProvider(new ColumnLabelProvider() {
-			@Override
-			public String getText(Object element) {
-				if(!(element instanceof OscilloCurveConfiguration)) return "";
-				OscilloCurveConfiguration curve = (OscilloCurveConfiguration)element;
-				String value = curve.getProperty(OscilloCurveConfigurationProperties.DISPLAY_CURRENT_VALUES);
-				return value == null ? "false":value;
-			}
-			
-			@Override
-			public Image getImage(Object element) {
-				if(!(element instanceof OscilloCurveConfiguration)) return null;
-				OscilloCurveConfiguration curve = (OscilloCurveConfiguration)element;
-				String value = "false";
-				value = curve.getProperty(OscilloCurveConfigurationProperties.DISPLAY_CURRENT_VALUES);
-				return "true".equals(value) ? ModulePage.checkedImage : ModulePage.uncheckedImage;
-			}
-		});
+		if(!Activator.useOpenGLV2()) {
+			TableViewerColumn curveDisplayValueTableViewerColumn = createColumn(OscilloCurveConfigurationProperties.DISPLAY_CURRENT_VALUES.getTooltip(), curvesTableColumnLayout, OscilloCurveConfigurationProperties.DISPLAY_CURRENT_VALUES, defaultColumnWidth + 100, 4);
+			curveDisplayValueTableViewerColumn.setLabelProvider(new ColumnLabelProvider() {
+				@Override
+				public String getText(Object element) {
+					if(!(element instanceof OscilloCurveConfiguration)) return "";
+					OscilloCurveConfiguration curve = (OscilloCurveConfiguration)element;
+					String value = curve.getProperty(OscilloCurveConfigurationProperties.DISPLAY_CURRENT_VALUES);
+					return value == null ? "false":value;
+				}
+				
+				@Override
+				public Image getImage(Object element) {
+					if(!(element instanceof OscilloCurveConfiguration)) return null;
+					OscilloCurveConfiguration curve = (OscilloCurveConfiguration)element;
+					String value = "false";
+					value = curve.getProperty(OscilloCurveConfigurationProperties.DISPLAY_CURRENT_VALUES);
+					return "true".equals(value) ? ModulePage.checkedImage : ModulePage.uncheckedImage;
+				}
+			});
+		}
 		
 		configureSorter(new CurvesComparator(), tableViewer.getTable().getColumn(0));
 		tableViewer.setContentProvider(new ArrayContentProvider());

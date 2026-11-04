@@ -65,6 +65,7 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.FontUtil;
 import fr.univamu.ism.docometre.chartxyz.AbstractGLPlotChart;
 import fr.univamu.ism.docometre.chartxyz.Curve2DData;
+import fr.univamu.ism.docometre.chartxyz.LegendPosition;
 import fr.univamu.ism.docometre.chartxyz.LineStyle;
 import fr.univamu.ism.docometre.chartxyz.macos.NewtChart2D;
 import fr.univamu.ism.docometre.chartxyz.windows.Chart2D;
@@ -93,6 +94,13 @@ public class XYChartConfiguration extends ChartConfiguration {
 	transient private Text fontSizeText;
 	transient private Text historySizeText;
 	transient private Button chartColorButton;
+	// Display options only available with "SWT + OpenGL v2" library
+	transient private Button showLegendButton;
+	transient private Button legendInsideButton;
+	transient private Button displayCurrentValuesButton;
+	transient private Button showGridButton;
+	transient private Button showAxesButton;
+	transient private Button showTickLabelsButton;
 
 	public XYChartConfiguration() {
 		this(ChartTypes.XY_CHART);
@@ -127,33 +135,47 @@ public class XYChartConfiguration extends ChartConfiguration {
 
 	@Override
 	public void populateChartConfigurationContainer(Composite container, ChartsConfigurationPage page, ModuleSectionPart generalConfigurationSectionPart) {
-		container.setLayout(new GridLayout(7, false));
+		// 8 columns : the first seven for the general options, 
+		// the last one for the display options only available with "SWT + OpenGL v2" library
+		container.setLayout(new GridLayout(8, false));
 		
 		autoScaleButton = page.createButton(container, DocometreMessages.AutoScale_Title, SWT.CHECK, 7, 1);
 		String value = getProperty(XYChartConfigurationProperties.AUTO_SCALE);
 		boolean autoScale = Boolean.valueOf(value);
 		autoScaleButton.setSelection(autoScale);
 		autoScaleButton.addSelectionListener(new ModifyPropertyHandler(XYChartConfigurationProperties.AUTO_SCALE, XYChartConfiguration.this, autoScaleButton, XYChartConfigurationProperties.AUTO_SCALE.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		showLegendButton = createGL2OptionButton(container, page, XYChartConfigurationProperties.SHOW_LEGEND);
 		
 		page.createLabel(container, DocometreMessages.xMaxAmplitude_Title, DocometreMessages.xMaxAmplitude_Tooltip);
 		xAmpMaxText = page.createText(container, getProperty(XYChartConfigurationProperties.X_MAX), SWT.NONE, 6, 1); 
 		xAmpMaxText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		xAmpMaxText.addModifyListener(new ModifyPropertyHandler(XYChartConfigurationProperties.X_MAX, this, xAmpMaxText, XYChartConfigurationProperties.X_MAX.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		legendInsideButton = createGL2OptionButton(container, page, XYChartConfigurationProperties.LEGEND_INSIDE);
+		legendInsideButton.setEnabled(Activator.useOpenGLV2() && showLegendButton.getSelection());
+		showLegendButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				legendInsideButton.setEnabled(Activator.useOpenGLV2() && showLegendButton.getSelection());
+			}
+		});
 		
 		page.createLabel(container, DocometreMessages.xMinAmplitude_Title, DocometreMessages.xMinAmplitude_Tooltip);
 		xAmpMinText = page.createText(container, getProperty(XYChartConfigurationProperties.X_MIN), SWT.NONE, 6, 1); 
 		xAmpMinText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		xAmpMinText.addModifyListener(new ModifyPropertyHandler(XYChartConfigurationProperties.X_MIN, this, xAmpMinText, XYChartConfigurationProperties.X_MIN.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		displayCurrentValuesButton = createGL2OptionButton(container, page, XYChartConfigurationProperties.DISPLAY_CURRENT_VALUES);
 		
 		page.createLabel(container, DocometreMessages.yMaxAmplitude_Title, DocometreMessages.yMaxAmplitude_Tooltip);
 		yAmpMaxText = page.createText(container, getProperty(XYChartConfigurationProperties.Y_MAX), SWT.NONE, 6, 1); 
 		yAmpMaxText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		yAmpMaxText.addModifyListener(new ModifyPropertyHandler(XYChartConfigurationProperties.Y_MAX, this, yAmpMaxText, XYChartConfigurationProperties.Y_MAX.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		showGridButton = createGL2OptionButton(container, page, XYChartConfigurationProperties.SHOW_GRID);
 		
 		page.createLabel(container, DocometreMessages.yMinAmplitude_Title, DocometreMessages.yMinAmplitude_Tooltip);
 		yAmpMinText = page.createText(container, getProperty(XYChartConfigurationProperties.Y_MIN), SWT.NONE, 6, 1); 
 		yAmpMinText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		yAmpMinText.addModifyListener(new ModifyPropertyHandler(XYChartConfigurationProperties.Y_MIN, this, yAmpMinText, XYChartConfigurationProperties.Y_MIN.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		showAxesButton = createGL2OptionButton(container, page, XYChartConfigurationProperties.SHOW_AXES);
 		
 		autoScaleButton.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -198,13 +220,26 @@ public class XYChartConfiguration extends ChartConfiguration {
 		chartColorButton.setToolTipText(DocometreMessages.Color_Tooltip);
 		chartColorButton.setBackground(chartColor);
 		chartColorButton.addSelectionListener(new ModifyPropertyHandler(ChartConfigurationProperties.COLOR, this, chartColorButton, ChartConfigurationProperties.COLOR.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		showTickLabelsButton = createGL2OptionButton(container, page, XYChartConfigurationProperties.SHOW_TICK_LABELS);
 		
 		if(!hasHistorySize()) return;
 		page.createLabel(container, DocometreMessages.HistorySize_Title, DocometreMessages.HistorySize_Tooltip);
-		historySizeText = page.createText(container, getProperty(XYChartConfigurationProperties.HISTORY_SIZE), SWT.NONE, 6, 1);
+		historySizeText = page.createText(container, getProperty(XYChartConfigurationProperties.HISTORY_SIZE), SWT.NONE, 7, 1);
 		historySizeText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		historySizeText.addModifyListener(new ModifyPropertyHandler(XYChartConfigurationProperties.HISTORY_SIZE, this, historySizeText, XYChartConfigurationProperties.HISTORY_SIZE.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
 		
+	}
+	
+	/*
+	 * Helper method to create a check button for a display option only available with "SWT + OpenGL v2" library
+	 */
+	private Button createGL2OptionButton(Composite container, ChartsConfigurationPage page, XYChartConfigurationProperties property) {
+		Button button = page.createButton(container, property.getLabel(), SWT.CHECK, 1, 1);
+		button.setToolTipText(property.getTooltip());
+		button.setSelection(Boolean.parseBoolean(XYChartConfigurationProperties.getValue(this, property)));
+		button.addSelectionListener(new ModifyPropertyHandler(property, this, button, property.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
+		button.setEnabled(Activator.useOpenGLV2());
+		return button;
 	}
 	
 	/*
@@ -260,6 +295,20 @@ public class XYChartConfiguration extends ChartConfiguration {
 			updateWidget(historySizeText, (XYChartConfigurationProperties)property);
 		if(property == ChartConfigurationProperties.COLOR)
 			updateColordialogButton();
+		if(property == XYChartConfigurationProperties.SHOW_LEGEND) {
+			updateWidget(showLegendButton, (XYChartConfigurationProperties)property);
+			legendInsideButton.setEnabled(Activator.useOpenGLV2() && showLegendButton.getSelection());
+		}
+		if(property == XYChartConfigurationProperties.LEGEND_INSIDE)
+			updateWidget(legendInsideButton, (XYChartConfigurationProperties)property);
+		if(property == XYChartConfigurationProperties.DISPLAY_CURRENT_VALUES)
+			updateWidget(displayCurrentValuesButton, (XYChartConfigurationProperties)property);
+		if(property == XYChartConfigurationProperties.SHOW_GRID)
+			updateWidget(showGridButton, (XYChartConfigurationProperties)property);
+		if(property == XYChartConfigurationProperties.SHOW_AXES)
+			updateWidget(showAxesButton, (XYChartConfigurationProperties)property);
+		if(property == XYChartConfigurationProperties.SHOW_TICK_LABELS)
+			updateWidget(showTickLabelsButton, (XYChartConfigurationProperties)property);
 	}
 
 	@Override
@@ -326,6 +375,8 @@ public class XYChartConfiguration extends ChartConfiguration {
 			AbstractGLPlotChart<?, ?> glChart = (AbstractGLPlotChart<?, ?>) rtswtxyChart;
 			glChart.setMarkersInteractive(false);
 			glChart.setMarkersMenuItemsVisible(false);
+			// Display options of the "SWT + OpenGL v2" library
+			applyGL2DisplayOptions(glChart);
 		}
 		
 		// Create curves
@@ -375,6 +426,25 @@ public class XYChartConfiguration extends ChartConfiguration {
 			xyCurveConfiguration.setSerie(rtswtSerie);
 		}
 
+	}
+
+	/*
+	 * Applies the display options only available with "SWT + OpenGL v2" library
+	 * (also used by Cursor2DChartConfiguration)
+	 */
+	protected void applyGL2DisplayOptions(AbstractGLPlotChart<?, ?> glChart) {
+		boolean showLegend = Boolean.parseBoolean(XYChartConfigurationProperties.getValue(this, XYChartConfigurationProperties.SHOW_LEGEND));
+		boolean legendInside = Boolean.parseBoolean(XYChartConfigurationProperties.getValue(this, XYChartConfigurationProperties.LEGEND_INSIDE));
+		boolean displayCurrentValues = Boolean.parseBoolean(XYChartConfigurationProperties.getValue(this, XYChartConfigurationProperties.DISPLAY_CURRENT_VALUES));
+		boolean showGrid = Boolean.parseBoolean(XYChartConfigurationProperties.getValue(this, XYChartConfigurationProperties.SHOW_GRID));
+		boolean showAxes = Boolean.parseBoolean(XYChartConfigurationProperties.getValue(this, XYChartConfigurationProperties.SHOW_AXES));
+		boolean showTickLabels = Boolean.parseBoolean(XYChartConfigurationProperties.getValue(this, XYChartConfigurationProperties.SHOW_TICK_LABELS));
+		glChart.setLegendVisible(showLegend);
+		glChart.setLegendPosition(legendInside ? LegendPosition.INSIDE : LegendPosition.BELOW);
+		glChart.setCurrentValuesVisible(displayCurrentValues);
+		glChart.getRenderer().setGridVisible(showGrid);
+		glChart.getRenderer().setAxesVisible(showAxes);
+		glChart.getRenderer().setLabelsVisible(showTickLabels);
 	}
 
 	@Override
