@@ -148,6 +148,15 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
 		FileFieldEditor wineFileFieldEditor = new FolderPathFieldEditor(GeneralPreferenceConstants.WINE_FULL_PATH, DocometreMessages.GeneralPreferences_WineFileLocation, wineGroup);
 		addField(wineFileFieldEditor);
 		
+		Group fullScreenGroup = new Group(getFieldEditorParent(), SWT.NONE);
+		fullScreenGroup.setText(DocometreMessages.GeneralPreferences_FullScreenGroup);
+		fullScreenGroup.setLayout(new FillLayout(SWT.HORIZONTAL));
+		fullScreenGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1));
+		
+		BooleanFieldEditor fullScreenFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.RUN_FULL_SCREEN,
+				DocometreMessages.GeneralPreferences_FullScreen, fullScreenGroup);
+		addField(fullScreenFieldEditor);
+		
 		Group trialsGroup = new Group(getFieldEditorParent(), SWT.NONE);
 		trialsGroup.setText(DocometreMessages.TrialsParameters);
 		trialsGroup.setLayout(new FillLayout(SWT.HORIZONTAL));

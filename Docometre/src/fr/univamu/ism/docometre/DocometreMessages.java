@@ -116,6 +116,9 @@ public final class DocometreMessages extends NLS {
 	
 	public static String EditorsFontSize;
 	
+	public static String GeneralPreferences_FullScreenGroup;
+	public static String GeneralPreferences_FullScreen;
+	
 	/*Undo/Redo prompt user*/
 	public static String Undo;
 	public static String Redo;

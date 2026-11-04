@@ -122,22 +122,23 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 			@Override
 			public void handleEvent(Event event) {
 				IPerspectiveDescriptor currentPerspective = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getPerspective();
-				boolean checkPerspcetive = currentPerspective.getId().equals(AcquirePerspective.id);
+				boolean checkPerspective = currentPerspective.getId().equals(AcquirePerspective.id);
 				boolean isRunning = ExperimentScheduler.getInstance().isRunning();
 				// Shortcuts below are ignored when a dialog is opened
 				boolean workbenchShellActive = !container.isDisposed() && event.display.getActiveShell() == getSite().getShell();
 				boolean mod1Shift = ((event.stateMask & SWT.MOD1) != 0) && ((event.stateMask & SWT.SHIFT) != 0);
 				if(event.keyCode == SWT.F11 || (mod1Shift && event.keyCode == 'f')) {
-					if(checkPerspcetive && workbenchShellActive) setFullScreen(!fullScreen);
+					if(checkPerspective && workbenchShellActive) setFullScreen(!fullScreen);
 				}
 				if(event.keyCode == SWT.F9 || (mod1Shift && (event.keyCode == SWT.CR || event.keyCode == SWT.KEYPAD_CR))) {
-					if(checkPerspcetive && workbenchShellActive) runStop();
+					if(checkPerspective && workbenchShellActive) runStop();
 				}
 				if(event.keyCode == SWT.ESC) {
-					if(checkPerspcetive && isRunning) RunStopHandler.stop();
+					if(checkPerspective && isRunning) RunStopHandler.stop();
+					else if(checkPerspective && !isRunning && fullScreen) setFullScreen(false);
 				}
 				if((event.keyCode == SWT.PAUSE) || (((event.stateMask & SWT.COMMAND) != 0) && event.keyCode == 'p')) {
-					if(checkPerspcetive && isRunning) {
+					if(checkPerspective && isRunning) {
 						ExperimentScheduler.getInstance().stop(true);
 						ApplicationActionBarAdvisor.pausePendingContributionItem.setText(DocometreMessages.PausePending);
 					}

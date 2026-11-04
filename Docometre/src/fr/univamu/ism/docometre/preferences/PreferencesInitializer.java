@@ -116,6 +116,8 @@ public class PreferencesInitializer extends AbstractPreferenceInitializer {
 		
 		defaults.putInt(GeneralPreferenceConstants.EDITORS_FONT_SIZE, 12);
 		
+		defaults.putBoolean(GeneralPreferenceConstants.RUN_FULL_SCREEN, false);
+		
 		Bundle bundle = Platform.getBundle("Libraries");
 		Optional<File> files = FileLocator.getBundleFileLocation(bundle);
 		if(files.isPresent()) {

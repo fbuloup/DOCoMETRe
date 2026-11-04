@@ -111,4 +111,6 @@ public class GeneralPreferenceConstants {
 	public static final String RTSWT_CHART_LIBRARY_SWT_OPENGL_V1 = "SWT + OpenGL v1";
 	public static final String RTSWT_CHART_LIBRARY_SWT_OPENGL_V2 = "SWT + OpenGL v2";
 	
+	public static final String RUN_FULL_SCREEN = "RUN_FULL_SCREEN";
+	
 }

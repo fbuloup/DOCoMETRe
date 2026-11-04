@@ -59,6 +59,8 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.Activator;
@@ -325,8 +327,31 @@ public class ExperimentScheduler {
 	
 	public void run() {
 		running = true;
+		setFullScreenIfRequired();
 		SeekNextProcess seekNextProcess = new SeekNextProcess(DocometreMessages.RunningTrials);
 		seekNextProcess.schedule();
+	}
+	
+	/*
+	 * Real time charts view in full screen mode, if not already the case, when trials 
+	 * are run or a process is tested and if the corresponding general preference is set
+	 */
+	private void setFullScreenIfRequired() {
+		if(selectedResource == null) return;
+		if(!runProcess && currentTrial == null) return;
+		if(!Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.RUN_FULL_SCREEN)) return;
+		PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+			@Override
+			public void run() {
+				IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+				if(workbenchWindow == null || workbenchWindow.getActivePage() == null) return;
+				IViewPart viewPart = workbenchWindow.getActivePage().findView(RealTimeChartsView.ID);
+				if(viewPart instanceof RealTimeChartsView) {
+					RealTimeChartsView realTimeChartsView = (RealTimeChartsView) viewPart;
+					if(!realTimeChartsView.isFullScreen()) realTimeChartsView.setFullScreen(true);
+				}
+			}
+		});
 	}
 
 	public void initialize() {
