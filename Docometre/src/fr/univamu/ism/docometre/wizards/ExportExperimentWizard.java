@@ -89,6 +89,7 @@ public class ExportExperimentWizard extends Wizard {
 							boolean asZip = exportExperimentWizardPage.isAsZip();
 							Path destinationPath = new Path(destination);
 							boolean includeData = exportExperimentWizardPage.isIncludeData();
+							boolean includeHistory = exportExperimentWizardPage.isIncludeHistory();
 							boolean onlyExportSelectedSubjects = exportExperimentWizardPage.isOnlyExportSubjects();
 							List<IResource> subjects = exportExperimentWizardPage.getSelectedSubjects();
 							
@@ -96,6 +97,7 @@ public class ExportExperimentWizard extends Wizard {
 								ArchiveFileExportOperation archiveFileExportOperation = new ArchiveFileExportOperation(experiment, destinationPath.toOSString(), includeData);
 								archiveFileExportOperation.setUseCompression(compress);
 								archiveFileExportOperation.setUseTarFormat(!asZip);
+								archiveFileExportOperation.setIncludeHistory(includeHistory);
 								
 								SubMonitor subMonitor = SubMonitor.convert(monitor, DocometreMessages.ExportExperimentTaskTitle, 2 + archiveFileExportOperation.getTotalWork());
 								

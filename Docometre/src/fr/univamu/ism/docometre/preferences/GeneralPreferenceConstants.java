@@ -48,6 +48,11 @@ public class GeneralPreferenceConstants {
 
 
 	public static final String XML_SERIALIZATION = "XML_SERIALIZATION";
+	// Experiments history
+	public static final String HISTORY_AUTHOR_NAME = "HISTORY_AUTHOR_NAME";
+	public static final String HISTORY_AUTHOR_EMAIL = "HISTORY_AUTHOR_EMAIL";
+	public static final String HISTORY_AUTOMATIC_SNAPSHOTS = "HISTORY_AUTOMATIC_SNAPSHOTS";
+	public static final String HISTORY_OPTIMIZATION_PERIOD = "HISTORY_OPTIMIZATION_PERIOD";
 	public static final String BUILD_AUTOMATICALLY = "BUILD_AUTOMATICALLY";
 	
 	public static final String FIRST_LAUNCH = "FIRST_LAUNCH";

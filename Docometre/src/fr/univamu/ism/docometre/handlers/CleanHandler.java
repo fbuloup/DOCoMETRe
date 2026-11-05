@@ -78,6 +78,7 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
+import fr.univamu.ism.docometre.history.ui.HistoryOperations;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 
 public class CleanHandler extends AbstractHandler implements ISelectionListener {
@@ -102,6 +103,8 @@ public class CleanHandler extends AbstractHandler implements ISelectionListener 
 				@Override
 				public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 					try {
+						// Experiments history : save experiments content before deleting diaries and data files
+						HistoryOperations.createAutomaticSnapshots(folders, DocometreMessages.History_AutoSnapshotBeforeDataDeletion);
 						removeLogAndDataFiles(folders, shell.getDisplay(), monitor);
 					} catch (OperationCanceledException e) {
 						throw new InterruptedException();

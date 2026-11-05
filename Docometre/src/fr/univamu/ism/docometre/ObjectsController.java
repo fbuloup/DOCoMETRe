@@ -161,6 +161,14 @@ public class ObjectsController {
 	}
 	
 	/*
+	 * Forget object whatever its number of handles, e.g. because its file has been replaced
+	 * (restoration of a snapshot) : it will be deserialized again when needed.
+	 */
+	public static void forgetObject(Object object) {
+		if(object != null) objectHandles.remove(object);
+	}
+	
+	/*
 	 * Serialize object
 	 */
 	public static void serialize(Object object) {
