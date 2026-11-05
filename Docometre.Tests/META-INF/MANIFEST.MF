@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Docometre Tests
+Bundle-SymbolicName: Docometre.Tests
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: ISM
+Fragment-Host: Docometre;bundle-version="1.0.0"
+Require-Bundle: junit-jupiter-api;bundle-version="5.11.0",
+ org.eclipse.jgit;bundle-version="7.2.0",
+ com.googlecode.javaewah.JavaEWAH;bundle-version="1.2.3",
+ slf4j.api;bundle-version="2.0.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-21
+Automatic-Module-Name: Docometre.Tests
