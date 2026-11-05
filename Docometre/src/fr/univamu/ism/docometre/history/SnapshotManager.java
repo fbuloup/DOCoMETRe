@@ -54,7 +54,6 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jgit.lib.PersonIdent;
-import org.eclipse.jgit.storage.file.WindowCacheConfig;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
@@ -174,15 +173,8 @@ public final class SnapshotManager implements IResourceChangeListener {
 	 */
 	public synchronized void close(String projectName) {
 		SnapshotRepository repository = repositories.remove(projectName);
-		if(repository != null) {
-			repository.close();
-			// JGit keeps pack files of repositories in a global cache : release them
-			releaseCachedFiles();
-		}
-	}
-	
-	private static void releaseCachedFiles() {
-		new WindowCacheConfig().install();
+		// Pack files kept opened by JGit are released too
+		if(repository != null) repository.close();
 	}
 	
 	/*
@@ -195,7 +187,8 @@ public final class SnapshotManager implements IResourceChangeListener {
 		suspendedProjects.add(project.getName());
 		if(!isHistorized(project)) return;
 		close(project.getName());
-		releaseCachedFiles();
+		// Pack files may also have been opened while history was not cached here
+		SnapshotRepository.releaseCachedFiles();
 		SnapshotRepository.checkMovable(getDirectory(project));
 	}
 	

@@ -91,6 +91,7 @@ import org.eclipse.jgit.lib.RefUpdate;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.RepositoryCache;
 import org.eclipse.jgit.lib.StoredConfig;
+import org.eclipse.jgit.storage.file.WindowCacheConfig;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.treewalk.FileTreeIterator;
@@ -1149,9 +1150,23 @@ public final class SnapshotRepository implements AutoCloseable {
 		action.run(repository.getDirectory());
 	}
 	
+	/*
+	 * Close history and release its files : JGit keeps pack files opened in a global cache even
+	 * after the repository is closed, and on Windows an opened file can't be deleted or moved
+	 * (deletion or renaming of the experiment, deletion of the history)
+	 */
 	@Override
 	public synchronized void close() {
 		git.close();
+		releaseCachedFiles();
+	}
+	
+	/*
+	 * Close pack files kept opened by JGit global cache (of all repositories : they are opened
+	 * again when needed, reading another history at the same time is not disturbed)
+	 */
+	public static void releaseCachedFiles() {
+		new WindowCacheConfig().install();
 	}
 	
 	private void checkNoChanges() throws SnapshotException {
