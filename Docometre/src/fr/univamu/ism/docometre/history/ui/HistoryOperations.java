@@ -131,6 +131,16 @@ public final class HistoryOperations {
 		return project != null && SnapshotManager.getInstance().isHistorized(project);
 	}
 	
+	/*
+	 * Return history of experiment, never null : history may have been deleted meanwhile, or be
+	 * temporarily unavailable (experiment being renamed)
+	 */
+	private static SnapshotRepository getRepository(IProject project) throws SnapshotException {
+		SnapshotRepository repository = SnapshotManager.getInstance().getRepository(project);
+		if(repository == null) throw new SnapshotException("History of " + project.getName() + " is not available");
+		return repository;
+	}
+	
 	private static boolean isAcquisitionRunning(Shell shell) {
 		if(!ExperimentScheduler.getInstance().isRunning()) return false;
 		MessageDialog.openInformation(shell, DocometreMessages.History_ErrorTitle, DocometreMessages.History_AcquisitionRunning);
@@ -214,11 +224,12 @@ public final class HistoryOperations {
 	 */
 	public static void disableHistory(Shell shell, IProject project) {
 		if(!isHistorized(project) || isAcquisitionRunning(shell)) return;
-		int snapshotsNumber = 0;
+		int snapshotsNumber;
 		try {
-			snapshotsNumber = SnapshotManager.getInstance().getRepository(project).getSnapshots().size();
+			snapshotsNumber = getRepository(project).getSnapshots().size();
 		} catch (SnapshotException e) {
-			Activator.logErrorMessageWithCause(e);
+			ErrorDialog.openError(shell, DocometreMessages.History_DisableTitle, null, getErrorStatus(project, e));
+			return;
 		}
 		String message = NLS.bind(DocometreMessages.History_DisableMessage, project.getName(), snapshotsNumber);
 		MessageDialog dialog = new MessageDialog(shell, DocometreMessages.History_DisableTitle, null, message, MessageDialog.WARNING, 1, DocometreMessages.History_DisableTitle, IDialogConstants.CANCEL_LABEL);
@@ -269,7 +280,7 @@ public final class HistoryOperations {
 		Snapshot lastSnapshot;
 		int nextNumber;
 		try {
-			SnapshotRepository repository = SnapshotManager.getInstance().getRepository(project);
+			SnapshotRepository repository = getRepository(project);
 			restoreChanges = repository.getRestoreChanges(snapshot);
 			currentChanges = repository.getChanges();
 			lastSnapshot = repository.getLastSnapshot();
@@ -376,7 +387,7 @@ public final class HistoryOperations {
 				project.refreshLocal(IResource.DEPTH_INFINITE, null);
 				ResourceProperties.synchronizePropertiesFile(project);
 				project.refreshLocal(IResource.DEPTH_ONE, null);
-				Snapshot snapshot = SnapshotManager.getInstance().getRepository(project).createSnapshot(name, null, SnapshotType.AUTO, SnapshotManager.getDefaultAuthor());
+				Snapshot snapshot = getRepository(project).createSnapshot(name, null, SnapshotType.AUTO, SnapshotManager.getDefaultAuthor());
 				if(snapshot != null) {
 					Activator.logInfoMessage(NLS.bind(DocometreMessages.History_AutomaticSnapshotCreated, new Object[] {project.getName(), snapshot.number(), snapshot.name()}), HistoryOperations.class);
 					historyChanged(project);
@@ -401,7 +412,7 @@ public final class HistoryOperations {
 		SnapshotException[] exception = new SnapshotException[1];
 		BusyIndicator.showWhile(shell.getDisplay(), () -> {
 			try {
-				fileDiff[0] = SnapshotManager.getInstance().getRepository(project).getDiff(from, to, path);
+				fileDiff[0] = getRepository(project).getDiff(from, to, path);
 			} catch (SnapshotException e) {
 				exception[0] = e;
 			}
@@ -428,7 +439,7 @@ public final class HistoryOperations {
 		Snapshot lastSnapshot;
 		int nextNumber;
 		try {
-			SnapshotRepository repository = SnapshotManager.getInstance().getRepository(project);
+			SnapshotRepository repository = getRepository(project);
 			for (FileChange change : repository.getRestoreChanges(snapshot)) {
 				if(change.path().equals(path)) kind = change.kind();
 			}
@@ -660,7 +671,7 @@ public final class HistoryOperations {
 				@Override
 				public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
 					try {
-						SnapshotManager.getInstance().getRepository(project).resetToLastSnapshot();
+						getRepository(project).resetToLastSnapshot(exception.getKeptFiles());
 						reloadExperiment(project, monitor);
 					} catch (IncompleteRestoreException e) {
 						reloadExperiment(project, monitor);

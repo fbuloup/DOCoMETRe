@@ -78,6 +78,7 @@ import org.eclipse.jgit.diff.RawTextComparator;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheBuilder;
 import org.eclipse.jgit.dircache.DirCacheEntry;
+import org.eclipse.jgit.errors.DirCacheNameConflictException;
 import org.eclipse.jgit.lib.CommitBuilder;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
@@ -484,18 +485,24 @@ public final class SnapshotRepository implements AutoCloseable {
 	public synchronized List<FileChange> getChanges() throws SnapshotException {
 		updateFoldersList();
 		try {
-			Status status = git.status().call();
-			TreeMap<String, Kind> changes = new TreeMap<>();
-			for (String path : status.getModified()) changes.put(path, Kind.MODIFIED);
-			for (String path : status.getChanged()) changes.put(path, Kind.MODIFIED);
-			for (String path : status.getAdded()) changes.put(path, Kind.ADDED);
-			for (String path : status.getUntracked()) changes.put(path, Kind.ADDED);
-			for (String path : status.getRemoved()) changes.put(path, Kind.DELETED);
-			for (String path : status.getMissing()) changes.put(path, Kind.DELETED);
-			return toFileChanges(changes);
+			return toChanges(git.status().call(), Set.of());
 		} catch (GitAPIException e) {
 			throw new SnapshotException("Unable to get status of " + getDirectory(), e);
 		}
+	}
+	
+	/*
+	 * Changes of status sorted by path, new files which are kept paths (or inside them) excepted
+	 */
+	private static List<FileChange> toChanges(Status status, Set<String> keptPaths) {
+		TreeMap<String, Kind> changes = new TreeMap<>();
+		for (String path : status.getModified()) changes.put(path, Kind.MODIFIED);
+		for (String path : status.getChanged()) changes.put(path, Kind.MODIFIED);
+		for (String path : status.getAdded()) changes.put(path, Kind.ADDED);
+		for (String path : status.getUntracked()) if(!isKept(path, keptPaths)) changes.put(path, Kind.ADDED);
+		for (String path : status.getRemoved()) changes.put(path, Kind.DELETED);
+		for (String path : status.getMissing()) changes.put(path, Kind.DELETED);
+		return toFileChanges(changes);
 	}
 	
 	/*
@@ -681,6 +688,7 @@ public final class SnapshotRepository implements AutoCloseable {
 		checkName(name);
 		checkNoChanges();
 		Snapshot lastSnapshot = getLastSnapshot();
+		if(lastSnapshot == null) throw new SnapshotException("No snapshot in " + getDirectory());
 		if(snapshot.hasSameContent(lastSnapshot)) return null;
 		int number = getNextNumber();
 		String message = buildMessage(name, null, SnapshotType.RESTORE, snapshot.commitId(), number);
@@ -709,21 +717,49 @@ public final class SnapshotRepository implements AutoCloseable {
 	 * Return the last snapshot.
 	 */
 	public synchronized Snapshot resetToLastSnapshot() throws SnapshotException {
+		return resetToLastSnapshot(Set.of());
+	}
+	
+	/*
+	 * Same as resetToLastSnapshot(), files of keptFiles (relative paths, '/' separator) are kept
+	 * too : to complete an incomplete restoration, use IncompleteRestoreException.getKeptFiles()
+	 * so that files which were not historized before the restoration are not deleted.
+	 */
+	public synchronized Snapshot resetToLastSnapshot(Set<String> keptFiles) throws SnapshotException {
 		Snapshot lastSnapshot = getLastSnapshot();
 		if(lastSnapshot == null) throw new SnapshotException("No snapshot in " + getDirectory());
-		checkout(lastSnapshot.commitId());
+		checkout(lastSnapshot.commitId(), keptFiles);
 		return lastSnapshot;
+	}
+	
+	private void checkout(ObjectId commitId) throws SnapshotException {
+		checkout(commitId, Set.of());
 	}
 	
 	/*
 	 * git reset --hard commitId then git clean : the branch is moved first, then files are
-	 * written, then files which are not in commit are deleted (files which are not historized
-	 * are kept). Experiment content must not have changes before.
+	 * written, then files which are not in commit are deleted.
+	 * Files which are not historized before the operation (ignored files) and files of keptFiles
+	 * are never deleted, even if they are no longer ignored afterwards (e.g. .gitignore of
+	 * commit ignores less files) : they then become new files of experiment (changes since the
+	 * last snapshot).
 	 * A file locked by another program (antivirus, explorer, Python... on Windows) may make
 	 * writing fail, or may silently not be deleted : the operation is retried for 5 seconds,
 	 * until experiment content is exactly the content of commit.
 	 */
-	private void checkout(ObjectId commitId) throws SnapshotException {
+	private void checkout(ObjectId commitId, Set<String> keptFiles) throws SnapshotException {
+		// Must be computed before files (and .gitignore) are replaced
+		HashSet<String> keptPaths = new HashSet<>();
+		try {
+			ArrayList<String> paths = new ArrayList<>(keptFiles);
+			paths.addAll(git.status().call().getIgnoredNotInIndex());
+			for (String path : paths) {
+				String normalizedPath = path.replaceAll("/+$", "");
+				if(!normalizedPath.isEmpty()) keptPaths.add(normalizedPath);
+			}
+		} catch (GitAPIException | RuntimeException e) {
+			throw new SnapshotException("Unable to get status of " + getDirectory(), e);
+		}
 		Exception lastException = null;
 		long deadline = System.currentTimeMillis() + FILE_OPERATION_ATTEMPTS * FILE_OPERATION_DELAY;
 		for (int attempt = 1; attempt == 1 || System.currentTimeMillis() < deadline; attempt++) {
@@ -731,17 +767,17 @@ public final class SnapshotRepository implements AutoCloseable {
 				git.reset().setMode(ResetType.HARD).setRef(commitId.name()).call();
 				// Files which are not in commit and could not be deleted by reset (git clean),
 				// files which are not historized are kept
-				git.clean().setCleanDirectories(true).setIgnore(true).call();
+				deleteUntrackedPaths(getCleanablePaths(git.status().call(), keptPaths));
 				lastException = null;
-			} catch (GitAPIException | RuntimeException e) {
+			} catch (GitAPIException | IOException | RuntimeException e) {
 				lastException = e;
 			}
 			try {
-				if(commitId.equals(repository.resolve(Constants.HEAD)) && isClean()) {
+				if(commitId.equals(repository.resolve(Constants.HEAD)) && toChanges(git.status().call(), keptPaths).isEmpty()) {
 					createFolders();
 					return;
 				}
-			} catch (IOException e) {
+			} catch (IOException | GitAPIException | RuntimeException e) {
 				lastException = e;
 			}
 			try {
@@ -755,7 +791,82 @@ public final class SnapshotRepository implements AutoCloseable {
 		if(lastSnapshot == null || !lastSnapshot.commitId().equals(commitId)) {
 			throw new SnapshotException("Unable to restore content of " + commitId.name() + " in " + getDirectory(), lastException);
 		}
-		throw new IncompleteRestoreException("Content of snapshot " + lastSnapshot.name() + " could not be completely restored in " + getDirectory(), lastException, lastSnapshot, getChanges());
+		updateFoldersList();
+		Status status;
+		try {
+			status = git.status().call();
+		} catch (GitAPIException e) {
+			throw new SnapshotException("Unable to get status of " + getDirectory(), e);
+		}
+		// Kept files which are no longer ignored : they must still be kept when restoration is completed
+		TreeSet<String> remainingKeptFiles = new TreeSet<>();
+		for (String path : status.getUntracked()) if(isKept(path, keptPaths)) remainingKeptFiles.add(path);
+		throw new IncompleteRestoreException("Content of snapshot " + lastSnapshot.name() + " could not be completely restored in " + getDirectory(), lastException, lastSnapshot, toChanges(status, keptPaths), remainingKeptFiles);
+	}
+	
+	/*
+	 * True if path is one of kept paths (files or folders) or is inside one of them
+	 */
+	private static boolean isKept(String path, Set<String> keptPaths) {
+		for (String keptPath : keptPaths) {
+			if(isInPath(path, keptPath)) return true;
+		}
+		return false;
+	}
+	
+	/*
+	 * Delete untracked files and folders (relative paths), then their parent folders which become
+	 * empty (git clean). Like git clean, folders containing a Git repository are not deleted and
+	 * symbolic links are deleted, not followed. Git makes some files read only : they are made
+	 * writable first (required on Windows).
+	 */
+	private void deleteUntrackedPaths(Set<String> paths) throws IOException {
+		Path directory = getDirectory().toPath().toAbsolutePath().normalize();
+		for (String path : paths) {
+			Path file = directory.resolve(path).normalize();
+			// Already deleted with its folder
+			if(!file.startsWith(directory) || file.equals(directory) || !Files.exists(file, LinkOption.NOFOLLOW_LINKS)) continue;
+			if(Files.isDirectory(file, LinkOption.NOFOLLOW_LINKS)) {
+				List<Path> folderPaths;
+				try (Stream<Path> stream = Files.walk(file)) {
+					folderPaths = stream.sorted(Comparator.reverseOrder()).toList();
+				}
+				if(folderPaths.stream().anyMatch(folderPath -> Constants.DOT_GIT.equals(folderPath.getFileName().toString()))) continue;
+				for (Path folderPath : folderPaths) {
+					folderPath.toFile().setWritable(true);
+					Files.deleteIfExists(folderPath);
+				}
+			} else {
+				file.toFile().setWritable(true);
+				Files.deleteIfExists(file);
+			}
+			for (Path parent = file.getParent(); parent != null && !parent.equals(directory) && isEmptyFolder(parent); parent = parent.getParent()) Files.delete(parent);
+		}
+	}
+	
+	private static boolean isEmptyFolder(Path folder) throws IOException {
+		if(!Files.isDirectory(folder, LinkOption.NOFOLLOW_LINKS)) return false;
+		try (Stream<Path> stream = Files.list(folder)) {
+			return stream.findAny().isEmpty();
+		}
+	}
+	
+	/*
+	 * Untracked files and folders which can be deleted : not kept and, for folders, not
+	 * containing a kept path
+	 */
+	private static Set<String> getCleanablePaths(Status status, Set<String> keptPaths) {
+		HashSet<String> cleanablePaths = new HashSet<>();
+		for (String file : status.getUntracked()) {
+			if(!isKept(file, keptPaths)) cleanablePaths.add(file);
+		}
+		for (String folder : status.getUntrackedFolders()) {
+			if(isKept(folder, keptPaths)) continue;
+			boolean containsKeptPath = false;
+			for (String keptPath : keptPaths) containsKeptPath |= keptPath.startsWith(folder + "/");
+			if(!containsKeptPath) cleanablePaths.add(folder);
+		}
+		return cleanablePaths;
 	}
 	
 	/*
@@ -774,12 +885,19 @@ public final class SnapshotRepository implements AutoCloseable {
 		if(normalizedPath.isEmpty()) return restore(snapshot, name, author);
 		checkNoChanges();
 		Snapshot lastSnapshot = getLastSnapshot();
+		if(lastSnapshot == null) throw new SnapshotException("No snapshot in " + getDirectory());
 		try (ObjectReader objectReader = repository.newObjectReader(); ObjectInserter objectInserter = repository.newObjectInserter()) {
 			// Content of the last snapshot outside path, content of snapshot inside path
 			DirCache dirCache = DirCache.newInCore();
 			DirCacheBuilder dirCacheBuilder = dirCache.builder();
-			addEntries(dirCacheBuilder, objectReader, lastSnapshot.treeId(), normalizedPath, false);
-			addEntries(dirCacheBuilder, objectReader, snapshot.treeId(), normalizedPath, true);
+			Set<String> outsidePaths = addEntries(dirCacheBuilder, objectReader, lastSnapshot.treeId(), normalizedPath, false);
+			Set<String> insidePaths = addEntries(dirCacheBuilder, objectReader, snapshot.treeId(), normalizedPath, true);
+			// A file is now where a parent folder of path must be (e.g. restore "A/B/f" while "A" is a file)
+			if(!insidePaths.isEmpty()) {
+				for (String parent = getParent(normalizedPath); !parent.isEmpty(); parent = getParent(parent)) {
+					if(outsidePaths.contains(parent)) throw new SnapshotException("Unable to restore " + path + " from snapshot " + snapshot.name() + " : " + parent + " is now a file, it must be removed or renamed first");
+				}
+			}
 			// Folders list : folders of path are those of snapshot
 			if(!isInPath(FOLDERS_LIST_FILE_NAME, normalizedPath)) {
 				List<String> lastFolders = readFoldersList(lastSnapshot);
@@ -811,7 +929,7 @@ public final class SnapshotRepository implements AutoCloseable {
 			saveLastNumber(number);
 			checkout(commitId);
 			return getLastSnapshot();
-		} catch (IOException e) {
+		} catch (IOException | DirCacheNameConflictException e) {
 			throw new SnapshotException("Unable to restore " + path + " from snapshot " + snapshot.name() + " in " + getDirectory(), e);
 		}
 	}
@@ -821,9 +939,10 @@ public final class SnapshotRepository implements AutoCloseable {
 	}
 	
 	/*
-	 * Add files of tree which are inside (or outside) path, except folders list
+	 * Add files of tree which are inside (or outside) path, except folders list. Return their paths.
 	 */
-	private static void addEntries(DirCacheBuilder dirCacheBuilder, ObjectReader objectReader, ObjectId treeId, String path, boolean insidePath) throws IOException {
+	private static Set<String> addEntries(DirCacheBuilder dirCacheBuilder, ObjectReader objectReader, ObjectId treeId, String path, boolean insidePath) throws IOException {
+		HashSet<String> paths = new HashSet<>();
 		try (TreeWalk treeWalk = new TreeWalk(objectReader)) {
 			treeWalk.addTree(treeId);
 			treeWalk.setRecursive(true);
@@ -835,8 +954,10 @@ public final class SnapshotRepository implements AutoCloseable {
 				dirCacheEntry.setFileMode(treeWalk.getFileMode(0));
 				dirCacheEntry.setObjectId(treeWalk.getObjectId(0));
 				dirCacheBuilder.add(dirCacheEntry);
+				paths.add(entryPath);
 			}
 		}
+		return paths;
 	}
 	
 	private List<String> readFoldersList(Snapshot snapshot) throws SnapshotException, IOException {
@@ -865,12 +986,13 @@ public final class SnapshotRepository implements AutoCloseable {
 	
 	/*
 	 * Return differences of file path (relative, '/' separator) from snapshot "from" to snapshot
-	 * "to". "from" or "to" may be null : current file of experiment is then used.
+	 * "to". "from" may be null when there is no previous snapshot (e.g. first snapshot) : the file
+	 * is then compared to an empty file. "to" may be null : current file of experiment is then used.
 	 * A missing file is compared as an empty file.
 	 */
 	public synchronized FileDiff getDiff(Snapshot from, Snapshot to, String path) throws SnapshotException {
 		try {
-			byte[] oldContent = readContent(from, path);
+			byte[] oldContent = from == null ? new byte[0] : readContent(from, path);
 			byte[] newContent = readContent(to, path);
 			if(oldContent == null || newContent == null) return new FileDiff(FileDiff.Result.TOO_LARGE, "");
 			if(Arrays.equals(oldContent, newContent)) return new FileDiff(FileDiff.Result.IDENTICAL, "");

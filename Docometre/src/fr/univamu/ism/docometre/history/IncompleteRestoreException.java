@@ -42,12 +42,13 @@
 package fr.univamu.ism.docometre.history;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * A restoration has been recorded in history but experiment files could not all be
  * written or deleted (e.g. files locked by another program on Windows) : experiment
  * content still differs from the restored snapshot. Nothing is lost, the restoration
- * can be completed with SnapshotRepository.resetToLastSnapshot().
+ * can be completed with SnapshotRepository.resetToLastSnapshot(getKeptFiles()).
  */
 public class IncompleteRestoreException extends SnapshotException {
 
@@ -55,11 +56,13 @@ public class IncompleteRestoreException extends SnapshotException {
 	
 	private final transient Snapshot restoredSnapshot;
 	private final transient List<FileChange> remainingChanges;
+	private final transient Set<String> keptFiles;
 
-	public IncompleteRestoreException(String message, Throwable cause, Snapshot restoredSnapshot, List<FileChange> remainingChanges) {
+	public IncompleteRestoreException(String message, Throwable cause, Snapshot restoredSnapshot, List<FileChange> remainingChanges, Set<String> keptFiles) {
 		super(message, cause);
 		this.restoredSnapshot = restoredSnapshot;
 		this.remainingChanges = remainingChanges;
+		this.keptFiles = Set.copyOf(keptFiles);
 	}
 	
 	/*
@@ -74,6 +77,14 @@ public class IncompleteRestoreException extends SnapshotException {
 	 */
 	public List<FileChange> getRemainingChanges() {
 		return remainingChanges;
+	}
+	
+	/*
+	 * Files which were not historized before the restoration and are no longer ignored by the
+	 * restored content : they must not be deleted when the restoration is completed
+	 */
+	public Set<String> getKeptFiles() {
+		return keptFiles;
 	}
 
 }

@@ -288,6 +288,60 @@ public class SnapshotRepositoryTest {
 	}
 	
 	@Test
+	void restoreKeepsFilesWhichWereNotHistorizedWithAnOlderGitIgnore() throws Exception {
+		write("Acquisition.process", "v1");
+		Snapshot s1 = snapshot("Config initiale");
+		// User excludes a folder from history after s1
+		write(".gitignore", SnapshotRepository.DEFAULT_GIT_IGNORE + "Local/\n");
+		write("Local/notes.txt", "not historized");
+		write("Acquisition.process", "v2");
+		snapshot("v2");
+		// Restored .gitignore of s1 does not ignore Local/ : its files must not be deleted
+		repository.restore(s1, "Restauration", AUTHOR);
+		assertEquals("v1", read("Acquisition.process"));
+		assertEquals("not historized", read("Local/notes.txt"));
+		// They are now new files of experiment, which can be historized
+		assertTrue(toString(repository.getChanges()).contains("A Local/notes.txt\n"), toString(repository.getChanges()));
+	}
+	
+	@Test
+	void restoreGitIgnoreOnlyKeepsFilesWhichWereNotHistorized() throws Exception {
+		write("Acquisition.process", "v1");
+		Snapshot s1 = snapshot("Config initiale");
+		write(".gitignore", SnapshotRepository.DEFAULT_GIT_IGNORE + "Local/\n");
+		write("Local/notes.txt", "not historized");
+		snapshot("Local ignoré");
+		repository.restore(s1, ".gitignore", "Restauration de .gitignore", AUTHOR);
+		assertEquals(SnapshotRepository.DEFAULT_GIT_IGNORE, read(".gitignore"));
+		assertEquals("not historized", read("Local/notes.txt"));
+	}
+	
+	@Test
+	void resetToLastSnapshotKeepsFilesWhichWereNotHistorized() throws Exception {
+		write("Acquisition.process", "v1");
+		snapshot("v1");
+		// .gitignore modified since the last snapshot : its previous version is written back
+		write(".gitignore", SnapshotRepository.DEFAULT_GIT_IGNORE + "Local/\n");
+		write("Local/notes.txt", "not historized");
+		write("Sujet01/new.samples", "new");
+		repository.resetToLastSnapshot();
+		assertEquals(SnapshotRepository.DEFAULT_GIT_IGNORE, read(".gitignore"));
+		assertEquals("not historized", read("Local/notes.txt"));
+		assertFalse(exists("Sujet01/new.samples"));
+		// Completing an incomplete restoration : kept files are given explicitly
+		write("Other/kept.txt", "kept");
+		write("Other/deleted.txt", "deleted");
+		write("New/Sub/a.txt", "a");
+		write("New/b.txt", "b");
+		repository.resetToLastSnapshot(Set.of("Other/kept.txt", "Local/notes.txt"));
+		assertEquals("kept", read("Other/kept.txt"));
+		assertFalse(exists("Other/deleted.txt"));
+		assertEquals("not historized", read("Local/notes.txt"));
+		assertFalse(exists("New"));
+		assertFalse(repository.hasChanges() && toString(repository.getChanges()).contains("New"));
+	}
+	
+	@Test
 	void restoreOnlyOneFolder() throws Exception {
 		write("Acquisition.process", "v1");
 		write("Sujet01/a.samples", "a1");
@@ -339,6 +393,23 @@ public class SnapshotRepositoryTest {
 	}
 	
 	@Test
+	void restoreOneFileWhoseParentFolderIsNowAFile() throws Exception {
+		write("Sujet01/Essai01.samples", "data");
+		Snapshot s1 = snapshot("Dossier");
+		deleteDirectory(experiment.resolve("Sujet01"));
+		write("Sujet01", "file");
+		Snapshot s2 = snapshot("Fichier");
+		// Sujet01 must not be silently replaced : restoration is refused, nothing is modified
+		assertThrows(SnapshotException.class, () -> repository.restore(s1, "Sujet01/Essai01.samples", "Restauration", AUTHOR));
+		assertEquals("file", read("Sujet01"));
+		assertEquals(s2, repository.getLastSnapshot());
+		assertFalse(repository.hasChanges());
+		// Restoring the parent itself is possible
+		assertNotNull(repository.restore(s1, "Sujet01", "Restauration de Sujet01", AUTHOR));
+		assertEquals("data", read("Sujet01/Essai01.samples"));
+	}
+	
+	@Test
 	void differencesOfAFile() throws Exception {
 		write("Filtrage.dataprocess", "Fonction : Butterworth\nOrdre : 2\nCoupure : 10 Hz\n");
 		Snapshot s1 = snapshot("n°1");
@@ -353,7 +424,15 @@ public class SnapshotRepositoryTest {
 		write("Filtrage.dataprocess", "Fonction : Butterworth\nOrdre : 4\nCoupure : 6 Hz\n");
 		assertTrue(repository.getDiff(s2, null, "Filtrage.dataprocess").text().contains("+Ordre : 4"));
 		assertEquals(SnapshotRepository.FileDiff.Result.IDENTICAL, repository.getDiff(s2, s2, "Filtrage.dataprocess").result());
-		assertTrue(repository.getDiff(null, s1, "Filtrage.dataprocess").text().contains("+Coupure : 10 Hz"));
+		// No previous snapshot (first snapshot) : the whole file is added, current file is not used
+		SnapshotRepository.FileDiff firstDiff = repository.getDiff(null, s1, "Filtrage.dataprocess");
+		assertEquals(SnapshotRepository.FileDiff.Result.DIFFERENCES, firstDiff.result());
+		assertTrue(firstDiff.text().contains("+Coupure : 10 Hz"), firstDiff.text());
+		assertTrue(firstDiff.text().contains("+Ordre : 2"), firstDiff.text());
+		assertFalse(firstDiff.text().contains("Ordre : 4"), firstDiff.text());
+		assertFalse(firstDiff.text().contains("\n-"), firstDiff.text());
+		// No snapshot at all : current file is added
+		assertTrue(repository.getDiff(null, null, "Filtrage.dataprocess").text().contains("+Ordre : 4"));
 		assertTrue(repository.getDiff(s1, null, "missing.chart").result() == SnapshotRepository.FileDiff.Result.IDENTICAL);
 		// Binary file
 		Files.write(experiment.resolve("Force.samples"), new byte[] {0, 1, 2, 0, 3});
