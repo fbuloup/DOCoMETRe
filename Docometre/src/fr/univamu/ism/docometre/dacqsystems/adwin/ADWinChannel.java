@@ -65,6 +65,7 @@ import de.adwin.driver.ADwinCommunicationError;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
+import fr.univamu.ism.docometre.dacqsystems.ChannelFileWriter;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.Process;
@@ -102,11 +103,8 @@ public class ADWinChannel extends Channel {
 		floatBuffer = byteBuffer.asFloatBuffer();
 		floatBuffer.put(buffer);
 		notify = true;
-		try {
-			fileChannel.write(byteBuffer);
-		} catch (IOException e) {
-			Logger.getLogger(Process.class).error("Exception message",e);
-		}
+		// Written by a dedicated thread : a slow disk does not block the real-time loop
+		ChannelFileWriter.write(fileChannel, byteBuffer);
 	}
 	
 	public float[] getSamples(int nbData){
@@ -254,7 +252,8 @@ public class ADWinChannel extends Channel {
 			recordedFileName = null;
 			if(!isStimulus) {
 				if(fileChannel != null) {
-					fileChannel.close();
+					// Waits for the samples still to be written, then closes the file
+					ChannelFileWriter.close(fileChannel);
 					// The workspace is refreshed only once for all channels, by ADWinProcess.close() :
 					// a deleted file disappears from the workspace and recordedFileName gets its type
 					if(!isRecorded && file != null) file.delete();

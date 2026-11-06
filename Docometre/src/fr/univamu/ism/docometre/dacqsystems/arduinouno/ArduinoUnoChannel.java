@@ -57,6 +57,7 @@ import org.eclipse.core.runtime.Platform;
 
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
+import fr.univamu.ism.docometre.dacqsystems.ChannelFileWriter;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.Process;
@@ -115,11 +116,8 @@ public class ArduinoUnoChannel extends Channel {
 		floatBuffer = byteBuffer.asFloatBuffer();
 		floatBuffer.put(buffer);
 		notify = true;
-		try {
-			fileChannel.write(byteBuffer);
-		} catch (IOException e) {
-			Logger.getLogger(Process.class).error("Exception message",e);
-		}
+		// Written by a dedicated thread : a slow disk does not block the real-time loop
+		ChannelFileWriter.write(fileChannel, byteBuffer);
 	}
 
 	@Override
@@ -173,7 +171,8 @@ public class ArduinoUnoChannel extends Channel {
 		recordedFileName = null;
 		try {
 			if(fileChannel != null) {
-				fileChannel.close();
+				// Waits for the samples still to be written, then closes the file
+				ChannelFileWriter.close(fileChannel);
 				// The workspace is refreshed only once for all channels, by ArduinoUnoProcess.postExecute :
 				// a deleted file disappears from the workspace and recordedFileName gets its type
 				boolean isRecorded = Boolean.valueOf(getProperty(ChannelProperties.RECORD));
