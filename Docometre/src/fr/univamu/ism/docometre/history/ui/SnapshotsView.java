@@ -73,9 +73,14 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -123,6 +128,10 @@ public class SnapshotsView extends ViewPart implements ISelectionListener, IReso
 	private record HistoryData(IProject project, boolean historized, List<Snapshot> snapshots, CurrentState currentState, String error) {
 	}
 	
+	/* Below this size, the view content scrolls (tables would otherwise get no room at all) */
+	private static final int MINIMUM_WIDTH = 450;
+	private static final int MINIMUM_TABLE_ROWS = 4;
+	
 	private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).withZone(ZoneId.systemDefault());
 	
 	private IProject experiment;
@@ -130,6 +139,10 @@ public class SnapshotsView extends ViewPart implements ISelectionListener, IReso
 	private Job loadJob;
 	private Job detailsJob;
 	
+	private ScrolledComposite scrolledComposite;
+	private Composite content;
+	private SashForm sashForm;
+	private Composite details;
 	private CLabel headerLabel;
 	private TableViewer snapshotsTableViewer;
 	private Label titleLabel;
@@ -201,17 +214,28 @@ public class SnapshotsView extends ViewPart implements ISelectionListener, IReso
 
 	@Override
 	public void createPartControl(Composite parent) {
-		GridLayoutFactory.fillDefaults().applyTo(parent);
+		parent.setLayout(new FillLayout());
+		// When the view is too small, its content scrolls instead of hiding the tables
+		scrolledComposite = new ScrolledComposite(parent, SWT.V_SCROLL | SWT.H_SCROLL);
+		scrolledComposite.setExpandHorizontal(true);
+		scrolledComposite.setExpandVertical(true);
+		content = new Composite(scrolledComposite, SWT.NONE);
+		GridLayoutFactory.fillDefaults().applyTo(content);
+		scrolledComposite.setContent(content);
 		
-		headerLabel = new CLabel(parent, SWT.NONE);
+		headerLabel = new CLabel(content, SWT.NONE);
 		headerLabel.setImage(Activator.getImage(IImageKeys.HISTORY_ICON));
 		GridDataFactory.fillDefaults().grab(true, false).applyTo(headerLabel);
 		
-		SashForm sashForm = new SashForm(parent, SWT.HORIZONTAL);
+		sashForm = new SashForm(content, SWT.HORIZONTAL);
 		GridDataFactory.fillDefaults().grab(true, true).applyTo(sashForm);
 		createSnapshotsTable(sashForm);
 		createDetails(sashForm);
 		sashForm.setWeights(55, 45);
+		
+		// Minimum size depends on width (wrapped labels) and on the sash position
+		scrolledComposite.addControlListener(ControlListener.controlResizedAdapter(event -> updateMinimumSize()));
+		details.addControlListener(ControlListener.controlResizedAdapter(event -> updateMinimumSize()));
 		
 		createActions();
 		
@@ -285,7 +309,7 @@ public class SnapshotsView extends ViewPart implements ISelectionListener, IReso
 	}
 	
 	private void createDetails(Composite parent) {
-		Composite details = new Composite(parent, SWT.NONE);
+		details = new Composite(parent, SWT.NONE);
 		GridLayoutFactory.fillDefaults().numColumns(1).margins(5, 5).applyTo(details);
 		
 		titleLabel = new Label(details, SWT.NONE);
@@ -325,6 +349,9 @@ public class SnapshotsView extends ViewPart implements ISelectionListener, IReso
 				return getPathLabel(((FileChange)element).path());
 			}
 		});
+		// Preferred height is the minimum one (see updateMinimumSize), the table grows with the view.
+		// Computed once columns exist (header height).
+		((GridData) changesTableViewer.getControl().getLayoutData()).heightHint = getTableMinimumHeight(changesTableViewer.getTable());
 	}
 	
 	private void createActions() {
@@ -419,6 +446,33 @@ public class SnapshotsView extends ViewPart implements ISelectionListener, IReso
 		toolBarManager.add(enableHistoryAction);
 		toolBarManager.add(createSnapshotAction);
 		toolBarManager.add(refreshAction);
+	}
+	
+	/*
+	 * Height of a table showing its header and MINIMUM_TABLE_ROWS rows, with its border and scroll bars
+	 */
+	private static int getTableMinimumHeight(Table table) {
+		int height = table.getHeaderHeight() + MINIMUM_TABLE_ROWS * table.getItemHeight();
+		return table.computeTrim(0, 0, 0, height).height;
+	}
+	
+	/*
+	 * Minimum size of view content : under it, scroll bars are shown. The snapshots table and the
+	 * table of changes keep at least MINIMUM_TABLE_ROWS visible rows, and details keep their labels,
+	 * description and button.
+	 */
+	private void updateMinimumSize() {
+		if(scrolledComposite == null || scrolledComposite.isDisposed()) return;
+		int width = Math.max(scrolledComposite.getClientArea().width, MINIMUM_WIDTH);
+		GridLayout layout = (GridLayout) content.getLayout();
+		int headerHeight = headerLabel.computeSize(width - 2 * layout.marginWidth, SWT.DEFAULT).y;
+		int[] weights = sashForm.getWeights();
+		int detailsWidth = details.getSize().x > 0 ? details.getSize().x : width * weights[1] / Math.max(1, weights[0] + weights[1]);
+		int detailsHeight = details.computeSize(detailsWidth, SWT.DEFAULT).y;
+		int sashHeight = Math.max(detailsHeight, getTableMinimumHeight(snapshotsTableViewer.getTable()));
+		int height = 2 * layout.marginHeight + headerHeight + layout.verticalSpacing + sashHeight;
+		// Changing minimum size lays content out again : only when it really changes
+		if(scrolledComposite.getMinWidth() != MINIMUM_WIDTH || scrolledComposite.getMinHeight() != height) scrolledComposite.setMinSize(MINIMUM_WIDTH, height);
 	}
 	
 	/*
@@ -538,6 +592,7 @@ public class SnapshotsView extends ViewPart implements ISelectionListener, IReso
 		else if(!data.historized()) headerLabel.setText(NLS.bind(DocometreMessages.SnapshotsView_NotHistorized, project.getName()));
 		else headerLabel.setText(NLS.bind(DocometreMessages.SnapshotsView_Header, project.getName(), data.snapshots().size()));
 		headerLabel.setToolTipText(headerLabel.getText());
+		updateMinimumSize();
 		
 		ArrayList<Object> rows = new ArrayList<>();
 		if(data.historized()) {
@@ -592,6 +647,7 @@ public class SnapshotsView extends ViewPart implements ISelectionListener, IReso
 		if(restoreAction != null) restoreAction.setEnabled(element instanceof Snapshot);
 		if(deleteSnapshotAction != null) deleteSnapshotAction.setEnabled(element instanceof Snapshot && historyData.snapshots().size() > 1);
 		titleLabel.getParent().layout(true, true);
+		updateMinimumSize();
 	}
 	
 	private String getInformation(Snapshot snapshot) {
