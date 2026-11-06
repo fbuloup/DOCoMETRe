@@ -510,6 +510,8 @@ public class SnapshotsView extends ViewPart implements ISelectionListener, IReso
 			});
 		});
 		loadJob.setSystem(true);
+		// Experiment must not be closed, deleted or modified while its history is read
+		loadJob.setRule(loadedExperiment);
 		loadJob.schedule(delay);
 	}
 	
@@ -643,6 +645,8 @@ public class SnapshotsView extends ViewPart implements ISelectionListener, IReso
 			});
 		});
 		detailsJob.setSystem(true);
+		// Experiment must not be closed, deleted or modified while its history is read
+		detailsJob.setRule(project);
 		detailsJob.schedule();
 	}
 	

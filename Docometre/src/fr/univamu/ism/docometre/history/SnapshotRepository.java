@@ -187,6 +187,8 @@ public final class SnapshotRepository implements AutoCloseable {
 	
 	private final Git git;
 	private final Repository repository;
+	/* True once closed : history must not be used anymore (its files would be opened again) */
+	private boolean closed;
 	
 	private SnapshotRepository(Git git) {
 		this.git = git;
@@ -403,6 +405,7 @@ public final class SnapshotRepository implements AutoCloseable {
 	 * Return all snapshots, the most recent first
 	 */
 	public synchronized List<Snapshot> getSnapshots() throws SnapshotException {
+		checkOpen();
 		try {
 			ObjectId head = repository.resolve(Constants.HEAD);
 			if(head == null) return new ArrayList<>(0);
@@ -424,6 +427,7 @@ public final class SnapshotRepository implements AutoCloseable {
 	 * Return the most recent snapshot, null if there is no snapshot
 	 */
 	public synchronized Snapshot getLastSnapshot() throws SnapshotException {
+		checkOpen();
 		List<Snapshot> snapshots = getSnapshots();
 		return snapshots.isEmpty() ? null : snapshots.get(0);
 	}
@@ -432,6 +436,7 @@ public final class SnapshotRepository implements AutoCloseable {
 	 * Return snapshot of commit id, null if it is not in history
 	 */
 	public synchronized Snapshot getSnapshot(ObjectId commitId) throws SnapshotException {
+		checkOpen();
 		for (Snapshot snapshot : getSnapshots()) {
 			if(snapshot.commitId().equals(commitId)) return snapshot;
 		}
@@ -464,6 +469,7 @@ public final class SnapshotRepository implements AutoCloseable {
 	 * (files which are not historized are not taken into account)
 	 */
 	public synchronized boolean hasChanges() throws SnapshotException {
+		checkOpen();
 		updateFoldersList();
 		return !isClean();
 	}
@@ -483,6 +489,7 @@ public final class SnapshotRepository implements AutoCloseable {
 	 * Return changes of experiment content since the last snapshot, sorted by path
 	 */
 	public synchronized List<FileChange> getChanges() throws SnapshotException {
+		checkOpen();
 		updateFoldersList();
 		try {
 			return toChanges(git.status().call(), Set.of());
@@ -512,6 +519,7 @@ public final class SnapshotRepository implements AutoCloseable {
 	 * are changed.
 	 */
 	public synchronized Set<String> getChangedPaths() throws SnapshotException {
+		checkOpen();
 		HashSet<String> changedPaths = new HashSet<>();
 		List<FileChange> changes = getChanges();
 		for (FileChange change : changes) {
@@ -564,6 +572,7 @@ public final class SnapshotRepository implements AutoCloseable {
 	 * "from" may be null : all files of "to" are then added.
 	 */
 	public synchronized List<FileChange> getChanges(Snapshot from, Snapshot to) throws SnapshotException {
+		checkOpen();
 		TreeMap<String, Kind> changes = new TreeMap<>();
 		try (DiffFormatter diffFormatter = new DiffFormatter(DisabledOutputStream.INSTANCE)) {
 			diffFormatter.setRepository(repository);
@@ -595,6 +604,7 @@ public final class SnapshotRepository implements AutoCloseable {
 	 * snapshot is considered as different from the restored one.
 	 */
 	public synchronized List<FileChange> getRestoreChanges(Snapshot snapshot) throws SnapshotException {
+		checkOpen();
 		Snapshot lastSnapshot = getLastSnapshot();
 		Map<String, Kind> committedChanges = toMap(getChanges(lastSnapshot, snapshot));
 		Map<String, Kind> workingChanges = toMap(getChanges());
@@ -626,6 +636,7 @@ public final class SnapshotRepository implements AutoCloseable {
 	 * Open content of file path (relative, '/' separator) in snapshot, null if file is not in snapshot
 	 */
 	public synchronized InputStream openFile(Snapshot snapshot, String path) throws SnapshotException {
+		checkOpen();
 		ObjectLoader objectLoader = getObjectLoader(snapshot, path);
 		try {
 			return objectLoader == null ? null : objectLoader.openStream();
@@ -638,6 +649,7 @@ public final class SnapshotRepository implements AutoCloseable {
 	 * Return size in bytes of file path (relative, '/' separator) in snapshot, -1 if file is not in snapshot
 	 */
 	public synchronized long getFileSize(Snapshot snapshot, String path) throws SnapshotException {
+		checkOpen();
 		ObjectLoader objectLoader = getObjectLoader(snapshot, path);
 		return objectLoader == null ? -1 : objectLoader.getSize();
 	}
@@ -659,6 +671,7 @@ public final class SnapshotRepository implements AutoCloseable {
 	 * Return created snapshot or null if content has not changed since the last snapshot.
 	 */
 	public synchronized Snapshot createSnapshot(String name, String description, SnapshotType type, PersonIdent author) throws SnapshotException {
+		checkOpen();
 		checkName(name);
 		try {
 			if(!hasChanges()) return null;
@@ -685,6 +698,7 @@ public final class SnapshotRepository implements AutoCloseable {
 	 * Return created snapshot or null if experiment content is already the content of snapshot.
 	 */
 	public synchronized Snapshot restore(Snapshot snapshot, String name, PersonIdent author) throws SnapshotException {
+		checkOpen();
 		checkName(name);
 		checkNoChanges();
 		Snapshot lastSnapshot = getLastSnapshot();
@@ -717,6 +731,7 @@ public final class SnapshotRepository implements AutoCloseable {
 	 * Return the last snapshot.
 	 */
 	public synchronized Snapshot resetToLastSnapshot() throws SnapshotException {
+		checkOpen();
 		return resetToLastSnapshot(Set.of());
 	}
 	
@@ -726,6 +741,7 @@ public final class SnapshotRepository implements AutoCloseable {
 	 * so that files which were not historized before the restoration are not deleted.
 	 */
 	public synchronized Snapshot resetToLastSnapshot(Set<String> keptFiles) throws SnapshotException {
+		checkOpen();
 		Snapshot lastSnapshot = getLastSnapshot();
 		if(lastSnapshot == null) throw new SnapshotException("No snapshot in " + getDirectory());
 		checkout(lastSnapshot.commitId(), keptFiles);
@@ -880,6 +896,7 @@ public final class SnapshotRepository implements AutoCloseable {
 	 * Return created snapshot or null if path content is already its content in snapshot.
 	 */
 	public synchronized Snapshot restore(Snapshot snapshot, String path, String name, PersonIdent author) throws SnapshotException {
+		checkOpen();
 		checkName(name);
 		String normalizedPath = path.replace('\\', '/').replaceAll("^/+|/+$", "");
 		if(normalizedPath.isEmpty()) return restore(snapshot, name, author);
@@ -991,6 +1008,7 @@ public final class SnapshotRepository implements AutoCloseable {
 	 * A missing file is compared as an empty file.
 	 */
 	public synchronized FileDiff getDiff(Snapshot from, Snapshot to, String path) throws SnapshotException {
+		checkOpen();
 		try {
 			byte[] oldContent = from == null ? new byte[0] : readContent(from, path);
 			byte[] newContent = readContent(to, path);
@@ -1044,6 +1062,7 @@ public final class SnapshotRepository implements AutoCloseable {
 	 * The only snapshot of history can't be deleted (delete history instead).
 	 */
 	public synchronized void deleteSnapshot(Snapshot snapshot) throws SnapshotException {
+		checkOpen();
 		deleteSnapshot(snapshot, false);
 	}
 	
@@ -1056,6 +1075,7 @@ public final class SnapshotRepository implements AutoCloseable {
 	 * deleted anyway), see resetToLastSnapshot.
 	 */
 	public synchronized void deleteSnapshot(Snapshot snapshot, boolean restorePreviousContent) throws SnapshotException {
+		checkOpen();
 		if(restorePreviousContent) {
 			Snapshot lastSnapshot = getLastSnapshot();
 			if(lastSnapshot == null || !lastSnapshot.commitId().equals(snapshot.commitId())) throw new SnapshotException("Snapshot " + snapshot.name() + " is not the last snapshot of " + getDirectory());
@@ -1152,6 +1172,7 @@ public final class SnapshotRepository implements AutoCloseable {
 	 * these versions are lost if snapshot is deleted
 	 */
 	public synchronized List<String> getFilesOnlyIn(Snapshot snapshot) throws SnapshotException {
+		checkOpen();
 		try (ObjectReader objectReader = repository.newObjectReader()) {
 			HashSet<ObjectId> otherVersions = new HashSet<>();
 			for (Snapshot otherSnapshot : getSnapshots()) {
@@ -1229,6 +1250,7 @@ public final class SnapshotRepository implements AutoCloseable {
 	 * Optimize history storage (git gc)
 	 */
 	public synchronized void optimize() throws SnapshotException {
+		checkOpen();
 		try {
 			git.gc().call();
 		} catch (GitAPIException e) {
@@ -1242,6 +1264,7 @@ public final class SnapshotRepository implements AutoCloseable {
 	 * any type, numbers of deleted snapshots are counted), all snapshots if it never was
 	 */
 	public synchronized int getSnapshotsNumberSinceOptimization() throws SnapshotException {
+		checkOpen();
 		int lastOptimizationNumber = repository.getConfig().getInt(CONFIG_SECTION, CONFIG_KEY_LAST_OPTIMIZATION_NUMBER, 0);
 		return Math.max(0, getNextNumber() - 1 - lastOptimizationNumber);
 	}
@@ -1275,12 +1298,30 @@ public final class SnapshotRepository implements AutoCloseable {
 	/*
 	 * Close history and release its files : JGit keeps pack files opened in a global cache even
 	 * after the repository is closed, and on Windows an opened file can't be deleted or moved
-	 * (deletion or renaming of the experiment, deletion of the history)
+	 * (deletion or renaming of the experiment, deletion of the history).
+	 * A closed history can't be used anymore : its methods throw a SnapshotException.
 	 */
 	@Override
 	public synchronized void close() {
+		if(closed) return;
+		closed = true;
 		git.close();
 		releaseCachedFiles();
+	}
+	
+	/*
+	 * Return true if history has been closed
+	 */
+	public synchronized boolean isClosed() {
+		return closed;
+	}
+	
+	/*
+	 * A closed history must not be used : JGit would open its files again (e.g. pack files), which
+	 * would prevent deleting or renaming the experiment on Windows. Get it again from SnapshotManager.
+	 */
+	private void checkOpen() throws SnapshotException {
+		if(closed) throw new SnapshotException("History of " + getDirectory() + " is closed");
 	}
 	
 	/*
@@ -1316,6 +1357,7 @@ public final class SnapshotRepository implements AutoCloseable {
 	 * Number of the next snapshot : numbers of deleted snapshots are not reused
 	 */
 	public synchronized int getNextNumber() throws SnapshotException {
+		checkOpen();
 		int lastNumber = repository.getConfig().getInt(CONFIG_SECTION, CONFIG_KEY_LAST_NUMBER, 0);
 		for (Snapshot snapshot : getSnapshots()) lastNumber = Math.max(lastNumber, snapshot.number());
 		return lastNumber + 1;

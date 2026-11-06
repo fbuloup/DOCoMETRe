@@ -55,6 +55,7 @@ import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Display;
@@ -107,7 +108,16 @@ public final class HistoryStatusCache implements IResourceChangeListener {
 				projectsToUpdate.removeAll(projects);
 				for (IProject project : projects) {
 					if(monitor.isCanceled()) return Status.CANCEL_STATUS;
-					ExperimentStatus status = computeStatus(project);
+					// Experiment must not be closed, deleted or modified while its history is read
+					ExperimentStatus status;
+					try {
+						Job.getJobManager().beginRule(project, monitor);
+						status = computeStatus(project);
+					} catch (OperationCanceledException e) {
+						return Status.CANCEL_STATUS;
+					} finally {
+						Job.getJobManager().endRule(project);
+					}
 					if(status == null) statuses.remove(project.getName());
 					else statuses.put(project.getName(), status);
 				}

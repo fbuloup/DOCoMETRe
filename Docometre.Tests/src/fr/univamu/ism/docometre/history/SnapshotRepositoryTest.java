@@ -184,6 +184,27 @@ public class SnapshotRepositoryTest {
 	}
 	
 	@Test
+	void closedHistoryCannotBeUsedAnymore() throws Exception {
+		write("Acquisition.process", "v1");
+		Snapshot s1 = snapshot("v1");
+		repository.close();
+		assertTrue(repository.isClosed());
+		// Its files would be opened again (e.g. pack files, which prevents deleting the experiment on Windows)
+		assertThrows(SnapshotException.class, () -> repository.getSnapshots());
+		assertThrows(SnapshotException.class, () -> repository.getChanges());
+		assertThrows(SnapshotException.class, () -> repository.openFile(s1, "Acquisition.process"));
+		assertThrows(SnapshotException.class, () -> repository.createSnapshot("v2", null, SnapshotType.MANUAL, AUTHOR));
+		assertThrows(SnapshotException.class, () -> repository.restore(s1, "Restauration", AUTHOR));
+		assertThrows(SnapshotException.class, () -> repository.optimize());
+		// Closing twice is harmless, directory is still known
+		repository.close();
+		assertEquals(experiment.toFile().getAbsoluteFile(), new File(repository.getDirectory().getAbsolutePath()));
+		// History is available again once reopened
+		repository = SnapshotRepository.open(experiment.toFile());
+		assertEquals(s1, repository.getLastSnapshot());
+	}
+	
+	@Test
 	void openExistingHistory() throws Exception {
 		write("Acquisition.process", "v1");
 		snapshot("Config initiale");

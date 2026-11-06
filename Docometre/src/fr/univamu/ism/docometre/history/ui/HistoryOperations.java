@@ -42,6 +42,7 @@
 package fr.univamu.ism.docometre.history.ui;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -54,6 +55,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -63,7 +65,6 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.osgi.util.NLS;
-import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -139,6 +140,57 @@ public final class HistoryOperations {
 		SnapshotRepository repository = SnapshotManager.getInstance().getRepository(project);
 		if(repository == null) throw new SnapshotException("History of " + project.getName() + " is not available");
 		return repository;
+	}
+	
+	/*
+	 * What a dialog needs to know about history before asking user confirmation
+	 */
+	private static final class HistoryPreview {
+		private List<Snapshot> snapshots;
+		private Snapshot lastSnapshot;
+		private int nextNumber;
+		private List<FileChange> currentChanges = new ArrayList<>();
+		private List<FileChange> restoreChanges;
+		private FileChange.Kind restoreKind;
+		private List<String> lostFiles;
+		private SnapshotRepository.FileDiff fileDiff;
+	}
+	
+	@FunctionalInterface
+	private interface HistoryReading {
+		void read(SnapshotRepository repository) throws SnapshotException, CoreException;
+	}
+	
+	/*
+	 * Read history of experiment before a dialog (UI thread). Reading may be long (Git status of
+	 * the whole experiment, data files included) : it runs in another thread, with busy cursor then
+	 * a progress dialog, so that UI stays responsive. Experiment is the scheduling rule : reading
+	 * waits for the end of history operations in progress (e.g. storage optimization), user may
+	 * cancel. Return false if reading failed (an error is shown) or has been cancelled.
+	 */
+	private static boolean readHistory(Shell shell, String title, IProject project, HistoryReading reading) {
+		try {
+			PlatformUI.getWorkbench().getProgressService().busyCursorWhile(monitor -> {
+				try {
+					Job.getJobManager().beginRule(project, monitor);
+					reading.read(getRepository(project));
+				} catch (OperationCanceledException e) {
+					throw new InterruptedException();
+				} catch (SnapshotException | CoreException e) {
+					throw new InvocationTargetException(e);
+				} finally {
+					Job.getJobManager().endRule(project);
+				}
+			});
+			return true;
+		} catch (InvocationTargetException e) {
+			Exception exception = e.getCause() instanceof Exception ? (Exception) e.getCause() : e;
+			ErrorDialog.openError(shell, title, null, getErrorStatus(project, exception));
+			return false;
+		} catch (InterruptedException e) {
+			// Cancelled by user
+			return false;
+		}
 	}
 	
 	private static boolean isAcquisitionRunning(Shell shell) {
@@ -224,13 +276,9 @@ public final class HistoryOperations {
 	 */
 	public static void disableHistory(Shell shell, IProject project) {
 		if(!isHistorized(project) || isAcquisitionRunning(shell)) return;
-		int snapshotsNumber;
-		try {
-			snapshotsNumber = getRepository(project).getSnapshots().size();
-		} catch (SnapshotException e) {
-			ErrorDialog.openError(shell, DocometreMessages.History_DisableTitle, null, getErrorStatus(project, e));
-			return;
-		}
+		HistoryPreview preview = new HistoryPreview();
+		if(!readHistory(shell, DocometreMessages.History_DisableTitle, project, repository -> preview.snapshots = repository.getSnapshots())) return;
+		int snapshotsNumber = preview.snapshots.size();
 		String message = NLS.bind(DocometreMessages.History_DisableMessage, project.getName(), snapshotsNumber);
 		MessageDialog dialog = new MessageDialog(shell, DocometreMessages.History_DisableTitle, null, message, MessageDialog.WARNING, 1, DocometreMessages.History_DisableTitle, IDialogConstants.CANCEL_LABEL);
 		if(dialog.open() != 0) return;
@@ -275,20 +323,17 @@ public final class HistoryOperations {
 		if(!isHistorized(project) || snapshot == null || isAcquisitionRunning(shell)) return;
 		
 		// What will be done
-		List<FileChange> restoreChanges;
-		List<FileChange> currentChanges;
-		Snapshot lastSnapshot;
-		int nextNumber;
-		try {
-			SnapshotRepository repository = getRepository(project);
-			restoreChanges = repository.getRestoreChanges(snapshot);
-			currentChanges = repository.getChanges();
-			lastSnapshot = repository.getLastSnapshot();
-			nextNumber = repository.getNextNumber();
-		} catch (SnapshotException e) {
-			ErrorDialog.openError(shell, DocometreMessages.History_RestoreTitle, null, getErrorStatus(project, e));
-			return;
-		}
+		HistoryPreview preview = new HistoryPreview();
+		if(!readHistory(shell, DocometreMessages.History_RestoreTitle, project, repository -> {
+			preview.restoreChanges = repository.getRestoreChanges(snapshot);
+			preview.currentChanges = repository.getChanges();
+			preview.lastSnapshot = repository.getLastSnapshot();
+			preview.nextNumber = repository.getNextNumber();
+		})) return;
+		List<FileChange> restoreChanges = preview.restoreChanges;
+		List<FileChange> currentChanges = preview.currentChanges;
+		Snapshot lastSnapshot = preview.lastSnapshot;
+		int nextNumber = preview.nextNumber;
 		if(restoreChanges.isEmpty()) {
 			MessageDialog.openInformation(shell, DocometreMessages.History_RestoreTitle, NLS.bind(DocometreMessages.History_RestoreNothingToDo, project.getName(), snapshot.number()));
 			return;
@@ -365,7 +410,11 @@ public final class HistoryOperations {
 	 * Before a risky operation on resources (deletion, renaming), save unsaved changes of their
 	 * historized experiments in automatic snapshots, if enabled in preferences. Experiments
 	 * themselves are not concerned : deleting an experiment deletes its history.
-	 * Runs in the calling thread, errors are logged and do not prevent the operation.
+	 * Errors are logged and do not prevent the operation. Called from UI thread, snapshots are
+	 * created in another thread with busy cursor then a progress dialog (UI stays responsive) :
+	 * if user cancels while waiting for history operations in progress (e.g. storage
+	 * optimization), remaining automatic snapshots are not created. Otherwise, they are created in
+	 * the calling thread.
 	 */
 	public static void createAutomaticSnapshots(IResource[] resources, String nameMessage) {
 		if(resources == null || !Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.HISTORY_AUTOMATIC_SNAPSHOTS)) return;
@@ -379,22 +428,46 @@ public final class HistoryOperations {
 				// e.g. channels which are not workspace resources
 			}
 		}
+		if(resourcesNames.isEmpty()) return;
+		if(Display.getCurrent() == null) {
+			createAutomaticSnapshots(resourcesNames, nameMessage, null);
+			return;
+		}
+		try {
+			PlatformUI.getWorkbench().getProgressService().busyCursorWhile(monitor -> createAutomaticSnapshots(resourcesNames, nameMessage, monitor));
+		} catch (InvocationTargetException e) {
+			Activator.logErrorMessageWithCause(e.getCause() instanceof Exception ? (Exception) e.getCause() : e);
+		} catch (InterruptedException e) {
+			// Never thrown : cancellation is handled for each experiment
+		}
+	}
+	
+	/*
+	 * Create automatic snapshots of experiments, while holding each experiment as scheduling rule
+	 */
+	private static void createAutomaticSnapshots(LinkedHashMap<IProject, ArrayList<String>> resourcesNames, String nameMessage, IProgressMonitor monitor) {
 		for (IProject project : resourcesNames.keySet()) {
 			ArrayList<String> names = resourcesNames.get(project);
 			String resourcesLabel = names.size() <= 3 ? String.join(", ", names) : String.join(", ", names.subList(0, 3)) + "...";
 			String name = NLS.bind(nameMessage, resourcesLabel);
 			try {
-				project.refreshLocal(IResource.DEPTH_INFINITE, null);
+				Job.getJobManager().beginRule(project, monitor);
+				project.refreshLocal(IResource.DEPTH_INFINITE, monitor);
 				ResourceProperties.synchronizePropertiesFile(project);
-				project.refreshLocal(IResource.DEPTH_ONE, null);
+				project.refreshLocal(IResource.DEPTH_ONE, monitor);
 				Snapshot snapshot = getRepository(project).createSnapshot(name, null, SnapshotType.AUTO, SnapshotManager.getDefaultAuthor());
 				if(snapshot != null) {
 					Activator.logInfoMessage(NLS.bind(DocometreMessages.History_AutomaticSnapshotCreated, new Object[] {project.getName(), snapshot.number(), snapshot.name()}), HistoryOperations.class);
 					historyChanged(project);
 					scheduleOptimization(project);
 				}
+			} catch (OperationCanceledException e) {
+				Activator.logWarningMessage("Automatic snapshots cancelled by user : " + name + " (" + project.getName() + ")");
+				return;
 			} catch (CoreException | SnapshotException | RuntimeException e) {
 				Activator.logErrorMessageWithCause(e);
+			} finally {
+				Job.getJobManager().endRule(project);
 			}
 		}
 	}
@@ -408,23 +481,12 @@ public final class HistoryOperations {
 	 */
 	public static void showDifferences(Shell shell, IProject project, Snapshot from, Snapshot to, String path) {
 		if(!isHistorized(project) || path == null) return;
-		SnapshotRepository.FileDiff[] fileDiff = new SnapshotRepository.FileDiff[1];
-		SnapshotException[] exception = new SnapshotException[1];
-		BusyIndicator.showWhile(shell.getDisplay(), () -> {
-			try {
-				fileDiff[0] = getRepository(project).getDiff(from, to, path);
-			} catch (SnapshotException e) {
-				exception[0] = e;
-			}
-		});
-		if(exception[0] != null) {
-			ErrorDialog.openError(shell, DocometreMessages.History_ShowDiffAction, null, getErrorStatus(project, exception[0]));
-			return;
-		}
+		HistoryPreview preview = new HistoryPreview();
+		if(!readHistory(shell, DocometreMessages.History_ShowDiffAction, project, repository -> preview.fileDiff = repository.getDiff(from, to, path))) return;
 		String fromLabel = from == null ? "\u2205" : NLS.bind(DocometreMessages.History_DiffSnapshot, from.number());
 		String toLabel = to == null ? DocometreMessages.SnapshotsView_CurrentState : NLS.bind(DocometreMessages.History_DiffSnapshot, to.number());
 		String title = NLS.bind(DocometreMessages.History_DiffTitle, SnapshotsView.getPathLabel(path));
-		new DiffDialog(shell, title, fromLabel + "  \u2192  " + toLabel, fileDiff[0]).open();
+		new DiffDialog(shell, title, fromLabel + "  \u2192  " + toLabel, preview.fileDiff).open();
 	}
 	
 	/*
@@ -434,22 +496,19 @@ public final class HistoryOperations {
 	 */
 	public static void restoreFile(Shell shell, IProject project, Snapshot snapshot, String path) {
 		if(!isHistorized(project) || snapshot == null || path == null || isAcquisitionRunning(shell)) return;
-		FileChange.Kind kind = null;
-		List<FileChange> currentChanges;
-		Snapshot lastSnapshot;
-		int nextNumber;
-		try {
-			SnapshotRepository repository = getRepository(project);
+		HistoryPreview preview = new HistoryPreview();
+		if(!readHistory(shell, DocometreMessages.History_RestoreFileTitle, project, repository -> {
 			for (FileChange change : repository.getRestoreChanges(snapshot)) {
-				if(change.path().equals(path)) kind = change.kind();
+				if(change.path().equals(path)) preview.restoreKind = change.kind();
 			}
-			currentChanges = repository.getChanges();
-			lastSnapshot = repository.getLastSnapshot();
-			nextNumber = repository.getNextNumber();
-		} catch (SnapshotException e) {
-			ErrorDialog.openError(shell, DocometreMessages.History_RestoreFileTitle, null, getErrorStatus(project, e));
-			return;
-		}
+			preview.currentChanges = repository.getChanges();
+			preview.lastSnapshot = repository.getLastSnapshot();
+			preview.nextNumber = repository.getNextNumber();
+		})) return;
+		FileChange.Kind kind = preview.restoreKind;
+		List<FileChange> currentChanges = preview.currentChanges;
+		Snapshot lastSnapshot = preview.lastSnapshot;
+		int nextNumber = preview.nextNumber;
 		String pathLabel = SnapshotsView.getPathLabel(path);
 		if(kind == null) {
 			MessageDialog.openInformation(shell, DocometreMessages.History_RestoreFileTitle, NLS.bind(DocometreMessages.History_RestoreFileNothingToDo, pathLabel, snapshot.number()));
@@ -526,23 +585,19 @@ public final class HistoryOperations {
 	 */
 	public static void deleteSnapshot(Shell shell, IProject project, Snapshot snapshot) {
 		if(!isHistorized(project) || snapshot == null) return;
-		List<Snapshot> snapshots;
-		List<String> lostFiles;
-		List<FileChange> currentChanges = new ArrayList<>();
-		try {
-			SnapshotRepository repository = SnapshotManager.getInstance().getRepository(project);
-			if(repository == null) return;
-			snapshots = repository.getSnapshots();
-			lostFiles = repository.getFilesOnlyIn(snapshot);
-			if(!snapshots.isEmpty() && snapshots.get(0).commitId().equals(snapshot.commitId())) {
+		HistoryPreview preview = new HistoryPreview();
+		if(!readHistory(shell, DocometreMessages.History_DeleteSnapshotTitle, project, repository -> {
+			preview.snapshots = repository.getSnapshots();
+			preview.lostFiles = repository.getFilesOnlyIn(snapshot);
+			if(!preview.snapshots.isEmpty() && preview.snapshots.get(0).commitId().equals(snapshot.commitId())) {
 				// Properties only modified in workspace (descriptions, trials states...) are changes too
 				synchronizeProperties(project, null);
-				currentChanges = repository.getChanges();
+				preview.currentChanges = repository.getChanges();
 			}
-		} catch (SnapshotException | CoreException e) {
-			ErrorDialog.openError(shell, DocometreMessages.History_DeleteSnapshotTitle, null, getErrorStatus(project, e));
-			return;
-		}
+		})) return;
+		List<Snapshot> snapshots = preview.snapshots;
+		List<String> lostFiles = preview.lostFiles;
+		List<FileChange> currentChanges = preview.currentChanges;
 		if(snapshots.size() <= 1) {
 			MessageDialog.openInformation(shell, DocometreMessages.History_DeleteSnapshotTitle, NLS.bind(DocometreMessages.History_DeleteOnlySnapshot, snapshot.number(), project.getName()));
 			return;

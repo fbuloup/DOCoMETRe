@@ -64,6 +64,9 @@ import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
  * 
  * Opened repositories are cached and closed when their experiment is closed, deleted
  * or renamed (Git files must not remain open, e.g. Windows would prevent deletion).
+ * Repositories must be used while holding the experiment as scheduling rule (job rule or
+ * IJobManager.beginRule) : history is then never opened again while its experiment is being
+ * closed or deleted. A repository must not be kept once this rule is released : get it again.
  */
 public final class SnapshotManager implements IResourceChangeListener {
 	
@@ -135,7 +138,7 @@ public final class SnapshotManager implements IResourceChangeListener {
 	public synchronized SnapshotRepository getRepository(IProject project) throws SnapshotException {
 		if(project == null || suspendedProjects.contains(project.getName()) || !isHistorized(project)) return null;
 		SnapshotRepository repository = repositories.get(project.getName());
-		if(repository != null && !repository.getDirectory().equals(getDirectory(project))) {
+		if(repository != null && (repository.isClosed() || !repository.getDirectory().equals(getDirectory(project)))) {
 			close(project.getName());
 			repository = null;
 		}
