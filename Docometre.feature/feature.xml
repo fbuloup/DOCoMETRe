@@ -6,7 +6,32 @@
       provider-name="ISM">
 
    <description>
-      -- 2026-11-03 - BIS
+      -- 2026-11-07
+ADDED :
+* Experiments history (experimental feature, to be enabled in Options &gt; Preferences &gt; History) :
+snapshots of experiments (stored with Git in each experiment folder), Snapshots view (snapshots,
+files changed by each snapshot, differences of a file), creation of snapshots, restoration of a
+snapshot or of a single file (nothing is lost : a restoration creates a new snapshot), deletion of
+snapshots, automatic snapshots before deleting or renaming resources or deleting diaries and data
+files, indicators of changes in the Experiments view, history exported and imported with the
+experiment, help page
+* Full screen mode to run trials or test a process (general preferences)
+* OpenGL V2 charts : display options in the DACQ configuration editor (current values, legend
+inside or below the chart, grid, axes, tick labels)
+* Shorter dead time between trials (about 30 ms instead of 84 ms) : Experiments and Subjects views
+updated asynchronously and only where needed, real-time charts cleared instead of recreated when
+the acquisition configuration did not change, no vertical synchronization for OpenGL charts
+* Tests project (JUnit tests of the experiments history)
+FIXED :
+* Rename of untyped files (stream leak and NPE)
+* Acquisition loop blocked (up to more than one second) when the disk was slow : channels samples
+files are now written in a dedicated thread
+* Real-time charts, sweep mode : the last sample of a recording lasting exactly the window width
+was not drawn and the first samples were hidden by the gap
+* Experiments view no longer refreshed during processes compilation
+* Help : real-time system diagram of the Data Acquisition and Real Time Systems page redone in
+English (it was in French, blurred and distorted)
+-- 2026-11-03 - BIS
 ADDED : Nothing !
 FIXED :
 Fix rename of untyped files (stream leak and NPE)
