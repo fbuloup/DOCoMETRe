@@ -228,7 +228,7 @@ public class SnapshotsView extends ViewPart implements ISelectionListener, IReso
 		scrolledComposite.setContent(content);
 		
 		headerLabel = new CLabel(content, SWT.NONE);
-		headerLabel.setImage(Activator.getImage(IImageKeys.HISTORY_ICON));
+		headerLabel.setImage(Activator.getImage(IImageKeys.EXPERIMENT_ICON));
 		GridDataFactory.fillDefaults().grab(true, false).applyTo(headerLabel);
 		
 		sashForm = new SashForm(content, SWT.HORIZONTAL);
@@ -389,13 +389,13 @@ public class SnapshotsView extends ViewPart implements ISelectionListener, IReso
 			}
 		};
 		// In view menu only, to avoid deleting history by mistake
-		disableHistoryAction = new Action(DocometreMessages.History_DisableTitle + "...") {
+		disableHistoryAction = new Action(DocometreMessages.History_DisableTitle + "...", Activator.getImageDescriptor(IImageKeys.HISTORY_DISABLE_ICON)) {
 			@Override
 			public void run() {
 				HistoryOperations.disableHistory(getSite().getShell(), experiment);
 			}
 		};
-		getViewSite().getActionBars().getMenuManager().add(disableHistoryAction);
+//		getViewSite().getActionBars().getMenuManager().add(disableHistoryAction);
 		restoreAction = new Action(DocometreMessages.History_RestoreAction, Activator.getImageDescriptor(IImageKeys.HISTORY_ICON)) {
 			@Override
 			public void run() {
@@ -452,6 +452,8 @@ public class SnapshotsView extends ViewPart implements ISelectionListener, IReso
 		toolBarManager.add(enableHistoryAction);
 		toolBarManager.add(createSnapshotAction);
 		toolBarManager.add(refreshAction);
+		toolBarManager.add(new Separator());
+		toolBarManager.add(disableHistoryAction);
 	}
 	
 	/*
