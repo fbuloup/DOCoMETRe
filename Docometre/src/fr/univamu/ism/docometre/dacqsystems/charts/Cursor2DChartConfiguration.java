@@ -112,6 +112,7 @@ public class Cursor2DChartConfiguration extends XYChartConfiguration {
 		GLCursorChart2D chart = null;
 		if (Platform.OS_MACOSX.equals(Platform.getOS())) chart = new NewtCursorChart2D(chartContainer, xMin, xMax, yMin, yMax, new Curve2DData[0]);
 		else chart = new CursorChart2D(chartContainer, xMin, xMax, yMin, yMax, new Curve2DData[0]);
+		this.chart = chart;
 		chart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, hSpan, vSpan));
 		chart.setAutoScale(autoscale);
 		chart.setGridVisibility(true);

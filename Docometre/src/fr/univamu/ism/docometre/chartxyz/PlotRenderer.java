@@ -265,6 +265,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     @Override
     public void display(GLAutoDrawable drawable) {
         beginFrame();
+        applySwapInterval(drawable);
         GL2 gl = drawable.getGL().getGL2();
         gl.glViewport(0, 0, width, height);
         gl.glClear(GL2.GL_COLOR_BUFFER_BIT);

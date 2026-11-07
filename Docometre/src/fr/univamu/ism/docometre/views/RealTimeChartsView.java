@@ -57,6 +57,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
@@ -100,6 +101,11 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 	private PartListenerAdapter partListenerAdapter;
 
 	private static Composite chartsContainer;
+	
+	// Acquisition configuration of the displayed charts, and number of controls they
+	// are made of : null if the charts can not be reused (UI thread)
+	private static DACQConfiguration chartsDACQConfiguration;
+	private static int chartsControlsNumber;
 
 	private Composite container;
 	
@@ -385,15 +391,32 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 			String currentPerspectiveID = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getPerspective().getId();
 			if(currentPerspectiveID.equals(AcquirePerspective.id)) return;
 		}
+		chartsDACQConfiguration = null;
 		Control[] children = chartsContainer.getChildren();
 		for (Control control : children) {
 			control.dispose();
 		}
 	}
+	
+	/**
+	 * The charts displayed will be recreated by the next call to updateCharts, even
+	 * if the acquisition configuration is the same (e.g. it may have been modified
+	 * since). UI thread.
+	 */
+	public static void invalidateCharts() {
+		chartsDACQConfiguration = null;
+	}
 
+	/*
+	 * The charts are recreated only if the acquisition configuration has changed since
+	 * the previous execution (or if they can not be reset) : otherwise, they are kept
+	 * and only their data are cleared (creating the charts takes about 20 ms).
+	 */
 	public void updateCharts(Process process) {
-		removeAllCharts(true);
 		DACQConfiguration dacqConfiguration = process.getDACQConfiguration();
+		chartsContainer.setData("process", process);
+		if(resetCharts(dacqConfiguration)) return;
+		removeAllCharts(true);
 		String value = dacqConfiguration.getProperty(DACQConfigurationProperties.CHARTS_LAYOUT_COLUMNS_NUMBER);
 		int chartsLayoutColumnsNumber = Integer.parseInt(value);
 		chartsContainer.setLayout(new GridLayout(chartsLayoutColumnsNumber, true));
@@ -410,7 +433,46 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 		// loop of the menu (Windows, macOS), after which a deferred layout may wait for the next event
 		// (the new charts would remain invisible until the window is resized, for example)
 		chartsContainer.layout(true, true);
+		focusCharts();
+		chartsDACQConfiguration = dacqConfiguration;
+		chartsControlsNumber = chartsContainer.getChildren().length;
+	}
+	
+	/*
+	 * Clears the data of the displayed charts if they have been created for this
+	 * acquisition configuration, which has not been invalidated since.
+	 * Returns false if the charts must be recreated.
+	 */
+	private boolean resetCharts(DACQConfiguration dacqConfiguration) {
+		if(dacqConfiguration == null || dacqConfiguration != chartsDACQConfiguration) return false;
+		Control[] children = chartsContainer.getChildren();
+		if(children.length != chartsControlsNumber) return false;
+		for (Control control : children) if(control.isDisposed()) return false;
+		for (ChartConfiguration chartConfiguration : dacqConfiguration.getCharts().getChartsConfigurations()) {
+			if(!chartConfiguration.resetChart(chartsContainer)) return false;
+		}
+		focusCharts();
+		return true;
+	}
+	
+	/*
+	 * Keyboard focus for the charts (keys of the charts : M, space, R...). It goes to
+	 * the chart under the mouse, as when the mouse enters a chart ; otherwise, a chart
+	 * which already has it keeps it. chartsContainer.setFocus() alone gives it to the
+	 * first chart : the keys pressed with the mouse over another chart went to the
+	 * first one (no MouseEnter event when the charts are kept from a trial to the next).
+	 */
+	private static void focusCharts() {
+		Display display = chartsContainer.getDisplay();
+		Control cursorControl = display.getCursorControl();
+		if(isInCharts(cursorControl) && display.getActiveShell() == chartsContainer.getShell() && cursorControl.forceFocus()) return;
+		if(isInCharts(display.getFocusControl())) return;
 		chartsContainer.setFocus();
+	}
+	
+	private static boolean isInCharts(Control control) {
+		for (; control != null; control = control.getParent()) if(control == chartsContainer) return true;
+		return false;
 	}
 
 }

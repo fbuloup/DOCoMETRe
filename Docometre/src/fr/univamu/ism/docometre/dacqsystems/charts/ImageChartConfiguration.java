@@ -92,6 +92,16 @@ public class ImageChartConfiguration extends ChartConfiguration {
 			System.out.print("Must read images file name : " + imageFileName + " in folder " + directoryName + " at line number " + ExperimentScheduler.getInstance().getCurrentTrialNumber());
 		}
 	}
+	
+	/*
+	 * No control is created : what createChart does for each execution (images of
+	 * the current trial) is done again.
+	 */
+	@Override
+	public boolean resetChart(Composite container) {
+		createChart(container);
+		return true;
+	}
 
 	@Override
 	public Object clone() throws CloneNotSupportedException {

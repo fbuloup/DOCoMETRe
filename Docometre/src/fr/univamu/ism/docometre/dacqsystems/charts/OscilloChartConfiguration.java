@@ -63,6 +63,7 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.FontUtil;
 import fr.univamu.ism.docometre.chartxyz.AbstractGLPlotChart;
+import fr.univamu.ism.docometre.chartxyz.Chart1DRenderer;
 import fr.univamu.ism.docometre.chartxyz.Curve1DData;
 import fr.univamu.ism.docometre.chartxyz.GLChart1D;
 import fr.univamu.ism.docometre.chartxyz.LegendPosition;
@@ -82,6 +83,8 @@ import fr.univamu.ism.rtswtchart.RTSWTChartsFactory;
 
 public class OscilloChartConfiguration extends ChartConfiguration {
 
+	// Chart created by the last call to createChart (UI thread)
+	transient private IRTSWTOscilloChart chart;
 	transient private Text timeWidthText;
 	transient private Button autoScaleButton;
 	transient private Text ampMaxText;
@@ -429,6 +432,28 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 			
 			oscilloCurveConfiguration.setSerie(rtswtSerie);
 		}
+		chart = rtswtOscilloChart;
+	}
+	
+	/*
+	 * Only the charts of the "SWT + OpenGL v2" library can be reset : their curves
+	 * can be cleared, the view and the state they had at their creation can be
+	 * restored.
+	 */
+	@Override
+	public boolean resetChart(Composite container) {
+		if(!(chart instanceof GLChart1D)) return false;
+		GLChart1D glChart = (GLChart1D) chart;
+		if(glChart.isDisposed()) return false;
+		for (CurveConfiguration curveConfiguration : curvesConfigurations) {
+			if(!((OscilloCurveConfiguration)curveConfiguration).clearSerie()) return false;
+		}
+		// State of a new chart : not paused, sweep mode, initial view
+		glChart.setPaused(false);
+		glChart.setDisplayMode(Chart1DRenderer.DisplayMode.SWEEP);
+		glChart.clearStaticCursor();
+		glChart.resetZoom();
+		return true;
 	}
 
 }

@@ -80,6 +80,8 @@ import fr.univamu.ism.docometre.editors.ModulePage.ModuleSectionPart;
 
 public class XYZChartConfiguration extends ChartConfiguration {
 
+	// Chart created by the last call to createChart (UI thread), null without the "SWT + OpenGL v2" library
+	transient private IRTSWTXYZChart chart;
 	private static final long serialVersionUID = 1L;
 	
 	transient private Button autoScaleButton;
@@ -372,6 +374,7 @@ public class XYZChartConfiguration extends ChartConfiguration {
 			Activator.logErrorMessage(DocometreMessages.ImpossibleToCreate3DChartMessage);
 			return;
 		}
+		chart = rtswtxyzChart;
 		rtswtxyzChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, hSpan, vSpan));
 		rtswtxyzChart.setAutoScale(autoscale);
 		rtswtxyzChart.setGridVisibility(showGrid);
@@ -434,6 +437,23 @@ public class XYZChartConfiguration extends ChartConfiguration {
 			xyzCurveConfiguration.setSerie(rtswtSerie);
 		}
 
+	}
+
+	/*
+	 * The curves are cleared and the camera goes back to its initial position. Without
+	 * the "SWT + OpenGL v2" library, there is only a message (no chart) : nothing to do.
+	 */
+	@Override
+	public boolean resetChart(Composite container) {
+		if(chart == null) return !Activator.useOpenGLV2();
+		if(!(chart instanceof AbstractGLChart)) return false;
+		AbstractGLChart<?, ?> glChart = (AbstractGLChart<?, ?>) chart;
+		if(glChart.isDisposed()) return false;
+		for (CurveConfiguration curveConfiguration : curvesConfigurations) {
+			if(!((XYZCurveConfiguration)curveConfiguration).clearSerie()) return false;
+		}
+		glChart.getRenderer().resetView();
+		return true;
 	}
 
 	@Override

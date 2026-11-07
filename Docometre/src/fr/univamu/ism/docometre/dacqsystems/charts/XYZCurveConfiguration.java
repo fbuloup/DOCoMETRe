@@ -44,6 +44,7 @@ package fr.univamu.ism.docometre.dacqsystems.charts;
 import java.io.IOException;
 import java.nio.FloatBuffer;
 
+import fr.univamu.ism.docometre.chartxyz.CurveData;
 import fr.univamu.ism.docometre.chartxyz.IRTSWTXYZSerie;
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
@@ -109,6 +110,23 @@ public class XYZCurveConfiguration extends CurveConfiguration implements Propert
 	private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
 		in.defaultReadObject();
 		initializeObservers();
+	}
+	
+	/**
+	 * Clears the samples of the serie, which is kept, for a new execution
+	 * (UI thread, while no execution is running). Nothing to do if there is no
+	 * serie (curve not created because of different sample frequencies).
+	 * 
+	 * @return false if the serie can not be cleared (serie of another library
+	 * than "SWT + OpenGL v2")
+	 */
+	public boolean clearSerie() {
+		IRTSWTXYZSerie currentSerie = serie;
+		if(currentSerie == null) return true;
+		if(!(currentSerie instanceof CurveData)) return false;
+		setSerie(currentSerie); // values in progress removed
+		((CurveData<?>)currentSerie).clear();
+		return true;
 	}
 	
 	public void setSerie(IRTSWTXYZSerie serie) {

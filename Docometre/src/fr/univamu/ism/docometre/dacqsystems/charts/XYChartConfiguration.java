@@ -81,6 +81,8 @@ import fr.univamu.ism.rtswtchart.RTSWTChartsFactory;
 
 public class XYChartConfiguration extends ChartConfiguration {
 
+	// Chart created by the last call to createChart (UI thread)
+	transient protected IRTSWTXYChart chart;
 	private static final long serialVersionUID = 1L;
 	
 	transient private Button autoScaleButton;
@@ -361,6 +363,7 @@ public class XYChartConfiguration extends ChartConfiguration {
 			}
 		}
 		else rtswtxyChart = RTSWTChartsFactory.createPureSWTXYChart(chartContainer, SWT.DOUBLE_BUFFERED, fontName, fontStyle, fontSize);;
+		chart = rtswtxyChart;
 		rtswtxyChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, hSpan, vSpan));
 		rtswtxyChart.setAutoScale(autoscale);
 		rtswtxyChart.setGridVisibility(true);
@@ -426,6 +429,25 @@ public class XYChartConfiguration extends ChartConfiguration {
 			xyCurveConfiguration.setSerie(rtswtSerie);
 		}
 
+	}
+
+	/*
+	 * Only the charts of the "SWT + OpenGL v2" library can be reset (also used by
+	 * Cursor2DChartConfiguration) : their curves can be cleared, the view they had
+	 * at their creation can be restored.
+	 */
+	@Override
+	public boolean resetChart(Composite container) {
+		if(!(chart instanceof AbstractGLPlotChart)) return false;
+		AbstractGLPlotChart<?, ?> glChart = (AbstractGLPlotChart<?, ?>) chart;
+		if(glChart.isDisposed()) return false;
+		for (CurveConfiguration curveConfiguration : curvesConfigurations) {
+			if(!((XYCurveConfiguration)curveConfiguration).clearSerie()) return false;
+		}
+		// State of a new chart : no static cursor, initial view
+		glChart.clearStaticCursor();
+		glChart.resetZoom();
+		return true;
 	}
 
 	/*

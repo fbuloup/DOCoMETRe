@@ -44,6 +44,7 @@ package fr.univamu.ism.docometre.dacqsystems.charts;
 import java.io.IOException;
 import java.nio.FloatBuffer;
 
+import fr.univamu.ism.docometre.chartxyz.CurveData;
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelObserver;
@@ -126,6 +127,21 @@ public class OscilloCurveConfiguration extends CurveConfiguration implements Pro
 		this.serie = serie;
 		previousTime = 0;
 		getPendingPoints().clear();
+	}
+	
+	/**
+	 * Clears the samples of the serie, which is kept, for a new execution
+	 * (UI thread, while no execution is running).
+	 * 
+	 * @return false if the serie can not be cleared (no serie, or serie of
+	 * another library than "SWT + OpenGL v2")
+	 */
+	public boolean clearSerie() {
+		IRTSWTSerie currentSerie = serie;
+		if(!(currentSerie instanceof CurveData)) return false;
+		setSerie(currentSerie); // time back to zero, pending points removed
+		((CurveData<?>)currentSerie).clear();
+		return true;
 	}
 	
 	private synchronized PendingPoints getPendingPoints() {

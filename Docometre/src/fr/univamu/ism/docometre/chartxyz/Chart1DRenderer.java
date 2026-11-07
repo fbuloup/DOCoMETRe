@@ -14,7 +14,10 @@ import com.jogamp.opengl.GL2;
  *     abscissa is fixed, from 0 to windowTimeWidth seconds; the drawing
  *     progresses from left to right, then starts again on the left,
  *     progressively replacing the previous sweep. A vertical cursor shows
- *     the write position and a short gap precedes it.</li>
+ *     the write position and a short gap precedes it. The sweep k covers
+ *     the times ]k.windowTimeWidth, (k + 1).windowTimeWidth] (the first one
+ *     [0, windowTimeWidth]): a sample at the end of a sweep is drawn at its
+ *     right edge, not at the left of the next one.</li>
  * <li>{@link DisplayMode#SCROLL}: scrolling. The abscissa ends at the last
  *     sample received and slides with time.</li>
  * </ul>
@@ -240,8 +243,8 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
     @Override
     protected double markerAxisX(double time) {
         if (frameMode == DisplayMode.SCROLL) return time;
-        if (time > lastTime || time < lastTime - windowTime * (1 - SWEEP_GAP)) return Double.NaN;
-        return time - Math.floor(time / windowTime) * windowTime;
+        if (time > lastTime || !isShownInSweep(time)) return Double.NaN;
+        return sweepX(time);
     }
 
     /** In sweep mode, the samples of the gap are not drawn: the cursor ignores them. */
@@ -255,7 +258,7 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
     protected boolean cursorPoint(Curve1DData curve, int i, double[] xy) {
         int n = curve.getSnapshotCount();
         double t = curve.getLastSampleTime() - (n - 1 - i) / curve.getSampleFrequency();
-        xy[0] = (frameMode == DisplayMode.SWEEP) ? t - Math.floor(t / windowTime) * windowTime : t;
+        xy[0] = (frameMode == DisplayMode.SWEEP) ? sweepX(t) : t;
         xy[1] = curve.getSnapshotValues()[i];
         return true;
     }
@@ -267,11 +270,49 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
         return String.format(Locale.US, "%." + decimals + "f", x);
     }
 
-    /** In sweep mode, first drawn sample of the curve: the oldest ones are in the gap before the write cursor. */
+    /**
+     * Sweep of a sample at time t: the sweep k covers ]k.windowTime, (k + 1).windowTime],
+     * the first one [0, windowTime]. A sample at the end of a sweep (t = windowTime,
+     * 2.windowTime...) thus belongs to it: it is drawn at its right edge (with
+     * Math.floor, it went to the left of the next sweep, and the last sample of a
+     * recording lasting exactly windowTime was not drawn).
+     */
+    private long sweepOf(double t) {
+        if (t <= 0) return 0;
+        return Math.max(0, (long) Math.ceil(t / windowTime - 1e-9) - 1);
+    }
+
+    /** Abscissa of time t in its sweep, in [0, windowTime]. */
+    private double sweepX(double t) {
+        return t - sweepOf(t) * windowTime;
+    }
+
+    /**
+     * In sweep mode, true if the sample at time t (at most lastTime) is drawn:
+     * all the samples of the current sweep, and those of the previous one which
+     * are not in the gap before the write cursor.
+     */
+    private boolean isShownInSweep(double t) {
+        long sweep = sweepOf(lastTime);
+        if (sweep == 0) return true; // first sweep: nothing to hide
+        double gapLimit = lastTime - windowTime * (1 - SWEEP_GAP);
+        double sweepStart = sweep * windowTime;
+        return (gapLimit <= sweepStart) ? t >= gapLimit : t > sweepStart;
+    }
+
+    /** In sweep mode, first drawn sample of the curve (see {@link #isShownInSweep}): the oldest ones are in the gap before the write cursor. */
     private int firstSweepSample(Curve1DData curve) {
-        double oldestShown = lastTime - windowTime * (1 - SWEEP_GAP);
         int n = curve.getSnapshotCount();
-        return (int) Math.max(0, Math.ceil((oldestShown - curve.getLastSampleTime()) * curve.getSampleFrequency() + (n - 1) - 1e-9));
+        long sweep = sweepOf(lastTime);
+        if (sweep == 0) return 0; // first sweep: nothing to hide
+        double frequency = curve.getSampleFrequency();
+        double zeroIndex = (n - 1) - curve.getLastSampleTime() * frequency; // index of the sample at t = 0
+        double gapLimit = lastTime - windowTime * (1 - SWEEP_GAP);
+        double sweepStart = sweep * windowTime;
+        double first = (gapLimit <= sweepStart)
+                ? Math.ceil(zeroIndex + gapLimit * frequency - 1e-9)       // first sample at or after the gap limit
+                : Math.floor(zeroIndex + sweepStart * frequency + 1e-9) + 1; // first sample of the current sweep
+        return (int) Math.max(0, Math.min(n, first));
     }
 
     @Override
@@ -355,10 +396,11 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
     }
 
     /**
-     * Sweep mode: each sample at time t is placed at x = t modulo windowTime;
-     * the drawing is interrupted at each return to the left. The samples
-     * whose time precedes lastTime - windowTime * (1 - SWEEP_GAP) are not
-     * drawn, which leaves a gap before the cursor.
+     * Sweep mode: each sample at time t is placed at its abscissa in its sweep
+     * (see {@link #sweepOf}); the drawing is interrupted at each return to the
+     * left. The samples of the previous sweep whose time precedes
+     * lastTime - windowTime * (1 - SWEEP_GAP) are not drawn, which leaves a
+     * gap before the cursor.
      */
     private void drawCurvesSweep(GL2 gl, boolean withPoints) {
         for (int k = 0; k < frameCurves.size(); k++) {
@@ -376,11 +418,11 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
             if (CurveStyles.isDashed(curve)) {
                 // Segments straddling a return to the left are not drawn
                 drawDashed(gl, curve, width, values, n, first,
-                        i -> Math.floor((curveLast - (n - i) / frequency) / windowTime)
-                             != Math.floor((curveLast - (n - 1 - i) / frequency) / windowTime),
+                        i -> sweepOf(curveLast - (n - i) / frequency)
+                             != sweepOf(curveLast - (n - 1 - i) / frequency),
                         (i, f) -> {
                             double t = curveLast - (n - i - f) / frequency;
-                            double sweepStart = Math.floor((curveLast - (n - i) / frequency) / windowTime) * windowTime;
+                            double sweepStart = sweepOf(curveLast - (n - i) / frequency) * windowTime;
                             gl.glVertex2d(t - sweepStart, values[i - 1] + f * (values[i] - values[i - 1]));
                         });
                 drawnPoints += n - first;
@@ -392,8 +434,8 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
                     double pixelsPerSecond = plotWidth / (viewMaxX - viewMinX), left = viewMinX;
                     decimation.m4(first, n, values, i -> {
                         double t = curveLast - (n - 1 - i) / frequency;
-                        double sweep = Math.floor(t / windowTime);
-                        return ((long) sweep << 32) + (long) Math.floor((t - sweep * windowTime - left) * pixelsPerSecond);
+                        long sweep = sweepOf(t);
+                        return (sweep << 32) + (long) Math.floor((t - sweep * windowTime - left) * pixelsPerSecond);
                     });
                     kept = decimation.indices();
                     count = decimation.count();
@@ -404,7 +446,7 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
                 for (int j = 0; j < count; j++) {
                     int i = (kept == null) ? first + j : kept[j];
                     double t = curveLast - (n - 1 - i) / frequency;
-                    long sweep = (long) Math.floor(t / windowTime);
+                    long sweep = sweepOf(t);
                     if (sweep != currentSweep) { // return to the left: new strip
                         if (open) gl.glEnd();
                         gl.glBegin(GL2.GL_LINE_STRIP);
@@ -422,7 +464,7 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
                 gl.glBegin(GL2.GL_POINTS);
                 for (int i = first; i < n; i++) {
                     double t = curveLast - (n - 1 - i) / frequency;
-                    gl.glVertex2d(t - Math.floor(t / windowTime) * windowTime, values[i]);
+                    gl.glVertex2d(sweepX(t), values[i]);
                 }
                 gl.glEnd();
             }
@@ -434,7 +476,7 @@ public class Chart1DRenderer extends PlotRenderer<Curve1DData> {
         boolean any = false;
         for (Curve1DData curve : frameCurves) any |= curve.getSnapshotCount() > 0;
         if (!any) return;
-        double x = lastTime - Math.floor(lastTime / windowTime) * windowTime;
+        double x = sweepX(lastTime);
         gl.glColor4f(0.85f, 0.85f, 0.9f, 0.5f);
         gl.glLineWidth(1f);
         gl.glBegin(GL2.GL_LINES);

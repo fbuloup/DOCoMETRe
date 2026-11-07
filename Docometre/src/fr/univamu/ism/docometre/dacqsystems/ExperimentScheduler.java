@@ -265,6 +265,8 @@ public class ExperimentScheduler {
 									}
 								});
 							}
+							// Trial state is a persistent property : its change is not notified to the experiments view
+							ExperimentsView.updateLabels(currentTrial);
 						}
 					} catch (InterruptedException e) {
 						e.printStackTrace();
@@ -327,6 +329,8 @@ public class ExperimentScheduler {
 	
 	public void run() {
 		running = true;
+		// Charts are recreated at the beginning of each run : their configuration may have been modified since the previous one
+		PlatformUI.getWorkbench().getDisplay().syncExec(RealTimeChartsView::invalidateCharts);
 		setFullScreenIfRequired();
 		SeekNextProcess seekNextProcess = new SeekNextProcess(DocometreMessages.RunningTrials);
 		seekNextProcess.schedule();

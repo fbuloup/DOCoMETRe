@@ -63,6 +63,7 @@ public class Surface3DRenderer extends GLChartRenderer {
 
     @Override
     public void display(GLAutoDrawable drawable) {
+        applySwapInterval(drawable);
         GL2 gl = drawable.getGL().getGL2();
         gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
         
