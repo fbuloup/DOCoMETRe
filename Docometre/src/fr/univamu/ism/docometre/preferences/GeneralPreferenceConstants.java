@@ -49,6 +49,8 @@ public class GeneralPreferenceConstants {
 
 	public static final String XML_SERIALIZATION = "XML_SERIALIZATION";
 	// Experiments history
+	/* Experimental : when false (default), histories can only be viewed */
+	public static final String HISTORY_ENABLED = "HISTORY_ENABLED";
 	public static final String HISTORY_AUTHOR_NAME = "HISTORY_AUTHOR_NAME";
 	public static final String HISTORY_AUTHOR_EMAIL = "HISTORY_AUTHOR_EMAIL";
 	public static final String HISTORY_AUTOMATIC_SNAPSHOTS = "HISTORY_AUTOMATIC_SNAPSHOTS";

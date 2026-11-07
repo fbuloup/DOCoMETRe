@@ -1373,6 +1373,7 @@ public final class DocometreMessages extends NLS {
 	/* Experiments history */
 	public static String SnapshotsView_NoExperiment;
 	public static String SnapshotsView_NotHistorized;
+	public static String SnapshotsView_HistoryDisabled;
 	public static String SnapshotsView_Header;
 	public static String SnapshotsView_Loading;
 	public static String SnapshotsView_Number;
@@ -1414,6 +1415,7 @@ public final class DocometreMessages extends NLS {
 	public static String History_HistoryEnabled;
 	public static String History_AcquisitionRunning;
 	public static String History_ErrorTitle;
+	public static String History_FeatureDisabled;
 	public static String History_ErrorMessage;
 	public static String History_CreateSnapshotAction;
 	public static String History_DisableTitle;
@@ -1483,6 +1485,7 @@ public final class DocometreMessages extends NLS {
 	public static String History_RestoreFileNothingToDo;
 	public static String History_FileRestored;
 	public static String HistoryPreferences_Description;
+	public static String HistoryPreferences_Enabled;
 	public static String HistoryPreferences_AuthorName;
 	public static String HistoryPreferences_AuthorEmail;
 	public static String HistoryPreferences_AutomaticSnapshots;

@@ -58,7 +58,7 @@ public class CreateSnapshotHandler extends AbstractHistoryHandler {
 
 	@Override
 	protected boolean isEnabled(IProject experiment) {
-		return HistoryOperations.isHistorized(experiment);
+		return HistoryOperations.isHistoryEnabled() && HistoryOperations.isHistorized(experiment);
 	}
 
 }

@@ -41,10 +41,14 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.history.ui;
 
+import java.util.ArrayList;
+	
 import org.eclipse.jface.preference.BooleanFieldEditor;
+import org.eclipse.jface.preference.FieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
@@ -53,9 +57,14 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
 /**
- * Preferences of experiments history.
+ * Preferences of experiments history. Experiments history is experimental : it is disabled by
+ * default, existing histories can then only be viewed. Other preferences are only editable
+ * when it is enabled.
  */
 public class HistoryPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
+	
+	private BooleanFieldEditor historyEnabledFieldEditor;
+	private final ArrayList<FieldEditor> historyFieldEditors = new ArrayList<>();
 
 	public HistoryPreferencePage() {
 		super(GRID);
@@ -69,12 +78,45 @@ public class HistoryPreferencePage extends FieldEditorPreferencePage implements 
 
 	@Override
 	protected void createFieldEditors() {
-		addField(new StringFieldEditor(GeneralPreferenceConstants.HISTORY_AUTHOR_NAME, DocometreMessages.HistoryPreferences_AuthorName, getFieldEditorParent()));
-		addField(new StringFieldEditor(GeneralPreferenceConstants.HISTORY_AUTHOR_EMAIL, DocometreMessages.HistoryPreferences_AuthorEmail, getFieldEditorParent()));
-		addField(new BooleanFieldEditor(GeneralPreferenceConstants.HISTORY_AUTOMATIC_SNAPSHOTS, DocometreMessages.HistoryPreferences_AutomaticSnapshots, getFieldEditorParent()));
+		historyEnabledFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.HISTORY_ENABLED, DocometreMessages.HistoryPreferences_Enabled, getFieldEditorParent());
+		addField(historyEnabledFieldEditor);
+		addHistoryField(new StringFieldEditor(GeneralPreferenceConstants.HISTORY_AUTHOR_NAME, DocometreMessages.HistoryPreferences_AuthorName, getFieldEditorParent()));
+		addHistoryField(new StringFieldEditor(GeneralPreferenceConstants.HISTORY_AUTHOR_EMAIL, DocometreMessages.HistoryPreferences_AuthorEmail, getFieldEditorParent()));
+		addHistoryField(new BooleanFieldEditor(GeneralPreferenceConstants.HISTORY_AUTOMATIC_SNAPSHOTS, DocometreMessages.HistoryPreferences_AutomaticSnapshots, getFieldEditorParent()));
 		IntegerFieldEditor optimizationPeriodFieldEditor = new IntegerFieldEditor(GeneralPreferenceConstants.HISTORY_OPTIMIZATION_PERIOD, DocometreMessages.HistoryPreferences_OptimizationPeriod, getFieldEditorParent());
 		optimizationPeriodFieldEditor.setValidRange(0, 1000);
-		addField(optimizationPeriodFieldEditor);
+		addHistoryField(optimizationPeriodFieldEditor);
+	}
+	
+	/*
+	 * Preference only editable when experiments history is enabled
+	 */
+	private void addHistoryField(FieldEditor fieldEditor) {
+		historyFieldEditors.add(fieldEditor);
+		addField(fieldEditor);
+	}
+	
+	private void updateFieldEditorsEnablement() {
+		boolean enabled = historyEnabledFieldEditor.getBooleanValue();
+		for (FieldEditor fieldEditor : historyFieldEditors) fieldEditor.setEnabled(enabled, getFieldEditorParent());
+	}
+	
+	@Override
+	protected void initialize() {
+		super.initialize();
+		updateFieldEditorsEnablement();
+	}
+	
+	@Override
+	protected void performDefaults() {
+		super.performDefaults();
+		updateFieldEditorsEnablement();
+	}
+	
+	@Override
+	public void propertyChange(PropertyChangeEvent event) {
+		super.propertyChange(event);
+		if(event.getSource() == historyEnabledFieldEditor) updateFieldEditorsEnablement();
 	}
 
 }

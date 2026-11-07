@@ -101,6 +101,9 @@ import fr.univamu.ism.docometre.views.ExperimentsView;
  * User operations on experiments histories, shared by menus and snapshots view.
  * Operations which modify an experiment run in a workspace job with experiment as
  * scheduling rule.
+ * Experiments history is experimental : unless it is enabled in preferences (disabled by
+ * default), existing histories can only be viewed (snapshots view, differences of files,
+ * decorations), operations which modify a history are refused.
  */
 public final class HistoryOperations {
 	
@@ -126,6 +129,23 @@ public final class HistoryOperations {
 			// e.g. channels which are not linked to a subject
 			return null;
 		}
+	}
+	
+	/*
+	 * Return true if experiments history can be used (preference, disabled by default).
+	 * Otherwise, existing histories can only be viewed.
+	 */
+	public static boolean isHistoryEnabled() {
+		return Activator.getDefault() != null && Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.HISTORY_ENABLED);
+	}
+	
+	/*
+	 * Return true if experiments history can be used, otherwise tell user that it is disabled
+	 */
+	private static boolean checkHistoryEnabled(Shell shell) {
+		if(isHistoryEnabled()) return true;
+		MessageDialog.openInformation(shell, DocometreMessages.History_ErrorTitle, DocometreMessages.History_FeatureDisabled);
+		return false;
 	}
 	
 	public static boolean isHistorized(IProject project) {
@@ -203,7 +223,7 @@ public final class HistoryOperations {
 	 * Ask user confirmation, create experiment history and its first snapshot
 	 */
 	public static void enableHistory(Shell shell, IProject project) {
-		if(project == null || isHistorized(project) || isAcquisitionRunning(shell)) return;
+		if(project == null || isHistorized(project) || !checkHistoryEnabled(shell) || isAcquisitionRunning(shell)) return;
 		String message = NLS.bind(DocometreMessages.History_EnableMessage, project.getName());
 		if(!MessageDialog.openQuestion(shell, DocometreMessages.History_EnableTitle, message)) return;
 		// Snapshots contain files, not unsaved editors contents
@@ -235,7 +255,7 @@ public final class HistoryOperations {
 	 * Ask snapshot name and description, then create a snapshot of experiment current content
 	 */
 	public static void createSnapshot(Shell shell, IProject project) {
-		if(!isHistorized(project) || isAcquisitionRunning(shell)) return;
+		if(!isHistorized(project) || !checkHistoryEnabled(shell) || isAcquisitionRunning(shell)) return;
 		// Snapshots contain files, not unsaved editors contents
 		if(!PlatformUI.getWorkbench().saveAllEditors(true)) return;
 		CreateSnapshotDialog dialog = new CreateSnapshotDialog(shell, project.getName());
@@ -275,7 +295,7 @@ public final class HistoryOperations {
 	 * are not modified.
 	 */
 	public static void disableHistory(Shell shell, IProject project) {
-		if(!isHistorized(project) || isAcquisitionRunning(shell)) return;
+		if(!isHistorized(project) || !checkHistoryEnabled(shell) || isAcquisitionRunning(shell)) return;
 		HistoryPreview preview = new HistoryPreview();
 		if(!readHistory(shell, DocometreMessages.History_DisableTitle, project, repository -> preview.snapshots = repository.getSnapshots())) return;
 		int snapshotsNumber = preview.snapshots.size();
@@ -320,7 +340,7 @@ public final class HistoryOperations {
 	 * No snapshot is ever deleted.
 	 */
 	public static void restoreSnapshot(Shell shell, IProject project, Snapshot snapshot) {
-		if(!isHistorized(project) || snapshot == null || isAcquisitionRunning(shell)) return;
+		if(!isHistorized(project) || snapshot == null || !checkHistoryEnabled(shell) || isAcquisitionRunning(shell)) return;
 		
 		// What will be done
 		HistoryPreview preview = new HistoryPreview();
@@ -417,7 +437,7 @@ public final class HistoryOperations {
 	 * the calling thread.
 	 */
 	public static void createAutomaticSnapshots(IResource[] resources, String nameMessage) {
-		if(resources == null || !Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.HISTORY_AUTOMATIC_SNAPSHOTS)) return;
+		if(resources == null || !isHistoryEnabled() || !Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.HISTORY_AUTOMATIC_SNAPSHOTS)) return;
 		LinkedHashMap<IProject, ArrayList<String>> resourcesNames = new LinkedHashMap<>();
 		for (IResource resource : resources) {
 			try {
@@ -495,7 +515,7 @@ public final class HistoryOperations {
 	 * automatic snapshot and a new snapshot is created.
 	 */
 	public static void restoreFile(Shell shell, IProject project, Snapshot snapshot, String path) {
-		if(!isHistorized(project) || snapshot == null || path == null || isAcquisitionRunning(shell)) return;
+		if(!isHistorized(project) || snapshot == null || path == null || !checkHistoryEnabled(shell) || isAcquisitionRunning(shell)) return;
 		HistoryPreview preview = new HistoryPreview();
 		if(!readHistory(shell, DocometreMessages.History_RestoreFileTitle, project, repository -> {
 			for (FileChange change : repository.getRestoreChanges(snapshot)) {
@@ -584,7 +604,7 @@ public final class HistoryOperations {
 	 * this snapshot are listed). Experiment files are not modified.
 	 */
 	public static void deleteSnapshot(Shell shell, IProject project, Snapshot snapshot) {
-		if(!isHistorized(project) || snapshot == null) return;
+		if(!isHistorized(project) || snapshot == null || !checkHistoryEnabled(shell)) return;
 		HistoryPreview preview = new HistoryPreview();
 		if(!readHistory(shell, DocometreMessages.History_DeleteSnapshotTitle, project, repository -> {
 			preview.snapshots = repository.getSnapshots();
@@ -721,7 +741,7 @@ public final class HistoryOperations {
 		String message = NLS.bind(DocometreMessages.History_RestoreIncompleteMessage, new Object[] {exception.getRestoredSnapshot().number(), project.getName(), remainingChanges.size(), files.toString().strip()});
 		Display.getDefault().asyncExec(() -> {
 			MessageDialog dialog = new MessageDialog(Display.getDefault().getActiveShell(), DocometreMessages.History_RestoreIncompleteTitle, null, message, MessageDialog.WARNING, 0, DocometreMessages.History_RetryButton, DocometreMessages.History_LaterButton);
-			if(dialog.open() != 0) return;
+			if(dialog.open() != 0 || !checkHistoryEnabled(Display.getDefault().getActiveShell())) return;
 			WorkspaceJob job = new WorkspaceJob(NLS.bind(DocometreMessages.History_RestoreJob, exception.getRestoredSnapshot().number(), project.getName())) {
 				@Override
 				public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
@@ -881,7 +901,7 @@ public final class HistoryOperations {
 	 */
 	private static void scheduleOptimization(IProject project) {
 		int optimizationPeriod = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.HISTORY_OPTIMIZATION_PERIOD);
-		if(optimizationPeriod <= 0) return;
+		if(optimizationPeriod <= 0 || !isHistoryEnabled()) return;
 		Job job = new Job(NLS.bind(DocometreMessages.History_OptimizeJob, project.getName())) {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {

@@ -27,6 +27,14 @@
 		folder of the experiment folder (DOCoMETRe uses Git internally, but
 		you never need to know or use Git). It is enabled experiment by
 		experiment.</p>
+	<p><b>The history is an experimental feature, disabled by default.</b>
+		To use it, check <b>Use experiments history (experimental)</b> in
+		Options &gt; Preferences &gt; History (see
+		<a href="#preferences">preferences</a>). When it is not checked,
+		histories which already exist can still be viewed (Snapshots view,
+		differences of files, indicators of the Experiments view), but the
+		history can't be enabled on an experiment, and snapshots can't be
+		created, restored or deleted (no automatic snapshot either).</p>
 	<p>Contents of this page:</p>
 	<ul>
 		<li><a href="#enable">Enabling the history</a></li>
@@ -46,7 +54,8 @@
 
 	<h2><a name="enable">Enabling the history</a></h2>
 
-	<p>In the Experiments view, right click on the experiment (or on any of
+	<p>The history must first be enabled in preferences (see above). Then,
+		in the Experiments view, right click on the experiment (or on any of
 		its resources), then <b>History &gt; Enable history...</b>. After
 		confirmation, DOCoMETRe creates the history of the experiment and its
 		first snapshot, named "History enabled". The Snapshots view is then
@@ -215,6 +224,11 @@
 	<p>Options &gt; Preferences &gt; History:</p>
 	<table>
 		<tr><th>Preference</th><th>Meaning</th></tr>
+		<tr><td>Use experiments history (experimental)</td><td>Not checked by
+			default: existing histories can only be viewed, nothing can be
+			modified (no history can be enabled, no snapshot can be created,
+			restored or deleted). The other preferences of the page can only be
+			changed when it is checked.</td></tr>
 		<tr><td>Author of snapshots, Author e-mail</td><td>Shown in the Author
 			column of the Snapshots view. By default, the name of the session
 			of the computer.</td></tr>

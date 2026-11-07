@@ -99,6 +99,7 @@ public class PreferencesInitializer extends AbstractPreferenceInitializer {
 
 		defaults.putBoolean(GeneralPreferenceConstants.XML_SERIALIZATION, true);
 		
+		defaults.putBoolean(GeneralPreferenceConstants.HISTORY_ENABLED, false);
 		defaults.put(GeneralPreferenceConstants.HISTORY_AUTHOR_NAME, System.getProperty("user.name", ""));
 		defaults.put(GeneralPreferenceConstants.HISTORY_AUTHOR_EMAIL, "");
 		defaults.putBoolean(GeneralPreferenceConstants.HISTORY_AUTOMATIC_SNAPSHOTS, true);

@@ -62,6 +62,8 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ISelection;
@@ -108,6 +110,7 @@ import fr.univamu.ism.docometre.history.SnapshotException;
 import fr.univamu.ism.docometre.history.SnapshotManager;
 import fr.univamu.ism.docometre.history.SnapshotRepository;
 import fr.univamu.ism.docometre.history.SnapshotType;
+import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 
 /**
@@ -136,6 +139,7 @@ public class SnapshotsView extends ViewPart implements ISelectionListener, IReso
 	
 	private IProject experiment;
 	private HistoryData historyData;
+	private final IPropertyChangeListener preferenceListener = this::preferenceChanged;
 	private Job loadJob;
 	private Job detailsJob;
 	
@@ -241,6 +245,7 @@ public class SnapshotsView extends ViewPart implements ISelectionListener, IReso
 		
 		getSite().getWorkbenchWindow().getSelectionService().addPostSelectionListener(this);
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
+		Activator.getDefault().getPreferenceStore().addPropertyChangeListener(preferenceListener);
 		
 		IProject selectedExperiment = HistoryOperations.getExperiment(getSite().getWorkbenchWindow().getSelectionService().getSelection(ExperimentsView.ID));
 		setExperiment(selectedExperiment, true);
@@ -433,7 +438,8 @@ public class SnapshotsView extends ViewPart implements ISelectionListener, IReso
 			if(change == null) return;
 			manager.add(showDifferencesAction);
 			Snapshot snapshot = getRestoreTarget(snapshotsTableViewer.getStructuredSelection().getFirstElement());
-			if(snapshot != null && !SnapshotRepository.FOLDERS_LIST_FILE_NAME.equals(change.path())) {
+			// Restoring a file modifies history : not available if history is disabled in preferences
+			if(snapshot != null && HistoryOperations.isHistoryEnabled() && !SnapshotRepository.FOLDERS_LIST_FILE_NAME.equals(change.path())) {
 				restoreFileAction.setText(NLS.bind(DocometreMessages.History_RestoreFileAction, snapshot.number()));
 				manager.add(new Separator());
 				manager.add(restoreFileAction);
@@ -586,13 +592,7 @@ public class SnapshotsView extends ViewPart implements ISelectionListener, IReso
 	private void updateView(HistoryData data) {
 		Object selectedElement = snapshotsTableViewer.getStructuredSelection().getFirstElement();
 		historyData = data;
-		IProject project = data.project();
-		if(project == null) headerLabel.setText(DocometreMessages.SnapshotsView_NoExperiment);
-		else if(data.error() != null) headerLabel.setText(data.error());
-		else if(!data.historized()) headerLabel.setText(NLS.bind(DocometreMessages.SnapshotsView_NotHistorized, project.getName()));
-		else headerLabel.setText(NLS.bind(DocometreMessages.SnapshotsView_Header, project.getName(), data.snapshots().size()));
-		headerLabel.setToolTipText(headerLabel.getText());
-		updateMinimumSize();
+		updateHeader();
 		
 		ArrayList<Object> rows = new ArrayList<>();
 		if(data.historized()) {
@@ -611,10 +611,55 @@ public class SnapshotsView extends ViewPart implements ISelectionListener, IReso
 		if(newSelection != null) snapshotsTableViewer.setSelection(new StructuredSelection(newSelection), true);
 		else showDetails(null);
 		
-		enableHistoryAction.setEnabled(project != null && !data.historized() && data.error() == null);
-		createSnapshotAction.setEnabled(data.historized());
-		disableHistoryAction.setEnabled(data.historized());
-		refreshAction.setEnabled(project != null);
+		updateActionsEnablement();
+		refreshAction.setEnabled(data.project() != null);
+	}
+	
+	/*
+	 * Header : experiment and number of snapshots, read only mode if history is disabled in preferences
+	 */
+	private void updateHeader() {
+		HistoryData data = historyData;
+		if(data == null) return;
+		IProject project = data.project();
+		String header;
+		if(project == null) header = DocometreMessages.SnapshotsView_NoExperiment;
+		else if(data.error() != null) header = data.error();
+		else if(!data.historized()) header = NLS.bind(DocometreMessages.SnapshotsView_NotHistorized, project.getName());
+		else header = NLS.bind(DocometreMessages.SnapshotsView_Header, project.getName(), data.snapshots().size());
+		if(project != null && !HistoryOperations.isHistoryEnabled()) header += " - " + DocometreMessages.SnapshotsView_HistoryDisabled;
+		headerLabel.setText(header);
+		headerLabel.setToolTipText(header);
+		updateMinimumSize();
+	}
+	
+	/*
+	 * Actions which modify history are only available if history is enabled in preferences :
+	 * otherwise, histories can only be viewed
+	 */
+	private void updateActionsEnablement() {
+		HistoryData data = historyData;
+		boolean enabled = HistoryOperations.isHistoryEnabled() && data != null;
+		boolean historized = enabled && data.historized();
+		Object element = snapshotsTableViewer.getStructuredSelection().getFirstElement();
+		if(enableHistoryAction != null) enableHistoryAction.setEnabled(enabled && data.project() != null && !data.historized() && data.error() == null);
+		if(createSnapshotAction != null) createSnapshotAction.setEnabled(historized);
+		if(disableHistoryAction != null) disableHistoryAction.setEnabled(historized);
+		if(restoreButton != null) restoreButton.setEnabled(historized && element instanceof Snapshot);
+		if(restoreAction != null) restoreAction.setEnabled(historized && element instanceof Snapshot);
+		if(deleteSnapshotAction != null) deleteSnapshotAction.setEnabled(historized && element instanceof Snapshot && data.snapshots().size() > 1);
+	}
+	
+	/*
+	 * Experiments history enabled or disabled in preferences (any thread)
+	 */
+	private void preferenceChanged(PropertyChangeEvent event) {
+		if(!GeneralPreferenceConstants.HISTORY_ENABLED.equals(event.getProperty())) return;
+		Display.getDefault().asyncExec(() -> {
+			if(headerLabel == null || headerLabel.isDisposed()) return;
+			updateHeader();
+			updateActionsEnablement();
+		});
 	}
 	
 	/////////////////////////////////////////////////////////////////////////////
@@ -643,9 +688,7 @@ public class SnapshotsView extends ViewPart implements ISelectionListener, IReso
 			else changesLabel.setText(NLS.bind(DocometreMessages.SnapshotsView_SnapshotChanges, previousSnapshot.number()));
 			loadChanges(previousSnapshot, snapshot);
 		}
-		if(restoreButton != null) restoreButton.setEnabled(element instanceof Snapshot);
-		if(restoreAction != null) restoreAction.setEnabled(element instanceof Snapshot);
-		if(deleteSnapshotAction != null) deleteSnapshotAction.setEnabled(element instanceof Snapshot && historyData.snapshots().size() > 1);
+		updateActionsEnablement();
 		titleLabel.getParent().layout(true, true);
 		updateMinimumSize();
 	}
@@ -739,6 +782,7 @@ public class SnapshotsView extends ViewPart implements ISelectionListener, IReso
 	public void dispose() {
 		getSite().getWorkbenchWindow().getSelectionService().removePostSelectionListener(this);
 		ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
+		Activator.getDefault().getPreferenceStore().removePropertyChangeListener(preferenceListener);
 		if(loadJob != null) loadJob.cancel();
 		if(detailsJob != null) detailsJob.cancel();
 		super.dispose();

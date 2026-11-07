@@ -58,7 +58,7 @@ public class EnableHistoryHandler extends AbstractHistoryHandler {
 
 	@Override
 	protected boolean isEnabled(IProject experiment) {
-		return experiment != null && !HistoryOperations.isHistorized(experiment);
+		return HistoryOperations.isHistoryEnabled() && experiment != null && !HistoryOperations.isHistorized(experiment);
 	}
 
 }
