@@ -52,6 +52,7 @@ import org.eclipse.core.commands.operations.IUndoContext;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
@@ -82,6 +83,10 @@ import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.editors.PartNameRefresher;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
+import fr.univamu.ism.docometre.history.SnapshotException;
+import fr.univamu.ism.docometre.history.SnapshotManager;
+import fr.univamu.ism.docometre.history.ui.HistoryStatusCache;
+import fr.univamu.ism.docometre.history.ui.SnapshotsView;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 
 public class RenameResourceOperation extends AbstractOperation {
@@ -189,7 +194,23 @@ public class RenameResourceOperation extends AbstractOperation {
 						}
 						// If resource is process, delete build folder
 						if(associatedObject != null && ResourceType.isProcess(resource)) ((Process)associatedObject).cleanBuild();
-						resource.move(parentResource.getFullPath().append(name + fileExtension), true, monitor);
+						// Experiments history : files of .git folder must not be opened while the experiment folder is
+						// renamed (Windows can't rename a folder containing an opened file, Eclipse would then copy the
+						// experiment and fail to delete the original one). History is reopened when needed.
+						String experimentName = resource instanceof IProject ? resource.getName() : null;
+						try {
+							if(experimentName != null) SnapshotManager.getInstance().suspend((IProject) resource);
+							resource.move(parentResource.getFullPath().append(name + fileExtension), true, monitor);
+						} finally {
+							if(experimentName != null) {
+								SnapshotManager.getInstance().resume(experimentName);
+								// Renaming refused or failed : history was hidden while suspended, show it again
+								if(resource.exists()) {
+									HistoryStatusCache.update((IProject) resource);
+									SnapshotsView.refreshIfShown((IProject) resource);
+								}
+							}
+						}
 						IResource newResource = parentResource.findMember(name + fileExtension);
 						if(associatedObject != null) ObjectsController.setResourceForObject(associatedObject, newResource);
 						if(removeHandle && associatedObject != null) ObjectsController.removeHandle(associatedObject);
@@ -271,6 +292,10 @@ public class RenameResourceOperation extends AbstractOperation {
 					} catch (CoreException e) {
 						Activator.logErrorMessageWithCause(e);
 						e.printStackTrace();
+					} catch (SnapshotException e) {
+						// History files used by another program : experiment is not renamed
+						Activator.logErrorMessage(NLS.bind(DocometreMessages.History_RenameExperimentBlocked, resource.getName()));
+						Activator.logErrorMessageWithCause(e);
 					}
 					
 				}

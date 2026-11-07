@@ -83,4 +83,21 @@ public interface IFileExporter {
 	public void write(IFile resource, String destinationPath)
 		throws IOException, CoreException;
 
+	/**
+	 * Write the entry of a folder which is not a workspace resource (e.g. experiment history)
+	 *
+	 * @param destinationPath the path that will be used in the archive, ending with '/'
+	 * @throws IOException if an IO error occurs while writing the folder entry
+	 */
+	public void writeFolder(String destinationPath) throws IOException;
+
+	/**
+	 * Write a file which is not a workspace resource (e.g. experiment history)
+	 *
+	 * @param file the file to write
+	 * @param destinationPath the path that will be used in the archive
+	 * @throws IOException if an IO error occurs while writing the file
+	 */
+	public void write(java.io.File file, String destinationPath) throws IOException;
+
 }

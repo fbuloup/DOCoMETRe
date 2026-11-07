@@ -98,6 +98,12 @@ public class PreferencesInitializer extends AbstractPreferenceInitializer {
 		defaults.putBoolean(GeneralPreferenceConstants.SYNCHRONIZE_CHARTS_WHEN_TRIAL_CHANGE, true);
 
 		defaults.putBoolean(GeneralPreferenceConstants.XML_SERIALIZATION, true);
+		
+		defaults.putBoolean(GeneralPreferenceConstants.HISTORY_ENABLED, false);
+		defaults.put(GeneralPreferenceConstants.HISTORY_AUTHOR_NAME, System.getProperty("user.name", ""));
+		defaults.put(GeneralPreferenceConstants.HISTORY_AUTHOR_EMAIL, "");
+		defaults.putBoolean(GeneralPreferenceConstants.HISTORY_AUTOMATIC_SNAPSHOTS, true);
+		defaults.putInt(GeneralPreferenceConstants.HISTORY_OPTIMIZATION_PERIOD, 20);
 		defaults.putBoolean(GeneralPreferenceConstants.BUILD_AUTOMATICALLY, false);
 		
 		defaults.put(MathEnginePreferencesConstants.MATH_ENGINE, MathEnginePreferencesConstants.MATH_ENGINE_MATLAB);

@@ -130,6 +130,7 @@ import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.dacqsystems.ExperimentScheduler;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.handlers.RunStopHandler;
+import fr.univamu.ism.docometre.history.GitResources;
 
 public class ExperimentsView extends ViewPart implements IResourceChangeListener, IPerspectiveListener, IPropertyChangeListener {
 
@@ -658,6 +659,8 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 	public void resourceChanged(IResourceChangeEvent event) {
 		IResourceDelta delta = event.getDelta();
 		if(delta == null) return;
+		// Changes inside experiments .git folders (history) are not shown
+		if(!GitResources.hasRelevantChanges(delta)) return;
 		Set<IResource> refreshes = new HashSet<>();
 		Set<IResource> labelsUpdates = new HashSet<>();
 		try {

@@ -86,6 +86,8 @@ private ParametersTableEditor parametersTableEditor;
 		try {
 			IResource paramsFile = ((IResource)((ResourceEditorInput)getEditorInput()).getObject());
 			Files.write(Paths.get(paramsFile.getLocationURI()), document.get().getBytes(), StandardOpenOption.TRUNCATE_EXISTING , StandardOpenOption.WRITE);
+			// File written on disk : notify workspace (views, experiments history)
+			Activator.refreshWorkspaceFile(Paths.get(paramsFile.getLocationURI()));
 			setDirty(false);
 		} catch (IOException e) {
 			Activator.logErrorMessageWithCause(e);

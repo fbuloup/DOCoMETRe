@@ -40,7 +40,8 @@ Require-Bundle: org.eclipse.ui;bundle-version="3.108.0",
  org.eclipse.platform;bundle-version="4.35.0",
  org.eclipse.nebula.widgets.pgroup;bundle-version="1.0.0",
  org.eclipse.e4.ui.model.workbench,
- org.eclipse.emf.ecore
+ org.eclipse.emf.ecore,
+ org.eclipse.jgit;bundle-version="7.2.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Bundle-Localization: OSGI-INF/l10n/bundle
@@ -78,6 +79,9 @@ Export-Package: fr,
  fr.univamu.ism.docometre.editors,
  fr.univamu.ism.docometre.export,
  fr.univamu.ism.docometre.handlers,
+ fr.univamu.ism.docometre.history,
+ fr.univamu.ism.docometre.history.handlers,
+ fr.univamu.ism.docometre.history.ui,
  fr.univamu.ism.docometre.preferences,
  fr.univamu.ism.docometre.scripteditor.actions,
  fr.univamu.ism.docometre.scripteditor.commands,

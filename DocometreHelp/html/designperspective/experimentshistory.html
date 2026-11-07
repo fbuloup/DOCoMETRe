@@ -1,0 +1,284 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Experiments History</title>
+<style type="text/css">
+	table { border-collapse: collapse; margin-bottom: 1em; }
+	th, td { border: 1px solid #A0A0A0; padding: 4px 8px; text-align: left; vertical-align: top; }
+	kbd { border: 1px solid #A0A0A0; border-radius: 3px; padding: 0px 4px; font-family: monospace; }
+	pre { margin-left: 2em; }
+</style>
+</head>
+
+<body>
+	<h1>Experiments History</h1>
+
+	<p>The history of an experiment records <b>snapshots</b> of the
+		experiment: a snapshot is a copy of the whole experiment
+		(configurations, processes, protocol, parameters files, data files,
+		diaries, data processings, charts and DOCoMETRe properties of the
+		resources) at a given time, with a name and an optional description.
+		You can then look at what changed between snapshots, go back to the
+		content of any snapshot, and go forward again: <b>restoring a snapshot
+		never deletes another snapshot</b>.</p>
+	<p>The history is local: it is stored in a hidden <code>.git</code>
+		folder of the experiment folder (DOCoMETRe uses Git internally, but
+		you never need to know or use Git). It is enabled experiment by
+		experiment.</p>
+	<p><b>The history is an experimental feature, disabled by default.</b>
+		To use it, check <b>Use experiments history (experimental)</b> in
+		Options &gt; Preferences &gt; History (see
+		<a href="#preferences">preferences</a>). When it is not checked,
+		histories which already exist can still be viewed (Snapshots view,
+		differences of files, indicators of the Experiments view), but the
+		history can't be enabled on an experiment, and snapshots can't be
+		created, restored or deleted (no automatic snapshot either).</p>
+	<p>Contents of this page:</p>
+	<ul>
+		<li><a href="#enable">Enabling the history</a></li>
+		<li><a href="#view">The Snapshots view</a> and
+			<a href="#decorations">the indicators of the Experiments view</a></li>
+		<li><a href="#create">Creating a snapshot</a></li>
+		<li><a href="#differences">Showing the differences of a file</a></li>
+		<li><a href="#restore">Restoring a snapshot</a> or
+			<a href="#restorefile">a single file</a></li>
+		<li><a href="#delete">Deleting a snapshot</a></li>
+		<li><a href="#automatic">Automatic snapshots</a> and
+			<a href="#preferences">preferences</a></li>
+		<li><a href="#exportimport">Export and import</a></li>
+		<li><a href="#disable">Disabling the history</a></li>
+		<li><a href="#notes">Notes and limits</a></li>
+	</ul>
+
+	<h2><a name="enable">Enabling the history</a></h2>
+
+	<p>The history must first be enabled in preferences (see above). Then,
+		in the Experiments view, right click on the experiment (or on any of
+		its resources), then <b>History &gt; Enable history...</b>. After
+		confirmation, DOCoMETRe creates the history of the experiment and its
+		first snapshot, named "History enabled". The Snapshots view is then
+		opened.</p>
+	<p>The History sub menu also contains <b>Create a snapshot...</b>,
+		<b>Show history</b> and <b>Disable history...</b>, depending on
+		whether the history of the experiment is enabled.</p>
+
+	<h2><a name="view">The Snapshots view</a></h2>
+
+	<p>The Snapshots view (History &gt; Show history) shows the history of
+		the experiment selected in the Experiments view or in the Subjects
+		view. Its header gives the name of the experiment and its number of
+		snapshots.</p>
+	<p>The first row of the table is the <b>Current state</b> of the
+		experiment: it gives the number of changes that are not saved in a
+		snapshot yet ("3 change(s) not saved"), or "No change since No.N".
+		The other rows are the snapshots, the most recent first, with their
+		number, name, date, type and author. Types are:</p>
+	<table>
+		<tr><th>Type</th><th>Meaning</th></tr>
+		<tr><td>Manual</td><td>Snapshot created by the user.</td></tr>
+		<tr><td>Automatic</td><td>Snapshot created by DOCoMETRe, for example to
+			save unsaved changes before a restoration, a deletion or a
+			renaming (see <a href="#automatic">Automatic snapshots</a>).</td></tr>
+		<tr><td>Restoration</td><td>Snapshot created by the restoration of
+			another snapshot or of a file.</td></tr>
+	</table>
+	<p>Snapshot numbers never change and are never reused: when a snapshot is
+		deleted, its number simply disappears from the list.</p>
+	<p>The details pane shows the selected row: name, date, author, type,
+		"restoration of No.N" for a restoration, "same content as No.N" when
+		several snapshots have exactly the same content, the description, and
+		the list of files:</p>
+	<ul>
+		<li>for the Current state: the files added, modified or deleted since
+			the last snapshot;</li>
+		<li>for a snapshot: the files added, modified or deleted by this
+			snapshot, compared to the previous one.</li>
+	</ul>
+	<p>Two special files can appear in these lists: <b>(experiment
+		properties)</b>, the file that holds the DOCoMETRe properties of the
+		resources (trials states, default DACQ configuration, descriptions...),
+		and <b>(folders list)</b>, which records the folders of the
+		experiment, so that empty folders (trials not acquired yet for
+		example) are restored too.</p>
+	<p>The tool bar of the view contains Enable history, Create a snapshot
+		and Refresh. Refresh also takes into account files modified by other
+		programs. Disable history is in the menu of the view.</p>
+
+	<h2><a name="decorations">Indicators of the Experiments view</a></h2>
+
+	<p>In the Experiments and Subjects views, historized experiments show the
+		number of their last snapshot and, if any, the number of unsaved
+		changes, for example <code>MyExperiment [No.5, 3 change(s)]</code>.
+		A <code>&gt;</code> prefix marks the experiment, the folders and the
+		files that changed since the last snapshot. These indicators are
+		updated about one second after each change.</p>
+
+	<h2><a name="create">Creating a snapshot</a></h2>
+
+	<p>Use History &gt; Create a snapshot... (or the tool bar of the
+		Snapshots view), give a name and, optionally, a description. If editors
+		are modified, you are asked to save them first: a snapshot contains
+		the files of the experiment, not the unsaved contents of editors. If
+		nothing changed since the last snapshot, no snapshot is created.
+		Snapshots can't be created while an acquisition is running.</p>
+	<p>Create a snapshot at each important step: before a new session of
+		acquisitions, after the validation of a configuration, before and
+		after a data processing...</p>
+
+	<h2><a name="differences">Showing the differences of a file</a></h2>
+
+	<p>In the list of files of the details pane, double click on a file (or
+		right click &gt; <b>Show differences</b>). The lines removed are shown
+		in red, the lines added in green. For a snapshot, these are the
+		changes saved by this snapshot; for the Current state, the changes
+		since the last snapshot.</p>
+	<p>Differences can only be shown for text files: DOCoMETRe files are text
+		files when the XML serialization is enabled in the general
+		preferences (default). Data files (samples...) are binary files, and
+		files larger than 5 MB are not compared.</p>
+
+	<h2><a name="restore">Restoring a snapshot</a></h2>
+
+	<p>Select a snapshot, then press <b>Restore this snapshot...</b> (or right
+		click on the snapshot). A confirmation dialog lists what will be done
+		and the files that will be replaced, removed or recreated (with a
+		warning when acquisition data files will be removed). Then:</p>
+	<ol>
+		<li>all the editors are closed (you are asked to save the modified
+			ones);</li>
+		<li>the subjects of the experiment loaded in the math engine are
+			unloaded (modified subjects are saved first if the corresponding
+			box is checked);</li>
+		<li>the unsaved changes of the experiment are saved in an automatic
+			snapshot ("Automatic save before restoration");</li>
+		<li>a new snapshot ("Restoration of ...") is created with exactly the
+			content of the restored snapshot, and the files of the experiment
+			are replaced;</li>
+		<li>the DOCoMETRe properties of the resources are read again and the
+			views are refreshed.</li>
+	</ol>
+	<p>Nothing is lost: to come back to the state before the restoration,
+		restore the automatic snapshot (or the last snapshot before the
+		restoration). Restorations are not possible during an
+		acquisition.</p>
+	<p>If some files are used by another program (antivirus, file explorer,
+		Python, Matlab...), the restoration may not be complete: a dialog
+		lists these files. Close the programs that use them, then press
+		Retry, or later restore the same snapshot again.</p>
+
+	<h2><a name="restorefile">Restoring a single file</a></h2>
+
+	<p>In the list of files of the details pane, right click on a file, then
+		<b>Restore this file as it was in No.N...</b>. Only this file is
+		replaced (or recreated, or removed if it did not exist in this
+		snapshot); the rest of the experiment is not modified. As for a whole
+		restoration, all the editors are closed (you are asked to save the
+		modified ones), the loaded subjects that contain the file are
+		unloaded, unsaved changes are first saved in an automatic snapshot
+		and a new snapshot is created.</p>
+	<p>On the Current state, this command restores the file as it was in the
+		last snapshot: it cancels the changes of this file.</p>
+
+	<h2><a name="delete">Deleting a snapshot</a></h2>
+
+	<p>Right click on a snapshot, then <b>Delete this snapshot...</b>. The
+		snapshot is permanently deleted, including the file versions that only
+		existed in this snapshot (they are listed in the confirmation
+		dialog). The other snapshots keep their contents, names, numbers and
+		dates. The only snapshot of a history can't be deleted: disable the
+		history instead.</p>
+	<p>When the <b>last</b> snapshot is deleted, two choices are proposed:</p>
+	<ul>
+		<li><b>Delete and go back to No.N</b>: the files of the experiment take
+			again the content of the snapshot that becomes the last one, for
+			example to cancel a restoration. This choice is only available if
+			nothing unsaved would be lost (no change since the deleted
+			snapshot, DOCoMETRe properties such as descriptions or trials states
+			included, no modified editor of the experiment, no modified loaded
+			subject, no acquisition running);</li>
+		<li><b>Delete and keep current files</b>: the files are not modified,
+			the changes of the deleted snapshot then appear as unsaved changes
+			of the Current state.</li>
+	</ul>
+	<p>Deleting a snapshot that is not the last one never modifies the files
+		of the experiment.</p>
+
+	<h2><a name="automatic">Automatic snapshots</a></h2>
+
+	<p>When an experiment is historized, DOCoMETRe creates an automatic
+		snapshot of its unsaved changes before deleting or renaming resources
+		of this experiment, and before deleting diaries and data files of
+		trials, sessions or subjects ("Automatic save before deleting ...",
+		"Automatic save before renaming ...", "Automatic save before deleting
+		diaries and data files of ..."). It also saves unsaved changes before
+		a restoration. An automatic snapshot is only created when there are
+		unsaved changes.</p>
+	<p>Renaming the experiment itself does not create a snapshot (it does not
+		modify its data): the history follows the experiment under its new
+		name. Deleting the experiment also deletes its history.</p>
+
+	<h2><a name="preferences">Preferences</a></h2>
+
+	<p>Options &gt; Preferences &gt; History:</p>
+	<table>
+		<tr><th>Preference</th><th>Meaning</th></tr>
+		<tr><td>Use experiments history (experimental)</td><td>Not checked by
+			default: existing histories can only be viewed, nothing can be
+			modified (no history can be enabled, no snapshot can be created,
+			restored or deleted). The other preferences of the page can only be
+			changed when it is checked.</td></tr>
+		<tr><td>Author of snapshots, Author e-mail</td><td>Shown in the Author
+			column of the Snapshots view. By default, the name of the session
+			of the computer.</td></tr>
+		<tr><td>Create an automatic snapshot before deleting or renaming
+			resources of a historized experiment, or deleting its diaries and
+			data files</td><td>See
+			<a href="#automatic">Automatic snapshots</a> (checked by
+			default).</td></tr>
+		<tr><td>Optimize history storage every N snapshots</td><td>The storage
+			of the history is compacted in background when N snapshots of any
+			type (manual, automatic or restoration) have been created since the
+			last compaction (20 by default, 0: never). It is also compacted after
+			each deletion of a snapshot.</td></tr>
+	</table>
+
+	<h2><a name="exportimport">Export and import</a></h2>
+
+	<p>When a whole historized experiment is exported (File &gt; Export
+		Experiment..., see <a href="importexport.html#exportexperiment">Exporting
+		an experiment</a>), the option <b>Include history (snapshots)</b> adds
+		the history to the archive. The archive may then be much larger: the
+		history contains all the versions of the files, acquisition data
+		included. When such a zip archive is imported, the experiment is
+		imported with its history.</p>
+
+	<h2><a name="disable">Disabling the history</a></h2>
+
+	<p>History &gt; Disable history... (or the menu of the Snapshots view)
+		permanently deletes all the snapshots of the experiment (its
+		<code>.git</code> folder). The current files of the experiment are not
+		modified. The history can be enabled again later: it then starts again
+		with a new snapshot No.1.</p>
+
+	<h2><a name="notes">Notes and limits</a></h2>
+
+	<ul>
+		<li>The history is not a backup: it is stored in the experiment folder,
+			on the same disk. Keep exporting your experiments regularly to
+			another location.</li>
+		<li>Every version of every file is kept, acquisition data included:
+			the size of the history grows with the number of acquisitions. Files
+			that never change (data of finished trials) are stored only
+			once.</li>
+		<li>Files generated when compiling processes (<code>BinSource</code>
+			folders) are not historized.</li>
+		<li>Do not modify the <code>.git</code> folder of an experiment, and do
+			not use Git tools on it.</li>
+		<li>While an acquisition is running, snapshots can't be created or
+			restored, and the history can't be enabled or disabled.</li>
+	</ul>
+
+</body>
+</html>

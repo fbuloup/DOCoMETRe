@@ -72,6 +72,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
+import org.eclipse.swt.custom.BusyIndicator;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
@@ -79,6 +80,7 @@ import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.dialogs.RenameResourceDialog;
+import fr.univamu.ism.docometre.history.ui.HistoryOperations;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 
 public class RenameResourceAction extends Action implements ISelectionListener, IWorkbenchAction {
@@ -106,6 +108,8 @@ public class RenameResourceAction extends Action implements ISelectionListener, 
 		RenameResourceDialog inputDialog = new RenameResourceDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
 				DocometreMessages.RenameDialogTitle, message, resource.getName().replaceAll("." + resource.getFileExtension(), ""), resourceNameValidator, resource);
 		if (inputDialog.open() == Window.OK) {
+			// Experiments history : save experiment content before renaming
+			BusyIndicator.showWhile(PlatformUI.getWorkbench().getDisplay(), () -> HistoryOperations.createAutomaticSnapshots(new IResource[] {resource}, DocometreMessages.History_AutoSnapshotBeforeRename));
 			try {
 				// If resource is Arduino Process, remove ino source file before renaming process  
 				if(ResourceType.isProcess(resource)) {

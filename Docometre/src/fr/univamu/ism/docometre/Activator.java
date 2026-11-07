@@ -48,6 +48,10 @@ import java.util.Date;
 import java.util.Locale;
 
 import org.apache.log4j.Logger;
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IStatus;
@@ -78,6 +82,9 @@ import fr.univamu.ism.docometre.chartxyz.editors.GLDataEditor;
 import fr.univamu.ism.docometre.editors.DataEditor;
 import fr.univamu.ism.docometre.editors.PartNameRefresher;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
+import fr.univamu.ism.docometre.history.GitResources;
+import fr.univamu.ism.docometre.history.SnapshotManager;
+import fr.univamu.ism.docometre.history.ui.HistoryStatusCache;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 import fr.univamu.ism.docometre.views.CachedLogger;
 import fr.univamu.ism.process.ScriptSegment;
@@ -169,6 +176,8 @@ public class Activator extends AbstractUIPlugin {
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
 	 */
 	public void stop(BundleContext context) throws Exception {
+		HistoryStatusCache.dispose();
+		SnapshotManager.dispose();
 		plugin = null;
 		super.stop(context);
 	}
@@ -365,6 +374,44 @@ public class Activator extends AbstractUIPlugin {
 		}
 	}
 	
+	
+	/*
+	 * Close editors of resource and, if resource is a container, of all its descendants.
+	 * May be called from any thread.
+	 */
+	public static void closeEditors(IResource resource) throws CoreException {
+		if(GitResources.isGitMetadata(resource)) return;
+		Object object = ResourceProperties.getObjectSessionProperty(resource);
+		if(ResourceType.isLog(resource) || ResourceType.isParameters(resource) || ResourceType.isSamples(resource) || ResourceType.isChannel(resource)) object = resource;
+		if(object != null) {
+			Object editedObject = object;
+			PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+				@Override
+				public void run() {
+					closeEditor(editedObject);
+				}
+			});
+		}
+		if(resource instanceof IContainer) {
+			IResource[] childrenResources = ((IContainer)resource).members();
+			for (IResource childResource : childrenResources) {
+				closeEditors(childResource);
+			}
+		}
+	}
+	
+	/*
+	 * Synchronize workspace with a file written directly on disk (java.io, java.nio) : otherwise
+	 * resource change listeners (views, experiments history) are not notified of the change.
+	 * Nothing is done if file is not in the workspace.
+	 */
+	public static void refreshWorkspaceFile(java.nio.file.Path path) {
+		try {
+			for (IFile file : ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(path.toUri())) file.refreshLocal(IResource.DEPTH_ZERO, null);
+		} catch (CoreException e) {
+			logErrorMessageWithCause(e);
+		}
+	}
 	
 	public static IWorkbenchPart getEditor(Object object, String editorID) {
 		IWorkbenchPart foundWorkbenchPart = null;

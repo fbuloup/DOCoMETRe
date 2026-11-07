@@ -79,6 +79,7 @@ public class NewCustomFunctionHandler implements IHandler, ISelectionListener {
 						try {
 							String userFunction = "USER_FUNCTION = YES";
 							Files.write(Paths.get(customFunctionFile.getLocationURI()), userFunction.getBytes(), StandardOpenOption.TRUNCATE_EXISTING , StandardOpenOption.WRITE);
+							customFunctionFile.refreshLocal(IResource.DEPTH_ZERO, null);
 						} catch (IOException e) {
 							Activator.logErrorMessageWithCause(e);
 							e.printStackTrace();

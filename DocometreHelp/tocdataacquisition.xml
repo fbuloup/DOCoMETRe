@@ -17,6 +17,8 @@
  		</topic>
  		<topic label="Import and Export"  href="html/designperspective/importexport.html"> 
  		</topic>
+ 		<topic label="Experiments History"  href="html/designperspective/experimentshistory.html"> 
+ 		</topic>
  	</topic>
  	<topic label="Acquire Perspective"  href="html/dataacquisition/acquireperspective.html"> 
  	</topic>

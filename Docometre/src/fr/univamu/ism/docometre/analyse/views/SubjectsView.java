@@ -95,6 +95,7 @@ import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ExperimentScheduler;
+import fr.univamu.ism.docometre.history.GitResources;
 import fr.univamu.ism.docometre.views.ExperimentsLabelDecorator;
 import fr.univamu.ism.docometre.views.ExperimentsViewerSorter;
 
@@ -301,6 +302,8 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 	@Override
 	public void resourceChanged(IResourceChangeEvent event) {
 		if (event.getDelta() == null) return;
+		// Changes inside experiments .git folders (history) are not shown
+		if (!GitResources.hasRelevantChanges(event.getDelta())) return;
 		IResourceDelta[] resourceDeltas = event.getDelta().getAffectedChildren();
 		for (IResourceDelta resourceDelta : resourceDeltas) {
 			if (resourceDelta.getKind() == IResourceDelta.ADDED) {

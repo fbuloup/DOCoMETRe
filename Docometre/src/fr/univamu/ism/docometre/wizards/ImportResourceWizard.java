@@ -107,6 +107,8 @@ import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.dacqsystems.DocometreBuilder;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfiguration;
+import fr.univamu.ism.docometre.history.GitResources;
+import fr.univamu.ism.docometre.history.SnapshotManager;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 
 public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
@@ -289,6 +291,9 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 										subMonitor.subTask(DocometreMessages.RefreshingWorkspace);
 										newExperiment.getParent().refreshLocal(IResource.DEPTH_INFINITE, null);
 										subMonitor.worked(1);
+										
+										// Experiments history imported with the experiment : .git folder is not a workspace resource
+										if(SnapshotManager.getInstance().isHistorized(newExperiment)) GitResources.excludeGitFolder(newExperiment, null);
 										
 										subMonitor.subTask(DocometreMessages.AddingProjectToBuilderAndRefreshingExperiment);
 										DocometreBuilder.addProject(newExperiment);

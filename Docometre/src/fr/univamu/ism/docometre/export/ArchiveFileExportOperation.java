@@ -42,13 +42,16 @@
 package fr.univamu.ism.docometre.export;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -64,6 +67,9 @@ import org.eclipse.osgi.util.NLS;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.history.SnapshotException;
+import fr.univamu.ism.docometre.history.SnapshotManager;
+import fr.univamu.ism.docometre.history.SnapshotRepository;
 
 /**
  *	Operation for exporting a resource and its children to a new .zip or
@@ -85,6 +91,7 @@ public class ArchiveFileExportOperation implements IRunnableWithProgress {
 	private String toRootDirectory;
 	private String fromRootDirectory;
 	private boolean includeData = true;
+	private boolean includeHistory = false;
 
 	/**
 	 *	Create an instance of this class.  Use this constructor if you wish to
@@ -362,6 +369,7 @@ public class ArchiveFileExportOperation implements IRunnableWithProgress {
 		try {
 			if (resourcesToExport == null) {
 				exportResource(resource);
+				if(includeHistory && resource instanceof IProject) exportHistory((IProject) resource);
 			} else {
 				// ie.- a list of specific resources to export was specified
 				exportSpecifiedResources();
@@ -377,6 +385,49 @@ public class ArchiveFileExportOperation implements IRunnableWithProgress {
 		} finally {
 			monitor.worked(1);
 		}
+	}
+
+	/**
+	 * Export experiment history (.git folder, which is not a workspace resource) with the experiment.
+	 * History can't be modified while it is exported (e.g. by an automatic optimization).
+	 */
+	private void exportHistory(IProject experiment) throws InvocationTargetException {
+		SnapshotRepository repository;
+		try {
+			repository = SnapshotManager.getInstance().getRepository(experiment);
+		} catch (SnapshotException e) {
+			throw new InvocationTargetException(e, NLS.bind(DocometreMessages.DataTransfer_errorExporting, experiment.getName(), e.getMessage()));
+		}
+		if(repository == null) return;
+		String experimentDestinationName = createDestinationName(1, experiment);
+		repository.runExclusive(historyFolder -> exportHistoryFolder(historyFolder.toPath(), experimentDestinationName));
+	}
+	
+	private void exportHistoryFolder(java.nio.file.Path historyFolder, String experimentDestinationName) throws InvocationTargetException {
+		List<java.nio.file.Path> paths;
+		try (Stream<java.nio.file.Path> stream = Files.walk(historyFolder)) {
+			paths = stream.sorted().toList();
+		} catch (IOException e) {
+			throw new InvocationTargetException(e, NLS.bind(DocometreMessages.DataTransfer_errorExporting, historyFolder.toString(), e.getMessage()));
+		}
+		for (java.nio.file.Path path : paths) {
+			String relativePath = historyFolder.getParent().relativize(path).toString().replace('\\', '/');
+			String destinationName = experimentDestinationName + "/" + relativePath;
+			try {
+				if(Files.isDirectory(path)) exporter.writeFolder(destinationName + "/");
+				else exporter.write(path.toFile(), destinationName);
+			} catch (IOException e) {
+				addError(NLS.bind(DocometreMessages.DataTransfer_errorExporting, path.toString(), e.getMessage()), e);
+			}
+		}
+	}
+	
+	/**
+	 * Set this boolean indicating whether experiment history must be exported
+	 * (only when a whole experiment is exported)
+	 */
+	public void setIncludeHistory(boolean includeHistory) {
+		this.includeHistory = includeHistory;
 	}
 
 	/**
