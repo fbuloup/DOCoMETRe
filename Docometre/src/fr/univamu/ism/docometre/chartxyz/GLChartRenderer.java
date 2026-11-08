@@ -54,8 +54,6 @@ public abstract class GLChartRenderer implements GLEventListener, ChartInteracti
     /** Size of the drawing area (pixels). */
     protected int width = 1, height = 1;
 
-    protected float scaleX = 1, scaleY = 1;
-
     private final List<DisplayOptionListener> displayOptionListeners = new CopyOnWriteArrayList<>();
     private final Object optionsLock = new Object(); // option changes and their detection are atomic
 
@@ -88,14 +86,6 @@ public abstract class GLChartRenderer implements GLEventListener, ChartInteracti
         
     }
     
-    public float getScaleX() {
-		return scaleX;
-	}
-    
-    public float getScaleY() {
-		return scaleY;
-	}
-
     @Override
     public void dispose(GLAutoDrawable drawable) {
     }
