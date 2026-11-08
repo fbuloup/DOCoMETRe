@@ -35,6 +35,18 @@ final class SWTGLHost extends GLHost {
         animator.start();
     }
 
+    /**
+     * Ratio between the OpenGL surface (pixels) and the SWT component (points):
+     * 1 on a screen without scaling, 2 on a Retina screen, 1.5 on a Windows
+     * screen scaled to 150 %. Read at each event: it follows the component when
+     * it moves to a screen of another density.
+     */
+    private float[] pixelScale() {
+        Point size = canvas.getSize();
+        return new float[] { canvas.getSurfaceWidth() / (float) Math.max(1, size.x),
+                              canvas.getSurfaceHeight() / (float) Math.max(1, size.y) };
+    }
+
     /** Connects the SWT mouse / keyboard events to the renderer commands. */
     private void attachInput(ChartInteraction interaction) {
         canvas.addMouseListener(new MouseAdapter() {
@@ -49,8 +61,9 @@ final class SWTGLHost extends GLHost {
                     rightPressY = e.y;
                     rightDragged = false;
                 }
-                Point size = canvas.getSize();
-                interaction.press(e.button, modifiers(e), e.x, e.y, size.x, size.y);
+                float[] scale = pixelScale();
+                int x = (int) (e.x * scale[0]), y = (int) (e.y * scale[1]);
+                interaction.press(e.button, modifiers(e), x, y, canvas.getSurfaceWidth(), canvas.getSurfaceHeight());
             }
 
             @Override
@@ -58,16 +71,18 @@ final class SWTGLHost extends GLHost {
                 if (e.button == ChartInteraction.LEFT_BUTTON) leftDown = false;
                 if (e.button == ChartInteraction.RIGHT_BUTTON) rightDown = false;
                 // Received even outside the component: SWT captures the mouse during a drag
-                Point size = canvas.getSize();
-                interaction.release(e.button, e.x, e.y, size.x, size.y);
+                float[] scale = pixelScale();
+                int x = (int) (e.x * scale[0]), y = (int) (e.y * scale[1]);
+                interaction.release(e.button, x, y, canvas.getSurfaceWidth(), canvas.getSurfaceHeight());
                 // Right click without drag: context menu
                 if (e.button == ChartInteraction.RIGHT_BUTTON && !rightDragged && !leftDown) requestContextMenu(e.x, e.y);
             }
 
             @Override
             public void mouseDoubleClick(MouseEvent e) {
-                Point size = canvas.getSize();
-                interaction.doubleClick(e.button, modifiers(e), e.x, e.y, size.x, size.y);
+                float[] scale = pixelScale();
+                int x = (int) (e.x * scale[0]), y = (int) (e.y * scale[1]);
+                interaction.doubleClick(e.button, modifiers(e), x, y, canvas.getSurfaceWidth(), canvas.getSurfaceHeight());
             }
         });
 
@@ -80,11 +95,12 @@ final class SWTGLHost extends GLHost {
                 rightDragged = true;
             }
             int button = leftDown ? ChartInteraction.LEFT_BUTTON : rightDown ? ChartInteraction.RIGHT_BUTTON : 0;
-            Point size = canvas.getSize();
+            float[] scale = pixelScale();
+            int x = (int) (e.x * scale[0]), y = (int) (e.y * scale[1]);
             if (button != 0) {
-                interaction.dragTo(button, e.x, e.y, dx, dy, size.x, size.y, ChartInteraction.InputScale.SWT);
+                interaction.dragTo(button, x, y, dx, dy, canvas.getSurfaceWidth(), canvas.getSurfaceHeight(), ChartInteraction.InputScale.SWT);
             } else {
-                interaction.move(e.x, e.y, size.x, size.y);
+                interaction.move(x, y, canvas.getSurfaceWidth(), canvas.getSurfaceHeight());
             }
         });
 
