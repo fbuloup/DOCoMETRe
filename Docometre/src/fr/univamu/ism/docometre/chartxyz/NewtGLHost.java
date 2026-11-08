@@ -28,9 +28,11 @@ final class NewtGLHost extends GLHost {
     private boolean leftDown, rightDown;
     private int rightPressX, rightPressY;
     private boolean rightDragged; // the right button moved beyond CLICK_TOLERANCE: pan, no context menu
+	private GLChartRenderer renderer;
 
     NewtGLHost(Composite parent, GLCapabilities capabilities, GLChartRenderer renderer) {
         glWindow = GLWindow.create(capabilities);
+        this.renderer = renderer;
         NewtCanvasSWT created;
         try {
             glWindow.addGLEventListener(renderer);
@@ -58,8 +60,8 @@ final class NewtGLHost extends GLHost {
         glWindow.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                lastX = e.getX();
-                lastY = e.getY();
+                lastX = (int) (e.getX()/renderer.getScaleX());
+                lastY = (int) (e.getY()/renderer.getScaleY());
                 if (e.getButton() == MouseEvent.BUTTON1) leftDown = true;
                 if (e.getButton() == MouseEvent.BUTTON3) {
                     rightDown = true;
@@ -67,7 +69,7 @@ final class NewtGLHost extends GLHost {
                     rightPressY = e.getY();
                     rightDragged = false;
                 }
-                int button = toButton(e), x = e.getX(), y = e.getY(), w = glWindow.getWidth(), h = glWindow.getHeight();
+                int button = toButton(e), x = (int) (e.getX()/renderer.getScaleX()), y = (int) (e.getY()/renderer.getScaleY()), w = (int) (glWindow.getWidth()/renderer.getScaleX()), h = (int) (glWindow.getHeight()/renderer.getScaleY());
                 // Like the drag, in the OpenGL thread: press, drag and release are processed there in order
                 int modifiers = modifiers(e);
                 if (button != 0) glWindow.invoke(false, d -> { interaction.press(button, modifiers, x, y, w, h); return true; });
@@ -88,7 +90,7 @@ final class NewtGLHost extends GLHost {
             public void mouseReleased(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON1) leftDown = false;
                 if (e.getButton() == MouseEvent.BUTTON3) rightDown = false;
-                int button = toButton(e), x = e.getX(), y = e.getY(), w = glWindow.getWidth(), h = glWindow.getHeight();
+                int button = toButton(e), x = (int) (e.getX()/renderer.getScaleX()), y = (int) (e.getY()/renderer.getScaleY()), w = (int) (glWindow.getWidth()/renderer.getScaleX()), h = (int) (glWindow.getHeight()/renderer.getScaleY());
                 if (button != 0) glWindow.invoke(false, d -> { interaction.release(button, x, y, w, h); return true; });
                 // Right click without drag: context menu, opened in the SWT thread
                 if (button == ChartInteraction.RIGHT_BUTTON && !rightDragged && !leftDown) showContextMenu(x, y);
@@ -97,23 +99,23 @@ final class NewtGLHost extends GLHost {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() != 2) return;
-                int button = toButton(e), x = e.getX(), y = e.getY(), w = glWindow.getWidth(), h = glWindow.getHeight();
+                int button = toButton(e), x = (int) (e.getX()/renderer.getScaleX()), y = (int) (e.getY()/renderer.getScaleY()), w = (int) (glWindow.getWidth()/renderer.getScaleX()), h = (int) (glWindow.getHeight()/renderer.getScaleY());
                 int modifiers = modifiers(e);
                 if (button != 0) glWindow.invoke(false, d -> { interaction.doubleClick(button, modifiers, x, y, w, h); return true; });
             }
 
             @Override
             public void mouseDragged(MouseEvent e) {
-                int dx = e.getX() - lastX;
-                int dy = e.getY() - lastY;
-                lastX = e.getX();
-                lastY = e.getY();
-                if (rightDown && (Math.abs(e.getX() - rightPressX) > CLICK_TOLERANCE || Math.abs(e.getY() - rightPressY) > CLICK_TOLERANCE)) {
+                int dx = (int) (e.getX()/renderer.getScaleX() - lastX);
+                int dy = (int) (e.getY()/renderer.getScaleY() - lastY);
+                lastX = (int) (e.getX()/renderer.getScaleX());
+                lastY = (int) (e.getY()/renderer.getScaleY());
+                if (rightDown && (Math.abs(e.getX()/renderer.getScaleX() - rightPressX) > CLICK_TOLERANCE || Math.abs(e.getY()/renderer.getScaleY() - rightPressY) > CLICK_TOLERANCE)) {
                     rightDragged = true;
                 }
                 int button = leftDown ? ChartInteraction.LEFT_BUTTON : rightDown ? ChartInteraction.RIGHT_BUTTON : 0;
                 if (button != 0) {
-                    int x = e.getX(), y = e.getY(), w = glWindow.getWidth(), h = glWindow.getHeight();
+                    int x = (int) (e.getX()/renderer.getScaleX()), y = (int) (e.getY()/renderer.getScaleY()), w = (int) (glWindow.getWidth()/renderer.getScaleX()), h = (int) (glWindow.getHeight()/renderer.getScaleY());
                     // run in the OpenGL thread at the beginning of the next frame: no concurrent access to the renderer
                     glWindow.invoke(false, d -> { interaction.dragTo(button, x, y, dx, dy, w, h, ChartInteraction.InputScale.NEWT); return true; });
                 }
@@ -121,9 +123,9 @@ final class NewtGLHost extends GLHost {
 
             @Override
             public void mouseMoved(MouseEvent e) {
-                lastX = e.getX();
-                lastY = e.getY();
-                int x = e.getX(), y = e.getY(), w = glWindow.getWidth(), h = glWindow.getHeight();
+                lastX = (int) (e.getX()/renderer.getScaleX());
+                lastY = (int) (e.getY()/renderer.getScaleY());
+                int x = (int) (e.getX()/renderer.getScaleX()), y = (int) (e.getY()/renderer.getScaleY()), w = (int) (glWindow.getWidth()/renderer.getScaleX()), h = (int) (glWindow.getHeight()/renderer.getScaleY());
                 glWindow.invoke(false, d -> { interaction.move(x, y, w, h); return true; });
             }
 

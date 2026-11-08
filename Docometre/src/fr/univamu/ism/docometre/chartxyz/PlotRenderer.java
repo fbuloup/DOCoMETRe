@@ -1937,11 +1937,11 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     // width takes high-density screens into account.
 
     private float toPixelX(int x, int componentWidth) {
-        return (float) x * width / Math.max(1, componentWidth);
+        return (float) (x * width / Math.max(1, componentWidth)) / scaleX;
     }
 
     private float toPixelY(int y, int componentHeight) {
-        return height - (float) y * height / Math.max(1, componentHeight);
+        return height - (float) (y * height / Math.max(1, componentHeight)) / scaleY;
     }
 
     private float clampX(float px) {

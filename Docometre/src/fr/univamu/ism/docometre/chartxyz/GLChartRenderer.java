@@ -6,10 +6,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
+import org.eclipse.swt.widgets.Display;
+
+import com.jogamp.newt.opengl.GLWindow;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLContext;
 import com.jogamp.opengl.GLEventListener;
+import com.jogamp.opengl.swt.GLCanvas;
 
 import fr.univamu.ism.docometre.Activator;
 
@@ -54,6 +58,8 @@ public abstract class GLChartRenderer implements GLEventListener, ChartInteracti
     /** Size of the drawing area (pixels). */
     protected int width = 1, height = 1;
 
+    protected float scaleX = 1, scaleY = 1;
+
     private final List<DisplayOptionListener> displayOptionListeners = new CopyOnWriteArrayList<>();
     private final Object optionsLock = new Object(); // option changes and their detection are atomic
 
@@ -83,7 +89,27 @@ public abstract class GLChartRenderer implements GLEventListener, ChartInteracti
         gl.glEnable(GL2.GL_BLEND);
         gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);
         gl.glHint(GL2.GL_LINE_SMOOTH_HINT, GL2.GL_NICEST);
+        
+        if(drawable instanceof GLWindow) {
+    		float[] scale = new float[2];
+    		((GLWindow)drawable).getScreen().getPrimaryMonitor().getPixelScale(scale);
+    		this.scaleX = scale[0];
+    		this.scaleY = scale[1];
+        } else if(drawable instanceof GLCanvas) {
+        	float dpiScale = Display.getCurrent().getDPI().x / 96.0f;
+        	this.scaleX = dpiScale;
+    		this.scaleY = dpiScale;
+        }
+        
     }
+    
+    public float getScaleX() {
+		return scaleX;
+	}
+    
+    public float getScaleY() {
+		return scaleY;
+	}
 
     @Override
     public void dispose(GLAutoDrawable drawable) {
