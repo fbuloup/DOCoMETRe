@@ -369,9 +369,11 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 	
 	@Override
 	public void dispose() {
-        container.getDisplay().removeFilter(SWT.KeyUp, shortcutsListener);
+		if(!container.isDisposed())
+			container.getDisplay().removeFilter(SWT.KeyUp, shortcutsListener);
         GLHost.removeApplicationKeyListener(shortcutsListener);
 		setFullScreen(false);
+		removeAllCharts(true);
 		PlatformUI.getWorkbench().getActiveWorkbenchWindow().removePerspectiveListener(this);
 		super.dispose();
 	}
@@ -420,6 +422,7 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 			if(currentPerspectiveID.equals(AcquirePerspective.id)) return;
 		}
 		chartsDACQConfiguration = null;
+		if(chartsContainer.isDisposed()) return;
 		Control[] children = chartsContainer.getChildren();
 		for (Control control : children) {
 			control.dispose();
