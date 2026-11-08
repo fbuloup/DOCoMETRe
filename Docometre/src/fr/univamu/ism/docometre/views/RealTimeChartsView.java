@@ -84,6 +84,7 @@ import fr.univamu.ism.docometre.dacqsystems.ExperimentScheduler;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.dacqsystems.charts.ChartConfiguration;
 import fr.univamu.ism.docometre.handlers.RunStopHandler;
+import fr.univamu.ism.docometre.chartxyz.GLHost;
 
 public class RealTimeChartsView extends ViewPart implements IPerspectiveListener {
 	
@@ -113,6 +114,10 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 	private boolean fullScreen;
 	private Menu savedMenuBar;
 	private List<MTrimBar> hiddenTrimBars = new ArrayList<>();
+    // Shortcuts of the acquire perspective (full screen, run / stop, Escape...) : registered as a
+    // display filter on SWT.KeyUp, and as an application key listener of the charts (GLHost) for
+    // the keys typed while a NEWT window has the keyboard focus (macOS), which SWT does not see
+    private Listener shortcutsListener;
 
 	public RealTimeChartsView() {
 		// TODO Auto-generated constructor stub
@@ -124,14 +129,18 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 		container = new Composite(parent, SWT.NONE);
 		container.setLayout(new GridLayout());
 		
-		container.getDisplay().addFilter(SWT.KeyUp, new Listener() {
+		shortcutsListener = new Listener() {
 			@Override
 			public void handleEvent(Event event) {
 				IPerspectiveDescriptor currentPerspective = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getPerspective();
 				boolean checkPerspective = currentPerspective.getId().equals(AcquirePerspective.id);
 				boolean isRunning = ExperimentScheduler.getInstance().isRunning();
 				// Shortcuts below are ignored when a dialog is opened
-				boolean workbenchShellActive = !container.isDisposed() && event.display.getActiveShell() == getSite().getShell();
+				// When the NEWT window has the keyboard focus (macOS), no SWT shell is active :
+                // the shortcuts are accepted. When a modal dialog is open, it is the active
+                // shell : the shortcuts are ignored.
+                Shell activeShell = container != null && !container.isDisposed() ? container.getDisplay().getActiveShell() : null;
+                boolean workbenchShellActive = !container.isDisposed() && (activeShell == null || activeShell == getSite().getShell());
 				boolean mod1Shift = ((event.stateMask & SWT.MOD1) != 0) && ((event.stateMask & SWT.SHIFT) != 0);
 				if(event.keyCode == SWT.F11 || (mod1Shift && event.keyCode == 'f')) {
 					if(checkPerspective && workbenchShellActive) setFullScreen(!fullScreen);
@@ -150,7 +159,9 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 					}
 				}
 			}
-		});
+        };
+        container.getDisplay().addFilter(SWT.KeyUp, shortcutsListener);
+        GLHost.addApplicationKeyListener(shortcutsListener);
 		
 		stateContainer = new Composite(container, SWT.NONE);
 		stateContainer.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
@@ -358,6 +369,8 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 	
 	@Override
 	public void dispose() {
+        container.getDisplay().removeFilter(SWT.KeyUp, shortcutsListener);
+        GLHost.removeApplicationKeyListener(shortcutsListener);
 		setFullScreen(false);
 		PlatformUI.getWorkbench().getActiveWorkbenchWindow().removePerspectiveListener(this);
 		super.dispose();
