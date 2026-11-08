@@ -83,9 +83,8 @@ public abstract class GLChartRenderer implements GLEventListener, ChartInteracti
         gl.glEnable(GL2.GL_BLEND);
         gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);
         gl.glHint(GL2.GL_LINE_SMOOTH_HINT, GL2.GL_NICEST);
-        
     }
-    
+
     @Override
     public void dispose(GLAutoDrawable drawable) {
     }

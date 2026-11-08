@@ -1932,6 +1932,9 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         return true;
     }
 
+    // Conversions: interaction coordinates (pixels, origin at the top left)
+    // -> OpenGL pixels (origin at the bottom left) -> data units.
+
     private float toPixelX(int x, int componentWidth) {
         return (float) x * width / Math.max(1, componentWidth);
     }

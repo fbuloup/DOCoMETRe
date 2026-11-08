@@ -158,7 +158,7 @@ final class NewtGLHost extends GLHost {
     private float[] pixelScale() {
         return glWindow.getCurrentSurfaceScale(new float[2]);
     }
-    
+
     /** NEWT button -> {@link ChartInteraction#LEFT_BUTTON} / {@link ChartInteraction#RIGHT_BUTTON}, 0 for the others. */
     private static int toButton(MouseEvent e) {
         if (e.getButton() == MouseEvent.BUTTON1) return ChartInteraction.LEFT_BUTTON;
