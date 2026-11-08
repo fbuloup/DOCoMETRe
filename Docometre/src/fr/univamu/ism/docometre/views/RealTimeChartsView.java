@@ -249,6 +249,10 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 
 	}
 	
+	public boolean isContainerDisposed() {
+		return container == null || container.isDisposed();
+	}
+	
 	public void updateValues(IResource resource) {
 		if(resource == null) {
 			experimentLabelValue.setText(DocometreMessages.NotAvailable_Label);
@@ -280,7 +284,7 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 	/*
 	 * Run or stop selected item, as run/stop button of the main tool bar (which is hidden in full screen mode)
 	 */
-	private void runStop() {
+	public void runStop() {
 		IHandlerService handlerService = getSite().getService(IHandlerService.class);
 		if(handlerService == null) return;
 		try {
