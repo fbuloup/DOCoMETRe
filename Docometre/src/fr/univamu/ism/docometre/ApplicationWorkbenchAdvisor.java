@@ -41,8 +41,11 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
@@ -62,8 +65,11 @@ import org.eclipse.e4.ui.model.application.ui.MUILabel;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceManager;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
@@ -72,10 +78,12 @@ import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
+import fr.univamu.ism.docometre.dacqsystems.ExperimentScheduler;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfigurationProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfigurationProperties;
 import fr.univamu.ism.docometre.handlers.StartStopMathEngineHandler;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
+import fr.univamu.ism.docometre.views.RealTimeChartsView;
 
 public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
@@ -163,6 +171,36 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 	@Override
 	public boolean preShutdown() {
 		try {
+			if(ExperimentScheduler.getInstance().isRunning()) return false;
+			// Leave full screen mode before closing so that trim bars visibility is restored
+			// before the workbench model is saved (RealTimeChartsView.setFullScreen(false))
+			IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+			IViewPart realTimeChartsView = activePage == null ? null : activePage.findView(RealTimeChartsView.ID);
+			if(realTimeChartsView instanceof RealTimeChartsView && ((RealTimeChartsView)realTimeChartsView).isFullScreen()) {
+				((RealTimeChartsView)realTimeChartsView).setFullScreen(false);
+			}
+			boolean doClose = true;
+			try {
+				PlatformUI.getWorkbench().getProgressService().busyCursorWhile(new IRunnableWithProgress() {
+					@Override
+					public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+						IProject[] projects =ResourcesPlugin.getWorkspace().getRoot().getProjects();
+						monitor.beginTask("", projects.length);
+						for (IProject project : projects) {
+							ResourceProperties.savePropertiesToFile(project);
+							monitor.done();
+							if(monitor.isCanceled()) break;
+						}
+						
+					}
+				});
+			} catch (InvocationTargetException | InterruptedException e) {
+				Activator.logErrorMessageWithCause(e);
+				e.printStackTrace();
+				if(e instanceof InterruptedException) doClose = false;
+			} 
+			if(!doClose) return false;
+			
 			jobStatus = null;
 			jobState = Job.NONE;
 			long dt = 0;

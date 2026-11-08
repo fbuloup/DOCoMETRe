@@ -45,22 +45,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
 import org.eclipse.core.commands.operations.IOperationHistory;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.e4.ui.model.application.ui.basic.MTrimBar;
 import org.eclipse.e4.ui.model.application.ui.basic.MTrimmedWindow;
 import org.eclipse.e4.ui.model.application.ui.basic.MWindow;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.ui.IViewPart;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
@@ -69,7 +62,6 @@ import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 
 import fr.univamu.ism.docometre.consoles.DocometreConsole;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
-import fr.univamu.ism.docometre.views.RealTimeChartsView;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
@@ -133,37 +125,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		PlatformUI.getWorkbench().getOperationSupport().getOperationHistory().addOperationApprover(promptingUserApprover);
     }
 	
-	@Override
-	public boolean preWindowShellClose() {
-		// Leave full screen mode before closing so that trim bars visibility is restored
-		// before the workbench model is saved (RealTimeChartsView.setFullScreen(false))
-		IWorkbenchPage activePage = getWindowConfigurer().getWindow().getActivePage();
-		IViewPart realTimeChartsView = activePage == null ? null : activePage.findView(RealTimeChartsView.ID);
-		if(realTimeChartsView instanceof RealTimeChartsView && ((RealTimeChartsView)realTimeChartsView).isFullScreen()) {
-			((RealTimeChartsView)realTimeChartsView).setFullScreen(false);
-		}
-		boolean doClose = true;
-		try {
-			PlatformUI.getWorkbench().getProgressService().busyCursorWhile(new IRunnableWithProgress() {
-				@Override
-				public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-					IProject[] projects =ResourcesPlugin.getWorkspace().getRoot().getProjects();
-					monitor.beginTask("", projects.length);
-					for (IProject project : projects) {
-						ResourceProperties.savePropertiesToFile(project);
-						monitor.done();
-						if(monitor.isCanceled()) break;
-					}
-					
-				}
-			});
-		} catch (InvocationTargetException | InterruptedException e) {
-			Activator.logErrorMessageWithCause(e);
-			e.printStackTrace();
-			if(e instanceof InterruptedException) doClose = false;
-		} 
-		if(!doClose) return false;
-		return super.preWindowShellClose();
-	}
+	
 	
 }
