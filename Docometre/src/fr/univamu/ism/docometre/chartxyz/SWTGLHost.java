@@ -134,6 +134,8 @@ final class SWTGLHost extends GLHost {
 
         // Escape and Backspace arrive as the ESCAPE and BACKSPACE characters
         canvas.addListener(SWT.KeyDown, e -> {
+        	if (isShortcutModifier(e.stateMask))
+				return; // shortcut of the application, not a chart command
             char arrow = toArrow(e.keyCode);
             if (arrow != 0) {
                 interaction.keyPressed(arrow);

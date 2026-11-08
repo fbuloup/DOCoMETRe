@@ -4,6 +4,7 @@ import java.util.function.Consumer;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -88,6 +89,16 @@ public abstract class GLHost {
                 for (Listener listener : applicationKeyListeners) listener.handleEvent(event);
             });
         }
+    }
+    
+    /**
+     * True if a modifier key of the application shortcuts (Ctrl, Command, Alt) is
+     * pressed: the key is then a shortcut of the application (Cmd+Shift+F for the
+     * full screen mode...), it is not passed to the renderer (F would toggle the
+     * frame rate display). Shift alone is not one of them (Shift + Tab).
+     */
+    protected static boolean isShortcutModifier(int swtStateMask) {
+        return (swtStateMask & (SWT.CTRL | SWT.COMMAND | SWT.ALT | SWT.SHIFT)) != 0;
     }
 
     /** GL2 profile, double buffering, 4x antialiasing and, if requested, depth buffer. */

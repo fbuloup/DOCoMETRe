@@ -256,6 +256,8 @@ final class NewtGLHost extends GLHost {
 
 		// Escape and Backspace arrive as the ESCAPE and BACKSPACE characters
 		canvas.addListener(SWT.KeyDown, e -> {
+			if (isShortcutModifier(e.stateMask))
+				return; // shortcut of the application, not a chart command
 			char arrow = toArrow(e.keyCode);
 			if (arrow != 0) {
 				interaction.keyPressed(arrow);
@@ -279,11 +281,15 @@ final class NewtGLHost extends GLHost {
 		glWindow.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
-				char key = toKey(e);
-				glWindow.invoke(false, d -> {
-					interaction.keyPressed(key);
-					return true;
-				});
+				// Shortcut of the application (Cmd+Shift+F...) : only forwarded to SWT, not
+				// passed to the renderer
+				if (!isShortcutModifier(toSWTStateMask(e))) {
+					char key = toKey(e);
+					glWindow.invoke(false, d -> {
+						interaction.keyPressed(key);
+						return true;
+					});
+				}
 				// Forward to SWT the keys typed while the NEWT window has the keyboard focus,
 				// so that the shortcuts of the application (Escape to stop a trial, F9...) keep
 				// working : posted as a KeyUp event, they are received by the display filters
