@@ -338,7 +338,18 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 			containerLayout.marginHeight = fullScreen ? 0 : 5;
 			chartsContainer.setFocus();
 		}
-		shell.layout(true, true);
+		// On macOS, leaving full screen is animated and asynchronous : the shell is
+		// resized after this method returns, so the layout must be deferred
+		if(Platform.OS_MACOSX.equals(Platform.getOS())) {
+			shell.getDisplay().asyncExec(new Runnable() {
+				@Override
+				public void run() {
+					if(!shell.isDisposed()) shell.layout(true, true);
+				}
+			});
+		} else {
+			shell.layout(true, true);
+		}
 	}
 	
 	@Override
