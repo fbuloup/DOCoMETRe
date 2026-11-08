@@ -1932,10 +1932,6 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         return true;
     }
 
-    // Conversions: window units (origin at the top left) -> OpenGL pixels
-    // (origin at the bottom left) -> data units. The ratio this.width / component
-    // width takes high-density screens into account.
-
     private float toPixelX(int x, int componentWidth) {
         return (float) x * width / Math.max(1, componentWidth);
     }
