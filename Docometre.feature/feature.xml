@@ -6,30 +6,61 @@
       provider-name="ISM">
 
    <description>
-      -- 2026-11-07
+      -- 2026-11-09
 ADDED :
-* Experiments history (experimental feature, to be enabled in Options &gt; Preferences &gt; History) :
-snapshots of experiments (stored with Git in each experiment folder), Snapshots view (snapshots,
-files changed by each snapshot, differences of a file), creation of snapshots, restoration of a
-snapshot or of a single file (nothing is lost : a restoration creates a new snapshot), deletion of
-snapshots, automatic snapshots before deleting or renaming resources or deleting diaries and data
-files, indicators of changes in the Experiments view, history exported and imported with the
+* The application can no longer be closed (Cmd+Q, Alt+F4) while an experiment is running
+* OpenGL V2 charts : keyboard shortcuts of the application (Escape to stop a trial, F9, F11,
+Cmd+P, full screen...) now also work when the chart has the keyboard focus (NEWT window, macOS)
+FIXED :
+* OpenGL V2 charts, HiDPI / Retina screens (and screens scaled to more than 100 %) : mouse
+coordinates of the chart interactions (zoom, pan, cursors, markers, context menu) were offset by
+the scaling factor, with both NEWT and SWT hosts. The scaling factor follows a window moved to a
+screen of another density
+* Status line hidden after leaving full screen mode : full screen mode is now left before the
+workbench model is saved and the status line is forced visible at startup, and the layout is
+deferred on macOS where leaving full screen is asynchronous
+* Stop trial dialog opened twice on macOS (the same key press was delivered twice)
+* Shortcuts with Cmd/Ctrl/Alt were also passed to the chart having the keyboard focus (e.g.
+Cmd+Shift+F switched to full screen mode but also toggled the frame rate display of the chart)
+* JVM crash when closing the Real-Time Charts view : its container may already be disposed, and
+the charts are now removed when the view is disposed
+-- 2026-11-07
+ADDED :
+* Experiments history (experimental feature, to be enabled in
+Options &gt; Preferences &gt; History) :
+snapshots of experiments (stored with Git in each experiment
+folder), Snapshots view (snapshots,
+files changed by each snapshot, differences of a file), creation
+of snapshots, restoration of a
+snapshot or of a single file (nothing is lost : a restoration
+creates a new snapshot), deletion of
+snapshots, automatic snapshots before deleting or renaming resources
+or deleting diaries and data
+files, indicators of changes in the Experiments view, history
+exported and imported with the
 experiment, help page
 * Full screen mode to run trials or test a process (general preferences)
-* OpenGL V2 charts : display options in the DACQ configuration editor (current values, legend
+* OpenGL V2 charts : display options in the DACQ configuration
+editor (current values, legend
 inside or below the chart, grid, axes, tick labels)
-* Shorter dead time between trials (about 30 ms instead of 84 ms) : Experiments and Subjects views
-updated asynchronously and only where needed, real-time charts cleared instead of recreated when
-the acquisition configuration did not change, no vertical synchronization for OpenGL charts
+* Shorter dead time between trials (about 30 ms instead of 84
+ms) : Experiments and Subjects views
+updated asynchronously and only where needed, real-time charts
+cleared instead of recreated when
+the acquisition configuration did not change, no vertical synchronization
+for OpenGL charts
 * Tests project (JUnit tests of the experiments history)
 FIXED :
 * Rename of untyped files (stream leak and NPE)
-* Acquisition loop blocked (up to more than one second) when the disk was slow : channels samples
+* Acquisition loop blocked (up to more than one second) when
+the disk was slow : channels samples
 files are now written in a dedicated thread
-* Real-time charts, sweep mode : the last sample of a recording lasting exactly the window width
+* Real-time charts, sweep mode : the last sample of a recording
+lasting exactly the window width
 was not drawn and the first samples were hidden by the gap
 * Experiments view no longer refreshed during processes compilation
-* Help : real-time system diagram of the Data Acquisition and Real Time Systems page redone in
+* Help : real-time system diagram of the Data Acquisition and
+Real Time Systems page redone in
 English (it was in French, blurred and distorted)
 -- 2026-11-03 - BIS
 ADDED : Nothing !
