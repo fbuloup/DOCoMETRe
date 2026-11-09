@@ -116,7 +116,7 @@ public class VariablesCodeGenerationDelegate {
 					code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%d\"," + transferNumber + ", " + name + ");\n";
 				}
 				if(type.equals(ArduinoUnoVariableProperties.LONG)) {
-					code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%lu\"," + transferNumber + ", " + name + ");\n";
+					code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%ld\"," + transferNumber + ", " + name + ");\n";
 				}
 				if(type.equals(ArduinoUnoVariableProperties.FLOAT)) {
 					if(isRelease4Wifi) {
