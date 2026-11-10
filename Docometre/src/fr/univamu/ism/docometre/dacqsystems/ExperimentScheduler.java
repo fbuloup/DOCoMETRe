@@ -69,6 +69,7 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.TrialNames;
 import fr.univamu.ism.docometre.TrialStartMode;
 import fr.univamu.ism.docometre.TrialValidateMode;
 import fr.univamu.ism.docometre.dacqsystems.charts.UIRefreshScheduler;
@@ -147,7 +148,7 @@ public class ExperimentScheduler {
 					if(prefix == null) prefix= "";
 					else prefix = prefix + dataFilePathNameSeparator;
 					if(ResourceProperties.useSessionNameInDataFilesNamesAsFirstSuffix(currentSession)) suffix = dataFilePathNameSeparator + currentSession.getName();
-					if(ResourceProperties.useTrialNumberInDataFilesNamesAsSecondSuffix(currentSession)) suffix = suffix  + dataFilePathNameSeparator + "T" + currentTrial.getName().split("°")[1];
+					if(ResourceProperties.useTrialNumberInDataFilesNamesAsSecondSuffix(currentSession)) suffix = suffix  + dataFilePathNameSeparator + "T" + TrialNames.getNumber(currentTrial);
 				}
 				
 				Thread.currentThread().setPriority(Thread.NORM_PRIORITY + 1);
@@ -412,13 +413,12 @@ public class ExperimentScheduler {
 	}
 	
 	private IResource getTrial(IResource trial, boolean next) {
-		String name = trial.getName();
-		int currentTrialNumber = Integer.parseInt(name.split("°")[1]);
+		int currentTrialNumber = TrialNames.getNumber(trial);
 		int nextTrialNumber = next?currentTrialNumber + 1:currentTrialNumber - 1;
-		IResource nextTrial = ((IFolder)currentSession).findMember(DocometreMessages.Trial + nextTrialNumber);
+		IResource nextTrial = ((IFolder)currentSession).findMember(TrialNames.getName(nextTrialNumber));
 		while(nextTrial != null && ResourceProperties.isTrialDone((IFolder) nextTrial)) {
 			nextTrialNumber = next?nextTrialNumber + 1:nextTrialNumber - 1;
-			nextTrial = ((IFolder)currentSession).findMember(DocometreMessages.Trial + nextTrialNumber);
+			nextTrial = ((IFolder)currentSession).findMember(TrialNames.getName(nextTrialNumber));
 		}
 		return nextTrial;
     }
@@ -539,8 +539,7 @@ public class ExperimentScheduler {
 	
 	public int getCurrentTrialNumber() {
 		if(currentTrial == null) return 0;
-		String trialNumber = currentTrial.getName().split("°")[1];
-		return Integer.parseInt(trialNumber);
+		return TrialNames.getNumber(currentTrial);
 	}
 
 }

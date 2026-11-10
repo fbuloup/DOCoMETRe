@@ -43,8 +43,6 @@ package fr.univamu.ism.docometre.views;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IProject;
@@ -55,9 +53,9 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
 import fr.univamu.ism.docometre.Activator;
-import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.TrialNames;
 
 public class ExperimentsContentProvider implements ITreeContentProvider {
 
@@ -156,9 +154,8 @@ public class ExperimentsContentProvider implements ITreeContentProvider {
 						ResourceProperties.setTypePersistentProperty(resource, ResourceType.SAVE_DATA_FILE.toString());
 					}
 				} else {
-					Pattern pattern = Pattern.compile("^" + DocometreMessages.Trial + "[1-9]\\d*(:[1-9]\\d*)?$");
-					Matcher matcher = pattern.matcher(resource.getName());
-					if(matcher.matches()) {
+					// Trial folder, or trial folder of previous versions (e.g. "Essai n°N") not yet renamed
+					if(TrialNames.isName(resource.getName()) || TrialNames.isLegacyName(resource.getName())) {
 						ResourceProperties.setTypePersistentProperty(resource, ResourceType.TRIAL.toString());
 						IResource parentResource = resource.getParent();
 						if(ResourceType.isAnyTest(parentResource)) 

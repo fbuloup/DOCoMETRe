@@ -80,6 +80,7 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.TrialNames;
 import fr.univamu.ism.docometre.dacqsystems.ParametersFile.TrialValues;
 import fr.univamu.ism.docometre.dacqsystems.adwin.DiaryLogLevel;
 import fr.univamu.ism.docometre.dacqsystems.ui.ParametersDialog;
@@ -412,7 +413,7 @@ public abstract class Process extends AbstractElement implements ModuleBehaviour
 	
 	private void prepareTrialParameters(IResource resource) throws Exception {
 		// Get trial number from trial name
-		currentTrialNumber = Integer.parseInt(resource.getName().split("°")[1]);
+		currentTrialNumber = TrialNames.getNumber(resource);
 		ParameterVariable[] parameters = getDACQConfiguration().getParameters();
 		if(parameters.length == 0) return;
 		// There are parameters, try to get their values for current trial from parameters file

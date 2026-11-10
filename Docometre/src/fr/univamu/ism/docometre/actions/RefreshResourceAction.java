@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
@@ -68,6 +69,7 @@ import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.TrialNames;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
 import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
@@ -109,6 +111,8 @@ public class RefreshResourceAction extends Action implements ISelectionListener,
 					for (IResource resource : selectedResources) {
 						try {
 							resource.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+							// Trials folders of previous versions (e.g. "Essai n°N") added from file system
+							if(resource instanceof IContainer) TrialNames.migrate((IContainer) resource, monitor);
 							ExperimentsView.refresh(resource.getParent(), new IResource[]{resource});
 							SubjectsView.refresh(resource.getParent(), new IResource[]{resource});
 							FunctionsView.refresh(true);

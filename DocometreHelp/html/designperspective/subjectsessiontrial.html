@@ -99,12 +99,18 @@
 
 	<h2><a name="trials">Trials</a></h2>
 
-	<p>Trials are folders named <code>Trial n&deg;N</code>
-		(<code>Essai n&deg;N</code> in French), where N is the trial number.
-		They are created with their session, or with File &gt; New &gt;
+	<p>Trials are folders named <code>Trial_N</code>, where N is the trial
+		number, whatever the language of the application. They are displayed
+		<code>Trial n&deg;N</code> (<code>Essai n&deg;N</code> in French,
+		<code>Pr&oacute;ba nr N</code> in Polish). Trials folders created by
+		previous versions (named <code>Trial n&deg;N</code>,
+		<code>Essai n&deg;N</code>...) are automatically renamed
+		<code>Trial_N</code> at startup, after an import, a refresh or the
+		restoration of a snapshot.</p>
+	<p>Trials are created with their session, or with File &gt; New &gt;
 		Trial(s) when a session is selected: type <code>Trial n&deg;10</code>
-		to create trial 10, or <code>Trial n&deg;10:30</code> to create trials
-		10 to 30.</p>
+		(or <code>Trial_10</code>) to create trial 10, or
+		<code>Trial n&deg;10:30</code> to create trials 10 to 30.</p>
 	<p>The label of a trial gives its modes and its associated process, for
 		example <code>Trial n&deg;3 [S.Man.][V.Auto.] [/MyExperiment/MyProcess]</code>,
 		and its icon shows whether it has been done:</p>

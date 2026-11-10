@@ -66,6 +66,7 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.TrialNames;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 import fr.univamu.ism.docometre.wizards.NewResourceWizard;
 import fr.univamu.ism.docometre.wizards.OrganizeSessionWizardPage;
@@ -104,7 +105,7 @@ public class NewSessionAction extends Action implements ISelectionListener, IWor
 				ResourceProperties.setUseTrialNumberInDataFilesNamesAsSecondSuffix(session, newResourceWizard.useTrialNumberSuffix());
 				int nbTrials = newResourceWizard.getTrialsNumber();
 				for (int i = 0; i < nbTrials; i++) {
-					IFolder trial = session.getFolder(DocometreMessages.Trial + (i+1));
+					IFolder trial = TrialNames.getTrial(session, i + 1);
 					trial.create(true, true, null);
 					ResourceProperties.setDescriptionPersistentProperty(trial, "");
 					ResourceProperties.setTypePersistentProperty(trial, ResourceType.TRIAL.toString());
@@ -114,7 +115,7 @@ public class NewSessionAction extends Action implements ISelectionListener, IWor
 				HashMap<Integer, IResource> resultAssociation = organizeSessionWizardPage.getResultAssociation();
 				Set<Integer> trialsNumbers = resultAssociation.keySet();
 				for (Integer trialNumber : trialsNumbers) {
-					IFolder trial = session.getFolder(DocometreMessages.Trial + trialNumber);
+					IFolder trial = TrialNames.getTrial(session, trialNumber);
 					IResource process = resultAssociation.get(trialNumber);
 					ResourceProperties.setAssociatedProcessProperty(trial, process.getFullPath().toOSString());
 				}

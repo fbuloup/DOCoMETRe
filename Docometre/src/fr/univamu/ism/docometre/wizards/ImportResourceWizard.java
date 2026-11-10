@@ -101,6 +101,7 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.TrialNames;
 import fr.univamu.ism.docometre.TrialStartMode;
 import fr.univamu.ism.docometre.TrialValidateMode;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
@@ -287,6 +288,8 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 										readAndApplyPersitentProperties(newExperiment, subMonitor, nbPropertiesEntriesToApply, propertiesFileFullPath);
 										IFile propertiesFile = newExperiment.getFile(newExperiment.getName() + ".properties");
 										if(propertiesFile != null) propertiesFile.delete(true, null);
+										// Experiment exported by a previous version : trials folders named "Essai n°N"...
+										TrialNames.migrate(newExperiment, null);
 										
 										subMonitor.subTask(DocometreMessages.RefreshingWorkspace);
 										newExperiment.getParent().refreshLocal(IResource.DEPTH_INFINITE, null);
@@ -349,6 +352,8 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 											String[] propertiesFileFullPathSegments = propertiesFileFullPath.split("/");
 											IFile propertiesFile = experiment.getFile(propertiesFileFullPathSegments[propertiesFileFullPathSegments.length - 1]);
 											if(propertiesFile != null) propertiesFile.delete(true, null);
+											// Resources exported by a previous version : trials folders named "Essai n°N"...
+											TrialNames.migrate(experiment, null);
 											
 											
 										} catch (IOException e) {
@@ -440,8 +445,7 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 										String validateMode = values.length > 1 ? TrialValidateMode.getValidateMode(values[1]).getKey():TrialValidateMode.MANUAL.getKey();
 										String process = values.length > 2 ? values[2]:null;
 										if(process != null) process = process.endsWith(Activator.processFileExtension) ? process : process + Activator.processFileExtension;
-										String trialName = DocometreMessages.NewResourceWizard_DefaultTrialName.replaceAll("N", "") + numTrial;
-										IFolder newTrial = newSession.getFolder(new org.eclipse.core.runtime.Path(trialName));
+										IFolder newTrial = TrialNames.getTrial(newSession, numTrial);
 										newTrial.create(true, true, null);
 										ResourceProperties.setTypePersistentProperty(newTrial, ResourceType.TRIAL.toString());
 										ResourceProperties.setTrialStartMode(newTrial, TrialStartMode.getStartMode(startMode));

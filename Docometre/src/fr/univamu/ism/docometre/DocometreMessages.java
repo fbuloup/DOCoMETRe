@@ -1496,6 +1496,9 @@ public final class DocometreMessages extends NLS {
 	public static String History_AutoSnapshotBeforeDelete;
 	public static String History_AutoSnapshotBeforeRename;
 	public static String History_AutoSnapshotBeforeDataDeletion;
+	public static String TrialNames_MigrationDone;
+	public static String TrialNames_MigrationConflict;
+	public static String TrialNames_MigrationTaskTitle;
 	public static String History_AutomaticSnapshotCreated;
 	public static String History_RenameExperimentBlocked;
 	public static String ExportWithHistoryTitle;

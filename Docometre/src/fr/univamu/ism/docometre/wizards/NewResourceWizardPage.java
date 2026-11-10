@@ -62,6 +62,7 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.TrialNames;
 
 public abstract class NewResourceWizardPage extends WizardPage implements IWizardPage {
 	
@@ -176,15 +177,11 @@ public abstract class NewResourceWizardPage extends WizardPage implements IWizar
 		} else {
 			if(this instanceof NewTrialWizardPage) {
 				boolean error = false;
-				String trialName = name;
-				String trials = trialName.replaceAll(DocometreMessages.NewResourceWizard_DefaultTrialName.replaceAll("N", ""), "");
-				String[] trialsSplitted = trials.split(":");
-				int trialMin = Integer.parseInt(trialsSplitted[0]);
-				int trialMax = trialMin;
-				if(trialsSplitted.length > 1) trialMax = Integer.parseInt(trialsSplitted[1]);
-				for (int n = trialMin; n <= trialMax; n++) {
-					trialName = DocometreMessages.NewResourceWizard_DefaultTrialName.replaceAll("N", "") + n;
-					if(newResourceWizard.getParentResource().findMember(trialName + fileExtension) != null) {
+				// Typed name, e.g. "Essai n°N" or "Essai n°N:M" in french, or "Trial_N"
+				int[] trialsRange = TrialNames.parseInput(name, true);
+				if(trialsRange == null) trialsRange = new int[] {1, 0};
+				for (int n = trialsRange[0]; n <= trialsRange[1]; n++) {
+					if(newResourceWizard.getParentResource().findMember(TrialNames.getName(n) + fileExtension) != null) {
 						setErrorMessage(DocometreMessages.NewResourceWizard_ErrorMessage2);
 						controlDecoration.show();
 						setPageComplete(false);

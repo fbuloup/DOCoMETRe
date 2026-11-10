@@ -65,9 +65,12 @@ import org.eclipse.e4.ui.model.application.ui.MUILabel;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceManager;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
@@ -112,6 +115,40 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 		super.preStartup();
 		// Menus and toolbars contributed in plugin.xml are in application model now, not yet rendered
 		updateIconsForTheme();
+		// Trials folders of previous versions (e.g. "Essai n°N") are renamed "Trial_N", before editors
+		// of their files are restored
+		migrateTrialsFolders();
+	}
+	
+	/*
+	 * Rename trials folders of previous versions (e.g. "Essai n°N") to "Trial_N".
+	 * Only done once, the first time a workspace is opened with this version : a progress dialog
+	 * ("Migration to the new names of trials folders") is then displayed as renaming may take time.
+	 */
+	private void migrateTrialsFolders() {
+		try {
+			if(!TrialNames.hasLegacyTrialsInWorkspace()) return;
+			// No workbench window yet : dialog without parent, kept above splash screen
+			ProgressMonitorDialog progressMonitorDialog = new ProgressMonitorDialog(null) {
+				{
+					setShellStyle(getShellStyle() | SWT.ON_TOP);
+				}
+				@Override
+				protected void configureShell(Shell shell) {
+					super.configureShell(shell);
+					shell.setText(DocometreMessages.TrialNames_MigrationTaskTitle);
+				}
+			};
+			progressMonitorDialog.run(true, false, new IRunnableWithProgress() {
+				@Override
+				public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+					TrialNames.migrateWorkspace(monitor);
+				}
+			});
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
 	}
 	
 	/*

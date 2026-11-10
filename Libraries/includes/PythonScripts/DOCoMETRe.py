@@ -374,7 +374,8 @@ class DOCoMETRe(object):
 					criteria = criteria + "." + sessionName + "." + process;
 			# if(jvmMode): print("nbDataFiles : " + str(nbDataFiles) + " fichier : " + str(n+1) + " critere : " + criteria);
 			# if(jvmMode): print(str(n) + " - " + dataFiles[n]);
-			trialNumber = trialName.split("\u00b0")[1];
+			# Trial number at the end of trial folder name ("Trial_N", or "Essai n\u00b0N"... for previous versions)
+			trialNumber = re.search(r"(\d+)$", trialName).group(1);
 			system = sessionsProperties[key + "_SYSTEM"];
 			baseTrialsNumber = sessionsProperties[sessionName + baseTrialsNumber_QN];
 			trialNumber = str(int(baseTrialsNumber) + int(trialNumber));

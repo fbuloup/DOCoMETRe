@@ -78,6 +78,7 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.PartListenerAdapter;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.TrialNames;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfigurationProperties;
 import fr.univamu.ism.docometre.dacqsystems.ExperimentScheduler;
@@ -279,7 +280,7 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 		if(ResourceType.isSession(resource)) sessionLabelValue.setText(resource.getName());
 		if(ResourceType.isTrial(resource)) {
 			int nbTrials = ResourceProperties.getTrialsNumber(resource.getParent());
-			trialLabelValue.setText(resource.getName() + " / " + nbTrials);
+			trialLabelValue.setText(TrialNames.getLabel(resource) + " / " + nbTrials);
 		}
 		if(ResourceType.isProcess(resource)) {
 			processLabelValue.setText(resource.getName().replaceAll(Activator.processFileExtension + "$", ""));

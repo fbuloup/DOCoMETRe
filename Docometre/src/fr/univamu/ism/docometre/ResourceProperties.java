@@ -512,7 +512,7 @@ public final class ResourceProperties {
 			IResource[] members  = session.members();
 			for (IResource member : members) {
 				if(ResourceType.isTrial(member)) {
-					int trialNumber = Integer.parseInt(member.getName().split("°")[1]);
+					int trialNumber = TrialNames.getNumber(member);
 					if(trialNumber > nbTrials) nbTrials = trialNumber;
 				}
 			}
@@ -778,8 +778,8 @@ public final class ResourceProperties {
 				for (int i = 0; i < members.length; i++) {
 					if(ResourceType.isTrial(members[i])) {
 						if(!ResourceProperties.isTrialDone(members[i])) {
-							String trialNumberString = members[i].getName().split("°")[1];//members[i].getName().replaceAll(DocometreMessages.Trial, "");
-							numbersArrayList.add(Integer.parseInt(trialNumberString));
+							int trialNumber = TrialNames.getNumber(members[i]);
+							if(trialNumber > 0) numbersArrayList.add(trialNumber);
 						}
 					}
 				}

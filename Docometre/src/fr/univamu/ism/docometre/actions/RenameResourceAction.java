@@ -78,6 +78,7 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.TrialNames;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.dialogs.RenameResourceDialog;
 import fr.univamu.ism.docometre.history.ui.HistoryOperations;
@@ -103,10 +104,13 @@ public class RenameResourceAction extends Action implements ISelectionListener, 
 
 	@Override
 	public void run() {
-		String message = NLS.bind(DocometreMessages.RenameDialogMessage, resource.getName().replaceAll("." + resource.getFileExtension(), ""));
+		String currentName = resource.getName().replaceAll("." + resource.getFileExtension(), "");
+		// Trial : translated label is displayed (e.g. "Essai n°N" in french), folder name is "Trial_N"
+		if(ResourceType.isTrial(resource)) currentName = TrialNames.getLabel(resource);
+		String message = NLS.bind(DocometreMessages.RenameDialogMessage, currentName);
 		ResourceNameValidator resourceNameValidator = new ResourceNameValidator();
 		RenameResourceDialog inputDialog = new RenameResourceDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
-				DocometreMessages.RenameDialogTitle, message, resource.getName().replaceAll("." + resource.getFileExtension(), ""), resourceNameValidator, resource);
+				DocometreMessages.RenameDialogTitle, message, currentName, resourceNameValidator, resource);
 		if (inputDialog.open() == Window.OK) {
 			// Experiments history : save experiment content before renaming
 			BusyIndicator.showWhile(PlatformUI.getWorkbench().getDisplay(), () -> HistoryOperations.createAutomaticSnapshots(new IResource[] {resource}, DocometreMessages.History_AutoSnapshotBeforeRename));
@@ -132,10 +136,11 @@ public class RenameResourceAction extends Action implements ISelectionListener, 
 				String fileExtension = "";
 				if(resource.getFileExtension() != null) fileExtension = "." + resource.getFileExtension();
 				IPath oldResourceAbsolutePath = resource.getLocation();
-				IPath newResourceAbsolutePath = resource.getParent().getLocation().append(inputDialog.getValue() + fileExtension);
+				String newName = resourceNameValidator.getResourceName(inputDialog.getValue());
+				IPath newResourceAbsolutePath = resource.getParent().getLocation().append(newName + fileExtension);
 				String oldPrefix = resource.getFullPath().toPortableString();
 				
-				IStatus status = operationHistory.execute(new RenameResourceOperation(DocometreMessages.RenameAction_Text, resource, inputDialog.getValue(), true, inputDialog.isAlsoRenameDataFiles(), undoContext), null, null);
+				IStatus status = operationHistory.execute(new RenameResourceOperation(DocometreMessages.RenameAction_Text, resource, newName, true, inputDialog.isAlsoRenameDataFiles(), undoContext), null, null);
 				
 				if(!status.isOK()) {
 					if(status instanceof MultiStatus) {
@@ -213,7 +218,8 @@ public class RenameResourceAction extends Action implements ISelectionListener, 
 			regexp = "^([a-zA-Z]+\\d*\\s*)+$"; //$NON-NLS-1$
 			errorMessage = DocometreMessages.NewResourceWizard_ErrorMessage;
 			if(ResourceType.isTrial(resource)) {
-				regexp = "^" + DocometreMessages.Trial + "\\d+$"; //$NON-NLS-1$ //$NON-NLS-2$
+				// "Trial_N" or translated label (e.g. "Essai n°N" in french)
+				regexp = TrialNames.getInputRegularExpression(false);
 				errorMessage = DocometreMessages.RenameResourceAction_TrialErrorMessage;
 			} 
 			if (ResourceType.isSamples(resource)){
@@ -222,6 +228,17 @@ public class RenameResourceAction extends Action implements ISelectionListener, 
 			if (ResourceType.isBatchDataProcessing(resource) || ResourceType.isDataProcessing(resource)){
 				regexp = "^([a-zA-Z]+(\\w|\\.|_)*)+$"; //$NON-NLS-1$
 			} 
+		}
+		
+		/*
+		 * Folder or file name (without extension) of typed text : "Trial_N" for a trial
+		 */
+		public String getResourceName(String text) {
+			if(ResourceType.isTrial(resource)) {
+				int[] trialNumbers = TrialNames.parseInput(text, false);
+				if(trialNumbers != null) return TrialNames.getName(trialNumbers[0]);
+			}
+			return text;
 		}
 		
 		@Override
@@ -235,6 +252,7 @@ public class RenameResourceAction extends Action implements ISelectionListener, 
 				return message;
 			} 
 			/*Check if resource name already exists*/
+			newText = getResourceName(newText);
 			IContainer parent = resource.getParent();
 			if(resource.getFileExtension() != null) {
 				if(parent.findMember(newText + "." + resource.getFileExtension()) != null) return DocometreMessages.NewResourceWizard_ErrorMessage2;

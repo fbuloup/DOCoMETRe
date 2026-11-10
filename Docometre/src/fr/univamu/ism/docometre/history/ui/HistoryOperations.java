@@ -79,6 +79,7 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.TrialNames;
 import fr.univamu.ism.docometre.analyse.MathEngine;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
@@ -865,6 +866,8 @@ public final class HistoryOperations {
 	private static void reloadExperiment(IProject project, IProgressMonitor monitor) throws CoreException {
 		project.refreshLocal(IResource.DEPTH_INFINITE, monitor);
 		ResourceProperties.reloadPropertiesFromFile(project);
+		// A snapshot of a previous version may contain trials folders named "Essai n°N"...
+		TrialNames.migrate(project, monitor);
 		List<IResource> loadedSubjects = getLoadedSubjects(project);
 		project.accept(new IResourceVisitor() {
 			@Override

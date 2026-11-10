@@ -59,6 +59,7 @@ import fr.univamu.ism.docometre.GetResourceLabelDelegate;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.TrialNames;
 
 public class NewTrialWizardPage extends NewResourceWizardPage {
 
@@ -69,7 +70,7 @@ public class NewTrialWizardPage extends NewResourceWizardPage {
 		setTitle(DocometreMessages.NewTrialWizard_PageTitle);
 		setMessage(DocometreMessages.NewTrialWizard_PageMessage);
 		setImageDescriptor(Activator.getImageDescriptor(IImageKeys.NEW_RESOURCE_BANNER));
-		setResourceNameRegularExpression("^" + DocometreMessages.Trial + "[1-9]\\d*(:[1-9]\\d*)?$");
+		setResourceNameRegularExpression(TrialNames.getInputRegularExpression(true));
 		setResourceNameErrorMessage(DocometreMessages.NewTrialWizard_ErrorMessage);
 		resourceType = ResourceType.TRIAL;
 	}
