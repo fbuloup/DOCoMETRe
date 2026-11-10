@@ -42,9 +42,11 @@
 package fr.univamu.ism.docometre.dacqsystems.adwin;
 
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
+import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
+import fr.univamu.ism.docometre.dacqsystems.ParameterVariable;
 
-public class ADWinVariable extends ADWinChannel {
+public class ADWinVariable extends ADWinChannel implements ParameterVariable {
 	
 	public static final long serialVersionUID = AbstractElement.serialVersionUID;
 	
@@ -65,29 +67,51 @@ public class ADWinVariable extends ADWinChannel {
 		return dacqConfiguration;
 	}
 	
-	public boolean isParameter() {
-		String value = getProperty(ADWinVariableProperties.PARAMETER);
-		return value.equalsIgnoreCase("true");
+	@Override
+	public String getParameterName() {
+		return getProperty(ChannelProperties.NAME);
 	}
 	
+	@Override
+	public boolean isParameter() {
+		String value = getProperty(ADWinVariableProperties.PARAMETER);
+		return "true".equalsIgnoreCase(value);
+	}
+	
+	@Override
 	public boolean isParameterPropagated() {
 		String value = getProperty(ADWinVariableProperties.PROPAGATE);
-		return isParameter() && value.equalsIgnoreCase("true");
+		return isParameter() && "true".equalsIgnoreCase(value);
+	}
+	
+	@Override
+	public boolean isStringParameter() {
+		return isParameter() && isString();
+	}
+	
+	@Override
+	public String getParameterValue() {
+		return getProperty(ADWinVariableProperties.PARAMETER_VALUE);
+	}
+	
+	@Override
+	public void setParameterValue(String value) {
+		setProperty(ADWinVariableProperties.PARAMETER_VALUE, value);
 	}
 	
 	public boolean isFloat() {
 		String value = getProperty(ADWinVariableProperties.TYPE);
-		return value.equalsIgnoreCase(ADWinVariableProperties.FLOAT); 
+		return ADWinVariableProperties.FLOAT.equalsIgnoreCase(value);
 	}
 	
 	public boolean isInt() {
 		String value = getProperty(ADWinVariableProperties.TYPE);
-		return value.equalsIgnoreCase(ADWinVariableProperties.INT); 
+		return ADWinVariableProperties.INT.equalsIgnoreCase(value);
 	}
 
 	public boolean isString() {
 		String value = getProperty(ADWinVariableProperties.TYPE);
-		return value.equalsIgnoreCase(ADWinVariableProperties.STRING); 
+		return ADWinVariableProperties.STRING.equalsIgnoreCase(value);
 	}
 
 	

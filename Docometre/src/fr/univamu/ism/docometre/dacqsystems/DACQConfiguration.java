@@ -233,6 +233,34 @@ public abstract class DACQConfiguration extends AbstractElement {
 	
 	public abstract Channel[] getVariables();
 	
+	/**
+	 * Parameters of the process : variables which are parameters, in the order of
+	 * {@link #getVariables()}. This order is the only reference for the number of a parameter
+	 * (its rank in this array, starting at 1) : code generation, sending of the values to
+	 * the DACQ system and propagation must all use it.
+	 * @return the variables which are parameters
+	 */
+	public ParameterVariable[] getParameters() {
+		ArrayList<ParameterVariable> parameters = new ArrayList<>();
+		Channel[] variables = getVariables();
+		for (Channel variable : variables) {
+			if(variable instanceof ParameterVariable && ((ParameterVariable)variable).isParameter()) parameters.add((ParameterVariable)variable);
+		}
+		return parameters.toArray(new ParameterVariable[parameters.size()]);
+	}
+	
+	/**
+	 * @return the parameters which values are propagated to the next trial, in the order of {@link #getParameters()}
+	 */
+	public ParameterVariable[] getPropagatedParameters() {
+		ArrayList<ParameterVariable> propagatedParameters = new ArrayList<>();
+		ParameterVariable[] parameters = getParameters();
+		for (ParameterVariable parameter : parameters) {
+			if(parameter.isParameterPropagated()) propagatedParameters.add(parameter);
+		}
+		return propagatedParameters.toArray(new ParameterVariable[propagatedParameters.size()]);
+	}
+	
 	public Channel[] getTransferedChannels() {
 		ArrayList<Channel> channelsArrayList = new ArrayList<>(0);
 		Channel[] channels = getChannels();

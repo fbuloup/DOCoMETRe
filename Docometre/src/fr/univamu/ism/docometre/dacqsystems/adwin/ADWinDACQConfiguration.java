@@ -224,23 +224,5 @@ public class ADWinDACQConfiguration extends DACQConfiguration implements Propert
 	public String[] getProposal() {
 		return getProposalImpl(false, false, false);
 	}
-	
-	public ADWinVariable[] getParameters() {
-		ArrayList<ADWinVariable> parameters = new ArrayList<>();
-		ADWinVariable[] variables = getVariables();
-		for (ADWinVariable variable : variables) {
-			if(variable.isParameter()) parameters.add(variable);
-		}
-		return parameters.toArray(new ADWinVariable[parameters.size()]);
-	}
 
-	
-	public ADWinVariable[] getPropagatedParameters() {
-		ADWinVariable[] parameters = getParameters();
-		ArrayList<ADWinVariable> propagatedParameters = new ArrayList<>();
-		for (ADWinVariable parameter : parameters) {
-			if(parameter.isParameterPropagated()) propagatedParameters.add(parameter);
-		}
-		return propagatedParameters.toArray(new ADWinVariable[propagatedParameters.size()]);
-	}
 }

@@ -55,6 +55,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -98,6 +99,7 @@ import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.DocometreBuilder;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.ModuleBehaviour;
+import fr.univamu.ism.docometre.dacqsystems.ParameterVariable;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.dacqsystems.TrialTimings;
 import fr.univamu.ism.docometre.dacqsystems.functions.FunctionsUtil;
@@ -1283,7 +1285,7 @@ public class ADWinProcess extends Process {
 			currentTrialNumber = Integer.parseInt(resource.getName().split("°")[1]);
 			// Try to find if there are any parameters in associated dacq conf
 			ADWinDACQConfiguration adwinDacqConfiguration = (ADWinDACQConfiguration) getDACQConfiguration();
-			ADWinVariable[] parameters = adwinDacqConfiguration.getParameters();
+			ADWinVariable[] parameters = Arrays.copyOf(adwinDacqConfiguration.getParameters(), adwinDacqConfiguration.getParameters().length, ADWinVariable[].class);
 			if(parameters.length > 0) {
 				// There are parameters, try to get their values for current trial from parameters file
 				// Get parameters file
@@ -1364,7 +1366,7 @@ public class ADWinProcess extends Process {
 		if(ResourceType.isProcess(resource)) {
 			// Try to find if there are any parameters in associated dacq conf
 			ADWinDACQConfiguration adwinDacqConfiguration = (ADWinDACQConfiguration) getDACQConfiguration();
-			ADWinVariable[] parameters = adwinDacqConfiguration.getParameters();
+			ADWinVariable[] parameters = Arrays.copyOf(adwinDacqConfiguration.getParameters(), adwinDacqConfiguration.getParameters().length, ADWinVariable[].class);
 			response = Dialog.OK;
 			if(parameters.length > 0) {
 				PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
@@ -1476,7 +1478,7 @@ public class ADWinProcess extends Process {
 	private void postManageParameters(IResource resource) throws Exception {
 		if(!ResourceType.isTrial(resource)) return;
 		ADWinDACQConfiguration adwinDacqConfiguration = (ADWinDACQConfiguration) getDACQConfiguration();
-		ADWinVariable[] propagatedParameters = adwinDacqConfiguration.getPropagatedParameters();
+		ParameterVariable[] propagatedParameters = adwinDacqConfiguration.getPropagatedParameters();
 		if(propagatedParameters.length == 0 || parametersFile == null) return;
 		// Read parameters file and replace next trial values of propagated parameters
 		List<String> lines = Files.readAllLines(FileSystems.getDefault().getPath(parametersFile.getLocation().toOSString()), StandardCharsets.UTF_8);
