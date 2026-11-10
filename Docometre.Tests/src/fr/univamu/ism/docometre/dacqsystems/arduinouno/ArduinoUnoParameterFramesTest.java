@@ -215,5 +215,29 @@ public class ArduinoUnoParameterFramesTest {
 		Reception reception = new Reception(new String[0], new int[0], false);
 		assertEquals("A0\n", send(reception, "E0"));
 	}
+	
+	private static Reception propagationReception() {
+		// Parameters 1 and 3 are propagated, parameter 2 (string) is not
+		return new Reception(new String[] {INT, STRING, FLOAT}, new int[] {1, 5, 1}, false, new boolean[] {true, false, true});
+	}
+	
+	@Test
+	public void propagatedParametersAreReceived() {
+		Reception reception = propagationReception();
+		assertEquals("A2\n", send(reception, "P3:+2.500000E-01", "P1:-12", "E2"));
+		assertTrue(reception.isAcknowledged());
+		assertEquals("-12", reception.getValue(1));
+		assertEquals("0.25", reception.getValue(3));
+		// Not expected
+		assertNull(reception.getValue(2));
+	}
+	
+	@Test
+	public void propagationErrors() {
+		// Parameter not propagated, missing propagated parameter, wrong count
+		assertEquals("N2\n", send(propagationReception(), "P1:1", "P2:abc", "P3:1", "E2"));
+		assertEquals("N3\n", send(propagationReception(), "P1:1", "E2"));
+		assertEquals("N0\n", send(propagationReception(), "P1:1", "P3:1", "E3"));
+	}
 
 }

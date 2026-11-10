@@ -65,6 +65,8 @@ public class ArduinoUnoParametersCodeTest {
 	private static final String[] TYPES = {ArduinoUnoVariableProperties.BOOL, ArduinoUnoVariableProperties.CHAR, ArduinoUnoVariableProperties.INT,
 										   ArduinoUnoVariableProperties.LONG, ArduinoUnoVariableProperties.FLOAT, ArduinoUnoVariableProperties.STRING};
 	private static final int[] SIZES = {1, 1, 1, 1, 1, 8};
+	// Strings are never propagated
+	private static final boolean[] PROPAGATED = {true, true, true, true, true, false};
 	
 	@Test
 	public void withoutParameterCodeIsUnchanged() {
@@ -88,9 +90,21 @@ public class ArduinoUnoParametersCodeTest {
 	}
 	
 	@Test
+	public void withoutPropagatedParameterNoPropagationCode() {
+		assertEquals("", ArduinoUnoParametersCode.getPropagationDeclarationCode(NAMES, TYPES, new boolean[NAMES.length], false));
+	}
+	
+	@Test
+	public void floatsArePropagatedWithDtostreOnR3() {
+		assertTrue(ArduinoUnoParametersCode.getPropagationDeclarationCode(NAMES, TYPES, PROPAGATED, true).contains("dtostre(pFloat, propagationBuffer, 6"));
+		assertTrue(ArduinoUnoParametersCode.getPropagationDeclarationCode(NAMES, TYPES, PROPAGATED, false).contains("snprintf(propagationBuffer, sizeof(propagationBuffer), \"%+.6E\", pFloat);"));
+	}
+	
+	@Test
 	public void generatedCodeRunsOnHost(@TempDir Path directory) throws Exception {
 		assumeTrue(run(directory, "g++", "--version") == 0, "g++ not available");
 		String generated = ArduinoUnoParametersCode.getDeclarationCode(NAMES, TYPES, SIZES)
+						 + ArduinoUnoParametersCode.getPropagationDeclarationCode(NAMES, TYPES, PROPAGATED, false)
 						 + "void waitForStart() {\n" + ArduinoUnoParametersCode.getWaitForStartCode(NAMES.length, "\t\t") + "}\n";
 		Files.writeString(directory.resolve("generated.inc"), generated, StandardCharsets.US_ASCII);
 		try (InputStream harness = getClass().getResourceAsStream("ArduinoUnoParametersCodeHarness.cpp")) {

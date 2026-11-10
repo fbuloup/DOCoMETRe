@@ -50,6 +50,10 @@ package fr.univamu.ism.docometre.dacqsystems.arduinouno;
  * received and read) or an N frame (error), following the same rules as {@link ArduinoUnoParameterFrames.Reception}.
  * The variables which are parameters are then not initialized to 0 at the start of the process.
  * <p>
+ * At the end of the process, the values of the propagated parameters are sent to the PC (P frames then
+ * E frame) from loop(), then the board waits for the answer of the PC (A or N frame) before sending 's'.
+ * The real time loop (interrupt) does not read the serial port during this exchange (propagationInProgress).
+ * <p>
  * The number of a parameter is its rank (starting at 1) in DACQConfiguration.getParameters() : the arrays
  * given to these methods must follow this order.
  */
@@ -57,6 +61,11 @@ public final class ArduinoUnoParametersCode {
 	
 	// Longest value in a frame for numeric types : "-2147483648" or "+1.234567E+00"
 	private static final int NUMERIC_VALUE_LENGTH = 16;
+	
+	// Propagation : maximum wait for the answer of the PC (number of waits of 10 us : about 500 ms) and number of attempts.
+	// millis() can't be used : timer 0 is used to compute the workload on Arduino Uno R3.
+	private static final int PROPAGATION_ANSWER_WAITS = 50000;
+	private static final int PROPAGATION_ATTEMPTS = 2;
 	
 	private ArduinoUnoParametersCode() {
 	}
@@ -209,6 +218,90 @@ public final class ArduinoUnoParametersCode {
 		code.append(indent).append("\t\tSerial.println(\"N0\");\n");
 		code.append(indent).append("\t\tSerial.flush();\n");
 		code.append(indent).append("}\n");
+		return code.toString();
+	}
+	
+	/**
+	 * @param propagated propagated[i] is true if parameter number i + 1 is propagated
+	 * @return true if at least one parameter is propagated
+	 */
+	public static boolean hasPropagatedParameters(boolean[] propagated) {
+		for (boolean value : propagated) if(value) return true;
+		return false;
+	}
+	
+	/**
+	 * @param names the names of the parameters
+	 * @param types their types (see {@link ArduinoUnoVariableProperties#TYPES}), strings are never propagated
+	 * @param propagated propagated[i] is true if parameter number i + 1 is propagated
+	 * @param avr true for Arduino Uno R3 (AVR : floats are written with dtostre()), false for R4 WiFi
+	 * @return the declarations and functions to send the propagated parameters, to add after {@link #getDeclarationCode(String[], String[], int[])},
+	 * empty if no parameter is propagated
+	 */
+	public static String getPropagationDeclarationCode(String[] names, String[] types, boolean[] propagated, boolean avr) {
+		if(!hasPropagatedParameters(propagated)) return "";
+		int count = 0;
+		boolean hasFloat = false;
+		for (int i = 0; i < names.length; i++) {
+			if(!propagated[i]) continue;
+			count++;
+			hasFloat = hasFloat || ArduinoUnoVariableProperties.FLOAT.equals(types[i]);
+		}
+		StringBuilder code = new StringBuilder();
+		code.append("// ******** Propagated parameters : values sent to the PC at the end of the process (see loop())\n");
+		code.append("// True from the end of the process until the answer of the PC : the real time loop does not read the serial port\n");
+		code.append("volatile bool propagationInProgress;\n");
+		if(hasFloat) code.append("char propagationBuffer[20];\n");
+		code.append("\n");
+		
+		code.append("// Waits for the answer of the PC : returns true for A frame (acknowledged), false for N frame or time out\n");
+		code.append("bool waitForPropagationAnswer() {\n");
+		code.append("\t\tparameterLineLength = 0;\n");
+		code.append("\t\tfor(long i = 0; i < ").append(PROPAGATION_ANSWER_WAITS).append("; i++) {\n");
+		code.append("\t\t\t\tif(!Serial.available()) {\n");
+		code.append("\t\t\t\t\t\tdelayMicroseconds(10);\n");
+		code.append("\t\t\t\t\t\tcontinue;\n");
+		code.append("\t\t\t\t}\n");
+		code.append("\t\t\t\tchar c = (char)Serial.read();\n");
+		code.append("\t\t\t\t// 's' char of a stop requested by the user (sent without end of line) : the process is already terminated\n");
+		code.append("\t\t\t\tif(c == 's' && parameterLineLength == 0) continue;\n");
+		code.append("\t\t\t\tif(c == '\\n' || c == '\\r') {\n");
+		code.append("\t\t\t\t\t\tif(parameterLineLength > 0 && parameterLine[0] == 'A') return true;\n");
+		code.append("\t\t\t\t\t\tif(parameterLineLength > 0 && parameterLine[0] == 'N') return false;\n");
+		code.append("\t\t\t\t\t\tparameterLineLength = 0;\n");
+		code.append("\t\t\t\t} else if(parameterLineLength < (int)sizeof(parameterLine) - 1) parameterLine[parameterLineLength++] = c;\n");
+		code.append("\t\t}\n");
+		code.append("\t\treturn false;\n");
+		code.append("}\n\n");
+		
+		code.append("// Sends the values of the propagated parameters (P frames then E frame) and waits for the answer of the PC\n");
+		code.append("void sendPropagatedParameters() {\n");
+		code.append("\t\tfor(int attempt = 0; attempt < ").append(PROPAGATION_ATTEMPTS).append("; attempt++) {\n");
+		for (int i = 0; i < names.length; i++) {
+			if(!propagated[i]) continue;
+			String indent = "\t\t\t\t";
+			code.append(indent).append("Serial.print(\"P").append(i + 1).append(":\");\n");
+			switch (types[i]) {
+			case ArduinoUnoVariableProperties.BOOL:
+				code.append(indent).append("Serial.println(").append(names[i]).append(" ? 1 : 0);\n");
+				break;
+			case ArduinoUnoVariableProperties.FLOAT:
+				// Same format as the transferred values : %+.6E
+				if(avr) code.append(indent).append("dtostre(").append(names[i]).append(", propagationBuffer, 6, DTOSTR_ALWAYS_SIGN | DTOSTR_PLUS_SIGN | DTOSTR_UPPERCASE);\n");
+				else code.append(indent).append("snprintf(propagationBuffer, sizeof(propagationBuffer), \"%+.6E\", ").append(names[i]).append(");\n");
+				code.append(indent).append("Serial.println(propagationBuffer);\n");
+				break;
+			default:
+				// char, int and long
+				code.append(indent).append("Serial.println(").append(names[i]).append(");\n");
+				break;
+			}
+		}
+		code.append("\t\t\t\tSerial.println(\"E").append(count).append("\");\n");
+		code.append("\t\t\t\tSerial.flush();\n");
+		code.append("\t\t\t\tif(waitForPropagationAnswer()) return;\n");
+		code.append("\t\t}\n");
+		code.append("}\n\n");
 		return code.toString();
 	}
 	

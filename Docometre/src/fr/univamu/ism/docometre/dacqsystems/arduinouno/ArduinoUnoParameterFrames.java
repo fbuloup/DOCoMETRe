@@ -130,13 +130,16 @@ public final class ArduinoUnoParameterFrames {
 	
 	/**
 	 * Reception of the values of the parameters, until the E frame : gives the answer to send (A or N frame).
-	 * The receiver knows the types of the parameters it expects, in the order of their numbers.
+	 * The receiver knows the types of the parameters, in the order of their numbers, and which ones it expects
+	 * (all of them before the start of the process, only the propagated ones at the end of the process).
 	 */
 	public static final class Reception {
 		
 		private final String[] types;
 		private final int[] sizes;
 		private final boolean int32;
+		private final boolean[] expected;
+		private final int expectedCount;
 		private final String[] values;
 		private int errorNumber = -1;
 		private boolean ended;
@@ -148,9 +151,26 @@ public final class ArduinoUnoParameterFrames {
 		 * @param int32 true if int is on 32 bits (R4 WiFi), false if on 16 bits (R3)
 		 */
 		public Reception(String[] types, int[] sizes, boolean int32) {
+			this(types, sizes, int32, null);
+		}
+		
+		/**
+		 * @param types the types of the parameters (types[n - 1] for parameter number n)
+		 * @param sizes the sizes of the parameters (maximum length for a string)
+		 * @param int32 true if int is on 32 bits (R4 WiFi), false if on 16 bits (R3)
+		 * @param expected expected[n - 1] is true if parameter number n is expected (e.g. propagated parameters), null if all are expected
+		 */
+		public Reception(String[] types, int[] sizes, boolean int32, boolean[] expected) {
 			this.types = types.clone();
 			this.sizes = sizes.clone();
 			this.int32 = int32;
+			this.expected = new boolean[types.length];
+			int count = 0;
+			for (int i = 0; i < types.length; i++) {
+				this.expected[i] = expected == null || expected[i];
+				if(this.expected[i]) count++;
+			}
+			this.expectedCount = count;
 			this.values = new String[types.length];
 		}
 		
@@ -162,20 +182,20 @@ public final class ArduinoUnoParameterFrames {
 			if(frame == null || ended) return null;
 			if(frame.getKind() == Kind.PARAMETER) {
 				int index = frame.getNumber() - 1;
-				boolean valid = index >= 0 && index < types.length && ArduinoUnoParameterValues.isValid(types[index], sizes[index], int32, fromFrameValue(types[index], frame.getValue()));
+				boolean valid = index >= 0 && index < types.length && expected[index] && ArduinoUnoParameterValues.isValid(types[index], sizes[index], int32, fromFrameValue(types[index], frame.getValue()));
 				if(valid) values[index] = frame.getValue();
 				else if(errorNumber == -1) errorNumber = frame.getNumber();
 				return null;
 			}
 			if(frame.getKind() == Kind.END) {
 				ended = true;
-				if(frame.getNumber() != types.length) return errorFrame(COUNT_ERROR);
+				if(frame.getNumber() != expectedCount) return errorFrame(COUNT_ERROR);
 				if(errorNumber != -1) return errorFrame(errorNumber);
 				for (int i = 0; i < values.length; i++) {
-					if(values[i] == null) return errorFrame(i + 1);
+					if(expected[i] && values[i] == null) return errorFrame(i + 1);
 				}
 				acknowledged = true;
-				return acknowledgementFrame(types.length);
+				return acknowledgementFrame(expectedCount);
 			}
 			return null;
 		}
@@ -200,7 +220,7 @@ public final class ArduinoUnoParameterFrames {
 		 * null if not received or not acknowledged
 		 */
 		public String getValue(int number) {
-			if(!acknowledged || number < 1 || number > values.length) return null;
+			if(!acknowledged || number < 1 || number > values.length || !expected[number - 1]) return null;
 			return fromFrameValue(types[number - 1], values[number - 1]);
 		}
 		

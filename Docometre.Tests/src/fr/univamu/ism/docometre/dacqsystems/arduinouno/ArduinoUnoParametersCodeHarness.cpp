@@ -19,11 +19,15 @@ struct MockSerial {
 	int available() { return pos < input.size(); }
 	int read() { return input[pos++]; }
 	void print(char c) { output += c; }
+	void print(const char* s) { output += s; }
+	void println(char c) { output += c; output += "\r\n"; }
 	void println(int v) { output += std::to_string(v) + "\r\n"; }
+	void println(long v) { output += std::to_string(v) + "\r\n"; }
 	void println(const char* s) { output += std::string(s) + "\r\n"; }
 	void flush() {}
 } Serial;
 bool startLoop;
+void delayMicroseconds(int) {}
 bool pBool; char pChar; int pInt; long pLong; float pFloat; char pString[9];
 #include "generated.inc"
 static std::string run(const std::string& in) {
@@ -61,6 +65,26 @@ int main() {
 	// 'r' inside a line is not the start
 	CHECK(run("P6:rr\nP1:1\nP2:r\nP3:1\nP4:1\nP5:1\nE6\nr") == "A6\r\n");
 	CHECK(pChar == 'r' && strcmp(pString, "rr") == 0);
+	// Propagation : values sent at the end of the process, then wait for the answer of the PC
+	pBool = true; pChar = 'q'; pInt = -5; pLong = 70000L; pFloat = 1.5f;
+	std::string frames = "P1:1\r\nP2:q\r\nP3:-5\r\nP4:70000\r\nP5:+1.500000E+00\r\nE5\r\n";
+	Serial.input = "A5\n"; Serial.pos = 0; Serial.output = "";
+	sendPropagatedParameters();
+	CHECK(Serial.output == frames);
+	// N answer : sent again, then acknowledged
+	Serial.input = "N3\r\nA5\r\n"; Serial.pos = 0; Serial.output = "";
+	sendPropagatedParameters();
+	CHECK(Serial.output == frames + frames);
+	// The answer has been read (only the final \n of "A5\r\n" may remain)
+	CHECK(Serial.pos >= Serial.input.size() - 1);
+	// 's' of a stop requested by the user just before the answer : ignored
+	Serial.input = "sA5\r\n"; Serial.pos = 0; Serial.output = "";
+	sendPropagatedParameters();
+	CHECK(Serial.output == frames);
+	// No answer : sent twice, then given up
+	Serial.input = ""; Serial.pos = 0; Serial.output = "";
+	sendPropagatedParameters();
+	CHECK(Serial.output == frames + frames);
 	printf(failures == 0 ? "ALL OK\n" : "%d FAILURES\n", failures);
 	return failures;
 }

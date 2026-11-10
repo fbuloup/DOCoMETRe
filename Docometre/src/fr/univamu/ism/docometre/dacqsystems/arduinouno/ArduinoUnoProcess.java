@@ -58,6 +58,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -183,6 +184,10 @@ public class ArduinoUnoProcess extends Process {
 		// before restarts with a board reset (watchdog) : measured about 530 ms, 1000 ms
 		// gives a margin for slower boards.
 		private static final long READY_TIMEOUT_MS = 1000;
+		// Maximum wait for the 's' char of the Arduino after a stop requested by the user, when parameters are
+		// propagated : the Arduino sends them before 's' and waits for the answer of the PC (2 attempts of
+		// about 500 ms at most, see ArduinoUnoParametersCode).
+		private static final long STOP_REPLY_WITH_PROPAGATION_TIMEOUT_MS = 1500;
 		
 		private SerialPort serialPort;
 		private boolean terminate;
@@ -202,6 +207,10 @@ public class ArduinoUnoProcess extends Process {
 		// Timing trace (see TrialTimings)
 		private boolean processEndTraced;
 		private boolean firstDataTraced;
+		// Propagated parameters : expected at the end of the process, reception in progress (see handleParametersFrame())
+		private boolean propagationExpected = hasPropagatedParameters();
+		private ArduinoUnoParameterFrames.Reception propagationReception;
+		private long propagationStartNanos;
 
 		public RealTimeLoopJob(String name) {
 			super(name);
@@ -287,10 +296,7 @@ public class ArduinoUnoProcess extends Process {
 		                    	// Parameters frame : N0 is sent at the start when the process expects parameters that were not sent
 		                    	ArduinoUnoParameterFrames.Frame parametersFrame = ArduinoUnoParameterFrames.parse(messageString);
 		                    	if(parametersFrame != null) {
-		                    		if(parametersFrame.getKind() == ArduinoUnoParameterFrames.Kind.ERROR) {
-		                    			appendToEventDiary("ERROR : " + ArduinoUnoMessages.ParametersCountError);
-		                    			appendErrorMarkerAtCurrentDiaryLine(ArduinoUnoMessages.ParametersCountError);
-		                    		}
+		                    		handleParametersFrame(parametersFrame);
 		                    		continue;
 		                    	}
 		                    	String[] segments = messageString.split(":");
@@ -399,7 +405,8 @@ public class ArduinoUnoProcess extends Process {
 		                    	}
 			                    
 		                    } else {
-		                    	if(b == 's') {
+		                    	// 's' at the beginning of a line (a propagated char parameter can be 's')
+		                    	if(b == 's' && message.length() == 0) {
 		                    		if(TrialTimings.trace && !processEndTraced) {
 		                    			processEndTraced = true;
 		                    			TrialTimings.processEnded();
@@ -436,11 +443,13 @@ public class ArduinoUnoProcess extends Process {
                     		appendToEventDiary("\nSend 's' char");
 	    					serialPort.writeByte((byte) 's');
 	    					long replyStartNanos = System.nanoTime();
-	    					boolean replyReceived = waitForChar('s', STOP_REPLY_TIMEOUT_MS);
+	    					// Propagated parameters are sent by the Arduino before its 's' char
+	    					long stopReplyTimeOut = propagationExpected ? STOP_REPLY_WITH_PROPAGATION_TIMEOUT_MS : STOP_REPLY_TIMEOUT_MS;
+	    					boolean replyReceived = waitForStopReply(stopReplyTimeOut);
 	    					double replyDelayMs = (System.nanoTime() - replyStartNanos)/1e6;
 	    					if(replyReceived) appendToEventDiary("\nReceived stop 's' char after " + String.format("%.1f", replyDelayMs) + " ms");
-	    					else appendToEventDiary("\nStop 's' char not received after " + STOP_REPLY_TIMEOUT_MS + " ms");
-	    					TrialTimings.log("Arduino stop reply ('s') " + (replyReceived ? "received after " + String.format("%.1f", replyDelayMs) + " ms" : "not received (time out " + STOP_REPLY_TIMEOUT_MS + " ms)"));
+	    					else appendToEventDiary("\nStop 's' char not received after " + stopReplyTimeOut + " ms");
+	    					TrialTimings.log("Arduino stop reply ('s') " + (replyReceived ? "received after " + String.format("%.1f", replyDelayMs) + " ms" : "not received (time out " + stopReplyTimeOut + " ms)"));
 	    				}
 	    				// 's' to restart the Arduino, then wait for its 'w' : restarted and ready for next start
 	    				appendToEventDiary("\nSend 's' char to start reset");
@@ -452,6 +461,11 @@ public class ArduinoUnoProcess extends Process {
 	    				else appendToEventDiary("\nArduino restart ('w' char) not received after " + READY_TIMEOUT_MS + " ms : compile and upload the process again to get it");
 	    				TrialTimings.log("Arduino restart ('w') " + (ready ? "received after " + String.format("%.1f", readyDelayMs) + " ms" : "not received (time out " + READY_TIMEOUT_MS + " ms, process compiled before ? compile it again)"));
 	    				TrialTimings.step("stop handshake with Arduino ('s' chars and waits)");
+	    				if(propagationExpected && propagatedValues == null) {
+	    					// The parameters file will not be modified (see getPropagatedParametersValues())
+	    					appendToEventDiary("\nERROR : " + ArduinoUnoMessages.PropagatedParametersNotReceived);
+	    					appendErrorMarkerAtCurrentDiaryLine(ArduinoUnoMessages.PropagatedParametersNotReceived);
+	    				}
 	    				forceTermination = false;
 	    				terminate = true;
 	    			}
@@ -560,6 +574,87 @@ public class ArduinoUnoProcess extends Process {
 		}
 		
 		/*
+		 * Parameters frame received from the Arduino :
+		 * - N0 at the start : the process expects parameters that were not sent (process to compile again) ;
+		 * - P and E frames at the end of the process : values of the propagated parameters, the E frame is
+		 *   answered with an A frame (acknowledged : values kept for the parameters file) or an N frame.
+		 */
+		private void handleParametersFrame(ArduinoUnoParameterFrames.Frame frame) throws SerialPortException {
+			if(frame.getKind() == ArduinoUnoParameterFrames.Kind.ERROR) {
+				appendToEventDiary("ERROR : " + ArduinoUnoMessages.ParametersCountError);
+				appendErrorMarkerAtCurrentDiaryLine(ArduinoUnoMessages.ParametersCountError);
+				return;
+			}
+			if(!propagationExpected) return;
+			// New sending of the propagated parameters (first one or after an N answer)
+			if(propagationReception == null || (propagationReception.isEnded() && frame.getKind() == ArduinoUnoParameterFrames.Kind.PARAMETER)) {
+				propagationReception = createPropagationReception();
+				propagationStartNanos = System.nanoTime();
+			}
+			String answer = propagationReception.accept(frame);
+			if(answer == null) return;
+			serialPort.writeBytes(answer.getBytes(StandardCharsets.US_ASCII));
+			double delayMs = (System.nanoTime() - propagationStartNanos)/1e6;
+			if(propagationReception.isAcknowledged()) {
+				ParameterVariable[] parameters = getDACQConfiguration().getParameters();
+				Map<ParameterVariable, String> values = new LinkedHashMap<>();
+				String valuesString = "";
+				for (int i = 0; i < parameters.length; i++) {
+					String value = propagationReception.getValue(i + 1);
+					if(value == null) continue;
+					values.put(parameters[i], value);
+					valuesString = valuesString + (valuesString.isEmpty() ? "" : " - ") + parameters[i].getParameterName() + " = " + value;
+				}
+				propagatedValues = values;
+				appendToEventDiary("Propagated parameters received from Arduino and acknowledged : " + valuesString);
+				TrialTimings.log("Arduino propagated parameters (" + values.size() + ") received and acknowledged in " + String.format("%.1f", delayMs) + " ms");
+			} else {
+				appendToEventDiary("Propagated parameters not acknowledged (answer : " + answer.trim() + ")");
+				appendErrorMarkerAtCurrentDiaryLine("ERROR");
+			}
+		}
+		
+		/*
+		 * Reception of the values of the propagated parameters : types of all the parameters (numbers are
+		 * the ranks in getParameters()), only the propagated ones are expected
+		 */
+		private ArduinoUnoParameterFrames.Reception createPropagationReception() {
+			ParameterVariable[] parameters = getDACQConfiguration().getParameters();
+			String[] types = new String[parameters.length];
+			int[] sizes = new int[parameters.length];
+			for (int i = 0; i < parameters.length; i++) {
+				types[i] = ((ArduinoUnoVariable)parameters[i]).getProperty(ArduinoUnoVariableProperties.TYPE);
+				sizes[i] = ((ArduinoUnoVariable)parameters[i]).getSize();
+			}
+			boolean int32 = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION));
+			return new ArduinoUnoParameterFrames.Reception(types, sizes, int32, getPropagatedFlags());
+		}
+		
+		/*
+		 * Reads the serial port, byte per byte (the next bytes are kept for the next call), until the 's' char
+		 * (at the beginning of a line) is received or the time out is reached. Parameters frames received before
+		 * (propagated parameters) are handled, data frames are ignored. Returns true if 's' has been received.
+		 */
+		private boolean waitForStopReply(long timeOutMs) throws SerialPortException, InterruptedException {
+			StringBuilder line = new StringBuilder();
+			long deadline = System.nanoTime() + timeOutMs*1_000_000L;
+			while(System.nanoTime() < deadline) {
+				if(serialPort.getInputBufferBytesCount() > 0) {
+					byte[] bytes = serialPort.readBytes(1);
+					if(bytes == null || bytes.length == 0) continue;
+					byte b = bytes[0];
+					if(b == '\r' || b == '\n') {
+						ArduinoUnoParameterFrames.Frame frame = ArduinoUnoParameterFrames.parse(line.toString());
+						if(frame != null) handleParametersFrame(frame);
+						line.setLength(0);
+					} else if(b == 's' && line.length() == 0) return true;
+					else line.append((char)b);
+				} else Thread.sleep(1);
+			}
+			return false;
+		}
+		
+		/*
 		 * Reads the serial port, line per line, until an A or N frame is received or the time out is reached.
 		 * Returns the frame, null if not received.
 		 */
@@ -602,6 +697,8 @@ public class ArduinoUnoProcess extends Process {
 
 	private transient String devicePath;
 	private transient RealTimeLoopJob realTimeLoopJob;
+	// Values of the propagated parameters received and acknowledged at the end of the process, null if not received
+	private transient Map<ParameterVariable, String> propagatedValues;
 
 	
 
@@ -771,6 +868,7 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "\t\t// Tell the PC that the board has (re)started and waits for 'r' char (end handshake)\n";
 			code = code + "\t\tSerial.println('" + READY_MESSAGE + "');\n";
 			code = code + "\t\tSerial.flush();\n";
+			if(hasPropagatedParameters()) code = code + "\t\tpropagationInProgress = false;\n";
 			code = code + ArduinoUnoParametersCode.getWaitForStartCode(getDACQConfiguration().getParameters().length, "\t\t");
 			
 			// Variables initialization
@@ -801,7 +899,10 @@ public class ArduinoUnoProcess extends Process {
 			
 			code = code + "\t\tif(terminateProcess) {\n";
 			code = code + "\t\t\t\t// End of process : 's' char from the PC requests the restart (done by loop())\n";
-			code = code + "\t\t\t\tif(Serial.available()) {\n";
+			if(hasPropagatedParameters()) {
+				code = code + "\t\t\t\t// Serial port is not read while the propagated parameters are sent (answer of the PC read by loop())\n";
+				code = code + "\t\t\t\tif(!propagationInProgress && Serial.available()) {\n";
+			} else code = code + "\t\t\t\tif(Serial.available()) {\n";
 			code = code + "\t\t\t\t\t\tif(((char)Serial.read()) == 's') restartRequested = true;\n";
 			code = code + "\t\t\t\t}\n";
 			code = code + "\t\t\t\treturn;\n";
@@ -904,8 +1005,12 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "\t\t// ******** Début algorithme finalisation\n\n";
 			code = code + getCurrentProcess().getScript().getFinalizeCode(this, ScriptSegmentType.FINALIZE);
 			code = code + "\n\t\t// ******** Fin algorithme finalisation\n\n";
+			if(hasPropagatedParameters()) {
+				code = code + "\t\t// Propagated parameters, then 's' char, are sent by loop()\n";
+				code = code + "\t\tpropagationInProgress = true;\n";
+			}
 			if(isRelease4Wifi) code = code + "\t\tstartLoop = false;\n";
-			if(isRelease3) {
+			if(isRelease3 && !hasPropagatedParameters()) {
 				code = code + "\t\tSerial.println('s');\n";
 				code = code + "\t\tSerial.flush();\n";
 				if(delay > 0) code = code + "\t\t\t\t\t\tdelayMicroseconds(" + delay + ");\n";
@@ -942,14 +1047,32 @@ public class ArduinoUnoProcess extends Process {
 				code = code + "\t\t\t\tglobalSerialMessage = \"\";\n";
 				code = code + "\t\t\t\tSerial.flush();\n";
 				code = code + "\t\t}\n";
+				if(hasPropagatedParameters()) {
+					code = code + "\t\t// End of process : values of the propagated parameters sent before 's' char\n";
+					code = code + "\t\tif(propagationInProgress) {\n";
+					code = code + "\t\t\t\tsendPropagatedParameters();\n";
+					code = code + "\t\t\t\tpropagationInProgress = false;\n";
+					code = code + "\t\t}\n";
+				}
 				code = code + "\t\tif(terminateProcess) {\n";
 				
-				code = code + "\t\t\t\tif(!startLoop) {\n";
+				if(hasPropagatedParameters()) code = code + "\t\t\t\tif(!startLoop && !propagationInProgress) {\n";
+				else code = code + "\t\t\t\tif(!startLoop) {\n";
 				code = code + "\t\t\t\t\t\tSerial.println('s');\n";
 				code = code + "\t\t\t\t\t\tSerial.flush();\n";
 				if(delay > 0) code = code + "\t\t\t\t\t\t\t\tdelayMicroseconds(" + delay + ");\n";
 				code = code + "\t\t\t\t\t\tstartLoop = true;\n";
 			    code = code + "\t\t\t\t}\n";
+				code = code + "\t\t}\n";
+			}
+			if(isRelease3 && hasPropagatedParameters()) {
+				code = code + "\t\t// End of process : values of the propagated parameters, then 's' char\n";
+				code = code + "\t\tif(propagationInProgress) {\n";
+				code = code + "\t\t\t\tsendPropagatedParameters();\n";
+				code = code + "\t\t\t\tSerial.println('s');\n";
+				code = code + "\t\t\t\tSerial.flush();\n";
+				if(delay > 0) code = code + "\t\t\t\tdelayMicroseconds(" + delay + ");\n";
+				code = code + "\t\t\t\tpropagationInProgress = false;\n";
 				code = code + "\t\t}\n";
 			}
 			code = code + "\t\tif(restartRequested) restartProcess();\n";
@@ -1213,19 +1336,37 @@ public class ArduinoUnoProcess extends Process {
 		String[] names = new String[parameters.length];
 		String[] types = new String[parameters.length];
 		int[] sizes = new int[parameters.length];
+		boolean[] propagated = getPropagatedFlags();
 		for (int i = 0; i < parameters.length; i++) {
 			ArduinoUnoVariable variable = (ArduinoUnoVariable)parameters[i];
 			names[i] = variable.getParameterName();
 			types[i] = variable.getProperty(ArduinoUnoVariableProperties.TYPE);
 			sizes[i] = variable.getSize();
 		}
-		return ArduinoUnoParametersCode.getDeclarationCode(names, types, sizes);
+		boolean avr = ArduinoUnoDACQConfigurationProperties.REVISION_R3.equals(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION));
+		return ArduinoUnoParametersCode.getDeclarationCode(names, types, sizes) + ArduinoUnoParametersCode.getPropagationDeclarationCode(names, types, propagated, avr);
+	}
+	
+	/*
+	 * propagated[n - 1] is true if parameter number n (rank in getParameters()) is propagated :
+	 * numeric parameters only, a string is never propagated
+	 */
+	private boolean[] getPropagatedFlags() {
+		ParameterVariable[] parameters = getDACQConfiguration().getParameters();
+		boolean[] propagated = new boolean[parameters.length];
+		for (int i = 0; i < parameters.length; i++) propagated[i] = parameters[i].isParameterPropagated() && !parameters[i].isStringParameter();
+		return propagated;
+	}
+	
+	private boolean hasPropagatedParameters() {
+		return ArduinoUnoParametersCode.hasPropagatedParameters(getPropagatedFlags());
 	}
 	
 	@Override
 	protected Map<ParameterVariable, String> getPropagatedParametersValues() throws Exception {
-		// Values are not yet sent to the Arduino Uno : no value to propagate
-		return null;
+		// Values sent by the Arduino at the end of the process and acknowledged (see RealTimeLoopJob.handleParametersFrame()),
+		// in the format of the parameters file : null if not received (the parameters file is then not modified)
+		return propagatedValues;
 	}
 	
 	/*
@@ -1864,6 +2005,8 @@ public class ArduinoUnoProcess extends Process {
 			TrialTimings.step("ArduinoUnoProcess.loadProcess() (upload if needed)");
 			if(processLoaded) {
 				// Create Job
+				// Values of the propagated parameters, received at the end of the process (see RealTimeLoopJob)
+				propagatedValues = null;
 				realTimeLoopJob = new RealTimeLoopJob(DocometreMessages.RunningProcess);
 				TrialTimings.step("RealTimeLoopJob created (serial port opened)");
 				// Values of the parameters, sent while the Arduino waits for 'r' char
