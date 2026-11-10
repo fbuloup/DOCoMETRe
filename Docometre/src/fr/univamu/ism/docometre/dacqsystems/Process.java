@@ -43,7 +43,14 @@ package fr.univamu.ism.docometre.dacqsystems;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Appender;
@@ -62,6 +69,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.PlatformUI;
@@ -72,7 +80,9 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.dacqsystems.ParametersFile.TrialValues;
 import fr.univamu.ism.docometre.dacqsystems.adwin.DiaryLogLevel;
+import fr.univamu.ism.docometre.dacqsystems.ui.ParametersDialog;
 import fr.univamu.ism.process.Script;
 import fr.univamu.ism.process.ScriptSegment;
 
@@ -100,6 +110,16 @@ public abstract class Process extends AbstractElement implements ModuleBehaviour
 	private transient IResource outputFolder;
 
 	protected boolean deletionDecision;
+	
+	// Parameters of the current trial or process test (see prepareParameters), in the order of
+	// DACQConfiguration.getParameters() : values as read in the parameters file or entered by the user
+	private transient LinkedHashMap<ParameterVariable, String> currentTrialParameters;
+	// Parameters file of the session of the current trial (null if no parameter)
+	private transient IResource parametersFile;
+	// Number of the current trial
+	private transient int currentTrialNumber;
+	// Response of the parameters dialog (process test)
+	private transient int parametersDialogResponse;
 
 	public ScriptSegment getInitializeBlocksContainer() {
 		return getScript().getInitializeBlocksContainer();
@@ -288,6 +308,8 @@ public abstract class Process extends AbstractElement implements ModuleBehaviour
 		fileAppender.setImmediateFlush(false);
 		fileAppender.activateOptions();
 		logger.addAppender(fileAppender);
+		// Parameters values of the trial or process test
+		prepareParameters(resource);
 	}
 	
 	private void refreshLogFile(IResource resource) throws Exception {
@@ -346,6 +368,131 @@ public abstract class Process extends AbstractElement implements ModuleBehaviour
 	 */
 	protected void postExecuteInWorkspaceOperation(IResource resource) throws Exception {
 		refreshLogFile(resource);
+		writePropagatedParameters(resource);
+	}
+	
+	/**
+	 * Values of the parameters of the current trial or process test, prepared by {@link #preExecute(IResource)},
+	 * to be sent to the DACQ system by the sub class before the start of the process.
+	 * @return the parameters and their values (as read in the parameters file or entered by the user),
+	 * in the order of {@link DACQConfiguration#getParameters()}
+	 */
+	protected Map<ParameterVariable, String> getCurrentTrialParameters() {
+		if(currentTrialParameters == null) return Collections.emptyMap();
+		return Collections.unmodifiableMap(currentTrialParameters);
+	}
+	
+	/**
+	 * Checks the value of a parameter before the start of the process (called by {@link #preExecute(IResource)}).
+	 * Does nothing by default.
+	 * @param parameter the parameter
+	 * @param value its value, as read in the parameters file or entered by the user (may be null for a process test)
+	 * @throws Exception if the value can't be used by the DACQ system : the process is not started
+	 */
+	protected void checkParameterValue(ParameterVariable parameter, String value) throws Exception {
+	}
+	
+	/**
+	 * Values of the parameters at the end of the trial, read from the DACQ system. Called after the execution
+	 * of a trial when there are propagated parameters and a line of values for the next trial in the parameters file.
+	 * Only the values of the propagated parameters are written in the parameters file, as returned by this method.
+	 * @return the parameters and their values, null if they can't be read : the parameters file is then not modified
+	 * @throws Exception
+	 */
+	protected abstract Map<ParameterVariable, String> getPropagatedParametersValues() throws Exception;
+	
+	private void prepareParameters(IResource resource) throws Exception {
+		if(currentTrialParameters == null) currentTrialParameters = new LinkedHashMap<>();
+		currentTrialParameters.clear();
+		// Init parameters from parameters file if resource is a trial
+		if(ResourceType.isTrial(resource)) prepareTrialParameters(resource);
+		// Init parameters from parameters dialog if resource is a process (process test)
+		if(ResourceType.isProcess(resource)) prepareProcessTestParameters(resource);
+	}
+	
+	private void prepareTrialParameters(IResource resource) throws Exception {
+		// Get trial number from trial name
+		currentTrialNumber = Integer.parseInt(resource.getName().split("°")[1]);
+		ParameterVariable[] parameters = getDACQConfiguration().getParameters();
+		if(parameters.length == 0) return;
+		// There are parameters, try to get their values for current trial from parameters file
+		parametersFile = null;
+		IResource[] members = resource.getParent().members();
+		for (IResource member : members) {
+			if(ResourceType.isParameters(member)) {
+				parametersFile = member;
+				break;
+			}
+		}
+		if(parametersFile == null) throw new Exception(DocometreMessages.NoParameterFileFound);
+		String parametersFilePath = parametersFile.getLocation().toOSString();
+		List<String> lines = Files.readAllLines(Paths.get(parametersFilePath), StandardCharsets.UTF_8);
+		TrialValues trialValues = ParametersFile.getTrialValues(lines, currentTrialNumber);
+		if(trialValues == null) throw new Exception(NLS.bind(DocometreMessages.ParameterValueNotfound, currentTrialNumber, parametersFilePath));
+		String[] values = new String[parameters.length];
+		StringBuilder parametersString = new StringBuilder();
+		for (int i = 0; i < parameters.length; i++) {
+			int index = trialValues.indexOf(parameters[i].getParameterName());
+			if(index == -1) throw new Exception(NLS.bind(DocometreMessages.ParameterNameNotfound, parameters[i].getParameterName(), parametersFilePath));
+			values[i] = trialValues.getValue(index);
+			if(values[i] == null) throw new Exception(NLS.bind(DocometreMessages.ParameterValueNotfound, currentTrialNumber, parametersFilePath));
+			if(i > 0) parametersString.append(" - ");
+			parametersString.append(trialValues.getName(index)).append(" = ").append(values[i]);
+		}
+		Activator.logInfoMessage("Preparing paramaters array (parsing values) for trial (" + resource.getName() + ") : " + parametersString, getClass());
+		for (int i = 0; i < parameters.length; i++) {
+			checkParameterValue(parameters[i], values[i]);
+			currentTrialParameters.put(parameters[i], values[i]);
+		}
+	}
+	
+	private void prepareProcessTestParameters(IResource resource) throws Exception {
+		DACQConfiguration dacqConfiguration = getDACQConfiguration();
+		ParameterVariable[] parameters = dacqConfiguration.getParameters();
+		if(parameters.length == 0) return;
+		parametersDialogResponse = Dialog.OK;
+		PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+			@Override
+			public void run() {
+				ParametersDialog parametersDialog = new ParametersDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), parameters);
+				parametersDialog.setBlockOnOpen(true);
+				parametersDialogResponse = parametersDialog.open();
+			}
+		});
+		if(parametersDialogResponse == Dialog.CANCEL) throw new Exception(DocometreMessages.ProcessLaunchCanceled);
+		ObjectsController.serialize(dacqConfiguration);
+		StringBuilder parametersString = new StringBuilder();
+		for (int i = 0; i < parameters.length; i++) {
+			if(i > 0) parametersString.append(" - ");
+			parametersString.append(parameters[i].getParameterName()).append(" = ").append(parameters[i].getParameterValue());
+		}
+		Activator.logInfoMessage("Preparing parameters array (parsing values) for process test (" + resource.getName() + ") : " + parametersString, getClass());
+		for (ParameterVariable parameter : parameters) {
+			String value = parameter.getParameterValue();
+			checkParameterValue(parameter, value);
+			currentTrialParameters.put(parameter, value);
+		}
+	}
+	
+	/*
+	 * Writes the values of the propagated parameters, at the end of the trial, in the line of the next trial
+	 * of the parameters file
+	 */
+	private void writePropagatedParameters(IResource resource) throws Exception {
+		if(!ResourceType.isTrial(resource)) return;
+		ParameterVariable[] propagatedParameters = getDACQConfiguration().getPropagatedParameters();
+		if(propagatedParameters.length == 0 || parametersFile == null) return;
+		List<String> lines = Files.readAllLines(Paths.get(parametersFile.getLocationURI()), StandardCharsets.UTF_8);
+		if(!ParametersFile.hasTrialLine(lines, currentTrialNumber + 1)) return;
+		Map<ParameterVariable, String> values = getPropagatedParametersValues();
+		if(values == null) return;
+		Map<String, String> valuesByName = new LinkedHashMap<>();
+		for (Map.Entry<ParameterVariable, String> entry : values.entrySet()) {
+			if(entry.getKey().isParameterPropagated()) valuesByName.put(entry.getKey().getParameterName(), entry.getValue());
+		}
+		ParametersFile.setTrialValues(lines, currentTrialNumber + 1, valuesByName);
+		Files.write(Paths.get(parametersFile.getLocationURI()), String.join(System.getProperty("line.separator"), lines).getBytes(StandardCharsets.UTF_8), StandardOpenOption.TRUNCATE_EXISTING , StandardOpenOption.WRITE);
+		parametersFile.refreshLocal(IResource.DEPTH_ZERO, null);
 	}
 
 	@Override

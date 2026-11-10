@@ -60,6 +60,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -100,6 +101,7 @@ import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.DocometreBuilder;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.ModuleBehaviour;
+import fr.univamu.ism.docometre.dacqsystems.ParameterVariable;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.dacqsystems.TrialTimings;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinMessages;
@@ -1103,6 +1105,12 @@ public class ArduinoUnoProcess extends Process {
 	protected void postExecuteInWorkspaceOperation(IResource resource) throws Exception {
 		refreshChannelsFiles();
 		super.postExecuteInWorkspaceOperation(resource);
+	}
+	
+	@Override
+	protected Map<ParameterVariable, String> getPropagatedParametersValues() throws Exception {
+		// Arduino Uno variables can't be parameters yet : no value to propagate
+		return null;
 	}
 	
 	/*

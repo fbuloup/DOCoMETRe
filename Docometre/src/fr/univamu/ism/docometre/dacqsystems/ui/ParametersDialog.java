@@ -39,7 +39,7 @@
  * Contributors:
  *  - Frank Buloup - frank.buloup@univ-amu.fr - initial API and implementation [25/03/2020]
  ******************************************************************************/
-package fr.univamu.ism.docometre.dacqsystems.adwin.ui.dialogs;
+package fr.univamu.ism.docometre.dacqsystems.ui;
 
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
@@ -62,10 +62,11 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 
 import fr.univamu.ism.docometre.DocometreMessages;
-import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
-import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinVariable;
-import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinVariableProperties;
+import fr.univamu.ism.docometre.dacqsystems.ParameterVariable;
 
+/**
+ * Dialog to enter the values of the parameters for a process test (DACQ systems independent)
+ */
 public class ParametersDialog extends TitleAreaDialog {
 	
 	private class ParameterValueEditingSupport extends EditingSupport {
@@ -82,9 +83,9 @@ public class ParametersDialog extends TitleAreaDialog {
 					if(selection != null) {
 						IStructuredSelection structuredSelection = (IStructuredSelection)selection;
 						Object element = structuredSelection.getFirstElement();
-						if(element instanceof ADWinVariable) {
-							ADWinVariable adWinVariable = (ADWinVariable)element;
-							if(adWinVariable.isString()) return null;
+						if(element instanceof ParameterVariable) {
+							ParameterVariable parameter = (ParameterVariable)element;
+							if(parameter.isStringParameter()) return null;
 						}
 					}
 				}
@@ -116,11 +117,11 @@ public class ParametersDialog extends TitleAreaDialog {
 
 		@Override
 		protected Object getValue(Object element) {
-			ADWinVariable parameter = (ADWinVariable) element;
-	        String value = parameter.getProperty(ADWinVariableProperties.PARAMETER_VALUE);
+			ParameterVariable parameter = (ParameterVariable) element;
+	        String value = parameter.getParameterValue();
 	        if(value == null) {
 	        		value = "0";
-	        		parameter.setProperty(ADWinVariableProperties.PARAMETER_VALUE, value);
+	        		parameter.setParameterValue(value);
 	        		
 	        }
 	        return value;
@@ -128,15 +129,15 @@ public class ParametersDialog extends TitleAreaDialog {
 
 		@Override
 		protected void setValue(Object element, Object value) {
-			((ADWinVariable)element).setProperty(ADWinVariableProperties.PARAMETER_VALUE, (String)value);
+			((ParameterVariable)element).setParameterValue((String)value);
 			getViewer().refresh(element);
 		}
 		
 	}
 
-	private ADWinVariable[] parameters;
+	private ParameterVariable[] parameters;
 
-	public ParametersDialog(Shell parentShell, ADWinVariable[] parameters) {
+	public ParametersDialog(Shell parentShell, ParameterVariable[] parameters) {
 		super(parentShell);
 		this.parameters = parameters;
 	}
@@ -161,8 +162,8 @@ public class ParametersDialog extends TitleAreaDialog {
 		parameterNameColumn.setLabelProvider(new ColumnLabelProvider() {
 		    @Override
 		    public String getText(Object element) {
-		        ADWinVariable variable = (ADWinVariable) element;
-		        return variable.getProperty(ChannelProperties.NAME);
+		        ParameterVariable variable = (ParameterVariable) element;
+		        return variable.getParameterName();
 		    }
 		});
 		
@@ -172,8 +173,8 @@ public class ParametersDialog extends TitleAreaDialog {
 		parameterValueColumn.setLabelProvider(new ColumnLabelProvider() {
 		    @Override
 		    public String getText(Object element) {
-		        ADWinVariable variable = (ADWinVariable) element;
-		        String value = variable.getProperty(ADWinVariableProperties.PARAMETER_VALUE);
+		        ParameterVariable variable = (ParameterVariable) element;
+		        String value = variable.getParameterValue();
 		        return (value == null)? "0":value;
 		    }
 		});
