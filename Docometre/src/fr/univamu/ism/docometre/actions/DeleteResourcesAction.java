@@ -243,7 +243,8 @@ public class DeleteResourcesAction extends Action implements ISelectionListener,
 						ResourceEditorInput editorInput = (ResourceEditorInput)editorReference.getEditorInput();
 						Object localObject = editorInput.getObject();
 						IResource editedResource = ObjectsController.getResourceForObject(localObject);
-						if(ResourceType.isProcess(editedResource)) ((PartNameRefresher)editorReference.getEditor(false)).refreshPartName();
+						// Editor may not be instantiated yet (lazy loading) : its part name will be computed at creation
+						if(ResourceType.isProcess(editedResource) && editorReference.getEditor(false) instanceof PartNameRefresher) ((PartNameRefresher)editorReference.getEditor(false)).refreshPartName();
 					}
 				} catch (CoreException e) {
 					e.printStackTrace();

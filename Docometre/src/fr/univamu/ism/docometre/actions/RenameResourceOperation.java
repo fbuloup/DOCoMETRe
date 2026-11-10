@@ -154,7 +154,7 @@ public class RenameResourceOperation extends AbstractOperation {
 									String fullResourcePath = editedResource.getFullPath().toOSString();
 									if(fullResourcePath.startsWith(performOldName)) 
 										if(!fullResourcePath.equals(performOldName)) 
-											PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().closeEditor(editorReferences[i].getEditor(false), false);
+											Activator.closeEditorReference(editorReferences[i], false);
 								} catch (PartInitException e) {
 									Activator.getLogErrorMessageWithCause(e);
 									e.printStackTrace();
@@ -351,7 +351,8 @@ public class RenameResourceOperation extends AbstractOperation {
 							// If yes mark this editor to be refreshed
 							if(fullPathAssociatedDAQ.startsWith(fullNewPath)) refreshPartName = true;
 						}
-						if(refreshPartName) ((PartNameRefresher)editorReferences[i].getEditor(false)).refreshPartName();
+						// Editor may not be instantiated yet (lazy loading) : its part name will be computed at creation
+						if(refreshPartName && editorReferences[i].getEditor(false) instanceof PartNameRefresher) ((PartNameRefresher)editorReferences[i].getEditor(false)).refreshPartName();
 					} catch (PartInitException e) {
 						e.printStackTrace();
 						Activator.logErrorMessageWithCause(e);
@@ -393,7 +394,8 @@ public class RenameResourceOperation extends AbstractOperation {
 								try {
 									resourceEditorInput = ((ResourceEditorInput)editorReferences[i].getEditorInput());
 									Object editorObject = resourceEditorInput.getObject();
-									if(editorObject == batchDataProcessing) {
+									// Editor may not be instantiated yet (lazy loading) : it will be up to date at creation
+									if(editorObject == batchDataProcessing && editorReferences[i].getEditor(false) instanceof BatchDataProcessingEditor) {
 										if(forProcess) ((BatchDataProcessingEditor)editorReferences[i].getEditor(false)).refreshProcesses();
 										else ((BatchDataProcessingEditor)editorReferences[i].getEditor(false)).refreshSubjects();
 									}

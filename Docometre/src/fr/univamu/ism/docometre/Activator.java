@@ -352,20 +352,23 @@ public class Activator extends AbstractUIPlugin {
 		IEditorReference[] editorReferences = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
 		for (int i = 0; i < editorReferences.length; i++) {
 			try {
+				// Editors restored at startup are lazily instantiated : getEditor(false) returns null as long as
+				// they have not been made visible. They must be closed through their reference, otherwise they
+				// stay opened with an inconsistent editor input.
 				if(!(editorReferences[i].getEditorInput() instanceof ResourceEditorInput)) {
-					if(editorReferences[i].getEditor(false) != null) editorReferences[i].getEditor(false).getSite().getPage().closeEditor(editorReferences[i].getEditor(false), false);
+					closeEditorReference(editorReferences[i], false);
 					continue;
 				}
 				ResourceEditorInput resourceEditorInput = ((ResourceEditorInput)editorReferences[i].getEditorInput());
 				if(object != null && resourceEditorInput.isEditing(object)) {
+					// Editor may not be instantiated yet (lazy loading) : editor is null in this case
+					IEditorPart editor = editorReferences[i].getEditor(false);
 					if(resourceEditorInput.removeEditedObject(object)) {
-						if(editorReferences[i].getEditor(false) instanceof DataEditor) ((DataEditor)editorReferences[i].getEditor(false)).removeTrace(object);
-						if(editorReferences[i].getEditor(false) instanceof GLDataEditor) ((GLDataEditor)editorReferences[i].getEditor(false)).removeTrace(object);
+						if(editor instanceof DataEditor) ((DataEditor)editor).removeTrace(object);
+						if(editor instanceof GLDataEditor) ((GLDataEditor)editor).removeTrace(object);
 					}
-					if(resourceEditorInput.canCloseEditor()) {
-						if(editorReferences[i].getEditor(false) != null) editorReferences[i].getEditor(false).getSite().getPage().closeEditor(editorReferences[i].getEditor(false), false);
-					}
-					else if(editorReferences[i].getEditor(false) instanceof PartNameRefresher) ((PartNameRefresher)editorReferences[i].getEditor(false)).refreshPartName();
+					if(resourceEditorInput.canCloseEditor()) closeEditorReference(editorReferences[i], false);
+					else if(editor instanceof PartNameRefresher) ((PartNameRefresher)editor).refreshPartName();
 				}
 			} catch (PartInitException e) {
 				e.printStackTrace();
@@ -374,6 +377,17 @@ public class Activator extends AbstractUIPlugin {
 		}
 	}
 	
+	
+	/*
+	 * Close an editor from its reference, whether it has already been instantiated or not
+	 * (editors restored at startup are only instantiated when they become visible).
+	 * Must be called from UI thread.
+	 */
+	public static boolean closeEditorReference(IEditorReference editorReference, boolean save) {
+		IWorkbenchPage page = editorReference.getPage();
+		if(page == null) page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+		return page.closeEditors(new IEditorReference[] {editorReference}, save);
+	}
 	
 	/*
 	 * Close editors of resource and, if resource is a container, of all its descendants.

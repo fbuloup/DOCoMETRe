@@ -219,7 +219,7 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 								Object object  = selectedResource;
 								if(selectedResource instanceof IResource) object = ResourceProperties.getObjectSessionProperty((IResource)selectedResource);
 								if(object != null && resourceEditorInput.isEditing(object)) {
-									PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(editorReference.getPart(false));
+									PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(editorReference.getPart(true));
 									ExperimentsView.this.setFocus();
 									break;
 								}

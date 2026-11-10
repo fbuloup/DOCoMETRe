@@ -247,13 +247,14 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
 		boolean showMarker = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.SHOW_MARKER);
 		IEditorReference[] editorReferences = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
 		for (IEditorReference editorReference : editorReferences) {
-			boolean update = DataEditor.ID.equals(editorReference.getId());
+			// Editor may not be instantiated yet (lazy loading) : preferences will be read at creation
+			boolean update = DataEditor.ID.equals(editorReference.getId()) && editorReference.getEditor(false) != null;
 			if(update) {
 				DataEditor dataEditor = (DataEditor)editorReference.getEditor(false);
 				dataEditor.setShowCursor(showCursor);
 //				dataEditor.setShowMarker(showMarker);
 			}
-			update = ChannelEditor.ID.equals(editorReference.getId());
+			update = ChannelEditor.ID.equals(editorReference.getId()) && editorReference.getEditor(false) != null;
 			if(update) {
 				ChannelEditor channelEditor = (ChannelEditor)editorReference.getEditor(false);
 				channelEditor.setShowCursor(showCursor);
