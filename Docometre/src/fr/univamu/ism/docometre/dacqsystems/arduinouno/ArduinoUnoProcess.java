@@ -211,6 +211,8 @@ public class ArduinoUnoProcess extends Process {
 		private boolean propagationExpected = hasPropagatedParameters();
 		private ArduinoUnoParameterFrames.Reception propagationReception;
 		private long propagationStartNanos;
+		// 'w' char received while waiting for the 's' char of the Arduino (see waitForStopReply())
+		private boolean readyReceived;
 
 		public RealTimeLoopJob(String name) {
 			super(name);
@@ -405,8 +407,9 @@ public class ArduinoUnoProcess extends Process {
 		                    	}
 			                    
 		                    } else {
-		                    	// 's' at the beginning of a line (a propagated char parameter can be 's')
-		                    	if(b == 's' && message.length() == 0) {
+		                    	// 's' at the beginning of a line (a propagated char parameter can be 's'). The message
+		                    	// may hold the '\n' of the previous line : the '\r' of "\r\n" ends the line, then '\n' is appended.
+		                    	if(b == 's' && isBlank(message)) {
 		                    		if(TrialTimings.trace && !processEndTraced) {
 		                    			processEndTraced = true;
 		                    			TrialTimings.processEnded();
@@ -452,10 +455,15 @@ public class ArduinoUnoProcess extends Process {
 	    					TrialTimings.log("Arduino stop reply ('s') " + (replyReceived ? "received after " + String.format("%.1f", replyDelayMs) + " ms" : "not received (time out " + stopReplyTimeOut + " ms)"));
 	    				}
 	    				// 's' to restart the Arduino, then wait for its 'w' : restarted and ready for next start
-	    				appendToEventDiary("\nSend 's' char to start reset");
-	    				serialPort.writeByte((byte) 's');
+	    				// ('w' already received : the Arduino had already sent its 's' and has been restarted
+	    				// by the 's' of the stop request, it now waits for 'r' : no other 's')
 	    				long resetStartNanos = System.nanoTime();
-	    				boolean ready = waitForChar(READY_MESSAGE.charAt(0), READY_TIMEOUT_MS);
+	    				boolean ready = readyReceived;
+	    				if(!readyReceived) {
+	    					appendToEventDiary("\nSend 's' char to start reset");
+	    					serialPort.writeByte((byte) 's');
+	    					ready = waitForChar(READY_MESSAGE.charAt(0), READY_TIMEOUT_MS);
+	    				} else appendToEventDiary("\nArduino already restarted ('w' char received while waiting for its 's' char)");
 	    				double readyDelayMs = (System.nanoTime() - resetStartNanos)/1e6;
 	    				if(ready) appendToEventDiary("\nArduino restarted ('w' char received) after " + String.format("%.1f", readyDelayMs) + " ms");
 	    				else appendToEventDiary("\nArduino restart ('w' char) not received after " + READY_TIMEOUT_MS + " ms : compile and upload the process again to get it");
@@ -631,9 +639,22 @@ public class ArduinoUnoProcess extends Process {
 		}
 		
 		/*
+		 * True if the message holds only end of line chars
+		 */
+		private boolean isBlank(StringBuilder message) {
+			for (int i = 0; i < message.length(); i++) {
+				char c = message.charAt(i);
+				if(c != '\r' && c != '\n') return false;
+			}
+			return true;
+		}
+		
+		/*
 		 * Reads the serial port, byte per byte (the next bytes are kept for the next call), until the 's' char
 		 * (at the beginning of a line) is received or the time out is reached. Parameters frames received before
 		 * (propagated parameters) are handled, data frames are ignored. Returns true if 's' has been received.
+		 * If the 'w' char is received, the Arduino had already sent its 's' and has been restarted by the 's'
+		 * of the PC : readyReceived is set and true is returned (the restart must not be requested again).
 		 */
 		private boolean waitForStopReply(long timeOutMs) throws SerialPortException, InterruptedException {
 			StringBuilder line = new StringBuilder();
@@ -644,6 +665,10 @@ public class ArduinoUnoProcess extends Process {
 					if(bytes == null || bytes.length == 0) continue;
 					byte b = bytes[0];
 					if(b == '\r' || b == '\n') {
+						if(READY_MESSAGE.equals(line.toString())) {
+							readyReceived = true;
+							return true;
+						}
 						ArduinoUnoParameterFrames.Frame frame = ArduinoUnoParameterFrames.parse(line.toString());
 						if(frame != null) handleParametersFrame(frame);
 						line.setLength(0);
