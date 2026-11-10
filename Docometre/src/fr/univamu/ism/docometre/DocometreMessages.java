@@ -1276,6 +1276,9 @@ public final class DocometreMessages extends NLS {
 	public static String RemoveLines;
 	public static String ParametersEditor_RawFileTab;
 	public static String ParametersEditor_TableTab;
+	public static String ParametersFileChanged_Title;
+	public static String ParametersFileChanged_ReloadMessage;
+	public static String ParametersFileChanged_OverwriteMessage;
 	
 	// ExportToADW Handler 
 	public static String ExportToADWJob_Title;
