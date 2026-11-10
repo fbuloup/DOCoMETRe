@@ -362,34 +362,45 @@
 		</tr>
 		<tr>
 			<td>Type</td>
-			<td>ADwin: float, int or string. Arduino: bool, char, int, long or
-				float.</td>
+			<td>ADwin: float, int or string. Arduino: bool, char, int, long,
+				float or string.</td>
 		</tr>
 		<tr>
 			<td>Size</td>
 			<td>1 for a scalar, more for an array. Arrays cannot be
-				transferred.</td>
+				transferred. For a string, the size is its maximum length.</td>
 		</tr>
 		<tr>
-			<td>Parameter (ADwin)</td>
+			<td>Parameter</td>
 			<td>The variable is a parameter: its value is set before each
 				trial, from the <a href="subjectsessiontrial.html#parameters">parameters
 				file</a> of the session (or from a dialog when a process is
 				<a href="processtest.html">tested</a>). Parameters are used to
 				build generic processes, for example one process for several
-				experimental conditions. A parameter cannot be an array and is
-				not transferred.</td>
+				experimental conditions. A parameter is not transferred and,
+				except for a string, cannot be an array. Accepted values depend on
+				the type and on the system : see
+				<a href="../advancedconcepts/parametersfileformat.html#values">What
+				is parameters file format ?</a>. Compile the processes again after
+				adding, removing or reordering parameters.</td>
 		</tr>
 		<tr>
-			<td>Propagate (ADwin)</td>
-			<td>For a parameter: its value at the end of a trial is written in
-				the parameters file as the value of the next trial.</td>
+			<td>Propagate</td>
+			<td>For a numeric parameter (not a string): its value at the end of
+				a trial is written in the parameters file as the value of the next
+				trial.</td>
 		</tr>
 		<tr>
 			<td>Stimulus (ADwin)</td>
 			<td>Values of the variable are read from a stimulus file.</td>
 		</tr>
 	</table>
+	<p>With Arduino Uno, the names of the variables (and of the channels)
+		become names of the generated C++ code : some names are reserved by
+		Arduino, by the C library or by DOCoMETRe (for example <code>F</code>
+		or <code>signal</code> with R4 WiFi) and make the compilation fail. See
+		<a href="../troubleshoots/arduinouno.html#reservednames">Troubleshoots
+		with Arduino Uno</a>.</p>
 
 	<h2><a name="charts">Charts tab</a></h2>
 

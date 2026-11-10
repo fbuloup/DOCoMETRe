@@ -214,7 +214,7 @@
 
 	<h2><a name="parameters">Parameters files</a></h2>
 
-	<p>With ADwin systems, variables of the DACQ configuration can be
+	<p>With ADwin and Arduino Uno systems, variables of the DACQ configuration can be
 		declared as <b>parameters</b> (see the
 		<a href="dacqconfiguration.html#variables">Variables tab</a>). Their
 		values are then sent to the real time system just before each trial
@@ -256,10 +256,24 @@ target;perturbation
 		in the line of the next trial. This is useful to keep and update a
 		value along a session (an adaptive threshold, for example). Only the
 		values of propagated parameters are replaced: the other values of the
-		line, the comments and the other lines of the file are kept.</p>
-	<p>Parameters are only available with ADwin systems. When a process is
-		<a href="processtest.html">tested</a> on its own, parameters values are
-		asked in a dialog.</p>
+		line, the comments and the other lines of the file are kept. Nothing
+		is written when the values could not be read from the real time system
+		(an error is written in the diary of the trial).</p>
+	<p>When a process is <a href="processtest.html">tested</a> on its own,
+		parameters values are asked in a dialog.</p>
+	<p>As propagated values are written at the end of each trial, the
+		parameters file can change while it is opened in its editor. The
+		editor follows these changes:</p>
+	<ul>
+		<li>without unsaved modification, the editor is reloaded
+			automatically (raw file and table);</li>
+		<li>with unsaved modifications, you are asked whether to reload the
+			file (your modifications are then lost), at once if the editor is
+			active, otherwise when it is activated;</li>
+		<li>when you save an editor whose file has been changed on disk and
+			not reloaded, you are asked whether to overwrite the file (the
+			propagated values written since it was read would be lost).</li>
+	</ul>
 
 	<h2><a name="diaries">Diaries (log files)</a></h2>
 

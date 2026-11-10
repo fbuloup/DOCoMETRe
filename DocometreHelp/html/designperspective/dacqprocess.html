@@ -233,6 +233,15 @@
 		configuration. Errors are written in the Console view and shown with
 		an error overlay on the process; warnings about the blocks structure
 		are shown with a warning overlay.</p>
+	<p>With Arduino Uno, the compilation is reported as failed when the build
+		fails, whatever the reason : errors of the compiler (marked at their
+		line), errors of the linker (for example <i>Link error : multiple
+		definition of `signal'</i>, marked at the line of the sketch when it is
+		known, at line 1 otherwise) or any other failure of the build.</p>
+	<p>Compile the processes again after modifying the variables or the
+		parameters of their DACQ configuration. A process modified and
+		compiled again is loaded again into the real time system at its next
+		execution (ADwin) or uploaded again (Arduino Uno).</p>
 	<p>Once compiled, a process can be <a href="processtest.html">tested on
 		its own</a> before being associated with trials.</p>
 

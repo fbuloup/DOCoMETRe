@@ -49,6 +49,11 @@ Without this argument, nothing is measured nor written : the acquisition is not 
   by the user) and the delay of its restart ('w' char sent when it waits for the next start) are written. If the 'w' char is
   not received, the process has been compiled with a previous version : compile it again. Between two trials, the upload of the process (if needed), the serial port
   opening and the channels files opening are measured; the start is the 'r' char sent to the Arduino.
+  With parameters, the sending of their values is measured as a step, and the delay of their acknowledgement by the Arduino is written
+  (<i>Arduino parameters (number, bytes) acknowledged after ... ms</i>). With propagated parameters, the reception of their values at the end
+  of the process is written (<i>Arduino propagated parameters (number) received and acknowledged in ... ms</i>) and the wait for the 's' reply
+  of the Arduino after a stop requested by the user is 1500 ms instead of 300 ms. When the Arduino has already restarted ('w' char received
+  while waiting for its 's' reply), the restart is not requested again.
   As the real-time loop polls the serial port, only the iterations which read bytes are counted in its summary.
   There is no INIT section duration.</li>
   <li><b>Process stop</b> : the duration of the first call to stop the process. A call longer than 100 ms is reported as a
