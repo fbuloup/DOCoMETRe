@@ -1557,43 +1557,42 @@ public class ArduinoUnoProcess extends Process {
 	    	process.destroy();
 	    if(progressMonitor.isCanceled()) throw new OperationCanceledException();
 	    
+	    // Exit code of the build (exit code of the last command of the script : the compilation)
+	    int exitCode = process.exitValue();
+	    
 	    String line;
+	    // Output of the build when it is not written in compile.txt (arduino-builder)
+	    StringBuilder standardOutput = new StringBuilder();
 	    BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
 		while((line=input.readLine()) != null){
 			Activator.logInfoMessage(line, ArduinoUnoProcess.class);
+			standardOutput.append(line).append("\n");
 		}
 		input.close();
 	    
 	    // Get compile results
 	    progressMonitor.subTask(DocometreMessages.ArduinoUnoProcess_GetCompileErrorsMessage);
 	    processResource.deleteMarkers(null, true, IResource.DEPTH_INFINITE);
-	    Pattern pattern = Pattern.compile("^(.+):(\\d+):(\\d+):\\s+error:\\s+(.*)$");
 		// compile.txt is written by shell redirection : its encoding depends on the OS/console
 		// (e.g. cp1252/cp850 on Windows with accented paths or localized messages), not always UTF-8.
 		String compileOutput = compileFile.exists() ? readTextWithFallback(compileFile) : "";
-		String compileString = "";
-		boolean errorDetected = false;
-		for (String compileLine : compileOutput.split("\\R")) {
-			line = compileLine;
-			Matcher matcher = pattern.matcher(line);
-			errorDetected = errorDetected || matcher.matches();
-			if (matcher.matches()) {
-			    int numLine = Integer.parseInt(matcher.group(2)); 
-			    int numColumn    = Integer.parseInt(matcher.group(3)); 
-			    String message = matcher.group(4);    
-			    createMarker(IMarker.SEVERITY_ERROR, processResource, numLine, numColumn, message);
-			}
-			compileString = compileString + line + "\n";
+		Activator.logInfoMessage(compileOutput, ArduinoUnoProcess.class);
+		// Errors of the compiler, errors of the linker and failure of the build (exit code, failure lines)
+		ArduinoUnoBuildOutput buildOutput = ArduinoUnoBuildOutput.analyze(compileOutput + "\n" + standardOutput, exitCode);
+		boolean errorDetected = buildOutput.hasFailed();
+		for (ArduinoUnoBuildOutput.Error error : buildOutput.getErrors()) {
+			String errorMessage = error.getMessage();
+			if(error.getKind() == ArduinoUnoBuildOutput.Kind.LINKER) errorMessage = NLS.bind(ArduinoUnoMessages.LinkError, errorMessage);
+			if(error.getKind() == ArduinoUnoBuildOutput.Kind.BUILD) errorMessage = NLS.bind(ArduinoUnoMessages.BuildFailed, errorMessage);
+			createMarker(IMarker.SEVERITY_ERROR, processResource, error.getLine(), error.getColumn(), errorMessage);
 		}
-		
-		Activator.logInfoMessage(compileString, ArduinoUnoProcess.class);
 
 		Bundle librariesBundle = Platform.getBundle("Libraries");
 		String message = NLS.bind(DocometreMessages.CurrentLibrariesVersion, librariesBundle.getVersion().toString());
 		Activator.logInfoMessage(message, getClass());
 		ArduinoUnoDACQConfiguration dacqConfig = (ArduinoUnoDACQConfiguration)getDACQConfiguration();
 		String librariesAbsolutePath = dacqConfig.getProperty(ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH);
-		pattern = Pattern.compile("Libraries_\\d\\.\\d.\\d.\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d");
+		Pattern pattern = Pattern.compile("Libraries_\\d\\.\\d.\\d.\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d");
 		Matcher matcher = pattern.matcher(librariesAbsolutePath);
 		if (matcher.find()) {
 			String usedLibrariesVersion = librariesAbsolutePath.substring(matcher.start(), matcher.end());

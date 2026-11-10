@@ -84,6 +84,8 @@ public class ArduinoUnoMessages extends NLS {
 	public static String StringsMemoryWarning;
 	public static String ParametersNotAcknowledged;
 	public static String ParametersCountError;
+	public static String LinkError;
+	public static String BuildFailed;
 	
 	public static String GeneralConfigurationSection_Title;
 	public static String GeneralConfigurationSectionDescription;
