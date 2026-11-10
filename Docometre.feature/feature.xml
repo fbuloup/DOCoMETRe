@@ -6,23 +6,66 @@
       provider-name="ISM">
 
    <description>
-      -- 2026-11-09
+      -- 2026-11-10
 ADDED :
-* The application can no longer be closed (Cmd+Q, Alt+F4) while an experiment is running
-* OpenGL V2 charts : keyboard shortcuts of the application (Escape to stop a trial, F9, F11,
-Cmd+P, full screen...) now also work when the chart has the keyboard focus (NEWT window, macOS)
+* Arduino Uno : process parameters, as with ADwin (Parameter and Propagate columns of the Variables
+tab, parameters file of the session, parameters dialog for a process test). Values are sent to the
+board before each trial and acknowledged by it (frames on the serial port, about 2 to 3 ms per
+trial), values of the propagated parameters are sent back at the end of the trial and written in
+the line of the next trial of the parameters file
+* Arduino Uno : string type for variables (Size is the maximum length of the string), warning at
+compile time when strings use more than 512 bytes of the RAM of the R3
+* Arduino Uno : values of the parameters checked by type (bool, char, int on 16 bits with R3 and
+32 bits with R4 WiFi, long, float, string) in the parameters dialog and before each trial
+* Parameters editor : reloaded when the parameters file is changed on disk (propagated values),
+question to reload the file when the editor has unsaved modifications, question before
+overwriting a file changed on disk
+* Parameters management common to ADwin and Arduino Uno (parameters file, parameters dialog,
+propagation)
+* Tests : JUnit tests of the parameters file, of the Arduino parameters values and frames, of the
+generated Arduino parameters code (compiled and run on the host with g++ when available) and of
+the Arduino build output analysis
+* Help : parameters with Arduino Uno, accepted values, how parameters are sent to ADwin and Arduino
+Uno, Arduino reserved names (F, signal...), timing measures of the parameters
 FIXED :
-* OpenGL V2 charts, HiDPI / Retina screens (and screens scaled to more than 100 %) : mouse
-coordinates of the chart interactions (zoom, pan, cursors, markers, context menu) were offset by
-the scaling factor, with both NEWT and SWT hosts. The scaling factor follows a window moved to a
+* ADwin : a process modified and compiled again between two executions was not loaded again
+(the previous version of the process was executed)
+* Parameters editor : the parameters file was not reloaded when changed on disk during a session,
+and saving the editor overwrote the propagated values
+* Arduino Uno : a build failed at link time (e.g. variable named signal with R4 WiFi : multiple
+definition of `signal&apos;) was reported as successful : the exit code of the build, the linker
+errors and the output of arduino-builder are now checked
+* Arduino Uno : negative long variables were transferred as unsigned values (e.g. -1 received as
+4294967295)
+-- 2026-11-09
+ADDED :
+* The application can no longer be closed (Cmd+Q, Alt+F4) while
+an experiment is running
+* OpenGL V2 charts : keyboard shortcuts of the application (Escape
+to stop a trial, F9, F11,
+Cmd+P, full screen...) now also work when the chart has the keyboard
+focus (NEWT window, macOS)
+FIXED :
+* OpenGL V2 charts, HiDPI / Retina screens (and screens scaled
+to more than 100 %) : mouse
+coordinates of the chart interactions (zoom, pan, cursors, markers,
+context menu) were offset by
+the scaling factor, with both NEWT and SWT hosts. The scaling
+factor follows a window moved to a
 screen of another density
-* Status line hidden after leaving full screen mode : full screen mode is now left before the
-workbench model is saved and the status line is forced visible at startup, and the layout is
+* Status line hidden after leaving full screen mode : full screen
+mode is now left before the
+workbench model is saved and the status line is forced visible
+at startup, and the layout is
 deferred on macOS where leaving full screen is asynchronous
-* Stop trial dialog opened twice on macOS (the same key press was delivered twice)
-* Shortcuts with Cmd/Ctrl/Alt were also passed to the chart having the keyboard focus (e.g.
-Cmd+Shift+F switched to full screen mode but also toggled the frame rate display of the chart)
-* JVM crash when closing the Real-Time Charts view : its container may already be disposed, and
+* Stop trial dialog opened twice on macOS (the same key press
+was delivered twice)
+* Shortcuts with Cmd/Ctrl/Alt were also passed to the chart having
+the keyboard focus (e.g.
+Cmd+Shift+F switched to full screen mode but also toggled the
+frame rate display of the chart)
+* JVM crash when closing the Real-Time Charts view : its container
+may already be disposed, and
 the charts are now removed when the view is disposed
 -- 2026-11-07
 ADDED :
