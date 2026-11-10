@@ -297,6 +297,9 @@ public class ADWinProcess extends Process {
 	
 	@Override
 	public void compile(IProgressMonitor progressMonitor) throws Exception {
+		// The binary file of this process changes : if it is the process loaded in ADwin,
+		// it must be loaded again at its next execution (see loadProcess())
+		if(previousADWINBinFilePath.equals(getBinaryFilePath())) previousADWINBinFilePath = "";
 		cleanBuild();
 		if(Platform.getOS().equals(Platform.OS_WIN32)) {
 			Program programEditor = Program.findProgram (".bas");
@@ -1032,15 +1035,25 @@ public class ADWinProcess extends Process {
 		
 		return code;
 	}
-	/**
-	 * This method loads the ADWIN binary code to the device
+	/*
+	 * Path of the binary file of this process, without extension : identifies the process loaded in ADwin
+	 * (see previousADWINBinFilePath)
 	 */
-	public void loadProcess() throws Exception {
+	private String getBinaryFilePath() {
 		IResource processFile = ObjectsController.getResourceForObject(this);
 		IPath wsPath = new Path(Platform.getInstanceLocation().getURL().getPath());
 		String binaryFilePath = wsPath.toOSString().replaceAll(File.separator + "$", "");
 		binaryFilePath = binaryFilePath + processFile.getParent().getFullPath().toOSString();
 		binaryFilePath = binaryFilePath + File.separator + "BinSource" + File.separator + processFile.getName().replaceAll(Activator.processFileExtension + "$", "");
+		return binaryFilePath;
+	}
+	
+	/**
+	 * This method loads the ADWIN binary code to the device
+	 */
+	public void loadProcess() throws Exception {
+		IResource processFile = ObjectsController.getResourceForObject(this);
+		String binaryFilePath = getBinaryFilePath();
 		appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_Loading, binaryFilePath));
 		if(previousADWINBinFilePath.equals(binaryFilePath)) {
 			appendToEventDiary("Process " + processFile.getFullPath() + " was already loaded" );
