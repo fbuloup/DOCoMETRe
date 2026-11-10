@@ -73,7 +73,9 @@ public class VariablesCodeGenerationDelegate {
 			String transfer = variable.getProperty(ChannelProperties.TRANSFER);
 			boolean isTransfered = Boolean.valueOf(transfer);
 			boolean isString = ArduinoUnoVariableProperties.STRING.equals(variable.getProperty(ArduinoUnoVariableProperties.TYPE));
-			if("1".equals(size) && !isString) code = code + "\t\t" + name + " = 0;\n";
+			// Parameters are not initialized : their values have been received just before (see ArduinoUnoParametersCode)
+			if(variable.isParameter()) code = code + "\t\t// " + name + " : parameter, value received from the PC\n";
+			else if("1".equals(size) && !isString) code = code + "\t\t" + name + " = 0;\n";
 			else code = code + "\t\tmemset(" + name + ", 0, sizeof(" + name + "));\n";
 			if(isTransfered) {
 				float sfFloat = Float.parseFloat(variable.getProperty(ChannelProperties.SAMPLE_FREQUENCY));

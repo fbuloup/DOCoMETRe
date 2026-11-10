@@ -82,6 +82,8 @@ public class ArduinoUnoMessages extends NLS {
 	public static String Propagate_Tooltip;
 	public static String InvalidParameterValue;
 	public static String StringsMemoryWarning;
+	public static String ParametersNotAcknowledged;
+	public static String ParametersCountError;
 	
 	public static String GeneralConfigurationSection_Title;
 	public static String GeneralConfigurationSectionDescription;
