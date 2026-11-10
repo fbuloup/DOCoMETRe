@@ -76,6 +76,12 @@ public class ArduinoUnoMessages extends NLS {
 	public static String Size_Tooltip;
 	public static String Type_Label;
 	public static String Type_Tooltip;
+	public static String Parameter_Label;
+	public static String Parameter_Tooltip;
+	public static String Propagate_Label;
+	public static String Propagate_Tooltip;
+	public static String InvalidParameterValue;
+	public static String StringsMemoryWarning;
 	
 	public static String GeneralConfigurationSection_Title;
 	public static String GeneralConfigurationSectionDescription;

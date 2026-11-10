@@ -85,7 +85,7 @@ public class ParametersDialog extends TitleAreaDialog {
 						Object element = structuredSelection.getFirstElement();
 						if(element instanceof ParameterVariable) {
 							ParameterVariable parameter = (ParameterVariable)element;
-							if(parameter.isStringParameter()) return null;
+							return parameter.isValidParameterValue(value == null ? null : value.toString()) ? null : "error";
 						}
 					}
 				}

@@ -125,6 +125,9 @@ public class ArduinoUnoProcess extends Process {
 	
 	// Message sent by the Arduino when it has (re)started and waits for 'r' char (see end handshake in RealTimeLoopJob)
 	private static final String READY_MESSAGE = "w";
+	
+	// Arduino Uno R3 : number of bytes of strings variables above which a warning is given at compile time (2048 bytes of RAM)
+	private static final int STRINGS_BYTES_WARNING_R3 = 512;
 
 	public static final long serialVersionUID = DACQConfiguration.serialVersionUID;
 	public static String previousINOHexFilePath = "";
@@ -1108,8 +1111,16 @@ public class ArduinoUnoProcess extends Process {
 	}
 	
 	@Override
+	protected void checkParameterValue(ParameterVariable parameter, String value) throws Exception {
+		if(!parameter.isValidParameterValue(value)) {
+			String type = ((ArduinoUnoVariable)parameter).getProperty(ArduinoUnoVariableProperties.TYPE);
+			throw new Exception(NLS.bind(ArduinoUnoMessages.InvalidParameterValue, new Object[] {value, parameter.getParameterName(), type}));
+		}
+	}
+	
+	@Override
 	protected Map<ParameterVariable, String> getPropagatedParametersValues() throws Exception {
-		// Arduino Uno variables can't be parameters yet : no value to propagate
+		// Values are not yet sent to the Arduino Uno : no value to propagate
 		return null;
 	}
 	
@@ -1394,6 +1405,18 @@ public class ArduinoUnoProcess extends Process {
 			IMarker marker = getDACQConfiguration().getResource().createMarker("ArduinoUnoDACQConfiguration.Revision");
 			marker.setAttribute(IMarker.MESSAGE, ArduinoUnoMessages.arduinoRevisionNotSpecified);
 			marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+		}
+		// Arduino Uno R3 : 2048 bytes of RAM, warn if strings variables use a large part of it
+		if(ArduinoUnoDACQConfigurationProperties.REVISION_R3.equals(value)) {
+			int stringsBytes = 0;
+			for (ArduinoUnoVariable variable : ((ArduinoUnoDACQConfiguration)getDACQConfiguration()).getVariables()) {
+				if(variable.isString()) stringsBytes += variable.getSize() + 1;
+			}
+			if(stringsBytes > STRINGS_BYTES_WARNING_R3) {
+				IMarker marker = getDACQConfiguration().getResource().createMarker(DocometreBuilder.MARKER_ID);
+				marker.setAttribute(IMarker.MESSAGE, NLS.bind(ArduinoUnoMessages.StringsMemoryWarning, stringsBytes));
+				marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
+			}
 		}
 		ExperimentsView.refresh(getDACQConfiguration().getResource(), null);
 		

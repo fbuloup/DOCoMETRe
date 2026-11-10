@@ -50,6 +50,9 @@ public class ADWinVariable extends ADWinChannel implements ParameterVariable {
 	
 	public static final long serialVersionUID = AbstractElement.serialVersionUID;
 	
+	// Numeric values accepted for a parameter (float or int, sent as float)
+	private static final String NUMERIC_PARAMETER_VALUE_REGEXP = "(^[+-]?\\d*\\.?\\d*[1-9]+\\d*([eE][-+]?[0-9]+)?$)|(^[+-]?[1-9]+\\d*\\.\\d*([eE][-+]?[0-9]+)?|0$)";
+	
 	private DACQConfiguration dacqConfiguration;
 
 	public ADWinVariable(DACQConfiguration dacqConfiguration) {
@@ -97,6 +100,14 @@ public class ADWinVariable extends ADWinChannel implements ParameterVariable {
 	@Override
 	public void setParameterValue(String value) {
 		setProperty(ADWinVariableProperties.PARAMETER_VALUE, value);
+	}
+	
+	@Override
+	public boolean isValidParameterValue(String value) {
+		// Same rule as the former validator of the parameters dialog
+		if(isString()) return true;
+		if(value == null) return false;
+		return value.matches(NUMERIC_PARAMETER_VALUE_REGEXP);
 	}
 	
 	public boolean isFloat() {

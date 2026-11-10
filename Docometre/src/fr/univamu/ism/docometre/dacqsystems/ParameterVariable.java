@@ -85,4 +85,10 @@ public interface ParameterVariable {
 	 */
 	void setParameterValue(String value);
 
+	/**
+	 * @param value a value of this parameter, as read in the parameters file or entered by the user
+	 * @return true if this value can be used for this parameter by the DACQ system
+	 */
+	boolean isValidParameterValue(String value);
+
 }

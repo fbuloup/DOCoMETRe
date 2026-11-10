@@ -72,7 +72,8 @@ public class VariablesCodeGenerationDelegate {
 			String size = variable.getProperty(ArduinoUnoVariableProperties.SIZE);
 			String transfer = variable.getProperty(ChannelProperties.TRANSFER);
 			boolean isTransfered = Boolean.valueOf(transfer);
-			if("1".equals(size)) code = code + "\t\t" + name + " = 0;\n";
+			boolean isString = ArduinoUnoVariableProperties.STRING.equals(variable.getProperty(ArduinoUnoVariableProperties.TYPE));
+			if("1".equals(size) && !isString) code = code + "\t\t" + name + " = 0;\n";
 			else code = code + "\t\tmemset(" + name + ", 0, sizeof(" + name + "));\n";
 			if(isTransfered) {
 				float sfFloat = Float.parseFloat(variable.getProperty(ChannelProperties.SAMPLE_FREQUENCY));
@@ -103,7 +104,8 @@ public class VariablesCodeGenerationDelegate {
 			float sfFloat = Float.parseFloat(sfVariable);
 			int frequencyRatio = (int) (gsfFloat/sfFloat);
 			
-			if(isTransfered) {
+			// A string can't be transferred (see ArduinoUnoVariablesPage)
+			if(isTransfered && !ArduinoUnoVariableProperties.STRING.equals(variable.getProperty(ArduinoUnoVariableProperties.TYPE))) {
 				String type = variable.getProperty(ArduinoUnoVariableProperties.TYPE);
 				
 				code = code + "\t\t// Transfer " + name + "\n";
@@ -182,7 +184,14 @@ public class VariablesCodeGenerationDelegate {
 				code = code + " flottant(s)";
 				type = "float";
 			}
-			size = size.equals("1") ? "" : "[" + size + "]" ;
+			boolean isString = type.equals(ArduinoUnoVariableProperties.STRING);
+			if(isString) {
+				// SIZE is the maximum length of the string, plus terminating null character
+				code = code + " chaîne de caractères (longueur max. " + size + ")";
+				type = "char";
+				size = Integer.toString(Integer.parseInt(size) + 1);
+			}
+			size = size.equals("1") && !isString ? "" : "[" + size + "]" ;
 			code = code + "\n" + type + " " + name + size + ";\n";
 			
 			if(isTransfered) {
