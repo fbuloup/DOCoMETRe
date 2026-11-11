@@ -49,6 +49,8 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinChannel;
 import fr.univamu.ism.docometre.dacqsystems.adwin.calibration.ADWinCalibration;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoChannel;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.calibration.ArduinoUnoCalibration;
 import fr.univamu.ism.docometre.widgets.CalibrationHeader;
 import fr.univamu.ism.docometre.widgets.ChannelViewer;
 
@@ -61,12 +63,18 @@ public class CalibrationFactory {
 		if(channel instanceof ADWinChannel) {
 			return ADWinCalibration.createHeader(container, channel);
 		}
+		if(channel instanceof ArduinoUnoChannel) {
+			return ArduinoUnoCalibration.createHeader(container, channel);
+		}
 		return null;
 	}
 
 	public static double compute(double y, Channel channel) {
 		if(channel instanceof ADWinChannel) {
 			return ADWinCalibration.computeCalibration(y, channel);
+		}
+		if(channel instanceof ArduinoUnoChannel) {
+			return ArduinoUnoCalibration.computeCalibration(y, channel);
 		}
 		return y;
 	}
@@ -76,6 +84,15 @@ public class CalibrationFactory {
 		calibrationTimerTask = null;
 		if( system.equals(Activator.ADWIN_SYSTEM)) calibrationTimerTask = ADWinCalibration.runCalibrationTask(channelsViewers);
 		if(calibrationTimerTask != null) calibrationTimer.schedule(calibrationTimerTask, 0, 10);
+	}
+	
+	/**
+	 * Runs a calibration task already connected to its system (see ArduinoUnoCalibrateMonitorDialog)
+	 */
+	public static void runCalibrationTask(CalibrationTimerTask task) {
+		calibrationTimer = new Timer();
+		calibrationTimerTask = task;
+		calibrationTimer.schedule(calibrationTimerTask, 0, 10);
 	}
 	
 	public static void stopCalibrationProcess() {

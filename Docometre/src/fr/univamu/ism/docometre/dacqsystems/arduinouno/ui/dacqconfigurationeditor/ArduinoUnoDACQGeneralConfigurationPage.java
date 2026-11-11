@@ -72,6 +72,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Scrollable;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.IManagedForm;
@@ -103,6 +104,8 @@ import fr.univamu.ism.docometre.dacqsystems.ui.DeviceSelectionHandler.DeviceType
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoADS1115ModuleProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfigurationProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoMessages;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfiguration;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.calibration.ArduinoUnoCalibrateMonitorDialog;
 import fr.univamu.ism.docometre.editors.ModulePage;
 import fr.univamu.ism.docometre.editors.ResourceEditor;
 
@@ -152,6 +155,22 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 		}
 	}
 
+	private class CalibrateMonitorAction extends Action {
+		public CalibrateMonitorAction() {
+			setImageDescriptor(Activator.getImageDescriptor(IImageKeys.CALIBRATION_MONITORING_ICON));
+			setToolTipText(ArduinoUnoMessages.CalibrationMonitoring_Tooltip);
+		}
+		
+		@Override
+		public void run() {
+			Shell shell = ArduinoUnoDACQGeneralConfigurationPage.this.getSite().getShell();
+			ArduinoUnoCalibrateMonitorDialog calibrateMonitorDialog = new ArduinoUnoCalibrateMonitorDialog(shell, (ArduinoUnoDACQConfiguration) dacqConfiguration);
+			calibrateMonitorDialog.open();
+			if(ArduinoUnoCalibrateMonitorDialog.hasCalibrationBeenModified()) 
+				Activator.logWarningMessage(NLS.bind(DocometreMessages.CalibrationHasBeenModified, dacqConfiguration.getResource().getFullPath()));
+		}
+	}
+
 	public ArduinoUnoDACQGeneralConfigurationPage(FormEditor editor) {
 		super(editor, PAGE_ID, ArduinoUnoMessages.DACQGeneralConfigurationPage_Title, null);
 	}
@@ -191,6 +210,7 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 		
 		managedForm.getForm().getForm().setText(ArduinoUnoMessages.DACQGeneralConfigurationPage_PageTitle);
 		managedForm.getForm().getToolBarManager().add(new SetAsDefaultConfigurationAction());
+		managedForm.getForm().getToolBarManager().add(new CalibrateMonitorAction());
 		managedForm.getForm().getToolBarManager().update(true);
 		
 		String value = "";

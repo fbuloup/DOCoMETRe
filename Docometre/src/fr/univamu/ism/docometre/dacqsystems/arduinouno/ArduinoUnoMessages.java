@@ -210,6 +210,24 @@ public class ArduinoUnoMessages extends NLS {
 	 */
 	public static String ArduinoDiary_TimeSinceLastProcessStopped;
 
+	// CALIBRATION, MONITORING
+	public static String CalibrationMonitoring_Tooltip;
+	public static String Calibration_TaskName;
+	public static String Calibration_Connecting;
+	public static String Calibration_Uploading;
+	public static String Calibration_Configuring;
+	public static String Calibration_FirmwareNotFound;
+	public static String Calibration_UploadFailed;
+	public static String Calibration_NoAnswer;
+	public static String Calibration_WrongBoard;
+	public static String Calibration_CommandRefused;
+	public static String Calibration_TooManyInputs;
+	public static String Calibration_TooManyOutputs;
+	public static String Calibration_ExternalReference;
+	public static String Calibration_R4RequiresArduinoCLI;
+	public static String Calibration_NoChannel;
+	public static String Calibration_NoValue;
+	
 	static {
 		NLS.initializeMessages(BUNDLE_NAME, ArduinoUnoMessages.class);
 	}
