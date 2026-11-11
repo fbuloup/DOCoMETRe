@@ -2,12 +2,130 @@
 
 <html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-	<title>Arduino Uno</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Arduino Uno R3 and R4 WiFi</title>
+<style type="text/css">
+	table { border-collapse: collapse; margin-bottom: 1em; }
+	th, td { border: 1px solid #A0A0A0; padding: 4px 8px; text-align: left; vertical-align: top; }
+</style>
 </head>
 
 <body>
-<h1>Arduino Uno</h1>
+	<h1>Arduino Uno R3 and R4 WiFi</h1>
+
+	<p>Two revisions of the Arduino Uno are supported. Choose the one of your
+		board in the <b>Revision</b> field of the DACQ configuration. Read
+		<a href="ArduinoTopic.html">Arduino DACQ Systems</a> first for the
+		installation of the Arduino tools and the connection of the
+		board.</p>
+
+	<p>Contents of this page:</p>
+	<ul>
+		<li><a href="#revisions">R3 or R4 WiFi ?</a></li>
+		<li><a href="#pins">Inputs and outputs</a></li>
+		<li><a href="#frequency">Choosing the global frequency</a></li>
+		<li><a href="#names">Variables and reserved names</a></li>
+	</ul>
+
+	<h2><a name="revisions">R3 or R4 WiFi ?</a></h2>
+
+	<table>
+		<tr>
+			<th></th>
+			<th>Uno R3</th>
+			<th>Uno R4 WiFi</th>
+		</tr>
+		<tr><td>Revision field</td><td><code>R3</code></td><td><code>R4_WIFI</code></td></tr>
+		<tr><td>Micro-controller</td><td>ATmega328P, 8 bits, 16 MHz, no floating point unit</td><td>Renesas RA4M1, 32 bits ARM Cortex-M4, 48 MHz, floating point unit</td></tr>
+		<tr><td>Board name used to compile (FQBN)</td><td><code>arduino:avr:uno</code></td><td><code>arduino:renesas_uno:unor4wifi</code></td></tr>
+		<tr><td>Compilation and upload</td><td>arduino-cli, or arduino-builder and avrdude</td><td>arduino-cli only</td></tr>
+		<tr><td>Resolution of the analog inputs</td><td>10 bits (0 to 1023)</td><td>14 bits (0 to 16383)</td></tr>
+		<tr><td>Analog reference</td><td><code>DEFAULT</code>, <code>INTERNAL</code>, <code>EXTERNAL</code></td><td><code>AR_DEFAULT</code>, <code>AR_EXTERNAL</code></td></tr>
+		<tr><td>Timer of the real time loop</td><td>Timer 1 (16 bits)</td><td>GPT timer, with a watchdog</td></tr>
+		<tr><td>Size of an <code>int</code></td><td>16 bits</td><td>32 bits</td></tr>
+		<tr><td>RAM</td><td>2 KB: avoid long strings</td><td>32 KB</td></tr>
+		<tr><td>Name of the time variable</td><td><code>time</code></td><td><code>rtTime</code></td></tr>
+	</table>
+	<p>The Uno R4 Minima is not supported. When an experiment moves from an
+		R3 to an R4 WiFi (or the reverse), change the Revision field, check
+		the analog reference and the variables (size of <code>int</code>,
+		reserved names), then compile the processes again.</p>
+
+	<h2><a name="pins">Inputs and outputs</a></h2>
+
+	<p>The modules of an Arduino Uno are created automatically with the
+		configuration: you only check the <b>Used</b> column of the channels
+		you need. ADS1115 modules are the only modules you can add (see
+		<a href="ads1115.html">ADS1115 Module</a>).</p>
+	<table>
+		<tr>
+			<th>Module</th>
+			<th>Channels</th>
+			<th>Board pins</th>
+			<th>Remarks</th>
+		</tr>
+		<tr>
+			<td>Analog inputs</td>
+			<td><code>AIN0</code> to <code>AIN5</code></td>
+			<td>A0 to A5</td>
+			<td>0 to 5V with the default reference. Calibration values (Unit,
+				UMax, UMin, AMax, AMin) convert the values in physical units.
+				On the R3, a conversion takes about 19&micro;s.</td>
+		</tr>
+		<tr>
+			<td>Analog outputs</td>
+			<td><code>AOUT3</code>, <code>AOUT5</code>, <code>AOUT6</code>,
+				<code>AOUT9</code>, <code>AOUT10</code>, <code>AOUT11</code></td>
+			<td>digital pins 3, 5, 6, 9, 10, 11</td>
+			<td>PWM outputs (values 0 to 255), not true analog outputs: add an
+				RC filter if you need a continuous voltage.</td>
+		</tr>
+		<tr>
+			<td>Digital inputs/outputs</td>
+			<td><code>DIGITAL0</code> to <code>DIGITAL13</code></td>
+			<td>digital pins 0 to 13</td>
+			<td>Inp./Out. column: <code>input</code>, <code>output</code> or
+				<code>input_pullup</code> (input with the internal pull-up
+				resistor, for switches connected to the ground).</td>
+		</tr>
+	</table>
+	<p>Remarks:</p>
+	<ul>
+		<li>a pin used as an analog output (PWM) can't be used as a digital
+			input or output at the same time;</li>
+		<li>on the Uno R3, digital pins 0 and 1 are the serial link with the
+			computer: <b>do not use DIGITAL0 and DIGITAL1</b>, the transfer of
+			the samples would be disturbed. On the R4 WiFi the serial link with
+			the computer doesn't use these pins, which are free;</li>
+		<li>pin 13 is connected to the LED of the board.</li>
+	</ul>
+
+	<h2><a name="frequency">Choosing the global frequency</a></h2>
+
+	<p>The real time loop is called by a timer interrupt at the global
+		frequency. On the Uno R3, the period is obtained by dividing the
+		16 MHz clock: when the requested frequency can't be obtained exactly,
+		a message gives the frequency that will actually be used. Prefer
+		frequencies that are multiples of powers of 2 and/or 10 (100Hz,
+		200Hz, 500Hz, 1000Hz...).</p>
+	<p>The maximum usable frequency depends on the work done in each period
+		(number of channels acquired, computations, lines sent on the serial
+		link): check the <b>workload</b> displayed during a test or a trial
+		(see <a href="../designperspective/processtest.html">Testing a
+		Process</a>). It must stay well below 100%. Remember that the sample
+		frequency of each channel must be a sub-multiple of the global
+		frequency.</p>
+
+	<h2><a name="names">Variables and reserved names</a></h2>
+
+	<p>The names of the channels and variables of the DACQ configuration
+		become names of the generated C++ code. They must not be names already
+		used by Arduino, by the C library or by DOCoMETRe (for example
+		<code>F</code>, <code>PI</code>, <code>signal</code>, <code>time</code>
+		on R3, <code>rtTime</code> on R4 WiFi...): see the list in
+		<a href="../troubleshoots/arduinouno.html#reservednames">Troubleshoots
+		with Arduino Uno system</a>. Variables can be of type bool, char, int,
+		long, float or string.</p>
 
 </body>
 </html>

@@ -2,12 +2,76 @@
 
 <html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-	<title>ADWin Gold</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>ADwin Gold and Gold II</title>
+<style type="text/css">
+	table { border-collapse: collapse; margin-bottom: 1em; }
+	th, td { border: 1px solid #A0A0A0; padding: 4px 8px; text-align: left; vertical-align: top; }
+</style>
 </head>
 
 <body>
-<h1>ADWin Gold</h1>
+	<h1>ADwin Gold and Gold II</h1>
+
+	<p>ADwin Gold and ADwin Gold II are compact systems: the processor and
+		the inputs/outputs (analog inputs, analog outputs, digital
+		inputs/outputs) are in a single box. Read
+		<a href="ADWinTopic.html">ADwin DACQ Systems</a> first for the
+		installation of the ADwin software and the connection of the
+		system.</p>
+
+	<h2>Settings of the DACQ configuration</h2>
+
+	<table>
+		<tr>
+			<th>Field</th>
+			<th>ADwin Gold</th>
+			<th>ADwin Gold II</th>
+		</tr>
+		<tr><td>Device type</td><td>Gold</td><td>Gold</td></tr>
+		<tr><td>CPU type</td><td>I</td><td>II</td></tr>
+		<tr><td>Processor</td><td>T9, 40 MHz</td><td>T11, 300 MHz</td></tr>
+		<tr><td>Bootloader file</td><td><code>adwin9.btl</code></td><td><code>adwin11.btl</code></td></tr>
+		<tr><td>DOCoMETRe library</td><td><code>DOCOLIBGold.LI9</code></td><td><code>DOCOLIBGoldII.LIB</code></td></tr>
+	</table>
+	<p>The library is chosen automatically from the device and CPU types:
+		you only have to give the folder of the DOCoMETRe libraries
+		(<b>ADBasic libraries path</b>).</p>
+
+	<h2>Declaring the inputs and outputs</h2>
+
+	<p>Although the inputs and outputs of a Gold system are on the main
+		board, they are declared in DOCoMETRe as modules, like on a Pro
+		system: add one <b>Analog inputs</b>, one <b>Analog outputs</b> and
+		one <b>Digital inputs/outputs</b> module according to your needs,
+		then add their channels. As there is only one module of each type,
+		keep the module number to 1.</p>
+	<ul>
+		<li><b>Analog inputs</b>: the channel number is the number of the
+			input of the system. The amplitude range of the module and the gain
+			of each channel must match the settings of your system.</li>
+		<li><b>Digital inputs/outputs</b>: the 32 channels are configured by
+			<b>groups of 8</b> (1-8, 9-16, 17-24 and 25-32). When one channel of
+			a group is declared as an output (Inp./Out. column), the whole group
+			is configured as outputs: do not mix inputs and outputs in the same
+			group. A usual choice is channels 1 to 16 as inputs and 17 to 32 as
+			outputs.</li>
+		<li><b>CAN</b> and <b>RS232</b> interfaces are available when the
+			option is installed on your system.</li>
+	</ul>
+	<p>Check the hardware documentation of your system (number of analog
+		inputs, ranges, options) and the wiring with the
+		<a href="ADWinTopic.html#calibration">calibration and monitoring</a>
+		dialog.</p>
+
+	<h2>Gold or Gold II ?</h2>
+
+	<p>The Gold II processor is much faster: it allows higher global
+		frequencies and more computations in each period of the real time
+		loop. The processes are the same for both variants: to move an
+		experiment from a Gold to a Gold II, change the CPU type and the boot
+		loader file of the DACQ configuration, then compile the processes
+		again.</p>
 
 </body>
 </html>

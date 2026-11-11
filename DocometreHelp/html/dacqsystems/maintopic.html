@@ -1,35 +1,130 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"> 
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 
- <html>
- <head>
- 	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
- 	<title>Dacq. Systems</title>
- </head>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Supported DACQ Systems</title>
+<style type="text/css">
+	table { border-collapse: collapse; margin-bottom: 1em; }
+	th, td { border: 1px solid #A0A0A0; padding: 4px 8px; text-align: left; vertical-align: top; }
+</style>
+</head>
 
- <body>
- <h1>Introduction</h1>
+<body>
+	<h1>Supported DACQ Systems</h1>
 
-For now you can use ADWin and Arduino Uno systems. 
-<br><br>
-ADWin systems are declined in several hardwares :
-<ul>
-<li>ADWin Gold</li>
-<li>ADWin Gold II</li>
-<li>ADWin Pro</li>
-<li>ADWin Pro II</li>
-</ul>
-All these hardwares are supported by DOCoMETRe. 
-<br><br>
-Note that ADWin systems are mainly available on Windows. They are supposed to work under Linux but 
-if you want to use these dacq. systems under Mac OS X, you must install <a href="https://wiki.winehq.org/Download">WineHQ</a>. 
+	<p>A DACQ (data acquisition) system is the real time hardware that
+		acquires the signals of an experiment and generates its outputs.
+		DOCoMETRe generates the program of this hardware from the
+		<a href="../designperspective/dacqprocess.html">processes</a> you
+		design, compiles it, loads it in the system, then receives the
+		transferred samples during each trial. Two families of systems are
+		supported: <b>ADwin</b> and <b>Arduino Uno</b>.</p>
 
-<p style="color:rgba(255,0,0,1);"><b>Warning : on Mac OS X, WineHQ is no longer available since Mac OS version 10.15.</b></p>
+	<p>Contents of this page:</p>
+	<ul>
+		<li><a href="#overview">Overview</a></li>
+		<li><a href="#choose">Which system should I choose ?</a></li>
+		<li><a href="#configuration">Declaring a system in DOCoMETRe</a></li>
+	</ul>
 
-Arduino Uno R3 and R4 are fully supported on Windows, Mac and Linux platforms. ADS1115 extension module is also supported. 
-<br><br>
-Support for MCP4725 (DAC 12 bits - I2C) Arduino Uno extension module is planned. Support for Portenta Machine Control or Teensy 4.0 support are also planned.
+	<h2><a name="overview">Overview</a></h2>
 
-<br><br>
+	<table>
+		<tr>
+			<th>System</th>
+			<th>Variants</th>
+			<th>Link with the computer</th>
+			<th>Platforms</th>
+			<th>External software</th>
+		</tr>
+		<tr>
+			<td><a href="ADWinTopic.html">ADwin</a></td>
+			<td><a href="ADWinGoldTopic.html">Gold, Gold II</a>,
+				<a href="ADWinProTopic.html">Pro, Pro II</a></td>
+			<td>Ethernet (TCP/IP)</td>
+			<td>Windows (native), Linux and Mac OS (ADbasic compiler run
+				with Docker or Wine)</td>
+			<td>ADwin software: ADbasic compiler, ADconfig, boot loader files</td>
+		</tr>
+		<tr>
+			<td><a href="ArduinoTopic.html">Arduino</a></td>
+			<td><a href="ArduinoUnoTopic.html">Uno R3, Uno R4 WiFi</a>, with
+				up to four <a href="ads1115.html">ADS1115</a> modules</td>
+			<td>USB (serial link)</td>
+			<td>Windows, Linux, Mac OS</td>
+			<td>arduino-cli (or arduino-builder and avrdude for Uno R3), ADS1X15
+				library for ADS1115 modules</td>
+		</tr>
+	</table>
 
- </body>
- </html>
+	<p>Other systems are being considered but are <b>not available</b>
+		yet: see <a href="plannedsystems.html">Planned systems</a>.</p>
+
+	<h2><a name="choose">Which system should I choose ?</a></h2>
+
+	<table>
+		<tr>
+			<th></th>
+			<th>ADwin</th>
+			<th>Arduino Uno</th>
+		</tr>
+		<tr>
+			<td>Real time loop</td>
+			<td>Several kHz to tens of kHz, very stable (dedicated real time
+				processor)</td>
+			<td>Typically a few hundred Hz, up to about one kHz with few
+				channels: limited by the serial link and the work done in each
+				period (see
+				<a href="../troubleshoots/timingConsideration.html">Timing
+				consideration</a>)</td>
+		</tr>
+		<tr>
+			<td>Analog inputs</td>
+			<td>16 bits, &plusmn;10V, &plusmn;5V or 0-10V, gains 1 to 8,
+				single ended or differential</td>
+			<td>10 bits (R3) or 14 bits (R4 WiFi), 0-5V; 15 useful bits with
+				ADS1115 modules</td>
+		</tr>
+		<tr>
+			<td>Analog outputs</td>
+			<td>16 bits, stimulus files</td>
+			<td>PWM outputs only</td>
+		</tr>
+		<tr>
+			<td>Floating point computations, filters, calibration</td>
+			<td>Yes</td>
+			<td>Limited (no floating point unit on R3), no calibration tool</td>
+		</tr>
+		<tr>
+			<td>CAN and RS232 interfaces (Codamotion, Optitrack, gyroscopes,
+				ICE...)</td>
+			<td>Yes</td>
+			<td>No</td>
+		</tr>
+		<tr>
+			<td>Cost, ease of installation</td>
+			<td>Expensive, requires the ADwin software</td>
+			<td>Cheap, only requires the Arduino tools</td>
+		</tr>
+	</table>
+
+	<p>In short: choose ADwin for demanding experiments (high frequencies,
+		precise timing, many channels, external motion capture systems),
+		and Arduino Uno for simple, low cost or portable set-ups.</p>
+
+	<h2><a name="configuration">Declaring a system in DOCoMETRe</a></h2>
+
+	<p>A system is declared in a
+		<a href="../designperspective/dacqconfiguration.html">DACQ
+		configuration</a>: choose the system when you create the
+		configuration, then fill its General tab (how to reach the system,
+		paths of the compilation tools, global frequency) and its modules
+		tabs. The default values of new configurations come from the
+		preferences pages <b>Default ADWin System</b> and <b>Default Arduino
+		Uno System</b>. The pages of this section describe what has to be
+		installed and checked for each system before filling this
+		configuration.</p>
+
+</body>
+</html>

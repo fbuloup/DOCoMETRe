@@ -591,12 +591,17 @@ public class ADWinProcess extends Process {
 			String volume2 = " -v " + librariesPath + ":" + librariesPath + ":ro";
 			String incLibFoldersOptions = " /IP/opt/adwin/ADwin-linux_6.0.30.00/adwin-compiler-6.0.30/share/adbasic/Inc/";
 			incLibFoldersOptions = incLibFoldersOptions +" /LP/opt/adwin/ADwin-linux_6.0.30.00/adwin-compiler-6.0.30/share/adbasic/Lib/";
-			String cmd = "/usr/local/bin/docker run -w " + adbasicPath.removeLastSegments(1).toPortableString() + " -di" + volume1 + volume2 + " --name adwin ubuntu:adwin";
-			cmd += "\n/usr/local/bin/docker cp /Users/frank/git/DOCoMETRe/Libraries/includes/ADWinIncludeFiles/. adwin:/opt/adwin/ADwin-linux_6.0.30.00/adwin-compiler-6.0.30/share/adbasic/Inc/";
-			cmd += "\n/usr/local/bin/docker cp /Users/frank/git/DOCoMETRe/Libraries/includes/ADWinIncludeFiles/. adwin:/opt/adwin/ADwin-linux_6.0.30.00/adwin-compiler-6.0.30/share/adbasic/Lib/";
-			cmd += "\n/usr/local/bin/docker exec adwin /opt/adwin/bin/adbasic " + adbasicPath.lastSegment() + getCommandLineParameters(outputFolder, adbasicFilePath) + incLibFoldersOptions;
-			cmd += "\n/usr/local/bin/docker stop -t 1 adwin";
-			cmd += "\n/usr/local/bin/docker rm adwin";
+			// Docker Desktop installs docker in /usr/local/bin on Mac OS, which is not in the PATH of applications launched from the Finder.
+			// On Linux, docker is found through the PATH.
+			String docker = Platform.getOS().equals(Platform.OS_MACOSX) ? "/usr/local/bin/docker" : "docker";
+			// DOCoMETRe ADbasic libraries (include and library files) are copied from the libraries path of the DACQ configuration
+			String librariesSource = "\"" + Path.fromOSString(librariesPath).removeTrailingSeparator().toPortableString() + "/.\"";
+			String cmd = docker + " run -w " + adbasicPath.removeLastSegments(1).toPortableString() + " -di" + volume1 + volume2 + " --name adwin ubuntu:adwin";
+			cmd += "\n" + docker + " cp " + librariesSource + " adwin:/opt/adwin/ADwin-linux_6.0.30.00/adwin-compiler-6.0.30/share/adbasic/Inc/";
+			cmd += "\n" + docker + " cp " + librariesSource + " adwin:/opt/adwin/ADwin-linux_6.0.30.00/adwin-compiler-6.0.30/share/adbasic/Lib/";
+			cmd += "\n" + docker + " exec adwin /opt/adwin/bin/adbasic " + adbasicPath.lastSegment() + getCommandLineParameters(outputFolder, adbasicFilePath) + incLibFoldersOptions;
+			cmd += "\n" + docker + " stop -t 1 adwin";
+			cmd += "\n" + docker + " rm adwin";
 			fileWriter.write(cmd);
 			fileWriter.close();
 		}
