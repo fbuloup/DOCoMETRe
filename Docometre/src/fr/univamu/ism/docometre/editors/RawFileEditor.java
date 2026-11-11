@@ -1,9 +1,7 @@
 package fr.univamu.ism.docometre.editors;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,17 +37,20 @@ import fr.univamu.ism.docometre.ThemeColors;
 import fr.univamu.ism.docometre.dialogs.FindDialog;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
-public class ParametersRawEditor extends EditorPart {
+/**
+ * Raw file page (text of the file) of the text files editors (parameters and images files)
+ */
+public class RawFileEditor extends EditorPart implements TextFileEditorPage {
 	
 	private SourceViewer sourceViewer;
 	private PartListenerAdapter partListenerAdapter;
 	private ArrayList<Font> fontsArrayList = new ArrayList<>();
-	private ParametersEditor parametersEditor;
+	private TextFileEditor textFileEditor;
 	private StringBuffer content;
 	private TextViewerUndoManager textViewerUndoManager;
 	
-	public ParametersRawEditor(ParametersEditor parametersEditor) {
-		this.parametersEditor = parametersEditor;
+	public RawFileEditor(TextFileEditor textFileEditor) {
+		this.textFileEditor = textFileEditor;
 	}
 
 	@Override
@@ -82,9 +83,9 @@ public class ParametersRawEditor extends EditorPart {
 	public void createPartControl(Composite parent) {
 		try {
 			
-			readParamsFile();
+			readFile();
 			
-			Document document = parametersEditor.getDocument();
+			Document document = textFileEditor.getDocument();
 			CompositeRuler lineAnnotationRuler = new CompositeRuler();
 			LineNumberRulerColumn lineNumberRulerColumn = new LineNumberRulerColumn();
 			lineAnnotationRuler.addDecorator(0, lineNumberRulerColumn);
@@ -101,7 +102,7 @@ public class ParametersRawEditor extends EditorPart {
 			sourceViewer.addTextListener(new ITextListener() {
 				@Override
 				public void textChanged(TextEvent event) {
-					parametersEditor.setDirty(true);
+					textFileEditor.setDirty(true);
 				}
 			});
 			
@@ -155,7 +156,7 @@ public class ParametersRawEditor extends EditorPart {
 			partListenerAdapter = new PartListenerAdapter() {
 				@Override
 				public void partClosed(IWorkbenchPartReference partRef) {
-					if(partRef.getPart(false) == parametersEditor) {
+					if(partRef.getPart(false) == textFileEditor) {
 						PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().removePartListener(partListenerAdapter);
 					}
 				}
@@ -171,7 +172,7 @@ public class ParametersRawEditor extends EditorPart {
 				}
 				
 				private void update(IWorkbenchPartReference partRef) {
-					if(partRef.getPart(false) == parametersEditor) FindDialog.getInstance().setTextViewer(sourceViewer);
+					if(partRef.getPart(false) == textFileEditor) FindDialog.getInstance().setTextViewer(sourceViewer);
 				}
 			};
 			PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().addPartListener(partListenerAdapter);
@@ -197,7 +198,7 @@ public class ParametersRawEditor extends EditorPart {
 	}
 
 	/**
-	 * Replaces the content of the document by the content of the file changed on disk (see ParametersEditor),
+	 * Replaces the content of the document by the content of the file changed on disk (see TextFileEditor),
 	 * keeping the caret position and the visible lines as far as possible. Undo history is cleared.
 	 * @param newContent the new content
 	 */
@@ -205,16 +206,17 @@ public class ParametersRawEditor extends EditorPart {
 		StyledText textWidget = sourceViewer.getTextWidget();
 		int caretOffset = textWidget.getCaretOffset();
 		int topIndex = sourceViewer.getTopIndex();
-		parametersEditor.getDocument().set(newContent);
+		textFileEditor.getDocument().set(newContent);
 		if(textViewerUndoManager != null) textViewerUndoManager.reset();
 		textWidget.setCaretOffset(Math.min(caretOffset, textWidget.getCharCount()));
 		sourceViewer.setTopIndex(topIndex);
 	}
 
+	@Override
 	public void update() {
 //		try {
-//			readParamsFile();
-//			parametersEditor.getDocument().set(content.toString());
+//			readFile();
+//			textFileEditor.getDocument().set(content.toString());
 //		} catch (IOException e) {
 //			Activator.logErrorMessageWithCause(e);
 //			e.printStackTrace();
@@ -222,9 +224,9 @@ public class ParametersRawEditor extends EditorPart {
 		
 	}
 	
-	private void readParamsFile() throws IOException {
-		IFile paramsFile = (IFile) ((ResourceEditorInput)getEditorInput()).getObject();
-		List<String> lines = Files.readAllLines(FileSystems.getDefault().getPath(paramsFile.getLocation().toOSString()), StandardCharsets.UTF_8);
+	private void readFile() throws IOException {
+		IFile file = (IFile) ((ResourceEditorInput)getEditorInput()).getObject();
+		List<String> lines = TextFileEditor.readLines(FileSystems.getDefault().getPath(file.getLocation().toOSString()));
 		content = new StringBuffer();
 		int lineNumber = 1;
 		for (String line : lines) {

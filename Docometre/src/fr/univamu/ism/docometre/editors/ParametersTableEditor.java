@@ -27,7 +27,7 @@ import org.eclipse.ui.part.EditorPart;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 
-public class ParametersTableEditor extends EditorPart {
+public class ParametersTableEditor extends EditorPart implements TextFileEditorPage {
 	
 	private static String commentLine = "commentLine";
 	private static String parameterLine = "parameterLine";
@@ -305,6 +305,7 @@ public class ParametersTableEditor extends EditorPart {
 		parametersTableViewer.getTable().setFocus();
 	}
 
+	@Override
 	public void update() {
 		populateTable();
 		Integer[] linesNumber = new Integer[parametersEditor.getDocument().getNumberOfLines()];
