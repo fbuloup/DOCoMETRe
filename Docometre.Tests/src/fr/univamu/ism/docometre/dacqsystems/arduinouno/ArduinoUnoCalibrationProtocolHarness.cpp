@@ -1,0 +1,124 @@
+// Test harness of the generic calibration firmware protocol (CalibrationProtocol.h), compiled and run on the
+// host by ArduinoUnoCalibrationProtocolTest with mocked hardware functions. Exit code is the number of failures.
+#include <string>
+#include <map>
+#include "CalibrationProtocol.h"
+
+static std::string output;
+static std::string reference;
+static unsigned long now = 0;
+static std::map<int, long> analogValues;
+static std::map<int, int> digitalValues;
+static std::map<int, std::string> pinModes;
+static std::map<int, int> digitalWrites;
+static std::map<int, int> analogWrites;
+static long adsValue = 0;
+static int adsGain = -1, adsChannel = -1, adsIndex = -1, adsDataRate = -1;
+static bool adsConnected = true;
+
+const char* calBoardName() { return "R3"; }
+bool calAnalogReference(const char* name) {
+	if(strcmp(name, "DEFAULT") != 0 && strcmp(name, "INTERNAL") != 0 && strcmp(name, "EXTERNAL") != 0 && strcmp(name, "AR_DEFAULT") != 0 && strcmp(name, "AR_EXTERNAL") != 0) return false;
+	reference = name;
+	return true;
+}
+long calAnalogRead(uint8_t pin) { return analogValues[pin]; }
+bool calADSBegin(uint8_t index, uint8_t address, uint8_t dataRate) { adsIndex = index; adsDataRate = dataRate; (void)address; return adsConnected; }
+long calADSRead(uint8_t index, uint8_t channel, uint8_t gain) { adsIndex = index; adsChannel = channel; adsGain = gain; return adsValue; }
+int calDigitalRead(uint8_t pin) { return digitalValues[pin]; }
+void calPinModeInput(uint8_t pin, bool pullUp) { pinModes[pin] = pullUp ? "INPUT_PULLUP" : "INPUT"; }
+void calPinModeOutput(uint8_t pin) { pinModes[pin] = "OUTPUT"; }
+void calDigitalWrite(uint8_t pin, uint8_t value) { digitalWrites[pin] = value; }
+void calAnalogWrite(uint8_t pin, int value) { analogWrites[pin] = value; }
+void calPrintLine(const char* line) { output += line; output += "\n"; }
+unsigned long calMillis() { return now; }
+
+// Sends the commands, returns the answers
+static std::string send(const std::string& commands) {
+	output.clear();
+	for (char c : commands) calReceive(c);
+	return output;
+}
+
+// Advances time by dt ms and calls calUpdate(), returns what was sent
+static std::string update(unsigned long dt) {
+	output.clear();
+	now += dt;
+	calUpdate();
+	return output;
+}
+
+#define CHECK(c) do { if(!(c)) { printf("FAIL line %d : %s\n", __LINE__, #c); failures++; } } while(0)
+int main() {
+	int failures = 0;
+	// Identification, CR LF accepted
+	CHECK(send("I\r\n") == "CAL1:R3\n");
+	// Configuration
+	CHECK(send("C\nFINTERNAL\nT50\n") == "K\nK\nK\n");
+	CHECK(reference == "INTERNAL");
+	CHECK(send("A0\nA3\nD7:1\nD8:0\nB0x49:4\nS0x49:2:16\nS73:0:0\n") == "K\nK\nK\nK\nK\nK\nK\n");
+	CHECK(pinModes[7] == "INPUT_PULLUP" && pinModes[8] == "INPUT");
+	CHECK(adsIndex == 1 && adsDataRate == 4);
+	CHECK(send("P13\nQ9\n") == "K\nK\n");
+	CHECK(pinModes[13] == "OUTPUT" && pinModes[9] == "OUTPUT" && digitalWrites[13] == 0 && analogWrites[9] == 0);
+	// No measures before G
+	CHECK(update(100) == "");
+	CHECK(send("G\n") == "K\n");
+	analogValues[0] = 1023; analogValues[3] = 512; digitalValues[7] = 1; digitalValues[8] = 0; adsValue = -1234;
+	// First measures at once, then every period (50 ms)
+	CHECK(update(0) == "M:1023;512;1;0;-1234;-1234\n");
+	CHECK(adsChannel == 0 && adsGain == 0);
+	CHECK(update(20) == "");
+	CHECK(update(30) == "M:1023;512;1;0;-1234;-1234\n");
+	// Outputs : no answer, written immediately
+	CHECK(send("W13:1\nO9:200\n") == "");
+	CHECK(digitalWrites[13] == 1 && analogWrites[9] == 200);
+	// Outputs not declared, wrong values
+	CHECK(send("W12:1\n") == "E:W12:1\n");
+	CHECK(send("O13:10\n") == "E:O13:10\n");
+	CHECK(send("W13:2\n") == "E:W13:2\n");
+	// Stop : outputs reset, digital outputs stay outputs
+	CHECK(send("H\n") == "K\n");
+	CHECK(digitalWrites[13] == 0 && analogWrites[9] == 0 && pinModes[13] == "OUTPUT");
+	CHECK(update(100) == "");
+	// Clear : digital outputs released (high impedance), inputs removed
+	CHECK(send("W13:1\nC\n") == "K\n");
+	CHECK(digitalWrites[13] == 0 && pinModes[13] == "INPUT");
+	CHECK(send("G\n") == "K\n");
+	CHECK(update(100) == "M:\n");
+	CHECK(send("H\n") == "K\n");
+	// Wrong commands
+	CHECK(send("X\n") == "E:X\n");
+	CHECK(send("FVCC\n") == "E:FVCC\n");
+	CHECK(send("T2\n") == "E:T2\n");
+	CHECK(send("A\n") == "E:A\n");
+	CHECK(send("Aa\n") == "E:Aa\n");
+	CHECK(send("A1:2\n") == "E:A1:2\n");
+	CHECK(send("I1\n") == "E:I1\n");
+	CHECK(send("S0x4A:0:1\n") == "E:S0x4A:0:1\n"); // module not started
+	CHECK(send("B0x47:0\n") == "E:B0x47:0\n");
+	CHECK(send("B0x48:0\nS0x48:4:1\n") == "K\nE:S0x48:4:1\n"); // channel 0 to 3
+	CHECK(send("S0x48:0:3\n") == "E:S0x48:0:3\n"); // gain 0, 1, 2, 4, 8 or 16
+	adsConnected = false;
+	CHECK(send("B0x4B:0\n") == "E:B0x4B:0\n");
+	// Too long line
+	CHECK(send(std::string(60, 'A') + "\n") == "E:overflow\n");
+	CHECK(send("I\n") == "CAL1:R3\n");
+	// Inputs limit
+	send("C\n");
+	std::string commands;
+	for (int i = 0; i < CAL_MAX_INPUTS; i++) commands += "A0\n";
+	send(commands);
+	CHECK(send("A0\n") == "E:A0\n");
+	// Longest frame fits (24 ADS values of 6 chars)
+	send("C\nB0x48:0\n");
+	commands.clear();
+	for (int i = 0; i < CAL_MAX_INPUTS; i++) commands += "S0x48:0:0\n";
+	send(commands);
+	adsValue = -32768;
+	send("G\n");
+	std::string frame = update(100);
+	CHECK(frame.size() == 2 + 24 * 6 + 23 + 1);
+	printf("%d failure(s)\n", failures);
+	return failures;
+}
