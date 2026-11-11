@@ -86,6 +86,18 @@ parameters which were not sent. Compile the process again.</p>
 next trial uses the value written in the file. Compile the process again if its configuration has changed, and check the parameters file before
 going on with the session.</p>
 
+<h2><a name="calibration">Calibration, monitoring : "The calibration firmware does not answer" or "Upload of the calibration firmware failed".</a></h2>
+<ul>
+	<li>Check the serial port (Device path) and the revision (R3 or R4 WiFi) of the board in the General tab of the DACQ configuration, and
+	that no other program (Arduino IDE serial monitor for example) uses the serial port.</li>
+	<li>Check the upload tool : avrdude (R3) or arduino-cli (R3 or R4 WiFi, required for the R4 WiFi) and its path in the General tab, as for
+	the upload of the processes.</li>
+	<li>"The calibration firmware refused the command S0x48..." : the ADS1115 module at this address does not answer on the I2C bus
+	(wiring, address).</li>
+	<li>After a calibration, the acquisition process is uploaded again at the next trial : this is normal, the calibration firmware had
+	replaced it on the board.</li>
+</ul>
+
 
 
 

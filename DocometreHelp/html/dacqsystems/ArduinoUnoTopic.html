@@ -25,6 +25,7 @@
 		<li><a href="#pins">Inputs and outputs</a></li>
 		<li><a href="#frequency">Choosing the global frequency</a></li>
 		<li><a href="#names">Variables and reserved names</a></li>
+		<li><a href="#calibration">Calibration and monitoring</a></li>
 	</ul>
 
 	<h2><a name="revisions">R3 or R4 WiFi ?</a></h2>
@@ -126,6 +127,34 @@
 		<a href="../troubleshoots/arduinouno.html#reservednames">Troubleshoots
 		with Arduino Uno system</a>. Variables can be of type bool, char, int,
 		long, float or string.</p>
+
+	<h2><a name="calibration">Calibration and monitoring</a></h2>
+
+	<p>The <b>Calibration, monitoring</b> button of the General tab shows the
+		values of the used inputs and sets the values of the used outputs. It
+		is used to check the wiring and to compute the calibration values of
+		the analog inputs, as with ADwin systems: see
+		<a href="../designperspective/dacqconfiguration.html#calibration">Calibration
+		and monitoring</a>.</p>
+	<p>Like the calibration programs of ADwin systems, the calibration
+		firmware is <b>precompiled</b>: it is the same for all the DACQ
+		configurations and is not compiled on your computer, it is only
+		uploaded (with avrdude, or arduino-cli for the R4 WiFi which requires
+		it). It is configured by DOCoMETRe through the serial port, at 115200
+		bauds whatever the baud rate of the DACQ configuration. Its sources and
+		the way to compile it again are in the <code>Libraries</code> plugin
+		(<code>includes/ArduinoUnoCalibrationFiles</code>).</p>
+	<p>The values of the analog inputs are converted in volts from the analog
+		reference: 5V for DEFAULT and AR_DEFAULT, 1.1V (R3) or 1.5V (R4 WiFi)
+		for INTERNAL, full scale of the gain for ADS1115 inputs. With EXTERNAL
+		and AR_EXTERNAL, the voltage of the AREF pin is not known: raw values
+		of the converter are displayed (0 to 1023 on R3, 0 to 16383 on R4
+		WiFi).</p>
+	<p>The calibration values are saved in the DACQ configuration. The data
+		of the trials are still recorded as raw values of the converters.</p>
+	<p>If something goes wrong, see
+		<a href="../troubleshoots/arduinouno.html#calibration">Troubleshoots
+		with Arduino Uno system</a>.</p>
 
 </body>
 </html>

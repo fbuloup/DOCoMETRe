@@ -31,7 +31,7 @@
 		<li><a href="#modules">Modules tabs</a></li>
 		<li><a href="#variables">Variables tab</a></li>
 		<li><a href="#charts">Charts tab</a></li>
-		<li><a href="#calibration">Calibration and monitoring (ADwin)</a></li>
+		<li><a href="#calibration">Calibration and monitoring</a></li>
 	</ul>
 
 	<h2><a name="create">Creating a DACQ configuration</a></h2>
@@ -501,7 +501,7 @@
 		<a href="../advancedconcepts/imagesfileformat.html">What is images file
 		format ?</a> for details and examples.</p>
 
-	<h2><a name="calibration">Calibration and monitoring (ADwin)</a></h2>
+	<h2><a name="calibration">Calibration and monitoring</a></h2>
 
 	<p>The <b>Calibration, monitoring</b> button of the General tab opens a
 		dialog that shows the inputs and outputs of the system. After the
@@ -515,6 +515,23 @@
 		channel. "Show calibrated values" displays the values in physical
 		unit. When the calibration has been modified, do not forget to save
 		the configuration and to recompile the associated processes.</p>
+	<p>With <b>ADwin</b> systems, a calibration program is loaded in the
+		system (see <a href="../dacqsystems/ADWinTopic.html#calibration">ADwin
+		systems</a>).</p>
+	<p>With <b>Arduino Uno</b> systems, the dialog shows the <b>used</b>
+		channels: analog inputs of the board and of the ADS1115 modules and
+		digital inputs on the left, analog outputs (values 0 to 255 written by
+		<code>analogWrite</code>) and digital outputs on the right. When the
+		proceed button is pressed, a generic calibration firmware is uploaded
+		on the board if it does not already run it (this takes a few seconds),
+		then it is configured from the DACQ configuration: analog reference of
+		the analog inputs module, used channels, ADS1115 addresses, gains and
+		conversion times. Analog values are displayed in volts (raw values of
+		the converter with the EXTERNAL reference, whose voltage is not
+		known). As the acquisition process has been replaced on the board by
+		the firmware, it is uploaded again before the next trial. See
+		<a href="../dacqsystems/ArduinoUnoTopic.html#calibration">Arduino Uno
+		system</a>.</p>
 
 </body>
 </html>
