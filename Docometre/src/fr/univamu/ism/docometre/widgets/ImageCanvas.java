@@ -51,7 +51,7 @@ import org.eclipse.swt.widgets.Composite;
 
 /**
  * Canvas which displays an image centered and scaled to fit, keeping its proportions,
- * or a message in red (error message for example). The image given to this canvas is
+ * or a message in red, centered (error message for example). The image given to this canvas is
  * disposed by it (when replaced or when the canvas is disposed).
  * Used by image charts and by the preview of the images files editor.
  */
@@ -97,13 +97,15 @@ public class ImageCanvas extends Canvas {
 		if(area.width <= 0 || area.height <= 0) return;
 		if(image == null || image.isDisposed()) {
 			if(message == null || message.isEmpty()) return;
-			// Message wrapped to the width of the canvas
+			// Message wrapped to the width of the canvas, centered horizontally and vertically
 			TextLayout textLayout = new TextLayout(getDisplay());
 			textLayout.setText(message);
 			textLayout.setFont(getFont());
 			textLayout.setWidth(Math.max(1, area.width - 10));
+			textLayout.setAlignment(SWT.CENTER);
+			int y = area.y + Math.max(5, (area.height - textLayout.getBounds().height) / 2);
 			gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_RED));
-			textLayout.draw(gc, area.x + 5, area.y + 5);
+			textLayout.draw(gc, area.x + 5, y);
 			textLayout.dispose();
 			return;
 		}
