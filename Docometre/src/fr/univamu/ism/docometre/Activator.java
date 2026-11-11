@@ -75,6 +75,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.Version;
 
 import fr.univamu.ism.docometre.analyse.editors.DataProcessEditor;
+import fr.univamu.ism.docometre.dacqsystems.ImagesFile;
 import fr.univamu.ism.docometre.dacqsystems.TrialTimings;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor.ADWinProcessEditor;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.processeditor.ArduinoUnoProcessEditor;
@@ -108,6 +109,7 @@ public class Activator extends AbstractUIPlugin {
 	public static final String logFileExtension = ".log";
 	public static final String samplesFileExtension = ".samples";
 	public static final String parametersFileExtension = ".params";
+	public static final String imagesFileExtension = ImagesFile.EXTENSION;
 	public static final String adwFileExtension = ".adw";
 	public static final String dataProcessingFileExtension = ".dataprocess";
 	public static final String batchDataProcessingFileExtension = ".batchdataprocess";
@@ -396,7 +398,7 @@ public class Activator extends AbstractUIPlugin {
 	public static void closeEditors(IResource resource) throws CoreException {
 		if(GitResources.isGitMetadata(resource)) return;
 		Object object = ResourceProperties.getObjectSessionProperty(resource);
-		if(ResourceType.isLog(resource) || ResourceType.isParameters(resource) || ResourceType.isSamples(resource) || ResourceType.isChannel(resource)) object = resource;
+		if(ResourceType.isLog(resource) || ResourceType.isParameters(resource) || ResourceType.isImages(resource) || ResourceType.isSamples(resource) || ResourceType.isChannel(resource)) object = resource;
 		if(object != null) {
 			Object editedObject = object;
 			PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {

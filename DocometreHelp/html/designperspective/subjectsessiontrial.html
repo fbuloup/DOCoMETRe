@@ -281,6 +281,44 @@ target;perturbation
 			propagated values written since it was read would be lost).</li>
 	</ul>
 
+	<h2><a name="images">Images files</a></h2>
+
+	<p>Images files (<code>*.images</code>) give the images displayed by
+		<a href="dacqconfiguration.html#imagechart">image charts</a>, one
+		image per trial. To create one, select a session and use File &gt; New
+		&gt; Images file... Its name must be the <b>generic images files
+		name</b> of the image charts (<code>images</code> by default). The new
+		file is created in the session with explanations in comments. Each
+		session whose trials display images must contain its images file.
+		See <a href="../advancedconcepts/imagesfileformat.html">What is images
+		file format ?</a> for the format of the file.</p>
+	<p>A double click on an images file opens it in the images files editor,
+		which has two tabs:</p>
+	<ul>
+		<li><b>Images</b> (displayed first): one row per uncommented line of
+			the file, with the trial number ("&ge; N" for the last line, used
+			for the remaining trials), the path of the image and the comment of
+			the line. The path is displayed in red when the image is not found;
+			its tooltip gives the absolute path. Paths and comments can be
+			edited in the table. The selected image is previewed on the right.
+			Buttons:
+			<ul>
+				<li><b>Add images...</b> adds the chosen images after the last
+					selected image (at the end of the file if there is no
+					selection). Images inside the workspace are written with a
+					path relative to the workspace folder, the other ones with
+					an absolute path;</li>
+				<li><b>Remove</b> removes the lines of the selected images;</li>
+				<li><b>Up</b> and <b>Down</b> exchange the selected image with
+					the previous or next one.</li>
+			</ul>
+			Comment lines are kept but not shown in this tab.</li>
+		<li><b>Raw file</b>: the text of the file.</li>
+	</ul>
+	<p>As with parameters files, the editor follows the changes made on disk
+		while it is opened: it is reloaded when it has no unsaved
+		modification, otherwise you are asked.</p>
+
 	<h2><a name="diaries">Diaries (log files)</a></h2>
 
 	<p>Each run of a process writes an events diary (<code>*.log</code>

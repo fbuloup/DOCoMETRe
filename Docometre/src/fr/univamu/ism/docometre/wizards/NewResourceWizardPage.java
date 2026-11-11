@@ -160,6 +160,7 @@ public abstract class NewResourceWizardPage extends WizardPage implements IWizar
 		if(this instanceof NewDACQConfigurationWizardPage) fileExtension = Activator.daqFileExtension;
 		if(this instanceof NewProcessWizardPage) fileExtension = Activator.processFileExtension;
 		if(this instanceof NewParametersFileWizardPage) fileExtension = Activator.parametersFileExtension;
+		if(this instanceof NewImagesFileWizardPage) fileExtension = Activator.imagesFileExtension;
 		if(this instanceof NewDataProcessingWizardPage) fileExtension = Activator.dataProcessingFileExtension;
 		if(this instanceof NewBatchDataProcessingWizardPage) fileExtension = Activator.batchDataProcessingFileExtension;
 		if(this instanceof NewXYZChartWizardPage) {

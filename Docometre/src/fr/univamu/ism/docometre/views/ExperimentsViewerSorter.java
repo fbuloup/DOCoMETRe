@@ -68,6 +68,7 @@ public class ExperimentsViewerSorter extends ViewerComparator {
 		if(ResourceType.isSubject(resource)) return 9;
 		if(ResourceType.isSession(resource)) return 10;
 		if(ResourceType.isParameters(resource)) return 11;
+		if(ResourceType.isImages(resource)) return 11;
 		if(ResourceType.isTrial(resource)) return 12;
 		if(ResourceType.isLog(resource)) return 13;
 		if(ResourceType.isSamples(resource)) return 14;

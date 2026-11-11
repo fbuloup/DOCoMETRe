@@ -249,7 +249,7 @@
 			<td>Session</td>
 			<td>Folder</td>
 			<td>A set of trials run in sequence. Contains trials and possibly a
-				parameters file.</td>
+				parameters file and images files.</td>
 		</tr>
 		<tr>
 			<td>Trial</td>
@@ -270,6 +270,12 @@
 			<td>Parameters file</td>
 			<td><code>*.params</code> file</td>
 			<td>Values of the parameters for each trial of a session. See <a href="subjectsessiontrial.html#parameters">Parameters
+				files</a>.</td>
+		</tr>
+		<tr>
+			<td>Images file</td>
+			<td><code>*.images</code> file</td>
+			<td>Images displayed by image charts for each trial of a session. See <a href="subjectsessiontrial.html#images">Images
 				files</a>.</td>
 		</tr>
 		<tr>
@@ -331,6 +337,7 @@ MyExperiment
    Subject1 [50%]
       Session1 [50%]
          Session1.params
+         images.images
          Trial n&deg;1 [S.Man.][V.Man.] [/MyExperiment/MyProcess]
             diary.log
             Channel1.samples
@@ -467,7 +474,7 @@ MyExperiment
 			on their own.</li>
 		<li>Create the <a href="subjectsessiontrial.html">subjects, sessions and
 			trials</a> of the protocol, associate a process with each trial and,
-			if needed, add parameters files.</li>
+			if needed, add parameters files and images files.</li>
 		<li>Run the subjects, sessions or trials in the
 			<a href="../dataacquisition/acquireperspective.html">Acquire
 			perspective</a>.</li>

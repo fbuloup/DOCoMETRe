@@ -404,6 +404,13 @@
             name="ParametersEditor">
       </editor>
       <editor
+            class="fr.univamu.ism.docometre.editors.ImagesEditor"
+            default="false"
+            icon="icons/images.png"
+            id="Docometre.ImagesEditor"
+            name="ImagesEditor">
+      </editor>
+      <editor
             class="fr.univamu.ism.docometre.editors.DataEditor"
             contributorClass="fr.univamu.ism.docometre.editors.DataEditorActionBarContributor"
             default="false"
@@ -672,6 +679,21 @@
                      </visibleWhen>
                </command>
                <command
+                     commandId="NewImagesCommand"
+                     icon="icons/images.png"
+                     label="%NewImagesCommand.label"
+                     style="push"
+                     tooltip="%NewImagesCommand.tooltip">
+                     <visibleWhen
+                           checkEnabled="false">
+                           <or>
+	                           <reference
+	                                 definitionId="Docometre.DesignPerspectiveSelected">
+	                           </reference>
+                           </or>
+                     </visibleWhen>
+               </command>
+               <command
                      commandId="NewDataProcessingCommand"
                      icon="icons/dataProcessing.gif"
                      label="%NewDataProcessingCommand.label"
@@ -818,6 +840,13 @@
                                   type="org.eclipse.core.resources.IResource">
                                <test
                                      args="Docometre.type,PARAMETERS"
+                                     property="org.eclipse.core.resources.persistentProperty">
+                               </test>
+                            </adapt>
+                            <adapt
+                                  type="org.eclipse.core.resources.IResource">
+                               <test
+                                     args="Docometre.type,IMAGES"
                                      property="org.eclipse.core.resources.persistentProperty">
                                </test>
                             </adapt>
@@ -1213,6 +1242,15 @@
                   <parameter
                         name="Docometre.type.parameter"
                         value="PARAMETERS">
+                  </parameter>
+               </command>
+               <command
+                     commandId="SetTypeCommand"
+                     label="%ImagesType.label"
+                     style="radio">
+                  <parameter
+                        name="Docometre.type.parameter"
+                        value="IMAGES">
                   </parameter>
                </command>
                <command
@@ -1779,6 +1817,13 @@
                      tooltip="%NewParametersCommand.tooltip">
                </command>
                <command
+                     commandId="NewImagesCommand"
+                     icon="icons/images.png"
+                     label="%NewImagesCommand.label"
+                     style="push"
+                     tooltip="%NewImagesCommand.tooltip">
+               </command>
+               <command
                      commandId="NewDataProcessingCommand"
                      icon="icons/dataProcessing.gif"
                      label="%NewDataProcessingCommand.label"
@@ -1863,6 +1908,13 @@
                          type="org.eclipse.core.resources.IResource">
                       <test
                             args="Docometre.type,PARAMETERS"
+                            property="org.eclipse.core.resources.persistentProperty">
+                      </test>
+                   </adapt>
+                   <adapt
+                         type="org.eclipse.core.resources.IResource">
+                      <test
+                            args="Docometre.type,IMAGES"
                             property="org.eclipse.core.resources.persistentProperty">
                       </test>
                    </adapt>
@@ -2130,6 +2182,15 @@
                <parameter
                      name="Docometre.type.parameter"
                      value="PARAMETERS">
+               </parameter>
+            </command>
+            <command
+                  commandId="SetTypeCommand"
+                  label="%ImagesType.label"
+                  style="radio">
+               <parameter
+                     name="Docometre.type.parameter"
+                     value="IMAGES">
                </parameter>
             </command>
             <command
@@ -3538,6 +3599,11 @@
             defaultHandler="fr.univamu.ism.docometre.handlers.NewParametersFileHandler"
             id="NewParametersCommand"
             name="NewParametersCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.handlers.NewImagesFileHandler"
+            id="NewImagesCommand"
+            name="NewImagesCommand">
       </command>
       <command
             id="EditSessionAction"

@@ -121,6 +121,7 @@ public class NewResourceWizard extends Wizard implements INewWizard, IPageChange
 		if(resourceType.equals(ResourceType.FOLDER)) newResourceWizardPage = new NewFolderWizardPage();
 		if(resourceType.equals(ResourceType.TRIAL)) newResourceWizardPage = new NewTrialWizardPage();
 		if(resourceType.equals(ResourceType.PARAMETERS)) newResourceWizardPage = new NewParametersFileWizardPage();
+		if(resourceType.equals(ResourceType.IMAGES)) newResourceWizardPage = new NewImagesFileWizardPage();
 		if(resourceType.equals(ResourceType.DATA_PROCESSING)) newResourceWizardPage = new NewDataProcessingWizardPage();
 		if(resourceType.equals(ResourceType.BATCH_DATA_PROCESSING)) newResourceWizardPage = new NewBatchDataProcessingWizardPage();
 		if(resourceType.equals(ResourceType.XYCHART)) newResourceWizardPage = new NewXYZChartWizardPage(ResourceType.XYCHART);

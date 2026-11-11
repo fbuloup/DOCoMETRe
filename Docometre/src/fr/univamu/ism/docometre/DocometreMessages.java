@@ -319,6 +319,9 @@ public final class DocometreMessages extends NLS {
 	public static String NewParametersFileWizard_PageName;
 	public static String NewParametersFileWizard_PageTitle;
 	public static String NewParametersFileWizard_PageMessage;
+	public static String NewImagesFileWizard_PageName;
+	public static String NewImagesFileWizard_PageTitle;
+	public static String NewImagesFileWizard_PageMessage;
 	
 	/*New Custom function Page*/
 	public static String NewCustomFunctionWizard_PageName;
@@ -1284,6 +1287,19 @@ public final class DocometreMessages extends NLS {
 	public static String ParametersFileChanged_Title;
 	public static String ParametersFileChanged_ReloadMessage;
 	public static String ParametersFileChanged_OverwriteMessage;
+	public static String ImagesEditor_ImagesTab;
+	public static String ImagesEditor_TrialColumn;
+	public static String ImagesEditor_ImageColumn;
+	public static String ImagesEditor_CommentColumn;
+	public static String ImagesEditor_AddImages;
+	public static String ImagesEditor_Remove;
+	public static String ImagesEditor_MoveUp;
+	public static String ImagesEditor_MoveDown;
+	public static String ImagesEditor_ImageNotFound;
+	public static String ImagesEditor_ImageLoadError;
+	public static String ImagesFileChanged_Title;
+	public static String ImagesFileChanged_ReloadMessage;
+	public static String ImagesFileChanged_OverwriteMessage;
 	
 	// ExportToADW Handler 
 	public static String ExportToADWJob_Title;

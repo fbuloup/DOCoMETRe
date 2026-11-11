@@ -72,6 +72,7 @@ public interface IImageKeys {
 	public static final String SNAPSHOT_ICON = "icons/snapshot.png"; //$NON-NLS-1$
 	public static final String COLLAPSE_ALL = "icons/collapseAll.gif"; //$NON-NLS-1$
 	public static final String PARAMETERS_FILE_ICON = "icons/parameters.gif"; //$NON-NLS-1$
+	public static final String IMAGES_FILE_ICON = "icons/images.png"; //$NON-NLS-1$
 
 	//Messages View
 	public static final String MESSAGES_VIEW_ICON = "icons/messagesView.gif"; //$NON-NLS-1$

@@ -80,6 +80,7 @@ public class GetResourceLabelDelegate {
 		if(ResourceType.isLog(resource)) return resource.getName().replaceAll(Activator.logFileExtension + "$", "");
 		if(ResourceType.isSamples(resource)) return resource.getName().replaceAll(Activator.samplesFileExtension + "$", "");
 		if(ResourceType.isParameters(resource)) return resource.getName().replaceAll(Activator.parametersFileExtension + "$", "");
+		if(ResourceType.isImages(resource)) return resource.getName().replaceAll(Activator.imagesFileExtension + "$", "");
 		if(ResourceType.isDataProcessing(resource)) return resource.getName().replaceAll(Activator.dataProcessingFileExtension + "$", "");
 		if(ResourceType.isBatchDataProcessing(resource)) return resource.getName().replaceAll(Activator.batchDataProcessingFileExtension + "$", "");
 		if(ResourceType.isXYChart(resource)) return resource.getName().replaceAll(Activator.xyChartFileExtension + "$", "");

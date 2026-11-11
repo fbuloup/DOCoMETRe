@@ -1,0 +1,57 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+ <html>
+ <head>
+ 	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ 	<title>What is images file format ?</title>
+ 	<style type="text/css">
+ 		pre { margin-left: 2em; }
+ 	</style>
+ </head>
+
+ <body>
+ <h1>What is images file format ?</h1>
+ <p>
+ Images files (<code>*.images</code>) give the images displayed by
+ <a href="../designperspective/dacqconfiguration.html#imagechart">image charts</a> in the
+ <a href="../dataacquisition/acquireperspective.html">Acquire perspective</a>, one image per trial. An image chart reads, in the folder of the
+ session of the running trial, the images file whose name is its <b>generic images files name</b> followed by <code>.images</code> : with
+ the generic name <code>stimuli</code>, each session must contain a file <code>stimuli.images</code>. Each session can thus have its own list
+ of images, and several image charts can use different images files.
+ </p>
+ <p>An images file is created with File &gt; New &gt; Images file... when a session is selected, and edited with the
+ <a href="../designperspective/subjectsessiontrial.html#images">images files editor</a>. It is a simple text file that can also be written
+ elsewhere :</p>
+ <ul>
+ 	<li>"#" starts a comment, until the end of the line : a line can be a comment, or a comment can follow the path of an image;</li>
+ 	<li>comment lines and empty lines are ignored;</li>
+ 	<li>the first uncommented line gives the image of trial 1, the second one the image of trial 2, etc.;</li>
+ 	<li>when the session has more trials than uncommented lines, the last line is used for the remaining trials;</li>
+ 	<li>each line contains the path of an image file, either <b>absolute</b> or <b>relative to the workspace folder</b>. A path can't contain "#";</li>
+ 	<li>supported formats are those read by SWT : PNG, JPEG, BMP, GIF, ICO and TIFF.</li>
+ </ul>
+ <p>For example, with images stored once in a folder <code>images</code> of the experiment <code>MyExperiment</code> :</p>
+ <pre>
+# Images of the session (one line per trial)
+MyExperiment/images/target_left.png     # trial 1
+MyExperiment/images/target_right.png    # trial 2
+
+# Last line : trials 3 and following
+C:\Stimuli\target_center.jpg
+ </pre>
+ <p>Trial 1 displays <code>&lt;workspace&gt;/MyExperiment/images/target_left.png</code>, trial 2
+ <code>&lt;workspace&gt;/MyExperiment/images/target_right.png</code>, and trials 3 and following <code>C:\Stimuli\target_center.jpg</code>.</p>
+
+ <h2><a name="errors">Errors</a></h2>
+ <p>When the images file is missing or has no uncommented line, or when the image of the trial is not found or can't be read, an error message
+ is displayed in red in the chart and written in the error log (with the number of the line in the images file, comments included). The trial
+ is run anyway.</p>
+ <p>When a process is <a href="../designperspective/processtest.html">tested</a> on its own, the images file is searched in the folder of the
+ process, and its first uncommented line is used.</p>
+
+ <h2><a name="legacy">Images files of previous versions</a></h2>
+ <p>First versions of image charts used a text file whose generic name included its extension (<code>images.txt</code>). Such a generic name
+ is still accepted : when it ends with <code>.txt</code>, the file is searched with this name. Rename these files with the <code>.images</code>
+ extension (and remove <code>.txt</code> from the generic name) to edit them with the images files editor.</p>
+ </body>
+ </html>

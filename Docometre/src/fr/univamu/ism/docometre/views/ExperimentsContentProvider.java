@@ -120,6 +120,9 @@ public class ExperimentsContentProvider implements ITreeContentProvider {
 					if(resource.getName().endsWith(Activator.parametersFileExtension)) {
 						ResourceProperties.setTypePersistentProperty(resource, ResourceType.PARAMETERS.toString());
 					}
+					if(resource.getName().endsWith(Activator.imagesFileExtension)) {
+						ResourceProperties.setTypePersistentProperty(resource, ResourceType.IMAGES.toString());
+					}
 					if(resource.getName().endsWith(Activator.processFileExtension)) {
 						ResourceProperties.setTypePersistentProperty(resource, ResourceType.PROCESS.toString());
 					}

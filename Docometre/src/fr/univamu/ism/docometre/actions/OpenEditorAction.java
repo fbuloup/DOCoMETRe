@@ -82,6 +82,7 @@ import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.dacqconfigurationedito
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.processeditor.ArduinoUnoProcessEditor;
 import fr.univamu.ism.docometre.editors.DataEditor;
 import fr.univamu.ism.docometre.editors.DiaryEditor;
+import fr.univamu.ism.docometre.editors.ImagesEditor;
 import fr.univamu.ism.docometre.editors.ParametersEditor;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.views.ExperimentsView;
@@ -163,6 +164,8 @@ public class OpenEditorAction extends Action implements ISelectionListener, IWor
 				}
 				
 				if(ResourceType.isParameters(resource)) openEditor(resource, ParametersEditor.ID);
+				
+				if(ResourceType.isImages(resource)) openEditor(resource, ImagesEditor.ID);
 				
 				if(ResourceType.isChannel(resource)) {
 					if(Activator.useOpenGLV2()) openEditor(resource, GLChannelEditor.ID);
@@ -255,6 +258,7 @@ public class OpenEditorAction extends Action implements ISelectionListener, IWor
 						boolean canOpen = ResourceType.isDACQConfiguration((IResource) object) || ResourceType.isProcess((IResource) object);
 						canOpen = canOpen || ResourceType.isLog((IResource) object);
 						canOpen = canOpen || ResourceType.isParameters((IResource) object);
+						canOpen = canOpen || ResourceType.isImages((IResource) object);
 						canOpen = canOpen || ResourceType.isSamples((IResource) object);
 						canOpen = canOpen || ResourceType.isChannel((IResource) object);
 						canOpen = canOpen || ResourceType.isDataProcessing((IResource) object);

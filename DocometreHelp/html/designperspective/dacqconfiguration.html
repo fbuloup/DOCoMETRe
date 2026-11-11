@@ -461,9 +461,10 @@
 		</tr>
 		<tr>
 			<td>Image Chart</td>
-			<td>One image per trial, read from an images file present in each
-				session folder. Generic name of the images file. See
-				<a href="#imagechart">Image chart</a>.</td>
+			<td>One image per trial, read from an images file
+				(<code>*.images</code>) present in each session folder. Generic
+				name of the images files. See <a href="#imagechart">Image
+				chart</a>.</td>
 		</tr>
 	</table>
 	<p>The <b>Curves</b> section lists the curves of the selected chart. Its
@@ -478,46 +479,27 @@
 
 	<p>An image chart displays one image for each trial, for example a
 		stimulus or an instruction shown to the subject. Its only specific
-		property is the <b>generic images files name</b>
-		(<code>images.txt</code> by default):</p>
+		property is the <b>generic images files name</b>, without extension
+		(<code>images</code> by default). At the beginning of each trial, the
+		chart reads, in the folder of the session, the
+		<a href="subjectsessiontrial.html#images">images file</a> with this
+		name and the <code>.images</code> extension (<code>images.images</code>
+		by default):</p>
 	<ul>
-		<li>each <a href="subjectsessiontrial.html#sessions">session</a>
-			folder must contain a text file with this name, so that each session
-			can have its own list of images;</li>
-		<li>"#" starts a comment, until the end of the line, as in
-			<a href="subjectsessiontrial.html#parameters">parameters files</a>:
-			a line can be a comment, or a comment can follow the path of an
-			image. Comment lines and empty lines are ignored;</li>
-		<li>the N-th remaining line gives the image of trial N. When the session
-			has more trials than lines, the last line is used for the remaining
-			trials;</li>
+		<li>"#" starts a comment, until the end of the line; comment lines and
+			empty lines are ignored;</li>
+		<li>the N-th uncommented line gives the image of trial N. When the
+			session has more trials than lines, the last line is used for the
+			remaining trials;</li>
 		<li>each line contains the path of an image file, either absolute or
-			relative to the workspace folder;</li>
-		<li>supported formats are those read by SWT: PNG, JPEG, BMP, GIF, ICO
-			and TIFF.</li>
+			relative to the workspace folder.</li>
 	</ul>
-	<p>For example, with images stored once in a folder of the experiment
-		<code>Images</code>, the file <code>images.txt</code> of a session
-		could be:</p>
-<pre>
-# Images of the session (one line per trial)
-Images/images/target_left.png     # trial 1
-Images/images/target_right.png    # trial 2
-C:\Stimuli\target_center.jpg      # trials 3 and following
-</pre>
-	<p>Trial 1 displays <code>&lt;workspace&gt;/Images/images/target_left.png</code>,
-		trial 2 <code>&lt;workspace&gt;/Images/images/target_right.png</code>,
-		and trials 3 and following <code>C:\Stimuli\target_center.jpg</code>.</p>
-	<p>The image is loaded at the beginning of each trial, then centered and
-		scaled to fit the chart while keeping its proportions. When the
-		images file is missing or empty, or when the image of the trial is not
-		found or cannot be read, an error message is displayed in red in the
-		chart and written in the error log (with the line number in the
-		images file, comments included); the trial is run anyway. A path
-		cannot contain "#". When a
-		process is <a href="processtest.html">tested</a> outside a session,
-		the images file is searched in the folder of the process and its first
-		line is used.</p>
+	<p>The image is centered and scaled to fit the chart while keeping its
+		proportions. When the images file or the image of the trial is not
+		found, an error message is displayed in red in the chart and written
+		in the error log; the trial is run anyway. See
+		<a href="../advancedconcepts/imagesfileformat.html">What is images file
+		format ?</a> for details and examples.</p>
 
 	<h2><a name="calibration">Calibration and monitoring (ADwin)</a></h2>
 

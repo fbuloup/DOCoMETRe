@@ -2,11 +2,6 @@ package fr.univamu.ism.docometre.dacqsystems.charts;
 
 import java.io.File;
 import java.nio.FloatBuffer;
-import java.nio.charset.MalformedInputException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
@@ -15,18 +10,11 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.PaintListener;
-import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -41,21 +29,21 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.DocometreSharedColors;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.dacqsystems.ExperimentScheduler;
+import fr.univamu.ism.docometre.dacqsystems.ImagesFile;
+import fr.univamu.ism.docometre.dacqsystems.ImagesFile.ImageLine;
 import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyHandler;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.dacqsystems.Property;
 import fr.univamu.ism.docometre.editors.ResourceEditor;
 import fr.univamu.ism.docometre.editors.ModulePage.ModuleSectionPart;
+import fr.univamu.ism.docometre.widgets.ImageCanvas;
 
 public class ImageChartConfiguration extends ChartConfiguration {
 	
 	private static final long serialVersionUID = 1L;
-	private static final String COMMENT_REGEXP = "#.*$";
 
 	transient private Text imagesFileNameText;
-	transient private Canvas imageCanvas;
-	transient private Image image;
-	transient private String errorMessage;
+	transient private ImageCanvas imageCanvas;
 
 	public ImageChartConfiguration() {
 		super(ChartTypes.IMAGE_CHART);
@@ -124,52 +112,32 @@ public class ImageChartConfiguration extends ChartConfiguration {
 		value = getProperty(ChartConfigurationProperties.VERTICAL_SPANNING);
 		int vSpan = Integer.parseInt(value);
 		
-		imageCanvas = new Canvas(container, SWT.DOUBLE_BUFFERED);
+		imageCanvas = new ImageCanvas(container, SWT.NONE);
 		imageCanvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, hSpan, vSpan));
 		// Same colors as the other real time charts (see MeterChartConfiguration)
 		imageCanvas.setData("org.eclipse.e4.ui.css.id", "DocometreMeterChart");
 		imageCanvas.setBackground(DocometreSharedColors.getInstance().getColor(new RGB(25, 28, 33)));
 		imageCanvas.setForeground(DocometreSharedColors.getInstance().getColor(new RGB(217, 217, 229)));
 		
-		image = null;
 		updateImage(process);
-		
-		imageCanvas.addPaintListener(new PaintListener() {
-			@Override
-			public void paintControl(PaintEvent event) {
-				paintImage(event.gc);
-			}
-		});
-		imageCanvas.addDisposeListener(new DisposeListener() {
-			@Override
-			public void widgetDisposed(DisposeEvent event) {
-				if(image != null && !image.isDisposed()) image.dispose();
-				image = null;
-			}
-		});
 	}
 	
 	/*
 	 * Replace current image by the one of current trial, or by an error message
 	 */
 	private void updateImage(Process process) {
-		if(image != null && !image.isDisposed()) image.dispose();
-		image = null;
-		errorMessage = null;
 		try {
-			image = loadImage(process, imageCanvas.getDisplay());
+			imageCanvas.setImage(loadImage(process, imageCanvas.getDisplay()));
 		} catch (Exception e) {
-			errorMessage = e.getMessage() != null ? e.getMessage() : e.toString();
+			String errorMessage = e.getMessage() != null ? e.getMessage() : e.toString();
 			Activator.logErrorMessage(errorMessage);
+			imageCanvas.setMessage(errorMessage);
 		}
 	}
 	
 	/*
 	 * Get image path from images file in session folder and load this image.
-	 * Line N of images file gives the image of trial N. If there are less lines
-	 * than trials, last line is used. Comments (# until the end of the line) and
-	 * empty lines are ignored.
-	 * Image path may be absolute or relative to workspace folder.
+	 * See ImagesFile for the format of the images file.
 	 */
 	private Image loadImage(Process process, Display display) throws Exception {
 		IFolder outputFolder = process.getOutputFolder();
@@ -177,65 +145,21 @@ public class ImageChartConfiguration extends ChartConfiguration {
 		// When testing a process, there is no session : use output folder parent instead.
 		IContainer sessionFolder = outputFolder.getParent();
 		File sessionDirectory = sessionFolder.getLocation().toFile();
-		String imagesFileName = getProperty(ImageChartConfigurationProperties.IMAGES_FILE_NAME);
+		String imagesFileName = ImagesFile.getFileName(getProperty(ImageChartConfigurationProperties.IMAGES_FILE_NAME));
 		File imagesFile = new File(sessionDirectory, imagesFileName);
 		if(!imagesFile.isFile()) throw new Exception(NLS.bind(DocometreMessages.ImageChartFileNotFound, imagesFileName, sessionDirectory.getAbsolutePath()));
 		
-		List<String> lines = new ArrayList<>();
-		List<String> fileLines;
-		try {
-			fileLines = Files.readAllLines(imagesFile.toPath(), StandardCharsets.UTF_8);
-		} catch (MalformedInputException e) {
-			// Not an UTF-8 file : probably edited with a Latin-1 editor
-			fileLines = Files.readAllLines(imagesFile.toPath(), StandardCharsets.ISO_8859_1);
-		}
-		// Same comments as parameters files : # starts a comment, until the end of the line.
-		// Line numbers in file are kept for error messages.
-		List<Integer> linesNumbers = new ArrayList<>();
-		for (int i = 0; i < fileLines.size(); i++) {
-			String line = fileLines.get(i).replaceAll(COMMENT_REGEXP, "").trim();
-			if(line.isEmpty()) continue;
-			lines.add(line);
-			linesNumbers.add(i + 1);
-		}
-		if(lines.isEmpty()) throw new Exception(NLS.bind(DocometreMessages.ImageChartFileEmpty, imagesFile.getAbsolutePath()));
-		
 		int trialNumber = ResourceType.isTrial(outputFolder) ? ExperimentScheduler.getInstance().getCurrentTrialNumber() : 1;
-		int lineIndex = Math.min(Math.max(trialNumber, 1), lines.size()) - 1;
+		ImageLine imageLine = ImagesFile.getTrialImageLine(ImagesFile.getImageLines(ImagesFile.readLines(imagesFile.toPath())), trialNumber);
+		if(imageLine == null) throw new Exception(NLS.bind(DocometreMessages.ImageChartFileEmpty, imagesFile.getAbsolutePath()));
 		
-		// Image path may be absolute or relative to workspace folder
-		File imageFile = new File(lines.get(lineIndex));
-		if(!imageFile.isAbsolute()) imageFile = new File(ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile(), lines.get(lineIndex));
-		if(!imageFile.isFile()) throw new Exception(NLS.bind(DocometreMessages.ImageChartImageNotFound, new Object[] {imageFile.getAbsolutePath(), linesNumbers.get(lineIndex), imagesFile.getAbsolutePath()}));
+		File imageFile = ImagesFile.getImageFile(imageLine.getPath(), ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile());
+		if(!imageFile.isFile()) throw new Exception(NLS.bind(DocometreMessages.ImageChartImageNotFound, new Object[] {imageFile.getAbsolutePath(), imageLine.getLineNumber(), imagesFile.getAbsolutePath()}));
 		try {
 			return new Image(display, imageFile.getAbsolutePath());
 		} catch (SWTException e) {
 			throw new Exception(NLS.bind(DocometreMessages.ImageChartImageLoadError, imageFile.getAbsolutePath(), e.getMessage()));
 		}
-	}
-	
-	/*
-	 * Draw image centered and scaled to fit canvas while keeping its aspect ratio,
-	 * or error message if image could not be loaded
-	 */
-	private void paintImage(GC gc) {
-		Rectangle area = imageCanvas.getClientArea();
-		if(image == null || image.isDisposed()) {
-			if(errorMessage == null) return;
-			gc.setForeground(imageCanvas.getDisplay().getSystemColor(SWT.COLOR_RED));
-			gc.drawText(errorMessage, area.x + 5, area.y + 5, true);
-			return;
-		}
-		Rectangle bounds = image.getBounds();
-		if(area.width <= 0 || area.height <= 0 || bounds.width <= 0 || bounds.height <= 0) return;
-		double scale = Math.min((double)area.width / bounds.width, (double)area.height / bounds.height);
-		int width = (int) Math.round(bounds.width * scale);
-		int height = (int) Math.round(bounds.height * scale);
-		int x = area.x + (area.width - width) / 2;
-		int y = area.y + (area.height - height) / 2;
-		gc.setAntialias(SWT.ON);
-		gc.setInterpolation(SWT.HIGH);
-		gc.drawImage(image, 0, 0, bounds.width, bounds.height, x, y, width, height);
 	}
 	
 	/*
@@ -247,7 +171,6 @@ public class ImageChartConfiguration extends ChartConfiguration {
 		Object object = container.getData("process");
 		if(!(object instanceof Process)) return false;
 		updateImage((Process)object);
-		imageCanvas.redraw();
 		return true;
 	}
 

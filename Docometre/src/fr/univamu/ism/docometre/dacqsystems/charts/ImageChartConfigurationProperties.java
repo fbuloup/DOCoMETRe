@@ -9,7 +9,7 @@ public class ImageChartConfigurationProperties extends Property {
 	
 	public static void populateProperties(ImageChartConfiguration imageChartConfiguration){
 		ChartConfigurationProperties.populateProperties(imageChartConfiguration);
-		imageChartConfiguration.setProperty(IMAGES_FILE_NAME, "images.txt");
+		imageChartConfiguration.setProperty(IMAGES_FILE_NAME, "images");
 	}
 	
 	public static ImageChartConfiguration clone(ImageChartConfiguration imageChartConfiguration) {

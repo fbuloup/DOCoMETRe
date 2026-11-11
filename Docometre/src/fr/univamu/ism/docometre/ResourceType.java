@@ -61,6 +61,7 @@ public enum ResourceType {
 	LOG("LOG"),
 	SAMPLES("SAMPLES"),
 	PARAMETERS("PARAMETERS"),
+	IMAGES("IMAGES"),
 	PROCESS_TEST("PROCESS_TEST"),
 	ADW_DATA_FILE("ADW_DATA_FILE"),
 	CHANNEL("CHANNEL"),
@@ -99,6 +100,7 @@ public enum ResourceType {
 		if(typeValue.equals(LOG.toString())) return LOG;
 		if(typeValue.equals(SAMPLES.toString())) return SAMPLES;
 		if(typeValue.equals(PARAMETERS.toString())) return PARAMETERS;
+		if(typeValue.equals(IMAGES.toString())) return IMAGES;
 		if(typeValue.equals(PROCESS_TEST.toString())) return PROCESS_TEST;
 		if(typeValue.equals(ADW_DATA_FILE.toString())) return ADW_DATA_FILE;
 		if(typeValue.equals(CHANNEL.toString())) return CHANNEL;
@@ -154,6 +156,10 @@ public enum ResourceType {
 	
 	public static boolean isParameters(IResource resource) {
 		return check(resource, PARAMETERS);
+	}
+	
+	public static boolean isImages(IResource resource) {
+		return check(resource, IMAGES);
 	}
 	
 	public static boolean isProcessTest(IResource resource) {
