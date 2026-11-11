@@ -50,6 +50,7 @@ import fr.univamu.ism.docometre.editors.ModulePage.ModuleSectionPart;
 public class ImageChartConfiguration extends ChartConfiguration {
 	
 	private static final long serialVersionUID = 1L;
+	private static final String COMMENT_REGEXP = "#.*$";
 
 	transient private Text imagesFileNameText;
 	transient private Canvas imageCanvas;
@@ -166,7 +167,8 @@ public class ImageChartConfiguration extends ChartConfiguration {
 	/*
 	 * Get image path from images file in session folder and load this image.
 	 * Line N of images file gives the image of trial N. If there are less lines
-	 * than trials, last line is used. Empty lines are ignored.
+	 * than trials, last line is used. Comments (# until the end of the line) and
+	 * empty lines are ignored.
 	 * Image path may be absolute or relative to workspace folder.
 	 */
 	private Image loadImage(Process process, Display display) throws Exception {
@@ -187,9 +189,14 @@ public class ImageChartConfiguration extends ChartConfiguration {
 			// Not an UTF-8 file : probably edited with a Latin-1 editor
 			fileLines = Files.readAllLines(imagesFile.toPath(), StandardCharsets.ISO_8859_1);
 		}
-		for (String line : fileLines) {
-			line = line.trim();
-			if(!line.isEmpty()) lines.add(line);
+		// Same comments as parameters files : # starts a comment, until the end of the line.
+		// Line numbers in file are kept for error messages.
+		List<Integer> linesNumbers = new ArrayList<>();
+		for (int i = 0; i < fileLines.size(); i++) {
+			String line = fileLines.get(i).replaceAll(COMMENT_REGEXP, "").trim();
+			if(line.isEmpty()) continue;
+			lines.add(line);
+			linesNumbers.add(i + 1);
 		}
 		if(lines.isEmpty()) throw new Exception(NLS.bind(DocometreMessages.ImageChartFileEmpty, imagesFile.getAbsolutePath()));
 		
@@ -199,7 +206,7 @@ public class ImageChartConfiguration extends ChartConfiguration {
 		// Image path may be absolute or relative to workspace folder
 		File imageFile = new File(lines.get(lineIndex));
 		if(!imageFile.isAbsolute()) imageFile = new File(ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile(), lines.get(lineIndex));
-		if(!imageFile.isFile()) throw new Exception(NLS.bind(DocometreMessages.ImageChartImageNotFound, new Object[] {imageFile.getAbsolutePath(), lineIndex + 1, imagesFile.getAbsolutePath()}));
+		if(!imageFile.isFile()) throw new Exception(NLS.bind(DocometreMessages.ImageChartImageNotFound, new Object[] {imageFile.getAbsolutePath(), linesNumbers.get(lineIndex), imagesFile.getAbsolutePath()}));
 		try {
 			return new Image(display, imageFile.getAbsolutePath());
 		} catch (SWTException e) {
