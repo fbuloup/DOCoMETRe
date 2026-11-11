@@ -82,7 +82,6 @@ import org.eclipse.jface.action.StatusLineManager;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IPageChangeProvider;
 import org.eclipse.jface.dialogs.PageChangedEvent;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
@@ -1910,9 +1909,11 @@ public class ArduinoUnoProcess extends Process {
 		} else {
 			String arduinoCLIPATH = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH);
 			
-			cmd = cmd + "\"" + arduinoCLIPATH + "\"" + " compile -b " + fullQualifiedBoardName + " --output-dir \"" + outputFolder + File.separator + "Build\" \"" + sketchFilePath + "\" > " + outputFolder + File.separator + "Build" +  File.separator + "compile.txt 2>&1";			
 			String userLibrariesPath = getDACQConfiguration().getProperty((ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH));
-			if(userLibrariesPath != null && !"".equals(userLibrariesPath)) cmd = cmd + " -libraries \"" + userLibrariesPath + "\"";
+			// --libraries must be given before the output redirection
+			cmd = cmd + "\"" + arduinoCLIPATH + "\"" + " compile -b " + fullQualifiedBoardName + " --output-dir \"" + outputFolder + File.separator + "Build\" \"" + sketchFilePath + "\"";
+			if(userLibrariesPath != null && !"".equals(userLibrariesPath)) cmd = cmd + " --libraries \"" + userLibrariesPath + "\"";
+			cmd = cmd + " > " + outputFolder + File.separator + "Build" +  File.separator + "compile.txt 2>&1";
 		}
 		fileWriter.write(cmd);
 		fileWriter.close();
@@ -1944,16 +1945,17 @@ public class ArduinoUnoProcess extends Process {
 		if(!useCLI) {
 			cmd = cmd + arduinoUnoCompiler + " -hardware=" + rootPath + "hardware/ -tools=" + rootPath + "hardware/tools/ -tools=" + rootPath + "tools-builder/ -fqbn=" + fullQualifiedBoardName + " -quiet -verbose";
 			cmd = cmd + " -built-in-libraries=" + rootPath + "libraries";
-			IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
-			String userLibrariesPath = preferenceStore.getString(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getKey());
+			String userLibrariesPath = getDACQConfiguration().getProperty((ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH));
 			if(userLibrariesPath != null && !"".equals(userLibrariesPath)) cmd = cmd + " -libraries " + userLibrariesPath;
 			cmd = cmd + " -build-path=" + outputFolder + File.separator + "Build";
 			cmd = cmd + " -compile " + sketchFilePath;// + " > stdout.txt 2>stderr.txt";
 		} else {
 			String arduinoCLIPATH = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH);
-			cmd = cmd + "\"" + arduinoCLIPATH + "\"" + " compile -b " + fullQualifiedBoardName + " --output-dir \"" + outputFolder + File.separator + "Build\" \"" + sketchFilePath + "\" > " + outputFolder + File.separator + "Build" +  File.separator + "compile.txt 2>&1";				
 			String userLibrariesPath = getDACQConfiguration().getProperty((ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH));
-			if(userLibrariesPath != null && !"".equals(userLibrariesPath)) cmd = cmd + " -libraries \"" + userLibrariesPath + "\"";
+			// --libraries must be given before the output redirection
+			cmd = cmd + "\"" + arduinoCLIPATH + "\"" + " compile -b " + fullQualifiedBoardName + " --output-dir \"" + outputFolder + File.separator + "Build\" \"" + sketchFilePath + "\"";
+			if(userLibrariesPath != null && !"".equals(userLibrariesPath)) cmd = cmd + " --libraries \"" + userLibrariesPath + "\"";
+			cmd = cmd + " > " + outputFolder + File.separator + "Build" +  File.separator + "compile.txt 2>&1";
 		}
 		
 		fileWriter.write(cmd);
@@ -1986,16 +1988,17 @@ public class ArduinoUnoProcess extends Process {
 		if(!useCLI) {
 			cmd = cmd + arduinoUnoCompiler + " -hardware=" + rootPath + "hardware/ -tools=" + rootPath + "hardware/tools/ -tools=" + rootPath + "tools-builder/ -fqbn=" + fullQualifiedBoardName + " -quiet -verbose";
 			cmd = cmd + " -built-in-libraries=" + rootPath + "libraries";
-			IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
-			String userLibrariesPath = preferenceStore.getString(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getKey());
+			String userLibrariesPath = getDACQConfiguration().getProperty((ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH));
 			if(userLibrariesPath != null && !"".equals(userLibrariesPath)) cmd = cmd + " -libraries " + userLibrariesPath;
 			cmd = cmd + " -build-path=" + outputFolder + File.separator + "Build";
 			cmd = cmd + " -compile " + sketchFilePath;// + " > stdout.txt 2>stderr.txt";
 		} else {
 			String arduinoCLIPATH = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH);
-			cmd = cmd + "\"" + arduinoCLIPATH + "\"" + " compile -b " + fullQualifiedBoardName + " --output-dir \"" + outputFolder + File.separator + "Build\" \"" + sketchFilePath + "\" > " + outputFolder + File.separator + "Build" +  File.separator + "compile.txt 2>&1";				
 			String userLibrariesPath = getDACQConfiguration().getProperty((ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH));
-			if(userLibrariesPath != null && !"".equals(userLibrariesPath)) cmd = cmd + " -libraries \"" + userLibrariesPath + "\"";
+			// --libraries must be given before the output redirection
+			cmd = cmd + "\"" + arduinoCLIPATH + "\"" + " compile -b " + fullQualifiedBoardName + " --output-dir \"" + outputFolder + File.separator + "Build\" \"" + sketchFilePath + "\"";
+			if(userLibrariesPath != null && !"".equals(userLibrariesPath)) cmd = cmd + " --libraries \"" + userLibrariesPath + "\"";
+			cmd = cmd + " > " + outputFolder + File.separator + "Build" +  File.separator + "compile.txt 2>&1";
 		}
 		
 		fileWriter.write(cmd);
