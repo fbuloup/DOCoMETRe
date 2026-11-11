@@ -1,0 +1,100 @@
+1
+00:00:04,002 --> 00:00:09,958
+In this tutorial you will create an experiment, add subjects (participants) and organize their sessions and trials.
+
+2
+00:00:10,008 --> 00:00:21,820
+When DOCoMETRe starts, choose a workspace: the folder where all your experiments are stored.
+
+3
+00:00:21,870 --> 00:00:27,160
+Close the Welcome page to reach the Design perspective.
+
+4
+00:00:27,210 --> 00:00:32,234
+The Experiments view (left) shows the experiments of the workspace as a tree.
+
+5
+00:00:32,284 --> 00:00:39,561
+The Description view shows the description of the selected item, and the Console view displays messages.
+
+6
+00:00:39,611 --> 00:00:45,275
+Step 1 - Create an experiment with the 'Experiment' button of the tool bar.
+
+7
+00:00:45,325 --> 00:00:51,439
+Give it a name and a short description.
+
+8
+00:00:51,489 --> 00:00:58,088
+Click Finish: the experiment appears in the Experiments view.
+
+9
+00:00:58,138 --> 00:01:01,094
+Its description is displayed in the Description view.
+
+10
+00:01:01,144 --> 00:01:14,299
+Step 2 - Select the experiment and click the 'Subject' button to add a participant.
+
+11
+00:01:14,349 --> 00:01:25,491
+Do the same for each participant of the study.
+
+12
+00:01:25,541 --> 00:01:29,496
+Subjects are folders of the experiment. The percentage of trials already done will be displayed next to their name.
+
+13
+00:01:29,546 --> 00:01:40,425
+Step 3 - Select a subject and click the 'Session' button. A session is a set of trials run in sequence.
+
+14
+00:01:40,475 --> 00:01:44,774
+Choose the number of trials of the session.
+
+15
+00:01:44,824 --> 00:01:49,845
+Data files names are built from the channel name, plus the session name and the trial number as suffixes...
+
+16
+00:01:49,895 --> 00:01:59,096
+...and, optionally, a prefix: here the subject code, so that files keep unique names outside DOCoMETRe.
+
+17
+00:01:59,146 --> 00:02:03,444
+Click Next to organize the session.
+
+18
+00:02:03,494 --> 00:02:09,448
+This page associates a data acquisition process with each trial. The experiment has no process yet: this will be done in another tutorial.
+
+19
+00:02:09,498 --> 00:02:16,570
+Click Finish to create the session and its trials.
+
+20
+00:02:16,620 --> 00:02:25,790
+The session contains 10 trials. [S.Man.] and [V.Man.] mean that each trial is started and validated manually.
+
+21
+00:02:25,840 --> 00:02:30,625
+Their icon will show whether they have been done or not.
+
+22
+00:02:30,675 --> 00:02:47,027
+Add a second session to S01 : 'Learning', with 40 trials.
+
+23
+00:02:47,077 --> 00:02:53,725
+When processes are not needed yet, Finish can be clicked from the first page.
+
+24
+00:02:53,775 --> 00:03:05,741
+The selected session and its description: everything can be edited later (Edit session in the context menu).
+
+25
+00:03:05,791 --> 00:03:11,746
+Your experimental protocol is ready: subjects, sessions and trials. Next step: describe the data acquisition system and its processes.
+
