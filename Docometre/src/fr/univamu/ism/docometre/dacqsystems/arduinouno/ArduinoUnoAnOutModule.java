@@ -57,6 +57,63 @@ public class ArduinoUnoAnOutModule extends Module {
 	}
 
 	private static final long serialVersionUID = AbstractElement.serialVersionUID;;
+	
+	/**
+	 * Channel of the DAC of Arduino Uno R4 WiFi (true analog output, 12 bits) : pin A0, number 14 of the board.
+	 * It is added to the module of R4 WiFi configurations only (see {@link #updateDACChannel()}).
+	 */
+	public static final String DAC_CHANNEL_NUMBER = "14";
+	public static final String DAC_CHANNEL_NAME = "AOUT_DAC";
+	public static final int DAC_MAXIMUM = 4095;
+	
+	/**
+	 * @return true if the channel is the DAC of Arduino Uno R4 WiFi
+	 */
+	public static boolean isDACChannel(Channel channel) {
+		return DAC_CHANNEL_NUMBER.equals(channel.getProperty(ChannelProperties.CHANNEL_NUMBER));
+	}
+	
+	/**
+	 * @return the DAC channel, null if the module has none
+	 */
+	public Channel getDACChannel() {
+		for (Channel channel : getChannels()) if(isDACChannel(channel)) return channel;
+		return null;
+	}
+	
+	/**
+	 * DAC channel of the revision of the board : added (not used) for R4 WiFi if the module has none (new
+	 * configurations, configurations created before), no more used, transferred or recorded for R3.
+	 * @return the DAC channel when it has been added, null otherwise
+	 */
+	public Channel updateDACChannel() {
+		Channel dacChannel = getDACChannel();
+		if(ArduinoUnoAnInModuleProperties.isR4(dacqConfiguration)) {
+			if(dacChannel != null) return null;
+			dacChannel = createChannel();
+			dacChannel.setProperty(ChannelProperties.NAME, DAC_CHANNEL_NAME);
+			dacChannel.setProperty(ChannelProperties.CHANNEL_NUMBER, DAC_CHANNEL_NUMBER);
+			return dacChannel;
+		}
+		if(dacChannel != null && (Boolean.valueOf(dacChannel.getProperty(ArduinoUnoChannelProperties.USED)) || Boolean.valueOf(dacChannel.getProperty(ChannelProperties.TRANSFER)))) {
+			dacChannel.setProperty(ArduinoUnoChannelProperties.USED, "false");
+			dacChannel.setProperty(ChannelProperties.TRANSFER, "false");
+			dacqConfiguration.updateChannelsTransferNumber();
+		}
+		return null;
+	}
+	
+	/*
+	 * True if the analog input on pin A0 (AIN0, same pin as the DAC) is used
+	 */
+	private boolean isAnalogInputA0Used() {
+		for (Module module : dacqConfiguration.getModules()) {
+			if(!(module instanceof ArduinoUnoAnInModule)) continue;
+			for (Channel channel : module.getChannels()) 
+				if("0".equals(channel.getProperty(ChannelProperties.CHANNEL_NUMBER)) && Boolean.valueOf(channel.getProperty(ArduinoUnoChannelProperties.USED))) return true;
+		}
+		return false;
+	}
 
 	@Override
 	public String getCodeSegment(Object segment) throws Exception {
@@ -69,7 +126,9 @@ public class ArduinoUnoAnOutModule extends Module {
 			Channel channel = getChannel(i);
 			
 			String used = channel.getProperty(ArduinoUnoChannelProperties.USED);
-			boolean isUsed = Boolean.valueOf(used);
+			boolean isDAC = isDACChannel(channel);
+			// The DAC exists on R4 WiFi only
+			boolean isUsed = Boolean.valueOf(used) && (!isDAC || ArduinoUnoAnInModuleProperties.isR4(dacqConfiguration));
 			String name = channel.getProperty(ChannelProperties.NAME);
 			String transferNumber = channel.getProperty(ChannelProperties.TRANSFER_NUMBER);
 			String channelNumber = channel.getProperty(ChannelProperties.CHANNEL_NUMBER);
@@ -82,6 +141,8 @@ public class ArduinoUnoAnOutModule extends Module {
 			int frequencyRatio = (int) (gsfFloat/sfFloat);
 			
 			if (segment == ArduinoUnoCodeSegmentProperties.DECLARATION) {
+				if(isUsed && isDAC && isAnalogInputA0Used()) 
+					code = code + "#error \"Pin A0 can't be used both as analog input (AIN0) and as DAC output (" + name + ") : uncheck one of them in the DACQ configuration\"\n";
 				if(isUsed) {
 					code = code + "// ******** Sortie analogique : " + name + "\n";
 					code = code + "unsigned int " + name + ";\n";
@@ -105,7 +166,12 @@ public class ArduinoUnoAnOutModule extends Module {
 				if(isUsed) {
 					code = code + "\n\t\tif(generate_" + name + "_index == " + frequencyRatio + ") {\n";
 					code = code + "\t\t\t\tgenerate_" + name + "_index = 0;\n";
-					code = code + "\t\t\t\tanalogWrite(" + channelNumber + ", " + name + ");\n";
+					if(isDAC) {
+						// 12 bits for the DAC only : the resolution is common to all the analog outputs (PWM outputs stay 8 bits)
+						code = code + "\t\t\t\tanalogWriteResolution(12);\n";
+						code = code + "\t\t\t\tanalogWrite(" + channelNumber + ", " + name + ");\n";
+						code = code + "\t\t\t\tanalogWriteResolution(8);\n";
+					} else code = code + "\t\t\t\tanalogWrite(" + channelNumber + ", " + name + ");\n";
 					if(isTransfered) {
 						code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%d\", " + transferNumber + ", " + name + ");\n";
 						code = code + "\t\t\t\tSerial.println(serialMessage);\n";
@@ -141,8 +207,8 @@ public class ArduinoUnoAnOutModule extends Module {
 
 	@Override
 	public void update(Property property, Object newValue, Object oldValue, AbstractElement element) {
-		// TODO Auto-generated method stub
-
+		// DAC channel of the new revision of the board
+		if(property == ArduinoUnoDACQConfigurationProperties.REVISION) updateDACChannel();
 	}
 
 	@Override

@@ -210,6 +210,8 @@ public class ArduinoUnoMessages extends NLS {
 	 */
 	public static String ArduinoDiary_TimeSinceLastProcessStopped;
 
+	public static String PinA0AlreadyUsed;
+	
 	// CALIBRATION, MONITORING
 	public static String CalibrationMonitoring_Tooltip;
 	public static String Calibration_TaskName;

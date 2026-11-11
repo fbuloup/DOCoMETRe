@@ -341,7 +341,9 @@
 		<tr>
 			<td>Analog outputs, digital inputs/outputs (Arduino)</td>
 			<td>Channels: <b>Used</b>, and for digital channels
-				<b>Inp./Out.</b> (input or output).</td>
+				<b>Inp./Out.</b> (input or output). With an R4 WiFi, the analog
+				outputs module also has the true analog output of the DAC
+				(<code>AOUT_DAC</code>, pin A0, 12 bits).</td>
 		</tr>
 		<tr>
 			<td>ADS1115 (Arduino)</td>
@@ -524,7 +526,8 @@
 	<p>With <b>Arduino Uno</b> systems, the dialog shows the <b>used</b>
 		channels: analog inputs of the board and of the ADS1115 modules and
 		digital inputs on the left, analog outputs (values 0 to 255 written by
-		<code>analogWrite</code>) and digital outputs on the right. When the
+		<code>analogWrite</code>, 0 to 4095 for the DAC of the R4 WiFi) and
+		digital outputs on the right. When the
 		proceed button is pressed, a generic calibration firmware is uploaded
 		on the board if it does not already run it (this takes a few seconds),
 		then it is configured from the DACQ configuration: analog reference of

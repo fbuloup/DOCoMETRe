@@ -114,6 +114,9 @@ public class ArduinoUnoCalibrationProtocolJavaTest {
 		assertEquals(128, ArduinoUnoCalibrationProtocol.getAnalogOutputValue(127.6));
 		assertEquals(0, ArduinoUnoCalibrationProtocol.getAnalogOutputValue(-2));
 		assertEquals(255, ArduinoUnoCalibrationProtocol.getAnalogOutputValue(300));
+		// DAC of R4 WiFi : 12 bits
+		assertEquals("O14:4095", ArduinoUnoCalibrationProtocol.getAnalogOutputCommand(14, 5000, ArduinoUnoCalibrationProtocol.DAC_OUTPUT_MAXIMUM));
+		assertEquals(2048, ArduinoUnoCalibrationProtocol.getAnalogOutputValue(2047.5, ArduinoUnoCalibrationProtocol.DAC_OUTPUT_MAXIMUM));
 	}
 	
 	@Test

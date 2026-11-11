@@ -62,7 +62,7 @@
  *   G                          starts the measures -> "K"
  *   H                          stops the measures, outputs reset -> "K"
  *   W<pin>:<value>             writes a digital output (0 or 1), no answer
- *   O<pin>:<value>             writes an analog output, no answer
+ *   O<pin>:<value>             writes an analog output (0 to 255 ; 0 to 4095 for the DAC of R4 WiFi, pin A0 = 14), no answer
  * A wrong command is answered by "E:<command>".
  * While started, the values of the inputs, in the order they were added, are sent
  * every period : "M:<value 1>;<value 2>;..." (raw values of the converters).
@@ -117,6 +117,10 @@ static uint8_t calInputsNumber = 0;
 static CalOutput calOutputs[CAL_MAX_OUTPUTS];
 static uint8_t calOutputsNumber = 0;
 static bool calADSStarted[CAL_MAX_ADS];
+// Pins whose mode has been set as analog output since the start of the board (pins 0 to 31) : the mode is set
+// once, as in acquisition processes (on R4 WiFi, the DAC pin is no more connected to the DAC when its mode is
+// changed after its first analogWrite)
+static uint32_t calAnalogOutputModeSet = 0;
 static bool calRunning = false;
 static unsigned long calPeriod = CAL_DEFAULT_PERIOD;
 static unsigned long calLastMeasuresTime = 0;
@@ -185,7 +189,9 @@ static bool calAddOutput(uint8_t pin, bool analog) {
 	calOutputs[calOutputsNumber].analog = analog;
 	calOutputsNumber++;
 	if(analog) {
-		calPinModeOutput(pin);
+		bool modeSet = pin < 32 && (calAnalogOutputModeSet & ((uint32_t)1 << pin));
+		if(!modeSet) calPinModeOutput(pin);
+		if(pin < 32) calAnalogOutputModeSet |= (uint32_t)1 << pin;
 		calAnalogWrite(pin, 0);
 	} else {
 		calPinModeOutput(pin);

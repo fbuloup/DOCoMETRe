@@ -96,6 +96,11 @@ int main(int argc, char** argv) {
 	// Clear : digital outputs released (high impedance), inputs removed
 	CHECK(send("W13:1\nC\n") == "K\n");
 	CHECK(digitalWrites[13] == 0 && pinModes[13] == "INPUT");
+	// Mode of an analog output set once since the start (DAC of R4 WiFi) : not set again when it is added again
+	pinModes[9] = "UNCHANGED";
+	CHECK(send("Q9\nO9:4095\n") == "K\n");
+	CHECK(pinModes[9] == "UNCHANGED" && analogWrites[9] == 4095);
+	CHECK(send("C\n") == "K\n");
 	CHECK(send("G\n") == "K\n");
 	CHECK(update(100) == "M:\n");
 	CHECK(send("H\n") == "K\n");

@@ -86,6 +86,11 @@ public final class ArduinoUnoCalibrationProtocol {
 	public static final int ANALOG_OUTPUT_MAXIMUM = 255;
 	
 	/**
+	 * Maximum value of the DAC of Arduino Uno R4 WiFi (pin A0, 12 bits)
+	 */
+	public static final int DAC_OUTPUT_MAXIMUM = 4095;
+	
+	/**
 	 * Inputs and outputs limits of the firmware (CAL_MAX_INPUTS, CAL_MAX_OUTPUTS)
 	 */
 	public static final int MAXIMUM_INPUTS = 24;
@@ -232,15 +237,29 @@ public final class ArduinoUnoCalibrationProtocol {
 	 * @param value the value of the output, limited to 0 - ANALOG_OUTPUT_MAXIMUM
 	 */
 	public static String getAnalogOutputCommand(int pin, double value) {
-		return "O" + pin + ":" + getAnalogOutputValue(value);
+		return getAnalogOutputCommand(pin, value, ANALOG_OUTPUT_MAXIMUM);
+	}
+	
+	/**
+	 * @param maximum ANALOG_OUTPUT_MAXIMUM (PWM outputs) or DAC_OUTPUT_MAXIMUM (DAC of R4 WiFi)
+	 */
+	public static String getAnalogOutputCommand(int pin, double value, int maximum) {
+		return "O" + pin + ":" + getAnalogOutputValue(value, maximum);
 	}
 	
 	/**
 	 * @return the value written by analogWrite for this value : rounded and limited to 0 - ANALOG_OUTPUT_MAXIMUM
 	 */
 	public static int getAnalogOutputValue(double value) {
+		return getAnalogOutputValue(value, ANALOG_OUTPUT_MAXIMUM);
+	}
+	
+	/**
+	 * @return the value written by analogWrite for this value : rounded and limited to 0 - maximum
+	 */
+	public static int getAnalogOutputValue(double value, int maximum) {
 		long digitValue = Math.round(value);
-		return (int) Math.max(0, Math.min(ANALOG_OUTPUT_MAXIMUM, digitValue));
+		return (int) Math.max(0, Math.min(maximum, digitValue));
 	}
 	
 	/**

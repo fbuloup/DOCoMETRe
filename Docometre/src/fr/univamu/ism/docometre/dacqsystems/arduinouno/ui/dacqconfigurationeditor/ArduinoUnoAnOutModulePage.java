@@ -46,20 +46,26 @@ import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.widgets.FormText;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorSite;
 
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.Property;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnInModuleProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnOutChannelProperties;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnOutModule;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoChannelProperties;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfigurationProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoMessages;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoModulesList;
 import fr.univamu.ism.docometre.editors.ModulePage;
@@ -118,6 +124,13 @@ public class ArduinoUnoAnOutModulePage extends ArduinoUnoModulePage {
 	public ArduinoUnoAnOutModulePage(FormEditor editor, String id, String title, Module module) {
 		super(editor, id, title, module);
 		// TODO Auto-generated constructor stub
+	}
+	
+	@Override
+	public void init(IEditorSite site, IEditorInput input) {
+		// DAC channel added to R4 WiFi configurations created before (before the observers of the channels are added)
+		((ArduinoUnoAnOutModule)module).updateDACChannel();
+		super.init(site, input);
 	}
 
 	@Override
@@ -207,6 +220,13 @@ public class ArduinoUnoAnOutModulePage extends ArduinoUnoModulePage {
 			}
 		});
 		configureSorter(new AnalogOutputsComparator(), tableViewer.getTable().getColumn(1));
+		// DAC channel shown for R4 WiFi only
+		tableViewer.addFilter(new ViewerFilter() {
+			@Override
+			public boolean select(Viewer viewer, Object parentElement, Object element) {
+				return !ArduinoUnoAnOutModule.isDACChannel((Channel)element) || ArduinoUnoAnInModuleProperties.isR4(dacqConfiguration);
+			}
+		});
 		tableViewer.setInput(module.getChannels());
 	}
 	
@@ -246,6 +266,13 @@ public class ArduinoUnoAnOutModulePage extends ArduinoUnoModulePage {
 //			}
 //			
 //		}
+		// DAC channel of the new revision of the board
+		if(property == ArduinoUnoDACQConfigurationProperties.REVISION && tableViewer != null && !tableViewer.getTable().isDisposed()) {
+			Channel dacChannel = ((ArduinoUnoAnOutModule)module).updateDACChannel();
+			if(dacChannel != null) dacChannel.addObserver(this);
+			tableViewer.setInput(module.getChannels());
+			tableConfigurationSectionPart.markDirty();
+		}
 		if(property instanceof ArduinoUnoAnOutChannelProperties) {
 			if(tableViewer != null && tableViewer.getTable() != null && !tableViewer.getTable().isDisposed()) {
 				tableViewer.refresh();

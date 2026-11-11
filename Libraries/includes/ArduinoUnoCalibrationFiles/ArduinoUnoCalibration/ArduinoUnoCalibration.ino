@@ -125,6 +125,15 @@ void calDigitalWrite(uint8_t pin, uint8_t value) {
 }
 
 void calAnalogWrite(uint8_t pin, int value) {
+#if defined(ARDUINO_ARCH_RENESAS)
+	if(pin == DAC) {
+		// DAC (pin A0) : 12 bits, the resolution is common to all the analog outputs (PWM outputs stay 8 bits)
+		analogWriteResolution(12);
+		analogWrite(pin, value);
+		analogWriteResolution(8);
+		return;
+	}
+#endif
 	analogWrite(pin, value);
 }
 

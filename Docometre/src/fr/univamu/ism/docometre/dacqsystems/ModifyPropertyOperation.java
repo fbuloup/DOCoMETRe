@@ -52,18 +52,21 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.osgi.util.NLS;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfigurationProperties;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinVariable;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoADS1115Module;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnInModule;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnOutModule;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoChannel;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfigurationProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDigInOutModule;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoMessages;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoVariable;
 import fr.univamu.ism.docometre.editors.ResourceEditor;
 
@@ -136,6 +139,19 @@ public class ModifyPropertyOperation extends AbstractOperation {
 			Module module = arduinoUnoChannel.getModule();
 			DACQConfiguration dacqConfiguration = arduinoUnoChannel.getModule().getDACQConfiguration();
 			Module[] modules = dacqConfiguration.getModules();
+			// Pin A0 of Arduino Uno R4 WiFi : analog input AIN0 or DAC output, not both
+			boolean isAnalogInputA0 = module instanceof ArduinoUnoAnInModule && "0".equals(channelNumber);
+			boolean isDAC = module instanceof ArduinoUnoAnOutModule && ArduinoUnoAnOutModule.isDACChannel(arduinoUnoChannel);
+			for (Module otherModule : modules) {
+				Channel otherChannel = null;
+				if(isAnalogInputA0 && otherModule instanceof ArduinoUnoAnOutModule) otherChannel = ((ArduinoUnoAnOutModule)otherModule).getDACChannel();
+				if(isDAC && otherModule instanceof ArduinoUnoAnInModule) 
+					for (Channel channel : otherModule.getChannels()) if("0".equals(channel.getProperty(ChannelProperties.CHANNEL_NUMBER))) otherChannel = channel;
+				if(otherChannel != null && "true".equals(otherChannel.getProperty(ArduinoUnoChannelProperties.USED))) {
+					Activator.logWarningMessage(NLS.bind(ArduinoUnoMessages.PinA0AlreadyUsed, otherChannel.getProperty(ChannelProperties.NAME)));
+					return true;
+				}
+			}
 			for (Module otherModule : modules) {
 				if(otherModule != module && (otherModule instanceof ArduinoUnoAnOutModule || otherModule instanceof ArduinoUnoDigInOutModule) && !(module instanceof ArduinoUnoADS1115Module)) {
 					Channel[] channels = otherModule.getChannels();

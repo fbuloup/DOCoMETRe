@@ -59,6 +59,7 @@ import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoADS1115Module;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnInModule;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnInModuleProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnOutModule;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfiguration;
@@ -107,11 +108,16 @@ public class ArduinoUnoCalibrateMonitorDialog extends AbstractCalibrateMonitorDi
 		for (Module module : modules) 
 			if(module instanceof ArduinoUnoDigInOutModule)
 				for (Channel channel : module.getChannels()) if(isUsed(channel) && !isDigitalOutput(channel)) createChannelViewer(inputsContainer, channel, true, false);
-		// Analog outputs (analogWrite values)
+		// Analog outputs (analogWrite values) : PWM outputs, and DAC of R4 WiFi (12 bits)
+		boolean r4 = ArduinoUnoAnInModuleProperties.isR4(dacqConfiguration);
 		for (Module module : modules) 
 			if(module instanceof ArduinoUnoAnOutModule)
-				for (Channel channel : module.getChannels()) 
-					if(isUsed(channel)) createChannelViewer(outputsContainer, channel, false, true).setOutputRange(0, ArduinoUnoCalibrationProtocol.ANALOG_OUTPUT_MAXIMUM);
+				for (Channel channel : module.getChannels()) {
+					boolean isDAC = ArduinoUnoAnOutModule.isDACChannel(channel);
+					if(!isUsed(channel) || (isDAC && !r4)) continue;
+					int maximum = isDAC ? ArduinoUnoCalibrationProtocol.DAC_OUTPUT_MAXIMUM : ArduinoUnoCalibrationProtocol.ANALOG_OUTPUT_MAXIMUM;
+					createChannelViewer(outputsContainer, channel, false, true).setOutputRange(0, maximum);
+				}
 		// Digital outputs
 		for (Module module : modules) 
 			if(module instanceof ArduinoUnoDigInOutModule)

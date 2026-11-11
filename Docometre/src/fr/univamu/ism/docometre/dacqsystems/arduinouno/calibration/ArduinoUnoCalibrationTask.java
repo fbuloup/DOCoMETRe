@@ -108,6 +108,8 @@ public class ArduinoUnoCalibrationTask extends CalibrationTimerTask {
 	// Outputs viewers and their last values sent
 	private Map<ChannelViewer, Object> outputsValues = new LinkedHashMap<>();
 	private Map<ChannelViewer, Boolean> outputsAnalog = new HashMap<>();
+	// Maximum value of analog outputs : PWM or DAC (R4 WiFi)
+	private Map<ChannelViewer, Integer> outputsMaximum = new HashMap<>();
 	// ADS1115 modules : address, data rate
 	private Map<Integer, Integer> ads1115Modules = new LinkedHashMap<>();
 	private List<Integer> digitalOutputs = new ArrayList<>();
@@ -129,6 +131,14 @@ public class ArduinoUnoCalibrationTask extends CalibrationTimerTask {
 			if(module instanceof ArduinoUnoAnInModule) analogReference = module.getProperty(ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE);
 		analogReference = ArduinoUnoAnInModuleProperties.getReferenceOfRevision(analogReference, ArduinoUnoAnInModuleProperties.isR4(dacqConfiguration));
 		for (ChannelViewer channelViewer : channelsViewers) addChannel(channelViewer);
+		// Pin A0 of R4 WiFi : analog input AIN0 or DAC output, not both
+		Channel analogInputA0 = null, dacOutput = null;
+		for (ChannelViewer channelViewer : channelsViewers) {
+			Channel channel = channelViewer.getChannel();
+			if(channel.getModule() instanceof ArduinoUnoAnInModule && "0".equals(channel.getProperty(ChannelProperties.CHANNEL_NUMBER))) analogInputA0 = channel;
+			if(channel.getModule() instanceof ArduinoUnoAnOutModule && ArduinoUnoAnOutModule.isDACChannel(channel)) dacOutput = channel;
+		}
+		if(analogInputA0 != null && dacOutput != null) throw new Exception(NLS.bind(ArduinoUnoMessages.PinA0AlreadyUsed, analogInputA0.getProperty(ChannelProperties.NAME)));
 		if(inputs.size() > ArduinoUnoCalibrationProtocol.MAXIMUM_INPUTS) 
 			throw new Exception(NLS.bind(ArduinoUnoMessages.Calibration_TooManyInputs, inputs.size(), ArduinoUnoCalibrationProtocol.MAXIMUM_INPUTS));
 		if(outputsValues.size() > ArduinoUnoCalibrationProtocol.MAXIMUM_OUTPUTS) 
@@ -169,6 +179,7 @@ public class ArduinoUnoCalibrationTask extends CalibrationTimerTask {
 			analogOutputs.add(channelNumber);
 			outputsValues.put(channelViewer, null);
 			outputsAnalog.put(channelViewer, true);
+			outputsMaximum.put(channelViewer, ArduinoUnoAnOutModule.isDACChannel(channel) ? ArduinoUnoCalibrationProtocol.DAC_OUTPUT_MAXIMUM : ArduinoUnoCalibrationProtocol.ANALOG_OUTPUT_MAXIMUM);
 		} else if(module instanceof ArduinoUnoDigInOutModule) {
 			String inOut = channel.getProperty(ArduinoUnoDigInOutChannelProperties.IN_OUT);
 			if(ArduinoUnoDigInOutChannelProperties.OUTPUT.equals(inOut)) {
@@ -364,7 +375,7 @@ public class ArduinoUnoCalibrationTask extends CalibrationTimerTask {
 				if(Objects.equals(value, output.getValue())) continue;
 				int channelNumber = Integer.parseInt(channelViewer.getChannel().getProperty(ChannelProperties.CHANNEL_NUMBER));
 				String command;
-				if(outputsAnalog.get(channelViewer)) command = ArduinoUnoCalibrationProtocol.getAnalogOutputCommand(channelNumber, (double) value);
+				if(outputsAnalog.get(channelViewer)) command = ArduinoUnoCalibrationProtocol.getAnalogOutputCommand(channelNumber, (double) value, outputsMaximum.get(channelViewer));
 				else command = ArduinoUnoCalibrationProtocol.getDigitalOutputCommand(channelNumber, (boolean) value);
 				serialPort.writeString(command + "\n");
 				output.setValue(value);
@@ -383,7 +394,7 @@ public class ArduinoUnoCalibrationTask extends CalibrationTimerTask {
 				for (Map.Entry<ChannelViewer, Object> output : outputsValues.entrySet()) {
 					if(output.getValue() == null) continue;
 					outputsViewers.add(output.getKey());
-					if(outputsAnalog.get(output.getKey())) outputsDisplayedValues.add((double) ArduinoUnoCalibrationProtocol.getAnalogOutputValue((double) output.getValue()));
+					if(outputsAnalog.get(output.getKey())) outputsDisplayedValues.add((double) ArduinoUnoCalibrationProtocol.getAnalogOutputValue((double) output.getValue(), outputsMaximum.get(output.getKey())));
 					else outputsDisplayedValues.add((boolean) output.getValue() ? 1.0 : 0.0);
 				}
 				Display display = Display.getDefault();

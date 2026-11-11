@@ -82,6 +82,16 @@
 				RC filter if you need a continuous voltage.</td>
 		</tr>
 		<tr>
+			<td>Analog outputs (R4 WiFi only)</td>
+			<td><code>AOUT_DAC</code></td>
+			<td>A0</td>
+			<td>True analog output of the 12 bits DAC of the R4 WiFi (values 0
+				to 4095, 0 to about 5V with the default reference). The channel is
+				added to the analog outputs module when the revision of the board
+				is R4 WiFi. Pin A0 is also the analog input <code>AIN0</code>: only
+				one of them can be used.</td>
+		</tr>
+		<tr>
 			<td>Digital inputs/outputs</td>
 			<td><code>DIGITAL0</code> to <code>DIGITAL13</code></td>
 			<td>digital pins 0 to 13</td>
@@ -93,7 +103,8 @@
 	<p>Remarks:</p>
 	<ul>
 		<li>a pin used as an analog output (PWM) can't be used as a digital
-			input or output at the same time;</li>
+			input or output at the same time, and pin A0 can't be used both as
+			analog input AIN0 and as DAC output AOUT_DAC (R4 WiFi);</li>
 		<li>on the Uno R3, digital pins 0 and 1 are the serial link with the
 			computer: <b>do not use DIGITAL0 and DIGITAL1</b>, the transfer of
 			the samples would be disturbed. On the R4 WiFi the serial link with
@@ -131,7 +142,8 @@
 	<h2><a name="calibration">Calibration and monitoring</a></h2>
 
 	<p>The <b>Calibration, monitoring</b> button of the General tab shows the
-		values of the used inputs and sets the values of the used outputs. It
+		values of the used inputs and sets the values of the used outputs (0 to
+		255 for PWM outputs, 0 to 4095 for the DAC of the R4 WiFi). It
 		is used to check the wiring and to compute the calibration values of
 		the analog inputs, as with ADwin systems: see
 		<a href="../designperspective/dacqconfiguration.html#calibration">Calibration
