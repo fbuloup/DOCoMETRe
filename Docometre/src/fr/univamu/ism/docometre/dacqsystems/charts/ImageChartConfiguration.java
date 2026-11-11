@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -152,6 +153,7 @@ public class ImageChartConfiguration extends ChartConfiguration {
 	 * Get image path from images file in session folder and load this image.
 	 * Line N of images file gives the image of trial N. If there are less lines
 	 * than trials, last line is used. Empty lines are ignored.
+	 * Image path may be absolute or relative to workspace folder.
 	 */
 	private Image loadImage(Process process, Display display) throws Exception {
 		IFolder outputFolder = process.getOutputFolder();
@@ -180,9 +182,9 @@ public class ImageChartConfiguration extends ChartConfiguration {
 		int trialNumber = ResourceType.isTrial(outputFolder) ? ExperimentScheduler.getInstance().getCurrentTrialNumber() : 1;
 		int lineIndex = Math.min(Math.max(trialNumber, 1), lines.size()) - 1;
 		
-		// Image path may be absolute or relative to session folder
+		// Image path may be absolute or relative to workspace folder
 		File imageFile = new File(lines.get(lineIndex));
-		if(!imageFile.isAbsolute()) imageFile = new File(sessionDirectory, lines.get(lineIndex));
+		if(!imageFile.isAbsolute()) imageFile = new File(ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile(), lines.get(lineIndex));
 		if(!imageFile.isFile()) throw new Exception(NLS.bind(DocometreMessages.ImageChartImageNotFound, new Object[] {imageFile.getAbsolutePath(), lineIndex + 1, imagesFile.getAbsolutePath()}));
 		try {
 			return new Image(display, imageFile.getAbsolutePath());
