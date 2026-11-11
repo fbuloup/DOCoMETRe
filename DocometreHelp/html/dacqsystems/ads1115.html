@@ -4,35 +4,151 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <title>ADS1115 Module</title>
+<style type="text/css">
+	table { border-collapse: collapse; margin-bottom: 1em; }
+	th, td { border: 1px solid #A0A0A0; padding: 4px 8px; text-align: left; vertical-align: top; }
+</style>
 </head>
 
 <body>
 	<h1>ADS1115 Module</h1>
-	<p>ADS1115 module is a &#916;&#931; DAC with 16 bits resolution and
-		four channels. With DOCoMETRe, it's possible to acquire one channel at
-		600Hz in continuous mode. In single-shot mode, one can acquire at
-		300Hz per channel. If you need more details on this module, please
-		follow the first two links below. The other links point to messages in
-		Texas Instrument forum related to acquisition time.</p>
 
+	<p>The ADS1115 is a &#916;&#931; analog to digital converter with four
+		multiplexed channels, a programmable gain amplifier and an I2C
+		interface. It can be added to an
+		<a href="ArduinoUnoTopic.html">Arduino Uno</a> (R3 or R4 WiFi) when
+		the resolution of the analog inputs of the board is not
+		sufficient. Up to <b>four ADS1115 modules</b> can be used on the same
+		board.</p>
+
+	<p>Contents of this page:</p>
+	<ul>
+		<li><a href="#resolution">15 or 16 bits ?</a></li>
+		<li><a href="#install">Installing the ADS1X15 library</a></li>
+		<li><a href="#wiring">Wiring</a></li>
+		<li><a href="#configure">Configuring the modules</a></li>
+		<li><a href="#rates">Sample rates</a></li>
+		<li><a href="#links">Links</a></li>
+	</ul>
+
+	<h2><a name="resolution">15 or 16 bits ?</a></h2>
+
+	<p>The ADS1115 is a 16 bits converter, but its result is <b>signed</b>:
+		it measures voltages from -FS to +FS (FS being the full scale given
+		by the gain). DOCoMETRe uses its inputs in single ended mode, each
+		channel being measured against GND: only positive values are then
+		used, from 0 to 32767, which gives <b>15 useful bits</b>. This is why
+		the module is named "Four 15bits Analog inputs" in the DACQ
+		configuration.</p>
+
+	<h2><a name="install">Installing the ADS1X15 library</a></h2>
+
+	<p>The generated sketches use the ADS1X15 library of Rob Tillaart, which
+		must be installed once. With arduino-cli, run in a terminal:</p>
+<pre>
+arduino-cli lib install ADS1X15
+</pre>
+	<p>You can also install it with the library manager of the Arduino IDE,
+		or download it from
+		<a href="https://github.com/RobTillaart/ADS1X15" target="_blank"
+		rel="noopener noreferrer">GitHub</a>. If the library is installed in a
+		folder that is not the standard libraries folder of the Arduino
+		tools, give this folder in the <b>Arduino SDK user libraries path</b>
+		field of the DACQ configuration. If the compilation fails with
+		<i>"ADS1X15.h: No such file or directory"</i>, see
+		<a href="../troubleshoots/arduinouno.html">Troubleshoots with Arduino
+		Uno system</a>.</p>
+
+	<h2><a name="wiring">Wiring</a></h2>
+
+	<table>
+		<tr>
+			<th>ADS1115</th>
+			<th>Arduino Uno</th>
+		</tr>
+		<tr><td>VDD</td><td>5V (or 3.3V)</td></tr>
+		<tr><td>GND</td><td>GND</td></tr>
+		<tr><td>SCL</td><td>SCL (same signal as A5)</td></tr>
+		<tr><td>SDA</td><td>SDA (same signal as A4)</td></tr>
+		<tr><td>ADDR</td><td>GND, VDD, SDA or SCL, to choose the I2C address</td></tr>
+		<tr><td>A0 to A3</td><td>the signals to acquire, between GND and VDD</td></tr>
+	</table>
+	<p>The ADDR pin gives the address of the module on the I2C bus:</p>
+	<table>
+		<tr><th>ADDR connected to</th><th>I2C address</th></tr>
+		<tr><td>GND</td><td>0x48</td></tr>
+		<tr><td>VDD</td><td>0x49</td></tr>
+		<tr><td>SDA</td><td>0x4A</td></tr>
+		<tr><td>SCL</td><td>0x4B</td></tr>
+	</table>
+	<p>Each module of the same board must have its own address. The I2C bus
+		uses pins A4 and A5 (the Qwiic connector of the R4 WiFi is not used): do not use the analog inputs
+		<code>AIN4</code> and <code>AIN5</code> with ADS1115 modules. The
+		voltage applied to an input must never be below GND or above VDD,
+		whatever the gain.</p>
+
+	<h2><a name="configure">Configuring the modules</a></h2>
+
+	<p>Add the modules in the Modules section of the General tab of the
+		<a href="../designperspective/dacqconfiguration.html">DACQ
+		configuration</a>. Each module gets its own tab with:</p>
+	<ul>
+		<li><b>Address</b>: the I2C address of the module (0x48, 0x49, 0x4A
+			or 0x4B), which must match its wiring;</li>
+		<li><b>Mode</b>: 0 for continuous mode, to acquire one channel only;
+			1 for single shot mode, recommended to acquire several
+			channels;</li>
+		<li><b>Conversion time</b>: from 0 (about 124ms, less noise) to 7
+			(about 2.7ms, fastest). Use 7 unless the signals are too
+			noisy.</li>
+	</ul>
+	<p>For each channel used, the <b>Gain</b> sets the full scale of the
+		input:</p>
+	<table>
+		<tr><th>Gain</th><th>Actual gain</th><th>Full scale</th><th>Resolution (1 bit)</th></tr>
+		<tr><td>0</td><td>2/3</td><td>6.144V (limited to VDD)</td><td>0.1875mV</td></tr>
+		<tr><td>1</td><td>1</td><td>4.096V</td><td>0.125mV</td></tr>
+		<tr><td>2</td><td>2</td><td>2.048V</td><td>0.0625mV</td></tr>
+		<tr><td>4</td><td>4</td><td>1.024V</td><td>0.03125mV</td></tr>
+		<tr><td>8</td><td>8</td><td>0.512V</td><td>0.015625mV</td></tr>
+		<tr><td>16</td><td>16</td><td>0.256V</td><td>0.0078125mV</td></tr>
+	</table>
+	<p>Choose the highest gain whose full scale is above the maximum voltage
+		of the signal. The calibration values (Unit, UMax, UMin, AMax, AMin)
+		convert the values in physical units, as for the analog inputs of the
+		board.</p>
+
+	<h2><a name="rates">Sample rates</a></h2>
+
+	<p>With DOCoMETRe, it is possible to acquire about <b>600Hz</b> on one
+		channel in continuous mode, and about <b>300Hz per channel</b> in
+		single shot mode. The conversions are done during the real time loop:
+		check the workload and choose a global frequency and sample
+		frequencies compatible with these values.</p>
+
+	<h2><a name="links">Links</a></h2>
+
+	<p>The first two links below give more details on this module. The
+		other links point to messages of the Texas Instruments forum related
+		to the acquisition time.</p>
 	<ul>
 		<li><a
-			href="https://www.ti.com/lit/ds/symlink/ads1114.pdf?ts=1638514189687&ref_url=https%253A%252F%252Fwww.google.com%252F"
+			href="https://www.ti.com/lit/ds/symlink/ads1115.pdf"
 			target="_blank" rel="noopener noreferrer">ADS1115 datasheet</a></li>
 		<li><a href="https://www.adafruit.com/product/1085"
-			target="_blank" rel="noopener noreferrer">ADS1115 from daFruit</a></li>
+			target="_blank" rel="noopener noreferrer">ADS1115 from Adafruit</a></li>
 		<li><a
 			href="https://e2e.ti.com/support/data-converters-group/data-converters/f/data-converters-forum/563147/ads1115-ads1115-in-continuous-mode-with-alternating-channels"
-			target="_blank" rel="noopener noreferrer">Texas Instrument Forum message 1</a></li>
+			target="_blank" rel="noopener noreferrer">Texas Instruments Forum message 1</a></li>
 		<li><a
 			href="https://e2e.ti.com/support/data-converters-group/data-converters/f/data-converters-forum/526236/ads1118-conversion-time/1916483#1916483"
-			target="_blank" rel="noopener noreferrer">Texas Instrument Forum message 2</a></li>
+			target="_blank" rel="noopener noreferrer">Texas Instruments Forum message 2</a></li>
 		<li><a
 			href="https://e2e.ti.com/support/legacy_forums/automotive/f/automotive-forum-read-only/552044/ads1015-q1-total-required-time-of-conversion-and-data-reading-in-multi-channel-input-mode/2018149#2018149"
-			target="_blank" rel="noopener noreferrer">Texas Instrument Forum message 3</a></li>
+			target="_blank" rel="noopener noreferrer">Texas Instruments Forum message 3</a></li>
 		<li><a
 			href="https://e2e.ti.com/support/data-converters-group/data-converters/f/data-converters-forum/552080/ads1018-and-ads1118-conversion-time/2017119#2017119"
-			target="_blank" rel="noopener noreferrer">Texas Instrument Forum message 4</a></li>
+			target="_blank" rel="noopener noreferrer">Texas Instruments Forum message 4</a></li>
 	</ul>
 
 </body>

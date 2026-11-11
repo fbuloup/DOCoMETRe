@@ -64,6 +64,9 @@ public final class ChartFactory {
 		case IMAGE_CHART:
 			chartConfiguration = new ImageChartConfiguration();
 			break;
+		case CURSOR_2D_CHART:
+			chartConfiguration = new Cursor2DChartConfiguration();
+			break;
 		default:
 			break;
 		}

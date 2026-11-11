@@ -58,6 +58,7 @@ import org.eclipse.ui.PlatformUI;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.TrialNames;
 
 public class RenameDataFilesHelper {
 	
@@ -80,12 +81,12 @@ public class RenameDataFilesHelper {
 			
 			// If resource is trial, rename segment n-2 and continue to next data file
 			if (ResourceType.isTrial(newResource)) {
-				String trialNumber = oldResource.getName().replaceAll(DocometreMessages.Trial, "");
+				String trialNumber = String.valueOf(TrialNames.getNumber(oldResource));
 				String trialSegment = segments[segments.length - 2];
 				
 				if(trialSegment.replaceAll("T", "").equals(trialNumber)) {
 					rename = true;
-					trialNumber = newResource.getName().replaceAll(DocometreMessages.Trial, "");
+					trialNumber = String.valueOf(TrialNames.getNumber(newResource));
 					trialSegment = trialSegment.replaceAll("\\d+$", trialNumber);
 					segments[segments.length - 2] = trialSegment;
 				}

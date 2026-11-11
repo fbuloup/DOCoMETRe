@@ -1,7 +1,9 @@
 MENU_TITLE = Minima
 DESCRIPTION = Mark all minima
 MENU_TITLE_FR = Minima
+MENU_TITLE_PL = Minima
 DESCRIPTION_FR = Marque tous les minima
+DESCRIPTION_PL = Oznacza wszystkie minima
 
 # Now start specific matlab function 
 FUNCTION_CODE = % Compute find peaks\n\

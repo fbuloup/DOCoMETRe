@@ -1,7 +1,9 @@
 MENU_TITLE = Multiscale Sample Entropy
 DESCRIPTION = Compute Multiscale  Sample Entropy 
 MENU_TITLE_FR = Entropie d'échantillons multi-échelle
+MENU_TITLE_PL = Wieloskalowa entropia próbkowa
 DESCRIPTION_FR = Calcule l'entropie d'échantillons multi-échelle
+DESCRIPTION_PL = Oblicza wieloskalową entropię próbkową
 
 # Now start specific python function 
 FUNCTION_CODE = # Compute Sample Entropy feature\n\

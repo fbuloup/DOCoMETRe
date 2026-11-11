@@ -60,8 +60,8 @@ public interface ChartInteraction {
      * @param button        {@link #LEFT_BUTTON} or {@link #RIGHT_BUTTON} (the left one wins if both are pressed)
      * @param dx            horizontal displacement, in window units
      * @param dy            vertical displacement (downwards), in window units
-     * @param width         width of the component, in the same units
-     * @param height        height of the component, in the same units
+     * @param width         width of the component, in pixels
+     * @param height        height of the component, in pixels
      */
     void drag(int button, int dx, int dy, int width, int height, InputScale scale);
 

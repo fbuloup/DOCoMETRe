@@ -1,7 +1,9 @@
 MENU_TITLE = Acquire digital input value
 DESCRIPTION =  Acquire digital input value asynchronously (immediate)
 MENU_TITLE_FR = Acquérir une entrée digitale
+MENU_TITLE_PL = Akwizycja wartości wejścia cyfrowego
 DESCRIPTION_FR = Acquérir une entrée digitale de manière asynchrone (immédiat)
+DESCRIPTION_PL = Akwizycja wartości wejścia cyfrowego w trybie asynchronicznym (natychmiastowym)
 # Several segments are available in ArduinoUno code :
 # INCLUDE, DEFINE, DECLARATION, INITIALIZATION, ACQUISITION, RECOVERY, LOOP, TRANSFER, GENERATION, FUNCTION, FINALIZE
 # The Arduino function code you need to add in segment INITIALIZATION, LOOP or FINALIZE may require contributions to any other segment.

@@ -1,7 +1,9 @@
 MENU_TITLE = Binary median filter
 DESCRIPTION = Return one if all historical values are one, otherwize return zero
 MENU_TITLE_FR = Filtre médian binaire
+MENU_TITLE_PL = Binarny filtr medianowy
 DESCRIPTION_FR = Retourne un si toutes les valeurs de l'historique sont à un, sinon retourne zéro
+DESCRIPTION_PL = Zwraca jeden, jeśli wszystkie wartości historii są równe jeden, w przeciwnym razie zwraca zero
 # Several segments are available in ADBascic code :
 # HEADER, INCLUDE, DECLARATION, INITIALIZATION, ACQUISITION, RECOVERY, TRANSFER, EVENT, GENERATION and FINISH
 # The ADBasic function code you need to add in any segments INITIALIZATION, EVENT or FINISH may require contributions to any other segment.

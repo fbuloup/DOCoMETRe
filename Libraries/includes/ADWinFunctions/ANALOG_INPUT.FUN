@@ -1,7 +1,9 @@
 MENU_TITLE = Acquire analog input
 DESCRIPTION = Acquire analog input asynchronously (immediate)
 MENU_TITLE_FR = Acquérir une entrée analogique
+MENU_TITLE_PL = Akwizycja wejścia analogowego
 DESCRIPTION_FR = Acquière la valeur courante de l'entrée analogique de manière asynchrone (immédiat)
+DESCRIPTION_PL = Akwizycja bieżącej wartości wejścia analogowego w trybie asynchronicznym (natychmiastowym)
 # Several segments are available in ADBascic code :
 # HEADER, INCLUDE, DECLARATION, INITIALIZATION, ACQUISITION, RECOVERY, TRANSFER, EVENT, GENERATION and FINISH
 # The ADBasic function code you need to add in any segments INITIALIZATION, EVENT or FINISH may require contributions to any other segment.

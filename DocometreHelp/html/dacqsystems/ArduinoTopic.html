@@ -2,12 +2,160 @@
 
 <html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-	<title>Arduino DACQ Systems</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Arduino DACQ Systems</title>
+<style type="text/css">
+	table { border-collapse: collapse; margin-bottom: 1em; }
+	th, td { border: 1px solid #A0A0A0; padding: 4px 8px; text-align: left; vertical-align: top; }
+</style>
 </head>
 
 <body>
-<h1>Arduino DACQ Systems</h1>
+	<h1>Arduino DACQ Systems</h1>
+
+	<p>DOCoMETRe can use an Arduino board as a low cost real time system.
+		The supported boards are the <a href="ArduinoUnoTopic.html">Arduino
+		Uno R3 and Arduino Uno R4 WiFi</a>, which can be extended with up to
+		four <a href="ads1115.html">ADS1115</a> 16 bits analog to digital
+		converters. Other Arduino boards (Uno R4 Minima, Due, Mega, Portenta,
+		Teensy...) are <b>not supported</b>: see
+		<a href="plannedsystems.html">Planned systems</a>.</p>
+
+	<p>Contents of this page:</p>
+	<ul>
+		<li><a href="#principle">How DOCoMETRe works with Arduino</a></li>
+		<li><a href="#install">Installing the Arduino tools</a></li>
+		<li><a href="#connect">Connecting the board</a></li>
+		<li><a href="#configure">Configuring the board in DOCoMETRe</a></li>
+		<li><a href="#limits">Limits</a></li>
+	</ul>
+
+	<h2><a name="principle">How DOCoMETRe works with Arduino</a></h2>
+
+	<ol>
+		<li>When a <a href="../designperspective/dacqprocess.html">process</a>
+			is compiled, DOCoMETRe generates an Arduino sketch
+			(<code>.ino</code> file in the <code>BinSource</code> folder next to
+			the process) and compiles it with the Arduino tools.</li>
+		<li>Before a trial, the compiled sketch is uploaded to the board when
+			it has changed since the last upload, then the parameters are sent
+			to the board, which acknowledges them.</li>
+		<li>During the trial, a timer of the board calls the real time loop at
+			the global frequency. The values of the transferred channels and
+			variables are sent as text lines on the USB serial link, then
+			displayed and recorded by DOCoMETRe.</li>
+	</ol>
+
+	<h2><a name="install">Installing the Arduino tools</a></h2>
+
+	<p>DOCoMETRe needs a command line tool to compile and upload the
+		sketches. Two tools can be used:</p>
+	<table>
+		<tr>
+			<th>Tool</th>
+			<th>Boards</th>
+			<th>Remarks</th>
+		</tr>
+		<tr>
+			<td><b>arduino-cli</b> (recommended)</td>
+			<td>Uno R3 and Uno R4 WiFi</td>
+			<td>Required for the Uno R4 WiFi. Check <b>Use command line tool</b>
+				in the DACQ configuration and give the path of the
+				<code>arduino-cli</code> executable.</td>
+		</tr>
+		<tr>
+			<td><b>arduino-builder</b> and <b>avrdude</b></td>
+			<td>Uno R3 only</td>
+			<td>Tools of the Arduino IDE 1.x. Give their paths in <b>Builder
+				path</b> and <b>AVRDude path</b>.</td>
+		</tr>
+	</table>
+	<p>To install arduino-cli:</p>
+	<ol>
+		<li>download it from the
+			<a href="https://arduino.github.io/arduino-cli/latest/installation/"
+			target="_blank" rel="noopener noreferrer">arduino-cli installation
+			page</a> and uncompress it in a folder where you have all
+			rights;</li>
+		<li>install the cores of the boards you use, in a terminal:
+<pre>
+arduino-cli core update-index
+arduino-cli core install arduino:avr
+arduino-cli core install arduino:renesas_uno
+</pre>
+			(<code>arduino:avr</code> for the Uno R3,
+			<code>arduino:renesas_uno</code> for the Uno R4 WiFi);</li>
+		<li>if you use ADS1115 modules, install the ADS1X15 library (see
+			<a href="ads1115.html#install">ADS1115 Module</a>).</li>
+	</ol>
+	<p>The cheat sheet <b>Arduino Installation</b> (Help &gt; Cheat
+		Sheets...) gives links to the installation guides of the Arduino web
+		site.</p>
+
+	<h2><a name="connect">Connecting the board</a></h2>
+
+	<p>The board is connected with a USB cable, which powers it and carries
+		the serial link. The name of its serial port is given in the <b>Serial
+		port name</b> field of the DACQ configuration (the <b>Browse...</b>
+		button lists the available ports):</p>
+	<ul>
+		<li>Windows: <code>COM3</code>, <code>COM4</code>... (see the Device
+			Manager);</li>
+		<li>Mac OS: <code>/dev/cu.usbmodem...</code> or
+			<code>/dev/tty.usbmodem...</code>;</li>
+		<li>Linux: <code>/dev/ttyACM0</code>, <code>/dev/ttyACM1</code>...
+			Your user must be allowed to access this port: see
+			<a href="../troubleshoots/arduinouno.html">Troubleshoots with Arduino
+			Uno system</a>.</li>
+	</ul>
+	<p>Close any other program that uses the port (Arduino IDE serial
+		monitor for example): DOCoMETRe could not open it.</p>
+
+	<h2><a name="configure">Configuring the board in DOCoMETRe</a></h2>
+
+	<p>All the fields of the General tab are described in
+		<a href="../designperspective/dacqconfiguration.html#generalarduino">DACQ
+		Configuration</a>. In particular:</p>
+	<ul>
+		<li><b>Revision</b>: <code>R3</code> or <code>R4_WIFI</code>, see
+			<a href="ArduinoUnoTopic.html">Arduino Uno R3 and R4 WiFi</a>;</li>
+		<li><b>Arduino Uno Libraries path</b>: folder of the DOCoMETRe Arduino
+			functions, shipped with DOCoMETRe. A warning is displayed when it
+			points to an older version of these functions;</li>
+		<li><b>Arduino SDK user libraries path</b>: folder of additional
+			Arduino libraries, only needed when they are not installed in the
+			standard libraries folder of the Arduino tools;</li>
+		<li><b>Baud rate</b>: speed of the serial link (default 2000000).
+			High values are needed to transfer many samples;</li>
+		<li><b>Global Frequency</b>: frequency of the real time loop (default
+			100Hz).</li>
+	</ul>
+	<p>The preferences page <b>Default Arduino Uno System</b> also contains
+		the <b>Delay time after serial print</b>, a delay added after each
+		line sent to the computer. Increase it if samples are lost or
+		corrupted on the serial link.</p>
+
+	<h2><a name="limits">Limits</a></h2>
+
+	<p>Compared with an <a href="ADWinTopic.html">ADwin system</a>, keep in
+		mind that:</p>
+	<ul>
+		<li>all transferred values go through the serial link: the number of
+			transferred channels multiplied by their sample frequency must stay
+			compatible with the baud rate, and each line sent takes time in the
+			real time loop. The workload displayed during a trial must stay
+			well below 100%;</li>
+		<li>the Uno R3 has no floating point unit: floating point computations
+			are slow and there is no calibration tool. The time base of the R3
+			is a ceramic resonator, less stable than a crystal: see
+			<a href="../troubleshoots/timingConsideration.html">Timing
+			consideration</a>;</li>
+		<li>the analog outputs are PWM outputs, and some functions of the
+			processes are only available for ADwin (stimulus, filters, serial
+			port functions...): see the functions table of
+			<a href="../designperspective/dacqprocess.html#functions">DACQ
+			Process</a>.</li>
+	</ul>
 
 </body>
 </html>

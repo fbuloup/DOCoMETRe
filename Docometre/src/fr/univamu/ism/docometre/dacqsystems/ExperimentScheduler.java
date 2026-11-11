@@ -59,6 +59,8 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.Activator;
@@ -67,8 +69,10 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.TrialNames;
 import fr.univamu.ism.docometre.TrialStartMode;
 import fr.univamu.ism.docometre.TrialValidateMode;
+import fr.univamu.ism.docometre.dacqsystems.charts.UIRefreshScheduler;
 import fr.univamu.ism.docometre.dialogs.NextTrialDialog;
 import fr.univamu.ism.docometre.dialogs.ValidateTrialDialog;
 import fr.univamu.ism.docometre.handlers.RunStopHandler;
@@ -81,20 +85,27 @@ public class ExperimentScheduler {
 	public static String dataFilePathNameSeparator = ".";
 	public static String dataFilePathNameSeparator_RegExpSplitter = "\\.";
 	
-	private RunProcessJob runProcessJob;
+	// Period of the stop request check while waiting for the end of the real time loop job
+	private static final long STOP_CHECK_PERIOD_MS = 20;
+	// Period between two calls to Process.stop() if the process is still running
+	private static final long STOP_RETRY_PERIOD_MS = 1000;
+	
+	// Accessed from several threads (UI, scheduler and process jobs)
+	private volatile RunProcessJob runProcessJob;
 	
 	private IResource selectedResource;
 	private IResource currentSession;
 	private IResource currentTrial;
 	private  boolean runProcess;
-	private boolean running;
+	private volatile boolean running;
 	
 	private class RunProcessJob extends Job {
 		
 		private IResource processFile;
 		private IResource trial;
 		private Process process;
-		private boolean stop;
+		// Set by the UI thread, read by this job : volatile so that the request is seen
+		private volatile boolean stop;
 
 		public RunProcessJob(IResource processFile, IResource trial) {
 			super("Scheduling : " + processFile.getName());
@@ -137,23 +148,24 @@ public class ExperimentScheduler {
 					if(prefix == null) prefix= "";
 					else prefix = prefix + dataFilePathNameSeparator;
 					if(ResourceProperties.useSessionNameInDataFilesNamesAsFirstSuffix(currentSession)) suffix = dataFilePathNameSeparator + currentSession.getName();
-					if(ResourceProperties.useTrialNumberInDataFilesNamesAsSecondSuffix(currentSession)) suffix = suffix  + dataFilePathNameSeparator + "T" + currentTrial.getName().split("°")[1];
+					if(ResourceProperties.useTrialNumberInDataFilesNamesAsSecondSuffix(currentSession)) suffix = suffix  + dataFilePathNameSeparator + "T" + TrialNames.getNumber(currentTrial);
 				}
 				
 				Thread.currentThread().setPriority(Thread.NORM_PRIORITY + 1);
 				
 				Job realTimeLoopJob = process.execute(prefix, suffix);
 				realTimeLoopJob.schedule();
-				boolean timeOut = false;
-				long startTime = System.currentTimeMillis();
-				while(realTimeLoopJob.getState() != Job.RUNNING && !timeOut) {
-					timeOut = (System.currentTimeMillis() - startTime > 1000);
-				};
-				if(timeOut) Activator.logErrorMessage("Time out on scheduling realTimeLoopJob");
-				while(realTimeLoopJob.getState() == Job.RUNNING) {
-					if(stop) {
-						process.stop();
+				// Wait for the end of the real time loop job without busy wait (a busy wait
+				// would use a whole CPU core during the trial, in competition with the real
+				// time loop and UI threads). The stop request is checked periodically. The
+				// process is asked to stop once, and again only if it is still running
+				// STOP_RETRY_PERIOD_MS later.
+				long lastStopCallNanos = -1;
+				while(!realTimeLoopJob.join(STOP_CHECK_PERIOD_MS, null)) {
+					if(stop && (lastStopCallNanos < 0 || System.nanoTime() - lastStopCallNanos > STOP_RETRY_PERIOD_MS*1000000L)) {
 						returnStatus = new Status(IStatus.CANCEL, Activator.PLUGIN_ID, null);
+						process.stop();
+						lastStopCallNanos = System.nanoTime();
 					}
 //					if(monitor.isCanceled()) { CANNOT CANCEL THIS JOB - ONLY Real time Job can be canceled
 //						stop = true;
@@ -161,6 +173,10 @@ public class ExperimentScheduler {
 //					}
 				}
 				TrialTimings.step("RealTimeLoopJob finished");
+				// Last samples of the trial given at once to the real-time charts : they are
+				// displayed before the charts are created again for the next trial
+				UIRefreshScheduler.flushAll();
+				TrialTimings.step("Real-time charts : last samples displayed");
 //				Thread.currentThread().setPriority(priority);
 //				process.postExecute((trial==null)?processFile:trial);
 //				process.refreshLogFile((trial==null)?processFile:trial);
@@ -172,7 +188,7 @@ public class ExperimentScheduler {
 			} finally {
 				try {
 					process.postExecute((trial==null)?processFile:trial);
-					TrialTimings.step("Process.postExecute() (diary, markers)");
+					TrialTimings.step("Process.postExecute() (files, diary, markers)");
 				} catch (Exception e) {
 					Activator.logErrorMessageWithCause(e);
 					e.printStackTrace();
@@ -250,6 +266,8 @@ public class ExperimentScheduler {
 									}
 								});
 							}
+							// Trial state is a persistent property : its change is not notified to the experiments view
+							ExperimentsView.updateLabels(currentTrial);
 						}
 					} catch (InterruptedException e) {
 						e.printStackTrace();
@@ -312,8 +330,33 @@ public class ExperimentScheduler {
 	
 	public void run() {
 		running = true;
+		// Charts are recreated at the beginning of each run : their configuration may have been modified since the previous one
+		PlatformUI.getWorkbench().getDisplay().syncExec(RealTimeChartsView::invalidateCharts);
+		setFullScreenIfRequired();
 		SeekNextProcess seekNextProcess = new SeekNextProcess(DocometreMessages.RunningTrials);
 		seekNextProcess.schedule();
+	}
+	
+	/*
+	 * Real time charts view in full screen mode, if not already the case, when trials 
+	 * are run or a process is tested and if the corresponding general preference is set
+	 */
+	private void setFullScreenIfRequired() {
+		if(selectedResource == null) return;
+		if(!runProcess && currentTrial == null) return;
+		if(!Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.RUN_FULL_SCREEN)) return;
+		PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+			@Override
+			public void run() {
+				IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+				if(workbenchWindow == null || workbenchWindow.getActivePage() == null) return;
+				IViewPart viewPart = workbenchWindow.getActivePage().findView(RealTimeChartsView.ID);
+				if(viewPart instanceof RealTimeChartsView) {
+					RealTimeChartsView realTimeChartsView = (RealTimeChartsView) viewPart;
+					if(!realTimeChartsView.isFullScreen()) realTimeChartsView.setFullScreen(true);
+				}
+			}
+		});
 	}
 
 	public void initialize() {
@@ -370,13 +413,12 @@ public class ExperimentScheduler {
 	}
 	
 	private IResource getTrial(IResource trial, boolean next) {
-		String name = trial.getName();
-		int currentTrialNumber = Integer.parseInt(name.split("°")[1]);
+		int currentTrialNumber = TrialNames.getNumber(trial);
 		int nextTrialNumber = next?currentTrialNumber + 1:currentTrialNumber - 1;
-		IResource nextTrial = ((IFolder)currentSession).findMember(DocometreMessages.Trial + nextTrialNumber);
+		IResource nextTrial = ((IFolder)currentSession).findMember(TrialNames.getName(nextTrialNumber));
 		while(nextTrial != null && ResourceProperties.isTrialDone((IFolder) nextTrial)) {
 			nextTrialNumber = next?nextTrialNumber + 1:nextTrialNumber - 1;
-			nextTrial = ((IFolder)currentSession).findMember(DocometreMessages.Trial + nextTrialNumber);
+			nextTrial = ((IFolder)currentSession).findMember(TrialNames.getName(nextTrialNumber));
 		}
 		return nextTrial;
     }
@@ -497,8 +539,7 @@ public class ExperimentScheduler {
 	
 	public int getCurrentTrialNumber() {
 		if(currentTrial == null) return 0;
-		String trialNumber = currentTrial.getName().split("°")[1];
-		return Integer.parseInt(trialNumber);
+		return TrialNames.getNumber(currentTrial);
 	}
 
 }

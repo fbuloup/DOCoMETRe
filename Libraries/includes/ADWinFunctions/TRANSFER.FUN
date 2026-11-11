@@ -1,7 +1,9 @@
 MENU_TITLE = Transfer
 DESCRIPTION = Transfer Signal from system to PC
 MENU_TITLE_FR = Transfert
+MENU_TITLE_PL = Transfer
 DESCRIPTION_FR = Transfert du signal du système vers le PC
+DESCRIPTION_PL = Transfer sygnału z systemu do komputera
 # Several segments are available in ADBascic code :
 # HEADER, INCLUDE, DECLARATION, INITIALIZATION, ACQUISITION, RECOVERY, TRANSFER, EVENT, GENERATION and FINISH
 # The ADBasic function code you need to add in any segments INITIALIZATION, EVENT or FINISH may require contributions to any other segment.

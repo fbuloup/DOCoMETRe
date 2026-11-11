@@ -75,7 +75,7 @@ public class GetResourceLabelDelegate {
 				associatedProcessFullPath = processFile.getFullPath().toOSString();
 				associatedProcessFullPath = associatedProcessFullPath.replaceAll(Activator.processFileExtension + "$", "");
 			} else associatedProcessFullPath = DocometreMessages.NoAssociatedProcessFile;
-			return resource.getName() + " [" + startMode + "]" + "[" + validateMode + "]" + " [" + associatedProcessFullPath + "]";
+			return TrialNames.getLabel(resource) + " [" + startMode + "]" + "[" + validateMode + "]" + " [" + associatedProcessFullPath + "]";
 		}
 		if(ResourceType.isLog(resource)) return resource.getName().replaceAll(Activator.logFileExtension + "$", "");
 		if(ResourceType.isSamples(resource)) return resource.getName().replaceAll(Activator.samplesFileExtension + "$", "");

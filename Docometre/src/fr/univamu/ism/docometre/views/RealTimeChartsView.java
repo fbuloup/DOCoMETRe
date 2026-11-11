@@ -41,21 +41,34 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.views;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.eclipse.core.commands.NotEnabledException;
+import org.eclipse.core.commands.NotHandledException;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.e4.ui.model.application.ui.basic.MTrimBar;
+import org.eclipse.e4.ui.model.application.ui.basic.MTrimmedWindow;
+import org.eclipse.e4.ui.model.application.ui.basic.MWindow;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IPerspectiveListener;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.part.ViewPart;
 
 import fr.univamu.ism.docometre.AcquirePerspective;
@@ -65,12 +78,14 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.PartListenerAdapter;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.TrialNames;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfigurationProperties;
 import fr.univamu.ism.docometre.dacqsystems.ExperimentScheduler;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.dacqsystems.charts.ChartConfiguration;
 import fr.univamu.ism.docometre.handlers.RunStopHandler;
+import fr.univamu.ism.docometre.chartxyz.GLHost;
 
 public class RealTimeChartsView extends ViewPart implements IPerspectiveListener {
 	
@@ -88,6 +103,22 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 	private PartListenerAdapter partListenerAdapter;
 
 	private static Composite chartsContainer;
+	
+	// Acquisition configuration of the displayed charts, and number of controls they
+	// are made of : null if the charts can not be reused (UI thread)
+	private static DACQConfiguration chartsDACQConfiguration;
+	private static int chartsControlsNumber;
+
+	private Composite container;
+	
+	// Full screen mode : only charts are visible (no menu bar, tool bars, status bar nor state container)
+	private boolean fullScreen;
+	private Menu savedMenuBar;
+	private List<MTrimBar> hiddenTrimBars = new ArrayList<>();
+    // Shortcuts of the acquire perspective (full screen, run / stop, Escape...) : registered as a
+    // display filter on SWT.KeyUp, and as an application key listener of the charts (GLHost) for
+    // the keys typed while a NEWT window has the keyboard focus (macOS), which SWT does not see
+    private Listener shortcutsListener;
 
 	public RealTimeChartsView() {
 		// TODO Auto-generated constructor stub
@@ -96,26 +127,42 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 	@Override
 	public void createPartControl(Composite parent) {
 		
-		Composite container = new Composite(parent, SWT.NONE);
+		container = new Composite(parent, SWT.NONE);
 		container.setLayout(new GridLayout());
 		
-		container.getDisplay().addFilter(SWT.KeyUp, new Listener() {
+		shortcutsListener = new Listener() {
 			@Override
 			public void handleEvent(Event event) {
 				IPerspectiveDescriptor currentPerspective = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getPerspective();
-				boolean checkPerspcetive = currentPerspective.getId().equals(AcquirePerspective.id);
+				boolean checkPerspective = currentPerspective.getId().equals(AcquirePerspective.id);
 				boolean isRunning = ExperimentScheduler.getInstance().isRunning();
+				// Shortcuts below are ignored when a dialog is opened
+				// When the NEWT window has the keyboard focus (macOS), no SWT shell is active :
+                // the shortcuts are accepted. When a modal dialog is open, it is the active
+                // shell : the shortcuts are ignored.
+                Shell activeShell = container != null && !container.isDisposed() ? container.getDisplay().getActiveShell() : null;
+                boolean workbenchShellActive = !container.isDisposed() && (activeShell == null || activeShell == getSite().getShell());
+				boolean mod1Shift = ((event.stateMask & SWT.MOD1) != 0) && ((event.stateMask & SWT.SHIFT) != 0);
+				if(event.keyCode == SWT.F11 || (mod1Shift && event.keyCode == 'f')) {
+					if(checkPerspective && workbenchShellActive) setFullScreen(!fullScreen);
+				}
+				if(event.keyCode == SWT.F9 || (mod1Shift && (event.keyCode == SWT.CR || event.keyCode == SWT.KEYPAD_CR))) {
+					if(checkPerspective && workbenchShellActive) runStop();
+				}
 				if(event.keyCode == SWT.ESC) {
-					if(checkPerspcetive && isRunning) RunStopHandler.stop();
+					if(checkPerspective && isRunning) RunStopHandler.stop();
+					else if(checkPerspective && !isRunning && fullScreen) setFullScreen(false);
 				}
 				if((event.keyCode == SWT.PAUSE) || (((event.stateMask & SWT.COMMAND) != 0) && event.keyCode == 'p')) {
-					if(checkPerspcetive && isRunning) {
+					if(checkPerspective && isRunning) {
 						ExperimentScheduler.getInstance().stop(true);
 						ApplicationActionBarAdvisor.pausePendingContributionItem.setText(DocometreMessages.PausePending);
 					}
 				}
 			}
-		});
+        };
+        container.getDisplay().addFilter(SWT.KeyUp, shortcutsListener);
+        GLHost.addApplicationKeyListener(shortcutsListener);
 		
 		stateContainer = new Composite(container, SWT.NONE);
 		stateContainer.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
@@ -173,7 +220,7 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 		processLabelValue.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, true, true));
 		processLabelValue.setText(DocometreMessages.NotAvailable_Label);
 		
-		chartsContainer = new Composite(container, SWT.BORDER);
+		chartsContainer = new Composite(container, SWT.NONE);
 		chartsContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
 		IResource resource = ExperimentsView.currentSelectedResource;
@@ -214,6 +261,10 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 
 	}
 	
+	public boolean isContainerDisposed() {
+		return container == null || container.isDisposed();
+	}
+	
 	public void updateValues(IResource resource) {
 		if(resource == null) {
 			experimentLabelValue.setText(DocometreMessages.NotAvailable_Label);
@@ -229,7 +280,7 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 		if(ResourceType.isSession(resource)) sessionLabelValue.setText(resource.getName());
 		if(ResourceType.isTrial(resource)) {
 			int nbTrials = ResourceProperties.getTrialsNumber(resource.getParent());
-			trialLabelValue.setText(resource.getName() + " / " + nbTrials);
+			trialLabelValue.setText(TrialNames.getLabel(resource) + " / " + nbTrials);
 		}
 		if(ResourceType.isProcess(resource)) {
 			processLabelValue.setText(resource.getName().replaceAll(Activator.processFileExtension + "$", ""));
@@ -242,8 +293,88 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 		
 	}
 	
+	/*
+	 * Run or stop selected item, as run/stop button of the main tool bar (which is hidden in full screen mode)
+	 */
+	public void runStop() {
+		IHandlerService handlerService = getSite().getService(IHandlerService.class);
+		if(handlerService == null) return;
+		try {
+			handlerService.executeCommand(RunStopHandler.COMMAND_ID, null);
+		} catch (NotEnabledException | NotHandledException e) {
+			// Nothing to run or stop pending : ignore shortcut
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+		}
+	}
+	
+	public boolean isFullScreen() {
+		return fullScreen;
+	}
+	
+	/*
+	 * Full screen mode : workbench window is set full screen and everything except charts is hidden.
+	 * Workbench window is kept (no other shell) in order to keep active workbench window available
+	 * during acquisition (dialogs, views lookups...), and charts are only resized, not reparented.
+	 */
+	public void setFullScreen(boolean fullScreen) {
+		if(this.fullScreen == fullScreen) return;
+		Shell shell = getSite().getShell();
+		if(shell == null || shell.isDisposed()) return;
+		if(fullScreen && (container == null || container.isDisposed())) return;
+		this.fullScreen = fullScreen;
+		MWindow window = getSite().getWorkbenchWindow().getService(MWindow.class);
+		if(fullScreen) {
+			hiddenTrimBars.clear();
+			if(window instanceof MTrimmedWindow) {
+				for (MTrimBar trimBar : ((MTrimmedWindow)window).getTrimBars()) {
+					if(trimBar.isVisible()) {
+						trimBar.setVisible(false);
+						hiddenTrimBars.add(trimBar);
+					}
+				}
+			}
+			// On macOS, menu bar is automatically hidden in full screen mode
+			if(!Platform.OS_MACOSX.equals(Platform.getOS())) {
+				savedMenuBar = shell.getMenuBar();
+				shell.setMenuBar(null);
+			}
+		} else {
+			for (MTrimBar trimBar : hiddenTrimBars) trimBar.setVisible(true);
+			hiddenTrimBars.clear();
+			if(savedMenuBar != null && !savedMenuBar.isDisposed()) shell.setMenuBar(savedMenuBar);
+			savedMenuBar = null;
+		}
+		shell.setFullScreen(fullScreen);
+		if(container != null && !container.isDisposed()) {
+			((GridData)stateContainer.getLayoutData()).exclude = fullScreen;
+			stateContainer.setVisible(!fullScreen);
+			GridLayout containerLayout = (GridLayout)container.getLayout();
+			containerLayout.marginWidth = fullScreen ? 0 : 5;
+			containerLayout.marginHeight = fullScreen ? 0 : 5;
+			chartsContainer.setFocus();
+		}
+		// On macOS, leaving full screen is animated and asynchronous : the shell is
+		// resized after this method returns, so the layout must be deferred
+		if(Platform.OS_MACOSX.equals(Platform.getOS())) {
+			shell.getDisplay().asyncExec(new Runnable() {
+				@Override
+				public void run() {
+					if(!shell.isDisposed()) shell.layout(true, true);
+				}
+			});
+		} else {
+			shell.layout(true, true);
+		}
+	}
+	
 	@Override
 	public void dispose() {
+		if(!container.isDisposed())
+			container.getDisplay().removeFilter(SWT.KeyUp, shortcutsListener);
+        GLHost.removeApplicationKeyListener(shortcutsListener);
+		setFullScreen(false);
+		removeAllCharts(true);
 		PlatformUI.getWorkbench().getActiveWorkbenchWindow().removePerspectiveListener(this);
 		super.dispose();
 	}
@@ -276,6 +407,7 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 				removeAllCharts(false);
 			}
 		} else {
+			setFullScreen(false);
 			if(!ExperimentScheduler.getInstance().isRunning()) 
 				removeAllCharts(false);
 		}
@@ -290,15 +422,33 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 			String currentPerspectiveID = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getPerspective().getId();
 			if(currentPerspectiveID.equals(AcquirePerspective.id)) return;
 		}
+		chartsDACQConfiguration = null;
+		if(chartsContainer.isDisposed()) return;
 		Control[] children = chartsContainer.getChildren();
 		for (Control control : children) {
 			control.dispose();
 		}
 	}
+	
+	/**
+	 * The charts displayed will be recreated by the next call to updateCharts, even
+	 * if the acquisition configuration is the same (e.g. it may have been modified
+	 * since). UI thread.
+	 */
+	public static void invalidateCharts() {
+		chartsDACQConfiguration = null;
+	}
 
+	/*
+	 * The charts are recreated only if the acquisition configuration has changed since
+	 * the previous execution (or if they can not be reset) : otherwise, they are kept
+	 * and only their data are cleared (creating the charts takes about 20 ms).
+	 */
 	public void updateCharts(Process process) {
-		removeAllCharts(true);
 		DACQConfiguration dacqConfiguration = process.getDACQConfiguration();
+		chartsContainer.setData("process", process);
+		if(resetCharts(dacqConfiguration)) return;
+		removeAllCharts(true);
 		String value = dacqConfiguration.getProperty(DACQConfigurationProperties.CHARTS_LAYOUT_COLUMNS_NUMBER);
 		int chartsLayoutColumnsNumber = Integer.parseInt(value);
 		chartsContainer.setLayout(new GridLayout(chartsLayoutColumnsNumber, true));
@@ -315,7 +465,46 @@ public class RealTimeChartsView extends ViewPart implements IPerspectiveListener
 		// loop of the menu (Windows, macOS), after which a deferred layout may wait for the next event
 		// (the new charts would remain invisible until the window is resized, for example)
 		chartsContainer.layout(true, true);
+		focusCharts();
+		chartsDACQConfiguration = dacqConfiguration;
+		chartsControlsNumber = chartsContainer.getChildren().length;
+	}
+	
+	/*
+	 * Clears the data of the displayed charts if they have been created for this
+	 * acquisition configuration, which has not been invalidated since.
+	 * Returns false if the charts must be recreated.
+	 */
+	private boolean resetCharts(DACQConfiguration dacqConfiguration) {
+		if(dacqConfiguration == null || dacqConfiguration != chartsDACQConfiguration) return false;
+		Control[] children = chartsContainer.getChildren();
+		if(children.length != chartsControlsNumber) return false;
+		for (Control control : children) if(control.isDisposed()) return false;
+		for (ChartConfiguration chartConfiguration : dacqConfiguration.getCharts().getChartsConfigurations()) {
+			if(!chartConfiguration.resetChart(chartsContainer)) return false;
+		}
+		focusCharts();
+		return true;
+	}
+	
+	/*
+	 * Keyboard focus for the charts (keys of the charts : M, space, R...). It goes to
+	 * the chart under the mouse, as when the mouse enters a chart ; otherwise, a chart
+	 * which already has it keeps it. chartsContainer.setFocus() alone gives it to the
+	 * first chart : the keys pressed with the mouse over another chart went to the
+	 * first one (no MouseEnter event when the charts are kept from a trial to the next).
+	 */
+	private static void focusCharts() {
+		Display display = chartsContainer.getDisplay();
+		Control cursorControl = display.getCursorControl();
+		if(isInCharts(cursorControl) && display.getActiveShell() == chartsContainer.getShell() && cursorControl.forceFocus()) return;
+		if(isInCharts(display.getFocusControl())) return;
 		chartsContainer.setFocus();
+	}
+	
+	private static boolean isInCharts(Control control) {
+		for (; control != null; control = control.getParent()) if(control == chartsContainer) return true;
+		return false;
 	}
 
 }

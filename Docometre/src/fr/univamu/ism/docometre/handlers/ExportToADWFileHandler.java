@@ -40,6 +40,7 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.TrialNames;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
@@ -209,7 +210,7 @@ public class ExportToADWFileHandler extends AbstractHandler implements ISelectio
 						for (IResource trialsMember : trialsMembers) {
 							if(ResourceType.isTrial(trialsMember)) {
 								IFolder trial = (IFolder) trialsMember;
-								int trialNumber = Integer.parseInt(trial.getName().split("°")[1]);
+								int trialNumber = TrialNames.getNumber(trial);
 								if(trialNumber != currentTrialNumber) continue;
 								
 								IResource process = ResourceProperties.getAssociatedProcess(trial);

@@ -41,6 +41,8 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.export;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -166,5 +168,31 @@ public class ZipFileExporter implements IFileExporter {
 		}
 		ZipEntry newEntry = new ZipEntry(destinationPath);
 		write(newEntry, resource);
+	}
+	@Override
+	public void writeFolder(String destinationPath) throws IOException {
+		outputStream.putNextEntry(new ZipEntry(destinationPath));
+	}
+
+	@Override
+	public void write(File file, String destinationPath) throws IOException {
+		ZipEntry newEntry = new ZipEntry(destinationPath);
+		if (!useCompression) {
+			newEntry.setMethod(ZipEntry.STORED);
+			CRC32 checksumCalculator = new CRC32();
+			byte[] readBuffer = new byte[4096];
+			try (InputStream contentStream = new FileInputStream(file)) {
+				int n;
+				while ((n = contentStream.read(readBuffer)) > 0) checksumCalculator.update(readBuffer, 0, n);
+			}
+			newEntry.setSize(file.length());
+			newEntry.setCrc(checksumCalculator.getValue());
+		}
+		newEntry.setTime(file.lastModified());
+		outputStream.putNextEntry(newEntry);
+		try (InputStream contentStream = new FileInputStream(file)) {
+			contentStream.transferTo(outputStream);
+		}
+		outputStream.closeEntry();
 	}
 }

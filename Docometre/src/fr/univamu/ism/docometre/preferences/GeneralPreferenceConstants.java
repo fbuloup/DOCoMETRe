@@ -48,6 +48,13 @@ public class GeneralPreferenceConstants {
 
 
 	public static final String XML_SERIALIZATION = "XML_SERIALIZATION";
+	// Experiments history
+	/* Experimental : when false (default), histories can only be viewed */
+	public static final String HISTORY_ENABLED = "HISTORY_ENABLED";
+	public static final String HISTORY_AUTHOR_NAME = "HISTORY_AUTHOR_NAME";
+	public static final String HISTORY_AUTHOR_EMAIL = "HISTORY_AUTHOR_EMAIL";
+	public static final String HISTORY_AUTOMATIC_SNAPSHOTS = "HISTORY_AUTOMATIC_SNAPSHOTS";
+	public static final String HISTORY_OPTIMIZATION_PERIOD = "HISTORY_OPTIMIZATION_PERIOD";
 	public static final String BUILD_AUTOMATICALLY = "BUILD_AUTOMATICALLY";
 	
 	public static final String FIRST_LAUNCH = "FIRST_LAUNCH";
@@ -57,6 +64,7 @@ public class GeneralPreferenceConstants {
 	public static final String MAX_RECENT_WORKSPACES = "MAX_RECENT_WORKSPACES";
 	public static final String RECENT_WORKSPACES = "RECENT_WORKSPACES";
 	public static final String SELECTED_WORKSPACE = "SELECTED_WORKSPACE";
+	public static final String LANGUAGE = "LANGUAGE";
 	public static final String SHOW_TRADITIONAL_STYLE_TABS = "SHOW_TRADITIONAL_STYLE_TABS";
 	public static final String WINE_FULL_PATH = "WINE_FULL_PATH";
 	public static final String USE_DOCKER = "USE_DOCKER";
@@ -109,5 +117,7 @@ public class GeneralPreferenceConstants {
 	public static final String RTSWT_CHART_LIBRARY_SWT = "SWT";
 	public static final String RTSWT_CHART_LIBRARY_SWT_OPENGL_V1 = "SWT + OpenGL v1";
 	public static final String RTSWT_CHART_LIBRARY_SWT_OPENGL_V2 = "SWT + OpenGL v2";
+	
+	public static final String RUN_FULL_SCREEN = "RUN_FULL_SCREEN";
 	
 }

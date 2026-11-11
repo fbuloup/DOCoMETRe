@@ -59,6 +59,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.ISelectionListener;
@@ -83,13 +84,13 @@ import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.editors.PartNameRefresher;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
+import fr.univamu.ism.docometre.history.ui.HistoryOperations;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 
 public class DeleteResourcesAction extends Action implements ISelectionListener, IWorkbenchAction {
 
 	private IResource[] resources;
 	private IWorkbenchWindow window;
-	private Object object;
 	private boolean askConfirmation = true;
 
 	public DeleteResourcesAction(IWorkbenchWindow window) {
@@ -111,6 +112,9 @@ public class DeleteResourcesAction extends Action implements ISelectionListener,
 		boolean doRun = true;
 		if(askConfirmation) doRun = MessageDialog.openQuestion(shell, title, message);
 		if(doRun) {
+			// Experiments history : save experiments content before deletion
+			IResource[] resourcesToDelete = resources;
+			BusyIndicator.showWhile(shell.getDisplay(), () -> HistoryOperations.createAutomaticSnapshots(resourcesToDelete, DocometreMessages.History_AutoSnapshotBeforeDelete));
 			
 			try {
 				PlatformUI.getWorkbench().getProgressService().busyCursorWhile(new IRunnableWithProgress() {
@@ -135,7 +139,7 @@ public class DeleteResourcesAction extends Action implements ISelectionListener,
 									if(fullPath != null && resource.getFullPath().equals(new Path(fullPath))) ResourceProperties.setDefaultDACQPersistentProperty(resource, null);
 									updateEditors = true;
 								}
-								closeEditors(resource);
+								Activator.closeEditors(resource);
 								if(ResourceType.isChannel(resource)) {
 									IContainer subject = resource.getParent();
 									try {
@@ -239,7 +243,8 @@ public class DeleteResourcesAction extends Action implements ISelectionListener,
 						ResourceEditorInput editorInput = (ResourceEditorInput)editorReference.getEditorInput();
 						Object localObject = editorInput.getObject();
 						IResource editedResource = ObjectsController.getResourceForObject(localObject);
-						if(ResourceType.isProcess(editedResource)) ((PartNameRefresher)editorReference.getEditor(false)).refreshPartName();
+						// Editor may not be instantiated yet (lazy loading) : its part name will be computed at creation
+						if(ResourceType.isProcess(editedResource) && editorReference.getEditor(false) instanceof PartNameRefresher) ((PartNameRefresher)editorReference.getEditor(false)).refreshPartName();
 					}
 				} catch (CoreException e) {
 					e.printStackTrace();
@@ -247,25 +252,6 @@ public class DeleteResourcesAction extends Action implements ISelectionListener,
 				}
 			}
 		});
-	}
-
-	private void closeEditors(IResource resource) throws CoreException {
-		object = ResourceProperties.getObjectSessionProperty(resource);
-		if(ResourceType.isLog(resource) || ResourceType.isParameters(resource) || ResourceType.isSamples(resource) || ResourceType.isChannel(resource)) object = resource;
-		if(object != null) {
-			PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
-				@Override
-				public void run() {
-					Activator.closeEditor(object);
-				}
-			});
-		}
-		if(resource instanceof IContainer) {
-			IResource[] childrenResources = ((IContainer)resource).members();
-			for (IResource childResource : childrenResources) {
-				closeEditors(childResource);
-			}
-		}
 	}
 
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {

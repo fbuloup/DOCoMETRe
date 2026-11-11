@@ -1,7 +1,9 @@
 MENU_TITLE = Write value to Servomotor Register
 DESCRIPTION = Write value to specific Servomotor Register (e.g. Torque, Acceleration, Velocity or Position register)
 MENU_TITLE_FR = Écrire dans un registre du servomoteur
+MENU_TITLE_PL = Zapis do rejestru serwomotoru
 DESCRIPTION_FR = Écrire une valeur dans un registre spécifique du servomoteur (e.g. registre Couple, Accélération, Vitesse ou Postion)
+DESCRIPTION_PL = Zapisuje wartość do określonego rejestru serwomotoru (np. rejestr momentu, przyspieszenia, prędkości lub pozycji)
 # Several segments are available in ADBascic code :
 # HEADER, INCLUDE, DECLARATION, INITIALIZATION, ACQUISITION, RECOVERY, TRANSFER, EVENT, GENERATION and FINISH
 # The ADBasic function code you need to add in any segments INITIALIZATION, EVENT or FINISH may require contributions to any other segment.

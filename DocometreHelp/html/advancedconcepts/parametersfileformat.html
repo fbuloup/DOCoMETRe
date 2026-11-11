@@ -1,9 +1,14 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"> 
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 
  <html>
  <head>
  	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
  	<title>What is parameters file format ?</title>
+ 	<style type="text/css">
+ 		table { border-collapse: collapse; margin-bottom: 1em; }
+ 		th, td { border: 1px solid #A0A0A0; padding: 4px 8px; text-align: left; vertical-align: top; }
+ 		pre { margin-left: 2em; }
+ 	</style>
  </head>
 
  <body>
@@ -12,7 +17,7 @@
  Using parameters in acquisition configuration files is very often a good way to reduce acquisition process files number. Doing so, a set of parameters values will
  be pushed to the real time process before current trial begins. There is also an option to propagate parameters values from a trial to its next one : it can be useful
  if you need to keep and update specific values during all session execution. You can configure parameters in Variables tab of the acquisition configuration file.
- Please keep in mind that his feature is only available with ADwin devices. Once these parameters are configured, you must add a parameters file in the root of each 
+ This feature is available with ADwin devices and with Arduino Uno devices (R3 and R4 WiFi). Once these parameters are configured, you must add a parameters file in the root of each
  session : it's a simple text file you can manage from DOCoMETRe or create elsewhere. You can see below an example of this kind of file :
  </p>
  <pre>
@@ -47,6 +52,82 @@
 # 5 ; 3 ; condition-1
 # ...
  </pre>
- 
+
+ <h2><a name="configuration">Parameters configuration</a></h2>
+ <p>A variable becomes a parameter when its <b>Parameter</b> column is checked in the
+ <a href="../designperspective/dacqconfiguration.html#variables">Variables tab</a> of the DACQ configuration. The same rules apply to ADwin and Arduino Uno :</p>
+ <ul>
+ 	<li>a parameter can't be transferred;</li>
+ 	<li>only a parameter of type string can be an array : its size is then the maximum length of the string;</li>
+ 	<li>only numeric parameters can be propagated (not strings).</li>
+ </ul>
+ <p>Columns of the parameters file are associated with the parameters by their <b>names</b> (case is ignored) : they can be in any order and the file
+ can hold other columns. White spaces are removed from the lines : a string value can't contain white spaces, nor the separators ";", "," and ":".</p>
+ <p>Internally, the number of a parameter is its rank in the list of the variables which are parameters. This number is not displayed, but it is used by the
+ compiled process : <b>compile the process again</b> each time you add, remove or reorder parameters.</p>
+
+ <h2><a name="values">Accepted values</a></h2>
+ <p>Values are checked before the start of the trial (and in the dialog of a <a href="../designperspective/processtest.html">process test</a>).
+ With an invalid value, the trial is not run and an error is reported.</p>
+ <table>
+ 	<tr><th>Type</th><th>ADwin</th><th>Arduino Uno</th></tr>
+ 	<tr><td>float</td><td>Decimal number.</td><td>Decimal number, with an optional exponent (e.g. -1.5, 2.5E-3).</td></tr>
+ 	<tr><td>int</td><td>Integer. It is sent to ADwin as a float : values are exact only up to &plusmn;16 777 216 (2<sup>24</sup>).</td>
+ 		<td>Integer on 16 bits with R3 (-32768 to 32767), on 32 bits with R4 WiFi.</td></tr>
+ 	<tr><td>long</td><td>-</td><td>Integer on 32 bits.</td></tr>
+ 	<tr><td>bool</td><td>-</td><td>0, 1, true or false.</td></tr>
+ 	<tr><td>char</td><td>-</td><td>One printable ASCII character.</td></tr>
+ 	<tr><td>string</td><td>All the string parameters together can't hold more than 1024 characters (otherwise they are not sent and an error is reported).</td>
+ 		<td>At most <b>Size</b> printable ASCII characters. With R3 (2048 bytes of RAM), a warning is given at compile time when string variables use more than 512 bytes.</td></tr>
+ </table>
+
+ <h2><a name="propagation">Propagation</a></h2>
+ <p>At the end of a trial, the values of the propagated parameters are read from the DACQ system and written in the parameters file, in the line of the <b>next trial</b>.
+ The other values of this line, its comment and the other lines of the file are kept. Nothing is written after the last trial of the session (no next line), nor when
+ the values could not be read from the DACQ system : the file is then not modified and an error is written in the diary of the trial.</p>
+ <p>Values are written as a float with ADwin (e.g. 5.0) and in the format of their type with Arduino Uno (e.g. 5 for an int, 1.5 for a float).</p>
+ <p>When the parameters file is opened in its editor during the session, the editor is reloaded each time the file is changed
+ (see <a href="../designperspective/subjectsessiontrial.html#parameters">Parameters files</a>).</p>
+
+ <h2><a name="sending">How are parameters sent to the DACQ system ?</a></h2>
+
+ <h3>ADwin</h3>
+ <ul>
+ 	<li><b>Before the trial</b> : the values of the numeric parameters (float and int) are written in the <code>DATA_200</code> array of ADwin, in the order of the
+ 	numeric parameters of the Variables tab. In the generated ADbasic code, this array is <code>TAB_PARAM</code> : each parameter is set from it at the
+ 	beginning of the initialization of the process. The values of the string parameters are written together, separated by line feeds, in the <code>DATA_199</code>
+ 	array (<code>TAB_PARAM_STRING</code> in the generated code).</li>
+ 	<li><b>At the end of the trial</b> (propagation) : the <code>DATA_200</code> array is read again. Strings are never propagated.</li>
+ </ul>
+
+ <h3>Arduino Uno</h3>
+ <p>Values are exchanged as text lines (frames) on the serial port, in which <b>n</b> is the number of the parameter (its rank in the list of all the parameters) :</p>
+ <table>
+ 	<tr><th>Frame</th><th>Meaning</th></tr>
+ 	<tr><td><code>P&lt;n&gt;:&lt;value&gt;</code></td><td>Value of parameter n (bool : 0 or 1, integers in base 10, float in +1.234567E+00 format, char and string as is).</td></tr>
+ 	<tr><td><code>E&lt;count&gt;</code></td><td>End of the sending of count parameters.</td></tr>
+ 	<tr><td><code>A&lt;count&gt;</code></td><td>Acknowledgement : all the parameters have been received and read.</td></tr>
+ 	<tr><td><code>N&lt;n&gt;</code></td><td>Error on parameter n (missing, unknown or invalid value). <code>N0</code> : the number of parameters is not the one of the compiled process.</td></tr>
+ </table>
+ <ul>
+ 	<li><b>Before the trial</b>, while the Arduino waits for the start ('r' char), the PC sends the P frames of all the parameters then the E frame.
+ 	The Arduino writes each value directly in its variable and answers with A or N. The trial is started only when the parameters are acknowledged
+ 	(1 s of wait, 2 attempts) : otherwise it is not started and an error message is displayed. With 2 parameters, this exchange takes about 2 to 3 ms.</li>
+ 	<li><b>At the end of the trial</b> (propagation), the Arduino sends the P frames of the propagated parameters then the E frame, before its end of process
+ 	('s' char). The PC answers with A or N (about 500 ms of wait on the Arduino, 2 attempts).</li>
+ </ul>
+ <p>Example with two parameters A (propagated) and Freq :</p>
+ <pre>
+PC      -&gt; Arduino : P1:500   P2:1   E2
+Arduino -&gt; PC      : A2
+PC      -&gt; Arduino : r                       (start of the trial)
+...
+Arduino -&gt; PC      : P1:401   E1             (end of the trial)
+PC      -&gt; Arduino : A1
+Arduino -&gt; PC      : s
+ </pre>
+ <p>The code generated for a process without parameters is not changed. A process compiled before the parameters of its configuration have been modified
+ answers <code>N0</code> (or does not answer) : compile and upload it again.</p>
+
  </body>
  </html>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cheatsheet
+      title="Instalacja Arduino">
+   <intro>
+      <description>
+			<b>Witamy w przewodniku instalacji Arduino</b>
+			
+			Aby korzystać z systemów Arduino,
+			takich jak Arduino Uno lub Due, należy zainstalować oprogramowanie
+			Arduino. Pozwala ono tworzyć i kompilować programy dla
+			tych systemów, a także dostarcza sterownik do komunikacji z nimi.
+			Oprogramowanie można pobrać ze strony internetowej Arduino. Odwiedź stronę
+			główną pod adresem https://www.arduino.cc/en/Guide
+			
+      </description>
+   </intro>
+   <item
+         skip="true"
+         title="Arduino dla Windows">
+      <description>
+         <b>Kliknij poniższy link, aby zainstalować Arduino dla Windows</b>
+      </description>
+      <command required="false"
+		serialization="Docometre.cheatsheet.OpenURLHandler(Docometre.cheatsheet.OpenURLHandler.Value=https://www.arduino.cc/en/Guide/Windows)" />
+   </item>
+    <item
+         skip="true"
+         title="Arduino dla Mac OS X">
+      <description>
+         <b>Kliknij poniższy link, aby zainstalować Arduino dla Mac</b>
+      </description>
+      <command required="false"
+		serialization="Docometre.cheatsheet.OpenURLHandler(Docometre.cheatsheet.OpenURLHandler.Value=https://www.arduino.cc/en/Guide/macOS)" />
+   </item>
+    <item
+         skip="true"
+         title="Arduino dla Linux">
+      <description>
+         <b>Kliknij poniższy link, aby zainstalować Arduino dla Linux</b>
+      </description>
+      <command required="false"
+		serialization="Docometre.cheatsheet.OpenURLHandler(Docometre.cheatsheet.OpenURLHandler.Value=https://www.arduino.cc/en/Guide/Linux)" />
+   </item>
+    <item
+         skip="true"
+          title="Portenta Machine Control">
+       <description>
+          Aby używać <b>Portenta Machine Control</b>, musisz zainstalować powiązaną bibliotekę. Kliknij poniższy link, aby postępować zgodnie z instrukcjami instalacji.
+       </description>
+        <command required="false"
+		serialization="Docometre.cheatsheet.OpenURLHandler(Docometre.cheatsheet.OpenURLHandler.Value=https://docs.arduino.cc/software/ide-v1/tutorials/getting-started/cores/arduino-mbed_portenta)" />
+    </item>
+   
+</cheatsheet>

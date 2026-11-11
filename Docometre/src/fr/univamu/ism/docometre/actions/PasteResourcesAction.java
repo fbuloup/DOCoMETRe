@@ -81,6 +81,7 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.TrialNames;
 import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.dialogs.CopyLogDataFilesDialog;
 import fr.univamu.ism.docometre.views.ExperimentsView;
@@ -137,6 +138,8 @@ public class PasteResourcesAction extends Action implements ISelectionListener, 
 				@Override
 				public void run(IProgressMonitor monitor) throws CoreException {
 					copyFromClipboard(destination, filesPath, monitor);
+					// Trials folders of previous versions (e.g. "Essai n°N") copied from file system
+					TrialNames.migrate(destination, monitor);
 				}
 			});
 			ExperimentsView.refresh(destination, null);

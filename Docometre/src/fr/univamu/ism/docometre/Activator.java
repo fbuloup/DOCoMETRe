@@ -48,6 +48,10 @@ import java.util.Date;
 import java.util.Locale;
 
 import org.apache.log4j.Logger;
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IStatus;
@@ -78,6 +82,9 @@ import fr.univamu.ism.docometre.chartxyz.editors.GLDataEditor;
 import fr.univamu.ism.docometre.editors.DataEditor;
 import fr.univamu.ism.docometre.editors.PartNameRefresher;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
+import fr.univamu.ism.docometre.history.GitResources;
+import fr.univamu.ism.docometre.history.SnapshotManager;
+import fr.univamu.ism.docometre.history.ui.HistoryStatusCache;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 import fr.univamu.ism.docometre.views.CachedLogger;
 import fr.univamu.ism.process.ScriptSegment;
@@ -169,6 +176,8 @@ public class Activator extends AbstractUIPlugin {
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
 	 */
 	public void stop(BundleContext context) throws Exception {
+		HistoryStatusCache.dispose();
+		SnapshotManager.dispose();
 		plugin = null;
 		super.stop(context);
 	}
@@ -343,20 +352,23 @@ public class Activator extends AbstractUIPlugin {
 		IEditorReference[] editorReferences = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
 		for (int i = 0; i < editorReferences.length; i++) {
 			try {
+				// Editors restored at startup are lazily instantiated : getEditor(false) returns null as long as
+				// they have not been made visible. They must be closed through their reference, otherwise they
+				// stay opened with an inconsistent editor input.
 				if(!(editorReferences[i].getEditorInput() instanceof ResourceEditorInput)) {
-					if(editorReferences[i].getEditor(false) != null) editorReferences[i].getEditor(false).getSite().getPage().closeEditor(editorReferences[i].getEditor(false), false);
+					closeEditorReference(editorReferences[i], false);
 					continue;
 				}
 				ResourceEditorInput resourceEditorInput = ((ResourceEditorInput)editorReferences[i].getEditorInput());
 				if(object != null && resourceEditorInput.isEditing(object)) {
+					// Editor may not be instantiated yet (lazy loading) : editor is null in this case
+					IEditorPart editor = editorReferences[i].getEditor(false);
 					if(resourceEditorInput.removeEditedObject(object)) {
-						if(editorReferences[i].getEditor(false) instanceof DataEditor) ((DataEditor)editorReferences[i].getEditor(false)).removeTrace(object);
-						if(editorReferences[i].getEditor(false) instanceof GLDataEditor) ((GLDataEditor)editorReferences[i].getEditor(false)).removeTrace(object);
+						if(editor instanceof DataEditor) ((DataEditor)editor).removeTrace(object);
+						if(editor instanceof GLDataEditor) ((GLDataEditor)editor).removeTrace(object);
 					}
-					if(resourceEditorInput.canCloseEditor()) {
-						if(editorReferences[i].getEditor(false) != null) editorReferences[i].getEditor(false).getSite().getPage().closeEditor(editorReferences[i].getEditor(false), false);
-					}
-					else if(editorReferences[i].getEditor(false) instanceof PartNameRefresher) ((PartNameRefresher)editorReferences[i].getEditor(false)).refreshPartName();
+					if(resourceEditorInput.canCloseEditor()) closeEditorReference(editorReferences[i], false);
+					else if(editor instanceof PartNameRefresher) ((PartNameRefresher)editor).refreshPartName();
 				}
 			} catch (PartInitException e) {
 				e.printStackTrace();
@@ -365,6 +377,55 @@ public class Activator extends AbstractUIPlugin {
 		}
 	}
 	
+	
+	/*
+	 * Close an editor from its reference, whether it has already been instantiated or not
+	 * (editors restored at startup are only instantiated when they become visible).
+	 * Must be called from UI thread.
+	 */
+	public static boolean closeEditorReference(IEditorReference editorReference, boolean save) {
+		IWorkbenchPage page = editorReference.getPage();
+		if(page == null) page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+		return page.closeEditors(new IEditorReference[] {editorReference}, save);
+	}
+	
+	/*
+	 * Close editors of resource and, if resource is a container, of all its descendants.
+	 * May be called from any thread.
+	 */
+	public static void closeEditors(IResource resource) throws CoreException {
+		if(GitResources.isGitMetadata(resource)) return;
+		Object object = ResourceProperties.getObjectSessionProperty(resource);
+		if(ResourceType.isLog(resource) || ResourceType.isParameters(resource) || ResourceType.isSamples(resource) || ResourceType.isChannel(resource)) object = resource;
+		if(object != null) {
+			Object editedObject = object;
+			PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+				@Override
+				public void run() {
+					closeEditor(editedObject);
+				}
+			});
+		}
+		if(resource instanceof IContainer) {
+			IResource[] childrenResources = ((IContainer)resource).members();
+			for (IResource childResource : childrenResources) {
+				closeEditors(childResource);
+			}
+		}
+	}
+	
+	/*
+	 * Synchronize workspace with a file written directly on disk (java.io, java.nio) : otherwise
+	 * resource change listeners (views, experiments history) are not notified of the change.
+	 * Nothing is done if file is not in the workspace.
+	 */
+	public static void refreshWorkspaceFile(java.nio.file.Path path) {
+		try {
+			for (IFile file : ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(path.toUri())) file.refreshLocal(IResource.DEPTH_ZERO, null);
+		} catch (CoreException e) {
+			logErrorMessageWithCause(e);
+		}
+	}
 	
 	public static IWorkbenchPart getEditor(Object object, String editorID) {
 		IWorkbenchPart foundWorkbenchPart = null;

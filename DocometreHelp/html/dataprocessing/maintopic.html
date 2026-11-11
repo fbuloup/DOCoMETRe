@@ -1,41 +1,184 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"> 
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 
- <html>
- <head>
- 	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
- 	<title>Data Processing</title>
- </head>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Analyse Perspective</title>
+<style type="text/css">
+	table { border-collapse: collapse; margin-bottom: 1em; }
+	th, td { border: 1px solid #A0A0A0; padding: 4px 8px; text-align: left; vertical-align: top; }
+	kbd { border: 1px solid #A0A0A0; border-radius: 3px; padding: 0px 4px; font-family: monospace; }
+	pre { margin-left: 2em; }
+</style>
+</head>
 
- <body>
- <h1>Introduction</h1>
+<body>
+	<h1>Analyse Perspective</h1>
 
-	<p>Data processing can be achieved using DOCoMETRe. It supports
-		Matlab or Python engines. With Matlab you should at least have Signal Processing
-		toolbox installed and with Python, numpy, scipy and py4j must be
-		installed. In Math. Engine preferences, you can configure Matlab and
-		Python runtime and user libraries paths and select default math
-		engine. Once this configuration is done, you can open the Analyse
-		perspective, select the experiment you want to analyse data and load
-		subjects from this experiment.</p>
+	<p>The Analyse perspective is the one used to inspect and process the
+		data of an experiment once they have been acquired (or imported). Data
+		are not processed by DOCoMETRe itself but by a <b>math engine</b>,
+		Python or Matlab, started and driven by DOCoMETRe: subjects are loaded
+		in the math engine, displayed in charts, processed with data processing
+		files built with graphical blocks (filters, markers, features...), and
+		the results are exported for statistical analysis.</p>
+	<p>The same processing or the same chart can be applied to several
+		subjects: a processing approach is tuned on a test subject, then
+		applied to all the subjects of the experiment with a batch
+		processing.</p>
+	<p>This page describes the perspective as a whole. The following pages
+		give more details:</p>
+	<ul>
+		<li><a href="mathengine.html">Math engines</a>: configuration of
+			Python and Matlab, start and stop, math engine console;</li>
+		<li><a href="subjects.html">Loading subjects</a>: selection of the
+			experiment, loading, unloading and saving of subjects, trials and
+			categories, merging of subjects;</li>
+		<li><a href="datamodel.html">Data model</a>: how signals, markers,
+			features, categories and events are stored in the math engine;</li>
+		<li><a href="signaleditor.html">Signal and category editors</a>:
+			display of signals, trials, cuts, markers and features;</li>
+		<li><a href="dataprocessingfiles.html">Data processing files</a>:
+			building and running a processing;</li>
+		<li><a href="functionslibrary.html">Standard functions library</a>:
+			functions available in data processing files;</li>
+		<li><a href="batchprocessing.html">Batch processing</a>: applying
+			processing files to several subjects;</li>
+		<li><a href="xyxyzcharts.html">XY and 3D charts</a>: charts of a signal
+			as a function of another one;</li>
+		<li><a href="userfunctions.html">User functions</a>: extending the
+			functions library, Functions view;</li>
+		<li><a href="exportdata.html">Exporting data</a>: signals, markers and
+			features to text files;</li>
+		<li><a href="datafilesformats.html">Supported data files formats</a>.</li>
+	</ul>
 
-	<p>If there are subjects loaded in Math. engine, you can visualize
-		time series from their existing signals but you can also create 2D or
-		3D charts. From within DOCoMETRe you should also be able to create and
-		configure data processing files. To do so, you can use default
-		standard library : it is large enough to handle basic needs (e.g. mean
-		and std computations, frequency filtering, points marking or
-		data exportation are available). You can also create your own data
-		processing functions by extending this standard library. Data
-		visualization or data processing on a specific subject is not only
-		what you can do in DOCoMETRe : you can apply this visualization or
-		process on several subject at a time. It means that you can configure
-		a chart on a specific subject and then apply this chart configuration
-		on an other loaded subject. It also means that you can tune this data
-		processing, elaborate a processing approach on a test subject and
-		apply it on several subjects at a time.</p>
+	<h2><a name="layout">Layout of the perspective</a></h2>
 
+	<ul>
+		<li>the <b>Subjects view</b>, on the left, shows the content of the
+			selected experiment that is useful for analysis: subjects, data
+			processing and batch processing files, XY and 3D charts, user
+			functions and folders that contain some of them. A loaded subject
+			can be expanded to show its signals, categories and events (see
+			<a href="#subjectsview">below</a>);</li>
+		<li>the <b>editors area</b>, in the center, where signals, categories,
+			processing files and charts are opened;</li>
+		<li>the <b>Console view</b>, under the editors area, where DOCoMETRe
+			and the math engine write their messages (loading of subjects,
+			errors of processing...);</li>
+		<li>the <b>Math engine console</b>, next to the Console view, which
+			sends commands to the math engine (see <a href="mathengine.html#console">Math
+			engines</a>).</li>
+	</ul>
+	<p>The name of the selected experiment is displayed in the status bar.
+		The Experiments view and the Functions view can be opened with
+		Options &gt; Show...</p>
 
+	<h2><a name="toolbar">Tool bar</a></h2>
 
+	<table>
+		<tr>
+			<th>Button</th>
+			<th>Action</th>
+		</tr>
+		<tr>
+			<td>Save / Save all</td>
+			<td>Save the active editor or all the modified editors. When modified
+				loaded subjects are selected in the Subjects view, Save records
+				their data (see <a href="subjects.html#save">Saving subjects</a>).</td>
+		</tr>
+		<tr>
+			<td>Select experiment</td>
+			<td>Chooses the experiment displayed in the Subjects view.</td>
+		</tr>
+		<tr>
+			<td>Start/Stop Math Engine</td>
+			<td>Starts the math engine chosen in the preferences, or stops it
+				(see <a href="mathengine.html">Math engines</a>).</td>
+		</tr>
+		<tr>
+			<td>Load/unload selected subjects</td>
+			<td>Loads the selected subjects in the math engine, or unloads them
+				if they are already loaded (see <a href="subjects.html">Loading
+				subjects</a>).</td>
+		</tr>
+		<tr>
+			<td>New data processing, New batch processing file</td>
+			<td>Create a <a href="dataprocessingfiles.html">data processing
+				file</a> or a <a href="batchprocessing.html">batch processing
+				file</a>.</td>
+		</tr>
+		<tr>
+			<td>Run selected data processes</td>
+			<td>Runs the data processing and batch processing files selected in
+				the Subjects view, or the one of the active editor.</td>
+		</tr>
+		<tr>
+			<td>New XY chart, New 3D chart</td>
+			<td>Create an <a href="xyxyzcharts.html">XY or 3D chart</a>.</td>
+		</tr>
+		<tr>
+			<td>New user function</td>
+			<td>Creates a <a href="userfunctions.html">user function</a>.</td>
+		</tr>
+		<tr>
+			<td>Export data...</td>
+			<td>Exports signals, events, markers or features of loaded subjects
+				to text files (see <a href="exportdata.html">Exporting data</a>).</td>
+		</tr>
+	</table>
+	<p>When a signal, category or chart editor is active, buttons are added
+		to the tool bar: previous and next trial, add and remove curves (charts
+		only), zoom in, zoom out, zoom to fit, pan up, down, left and right, and
+		turn left and right (3D charts).</p>
+
+	<h2><a name="subjectsview">Subjects view</a></h2>
+
+	<p>Before any selection, the Subjects view asks to select an experiment
+		(Select experiment button). Once an experiment is selected:</p>
+	<ul>
+		<li>a subject is decorated with an overlay when it is loaded in the math
+			engine, and with another one when its loaded data have been modified
+			and not saved yet;</li>
+		<li>a loaded subject can be expanded: its children are its
+			<b>signals</b>, its <b>categories</b> (groups of trials) and its
+			<b>events</b>, each one with its own icon;</li>
+		<li>a double click on a signal or a category opens it in the
+			<a href="signaleditor.html">signal or category editor</a>; a double
+			click on a processing file, a chart or a user function opens its
+			editor;</li>
+		<li>two signals selected in the view can be dragged and dropped onto
+			an <a href="xyxyzcharts.html">XY chart</a> to add a curve (the first
+			one is the X signal, the second one the Y signal).</li>
+	</ul>
+	<p>The context menu of the view contains: New (data processing, batch
+		processing, folder, XY chart, 3D chart, user function), Open..., Select
+		experiment, Start/Stop Math Engine, Load/unload selected subjects, Run
+		selected data processes, Rename..., Edit description, Refresh, Copy,
+		Paste, Export data..., <a href="subjects.html#merge">Merge data</a> and
+		Delete.</p>
+
+	<h2><a name="workflow">Typical workflow</a></h2>
+
+	<ol>
+		<li>Configure the math engine once in the preferences (Options &gt;
+			Preferences... &gt; Math Engine, see <a href="mathengine.html">Math
+			engines</a>).</li>
+		<li>Open the Analyse perspective, select the experiment and start the
+			math engine.</li>
+		<li>Load a subject and inspect its signals with the
+			<a href="signaleditor.html">signal editor</a>.</li>
+		<li>Create a <a href="dataprocessingfiles.html">data processing
+			file</a>, add functions (filters, markers, features...) and run it on
+			this subject. Check the results in the signal editor, adjust the
+			parameters and run again.</li>
+		<li>Save the subject if its processed data must be kept.</li>
+		<li>Create a <a href="batchprocessing.html">batch processing file</a> to
+			apply the processing files to all the subjects.</li>
+		<li><a href="exportdata.html">Export</a> markers and features for
+			statistical analysis.</li>
+	</ol>
 
 </body>
- </html>
+</html>

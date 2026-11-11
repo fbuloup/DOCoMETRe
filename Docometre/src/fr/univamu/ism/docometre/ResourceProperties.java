@@ -41,28 +41,35 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
 import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceVisitor;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.osgi.util.NLS;
 
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.editors.AbstractScriptSegmentEditor;
+import fr.univamu.ism.docometre.history.GitResources;
 
 public final class ResourceProperties {
 	
@@ -150,13 +157,162 @@ public final class ResourceProperties {
 		return properties;
 	}
 	
+	/*
+	 * Save experiment properties to its .metadata.properties file.
+	 * The content is written so that it only depends on the properties themselves
+	 * (sorted entries, no date comment, '\n' line separator) : this file can then be
+	 * historized and compared. The file is not rewritten if its content is unchanged.
+	 */
 	public static void savePropertiesToFile(IResource resource) {
 		Properties properties = experimentsProperties.get(resource.getProject().getName());
 		if(properties == null) return;
 		String fullPath = resource.getProject().getLocation().toPortableString();
-		try(FileOutputStream fos = new FileOutputStream(fullPath + metadataFileName)) {
-			properties.store(fos, null);
+		Path filePath = Path.of(fullPath + metadataFileName);
+		try {
+			byte[] content = getPropertiesFileContent(properties);
+			if(Files.exists(filePath) && Arrays.equals(Files.readAllBytes(filePath), content)) return;
+			Files.write(filePath, content);
 		} catch (IOException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+	}
+	
+	/*
+	 * Return properties file content : Properties.store format (ISO 8859-1 with unicode escapes),
+	 * one entry per line, lines sorted, without the date comment written by Properties.store.
+	 */
+	private static byte[] getPropertiesFileContent(Properties properties) throws IOException {
+		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+		properties.store(byteArrayOutputStream, null);
+		String[] lines = byteArrayOutputStream.toString(StandardCharsets.ISO_8859_1).split("\\R");
+		ArrayList<String> entries = new ArrayList<>(lines.length);
+		for (String line : lines) {
+			// Properties.store escapes leading '#' and '!' in keys : lines starting with them are comments
+			if(line.isEmpty() || line.startsWith("#") || line.startsWith("!")) continue;
+			entries.add(line);
+		}
+		Collections.sort(entries);
+		StringBuilder content = new StringBuilder();
+		for (String entry : entries) content.append(entry).append('\n');
+		return content.toString().getBytes(StandardCharsets.ISO_8859_1);
+	}
+	
+	/*
+	 * Return true if qualified name is one of DOCoMETRe persistent properties mirrored in .metadata.properties
+	 */
+	private static boolean isDocometrePersistentProperty(QualifiedName qn) {
+		String qualifier = qn.getQualifier();
+		return Activator.PLUGIN_ID.equals(qualifier) || AbstractScriptSegmentEditor.class.getCanonicalName().equals(qualifier);
+	}
+	
+	/*
+	 * Key format in .metadata.properties : <resource full path>:<qualifier>:<local name>
+	 * Return {resource full path, qualifier, local name} or null if key can't be parsed.
+	 */
+	private static String[] parsePropertyKey(String key) {
+		int localNameIndex = key.lastIndexOf(':');
+		if(localNameIndex <= 0) return null;
+		int qualifierIndex = key.lastIndexOf(':', localNameIndex - 1);
+		if(qualifierIndex <= 0) return null;
+		String fullPath = key.substring(0, qualifierIndex);
+		if(!fullPath.startsWith("/")) return null;
+		return new String[] {fullPath, key.substring(qualifierIndex + 1, localNameIndex), key.substring(localNameIndex + 1)};
+	}
+	
+	/*
+	 * Return true if resource referenced by full path (/project/...) still exists, in the workspace or on disk
+	 */
+	private static boolean resourceExists(String fullPath) {
+		IPath path = IPath.fromPortableString(fullPath);
+		if(path.segmentCount() == 0) return false;
+		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+		if(root.findMember(path) != null) return true;
+		IProject project = root.getProject(path.segment(0));
+		if(!project.exists() || project.getLocation() == null) return false;
+		return project.getLocation().append(path.removeFirstSegments(1)).toFile().exists();
+	}
+	
+	/*
+	 * Make .metadata.properties file of project complete and up to date before it is historized :
+	 *  - all DOCoMETRe persistent properties of project resources are copied into the file
+	 *    (some may only exist in the workspace, e.g. legacy or imported ones),
+	 *  - entries of resources which no longer exist are removed,
+	 *  - the file is saved.
+	 * Resources must be synchronized with file system (refreshLocal) before calling this method.
+	 */
+	public static void synchronizePropertiesFile(IProject project) {
+		if(!usePropertyFile || project == null || !project.isAccessible()) return;
+		Properties properties = loadPropertiesFromFile(project);
+		for (String key : properties.stringPropertyNames()) {
+			String[] keyParts = parsePropertyKey(key);
+			if(keyParts != null && !resourceExists(keyParts[0])) properties.remove(key);
+		}
+		try {
+			project.accept(new IResourceVisitor() {
+				@Override
+				public boolean visit(IResource resource) throws CoreException {
+					if(GitResources.isGitMetadata(resource)) return false;
+					for (Map.Entry<QualifiedName, String> entry : resource.getPersistentProperties().entrySet()) {
+						if(!isDocometrePersistentProperty(entry.getKey())) continue;
+						if(ResourceType.CHANNEL.toString().equals(entry.getValue())) continue;
+						properties.put(resource.getFullPath().toPortableString() + ":" + entry.getKey().toString(), entry.getValue());
+					}
+					return true;
+				}
+			});
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		savePropertiesToFile(project);
+	}
+	
+	/*
+	 * Reload DOCoMETRe persistent properties of project resources from its .metadata.properties file.
+	 * The file becomes the reference : workspace values absent from the file are removed.
+	 * To be called when .metadata.properties has been replaced on disk (e.g. a snapshot has been restored)
+	 * and after resources have been synchronized with file system (refreshLocal).
+	 * Keys are matched with project relative paths, so the file remains valid if project has been renamed.
+	 */
+	public static void reloadPropertiesFromFile(IProject project) {
+		if(!usePropertyFile || project == null || !project.isAccessible()) return;
+		experimentsProperties.remove(project.getName());
+		Properties properties = loadPropertiesFromFile(project);
+		// Project relative path -> (qualified name -> value)
+		HashMap<String, HashMap<QualifiedName, String>> fileProperties = new HashMap<>();
+		for (String key : properties.stringPropertyNames()) {
+			String[] keyParts = parsePropertyKey(key);
+			if(keyParts == null) continue;
+			IPath fullPath = IPath.fromPortableString(keyParts[0]);
+			if(fullPath.segmentCount() == 0) continue;
+			String relativePath = fullPath.removeFirstSegments(1).makeRelative().toPortableString();
+			QualifiedName qn = new QualifiedName(keyParts[1], keyParts[2]);
+			HashMap<QualifiedName, String> resourceProperties = fileProperties.computeIfAbsent(relativePath, k -> new HashMap<>());
+			// Keys using current project name take precedence over keys using an old project name
+			if(project.getName().equals(fullPath.segment(0))) resourceProperties.put(qn, properties.getProperty(key));
+			else resourceProperties.putIfAbsent(qn, properties.getProperty(key));
+		}
+		try {
+			project.accept(new IResourceVisitor() {
+				@Override
+				public boolean visit(IResource resource) throws CoreException {
+					if(GitResources.isGitMetadata(resource)) return false;
+					HashMap<QualifiedName, String> resourceFileProperties = fileProperties.get(resource.getProjectRelativePath().toPortableString());
+					for (Map.Entry<QualifiedName, String> entry : resource.getPersistentProperties().entrySet()) {
+						if(!isDocometrePersistentProperty(entry.getKey())) continue;
+						if(ResourceType.CHANNEL.toString().equals(entry.getValue())) continue;
+						if(resourceFileProperties == null || !resourceFileProperties.containsKey(entry.getKey())) resource.setPersistentProperty(entry.getKey(), null);
+					}
+					if(resourceFileProperties != null) {
+						for (Map.Entry<QualifiedName, String> entry : resourceFileProperties.entrySet()) {
+							resource.setPersistentProperty(entry.getKey(), entry.getValue());
+						}
+					}
+					return true;
+				}
+			});
+		} catch (CoreException e) {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
 		}
@@ -356,7 +512,7 @@ public final class ResourceProperties {
 			IResource[] members  = session.members();
 			for (IResource member : members) {
 				if(ResourceType.isTrial(member)) {
-					int trialNumber = Integer.parseInt(member.getName().split("°")[1]);
+					int trialNumber = TrialNames.getNumber(member);
 					if(trialNumber > nbTrials) nbTrials = trialNumber;
 				}
 			}
@@ -622,8 +778,8 @@ public final class ResourceProperties {
 				for (int i = 0; i < members.length; i++) {
 					if(ResourceType.isTrial(members[i])) {
 						if(!ResourceProperties.isTrialDone(members[i])) {
-							String trialNumberString = members[i].getName().split("°")[1];//members[i].getName().replaceAll(DocometreMessages.Trial, "");
-							numbersArrayList.add(Integer.parseInt(trialNumberString));
+							int trialNumber = TrialNames.getNumber(members[i]);
+							if(trialNumber > 0) numbersArrayList.add(trialNumber);
 						}
 					}
 				}

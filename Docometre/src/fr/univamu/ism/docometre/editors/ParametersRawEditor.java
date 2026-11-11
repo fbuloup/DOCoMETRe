@@ -21,6 +21,7 @@ import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CaretEvent;
 import org.eclipse.swt.custom.CaretListener;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.graphics.Font;
@@ -45,6 +46,7 @@ public class ParametersRawEditor extends EditorPart {
 	private ArrayList<Font> fontsArrayList = new ArrayList<>();
 	private ParametersEditor parametersEditor;
 	private StringBuffer content;
+	private TextViewerUndoManager textViewerUndoManager;
 	
 	public ParametersRawEditor(ParametersEditor parametersEditor) {
 		this.parametersEditor = parametersEditor;
@@ -91,7 +93,7 @@ public class ParametersRawEditor extends EditorPart {
 			sourceViewer.setDocument(document);
 			document.set(content.toString());
 			
-			TextViewerUndoManager textViewerUndoManager = new TextViewerUndoManager(Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.PREF_UNDO_LIMIT));
+			textViewerUndoManager = new TextViewerUndoManager(Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.PREF_UNDO_LIMIT));
 			sourceViewer.setUndoManager(textViewerUndoManager);
 			textViewerUndoManager.connect(sourceViewer);
 //			textViewerUndoManager.reset();
@@ -192,6 +194,21 @@ public class ParametersRawEditor extends EditorPart {
 	@Override
 	public void setFocus() {
 		sourceViewer.getTextWidget().setFocus();
+	}
+
+	/**
+	 * Replaces the content of the document by the content of the file changed on disk (see ParametersEditor),
+	 * keeping the caret position and the visible lines as far as possible. Undo history is cleared.
+	 * @param newContent the new content
+	 */
+	public void setContent(String newContent) {
+		StyledText textWidget = sourceViewer.getTextWidget();
+		int caretOffset = textWidget.getCaretOffset();
+		int topIndex = sourceViewer.getTopIndex();
+		parametersEditor.getDocument().set(newContent);
+		if(textViewerUndoManager != null) textViewerUndoManager.reset();
+		textWidget.setCaretOffset(Math.min(caretOffset, textWidget.getCharCount()));
+		sourceViewer.setTopIndex(topIndex);
 	}
 
 	public void update() {

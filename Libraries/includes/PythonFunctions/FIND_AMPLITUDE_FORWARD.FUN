@@ -1,7 +1,9 @@
 MENU_TITLE = Find amplitude forward
 DESCRIPTION = Find amplitude forward
 MENU_TITLE_FR = Trouver l'amplitude en avant
+MENU_TITLE_PL = Szukanie amplitudy w przód
 DESCRIPTION_FR = Trouver l'amplitude en avant
+DESCRIPTION_PL = Szukanie amplitudy w przód
 
 # Now start specific python function 
 FUNCTION_CODE = # Compute Find amplitude forward\n\

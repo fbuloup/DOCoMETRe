@@ -41,6 +41,8 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.analyse.views;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.eclipse.core.commands.operations.IUndoContext;
 import org.eclipse.core.commands.operations.UndoContext;
 import org.eclipse.core.resources.IContainer;
@@ -73,11 +75,13 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IMemento;
+import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IPerspectiveListener;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionFactory;
@@ -91,6 +95,7 @@ import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ExperimentScheduler;
+import fr.univamu.ism.docometre.history.GitResources;
 import fr.univamu.ism.docometre.views.ExperimentsLabelDecorator;
 import fr.univamu.ism.docometre.views.ExperimentsViewerSorter;
 
@@ -108,6 +113,17 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 	}
 	
 	private TreeViewer subjectsTreeViewer;
+	
+	// A refresh of the tree has been requested and not yet done by the UI thread
+	private final AtomicBoolean refreshScheduled = new AtomicBoolean();
+	// UI thread : a refresh has been skipped while the view was hidden
+	private boolean refreshNeeded;
+	private final IPartListener2 visibilityListener = new IPartListener2() {
+		@Override
+		public void partVisible(IWorkbenchPartReference partRef) {
+			if(partRef.getPart(false) == SubjectsView.this && refreshNeeded) refreshIfVisible();
+		}
+	};
 	private Composite parent;
 	private Composite imageMessageContainer;
 	
@@ -213,6 +229,7 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 		
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
 		PlatformUI.getWorkbench().getActiveWorkbenchWindow().addPerspectiveListener(this);
+		getSite().getPage().addPartListener(visibilityListener);
 		
 		getViewSite().getActionBars().setGlobalActionHandler(ActionFactory.DELETE.getId(), ApplicationActionBarAdvisor.deleteResourcesAction);
 		getViewSite().getActionBars().setGlobalActionHandler(ActionFactory.COPY.getId(), ApplicationActionBarAdvisor.copyResourcesAction);
@@ -235,6 +252,7 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 		ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
 		PlatformUI.getWorkbench().getActiveWorkbenchWindow().removePerspectiveListener(this);
 		Activator.getDefault().getPreferenceStore().removePropertyChangeListener(this);
+		getSite().getPage().removePartListener(visibilityListener);
 		super.dispose();
 	}
 	
@@ -284,6 +302,8 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 	@Override
 	public void resourceChanged(IResourceChangeEvent event) {
 		if (event.getDelta() == null) return;
+		// Changes inside experiments .git folders (history) are not shown
+		if (!GitResources.hasRelevantChanges(event.getDelta())) return;
 		IResourceDelta[] resourceDeltas = event.getDelta().getAffectedChildren();
 		for (IResourceDelta resourceDelta : resourceDeltas) {
 			if (resourceDelta.getKind() == IResourceDelta.ADDED) {
@@ -299,14 +319,33 @@ public class SubjectsView extends ViewPart implements IResourceChangeListener, I
 				}
 			} 
 			if (resourceDelta.getKind() == IResourceDelta.CHANGED) {
-				PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
-					@Override
-					public void run() {
-						if(subjectsTreeViewer.getTree() != null && !subjectsTreeViewer.getTree().isDisposed()) subjectsTreeViewer.refresh();
-					}
-				});
+				// Only the changes of the displayed experiment matter. The changes notified
+				// before the UI thread refreshes the tree are shown by a single refresh.
+				if(resourceDelta.getResource().equals(subjectsTreeViewer.getInput()) && refreshScheduled.compareAndSet(false, true)) {
+					PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+						@Override
+						public void run() {
+							refreshScheduled.set(false);
+							refreshIfVisible();
+						}
+					});
+				}
 			}
 		}
+	}
+	
+	/*
+	 * UI thread : refreshes the tree, or only remembers to do it when the view
+	 * becomes visible (e.g. while trials are run in the acquisition perspective)
+	 */
+	private void refreshIfVisible() {
+		if(subjectsTreeViewer == null || subjectsTreeViewer.getTree().isDisposed()) return;
+		if(!getSite().getPage().isPartVisible(this)) {
+			refreshNeeded = true;
+			return;
+		}
+		refreshNeeded = false;
+		subjectsTreeViewer.refresh();
 	}
 
 	@Override

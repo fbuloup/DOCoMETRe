@@ -1,7 +1,9 @@
 MENU_TITLE = Read Byte from serial port
 DESCRIPTION = Read Byte (eight bits) from selected serial port
 MENU_TITLE_FR = Lire un octet du port série
+MENU_TITLE_PL = Odczyt bajtu z portu szeregowego
 DESCRIPTION_FR = Lire un octet du port série sélectionné
+DESCRIPTION_PL = Odczytuje bajt (osiem bitów) z wybranego portu szeregowego
 # Several segments are available in ADBascic code :
 # HEADER, INCLUDE, DECLARATION, INITIALIZATION, ACQUISITION, RECOVERY, TRANSFER, EVENT, GENERATION and FINISH
 # The ADBasic function code you need to add in any segments INITIALIZATION, EVENT or FINISH may require contributions to any other segment.

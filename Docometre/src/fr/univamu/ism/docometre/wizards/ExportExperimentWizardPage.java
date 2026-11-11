@@ -56,6 +56,7 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.history.SnapshotManager;
 
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Group;
@@ -94,6 +95,9 @@ public class ExportExperimentWizardPage extends WizardPage {
 	private IProject experiment;
 	private String destination;
 	private boolean includeData = true;
+	private boolean includeHistory = false;
+	private boolean historyAvailable = false;
+	private Button exportWithHistoryButton;
 	private boolean exportOnlySelectedSubjects;
 	protected IStructuredSelection selectedSubjects;
 	private ListViewer subjectsListViewer;
@@ -160,6 +164,7 @@ public class ExportExperimentWizardPage extends WizardPage {
 			public void selectionChanged(SelectionChangedEvent event) {
 				experiment = (IProject)((StructuredSelection)exportProjectComboViewer.getSelection()).getFirstElement();
 				if(exportOnlySelectedSubjects) subjectsListViewer.setInput(experiment);
+				updateExportWithHistoryButton();
 				validate();
 			}
 		});
@@ -235,6 +240,19 @@ public class ExportExperimentWizardPage extends WizardPage {
 			}
 		});
 		
+		// Experiments history (.git folder) : only for a whole historized experiment
+		exportWithHistoryButton = new Button(optionsGroup, SWT.CHECK);
+		exportWithHistoryButton.setText(DocometreMessages.ExportWithHistoryTitle);
+		exportWithHistoryButton.setToolTipText(DocometreMessages.ExportWithHistoryToolTip);
+		exportWithHistoryButton.setSelection(false);
+		exportWithHistoryButton.setEnabled(false);
+		exportWithHistoryButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				includeHistory = exportWithHistoryButton.getSelection();
+			}
+		});
+		
 		exportProjectComboViewer.setInput(ResourcesPlugin.getWorkspace().getRoot());
 		
 		Button exportOnlySelectedSubjectsButton = new Button(container, SWT.CHECK);
@@ -244,6 +262,7 @@ public class ExportExperimentWizardPage extends WizardPage {
 				exportOnlySelectedSubjects = exportOnlySelectedSubjectsButton.getSelection();
 				if(exportOnlySelectedSubjects && experiment != null) subjectsListViewer.setInput(experiment);
 				else if (!exportOnlySelectedSubjects) subjectsListViewer.setInput(null);
+				updateExportWithHistoryButton();
 			}
 		});
 		exportOnlySelectedSubjectsButton.setText(DocometreMessages.ExportOnlySelectedSubjectTitle);
@@ -269,6 +288,19 @@ public class ExportExperimentWizardPage extends WizardPage {
 		warningLabel.setForeground(getShell().getDisplay().getSystemColor(SWT.COLOR_RED));
 		warningLabel.setText(DocometreMessages.ExportWarningMessage);
 		
+	}
+	
+	private void updateExportWithHistoryButton() {
+		historyAvailable = experiment != null && !exportOnlySelectedSubjects && SnapshotManager.getInstance().isHistorized(experiment);
+		if(exportWithHistoryButton != null && !exportWithHistoryButton.isDisposed()) exportWithHistoryButton.setEnabled(historyAvailable);
+	}
+	
+	/*
+	 * True if experiment history (.git folder) must be exported : only for a whole historized experiment
+	 * (may be called from any thread)
+	 */
+	public boolean isIncludeHistory() {
+		return includeHistory && historyAvailable;
 	}
 	
 	public boolean validate() {

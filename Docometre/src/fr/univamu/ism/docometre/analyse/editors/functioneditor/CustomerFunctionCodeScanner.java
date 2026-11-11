@@ -60,7 +60,7 @@ import fr.univamu.ism.docometre.editors.WordsDetector;
 public class CustomerFunctionCodeScanner extends RuleBasedScanner {
 	
 	public static String[] RESERVED_WORDS = {"COMBO", "FILE", "EDITABLE", "FOLDER", "FUNCTION_CODE", "USER_FUNCTION", 
-											 "MENU_TITLE_FR", "MENU_TITLE", "DESCRIPTION_FR", "DESCRIPTION", "LABEL_FR", "LABEL", 
+											 "MENU_TITLE_FR", "MENU_TITLE_PL", "MENU_TITLE", "DESCRIPTION_FR", "DESCRIPTION_PL", "DESCRIPTION", "LABEL_FR", "LABEL_PL", "LABEL", 
 											 "TEXT", "TYPE", "NAME", "PARAMETERS_NUMBER", "PARAMETER_"};
 	
 

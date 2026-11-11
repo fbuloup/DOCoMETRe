@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cheatsheet
+      title="Instalacja ADBasic [Linux]">
+   <intro>
+      <description>
+         <b>Witamy w przewodniku instalacji ADBasic dla systemu Linux</b>
+			<br/><br/>
+			Aby korzystać z systemów sprzedawanych przez firmę JAGER GmbH,
+			takich jak ADwin Pro lub Gold, należy zainstalować oprogramowanie
+			ADBasic. Pozwala ono tworzyć i kompilować programy dla
+			tych systemów, a także dostarcza sterownik do komunikacji z nimi.
+			Oprogramowanie jest dostarczane przez tę samą firmę i można je pobrać
+			z jej strony internetowej (http://www.adwin.de).
+			Sposób instalacji zależy jednak od systemu, w którym chcesz
+			używać DOCoMETRe. Ten przewodnik pomoże Ci zainstalować ADBasic w systemie
+			Linux Ubuntu, Debian lub Fedora.
+      </description>
+   </intro>
+   <item
+         skip="false"
+         title="Instalacja w systemie Ubuntu">
+      <description>
+		Kliknij przycisk obok
+      </description>
+       <command
+               required="false"
+               serialization="Docometre.cheatsheet.OpenURLHandler(Docometre.cheatsheet.OpenURLHandler.Value=https://wiki.winehq.org/Ubuntu)"/>
+   </item>
+   <item
+         skip="false"
+         title="Instalacja w systemie Debian">
+      <description>
+		Kliknij przycisk obok
+      </description>
+       <command
+               required="false"
+               serialization="Docometre.cheatsheet.OpenURLHandler(Docometre.cheatsheet.OpenURLHandler.Value=https://wiki.winehq.org/Debian)"/>
+   </item>
+    <item
+         skip="false"
+         title="Instalacja w systemie Fedora">
+      <description>
+		Kliknij przycisk obok
+      </description>
+       <command
+               required="false"
+               serialization="Docometre.cheatsheet.OpenURLHandler(Docometre.cheatsheet.OpenURLHandler.Value=https://wiki.winehq.org/Fedora)"/>
+   </item>
+    <item
+         title="Instalacja ADBasic">
+      <description>
+         Możesz teraz zainstalować ADBasic, postępując zgodnie z przewodnikiem dla systemu Windows.
+      </description>
+            <command
+               required="false"
+              serialization="Docometre.cheatsheet.OpenURLHandler(Docometre.cheatsheet.OpenURLHandler.Value=cheatsheet:Docometre.ADBasicInstallWindowsCheatSheet)"/>
+   </item>
+</cheatsheet>

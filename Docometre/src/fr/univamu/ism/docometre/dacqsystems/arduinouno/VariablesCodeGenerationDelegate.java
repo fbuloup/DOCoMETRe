@@ -58,16 +58,32 @@ public class VariablesCodeGenerationDelegate {
 		return "";
 	}
 
+	/*
+	 * Initial values of the variables, as after a board reset (global variables are then
+	 * zero) : the process can be restarted by software, without board reset.
+	 */
 	private static String getInitialisationCode() {
 		String  code = "";
 		ArduinoUnoVariable[] variables = ((ArduinoUnoDACQConfiguration)process.getDACQConfiguration()).getVariables();
+		String gsfProcess = ((ArduinoUnoDACQConfiguration)process.getDACQConfiguration()).getProperty(ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY);
+		float gsfFloat = Float.parseFloat(gsfProcess);
 		for (ArduinoUnoVariable variable : variables) {
-//			String name = variable.getProperty(ChannelProperties.NAME);
+			String name = variable.getProperty(ChannelProperties.NAME);
+			String size = variable.getProperty(ArduinoUnoVariableProperties.SIZE);
 			String transfer = variable.getProperty(ChannelProperties.TRANSFER);
 			boolean isTransfered = Boolean.valueOf(transfer);
+			boolean isString = ArduinoUnoVariableProperties.STRING.equals(variable.getProperty(ArduinoUnoVariableProperties.TYPE));
+			// Parameters are not initialized : their values have been received just before (see ArduinoUnoParametersCode)
+			if(variable.isParameter()) code = code + "\t\t// " + name + " : parameter, value received from the PC\n";
+			else if("1".equals(size) && !isString) code = code + "\t\t" + name + " = 0;\n";
+			else code = code + "\t\tmemset(" + name + ", 0, sizeof(" + name + "));\n";
 			if(isTransfered) {
+				float sfFloat = Float.parseFloat(variable.getProperty(ChannelProperties.SAMPLE_FREQUENCY));
+				int frequencyRatio = (int) (gsfFloat/sfFloat);
+				code = code + "\t\ttransfer_" + name + " = " + frequencyRatio + ";\n";
 			}
 		}
+		if(!code.isEmpty()) code = "\t\t// Initial values of the variables (as after a board reset : the process can be restarted by software)\n" + code;
 		return code + "\n";
 	}
 
@@ -90,7 +106,8 @@ public class VariablesCodeGenerationDelegate {
 			float sfFloat = Float.parseFloat(sfVariable);
 			int frequencyRatio = (int) (gsfFloat/sfFloat);
 			
-			if(isTransfered) {
+			// A string can't be transferred (see ArduinoUnoVariablesPage)
+			if(isTransfered && !ArduinoUnoVariableProperties.STRING.equals(variable.getProperty(ArduinoUnoVariableProperties.TYPE))) {
 				String type = variable.getProperty(ArduinoUnoVariableProperties.TYPE);
 				
 				code = code + "\t\t// Transfer " + name + "\n";
@@ -103,7 +120,7 @@ public class VariablesCodeGenerationDelegate {
 					code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%d\"," + transferNumber + ", " + name + ");\n";
 				}
 				if(type.equals(ArduinoUnoVariableProperties.LONG)) {
-					code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%lu\"," + transferNumber + ", " + name + ");\n";
+					code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%ld\"," + transferNumber + ", " + name + ");\n";
 				}
 				if(type.equals(ArduinoUnoVariableProperties.FLOAT)) {
 					if(isRelease4Wifi) {
@@ -169,7 +186,14 @@ public class VariablesCodeGenerationDelegate {
 				code = code + " flottant(s)";
 				type = "float";
 			}
-			size = size.equals("1") ? "" : "[" + size + "]" ;
+			boolean isString = type.equals(ArduinoUnoVariableProperties.STRING);
+			if(isString) {
+				// SIZE is the maximum length of the string, plus terminating null character
+				code = code + " chaîne de caractères (longueur max. " + size + ")";
+				type = "char";
+				size = Integer.toString(Integer.parseInt(size) + 1);
+			}
+			size = size.equals("1") && !isString ? "" : "[" + size + "]" ;
 			code = code + "\n" + type + " " + name + size + ";\n";
 			
 			if(isTransfered) {

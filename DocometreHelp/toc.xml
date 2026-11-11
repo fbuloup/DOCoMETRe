@@ -5,7 +5,7 @@
    <topic href="html/dataacquisition/dataacquistion.html" label="Data Acquisition and Real Time Systems">
       <anchor id="dataacquisition"/>
    </topic>
-   <topic label="Data Processing">
+   <topic href="html/dataprocessing/maintopic.html" label="Data Processing">
       <anchor id="dataprocessing"/>
    </topic>
    <topic label="Supported DACQ Systems">

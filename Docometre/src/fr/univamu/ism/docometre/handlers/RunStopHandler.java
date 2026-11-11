@@ -78,12 +78,12 @@ import fr.univamu.ism.docometre.views.RealTimeChartsView;
 @SuppressWarnings("restriction")
 public class RunStopHandler extends AbstractHandler implements IElementUpdater, IPerspectiveListener {
 	
-	private static String COMMAND_ID = "RunStopCommand";
+	public static final String COMMAND_ID = "RunStopCommand";
 	
 	private static boolean enabled;
 	private static boolean stop = false;
-	
-	
+    private static boolean stopPending = false;
+
 	public RunStopHandler() {
 		PlatformUI.getWorkbench().getActiveWorkbenchWindow().addPerspectiveListener(this);
 	}
@@ -150,38 +150,44 @@ public class RunStopHandler extends AbstractHandler implements IElementUpdater, 
 	}
 	
 	public static void stop() {
-		boolean saveChoice = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_AS_DEFAULT_DO_NOT_ASK_STOP_TRIAL_NOW);
-		stop = false;
-		if(!saveChoice) 
-			PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
-				@Override
-				public void run() {
-					StopTrialDialog stopTrialDialog = new StopTrialDialog(PlatformUI.getWorkbench().getDisplay().getActiveShell());
-					if(stopTrialDialog.open() == Window.OK) stop = true;
-				}
-			});
-		else stop = true;
-		boolean stopNow = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.STOP_TRIAL_NOW);
-		if(!stopNow && stop) {
-			if(!ExperimentScheduler.getInstance().isRunning()) return;
-			enabled = false;
-			refreshCommand();
-			ApplicationActionBarAdvisor.pausePendingContributionItem.setText(DocometreMessages.PausePending);
-		}
-		if(stop) {
-			ExperimentScheduler.getInstance().stop(false);
-			RealTimeChartsView.removeAllCharts(false);
-			IViewPart viewPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(ExperimentsView.ID);
-			if(viewPart != null && viewPart instanceof ExperimentsView) {
-				ExperimentsView experimentsView = (ExperimentsView)viewPart;
-				experimentsView.enableTree();
-			}
-			viewPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(SubjectsView.ID);
-			if(viewPart != null && viewPart instanceof SubjectsView) {
-				SubjectsView subjectsView = (SubjectsView)viewPart;
-				subjectsView.enableTree();
-			}
-		}
+        if (stopPending) return;
+        stopPending = true;
+        try {
+        	boolean saveChoice = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.USE_AS_DEFAULT_DO_NOT_ASK_STOP_TRIAL_NOW);
+    		stop = false;
+    		if(!saveChoice) 
+    			PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+    				@Override
+    				public void run() {
+    					StopTrialDialog stopTrialDialog = new StopTrialDialog(PlatformUI.getWorkbench().getDisplay().getActiveShell());
+    					if(stopTrialDialog.open() == Window.OK) stop = true;
+    				}
+    			});
+    		else stop = true;
+    		boolean stopNow = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.STOP_TRIAL_NOW);
+    		if(!stopNow && stop) {
+    			if(!ExperimentScheduler.getInstance().isRunning()) return;
+    			enabled = false;
+    			refreshCommand();
+    			ApplicationActionBarAdvisor.pausePendingContributionItem.setText(DocometreMessages.PausePending);
+    		}
+    		if(stop) {
+    			ExperimentScheduler.getInstance().stop(false);
+    			RealTimeChartsView.removeAllCharts(false);
+    			IViewPart viewPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(ExperimentsView.ID);
+    			if(viewPart != null && viewPart instanceof ExperimentsView) {
+    				ExperimentsView experimentsView = (ExperimentsView)viewPart;
+    				experimentsView.enableTree();
+    			}
+    			viewPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(SubjectsView.ID);
+    			if(viewPart != null && viewPart instanceof SubjectsView) {
+    				SubjectsView subjectsView = (SubjectsView)viewPart;
+    				subjectsView.enableTree();
+    			}
+    		}
+        } finally {
+            stopPending = false;
+        }
 	}
 	
 	@Override

@@ -265,6 +265,7 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
     @Override
     public void display(GLAutoDrawable drawable) {
         beginFrame();
+        applySwapInterval(drawable);
         GL2 gl = drawable.getGL().getGL2();
         gl.glViewport(0, 0, width, height);
         gl.glClear(GL2.GL_COLOR_BUFFER_BIT);
@@ -1931,9 +1932,8 @@ public abstract class PlotRenderer<C extends CurveData<C>> extends CurveChartRen
         return true;
     }
 
-    // Conversions: window units (origin at the top left) -> OpenGL pixels
-    // (origin at the bottom left) -> data units. The ratio this.width / component
-    // width takes high-density screens into account.
+    // Conversions: interaction coordinates (pixels, origin at the top left)
+    // -> OpenGL pixels (origin at the bottom left) -> data units.
 
     private float toPixelX(int x, int componentWidth) {
         return (float) x * width / Math.max(1, componentWidth);

@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
+import com.jogamp.opengl.GLContext;
 import com.jogamp.opengl.GLEventListener;
 
 import fr.univamu.ism.docometre.Activator;
@@ -25,12 +26,26 @@ import fr.univamu.ism.docometre.Activator;
  * </ul>
  * The {@link DisplayOptionListener}s are told about each change of a display
  * option (see {@link DisplayOption}), made with the keyboard or the API.
+ *
+ * Swap interval (see {@link #setSwapInterval}): 0 by default, that is
+ * without waiting for the vertical retrace. With the SWT host, frames are
+ * drawn in the user interface thread: a vertical synchronization would
+ * block it at each frame, and for each chart displayed.
  */
 public abstract class GLChartRenderer implements GLEventListener, ChartInteraction {
 
 	private static final AtomicBoolean GL_INFO_LOGGED = new AtomicBoolean();
 	private static volatile String glInfo = "OpenGL not initialised";
 	private static final System.Logger LOGGER = System.getLogger(GLChartRenderer.class.getName());
+
+	/** Swap interval of the charts created without {@link #setSwapInterval}: no vertical synchronization. */
+	public static final int DEFAULT_SWAP_INTERVAL = 0;
+	private static volatile int defaultSwapInterval = DEFAULT_SWAP_INTERVAL;
+
+	private volatile int swapInterval = defaultSwapInterval; // requested
+	private int appliedSwapInterval;                          // last value given to the context (rendering thread)
+	private boolean swapIntervalApplied = false;              // false: to be given to the context at the next frame
+	private volatile int effectiveSwapInterval = Integer.MIN_VALUE; // value of the context, MIN_VALUE before the first frame
 	
 	protected volatile boolean showAxes;
     protected volatile boolean showGrid = true;
@@ -51,10 +66,14 @@ public abstract class GLChartRenderer implements GLEventListener, ChartInteracti
     public void init(GLAutoDrawable drawable) {
         GL2 gl = drawable.getGL().getGL2();
 
+        // New context (first initialization, or context recreated): the swap interval is given to it again
+        swapIntervalApplied = false;
+        applySwapInterval(drawable);
+
         // OpenGL configuration of the machine, logged only once (support aid)
 		if (GL_INFO_LOGGED.compareAndSet(false, true)) {
 		    glInfo = gl.glGetString(GL2.GL_RENDERER) + " (" + gl.glGetString(GL2.GL_VENDOR) + ") - "
-		            + drawable.getContext().getGLVersion();
+		            + drawable.getContext().getGLVersion() + " - swap interval " + effectiveSwapInterval;
 		    LOGGER.log(System.Logger.Level.INFO, "OpenGL : " + glInfo);
 		    if(Activator.getDefault() != null) Activator.logInfoMessage("OpenGL : " + glInfo, getClass());
 		}
@@ -78,6 +97,65 @@ public abstract class GLChartRenderer implements GLEventListener, ChartInteracti
 
     /** Goes back to the initial view (R key). */
     public abstract void resetView();
+
+    // ------------------------------------------------------------------
+    // Swap interval
+
+    /**
+     * Swap interval of the charts created from now on: 0 (default) to swap
+     * the buffers without waiting, 1 to wait for the vertical retrace of the
+     * screen, -1 for an adaptive synchronization (if the driver supports it,
+     * otherwise 1). Usable from any thread; the existing charts keep theirs.
+     */
+    public static void setDefaultSwapInterval(int interval) {
+        defaultSwapInterval = interval;
+    }
+
+    /** Swap interval of the charts created from now on (see {@link #setDefaultSwapInterval}). */
+    public static int getDefaultSwapInterval() {
+        return defaultSwapInterval;
+    }
+
+    /**
+     * Swap interval of this chart: 0 to swap the buffers without waiting
+     * (default), 1 to wait for the vertical retrace, -1 for an adaptive
+     * synchronization (if the driver supports it, otherwise 1). Applied at
+     * the next frame; usable from any thread. The graphics driver settings
+     * can impose another behavior (vertical synchronization forced on or off).
+     */
+    public void setSwapInterval(int interval) {
+        swapInterval = interval;
+    }
+
+    /** Requested swap interval (see {@link #setSwapInterval}). */
+    public int getSwapInterval() {
+        return swapInterval;
+    }
+
+    /**
+     * Swap interval of the OpenGL context, as known by JOGL after the last
+     * change (Integer.MIN_VALUE before the first frame). It can differ from
+     * the requested one if the driver refused it.
+     */
+    public int getEffectiveSwapInterval() {
+        return effectiveSwapInterval;
+    }
+
+    /**
+     * Gives the requested swap interval to the context if it changed. To be
+     * called with the context current: in init() and at the beginning of
+     * each display() of the subclasses.
+     */
+    protected final void applySwapInterval(GLAutoDrawable drawable) {
+        int interval = swapInterval;
+        if (swapIntervalApplied && interval == appliedSwapInterval) return;
+        GLContext context = drawable.getContext();
+        boolean accepted = context.setSwapInterval(interval);
+        if (!accepted && interval < 0) context.setSwapInterval(1); // adaptive synchronization not supported
+        appliedSwapInterval = interval;
+        swapIntervalApplied = true;
+        effectiveSwapInterval = context.getSwapInterval();
+    }
 
     @Override
     public void keyPressed(char key) {

@@ -70,6 +70,7 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.TrialNames;
 
 public class NewSessionWizardPage extends NewResourceWizardPage {
 
@@ -300,7 +301,7 @@ public class NewSessionWizardPage extends NewResourceWizardPage {
 			IResource[] members  = session.members();
 			for (IResource member : members) {
 				if(ResourceType.isTrial(member)) {
-					int trialNumber = Integer.parseInt(member.getName().split("°")[1]);
+					int trialNumber = TrialNames.getNumber(member);
 					if(trialNumber > minTrial) minTrial = trialNumber;
 				}
 			}

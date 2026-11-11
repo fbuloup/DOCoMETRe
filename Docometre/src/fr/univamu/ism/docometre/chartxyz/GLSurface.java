@@ -22,6 +22,25 @@ public class GLSurface implements GLComponent {
     public Surface3DRenderer getRenderer() { return renderer; }
 
     /**
+     * Swap interval: 0 to swap the buffers without waiting (default), 1 to
+     * wait for the vertical retrace, -1 for an adaptive synchronization (see
+     * {@link GLChartRenderer#setSwapInterval}). Applied at the next frame.
+     */
+    public void setSwapInterval(int interval) {
+        renderer.setSwapInterval(interval);
+    }
+
+    /** Requested swap interval. */
+    public int getSwapInterval() {
+        return renderer.getSwapInterval();
+    }
+
+    /** Swap interval of the OpenGL context (see {@link GLChartRenderer#getEffectiveSwapInterval}). */
+    public int getEffectiveSwapInterval() {
+        return renderer.getEffectiveSwapInterval();
+    }
+
+    /**
      * Adds a listener told about each change of a display option (solid,
      * wireframe, lighting, axes, grid, labels; see {@link DisplayOption}),
      * with the keyboard or the API; see {@link DisplayOptionListener} for the

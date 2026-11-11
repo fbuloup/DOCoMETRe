@@ -23,7 +23,7 @@ Main reason comes from the fact that <b>micros()</b> instruction takes at less 4
 These values are not so big but for a long running operation, drift could grow up to more than several milliseconds if timing is based on these instructions.
 I've not been able to see any timing drift with ADWin Systems for real time loop running several minutes.
 In order to minimize this effect in Docometre with Arduino Uno board up to R3, an interrupt based on timer 1 (16 bits) is used to call a routine for real time loop and timing is computed from the number of this real time loop event : an index is incremented each time the <b>ISR</b> method is called.
-Doing so, the only variability comes from the ceramic resonator. If you cannot deal with this, please consider to use Portenta Machine Control or ADWin Systems. Please note that timer 0 is also used to compute CPU workload.
+Doing so, the only variability comes from the ceramic resonator. If you cannot deal with this, please consider to use an <a href="../dacqsystems/ADWinTopic.html">ADwin system</a>. Please note that timer 0 is also used to compute CPU workload.
 </p>
 
 <p>Another bullet point on microcontrollers without FPU : floating point calculation is emulated [3]. They are not Digital Signal Processors and it is a common practice to avoid floating point calculation in order to increase real time speed capability.

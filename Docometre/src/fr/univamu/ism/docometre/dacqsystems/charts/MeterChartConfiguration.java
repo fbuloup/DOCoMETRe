@@ -321,6 +321,16 @@ public class MeterChartConfiguration extends ChartConfiguration {
 		lws.setContents(meterFigure);
 	}
 	
+	/*
+	 * Nothing to clear : the gauge (or the tank) displays the last value received,
+	 * the first values of the next execution replace it.
+	 */
+	@Override
+	public boolean resetChart(Composite container) {
+		if(curvesConfigurations.size() != 1) return true; // no chart created
+		return meterContainer != null && !meterContainer.isDisposed();
+	}
+	
 	public void setVisible(boolean visible) {
 		if(meterContainer != null && !meterContainer.isDisposed())meterContainer.setVisible(visible);
 	}

@@ -1,7 +1,9 @@
 MENU_TITLE = Modify "End Cut" from marker
 DESCRIPTION = This function modify end cut value of selected signal from marker.
 MENU_TITLE_FR = Modifier "l'Après coupe" à partir d'un marqueur
+MENU_TITLE_PL = Zmiana "przycięcia końca" na podstawie znacznika
 DESCRIPTION_FR = Cette fonction modifie "l'Après coupe" du signal sélectionné à partir d'un marqueur.
+DESCRIPTION_PL = Ta funkcja zmienia wartość przycięcia końca wybranego sygnału na podstawie znacznika.
 
 # Now start specific matlab function 
 FUNCTION_CODE = # Compute Front Cut from marker\n\

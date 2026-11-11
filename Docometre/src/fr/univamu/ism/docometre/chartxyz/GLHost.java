@@ -1,10 +1,15 @@
 package fr.univamu.ism.docometre.chartxyz;
 
 import java.util.function.Consumer;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
@@ -52,6 +57,49 @@ public abstract class GLHost {
     private Runnable onClose;
     private boolean closed;
     private volatile Consumer<Point> contextMenuHandler;
+    
+    /*
+     * Listeners of the keys typed in a chart while the NEWT window has the keyboard
+     * focus (macOS) : the NEWT window covers the SWT canvas and takes the keyboard
+     * focus when the chart is clicked, so the key events are received by NEWT, not
+     * by SWT, and the display filters of the application do not see them. The NEWT
+     * host forwards these keys to the listeners below, in the SWT thread, as SWT
+     * KeyUp events (see NewtGLHost.forwardKeyUpToSWT).
+     */
+    private static final List<Listener> applicationKeyListeners = new CopyOnWriteArrayList<>();
+
+    /**
+     * Adds a listener notified, in the SWT thread, of the keys typed in a chart while
+     * the NEWT window has the keyboard focus. The listener receives SWT KeyUp events
+     * (keyCode, character, stateMask), like a display filter on SWT.KeyUp.
+     */
+    public static void addApplicationKeyListener(Listener listener) {
+        if (listener != null) applicationKeyListeners.add(listener);
+    }
+
+    /** Removes a listener added by {@link #addApplicationKeyListener(Listener)}. */
+    public static void removeApplicationKeyListener(Listener listener) {
+        applicationKeyListeners.remove(listener);
+    }
+
+    /** Notifies the application key listeners of a key typed in a NEWT chart, in the SWT thread. */
+    static void notifyApplicationKeyListeners(Event event) {
+        if (!applicationKeyListeners.isEmpty() && event.display != null && !event.display.isDisposed()) {
+            event.display.asyncExec(() -> {
+                for (Listener listener : applicationKeyListeners) listener.handleEvent(event);
+            });
+        }
+    }
+    
+    /**
+     * True if a modifier key of the application shortcuts (Ctrl, Command, Alt) is
+     * pressed: the key is then a shortcut of the application (Cmd+Shift+F for the
+     * full screen mode...), it is not passed to the renderer (F would toggle the
+     * frame rate display). Shift alone is not one of them (Shift + Tab).
+     */
+    protected static boolean isShortcutModifier(int swtStateMask) {
+        return (swtStateMask & (SWT.CTRL | SWT.COMMAND | SWT.ALT | SWT.SHIFT)) != 0;
+    }
 
     /** GL2 profile, double buffering, 4x antialiasing and, if requested, depth buffer. */
     private static GLCapabilities capabilities(boolean depthBuffer) {

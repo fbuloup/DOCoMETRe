@@ -44,6 +44,7 @@ package fr.univamu.ism.docometre.dacqsystems.charts;
 import java.io.IOException;
 import java.nio.FloatBuffer;
 
+import fr.univamu.ism.docometre.chartxyz.CurveData;
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelObserver;
@@ -67,7 +68,11 @@ public class XYCurveConfiguration extends CurveConfiguration implements Property
 	
 	private Double[] tempValues = new Double[0];
 	
-	transient private IRTSWTSerie serie;
+	// Set by the UI thread, read by the real time loop thread
+	transient private volatile IRTSWTSerie serie;
+	// Points received by the real time loop thread, added to the serie by the UI thread
+	transient private PendingPoints pendingPoints;
+	transient private UIRefreshScheduler refreshScheduler;
 	
 	public XYCurveConfiguration(Channel xChannel, Channel yChannel) {
 		XYCurveConfigurationProperties.populateProperties(this);
@@ -107,6 +112,43 @@ public class XYCurveConfiguration extends CurveConfiguration implements Property
 		xValuesToSerie = new Double[0];
 		yValuesToSerie = new Double[0];
 		tempValues = new Double[0];
+		getPendingPoints().clear();
+	}
+	
+	/**
+	 * Clears the samples of the serie, which is kept, for a new execution
+	 * (UI thread, while no execution is running). Nothing to do if there is no
+	 * serie (curve not created because of different sample frequencies).
+	 * 
+	 * @return false if the serie can not be cleared (serie of another library
+	 * than "SWT + OpenGL v2")
+	 */
+	public boolean clearSerie() {
+		IRTSWTSerie currentSerie = serie;
+		if(currentSerie == null) return true;
+		if(!(currentSerie instanceof CurveData)) return false;
+		setSerie(currentSerie); // values in progress and pending points removed
+		((CurveData<?>)currentSerie).clear();
+		return true;
+	}
+	
+	private synchronized PendingPoints getPendingPoints() {
+		if(pendingPoints == null) pendingPoints = new PendingPoints();
+		return pendingPoints;
+	}
+	
+	private synchronized UIRefreshScheduler getRefreshScheduler() {
+		if(refreshScheduler == null) refreshScheduler = new UIRefreshScheduler(this::addPendingPointsToSerie);
+		return refreshScheduler;
+	}
+	
+	/*
+	 * UI thread : adds all the points received since the previous refresh to the serie (one rendering)
+	 */
+	private void addPendingPointsToSerie() {
+		Double[][] points = getPendingPoints().drain();
+		IRTSWTSerie currentSerie = serie;
+		if(points != null && currentSerie != null) currentSerie.addPoints(points[0], points[1]);
 	}
 
 	@Override
@@ -150,7 +192,9 @@ public class XYCurveConfiguration extends CurveConfiguration implements Property
 				yValuesToSerie = new Double[n];
 				System.arraycopy(xValues, 0, xValuesToSerie, 0, n);
 				System.arraycopy(yValues, 0, yValuesToSerie, 0, n);
-				serie.addPoints(xValuesToSerie, yValuesToSerie);
+				// Does not block the real time loop : the serie is updated later by the UI thread
+				getPendingPoints().add(xValuesToSerie, yValuesToSerie);
+				getRefreshScheduler().request();
 				tempValues = new Double[xValues.length - n];
 				System.arraycopy(xValues, n, tempValues, 0, tempValues.length);
 				xValues = tempValues;

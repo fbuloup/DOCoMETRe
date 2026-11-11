@@ -67,6 +67,7 @@ public final class ChooseWorkspaceData {
 	private int workspaceDialogYPosition = 0;
 	private int workspaceDialogWidth = 0;
 	private int workspaceDialogHeight = 0;
+	private String language = Languages.SYSTEM;
 	
 	private ChooseWorkspaceData() {
 		workspaceDataProperties = new Properties();
@@ -77,6 +78,7 @@ public final class ChooseWorkspaceData {
 			recentWorkspacesString = (String) workspaceDataProperties.get(GeneralPreferenceConstants.RECENT_WORKSPACES);
 			recentWorkspaces = recentWorkspacesString.split(",");
 			selectedWorkspace =  (String) workspaceDataProperties.get(GeneralPreferenceConstants.SELECTED_WORKSPACE);
+			language = workspaceDataProperties.getProperty(GeneralPreferenceConstants.LANGUAGE, Languages.SYSTEM);
 			if( workspaceDataProperties.get(GeneralPreferenceConstants.WORKSPACE_DIALOG_X_POSITION) != null) {
 				workspaceDialogXPosition = Integer.parseInt((String) workspaceDataProperties.get(GeneralPreferenceConstants.WORKSPACE_DIALOG_X_POSITION));
 				workspaceDialogYPosition = Integer.parseInt((String) workspaceDataProperties.get(GeneralPreferenceConstants.WORKSPACE_DIALOG_Y_POSITION));
@@ -141,6 +143,7 @@ public final class ChooseWorkspaceData {
 		workspaceDataProperties.put(GeneralPreferenceConstants.WORKSPACE_DIALOG_Y_POSITION, String.valueOf(workspaceDialogYPosition));
 		workspaceDataProperties.put(GeneralPreferenceConstants.WORKSPACE_DIALOG_WIDTH, String.valueOf(workspaceDialogWidth));
 		workspaceDataProperties.put(GeneralPreferenceConstants.WORKSPACE_DIALOG_HEIGHT, String.valueOf(workspaceDialogHeight));
+		workspaceDataProperties.put(GeneralPreferenceConstants.LANGUAGE, language);
 		try {
 			FileOutputStream workspaceDataPropertiesFile = new FileOutputStream(propertiesFilePath);
 			workspaceDataProperties.store(workspaceDataPropertiesFile, "Workspaces data properties for DOCoMETRe");
@@ -164,6 +167,14 @@ public final class ChooseWorkspaceData {
 		this.workspaceDialogWidth = width;
 		this.workspaceDialogHeight = height;
 		
+	}
+	
+	public String getLanguage() {
+		return language;
+	}
+
+	public void setLanguage(String language) {
+		this.language = language;
 	}
 	
 	public Rectangle getWorkspaceDialogPosition() {

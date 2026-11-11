@@ -1,7 +1,9 @@
 MENU_TITLE = Terminate process
 DESCRIPTION = Terminate current process
 MENU_TITLE_FR = Arrêter le processus
+MENU_TITLE_PL = Zakończenie procesu
 DESCRIPTION_FR = Arrête le processus courant
+DESCRIPTION_PL = Kończy bieżący proces
 # Several segments are available in ADBascic code :
 # HEADER, INCLUDE, DECLARATION, INITIALIZATION, ACQUISITION, RECOVERY, TRANSFER, EVENT, GENERATION and FINISH
 # The ADBasic function code you need to add in any segments INITIALIZATION, EVENT or FINISH may require contributions to any other segment.

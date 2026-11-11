@@ -231,6 +231,25 @@ public abstract class AbstractGLChart<C extends CurveData<C>, R extends CurveCha
         renderer.setFpsVisible(visible);
     }
 
+    /**
+     * Swap interval: 0 to swap the buffers without waiting (default), 1 to
+     * wait for the vertical retrace, -1 for an adaptive synchronization (see
+     * {@link GLChartRenderer#setSwapInterval}). Applied at the next frame.
+     */
+    public void setSwapInterval(int interval) {
+        renderer.setSwapInterval(interval);
+    }
+
+    /** Requested swap interval. */
+    public int getSwapInterval() {
+        return renderer.getSwapInterval();
+    }
+
+    /** Swap interval of the OpenGL context (see {@link GLChartRenderer#getEffectiveSwapInterval}). */
+    public int getEffectiveSwapInterval() {
+        return renderer.getEffectiveSwapInterval();
+    }
+
     /** Shows or hides, at the top right of the chart, the last value of each curve (also with the V key). */
     public void setCurrentValuesVisible(boolean visible) {
         renderer.setCurrentValuesVisible(visible);

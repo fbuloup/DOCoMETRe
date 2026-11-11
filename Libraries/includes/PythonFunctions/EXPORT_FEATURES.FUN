@@ -1,7 +1,9 @@
 MENU_TITLE = Export Features
 DESCRIPTION = Export selected features to text file type CSV
 MENU_TITLE_FR = Export de caractéristiques
+MENU_TITLE_PL = Eksport cech
 DESCRIPTION_FR = Exporte les caractéristiques sélectionnées dans un fichier texte type CSV
+DESCRIPTION_PL = Eksportuje wybrane cechy do pliku tekstowego typu CSV
 
 # Now start specific python function
 FUNCTION_CODE = # Add categories infos to files (delete files if exist)\n\

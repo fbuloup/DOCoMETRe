@@ -2,8 +2,11 @@ MENU_TITLE = Write ASCII characters to serial port
 DESCRIPTION = Write ASCII characters to selected serial port\n\
 e.g. : channelName or string "stringValue" (do not omit the quotation marks)
 MENU_TITLE_FR = Écrire des caractères ASCII sur un port série
+MENU_TITLE_PL = Zapis znaków ASCII do portu szeregowego
 DESCRIPTION_FR = Écrire des caractères ASCII sur le port série sélectionné\n\
 e.g. : channelName ou chaîne "stringValue" (n'omettez pas les guillemets)
+DESCRIPTION_PL = Zapisuje znaki ASCII do wybranego portu szeregowego\n\
+np. : channelName lub ciąg "stringValue" (nie pomijaj cudzysłowów)
 # Several segments are available in ADBascic code :
 # HEADER, INCLUDE, DECLARATION, INITIALIZATION, ACQUISITION, RECOVERY, TRANSFER, EVENT, GENERATION and FINISH
 # The ADBasic function code you need to add in any segments INITIALIZATION, EVENT or FINISH may require contributions to any other segment.

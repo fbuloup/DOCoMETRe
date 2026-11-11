@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Troubleshoots with ADwin Systems</title>
+</head>
+
+<body>
+	<h1>Troubleshoots with ADwin Systems</h1>
+
+	<p>See also <a href="../dacqsystems/ADWinTopic.html">ADwin DACQ
+		Systems</a> for the installation and the configuration of these
+		systems.</p>
+
+	<h2>Compilation fails on Windows : "Default ADBAsic Editor and compiler not found".</h2>
+	<p>DOCoMETRe checks that the <code>.bas</code> extension is associated
+		with a program. This association is created by the installer of the
+		ADwin software: install (or install again) the ADwin software, or
+		associate the <code>.bas</code> files with ADbasic in Windows. Also
+		check the <b>ADBasic compiler path</b> field of the DACQ
+		configuration.</p>
+
+	<h2>Compilation fails on Linux or Mac OS.</h2>
+	<ul>
+		<li>Check in the general preferences of DOCoMETRe whether Docker or
+			Wine is used (<b>Use Docker (if not checked, Wine will be
+			used)</b>).</li>
+		<li>With Docker: the Docker daemon (Docker Desktop on Mac OS) must be
+			running, and the <code>ubuntu:adwin</code> image must have been
+			loaded (see <a href="../advancedconcepts/adwinwithmacos.html">Can I
+			use ADwin systems with Mac OS ?</a>). A container named
+			<code>adwin</code> left by an interrupted compilation can be removed
+			with <code>docker rm -f adwin</code>.</li>
+		<li>With Wine: check the <b>Wine file location</b> in the preferences
+			and the <b>ADBasic compiler path</b> of the DACQ configuration. Wine
+			can't be used since Mac OS 10.15.</li>
+	</ul>
+
+	<h2>The compiler can't find DOCOLIB or CALL*.INC files.</h2>
+	<p>The <b>ADBasic libraries path</b> of the DACQ configuration must
+		point to the DOCoMETRe ADbasic libraries of the installed version of
+		DOCoMETRe. Update it with the <b>Browse...</b> button, in particular
+		when DOCoMETRe warns that the libraries version used by the
+		configuration differs from the current one. Also check that the
+		<b>Device type</b>, the <b>CPU type</b> and the <b>ADBasic version</b>
+		match your system and your ADbasic installation.</p>
+
+	<h2>The trial doesn't start : "Impossible to boot ADwin : NOT_RESPONDING".</h2>
+	<ul>
+		<li>Check that the system is powered and connected to the
+			computer.</li>
+		<li>Check the <b>ADWin device IP address</b> and <b>ADwin device TCPIP
+			port</b> of the DACQ configuration (the <b>Browse...</b> button
+			searches the reachable devices), and the network settings of the
+			computer (same sub-network as the system).</li>
+		<li>Check that no other program (ADbasic, ADconfig, another
+			DOCoMETRe) is using the system.</li>
+	</ul>
+
+	<h2>The trial doesn't start : "Impossible to boot ADwin : WRONG_BTL_FOR_CPU".</h2>
+	<p>The <b>Bootloader file path</b> of the DACQ configuration gives a boot
+		loader file made for another processor: use <code>adwin9.btl</code>
+		with a T9 processor (ADwin Gold, ADwin Pro) and
+		<code>adwin11.btl</code> with a T11 processor (ADwin Gold II, ADwin
+		Pro II).</p>
+
+	<h2>Some outputs or digital inputs don't behave as expected.</h2>
+	<p>On ADwin Gold, Pro II and Pro DIO32 revision B modules, digital
+		channels are configured as inputs or outputs by groups of 8: one
+		output in a group makes the whole group an output. See
+		<a href="../dacqsystems/ADWinGoldTopic.html">ADwin Gold</a> and
+		<a href="../dacqsystems/ADWinProTopic.html">ADwin Pro</a>. Use the
+		<a href="../designperspective/dacqconfiguration.html#calibration">calibration
+		and monitoring</a> dialog to check the wiring.</p>
+
+	<h2>Samples are lost during a trial.</h2>
+	<p>Increase the <b>buffer size</b> (B.S. column) of the transferred
+		channels, or decrease their sample frequency. The events diary of the
+		trial reports the data losses.</p>
+
+</body>
+</html>

@@ -47,19 +47,27 @@ import fr.univamu.ism.docometre.dacqsystems.Property;
 public final class ArduinoUnoVariableProperties extends Property {
 
 	public final static ArduinoUnoVariableProperties SIZE = new ArduinoUnoVariableProperties("ArduinoUnoVariableProperties.SIZE", ArduinoUnoMessages.Size_Label, ArduinoUnoMessages.Size_Tooltip, "^\\d+$"); 
-	public final static ArduinoUnoVariableProperties TYPE = new ArduinoUnoVariableProperties("ArduinoUnoVariableProperties.TYPE", ArduinoUnoMessages.Type_Label, ArduinoUnoMessages.Type_Tooltip, "^bool|char|int|long|float$", "bool:char:int:long:float");
+	public final static ArduinoUnoVariableProperties TYPE = new ArduinoUnoVariableProperties("ArduinoUnoVariableProperties.TYPE", ArduinoUnoMessages.Type_Label, ArduinoUnoMessages.Type_Tooltip, "^bool|char|int|long|float|string$", "bool:char:int:long:float:string");
+	public final static ArduinoUnoVariableProperties PARAMETER = new ArduinoUnoVariableProperties("ArduinoUnoVariableProperties.PARAMETER", ArduinoUnoMessages.Parameter_Label, ArduinoUnoMessages.Parameter_Tooltip, "^(true|false)$", "true:false");
+	// Value entered by the user for a process test (see ParametersDialog)
+	public final static ArduinoUnoVariableProperties PARAMETER_VALUE = new ArduinoUnoVariableProperties("ArduinoUnoVariableProperties.PARAMETER_VALUE", "", "", ".*");
+	public final static ArduinoUnoVariableProperties PROPAGATE = new ArduinoUnoVariableProperties("ArduinoUnoVariableProperties.PROPAGATE", ArduinoUnoMessages.Propagate_Label, ArduinoUnoMessages.Propagate_Tooltip, "^(true|false)$", "true:false");
 
 	public static final String BOOL = "bool";
 	public static final String CHAR = "char";
 	public static final String INT = "int";
 	public static final String LONG = "long";
 	public static final String FLOAT = "float";
-	public static final String[] TYPES = new String[] { BOOL, CHAR, INT, LONG, FLOAT };
+	// Characters string : declared as char[SIZE + 1] (SIZE is the maximum length)
+	public static final String STRING = "string";
+	public static final String[] TYPES = new String[] { BOOL, CHAR, INT, LONG, FLOAT, STRING };
 
 	public static void populateProperties(ArduinoUnoVariable variable) {
 		ChannelProperties.populateProperties(variable);
 		variable.setProperty(SIZE, "1");
 		variable.setProperty(TYPE, INT);
+		variable.setProperty(PARAMETER, "false");
+		variable.setProperty(PROPAGATE, "false");
 	}
 
 	public static ArduinoUnoVariable cloneVariable(ArduinoUnoVariable variable) {
@@ -67,6 +75,10 @@ public final class ArduinoUnoVariableProperties extends Property {
 		ChannelProperties.cloneChannel(variable, newVariable);
 		newVariable.setProperty(SIZE, new String(variable.getProperty(SIZE)));
 		newVariable.setProperty(TYPE, new String(variable.getProperty(TYPE)));
+		// These properties may be missing in variables created before parameters management
+		if(variable.getProperty(PARAMETER) != null) newVariable.setProperty(PARAMETER, new String(variable.getProperty(PARAMETER)));
+		if(variable.getProperty(PARAMETER_VALUE) != null) newVariable.setProperty(PARAMETER_VALUE, new String(variable.getProperty(PARAMETER_VALUE)));
+		if(variable.getProperty(PROPAGATE) != null) newVariable.setProperty(PROPAGATE, new String(variable.getProperty(PROPAGATE)));
 		return newVariable;
 	}
 

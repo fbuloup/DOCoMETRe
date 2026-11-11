@@ -1,7 +1,9 @@
 MENU_TITLE = Averaging filter
 DESCRIPTION = First order recursive averaging filter
 MENU_TITLE_FR = Filtre moyenneur
+MENU_TITLE_PL = Filtr uśredniający
 DESCRIPTION_FR = Filtre moyenneur récursif d'ordre un
+DESCRIPTION_PL = Rekurencyjny filtr uśredniający pierwszego rzędu
 # Several segments are available in ADBascic code :
 # HEADER, INCLUDE, DECLARATION, INITIALIZATION, ACQUISITION, RECOVERY, TRANSFER, EVENT, GENERATION and FINISH
 # The ADBasic function code you need to add in any segments INITIALIZATION, EVENT or FINISH may require contributions to any other segment.

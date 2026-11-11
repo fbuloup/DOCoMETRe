@@ -108,6 +108,7 @@ public class Chart3DRenderer extends CurveChartRenderer<Curve3DData> {
     @Override
     public void display(GLAutoDrawable drawable) {
         beginFrame();
+        applySwapInterval(drawable);
         GL2 gl = drawable.getGL().getGL2();
         gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
 

@@ -1,7 +1,9 @@
 MENU_TITLE = Analog Wait
 DESCRIPTION = Wait for an analog input to go through a given value
 MENU_TITLE_FR = Attente analogique
+MENU_TITLE_PL = Oczekiwanie analogowe
 DESCRIPTION_FR = Attendre qu'une entrée analogique passe une valeur donnée
+DESCRIPTION_PL = Czekaj, aż wejście analogowe przekroczy zadaną wartość
 # Several segments are available in ArduinoUno code :
 # INCLUDE, DEFINE, DECLARATION, INITIALIZATION, ACQUISITION, RECOVERY, LOOP, TRANSFER, GENERATION, FUNCTION, FINALIZE
 # The Arduino function code you need to add in segment INITIALIZATION, LOOP or FINALIZE may require contributions to any other segment.

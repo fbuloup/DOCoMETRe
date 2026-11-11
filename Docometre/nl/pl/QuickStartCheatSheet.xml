@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cheatsheet title="Przewodnik szybkiego startu">
+	<intro>
+		<description>
+			<b>Witamy w samouczku szybkiego startu.</b><br/><br/>
+			Dowiesz się, jak utworzyć eksperyment oparty na konfiguracji sprzętowej
+			ADWin Gold. Następnie dodasz do tego eksperymentu badanego.
+			Ten badany będzie miał jedną sesję z dziesięcioma próbami.
+		</description>
+	</intro>
+	<item title="Utwórz eksperyment">
+		<description>
+			Wybierz pozycję menu
+			<b>Plik &gt; Nowy &gt; Eksperyment</b>
+			<br />
+			Wprowadź &quot;
+			<b>NewExperiment</b>
+			&quot; jako nazwę eksperymentu oraz opcjonalny opis tego
+			eksperymentu. Możesz wpisać na przykład &quot;
+			<b>Eksperyment samouczka szybkiego startu</b>
+			&quot;.
+		</description>
+	</item>
+	<item title="Wybierz utworzony eksperyment">
+		<description>
+			W widoku eksperymentów zaznacz nowo utworzony eksperyment. Jeśli
+			widok eksperymentów nie jest widoczny, wybierz pozycję menu
+			<b>Opcje &gt; Pokaż &gt; Widok eksperymentów</b>
+			i zaznacz nowo utworzony eksperyment w tym widoku.
+		</description>
+	</item>
+	<item title="Dodaj konfigurację sprzętową">
+		<description>
+			Wybierz pozycję menu
+			<b>Plik &gt; Nowy &gt; Konfiguracja DACQ</b>
+			<br />
+			Wprowadź "
+			<b>ADWinGold</b>
+			" jako nazwę konfiguracji DACQ, "
+			<b>Konfiguracja sprzętowa ADWinGold</b>
+			" jako opcjonalny opis i wybierz <b>ADWin</b> jako konfigurację, a następnie
+			kliknij
+			<b>Zakończ</b>
+		</description>
+	</item>
+	<item title="Skonfiguruj tę konfigurację DACQ">
+		<description>
+			Otwórz nowo utworzony plik DACQ (kliknij dwukrotnie plik lub kliknij prawym przyciskiem i wybierz pozycję menu <b>Otwórz</b>)
+			Wskaż plik wykonywalny <b>ADBasicCompiler</b> oraz bootloader <b>ADWin9</b>, aby określić te ścieżki bezwzględne. W zależności od systemu ADWin może to być także bootloader <b>ADWinA</b> lub <b>ADWinB</b>.
+			<br/>
+			<b>Ścieżka bibliotek</b> musi wskazywać folder <b>ADWinIncludeFiles</b>, który znajduje się w katalogu instalacyjnym Docometre. Skonfiguruj tę ścieżkę bezwzględną, jeśli nie zostało to jeszcze zrobione.
+			<br/>
+			Następnie wybierz posiadaną <b>wersję ADBasic</b>.
+			<br/>
+			Jeśli nie planujesz używać <b>serwera TCPIP ADWin</b>, nie zmieniaj numeru serwera TCPIP. Zmień go zgodnie z potrzebami, jeśli planujesz łączyć się z systemem ADWin przez ten serwer TCPIP.
+			<br/>
+			Następnie musisz podać <b>adres IP</b> ADwin Gold (często coś w rodzaju 192.168.0.x), <b>port TCPIP</b> (zwykle 6543) oraz <b>numer urządzenia</b> określony podczas instalacji ADWinGold za pomocą ADConfig.
+			<br/>
+			Wartość <b>limitu czasu</b> możesz pozostawić na 1s. Wybierz Gold jako <b>typ urządzenia</b> i I jako <b>typ procesora</b>. Oczywiście te dwa ostatnie parametry zależą od Twojego sprzętu (ADwinPro/Gold, CPU I/II).
+			<br/>
+			Pozostaw <b>częstotliwość globalną</b> na 2KHz.
+			<br/>
+			Jeśli w panelu <b>konfiguracji modułów</b> nie ma wiersza z modułem wejść analogowych, kliknij ikonę plusa i kliknij dwukrotnie moduł wejść analogowych. Podaj prawidłowy numer modułu, zwykle 1, oraz rewizję modułu, a następnie kliknij dwukrotnie wiersz lub wybierz odpowiedni panel "Analog inputs #n".
+		</description>
+	</item>
+	<item title="Skonfiguruj moduł wejść analogowych">
+		<description>
+			W tym panelu skonfigurujesz kilka ogólnych parametrów modułu oraz parametry specyficzne dla wejścia analogowego.
+			<br/>
+			<b>Ogólne parametry modułu</b><br/>
+			Tutaj wybierz zakres przetwornika : ±10V, ±5V lub [0-10]V. Wybierz ±10V.<br/>
+			<b>Wejście analogowe</b><br/>
+			Na pasku tytułu sekcji <b>Konfiguracja kanałów</b> kliknij ikonę dodawania, aby dodać kanał wejścia analogowego. Kliknij przyciski <b>Transfer</b>, <b>Auto-T</b>. i <b>Rej.</b>, aby automatycznie przesyłać i rejestrować ten kanał.
+			Teraz zmień <b>nazwę</b> kanału na <b>analogInput</b>.
+		</description>
+	</item>
+	<item title="Dodaj wykres oscyloskopowy">
+		<description>
+		Wybierz kartę <b>Wykresy</b> i kliknij przycisk dodawania wykresu. Wybierz typ <b>Wykres oscyloskopowy</b>, a następnie kliknij przycisk <b>OK</b>.<br/>
+		Kliknij teraz przycisk dodawania <b>krzywej</b> na pasku tytułu <b>Krzywe</b> i kliknij dwukrotnie utworzone wcześniej wejście analogowe.<br/>
+		Zapisz tę konfigurację akwizycji danych za pomocą pozycji menu <b>Plik &gt; Zapisz.</b>
+		</description>
+	</item>
+	<item title="Utwórz proces akwizycji trwający 10s">
+		<description>
+		Zaznacz <b>NewExperiment</b> w widoku eksperymentów.
+		Wybierz pozycję menu <b>Plik &gt; Nowy &gt; Proces DACQ.</b>
+		Wprowadź "<b>NewProcess</b>" jako nazwę procesu, "<b>Proces akwizycji trwający dziesięć sekund</b>
+			" jako opcjonalny opis i wybierz <b>ADWinGold</b> jako powiązaną konfigurację akwizycji, a następnie kliknij <b>Zakończ.</b><br/>
+		Otwórz nowo utworzony plik procesu (kliknij dwukrotnie plik lub kliknij prawym przyciskiem i wybierz pozycję menu <b>Otwórz</b>).
+		Wybierz segment <b>Zdarzenie</b> i kliknij przycisk <b>Pokaż paletę</b> w prawym górnym rogu edytora, aby rozwinąć paletę elementów.
+		 Kliknij element <b>Tworzenie bloku funkcji</b>, a następnie przesuń kursor myszy i kliknij w obszarze edytora : w segmencie zdarzenia zostanie umieszczony pusty blok funkcyjny.<br/>
+		 Aby utworzyć proces akwizycji trwający 10s., kliknij prawym przyciskiem ten nowo umieszczony blok, aby otworzyć menu kontekstowe.
+		 Następnie wybierz pozycję menu <b>Przypisz</b> i kliknij funkcję <b>Stop process</b>. Funkcja <b>Stop process</b> zostanie przypisana do wybranego bloku i otworzy się okno konfiguracji tej funkcji.
+		 Naciśnij "Ctrl+Spacja" w aktywnym polu tekstowym i wybierz kanał <b>time</b>. Wybierz element <b>>=</b> na liście rozwijanej i wpisz <b>10</b> w polu tekstowym po prawej. Kliknij przycisk <b>OK</b> i zapisz ten proces.<br/>
+		 Powinno to uruchomić kompilację. Jeśli tak się nie stanie, zaznacz plik <b>NewProcess</b> w widoku eksperymentów i kliknij pozycję menu <b>Plik > Kompiluj</b>. Wymusi to kompilację. Po zakończeniu zadania w widoku komunikatów powinien pojawić się komunikat informujący o pomyślnej kompilacji.
+		</description>
+	</item>
+	<item title="Przetestuj ten proces">
+		<description>
+		Zaznacz plik <b>NewProcess</b> w widoku eksperymentów i zmień perspektywę na <b>Akwizycja</b> : kliknij przycisk <b>Akwizycja</b> po prawej stronie paska narzędzi.
+		Następnie kliknij przycisk uruchamiania po lewej stronie paska narzędzi. Proces <b>NewProcess</b> zostanie uruchomiony, wyświetlając i rejestrując przesyłany kanał analogowy.
+		</description>
+	</item>
+	<item title="Przeglądaj zarejestrowane dane">
+		<description>
+			Możesz teraz wrócić do perspektywy <b>Projekt</b> i zauważyć, że pojawił się nowy folder o nazwie <b>test.NewProcess</b>.
+			Rozwiń ten folder, aby zobaczyć jego zawartość, i kliknij dwukrotnie plik <b>analogInput</b>, aby otworzyć domyślny edytor danych.
+		</description>
+	</item>
+
+</cheatsheet>

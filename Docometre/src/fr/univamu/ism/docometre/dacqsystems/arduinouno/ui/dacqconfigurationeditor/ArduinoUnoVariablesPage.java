@@ -129,6 +129,12 @@ public class ArduinoUnoVariablesPage extends ArduinoUnoModulePage {
 				e2 = var2.getProperty(ArduinoUnoVariableProperties.SIZE);
 				result = super.compare(Double.parseDouble((String)e1), Double.parseDouble((String)e2));
 				break;
+			case 7:
+				result = super.compare(viewer, String.valueOf(var1.isParameter()), String.valueOf(var2.isParameter()));
+				break;
+			case 8:
+				result = super.compare(viewer, String.valueOf(var1.isParameterPropagated()), String.valueOf(var2.isParameterPropagated()));
+				break;
 			default:
 				break;
 			}
@@ -203,6 +209,8 @@ public class ArduinoUnoVariablesPage extends ArduinoUnoModulePage {
 		//createColumn(ChannelProperties.BUFFER_SIZE.getTooltip(), variablesTableColumnLayout, ChannelProperties.BUFFER_SIZE, defaultColumnWidth, 6);
 		createColumn(ArduinoUnoVariableProperties.TYPE.getTooltip(), variablesTableColumnLayout, ArduinoUnoVariableProperties.TYPE, defaultColumnWidth, 5);
 		createColumn(ArduinoUnoVariableProperties.SIZE.getTooltip(), variablesTableColumnLayout, ArduinoUnoVariableProperties.SIZE, defaultColumnWidth, 6);
+		createColumn(ArduinoUnoVariableProperties.PARAMETER.getTooltip(), variablesTableColumnLayout, ArduinoUnoVariableProperties.PARAMETER, defaultColumnWidth, 7);
+		createColumn(ArduinoUnoVariableProperties.PROPAGATE.getTooltip(), variablesTableColumnLayout, ArduinoUnoVariableProperties.PROPAGATE, defaultColumnWidth, 8);
 		
 		tableViewer.setContentProvider(new ArrayContentProvider());
 		tableViewer.setLabelProvider(new ITableLabelProvider() {
@@ -236,6 +244,11 @@ public class ArduinoUnoVariablesPage extends ArduinoUnoModulePage {
 					return channel.getProperty(ArduinoUnoVariableProperties.TYPE);
 				case 6:
 					return channel.getProperty(ArduinoUnoVariableProperties.SIZE);
+				// PARAMETER and PROPAGATE may be missing in variables created before parameters management
+				case 7:
+					return String.valueOf(((ArduinoUnoVariable)channel).isParameter());
+				case 8:
+					return String.valueOf(((ArduinoUnoVariable)channel).isParameterPropagated());
 				default:
 					return "";
 				}
@@ -253,6 +266,10 @@ public class ArduinoUnoVariablesPage extends ArduinoUnoModulePage {
 				case 4:
 					value = channel.getProperty(ChannelProperties.RECORD);
 					return value.equals("true") ? ModulePage.checkedImage : ModulePage.uncheckedImage;
+				case 7:
+					return ((ArduinoUnoVariable)channel).isParameter() ? ModulePage.checkedImage : ModulePage.uncheckedImage;
+				case 8:
+					return ((ArduinoUnoVariable)channel).isParameterPropagated() ? ModulePage.checkedImage : ModulePage.uncheckedImage;
 				default:
 					return null;
 				}
@@ -266,50 +283,73 @@ public class ArduinoUnoVariablesPage extends ArduinoUnoModulePage {
 	@Override
 	public void update(Property property, Object newValue, Object oldValue, AbstractElement element) {
 		super.update(property, newValue, oldValue, element);
-		if(property == ChannelProperties.TRANSFER) {
-			ArduinoUnoVariable arduinoVariable = (ArduinoUnoVariable)element;
-			
-			/*boolean isParameter = "true".equals(adwinVariable.getProperty(ArduinoUnoVariableProperties.PARAMETER));*/
-			boolean isTransfered = "true".equals(arduinoVariable.getProperty(ChannelProperties.TRANSFER));
-			/*boolean isAutoTransfered = "true".equals(adwinVariable.getProperty(ChannelProperties.AUTO_TRANSFER));
-			if(isParameter && isTransfered) adwinVariable.setProperty(ChannelProperties.TRANSFER, "false");
-			if(isParameter && isAutoTransfered) adwinVariable.setProperty(ChannelProperties.AUTO_TRANSFER, "false");*/
-			
-			/*boolean isString = ADWinVariableProperties.STRING.equals(adwinVariable.getProperty(ADWinVariableProperties.TYPE));
-			if(isString && isTransfered) adwinVariable.setProperty(ChannelProperties.TRANSFER, "false");
-			if(isString && isAutoTransfered) adwinVariable.setProperty(ChannelProperties.AUTO_TRANSFER, "false");*/
-
-			boolean isArray = Integer.parseInt(arduinoVariable.getProperty(ArduinoUnoVariableProperties.SIZE)) > 1;
-			if(isArray && isTransfered) {
+		if(!(element instanceof ArduinoUnoVariable)) return;
+		ArduinoUnoVariable arduinoVariable = (ArduinoUnoVariable)element;
+		boolean isTransfered = "true".equals(arduinoVariable.getProperty(ChannelProperties.TRANSFER));
+		boolean isAutoTransfered = "true".equals(arduinoVariable.getProperty(ChannelProperties.AUTO_TRANSFER));
+		boolean isArray = arduinoVariable.getSize() > 1;
+		boolean isString = arduinoVariable.isString();
+		boolean isParameter = arduinoVariable.isParameter();
+		boolean propagate = "true".equals(arduinoVariable.getProperty(ArduinoUnoVariableProperties.PROPAGATE));
+		
+		if(property == ChannelProperties.TRANSFER && isTransfered) {
+			if(isArray) {
+				// An array (or a string) can't be transferred
 				arduinoVariable.setProperty(ChannelProperties.TRANSFER, "false");
 				MessageDialog.openInformation(getSite().getShell(), DocometreMessages.TransferInfo_MessageTitle, DocometreMessages.TransferInfo_MessageContent); 
+			} else {
+				// A transferred variable can't be a parameter
+				arduinoVariable.setProperty(ArduinoUnoVariableProperties.PARAMETER, "false");
+				arduinoVariable.setProperty(ArduinoUnoVariableProperties.PROPAGATE, "false");
+				if(isString) arduinoVariable.setProperty(ArduinoUnoVariableProperties.TYPE, ArduinoUnoVariableProperties.INT);
 			}
-			/*if(isArray && isAutoTransfered) adwinVariable.setProperty(ChannelProperties.AUTO_TRANSFER, "false");*/
-			
 		}
+		
 		if(property == ArduinoUnoVariableProperties.TYPE) {
-			/*ArduinoUnoVariable adwinVariable = (ArduinoUnoVariable)element;
-			boolean isTransfered = "true".equals(adwinVariable.getProperty(ChannelProperties.TRANSFER));
-			boolean isAutoTransfered = "true".equals(adwinVariable.getProperty(ChannelProperties.AUTO_TRANSFER));
-			boolean isString = ArduinoUnoVariableProperties.STRING.equals(adwinVariable.getProperty(ArduinoUnoVariableProperties.TYPE));
-			if(isString && isTransfered) adwinVariable.setProperty(ChannelProperties.TRANSFER, "false");
-			if(isString && isAutoTransfered) adwinVariable.setProperty(ChannelProperties.AUTO_TRANSFER, "false");*/
+			if(isString) {
+				// A string can't be transferred nor propagated
+				arduinoVariable.setProperty(ChannelProperties.TRANSFER, "false");
+				arduinoVariable.setProperty(ChannelProperties.AUTO_TRANSFER, "false");
+				arduinoVariable.setProperty(ArduinoUnoVariableProperties.PROPAGATE, "false");
+			} else if(isArray) {
+				// Except for string type, a parameter can't be an array
+				arduinoVariable.setProperty(ArduinoUnoVariableProperties.PARAMETER, "false");
+				arduinoVariable.setProperty(ArduinoUnoVariableProperties.PROPAGATE, "false");
+			}
 			((ArduinoUnoDACQConfiguration)dacqConfiguration).updateChannelsTransferNumber();
 		}
 		
 		if(property == ArduinoUnoVariableProperties.SIZE) {
-			ArduinoUnoVariable adwinVariable = (ArduinoUnoVariable)element;
-			boolean isTransfered = "true".equals(adwinVariable.getProperty(ChannelProperties.TRANSFER));
-			boolean isAutoTransfered = "true".equals(adwinVariable.getProperty(ChannelProperties.AUTO_TRANSFER));
-			boolean isArray = Integer.parseInt(adwinVariable.getProperty(ArduinoUnoVariableProperties.SIZE)) > 1;
-			if(isArray && isTransfered) adwinVariable.setProperty(ChannelProperties.TRANSFER, "false");
-			if(isArray && isAutoTransfered) adwinVariable.setProperty(ChannelProperties.AUTO_TRANSFER, "false");
+			if(isArray && isTransfered) arduinoVariable.setProperty(ChannelProperties.TRANSFER, "false");
+			if(isArray && isAutoTransfered) arduinoVariable.setProperty(ChannelProperties.AUTO_TRANSFER, "false");
+			if(isArray && !isString) {
+				// Except for string type, a parameter can't be an array
+				arduinoVariable.setProperty(ArduinoUnoVariableProperties.PARAMETER, "false");
+				arduinoVariable.setProperty(ArduinoUnoVariableProperties.PROPAGATE, "false");
+			}
 			((ArduinoUnoDACQConfiguration)dacqConfiguration).updateChannelsTransferNumber();
 		}
 		
+		if(property == ArduinoUnoVariableProperties.PARAMETER && isParameter) {
+			// A parameter can't be transferred and, except for string type, can't be an array
+			arduinoVariable.setProperty(ChannelProperties.TRANSFER, "false");
+			arduinoVariable.setProperty(ChannelProperties.AUTO_TRANSFER, "false");
+			if(!isString) arduinoVariable.setProperty(ArduinoUnoVariableProperties.SIZE, "1");
+			((ArduinoUnoDACQConfiguration)dacqConfiguration).updateChannelsTransferNumber();
+		}
+		
+		if(property == ArduinoUnoVariableProperties.PARAMETER && !isParameter) {
+			arduinoVariable.setProperty(ArduinoUnoVariableProperties.PROPAGATE, "false");
+		}
+		
+		if(property == ArduinoUnoVariableProperties.PROPAGATE && propagate && (!isParameter || isString)) {
+			// Only a numeric parameter can be propagated
+			arduinoVariable.setProperty(ArduinoUnoVariableProperties.PROPAGATE, "false");
+		}
+		
 		if(property instanceof ArduinoUnoVariableProperties) {
-			tableViewer.refresh();
-			tableConfigurationSectionPart.markDirty();
+			if(tableViewer != null && tableViewer.getTable() != null && !tableViewer.getTable().isDisposed()) tableViewer.refresh();
+			if(tableConfigurationSectionPart != null) tableConfigurationSectionPart.markDirty();
 		}
 	}
 

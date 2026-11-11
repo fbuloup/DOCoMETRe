@@ -62,9 +62,9 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 
 import fr.univamu.ism.docometre.Activator;
-import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.TrialNames;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 import fr.univamu.ism.docometre.wizards.NewResourceWizard;
 import fr.univamu.ism.docometre.wizards.OrganizeSessionWizardPage;
@@ -102,7 +102,7 @@ public class EditSessionAction extends Action implements ISelectionListener, IWo
 				int newNbTrials = newResourceWizard.getTrialsNumber();
 				
 				for (int i = nbTrials + 1; i <= newNbTrials; i++) {
-					IFolder trial = session.getFolder(DocometreMessages.Trial + i);
+					IFolder trial = TrialNames.getTrial(session, i);
 					trial.create(true, true, null);
 					ResourceProperties.setDescriptionPersistentProperty(trial, "");
 					ResourceProperties.setTypePersistentProperty(trial, ResourceType.TRIAL.toString());
@@ -114,7 +114,7 @@ public class EditSessionAction extends Action implements ISelectionListener, IWo
 				HashMap<Integer, IResource> resultAssociation = organizeSessionWizardPage.getResultAssociation();
 				Set<Integer> trialsNumbers = resultAssociation.keySet();
 				for (Integer trialNumber : trialsNumbers) {
-					IFolder trial = session.getFolder(DocometreMessages.Trial + trialNumber);
+					IFolder trial = TrialNames.getTrial(session, trialNumber);
 					IResource process = resultAssociation.get(trialNumber);
 					ResourceProperties.setAssociatedProcessProperty(trial, process.getFullPath().toOSString());
 				}

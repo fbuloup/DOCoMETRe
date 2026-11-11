@@ -6,16 +6,200 @@
       provider-name="ISM">
 
    <description>
-      -- 2026-10-21
+      -- 2026-11-10
 ADDED :
-* INPUT_PULLUP to available signals in digital wait function (ArduinoUno)
-* Compile results are written to a file for arduinoUno compilation processes
+* Arduino Uno : process parameters, as with ADwin (Parameter and Propagate columns of the Variables
+tab, parameters file of the session, parameters dialog for a process test). Values are sent to the
+board before each trial and acknowledged by it (frames on the serial port, about 2 to 3 ms per
+trial), values of the propagated parameters are sent back at the end of the trial and written in
+the line of the next trial of the parameters file
+* Arduino Uno : string type for variables (Size is the maximum length of the string), warning at
+compile time when strings use more than 512 bytes of the RAM of the R3
+* Arduino Uno : values of the parameters checked by type (bool, char, int on 16 bits with R3 and
+32 bits with R4 WiFi, long, float, string) in the parameters dialog and before each trial
+* Parameters editor : reloaded when the parameters file is changed on disk (propagated values),
+question to reload the file when the editor has unsaved modifications, question before
+overwriting a file changed on disk
+* Parameters management common to ADwin and Arduino Uno (parameters file, parameters dialog,
+propagation)
+* Tests : JUnit tests of the parameters file, of the Arduino parameters values and frames, of the
+generated Arduino parameters code (compiled and run on the host with g++ when available) and of
+the Arduino build output analysis
+* Help : parameters with Arduino Uno, accepted values, how parameters are sent to ADwin and Arduino
+Uno, Arduino reserved names (F, signal...), timing measures of the parameters
+FIXED :
+* ADwin : a process modified and compiled again between two executions was not loaded again
+(the previous version of the process was executed)
+* Parameters editor : the parameters file was not reloaded when changed on disk during a session,
+and saving the editor overwrote the propagated values
+* Arduino Uno : a build failed at link time (e.g. variable named signal with R4 WiFi : multiple
+definition of `signal&apos;) was reported as successful : the exit code of the build, the linker
+errors and the output of arduino-builder are now checked
+* Arduino Uno : negative long variables were transferred as unsigned values (e.g. -1 received as
+4294967295)
+-- 2026-11-09
+ADDED :
+* The application can no longer be closed (Cmd+Q, Alt+F4) while
+an experiment is running
+* OpenGL V2 charts : keyboard shortcuts of the application (Escape
+to stop a trial, F9, F11,
+Cmd+P, full screen...) now also work when the chart has the keyboard
+focus (NEWT window, macOS)
+FIXED :
+* OpenGL V2 charts, HiDPI / Retina screens (and screens scaled
+to more than 100 %) : mouse
+coordinates of the chart interactions (zoom, pan, cursors, markers,
+context menu) were offset by
+the scaling factor, with both NEWT and SWT hosts. The scaling
+factor follows a window moved to a
+screen of another density
+* Status line hidden after leaving full screen mode : full screen
+mode is now left before the
+workbench model is saved and the status line is forced visible
+at startup, and the layout is
+deferred on macOS where leaving full screen is asynchronous
+* Stop trial dialog opened twice on macOS (the same key press
+was delivered twice)
+* Shortcuts with Cmd/Ctrl/Alt were also passed to the chart having
+the keyboard focus (e.g.
+Cmd+Shift+F switched to full screen mode but also toggled the
+frame rate display of the chart)
+* JVM crash when closing the Real-Time Charts view : its container
+may already be disposed, and
+the charts are now removed when the view is disposed
+-- 2026-11-07
+ADDED :
+* Experiments history (experimental feature, to be enabled in
+Options &gt; Preferences &gt; History) :
+snapshots of experiments (stored with Git in each experiment
+folder), Snapshots view (snapshots,
+files changed by each snapshot, differences of a file), creation
+of snapshots, restoration of a
+snapshot or of a single file (nothing is lost : a restoration
+creates a new snapshot), deletion of
+snapshots, automatic snapshots before deleting or renaming resources
+or deleting diaries and data
+files, indicators of changes in the Experiments view, history
+exported and imported with the
+experiment, help page
+* Full screen mode to run trials or test a process (general preferences)
+* OpenGL V2 charts : display options in the DACQ configuration
+editor (current values, legend
+inside or below the chart, grid, axes, tick labels)
+* Shorter dead time between trials (about 30 ms instead of 84
+ms) : Experiments and Subjects views
+updated asynchronously and only where needed, real-time charts
+cleared instead of recreated when
+the acquisition configuration did not change, no vertical synchronization
+for OpenGL charts
+* Tests project (JUnit tests of the experiments history)
+FIXED :
+* Rename of untyped files (stream leak and NPE)
+* Acquisition loop blocked (up to more than one second) when
+the disk was slow : channels samples
+files are now written in a dedicated thread
+* Real-time charts, sweep mode : the last sample of a recording
+lasting exactly the window width
+was not drawn and the first samples were hidden by the gap
+* Experiments view no longer refreshed during processes compilation
+* Help : real-time system diagram of the Data Acquisition and
+Real Time Systems page redone in
+English (it was in French, blurred and distorted)
+-- 2026-11-03 - BIS
+ADDED : Nothing !
+FIXED :
+Fix rename of untyped files (stream leak and NPE)
+-- 2026-11-03
+ADDED :
+* New OpenGL charts library (1D, 2D and 3D charts, &quot;OpenGL V2&quot;)
+:
+real-time mode, decimation, zoom, pan (mouse, keyboard arrows,
+toolbar), cursors, markers, context menus, curves names and colors
+* Real-time charts : XYZ chart, Cursor 2D chart (last values
+only,
+configurable symbols), sweep mode and pause, display of last
+values,
+full screen mode (F11), chart library preference (SWT, OpenGL
+V1,
+OpenGL V2)
+* Analyse : data, channel, XY, XYZ and categories editors with
+the
+OpenGL charts (drop, zoom, focus), resizable and hideable side
+panel
+* Dark theme support and new Appearance preference page (theme
+and
+language)
+* Polish translation (messages and functions), translation of
+the
+new charts messages
+* Help : Acquire, Design and Analyse perspectives pages, timing
+debug during acquisition
+* Includes, constants and subprograms in processes (ADwin and
+Arduino Uno)
+* Script editor : curved connections between blocks
+* Trials management commands improved
+* Copy, paste and clean run in a modal and cancelable progress
+dialog
+* F9 shortcut to run/stop the selected item in Acquire perspective
+* Math engines : num. pad Enter and history in console, Python
+engine
+improved, Matlab engine faster
+* Compile errors written to the console
+* Improved ADwin boot and reset, improved Arduino Uno serial
+communication
+* Trial timings trace for debugging (-traceTrialTimings, ADwin
+and
+Arduino Uno), time between processes in the diary
+* Shorter delay between trials (ADwin and Arduino Uno) : no busy
+wait, non-blocking real-time charts, buffered diary, single workspace
+operation at the end of a trial, status line refreshed every
+200 ms
+* Arduino Uno : end of trial handshake without fixed waits and
+restart of the process by software (delay between trials from
+about
+680 ms to about 55 ms)
+* Process test : output folder deleted if it exists, recorded
+file
+deleted when a channel is opened
+* OpenGL and GPU information in the log
+* Development : target platform (Eclipse 2025-03), ADwin library
+sources and Javadoc
+FIXED :
+* ADwin CPU II (T11) : wrong GLOBALDELAY, actual sample frequency
+1 % lower than the configured one (processes and calibration
+processes)
+* Real-time charts : last samples of each trial not displayed
+* Real-time charts : not visible after a trial change with a
+context
+menu open, UI updated after the scheduler was stopped, font height
+* Arduino Uno R4 : upload needs the bin file (hex file is for
+R3)
+* Propagation of parameters
+* Wrong icons : process editor with compile error, Arduino Uno
+DACQ
+configuration editor with warnings
+* Sample frequencies of XY, XYZ and Cursor 2D curves compared
+as
+numbers
+* Python engine seen as stopped as soon as its shutdown begins
+* Messages : wrong French message, NLS keys, duplicate keys,
+translated functions keys suffix, batch processing explanation
+text,
+message displayed when no subjects are loaded
+* NPE (process, OpenGL charts, script editor commands),
+ClassCastException in trials management commands
+-- 2026-10-21
+ADDED :
+* INPUT_PULLUP to available signals in digital wait function
+(ArduinoUno)
+* Compile results are written to a file for arduinoUno compilation
+processes
 * More baud rate choices for ArduinoUno in dacq conf file
 FIXED :
 * Chart font was not updated in RT SWT XY chart
 * NPE in DocometreConsolePageParticipant.java
-* Print float using dtostre with UnoR4 is not possible. Must use snprintf.
-
+* Print float using dtostre with UnoR4 is not possible. Must
+use snprintf.
 -- 2026-10-15
 ADDED :
 * Update Installation doc.
@@ -2506,6 +2690,14 @@ jurisdiction, by the more diligent Party.
 
    <plugin
          id="org.eclipse.nebula.widgets.pgroup"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.eclipse.jgit"
+         version="0.0.0"/>
+
+   <plugin
+         id="com.googlecode.javaewah.JavaEWAH"
          version="0.0.0"/>
 
 </feature>

@@ -1,7 +1,9 @@
 MENU_TITLE = Butterworth low pass filter (filter)
 DESCRIPTION = Butterworth low pass filter (filter)
 MENU_TITLE_FR = Filtre passe bas de Butterworth (filter)
+MENU_TITLE_PL = Filtr dolnoprzepustowy Butterwortha (filter)
 DESCRIPTION_FR = Filtre passe bas de Butterworth (filter)
+DESCRIPTION_PL = Filtr dolnoprzepustowy Butterwortha (filter)
 
 # Now start specific python function 
 FUNCTION_CODE = # Compute low pass Butterworth filter\n\

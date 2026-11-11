@@ -1,7 +1,9 @@
 MENU_TITLE = Filtered derivator 
 DESCRIPTION = First order filtering and derivative
 MENU_TITLE_FR = Dérivateur filtré
+MENU_TITLE_PL = Różniczkowanie z filtracją
 DESCRIPTION_FR = Filtrage d'ordre un et dérivée
+DESCRIPTION_PL = Filtracja pierwszego rzędu i pochodna
 # Several segments are available in ADBascic code :
 # HEADER, INCLUDE, DECLARATION, INITIALIZATION, ACQUISITION, RECOVERY, TRANSFER, EVENT, GENERATION and FINISH
 # The ADBasic function code you need to add in any segments INITIALIZATION, EVENT or FINISH may require contributions to any other segment.

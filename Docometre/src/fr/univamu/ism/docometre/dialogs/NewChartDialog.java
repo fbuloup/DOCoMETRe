@@ -102,7 +102,7 @@ public class NewChartDialog extends TitleAreaDialog {
 		chartTypeComboViewer.setFilters(new ViewerFilter() {
 			@Override
 			public boolean select(Viewer viewer, Object parentElement, Object element) {
-				return Activator.useOpenGLV2() || !element.equals(ChartTypes.XYZ_CHART);
+				return Activator.useOpenGLV2() || !(element.equals(ChartTypes.XYZ_CHART) || element.equals(ChartTypes.CURSOR_2D_CHART));
 			}
 		});
 		

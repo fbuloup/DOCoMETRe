@@ -1,7 +1,9 @@
 MENU_TITLE = Butterworth high pass filter
 DESCRIPTION = Butterworth high pass filter
 MENU_TITLE_FR = Filtre passe haut de Butterworth
+MENU_TITLE_PL = Filtr górnoprzepustowy Butterwortha
 DESCRIPTION_FR = Filtre passe haut de Butterworth
+DESCRIPTION_PL = Filtr górnoprzepustowy Butterwortha
 
 # Now start specific matlab function 
 FUNCTION_CODE = % Compute high pass Butterworth filter\n\

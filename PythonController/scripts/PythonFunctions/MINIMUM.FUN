@@ -1,7 +1,9 @@
 MENU_TITLE = Minimum
 DESCRIPTION = Mark minimum amplitude
 MENU_TITLE_FR = Minimum
+MENU_TITLE_PL = Minimum
 DESCRIPTION_FR = Marque l'amplitude minimum
+DESCRIPTION_PL = Oznacza amplitudę minimalną
 
 # Now start specific python function 
 FUNCTION_CODE = # Compute Minimum marker\n\

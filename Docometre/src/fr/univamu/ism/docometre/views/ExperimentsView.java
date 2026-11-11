@@ -44,18 +44,25 @@ package fr.univamu.ism.docometre.views;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.commands.operations.UndoContext;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.SafeRunner;
@@ -123,6 +130,7 @@ import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.dacqsystems.ExperimentScheduler;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.handlers.RunStopHandler;
+import fr.univamu.ism.docometre.history.GitResources;
 
 public class ExperimentsView extends ViewPart implements IResourceChangeListener, IPerspectiveListener, IPropertyChangeListener {
 
@@ -211,7 +219,7 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 								Object object  = selectedResource;
 								if(selectedResource instanceof IResource) object = ResourceProperties.getObjectSessionProperty((IResource)selectedResource);
 								if(object != null && resourceEditorInput.isEditing(object)) {
-									PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(editorReference.getPart(false));
+									PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(editorReference.getPart(true));
 									ExperimentsView.this.setFocus();
 									break;
 								}
@@ -306,6 +314,15 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 	
 	public static ExperimentsViewUndoContext experimentsViewUndoContext;
 	private TreeViewer experimentsTreeViewer;
+
+	// Workspace changes not yet shown in the tree (accessed from the notifying threads and the UI thread)
+	private final Object pendingChangesLock = new Object();
+	private final Set<IResource> pendingRefreshes = new HashSet<>();
+	private final Set<IResource> pendingLabelsUpdates = new HashSet<>();
+	private boolean pendingChangesScheduled;
+	// While trials are run, the tree (disabled) is updated after this delay : during the
+	// acquisition of the next trial rather than during the dead time between two trials
+	private static final int RUNNING_REFRESH_DELAY_MS = 200;
 	private MenuManager popUpMenuManager;
 	private PartListenerAdapter partListenerAdapter;
 
@@ -320,6 +337,25 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 	/*
 	 * Refresh experiment view
 	 */
+	/**
+	 * Updates, asynchronously, the labels of these resources (e.g. after a change of
+	 * one of their persistent properties, which does not notify any resource change).
+	 * Can be called from any thread.
+	 */
+	public static void updateLabels(IResource... resources) {
+		if(resources == null || resources.length == 0) return;
+		Display.getDefault().asyncExec(new Runnable() {
+			@Override
+			public void run() {
+				if(!PlatformUI.isWorkbenchRunning() || PlatformUI.getWorkbench().getActiveWorkbenchWindow() == null) return;
+				IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+				if(page == null) return;
+				IViewPart experimentsView = page.findView(ExperimentsView.ID);
+				if (experimentsView instanceof ExperimentsView) ((ExperimentsView)experimentsView).addPendingChanges(new HashSet<>(), new HashSet<>(Arrays.asList(resources)));
+			}
+		});
+	}
+	
 	public static void refresh(IResource parentResource, IResource[] resourcesToSelect) {
 		Display.getDefault().syncExec(new Runnable() {
 			@Override
@@ -610,16 +646,104 @@ public class ExperimentsView extends ViewPart implements IResourceChangeListener
 	}
 
 	@Override
+	/*
+	 * Only the containers whose members have changed are refreshed, and only the
+	 * labels of the changed resources and of their ancestors (problems decorations)
+	 * are updated. This is done asynchronously : the thread which has modified the
+	 * workspace does not wait for the UI thread, and the changes notified before the
+	 * UI thread handles them are shown at once. While trials are run, this is delayed
+	 * (RUNNING_REFRESH_DELAY_MS) so that it does not lengthen the dead time between trials.
+	 * (Previously, each notification refreshed the whole tree from the workspace
+	 * root with a syncExec : about 20 to 30 ms of UI thread after each trial.)
+	 */
 	public void resourceChanged(IResourceChangeEvent event) {
 		IResourceDelta delta = event.getDelta();
 		if(delta == null) return;
-		if(delta.getResource() != null) 
-			PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+		// Changes inside experiments .git folders (history) are not shown
+		if(!GitResources.hasRelevantChanges(delta)) return;
+		Set<IResource> refreshes = new HashSet<>();
+		Set<IResource> labelsUpdates = new HashSet<>();
+		try {
+			delta.accept(new IResourceDeltaVisitor() {
 				@Override
-				public void run() {
-					experimentsTreeViewer.refresh(delta.getResource());
+				public boolean visit(IResourceDelta resourceDelta) throws CoreException {
+					IResource resource = resourceDelta.getResource();
+					int kind = resourceDelta.getKind();
+					if(kind == IResourceDelta.ADDED || kind == IResourceDelta.REMOVED) {
+						// Members of the parent have changed
+						IContainer parent = resource.getParent();
+						refreshes.add(parent != null ? parent : resource);
+						return false;
+					}
+					int flags = resourceDelta.getFlags();
+					if((flags & (IResourceDelta.OPEN | IResourceDelta.TYPE | IResourceDelta.REPLACED)) != 0) {
+						refreshes.add(resource);
+						return false;
+					}
+					if((flags & (IResourceDelta.MARKERS | IResourceDelta.CONTENT | IResourceDelta.DESCRIPTION)) != 0) labelsUpdates.add(resource);
+					return true;
 				}
 			});
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+			refreshes.add(ResourcesPlugin.getWorkspace().getRoot());
+		}
+		addPendingChanges(refreshes, labelsUpdates);
+	}
+	
+	private void addPendingChanges(Set<IResource> refreshes, Set<IResource> labelsUpdates) {
+		if(refreshes.isEmpty() && labelsUpdates.isEmpty()) return;
+		boolean schedule = false;
+		synchronized (pendingChangesLock) {
+			pendingRefreshes.addAll(refreshes);
+			pendingLabelsUpdates.addAll(labelsUpdates);
+			if(!pendingChangesScheduled) pendingChangesScheduled = schedule = true;
+		}
+		if(schedule) {
+			Display display = PlatformUI.getWorkbench().getDisplay();
+			if(ExperimentScheduler.getInstance().isRunning()) display.asyncExec(() -> display.timerExec(RUNNING_REFRESH_DELAY_MS, this::showPendingChanges));
+			else display.asyncExec(this::showPendingChanges);
+		}
+	}
+	
+	/*
+	 * UI thread : shows the pending workspace changes in the tree
+	 */
+	private void showPendingChanges() {
+		Set<IResource> refreshes;
+		Set<IResource> labelsUpdates;
+		synchronized (pendingChangesLock) {
+			refreshes = new HashSet<>(pendingRefreshes);
+			labelsUpdates = new HashSet<>(pendingLabelsUpdates);
+			pendingRefreshes.clear();
+			pendingLabelsUpdates.clear();
+			pendingChangesScheduled = false;
+		}
+		if(experimentsTreeViewer == null || experimentsTreeViewer.getTree().isDisposed()) return;
+		// Refreshing a container refreshes the labels of its descendants
+		List<IResource> containers = new ArrayList<>();
+		for (IResource resource : refreshes) if(!hasAncestorIn(resource, refreshes)) containers.add(resource);
+		// Labels of the changed resources and of their ancestors (the problems decoration of a resource depends on its descendants)
+		Set<IResource> labels = new LinkedHashSet<>();
+		for (IResource resource : refreshes) addWithAncestors(resource.getParent(), labels);
+		for (IResource resource : labelsUpdates) addWithAncestors(resource, labels);
+		labels.removeIf(resource -> resource.getType() == IResource.ROOT || containers.contains(resource) || hasAncestorIn(resource, containers));
+		for (IResource container : containers) {
+			if(container.getType() == IResource.ROOT) experimentsTreeViewer.refresh(true);
+			else experimentsTreeViewer.refresh(container, true);
+		}
+		if(!labels.isEmpty()) experimentsTreeViewer.update(labels.toArray(), null);
+	}
+	
+	private static boolean hasAncestorIn(IResource resource, Collection<IResource> resources) {
+		for (IContainer parent = resource.getParent(); parent != null; parent = parent.getParent()) {
+			if(resources.contains(parent)) return true;
+		}
+		return false;
+	}
+	
+	private static void addWithAncestors(IResource resource, Set<IResource> resources) {
+		for (; resource != null; resource = resource.getParent()) resources.add(resource);
 	}
 
 	@Override

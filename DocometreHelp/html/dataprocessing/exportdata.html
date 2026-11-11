@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Exporting Data</title>
+<style type="text/css">
+	table { border-collapse: collapse; margin-bottom: 1em; }
+	th, td { border: 1px solid #A0A0A0; padding: 4px 8px; text-align: left; vertical-align: top; }
+	pre { margin-left: 2em; }
+</style>
+</head>
+
+<body>
+	<h1>Exporting Data</h1>
+
+	<p>Results of the processing are exported to text files for statistical
+		analysis or for other software. There are two ways:</p>
+	<ul>
+		<li>the <b>Export data...</b> command, which exports on request the
+			signals, events, markers or features of loaded subjects;</li>
+		<li>the <b>Export Markers</b> and <b>Export Features</b> functions of the
+			<a href="functionslibrary.html#export">library</a>, which export them
+			each time a data processing file (or a batch processing) is run.</li>
+	</ul>
+	<p>Subjects can also be exported to <a href="adwdatafiles.html">ADW
+		files</a> (File &gt; Export to ADW file(s), see
+		<a href="../designperspective/importexport.html#exportadw">Import and
+		export</a>), and whole experiments to archives.</p>
+
+	<h2><a name="wizard">Export data wizard</a></h2>
+
+	<p>Load the subjects, then use the <b>Export data...</b> button of the tool
+		bar (or File &gt; Export data..., or the context menu of the Subjects
+		view). The wizard asks for:</p>
+	<table>
+		<tr><th>Field</th><th>Description</th></tr>
+		<tr><td>Export destination</td><td>Folder where the files are written
+			(Browse...).</td></tr>
+		<tr><td>Export type</td><td>Signal, Event, Marker or Feature.</td></tr>
+		<tr><td>Export in single file, Single file name</td><td>When checked, all
+			the data are written in one file with the given name; otherwise one
+			file is written per subject.</td></tr>
+		<tr><td>Separator</td><td>Separator of the columns (";" for example).</td></tr>
+		<tr><td>Data list</td><td>Add... opens a dialog that lists the elements of
+			the chosen type in the loaded subjects; Remove selection and Remove all
+			remove elements from the list.</td></tr>
+	</table>
+	<p>Finish writes the files; a progress dialog shows the elements being
+		written.</p>
+
+	<h2><a name="format">Files written</a></h2>
+
+	<p>Without "Export in single file", each subject gets a file named
+		<code>Experiment.Subject.Type.txt</code> (for example
+		<code>MyExp.S01.Feature.txt</code>).</p>
+	<p><b>Signals</b>: for each signal, a header and one line per trial:</p>
+<pre>
+Signal name;Force
+Sample frequency;1000.0
+Trial number;Category;Values
+1;Session1.Pointing;0.12;0.15;0.17;...
+2;Session1.Pointing;0.11;0.13;0.16;...
+</pre>
+	<p><b>Markers</b> and <b>features</b>: one line per trial, with the trial
+		number and its category, followed by the selected markers (signal name,
+		marker label, time and value) or features (signal name, feature label
+		and value):</p>
+<pre>
+Trial Number;Session;Signal Name;Feature Label;Value
+1;Session1.Pointing;Force;MEAN;2.31;Position;MEAN;12.7
+2;Session1.Pointing;Force;MEAN;2.45;Position;MEAN;12.9
+</pre>
+	<p>In a single file, signals are identified by their full names
+		(<code>Experiment.Subject.Signal</code>).</p>
+	<p>Each line of markers or features can then be read as one observation
+		by spreadsheet or statistics software.</p>
+
+</body>
+</html>

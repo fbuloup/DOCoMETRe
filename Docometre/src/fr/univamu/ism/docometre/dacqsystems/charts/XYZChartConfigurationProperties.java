@@ -59,6 +59,12 @@ public final class XYZChartConfigurationProperties extends Property {
 	public static final XYZChartConfigurationProperties FONT_ITALIC = new XYZChartConfigurationProperties("XYChartConfigurationProperties.FONT_ITALIC", DocometreMessages.Italic_Title, DocometreMessages.Italic_Tooltip, "^(true|false)$", "true:false");
 	public static final XYZChartConfigurationProperties FONT_SIZE = new XYZChartConfigurationProperties("XYChartConfigurationProperties.FONT_SIZE", DocometreMessages.Size_Title, DocometreMessages.Size_Tooltip, "^(([1-9][0-9]*)|(0))(?:\\.[0-9]+)?$");
 	public static final XYZChartConfigurationProperties HISTORY_SIZE = new XYZChartConfigurationProperties("XYChartConfigurationProperties.HISTORY_SIZE", DocometreMessages.HistorySize_Title, DocometreMessages.HistorySize_Tooltip, "^(([1-9][0-9]*)|(0))(?:\\.[0-9]+)?$");
+	// Display options only available with "SWT + OpenGL v2" library
+	public static final XYZChartConfigurationProperties SHOW_LEGEND = new XYZChartConfigurationProperties("XYZChartConfigurationProperties.SHOW_LEGEND", DocometreMessages.ShowLegend_Title, DocometreMessages.ShowLegend_Tooltip, "^(true|false)$", "true:false");
+	public static final XYZChartConfigurationProperties DISPLAY_CURRENT_VALUES = new XYZChartConfigurationProperties("XYZChartConfigurationProperties.DISPLAY_CURRENT_VALUES", DocometreMessages.DisplayValuesCurves_Title, DocometreMessages.DisplayValuesCurves_Tooltip, "^(true|false)$", "true:false");
+	public static final XYZChartConfigurationProperties SHOW_GRID = new XYZChartConfigurationProperties("XYZChartConfigurationProperties.SHOW_GRID", DocometreMessages.ShowGrid_Title, DocometreMessages.ShowGrid_Tooltip, "^(true|false)$", "true:false");
+	public static final XYZChartConfigurationProperties SHOW_AXES = new XYZChartConfigurationProperties("XYZChartConfigurationProperties.SHOW_AXES", DocometreMessages.ShowAxes_Title, DocometreMessages.ShowAxes_Tooltip, "^(true|false)$", "true:false");
+	public static final XYZChartConfigurationProperties SHOW_TICK_LABELS = new XYZChartConfigurationProperties("XYZChartConfigurationProperties.SHOW_TICK_LABELS", DocometreMessages.ShowTickLabels_Title, DocometreMessages.ShowTickLabels_Tooltip, "^(true|false)$", "true:false");
 	
 	public static void populateProperties(XYZChartConfiguration xyzChartConfiguration){
 		ChartConfigurationProperties.populateProperties(xyzChartConfiguration);
@@ -74,13 +80,37 @@ public final class XYZChartConfigurationProperties extends Property {
 		xyzChartConfiguration.setProperty(FONT_ITALIC, "false");
 		xyzChartConfiguration.setProperty(FONT_SIZE, "12");
 		xyzChartConfiguration.setProperty(HISTORY_SIZE, "1");
+		xyzChartConfiguration.setProperty(SHOW_LEGEND, getDefaultValue(SHOW_LEGEND));
+		xyzChartConfiguration.setProperty(DISPLAY_CURRENT_VALUES, getDefaultValue(DISPLAY_CURRENT_VALUES));
+		xyzChartConfiguration.setProperty(SHOW_GRID, getDefaultValue(SHOW_GRID));
+		xyzChartConfiguration.setProperty(SHOW_AXES, getDefaultValue(SHOW_AXES));
+		xyzChartConfiguration.setProperty(SHOW_TICK_LABELS, getDefaultValue(SHOW_TICK_LABELS));
+	}
+	
+	/*
+	 * Default values of the display options only available with "SWT + OpenGL v2" library.
+	 * They are the same as the default values of this library.
+	 */
+	private static String getDefaultValue(XYZChartConfigurationProperties property) {
+		if(property == SHOW_LEGEND || property == SHOW_GRID || property == SHOW_TICK_LABELS) return "true";
+		if(property == DISPLAY_CURRENT_VALUES || property == SHOW_AXES) return "false";
+		return null;
+	}
+	
+	/**
+	 * Returns the value of the property, or its default value if this property 
+	 * is not yet defined (e.g. configuration created with a previous version).
+	 */
+	public static String getValue(XYZChartConfiguration xyzChartConfiguration, XYZChartConfigurationProperties property) {
+		String value = xyzChartConfiguration.getProperty(property);
+		return value == null ? getDefaultValue(property) : value;
 	}
 
 	public static XYZChartConfiguration clone(XYZChartConfiguration xyzChartConfiguration) {
 		XYZChartConfiguration newXYZChartConfiguration = new XYZChartConfiguration();
 		ChartConfigurationProperties.clone(xyzChartConfiguration, newXYZChartConfiguration);
-		newXYZChartConfiguration.setProperty(X_MAX, new String(xyzChartConfiguration.getProperty(Y_MAX)));
-		newXYZChartConfiguration.setProperty(X_MIN, new String(xyzChartConfiguration.getProperty(Y_MIN)));
+		newXYZChartConfiguration.setProperty(X_MAX, new String(xyzChartConfiguration.getProperty(X_MAX)));
+		newXYZChartConfiguration.setProperty(X_MIN, new String(xyzChartConfiguration.getProperty(X_MIN)));
 		newXYZChartConfiguration.setProperty(Y_MAX, new String(xyzChartConfiguration.getProperty(Y_MAX)));
 		newXYZChartConfiguration.setProperty(Y_MIN, new String(xyzChartConfiguration.getProperty(Y_MIN)));
 		newXYZChartConfiguration.setProperty(Z_MAX, new String(xyzChartConfiguration.getProperty(Z_MAX)));
@@ -91,6 +121,11 @@ public final class XYZChartConfigurationProperties extends Property {
 		newXYZChartConfiguration.setProperty(FONT_ITALIC, new String(xyzChartConfiguration.getProperty(FONT_ITALIC)));
 		newXYZChartConfiguration.setProperty(FONT_SIZE, new String(xyzChartConfiguration.getProperty(FONT_SIZE)));
 		newXYZChartConfiguration.setProperty(HISTORY_SIZE, new String(xyzChartConfiguration.getProperty(HISTORY_SIZE)));
+		newXYZChartConfiguration.setProperty(SHOW_LEGEND, new String(getValue(xyzChartConfiguration, SHOW_LEGEND)));
+		newXYZChartConfiguration.setProperty(DISPLAY_CURRENT_VALUES, new String(getValue(xyzChartConfiguration, DISPLAY_CURRENT_VALUES)));
+		newXYZChartConfiguration.setProperty(SHOW_GRID, new String(getValue(xyzChartConfiguration, SHOW_GRID)));
+		newXYZChartConfiguration.setProperty(SHOW_AXES, new String(getValue(xyzChartConfiguration, SHOW_AXES)));
+		newXYZChartConfiguration.setProperty(SHOW_TICK_LABELS, new String(getValue(xyzChartConfiguration, SHOW_TICK_LABELS)));
 		CurveConfiguration[] curveConfigurations = xyzChartConfiguration.getCurvesConfiguration();
 		for (CurveConfiguration curveConfiguration : curveConfigurations) {
 			try {

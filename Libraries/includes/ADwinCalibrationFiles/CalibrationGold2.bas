@@ -5,11 +5,11 @@
 ' Control_long_Delays_for_Stop   = No
 ' Priority                       = High
 ' Version                        = 1
-' ADbasic_Version                = 6.0.0
+' ADbasic_Version                = 6.4.0
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Stacksize                      = 1000
-' Info_Last_Save                 = FRANK-PC  frank-PC\frank
+' Info_Last_Save                 = PREC3650BULOUP  PREC3650BULOUP\buloup
 '<Header End>
 #Include ADwinGoldII.Inc
 
@@ -21,7 +21,7 @@ DIM bitPattern AS LONG
 
 INIT :
 
-GLOBALDELAY = 10^9/(1000*3.3)
+GLOBALDELAY = 3*10^8/1000 ' T11 timer at 300 MHz (10/3 ns) : 10^9/(1000*3.3) gave a period 1 % too long
 
 'Entrées analogiques
 par_1=0'Numéro de l'entrée analogique 1 .. 32

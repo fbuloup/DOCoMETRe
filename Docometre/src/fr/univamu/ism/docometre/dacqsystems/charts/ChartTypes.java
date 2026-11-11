@@ -50,7 +50,8 @@ public enum ChartTypes {
 	XYZ_CHART(DocometreMessages.XYZChartLabel),
 	GAUGE_CHART(DocometreMessages.GaugeChartLabel),
 	TANK_CHART(DocometreMessages.TankChartLabel),
-	IMAGE_CHART(DocometreMessages.ImageChartLabel);
+	IMAGE_CHART(DocometreMessages.ImageChartLabel),
+	CURSOR_2D_CHART(DocometreMessages.Cursor2DChartLabel); // Last XY values only, as configurable symbols (RT OpenGL chart V2)
 	
 	private String label;
 	

@@ -91,9 +91,11 @@ public class ObjectsController {
 	
 	private static boolean isXML(String filePath) {
 		try {
-			BufferedReader reader = new BufferedReader(new FileReader(filePath));
-		    String line = reader.readLine();
-		    reader.close();
+			String line = null;
+			try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+				line = reader.readLine();
+			}
+			if(line == null) return false;
 			return Pattern.matches("<\\?xml\\s+version\\s*=\\s*\"1\\.0\"\\s+encoding\\s*=\\s*\"[^\"]+\"\\s*\\?>", line);
 		} catch (IOException e) {
 			Activator.logErrorMessageWithCause(e);
@@ -156,6 +158,14 @@ public class ObjectsController {
 			}
 			if(debug) debug(object, nbHandles);
 		}
+	}
+	
+	/*
+	 * Forget object whatever its number of handles, e.g. because its file has been replaced
+	 * (restoration of a snapshot) : it will be deserialized again when needed.
+	 */
+	public static void forgetObject(Object object) {
+		if(object != null) objectHandles.remove(object);
 	}
 	
 	/*
@@ -246,12 +256,12 @@ public class ObjectsController {
 			exception = e;
 		} finally {
 			try {
-				if(isXML(file.getLocation().toOSString())) {
-					bis.close();
-				} else {
-					ois.close();
-				}
-				is.close();
+				// Close every stream that has actually been opened, whatever the file format.
+				// If ObjectInputStream constructor failed (e.g. not a serialized file), ois is null
+				// and the underlying FileInputStream must still be closed, otherwise the file stays locked.
+				if(bis != null) bis.close();
+				if(ois != null) ois.close();
+				if(is != null) is.close();
 			} catch (Exception e) {
 				if(exception == null) exception = e;
 			} finally {

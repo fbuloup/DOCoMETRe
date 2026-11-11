@@ -1,7 +1,9 @@
 MENU_TITLE = Write long value to serial port
 DESCRIPTION = Convert long value to ASCII string and write result to selected serial port
 MENU_TITLE_FR = Écrire un entier long sur un port série
+MENU_TITLE_PL = Zapis liczby całkowitej long do portu szeregowego
 DESCRIPTION_FR = Convertir un entier long en chaine de caractères ASCII et l'écrire sur le port série sélectionné
+DESCRIPTION_PL = Konwertuje liczbę całkowitą long na ciąg ASCII i zapisuje wynik do wybranego portu szeregowego
 # Several segments are available in ADBascic code :
 # HEADER, INCLUDE, DECLARATION, INITIALIZATION, ACQUISITION, RECOVERY, TRANSFER, EVENT, GENERATION and FINISH
 # The ADBasic function code you need to add in any segments INITIALIZATION, EVENT or FINISH may require contributions to any other segment.

@@ -2,12 +2,83 @@
 
 <html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-	<title>ADWin Pro</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>ADwin Pro and Pro II</title>
+<style type="text/css">
+	table { border-collapse: collapse; margin-bottom: 1em; }
+	th, td { border: 1px solid #A0A0A0; padding: 4px 8px; text-align: left; vertical-align: top; }
+</style>
 </head>
 
 <body>
-<h1>ADWin Pro</h1>
+	<h1>ADwin Pro and Pro II</h1>
+
+	<p>ADwin Pro and ADwin Pro II are modular systems: a processor module
+		and input/output modules are plugged in a rack. Read
+		<a href="ADWinTopic.html">ADwin DACQ Systems</a> first for the
+		installation of the ADwin software and the connection of the
+		system.</p>
+
+	<h2>Settings of the DACQ configuration</h2>
+
+	<table>
+		<tr>
+			<th>Field</th>
+			<th>ADwin Pro</th>
+			<th>ADwin Pro II</th>
+		</tr>
+		<tr><td>Device type</td><td>Pro</td><td>Pro</td></tr>
+		<tr><td>CPU type</td><td>I</td><td>II</td></tr>
+		<tr><td>Processor</td><td>T9, 40 MHz</td><td>T11, 300 MHz</td></tr>
+		<tr><td>Bootloader file</td><td><code>adwin9.btl</code></td><td><code>adwin11.btl</code></td></tr>
+		<tr><td>DOCoMETRe library</td><td><code>DOCOLIBPro.LI9</code></td><td><code>DOCOLIBProII.LIB</code></td></tr>
+	</table>
+	<p>The library is chosen automatically from the device and CPU types:
+		you only have to give the folder of the DOCoMETRe libraries
+		(<b>ADBasic libraries path</b>).</p>
+
+	<h2>Declaring the modules</h2>
+
+	<p>Declare each module of the rack you use in the Modules configuration
+		section of the General tab:</p>
+	<ul>
+		<li><b>Module type</b>: Analog inputs, Analog outputs, Digital
+			inputs/outputs, CAN or RS232;</li>
+		<li><b>Module number</b>: the address of the module in the system, as
+			set on the module itself (see the hardware documentation of the
+			module). Two modules of the same type must have different
+			numbers;</li>
+		<li><b>Module revision</b>: the revision of the module (A, B, C...),
+			printed on the module.</li>
+	</ul>
+	<p>For <b>Digital inputs/outputs</b> modules, the direction of the
+		channels (Inp./Out. column) is programmed as follows:</p>
+	<ul>
+		<li>ADwin Pro, module of revision A: channel by channel;</li>
+		<li>ADwin Pro, module of revision B, and ADwin Pro II: by
+			<b>groups of 8 channels</b> (1-8, 9-16, 17-24 and 25-32). When one
+			channel of a group is declared as an output, the whole group is
+			configured as outputs: do not mix inputs and outputs in the same
+			group. A usual choice is channels 1 to 16 as inputs and 17 to 32 as
+			outputs.</li>
+	</ul>
+	<p>The channel number of each channel is the number of the input or
+		output on its module. The parameters of the modules and of their
+		channels are described in
+		<a href="../designperspective/dacqconfiguration.html#modules">Modules
+		tabs</a>. Check the wiring with the
+		<a href="ADWinTopic.html#calibration">calibration and monitoring</a>
+		dialog.</p>
+
+	<h2>Pro or Pro II ?</h2>
+
+	<p>The Pro II processor is much faster: it allows higher global
+		frequencies and more computations in each period of the real time
+		loop. The processes are the same for both variants: to move an
+		experiment from a Pro to a Pro II, change the CPU type and the boot
+		loader file of the DACQ configuration, then compile the processes
+		again. Make sure that the modules of the rack are supported by the
+		Pro II processor (see the documentation of the modules).</p>
 
 </body>
 </html>

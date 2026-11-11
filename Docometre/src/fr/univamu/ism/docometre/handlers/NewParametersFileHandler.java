@@ -137,6 +137,7 @@ public class NewParametersFileHandler implements IHandler, ISelectionListener {
 					text.append("# 5 ; 3 ; condition-1\n");
 					text.append("# ...");
 					Files.write(Paths.get(parametersFile.getLocationURI()), text.toString().getBytes(), StandardOpenOption.TRUNCATE_EXISTING , StandardOpenOption.WRITE);
+					parametersFile.refreshLocal(IResource.DEPTH_ZERO, null);
 				};
 			} catch (CoreException | IOException e) {
 				e.printStackTrace();

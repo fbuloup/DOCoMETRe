@@ -86,7 +86,8 @@ public final class FunctionFactory {
 	public final static String MENU_TITLE = "MENU_TITLE";
 	public final static String DESCRIPTION = "DESCRIPTION";
 	
-	private static final String countrySuffix = "_" + Locale.getDefault().getCountry();
+	// Translated keys use language code as suffix (e.g. MENU_TITLE_FR) : don't use country as it may be empty (e.g. -nl fr)
+	private static final String countrySuffix = "_" + Locale.getDefault().getLanguage().toUpperCase(Locale.ROOT);
 	private static final String USER_FUNCTION_KEY = "USER_FUNCTION";
 	
 	public static void populateMenu(AbstractScriptSegmentEditor scriptSegmentEditor, BlockEditPart blockEditPart, IMenuManager functionsMenuManager) {

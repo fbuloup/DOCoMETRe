@@ -178,7 +178,8 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		if(!MathEngineFactory.getMathEngine().isStarted()) {
-			Activator.logInfoMessage(DocometreMessages.PleaseStartMathEngineFirst, getClass());
+			if(selectedSubjects != null && !selectedSubjects.isEmpty())
+				Activator.logInfoMessage(DocometreMessages.PleaseStartMathEngineFirst, getClass());
 			return null;
 		}
 		cancel = false;
@@ -285,7 +286,7 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 					Object object = ((ResourceEditorInput)editorReference.getEditorInput()).getObject();
 					Channel channel = (Channel)object;
 					if(channel.getParent().equals(subject)) {
-						editorReference.getEditor(false).getSite().getPage().closeEditor(editorReference.getEditor(false), true);
+						Activator.closeEditorReference(editorReference, true);
 					}
 				} catch (PartInitException e) {
 					Activator.logErrorMessageWithCause(e);
@@ -299,7 +300,7 @@ public class LoadUnloadSubjectsHandler extends AbstractHandler implements ISelec
 					Object object = ((ResourceEditorInput)editorReference.getEditorInput()).getObject();
 					XYChart xyChart = (XYChart)object;
 					if(xyChart.contains(subject)) { 
-						editorReference.getEditor(false).getSite().getPage().closeEditor(editorReference.getEditor(false), true);
+						Activator.closeEditorReference(editorReference, true);
 					}
 				} catch (PartInitException e) {
 					Activator.logErrorMessageWithCause(e);

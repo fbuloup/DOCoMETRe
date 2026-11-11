@@ -45,16 +45,14 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
 import org.eclipse.core.commands.operations.IOperationHistory;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.e4.ui.model.application.ui.basic.MTrimBar;
+import org.eclipse.e4.ui.model.application.ui.basic.MTrimmedWindow;
+import org.eclipse.e4.ui.model.application.ui.basic.MWindow;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.application.ActionBarAdvisor;
@@ -86,6 +84,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
         DocometreConsole.createInstance();
 		Activator.logInfoMessage(DocometreMessages.CurrentWorkspace + DocometreApplication.WORKSPACE_PATH, DocometreApplication.class);
         Activator.logInfoMessage("Locale : " + Locale.getDefault(),  getClass());
+        Activator.logInfoMessage("Preferred language : " + Languages.getPreferredLanguage() + " - Language argument (-nl) : " + Languages.getLanguageArgument() + " - Relaunch possible : " + Languages.isRelaunchPossible(),  getClass());
 		Activator.logInfoMessage(DocometreMessages.RuntimeFolder + System.getProperty("user.dir"), getClass());
         try {
 			if(Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferenceConstants.REDIRECT_STD_ERR_OUT_TO_FILE)) {
@@ -109,36 +108,23 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 	@Override
     public void postWindowOpen() {
+		
+		// The workbench model (workbench.xmi) is persisted with the trim bars visibility :
+		// if the application was closed while in full screen mode (see RealTimeChartsView),
+		// the status line trim bar is restored hidden. Force it visible.
+		MWindow window = getWindowConfigurer().getWindow().getService(MWindow.class);
+		if(window instanceof MTrimmedWindow) {
+			for (MTrimBar trimBar : ((MTrimmedWindow)window).getTrimBars()) {
+				if("org.eclipse.ui.trim.status".equals(trimBar.getElementId())) trimBar.setVisible(true);
+			}
+		}
+		
 		int historyLimit = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.PREF_UNDO_LIMIT);
 		PlatformUI.getWorkbench().getOperationSupport().getOperationHistory().setLimit(IOperationHistory.GLOBAL_UNDO_CONTEXT, historyLimit);
 		UndoRedoUserApprover promptingUserApprover = new UndoRedoUserApprover(IOperationHistory.GLOBAL_UNDO_CONTEXT);
 		PlatformUI.getWorkbench().getOperationSupport().getOperationHistory().addOperationApprover(promptingUserApprover);
     }
 	
-	@Override
-	public boolean preWindowShellClose() {
-		boolean doClose = true;
-		try {
-			PlatformUI.getWorkbench().getProgressService().busyCursorWhile(new IRunnableWithProgress() {
-				@Override
-				public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-					IProject[] projects =ResourcesPlugin.getWorkspace().getRoot().getProjects();
-					monitor.beginTask("", projects.length);
-					for (IProject project : projects) {
-						ResourceProperties.savePropertiesToFile(project);
-						monitor.done();
-						if(monitor.isCanceled()) break;
-					}
-					
-				}
-			});
-		} catch (InvocationTargetException | InterruptedException e) {
-			Activator.logErrorMessageWithCause(e);
-			e.printStackTrace();
-			if(e instanceof InterruptedException) doClose = false;
-		} 
-		if(!doClose) return false;
-		return super.preWindowShellClose();
-	}
+	
 	
 }

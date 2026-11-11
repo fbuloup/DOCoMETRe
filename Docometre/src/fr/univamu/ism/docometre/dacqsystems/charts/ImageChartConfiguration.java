@@ -131,13 +131,7 @@ public class ImageChartConfiguration extends ChartConfiguration {
 		imageCanvas.setForeground(DocometreSharedColors.getInstance().getColor(new RGB(217, 217, 229)));
 		
 		image = null;
-		errorMessage = null;
-		try {
-			image = loadImage(process, container.getDisplay());
-		} catch (Exception e) {
-			errorMessage = e.getMessage() != null ? e.getMessage() : e.toString();
-			Activator.logErrorMessage(errorMessage);
-		}
+		updateImage(process);
 		
 		imageCanvas.addPaintListener(new PaintListener() {
 			@Override
@@ -152,6 +146,21 @@ public class ImageChartConfiguration extends ChartConfiguration {
 				image = null;
 			}
 		});
+	}
+	
+	/*
+	 * Replace current image by the one of current trial, or by an error message
+	 */
+	private void updateImage(Process process) {
+		if(image != null && !image.isDisposed()) image.dispose();
+		image = null;
+		errorMessage = null;
+		try {
+			image = loadImage(process, imageCanvas.getDisplay());
+		} catch (Exception e) {
+			errorMessage = e.getMessage() != null ? e.getMessage() : e.toString();
+			Activator.logErrorMessage(errorMessage);
+		}
 	}
 	
 	/*
@@ -220,6 +229,19 @@ public class ImageChartConfiguration extends ChartConfiguration {
 		gc.setAntialias(SWT.ON);
 		gc.setInterpolation(SWT.HIGH);
 		gc.drawImage(image, 0, 0, bounds.width, bounds.height, x, y, width, height);
+	}
+	
+	/*
+	 * Canvas is kept : only the image of the new current trial is loaded.
+	 */
+	@Override
+	public boolean resetChart(Composite container) {
+		if(imageCanvas == null || imageCanvas.isDisposed()) return false;
+		Object object = container.getData("process");
+		if(!(object instanceof Process)) return false;
+		updateImage((Process)object);
+		imageCanvas.redraw();
+		return true;
 	}
 
 	@Override

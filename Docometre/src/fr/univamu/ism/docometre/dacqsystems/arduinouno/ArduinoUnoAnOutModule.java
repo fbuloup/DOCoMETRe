@@ -92,7 +92,12 @@ public class ArduinoUnoAnOutModule extends Module {
 			
 			if (segment == ArduinoUnoCodeSegmentProperties.INITIALIZATION) {
 				if(isUsed) {
-					code = code + "\t\tpinMode(" + channelNumber + ", OUTPUT);\n";
+					// Initial values, as after a board reset : the process can be restarted by software
+					code = code + "\t\t" + name + " = 0;\n";
+					code = code + "\t\tgenerate_" + name + "_index = " + frequencyRatio + ";\n";
+					// Pin mode set once : on R4, a DAC pin whose mode is changed after
+					// its first analogWrite is no more connected to the DAC
+					code = code + "\t\tif(firstStart) pinMode(" + channelNumber + ", OUTPUT);\n";
 				}
 			}
 			

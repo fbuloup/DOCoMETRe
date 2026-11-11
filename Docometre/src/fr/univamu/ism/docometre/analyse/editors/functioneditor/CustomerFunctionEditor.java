@@ -81,6 +81,8 @@ public class CustomerFunctionEditor extends EditorPart implements PartNameRefres
 			}
 			String text = stringBuffer.toString();
 			Files.write(functionPath, text.getBytes(), StandardOpenOption.TRUNCATE_EXISTING , StandardOpenOption.WRITE);
+			// File written on disk : notify workspace (views, experiments history)
+			Activator.refreshWorkspaceFile(functionPath);
 			setDirty(false);
 		} catch (IOException e) {
 			Activator.logErrorMessageWithCause(e);

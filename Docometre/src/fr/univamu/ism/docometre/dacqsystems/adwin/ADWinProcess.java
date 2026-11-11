@@ -49,17 +49,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -67,9 +63,6 @@ import java.util.regex.Pattern;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.IWorkspaceRunnable;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -79,7 +72,6 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IPageChangeProvider;
 import org.eclipse.jface.dialogs.PageChangedEvent;
 import org.eclipse.osgi.util.NLS;
@@ -96,17 +88,16 @@ import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
-import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.DocometreBuilder;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.ModuleBehaviour;
+import fr.univamu.ism.docometre.dacqsystems.ParameterVariable;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.dacqsystems.TrialTimings;
 import fr.univamu.ism.docometre.dacqsystems.functions.FunctionsUtil;
 import fr.univamu.ism.docometre.dacqsystems.ui.ProcessEditor;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ui.dacqconfigurationeditor.ADWinDACQConfigurationEditor;
-import fr.univamu.ism.docometre.dacqsystems.adwin.ui.dialogs.ParametersDialog;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor.ADWinProcessEditor;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 import fr.univamu.ism.process.Block;
@@ -142,14 +133,13 @@ public class ADWinProcess extends Process {
 	transient private double startTimeDialog = 0;
 	transient private double timeBefore;
 	transient private double timeAfter;
-	transient private LinkedHashMap<ADWinVariable, Float> currentTrialParameters = new LinkedHashMap<>();
-	transient private LinkedHashMap<ADWinVariable, String> currentTrialParametersString = new LinkedHashMap<>();
-	transient private IResource parametersFile;
-	transient private int currentTrialNumber;
-	transient private int response;
 
 	private class RealTimeLoopJob extends Job {
 
+		// Minimum period between two refreshes of the workload and time in the status line.
+		// Refreshing at each iteration (50 to 200 Hz) costs two ADwin requests and floods the UI thread.
+		private static final long STATUS_LINE_REFRESH_PERIOD_NANOS = 200_000_000L;
+		
 		private float time = 0;
 		
 		public RealTimeLoopJob(String name) {
@@ -161,9 +151,11 @@ public class ADWinProcess extends Process {
 			double processBeginTime = 0;
 			// Timing trace of the loop iterations (see TrialTimings)
 			long iterations = 0, lastIterationNanos = 0, maxIterationNanos = 0;
+			long lastStatusLineRefreshNanos = 0;
+			int processNumberInt = -1;
 			try {
 				getThread().setPriority(Thread.MAX_PRIORITY);
-				int processNumberInt = Integer.parseInt(ADWinProcess.this.getProperty(ADWinProcessProperties.PROCESS_NUMBER));	
+				processNumberInt = Integer.parseInt(ADWinProcess.this.getProperty(ADWinProcessProperties.PROCESS_NUMBER));
 				int processStatus = ((ADWinDACQConfiguration)ADWinProcess.this.getDACQConfiguration()).getADwinDevice().Process_Status(processNumberInt);
 				boolean active = processStatus == 1;
 				processBeginTime = System.currentTimeMillis()/1000d;
@@ -219,16 +211,22 @@ public class ADWinProcess extends Process {
 					timeAfter = System.currentTimeMillis()/1000d;
 					appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_DisplayTime, (timeAfter - timeBefore)));
 					
-					time = ((ADWinDACQConfiguration)ADWinProcess.this.getDACQConfiguration()).getADwinDevice().Get_FPar(1);
-					int workload = ((ADWinDACQConfiguration)ADWinProcess.this.getDACQConfiguration()).getADwinDevice().Workload();
-					PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
-						@Override
-						public void run() {
-//							StatusLineManager statusLineManger = ((WorkbenchWindow)PlatformUI.getWorkbench().getActiveWorkbenchWindow()).getStatusLineManager();
-//							statusLineManger.setMessage(NLS.bind(DocometreMessages.Workload_Time, workload, formater.format(realTime)));
-							ApplicationActionBarAdvisor.workloadTimeContributionItem.setText(NLS.bind(DocometreMessages.Workload_Time, workload, time));
-						}
-					});
+					long now = System.nanoTime();
+					if(now - lastStatusLineRefreshNanos >= STATUS_LINE_REFRESH_PERIOD_NANOS) {
+						lastStatusLineRefreshNanos = now;
+						// time is FPAR_<process number> (see ADWinCodeSegmentProperties.DECLARATION)
+						time = ((ADWinDACQConfiguration)ADWinProcess.this.getDACQConfiguration()).getADwinDevice().Get_FPar(processNumberInt);
+						int workload = ((ADWinDACQConfiguration)ADWinProcess.this.getDACQConfiguration()).getADwinDevice().Workload();
+						float currentTime = time;
+						PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+							@Override
+							public void run() {
+//								StatusLineManager statusLineManger = ((WorkbenchWindow)PlatformUI.getWorkbench().getActiveWorkbenchWindow()).getStatusLineManager();
+//								statusLineManger.setMessage(NLS.bind(DocometreMessages.Workload_Time, workload, formater.format(realTime)));
+								ApplicationActionBarAdvisor.workloadTimeContributionItem.setText(NLS.bind(DocometreMessages.Workload_Time, workload, currentTime));
+							}
+						});
+					}
 
 					if(TrialTimings.trace) {
 						iterations++;
@@ -245,10 +243,17 @@ public class ADWinProcess extends Process {
 				// CLOSE
 				ADWinProcess.this.close();
 				TrialTimings.step("ADWinProcess.close() (channels files)");
+				// The status line is refreshed periodically during the loop : display the final time
+				try {
+					if(processNumberInt > 0) time = ((ADWinDACQConfiguration)ADWinProcess.this.getDACQConfiguration()).getADwinDevice().Get_FPar(processNumberInt);
+				} catch (ADwinCommunicationError e) {
+					// Keep the last time read
+				}
+				float finalTime = time;
 				PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
 					@Override
 					public void run() {
-						ApplicationActionBarAdvisor.workloadTimeContributionItem.setText(NLS.bind(DocometreMessages.Workload_Time, "0", time));
+						ApplicationActionBarAdvisor.workloadTimeContributionItem.setText(NLS.bind(DocometreMessages.Workload_Time, "0", finalTime));
 					}
 				});
 				double processEndTime = System.currentTimeMillis()/1000d;
@@ -292,6 +297,9 @@ public class ADWinProcess extends Process {
 	
 	@Override
 	public void compile(IProgressMonitor progressMonitor) throws Exception {
+		// The binary file of this process changes : if it is the process loaded in ADwin,
+		// it must be loaded again at its next execution (see loadProcess())
+		if(previousADWINBinFilePath.equals(getBinaryFilePath())) previousADWINBinFilePath = "";
 		cleanBuild();
 		if(Platform.getOS().equals(Platform.OS_WIN32)) {
 			Program programEditor = Program.findProgram (".bas");
@@ -583,12 +591,17 @@ public class ADWinProcess extends Process {
 			String volume2 = " -v " + librariesPath + ":" + librariesPath + ":ro";
 			String incLibFoldersOptions = " /IP/opt/adwin/ADwin-linux_6.0.30.00/adwin-compiler-6.0.30/share/adbasic/Inc/";
 			incLibFoldersOptions = incLibFoldersOptions +" /LP/opt/adwin/ADwin-linux_6.0.30.00/adwin-compiler-6.0.30/share/adbasic/Lib/";
-			String cmd = "/usr/local/bin/docker run -w " + adbasicPath.removeLastSegments(1).toPortableString() + " -di" + volume1 + volume2 + " --name adwin ubuntu:adwin";
-			cmd += "\n/usr/local/bin/docker cp /Users/frank/git/DOCoMETRe/Libraries/includes/ADWinIncludeFiles/. adwin:/opt/adwin/ADwin-linux_6.0.30.00/adwin-compiler-6.0.30/share/adbasic/Inc/";
-			cmd += "\n/usr/local/bin/docker cp /Users/frank/git/DOCoMETRe/Libraries/includes/ADWinIncludeFiles/. adwin:/opt/adwin/ADwin-linux_6.0.30.00/adwin-compiler-6.0.30/share/adbasic/Lib/";
-			cmd += "\n/usr/local/bin/docker exec adwin /opt/adwin/bin/adbasic " + adbasicPath.lastSegment() + getCommandLineParameters(outputFolder, adbasicFilePath) + incLibFoldersOptions;
-			cmd += "\n/usr/local/bin/docker stop -t 1 adwin";
-			cmd += "\n/usr/local/bin/docker rm adwin";
+			// Docker Desktop installs docker in /usr/local/bin on Mac OS, which is not in the PATH of applications launched from the Finder.
+			// On Linux, docker is found through the PATH.
+			String docker = Platform.getOS().equals(Platform.OS_MACOSX) ? "/usr/local/bin/docker" : "docker";
+			// DOCoMETRe ADbasic libraries (include and library files) are copied from the libraries path of the DACQ configuration
+			String librariesSource = "\"" + Path.fromOSString(librariesPath).removeTrailingSeparator().toPortableString() + "/.\"";
+			String cmd = docker + " run -w " + adbasicPath.removeLastSegments(1).toPortableString() + " -di" + volume1 + volume2 + " --name adwin ubuntu:adwin";
+			cmd += "\n" + docker + " cp " + librariesSource + " adwin:/opt/adwin/ADwin-linux_6.0.30.00/adwin-compiler-6.0.30/share/adbasic/Inc/";
+			cmd += "\n" + docker + " cp " + librariesSource + " adwin:/opt/adwin/ADwin-linux_6.0.30.00/adwin-compiler-6.0.30/share/adbasic/Lib/";
+			cmd += "\n" + docker + " exec adwin /opt/adwin/bin/adbasic " + adbasicPath.lastSegment() + getCommandLineParameters(outputFolder, adbasicFilePath) + incLibFoldersOptions;
+			cmd += "\n" + docker + " stop -t 1 adwin";
+			cmd += "\n" + docker + " rm adwin";
 			fileWriter.write(cmd);
 			fileWriter.close();
 		}
@@ -779,9 +792,9 @@ public class ADWinProcess extends Process {
 				TrialTimings.log("ADwin INIT section duration : unknown (process compiled without the INIT timer, recompile it)");
 				return;
 			}
-			// Timer tick : 25 ns for T9 (CPU I), 3.3 ns for T11 (CPU II), as for GLOBALDELAY
+			// Timer tick, as for GLOBALDELAY : 25 ns for T9 (CPU I, 40 MHz), 10/3 ns for T11 (CPU II, 300 MHz)
 			String cpuType = getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.CPU_TYPE);
-			double tickNanos = ADWinDACQConfigurationProperties.I.equals(cpuType) ? 25 : 3.3;
+			double tickNanos = ADWinDACQConfigurationProperties.I.equals(cpuType) ? 25 : 10.0/3.0;
 			TrialTimings.log(String.format("ADwin INIT section duration : %.3f ms (%.0f ticks)", ticks * tickNanos / 1e6, ticks));
 		} catch (ADwinCommunicationError e) {
 			TrialTimings.log("ADwin INIT section duration : unable to read FPAR_" + TrialTimings.INIT_DURATION_FPAR + " (" + e.getMessage() + ")");
@@ -947,8 +960,11 @@ public class ADWinProcess extends Process {
 			if(TrialTimings.trace) 
 				code = code + "DOCO_INIT_TIMER = READ_TIMER() ' Timing trace : start of INIT section\n";
 			code = code + "\nFEG = " + getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.GLOBAL_FREQUENCY) + "\n";
+			// GLOBALDELAY in timer ticks : T9 (CPU I) at 40 MHz (25 ns), T11 (CPU II) at 300 MHz (10/3 ns).
+			// For CPU II, 10^9/(FEG*3.3) gave a period 1 % too long (tick of 3.3 ns instead of 3.333... ns) :
+			// actual sample frequency 1 % lower than FEG.
 			if(cpuType.equals(ADWinDACQConfigurationProperties.I)) code = code + "GLOBALDELAY = 10^9/(FEG*25)\n";
-			else if(cpuType.equals(ADWinDACQConfigurationProperties.II)) code = code + "GLOBALDELAY = 10^9/(FEG*3.3)\n";
+			else if(cpuType.equals(ADWinDACQConfigurationProperties.II)) code = code + "GLOBALDELAY = 3*10^8/FEG\n";
 			code = code + "INDEX = 0\n";
 			code = code + "TERMINATE_PROCESS = 0\n";
 			code = code + "time = 0\n";
@@ -1024,15 +1040,25 @@ public class ADWinProcess extends Process {
 		
 		return code;
 	}
-	/**
-	 * This method loads the ADWIN binary code to the device
+	/*
+	 * Path of the binary file of this process, without extension : identifies the process loaded in ADwin
+	 * (see previousADWINBinFilePath)
 	 */
-	public void loadProcess() throws Exception {
+	private String getBinaryFilePath() {
 		IResource processFile = ObjectsController.getResourceForObject(this);
 		IPath wsPath = new Path(Platform.getInstanceLocation().getURL().getPath());
 		String binaryFilePath = wsPath.toOSString().replaceAll(File.separator + "$", "");
 		binaryFilePath = binaryFilePath + processFile.getParent().getFullPath().toOSString();
 		binaryFilePath = binaryFilePath + File.separator + "BinSource" + File.separator + processFile.getName().replaceAll(Activator.processFileExtension + "$", "");
+		return binaryFilePath;
+	}
+	
+	/**
+	 * This method loads the ADWIN binary code to the device
+	 */
+	public void loadProcess() throws Exception {
+		IResource processFile = ObjectsController.getResourceForObject(this);
+		String binaryFilePath = getBinaryFilePath();
 		appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_Loading, binaryFilePath));
 		if(previousADWINBinFilePath.equals(binaryFilePath)) {
 			appendToEventDiary("Process " + processFile.getFullPath() + " was already loaded" );
@@ -1191,13 +1217,14 @@ public class ADWinProcess extends Process {
 			ModuleBehaviour module = getDACQConfiguration().getModule(i);
 			module.close();
 		}
-		refreshChannelsFiles(variables);
+		// The workspace is refreshed by postExecute (see refreshChannelsFiles)
 	}
 
 	/*
-	 * Refreshes the output folder ONCE for all the channels just closed, and
-	 * sets the type of the recorded samples files. Done in a single workspace
-	 * operation : only one resource change notification is sent.
+	 * Refreshes the output folder ONCE for all the channels closed by close(), and
+	 * sets the type of the recorded samples files. Called by postExecute, within its
+	 * single workspace operation (with diary and parameters file modifications) :
+	 * only one resource change notification is sent.
 	 * (Previously, each recorded channel refreshed the whole output folder and
 	 * each not recorded channel deleted its resource : N workspace operations.)
 	 */
@@ -1216,16 +1243,12 @@ public class ADWinProcess extends Process {
 					recordedFilesNames.add(((ADWinChannel)channel).getRecordedFileName());
 			}
 		}
-		IWorkspace workspace = ResourcesPlugin.getWorkspace();
-		IWorkspaceRunnable refreshRunnable = monitor -> {
-			outputFolder.refreshLocal(IResource.DEPTH_ONE, monitor);
+		try {
+			outputFolder.refreshLocal(IResource.DEPTH_ONE, null);
 			for (String fileName : recordedFilesNames) {
 				IResource fileResource = outputFolder.findMember(fileName);
 				if(fileResource != null) ResourceProperties.setTypePersistentProperty(fileResource, ResourceType.SAMPLES.toString());
 			}
-		};
-		try {
-			workspace.run(refreshRunnable, workspace.getRuleFactory().refreshRule(outputFolder), IWorkspace.AVOID_UPDATE, null);
 		} catch (CoreException e) {
 			e.printStackTrace();
 			Activator.logErrorMessageWithCause(e);
@@ -1243,192 +1266,68 @@ public class ADWinProcess extends Process {
 	}
 	
 	@Override
-	public void preExecute(IResource resource) throws Exception {
-		super.preExecute(resource);
-		preManageParameters(resource);
+	protected void postExecuteInWorkspaceOperation(IResource resource) throws Exception {
+		// Same order as before grouping : channels files, then diary and markers, parameters file (see Process)
+		refreshChannelsFiles(((ADWinDACQConfiguration)getDACQConfiguration()).getVariables());
+		super.postExecuteInWorkspaceOperation(resource);
 	}
 	
 	@Override
-	public void postExecute(IResource resource) throws Exception {
-		super.postExecute(resource);
-		postManageParameters(resource);
+	protected void checkParameterValue(ParameterVariable parameter, String value) throws Exception {
+		// Numeric parameters (float and int) are sent to ADwin as float (see pushParametersToADWinProcess)
+		if(!parameter.isStringParameter()) Float.parseFloat(value);
 	}
 	
-	private void preManageParameters(IResource resource) throws Exception {
-		if(currentTrialParameters == null) currentTrialParameters = new LinkedHashMap<>();
-		if(currentTrialParametersString == null) currentTrialParametersString = new LinkedHashMap<>();
-		currentTrialParameters.clear();
-		currentTrialParametersString.clear();
-		// Init Parameters from params file if resource is a trial
-		if(ResourceType.isTrial(resource)) {
-			// Get trial number from trial name
-			currentTrialNumber = Integer.parseInt(resource.getName().split("°")[1]);
-			// Try to find if there are any parameters in associated dacq conf
-			ADWinDACQConfiguration adwinDacqConfiguration = (ADWinDACQConfiguration) getDACQConfiguration();
-			ADWinVariable[] parameters = adwinDacqConfiguration.getParameters();
-			if(parameters.length > 0) {
-				// There are parameters, try to get their values for current trial from parameters file
-				// Get parameters file
-				parametersFile = null;
-				IResource[] members = resource.getParent().members();
-				for (IResource member : members) {
-					if(ResourceType.isParameters(member)) {
-						parametersFile = member;
-						break;
-					}
-				}
-				if(parametersFile != null) {
-					// Retrieve values for this trial
-					List<String> lines = Files.readAllLines(FileSystems.getDefault().getPath(parametersFile.getLocation().toOSString()), StandardCharsets.UTF_8);
-					
-					removeComments(lines);
-					
-					if(lines.size() - 1 >= currentTrialNumber) {
-						String parametersNames = lines.get(0);
-						String parametersValues = lines.get(currentTrialNumber);
-						parametersNames = parametersNames.replaceAll("[\\s|\\u00A0]+", "");
-						parametersValues = parametersValues.replaceAll("[\\s|\\u00A0]+", "");
-						String[] parametersNamesArray = parametersNames.split(";|:|,");
-						String[] parametersValuesArray = parametersValues.split(";|:|,");
-						// Log infos
-						String parametersString = "";
-						int nbParmetersFound= 0;
-						for (ADWinVariable parameter : parameters) {
-							int index = 0;
-							for (String parameterName : parametersNamesArray) {
-								if(parameterName.equalsIgnoreCase(parameter.getProperty(ChannelProperties.NAME))) {
-									parametersString = parametersString + parameterName + " = " + parametersValuesArray[index] ;
-									nbParmetersFound++;
-									if(nbParmetersFound < parameters.length) parametersString = parametersString + " - ";
-									break;
-								}
-								index++;
-							}
-							if(index == parametersNamesArray.length) {
-//								currentTrialParameters.add(0f);
-								throw new Exception(NLS.bind(DocometreMessages.ParameterNameNotfound, parameter.getProperty(ChannelProperties.NAME), parametersFile.getLocation().toOSString()));
-							}
-						}
-						Activator.logInfoMessage("Preparing paramaters array (parsing values) for trial (" + resource.getName() + ") : " + parametersString, ADWinProcess.class);
-						
-						// put parameters
-						for (ADWinVariable parameter : parameters) {
-							int index = 0;
-							for (String parameterName : parametersNamesArray) {
-								if(parameterName.equalsIgnoreCase(parameter.getProperty(ChannelProperties.NAME))) {
-									if(parameter.getProperty(ADWinVariableProperties.TYPE).equals(ADWinVariableProperties.FLOAT) || parameter.getProperty(ADWinVariableProperties.TYPE).equals(ADWinVariableProperties.INT)) 
-										currentTrialParameters.put(parameter, Float.parseFloat(parametersValuesArray[index]));
-									if(parameter.getProperty(ADWinVariableProperties.TYPE).equals(ADWinVariableProperties.STRING)) 
-										currentTrialParametersString.put(parameter, parametersValuesArray[index]);
-									break;
-								}
-								index++;
-							}
-							if(index == parametersNamesArray.length) {
-//								currentTrialParameters.add(0f);
-								throw new Exception(NLS.bind(DocometreMessages.ParameterNameNotfound, parameter.getProperty(ChannelProperties.NAME), parametersFile.getLocation().toOSString()));
-							}
-						}
-					} else {
-						// Parameters file empty
-//						for (int i = 0; i < parameters.length; i++) currentTrialParameters.add(0f);
-						throw new Exception(NLS.bind(DocometreMessages.ParameterValueNotfound, currentTrialNumber, parametersFile.getLocation().toOSString()));
-					}
-				} else {
-					// No parameters file found
-//					for (int i = 0; i < parameters.length; i++) currentTrialParameters.add(0f);
-					throw new Exception(DocometreMessages.NoParameterFileFound);
-				}
-			}
+	/*
+	 * Numeric parameters (float and int) of the current trial, in the order of TAB_PARAM (DATA_200)
+	 * of the generated code (see VariablesCodeGenerationDelegate)
+	 */
+	private List<ParameterVariable> getNumericParameters() {
+		List<ParameterVariable> numericParameters = new ArrayList<>();
+		for (ParameterVariable parameter : getCurrentTrialParameters().keySet()) {
+			if(!parameter.isStringParameter()) numericParameters.add(parameter);
 		}
-		
-		// If resource is a process 
-		if(ResourceType.isProcess(resource)) {
-			// Try to find if there are any parameters in associated dacq conf
-			ADWinDACQConfiguration adwinDacqConfiguration = (ADWinDACQConfiguration) getDACQConfiguration();
-			ADWinVariable[] parameters = adwinDacqConfiguration.getParameters();
-			response = Dialog.OK;
-			if(parameters.length > 0) {
-				PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
-					@Override
-					public void run() {
-						ParametersDialog parametersDialog = new ParametersDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), parameters);
-						parametersDialog.setBlockOnOpen(true);
-						response = parametersDialog.open();
-					}
-				});
-				if(response == Dialog.CANCEL) throw new Exception(DocometreMessages.ProcessLaunchCanceled);
-				ObjectsController.serialize(adwinDacqConfiguration);
-				String parametersString = "";
-				int index = 0;
-				for (ADWinVariable parameter : parameters) {
-					String value = parameter.getProperty(ADWinVariableProperties.PARAMETER_VALUE);
-					parametersString = parametersString + parameter.getProperty(ChannelProperties.NAME) + " = " + value ;
-					index++;
-					if(index < parameters.length) parametersString = parametersString + " - ";
-				}
-				Activator.logInfoMessage("Preparing parameters array (parsing values) for process test (" + resource.getName() + ") : " + parametersString, ADWinProcess.class);
-				for (ADWinVariable parameter : parameters) {
-					String value = parameter.getProperty(ADWinVariableProperties.PARAMETER_VALUE);
-					try {
-						//float floatValue =  Float.parseFloat(value);
-						//currentTrialParameters.put(parameter, floatValue);
-						if(parameter.getProperty(ADWinVariableProperties.TYPE).equals(ADWinVariableProperties.FLOAT) || parameter.getProperty(ADWinVariableProperties.TYPE).equals(ADWinVariableProperties.INT)) 
-							currentTrialParameters.put(parameter, Float.parseFloat(value));
-						if(parameter.getProperty(ADWinVariableProperties.TYPE).equals(ADWinVariableProperties.STRING)) 
-							currentTrialParametersString.put(parameter, value);
-						
-					} catch (Exception e) {
-						throw e;
-					}
-					
-				}
-			}
-		}
+		return numericParameters;
 	}
 	
-	private void removeComments(List<String> lines) {
-		int n = 0;
-		while (n < lines.size()) {
-			String line = lines.get(n);
-			if(line.startsWith("#")) lines.remove(n);
-			else {
-				if(line.indexOf("#") > -1) {
-					line = line.replaceAll("#.*$", "");
-					lines.set(n, line);
-				}
-				n++;
-			}
+	/*
+	 * String parameters of the current trial, in the order of TAB_PARAM_STRING (DATA_199)
+	 * of the generated code (see VariablesCodeGenerationDelegate)
+	 */
+	private List<ParameterVariable> getStringParameters() {
+		List<ParameterVariable> stringParameters = new ArrayList<>();
+		for (ParameterVariable parameter : getCurrentTrialParameters().keySet()) {
+			if(parameter.isStringParameter()) stringParameters.add(parameter);
 		}
-		
+		return stringParameters;
 	}
 
 	private void pushParametersToADWinProcess() throws Exception {
-		if(currentTrialParameters.size() > 0) {
-			float[] data = new float[currentTrialParameters.size()];
-			Set<ADWinVariable> keys = currentTrialParameters.keySet();
-			int i = 0;
+		Map<ParameterVariable, String> parameters = getCurrentTrialParameters();
+		List<ParameterVariable> numericParameters = getNumericParameters();
+		if(numericParameters.size() > 0) {
+			float[] data = new float[numericParameters.size()];
 			String parametersString = "";
-			for (ADWinVariable variable : keys) {
-				data[i] = currentTrialParameters.get(variable).floatValue();
-				parametersString = parametersString + variable.getProperty(ChannelProperties.NAME) + " = " + data[i] ;
-				i++;
-				if(keys.size() > i) parametersString = parametersString + " - ";
+			for (int i = 0; i < data.length; i++) {
+				ParameterVariable parameter = numericParameters.get(i);
+				data[i] = Float.parseFloat(parameters.get(parameter));
+				parametersString = parametersString + parameter.getParameterName() + " = " + data[i] ;
+				if(data.length > i + 1) parametersString = parametersString + " - ";
 			}
 			Activator.logInfoMessage("Pushing paramaters to ADWin : " + parametersString, ADWinProcess.class);
 			((ADWinDACQConfiguration)ADWinProcess.this.getDACQConfiguration()).getADwinDevice().SetData_Float(200, data, 1, data.length);
 		}
-		if(currentTrialParametersString.size() > 0) {
+		List<ParameterVariable> stringParameters = getStringParameters();
+		if(stringParameters.size() > 0) {
 			String data = "";
-			Set<ADWinVariable> keys = currentTrialParametersString.keySet();
 			int i = 0;
 			String parametersString = "";
-			for (ADWinVariable variable : keys) {
-				String dataString = currentTrialParametersString.get(variable);
-				parametersString = parametersString + variable.getProperty(ChannelProperties.NAME) + " = " + dataString ;
+			for (ParameterVariable parameter : stringParameters) {
+				String dataString = parameters.get(parameter);
+				parametersString = parametersString + parameter.getParameterName() + " = " + dataString ;
 				data = data + dataString + "\n";
 				i++;
-				if(keys.size() > i) parametersString = parametersString + " - ";
+				if(stringParameters.size() > i) parametersString = parametersString + " - ";
 			}
 			if(data.length() > 1024)
 				Activator.logErrorMessage("Error : String parameters is too long (more than 1024 chars) !");
@@ -1446,50 +1345,16 @@ public class ADWinProcess extends Process {
 		}
 	}
 	
-	private float[] getParametersFromADWinProcess() throws Exception {
-		if(currentTrialParameters.size() > 0) {
-			float[] data = new float[currentTrialParameters.size()];
-			((ADWinDACQConfiguration)ADWinProcess.this.getDACQConfiguration()).getADwinDevice().GetData_Float(200, data, 1, data.length);
-			return data;
-		}
-		return null;
-	}
-
-	private void postManageParameters(IResource resource) throws Exception {
-		if(ResourceType.isTrial(resource)) {
-			ADWinDACQConfiguration adwinDacqConfiguration = (ADWinDACQConfiguration) getDACQConfiguration();
-			ADWinVariable[] propagatedParameters = adwinDacqConfiguration.getPropagatedParameters();
-			if(propagatedParameters.length > 0) {
-				// Read parameters file and replace next trial line when parameter must be propagated
-				List<String> lines = Files.readAllLines(FileSystems.getDefault().getPath(parametersFile.getLocation().toOSString()), StandardCharsets.UTF_8);
-				if(lines.size() - 1 >= currentTrialNumber + 1) {
-					String parametersNames = lines.get(0);
-					String parametersValues = lines.get(currentTrialNumber + 1); 
-					parametersNames = parametersNames.replaceAll("[\\s|\\u00A0]+", "");
-					parametersValues = parametersValues.replaceAll("[\\s|\\u00A0]+", "");
-					String[] parametersNamesArray = parametersNames.split(";|:|,");
-					String[] parametersValuesArray = parametersValues.split(";|:|,");
-					float[] data = getParametersFromADWinProcess();
-					String dataString = "";
-					int indexParameterName = 0;
-					for (String parameterName : parametersNamesArray) {
-						Set<ADWinVariable> variables = currentTrialParameters.keySet();
-						int indexVariablesName = 0;
-						for (ADWinVariable variable : variables) {
-							if(variable.getProperty(ChannelProperties.NAME).equalsIgnoreCase(parameterName)) {
-								if(variable.isParameterPropagated()) dataString = dataString + data[indexVariablesName] + ";";
-								else dataString = dataString + parametersValuesArray[indexParameterName] + ";";
-								break;
-							} else indexVariablesName++;
-						}
-						indexParameterName++;
-					}
-					dataString = dataString.replaceAll(";$", "");
-					lines.set(currentTrialNumber + 1, dataString);
-					Files.write(Paths.get(parametersFile.getLocationURI()), String.join(System.getProperty("line.separator"), lines).getBytes(), StandardOpenOption.TRUNCATE_EXISTING , StandardOpenOption.WRITE);
-				}
-			}
-		}
+	@Override
+	protected Map<ParameterVariable, String> getPropagatedParametersValues() throws Exception {
+		// Values read from ADwin, in the same order as pushed (see pushParametersToADWinProcess)
+		List<ParameterVariable> numericParameters = getNumericParameters();
+		if(numericParameters.isEmpty()) return null;
+		float[] data = new float[numericParameters.size()];
+		((ADWinDACQConfiguration)ADWinProcess.this.getDACQConfiguration()).getADwinDevice().GetData_Float(200, data, 1, data.length);
+		Map<ParameterVariable, String> values = new LinkedHashMap<>();
+		for (int i = 0; i < data.length; i++) values.put(numericParameters.get(i), String.valueOf(data[i]));
+		return values;
 	}
 
 }

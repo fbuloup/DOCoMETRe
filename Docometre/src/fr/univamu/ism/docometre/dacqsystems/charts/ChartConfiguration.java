@@ -101,5 +101,19 @@ public abstract class ChartConfiguration extends AbstractElement implements Chan
 	}
 	
 	public abstract void createChart(Composite container);
+	
+	/**
+	 * Prepares the chart created by the last call to createChart for a new
+	 * execution, without recreating it : its data are cleared (time back to
+	 * zero) and its view goes back to its initial state, as for a new chart.
+	 * UI thread, while no execution is running.
+	 * 
+	 * @param container the container of the charts, given to createChart
+	 * @return false if this is not possible (no chart, or chart type which does
+	 * not support it) : the chart must then be recreated.
+	 */
+	public boolean resetChart(Composite container) {
+		return false;
+	}
 
 }

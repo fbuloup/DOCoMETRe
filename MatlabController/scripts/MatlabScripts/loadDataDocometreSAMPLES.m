@@ -33,8 +33,8 @@ function subject = loadDataDocometre(dataFilesList, varargin)
             criteria = [prefix, '.', sessionNameCell{1}, '.', process];
         end
         trialName = trialNameCell{1};        
-        trialNumberCell = split(trialName, char(176));
-        trialNumber = trialNumberCell{2};
+        % Trial number at the end of trial folder name ('Trial_N', or 'Essai n'+char(176)+'N'... for previous versions)
+        trialNumber = regexp(trialName, '\d+$', 'match', 'once');
         system = sessionsProperties([fileparts(dataFiles{n}), '_SYSTEM']);
         
         baseTrialsNumber = sessionsProperties([sessionNameCell{1}, baseTrialsNumber_QN]);

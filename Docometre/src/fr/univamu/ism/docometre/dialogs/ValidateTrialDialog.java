@@ -57,6 +57,7 @@ import org.eclipse.swt.widgets.Shell;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.TrialNames;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 
 public class ValidateTrialDialog extends Dialog {
@@ -80,7 +81,7 @@ public class ValidateTrialDialog extends Dialog {
 		
 		Label messageLabel = new Label(composite, SWT.NORMAL);
         messageLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-        messageLabel.setText(NLS.bind(DocometreMessages.DoYouWantValidTrial, trial.getName()));
+        messageLabel.setText(NLS.bind(DocometreMessages.DoYouWantValidTrial, TrialNames.getLabel(trial)));
 		
 		 Button validateTrialButton = new Button(composite, SWT.RADIO);
 		 validateTrialButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));

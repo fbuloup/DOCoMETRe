@@ -1,7 +1,9 @@
 MENU_TITLE = Read value from Servomotor Register
 DESCRIPTION = Read value from specific Servomotor Register (e.g. Torque, Acceleration, Velocity or Position register)
 MENU_TITLE_FR = Lire un registre du servomoteur
+MENU_TITLE_PL = Odczyt rejestru serwomotoru
 DESCRIPTION_FR = Lire la valeur d'un registre spécifique du servomoteur (e.g. registre Couple, Accélération, Vitesse ou Postion)
+DESCRIPTION_PL = Odczytuje wartość z określonego rejestru serwomotoru (np. rejestr momentu, przyspieszenia, prędkości lub pozycji)
 # Several segments are available in ADBascic code :
 # HEADER, INCLUDE, DECLARATION, INITIALIZATION, ACQUISITION, RECOVERY, TRANSFER, EVENT, GENERATION and FINISH
 # The ADBasic function code you need to add in any segments INITIALIZATION, EVENT or FINISH may require contributions to any other segment.

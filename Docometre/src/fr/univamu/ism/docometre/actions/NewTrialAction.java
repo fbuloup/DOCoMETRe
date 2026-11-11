@@ -47,7 +47,6 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -64,6 +63,7 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
+import fr.univamu.ism.docometre.TrialNames;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 import fr.univamu.ism.docometre.wizards.NewResourceWizard;
 
@@ -91,17 +91,13 @@ public class NewTrialAction extends Action implements ISelectionListener, IWorkb
 		WizardDialog wizardDialog = new WizardDialog(shell, newResourceWizard);
 		if(wizardDialog.open() == Window.OK) {
 			try {
-				String trialName = newResourceWizard.getResourceName();
-				String trials = trialName.replaceAll(DocometreMessages.NewResourceWizard_DefaultTrialName.replaceAll("N", ""), "");
-				String[] trialsSplitted = trials.split(":");
-				int trialMin = Integer.parseInt(trialsSplitted[0]);
-				int trialMax = trialMin;
-				if(trialsSplitted.length > 1) trialMax = Integer.parseInt(trialsSplitted[1]);
+				// Typed name, e.g. "Essai n°N" or "Essai n°N:M" in french, or "Trial_N"
+				int[] trialsRange = TrialNames.parseInput(newResourceWizard.getResourceName(), true);
+				if(trialsRange == null) return;
 				
 				ArrayList<IFolder> newTrials = new ArrayList<>();
-				for (int n = trialMin; n <= trialMax; n++) {
-					trialName = DocometreMessages.NewResourceWizard_DefaultTrialName.replaceAll("N", "") + n;
-					IFolder trial = resource.getFolder(new Path(trialName));
+				for (int n = trialsRange[0]; n <= trialsRange[1]; n++) {
+					IFolder trial = TrialNames.getTrial(resource, n);
 					trial.create(true, true, null);
 					ResourceProperties.setDescriptionPersistentProperty(trial, newResourceWizard.getResourceDescription());
 					ResourceProperties.setTypePersistentProperty(trial, ResourceType.TRIAL.toString());

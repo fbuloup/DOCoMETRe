@@ -189,6 +189,14 @@ public class ArduinoUnoChannelEditingSupport extends EditingSupport implements P
 			cellEditor = new TextCellEditor((Composite) viewer.getControl());
 			cellEditor.setValidator(new Validator(ArduinoUnoVariableProperties.SIZE.getRegExp()));
 		}
+		if(property == ArduinoUnoVariableProperties.PARAMETER) {
+			cellEditor = new CheckboxCellEditor((Composite) viewer.getControl());
+			cellEditor.setValidator(new Validator(ArduinoUnoVariableProperties.PARAMETER.getRegExp()));
+		}
+		if(property == ArduinoUnoVariableProperties.PROPAGATE) {
+			cellEditor = new CheckboxCellEditor((Composite) viewer.getControl());
+			cellEditor.setValidator(new Validator(ArduinoUnoVariableProperties.PROPAGATE.getRegExp()));
+		}
 		
 		if(property == ArduinoUnoAnInChannelProperties.UNIT) {
 			cellEditor = new TextCellEditor((Composite) viewer.getControl());
@@ -281,8 +289,9 @@ public class ArduinoUnoChannelEditingSupport extends EditingSupport implements P
 	protected Object getValue(Object element) {
 		if(!(element instanceof Channel)) return null;
 		if(getCellEditor(element) instanceof CheckboxCellEditor) {
+			// Property may be missing (e.g. PARAMETER in variables created before parameters management)
 			String value = ((Channel)element).getProperty(property);
-			return value.equals("true") ? true : false;
+			return "true".equals(value);
 		}
 		return ((Channel)element).getProperty(property);
 	}

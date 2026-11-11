@@ -5,10 +5,11 @@
 ' Control_long_Delays_for_Stop   = No
 ' Priority                       = High
 ' Version                        = 1
-' ADbasic_Version                = 5.0.2
+' ADbasic_Version                = 6.4.0
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = PC64  PC64\buloup
+' Stacksize                      = 1000
+' Info_Last_Save                 = PREC3650BULOUP  PREC3650BULOUP\buloup
 '<Header End>
 #include adwinpro1.inc
 #include adwinpro2.inc
@@ -43,7 +44,7 @@ par_8=0'Valeur associ�e � la sortie num�rique s�lectionn�e 0 ou 1
 'par_11=0
 'par_12=0 'SE ou DIFF
 par_14=1 'gain des entr�es analogiques 1,2,4 ou 8
-GLOBALDELAY = 10^9/(1000*3.3)
+GLOBALDELAY = 3*10^8/1000 ' T11 timer at 300 MHz (10/3 ns) : 10^9/(1000*3.3) gave a period 1 % too long
 
 'par_12  : 0, mode SE ou 1, mode DIFF
 SE_DIFF(1,par_12)
@@ -56,10 +57,10 @@ par_13=P2_GET_DIGOUT_LONG(1) 'Lecture etat initial des ESnum
 
 EVENT :
 'Acquisition entr�e analogique
-IF (par_1>0) then	  	
+IF (par_1>0) then      
   bits_AnIn = shift_left(LOG(par_14)/LOG(2),5) + par_1 - 1
 
-  set_mux(1,bits_AnIn)		
+  set_mux(1,bits_AnIn)    
   P1_sleep(1400)
   start_conv(1)
   wait_eoc(1)"

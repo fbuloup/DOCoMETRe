@@ -1,7 +1,9 @@
 MENU_TITLE = Acquire analog input
 DESCRIPTION = Acquire analog input asynchronously (immediate)
 MENU_TITLE_FR = Acquérir une entrée analogique
+MENU_TITLE_PL = Akwizycja wejścia analogowego
 DESCRIPTION_FR = Acquière la valeur courante de l'entrée analogique de manière asynchrone (immédiat)
+DESCRIPTION_PL = Akwizycja bieżącej wartości wejścia analogowego w trybie asynchronicznym (natychmiastowym)
 # Several segments are available in ArduinoUno code :
 # INCLUDE, DEFINE, DECLARATION, INITIALIZATION, ACQUISITION, RECOVERY, LOOP, TRANSFER, GENERATION, FUNCTION, FINALIZE
 # The Arduino function code you need to add in segment INITIALIZATION, LOOP or FINALIZE may require contributions to any other segment.

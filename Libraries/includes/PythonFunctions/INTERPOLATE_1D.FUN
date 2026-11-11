@@ -1,7 +1,9 @@
 MENU_TITLE = 1-D Interpolation 
 DESCRIPTION = This function requires two points and interpolate input signal between these points using selected method
 MENU_TITLE_FR = Interpolation 1-D
+MENU_TITLE_PL = Interpolacja 1-D
 DESCRIPTION_FR = Cette fonction requiert deux points et interpole le signal d'entrée entre ces deux points selon la méthode choisie
+DESCRIPTION_PL = Ta funkcja wymaga dwóch punktów i interpoluje sygnał wejściowy między nimi wybraną metodą
 
 # Now start specific matlab function 
 FUNCTION_CODE = # Compute 1-D interpolation\n\

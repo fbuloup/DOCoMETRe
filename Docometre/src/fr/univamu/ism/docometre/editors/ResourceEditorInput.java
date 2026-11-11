@@ -79,12 +79,13 @@ public class ResourceEditorInput implements IEditorInput, IPersistableElement {
 	
 	public void addEditedObject(Object object) {
 		if(object == null) return;
-		if(this.object.equals(object)) return;
+		if(object.equals(this.object)) return;
 		editedObjects.add(object);
 	}
 	
 	public boolean removeEditedObject(Object object) {
-		if(this.object.equals(object)) {
+		if(object == null) return false;
+		if(object.equals(this.object)) {
 			this.object = null;
 			Object[] objects = editedObjects.toArray();
 			if(objects.length > 0) {
@@ -155,7 +156,8 @@ public class ResourceEditorInput implements IEditorInput, IPersistableElement {
 	}
 	
 	public boolean isEditing(Object object) {
-		if(this.object.equals(object)) {
+		if(object == null) return false;
+		if(object.equals(this.object)) {
 			return true;
 		}
 		Object[] objects = editedObjects.toArray();

@@ -1,7 +1,9 @@
 MENU_TITLE = Duplicate
 DESCRIPTION = Create a copy of the input signal
 MENU_TITLE_FR = Duplication
+MENU_TITLE_PL = Duplikowanie
 DESCRIPTION_FR = Créé une copie du signal d'entrée
+DESCRIPTION_PL = Tworzy kopię sygnału wejściowego
 
 # Now start specific python function 
 FUNCTION_CODE = # Compute Duplicate\n\

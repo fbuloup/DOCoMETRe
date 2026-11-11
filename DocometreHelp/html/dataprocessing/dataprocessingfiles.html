@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Data Processing Files</title>
+<style type="text/css">
+	table { border-collapse: collapse; margin-bottom: 1em; }
+	th, td { border: 1px solid #A0A0A0; padding: 4px 8px; text-align: left; vertical-align: top; }
+	kbd { border: 1px solid #A0A0A0; border-radius: 3px; padding: 0px 4px; font-family: monospace; }
+	pre { margin-left: 2em; }
+</style>
+</head>
+
+<body>
+	<h1>Data Processing Files</h1>
+
+	<p>A data processing file (<code>*.dataprocess</code>) describes a
+		sequence of operations applied to the signals of loaded subjects:
+		filtering, cuts, markers, features, exports... Like the
+		<a href="../designperspective/dacqprocess.html">acquisition
+		processes</a>, it is built with graphical blocks. DOCoMETRe generates
+		from these blocks Python or Matlab code, according to the math engine
+		in use, and runs it in the engine.</p>
+
+	<h2><a name="create">Creating a data processing file</a></h2>
+
+	<p>Select the experiment (or a folder of it) in the Subjects view and use
+		the <b>New data processing</b> button (or File &gt; New &gt; Data
+		processing). Give its name and its description. The file appears in
+		the Subjects view; a double click opens it.</p>
+
+	<h2><a name="editor">Data processing editor</a></h2>
+
+	<p>The editor has two tabs:</p>
+	<ul>
+		<li><b>Design</b>: the drawing area where blocks are created and linked,
+			with the same palette as the acquisition processes: Connection
+			Creation, If block, Do block, Function block and Comment block (see
+			<a href="../designperspective/dacqprocess.html#palette">Palette and
+			blocks</a>). Blocks are executed once, in the order of the
+			connections, starting from the block without incoming
+			connection;</li>
+		<li><b>Source code</b>: the code generated for the math engine, read
+			only.</li>
+	</ul>
+	<p>A function block is assigned with right click &gt; <b>Assign</b>, then
+		configured with a double click. The Assign menu is organized as
+		follows (see the <a href="functionslibrary.html">Standard functions
+		library</a>):</p>
+	<ul>
+		<li><b>Signals</b>: Filtering sub-menu, cuts, motion, absolute value,
+			derivative, interpolation, duplicate, sample frequency, replacement of
+			samples, FFT;</li>
+		<li><b>Markers</b>: functions that place markers;</li>
+		<li><b>Features</b>: functions that compute features, with the
+			Complexity sub-menu;</li>
+		<li><b>Events</b>: no function for now;</li>
+		<li><b>Export</b>: export of markers and features to CSV files;</li>
+		<li><b>Compute expression(s)</b>: free code (see
+			<a href="#expression">below</a>);</li>
+		<li><b>Customer functions</b>: your own <a href="userfunctions.html">user
+			functions</a>.</li>
+	</ul>
+	<p>The other commands of the context menu (copy, paste, toggle activated
+		state, zoom, grid...) are the same as in the acquisition process editor.
+		Deactivated blocks are not run, which is convenient to run only a part
+		of a processing.</p>
+
+	<h2><a name="configuration">Configuring a function</a></h2>
+
+	<p>The configuration dialog of most functions contains:</p>
+	<ul>
+		<li><b>Input signal name</b>: the signal to process, chosen among the
+			signals of the loaded subjects (full name
+			<code>Experiment.Subject.Signal</code>);</li>
+		<li><b>Trials list</b>: the trials to process, numbered from 1, separated
+			by "," or ";", with ranges written "a-b" or "a:b", for example
+			<code>1-10, 15, 20:25</code>;</li>
+		<li><b>Output signal suffix name</b>, for functions that create a new
+			signal: the new signal is named after the input signal followed by
+			this suffix (for example <code>ForceLP</code> for the low pass filter
+			of <code>Force</code>). An existing signal with this name is
+			replaced;</li>
+		<li><b>Markers group label</b>, for functions that place markers: the
+			label of the group in which markers are added;</li>
+		<li>the specific parameters of the function (cut off frequency, order,
+			threshold, from and to markers...).</li>
+	</ul>
+	<p>The input signal is a signal of a given subject: a data processing file
+		is therefore built on one subject. To apply it to other subjects, use a
+		<a href="batchprocessing.html">batch processing</a>, which replaces the
+		name of the subject in the generated code.</p>
+
+	<h2><a name="expression">Compute expression(s)</a></h2>
+
+	<p>The Compute expression(s) function inserts your own lines of code
+		(Python or Matlab, according to the engine) in the processing. Its
+		dialog has two tabs: <b>Expressions list</b>, where each expression is
+		typed, then added (Add), modified (select it, change it, Modify),
+		deleted or moved up and down; and <b>Source code</b>, which shows the
+		resulting code. In the Expression field,
+		<kbd>Ctrl</kbd>+<kbd>Space</kbd> proposes the names of the elements of
+		the loaded subjects (see the <a href="datamodel.html">Data model</a>).
+		For example, with Python:</p>
+<pre>
+D["MyExp.S01.ForceN.Values"] = D["MyExp.S01.Force.Values"] / 9.81
+</pre>
+	<p>Note that such an expression only adds the <code>Values</code> element:
+		to create a complete signal, also set the other elements described in
+		the data model, or use the Duplicate function first. DOCoMETRe marks a
+		subject as modified from the list of the signals created or modified by
+		the functions: <code>docometre.experiments["createdOrModifiedChannels"]</code>
+		with Python (full names separated by ":"), cell array
+		<code>createdOrModifiedChannels</code> with Matlab. An expression that
+		changes data should add the full name of the signal to this list,
+		otherwise the subject is not marked as modified.</p>
+
+	<h2><a name="run">Running a data processing file</a></h2>
+
+	<ol>
+		<li>Start the math engine and load the subjects whose signals are used by
+			the processing.</li>
+		<li>Select the data processing file in the Subjects view (several can be
+			selected, they are run one after the other), or activate its
+			editor.</li>
+		<li>Press <b>Run selected data processes</b>.</li>
+	</ol>
+	<p>A progress dialog is displayed while the code runs in the engine. Errors
+		of the engine are written in the Console view. When the processing is
+		over, the Subjects view and the opened editors are updated: new signals
+		appear under the subject, and markers and features are displayed in the
+		signal editor. Processed subjects are marked as modified:
+		<a href="subjects.html#save">save them</a> to keep the results.</p>
+	<p>With Python, the tool bar of the data processing editor contains a
+		<b>Run in main thread</b> toggle button. Check it when the processing
+		opens Matplotlib figures (with an expression or a user function):
+		graphical functions of Python must run in its main thread. The file is
+		then decorated with an overlay in the views (see
+		<a href="../advancedconcepts/matplotlibfigure.html">Is it possible to use
+		python Matplotlib or Matlab figures ?</a>).</p>
+
+</body>
+</html>

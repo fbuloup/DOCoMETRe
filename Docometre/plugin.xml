@@ -154,6 +154,14 @@
             name="%FunctionsView_Title"
             restorable="true">
       </view>
+      <view
+            allowMultiple="false"
+            class="fr.univamu.ism.docometre.history.ui.SnapshotsView"
+            icon="icons/history.png"
+            id="Docometre.SnapshotsView"
+            name="%SnapshotsView_Title"
+            restorable="true">
+      </view>
    </extension>
    <extension
          point="org.eclipse.ui.perspectiveExtensions">
@@ -162,6 +170,24 @@
          <hiddenMenuItem
                id="org.eclipse.equinox.p2.ui.sdk.install">
          </hiddenMenuItem>
+      </perspectiveExtension>
+      <perspectiveExtension
+            targetID="Docometre.designperspective">
+         <view
+               id="Docometre.SnapshotsView"
+               relationship="stack"
+               relative="Docometre.DescriptionView"
+               visible="false">
+         </view>
+      </perspectiveExtension>
+      <perspectiveExtension
+            targetID="Docometre.analyseperspective">
+         <view
+               id="Docometre.SnapshotsView"
+               relationship="stack"
+               relative="Docometre.SubjectsView"
+               visible="false">
+         </view>
       </perspectiveExtension>
    </extension>
    <extension
@@ -232,6 +258,11 @@
             class="fr.univamu.ism.docometre.preferences.AppearancePreferencePage"
             id="Docometre.AppearancePreferencePage"
             name="%PrefPage_Appearance">
+      </page>
+      <page
+            class="fr.univamu.ism.docometre.history.ui.HistoryPreferencePage"
+            id="Docometre.HistoryPreferencePage"
+            name="%PrefPage_History">
       </page>
       <page
             category="Docometre.SystemsPreferencePage"
@@ -510,6 +541,19 @@
             label="Experiments Decorator"
             lightweight="true"
             state="true">
+      </decorator>
+      <decorator
+            class="fr.univamu.ism.docometre.history.ui.HistoryLabelDecorator"
+            id="Docometre.HistoryDecorator"
+            label="%HistoryDecorator.label"
+            lightweight="true"
+            state="true">
+         <description>%HistoryDecorator.description</description>
+         <enablement>
+            <objectClass
+                  name="org.eclipse.core.resources.IResource">
+            </objectClass>
+         </enablement>
       </decorator>
    </extension>
    <extension
@@ -1004,7 +1048,7 @@
                   style="push">
             </command>
             <menu
-                  label="Associer au système">
+                  label="%AssociateWithSystem.label">
                <visibleWhen
                      checkEnabled="false">
                   <with
@@ -1921,7 +1965,7 @@
                label="%AssociateWith.label">
          </menu>
          <menu
-               label="Associer au système">
+               label="%AssociateWithSystem.label">
             <visibleWhen
                   checkEnabled="false">
                <with
@@ -2590,6 +2634,68 @@
                </with>
             </visibleWhen>
          </command>
+         <separator
+               name="Docometre.separator100"
+               visible="true">
+         </separator>
+         <menu
+               icon="icons/history.png"
+               id="Docometre.HistoryMenu"
+               label="%History.label">
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="selection">
+                  <and>
+                     <count
+                           value="1">
+                     </count>
+                     <iterate>
+                        <adapt
+                              type="org.eclipse.core.resources.IResource">
+                        </adapt>
+                     </iterate>
+                  </and>
+               </with>
+            </visibleWhen>
+            <command
+                  commandId="EnableHistoryCommand"
+                  icon="icons/history.png"
+                  label="%EnableHistoryCommand.label"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="true">
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="CreateSnapshotCommand"
+                  icon="icons/snapshot.png"
+                  label="%CreateSnapshotCommand.label"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="true">
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="ShowSnapshotsViewCommand"
+                  icon="icons/history.png"
+                  label="%ShowSnapshotsViewCommand.label"
+                  style="push">
+            </command>
+            <separator
+                  name="Docometre.HistoryMenu.separator"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="DisableHistoryCommand"
+                  icon="icons/history_disable.png"
+                  label="%DisableHistoryCommand.label"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="true">
+               </visibleWhen>
+            </command>
+         </menu>
          <separator
                name="Docometre.separator2"
                visible="true">
@@ -3487,6 +3593,26 @@
             name="ExportExperimentCommand">
       </command>
       <command
+            defaultHandler="fr.univamu.ism.docometre.history.handlers.EnableHistoryHandler"
+            id="EnableHistoryCommand"
+            name="EnableHistoryCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.history.handlers.CreateSnapshotHandler"
+            id="CreateSnapshotCommand"
+            name="CreateSnapshotCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.history.handlers.ShowSnapshotsViewHandler"
+            id="ShowSnapshotsViewCommand"
+            name="ShowSnapshotsViewCommand">
+      </command>
+      <command
+            defaultHandler="fr.univamu.ism.docometre.history.handlers.DisableHistoryHandler"
+            id="DisableHistoryCommand"
+            name="DisableHistoryCommand">
+      </command>
+      <command
             defaultHandler="fr.univamu.ism.docometre.handlers.ShowSubjectsViewHandler"
             id="ShowSubjectsViewCommand"
             name="ShowSubjectsViewCommand">
@@ -3658,55 +3784,55 @@
       <colorDefinition
             categoryId="fr.univamu.ism.docometre.themeElementCategory"
             id="fr.univamu.ism.docometre.CONSOLE_WARNING_COLOR"
-            label="Console : avertissement"
+            label="%ThemeColor.ConsoleWarning.label"
             value="204,102,0">
       </colorDefinition>
       <colorDefinition
             categoryId="fr.univamu.ism.docometre.themeElementCategory"
             id="fr.univamu.ism.docometre.CONSOLE_ERROR_COLOR"
-            label="Console : erreur"
+            label="%ThemeColor.ConsoleError.label"
             value="250,0,0">
       </colorDefinition>
       <colorDefinition
             categoryId="fr.univamu.ism.docometre.themeElementCategory"
             id="fr.univamu.ism.docometre.COMPLETION_BACKGROUND_COLOR"
-            label="Description : fond de la barre d&apos;avancement"
+            label="%ThemeColor.CompletionBackground.label"
             value="255,255,255">
       </colorDefinition>
       <colorDefinition
             categoryId="fr.univamu.ism.docometre.themeElementCategory"
             id="fr.univamu.ism.docometre.COMPLETION_MARK_COLOR"
-            label="Description : essais non réalisés"
+            label="%ThemeColor.CompletionMark.label"
             value="139,0,0">
       </colorDefinition>
       <colorDefinition
             categoryId="fr.univamu.ism.docometre.themeElementCategory"
             id="fr.univamu.ism.docometre.SYNTAX_RED_COLOR"
-            label="Coloration syntaxique : rouge"
+            label="%ThemeColor.SyntaxRed.label"
             value="202,0,42">
       </colorDefinition>
       <colorDefinition
             categoryId="fr.univamu.ism.docometre.themeElementCategory"
             id="fr.univamu.ism.docometre.SYNTAX_GREEN_COLOR"
-            label="Coloration syntaxique : vert"
+            label="%ThemeColor.SyntaxGreen.label"
             value="61,119,91">
       </colorDefinition>
       <colorDefinition
             categoryId="fr.univamu.ism.docometre.themeElementCategory"
             id="fr.univamu.ism.docometre.SYNTAX_BLUE_COLOR"
-            label="Coloration syntaxique : bleu"
+            label="%ThemeColor.SyntaxBlue.label"
             value="0,0,255">
       </colorDefinition>
       <colorDefinition
             categoryId="fr.univamu.ism.docometre.themeElementCategory"
             id="fr.univamu.ism.docometre.SYNTAX_ORANGE_COLOR"
-            label="Coloration syntaxique : orange"
+            label="%ThemeColor.SyntaxOrange.label"
             value="255,102,0">
       </colorDefinition>
       <colorDefinition
             categoryId="fr.univamu.ism.docometre.themeElementCategory"
             id="fr.univamu.ism.docometre.SYNTAX_MAROON_COLOR"
-            label="Coloration syntaxique : marron"
+            label="%ThemeColor.SyntaxMaroon.label"
             value="122,0,0">
       </colorDefinition>
    </extension>

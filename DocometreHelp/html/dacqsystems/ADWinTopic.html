@@ -2,12 +2,218 @@
 
 <html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-	<title>ADWin DACQ Systems</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>ADwin DACQ Systems</title>
+<style type="text/css">
+	table { border-collapse: collapse; margin-bottom: 1em; }
+	th, td { border: 1px solid #A0A0A0; padding: 4px 8px; text-align: left; vertical-align: top; }
+</style>
 </head>
 
 <body>
-<h1>ADWin DACQ Systems</h1>
+	<h1>ADwin DACQ Systems</h1>
+
+	<p>ADwin systems, made by J&auml;ger Computergesteuerte Messtechnik
+		GmbH, are real time systems with their own processor. DOCoMETRe
+		supports the four variants below, which differ by their architecture
+		(compact or modular) and their processor:</p>
+
+	<table>
+		<tr>
+			<th>Variant</th>
+			<th>Device type</th>
+			<th>CPU type</th>
+			<th>Processor</th>
+		</tr>
+		<tr><td><a href="ADWinGoldTopic.html">ADwin Gold</a></td><td>Gold</td><td>I</td><td>T9, 40 MHz</td></tr>
+		<tr><td><a href="ADWinGoldTopic.html">ADwin Gold II</a></td><td>Gold</td><td>II</td><td>T11, 300 MHz</td></tr>
+		<tr><td><a href="ADWinProTopic.html">ADwin Pro</a></td><td>Pro</td><td>I</td><td>T9, 40 MHz</td></tr>
+		<tr><td><a href="ADWinProTopic.html">ADwin Pro II</a></td><td>Pro</td><td>II</td><td>T11, 300 MHz</td></tr>
+	</table>
+
+	<p><b>Device type</b> and <b>CPU type</b> are fields of the General tab
+		of the <a href="../designperspective/dacqconfiguration.html#generaladwin">DACQ
+		configuration</a>. They select the ADbasic compiler options and the
+		DOCoMETRe library used to build the processes.</p>
+
+	<p>Contents of this page:</p>
+	<ul>
+		<li><a href="#principle">How DOCoMETRe works with ADwin</a></li>
+		<li><a href="#install">Installing the ADwin software</a></li>
+		<li><a href="#connect">Connecting the system</a></li>
+		<li><a href="#configure">Configuring the system in DOCoMETRe</a></li>
+		<li><a href="#modules">Supported modules</a></li>
+		<li><a href="#calibration">Calibration and monitoring</a></li>
+	</ul>
+
+	<h2><a name="principle">How DOCoMETRe works with ADwin</a></h2>
+
+	<ol>
+		<li>When a <a href="../designperspective/dacqprocess.html">process</a>
+			is compiled, DOCoMETRe generates its ADbasic source code
+			(<code>.BAS</code> file in the <code>BinSource</code> folder next to
+			the process) and runs the ADbasic compiler, which produces the
+			binary file of the process.</li>
+		<li>Before a trial, the system is booted with the boot loader file
+			(<code>*.btl</code>) if needed, the parameters are sent and the
+			binary file of the process is loaded in the system.</li>
+		<li>During the trial, the process runs on the ADwin processor at the
+			global frequency. Transferred channels and variables are read by
+			DOCoMETRe through the Ethernet link, displayed and recorded;
+			stimuli are sent to the system.</li>
+	</ol>
+	<p>The communication with the system uses the ADwin Java driver shipped
+		with DOCoMETRe: no other driver is needed to run trials. The ADwin
+		software is only needed to compile the processes.</p>
+
+	<h2><a name="install">Installing the ADwin software</a></h2>
+
+	<p>Download the ADwin software from the
+		<a href="https://www.adwin.de/pub/cd/ADwin-CD.zip" target="_blank"
+		rel="noopener noreferrer">ADwin web site</a>, uncompress it and run
+		<code>Setup.exe</code>. It installs the ADbasic compiler, the
+		<b>ADconfig</b> program and the boot loader files. Then:</p>
+	<ul>
+		<li>run <b>ADconfig</b> to declare your system (IP address, device
+			number);</li>
+		<li>run <b>ADbasic</b> once to configure the compiler for your
+			system.</li>
+	</ul>
+	<p>Step by step instructions are given by the cheat sheets of
+		DOCoMETRe (Help &gt; Cheat Sheets...):</p>
+	<table>
+		<tr>
+			<th>Platform</th>
+			<th>How the ADbasic compiler is run</th>
+			<th>Help</th>
+		</tr>
+		<tr>
+			<td>Windows</td>
+			<td>Natively. The <code>.bas</code> extension must be associated
+				with ADbasic (done by the ADwin installer), otherwise the
+				compilation fails with <i>"Default ADBAsic Editor and compiler
+				not found"</i>.</td>
+			<td>Cheat sheet <b>ADBasic installation [Windows]</b></td>
+		</tr>
+		<tr>
+			<td>Linux</td>
+			<td>With Docker or Wine.</td>
+			<td>Cheat sheet <b>ADBasic installation [Linux]</b> (Wine), and
+				<a href="../advancedconcepts/adwinwithmacos.html">Can I use ADwin
+				systems with Mac OS ?</a> for the Docker image</td>
+		</tr>
+		<tr>
+			<td>Mac OS</td>
+			<td>With Docker (any version) or Wine (before Mac OS 10.15
+				only).</td>
+			<td><a href="../advancedconcepts/adwinwithmacos.html">Can I use
+				ADwin systems with Mac OS ?</a> and cheat sheet <b>ADBasic
+				installation [Mac OS X]</b></td>
+		</tr>
+	</table>
+	<p>On Linux and Mac OS, the choice between Docker and Wine is made in the
+		general preferences of DOCoMETRe (<b>Use Docker (if not checked, Wine
+		will be used)</b>). When Wine is used, give the location of the Wine
+		executable in the same preferences page. When Docker is used, the
+		Docker daemon must be running each time a process is compiled.</p>
+
+	<h2><a name="connect">Connecting the system</a></h2>
+
+	<p>ADwin systems are connected to the computer through Ethernet,
+		usually with a direct cable. The default address of a system is
+		<code>192.168.0.2</code> and its default port is <code>6543</code>:</p>
+	<ul>
+		<li>give the network interface of the computer a fixed address in the
+			same sub-network (for example <code>192.168.0.1</code>, mask
+			<code>255.255.255.0</code>);</li>
+		<li>check the connection with ADconfig, or with the <b>Browse...</b>
+			button of the <b>ADWin device IP address</b> field, which searches
+			the reachable devices of the sub-network.</li>
+	</ul>
+
+	<h2><a name="configure">Configuring the system in DOCoMETRe</a></h2>
+
+	<p>All the fields of the General tab are described in
+		<a href="../designperspective/dacqconfiguration.html#generaladwin">DACQ
+		Configuration</a>. Pay particular attention to:</p>
+	<ul>
+		<li><b>ADBasic compiler path</b>: path of
+			<code>ADbasicCompiler.exe</code> (for example
+			<code>C:\ADwin\ADbasic\ADbasicCompiler.exe</code> on Windows);</li>
+		<li><b>Bootloader file path</b>: the boot loader file must match the
+			processor of the system (<code>adwin9.btl</code> for T9 processors,
+			<code>adwin11.btl</code> for T11 processors). When the name of the
+			file gives a processor that is not the one of the system, the boot
+			is refused (<i>"Impossible to boot ADwin : WRONG_BTL_FOR_CPU"</i>);</li>
+		<li><b>ADBasic libraries path</b>: folder of the DOCoMETRe ADbasic
+			libraries, shipped with DOCoMETRe. A warning is displayed when the
+			configuration uses libraries older than the version of DOCoMETRe:
+			update this path with the <b>Browse...</b> button;</li>
+		<li><b>ADBasic version</b>: <code>&gt;=5</code> for current versions
+			of ADbasic, <code>&lt;=4</code> for older ones;</li>
+		<li><b>ADWin device IP address</b> and <b>ADwin device TCPIP
+			port</b>: the values set in ADconfig;</li>
+		<li><b>Device type</b> and <b>CPU type</b>: see the table above;</li>
+		<li><b>Global Frequency</b>: frequency of the real time loop (default
+			2kHz). Some modules require a minimum frequency (15kHz for CAN
+			modules used with a specified system type).</li>
+	</ul>
+
+	<h2><a name="modules">Supported modules</a></h2>
+
+	<p>Modules are added in the Modules configuration section of the
+		General tab, with their type, number and revision:</p>
+	<table>
+		<tr>
+			<th>Module type</th>
+			<th>Use</th>
+		</tr>
+		<tr>
+			<td>Analog inputs</td>
+			<td>Acquisition of analog signals (&plusmn;10V, &plusmn;5V or
+				0-10V, gains 1, 2, 4 or 8, single ended or differential), with
+				calibration in physical units.</td>
+		</tr>
+		<tr>
+			<td>Analog outputs</td>
+			<td>Generation of analog values, computed by the processes or read
+				from stimulus files.</td>
+		</tr>
+		<tr>
+			<td>Digital inputs/outputs</td>
+			<td>Triggers, switches, synchronization signals, stimulus
+				files.</td>
+		</tr>
+		<tr>
+			<td>CAN</td>
+			<td>Acquisition of Codamotion, Optitrack, gyroscope or time stamp
+				data handled by DOCoMETRe, or any CAN communication written in
+				the processes.</td>
+		</tr>
+		<tr>
+			<td>RS232</td>
+			<td>Serial communication with ICE systems or any serial
+				device.</td>
+		</tr>
+	</table>
+	<p>The parameters of each module and of its channels are described in
+		<a href="../designperspective/dacqconfiguration.html#modules">Modules
+		tabs</a>. The way modules are numbered depends on the variant: see
+		<a href="ADWinGoldTopic.html">ADwin Gold / Gold II</a> and
+		<a href="ADWinProTopic.html">ADwin Pro / Pro II</a>.</p>
+
+	<h2><a name="calibration">Calibration and monitoring</a></h2>
+
+	<p>The <b>Calibration, monitoring</b> button of the General tab loads a
+		calibration program in the system (one for each variant) and shows
+		the values of all the inputs and outputs. It is used to check the
+		wiring and to compute the calibration values of the analog inputs: see
+		<a href="../designperspective/dacqconfiguration.html#calibration">Calibration
+		and monitoring</a>.</p>
+
+	<p>If something goes wrong, see
+		<a href="../troubleshoots/adwin.html">Troubleshoots with ADwin
+		systems</a>.</p>
 
 </body>
 </html>

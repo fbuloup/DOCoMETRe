@@ -1,7 +1,9 @@
 MENU_TITLE = Compute expression(s)
 DESCRIPTION = Compute given expression(d)
 MENU_TITLE_FR = Calculer une ou des expressions
+MENU_TITLE_PL = Obliczanie wyrażeń
 DESCRIPTION_FR = Calcule la ou les expressions fournies
+DESCRIPTION_PL = Oblicza podane wyrażenie lub wyrażenia
 # Several segments are available in ADBascic code :
 # HEADER, INCLUDE, DECLARATION, INITIALIZATION, ACQUISITION, RECOVERY, TRANSFER, EVENT, GENERATION and FINISH
 # The ADBasic function code you need to add in any segments INITIALIZATION, EVENT or FINISH may require contributions to any other segment.
