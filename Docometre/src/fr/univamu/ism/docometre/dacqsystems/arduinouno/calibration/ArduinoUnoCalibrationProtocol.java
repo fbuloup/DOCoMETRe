@@ -232,9 +232,15 @@ public final class ArduinoUnoCalibrationProtocol {
 	 * @param value the value of the output, limited to 0 - ANALOG_OUTPUT_MAXIMUM
 	 */
 	public static String getAnalogOutputCommand(int pin, double value) {
+		return "O" + pin + ":" + getAnalogOutputValue(value);
+	}
+	
+	/**
+	 * @return the value written by analogWrite for this value : rounded and limited to 0 - ANALOG_OUTPUT_MAXIMUM
+	 */
+	public static int getAnalogOutputValue(double value) {
 		long digitValue = Math.round(value);
-		digitValue = Math.max(0, Math.min(ANALOG_OUTPUT_MAXIMUM, digitValue));
-		return "O" + pin + ":" + digitValue;
+		return (int) Math.max(0, Math.min(ANALOG_OUTPUT_MAXIMUM, digitValue));
 	}
 	
 	/**

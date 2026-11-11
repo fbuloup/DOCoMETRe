@@ -110,6 +110,10 @@ public class ArduinoUnoCalibrationProtocolJavaTest {
 		assertEquals("O3:128", ArduinoUnoCalibrationProtocol.getAnalogOutputCommand(3, 127.6));
 		assertEquals("O3:0", ArduinoUnoCalibrationProtocol.getAnalogOutputCommand(3, -2));
 		assertEquals("O3:255", ArduinoUnoCalibrationProtocol.getAnalogOutputCommand(3, 300));
+		// Value displayed in the viewer of the output : value written by analogWrite
+		assertEquals(128, ArduinoUnoCalibrationProtocol.getAnalogOutputValue(127.6));
+		assertEquals(0, ArduinoUnoCalibrationProtocol.getAnalogOutputValue(-2));
+		assertEquals(255, ArduinoUnoCalibrationProtocol.getAnalogOutputValue(300));
 	}
 	
 	@Test

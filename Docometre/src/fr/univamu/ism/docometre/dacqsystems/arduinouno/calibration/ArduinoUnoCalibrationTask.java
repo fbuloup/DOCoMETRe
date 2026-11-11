@@ -356,21 +356,6 @@ public class ArduinoUnoCalibrationTask extends CalibrationTimerTask {
 				long[] lineMeasures = ArduinoUnoCalibrationProtocol.getMeasures(line, inputs.size());
 				if(lineMeasures != null) measures = lineMeasures;
 			}
-			if(measures != null && !inputs.isEmpty()) {
-				double time = System.currentTimeMillis()/1000.0;
-				double[] values = new double[measures.length];
-				for (int i = 0; i < measures.length; i++) {
-					values[i] = getValue(inputs.get(i), measures[i]);
-					ArduinoUnoCalibration.setLastValue(inputsViewers.get(i).getChannel(), values[i]);
-				}
-				Display display = Display.getDefault();
-				if(!terminate && display != null && !display.isDisposed()) display.syncExec(() -> {
-					for (int i = 0; i < values.length; i++) {
-						ChannelViewer channelViewer = inputsViewers.get(i);
-						if(!channelViewer.isDisposed()) channelViewer.addSample(time, values[i]);
-					}
-				});
-			}
 			// Outputs : sent when they change
 			for (Map.Entry<ChannelViewer, Object> output : outputsValues.entrySet()) {
 				ChannelViewer channelViewer = output.getKey();
@@ -383,6 +368,35 @@ public class ArduinoUnoCalibrationTask extends CalibrationTimerTask {
 				else command = ArduinoUnoCalibrationProtocol.getDigitalOutputCommand(channelNumber, (boolean) value);
 				serialPort.writeString(command + "\n");
 				output.setValue(value);
+			}
+			// Each measures line (sent every period, even without input) : values of the inputs, and values written on
+			// the outputs, displayed in their viewers
+			if(measures != null) {
+				double time = System.currentTimeMillis()/1000.0;
+				double[] values = new double[measures.length];
+				for (int i = 0; i < measures.length; i++) {
+					values[i] = getValue(inputs.get(i), measures[i]);
+					ArduinoUnoCalibration.setLastValue(inputsViewers.get(i).getChannel(), values[i]);
+				}
+				List<ChannelViewer> outputsViewers = new ArrayList<>();
+				List<Double> outputsDisplayedValues = new ArrayList<>();
+				for (Map.Entry<ChannelViewer, Object> output : outputsValues.entrySet()) {
+					if(output.getValue() == null) continue;
+					outputsViewers.add(output.getKey());
+					if(outputsAnalog.get(output.getKey())) outputsDisplayedValues.add((double) ArduinoUnoCalibrationProtocol.getAnalogOutputValue((double) output.getValue()));
+					else outputsDisplayedValues.add((boolean) output.getValue() ? 1.0 : 0.0);
+				}
+				Display display = Display.getDefault();
+				if(!terminate && display != null && !display.isDisposed()) display.syncExec(() -> {
+					for (int i = 0; i < values.length; i++) {
+						ChannelViewer channelViewer = inputsViewers.get(i);
+						if(!channelViewer.isDisposed()) channelViewer.addSample(time, values[i]);
+					}
+					for (int i = 0; i < outputsViewers.size(); i++) {
+						ChannelViewer channelViewer = outputsViewers.get(i);
+						if(!channelViewer.isDisposed()) channelViewer.addSample(time, outputsDisplayedValues.get(i));
+					}
+				});
 			}
 		} catch (Exception e) {
 			Activator.logErrorMessageWithCause(e);
