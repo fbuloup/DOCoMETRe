@@ -1,0 +1,271 @@
+/*******************************************************************************
+ * Copyright or © or Copr. Institut des Sciences du Mouvement 
+ * (CNRS & Aix Marseille Université)
+ * 
+ * The DOCoMETER Software must be used with a real time data acquisition 
+ * system marketed by ADwin (ADwin Pro and Gold, I and II) or an Arduino 
+ * Uno. This software, created within the Institute of Movement Sciences, 
+ * has been developed to facilitate their use by a "neophyte" public in the 
+ * fields of industrial computing and electronics.  Students, researchers or 
+ * engineers can configure this acquisition system in the best possible 
+ * conditions so that it best meets their experimental needs. 
+ * 
+ * This software is governed by the CeCILL-B license under French law and
+ * abiding by the rules of distribution of free software.  You can  use, 
+ * modify and/ or redistribute the software under the terms of the CeCILL-B
+ * license as circulated by CEA, CNRS and INRIA at the following URL
+ * "http://www.cecill.info". 
+ * 
+ * As a counterpart to the access to the source code and  rights to copy,
+ * modify and redistribute granted by the license, users are provided only
+ * with a limited warranty  and the software's author,  the holder of the
+ * economic rights,  and the successive licensors  have only  limited
+ * liability. 
+ * 
+ * In this respect, the user's attention is drawn to the risks associated
+ * with loading,  using,  modifying and/or developing or reproducing the
+ * software by the user in light of its specific status of free software,
+ * that may mean  that it is complicated to manipulate,  and  that  also
+ * therefore means  that it is reserved for developers  and  experienced
+ * professionals having in-depth computer knowledge. Users are therefore
+ * encouraged to load and test the software's suitability as regards their
+ * requirements in conditions enabling the security of their systems and/or 
+ * data to be ensured and,  more generally, to use and operate it in the 
+ * same conditions as regards security. 
+ * 
+ * The fact that you are presently reading this means that you have had
+ * knowledge of the CeCILL-B license and that you accept its terms.
+ * 
+ * Contributors:
+ *  - Frank Buloup - frank.buloup@univ-amu.fr - initial API and implementation [11/11/2026]
+ ******************************************************************************/
+package fr.univamu.ism.docometre.calibration;
+
+import java.util.ArrayList;
+
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IMessageProvider;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.dialogs.TitleAreaDialog;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
+
+import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.IImageKeys;
+import fr.univamu.ism.docometre.dacqsystems.Channel;
+import fr.univamu.ism.docometre.widgets.CalibrationListener;
+import fr.univamu.ism.docometre.widgets.ChannelViewer;
+
+/**
+ * Calibration and monitoring dialog, common to the DACQ systems : inputs on the left,
+ * outputs on the right, a ChannelViewer for each channel. The subclass of each system
+ * creates the viewers of its channels (see {@link #populate(Composite, Composite)}) ;
+ * the calibration process of the system is run by {@link CalibrationFactory}.
+ */
+public abstract class AbstractCalibrateMonitorDialog extends TitleAreaDialog {
+	
+	private static final class GlobalCalibrationListener implements CalibrationListener {
+		public static boolean calibrationModified;
+		@Override
+		public void push(double value) {
+			calibrationModified = true;
+		}
+		@Override
+		public double get() throws Exception {
+			// TODO nothing !
+			return 0;
+		}
+		public boolean hasBeenModified() {
+			return calibrationModified;
+		}
+	}
+	
+	public static GlobalCalibrationListener globalCalibrationListener = new GlobalCalibrationListener();
+	
+	private String system;
+	private boolean started; 
+	protected ArrayList<ChannelViewer> channelsViewers = new ArrayList<>();
+
+	/**
+	 * @param system the DACQ system (see Activator.ADWIN_SYSTEM, Activator.ARDUINO_UNO_SYSTEM)
+	 */
+	public AbstractCalibrateMonitorDialog(Shell parentShell, String system) {
+		super(parentShell);
+		this.system = system;
+		GlobalCalibrationListener.calibrationModified = false;
+	}
+	
+	public static CalibrationListener getGlobalCalibrationListener() {
+		return globalCalibrationListener;
+	}
+	
+	public static boolean hasCalibrationBeenModified() {
+		return globalCalibrationListener.hasBeenModified();
+	}
+	
+	/**
+	 * Creates the ChannelViewer of each input in inputsContainer and of each output in outputsContainer,
+	 * and adds them to {@link #channelsViewers}
+	 */
+	protected abstract void populate(Composite inputsContainer, Composite outputsContainer);
+	
+	/**
+	 * Creates a viewer of a channel in container and adds it to {@link #channelsViewers}
+	 */
+	protected ChannelViewer createChannelViewer(Composite container, Channel channel, boolean input, boolean analog) {
+		ChannelViewer channelViewer = new ChannelViewer(container, SWT.NONE, channel, input, analog);
+		channelViewer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		channelsViewers.add(channelViewer);
+		return channelViewer;
+	}
+	
+	@Override
+	public void create() {
+		super.create();
+		getShell().setText(DocometreMessages.CalibrationMonitoringDialogShellTitle);
+		setTitle(DocometreMessages.CalibrationMonitoringDialogTitle);
+		String message = DocometreMessages.CalibrationMonitoringDialogMessage;
+		message = NLS.bind(message, IDialogConstants.PROCEED_LABEL);
+		message = message.replaceAll("&", "");
+		setMessage(message, IMessageProvider.INFORMATION);
+		setTitleImage(Activator.getImage(IImageKeys.CALIBRATE_MONITOR_WIZBAN));
+		getShell().setMaximized(true);
+	}
+	
+	@Override
+	protected Control createDialogArea(Composite parent) {
+
+		Composite container = new Composite(parent, SWT.BORDER);
+		container.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		GridLayout gl = new GridLayout(2, true);
+		gl.horizontalSpacing = 2;
+		gl.verticalSpacing = 0;
+		gl.marginWidth = 2;
+		gl.marginHeight = 2;
+		container.setLayout(gl);
+
+		ScrolledComposite inputsScrolledComposite = new ScrolledComposite(container, SWT.V_SCROLL /*| SWT.H_SCROLL*/ | SWT.BORDER);
+		inputsScrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		
+		Composite inputsContainer = new Composite(inputsScrolledComposite, SWT.NONE);
+		inputsScrolledComposite.setContent(inputsContainer);
+		gl = new GridLayout();
+		gl.horizontalSpacing = 0;
+		gl.verticalSpacing = 0;
+		gl.marginWidth = 0;
+		gl.marginHeight = 0;
+		inputsContainer.setLayout(gl);
+		Label labelInputs = new Label(inputsContainer, SWT.NORMAL);
+		labelInputs.setText(DocometreMessages.Inputs);
+		labelInputs.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, false));
+		labelInputs.setFont(Activator.getBoldFont(JFaceResources.DEFAULT_FONT));
+		
+		ScrolledComposite outputsScrolledComposite = new ScrolledComposite(container, SWT.V_SCROLL /*| SWT.H_SCROLL*/ | SWT.BORDER);
+		outputsScrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		
+		Composite outputsContainer = new Composite(outputsScrolledComposite, SWT.NONE);
+		outputsScrolledComposite.setContent(outputsContainer);
+		gl = new GridLayout();
+		gl.horizontalSpacing = 0;
+		gl.verticalSpacing = 0;
+		gl.marginWidth = 0;
+		gl.marginHeight = 0;
+		outputsContainer.setLayout(gl);
+		Label labelOutputs = new Label(outputsContainer, SWT.NORMAL);
+		labelOutputs.setText(DocometreMessages.Outputs);
+		labelOutputs.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, false));
+		labelOutputs.setFont(Activator.getBoldFont(JFaceResources.DEFAULT_FONT));
+
+		populate(inputsContainer, outputsContainer);
+		
+		inputsScrolledComposite.addControlListener(new ControlAdapter() {
+			@Override
+			public void controlResized(ControlEvent e) {
+				inputsContainer.setSize(inputsContainer.computeSize(inputsScrolledComposite.getSize().x, SWT.DEFAULT));
+			}
+		});
+		
+		outputsScrolledComposite.addControlListener(new ControlAdapter() {
+			@Override
+			public void controlResized(ControlEvent e) {
+				outputsContainer.setSize(outputsContainer.computeSize(outputsScrolledComposite.getSize().x, SWT.DEFAULT));
+			}
+		});
+		
+		getShell().addDisposeListener(new DisposeListener() {
+			
+			@Override
+			public void widgetDisposed(DisposeEvent e) {
+				CalibrationFactory.stopCalibrationProcess();
+				
+			}
+		});
+		
+		return container;
+		
+		
+	}
+	
+	/**
+	 * Starts the calibration process of the system (Proceed button), on the UI thread
+	 */
+	protected void startCalibrationProcess() throws Exception {
+		CalibrationFactory.runCalibrationProcess(system, channelsViewers.toArray(new ChannelViewer[channelsViewers.size()]));
+	}
+	
+	@Override
+	protected void createButtonsForButtonBar(Composite parent) {
+		Button proceedButton = createButton(parent, IDialogConstants.PROCEED_ID, IDialogConstants.PROCEED_LABEL, false);
+		proceedButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent event) {
+				if(!started) {
+					try {
+						startCalibrationProcess();
+						proceedButton.setText(IDialogConstants.STOP_LABEL);
+						started = !started;
+					} catch (Exception e) {
+						Activator.logErrorMessageWithCause(e);
+						e.printStackTrace();
+						MessageDialog.openError(getShell(), "Error", e.getMessage());
+					}
+				} else {
+					proceedButton.setText(IDialogConstants.PROCEED_LABEL);
+					CalibrationFactory.stopCalibrationProcess();
+					started = !started;
+				}
+			}
+		});
+		Button terminatedButton = createButton(parent, IDialogConstants.OK_ID, IDialogConstants.FINISH_LABEL, false);
+		terminatedButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if(started) {
+					CalibrationFactory.stopCalibrationProcess();
+				}
+			}
+		});
+	}
+	
+	@Override
+	protected boolean isResizable() {
+		return true;
+	}
+	
+}

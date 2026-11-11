@@ -58,10 +58,10 @@ import org.eclipse.swt.widgets.Label;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
+import fr.univamu.ism.docometre.calibration.AbstractCalibrateMonitorDialog;
 import fr.univamu.ism.docometre.calibration.CalibrationFactory;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
-import fr.univamu.ism.docometre.dacqsystems.adwin.calibration.CalibrateMonitorDialog;
 import fr.univamu.ism.rtswtchart.IRTSWTOscilloChart;
 import fr.univamu.ism.rtswtchart.IRTSWTSerie;
 import fr.univamu.ism.rtswtchart.RTSWTChartsFactory;
@@ -165,10 +165,10 @@ public class ChannelViewer extends Composite {
 				showCalibratedValuesButton.setText(DocometreMessages.ShowCalibratedValues);
 				// Create calibrate header 
 				CalibrationHeader calibrationHeader = CalibrationFactory.createHeader(titleComposite, channel);
-				calibrationHeader.addAMaxListener(CalibrateMonitorDialog.getGlobalCalibrationListener());
-				calibrationHeader.addAMinListener(CalibrateMonitorDialog.getGlobalCalibrationListener());
-				calibrationHeader.addUMaxListener(CalibrateMonitorDialog.getGlobalCalibrationListener());
-				calibrationHeader.addUMinListener(CalibrateMonitorDialog.getGlobalCalibrationListener());
+				calibrationHeader.addAMaxListener(AbstractCalibrateMonitorDialog.getGlobalCalibrationListener());
+				calibrationHeader.addAMinListener(AbstractCalibrateMonitorDialog.getGlobalCalibrationListener());
+				calibrationHeader.addUMaxListener(AbstractCalibrateMonitorDialog.getGlobalCalibrationListener());
+				calibrationHeader.addUMinListener(AbstractCalibrateMonitorDialog.getGlobalCalibrationListener());
 			}
 			// Analog or digital input
 			valueLabel = new Label(titleComposite, SWT.NONE);
@@ -219,6 +219,15 @@ public class ChannelViewer extends Composite {
 	
 	public void setInitialAnalogState(double value) {
 		spinnerValue.setValue(value);
+	}
+	
+	/**
+	 * Range of the values of an analog output (-10 to 10 by default)
+	 */
+	public void setOutputRange(double minValue, double maxValue) {
+		if(spinnerValue == null) return;
+		spinnerValue.setMinValue(minValue);
+		spinnerValue.setMaxValue(maxValue);
 	}
 	
 	private void createGraph() {
