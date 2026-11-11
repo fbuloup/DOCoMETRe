@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.widgets.Hyperlink;
@@ -73,6 +74,10 @@ public class ImageChartConfiguration extends ChartConfiguration {
 	@Override
 	public void populateChartConfigurationContainer(Composite container, ChartsConfigurationPage page, ModuleSectionPart generalConfigurationSectionPart) {
 		container.setLayout(new GridLayout(2, false));
+		
+		Label explanationsLabel = page.getManagedForm().getToolkit().createLabel(container, DocometreMessages.ImageChartExplanations, SWT.WRAP);
+		explanationsLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		((GridData)explanationsLabel.getLayoutData()).widthHint = 200;
 		
 		page.createLabel(container, ImageChartConfigurationProperties.IMAGES_FILE_NAME.getLabel(), ImageChartConfigurationProperties.IMAGES_FILE_NAME.getTooltip());
 		imagesFileNameText = page.createText(container, getProperty(ImageChartConfigurationProperties.IMAGES_FILE_NAME), SWT.NONE, 1, 1);

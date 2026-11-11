@@ -439,6 +439,7 @@ public final class DocometreMessages extends NLS {
 	public static String ImageChartFileEmpty;
 	public static String ImageChartImageNotFound;
 	public static String ImageChartImageLoadError;
+	public static String ImageChartExplanations;
 	public static String ImpossibleToCreate3DChartMessage;
 	public static String DifferentSampleFrequencies;
 	
