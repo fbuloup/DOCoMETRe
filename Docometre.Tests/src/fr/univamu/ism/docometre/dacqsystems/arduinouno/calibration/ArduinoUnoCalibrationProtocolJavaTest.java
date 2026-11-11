@@ -58,6 +58,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -121,11 +123,13 @@ public class ArduinoUnoCalibrationProtocolJavaTest {
 	
 	@Test
 	public void identification() {
-		assertEquals("R3", ArduinoUnoCalibrationProtocol.getBoard("CAL1:R3"));
-		assertEquals("R4", ArduinoUnoCalibrationProtocol.getBoard("CAL1:R4\r"));
-		assertNull(ArduinoUnoCalibrationProtocol.getBoard("CAL2:R3"));
-		assertTrue(ArduinoUnoCalibrationProtocol.isIdentification("CAL2:R3"));
-		assertNull(ArduinoUnoCalibrationProtocol.getBoard("CAL1:R5"));
+		int version = ArduinoUnoCalibrationProtocol.VERSION;
+		assertEquals("R3", ArduinoUnoCalibrationProtocol.getBoard("CAL" + version + ":R3"));
+		assertEquals("R4", ArduinoUnoCalibrationProtocol.getBoard("CAL" + version + ":R4\r"));
+		// Other version (firmware uploaded again) : not the expected firmware, but an identification
+		assertNull(ArduinoUnoCalibrationProtocol.getBoard("CAL" + (version - 1) + ":R4"));
+		assertTrue(ArduinoUnoCalibrationProtocol.isIdentification("CAL" + (version - 1) + ":R4"));
+		assertNull(ArduinoUnoCalibrationProtocol.getBoard("CAL" + version + ":R5"));
 		assertNull(ArduinoUnoCalibrationProtocol.getBoard("w"));
 	}
 	
@@ -161,6 +165,15 @@ public class ArduinoUnoCalibrationProtocolJavaTest {
 		assertTrue(Double.isNaN(ArduinoUnoCalibrationProtocol.getAnalogVoltage(512, "AR_DEFAULT", "R3")));
 		assertEquals(-6.144, ArduinoUnoCalibrationProtocol.getADS1115Voltage(-32768, 0), 1e-9);
 		assertEquals(0.128, ArduinoUnoCalibrationProtocol.getADS1115Voltage(16384, 16), 1e-9);
+	}
+	
+	@Test
+	public void sameVersionAsFirmware() throws Exception {
+		Path protocolFile = findProtocolFile();
+		assumeTrue(protocolFile != null, PROTOCOL_FILE + " not found");
+		Matcher matcher = Pattern.compile("#define CAL_PROTOCOL_VERSION (\\d+)").matcher(Files.readString(protocolFile));
+		assertTrue(matcher.find());
+		assertEquals(Integer.parseInt(matcher.group(1)), ArduinoUnoCalibrationProtocol.VERSION, "CAL_PROTOCOL_VERSION of the firmware");
 	}
 	
 	@Test

@@ -49,7 +49,7 @@
  * configuration, then it sends the values of the inputs periodically.
  *
  * Commands (one line each, ended by '\n') and answers :
- *   I                          identification : "CAL<version>:<board>" (e.g. "CAL1:R3")
+ *   I                          identification : "CAL<version>:<board>" (e.g. "CAL2:R3")
  *   C                          clear : stop, outputs reset, inputs and outputs removed -> "K"
  *   F<reference>               analog reference (DEFAULT, INTERNAL, EXTERNAL on R3 ; AR_DEFAULT, AR_INTERNAL, AR_EXTERNAL on R4) -> "K"
  *   T<period>                  period of the measures in ms (5 to 1000, default 20) -> "K"
@@ -75,7 +75,10 @@
 #include <string.h>
 #include <stdio.h>
 
-#define CAL_PROTOCOL_VERSION 1
+// Version of the firmware, in its identification : DOCoMETRe uploads the firmware when the board runs another
+// version. Increase it with each modification of the firmware (and ArduinoUnoCalibrationProtocol.VERSION)
+// 1 : first version ; 2 : DAC of R4 WiFi in 12 bits, references of each board
+#define CAL_PROTOCOL_VERSION 2
 #define CAL_MAX_INPUTS 24
 #define CAL_MAX_OUTPUTS 24
 #define CAL_ADS_FIRST_ADDRESS 0x48

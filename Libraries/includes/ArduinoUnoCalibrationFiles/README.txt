@@ -26,5 +26,8 @@ library ADS1X15 0.6.2 (Rob Tillaart).
 
 then copy buildR3/ArduinoUnoCalibration.ino.hex as ArduinoUnoCalibration_R3.hex
 and buildR4/ArduinoUnoCalibration.ino.bin as ArduinoUnoCalibration_R4WiFi.bin.
-When the protocol changes, increase CAL_PROTOCOL_VERSION in CalibrationProtocol.h
-and the version expected by DOCoMETRe (ArduinoUnoCalibrationProtocol.VERSION).
+With each modification of the firmware, increase CAL_PROTOCOL_VERSION in
+CalibrationProtocol.h and the version expected by DOCoMETRe
+(ArduinoUnoCalibrationProtocol.VERSION, checked by the tests) : DOCoMETRe uploads
+the firmware only when the board does not answer with the expected version, a
+board running a previous build of the same version would keep it.

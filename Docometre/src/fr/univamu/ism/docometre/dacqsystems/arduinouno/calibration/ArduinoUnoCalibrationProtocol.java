@@ -55,9 +55,10 @@ import java.util.regex.Pattern;
 public final class ArduinoUnoCalibrationProtocol {
 	
 	/**
-	 * Version of the protocol expected in the identification of the firmware
+	 * Version of the firmware expected in its identification (CAL_PROTOCOL_VERSION of CalibrationProtocol.h) : the
+	 * firmware is uploaded when the board runs another version
 	 */
-	public static final int VERSION = 1;
+	public static final int VERSION = 2;
 	
 	/**
 	 * Baud rate of the firmware (precompiled)

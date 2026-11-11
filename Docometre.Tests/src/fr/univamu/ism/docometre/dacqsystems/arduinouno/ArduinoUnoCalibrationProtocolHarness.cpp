@@ -64,7 +64,9 @@ int main(int argc, char** argv) {
 	}
 	int failures = 0;
 	// Identification, CR LF accepted
-	CHECK(send("I\r\n") == "CAL1:R3\n");
+	char identification[16];
+	snprintf(identification, sizeof(identification), "CAL%d:R3\n", CAL_PROTOCOL_VERSION);
+	CHECK(send("I\r\n") == identification);
 	// Configuration
 	CHECK(send("C\nFINTERNAL\nT50\n") == "K\nK\nK\n");
 	CHECK(reference == "INTERNAL");
@@ -121,7 +123,7 @@ int main(int argc, char** argv) {
 	CHECK(send("B0x4B:0\n") == "E:B0x4B:0\n");
 	// Too long line
 	CHECK(send(std::string(60, 'A') + "\n") == "E:overflow\n");
-	CHECK(send("I\n") == "CAL1:R3\n");
+	CHECK(send("I\n") == identification);
 	// Inputs limit
 	send("C\n");
 	std::string commands;
