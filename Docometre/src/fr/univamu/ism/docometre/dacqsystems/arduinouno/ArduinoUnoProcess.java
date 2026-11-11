@@ -833,7 +833,56 @@ public class ArduinoUnoProcess extends Process {
 //			code = code + "bool firstLoop = true;\n\n";
 			code = code + "// String serialMessage\n";
 			code = code + "char serialMessage[64];\n";
-			if(isRelease4Wifi) code = code + "String globalSerialMessage;;\n\n";
+			if(isRelease4Wifi) {
+				// Messages added in the real time loop interrupt : no dynamic memory (String) in the interrupt, the
+				// memory allocator is not reentrant (interrupt adding messages while loop() releases them)
+				code = code + "// Messages for the PC : added by the real time loop interrupt (globalSerialMessage += ...),\n";
+				code = code + "// sent by loop(). Two buffers without dynamic memory, exchanged by loop() while interrupts are masked\n";
+				code = code + "#define SERIAL_MESSAGES_SIZE 2048\n";
+				code = code + "class SerialMessages {\n";
+				code = code + "\tpublic:\n";
+				code = code + "\t\tSerialMessages& operator+=(const char* text) {\n";
+				code = code + "\t\t\t\tsize_t length = strlen(text);\n";
+				code = code + "\t\t\t\tif(sizes[current] + length <= SERIAL_MESSAGES_SIZE) {\n";
+				code = code + "\t\t\t\t\t\tmemcpy(buffers[current] + sizes[current], text, length);\n";
+				code = code + "\t\t\t\t\t\tsizes[current] += length;\n";
+				code = code + "\t\t\t\t} else lost = true;\n";
+				code = code + "\t\t\t\treturn *this;\n";
+				code = code + "\t\t}\n";
+				code = code + "\t\t// Messages removed (start of the process)\n";
+				code = code + "\t\tSerialMessages& operator=(const char* text) {\n";
+				code = code + "\t\t\t\tnoInterrupts();\n";
+				code = code + "\t\t\t\tsizes[0] = 0;\n";
+				code = code + "\t\t\t\tsizes[1] = 0;\n";
+				code = code + "\t\t\t\tlost = false;\n";
+				code = code + "\t\t\t\tinterrupts();\n";
+				code = code + "\t\t\t\treturn *this += text;\n";
+				code = code + "\t\t}\n";
+				code = code + "\t\t// Sends the messages added since the last call : called by loop(), never in the interrupt\n";
+				code = code + "\t\tvoid send() {\n";
+				code = code + "\t\t\t\tnoInterrupts();\n";
+				code = code + "\t\t\t\tuint8_t full = current;\n";
+				code = code + "\t\t\t\tsize_t size = sizes[full];\n";
+				code = code + "\t\t\t\tbool messagesLost = lost;\n";
+				code = code + "\t\t\t\tif(size > 0 || messagesLost) {\n";
+				code = code + "\t\t\t\t\t\tcurrent = 1 - current;\n";
+				code = code + "\t\t\t\t\t\tsizes[current] = 0;\n";
+				code = code + "\t\t\t\t\t\tlost = false;\n";
+				code = code + "\t\t\t\t}\n";
+				code = code + "\t\t\t\tinterrupts();\n";
+				code = code + "\t\t\t\tif(size > 0) Serial.write((uint8_t*)buffers[full], size);\n";
+				code = code + "\t\t\t\t// Written in the diary of the trial by DOCoMETRe (not a data message)\n";
+				code = code + "\t\t\t\tif(messagesLost) Serial.println(\"ERROR : messages lost, messages buffer full\");\n";
+				code = code + "\t\t\t\tif(size > 0 || messagesLost) Serial.flush();\n";
+				code = code + "\t\t}\n";
+				code = code + "\tprivate:\n";
+				code = code + "\t\tchar buffers[2][SERIAL_MESSAGES_SIZE];\n";
+				code = code + "\t\tvolatile size_t sizes[2] = {0, 0};\n";
+				code = code + "\t\tvolatile uint8_t current = 0;\n";
+				code = code + "\t\tvolatile bool lost = false;\n";
+				code = code + "};\n";
+				code = code + "SerialMessages globalSerialMessage;\n\n";
+			}
 			code = code + "\n";
 			code = code + "// Index to send time and workload at regular intervall (#200ms)\n";
 			code = code + "unsigned long sendTimeWorkload;\n\n";
@@ -1066,11 +1115,7 @@ public class ArduinoUnoProcess extends Process {
 			
 			code = code + "void loop() {\n";
 			if(isRelease4Wifi) {
-				code = code + "\t\tif(!globalSerialMessage.equals(\"\")) {\n";
-				code = code + "\t\t\t\tSerial.print(globalSerialMessage);\n";
-				code = code + "\t\t\t\tglobalSerialMessage = \"\";\n";
-				code = code + "\t\t\t\tSerial.flush();\n";
-				code = code + "\t\t}\n";
+				code = code + "\t\tglobalSerialMessage.send();\n";
 				if(hasPropagatedParameters()) {
 					code = code + "\t\t// End of process : values of the propagated parameters sent before 's' char\n";
 					code = code + "\t\tif(propagationInProgress) {\n";
@@ -1169,9 +1214,12 @@ public class ArduinoUnoProcess extends Process {
 				code = code + "int acquireADS1115AnalogInput(ADS1115 ads, byte inputNumber, byte gain, bool transfert, byte transferNumber) {\n";
 				code = code + "\t\tint value = 0;\n";
 				code = code + "\t\tads.setGain(gain);\n";
-				code = code + "\t\tinterrupts();\n";
+				// R3 : interrupts are disabled in the real time loop interrupt, I2C needs them. R4 : I2C interrupts can
+				// interrupt the real time loop (see its priority) ; noInterrupts() would disable all interrupts after the
+				// end of the real time loop interrupt (PRIMASK of the Cortex-M4 is not restored at the end of an interrupt)
+				if(isRelease3) code = code + "\t\tinterrupts();\n";
 				code = code + "\t\tvalue = ads.readADC(inputNumber);\n";
-				code = code + "\t\tnoInterrupts();\n";
+				if(isRelease3) code = code + "\t\tnoInterrupts();\n";
 				code = code + "\t\tif(transfert) {\n";
 				code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%d\", transferNumber, value);\n";
 				if(isRelease4Wifi) {
@@ -1532,7 +1580,9 @@ public class ArduinoUnoProcess extends Process {
 					code = code + "\t\t\t\trealtimeLoop_Timer_Started = (timerIndex >= 0);\n";
 					code = code + "\t\t\t\tFspTimer::force_use_of_pwm_reserved_timer();\n";
 					code = code + "\t\t\t\trealtimeLoop_Timer_Started = realtimeLoop_Timer_Started && realtimeLoop_Timer.begin(TIMER_MODE_PERIODIC, timerType, timerIndex, " + sf + ", 0.0f, processing);\n";
-					code = code + "\t\t\t\trealtimeLoop_Timer_Started = realtimeLoop_Timer_Started && realtimeLoop_Timer.setup_overflow_irq();\n";
+					// Priority 13, lower than the one of the interrupts of the serial port (UART to the ESP32), I2C and USB (12) :
+					// they can interrupt the real time loop (end of a transmission, I2C transfer of ADS1115 inputs)
+					code = code + "\t\t\t\trealtimeLoop_Timer_Started = realtimeLoop_Timer_Started && realtimeLoop_Timer.setup_overflow_irq(13);\n";
 					code = code + "\t\t\t\trealtimeLoop_Timer_Started = realtimeLoop_Timer_Started && realtimeLoop_Timer.open();\n";
 					code = code + "\t\t}\n";
 					code = code + "\t\trealtimeLoop_Timer_Started = realtimeLoop_Timer_Started && realtimeLoop_Timer.start();\n";
