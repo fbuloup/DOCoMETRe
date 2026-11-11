@@ -18,7 +18,8 @@ static bool adsConnected = true;
 
 const char* calBoardName() { return "R3"; }
 bool calAnalogReference(const char* name) {
-	if(strcmp(name, "DEFAULT") != 0 && strcmp(name, "INTERNAL") != 0 && strcmp(name, "EXTERNAL") != 0 && strcmp(name, "AR_DEFAULT") != 0 && strcmp(name, "AR_EXTERNAL") != 0) return false;
+	// R3 references
+	if(strcmp(name, "DEFAULT") != 0 && strcmp(name, "INTERNAL") != 0 && strcmp(name, "EXTERNAL") != 0) return false;
 	reference = name;
 	return true;
 }
@@ -101,6 +102,7 @@ int main(int argc, char** argv) {
 	// Wrong commands
 	CHECK(send("X\n") == "E:X\n");
 	CHECK(send("FVCC\n") == "E:FVCC\n");
+	CHECK(send("FAR_DEFAULT\n") == "E:FAR_DEFAULT\n");
 	CHECK(send("T2\n") == "E:T2\n");
 	CHECK(send("A\n") == "E:A\n");
 	CHECK(send("Aa\n") == "E:Aa\n");

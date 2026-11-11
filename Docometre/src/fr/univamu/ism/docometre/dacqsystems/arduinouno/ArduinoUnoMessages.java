@@ -227,6 +227,7 @@ public class ArduinoUnoMessages extends NLS {
 	public static String Calibration_R4RequiresArduinoCLI;
 	public static String Calibration_NoChannel;
 	public static String Calibration_NoValue;
+	public static String Calibration_WrongReference;
 	
 	static {
 		NLS.initializeMessages(BUNDLE_NAME, ArduinoUnoMessages.class);

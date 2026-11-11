@@ -192,7 +192,20 @@ public final class ArduinoUnoCalibrationProtocol {
 	}
 	
 	/**
-	 * @param reference the analog reference, as in the analog inputs module (DEFAULT, INTERNAL, EXTERNAL, AR_DEFAULT or AR_EXTERNAL)
+	 * @param reference an analog reference
+	 * @param board BOARD_R3 or BOARD_R4
+	 * @return true if the reference is known by the board : DEFAULT, INTERNAL or EXTERNAL for R3, AR_DEFAULT,
+	 * AR_INTERNAL or AR_EXTERNAL for R4
+	 */
+	public static boolean isReferenceOfBoard(String reference, String board) {
+		reference = reference.trim();
+		if(BOARD_R4.equals(board)) return "AR_DEFAULT".equals(reference) || "AR_INTERNAL".equals(reference) || "AR_EXTERNAL".equals(reference);
+		return "DEFAULT".equals(reference) || "INTERNAL".equals(reference) || "EXTERNAL".equals(reference);
+	}
+	
+	/**
+	 * @param reference the analog reference, as in the analog inputs module (see {@link #isReferenceOfBoard(String, String)}),
+	 * null when there is no analog input (not sent)
 	 * @param ads1115Modules addresses and data rates of the ADS1115 modules used by inputs ({address, data rate} pairs)
 	 * @param inputs the inputs, in the order of the measures
 	 * @param digitalOutputs pins of the digital outputs
@@ -202,7 +215,7 @@ public final class ArduinoUnoCalibrationProtocol {
 	public static List<String> getConfigurationCommands(String reference, List<int[]> ads1115Modules, List<Input> inputs, List<Integer> digitalOutputs, List<Integer> analogOutputs) {
 		List<String> commands = new ArrayList<>();
 		commands.add(CLEAR);
-		commands.add("F" + reference.trim());
+		if(reference != null) commands.add("F" + reference.trim());
 		commands.add("T" + MEASURES_PERIOD);
 		for (int[] module : ads1115Modules) commands.add("B" + getAddressText(module[0]) + ":" + module[1]);
 		for (Input input : inputs) commands.add(input.getCommand());
@@ -246,14 +259,17 @@ public final class ArduinoUnoCalibrationProtocol {
 	}
 	
 	/**
-	 * @param reference the analog reference (DEFAULT, INTERNAL, EXTERNAL, AR_DEFAULT or AR_EXTERNAL)
+	 * @param reference the analog reference (see {@link #isReferenceOfBoard(String, String)})
 	 * @param board BOARD_R3 or BOARD_R4
-	 * @return the voltage of this reference, NaN when it is not known (EXTERNAL : voltage of the AREF pin)
+	 * @return the voltage of this reference, NaN when it is not known (EXTERNAL, AR_EXTERNAL : voltage of the AREF
+	 * pin ; reference of the other board)
 	 */
 	public static double getReferenceVoltage(String reference, String board) {
 		reference = reference.trim();
+		if(!isReferenceOfBoard(reference, board)) return Double.NaN;
 		if("DEFAULT".equals(reference) || "AR_DEFAULT".equals(reference)) return 5;
-		if("INTERNAL".equals(reference)) return BOARD_R4.equals(board) ? 1.5 : 1.1;
+		if("INTERNAL".equals(reference)) return 1.1;
+		if("AR_INTERNAL".equals(reference)) return 1.5;
 		return Double.NaN;
 	}
 	

@@ -46,12 +46,14 @@ import fr.univamu.ism.docometre.dacqsystems.Property;
 
 public final class ArduinoUnoAnInModuleProperties extends Property {
 	
-	public static final ArduinoUnoAnInModuleProperties ANALOG_REFERENCE = new ArduinoUnoAnInModuleProperties("ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE", ArduinoUnoMessages.AnalogReference_Label, ArduinoUnoMessages.AnalogReference_Tooltip, "^(DEFAULT|INTERNAL|EXTERNAL|AR_DEFAULT|AR_EXTERNAL)$", "DEFAULT:INTERNAL:EXTERNAL:AR_DEFAULT:AR_EXTERNAL");
+	public static final ArduinoUnoAnInModuleProperties ANALOG_REFERENCE = new ArduinoUnoAnInModuleProperties("ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE", ArduinoUnoMessages.AnalogReference_Label, ArduinoUnoMessages.AnalogReference_Tooltip, "^(DEFAULT|INTERNAL|EXTERNAL|AR_DEFAULT|AR_INTERNAL|AR_EXTERNAL)$", "DEFAULT:INTERNAL:EXTERNAL:AR_DEFAULT:AR_INTERNAL:AR_EXTERNAL");
 	
+	// Analog references of Arduino Uno R3 : DEFAULT, INTERNAL, EXTERNAL ; of Arduino Uno R4 WiFi : AR_DEFAULT, AR_INTERNAL, AR_EXTERNAL
 	public static String DEFAULT = "DEFAULT";
 	public static String INTERNAL = "INTERNAL";
 	public static String EXTERNAL = "EXTERNAL";
 	public static String AR_DEFAULT = "AR_DEFAULT";
+	public static String AR_INTERNAL = "AR_INTERNAL";
 	public static String AR_EXTERNAL = "AR_EXTERNAL";
 	
 	public static void populateProperties(Module module){

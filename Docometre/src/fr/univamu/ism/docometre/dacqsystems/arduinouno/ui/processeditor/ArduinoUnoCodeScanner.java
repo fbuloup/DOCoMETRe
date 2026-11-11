@@ -65,7 +65,7 @@ public class ArduinoUnoCodeScanner extends RuleBasedScanner {
 	private static String[] SEGMENTS = {"setup()", "loop()", "finalize()"};
 	public static String[] RESERVED_WORDS = {"double", "for", "while", "do", "void", "auto", "signed", "const", "extern", "register", "unsigned", "int", "float", "char", "double", "long", "break", "return", "continue",
 												"if", "else", "switch", "case", "default", "sizeof", "struct", "typedef", "union", "volatile", "byte", "bool", "sprintf", "Serial", "println", "print", "begin",
-												"available", "read", "micros", "String", "wdt_enable", "exit", "EXTERNAL", "INTERNAL", "DEFAULT", "AR_EXTERNAL", "AR_DEFAULT", "GPT_TIMER", "TIMER_MODE_PERIODIC", "force_use_of_pwm_reserved_timer", 
+												"available", "read", "micros", "String", "wdt_enable", "exit", "EXTERNAL", "INTERNAL", "DEFAULT", "AR_EXTERNAL", "AR_DEFAULT", "AR_INTERNAL", "GPT_TIMER", "TIMER_MODE_PERIODIC", "force_use_of_pwm_reserved_timer", 
 												"FspTimer", "get_available_timer", "analogReference", "pinMode", "WDT"};
 	
 	public static RuleBasedScanner getIncludeScanner(ArduinoUnoSourceEditor arduinoUnoSourceEditor) {

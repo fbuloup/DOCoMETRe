@@ -43,6 +43,7 @@ package fr.univamu.ism.docometre.dacqsystems.arduinouno.calibration;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -82,6 +83,24 @@ public class ArduinoUnoCalibrationProtocolJavaTest {
 	@Test
 	public void configurationCommands() {
 		assertEquals(Arrays.asList("C", "FDEFAULT", "T20", "B0x49:7", "A0", "A5", "S0x49:2:0", "S0x49:3:16", "D7:1", "D8:0", "P13", "P12", "Q3", "Q11"), sampleCommands());
+	}
+	
+	@Test
+	public void withoutAnalogInputReferenceIsNotSent() {
+		List<String> commands = ArduinoUnoCalibrationProtocol.getConfigurationCommands(null, new ArrayList<>(), Arrays.asList(Input.digital(2, false)), Arrays.asList(), Arrays.asList());
+		assertEquals(Arrays.asList("C", "T20", "D2:0"), commands);
+	}
+	
+	@Test
+	public void referencesOfBoards() {
+		for (String reference : new String[] {"DEFAULT", "INTERNAL", "EXTERNAL"}) {
+			assertTrue(ArduinoUnoCalibrationProtocol.isReferenceOfBoard(reference, "R3"), reference);
+			assertFalse(ArduinoUnoCalibrationProtocol.isReferenceOfBoard(reference, "R4"), reference);
+		}
+		for (String reference : new String[] {"AR_DEFAULT", "AR_INTERNAL", "AR_EXTERNAL"}) {
+			assertTrue(ArduinoUnoCalibrationProtocol.isReferenceOfBoard(reference, "R4"), reference);
+			assertFalse(ArduinoUnoCalibrationProtocol.isReferenceOfBoard(reference, "R3"), reference);
+		}
 	}
 	
 	@Test
@@ -127,8 +146,12 @@ public class ArduinoUnoCalibrationProtocolJavaTest {
 		assertEquals(5.0 * 1023 / 1024, ArduinoUnoCalibrationProtocol.getAnalogVoltage(1023, "DEFAULT", "R3"), 1e-9);
 		assertEquals(2.5, ArduinoUnoCalibrationProtocol.getAnalogVoltage(8192, "AR_DEFAULT", "R4"), 1e-9);
 		assertEquals(1.1 / 2, ArduinoUnoCalibrationProtocol.getAnalogVoltage(512, "INTERNAL", "R3"), 1e-9);
-		assertEquals(1.5 / 2, ArduinoUnoCalibrationProtocol.getAnalogVoltage(8192, "INTERNAL", "R4"), 1e-9);
+		assertEquals(1.5 / 2, ArduinoUnoCalibrationProtocol.getAnalogVoltage(8192, "AR_INTERNAL", "R4"), 1e-9);
 		assertTrue(Double.isNaN(ArduinoUnoCalibrationProtocol.getAnalogVoltage(512, "EXTERNAL", "R3")));
+		assertTrue(Double.isNaN(ArduinoUnoCalibrationProtocol.getAnalogVoltage(8192, "AR_EXTERNAL", "R4")));
+		// Reference of the other board
+		assertTrue(Double.isNaN(ArduinoUnoCalibrationProtocol.getAnalogVoltage(8192, "DEFAULT", "R4")));
+		assertTrue(Double.isNaN(ArduinoUnoCalibrationProtocol.getAnalogVoltage(512, "AR_DEFAULT", "R3")));
 		assertEquals(-6.144, ArduinoUnoCalibrationProtocol.getADS1115Voltage(-32768, 0), 1e-9);
 		assertEquals(0.128, ArduinoUnoCalibrationProtocol.getADS1115Voltage(16384, 16), 1e-9);
 	}

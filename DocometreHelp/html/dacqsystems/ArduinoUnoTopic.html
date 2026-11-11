@@ -41,7 +41,7 @@
 		<tr><td>Board name used to compile (FQBN)</td><td><code>arduino:avr:uno</code></td><td><code>arduino:renesas_uno:unor4wifi</code></td></tr>
 		<tr><td>Compilation and upload</td><td>arduino-cli, or arduino-builder and avrdude</td><td>arduino-cli only</td></tr>
 		<tr><td>Resolution of the analog inputs</td><td>10 bits (0 to 1023)</td><td>14 bits (0 to 16383)</td></tr>
-		<tr><td>Analog reference</td><td><code>DEFAULT</code>, <code>INTERNAL</code>, <code>EXTERNAL</code></td><td><code>AR_DEFAULT</code>, <code>AR_EXTERNAL</code></td></tr>
+		<tr><td>Analog reference</td><td><code>DEFAULT</code>, <code>INTERNAL</code>, <code>EXTERNAL</code></td><td><code>AR_DEFAULT</code>, <code>AR_INTERNAL</code>, <code>AR_EXTERNAL</code></td></tr>
 		<tr><td>Timer of the real time loop</td><td>Timer 1 (16 bits)</td><td>GPT timer, with a watchdog</td></tr>
 		<tr><td>Size of an <code>int</code></td><td>16 bits</td><td>32 bits</td></tr>
 		<tr><td>RAM</td><td>2 KB: avoid long strings</td><td>32 KB</td></tr>
@@ -145,8 +145,10 @@
 		the way to compile it again are in the <code>Libraries</code> plugin
 		(<code>includes/ArduinoUnoCalibrationFiles</code>).</p>
 	<p>The values of the analog inputs are converted in volts from the analog
-		reference: 5V for DEFAULT and AR_DEFAULT, 1.1V (R3) or 1.5V (R4 WiFi)
-		for INTERNAL, full scale of the gain for ADS1115 inputs. With EXTERNAL
+		reference: 5V for DEFAULT (R3) and AR_DEFAULT (R4 WiFi), 1.1V for
+		INTERNAL (R3), 1.5V for AR_INTERNAL (R4 WiFi), full scale of the gain
+		for ADS1115 inputs. The reference must be one of the revision of the
+		board, otherwise the calibration is not started. With EXTERNAL
 		and AR_EXTERNAL, the voltage of the AREF pin is not known: raw values
 		of the converter are displayed (0 to 1023 on R3, 0 to 16383 on R4
 		WiFi).</p>

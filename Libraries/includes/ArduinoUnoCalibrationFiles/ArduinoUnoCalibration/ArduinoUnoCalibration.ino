@@ -68,19 +68,19 @@ const char* calBoardName() {
 }
 
 /*
- * Analog reference given by its name in the DACQ configuration : names of both boards
- * are accepted (DEFAULT and AR_DEFAULT, EXTERNAL and AR_EXTERNAL)
+ * Analog reference given by its name in the DACQ configuration : DEFAULT, INTERNAL or
+ * EXTERNAL on R3, AR_DEFAULT, AR_INTERNAL or AR_EXTERNAL on R4 WiFi
  */
 bool calAnalogReference(const char* name) {
 #if defined(ARDUINO_ARCH_RENESAS)
-	if(strcmp(name, "DEFAULT") == 0 || strcmp(name, "AR_DEFAULT") == 0) analogReference(AR_DEFAULT);
-	else if(strcmp(name, "INTERNAL") == 0) analogReference(AR_INTERNAL);
-	else if(strcmp(name, "EXTERNAL") == 0 || strcmp(name, "AR_EXTERNAL") == 0) analogReference(AR_EXTERNAL);
+	if(strcmp(name, "AR_DEFAULT") == 0) analogReference(AR_DEFAULT);
+	else if(strcmp(name, "AR_INTERNAL") == 0) analogReference(AR_INTERNAL);
+	else if(strcmp(name, "AR_EXTERNAL") == 0) analogReference(AR_EXTERNAL);
 	else return false;
 #else
-	if(strcmp(name, "DEFAULT") == 0 || strcmp(name, "AR_DEFAULT") == 0) analogReference(DEFAULT);
+	if(strcmp(name, "DEFAULT") == 0) analogReference(DEFAULT);
 	else if(strcmp(name, "INTERNAL") == 0) analogReference(INTERNAL);
-	else if(strcmp(name, "EXTERNAL") == 0 || strcmp(name, "AR_EXTERNAL") == 0) analogReference(EXTERNAL);
+	else if(strcmp(name, "EXTERNAL") == 0) analogReference(EXTERNAL);
 	else return false;
 #endif
 	return true;

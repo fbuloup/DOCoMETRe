@@ -51,7 +51,7 @@
  * Commands (one line each, ended by '\n') and answers :
  *   I                          identification : "CAL<version>:<board>" (e.g. "CAL1:R3")
  *   C                          clear : stop, outputs reset, inputs and outputs removed -> "K"
- *   F<reference>               analog reference (DEFAULT, INTERNAL, EXTERNAL, AR_DEFAULT, AR_EXTERNAL) -> "K"
+ *   F<reference>               analog reference (DEFAULT, INTERNAL, EXTERNAL on R3 ; AR_DEFAULT, AR_INTERNAL, AR_EXTERNAL on R4) -> "K"
  *   T<period>                  period of the measures in ms (5 to 1000, default 20) -> "K"
  *   A<pin>                     adds an analog input -> "K"
  *   B<address>:<data rate>     starts an ADS1115 module (address 0x48 to 0x4B) -> "K"

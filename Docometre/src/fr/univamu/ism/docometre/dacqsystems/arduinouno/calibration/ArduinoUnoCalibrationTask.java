@@ -131,12 +131,16 @@ public class ArduinoUnoCalibrationTask extends CalibrationTimerTask {
 			throw new Exception(NLS.bind(ArduinoUnoMessages.Calibration_TooManyInputs, inputs.size(), ArduinoUnoCalibrationProtocol.MAXIMUM_INPUTS));
 		if(outputsValues.size() > ArduinoUnoCalibrationProtocol.MAXIMUM_OUTPUTS) 
 			throw new Exception(NLS.bind(ArduinoUnoMessages.Calibration_TooManyOutputs, outputsValues.size(), ArduinoUnoCalibrationProtocol.MAXIMUM_OUTPUTS));
+		// Analog reference of the revision of the board (the acquisition processes would not compile with another one)
+		String expectedBoard = getExpectedBoard();
+		if(hasAnalogInput() && !ArduinoUnoCalibrationProtocol.isReferenceOfBoard(analogReference, expectedBoard)) 
+			throw new Exception(NLS.bind(ArduinoUnoMessages.Calibration_WrongReference, analogReference, getRevisionName(expectedBoard)));
 		try {
 			connect(monitor);
 			monitor.subTask(ArduinoUnoMessages.Calibration_Configuring);
 			List<int[]> modules = new ArrayList<>();
 			for (Map.Entry<Integer, Integer> module : ads1115Modules.entrySet()) modules.add(new int[] {module.getKey(), module.getValue()});
-			List<String> commands = ArduinoUnoCalibrationProtocol.getConfigurationCommands(analogReference, modules, inputs, digitalOutputs, analogOutputs);
+			List<String> commands = ArduinoUnoCalibrationProtocol.getConfigurationCommands(hasAnalogInput() ? analogReference : null, modules, inputs, digitalOutputs, analogOutputs);
 			commands.add(ArduinoUnoCalibrationProtocol.START);
 			for (String command : commands) sendCommand(command);
 			if(Double.isNaN(ArduinoUnoCalibrationProtocol.getReferenceVoltage(analogReference, board)) && hasAnalogInput())
@@ -180,6 +184,17 @@ public class ArduinoUnoCalibrationTask extends CalibrationTimerTask {
 		}
 	}
 	
+	/*
+	 * Board of the revision of the DACQ configuration
+	 */
+	private String getExpectedBoard() {
+		return ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION)) ? ArduinoUnoCalibrationProtocol.BOARD_R4 : ArduinoUnoCalibrationProtocol.BOARD_R3;
+	}
+	
+	private static String getRevisionName(String board) {
+		return ArduinoUnoCalibrationProtocol.BOARD_R4.equals(board) ? "R4 WiFi" : "R3";
+	}
+	
 	private boolean hasAnalogInput() {
 		for (Input input : inputs) if(input.getType() == InputType.ANALOG) return true;
 		return false;
@@ -193,7 +208,7 @@ public class ArduinoUnoCalibrationTask extends CalibrationTimerTask {
 	 * Connection to the firmware, uploaded when the board does not run it (or another version)
 	 */
 	private void connect(IProgressMonitor monitor) throws Exception {
-		String expectedBoard = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION)) ? ArduinoUnoCalibrationProtocol.BOARD_R4 : ArduinoUnoCalibrationProtocol.BOARD_R3;
+		String expectedBoard = getExpectedBoard();
 		monitor.subTask(NLS.bind(ArduinoUnoMessages.Calibration_Connecting, devicePath));
 		board = identify();
 		if(board == null) {
