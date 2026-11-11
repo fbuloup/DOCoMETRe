@@ -143,7 +143,7 @@ public interface IImageKeys {
 	public static final String DIARY_ICON = "icons/diary.gif"; //$NON-NLS-1$
 	public static final String SAMPLES_ICON = "icons/samples.gif"; //$NON-NLS-1$
 	
-	public static final String CONFIGURE_FUNCTION_WIZBAN = "icons/configureFunctionBanner.gif"; //$NON-NLS-1$
+	public static final String CONFIGURE_FUNCTION_WIZBAN = "icons/configureFunctionBanner.png"; //$NON-NLS-1$
 	public static final String COMMENT_WIZBAN = "icons/CommentBanner.png"; //$NON-NLS-1$
 	
 	public static final String FILTERED_DERIVATOR_WIZBAN = "icons/FilteredDerivatorEq.png"; //$NON-NLS-1$
@@ -164,7 +164,7 @@ public interface IImageKeys {
 	public static final String HIDE_GRAPH_ICON = "icons/down.png"; //$NON-NLS-1$
 	public static final String CAPTURE_VALUE_ICON = "icons/captureValue.png"; //$NON-NLS-1$
 	
-	public static final String CALIBRATE_MONITOR_WIZBAN = "icons/calibrateMonitorBanner.gif"; //$NON-NLS-1$
+	public static final String CALIBRATE_MONITOR_WIZBAN = "icons/calibrateMonitorBanner.png"; //$NON-NLS-1$
 	
 	public static final String LEFT_PANNING = "icons/arrow_left.png"; //$NON-NLS-1$
 	public static final String UP_PANNING = "icons/arrow_up.png"; //$NON-NLS-1$
@@ -229,7 +229,7 @@ public interface IImageKeys {
 	
 	public static final String LINK_TO_EDITOR_ICON = "icons/link_to_editor.png"; //$NON-NLS-1$
 	
-	public static final String BUILD_WIZBAN = "icons/build.gif"; //$NON-NLS-1$
+	public static final String BUILD_WIZBAN = "icons/build.png"; //$NON-NLS-1$
 	public static final String SAVE_AS_ICON = "icons/save_as.png"; //$NON-NLS-1$
 
 	public static final String RUN_IN_MAIN_THREAD_ICON = "icons/runInMainThread.png"; //$NON-NLS-1$
