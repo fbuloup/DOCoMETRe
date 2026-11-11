@@ -123,18 +123,16 @@ public class ArduinoUnoCalibrationTask extends CalibrationTimerTask {
 		ArduinoUnoCalibration.clearLastValues();
 		if(channelsViewers.length == 0) throw new Exception(ArduinoUnoMessages.Calibration_NoChannel);
 		dacqConfiguration = (ArduinoUnoDACQConfiguration) channelsViewers[0].getChannel().getModule().getDACQConfiguration();
-		analogReference = ArduinoUnoAnInModuleProperties.DEFAULT;
+		// Reference of the revision of the board, as in acquisition processes (see ArduinoUnoAnInModule)
+		analogReference = null;
 		for (Module module : dacqConfiguration.getModules()) 
 			if(module instanceof ArduinoUnoAnInModule) analogReference = module.getProperty(ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE);
+		analogReference = ArduinoUnoAnInModuleProperties.getReferenceOfRevision(analogReference, ArduinoUnoAnInModuleProperties.isR4(dacqConfiguration));
 		for (ChannelViewer channelViewer : channelsViewers) addChannel(channelViewer);
 		if(inputs.size() > ArduinoUnoCalibrationProtocol.MAXIMUM_INPUTS) 
 			throw new Exception(NLS.bind(ArduinoUnoMessages.Calibration_TooManyInputs, inputs.size(), ArduinoUnoCalibrationProtocol.MAXIMUM_INPUTS));
 		if(outputsValues.size() > ArduinoUnoCalibrationProtocol.MAXIMUM_OUTPUTS) 
 			throw new Exception(NLS.bind(ArduinoUnoMessages.Calibration_TooManyOutputs, outputsValues.size(), ArduinoUnoCalibrationProtocol.MAXIMUM_OUTPUTS));
-		// Analog reference of the revision of the board (the acquisition processes would not compile with another one)
-		String expectedBoard = getExpectedBoard();
-		if(hasAnalogInput() && !ArduinoUnoCalibrationProtocol.isReferenceOfBoard(analogReference, expectedBoard)) 
-			throw new Exception(NLS.bind(ArduinoUnoMessages.Calibration_WrongReference, analogReference, getRevisionName(expectedBoard)));
 		try {
 			connect(monitor);
 			monitor.subTask(ArduinoUnoMessages.Calibration_Configuring);
@@ -189,10 +187,6 @@ public class ArduinoUnoCalibrationTask extends CalibrationTimerTask {
 	 */
 	private String getExpectedBoard() {
 		return ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION)) ? ArduinoUnoCalibrationProtocol.BOARD_R4 : ArduinoUnoCalibrationProtocol.BOARD_R3;
-	}
-	
-	private static String getRevisionName(String board) {
-		return ArduinoUnoCalibrationProtocol.BOARD_R4.equals(board) ? "R4 WiFi" : "R3";
 	}
 	
 	private boolean hasAnalogInput() {

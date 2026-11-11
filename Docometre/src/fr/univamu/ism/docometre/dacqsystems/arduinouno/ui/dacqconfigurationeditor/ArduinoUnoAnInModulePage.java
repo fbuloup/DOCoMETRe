@@ -51,12 +51,9 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Scrollable;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.widgets.FormText;
-import org.eclipse.ui.forms.widgets.Hyperlink;
 
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
@@ -69,6 +66,7 @@ import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnInModulePrope
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoMessages;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoModulesList;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfigurationProperties;
 import fr.univamu.ism.docometre.editors.ModulePage;
 import fr.univamu.ism.docometre.editors.ResourceEditor;
 
@@ -179,9 +177,14 @@ public class ArduinoUnoAnInModulePage extends ArduinoUnoModulePage {
 		
 		
 		createLabel(generalconfigurationContainer, ArduinoUnoMessages.AnalogReference_Label, ArduinoUnoMessages.AnalogReference_Tooltip);
+		// Only the references of the revision of the board (see updateAnalogReferenceCombo())
+		boolean r4 = ArduinoUnoAnInModuleProperties.isR4(dacqConfiguration);
 		value = module.getProperty(ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE);
-		String[] items = ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE.getAvailableValues();
-		analogRefCombo = createCombo(generalconfigurationContainer, items, value, 1, 1);
+		String referenceOfRevision = ArduinoUnoAnInModuleProperties.getReferenceOfRevision(value, r4);
+		// Configuration saved with a reference of the other revision : corrected
+		if(!referenceOfRevision.equals(value)) module.setProperty(ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE, referenceOfRevision);
+		String[] items = ArduinoUnoAnInModuleProperties.getReferences(r4);
+		analogRefCombo = createCombo(generalconfigurationContainer, items, referenceOfRevision, 1, 1);
 		analogRefCombo.addModifyListener(new ModifyPropertyHandler(ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE, module, analogRefCombo, ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE.getRegExp(), "", false, (ResourceEditor)getEditor()));
 		
 		
@@ -289,14 +292,16 @@ public class ArduinoUnoAnInModulePage extends ArduinoUnoModulePage {
 	/*
 	 * Helper method to update widget associated with specific key
 	 */
-	private void updateWidget(Scrollable widget, ArduinoUnoAnInModuleProperties propertyKey) {
-		String value = module.getProperty(propertyKey);
-		Listener[] listeners = widget.getListeners(SWT.Modify);
-		for (Listener listener : listeners) widget.removeListener(SWT.Modify, listener);
-		if(widget instanceof Text) ((Text)widget).setText(value);
-		if(widget instanceof Hyperlink) ((Hyperlink)widget).setText(value);
-		if(widget instanceof Combo) ((Combo)widget).select(((Combo)widget).indexOf(value));
-		for (Listener listener : listeners) widget.addListener(SWT.Modify , listener);
+	/*
+	 * References of the revision of the board, current reference selected
+	 */
+	private void updateAnalogReferenceCombo() {
+		if(analogRefCombo == null || analogRefCombo.isDisposed()) return;
+		Listener[] listeners = analogRefCombo.getListeners(SWT.Modify);
+		for (Listener listener : listeners) analogRefCombo.removeListener(SWT.Modify, listener);
+		analogRefCombo.setItems(ArduinoUnoAnInModuleProperties.getReferences(ArduinoUnoAnInModuleProperties.isR4(dacqConfiguration)));
+		analogRefCombo.select(analogRefCombo.indexOf(module.getProperty(ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE)));
+		for (Listener listener : listeners) analogRefCombo.addListener(SWT.Modify , listener);
 		generalConfigurationSectionPart.markDirty();
 	}
 	
@@ -309,8 +314,8 @@ public class ArduinoUnoAnInModulePage extends ArduinoUnoModulePage {
 	@Override
 	public void update(Property property, Object newValue, Object oldValue, AbstractElement element) {
 		super.update(property, newValue, oldValue, element);
-		if(property == ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE)
-			updateWidget(analogRefCombo, (ArduinoUnoAnInModuleProperties)property);
+		if(property == ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE || property == ArduinoUnoDACQConfigurationProperties.REVISION)
+			updateAnalogReferenceCombo();
 		if(property instanceof ArduinoUnoAnInChannelProperties) {
 			if(tableViewer != null && tableViewer.getTable() != null && !tableViewer.getTable().isDisposed()) {
 				tableViewer.refresh();

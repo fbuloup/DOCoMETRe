@@ -40,6 +40,9 @@
 		used, from 0 to 32767, which gives <b>15 useful bits</b>. This is why
 		the module is named "Four 15bits Analog inputs" in the DACQ
 		configuration.</p>
+	<p>Near 0V, noise can give small <b>negative</b> values (-1, -2...): they
+		are kept as negative values in the variables of the process and in the
+		data files.</p>
 
 	<h2><a name="install">Installing the ADS1X15 library</a></h2>
 

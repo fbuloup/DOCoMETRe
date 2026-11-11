@@ -41,6 +41,7 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.arduinouno;
 
+import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.Property;
 
@@ -55,6 +56,38 @@ public final class ArduinoUnoAnInModuleProperties extends Property {
 	public static String AR_DEFAULT = "AR_DEFAULT";
 	public static String AR_INTERNAL = "AR_INTERNAL";
 	public static String AR_EXTERNAL = "AR_EXTERNAL";
+	// Same order in both arrays : corresponding references of R3 and R4 WiFi
+	public static String[] R3_REFERENCES = new String[] {DEFAULT, INTERNAL, EXTERNAL};
+	public static String[] R4_REFERENCES = new String[] {AR_DEFAULT, AR_INTERNAL, AR_EXTERNAL};
+	
+	/**
+	 * @param r4 true for Arduino Uno R4 WiFi, false for R3
+	 * @return the analog references of this revision
+	 */
+	public static String[] getReferences(boolean r4) {
+		return r4 ? R4_REFERENCES : R3_REFERENCES;
+	}
+	
+	/**
+	 * @param reference an analog reference of R3 or of R4 WiFi
+	 * @param r4 true for Arduino Uno R4 WiFi, false for R3
+	 * @return the corresponding reference of this revision (e.g. AR_DEFAULT for DEFAULT on R4 WiFi), its
+	 * default reference if reference is not known
+	 */
+	public static String getReferenceOfRevision(String reference, boolean r4) {
+		String[] references = getReferences(r4);
+		reference = reference == null ? "" : reference.trim();
+		for (int i = 0; i < references.length; i++) 
+			if(R3_REFERENCES[i].equals(reference) || R4_REFERENCES[i].equals(reference)) return references[i];
+		return references[0];
+	}
+	
+	/**
+	 * @return true if the revision of the DACQ configuration is Arduino Uno R4 WiFi
+	 */
+	public static boolean isR4(DACQConfiguration dacqConfiguration) {
+		return ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION));
+	}
 	
 	public static void populateProperties(Module module){
 		module.setProperty(ANALOG_REFERENCE, DEFAULT); 

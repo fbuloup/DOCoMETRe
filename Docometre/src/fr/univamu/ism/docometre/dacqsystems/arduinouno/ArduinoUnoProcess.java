@@ -1165,8 +1165,9 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "}\n";
 			
 			if(((ArduinoUnoDACQConfiguration)getDACQConfiguration()).hasADS1115Module()) {
-				code = code + "unsigned int acquireADS1115AnalogInput(ADS1115 ads, byte inputNumber, byte gain, bool transfert, byte transferNumber) {\n";
-				code = code + "\t\tunsigned int value = 0;\n";
+				// Signed values (int16_t of the ADS1X15 library) : a voltage slightly lower than 0V gives a small negative value
+				code = code + "int acquireADS1115AnalogInput(ADS1115 ads, byte inputNumber, byte gain, bool transfert, byte transferNumber) {\n";
+				code = code + "\t\tint value = 0;\n";
 				code = code + "\t\tads.setGain(gain);\n";
 				code = code + "\t\tinterrupts();\n";
 				code = code + "\t\tvalue = ads.readADC(inputNumber);\n";

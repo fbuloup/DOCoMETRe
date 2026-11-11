@@ -62,7 +62,8 @@ public class ArduinoUnoAnInModule extends Module {
 		String code = "";
 		
 		if (segment == ArduinoUnoCodeSegmentProperties.INITIALIZATION) {
-			String analogReference = getProperty(ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE);
+			// Reference of the revision of the board (configurations saved with a reference of the other revision)
+			String analogReference = ArduinoUnoAnInModuleProperties.getReferenceOfRevision(getProperty(ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE), ArduinoUnoAnInModuleProperties.isR4(dacqConfiguration));
 			code = code +  "\t\t// Set analog ref.\n";
 			code = code + "\t\tanalogReference(" + analogReference + ");\n";
 		}
@@ -144,8 +145,12 @@ public class ArduinoUnoAnInModule extends Module {
 
 	@Override
 	public void update(Property property, Object newValue, Object oldValue, AbstractElement element) {
-		// TODO Auto-generated method stub
-
+		// Analog reference of the new revision of the board (DEFAULT <-> AR_DEFAULT...)
+		if(property == ArduinoUnoDACQConfigurationProperties.REVISION) {
+			String reference = getProperty(ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE);
+			String newReference = ArduinoUnoAnInModuleProperties.getReferenceOfRevision(reference, ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(newValue));
+			if(!newReference.equals(reference)) setProperty(ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE, newReference);
+		}
 	}
 
 	@Override

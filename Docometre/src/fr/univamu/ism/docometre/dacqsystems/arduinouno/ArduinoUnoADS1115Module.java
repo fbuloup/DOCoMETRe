@@ -114,7 +114,8 @@ public class ArduinoUnoADS1115Module extends Module {
 			if (segment == ArduinoUnoCodeSegmentProperties.DECLARATION) {
 				if(isUsed) {
 					code = code + "// ******** ADS1115 Entree analogique : " + name + "\n";
-					code = code + "unsigned int " + name + ";\n";
+					// Signed value, see acquireADS1115AnalogInput()
+					code = code + "int " + name + ";\n";
 					code = code + "byte acquire_" + name + "_index = " + frequencyRatio + ";\n";
 				}
 			}
