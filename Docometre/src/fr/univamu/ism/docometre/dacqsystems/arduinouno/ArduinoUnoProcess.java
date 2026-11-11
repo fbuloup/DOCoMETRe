@@ -1174,8 +1174,14 @@ public class ArduinoUnoProcess extends Process {
 				code = code + "\t\tnoInterrupts();\n";
 				code = code + "\t\tif(transfert) {\n";
 				code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%d\", transferNumber, value);\n";
-				code = code + "\t\t\t\tSerial.println(serialMessage);\n";
-				code = code + "\t\t\t\tSerial.flush();\n";
+				if(isRelease4Wifi) {
+					// Sent by loop() : in the real time loop interrupt, Serial would wait forever (see acquireAnalogInput())
+					code = code + "\t\t\t\tglobalSerialMessage += serialMessage;\n";
+					code = code + "\t\t\t\tglobalSerialMessage += \"\\n\";\n";
+				} else {
+					code = code + "\t\t\t\tSerial.println(serialMessage);\n";
+					code = code + "\t\t\t\tSerial.flush();\n";
+				}
 				code = code + "\t\t}\n";
 				code = code + "\t\treturn value;\n";
 				code = code + "}\n";

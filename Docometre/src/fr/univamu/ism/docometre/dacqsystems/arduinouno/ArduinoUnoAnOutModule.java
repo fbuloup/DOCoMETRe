@@ -174,7 +174,12 @@ public class ArduinoUnoAnOutModule extends Module {
 					} else code = code + "\t\t\t\tanalogWrite(" + channelNumber + ", " + name + ");\n";
 					if(isTransfered) {
 						code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%d\", " + transferNumber + ", " + name + ");\n";
-						code = code + "\t\t\t\tSerial.println(serialMessage);\n";
+						if(ArduinoUnoAnInModuleProperties.isR4(dacqConfiguration)) {
+							// R4 WiFi : sent by loop(). In the real time loop interrupt, Serial would wait forever for the
+							// end of the transmission, signaled by an interrupt of the same priority
+							code = code + "\t\t\t\tglobalSerialMessage += serialMessage;\n";
+							code = code + "\t\t\t\tglobalSerialMessage += \"\\n\";\n";
+						} else code = code + "\t\t\t\tSerial.println(serialMessage);\n";
 						if(delay > 0)code = code + "\t\t\t\tdelayMicroseconds(" + delay + ");\n";
 					}
 					code = code + "\t\t}\n";
