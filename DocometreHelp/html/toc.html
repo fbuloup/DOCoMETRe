@@ -7,9 +7,127 @@
 </head>
 
 <body>
-<h1>Table of Contents</h1>
-You can reach GitHub web page following this <a href="https://teamicstechnos.github.io/DOCoMETRe/">link</a>.
+<h1>DOCoMETRe</h1>
 
+<p>DOCoMETRe stands for &quot;Dispositif d'Observation et de COntr&ocirc;le du
+	Mouvement En Temps R&eacute;el&quot;. It is a multiplatform software (Windows,
+	Mac OS and Linux) developed at the Institut des Sciences du Mouvement
+	in Java, using the Eclipse RCP framework.</p>
+<p>Its aim is to make it easier to design and run human movement science
+	experiments. It covers the whole chain, from real time data acquisition
+	to deferred data processing:</p>
+<ul>
+	<li><b>Data acquisition and real time control</b>: DOCoMETRe drives
+		ADwin (Gold, Gold II, Pro and Pro II) and Arduino Uno (R3 and R4
+		WiFi) systems. Inputs, outputs, variables and real time charts are
+		described graphically in data acquisition configurations, and the
+		real time algorithm is built in processes, without writing low
+		level code.</li>
+	<li><b>Experiment management</b>: the root concept of the software is
+		the <i>Experiment</i>. An experiment contains data acquisition
+		configurations, processes and subjects. Each subject has one or more
+		sessions, and each session is a set of trials. Each trial runs a
+		process to collect data.</li>
+	<li><b>Data processing</b>: once data have been acquired or imported,
+		signals can be inspected and processed (e.g. filtering, points
+		marking or features computation) with a math engine, Python or
+		Matlab, driven by DOCoMETRe. The results can then be exported for
+		statistical analysis.</li>
+</ul>
+<p>The work is organised in three perspectives: the <b>Design</b>
+	perspective to prepare the experiment, the <b>Acquire</b> perspective
+	to run it, and the <b>Analyse</b> perspective to process the data.</p>
+<p>You can reach GitHub web page following this <a href="https://fbuloup.github.io/DOCoMETRe/">link</a>.</p>
+
+<h2>Table of Contents</h2>
+
+<ul>
+	<li><a href="dataacquisition/dataacquistion.html">Data Acquisition and Real Time Systems</a>
+		<ul>
+			<li><a href="dataacquisition/maintopic.html">Introduction</a></li>
+			<li><a href="designperspective/designperspective.html">Design Perspective</a>
+				<ul>
+					<li><a href="designperspective/dacqconfiguration.html">DACQ Configuration</a></li>
+					<li><a href="designperspective/dacqprocess.html">DACQ Process</a></li>
+					<li><a href="designperspective/processtest.html">Testing a Process</a></li>
+					<li><a href="designperspective/subjectsessiontrial.html">Subjects, Sessions and Trials</a></li>
+					<li><a href="designperspective/dataeditor.html">Data Editor</a></li>
+					<li><a href="designperspective/importexport.html">Import and Export</a></li>
+					<li><a href="designperspective/experimentshistory.html">Experiments History</a></li>
+				</ul>
+			</li>
+			<li><a href="dataacquisition/acquireperspective.html">Acquire Perspective</a></li>
+		</ul>
+	</li>
+	<li><a href="dataprocessing/maintopic.html">Data Processing</a>
+		<ul>
+			<li><a href="dataprocessing/maintopic.html">Analyse Perspective</a>
+				<ul>
+					<li><a href="dataprocessing/mathengine.html">Math Engines</a></li>
+					<li><a href="dataprocessing/subjects.html">Loading Subjects</a></li>
+					<li><a href="dataprocessing/signaleditor.html">Signal and Category Editors</a></li>
+					<li><a href="dataprocessing/dataprocessingfiles.html">Data Processing Files</a></li>
+					<li><a href="dataprocessing/functionslibrary.html">Standard Functions Library</a></li>
+					<li><a href="dataprocessing/batchprocessing.html">Batch Processing</a></li>
+					<li><a href="dataprocessing/xyxyzcharts.html">XY and 3D Charts</a></li>
+					<li><a href="dataprocessing/userfunctions.html">User Functions</a></li>
+					<li><a href="dataprocessing/exportdata.html">Exporting Data</a></li>
+				</ul>
+			</li>
+			<li><a href="dataprocessing/datamodel.html">Data model</a></li>
+			<li><a href="dataprocessing/datafilesformats.html">Supported data files formats</a>
+				<ul>
+					<li><a href="dataprocessing/samplesdatafiles.html">Samples data files</a></li>
+					<li><a href="dataprocessing/adwdatafiles.html">ADW data files</a></li>
+					<li><a href="dataprocessing/optitrackcsvfiles.html">Optitrack CSV Files</a></li>
+				</ul>
+			</li>
+		</ul>
+	</li>
+	<li>Supported DACQ Systems
+		<ul>
+			<li><a href="dacqsystems/maintopic.html">Introduction</a></li>
+			<li><a href="dacqsystems/ADWinTopic.html">ADwin Systems</a>
+				<ul>
+					<li><a href="dacqsystems/ADWinGoldTopic.html">ADwin Gold and Gold II</a></li>
+					<li><a href="dacqsystems/ADWinProTopic.html">ADwin Pro and Pro II</a></li>
+				</ul>
+			</li>
+			<li><a href="dacqsystems/ArduinoTopic.html">Arduino Systems</a>
+				<ul>
+					<li><a href="dacqsystems/ArduinoUnoTopic.html">Arduino Uno R3 and R4 WiFi</a>
+						<ul>
+							<li><a href="dacqsystems/ads1115.html">ADS1115 Module</a></li>
+						</ul>
+					</li>
+				</ul>
+			</li>
+			<li><a href="dacqsystems/plannedsystems.html">Planned Systems</a></li>
+		</ul>
+	</li>
+	<li>Troubleshoots
+		<ul>
+			<li><a href="troubleshoots/docometre.html">With DOCoMETRe - How to debug ?</a></li>
+			<li><a href="troubleshoots/arduinouno.html">With Arduino Uno system</a></li>
+			<li><a href="troubleshoots/timingConsideration.html">Timing consideration</a></li>
+			<li><a href="troubleshoots/adwin.html">With ADWin Systems</a></li>
+		</ul>
+	</li>
+	<li>Special topics
+		<ul>
+			<li><a href="advancedconcepts/maintopic.html">Introduction</a></li>
+			<li><a href="advancedconcepts/dataacquisitionfunction.html">How to create my own dacq. user function ?</a></li>
+			<li><a href="advancedconcepts/variabledeclaration.html">What if I need to declare variable in user function ?</a></li>
+			<li><a href="advancedconcepts/fileformatsessionimportation.html">What is file format for sessions importation ?</a></li>
+			<li><a href="advancedconcepts/adwinwithmacos.html">Can I use ADwin systems with Mac OS ?</a></li>
+			<li><a href="advancedconcepts/matplotlibfigure.html">Is it possible to use python Matplotlib or Matlab figures ?</a></li>
+			<li><a href="advancedconcepts/datafilewithmatlaborpython.html">How to open samples data files with Matlab or Python ?</a></li>
+			<li><a href="advancedconcepts/parametersfileformat.html">What is parameters file format ?</a></li>
+			<li><a href="advancedconcepts/imagesfileformat.html">What is images file format ?</a></li>
+			<li><a href="advancedconcepts/createstimulusfile.html">How to create stimulus file with Matlab or Python ?</a></li>
+		</ul>
+	</li>
+</ul>
 
 </body>
 </html>

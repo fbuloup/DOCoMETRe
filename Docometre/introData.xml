@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<extensions>
+   <page id="overview">
+      <group path="page-content/bottom-left" default="true">
+         <extension id="Docometre-overview" importance="low"/>
+      </group>
+      <group path="page-content/bottom-right" default="true">
+         <extension id="Docometre-introExtension" importance="low"/>
+      </group>
+      <hidden>         <extension id="org.eclipse.ui.workbench" importance="low"/>
+      </hidden>
+   </page>
+   <page id="whatsnew">
+      <group path="page-content/bottom-left" default="true">
+         <extension id="org.eclipse.ui.workbench.news" importance="low"/>
+         <extension id="org.eclipse.ui.workbench.migration" importance="low"/>
+      </group>
+      <group path="page-content/bottom-right" default="true">
+         <extension id="org.eclipse.ui.workbench" importance="low"/>
+      </group>
+   </page>
+   <page id="tutorials">
+      <group path="page-content/bottom-left" default="true">
+         <extension id="Docometre-introExtension" importance="low"/>
+      </group>
+      <group path="page-content/bottom-right" default="true">
+         <extension id="Docometre-tutorial" importance="low"/>
+      </group>
+   </page>
+   <page id="migrate">
+      <group path="page-content/bottom-left" default="true">
+         <extension id="org.eclipse.platform" importance="low"/>
+      </group>
+      <group path="page-content/bottom-right" default="true">
+      </group>
+   </page>
+</extensions>

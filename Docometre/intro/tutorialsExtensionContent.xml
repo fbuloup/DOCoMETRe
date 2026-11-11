@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <introContent>
-  	<extensionContent id="Docometre-introExtension" style="css/sample.css"
+  	<extensionContent id="Docometre-tutorial" style="css/sample.css"
 		name="Tutorials Extension" path="tutorials/@">
 		<group style-id="content-group" id="Docometre-introLink-group">
 			<link
@@ -10,26 +10,26 @@
 				</text>
 			</link>
 		</group>
-		<group style-id="content-group" id="Docometre-Install-ADwin-group">
+		<group style-id="content-group" id="Docometre-Install-ADwin-group-windows">
 			<link
 				url="http://org.eclipse.ui.intro/showStandby?partId=docometre.CheatSheetStandby&amp;input=Docometre.ADBasicInstallWindowsCheatSheet"
-				label="Install ADWin on Windows" id="Docometre-introLink-ADWin" style-id="content-link">
+				label="Install ADWin on Windows" id="Docometre-introLink-ADWin-windows" style-id="content-link">
 				<text>This tutorial will help you to install ADWin software (ADBasic) in order to be able to use ADWin systems on Windows OS with DOCoMETRe.
 				</text>
 			</link>
 		</group>
-		<group style-id="content-group" id="Docometre-Install-ADwin-group">
+		<group style-id="content-group" id="Docometre-Install-ADwin-group-mac">
 			<link
 				url="http://org.eclipse.ui.intro/showStandby?partId=docometre.CheatSheetStandby&amp;input=Docometre.ADBasicInstallMacOSCheatSheet"
-				label="Install ADWin on Mac OS X" id="Docometre-introLink-ADWin" style-id="content-link">
+				label="Install ADWin on Mac OS X" id="Docometre-introLink-ADWin-mac" style-id="content-link">
 				<text>This tutorial will help you to install ADWin software (ADBasic) in order to be able to use ADWin systems on Mac OS with DOCoMETRe.
 				</text>
 			</link>
 		</group>
-		<group style-id="content-group" id="Docometre-Install-ADwin-group">
+		<group style-id="content-group" id="Docometre-Install-ADwin-group-linux">
 			<link
 				url="http://org.eclipse.ui.intro/showStandby?partId=docometre.CheatSheetStandby&amp;input=Docometre.ADBasicInstallLinuxCheatSheet"
-				label="Install ADWin on Linux" id="Docometre-introLink-ADWin" style-id="content-link">
+				label="Install ADWin on Linux" id="Docometre-introLink-ADWin-linux" style-id="content-link">
 				<text>This tutorial will help you to install ADWin software (ADBasic) in order to be able to use ADWin systems on Linux OS with DOCoMETRe.
 				</text>
 			</link>
