@@ -2121,51 +2121,18 @@ public class ArduinoUnoProcess extends Process {
 	}
 	
 	private String createUploadProcess(String outputFolder) throws IOException, InterruptedException {
-		// We need to create a bash file in order to launch Arduino uno's compilation
-		// Bash file path
-		String bashFilePath = outputFolder + File.separator;
-		if(Platform.getOS().equals(Platform.OS_WIN32)) bashFilePath = bashFilePath + "uploadSketch.bat";
-		if(Platform.getOS().equals(Platform.OS_MACOSX)) bashFilePath = bashFilePath + "uploadSketch.sh";
-		if(Platform.getOS().equals(Platform.OS_LINUX)) bashFilePath = bashFilePath + "uploadSketch.sh";
-		// Create Bash file
-		final File bashFile = new File(bashFilePath);
-		if(bashFile.exists()) bashFile.delete();
-		FileWriter fileWriter = new FileWriter(bashFile);
-		String cmd = "";
 		IResource processResource = ObjectsController.getResourceForObject(this);
 		String resourcePath = processResource.getParent().getLocation().toOSString() + File.separatorChar + "BinSource" + File.separator + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + File.separator + "Build" + File.separator;
 		boolean useCLI = "true".equals(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI))?true:false;
-		if(!useCLI) {
-			String inoHexFilePath = resourcePath + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + ".ino.hex";
-			previousINOHexFilePath = inoHexFilePath;
-			String avrDudePath = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.AVRDUDE_PATH);
-			String confFilePath = "";
-			if(Platform.getOS().equals(Platform.OS_WIN32)) confFilePath = avrDudePath.replaceAll("avrdude.exe$", "");
-			else confFilePath = avrDudePath.replaceAll("avrdude$", "");
-			confFilePath = confFilePath + ".." + File.separator + "etc" + File.separator + "avrdude.conf";
-			if(Platform.getOS().equals(Platform.OS_WIN32)) confFilePath = "\"" + confFilePath + "\"";
-			cmd = avrDudePath + " -C " + confFilePath +  " -p m328p -c arduino -P " + devicePath + " -U flash:w:" + inoHexFilePath + ":i"; 
-		} else {
-			
-			String arduinoUnoRelease = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
-			boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
-			String fullQualifiedBoardName = "arduino:avr:uno";
-			if(isRelease4Wifi) fullQualifiedBoardName = "arduino:renesas_uno:unor4wifi";
-			String inoHexFilePath = resourcePath + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + ".ino.hex";
-			if(isRelease4Wifi) inoHexFilePath = resourcePath + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + ".ino.bin";
-			previousINOHexFilePath = inoHexFilePath;
-			String arduinoCLIPATH = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH);
-			cmd = arduinoCLIPATH + " upload -p " + devicePath + " --fqbn " + fullQualifiedBoardName + " -i " + inoHexFilePath;
-		}
+		String arduinoUnoRelease = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
+		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
+		// .hex file with avrdude, .bin file with arduino-cli for R4 WiFi
+		String inoHexFilePath = resourcePath + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + ".ino.hex";
+		if(useCLI && isRelease4Wifi) inoHexFilePath = resourcePath + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + ".ino.bin";
+		previousINOHexFilePath = inoHexFilePath;
+		String cmd = ArduinoUnoUploadDelegate.getUploadCommand(getDACQConfiguration(), devicePath, inoHexFilePath);
 		forceUpload = false;
-		fileWriter.write(cmd);
-		fileWriter.close();
-		if(!Platform.getOS().equals(Platform.OS_WIN32)) {
-			// This bash file must be executable 
-			java.lang.Process process = Runtime.getRuntime().exec(new String[]{"chmod", "777", bashFilePath});
-			process.waitFor();
-		}
-		return bashFilePath;
+		return ArduinoUnoUploadDelegate.createUploadScript(outputFolder, cmd);
 	}
 
 	@Override
