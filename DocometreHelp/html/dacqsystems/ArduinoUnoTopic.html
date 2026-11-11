@@ -23,6 +23,7 @@
 	<ul>
 		<li><a href="#revisions">R3 or R4 WiFi ?</a></li>
 		<li><a href="#pins">Inputs and outputs</a></li>
+		<li><a href="#analogoutputs">Analog outputs in processes (PWM and DAC)</a></li>
 		<li><a href="#frequency">Choosing the global frequency</a></li>
 		<li><a href="#names">Variables and reserved names</a></li>
 		<li><a href="#calibration">Calibration and monitoring</a></li>
@@ -41,6 +42,7 @@
 		<tr><td>Board name used to compile (FQBN)</td><td><code>arduino:avr:uno</code></td><td><code>arduino:renesas_uno:unor4wifi</code></td></tr>
 		<tr><td>Compilation and upload</td><td>arduino-cli, or arduino-builder and avrdude</td><td>arduino-cli only</td></tr>
 		<tr><td>Resolution of the analog inputs</td><td>10 bits (0 to 1023)</td><td>14 bits (0 to 16383)</td></tr>
+		<tr><td>Analog outputs</td><td>PWM (0 to 255)</td><td>PWM (0 to 255), and true analog output of the 12 bits DAC on A0 (0 to 4095)</td></tr>
 		<tr><td>Analog reference</td><td><code>DEFAULT</code>, <code>INTERNAL</code>, <code>EXTERNAL</code></td><td><code>AR_DEFAULT</code>, <code>AR_INTERNAL</code>, <code>AR_EXTERNAL</code></td></tr>
 		<tr><td>Timer of the real time loop</td><td>Timer 1 (16 bits)</td><td>GPT timer, with a watchdog</td></tr>
 		<tr><td>Size of an <code>int</code></td><td>16 bits</td><td>32 bits</td></tr>
@@ -49,8 +51,10 @@
 	</table>
 	<p>The Uno R4 Minima is not supported. When an experiment moves from an
 		R3 to an R4 WiFi (or the reverse), change the Revision field, check
-		the analog reference and the variables (size of <code>int</code>,
-		reserved names), then compile the processes again.</p>
+		the analog reference (converted automatically), the variables (size of
+		<code>int</code>, reserved names) and the analog outputs (the DAC output
+		AOUT_DAC exists on the R4 WiFi only), then compile the processes
+		again.</p>
 
 	<h2><a name="pins">Inputs and outputs</a></h2>
 
@@ -111,6 +115,57 @@
 			the computer doesn't use these pins, which are free;</li>
 		<li>pin 13 is connected to the LED of the board.</li>
 	</ul>
+
+	<h2><a name="analogoutputs">Analog outputs in processes (PWM and DAC)</a></h2>
+
+	<p>An analog output is used like a variable: in a process, give a value to
+		its channel name with the <b>Compute expression(s)</b> function (for
+		example <code>AOUT_DAC = 2048</code>). The value is written on the
+		output at the sample frequency of the channel, and sent to the
+		computer if the channel is transferred.</p>
+	<table>
+		<tr>
+			<th>Channels</th>
+			<th>Values</th>
+			<th>Output</th>
+		</tr>
+		<tr>
+			<td><code>AOUT3</code>, <code>AOUT5</code>, <code>AOUT6</code>,
+				<code>AOUT9</code>, <code>AOUT10</code>, <code>AOUT11</code></td>
+			<td>0 to 255</td>
+			<td>PWM signal whose duty cycle is value/255:
+				add an RC filter to get a continuous voltage.</td>
+		</tr>
+		<tr>
+			<td><code>AOUT_DAC</code> (R4 WiFi only)</td>
+			<td>0 to 4095</td>
+			<td>Continuous voltage on pin A0, from 0V to about the voltage of
+				the analog reference (about 4.8V measured with the default
+				reference): value 2048 gives about half of it.</td>
+		</tr>
+	</table>
+	<p>With AOUT_DAC:</p>
+	<ul>
+		<li>check <b>Used</b> for AOUT_DAC in the analog outputs tab of the
+			DACQ configuration (revision R4 WiFi), then compile the processes
+			again;</li>
+		<li>the analog input AIN0 can't be used at the same time (same pin
+			A0);</li>
+		<li>the DAC is written in 12 bits and the PWM outputs stay in 8 bits:
+			the generated code sets the resolution of <code>analogWrite</code>
+			to 12 bits only around the write of the DAC, because this resolution
+			is common to all the analog outputs of the R4 WiFi. In your own
+			functions, write the DAC the same way
+			(<code>analogWriteResolution(12)</code>, <code>analogWrite(A0,
+			value)</code>, <code>analogWriteResolution(8)</code>): with the
+			default 8 bits resolution, values over 255 give 0V;</li>
+		<li>do not change the mode of pin A0 (<code>pinMode</code>) in your
+			own functions: on the R4 WiFi, the pin is no longer connected to
+			the DAC when its mode is changed after its first write.</li>
+	</ul>
+	<p>At the end of each trial, the analog outputs are set to 0 (0V for the
+		DAC). The values of the outputs can be checked with the
+		<a href="#calibration">calibration and monitoring</a> dialog.</p>
 
 	<h2><a name="frequency">Choosing the global frequency</a></h2>
 

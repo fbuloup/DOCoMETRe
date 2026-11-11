@@ -146,11 +146,16 @@ arduino-cli core install arduino:renesas_uno
 			real time loop. The workload displayed during a trial must stay
 			well below 100%;</li>
 		<li>the Uno R3 has no floating point unit: floating point computations
-			are slow and there is no calibration tool. The time base of the R3
+			are slow, and the calibration values are not applied during
+			acquisition (the calibration and monitoring dialog can still be used
+			to check the wiring and compute them). The time base of the R3
 			is a ceramic resonator, less stable than a crystal: see
 			<a href="../troubleshoots/timingConsideration.html">Timing
 			consideration</a>;</li>
-		<li>the analog outputs are PWM outputs, and some functions of the
+		<li>the analog outputs are PWM outputs, except the 12 bits DAC output
+			of the Uno R4 WiFi (see
+			<a href="ArduinoUnoTopic.html#analogoutputs">Analog outputs in
+			processes</a>), and some functions of the
 			processes are only available for ADwin (stimulus, filters, serial
 			port functions...): see the functions table of
 			<a href="../designperspective/dacqprocess.html#functions">DACQ
