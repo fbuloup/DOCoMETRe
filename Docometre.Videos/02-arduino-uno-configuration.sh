@@ -34,7 +34,7 @@ TAB_GENERAL="67 854"; TAB_CHARTS="120 854"; TAB_VARIABLES="177 854"
 TAB_ANIN="256 854"; TAB_DIGIO="474 854"
 # General tab
 G_CLI_CHECK="67 323"; G_CLI_PATH="800 353"; G_REVISION="900 392"; G_R4="285 452"
-G_PORT="800 431"; G_FREQUENCY="257 502"; G_DEFAULT="1537 125"
+G_PORT="800 431"; G_FREQUENCY="257 502"; G_DEFAULT="1510 125"   # "Set as default", left of "Calibrate"
 
 continue_from 01-experiment-subjects-sessions
 start_recording
