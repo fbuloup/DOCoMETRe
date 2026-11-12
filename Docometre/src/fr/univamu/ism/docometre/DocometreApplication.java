@@ -123,6 +123,9 @@ public class DocometreApplication implements IApplication {
 	 * IApplicationContext)
 	 */
 	public Object start(IApplicationContext context) throws Exception {
+		// Linux, Wayland session : DOCoMETRe is relaunched with GDK_BACKEND=x11, as OpenGL charts
+		// only support the X11 backend of GTK (see LinuxDisplayBackend)
+		if(LinuxDisplayBackend.relaunchWithX11Backend()) return IApplication.EXIT_OK;
 		// Language is set by framework at startup : relaunch if chosen language is not current one
 		String relaunchCommandLine = Languages.getStartupRelaunchCommandLine();
 		if(relaunchCommandLine != null) {
