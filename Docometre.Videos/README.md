@@ -43,14 +43,33 @@ show the Linux (GTK) look of DOCoMETRe.
 
 ## Usage
 
+The tutorials follow each other : tutorial 1 starts from an empty workspace,
+and each next tutorial starts from the workspace as it was at the end of the
+previous one (each tutorial ends by quitting DOCoMETRe with File > Exit
+DOCoMETRe). Record them all, in order :
+
 ```bash
-./01-experiment-subjects-sessions.sh /path/to/DocometreLinux /path/to/output
+./record-all.sh /path/to/DocometreLinux /path/to/output
 ```
 
-The release folder is copied before each recording (fresh preferences, no
-remembered workspace). The workspace used in the video is
-`/home/researcher/DOCoMETRe-Workspace` (override with `WORKSPACE=...`); it is
-deleted before recording.
+or one by one :
+
+```bash
+./01-experiment-subjects-sessions.sh /path/to/DocometreLinux /path/to/output
+./02-arduino-uno-configuration.sh /path/to/DocometreLinux /path/to/output
+```
+
+The state of DOCoMETRe at the end of each tutorial (workspace and remembered
+workspace) is saved in `~/.docometre-videos` (override with `STATE_DIR=...`).
+A tutorial can thus be recorded again alone, without recording the previous
+ones again : e.g. `./02-arduino-uno-configuration.sh ...` restores the state
+saved at the end of tutorial 1. To record again from tutorial 2 to the last
+one : `./record-all.sh /path/to/DocometreLinux /path/to/output 2`.
+If a tutorial changes, the next ones must be recorded again.
+
+The release folder is copied before each recording (no preferences except
+those of the restored workspace). The workspace used in the videos is
+`/home/researcher/DOCoMETRe-Workspace` (override with `WORKSPACE=...`).
 
 The release folder is run from `/opt/DOCoMETRe` (override with
 `APP_RUN_DIR=...`), as its path is displayed by the application.

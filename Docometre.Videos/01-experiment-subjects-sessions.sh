@@ -6,7 +6,6 @@
 APP_DIR=$(realpath "$1")
 OUT_DIR=$(realpath "${2:-.}")
 WORK_DIR=${WORK_DIR:-$(mktemp -d)}
-WORKSPACE=${WORKSPACE:-/home/researcher/DOCoMETRe-Workspace}
 source "$(dirname "$0")/lib.sh"
 
 # Positions in the main window (1600x900 screen)
@@ -19,13 +18,7 @@ W_NAME="845 310"; W_DESC="845 415"; W_FINISH="1038 543"
 S_NAME="868 179"; S_DESC="868 300"; S_PREFIX_CHECK="410 437"; S_PREFIX="868 437"
 S_TRIALS="840 547"; S_NEXT="915 608"; S_FINISH="1148 608"
 
-rm -rf "$WORKSPACE"
-mkdir -p "$(dirname "$WORKSPACE")" 2>/dev/null || {
-	echo "Can't create $(dirname "$WORKSPACE") : run setup-ubuntu.sh or set WORKSPACE=..." >&2; exit 1; }
-start_display
-start_docometre
-wait_window "Workspace Launcher" 60
-pause 2
+new_tutorial
 start_recording
 
 say "In this tutorial you will create an experiment, add subjects (participants) and organize their sessions and trials." 6
@@ -148,11 +141,7 @@ pause 1
 
 # ------------------------------------------------------------ end
 say "Your experimental protocol is ready: subjects, sessions and trials. Next step: describe the data acquisition system and its processes." 6
-clear_subtitle
-pause 1
-
-stop_recording
-stop_docometre
-mkdir -p "$OUT_DIR"
+say "Quit DOCoMETRe with File > Exit DOCoMETRe: the workspace is saved and will be opened again next time." 2
+end_tutorial
 make_video "$OUT_DIR/01-Experiment-Subjects-Sessions.mp4" "Create an experiment" "Subjects, sessions and trials"
 echo "Video : $OUT_DIR/01-Experiment-Subjects-Sessions.mp4"

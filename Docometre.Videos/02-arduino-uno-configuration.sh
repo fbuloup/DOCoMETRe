@@ -3,6 +3,8 @@
 #
 # Usage : 02-arduino-uno-configuration.sh <DOCoMETRe release folder> <output folder>
 #
+# Follows tutorial 1 : starts from the workspace as it was at the end of it.
+#
 # No board is needed. As DOCoMETRe checks that the arduino-cli tool and the
 # serial port exist, placeholders are created when they are missing
 # (/usr/local/bin/arduino-cli and /dev/ttyACM0, with sudo if needed) : run
@@ -11,7 +13,6 @@
 APP_DIR=$(realpath "$1")
 OUT_DIR=$(realpath "${2:-.}")
 WORK_DIR=${WORK_DIR:-$(mktemp -d)}
-WORKSPACE=${WORKSPACE:-/home/researcher/DOCoMETRe-Workspace}
 ARDUINO_CLI=${ARDUINO_CLI:-/usr/local/bin/arduino-cli}
 SERIAL_PORT=${SERIAL_PORT:-/dev/ttyACM0}
 source "$(dirname "$0")/lib.sh"
@@ -39,26 +40,11 @@ TAB_ANIN="256 854"; TAB_DIGIO="474 854"
 G_CLI_CHECK="67 323"; G_CLI_PATH="800 353"; G_REVISION="900 392"; G_R4="285 452"
 G_PORT="800 431"; G_FREQUENCY="257 502"; G_DEFAULT="1537 125"
 
-rm -rf "$WORKSPACE"; mkdir -p "$(dirname "$WORKSPACE")"
-start_display
-start_docometre
-wait_window "Workspace Launcher" 60
-pause 2
-type_text "$WORKSPACE"
-key Return
-wait_window "DOCoMETRe [0-9]" 60
-pause 4
-click 132 91
-pause 1
+continue_from 01-experiment-subjects-sessions
 start_recording
 
 say "In this tutorial you will describe an Arduino Uno board in a DACQ (data acquisition) configuration." 5
-say "First, create an experiment (see tutorial 1)." 1
-move $TB_EXPERIMENT; pause 0.5; xdotool click 1
-wait_window "New Resource" 10; pause 0.8
-type_text "MotorLearning"
-click $W_FINISH
-pause 1.5
+say "We continue with the MotorLearning experiment created in the previous tutorial." 3
 
 # ------------------------------------------------------------ wizard
 say "Select the experiment and click the 'DACQ Configuration' button." 2
@@ -220,11 +206,7 @@ double_click 150 91
 pause 2
 click 120 145
 say "The DACQ configuration is ready. Next tutorial: create a process that uses these channels and variables." 5
-clear_subtitle
-pause 1
-
-stop_recording
-stop_docometre
-mkdir -p "$OUT_DIR"
+say "Quit DOCoMETRe with File > Exit DOCoMETRe." 1.5
+end_tutorial
 make_video "$OUT_DIR/02-Arduino-Uno-Configuration.mp4" "Arduino Uno configuration" "Board, modules, channels, variables and charts"
 echo "Video : $OUT_DIR/02-Arduino-Uno-Configuration.mp4"

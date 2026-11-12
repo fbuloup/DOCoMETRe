@@ -4,10 +4,16 @@
 # Requirements : Xvfb, openbox, xdotool, ffmpeg, ImageMagick (import) and a
 # DOCoMETRe release unzipped in $APP_DIR.
 #
-# A scenario script sources this file, calls start_session, then uses
-# move/click/type_text/key/say/pause, and finally calls end_session.
+# A scenario script sources this file, starts DOCoMETRe (new_tutorial for the
+# first one, continue_from <previous tutorial> for the next ones), calls
+# start_recording, then uses move/click/type_text/key/say/pause, and finally
+# calls end_tutorial and make_video.
 # Subtitles written with "say" are stored with their time stamps and burnt
 # into the final video by make_video.
+#
+# Tutorials follow each other : the state of DOCoMETRe at the end of a
+# tutorial (workspace, preferences, remembered workspace) is saved in
+# $STATE_DIR and restored at the beginning of the next one.
 
 : "${DISPLAY_NUM:=:99}"
 : "${SCREEN_W:=1600}"
@@ -15,6 +21,8 @@
 : "${FPS:=25}"
 : "${TYPE_DELAY:=70}"
 : "${APP_RUN_DIR:=/opt/DOCoMETRe}"
+: "${WORKSPACE:=/home/researcher/DOCoMETRe-Workspace}"
+: "${STATE_DIR:=$HOME/.docometre-videos}"
 
 export DISPLAY=$DISPLAY_NUM
 export LANG=C.UTF-8 LC_ALL=C.UTF-8
@@ -137,8 +145,9 @@ wait_window() {
 snapshot() { import -window root "$WORK_DIR/$1.png"; }
 
 # ---------------------------------------------------------------- application
+# start_docometre [state] : runs a fresh copy of the release, after restoring
+# the given saved state (see save_state) if any
 start_docometre() {
-	# Fresh copy of the release : no remembered workspace, no preferences
 	# The copy is run from a neutral folder : its path is displayed by the
 	# application (console, Arduino libraries path...). Its content is
 	# replaced, so that the folder itself can be owned by a non-root user.
@@ -148,11 +157,16 @@ start_docometre() {
 	cp -r "$APP_DIR"/. "$APP_RUN_DIR"/
 	# The launcher may lose its execute permission when the release is unzipped
 	chmod +x "$APP_RUN_DIR/DOCoMETRe"
+	rm -rf "$WORKSPACE"
+	mkdir -p "$(dirname "$WORKSPACE")" 2>/dev/null \
+		|| abort "can't create $(dirname "$WORKSPACE") (run setup-ubuntu.sh or set WORKSPACE=...)"
+	[ -n "$1" ] && restore_state "$1"
 	mkdir -p "$WORK_DIR/home"
 	(cd "$APP_RUN_DIR" && HOME="$WORK_DIR/home" exec ./DOCoMETRe -nl en) > "$WORK_DIR/docometre.log" 2>&1 &
 	DOCOMETRE_PID=$!
 }
 
+# Kills DOCoMETRe (on errors : its state is not saved)
 stop_docometre() {
 	[ -z "$DOCOMETRE_PID" ] && return
 	kill $DOCOMETRE_PID 2>/dev/null
@@ -164,6 +178,70 @@ stop_docometre() {
 	kill -9 $DOCOMETRE_PID 2>/dev/null
 	wait $DOCOMETRE_PID 2>/dev/null
 	DOCOMETRE_PID=
+}
+
+# Quits DOCoMETRe as a user would do (File > Exit DOCoMETRe, filmed) : the
+# workspace and the resources properties are saved, the lock file removed
+MENU_FILE="18 31"; MENU_EXIT="90 386"
+quit_docometre() {
+	local i
+	click $MENU_FILE
+	pause 1
+	click $MENU_EXIT
+	for i in $(seq 1 120); do
+		kill -0 $DOCOMETRE_PID 2>/dev/null || { wait $DOCOMETRE_PID 2>/dev/null; DOCOMETRE_PID=; return 0; }
+		sleep 0.5
+	done
+	abort "DOCoMETRe didn't exit (a dialog may be open)"
+}
+
+# ---------------------------------------------------------------- tutorials sequence
+# Name of the running tutorial : name of its script
+TUTORIAL=$(basename "$0" .sh)
+
+save_state() {
+	mkdir -p "$STATE_DIR"
+	tar -czf "$STATE_DIR/$1.tar.gz" -C / "${WORKSPACE#/}" "${APP_RUN_DIR#/}/workspaceData.properties" \
+		|| abort "state of $1 can't be saved"
+}
+
+restore_state() {
+	[ -f "$STATE_DIR/$1.tar.gz" ] \
+		|| abort "state at the end of tutorial $1 not found in $STATE_DIR : record $1 first (or use record-all.sh)"
+	tar -xzf "$STATE_DIR/$1.tar.gz" -C / || abort "state of $1 can't be restored"
+}
+
+# First tutorial : empty workspace, the Workspace Launcher is displayed
+new_tutorial() {
+	start_display
+	start_docometre
+	wait_window "Workspace Launcher" 60
+	pause 2
+}
+
+# Next tutorials : DOCoMETRe is opened (before recording) on the workspace
+# as it was at the end of the previous tutorial
+continue_from() {
+	start_display
+	start_docometre "$1"
+	wait_window "Workspace Launcher" 60
+	pause 1
+	key ctrl+a
+	xdotool type --delay 5 "$WORKSPACE"
+	key Return
+	wait_window "DOCoMETRe [0-9]" 60
+	pause 4
+}
+
+# End of the recording : DOCoMETRe is quit with File > Exit (filmed) and its
+# state saved for the next tutorial
+end_tutorial() {
+	quit_docometre
+	pause 0.5
+	clear_subtitle
+	stop_recording
+	save_state "$TUTORIAL"
+	mkdir -p "$OUT_DIR"
 }
 
 # ---------------------------------------------------------------- final video
@@ -225,7 +303,9 @@ drawtext=fontfile=$font:text='$title':fontcolor=0xffffff:fontsize=64:x=(w-tw)/2:
 drawtext=fontfile=$font2:text='$subtitle':fontcolor=0xc8d6e5:fontsize=34:x=(w-tw)/2:y=h/2+60,\
 fade=t=in:st=0:d=0.5,fade=t=out:st=3.5:d=0.5" \
 		-c:v libx264 -preset veryfast -crf 18 -pix_fmt yuv420p "$WORK_DIR/title.mp4"
-	ffmpeg -loglevel error -y -i "$RAW_VIDEO" -vf "ass=$ass,fade=t=in:st=0:d=0.5" \
+	local duration=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$RAW_VIDEO")
+	local fade_out=$(echo "$duration - 0.6" | bc)
+	ffmpeg -loglevel error -y -i "$RAW_VIDEO" -vf "ass=$ass,fade=t=in:st=0:d=0.5,fade=t=out:st=$fade_out:d=0.6" \
 		-c:v libx264 -preset medium -crf 20 -pix_fmt yuv420p -r $FPS "$WORK_DIR/body.mp4"
 	printf "file '%s'\nfile '%s'\n" "$WORK_DIR/title.mp4" "$WORK_DIR/body.mp4" > "$WORK_DIR/concat.txt"
 	ffmpeg -loglevel error -y -f concat -safe 0 -i "$WORK_DIR/concat.txt" -c copy -movflags +faststart "$output"
