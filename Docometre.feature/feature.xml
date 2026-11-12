@@ -6,56 +6,104 @@
       provider-name="ISM">
 
    <description>
-      -- 2026-11-12
+      -- 2026-11-12 - BIS
 ADDED :
-* Arduino Uno : calibration and monitoring dialog, as with ADwin (&quot;Calibration, monitoring&quot; button
-in the General tab of the DACQ configuration). A generic precompiled firmware (R3 and R4 WiFi) is
-uploaded when the board does not run it, configured from the DACQ configuration (analog reference,
-analog inputs of the board and ADS1115, digital inputs, analog and digital outputs) and started.
-Values are displayed in volts, calibration values are captured and saved as with ADwin
-* Calibration and monitoring dialog common to the DACQ systems (ADwin and Arduino Uno)
-* Arduino Uno R4 WiFi : DAC output on pin A0 (channel AOUT_DAC, 12 bits, values 0 to 4095) in
-acquisition processes and in the calibration. Pin A0 can not be used both as analog input AIN0
+* Linux, Wayland session (Ubuntu 22.04 and later, Fedora, WSL2 with WSLg) : DOCoMETRe is relaunched
+at startup with the X11 backend of GTK (GDK_BACKEND=x11, Xwayland), as OpenGL charts only support X11.
+No relaunch in an X11 session or when GDK_BACKEND=x11 is already set
+FIXED :
+* Linux, Wayland session : crash of the JVM (SIGSEGV in XDisplayString) as soon as an OpenGL chart was
+created, e.g. the real time charts of a process test
+* Linux : &quot;Caught handled GLException ... UnsatisfiedLinkError : EGL.dispatch_eglQueryString0&quot; messages
+when libEGL is installed (e.g. WSL2) : libjogl_mobile.so was not declared in the native code of the
+JOGL bundle
+* New Subject wizard : name, title and message of the custom function wizard were displayed
+-- 2026-11-12
+ADDED :
+* Arduino Uno : calibration and monitoring dialog, as with ADwin
+(&quot;Calibration, monitoring&quot; button
+in the General tab of the DACQ configuration). A generic precompiled
+firmware (R3 and R4 WiFi) is
+uploaded when the board does not run it, configured from the
+DACQ configuration (analog reference,
+analog inputs of the board and ADS1115, digital inputs, analog
+and digital outputs) and started.
+Values are displayed in volts, calibration values are captured
+and saved as with ADwin
+* Calibration and monitoring dialog common to the DACQ systems
+(ADwin and Arduino Uno)
+* Arduino Uno R4 WiFi : DAC output on pin A0 (channel AOUT_DAC,
+12 bits, values 0 to 4095) in
+acquisition processes and in the calibration. Pin A0 can not
+be used both as analog input AIN0
 and as DAC output
-* Arduino Uno : AR_INTERNAL analog reference (R4 WiFi). Only the analog references of the revision
-of the board are proposed, and the reference is converted when the revision changes
-* Image chart : displays for each trial an image read from the images file of the session (one
-line per trial, paths absolute or relative to the workspace, comments with #, errors displayed in
+* Arduino Uno : AR_INTERNAL analog reference (R4 WiFi). Only
+the analog references of the revision
+of the board are proposed, and the reference is converted when
+the revision changes
+* Image chart : displays for each trial an image read from the
+images file of the session (one
+line per trial, paths absolute or relative to the workspace,
+comments with #, errors displayed in
 the chart area, short explanations in the chart configuration)
-* Images files : new resource type (.images), File &gt; New &gt; Images file... wizard with a commented
-template, images files editor (Images page with preview, Raw file page)
-* Text files editors (parameters, images) : files read in UTF-8, or ISO-8859-1 if they are not
+* Images files : new resource type (.images), File &gt; New &gt; Images
+file... wizard with a commented
+template, images files editor (Images page with preview, Raw
+file page)
+* Text files editors (parameters, images) : files read in UTF-8,
+or ISO-8859-1 if they are not
 UTF-8, and saved in UTF-8
-* Trials folders : fixed name &quot;Trial_N&quot; on disk, whatever the language. Legacy trials folders are
-renamed at startup, after import, refresh, paste from file system and snapshot restoration
-* Dark theme : banner images of the dialogs and filter equations without white background
-* Help : Supported DACQ Systems pages (ADwin Gold / Pro, Arduino Uno R3 / R4 WiFi, ADS1115, planned
-systems, troubleshoots with ADwin), calibration and monitoring with Arduino Uno, analog outputs
-(PWM and DAC) in processes, images file format and image chart, R4 WiFi troubleshoot
-* Welcome page : table of contents in the help first page, link to the web site (opened in a new
+* Trials folders : fixed name &quot;Trial_N&quot; on disk, whatever the
+language. Legacy trials folders are
+renamed at startup, after import, refresh, paste from file system
+and snapshot restoration
+* Dark theme : banner images of the dialogs and filter equations
+without white background
+* Help : Supported DACQ Systems pages (ADwin Gold / Pro, Arduino
+Uno R3 / R4 WiFi, ADS1115, planned
+systems, troubleshoots with ADwin), calibration and monitoring
+with Arduino Uno, analog outputs
+(PWM and DAC) in processes, images file format and image chart,
+R4 WiFi troubleshoot
+* Welcome page : table of contents in the help first page, link
+to the web site (opened in a new
 tab), &quot;Workbench basics&quot; link hidden
-* Tests : Arduino calibration protocol (computer and firmware sides), images files, analog
+* Tests : Arduino calibration protocol (computer and firmware
+sides), images files, analog
 references of each Arduino revision
 FIXED :
-* NPE when closing editors not yet instantiated (lazy loading), e.g. editor of a deleted resource
-* Trials lookups broken after a change of the language or with an experiment shared with a user
-working with another language (translated trials folders names). In Polish, the trial number
+* NPE when closing editors not yet instantiated (lazy loading),
+e.g. editor of a deleted resource
+* Trials lookups broken after a change of the language or with
+an experiment shared with a user
+working with another language (translated trials folders names).
+In Polish, the trial number
 could not be read
-* ADwin : Docker compilation used a hard-coded ADbasic libraries path instead of the libraries path
-of the DACQ configuration (docker is now taken from the PATH on Linux)
-* Arduino Uno : user libraries option of the arduino-cli compilation ignored (--libraries placed
-after the output redirection). arduino-builder on macOS and Linux now reads the user libraries
+* ADwin : Docker compilation used a hard-coded ADbasic libraries
+path instead of the libraries path
+of the DACQ configuration (docker is now taken from the PATH
+on Linux)
+* Arduino Uno : user libraries option of the arduino-cli compilation
+ignored (--libraries placed
+after the output redirection). arduino-builder on macOS and Linux
+now reads the user libraries
 path from the DACQ configuration
-* Arduino Uno : wrong gain for ADS1115 inputs in acquisition processes (gains 4 and 16 gave
+* Arduino Uno : wrong gain for ADS1115 inputs in acquisition
+processes (gains 4 and 16 gave
 +/-6.144V, gain 8 gave +/-1.024V)
-* Arduino Uno : ADS1115 values were unsigned in processes (a small negative value near 0V was read
+* Arduino Uno : ADS1115 values were unsigned in processes (a
+small negative value near 0V was read
 as about 65535)
-* Arduino Uno R4 WiFi : process blocked after start when analog outputs or ADS1115 inputs were
+* Arduino Uno R4 WiFi : process blocked after start when analog
+outputs or ADS1115 inputs were
 transferred (Serial write in the real time loop interrupt)
-* Arduino Uno R4 WiFi : messages lost and possible memory corruption (String filled by the real
-time loop interrupt), interrupts left disabled after reading ADS1115 inputs, I2C transfers blocked
+* Arduino Uno R4 WiFi : messages lost and possible memory corruption
+(String filled by the real
+time loop interrupt), interrupts left disabled after reading
+ADS1115 inputs, I2C transfers blocked
 in the real time loop (interrupt priority)
-* ADS1115 module explanation : 15 useful bits in single ended mode, 1.0248V range typo
+* ADS1115 module explanation : 15 useful bits in single ended
+mode, 1.0248V range typo
 * French &quot;Used&quot; column label typo
 -- 2026-11-10
 ADDED :
