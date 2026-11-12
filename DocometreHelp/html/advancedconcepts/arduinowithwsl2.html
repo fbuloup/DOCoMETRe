@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+ <html>
+ <head>
+ 	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ 	<title>Can I use an Arduino Uno with DOCoMETRe running in WSL2 on Windows ?</title>
+ 	<style type="text/css">
+ 		pre { margin-left: 2em; }
+ 	</style>
+ </head>
+
+ <body>
+ <h1>Can I use an Arduino Uno with DOCoMETRe running in WSL2 on Windows ?</h1>
+ <p>
+ Yes you can ! With <b>WSL2</b> (Windows Subsystem for Linux), the Linux release of DOCoMETRe runs in an Ubuntu distribution installed on
+ Windows, and its windows are displayed on the Windows desktop (<b>WSLg</b>). But WSL2 does not see the USB devices of Windows : an Arduino Uno
+ connected to a USB port of the computer must first be shared with WSL2. This is done with <b>usbipd-win</b>, the tool recommended by Microsoft
+ (see <a href="https://learn.microsoft.com/windows/wsl/connect-usb" target="_blank" rel="noopener noreferrer">Connect USB devices</a> in the
+ WSL documentation, and <a href="https://github.com/dorssel/usbipd-win" target="_blank" rel="noopener noreferrer">usbipd-win</a>).
+ </p>
+ <p>In the commands below, run in <b>PowerShell</b> or in the <b>Ubuntu terminal</b> as indicated, <code>2-3</code> is an example of bus
+ identifier (BUSID) : use the one of your board.</p>
+
+ <h2>1. Install usbipd-win on Windows (once)</h2>
+ <p>In <b>PowerShell run as administrator</b> :</p>
+ <pre>
+winget install --interactive --exact dorssel.usbipd-win
+</pre>
+ <p>Nothing has to be installed in Ubuntu with a recent version of WSL : the version of its kernel, given by <code>wsl --version</code> in
+ PowerShell, must be 5.10.60.1 or later.</p>
+
+ <h2>2. Allow your Linux user to use the serial ports (once)</h2>
+ <p>In the <b>Ubuntu terminal</b> :</p>
+ <pre>
+sudo usermod -aG dialout $USER
+</pre>
+ <p>Then restart WSL, in <b>PowerShell</b>, so that this change is taken into account, and open the Ubuntu terminal again :</p>
+ <pre>
+wsl --shutdown
+</pre>
+ <p>See also <a href="../troubleshoots/arduinouno.html">Troubleshoots with Arduino Uno System</a>.</p>
+
+ <h2>3. Share the Arduino Uno with WSL2</h2>
+ <p>Connect the board and open the Ubuntu terminal. Then, in <b>PowerShell run as administrator</b>, list the USB devices :</p>
+ <pre>
+usbipd list
+</pre>
+ <p>Find the line of the Arduino Uno and note its <b>BUSID</b>, for example :</p>
+ <pre>
+BUSID  VID:PID    DEVICE                       STATE
+2-3    2341:1002  USB Serial Device (COM3)     Not shared
+</pre>
+ <p>Share it (once for each board, as administrator), then attach it to WSL2 :</p>
+ <pre>
+usbipd bind --busid 2-3
+usbipd attach --wsl --busid 2-3 --auto-attach
+</pre>
+ <ul>
+ 	<li><b>bind</b> is needed only once for each board;</li>
+ 	<li><b>attach</b> must be done again each time the board is connected, and each time WSL or Windows is restarted;</li>
+ 	<li>with <b>--auto-attach</b>, the board is attached again automatically when it is disconnected, which may happen when it resets during an
+ 	upload. This command keeps running : leave its PowerShell window open.</li>
+ </ul>
+
+ <h2>4. Check in Ubuntu</h2>
+ <p>In the <b>Ubuntu terminal</b> :</p>
+ <pre>
+ls -l /dev/ttyACM*
+</pre>
+ <p>The board must appear, usually as <b>/dev/ttyACM0</b> (a character device of the <b>dialout</b> group). In DOCoMETRe, give this name as
+ <b>Serial port name</b> in the General tab of the <a href="../designperspective/dacqconfiguration.html">DACQ configuration</a> (the
+ <b>Browse...</b> button lists the available ports). Processes can then be compiled, uploaded with arduino-cli and run from WSL2.</p>
+
+ <h2>Things to know</h2>
+ <ul>
+ 	<li><b>Windows no longer sees the board while it is attached to WSL2</b> : its COM port disappears, so the Arduino IDE or DOCoMETRe for
+ 	Windows can't use it. To give it back to Windows (or simply disconnect it), run in PowerShell :
+ <pre>
+usbipd detach --busid 2-3
+</pre>
+ 	</li>
+ 	<li><b>/dev/ttyACM0 must be the real device.</b> If <code>ls -l /dev/ttyACM0</code> shows a link to <code>/dev/null</code> (placeholder
+ 	created by the recording scripts of the video tutorials, which need no board), remove it before attaching the board, otherwise the board
+ 	can't get this name :
+ <pre>
+sudo rm /dev/ttyACM0
+</pre>
+ 	It also disappears when WSL is restarted (<code>wsl --shutdown</code>).</li>
+ 	<li><b>Timing.</b> USB/IP transfers the data through the virtual network of WSL2, which adds latency and jitter. This is fine to configure the
+ 	DACQ system, compile, upload and test processes. For experiments with high sampling frequencies, prefer DOCoMETRe for Windows with the board
+ 	connected directly (see also <a href="../troubleshoots/timingConsideration.html">Timing consideration</a>).</li>
+ 	<li><b>OpenGL charts.</b> WSLg is a Wayland session, whereas the OpenGL charts of DOCoMETRe (e.g. real time charts of a process test) need the
+ 	X11 backend of GTK : DOCoMETRe restarts itself at startup with the environment variable <code>GDK_BACKEND=x11</code>. With an older version
+ 	of DOCoMETRe, which closes without warning when such a chart is displayed, start it with this variable :
+ <pre>
+GDK_BACKEND=x11 ./DOCoMETRe
+</pre>
+ 	</li>
+ </ul>
+
+ </body>
+ </html>
