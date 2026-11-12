@@ -3,126 +3,126 @@
 In this tutorial you will describe an Arduino Uno board in a DACQ (data acquisition) configuration.
 
 2
-00:00:09,009 --> 00:00:14,432
+00:00:09,009 --> 00:00:14,390
 We continue with the MotorLearning experiment created in the previous tutorial, its subjects and sessions.
 
 3
-00:00:14,482 --> 00:00:25,136
+00:00:14,440 --> 00:00:25,071
 Select the experiment and click the 'DACQ Configuration' button.
 
 4
-00:00:25,186 --> 00:00:31,495
+00:00:25,121 --> 00:00:31,472
 Choose the system: ADwin or Arduino UNO.
 
 5
-00:00:31,545 --> 00:00:38,458
+00:00:31,522 --> 00:00:38,400
 As default configuration of the experiment, it will be pre-selected when processes are created.
 
 6
-00:00:38,508 --> 00:00:45,962
+00:00:38,450 --> 00:00:45,935
 The configuration appears in the Experiments view with its system. Double click to open its editor.
 
 7
-00:00:46,012 --> 00:00:50,935
+00:00:45,985 --> 00:00:50,944
 Double click on the editor tab to maximize it.
 
 8
-00:00:50,985 --> 00:00:56,595
+00:00:50,994 --> 00:00:56,656
 The General tab describes how DOCoMETRe compiles the processes and reaches the board.
 
 9
-00:00:56,645 --> 00:01:01,505
+00:00:56,706 --> 00:01:01,617
 Arduino libraries are provided with DOCoMETRe. Check 'Use command line tool' to compile and upload with arduino-cli...
 
 10
-00:01:01,555 --> 00:01:06,496
+00:01:01,667 --> 00:01:06,610
 ...and give its path (Browse... opens a file dialog).
 
 11
-00:01:06,546 --> 00:01:12,805
+00:01:06,660 --> 00:01:13,012
 Choose the revision of your board: R3 or R4 WiFi.
 
 12
-00:01:12,855 --> 00:01:19,634
+00:01:13,062 --> 00:01:19,871
 The serial port of the board: COM3 on Windows, /dev/ttyACM0 on Linux... Browse... lists the available ports.
 
 13
-00:01:19,684 --> 00:01:28,335
+00:01:19,921 --> 00:01:28,711
 The global frequency is the frequency of the real time loop. Click on its value to change it.
 
 14
-00:01:28,385 --> 00:01:37,168
+00:01:28,761 --> 00:01:37,555
 Each module of the board has its own tab: analog inputs, analog outputs and digital inputs/outputs.
 
 15
-00:01:37,218 --> 00:01:47,981
+00:01:37,605 --> 00:01:48,411
 Analog inputs tab: first choose the analog reference. AR_DEFAULT (5 V) is the default one of the R4 WiFi.
 
 16
-00:01:48,031 --> 00:01:52,374
+00:01:48,461 --> 00:01:52,873
 Then check the channels you use. Here a force sensor is wired on pin A1.
 
 17
-00:01:52,424 --> 00:01:56,787
+00:01:52,923 --> 00:01:57,269
 T (Transfer): values are sent to the computer, to be displayed during acquisition.
 
 18
-00:01:56,837 --> 00:02:01,225
+00:01:57,319 --> 00:02:01,702
 Rec. (Record): transferred values are saved in a samples file for each trial.
 
 19
-00:02:01,275 --> 00:02:07,801
+00:02:01,752 --> 00:02:08,294
 Give the channel a meaningful name: it is used in processes, charts and data files names.
 
 20
-00:02:07,851 --> 00:02:18,521
+00:02:08,344 --> 00:02:19,372
 S.F. is the sample frequency of the channel, a sub-multiple of the global frequency: 500 Hz here.
 
 21
-00:02:18,571 --> 00:02:33,767
+00:02:19,422 --> 00:02:34,913
 Digital inputs/outputs tab: pin 13 (the LED of the board) is used as a digital output.
 
 22
-00:02:33,817 --> 00:02:41,086
+00:02:34,963 --> 00:02:42,393
 Variables tab: variables are used by the processes (counters, states, computed values...).
 
 23
-00:02:41,136 --> 00:02:52,884
+00:02:42,443 --> 00:02:54,505
 Add a variable, give it a name and a type.
 
 24
-00:02:52,934 --> 00:02:59,302
+00:02:54,555 --> 00:03:00,913
 Checked as Parameter, its value will be read for each trial in the parameters file of the session.
 
 25
-00:02:59,352 --> 00:03:06,710
+00:03:00,963 --> 00:03:08,247
 Charts tab: the charts displayed in real time during acquisition.
 
 26
-00:03:06,760 --> 00:03:11,644
+00:03:08,297 --> 00:03:13,187
 Several types are available: oscilloscope, XY, gauge, tank, image... Here an oscilloscope chart.
 
 27
-00:03:11,694 --> 00:03:21,303
+00:03:13,237 --> 00:03:22,744
 Add the curves to display: only transferred channels and variables are listed.
 
 28
-00:03:21,353 --> 00:03:29,176
+00:03:22,794 --> 00:03:30,577
 Set the properties of the chart: a 5 seconds time width, with automatic scaling.
 
 29
-00:03:29,226 --> 00:03:34,970
+00:03:30,627 --> 00:03:36,329
 Save the configuration with Ctrl+S.
 
 30
-00:03:35,020 --> 00:03:46,660
+00:03:36,379 --> 00:03:47,818
 This button saves these settings in the preferences: they will initialize your next Arduino configurations.
 
 31
-00:03:46,710 --> 00:03:51,667
+00:03:47,868 --> 00:03:52,824
 The DACQ configuration is ready. Next tutorial: create a process that uses these channels and variables.
 
 32
-00:03:51,717 --> 00:03:57,967
+00:03:52,874 --> 00:03:59,047
 Quit DOCoMETRe with File > Exit DOCoMETRe.
 
