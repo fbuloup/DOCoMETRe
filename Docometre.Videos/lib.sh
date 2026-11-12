@@ -14,6 +14,7 @@
 : "${SCREEN_H:=900}"
 : "${FPS:=25}"
 : "${TYPE_DELAY:=70}"
+: "${APP_RUN_DIR:=/opt/DOCoMETRe}"
 
 export DISPLAY=$DISPLAY_NUM
 export LANG=C.UTF-8 LC_ALL=C.UTF-8
@@ -103,14 +104,16 @@ snapshot() { import -window root "$WORK_DIR/$1.png"; }
 # ---------------------------------------------------------------- application
 start_docometre() {
 	# Fresh copy of the release : no remembered workspace, no preferences
-	rm -rf "$WORK_DIR/app" "$WORK_DIR/home"
-	cp -r "$APP_DIR" "$WORK_DIR/app"
+	# The copy is run from a neutral folder : its path is displayed by the
+	# application (console, Arduino libraries path...)
+	rm -rf "$APP_RUN_DIR" "$WORK_DIR/home"
+	cp -r "$APP_DIR" "$APP_RUN_DIR"
 	mkdir -p "$WORK_DIR/home"
-	(cd "$WORK_DIR/app" && HOME="$WORK_DIR/home" ./DOCoMETRe -nl en > "$WORK_DIR/docometre.log" 2>&1 &)
+	(cd "$APP_RUN_DIR" && HOME="$WORK_DIR/home" ./DOCoMETRe -nl en > "$WORK_DIR/docometre.log" 2>&1 &)
 }
 
 stop_docometre() {
-	pkill -f "$WORK_DIR/app" 2>/dev/null
+	pkill -f "$APP_RUN_DIR/" 2>/dev/null
 	sleep 2
 }
 
