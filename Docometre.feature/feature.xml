@@ -6,36 +6,107 @@
       provider-name="ISM">
 
    <description>
-      -- 2026-11-10
+      -- 2026-11-12
 ADDED :
-* Arduino Uno : process parameters, as with ADwin (Parameter and Propagate columns of the Variables
-tab, parameters file of the session, parameters dialog for a process test). Values are sent to the
-board before each trial and acknowledged by it (frames on the serial port, about 2 to 3 ms per
-trial), values of the propagated parameters are sent back at the end of the trial and written in
-the line of the next trial of the parameters file
-* Arduino Uno : string type for variables (Size is the maximum length of the string), warning at
-compile time when strings use more than 512 bytes of the RAM of the R3
-* Arduino Uno : values of the parameters checked by type (bool, char, int on 16 bits with R3 and
-32 bits with R4 WiFi, long, float, string) in the parameters dialog and before each trial
-* Parameters editor : reloaded when the parameters file is changed on disk (propagated values),
-question to reload the file when the editor has unsaved modifications, question before
-overwriting a file changed on disk
-* Parameters management common to ADwin and Arduino Uno (parameters file, parameters dialog,
-propagation)
-* Tests : JUnit tests of the parameters file, of the Arduino parameters values and frames, of the
-generated Arduino parameters code (compiled and run on the host with g++ when available) and of
-the Arduino build output analysis
-* Help : parameters with Arduino Uno, accepted values, how parameters are sent to ADwin and Arduino
-Uno, Arduino reserved names (F, signal...), timing measures of the parameters
+* Arduino Uno : calibration and monitoring dialog, as with ADwin (&quot;Calibration, monitoring&quot; button
+in the General tab of the DACQ configuration). A generic precompiled firmware (R3 and R4 WiFi) is
+uploaded when the board does not run it, configured from the DACQ configuration (analog reference,
+analog inputs of the board and ADS1115, digital inputs, analog and digital outputs) and started.
+Values are displayed in volts, calibration values are captured and saved as with ADwin
+* Calibration and monitoring dialog common to the DACQ systems (ADwin and Arduino Uno)
+* Arduino Uno R4 WiFi : DAC output on pin A0 (channel AOUT_DAC, 12 bits, values 0 to 4095) in
+acquisition processes and in the calibration. Pin A0 can not be used both as analog input AIN0
+and as DAC output
+* Arduino Uno : AR_INTERNAL analog reference (R4 WiFi). Only the analog references of the revision
+of the board are proposed, and the reference is converted when the revision changes
+* Image chart : displays for each trial an image read from the images file of the session (one
+line per trial, paths absolute or relative to the workspace, comments with #, errors displayed in
+the chart area, short explanations in the chart configuration)
+* Images files : new resource type (.images), File &gt; New &gt; Images file... wizard with a commented
+template, images files editor (Images page with preview, Raw file page)
+* Text files editors (parameters, images) : files read in UTF-8, or ISO-8859-1 if they are not
+UTF-8, and saved in UTF-8
+* Trials folders : fixed name &quot;Trial_N&quot; on disk, whatever the language. Legacy trials folders are
+renamed at startup, after import, refresh, paste from file system and snapshot restoration
+* Dark theme : banner images of the dialogs and filter equations without white background
+* Help : Supported DACQ Systems pages (ADwin Gold / Pro, Arduino Uno R3 / R4 WiFi, ADS1115, planned
+systems, troubleshoots with ADwin), calibration and monitoring with Arduino Uno, analog outputs
+(PWM and DAC) in processes, images file format and image chart, R4 WiFi troubleshoot
+* Welcome page : table of contents in the help first page, link to the web site (opened in a new
+tab), &quot;Workbench basics&quot; link hidden
+* Tests : Arduino calibration protocol (computer and firmware sides), images files, analog
+references of each Arduino revision
 FIXED :
-* ADwin : a process modified and compiled again between two executions was not loaded again
+* NPE when closing editors not yet instantiated (lazy loading), e.g. editor of a deleted resource
+* Trials lookups broken after a change of the language or with an experiment shared with a user
+working with another language (translated trials folders names). In Polish, the trial number
+could not be read
+* ADwin : Docker compilation used a hard-coded ADbasic libraries path instead of the libraries path
+of the DACQ configuration (docker is now taken from the PATH on Linux)
+* Arduino Uno : user libraries option of the arduino-cli compilation ignored (--libraries placed
+after the output redirection). arduino-builder on macOS and Linux now reads the user libraries
+path from the DACQ configuration
+* Arduino Uno : wrong gain for ADS1115 inputs in acquisition processes (gains 4 and 16 gave
++/-6.144V, gain 8 gave +/-1.024V)
+* Arduino Uno : ADS1115 values were unsigned in processes (a small negative value near 0V was read
+as about 65535)
+* Arduino Uno R4 WiFi : process blocked after start when analog outputs or ADS1115 inputs were
+transferred (Serial write in the real time loop interrupt)
+* Arduino Uno R4 WiFi : messages lost and possible memory corruption (String filled by the real
+time loop interrupt), interrupts left disabled after reading ADS1115 inputs, I2C transfers blocked
+in the real time loop (interrupt priority)
+* ADS1115 module explanation : 15 useful bits in single ended mode, 1.0248V range typo
+* French &quot;Used&quot; column label typo
+-- 2026-11-10
+ADDED :
+* Arduino Uno : process parameters, as with ADwin (Parameter
+and Propagate columns of the Variables
+tab, parameters file of the session, parameters dialog for a
+process test). Values are sent to the
+board before each trial and acknowledged by it (frames on the
+serial port, about 2 to 3 ms per
+trial), values of the propagated parameters are sent back at
+the end of the trial and written in
+the line of the next trial of the parameters file
+* Arduino Uno : string type for variables (Size is the maximum
+length of the string), warning at
+compile time when strings use more than 512 bytes of the RAM
+of the R3
+* Arduino Uno : values of the parameters checked by type (bool,
+char, int on 16 bits with R3 and
+32 bits with R4 WiFi, long, float, string) in the parameters
+dialog and before each trial
+* Parameters editor : reloaded when the parameters file is changed
+on disk (propagated values),
+question to reload the file when the editor has unsaved modifications,
+question before
+overwriting a file changed on disk
+* Parameters management common to ADwin and Arduino Uno (parameters
+file, parameters dialog,
+propagation)
+* Tests : JUnit tests of the parameters file, of the Arduino
+parameters values and frames, of the
+generated Arduino parameters code (compiled and run on the host
+with g++ when available) and of
+the Arduino build output analysis
+* Help : parameters with Arduino Uno, accepted values, how parameters
+are sent to ADwin and Arduino
+Uno, Arduino reserved names (F, signal...), timing measures of
+the parameters
+FIXED :
+* ADwin : a process modified and compiled again between two executions
+was not loaded again
 (the previous version of the process was executed)
-* Parameters editor : the parameters file was not reloaded when changed on disk during a session,
+* Parameters editor : the parameters file was not reloaded when
+changed on disk during a session,
 and saving the editor overwrote the propagated values
-* Arduino Uno : a build failed at link time (e.g. variable named signal with R4 WiFi : multiple
-definition of `signal&apos;) was reported as successful : the exit code of the build, the linker
+* Arduino Uno : a build failed at link time (e.g. variable named
+signal with R4 WiFi : multiple
+definition of `signal&apos;) was reported as successful : the exit
+code of the build, the linker
 errors and the output of arduino-builder are now checked
-* Arduino Uno : negative long variables were transferred as unsigned values (e.g. -1 received as
+* Arduino Uno : negative long variables were transferred as unsigned
+values (e.g. -1 received as
 4294967295)
 -- 2026-11-09
 ADDED :
