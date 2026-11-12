@@ -86,6 +86,9 @@ the script is not run as root) : uploading to a board is not possible.
 
 If a window doesn't appear (e.g. the GUI changed), the script stops, saves a
 screenshot (`error.png`) and gives the path of the DOCoMETRe log.
+A recording can be interrupted with Ctrl+C : DOCoMETRe and ffmpeg are stopped.
+A DOCoMETRe left open on the virtual display (e.g. by a killed terminal) is
+closed before the next recording.
 
 Mouse positions are given for a 1600x900 screen and the default layout of the
 Design perspective: they must be checked if the GUI changes.

@@ -65,7 +65,35 @@ abort() {
 	exit 1
 }
 
+# Ctrl+C (or the terminal closed) : the recording and DOCoMETRe are stopped
+trap 'abort "interrupted"' INT TERM HUP
+
 # ---------------------------------------------------------------- display
+# A DOCoMETRe left open by an interrupted recording would be seen in the
+# background of the next one : it is closed
+close_leftovers() {
+	local w pid
+	for w in $(xdotool search --name "DOCoMETRe|Workspace Launcher" 2>/dev/null); do
+		pid=$(xdotool getwindowpid $w 2>/dev/null) || continue
+		kill -0 $pid 2>/dev/null || continue
+		echo "DOCoMETRe left open on $DISPLAY (pid $pid) : closed" >&2
+		kill_wait $pid
+	done
+	return 0
+}
+
+# kill_wait pid : stops a process, killed after 10 s if it is still running
+kill_wait() {
+	local i
+	kill $1 2>/dev/null
+	for i in $(seq 1 20); do
+		kill -0 $1 2>/dev/null || return 0
+		sleep 0.5
+	done
+	kill -9 $1 2>/dev/null
+	sleep 0.5
+}
+
 start_display() {
 	check_requirements
 	if ! xdpyinfo -display "$DISPLAY" >/dev/null 2>&1; then
@@ -74,6 +102,7 @@ start_display() {
 	fi
 	xdpyinfo -display "$DISPLAY" >/dev/null 2>&1 || abort "virtual display $DISPLAY can't be started"
 	pgrep -x openbox >/dev/null || { openbox >/dev/null 2>&1 & sleep 1; }
+	close_leftovers
 }
 
 # ---------------------------------------------------------------- recording
@@ -166,20 +195,15 @@ start_docometre() {
 		|| abort "can't create $(dirname "$WORKSPACE") (run setup-ubuntu.sh or set WORKSPACE=...)"
 	[ -n "$1" ] && restore_state "$1"
 	mkdir -p "$WORK_DIR/home"
-	(cd "$APP_RUN_DIR" && HOME="$WORK_DIR/home" exec ./DOCoMETRe -nl en) > "$WORK_DIR/docometre.log" 2>&1 &
+	# -nosplash : the splash screen would be seen behind the Workspace Launcher
+	(cd "$APP_RUN_DIR" && HOME="$WORK_DIR/home" exec ./DOCoMETRe -nl en -nosplash) > "$WORK_DIR/docometre.log" 2>&1 &
 	DOCOMETRE_PID=$!
 }
 
 # Kills DOCoMETRe (on errors : its state is not saved)
 stop_docometre() {
 	[ -z "$DOCOMETRE_PID" ] && return
-	kill $DOCOMETRE_PID 2>/dev/null
-	local i
-	for i in $(seq 1 20); do
-		kill -0 $DOCOMETRE_PID 2>/dev/null || break
-		sleep 0.5
-	done
-	kill -9 $DOCOMETRE_PID 2>/dev/null
+	kill_wait $DOCOMETRE_PID
 	wait $DOCOMETRE_PID 2>/dev/null
 	DOCOMETRE_PID=
 }
