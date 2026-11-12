@@ -18,13 +18,49 @@
 
 export DISPLAY=$DISPLAY_NUM
 export LANG=C.UTF-8 LC_ALL=C.UTF-8
+# Under WSL (WSLg) or a Wayland session, make sure GTK uses the virtual X display
+unset WAYLAND_DISPLAY
+export GDK_BACKEND=x11
+
+TITLE_FONT=/usr/share/fonts/opentype/inter/Inter-SemiBold.otf
+TITLE_FONT2=/usr/share/fonts/opentype/inter/Inter-Regular.otf
+
+# ---------------------------------------------------------------- checks
+check_requirements() {
+	local missing="" c
+	for c in Xvfb openbox xdotool xdpyinfo ffmpeg import bc python3 java; do
+		command -v $c >/dev/null 2>&1 || missing="$missing $c"
+	done
+	[ -f "$TITLE_FONT" ] || missing="$missing fonts-inter"
+	if [ -n "$missing" ]; then
+		echo "Missing :$missing (run setup-ubuntu.sh)" >&2
+		exit 1
+	fi
+	if [ ! -f "$APP_DIR/DOCoMETRe" ]; then
+		echo "DOCoMETRe release not found in '$APP_DIR'" >&2
+		exit 1
+	fi
+}
+
+# Stops everything and exits (called when the scenario can't go on)
+abort() {
+	echo "ERROR : $1" >&2
+	[ -n "$WORK_DIR" ] && import -window root "$WORK_DIR/error.png" 2>/dev/null \
+		&& echo "Screen at the time of the error : $WORK_DIR/error.png" >&2
+	[ -n "$FFMPEG_PID" ] && kill -INT $FFMPEG_PID 2>/dev/null
+	stop_docometre
+	echo "DOCoMETRe log : $WORK_DIR/docometre.log" >&2
+	exit 1
+}
 
 # ---------------------------------------------------------------- display
 start_display() {
+	check_requirements
 	if ! xdpyinfo -display "$DISPLAY" >/dev/null 2>&1; then
 		Xvfb "$DISPLAY" -screen 0 ${SCREEN_W}x${SCREEN_H}x24 >/dev/null 2>&1 &
 		sleep 2
 	fi
+	xdpyinfo -display "$DISPLAY" >/dev/null 2>&1 || abort "virtual display $DISPLAY can't be started"
 	pgrep -x openbox >/dev/null || { openbox >/dev/null 2>&1 & sleep 1; }
 }
 
@@ -95,8 +131,7 @@ wait_window() {
 		xdotool search --onlyvisible --name "$pattern" >/dev/null 2>&1 && return 0
 		sleep 0.25
 	done
-	echo "Window '$pattern' not found" >&2
-	return 1
+	abort "window '$pattern' not found after $timeout s"
 }
 
 snapshot() { import -window root "$WORK_DIR/$1.png"; }
@@ -105,16 +140,30 @@ snapshot() { import -window root "$WORK_DIR/$1.png"; }
 start_docometre() {
 	# Fresh copy of the release : no remembered workspace, no preferences
 	# The copy is run from a neutral folder : its path is displayed by the
-	# application (console, Arduino libraries path...)
-	rm -rf "$APP_RUN_DIR" "$WORK_DIR/home"
-	cp -r "$APP_DIR" "$APP_RUN_DIR"
+	# application (console, Arduino libraries path...). Its content is
+	# replaced, so that the folder itself can be owned by a non-root user.
+	mkdir -p "$APP_RUN_DIR" 2>/dev/null || abort "can't create $APP_RUN_DIR (run setup-ubuntu.sh)"
+	find "$APP_RUN_DIR" -mindepth 1 -delete
+	rm -rf "$WORK_DIR/home"
+	cp -r "$APP_DIR"/. "$APP_RUN_DIR"/
+	# The launcher may lose its execute permission when the release is unzipped
+	chmod +x "$APP_RUN_DIR/DOCoMETRe"
 	mkdir -p "$WORK_DIR/home"
-	(cd "$APP_RUN_DIR" && HOME="$WORK_DIR/home" ./DOCoMETRe -nl en > "$WORK_DIR/docometre.log" 2>&1 &)
+	(cd "$APP_RUN_DIR" && HOME="$WORK_DIR/home" exec ./DOCoMETRe -nl en) > "$WORK_DIR/docometre.log" 2>&1 &
+	DOCOMETRE_PID=$!
 }
 
 stop_docometre() {
-	pkill -f "$APP_RUN_DIR/" 2>/dev/null
-	sleep 2
+	[ -z "$DOCOMETRE_PID" ] && return
+	kill $DOCOMETRE_PID 2>/dev/null
+	local i
+	for i in $(seq 1 20); do
+		kill -0 $DOCOMETRE_PID 2>/dev/null || break
+		sleep 0.5
+	done
+	kill -9 $DOCOMETRE_PID 2>/dev/null
+	wait $DOCOMETRE_PID 2>/dev/null
+	DOCOMETRE_PID=
 }
 
 # ---------------------------------------------------------------- final video
@@ -169,8 +218,7 @@ for i, (t, text) in enumerate(entries):
 out.close()
 EOF
 	# Title card (4 s)
-	local font=/usr/share/fonts/opentype/inter/Inter-SemiBold.otf
-	local font2=/usr/share/fonts/opentype/inter/Inter-Regular.otf
+	local font=$TITLE_FONT font2=$TITLE_FONT2
 	ffmpeg -loglevel error -y -f lavfi -i "color=c=0x1f3b57:s=${SCREEN_W}x${SCREEN_H}:d=4:r=$FPS" \
 		-vf "drawtext=fontfile=$font:text='DOCoMETRe':fontcolor=0xffffff:fontsize=44:x=(w-tw)/2:y=h/2-120,\
 drawtext=fontfile=$font:text='$title':fontcolor=0xffffff:fontsize=64:x=(w-tw)/2:y=h/2-40,\

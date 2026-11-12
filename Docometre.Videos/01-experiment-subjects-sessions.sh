@@ -19,7 +19,9 @@ W_NAME="845 310"; W_DESC="845 415"; W_FINISH="1038 543"
 S_NAME="868 179"; S_DESC="868 300"; S_PREFIX_CHECK="410 437"; S_PREFIX="868 437"
 S_TRIALS="840 547"; S_NEXT="915 608"; S_FINISH="1148 608"
 
-rm -rf "$WORKSPACE"; mkdir -p "$(dirname "$WORKSPACE")"
+rm -rf "$WORKSPACE"
+mkdir -p "$(dirname "$WORKSPACE")" 2>/dev/null || {
+	echo "Can't create $(dirname "$WORKSPACE") : run setup-ubuntu.sh or set WORKSPACE=..." >&2; exit 1; }
 start_display
 start_docometre
 wait_window "Workspace Launcher" 60

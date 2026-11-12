@@ -5,7 +5,7 @@
 #
 # No board is needed. As DOCoMETRe checks that the arduino-cli tool and the
 # serial port exist, placeholders are created when they are missing
-# (/usr/local/bin/arduino-cli and /dev/ttyACM0, root rights required) : run
+# (/usr/local/bin/arduino-cli and /dev/ttyACM0, with sudo if needed) : run
 # this script on a machine dedicated to the recordings.
 
 APP_DIR=$(realpath "$1")
@@ -17,12 +17,15 @@ SERIAL_PORT=${SERIAL_PORT:-/dev/ttyACM0}
 source "$(dirname "$0")/lib.sh"
 
 # Placeholders for the arduino-cli tool and the serial port of the board
+# (sudo is used when the script is not run as root)
+SUDO=; [ "$(id -u)" -ne 0 ] && SUDO=sudo
 if [ ! -e "$ARDUINO_CLI" ]; then
-	mkdir -p "$(dirname "$ARDUINO_CLI")"
-	printf '#!/bin/sh\necho "arduino-cli placeholder (video recording)"\n' > "$ARDUINO_CLI"
-	chmod +x "$ARDUINO_CLI"
+	$SUDO mkdir -p "$(dirname "$ARDUINO_CLI")"
+	printf '#!/bin/sh\necho "arduino-cli placeholder (video recording)"\n' | $SUDO tee "$ARDUINO_CLI" >/dev/null
+	$SUDO chmod +x "$ARDUINO_CLI"
 fi
-[ -e "$SERIAL_PORT" ] || ln -s /dev/null "$SERIAL_PORT"
+# /dev is recreated at each boot (and each WSL start)
+[ -e "$SERIAL_PORT" ] || $SUDO ln -s /dev/null "$SERIAL_PORT"
 
 # Positions in the main window (1600x900 screen)
 TB_EXPERIMENT="90 59"; TB_DACQ="117 59"
