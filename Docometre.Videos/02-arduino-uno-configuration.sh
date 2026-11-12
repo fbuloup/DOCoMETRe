@@ -44,7 +44,9 @@ continue_from 01-experiment-subjects-sessions
 start_recording
 
 say "In this tutorial you will describe an Arduino Uno board in a DACQ (data acquisition) configuration." 5
-say "We continue with the MotorLearning experiment created in the previous tutorial." 3
+say "We continue with the MotorLearning experiment created in the previous tutorial, its subjects and sessions." 1.5
+click 34 145   # collapse S01
+pause 2.5
 
 # ------------------------------------------------------------ wizard
 say "Select the experiment and click the 'DACQ Configuration' button." 2

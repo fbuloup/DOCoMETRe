@@ -181,13 +181,24 @@ stop_docometre() {
 }
 
 # Quits DOCoMETRe as a user would do (File > Exit DOCoMETRe, filmed) : the
-# workspace and the resources properties are saved, the lock file removed
-MENU_FILE="18 31"; MENU_EXIT="90 386"
+# workspace and the resources properties are saved, the lock file removed.
+# The items of the File menu depend on the selection : "Exit DOCoMETRe", its
+# last item, is found from the geometry of the opened menu.
+MENU_FILE="18 31"
 quit_docometre() {
-	local i
+	local i w menu="" X Y WIDTH HEIGHT
 	click $MENU_FILE
-	pause 1
-	click $MENU_EXIT
+	pause 0.8
+	for w in $(xdotool search --onlyvisible --name '^DOCoMETRe$' 2>/dev/null); do
+		eval $(xdotool getwindowgeometry --shell $w)
+		[ $X -lt 20 ] && [ $Y -lt 80 ] && [ $HEIGHT -lt 700 ] && menu="$X $Y $WIDTH $HEIGHT"
+	done
+	if [ -n "$menu" ]; then
+		set -- $menu
+		click $(($1 + 80)) $(($2 + $4 - 13))
+	else
+		key Up; key Return
+	fi
 	for i in $(seq 1 120); do
 		kill -0 $DOCOMETRE_PID 2>/dev/null || { wait $DOCOMETRE_PID 2>/dev/null; DOCOMETRE_PID=; return 0; }
 		sleep 0.5

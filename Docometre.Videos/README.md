@@ -9,6 +9,7 @@ also produced, e.g. for YouTube or translations).
 | --- | --- |
 | `01-experiment-subjects-sessions.sh` | Create an experiment, its subjects, their sessions and trials |
 | `02-arduino-uno-configuration.sh` | DACQ configuration of an Arduino Uno R4 WiFi : general parameters, analog input, digital output, variable (parameter), real time chart |
+| `record-all.sh` | Records all the tutorials, in sequence |
 
 Recorded videos and their subtitles are in the `output` folder.
 
