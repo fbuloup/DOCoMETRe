@@ -17,7 +17,8 @@ Recorded videos and their subtitles are in the `output` folder.
 
 Ubuntu 24.04, native or under WSL2 on Windows (see below). `setup-ubuntu.sh`
 installs everything : `Xvfb`, `openbox`, `xdotool`, `ffmpeg` (with libass),
-ImageMagick, `bc`, `python3`, the Inter font, Java 21, the
+ImageMagick, `bc`, `python3`, the Inter font, Java 21, `arduino-cli` with the
+Uno R3 and R4 WiFi platforms, the
 [Linux release of DOCoMETRe](https://github.com/fbuloup/docometre-release/releases/download/docometre/DocometreLinux.zip)
 (unzipped in `~/DocometreLinux`) and creates, owned by the current user,
 `/home/researcher` (folder of the workspace shown in the videos) and
@@ -75,10 +76,13 @@ those of the restored workspace). The workspace used in the videos is
 The release folder is run from `/opt/DOCoMETRe` (override with
 `APP_RUN_DIR=...`), as its path is displayed by the application.
 
-Script 2 needs no board : as DOCoMETRe checks that the `arduino-cli` tool and
-the serial port exist, placeholders are created when they are missing
-(`/usr/local/bin/arduino-cli` and `/dev/ttyACM0`, with `sudo` when the script
-is not run as root).
+Script 2 needs no board. `setup-ubuntu.sh` installs `arduino-cli` (fixed
+version, checksum verified) in `/usr/local/bin`, the Uno R3 (`arduino:avr`)
+and Uno R4 WiFi (`arduino:renesas_uno`) platforms and the `ADS1X15` library
+(in `~/.arduino15` and `~/Arduino`, about 1 GB) : processes can be compiled
+as with a real installation. As DOCoMETRe checks that the serial port exists,
+a placeholder is created when it is missing (`/dev/ttyACM0`, with `sudo` when
+the script is not run as root) : uploading to a board is not possible.
 
 If a window doesn't appear (e.g. the GUI changed), the script stops, saves a
 screenshot (`error.png`) and gives the path of the DOCoMETRe log.

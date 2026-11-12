@@ -5,10 +5,10 @@
 #
 # Follows tutorial 1 : starts from the workspace as it was at the end of it.
 #
-# No board is needed. As DOCoMETRe checks that the arduino-cli tool and the
-# serial port exist, placeholders are created when they are missing
-# (/usr/local/bin/arduino-cli and /dev/ttyACM0, with sudo if needed) : run
-# this script on a machine dedicated to the recordings.
+# No board is needed. arduino-cli (with the Uno R3 and R4 WiFi platforms) is
+# installed by setup-ubuntu.sh. As DOCoMETRe checks that the serial port
+# exists, a placeholder is created when it is missing (/dev/ttyACM0, with sudo
+# if needed) : run this script on a machine dedicated to the recordings.
 
 APP_DIR=$(realpath "$1")
 OUT_DIR=$(realpath "${2:-.}")
@@ -17,14 +17,10 @@ ARDUINO_CLI=${ARDUINO_CLI:-/usr/local/bin/arduino-cli}
 SERIAL_PORT=${SERIAL_PORT:-/dev/ttyACM0}
 source "$(dirname "$0")/lib.sh"
 
-# Placeholders for the arduino-cli tool and the serial port of the board
-# (sudo is used when the script is not run as root)
+[ -x "$ARDUINO_CLI" ] || { echo "$ARDUINO_CLI not found : run setup-ubuntu.sh" >&2; exit 1; }
+# Placeholder for the serial port of the board (sudo is used when the script
+# is not run as root)
 SUDO=; [ "$(id -u)" -ne 0 ] && SUDO=sudo
-if [ ! -e "$ARDUINO_CLI" ]; then
-	$SUDO mkdir -p "$(dirname "$ARDUINO_CLI")"
-	printf '#!/bin/sh\necho "arduino-cli placeholder (video recording)"\n' | $SUDO tee "$ARDUINO_CLI" >/dev/null
-	$SUDO chmod +x "$ARDUINO_CLI"
-fi
 # /dev is recreated at each boot (and each WSL start)
 [ -e "$SERIAL_PORT" ] || $SUDO ln -s /dev/null "$SERIAL_PORT"
 

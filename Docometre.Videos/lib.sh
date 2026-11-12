@@ -26,6 +26,10 @@
 
 export DISPLAY=$DISPLAY_NUM
 export LANG=C.UTF-8 LC_ALL=C.UTF-8
+# arduino-cli, run by DOCoMETRe whose HOME is temporary, must use the boards
+# platforms and libraries installed by setup-ubuntu.sh in the user's home
+export ARDUINO_DIRECTORIES_DATA=${ARDUINO_DIRECTORIES_DATA:-$HOME/.arduino15}
+export ARDUINO_DIRECTORIES_USER=${ARDUINO_DIRECTORIES_USER:-$HOME/Arduino}
 # Under WSL (WSLg) or a Wayland session, make sure GTK uses the virtual X display
 unset WAYLAND_DISPLAY
 export GDK_BACKEND=x11
