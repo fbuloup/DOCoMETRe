@@ -8,23 +8,58 @@
 
 <body>
 <h1>Troubleshoots with Arduino Uno System</h1>
-<h2>I am on Linux and  can't see Arduino Uno port. What can I do ?</h2>
+<h2><a name="linuxport">I am on Linux and can't see Arduino Uno port. What can I do ?</a></h2>
 
 <p>
-On linux OS, an Arduino Uno is usually connected to <b>/dev/ttyACMn</b>. But if you do
-not have right access to <b>/dev/ttyACMn</b>, you won't be able to use it in DOCoMETRe. 
-In order to access this device, please run these commands in terminal :
+On Linux, an Arduino Uno is usually connected to <b>/dev/ttyACMn</b> (n = 0, 1...), or to <b>/dev/ttyUSBn</b> for boards (clones) with a
+<b>CH340</b> USB chip. To list the ports :
 </p>
 <pre>
-   sudo usermod -a -G tty UserName
-   sudo usermod -a -G dialout UserName
-   sudo chmod a+rw /dev/ttyACMn
+   ls -l /dev/ttyACM* /dev/ttyUSB*
+</pre>
+
+<h3>Access rights</h3>
+<p>
+These ports belong to the <b>dialout</b> group : to use them in DOCoMETRe, your user must be a member of this group. Run once in a terminal :
+</p>
+<pre>
+   sudo usermod -aG dialout $USER
 </pre>
 <p>
-These commands simply add <b>UserName</b> to <b>tty</b> and <b>dialout</b> groups and make sure
-<b>UserName</b> has read and write acces to <b>/dev/ttyACMn</b>. Please follow this
-<a href="https://www.arduino.cc/en/Guide/Linux">link</a> if you need more informations. You must obviously use proper values for <b>UserName</b> and <b>n</b>. 
+Then <b>log out and log in again</b> (or restart the computer; with WSL2, run <code>wsl --shutdown</code> in PowerShell) : the new group is
+only taken into account by a new session. The command <code>groups</code> must then list <b>dialout</b>. On Arch Linux and its derivatives,
+this group is named <b>uucp</b> instead of <b>dialout</b>. Please follow this <a href="https://www.arduino.cc/en/Guide/Linux">link</a> if
+you need more information.
 </p>
+<p>
+Adding your user to the <b>tty</b> group is not needed (this group is for terminals, not for serial ports), and changing the permissions of
+the port (<code>chmod a+rw /dev/ttyACMn</code>) is not needed either : these permissions would be lost each time the board is disconnected or
+reset, and would give access to the board to all the users of the computer.
+</p>
+
+<h3>The board disappears as soon as it is connected (CH340 clones, Ubuntu 22.04 and later)</h3>
+<p>
+The <b>brltty</b> package (support of braille displays) takes the ports of CH340 chips : <b>/dev/ttyUSBn</b> appears then disappears
+immediately. The command <code>sudo dmesg | grep -i brltty</code> then shows messages about brltty. If you don't use a braille display,
+remove this package and connect the board again :
+</p>
+<pre>
+   sudo apt remove brltty
+</pre>
+
+<h3>The port is busy for a few seconds after connecting the board, or the upload fails</h3>
+<p>
+<b>ModemManager</b> probes the <b>/dev/ttyACMn</b> ports each time a board is connected, which may lock the port for a few seconds or disturb
+an upload. If the computer doesn't use a 3G/4G modem, you can disable it :
+</p>
+<pre>
+   sudo systemctl disable --now ModemManager
+</pre>
+<p>
+With DOCoMETRe running in WSL2 on Windows, the board must first be shared with WSL2 : see
+<a href="../advancedconcepts/arduinowithwsl2.html">Can I use an Arduino Uno with DOCoMETRe running in WSL2 on Windows ?</a>
+</p>
+
 <h2>My Arduino Uno processes using ADS1115 module doesn't compile.</h2>
 <p>If you get this kind of error message :</p>
 <pre>
