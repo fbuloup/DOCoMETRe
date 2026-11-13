@@ -81,6 +81,14 @@ public class ArduinoUnoCodeScanner extends RuleBasedScanner {
 			// Watchdog and timers
 			"WDT", "wdt_enable", "FspTimer", "get_available_timer", "force_use_of_pwm_reserved_timer", "GPT_TIMER", "TIMER_MODE_PERIODIC"};
 	
+	/**
+	 * Keywords proposed by content assist in expressions : C/C++ keywords, types and Arduino API
+	 * (directives and segments are not used inside expressions)
+	 */
+	public static String[] getCompletionKeywords() {
+		return RESERVED_WORDS.clone();
+	}
+	
 	private static IToken createToken(String color, String font, int fontSize) {
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(color), 
 													ThemeColors.getBackgroundColor(), 

@@ -53,9 +53,14 @@ import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.DocumentEvent;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.jface.text.IDocumentPartitioner;
+import org.eclipse.jface.text.contentassist.ContentAssistant;
+import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
+import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.rules.FastPartitioner;
+import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -69,10 +74,12 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.custom.VerifyKeyListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -88,11 +95,14 @@ import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinProcess;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor.ADBasicCodeScanner;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor.ADBasicRulesPartitionScanner;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor.ADBasicSourceViewerConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoProcess;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.processeditor.ArduinoUnoCodeScanner;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.processeditor.ArduinoUnoRulesPartitionScanner;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.processeditor.ArduinoUnoSourceViewerConfiguration;
+import fr.univamu.ism.docometre.editors.WordsCompletionProcessor;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
 import fr.univamu.ism.process.Block;
@@ -180,17 +190,32 @@ public final class ExpressionFunction extends GenericFunction {
 		sourceViewer = new SourceViewer(sourceContainer, null, SWT.BORDER);
 		sourceViewer.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		Document document = new Document();
-		// Syntax coloring of the process language (Arduino or ADBasic), as in the process source editor
+		// Syntax coloring of the process language (Arduino or ADBasic), as in the process source editor,
+		// and content assist (Ctrl+Space) : names of the DACQ configuration, then language keywords
 		int fontSize = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.EDITORS_FONT_SIZE);
+		DACQConfiguration dacqConfiguration = ((Process)context).getDACQConfiguration();
+		String[] names = dacqConfiguration != null ? dacqConfiguration.getProposal() : null;
 		IDocumentPartitioner documentPartitioner = null;
 		SourceViewerConfiguration sourceViewerConfiguration = null;
 		if(context instanceof ArduinoUnoProcess) {
 			documentPartitioner = new FastPartitioner(new ArduinoUnoRulesPartitionScanner(), ArduinoUnoRulesPartitionScanner.PARTITIONS);
-			sourceViewerConfiguration = new ArduinoUnoSourceViewerConfiguration(fontSize);
+			IContentAssistProcessor contentAssistProcessor = new WordsCompletionProcessor(names, Activator.getImage(IImageKeys.SIGNAL_ICON), ArduinoUnoCodeScanner.getCompletionKeywords(), null);
+			sourceViewerConfiguration = new ArduinoUnoSourceViewerConfiguration(fontSize) {
+				@Override
+				public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
+					return createContentAssistant(contentAssistProcessor);
+				}
+			};
 		}
 		if(context instanceof ADWinProcess) {
 			documentPartitioner = new FastPartitioner(new ADBasicRulesPartitionScanner(), ADBasicRulesPartitionScanner.PARTITIONS);
-			sourceViewerConfiguration = new ADBasicSourceViewerConfiguration(fontSize);
+			IContentAssistProcessor contentAssistProcessor = new WordsCompletionProcessor(names, Activator.getImage(IImageKeys.SIGNAL_ICON), ADBasicCodeScanner.getCompletionKeywords(), null);
+			sourceViewerConfiguration = new ADBasicSourceViewerConfiguration(fontSize) {
+				@Override
+				public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
+					return createContentAssistant(contentAssistProcessor);
+				}
+			};
 		}
 		if(documentPartitioner != null) {
 			document.setDocumentPartitioner(documentPartitioner);
@@ -201,6 +226,16 @@ public final class ExpressionFunction extends GenericFunction {
 			// Same font as the colored tokens
 			sourceViewer.getTextWidget().setFont(DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, fontSize));
 			sourceViewer.configure(sourceViewerConfiguration);
+			// Content assist on Ctrl+Space, as in the expressions tab
+			sourceViewer.appendVerifyKeyListener(new VerifyKeyListener() {
+				@Override
+				public void verifyKey(VerifyEvent event) {
+					if(event.stateMask == SWT.CTRL && event.keyCode == ' ') {
+						if(sourceViewer.canDoOperation(ISourceViewer.CONTENTASSIST_PROPOSALS)) sourceViewer.doOperation(ISourceViewer.CONTENTASSIST_PROPOSALS);
+						event.doit = false;
+					}
+				}
+			});
 		}
 		
 		sourceViewer.getDocument().addDocumentListener(new IDocumentListener() {
@@ -213,6 +248,14 @@ public final class ExpressionFunction extends GenericFunction {
 			}
 		});
 		return sourceContainer;
+	}
+
+	private static IContentAssistant createContentAssistant(IContentAssistProcessor contentAssistProcessor) {
+		ContentAssistant contentAssistant = new ContentAssistant();
+		// Proposals in code only : not in comments nor strings
+		contentAssistant.setContentAssistProcessor(contentAssistProcessor, IDocument.DEFAULT_CONTENT_TYPE);
+		contentAssistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);
+		return contentAssistant;
 	}
 
 	private Composite createExpressionsTabItem(CTabFolder tabFolder, Object context) {

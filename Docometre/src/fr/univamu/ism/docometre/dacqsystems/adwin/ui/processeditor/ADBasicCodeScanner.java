@@ -74,6 +74,14 @@ public final class ADBasicCodeScanner extends RuleBasedScanner {
 	private static int NB_PAR_FPAR = 80;
 	private static int NB_DATA = 200;
 	
+	/**
+	 * Keywords proposed by content assist in expressions : instructions and operators
+	 * (declarations, directives and segments are not used inside expressions)
+	 */
+	public static String[] getCompletionKeywords() {
+		return RESERVED_WORDS.clone();
+	}
+	
 	private static IToken createToken(String color, String font, int fontSize) {
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(color), 
 													ThemeColors.getBackgroundColor(), 
