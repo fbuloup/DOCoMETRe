@@ -312,8 +312,6 @@ public class ADWinMessages extends NLS {
 	/*
 	 * Diary scanner
 	 */
-	public static String ADWinDiary_Header_Start_Scanner;
-	public static String ADWinDiary_Header_Footer_End_Scanner;
 	public static String ADWinDiary_TimeBetween_Scanner;
 	public static String ADWinDiary_Recovering_Scanner;
 	public static String ADWinDiary_RecoveryTime_Scanner;
@@ -321,8 +319,6 @@ public class ADWinMessages extends NLS {
 	public static String ADWinDiary_GenerationTime_Scanner;
 	public static String ADWinDiary_DisplayTime_Scanner;
 	public static String ADWinDiary_DataLoss_Scanner;
-	public static String ADWinDiary_Ending_Scanner;
-	public static String ADWinDiary_Approximative_Scanner;
 	public static String ADWinDiary_NoMoreToGenerate_Scanner;
 	
 	// RS232 ADWin module

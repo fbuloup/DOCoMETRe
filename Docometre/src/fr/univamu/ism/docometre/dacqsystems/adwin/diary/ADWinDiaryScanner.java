@@ -41,25 +41,24 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.adwin.diary;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.EndOfLineRule;
 import org.eclipse.jface.text.rules.IRule;
-import org.eclipse.jface.text.rules.IToken;
-import org.eclipse.jface.text.rules.MultiLineRule;
 import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.eclipse.jface.text.rules.Token;
-import org.eclipse.swt.SWT;
 
 import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinMessages;
 
+/**
+ * Each diary line is colored according to its beginning. Rules only apply 
+ * at the beginning of a line (column 0) : a channel, process or folder name 
+ * containing "ADWin" or "Ending" no more starts a colored block in the middle of a line.
+ * No font is given to the text attributes so that colored lines follow the 
+ * editor font size (Ctrl+= / Ctrl+-).
+ */
 public class ADWinDiaryScanner extends RuleBasedScanner {
-	
-	private static final String HEADER_START = ADWinMessages.ADWinDiary_Header_Start_Scanner;
-	private static final String HEADER_FOOTER_END = ADWinMessages.ADWinDiary_Header_Footer_End_Scanner;
+
 	private static final String TIME_BETWEEN_TWO_ADWIN_DIALOG = ADWinMessages.ADWinDiary_TimeBetween_Scanner; 
 	private static final String RECOVERING_CHANNEL = ADWinMessages.ADWinDiary_Recovering_Scanner;
 	private static final String RECOVERY_TIME = ADWinMessages.ADWinDiary_RecoveryTime_Scanner;
@@ -67,125 +66,26 @@ public class ADWinDiaryScanner extends RuleBasedScanner {
 	private static final String GENERATION_TIME = ADWinMessages.ADWinDiary_GenerationTime_Scanner;
 	private static final String DISPLAY_TIME = ADWinMessages.ADWinDiary_DisplayTime_Scanner;
 	private static final String DATA_LOSS = ADWinMessages.ADWinDiary_DataLoss_Scanner;
-	private static final String FOOTER_START_1 = ADWinMessages.ADWinDiary_Ending_Scanner;
-	private static final String FOOTER_START_2 = ADWinMessages.ADWinDiary_Approximative_Scanner;
 	private static final String NO_MORE_TO_GENERATE = ADWinMessages.ADWinDiary_NoMoreToGenerate_Scanner;
 	
 	public ADWinDiaryScanner() {
-		List<IRule> rules= new ArrayList<IRule>();
-		rules.add(getRecoveryTimeScanner());
-		rules.add(getGenerationTimeScanner());
-		rules.add(getDisplayTimeScanner());
-		rules.add(getGeneratingChannelScanner());
-		rules.add(getRecoveringChannelScanner());
-		rules.add(getTimeBetween2ADWinDialogScanner());
-		rules.add(getDataLossScanner());
-		rules.add(getHeaderScanner());
-		rules.add(getFooterScanner_1());
-		rules.add(getFooterScanner_2());
-		rules.add(getNoMoreDataToGenerate());
-		setRules(rules.toArray(new IRule[rules.size()]));
+		setRules(new IRule[] {
+			createLineRule(RECOVERY_TIME, DocometreApplication.ORANGE),
+			createLineRule(GENERATION_TIME, DocometreApplication.GREEN),
+			createLineRule(DISPLAY_TIME, DocometreApplication.MAROON),
+			createLineRule(GENERATING_CHANNEL, DocometreApplication.GREEN),
+			createLineRule(RECOVERING_CHANNEL, DocometreApplication.ORANGE),
+			createLineRule(TIME_BETWEEN_TWO_ADWIN_DIALOG, DocometreApplication.BLUE),
+			createLineRule(DATA_LOSS, DocometreApplication.RED),
+			createLineRule(NO_MORE_TO_GENERATE, DocometreApplication.GREEN)
+		});
 	}
 	
-	public static IRule getTimeBetween2ADWinDialogScanner() {
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLUE), 
-													null, 
-				   									SWT.NORMAL, 
-				   									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
-		IToken token = new Token(attribute);
-        return new EndOfLineRule(TIME_BETWEEN_TWO_ADWIN_DIALOG, token);
+	private static IRule createLineRule(String lineStart, String color) {
+		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(color));
+		EndOfLineRule rule = new EndOfLineRule(lineStart, new Token(attribute));
+		rule.setColumnConstraint(0);
+		return rule;
 	}
-	
-	public static IRule getRecoveringChannelScanner() {
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.ORANGE), 
-				null, 
-				   									SWT.NORMAL, 
-				   									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
-		IToken token = new Token(attribute);
-        return new EndOfLineRule(RECOVERING_CHANNEL, token);
-	}
-	
-	public static IRule getRecoveryTimeScanner() {
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.ORANGE), 
-				   									null, 
-				   									SWT.NORMAL, 
-				   									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
-		IToken token = new Token(attribute);
-        return new EndOfLineRule(RECOVERY_TIME, token);
-	}
-	
-	public static IRule getGeneratingChannelScanner() {
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.GREEN), 
-				   									null, 
-				   									SWT.NORMAL, 
-				   									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
-		IToken token = new Token(attribute);
-        return new EndOfLineRule(GENERATING_CHANNEL, token);
-	}
-	
-	public static IRule getGenerationTimeScanner() {
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.GREEN), 
-				   									null, 
-				   									SWT.NORMAL, 
-				   									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
-		IToken token = new Token(attribute);
-        return new EndOfLineRule(GENERATION_TIME, token);
-	}
-	
-	public static IRule getDisplayTimeScanner() {
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.MAROON), 
-				   									null, 
-				   									SWT.NORMAL, 
-				   									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
-		IToken token = new Token(attribute);
-        return new EndOfLineRule(DISPLAY_TIME, token);
-	}
-	
-	public static IRule getDataLossScanner() {
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.RED), 
-				   									null, 
-				   									SWT.NORMAL, 
-				   									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
-		IToken token = new Token(attribute);
-        return new EndOfLineRule(DATA_LOSS, token);
-	}
-	
-	public static IRule getHeaderScanner() {
-		TextAttribute attribute = new TextAttribute(null, 
-					null, 
-					SWT.NORMAL, 
-					DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
-		IToken token = new Token(attribute);
-		return new MultiLineRule(HEADER_START, HEADER_FOOTER_END, token);
-	}
-	
-	public static IRule getFooterScanner_1() {
-		TextAttribute attribute = new TextAttribute(null, 
-					null, 
-					SWT.NORMAL, 
-					DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
-		IToken token = new Token(attribute);
-		return new MultiLineRule(FOOTER_START_1, HEADER_FOOTER_END, token);
-	}
-	
-	public static IRule getFooterScanner_2() {
-		TextAttribute attribute = new TextAttribute(null, 
-					null, 
-					SWT.NORMAL, 
-					DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
-		IToken token = new Token(attribute);
-		return new MultiLineRule(FOOTER_START_2, HEADER_FOOTER_END, token);
-	}
-	
-	public static IRule getNoMoreDataToGenerate() {
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.GREEN), 
-					null, 
-					SWT.NORMAL, 
-					DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD));
-		IToken token = new Token(attribute);
-		return new EndOfLineRule(NO_MORE_TO_GENERATE, token);
-	}
-	
-	
 
 }

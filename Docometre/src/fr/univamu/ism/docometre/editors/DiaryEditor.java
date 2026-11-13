@@ -229,10 +229,10 @@ public class DiaryEditor extends EditorPart implements PartNameRefresher {
 				IFile logFile = (IFile) ((ResourceEditorInput)getEditorInput()).getObject();
 				List<String> lines = Files.readAllLines(FileSystems.getDefault().getPath(logFile.getLocation().toOSString()), StandardCharsets.UTF_8);
 				StringBuffer content = new StringBuffer();
-				for (String line : lines) {
-					line = diaryStatComputer.computeValue(line);
-					content.append(line);
-					if(!line.equals(lines.get(lines.size() - 1))) content.append("\n");
+				for (int i = 0; i < lines.size(); i++) {
+					// Lines are separated by index : a line equal to the last one must not be merged with the next one
+					if(i > 0) content.append("\n");
+					content.append(diaryStatComputer.computeValue(lines.get(i)));
 				}
 				document.set(content.toString());
 				
@@ -259,9 +259,9 @@ public class DiaryEditor extends EditorPart implements PartNameRefresher {
 				IFile logFile = (IFile) ((ResourceEditorInput)getEditorInput()).getObject();
 				List<String> lines = Files.readAllLines(FileSystems.getDefault().getPath(logFile.getLocation().toOSString()), StandardCharsets.UTF_8);
 				StringBuffer content = new StringBuffer();
-				for (String line : lines) {
-					content.append(line);
-					if(!line.equals(lines.get(lines.size() - 1))) content.append("\n");
+				for (int i = 0; i < lines.size(); i++) {
+					if(i > 0) content.append("\n");
+					content.append(lines.get(i));
 				}
 				document.set(content.toString());
 			}
