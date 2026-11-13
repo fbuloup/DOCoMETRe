@@ -52,7 +52,7 @@ import org.eclipse.osgi.util.NLS;
  * So a name :
  *  - starts with a letter and only contains letters, digits and '_' (no '.', no space, no '-'),
  *  - has at most 63 characters (MATLAB namelengthmax : longer field names are truncated),
- *  - is not a MATLAB keyword,
+ *  - is not a MATLAB or Python keyword (not necessary for Python, where names are only keys, but more consistent),
  *  - is not a trial folder name ("Trial_N"), except for trials : a folder named as a trial is a trial.
  */
 public final class ResourceNames {
@@ -65,6 +65,11 @@ public final class ResourceNames {
 	private static final Set<String> MATLAB_KEYWORDS = Set.of("break", "case", "catch", "classdef", "continue", "else", "elseif", "end", "for",  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$
 			"function", "global", "if", "otherwise", "parfor", "persistent", "return", "spmd", "switch", "try", "while"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$ //$NON-NLS-11$
 	
+	// Python keywords (keyword.kwlist)
+	private static final Set<String> PYTHON_KEYWORDS = Set.of("False", "None", "True", "and", "as", "assert", "async", "await", "break", "class", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$
+			"continue", "def", "del", "elif", "else", "except", "finally", "for", "from", "global", "if", "import", "in", "is", "lambda", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$ //$NON-NLS-11$ //$NON-NLS-12$ //$NON-NLS-13$ //$NON-NLS-14$ //$NON-NLS-15$
+			"nonlocal", "not", "or", "pass", "raise", "return", "try", "while", "with", "yield"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$
+	
 	private ResourceNames() {
 	}
 	
@@ -75,7 +80,7 @@ public final class ResourceNames {
 	public static String getErrorMessage(String name, boolean isTrial) {
 		if(name == null) return null;
 		if(name.length() > MAXIMUM_LENGTH) return NLS.bind(DocometreMessages.ResourceNameTooLong, name, MAXIMUM_LENGTH);
-		if(MATLAB_KEYWORDS.contains(name)) return NLS.bind(DocometreMessages.ResourceNameReservedWord, name);
+		if(MATLAB_KEYWORDS.contains(name) || PYTHON_KEYWORDS.contains(name)) return NLS.bind(DocometreMessages.ResourceNameReservedWord, name);
 		if(!isTrial && TrialNames.isName(name)) return NLS.bind(DocometreMessages.ResourceNameTrialName, name);
 		return null;
 	}
