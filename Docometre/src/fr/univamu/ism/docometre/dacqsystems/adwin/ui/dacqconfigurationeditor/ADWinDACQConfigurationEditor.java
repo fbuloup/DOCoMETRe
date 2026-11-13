@@ -110,13 +110,16 @@ public class ADWinDACQConfigurationEditor extends ResourceEditor implements Prop
 		
 		IResource resource = ObjectsController.getResourceForObject(getDACQConfiguration());
 		setPartName(GetResourceLabelDelegate.getLabel(resource));
-		getDACQConfiguration().addObserver(this);
+		// Editor input object is set to null when edited configuration is deleted (see Activator.closeEditor) :
+		// observed configuration must be kept to remove this editor from its observers when editor is closed
+		DACQConfiguration dacqConfiguration = getDACQConfiguration();
+		dacqConfiguration.addObserver(this);
 		partListenerAdapter = new PartListenerAdapter() {
 			@Override
 			public void partClosed(IWorkbenchPartReference partRef) {
 				if(partRef.getPart(false) == ADWinDACQConfigurationEditor.this) {
 					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().removePartListener(partListenerAdapter);
-					if(getDACQConfiguration() != null) getDACQConfiguration().removeObserver(ADWinDACQConfigurationEditor.this);
+					dacqConfiguration.removeObserver(ADWinDACQConfigurationEditor.this);
 				}
 			}
 		};
