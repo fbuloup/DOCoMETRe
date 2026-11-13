@@ -78,12 +78,43 @@ public final class ArduinoUnoBuildOutput {
 		private final int line;
 		private final int column;
 		private final String message;
+		private final String file;
+		private final boolean inSketch;
 		
 		private Error(Kind kind, int line, int column, String message) {
+			this(kind, line, column, message, null, false);
+		}
+		
+		private Error(Kind kind, int line, int column, String message, String file, boolean inSketch) {
 			this.kind = kind;
 			this.line = line;
 			this.column = column;
 			this.message = message;
+			this.file = file;
+			this.inSketch = inSketch;
+		}
+		
+		/**
+		 * @return the file of a compiler error (sketch, library...), null for other kinds of errors
+		 */
+		public String getFile() {
+			return file;
+		}
+		
+		/**
+		 * @return the name of the file of a compiler error (without its folder), null for other kinds of errors
+		 */
+		public String getFileName() {
+			if(file == null) return null;
+			return file.replaceAll("^.*[/\\\\]", "");
+		}
+		
+		/**
+		 * @return true if the line of this error is a line of the sketch (.ino file) : false for an error
+		 * in another file (library, core...) or when the line is unknown
+		 */
+		public boolean isInSketch() {
+			return inSketch;
 		}
 		
 		public Kind getKind() {
@@ -134,20 +165,28 @@ public final class ArduinoUnoBuildOutput {
 			String line = lines[i];
 			Matcher matcher = COMPILER_ERROR.matcher(line);
 			if(matcher.matches()) {
-				errors.add(new Error(Kind.COMPILER, Integer.parseInt(matcher.group(2)), Integer.parseInt(matcher.group(3)), matcher.group(4)));
+				String file = matcher.group(1).trim();
+				boolean inSketch = file.toLowerCase().endsWith(".ino");
+				errors.add(new Error(Kind.COMPILER, Integer.parseInt(matcher.group(2)), Integer.parseInt(matcher.group(3)), matcher.group(4), file, inSketch));
 				continue;
 			}
 			matcher = LINKER_ERROR.matcher(line);
 			if(matcher.find()) {
 				// Line of the sketch : in this line (undefined reference) or in the next one (multiple definition : first defined here)
 				int sketchLine = 1;
+				boolean inSketch = false;
 				Matcher sketchLineMatcher = SKETCH_LINE.matcher(line);
-				if(sketchLineMatcher.find()) sketchLine = Integer.parseInt(sketchLineMatcher.group(1));
-				else if(i + 1 < lines.length && lines[i + 1].contains("first defined here")) {
+				if(sketchLineMatcher.find()) {
+					sketchLine = Integer.parseInt(sketchLineMatcher.group(1));
+					inSketch = true;
+				} else if(i + 1 < lines.length && lines[i + 1].contains("first defined here")) {
 					sketchLineMatcher = SKETCH_LINE.matcher(lines[i + 1]);
-					if(sketchLineMatcher.find()) sketchLine = Integer.parseInt(sketchLineMatcher.group(1));
+					if(sketchLineMatcher.find()) {
+						sketchLine = Integer.parseInt(sketchLineMatcher.group(1));
+						inSketch = true;
+					}
 				}
-				errors.add(new Error(Kind.LINKER, sketchLine, 0, matcher.group(1).trim()));
+				errors.add(new Error(Kind.LINKER, sketchLine, 0, matcher.group(1).trim(), null, inSketch));
 				continue;
 			}
 			matcher = BUILD_FAILURE.matcher(line);

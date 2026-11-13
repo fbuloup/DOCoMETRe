@@ -119,6 +119,36 @@ public class ArduinoUnoBuildOutputTest {
 		assertEquals(5, errors.get(0).getColumn());
 		assertEquals("'int F' redeclared as different kind of symbol", errors.get(0).getMessage());
 		assertEquals(125, errors.get(1).getLine());
+		assertTrue(errors.get(0).isInSketch());
+		assertEquals("procArduino.ino", errors.get(0).getFileName());
+	}
+	
+	@Test
+	public void compilerErrorOutsideSketchIsNotInSketch() {
+		// Error in a library : its line is not a line of the sketch
+		String text = "C:\\Users\\user\\AppData\\Local\\Arduino15\\libraries\\WDT\\src\\WDT.cpp:12:3: error: 'foo' was not declared in this scope\n" + 
+					  "/home/user/BinSource/proc/proc.ino:40:7: error: expected ';' before '}' token\n" + 
+					  "Error during build: exit status 1\n";
+		ArduinoUnoBuildOutput output = ArduinoUnoBuildOutput.analyze(text, 1);
+		List<Error> errors = output.getErrors();
+		assertEquals(2, errors.size());
+		assertFalse(errors.get(0).isInSketch());
+		assertEquals("WDT.cpp", errors.get(0).getFileName());
+		assertEquals(12, errors.get(0).getLine());
+		assertTrue(errors.get(1).isInSketch());
+		assertEquals("proc.ino", errors.get(1).getFileName());
+		assertEquals(40, errors.get(1).getLine());
+	}
+	
+	@Test
+	public void linkerErrorIsInSketchOnlyIfItsLineIsKnown() {
+		assertTrue(ArduinoUnoBuildOutput.analyze(LINKER_OUTPUT, 1).getErrors().get(0).isInSketch());
+		String text = "libc_nano.a(lib_a-signal.o): multiple definition of `signal'\n" + 
+					  "collect2.exe: error: ld returned 1 exit status\n";
+		Error error = ArduinoUnoBuildOutput.analyze(text, 1).getErrors().get(0);
+		assertEquals(Kind.LINKER, error.getKind());
+		assertEquals(1, error.getLine());
+		assertFalse(error.isInSketch());
 	}
 	
 	@Test

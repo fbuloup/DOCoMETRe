@@ -74,6 +74,8 @@ public class ADWinProcessEditor extends ProcessEditor {
 			sourceEditor = new ADBasicSourceEditor(this);
 			pageIndex = addPage(sourceEditor, getEditorInput());
 			setPageText(pageIndex, DocometreMessages.ADBasicSourceCodeEditorTitle);
+			// Pages are now created : link compilation markers to blocks
+			updateBlocksCompilationMarkers();
 		} catch (PartInitException e) {
 			e.printStackTrace();
 			Activator.logErrorMessageWithCause(e);

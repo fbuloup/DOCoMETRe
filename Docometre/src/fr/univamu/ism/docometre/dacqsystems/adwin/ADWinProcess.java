@@ -111,10 +111,19 @@ public class ADWinProcess extends Process {
 	public static String previousADWINBinFilePath = "";
 	
 	public static File createADBasicFile(IResource processFile, Process process, String adbasicFilePath) {
+		return createADBasicFile(processFile, process, adbasicFilePath, false);
+	}
+	
+	/*
+	 * If compilation is true, the signature of the compiled code is saved : compilation markers
+	 * will be linked to blocks as long as the process code is unchanged
+	 */
+	private static File createADBasicFile(IResource processFile, Process process, String adbasicFilePath, boolean compilation) {
 		try {
 			// Get process code
-			String processCode = process.getCode(null);
-			processCode = processCode.replaceAll("^\\n", "");
+			String sourceCode = process.getCode(null);
+			String processCode = sourceCode.replaceAll("^\\n", "");
+			if(compilation) ResourceProperties.setCompiledCodeSignature(processFile, sourceCode, sourceCode.length() > processCode.length() ? 1 : 0);
 			
 			// Create ADBasic file
 			File file = new File(adbasicFilePath);
@@ -328,7 +337,7 @@ public class ADWinProcess extends Process {
 		
 		progressMonitor.subTask(DocometreMessages.ADWinProcess_CompileCMDLineMessage);
 		String adbasicFilePath = outputFolder + File.separator + processResource.getFullPath().lastSegment().replaceAll(Activator.processFileExtension +"$", ".BAS");
-		createADBasicFile(processResource, this, adbasicFilePath);
+		createADBasicFile(processResource, this, adbasicFilePath, true);
 		String adbasicCompiler = getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.ADBASIC_COMPILER);
 		String cmdLine = "";
 		String outputFolderCmdLine = outputFolder + File.separator + processResource.getFullPath().lastSegment().replaceAll(Activator.processFileExtension +"$", "");
@@ -427,6 +436,7 @@ public class ADWinProcess extends Process {
 					IMarker marker = processResource.createMarker(DocometreBuilder.MARKER_ID);
 					marker.setAttribute(IMarker.MESSAGE, status.getMessage());
 					marker.setAttribute(IMarker.LINE_NUMBER, 1);
+					marker.setAttribute(DocometreBuilder.CODE_GENERATION_MARKER_ATTRIBUTE, true);
 					marker.setAttribute(IMarker.SEVERITY, status.getSeverity()==IStatus.ERROR?IMarker.SEVERITY_ERROR:IMarker.SEVERITY_WARNING);
 					if(marker.getAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR) == IMarker.SEVERITY_ERROR) Activator.logErrorMessage(status.getMessage());
 					if(marker.getAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING) == IMarker.SEVERITY_WARNING) Activator.logWarningMessage(status.getMessage());

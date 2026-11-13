@@ -74,6 +74,8 @@ public class ArduinoUnoProcessEditor extends ProcessEditor {
 			sourceEditor = new ArduinoUnoSourceEditor(this);
 			pageIndex = addPage(sourceEditor, getEditorInput());
 			setPageText(pageIndex, DocometreMessages.ArduinoUnoSourceCodeEditorTitle);
+			// Pages are now created : link compilation markers to blocks
+			updateBlocksCompilationMarkers();
 		} catch (PartInitException e) {
 			e.printStackTrace();
 			Activator.logErrorMessageWithCause(e);

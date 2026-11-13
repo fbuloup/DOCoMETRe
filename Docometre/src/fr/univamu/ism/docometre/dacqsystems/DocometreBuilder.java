@@ -74,6 +74,9 @@ public class DocometreBuilder extends IncrementalProjectBuilder {
 	
 	public static final String BUILDER_ID = Activator.PLUGIN_ID + ".DocometreBuilder";
 	public static final String MARKER_ID = Activator.PLUGIN_ID + ".DocometreMarker";
+	// Boolean attribute of markers created from code generation statuses (not from compilation) :
+	// these statuses are already displayed on their blocks
+	public static final String CODE_GENERATION_MARKER_ATTRIBUTE = Activator.PLUGIN_ID + ".codeGeneration";
 	
 	public static void addProject(IProject project) {
 		

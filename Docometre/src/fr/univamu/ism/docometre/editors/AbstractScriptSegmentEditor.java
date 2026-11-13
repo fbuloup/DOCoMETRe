@@ -411,6 +411,19 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 		});
 	}
 	
+	public ScriptSegmentType getScriptSegmentType() {
+		return scriptSegmentType;
+	}
+	
+	/**
+	 * Repaints blocks figures, e.g. after their compilation status has changed
+	 */
+	public void refreshBlocksFigures() {
+		if(getGraphicalViewer() == null || getGraphicalViewer().getControl() == null || getGraphicalViewer().getControl().isDisposed()) return;
+		for (Object editPart : getGraphicalViewer().getEditPartRegistry().values()) 
+			if(editPart instanceof BlockEditPart) ((BlockEditPart)editPart).getFigure().repaint();
+	}
+	
 	/*
 	 * Shows, in the source code page, the lines corresponding to the block or the connection 
 	 * at the specified location (viewer control coordinates).

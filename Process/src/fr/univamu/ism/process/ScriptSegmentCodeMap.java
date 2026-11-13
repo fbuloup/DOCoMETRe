@@ -148,6 +148,51 @@ public class ScriptSegmentCodeMap {
 		return line;
 	}
 	
+	/**
+	 * Returns the number of lines of the segment code
+	 * @return the number of lines
+	 */
+	public int getLinesNumber() {
+		if(code.isEmpty()) return 0;
+		int linesNumber = lineOf(code, code.length());
+		// Last line without line delimiter
+		if(!code.endsWith("\n")) linesNumber++;
+		return linesNumber;
+	}
+	
+	/**
+	 * Returns the block whose code contains a line : the block generating this line, or the IF or DO block 
+	 * this line belongs to (ELSE, ENDIF, UNTIL...). If several blocks contain this line, the block 
+	 * with the smallest lines range is returned.
+	 * @param line the line, zero based, relative to the first line of the segment code
+	 * @return the block or null if this line does not belong to any block
+	 */
+	public Block getBlockAtLine(int line) {
+		Block foundBlock = null;
+		int foundRange = Integer.MAX_VALUE;
+		for (Map.Entry<Block, int[]> entry : blocksLines.entrySet()) {
+			int[] lines = entry.getValue();
+			if(line >= lines[0] && line <= lines[1] && lines[1] - lines[0] < foundRange) {
+				foundBlock = entry.getKey();
+				foundRange = lines[1] - lines[0];
+			}
+		}
+		for (Map.Entry<Block, int[]> entry : closingLines.entrySet()) {
+			int[] lines = entry.getValue();
+			if(line >= lines[0] && line <= lines[1] && lines[1] - lines[0] < foundRange) {
+				foundBlock = entry.getKey();
+				foundRange = lines[1] - lines[0];
+			}
+		}
+		for (Map.Entry<Block, Integer> entry : elseLines.entrySet()) {
+			if(line == entry.getValue() && foundRange > 0) {
+				foundBlock = entry.getKey();
+				foundRange = 0;
+			}
+		}
+		return foundBlock;
+	}
+	
 	public boolean contains(Block block) {
 		return blocksLines.containsKey(block);
 	}
