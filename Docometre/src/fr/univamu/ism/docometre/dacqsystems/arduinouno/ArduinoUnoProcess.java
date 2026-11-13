@@ -1821,15 +1821,15 @@ public class ArduinoUnoProcess extends Process {
 			String errorMessage = error.getMessage();
 			if(error.getKind() == ArduinoUnoBuildOutput.Kind.LINKER) errorMessage = NLS.bind(ArduinoUnoMessages.LinkError, errorMessage);
 			if(error.getKind() == ArduinoUnoBuildOutput.Kind.BUILD) errorMessage = NLS.bind(ArduinoUnoMessages.BuildFailed, errorMessage);
-			int line = error.getLine();
-			int column = error.getColumn();
+			int errorLine = error.getLine();
+			int errorColumn = error.getColumn();
 			if(error.getKind() == ArduinoUnoBuildOutput.Kind.COMPILER && !error.isInSketch()) {
 				// Error in another file (library, core...) : its line is not a line of the sketch
-				errorMessage = error.getFileName() + ":" + line + ":" + column + ": " + errorMessage;
-				line = 1;
-				column = 0;
+				errorMessage = error.getFileName() + ":" + errorLine + ":" + errorColumn + ": " + errorMessage;
+				errorLine = 1;
+				errorColumn = 0;
 			}
-			createMarker(IMarker.SEVERITY_ERROR, processResource, line, column, errorMessage);
+			createMarker(IMarker.SEVERITY_ERROR, processResource, errorLine, errorColumn, errorMessage);
 		}
 
 		Bundle librariesBundle = Platform.getBundle("Libraries");
