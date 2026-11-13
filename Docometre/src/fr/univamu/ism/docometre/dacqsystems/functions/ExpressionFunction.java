@@ -187,7 +187,7 @@ public final class ExpressionFunction extends GenericFunction {
 		sourceContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		sourceContainer.setLayout(new GridLayout(1, false));
 		
-		sourceViewer = new SourceViewer(sourceContainer, null, SWT.BORDER);
+		sourceViewer = new SourceViewer(sourceContainer, null, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
 		sourceViewer.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		Document document = new Document();
 		// Syntax coloring of the process language (Arduino or ADBasic), as in the process source editor,
