@@ -41,10 +41,14 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.ui;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.AnnotationModel;
@@ -76,6 +80,7 @@ import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.DocometreSharedColors;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.PartListenerAdapter;
+import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ThemeColors;
 import fr.univamu.ism.docometre.annotations.DocometreAnnotationAccesExtension;
 import fr.univamu.ism.docometre.annotations.ErrorAnnotation;
@@ -85,7 +90,10 @@ import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.dialogs.FindDialog;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.preferences.MathEnginePreferencesConstants;
+import fr.univamu.ism.docometre.scripteditor.connections.model.BlocksConnection;
+import fr.univamu.ism.process.Block;
 import fr.univamu.ism.process.Script;
+import fr.univamu.ism.process.ScriptSegmentCodeMap;
 import fr.univamu.ism.process.ScriptSegmentType;
 
 public class SourceEditor extends EditorPart {
@@ -277,6 +285,8 @@ public class SourceEditor extends EditorPart {
 			IResource process = ObjectsController.getResourceForObject(getObject());
 			IMarker[] markers = process.findMarkers(DocometreBuilder.MARKER_ID, true, IResource.DEPTH_INFINITE);
 			annotationModel.removeAllAnnotations();
+			// Markers lines refer to the compiled file, which may start lower than the source code (ADwin) 
+			int linesShift = Math.max(0, ResourceProperties.getCompiledCodeLinesShift(process, document.get()));
 			for (IMarker marker : markers) {
 				Annotation annotation = null;
 				String line = (String) marker.getAttribute(IMarker.MESSAGE);
@@ -288,7 +298,7 @@ public class SourceEditor extends EditorPart {
 					if (severity.equals(IMarker.SEVERITY_WARNING))
 						annotation = new WarningAnnotation(marker, line);
 //						int lineNumber = (int) marker.getAttribute(IMarker.LINE_NUMBER);
-					int lineOffset = document.getLineOffset((int) lineNumber - 1);
+					int lineOffset = document.getLineOffset(Math.min((int) lineNumber - 1 + linesShift, document.getNumberOfLines() - 1));
 					String lengthLine = line.replaceAll("^(.|\\n)*line:\\s", "");
 					lengthLine = lengthLine.replaceAll("\\sfile:(.*)$", "");
 					annotationModel.addAnnotation(annotation, new Position(lineOffset, lengthLine.length()));
@@ -327,6 +337,101 @@ public class SourceEditor extends EditorPart {
 
 	public void selectAll() {
 		sourceViewer.getTextWidget().selectAll();
+	}
+	
+	private Script getScript() {
+		Object object = getObject();
+		if(object instanceof Process) return ((Process)object).getScript();
+		if(object instanceof Script) return (Script)object;
+		return null;
+	}
+	
+	/**
+	 * Regenerates source code and returns the lines corresponding to a diagram element.
+	 * Source code document is updated if needed.
+	 * @param modelElement a block or a connection (BlocksConnection)
+	 * @return {first line, last line}, zero based, or null if this element has no corresponding code
+	 */
+	public int[] getSourceLines(Object modelElement) {
+		Block block = null;
+		BlocksConnection blocksConnection = null;
+		if(modelElement instanceof Block) block = (Block)modelElement;
+		else if(modelElement instanceof BlocksConnection) blocksConnection = (BlocksConnection)modelElement;
+		else return null;
+		for (Map.Entry<ScriptSegmentCodeMap, Integer> entry : locateSegments().entrySet()) {
+			ScriptSegmentCodeMap codeMap = entry.getKey();
+			int[] lines = null;
+			if(block != null) lines = codeMap.getBlockLines(block);
+			else if(codeMap.contains(blocksConnection.sourceBlock) || codeMap.contains(blocksConnection.targetBlock)) 
+				lines = codeMap.getConnectionLines(blocksConnection.sourceBlock, blocksConnection.targetBlock);
+			if(lines != null) {
+				int segmentLine = entry.getValue();
+				int lastLine = document.getNumberOfLines() - 1;
+				return new int[] {Math.min(segmentLine + lines[0], lastLine), Math.min(segmentLine + lines[1], lastLine)};
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Regenerates source code (document is updated if needed) and returns the code maps of the script segments 
+	 * found in this source code, with the line, zero based, where each segment starts.
+	 * @return code maps and first lines, in source code order
+	 */
+	public Map<ScriptSegmentCodeMap, Integer> locateSegments() {
+		Map<ScriptSegmentCodeMap, Integer> segments = new LinkedHashMap<>();
+		Script script = getScript();
+		if(script == null || document == null) return segments;
+		try {
+			// Regenerate code : segments code maps generated from now are those of the displayed code
+			long generationIndex = Script.getCodeMapsGenerationIndex();
+			String code = getCode();
+			if(!code.equals(document.get())) update(code);
+			String source = document.get();
+			// Segments codes are appended in generation order : search each one after the previous one
+			int searchOffset = 0;
+			for (ScriptSegmentCodeMap codeMap : script.getSegmentCodeMaps(generationIndex)) {
+				String segmentCode = codeMap.getCode();
+				if(segmentCode.isEmpty()) continue;
+				int segmentOffset = source.indexOf(segmentCode, searchOffset);
+				if(segmentOffset < 0) continue;
+				searchOffset = segmentOffset + segmentCode.length();
+				segments.put(codeMap, document.getLineOfOffset(segmentOffset));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			Activator.logErrorMessageWithCause(e);
+		}
+		return segments;
+	}
+	
+	/**
+	 * @return the source code currently displayed
+	 */
+	public String getSourceCode() {
+		return document == null ? "" : document.get();
+	}
+	
+	/**
+	 * Selects and reveals lines in source code.
+	 * @param firstLine first line, zero based
+	 * @param lastLine last line, zero based
+	 */
+	public void selectLines(int firstLine, int lastLine) {
+		try {
+			int lastDocumentLine = document.getNumberOfLines() - 1;
+			firstLine = Math.max(0, Math.min(firstLine, lastDocumentLine));
+			lastLine = Math.max(firstLine, Math.min(lastLine, lastDocumentLine));
+			int startOffset = document.getLineOffset(firstLine);
+			IRegion lastLineRegion = document.getLineInformation(lastLine);
+			int endOffset = lastLineRegion.getOffset() + lastLineRegion.getLength();
+			sourceViewer.setSelectedRange(startOffset, endOffset - startOffset);
+			// Scroll so that first selected line is visible, with a few lines above it
+			sourceViewer.setTopIndex(Math.max(0, firstLine - 5));
+		} catch (Exception e) {
+			e.printStackTrace();
+			Activator.logErrorMessageWithCause(e);
+		}
 	}
 
 }

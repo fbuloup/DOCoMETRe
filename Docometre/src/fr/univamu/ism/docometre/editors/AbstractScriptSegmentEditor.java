@@ -49,12 +49,16 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.draw2d.ScalableFreeformLayeredPane;
 import org.eclipse.draw2d.ToolTipHelper;
+import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw2d.zoom.ZoomListener;
 import org.eclipse.gef.ContextMenuProvider;
 import org.eclipse.gef.DefaultEditDomain;
+import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPartViewer;
 import org.eclipse.gef.GraphicalViewer;
+import org.eclipse.gef.KeyHandler;
+import org.eclipse.gef.KeyStroke;
 import org.eclipse.gef.MouseWheelHandler;
 import org.eclipse.gef.MouseWheelZoomHandler;
 import org.eclipse.gef.SnapToGeometry;
@@ -97,9 +101,11 @@ import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.part.MultiPageEditorPart;
+import org.eclipse.ui.part.MultiPageEditorSite;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
@@ -112,7 +118,9 @@ import fr.univamu.ism.docometre.scripteditor.actions.DeactivateBlockAction;
 import fr.univamu.ism.docometre.scripteditor.actions.EditBlockAction;
 import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
 import fr.univamu.ism.docometre.scripteditor.actions.PasteAction;
+import fr.univamu.ism.docometre.scripteditor.actions.ShowInSourceCodeAction;
 import fr.univamu.ism.docometre.scripteditor.editparts.BlockEditPart;
+import fr.univamu.ism.docometre.scripteditor.editparts.BlocksConnectionEditPart;
 import fr.univamu.ism.docometre.scripteditor.editparts.ScriptEditPartFactory;
 import fr.univamu.ism.docometre.scripteditor.editparts.ScriptSegmentEditPart;
 import fr.univamu.ism.process.Function;
@@ -252,6 +260,8 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 	        
 	        action = getActionRegistry().getAction(EditBlockAction.EDIT_BLOCK);
 	        menuManager.appendToGroup(GEFActionConstants.GROUP_EDIT, action);
+	        action = getActionRegistry().getAction(ShowInSourceCodeAction.SHOW_IN_SOURCE_CODE);
+	        menuManager.appendToGroup(GEFActionConstants.GROUP_EDIT, action);
 	        IStructuredSelection selection = (IStructuredSelection) getViewer().getSelection();
 	        if(selection.size() == 1) {
 	        		if(selection.getFirstElement() instanceof BlockEditPart) {
@@ -379,6 +389,11 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 		getGraphicalViewer().getControl().addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDoubleClick(MouseEvent event) {
+				// CTRL (CMD on macOS) + double click : go to corresponding lines in source code page
+				if((event.stateMask & SWT.MOD1) != 0) {
+					showInSourceCode(event.x, event.y);
+					return;
+				}
 				Map<?, ?> editPartMap = getGraphicalViewer().getEditPartRegistry();
 				ScriptSegmentEditPart scriptSegmentEditPart = null;
 				if(scriptSegmentType.equals(ScriptSegmentType.INITIALIZE)) scriptSegmentEditPart = (ScriptSegmentEditPart) editPartMap.get(getScript().getInitializeBlocksContainer());
@@ -394,6 +409,47 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 				if(e.character == '\u0008' || e.character == '\u007F') getActionRegistry().getAction(ActionFactory.DELETE.getId()).run();
 			}
 		});
+	}
+	
+	public ScriptSegmentType getScriptSegmentType() {
+		return scriptSegmentType;
+	}
+	
+	/**
+	 * Repaints blocks figures, e.g. after their compilation status has changed
+	 */
+	public void refreshBlocksFigures() {
+		if(getGraphicalViewer() == null || getGraphicalViewer().getControl() == null || getGraphicalViewer().getControl().isDisposed()) return;
+		for (Object editPart : getGraphicalViewer().getEditPartRegistry().values()) 
+			if(editPart instanceof BlockEditPart) ((BlockEditPart)editPart).getFigure().repaint();
+	}
+	
+	/*
+	 * Shows, in the source code page, the lines corresponding to the block or the connection 
+	 * at the specified location (viewer control coordinates).
+	 */
+	private void showInSourceCode(int x, int y) {
+		EditPart editPart = getGraphicalViewer().findObjectAt(new Point(x, y));
+		if(!(editPart instanceof BlockEditPart) && !(editPart instanceof BlocksConnectionEditPart)) {
+			// Mouse pointer may be over a selection handle : use selected element
+			ISelection selection = getGraphicalViewer().getSelection();
+			Object selectedElement = selection instanceof IStructuredSelection ? ((IStructuredSelection)selection).getFirstElement() : null;
+			editPart = selectedElement instanceof EditPart ? (EditPart)selectedElement : null;
+		}
+		showInSourceCode(editPart);
+	}
+	
+	/**
+	 * Shows, in the source code page, the lines corresponding to a block or a connection.
+	 * Beeps if there is no corresponding code.
+	 * @param editPart the block or connection edit part
+	 */
+	public void showInSourceCode(EditPart editPart) {
+		if(!(editPart instanceof BlockEditPart) && !(editPart instanceof BlocksConnectionEditPart)) return;
+		IEditorPart editor = getSite() instanceof MultiPageEditorSite ? ((MultiPageEditorSite)getSite()).getMultiPageEditor() : getSite().getPage().getActiveEditor();
+		boolean shown = editor instanceof SchematicSourceLinker && ((SchematicSourceLinker)editor).showInSourceCode(editPart.getModel());
+		// No corresponding code (comment block, block not connected to the flow...)
+		if(!shown) getGraphicalViewer().getControl().getDisplay().beep();
 	}
 	
 	@Override
@@ -413,6 +469,7 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 //		if(scriptSegmentType.equals(ScriptSegmentType.FINALIZE)) scriptSegment = process.getFinalizeBlocksContainer();
 //		if(copyAction == null) {
 		ActionRegistry registry = getActionRegistry();
+		Action action;
 		copyAction = new CopyAction(this);
 		copyAction.setText(DocometreMessages.CopyAction_Text);
 		registry.registerAction(copyAction);
@@ -426,8 +483,11 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 	    deactivateBlockAction = new DeactivateBlockAction(this);
 	    registry.registerAction(deactivateBlockAction);
 	    getSelectionActions().add(deactivateBlockAction.getId());
+	    action = new ShowInSourceCodeAction(this);
+	    registry.registerAction(action);
+	    getSelectionActions().add(action.getId());
 	    
-	    Action action = (Action) registry.getAction(ActionFactory.DELETE.getId());
+	    action = (Action) registry.getAction(ActionFactory.DELETE.getId());
 	    action.setText(DocometreMessages.DeleteAction_Text);
 	    
 	    action = (Action) registry.getAction(ActionFactory.UNDO.getId());
@@ -451,7 +511,10 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 		ToolTipHelper.setDefaultHideDelay(TOOLTIP_HIDE_DELAY);
 		getGraphicalViewer().setEditPartFactory(new ScriptEditPartFactory());
 		getGraphicalViewer().setRootEditPart(new ScalableFreeformRootEditPart());
-		getGraphicalViewer().setKeyHandler(new GraphicalViewerKeyHandler(getGraphicalViewer()));
+		// F3 : show selected block or connection in source code page
+		KeyHandler keyHandler = new KeyHandler();
+		keyHandler.put(KeyStroke.getPressed(SWT.F3, 0), getActionRegistry().getAction(ShowInSourceCodeAction.SHOW_IN_SOURCE_CODE));
+		getGraphicalViewer().setKeyHandler(new GraphicalViewerKeyHandler(getGraphicalViewer()).setParent(keyHandler));
 		getGraphicalViewer().setContextMenu(new ScriptSegmentEditorContextMenuProvider(getGraphicalViewer()));
 		getGraphicalViewer().setProperty(MouseWheelHandler.KeyGenerator.getKey(SWT.MOD1), MouseWheelZoomHandler.SINGLETON);
 

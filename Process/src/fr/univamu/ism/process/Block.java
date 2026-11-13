@@ -135,6 +135,11 @@ public abstract class Block implements Serializable {
 	
 	private transient IStatus status;
 	
+	/**
+	 * Errors and warnings of the last compilation located in the code of this block
+	 */
+	private transient IStatus compilationStatus;
+	
 	//Contructors
 	public Block() {
 		activated = true;
@@ -425,6 +430,19 @@ public abstract class Block implements Serializable {
 	
 	public IStatus getStatus() {
 		return status;
+	}
+	
+	/**
+	 * Sets errors and warnings of the last compilation located in the code of this block.
+	 * Unlike {@link #getStatus()}, this status is not modified by code generation.
+	 * @param compilationStatus the status, null if no error and no warning
+	 */
+	public void setCompilationStatus(IStatus compilationStatus) {
+		this.compilationStatus = compilationStatus;
+	}
+	
+	public IStatus getCompilationStatus() {
+		return compilationStatus;
 	}
 	
 }

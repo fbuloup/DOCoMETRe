@@ -50,6 +50,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -136,6 +137,17 @@ public class Script implements Serializable {
 	private transient Set<Block> reportedBlocks = new HashSet<>();
 	// Blocks whose branch leaves an enclosing IF block, with their warning
 	private transient Map<Block, IStatus> branchLeavesBlockStatus = new LinkedHashMap<>();
+	
+	/*
+	 * Links between blocks and generated code lines, used to go from the diagram to the source code.
+	 * One map per segment type, replaced each time the code of this segment is generated (INITIALIZE, LOOP or FINALIZE step).
+	 */
+	private static final AtomicLong codeMapsGenerationCounter = new AtomicLong();
+	private transient Map<ScriptSegmentType, ScriptSegmentCodeMap> segmentCodeMaps = new LinkedHashMap<>();
+	// Code map being built during current segment code generation, null when step is not a script segment type
+	private transient ScriptSegmentCodeMap currentCodeMap;
+	// Raw code (before indentation) of last generated segment
+	private transient String currentRawCode;
 	
 	public static Script getSampleScript() {
 		return SampleScript1.getSampleScript();
@@ -297,7 +309,7 @@ public class Script implements Serializable {
 		if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess)) {
 			if(!"DECLARATION".equals(step.toString())) initialIndent = "\t\t";
 		}
-		return indentCode(context, code, initialIndent);
+		return completeCodeMap(indentCode(context, code, initialIndent));
 	}
 	
 	//Loop phase
@@ -346,7 +358,7 @@ public class Script implements Serializable {
 		if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess)) {
 			if(!"DECLARATION".equals(step.toString())) initialIndent = "\t\t";
 		}
-		return indentCode(context, code, initialIndent);
+		return completeCodeMap(indentCode(context, code, initialIndent));
 	}
 	
 	//Finalize phase
@@ -396,7 +408,59 @@ public class Script implements Serializable {
 			if(!"DECLARATION".equals(step.toString())) initialIndent = "\t\t";
 		}
 //		initialIndent =  step.equals(ArduinounoCodeSegmentProperties.DECLARATION)? initialIndent: "";
-		return indentCode(context, code, initialIndent);
+		return completeCodeMap(indentCode(context, code, initialIndent));
+	}
+	
+	/*
+	 * Completes the code map built during last segment code generation, if any, and makes it available.
+	 * Returns the code parameter unchanged.
+	 */
+	private String completeCodeMap(String code) {
+		if(currentCodeMap != null) {
+			currentCodeMap.complete(currentRawCode, code, codeMapsGenerationCounter.incrementAndGet());
+			getSegmentCodeMapsMap().put(currentCodeMap.getSegmentType(), currentCodeMap);
+		}
+		currentCodeMap = null;
+		currentRawCode = null;
+		return code;
+	}
+	
+	private Map<ScriptSegmentType, ScriptSegmentCodeMap> getSegmentCodeMapsMap() {
+		if(segmentCodeMaps == null) segmentCodeMaps = new LinkedHashMap<>();
+		return segmentCodeMaps;
+	}
+	
+	/**
+	 * Returns the current value of the code maps generation counter. Any code map generated after
+	 * this call will have a greater generation index.
+	 * @return the current generation index
+	 */
+	public static long getCodeMapsGenerationIndex() {
+		return codeMapsGenerationCounter.get();
+	}
+	
+	/**
+	 * Returns the code map of a segment, built when the code of this segment has been generated for the last time.
+	 * @param segmentType the segment type
+	 * @return the code map or null if code of this segment has never been generated
+	 */
+	public ScriptSegmentCodeMap getSegmentCodeMap(ScriptSegmentType segmentType) {
+		return getSegmentCodeMapsMap().get(segmentType);
+	}
+	
+	/**
+	 * Returns code maps generated after a given generation index, sorted in generation order.
+	 * As source code is built by appending successive segments codes, this order is also
+	 * the order of these segments in the source code.
+	 * @param afterGenerationIndex code maps with a lower or equal generation index are ignored 
+	 * @return the code maps
+	 */
+	public List<ScriptSegmentCodeMap> getSegmentCodeMaps(long afterGenerationIndex) {
+		List<ScriptSegmentCodeMap> codeMaps = new ArrayList<>();
+		for (ScriptSegmentCodeMap codeMap : getSegmentCodeMapsMap().values()) 
+			if(codeMap.getGenerationIndex() > afterGenerationIndex) codeMaps.add(codeMap);
+		codeMaps.sort((codeMap1, codeMap2) -> Long.compare(codeMap1.getGenerationIndex(), codeMap2.getGenerationIndex()));
+		return codeMaps;
 	}
 	
 	/*
@@ -449,7 +513,9 @@ public class Script implements Serializable {
 		duplicatedBlocks = new HashSet<>();
 		reportedBlocks = new HashSet<>();
 		branchLeavesBlockStatus = new LinkedHashMap<>();
-		String code = generateCode(startBlocks.isEmpty() ? null : startBlocks.get(0), null, context, step, objects);
+		currentCodeMap = displayWarning ? new ScriptSegmentCodeMap(scriptSegment.getScriptSegmentType()) : null;
+		String code = generateCode(startBlocks.isEmpty() ? null : startBlocks.get(0), null, 0, context, step, objects);
+		currentRawCode = code;
 		// Statuses are set after generation : a block generated several times resets its own status
 		for (Map.Entry<Block, IStatus> entry : branchLeavesBlockStatus.entrySet()) {
 			if(displayWarning) addGenerationCodeStatus(entry.getValue());
@@ -489,9 +555,10 @@ public class Script implements Serializable {
 	 * Helper method to generate code.
 	 * @param block the block for which we want to generate code
 	 * @param stopBlock the block where we have to stop iterative generation
+	 * @param offset the offset, in the whole segment code, of the code generated by this call (used to link blocks to code lines)
 	 * @return the generated code
 	 */
-	private String generateCode(Block block, Block stopBlock, Object context, Object step, Object...objects) throws NullPointerException {
+	private String generateCode(Block block, Block stopBlock, int offset, Object context, Object step, Object...objects) throws NullPointerException {
 		boolean isScriptSegmentType = step == ScriptSegmentType.INITIALIZE || step == ScriptSegmentType.LOOP || step == ScriptSegmentType.FINALIZE;
 		//if(!isScriptSegmentType) return "";
 		String code = "";
@@ -501,6 +568,7 @@ public class Script implements Serializable {
 		if(block instanceof IfBlock /*&& isScriptSegmentType*/) {
 			IfBlock ifBlock = (IfBlock)block;
 			code = ifBlock.getCode(context, step, objects);
+			recordBlock(ifBlock, offset, offset + code.length());
 			displayWarning = displayWarning && !"".equals(code);
 			if(ifBlock.getNextTrueBranchBlock() == null) {
 				String message = NLS.bind(ProcessMessages.IfBlockWithoutTrueBranch, step.toString(), code.replaceAll("\n$", ""));
@@ -517,23 +585,27 @@ public class Script implements Serializable {
 			Block endifBlock = ifBlock.getEndBlock();
 			//generate code till this endif bloc from true branch
 			generationFrames.push(new GenerationFrame(ifBlock, endifBlock));
-			code = code + generateCode(ifBlock.getNextTrueBranchBlock(), endifBlock, context, step, objects);
+			code = code + generateCode(ifBlock.getNextTrueBranchBlock(), endifBlock, offset + code.length(), context, step, objects);
+			recordElse(ifBlock, offset + code.length());
 			if(context.getClass().getSimpleName().equals(Activator.ADWinProcess) && isScriptSegmentType) code = code + "ELSE\n";
 			if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess) && isScriptSegmentType) code = code + "} else {\n";
 			if(context.getClass().getSimpleName().equals(Activator.Script) && isScriptSegmentType) code = code + "else\n";
 			//generate code till this endif bloc from false branch
-			code = code + generateCode(ifBlock.getNextFalseBranchBlock(), endifBlock, context, step, objects);
+			code = code + generateCode(ifBlock.getNextFalseBranchBlock(), endifBlock, offset + code.length(), context, step, objects);
 			generationFrames.pop();
+			int endifOffset = offset + code.length();
 			if(context.getClass().getSimpleName().equals(Activator.ADWinProcess) && isScriptSegmentType) code = code + "ENDIF\n";
 			if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess) && isScriptSegmentType) code = code + "} // End if .. else\n";
 			if(context.getClass().getSimpleName().equals(Activator.Script) && isScriptSegmentType) code = code + "end\n";
+			recordClosing(ifBlock, endifOffset, offset + code.length());
 			//Continue to next bloc
-			code = code + generateCode(endifBlock, stopBlock, context, step, objects);
+			code = code + generateCode(endifBlock, stopBlock, offset + code.length(), context, step, objects);
 		}
 		else if(block instanceof DoBlock /*&& isScriptSegmentType*/) {
 			DoBlock doBlock = (DoBlock)block;
 			if(context.getClass().getSimpleName().equals(Activator.ADWinProcess) && isScriptSegmentType) code = "DO\n";
 			if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess) && isScriptSegmentType) code = "do {\n";
+			recordBlock(doBlock, offset, offset + code.length());
 			displayWarning = displayWarning && !"".equals(code);
 			//Find end do bloc
 			Block endDoBlock = doBlock.getEndBlock();
@@ -546,17 +618,19 @@ public class Script implements Serializable {
 			if(endDoBlock != null) {
 				//generate code till this end do bloc
 				generationFrames.push(new GenerationFrame(doBlock, endDoBlock));
-				code = code + generateCode(doBlock.getNextBlock(), endDoBlock, context, step, objects);
+				code = code + generateCode(doBlock.getNextBlock(), endDoBlock, offset + code.length(), context, step, objects);
 				//generate code for this end do bloc
-				code = code + generateCode(endDoBlock, endDoBlock.getNextBlock(), context, step, objects);
+				code = code + generateCode(endDoBlock, endDoBlock.getNextBlock(), offset + code.length(), context, step, objects);
 				generationFrames.pop();
 			}
 			//generate close do bloc
+			int untilOffset = offset + code.length();
 			code = code + doBlock.getCode(context, step, objects);
+			recordClosing(doBlock, untilOffset, offset + code.length());
 			//Continue to next bloc
 			if(endDoBlock != null) {
 				if(doBlock != endDoBlock.getNextBlock())
-					code = code + generateCode(endDoBlock.getNextBlock(), stopBlock, context, step, objects);
+					code = code + generateCode(endDoBlock.getNextBlock(), stopBlock, offset + code.length(), context, step, objects);
 				else { 
 					String message = NLS.bind(ProcessMessages.DoBlockWithoutStartFunction, step.toString());
 					IStatus status = new Status(Status.WARNING, Activator.PLUGIN_ID, message);
@@ -567,15 +641,32 @@ public class Script implements Serializable {
 		} else {
 			if(block != null) {
 				Block nextBlock = block.getNextBlock();
-				code = code + block.getCode(context, step, objects) + generateCode(nextBlock, stopBlock, context, step, objects);
+				String blockCode = block.getCode(context, step, objects);
+				recordBlock(block, offset, offset + blockCode.length());
+				code = code + blockCode + generateCode(nextBlock, stopBlock, offset + blockCode.length(), context, step, objects);
 			}
 		}
 		return code;
 	}
 	
+	/*
+	 * Code map recording helpers : do nothing if current step is not a script segment type
+	 */
+	private void recordBlock(Block block, int startOffset, int endOffset) {
+		if(currentCodeMap != null) currentCodeMap.recordBlock(block, startOffset, endOffset);
+	}
+	
+	private void recordElse(Block block, int offset) {
+		if(currentCodeMap != null) currentCodeMap.recordElse(block, offset);
+	}
+	
+	private void recordClosing(Block block, int startOffset, int endOffset) {
+		if(currentCodeMap != null) currentCodeMap.recordClosing(block, startOffset, endOffset);
+	}
+
 	/**
 	 * Helper method to indent code
-	 * @param context 
+	 * @param context
 	 * @param code the unindented code
 	 * @return the indented code
 	 */

@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -96,6 +97,9 @@ public final class ResourceProperties {
 	public static QualifiedName ASSOCIATED_PROCESS_FILE_QN = new QualifiedName(Activator.PLUGIN_ID, "associated.process.file");
 	// Whether a process may run in main thread 
 	public static QualifiedName RUN_IN_MAIN_THREAD_QN =  new QualifiedName(Activator.PLUGIN_ID, "run.in.main.thread");
+	// Signature of the source code of a process when it has been compiled for the last time, with the
+	// shift between lines of the compiled file and lines of the source code : "shift:signature"
+	public static QualifiedName COMPILED_CODE_SIGNATURE_QN =  new QualifiedName(Activator.PLUGIN_ID, "compiled.code.signature");
 	// Trial state : 
 	//    - if trial.state property doesn't exist or is not equal to "done", trial is undone
 	//    - if trial.state property exists and is equal to "done" trial is done !
@@ -962,6 +966,63 @@ public final class ResourceProperties {
 			e.printStackTrace();
 		}
 		return modified;
+	}
+
+	/*
+	 * Signature (SHA-256) of a source code
+	 */
+	private static String getCodeSignature(String code) {
+		try {
+			MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+			byte[] digest = messageDigest.digest(code.getBytes(StandardCharsets.UTF_8));
+			StringBuilder signature = new StringBuilder();
+			for (byte value : digest) signature.append(String.format("%02x", value));
+			return signature.toString();
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+			return null;
+		}
+	}
+	
+	/**
+	 * Saves the signature of the source code of a process when it is compiled. Lines numbers of compilation markers 
+	 * refer to the compiled file : they can be linked to the source code only while this source code is unchanged.
+	 * Saved in workspace metadata only (not in properties file) as it is only a cache.
+	 * @param process the process resource
+	 * @param sourceCode the source code (as displayed in source code page)
+	 * @param linesShift the number of lines removed at the beginning of the source code to get the compiled code
+	 */
+	public static void setCompiledCodeSignature(IResource process, String sourceCode, int linesShift) {
+		try {
+			if(process == null || !process.exists()) return;
+			String signature = sourceCode == null ? null : getCodeSignature(sourceCode);
+			process.setPersistentProperty(COMPILED_CODE_SIGNATURE_QN, signature == null ? null : linesShift + ":" + signature);
+		} catch (CoreException e) {
+			Activator.logErrorMessageWithCause(e);
+		}
+	}
+	
+	/**
+	 * Returns the shift between lines of the compiled file and lines of a source code, if this source code
+	 * is the one which has been compiled for the last time.
+	 * @param process the process resource
+	 * @param sourceCode the source code (as displayed in source code page)
+	 * @return the number of lines to add to a compiled file line to get the source code line, 
+	 * or -1 if this source code has not been compiled (modified since last compilation or unknown)
+	 */
+	public static int getCompiledCodeLinesShift(IResource process, String sourceCode) {
+		try {
+			if(process == null || !process.exists() || sourceCode == null) return -1;
+			String value = process.getPersistentProperty(COMPILED_CODE_SIGNATURE_QN);
+			if(value == null) return -1;
+			int separatorIndex = value.indexOf(':');
+			if(separatorIndex < 0) return -1;
+			if(!value.substring(separatorIndex + 1).equals(getCodeSignature(sourceCode))) return -1;
+			return Integer.parseInt(value.substring(0, separatorIndex));
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+		}
+		return -1;
 	}
 
 }

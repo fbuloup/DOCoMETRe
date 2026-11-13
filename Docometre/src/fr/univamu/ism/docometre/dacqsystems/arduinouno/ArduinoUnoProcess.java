@@ -154,12 +154,21 @@ public class ArduinoUnoProcess extends Process {
 //	}
 	
 	public static File createSketchFile(IResource processFile, Process process, String sketchFilePath) {
+		return createSketchFile(processFile, process, sketchFilePath, false);
+	}
+	
+	/*
+	 * If compilation is true, the signature of the compiled code is saved : compilation markers
+	 * will be linked to blocks as long as the process code is unchanged
+	 */
+	private static File createSketchFile(IResource processFile, Process process, String sketchFilePath, boolean compilation) {
 		// Create Sketch file
 		File file = new File(sketchFilePath);
 		file.getParentFile().mkdirs();
 		try(FileWriter fileWriter = new FileWriter(file)) {
 			// Get process code
 			String processCode = process.getCode(null);
+			if(compilation) ResourceProperties.setCompiledCodeSignature(processFile, processCode, 0);
 			// Write it to file
 			fileWriter.write(processCode);
 			return file;
@@ -1768,7 +1777,7 @@ public class ArduinoUnoProcess extends Process {
 		
 		progressMonitor.subTask(DocometreMessages.ArduinoUnoProcess_CompileCMDLineMessage);
 		String sketchFilePath = outputFolder + File.separator + processResource.getFullPath().lastSegment().replaceAll(Activator.processFileExtension +"$", ".ino");
-		createSketchFile(processResource, this, sketchFilePath);
+		createSketchFile(processResource, this, sketchFilePath, true);
 		String arduinoUnoCompiler = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.BUILDER_PATH);
 		String cmdLine = "";
 		if(Platform.getOS().equals(Platform.OS_WIN32)) cmdLine = createWindowsCompileProcess(currentFolder, outputFolder, arduinoUnoCompiler, sketchFilePath);
@@ -1812,7 +1821,15 @@ public class ArduinoUnoProcess extends Process {
 			String errorMessage = error.getMessage();
 			if(error.getKind() == ArduinoUnoBuildOutput.Kind.LINKER) errorMessage = NLS.bind(ArduinoUnoMessages.LinkError, errorMessage);
 			if(error.getKind() == ArduinoUnoBuildOutput.Kind.BUILD) errorMessage = NLS.bind(ArduinoUnoMessages.BuildFailed, errorMessage);
-			createMarker(IMarker.SEVERITY_ERROR, processResource, error.getLine(), error.getColumn(), errorMessage);
+			int errorLine = error.getLine();
+			int errorColumn = error.getColumn();
+			if(error.getKind() == ArduinoUnoBuildOutput.Kind.COMPILER && !error.isInSketch()) {
+				// Error in another file (library, core...) : its line is not a line of the sketch
+				errorMessage = error.getFileName() + ":" + errorLine + ":" + errorColumn + ": " + errorMessage;
+				errorLine = 1;
+				errorColumn = 0;
+			}
+			createMarker(IMarker.SEVERITY_ERROR, processResource, errorLine, errorColumn, errorMessage);
 		}
 
 		Bundle librariesBundle = Platform.getBundle("Libraries");
@@ -1845,6 +1862,7 @@ public class ArduinoUnoProcess extends Process {
 					IMarker marker = processResource.createMarker(DocometreBuilder.MARKER_ID);
 					marker.setAttribute(IMarker.MESSAGE, status.getMessage());
 					marker.setAttribute(IMarker.LINE_NUMBER, 1);
+					marker.setAttribute(DocometreBuilder.CODE_GENERATION_MARKER_ATTRIBUTE, true);
 					marker.setAttribute(IMarker.SEVERITY,
 							status.getSeverity() == IStatus.ERROR ? IMarker.SEVERITY_ERROR : IMarker.SEVERITY_WARNING);
 					if (marker.getAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR) == IMarker.SEVERITY_ERROR)

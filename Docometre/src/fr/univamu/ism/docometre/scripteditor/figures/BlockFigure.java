@@ -188,12 +188,17 @@ public class BlockFigure extends RoundedRectangle {
 		//if(label.getIcon() != null && !label.getIcon().isDisposed()) label.getIcon().dispose();
 		label.setIcon(null);
 		setToolTipFigure(null);
+		// Code generation status (warning) and compilation status (errors and warnings located in this block)
 		IStatus status = blockEditPart.getModel().getStatus();
-		if(status != null) {
-			Image image = Activator.getImage(IImageKeys.WARNING_ANNOTATION_ICON);
+		IStatus compilationStatus = blockEditPart.getModel().getCompilationStatus();
+		if(status != null || compilationStatus != null) {
+			boolean error = (status != null && status.getSeverity() == IStatus.ERROR) || (compilationStatus != null && compilationStatus.getSeverity() == IStatus.ERROR);
+			Image image = Activator.getImage(error ? IImageKeys.ERROR_ANNOTATION_ICON : IImageKeys.WARNING_ANNOTATION_ICON);
 			if(image != null && !image.isDisposed()) label.setIcon(image);
 			label.setIconAlignment(PositionConstants.LEFT);
-			setToolTipFigure(status.getMessage());
+			String message = status != null ? status.getMessage() : "";
+			if(compilationStatus != null) message = message + (message.isEmpty() ? "" : "\n") + compilationStatus.getMessage();
+			setToolTipFigure(message);
 		}
 	}
 	
