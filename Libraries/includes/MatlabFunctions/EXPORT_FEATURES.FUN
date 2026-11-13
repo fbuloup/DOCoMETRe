@@ -28,8 +28,8 @@ featuresToExport = cellExpression;\n\
 nbFeaturesToExport = length(featuresToExport);\n\
 for n = 1:nbFeaturesToExport\n\
     \tfullFeatureName = featuresToExport{n};\n\
-    \tfullFeatureNameSplitted = split(fullFeatureName, '_');\n\
-    \tfeatureLabel = fullFeatureNameSplitted{length(fullFeatureNameSplitted)};\n\
+    \tfullFeatureNameSplitted = split(fullFeatureName, '.');\n\
+    \tfeatureLabel = extractAfter(fullFeatureNameSplitted{length(fullFeatureNameSplitted)}, '_');\n\
     \tdataFile = fopen('fullPathFileName', 'a', 'n', 'UTF-8');\n\
     \tfprintf(dataFile, ['FeatureLabel', 'divider', featureLabel]);\n\
     \tfprintf(dataFile, '\\n');\n\

@@ -138,6 +138,9 @@ public final class DocometreMessages extends NLS {
 	public static String RenameAction_Text;
 	public static String RenameResourceAction_TrialErrorMessage;
 	public static String NewResourceWizard_ErrorMessage2;
+	public static String ResourceNameTooLong;
+	public static String ResourceNameReservedWord;
+	public static String ResourceNameTrialName;
 	public static String CopyAction_Text;
 	public static String CutAction_Text;
 	public static String NewResourceAction_Text;

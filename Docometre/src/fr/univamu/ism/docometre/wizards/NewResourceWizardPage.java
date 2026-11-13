@@ -60,6 +60,7 @@ import org.eclipse.swt.widgets.Text;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.ResourceNames;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.TrialNames;
@@ -78,7 +79,7 @@ public abstract class NewResourceWizardPage extends WizardPage implements IWizar
 	protected NewResourceWizardPage(String pageName, ResourceType resourceType) {
 		super(pageName);
 		this.resourceType = resourceType;
-		setResourceNameRegularExpression("^[a-zA-Z][a-zA-Z0-9_]*$");
+		setResourceNameRegularExpression(ResourceNames.REGULAR_EXPRESSION);
 		setResourceNameErrorMessage(DocometreMessages.NewResourceWizard_ErrorMessage);
 	}
 	
@@ -170,8 +171,10 @@ public abstract class NewResourceWizardPage extends WizardPage implements IWizar
 		if(this instanceof NewCustomFunctionWizardPage) fileExtension = Activator.customerFunctionFileExtension;
 		Pattern pattern = Pattern.compile(regexp);
 		Matcher matcher = pattern.matcher(name);
-		if(!matcher.matches()) {
-			String message = NLS.bind(errorMessage, name);
+		// Other rules for names (length, MATLAB keywords, trials names) : trials names are checked below
+		String namesRulesErrorMessage = (this instanceof NewTrialWizardPage) ? null : ResourceNames.getErrorMessage(name, false);
+		if(!matcher.matches() || namesRulesErrorMessage != null) {
+			String message = !matcher.matches() ? NLS.bind(errorMessage, name) : namesRulesErrorMessage;
 			setErrorMessage(message);
 			controlDecoration.show();
 			setPageComplete(false);

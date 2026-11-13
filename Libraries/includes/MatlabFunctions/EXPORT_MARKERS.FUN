@@ -28,8 +28,8 @@ markersToExport = cellExpression;\n\
 nbMarkersToExport = length(markersToExport);\n\
 for n = 1:nbMarkersToExport\n\
     \tfullMarkerName = markersToExport{n};\n\
-    \tfullMarkerNameSplitted = split(fullMarkerName, '_');\n\
-    \tmarkerLabel = fullMarkerNameSplitted{length(fullMarkerNameSplitted)};\n\
+    \tfullMarkerNameSplitted = split(fullMarkerName, '.');\n\
+    \tmarkerLabel = extractAfter(fullMarkerNameSplitted{length(fullMarkerNameSplitted)}, '_');\n\
     \tdataFile = fopen('fullPathFileName', 'a', 'n', 'UTF-8');\n\
     \tfprintf(dataFile, ['MarkerLabel', 'divider', markerLabel]);\n\
     \tfprintf(dataFile, '\\n');\n\

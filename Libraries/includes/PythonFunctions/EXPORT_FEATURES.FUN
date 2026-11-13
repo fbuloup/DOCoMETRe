@@ -27,8 +27,8 @@ featuresToExport = cellExpression;\n\
 nbFeaturesToExport = len(featuresToExport);\n\
 for numFeature in range(0, nbFeaturesToExport):\n\
 	\tfullFeatureName = featuresToExport[numFeature];\n\
-    \tfullFeatureNameSplitted = fullFeatureName.split('_');\n\
-    \tfeatureLabel = fullFeatureNameSplitted[len(fullFeatureNameSplitted) - 1];\n\
+    \tfullFeatureNameSplitted = fullFeatureName.split('.');\n\
+    \tfeatureLabel = fullFeatureNameSplitted[len(fullFeatureNameSplitted) - 1].partition('_')[2];\n\
     \twith open(r"fullPathFileName", 'a', encoding='utf-8') as dataFile:\n\
 		\t\tdataFile.write('FeatureLabel' + 'divider' + featureLabel);\n\
 		\t\tdataFile.write('\\n');\n\

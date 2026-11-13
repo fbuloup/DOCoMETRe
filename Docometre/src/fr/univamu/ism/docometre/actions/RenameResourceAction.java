@@ -76,6 +76,7 @@ import org.eclipse.swt.custom.BusyIndicator;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.ResourceNames;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.TrialNames;
@@ -215,7 +216,8 @@ public class RenameResourceAction extends Action implements ISelectionListener, 
 		private String errorMessage;
 
 		public ResourceNameValidator() {
-			regexp = "^([a-zA-Z]+\\d*\\s*)+$"; //$NON-NLS-1$
+			// Same rule as when resource is created
+			regexp = ResourceNames.REGULAR_EXPRESSION;
 			errorMessage = DocometreMessages.NewResourceWizard_ErrorMessage;
 			if(ResourceType.isTrial(resource)) {
 				// "Trial_N" or translated label (e.g. "Essai n°N" in french)
@@ -251,6 +253,11 @@ public class RenameResourceAction extends Action implements ISelectionListener, 
 				if(ResourceType.isTrial(resource)) message = NLS.bind(errorMessage, DocometreMessages.Trial);
 				return message;
 			} 
+			/*Check other rules for names (length, MATLAB keywords, trials names)*/
+			if(!ResourceType.isTrial(resource) && !ResourceType.isSamples(resource) && !ResourceType.isBatchDataProcessing(resource) && !ResourceType.isDataProcessing(resource)) {
+				String message = ResourceNames.getErrorMessage(newText, false);
+				if(message != null) return message;
+			}
 			/*Check if resource name already exists*/
 			newText = getResourceName(newText);
 			IContainer parent = resource.getParent();

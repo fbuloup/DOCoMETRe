@@ -111,7 +111,9 @@ public class Channel implements IFile {
 	
 	public String getLabel() {
 		if(!(isMarker || isFeature)) return null;
-		return getName().split("_")[1];
+		// Name is "MarkersGroup_<label>" or "Feature_<label>" : label may contain '_'
+		String name = getName();
+		return name.substring(name.indexOf('_') + 1);
 	}
 
 	public void setModified(boolean modified) {

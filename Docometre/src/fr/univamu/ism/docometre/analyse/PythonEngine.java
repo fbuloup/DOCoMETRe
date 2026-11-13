@@ -511,7 +511,8 @@ public class PythonEngine implements MathEngine {
 		String experimentName = channel.getFullPath().segment(0);
 		String subjectName = channel.getFullPath().segment(1);
 		String channelName = channel.getFullPath().segment(2);
-		channelName = experimentName + "\\." + subjectName + "\\." + channelName;
+		// Trailing "\\." : channel "Acc" must not remove channels "Acc2", "Acc_LP"...
+		channelName = experimentName + "\\." + subjectName + "\\." + channelName + "\\.";
 		pythonController.getPythonEntryPoint().unload(channelName);
 		channel.setModified(true);
 		ChannelsContainer.clearValuesCache(); // the values read before may have changed
@@ -575,7 +576,8 @@ public class PythonEngine implements MathEngine {
 		String subjectName = signal.getFullPath().segment(1);
 		channelName = signal.getFullPath().segment(2);
 		channelName = experimentName + "\\." + subjectName + "\\." + channelName;
-		expression = channelName + "\\.MarkersGroup_" + markersGroupLabel; 
+		// Only this markers group values : group "Peak" must not remove groups "Peak2", "Peak_max"...
+		expression = channelName + "\\.MarkersGroup_" + markersGroupLabel + "_Values$"; 
 		pythonController.getPythonEntryPoint().unload(expression);
 		signal.setModified(true);
 		ChannelsContainer.clearValuesCache(); // the values read before may have changed
@@ -680,7 +682,8 @@ public class PythonEngine implements MathEngine {
 		String subjectName = signal.getFullPath().segment(1);
 		channelName = signal.getFullPath().segment(2);
 		channelName = experimentName + "\\." + subjectName + "\\." + channelName;
-		expression = channelName + "\\.Feature_" + featureLabel; 
+		// Only this feature values : feature "Mean" must not remove features "Mean2", "Mean_abs"...
+		expression = channelName + "\\.Feature_" + featureLabel + "_Values$"; 
 		pythonController.getPythonEntryPoint().unload(expression);
 		signal.setModified(true);
 		ChannelsContainer.clearValuesCache(); // the values read before may have changed
