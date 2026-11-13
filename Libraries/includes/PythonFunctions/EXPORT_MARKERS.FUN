@@ -27,8 +27,8 @@ markersToExport = cellExpression;\n\
 nbMarkersToExport = len(markersToExport);\n\
 for numMarker in range(0, nbMarkersToExport):\n\
 	\tfullMarkerName = markersToExport[numMarker];\n\
-    \tfullMarkerNameSplitted = fullMarkerName.split('_');\n\
-    \tmarkerLabel = fullMarkerNameSplitted[len(fullMarkerNameSplitted) - 1];\n\
+    \tfullMarkerNameSplitted = fullMarkerName.split('.');\n\
+    \tmarkerLabel = fullMarkerNameSplitted[len(fullMarkerNameSplitted) - 1].partition('_')[2];\n\
     \twith open(r"fullPathFileName", 'a', encoding='utf-8') as dataFile:\n\
 		\t\tdataFile.write('MarkerLabel' + 'divider' + markerLabel);\n\
 		\t\tdataFile.write('\\n');\n\

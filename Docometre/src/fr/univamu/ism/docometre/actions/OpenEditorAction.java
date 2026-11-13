@@ -136,10 +136,12 @@ public class OpenEditorAction extends Action implements ISelectionListener, IWor
 					system = ResourceProperties.getSystemPersistentProperty(resource);
 					if(system == null) {
 						if(resource.getParent() instanceof IProject) {
-							String processName = resource.getName().split("_")[0];
+							// Process diary file name is "<process name>_<translated diary>.log" : process name may contain '_'
+							String processName = resource.getName().replaceAll(Activator.logFileExtension + "$", "");
+							if(processName.lastIndexOf('_') > 0) processName = processName.substring(0, processName.lastIndexOf('_'));
 							IResource[] processes = ResourceProperties.getAllTypedResources(ResourceType.PROCESS, resource.getParent(), null);
 							for (IResource process : processes) {
-								if(process.getName().replaceAll(Activator.processFileExtension, "").endsWith(processName)) {
+								if(process.getName().replaceAll(Activator.processFileExtension + "$", "").equals(processName)) {
 									IResource dacq = ResourceProperties.getAssociatedDACQConfiguration(process);
 									if(dacq != null) {
 										system = ResourceProperties.getSystemPersistentProperty(dacq);
