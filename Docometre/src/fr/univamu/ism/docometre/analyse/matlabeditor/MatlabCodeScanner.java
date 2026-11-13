@@ -42,6 +42,7 @@
 package fr.univamu.ism.docometre.analyse.matlabeditor;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.jface.text.TextAttribute;
@@ -57,7 +58,6 @@ import org.eclipse.swt.SWT;
 
 import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.ThemeColors;
-import fr.univamu.ism.docometre.analyse.editors.DataProcessScriptSourceEditor;
 import fr.univamu.ism.docometre.editors.IdentifierDetector;
 
 public final class MatlabCodeScanner extends RuleBasedScanner {
@@ -155,29 +155,40 @@ public final class MatlabCodeScanner extends RuleBasedScanner {
 	
 	public static String[] RESERVED_WORDS = {"break", "case", "catch", "continue", "else", "elseif", "end", "for", "function", "global", "if", "otherwise", "persistent", "return", "switch", "try", "while"};
 	
-	public static RuleBasedScanner getMatlabCodeScanner(DataProcessScriptSourceEditor dataProcessScriptSourceEditor) {
+	/**
+	 * Words proposed by content assist in expressions : keywords and functions
+	 * (duplicates are removed by the completion processor)
+	 */
+	public static String[] getCompletionKeywords() {
+		List<String> keywords = new ArrayList<String>();
+		keywords.addAll(Arrays.asList(RESERVED_WORDS));
+		keywords.addAll(Arrays.asList(FUNCTIONS));
+		return keywords.toArray(new String[keywords.size()]);
+	}
+	
+	public static RuleBasedScanner getMatlabCodeScanner(int fontSize) {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
 		List<IRule> rules = new ArrayList<IRule>();
 		
-		rules.addAll(getMatlabScanner(dataProcessScriptSourceEditor));
-		rules.addAll(getNumbersScanner(dataProcessScriptSourceEditor));
+		rules.addAll(getMatlabScanner(fontSize));
+		rules.addAll(getNumbersScanner(fontSize));
 		
 		ruleBasedScanner.setRules(rules.toArray(new IRule[rules.size()]));
 		return ruleBasedScanner;
 	}
 	
 	
-	private static List<IRule> getMatlabScanner(DataProcessScriptSourceEditor dataProcessScriptSourceEditor) {
+	private static List<IRule> getMatlabScanner(int fontSize) {
 		List<IRule> rules= new ArrayList<IRule>();
         
-        WordRule wordRule = new WordRule(new IdentifierDetector(), geDefaultTextAttributeToken(dataProcessScriptSourceEditor));
+        WordRule wordRule = new WordRule(new IdentifierDetector(), geDefaultTextAttributeToken(fontSize));
         
         for (int i = 0; i < FUNCTIONS.length; i++) {
-        	wordRule.addWord(FUNCTIONS[i], getFunctionsTextAttributeToken(dataProcessScriptSourceEditor));
+        	wordRule.addWord(FUNCTIONS[i], getFunctionsTextAttributeToken(fontSize));
 		}
         
         for (int i = 0; i < RESERVED_WORDS.length; i++) {
-        	wordRule.addWord(RESERVED_WORDS[i], getReservedWordsTextAttributeToken(dataProcessScriptSourceEditor));
+        	wordRule.addWord(RESERVED_WORDS[i], getReservedWordsTextAttributeToken(fontSize));
 		}
 
         
@@ -185,20 +196,20 @@ public final class MatlabCodeScanner extends RuleBasedScanner {
         return rules;
 	}
 	
-	public static RuleBasedScanner getStringScanner(DataProcessScriptSourceEditor dataProcessScriptSourceEditor) {
+	public static RuleBasedScanner getStringScanner(int fontSize) {
 		// Strings keep the default color and font : this scanner only prevents keywords from being colored inside them
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
-		ruleBasedScanner.setDefaultReturnToken(geDefaultTextAttributeToken(dataProcessScriptSourceEditor));
+		ruleBasedScanner.setDefaultReturnToken(geDefaultTextAttributeToken(fontSize));
 		return ruleBasedScanner;
 	}
 	
-	public static RuleBasedScanner  getCommentScanner(DataProcessScriptSourceEditor dataProcessScriptSourceEditor) {
+	public static RuleBasedScanner  getCommentScanner(int fontSize) {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
 		List<IRule> rules= new ArrayList<IRule>();
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.GREEN), 
 													ThemeColors.getBackgroundColor(), 
 													SWT.NORMAL, 
-													DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, dataProcessScriptSourceEditor.getFontSize()));
+													DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, fontSize));
 		IToken token = new Token(attribute);
 		IRule commentRule1 = new MultiLineRule("%{", "%}", token, (char) 0, true);
 		IRule commentRule2 = new EndOfLineRule("%", token);
@@ -209,12 +220,12 @@ public final class MatlabCodeScanner extends RuleBasedScanner {
 		return ruleBasedScanner;
 	}
 	
-	private static List<IRule>  getNumbersScanner(DataProcessScriptSourceEditor dataProcessScriptSourceEditor) {
+	private static List<IRule>  getNumbersScanner(int fontSize) {
 		List<IRule> rules= new ArrayList<IRule>();
 		
 		TextAttribute attribute = new TextAttribute(null, 
 														null, SWT.BOLD,
-														DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, dataProcessScriptSourceEditor.getFontSize()));
+														DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, fontSize));
 		
 	    IToken numberToken = new Token(attribute);
 	    
@@ -228,26 +239,26 @@ public final class MatlabCodeScanner extends RuleBasedScanner {
         return rules;
 	}
 	
-	private static IToken getFunctionsTextAttributeToken(DataProcessScriptSourceEditor dataProcessScriptSourceEditor) {
+	private static IToken getFunctionsTextAttributeToken(int fontSize) {
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLUE),
 													ThemeColors.getBackgroundColor(), SWT.NORMAL,
-													DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, dataProcessScriptSourceEditor.getFontSize()));
+													DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, fontSize));
 		IToken token = new Token(attribute);
 		return token;
 	}
 
-	private static IToken getReservedWordsTextAttributeToken(DataProcessScriptSourceEditor dataProcessScriptSourceEditor) {
+	private static IToken getReservedWordsTextAttributeToken(int fontSize) {
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.ORANGE),
 				ThemeColors.getBackgroundColor(), SWT.NORMAL,
-				DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, dataProcessScriptSourceEditor.getFontSize()));
+				DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, fontSize));
 		IToken token = new Token(attribute);
 		return token;
 	}
 	
-	private static IToken geDefaultTextAttributeToken(DataProcessScriptSourceEditor dataProcessScriptSourceEditor) {
+	private static IToken geDefaultTextAttributeToken(int fontSize) {
 		TextAttribute attribute = new TextAttribute(null,
 				ThemeColors.getBackgroundColor(), SWT.NORMAL,
-				DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, dataProcessScriptSourceEditor.getFontSize()));
+				DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, fontSize));
 		IToken token = new Token(attribute);
 		return token;
 	}

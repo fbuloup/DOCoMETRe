@@ -47,15 +47,16 @@ import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 
-import fr.univamu.ism.docometre.analyse.editors.DataProcessScriptSourceEditor;
-
 public class PythonSourceViewerConfiguration extends SourceViewerConfiguration {
 	
 	private PresentationReconciler presentationReconciler;
-	private DataProcessScriptSourceEditor dataProcessScriptSourceEditor;
+	private int fontSize;
 	
-	public PythonSourceViewerConfiguration(DataProcessScriptSourceEditor dataProcessScriptSourceEditor) {
-		this.dataProcessScriptSourceEditor = dataProcessScriptSourceEditor;
+	/**
+	 * @param fontSize font size of the colored tokens (the editor font size, or the editors font size preference)
+	 */
+	public PythonSourceViewerConfiguration(int fontSize) {
+		this.fontSize = fontSize;
 	}
 
 	@Override
@@ -64,17 +65,17 @@ public class PythonSourceViewerConfiguration extends SourceViewerConfiguration {
 		
 		presentationReconciler = (PresentationReconciler) super.getPresentationReconciler(sourceViewer);
 		
-		DefaultDamagerRepairer defaultDamagerRepairer = new DefaultDamagerRepairer(PythonCodeScanner.getCommentScanner(dataProcessScriptSourceEditor));		
+		DefaultDamagerRepairer defaultDamagerRepairer = new DefaultDamagerRepairer(PythonCodeScanner.getCommentScanner(fontSize));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, PythonRulesPartitionScanner.COMMENT);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, PythonRulesPartitionScanner.COMMENT);
 		
-		defaultDamagerRepairer = new DefaultDamagerRepairer(PythonCodeScanner.getStringScanner(dataProcessScriptSourceEditor));		
+		defaultDamagerRepairer = new DefaultDamagerRepairer(PythonCodeScanner.getStringScanner(fontSize));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, PythonRulesPartitionScanner.STRING);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, PythonRulesPartitionScanner.STRING);
 		presentationReconciler.setDamager(defaultDamagerRepairer, PythonRulesPartitionScanner.MULTILINE_STRING);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, PythonRulesPartitionScanner.MULTILINE_STRING);
 		
-		defaultDamagerRepairer = new DefaultDamagerRepairer(PythonCodeScanner.getPythonCodeScanner(dataProcessScriptSourceEditor));		
+		defaultDamagerRepairer = new DefaultDamagerRepairer(PythonCodeScanner.getPythonCodeScanner(fontSize));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, PythonRulesPartitionScanner.DEFAULT);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, PythonRulesPartitionScanner.DEFAULT);
 

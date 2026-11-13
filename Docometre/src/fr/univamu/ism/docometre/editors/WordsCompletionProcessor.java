@@ -43,10 +43,11 @@ package fr.univamu.ism.docometre.editors;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -59,17 +60,31 @@ import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import org.eclipse.swt.graphics.Image;
 
 /**
- * Proposes words beginning with the identifier being typed before the cursor : 
- * first the names (e.g. channels and variables of the DACQ configuration), then the language keywords,
- * each group in alphabetical order.
+ * Proposes words beginning with the identifier being typed before the cursor. Words are 
+ * given by groups (e.g. channels of the DACQ configuration or of the experiment, then 
+ * language keywords), proposed in this order, each group in alphabetical order.
  * The prefix is compared without case, the inserted word keeps its own case.
+ * 
+ * Extra prefix characters (e.g. '.' for channels full names "Experiment.Subject.Signal") 
+ * may be accepted in the typed prefix : a word containing one of them is compared to 
+ * the whole prefix, other words (keywords) to the part after the last one ("np.ze" : "zeros").
  */
 public class WordsCompletionProcessor implements IContentAssistProcessor {
 	
-	private String[] names;
-	private Image namesImage;
-	private String[] keywords;
-	private Image keywordsImage;
+	private static class WordsGroup {
+		private Supplier<String[]> words;
+		private Image image;
+		private WordsGroup(Supplier<String[]> words, Image image) {
+			this.words = words;
+			this.image = image;
+		}
+	}
+	
+	private List<WordsGroup> groups = new ArrayList<WordsGroup>();
+	private String extraPrefixCharacters = "";
+	
+	public WordsCompletionProcessor() {
+	}
 	
 	/**
 	 * @param names first proposed words (may be null)
@@ -78,50 +93,99 @@ public class WordsCompletionProcessor implements IContentAssistProcessor {
 	 * @param keywordsImage image of keywords proposals (may be null)
 	 */
 	public WordsCompletionProcessor(String[] names, Image namesImage, String[] keywords, Image keywordsImage) {
-		this.names = sort(names);
-		this.namesImage = namesImage;
-		this.keywords = sort(keywords);
-		this.keywordsImage = keywordsImage;
+		addWords(names, namesImage);
+		addWords(keywords, keywordsImage);
 	}
 	
-	private static String[] sort(String[] words) {
-		if(words == null) return new String[0];
-		String[] sortedWords = Arrays.stream(words).filter(word -> word != null).toArray(String[]::new);
-		Arrays.sort(sortedWords, String.CASE_INSENSITIVE_ORDER);
-		return sortedWords;
+	/**
+	 * @param extraPrefixCharacters characters also accepted in the typed prefix, e.g. "." for channels full names
+	 */
+	public WordsCompletionProcessor setExtraPrefixCharacters(String extraPrefixCharacters) {
+		this.extraPrefixCharacters = extraPrefixCharacters != null ? extraPrefixCharacters : "";
+		return this;
+	}
+	
+	/**
+	 * Adds a group of words (may be null), proposed after the previous groups
+	 */
+	public WordsCompletionProcessor addWords(String[] words, Image image) {
+		return addWords(() -> words, image);
+	}
+	
+	/**
+	 * Adds a group of words computed at each proposals request (e.g. channels of the loaded subjects)
+	 */
+	public WordsCompletionProcessor addWords(Supplier<String[]> words, Image image) {
+		groups.add(new WordsGroup(words, image));
+		return this;
 	}
 	
 	/*
-	 * Identifier being typed : letters, digits and '_' before the cursor
+	 * Identifier being typed : letters, digits, '_' and extra prefix characters before the cursor
 	 */
-	public static String getPrefix(IDocument document, int offset) {
+	public static String getPrefix(IDocument document, int offset, String extraPrefixCharacters) {
 		int start = offset;
 		try {
-			while(start > 0 && IdentifierDetector.isIdentifierPart(document.getChar(start - 1))) start--;
+			while(start > 0) {
+				char c = document.getChar(start - 1);
+				if(!IdentifierDetector.isIdentifierPart(c) && extraPrefixCharacters.indexOf(c) == -1) break;
+				start--;
+			}
 			return document.get(start, offset - start);
 		} catch (BadLocationException e) {
 			return "";
 		}
 	}
+	
+	private boolean containsExtraPrefixCharacter(String word) {
+		for (char c : extraPrefixCharacters.toCharArray()) if(word.indexOf(c) != -1) return true;
+		return false;
+	}
+	
+	private static String[] sort(String[] words) {
+		if(words == null) return new String[0];
+		String[] sortedWords = Arrays.stream(words).filter(word -> word != null && !word.isEmpty()).toArray(String[]::new);
+		Arrays.sort(sortedWords, String.CASE_INSENSITIVE_ORDER);
+		return sortedWords;
+	}
 
 	@Override
 	public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
-		String prefix = getPrefix(viewer.getDocument(), offset);
-		String upperCasePrefix = prefix.toUpperCase(Locale.ROOT);
+		String prefix = getPrefix(viewer.getDocument(), offset, extraPrefixCharacters);
+		// Part of the prefix after the last extra prefix character
+		String lastPart = prefix;
+		for (char c : extraPrefixCharacters.toCharArray()) {
+			int index = lastPart.lastIndexOf(c);
+			if(index != -1) lastPart = lastPart.substring(index + 1);
+		}
+		List<String[]> groupsWords = new ArrayList<String[]>();
+		for (WordsGroup group : groups) groupsWords.add(sort(group.words.get()));
+		// A prefix such as "Experiment.Subject.s" matching full names : words without extra 
+		// prefix characters (keywords) are not proposed ("np.ze" still proposes "zeros")
+		boolean fullNameMatches = false;
+		if(!prefix.equals(lastPart)) {
+			for (String[] words : groupsWords) 
+				for (String word : words) 
+					if(containsExtraPrefixCharacter(word) && startsWithIgnoreCase(word, prefix)) fullNameMatches = true;
+		}
 		List<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
-		Set<String> proposedWords = new LinkedHashSet<String>();
-		addProposals(names, namesImage, prefix, upperCasePrefix, offset, proposals, proposedWords);
-		addProposals(keywords, keywordsImage, prefix, upperCasePrefix, offset, proposals, proposedWords);
+		Set<String> proposedWords = new HashSet<String>();
+		for (int i = 0; i < groups.size(); i++) {
+			for (String word : groupsWords.get(i)) {
+				if(proposedWords.contains(word)) continue;
+				boolean fullName = containsExtraPrefixCharacter(word);
+				if(!fullName && fullNameMatches) continue;
+				String comparedPrefix = fullName ? prefix : lastPart;
+				if(!startsWithIgnoreCase(word, comparedPrefix)) continue;
+				proposedWords.add(word);
+				proposals.add(new CompletionProposal(word, offset - comparedPrefix.length(), comparedPrefix.length(), word.length(), groups.get(i).image, word, null, null));
+			}
+		}
 		return proposals.toArray(new ICompletionProposal[proposals.size()]);
 	}
 	
-	private void addProposals(String[] words, Image image, String prefix, String upperCasePrefix, int offset, List<ICompletionProposal> proposals, Set<String> proposedWords) {
-		for (String word : words) {
-			if(word == null || word.isEmpty() || proposedWords.contains(word)) continue;
-			if(!word.toUpperCase(Locale.ROOT).startsWith(upperCasePrefix)) continue;
-			proposedWords.add(word);
-			proposals.add(new CompletionProposal(word, offset - prefix.length(), prefix.length(), word.length(), image, word, null, null));
-		}
+	private static boolean startsWithIgnoreCase(String word, String prefix) {
+		return word.toUpperCase(Locale.ROOT).startsWith(prefix.toUpperCase(Locale.ROOT));
 	}
 
 	@Override

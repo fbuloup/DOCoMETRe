@@ -47,15 +47,16 @@ import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 
-import fr.univamu.ism.docometre.analyse.editors.DataProcessScriptSourceEditor;
-
 public class MatlabSourceViewerConfiguration extends SourceViewerConfiguration {
 	
 	private PresentationReconciler presentationReconciler;
-	private DataProcessScriptSourceEditor dataProcessScriptSourceEditor;
+	private int fontSize;
 	
-	public MatlabSourceViewerConfiguration(DataProcessScriptSourceEditor dataProcessScriptSourceEditor) {
-		this.dataProcessScriptSourceEditor = dataProcessScriptSourceEditor;
+	/**
+	 * @param fontSize font size of the colored tokens (the editor font size, or the editors font size preference)
+	 */
+	public MatlabSourceViewerConfiguration(int fontSize) {
+		this.fontSize = fontSize;
 	}
 
 	@Override
@@ -64,17 +65,17 @@ public class MatlabSourceViewerConfiguration extends SourceViewerConfiguration {
 		
 		presentationReconciler = (PresentationReconciler) super.getPresentationReconciler(sourceViewer);
 		
-		DefaultDamagerRepairer defaultDamagerRepairer = new DefaultDamagerRepairer(MatlabCodeScanner.getCommentScanner(dataProcessScriptSourceEditor));		
+		DefaultDamagerRepairer defaultDamagerRepairer = new DefaultDamagerRepairer(MatlabCodeScanner.getCommentScanner(fontSize));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, MatlabRulesPartitionScanner.COMMENT);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, MatlabRulesPartitionScanner.COMMENT);
 		presentationReconciler.setDamager(defaultDamagerRepairer, MatlabRulesPartitionScanner.MULTILINE_COMMENT);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, MatlabRulesPartitionScanner.MULTILINE_COMMENT);
 		
-		defaultDamagerRepairer = new DefaultDamagerRepairer(MatlabCodeScanner.getStringScanner(dataProcessScriptSourceEditor));		
+		defaultDamagerRepairer = new DefaultDamagerRepairer(MatlabCodeScanner.getStringScanner(fontSize));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, MatlabRulesPartitionScanner.STRING);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, MatlabRulesPartitionScanner.STRING);
 		
-		defaultDamagerRepairer = new DefaultDamagerRepairer(MatlabCodeScanner.getMatlabCodeScanner(dataProcessScriptSourceEditor));		
+		defaultDamagerRepairer = new DefaultDamagerRepairer(MatlabCodeScanner.getMatlabCodeScanner(fontSize));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, MatlabRulesPartitionScanner.DEFAULT);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, MatlabRulesPartitionScanner.DEFAULT);
 
