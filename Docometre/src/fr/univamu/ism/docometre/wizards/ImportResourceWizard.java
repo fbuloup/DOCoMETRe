@@ -102,6 +102,7 @@ import au.com.bytecode.opencsv.CSVReader;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ObjectsController;
+import fr.univamu.ism.docometre.ResourceNames;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.TrialNames;
@@ -834,7 +835,10 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 	 * Return null if experiment name is valid and if no experiment (or folder in workspace) has the same name, an error message otherwise
 	 */
 	protected static String validateExperimentName(String name) {
-		if(name == null || !name.matches("^[a-zA-Z][a-zA-Z0-9_]*$")) return NLS.bind(DocometreMessages.NewResourceWizard_ErrorMessage, name);
+		// Same rules as when an experiment is created or renamed
+		if(name == null || !name.matches(ResourceNames.REGULAR_EXPRESSION)) return NLS.bind(DocometreMessages.NewResourceWizard_ErrorMessage, name);
+		String namesRulesErrorMessage = ResourceNames.getErrorMessage(name, false);
+		if(namesRulesErrorMessage != null) return namesRulesErrorMessage;
 		IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
 		IStatus status = ResourcesPlugin.getWorkspace().validateName(name, IResource.PROJECT);
 		if(!status.isOK()) return status.getMessage();
