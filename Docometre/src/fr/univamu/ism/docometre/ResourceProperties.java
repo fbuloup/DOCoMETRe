@@ -318,6 +318,125 @@ public final class ResourceProperties {
 		}
 	}
 	
+	/*
+	 * Return true if values of this property are resources full paths (e.g. \Experiment\process.process)
+	 */
+	private static boolean isPathProperty(String qualifier, String localName) {
+		if(!Activator.PLUGIN_ID.equals(qualifier)) return false;
+		return DEFAULT_DACQ_QN.getLocalName().equals(localName) || ASSOCIATED_DACQ_CONFIGURATION_FILE_QN.getLocalName().equals(localName)
+				|| ASSOCIATED_PROCESS_FILE_QN.getLocalName().equals(localName);
+	}
+
+	/*
+	 * Return content of experiment .metadata.properties file as it must be written in an export archive :
+	 * experiment name is neither written in keys nor in paths values. Paths are relative to experiment
+	 * root "/" : "/:Docometre:type", "/Subject/Session:Docometre:type", "/process.process" etc.
+	 * So the archive can be imported with any experiment name (see importPropertiesFile).
+	 * Properties of data files are not exported if includeData is false. Resources must be
+	 * synchronized with file system (refreshLocal) before calling this method.
+	 */
+	public static byte[] getExportedPropertiesFileContent(IProject experiment, boolean includeData) throws IOException {
+		synchronizePropertiesFile(experiment);
+		Properties properties = loadPropertiesFromFile(experiment);
+		Properties exportedProperties = new Properties();
+		for (String key : properties.stringPropertyNames()) {
+			String[] keyParts = parsePropertyKey(key);
+			if(keyParts == null) continue;
+			IPath fullPath = IPath.fromPortableString(keyParts[0]);
+			// Keys using an old experiment name are not exported
+			if(fullPath.segmentCount() == 0 || !experiment.getName().equals(fullPath.segment(0))) continue;
+			IPath relativePath = fullPath.removeFirstSegments(1).makeRelative();
+			if(!includeData && relativePath.segmentCount() > 0) {
+				IResource resource = experiment.findMember(relativePath);
+				if(resource != null && ResourceType.isDataFile(resource)) continue;
+			}
+			String value = properties.getProperty(key);
+			if(isPathProperty(keyParts[1], keyParts[2])) {
+				IPath valuePath = IPath.fromPortableString(value.replace('\\', '/'));
+				// Path to a resource out of this experiment can't be exported
+				if(valuePath.segmentCount() == 0 || !experiment.getName().equals(valuePath.segment(0))) continue;
+				value = valuePath.removeFirstSegments(1).makeAbsolute().toPortableString();
+			}
+			String exportedKey = relativePath.makeAbsolute().toPortableString() + ":" + keyParts[1] + ":" + keyParts[2];
+			exportedProperties.put(exportedKey, value);
+		}
+		return getPropertiesFileContent(exportedProperties);
+	}
+
+	/*
+	 * Return the experiment name used in keys of a .metadata.properties file : the most used first segment of keys
+	 */
+	private static String getExperimentNameInProperties(Properties properties) {
+		HashMap<String, Integer> occurrences = new HashMap<>();
+		for (String key : properties.stringPropertyNames()) {
+			String[] keyParts = parsePropertyKey(key);
+			if(keyParts == null) continue;
+			IPath fullPath = IPath.fromPortableString(keyParts[0]);
+			if(fullPath.segmentCount() > 0) occurrences.merge(fullPath.segment(0), 1, Integer::sum);
+		}
+		String experimentName = null;
+		int maxOccurrences = 0;
+		for (Map.Entry<String, Integer> entry : occurrences.entrySet()) {
+			if(entry.getValue() > maxOccurrences) {
+				experimentName = entry.getKey();
+				maxOccurrences = entry.getValue();
+			}
+		}
+		return experimentName;
+	}
+
+	/*
+	 * Adapt .metadata.properties file of an experiment just extracted from an export archive to the experiment name,
+	 * then apply its properties to experiment resources (see reloadPropertiesFromFile).
+	 * relativePaths is true when keys and paths values of the file are relative to experiment (see getExportedPropertiesFileContent),
+	 * false when they contain the name of the experiment when it was exported (archives exported by previous versions).
+	 * Resources must be synchronized with file system (refreshLocal) before calling this method.
+	 */
+	public static void importPropertiesFile(IProject experiment, boolean relativePaths) {
+		if(!usePropertyFile || experiment == null || !experiment.isAccessible()) return;
+		Path filePath = Path.of(experiment.getLocation().toPortableString() + metadataFileName);
+		experimentsProperties.remove(experiment.getName());
+		if(Files.exists(filePath)) {
+			Properties properties = new Properties();
+			try(FileInputStream fis = new FileInputStream(filePath.toFile())) {
+				properties.load(fis);
+			} catch (IOException e) {
+				Activator.logErrorMessageWithCause(e);
+				e.printStackTrace();
+			}
+			String originalExperimentName = relativePaths ? null : getExperimentNameInProperties(properties);
+			Properties importedProperties = new Properties();
+			for (String key : properties.stringPropertyNames()) {
+				String[] keyParts = parsePropertyKey(key);
+				if(keyParts == null) continue;
+				IPath fullPath = IPath.fromPortableString(keyParts[0]);
+				IPath relativePath;
+				if(relativePaths) relativePath = fullPath.makeRelative();
+				else {
+					// Keys using an old experiment name are ignored
+					if(fullPath.segmentCount() == 0 || !fullPath.segment(0).equals(originalExperimentName)) continue;
+					relativePath = fullPath.removeFirstSegments(1).makeRelative();
+				}
+				String value = properties.getProperty(key);
+				if(isPathProperty(keyParts[1], keyParts[2])) {
+					IPath valuePath = IPath.fromPortableString(value.replace('\\', '/'));
+					if(relativePaths) value = experiment.getFullPath().append(valuePath.makeRelative()).toOSString();
+					else if(valuePath.segmentCount() > 0 && valuePath.segment(0).equals(originalExperimentName))
+						value = experiment.getFullPath().append(valuePath.removeFirstSegments(1)).toOSString();
+				}
+				String importedKey = experiment.getFullPath().append(relativePath).toPortableString() + ":" + keyParts[1] + ":" + keyParts[2];
+				importedProperties.put(importedKey, value);
+			}
+			try {
+				Files.write(filePath, getPropertiesFileContent(importedProperties));
+			} catch (IOException e) {
+				Activator.logErrorMessageWithCause(e);
+				e.printStackTrace();
+			}
+		}
+		reloadPropertiesFromFile(experiment);
+	}
+
 	private static String getPersistentPropertyFromFile(QualifiedName qn, IResource resource) {
 		Properties properties = loadPropertiesFromFile(resource);
 		return (String) properties.get(resource.getFullPath().toPortableString() + ":" + qn.toString());

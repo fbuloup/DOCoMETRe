@@ -66,6 +66,7 @@ import org.eclipse.osgi.util.NLS;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.history.SnapshotException;
 import fr.univamu.ism.docometre.history.SnapshotManager;
@@ -92,6 +93,7 @@ public class ArchiveFileExportOperation implements IRunnableWithProgress {
 	private String fromRootDirectory;
 	private boolean includeData = true;
 	private boolean includeHistory = false;
+	private boolean experimentRelativePaths = false;
 
 	/**
 	 *	Create an instance of this class.  Use this constructor if you wish to
@@ -209,6 +211,10 @@ public class ArchiveFileExportOperation implements IRunnableWithProgress {
 	 */
 	private String createDestinationName(int leadupDepth, IResource exportResource) {
 		IPath fullPath = exportResource.getFullPath();
+		if (experimentRelativePaths) {
+			// Experiment name is not written in archive entries names
+			return exportResource.getProjectRelativePath().toString();
+		}
 		if (createLeadupStructure) {
 			return fullPath.makeRelative().toString().replaceFirst(fromRootDirectory, toRootDirectory);
 		}
@@ -229,6 +235,9 @@ public class ArchiveFileExportOperation implements IRunnableWithProgress {
 		}
 		
 		if(!includeData) if(ResourceType.isDataFile(exportResource)) return;
+		
+		// Experiment metadata file is written by exportExperimentMetadata
+		if (experimentRelativePaths && isExperimentMetadataFile(exportResource)) return;
 
 		if (exportResource.getType() == IResource.FILE) {
 			String destinationName = createDestinationName(leadupDepth, exportResource);
@@ -252,8 +261,9 @@ public class ArchiveFileExportOperation implements IRunnableWithProgress {
 				addError(NLS.bind(DocometreMessages.DataTransfer_errorExporting, exportResource.getFullPath()), e);
 			}
 
-			if (children.length == 0) { // create an entry for empty containers, see bug 278402
-				String destinationName = createDestinationName(leadupDepth, exportResource);
+			String containerDestinationName = createDestinationName(leadupDepth, exportResource);
+			if (children.length == 0 && !containerDestinationName.isEmpty()) { // create an entry for empty containers, see bug 278402
+				String destinationName = containerDestinationName;
 				try {
 					exporter.write((IContainer) exportResource, destinationName + IPath.SEPARATOR);
 				} catch (IOException e) {
@@ -369,6 +379,7 @@ public class ArchiveFileExportOperation implements IRunnableWithProgress {
 		try {
 			if (resourcesToExport == null) {
 				exportResource(resource);
+				if(experimentRelativePaths && resource instanceof IProject) exportExperimentMetadata((IProject) resource);
 				if(includeHistory && resource instanceof IProject) exportHistory((IProject) resource);
 			} else {
 				// ie.- a list of specific resources to export was specified
@@ -412,7 +423,7 @@ public class ArchiveFileExportOperation implements IRunnableWithProgress {
 		}
 		for (java.nio.file.Path path : paths) {
 			String relativePath = historyFolder.getParent().relativize(path).toString().replace('\\', '/');
-			String destinationName = experimentDestinationName + "/" + relativePath;
+			String destinationName = experimentDestinationName.isEmpty() ? relativePath : experimentDestinationName + "/" + relativePath;
 			try {
 				if(Files.isDirectory(path)) exporter.writeFolder(destinationName + "/");
 				else exporter.write(path.toFile(), destinationName);
@@ -420,6 +431,46 @@ public class ArchiveFileExportOperation implements IRunnableWithProgress {
 				addError(NLS.bind(DocometreMessages.DataTransfer_errorExporting, path.toString(), e.getMessage()), e);
 			}
 		}
+	}
+	
+	/**
+	 * Return true if resource is the .metadata.properties file of its experiment
+	 */
+	private boolean isExperimentMetadataFile(IResource exportResource) {
+		return exportResource.getType() == IResource.FILE && exportResource.getParent() instanceof IProject 
+				&& ResourceProperties.metadataFileName.equals("/" + exportResource.getName());
+	}
+	
+	/**
+	 * Write experiment .metadata.properties file at archive root. Experiment name is
+	 * neither written in its keys nor in its paths values (see ResourceProperties.getExportedPropertiesFileContent).
+	 */
+	private void exportExperimentMetadata(IProject experiment) throws InterruptedException {
+		String destinationName = ResourceProperties.metadataFileName.substring(1);
+		monitor.subTask(destinationName);
+		java.io.File temporaryFile = null;
+		try {
+			byte[] content = ResourceProperties.getExportedPropertiesFileContent(experiment, includeData);
+			temporaryFile = java.io.File.createTempFile("docometre", ".properties");
+			Files.write(temporaryFile.toPath(), content);
+			exporter.write(temporaryFile, destinationName);
+		} catch (IOException e) {
+			addError(NLS.bind(DocometreMessages.DataTransfer_errorExporting, destinationName, e.getMessage()), e);
+		} finally {
+			if(temporaryFile != null) temporaryFile.delete();
+		}
+		monitor.worked(1);
+		ModalContext.checkCanceled(monitor);
+	}
+	
+	/**
+	 * Set this boolean indicating whether archive entries are relative to experiment : 
+	 * experiment name is not written in archive (neither in entries names nor in experiment 
+	 * .metadata.properties file) so that it can be imported with any name. 
+	 * Only when a whole experiment is exported.
+	 */
+	public void setExperimentRelativePaths(boolean experimentRelativePaths) {
+		this.experimentRelativePaths = experimentRelativePaths;
 	}
 	
 	/**

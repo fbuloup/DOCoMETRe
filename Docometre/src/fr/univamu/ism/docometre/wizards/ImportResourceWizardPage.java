@@ -126,9 +126,12 @@ public class ImportResourceWizardPage extends WizardPage {
 		
 		private boolean validateFile(File file, String name) {
 			boolean valid = false;
-			if(selection == ResourceType.EXPERIMENT || selection == ResourceType.SUBJECT) {
+			if(selection == ResourceType.EXPERIMENT) {
+				// Experiment name is asked when importing (archive file name by default)
+				valid = name.endsWith(".zip") || name.endsWith(".tar");
+			} else if(selection == ResourceType.SUBJECT) {
 				valid = name.matches("^[a-zA-Z][a-zA-Z0-9_]*.zip$") || name.matches("^[a-zA-Z][a-zA-Z0-9_]*.tar$");
-			} if(selection == ResourceType.SESSION ) {
+			} else if(selection == ResourceType.SESSION ) {
 				valid = name.matches("^[a-zA-Z][a-zA-Z0-9_]*.txt$") || name.matches("^[a-zA-Z][a-zA-Z0-9_]*.ini$") || name.matches("^[a-zA-Z][a-zA-Z0-9_]*.properties$") ;
 			} else if(selection == ResourceType.PROCESS || selection == ResourceType.ADW_DATA_FILE || selection == ResourceType.DATA_PROCESSING || selection == ResourceType.DACQ_CONFIGURATION) {
 				String extension = Activator.daqFileExtension;

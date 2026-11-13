@@ -98,20 +98,17 @@ public class ExportExperimentWizard extends Wizard {
 								archiveFileExportOperation.setUseCompression(compress);
 								archiveFileExportOperation.setUseTarFormat(!asZip);
 								archiveFileExportOperation.setIncludeHistory(includeHistory);
-								
-								SubMonitor subMonitor = SubMonitor.convert(monitor, DocometreMessages.ExportExperimentTaskTitle, 2 + archiveFileExportOperation.getTotalWork());
-								
-								subMonitor.subTask(DocometreMessages.createPropertiesFile);
-								IFile propertiesFile = ExperimentPropertiesFileCreator.createPropertiesFile(experiment, destinationPath, subMonitor, includeData);
-								subMonitor.worked(1);
-								
+								// Experiment name is not written in archive : it can be imported with any name
+								// Its properties are exported in its .metadata.properties file
+								archiveFileExportOperation.setExperimentRelativePaths(true);
+
+								SubMonitor subMonitor = SubMonitor.convert(monitor, DocometreMessages.ExportExperimentTaskTitle, 1 + archiveFileExportOperation.getTotalWork());
+
 								subMonitor.subTask(DocometreMessages.RefreshingWorkspace);
-								experiment.refreshLocal(IResource.DEPTH_ONE, null);
+								experiment.refreshLocal(IResource.DEPTH_INFINITE, null);
 								subMonitor.worked(1);
-								
+
 								archiveFileExportOperation.run(subMonitor);
-								
-								propertiesFile.delete(true, null);
 
 								subMonitor.done();
 							} else {
