@@ -45,6 +45,7 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.AnnotationModel;
@@ -85,7 +86,10 @@ import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.dialogs.FindDialog;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.preferences.MathEnginePreferencesConstants;
+import fr.univamu.ism.docometre.scripteditor.connections.model.BlocksConnection;
+import fr.univamu.ism.process.Block;
 import fr.univamu.ism.process.Script;
+import fr.univamu.ism.process.ScriptSegmentCodeMap;
 import fr.univamu.ism.process.ScriptSegmentType;
 
 public class SourceEditor extends EditorPart {
@@ -327,6 +331,80 @@ public class SourceEditor extends EditorPart {
 
 	public void selectAll() {
 		sourceViewer.getTextWidget().selectAll();
+	}
+	
+	private Script getScript() {
+		Object object = getObject();
+		if(object instanceof Process) return ((Process)object).getScript();
+		if(object instanceof Script) return (Script)object;
+		return null;
+	}
+	
+	/**
+	 * Regenerates source code and returns the lines corresponding to a diagram element.
+	 * Source code document is updated if needed.
+	 * @param modelElement a block or a connection (BlocksConnection)
+	 * @return {first line, last line}, zero based, or null if this element has no corresponding code
+	 */
+	public int[] getSourceLines(Object modelElement) {
+		Block block = null;
+		BlocksConnection blocksConnection = null;
+		if(modelElement instanceof Block) block = (Block)modelElement;
+		else if(modelElement instanceof BlocksConnection) blocksConnection = (BlocksConnection)modelElement;
+		else return null;
+		Script script = getScript();
+		if(script == null || document == null) return null;
+		try {
+			// Regenerate code : segments code maps generated from now are those of the displayed code
+			long generationIndex = Script.getCodeMapsGenerationIndex();
+			String code = getCode();
+			if(!code.equals(document.get())) update(code);
+			String source = document.get();
+			// Segments codes are appended in generation order : search each one after the previous one
+			int searchOffset = 0;
+			for (ScriptSegmentCodeMap codeMap : script.getSegmentCodeMaps(generationIndex)) {
+				String segmentCode = codeMap.getCode();
+				if(segmentCode.isEmpty()) continue;
+				int segmentOffset = source.indexOf(segmentCode, searchOffset);
+				if(segmentOffset < 0) continue;
+				searchOffset = segmentOffset + segmentCode.length();
+				int[] lines = null;
+				if(block != null) lines = codeMap.getBlockLines(block);
+				else if(codeMap.contains(blocksConnection.sourceBlock) || codeMap.contains(blocksConnection.targetBlock)) 
+					lines = codeMap.getConnectionLines(blocksConnection.sourceBlock, blocksConnection.targetBlock);
+				if(lines != null) {
+					int segmentLine = document.getLineOfOffset(segmentOffset);
+					int lastLine = document.getNumberOfLines() - 1;
+					return new int[] {Math.min(segmentLine + lines[0], lastLine), Math.min(segmentLine + lines[1], lastLine)};
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			Activator.logErrorMessageWithCause(e);
+		}
+		return null;
+	}
+	
+	/**
+	 * Selects and reveals lines in source code.
+	 * @param firstLine first line, zero based
+	 * @param lastLine last line, zero based
+	 */
+	public void selectLines(int firstLine, int lastLine) {
+		try {
+			int lastDocumentLine = document.getNumberOfLines() - 1;
+			firstLine = Math.max(0, Math.min(firstLine, lastDocumentLine));
+			lastLine = Math.max(firstLine, Math.min(lastLine, lastDocumentLine));
+			int startOffset = document.getLineOffset(firstLine);
+			IRegion lastLineRegion = document.getLineInformation(lastLine);
+			int endOffset = lastLineRegion.getOffset() + lastLineRegion.getLength();
+			sourceViewer.setSelectedRange(startOffset, endOffset - startOffset);
+			// Scroll so that first selected line is visible, with a few lines above it
+			sourceViewer.setTopIndex(Math.max(0, firstLine - 5));
+		} catch (Exception e) {
+			e.printStackTrace();
+			Activator.logErrorMessageWithCause(e);
+		}
 	}
 
 }

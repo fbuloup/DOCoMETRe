@@ -72,10 +72,11 @@ import fr.univamu.ism.docometre.analyse.views.SubjectsView;
 import fr.univamu.ism.docometre.editors.AbstractScriptSegmentEditor;
 import fr.univamu.ism.docometre.editors.PartNameRefresher;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
+import fr.univamu.ism.docometre.editors.SchematicSourceLinker;
 import fr.univamu.ism.docometre.views.ExperimentsView;
 import fr.univamu.ism.process.Script;
 
-public class DataProcessEditor extends MultiPageEditorPart implements PartNameRefresher, IPageChangedListener, IPropertyChangeListener {
+public class DataProcessEditor extends MultiPageEditorPart implements PartNameRefresher, IPageChangedListener, IPropertyChangeListener, SchematicSourceLinker {
 	
 	public static String ID = "Docometre.DataProcessEditor";
 	
@@ -233,6 +234,18 @@ public class DataProcessEditor extends MultiPageEditorPart implements PartNameRe
 
 	public void activateSegmentProcessEditor() {
 		 if(getActivePage() != 0) setActivePage(0);
+	}
+
+	@Override
+	public boolean showInSourceCode(Object modelElement) {
+		if(dataProcessScriptSourceEditor == null) return false;
+		// Regenerate source code and find corresponding lines before switching to source code page
+		int[] lines = dataProcessScriptSourceEditor.getSourceLines(modelElement);
+		if(lines == null) return false;
+		if(getSelectedPage() != dataProcessScriptSourceEditor) setActiveEditor(dataProcessScriptSourceEditor);
+		// Source code page activation may have regenerated code : select lines afterwards
+		dataProcessScriptSourceEditor.selectLines(lines[0], lines[1]);
+		return true;
 	}
 
 	@Override

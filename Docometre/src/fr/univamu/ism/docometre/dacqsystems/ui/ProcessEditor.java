@@ -72,10 +72,11 @@ import fr.univamu.ism.docometre.dialogs.FindDialog;
 import fr.univamu.ism.docometre.editors.AbstractScriptSegmentEditor;
 import fr.univamu.ism.docometre.editors.PartNameRefresher;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
+import fr.univamu.ism.docometre.editors.SchematicSourceLinker;
 import fr.univamu.ism.process.ScriptSegment;
 import fr.univamu.ism.process.ScriptSegmentType;
 
-public class ProcessEditor extends MultiPageEditorPart implements IPageChangedListener, PartNameRefresher/*, IResourceChangeListener*/ {
+public class ProcessEditor extends MultiPageEditorPart implements IPageChangedListener, PartNameRefresher, SchematicSourceLinker/*, IResourceChangeListener*/ {
 	
 	protected ArrayList<AbstractScriptSegmentEditor> segmentEditors;
 	private PartListenerAdapter partListenerAdapter;
@@ -180,6 +181,18 @@ public class ProcessEditor extends MultiPageEditorPart implements IPageChangedLi
 		if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.INITIALIZE)) if(getActivePage() != 0) setActivePage(0);
 		if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.LOOP)) if(getActivePage() != 1) setActivePage(1);
 		if(scriptSegment.getScriptSegmentType().equals(ScriptSegmentType.FINALIZE)) if(getActivePage() != 2) setActivePage(2);
+	}
+
+	@Override
+	public boolean showInSourceCode(Object modelElement) {
+		if(sourceEditor == null) return false;
+		// Regenerate source code and find corresponding lines before switching to source code page
+		int[] lines = sourceEditor.getSourceLines(modelElement);
+		if(lines == null) return false;
+		if(getSelectedPage() != sourceEditor) setActiveEditor(sourceEditor);
+		// Source code page activation may have regenerated code : select lines afterwards
+		sourceEditor.selectLines(lines[0], lines[1]);
+		return true;
 	}
 
 	@Override
