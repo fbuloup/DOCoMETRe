@@ -58,6 +58,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
@@ -75,11 +76,12 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.dialogs.Dialog;
@@ -89,6 +91,7 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeSelection;
+import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.osgi.signedcontent.InvalidContentException;
 import org.eclipse.osgi.util.NLS;
@@ -242,6 +245,14 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 						e.printStackTrace();
 					}
 				} else if(file.getName().endsWith(".zip") || file.getName().endsWith(".tar")) {
+					// Experiment name : by default, archive file name without extension
+					String experimentName = null;
+					if(resourceType.equals(ResourceType.EXPERIMENT)) {
+						experimentName = askExperimentName(file);
+						// Import of this experiment canceled by user
+						if(experimentName == null) continue;
+					}
+					String newExperimentName = experimentName;
 					try {
 						// Import experiment or subjects
 						getContainer().run(true, false, new IRunnableWithProgress() {
@@ -251,52 +262,63 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 									if(resourceType.equals(ResourceType.EXPERIMENT)) {
 										// Import experiment
 										
-										// Get experiment name
-										String experimentName = file.getName().replaceAll(".zip$", "").replaceAll(".tar$", "");
-										
-										//Check if an experiment with same name already exists
-										if(ResourcesPlugin.getWorkspace().getRoot().findMember(experimentName) != null) {
+										//Check again if an experiment with same name already exists
+										String errorMessage = validateExperimentName(newExperimentName);
+										if(errorMessage != null) {
 											getShell().getDisplay().syncExec(new Runnable() {
 												@Override
 												public void run() {
-													String message = NLS.bind(DocometreMessages.ImportErrorMessage, experimentName);
-													MessageDialog.openError(getShell(), DocometreMessages.ImportErrorDialogTitle, message);
+													MessageDialog.openError(getShell(), DocometreMessages.ImportErrorDialogTitle, errorMessage);
 												}
 											});
 											return;
 										}
 										
-										int nbFilesToExtract = getNbFiles(file);
-										int nbPropertiesEntriesToApply = getNbProperties(file, experimentName, rootPath);
+										// Archives exported by previous versions : all entries are in a root folder named as the archive 
+										// and experiment properties are in a "<root folder>.properties" file.
+										// Otherwise, archive entries are relative to experiment and experiment name is not written in archive.
+										String archiveRootFolder = getArchiveRootFolder(file);
 										
-										SubMonitor subMonitor = SubMonitor.convert(monitor, DocometreMessages.ImportingExperimentFromCompressedFile, nbFilesToExtract + nbPropertiesEntriesToApply + 2);
+										int nbFilesToExtract = getNbFiles(file);
+										int nbPropertiesEntriesToApply = archiveRootFolder != null ? getNbProperties(file, archiveRootFolder, rootPath) : 0;
+										
+										SubMonitor subMonitor = SubMonitor.convert(monitor, DocometreMessages.ImportingExperimentFromCompressedFile, nbFilesToExtract + nbPropertiesEntriesToApply + 4);
 
 										subMonitor.subTask(DocometreMessages.CreatingNewExperimentInWorkspace);
-										IProject newExperiment = ResourcesPlugin.getWorkspace().getRoot().getProject(experimentName);
+										IProject newExperiment = ResourcesPlugin.getWorkspace().getRoot().getProject(newExperimentName);
 										newExperiment.create(null);
 										newExperiment.open(null);
 										subMonitor.worked(1);
 										
-										unzip(file.getAbsolutePath(), rootPath, subMonitor);
+										unzip(file.getAbsolutePath(), newExperiment.getLocation().toOSString(), archiveRootFolder, subMonitor);
 										
 										subMonitor.subTask(DocometreMessages.RefreshingWorkspace);
-										newExperiment.getParent().refreshLocal(IResource.DEPTH_INFINITE, null);
-										subMonitor.worked(1);
-										
-										String propertiesFileFullPath = newExperiment.getFile(newExperiment.getName() + ".properties").getLocation().toOSString();
-										
-										readAndApplyPersitentProperties(newExperiment, subMonitor, nbPropertiesEntriesToApply, propertiesFileFullPath);
-										IFile propertiesFile = newExperiment.getFile(newExperiment.getName() + ".properties");
-										if(propertiesFile != null) propertiesFile.delete(true, null);
-										// Experiment exported by a previous version : trials folders named "Essai n°N"...
-										TrialNames.migrate(newExperiment, null);
-										
-										subMonitor.subTask(DocometreMessages.RefreshingWorkspace);
-										newExperiment.getParent().refreshLocal(IResource.DEPTH_INFINITE, null);
+										newExperiment.refreshLocal(IResource.DEPTH_INFINITE, null);
 										subMonitor.worked(1);
 										
 										// Experiments history imported with the experiment : .git folder is not a workspace resource
 										if(SnapshotManager.getInstance().isHistorized(newExperiment)) GitResources.excludeGitFolder(newExperiment, null);
+										
+										// Adapt .metadata.properties file to experiment name and apply its properties
+										ResourceProperties.importPropertiesFile(newExperiment, archiveRootFolder == null);
+										subMonitor.worked(1);
+										
+										if(archiveRootFolder != null) {
+											// Archive exported by a previous version : apply properties of "<root folder>.properties" file
+											IFile propertiesFile = newExperiment.getFile(archiveRootFolder + ".properties");
+											if(propertiesFile.exists()) {
+												readAndApplyPersitentProperties(newExperiment, subMonitor, nbPropertiesEntriesToApply, propertiesFile.getLocation().toOSString());
+												propertiesFile.delete(true, null);
+											}
+										}
+										// Experiment exported by a previous version : trials folders named "Essai n°N"...
+										TrialNames.migrate(newExperiment, null);
+										
+										subMonitor.subTask(DocometreMessages.RefreshingWorkspace);
+										newExperiment.refreshLocal(IResource.DEPTH_INFINITE, null);
+										// .metadata.properties file is now complete and up to date with experiment name
+										ResourceProperties.synchronizePropertiesFile(newExperiment);
+										subMonitor.worked(1);
 										
 										subMonitor.subTask(DocometreMessages.AddingProjectToBuilderAndRefreshingExperiment);
 										DocometreBuilder.addProject(newExperiment);
@@ -316,7 +338,7 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 										String destinationFolder =  parentResource.getLocation().toPortableString();
 										String id = String.valueOf(System.currentTimeMillis());
 										String temporaryFolder =  destinationFolder + "/" + "Temp_" + id;
-										unzip(file.getAbsolutePath(), temporaryFolder, subMonitor);
+										unzip(file.getAbsolutePath(), temporaryFolder, null, subMonitor);
 										
 										Stream<Path> stream = null;
 										String propertiesFileFullPath = null;
@@ -732,101 +754,147 @@ public class ImportResourceWizard extends Wizard implements IWorkbenchWizard {
 		return 0;
 	}
 
-	private void readAndApplyPersitentProperties(IProject newExperiment, SubMonitor subMonitor, int nbProperties, String propertiesFileFullPath) {
-		try {
-//			String propertiesFileFullPath = newExperiment.getFile(newExperiment.getName() + ".properties").getLocation().toOSString();
-			FileInputStream fileInputStream = new FileInputStream(propertiesFileFullPath);
-			InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, "UTF-8");
+	/*
+	 * Apply properties of a properties file created by ExperimentPropertiesFileCreator to experiment resources.
+	 * Keys are full paths of resources when exported : "/<archive root folder>/Subject/...>>>type".
+	 * Root folder is replaced by experiment name, as well as first segment of paths values.
+	 */
+	private void readAndApplyPersitentProperties(IProject experiment, SubMonitor subMonitor, int nbProperties, String propertiesFileFullPath) {
+		try (InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(propertiesFileFullPath), StandardCharsets.UTF_8)) {
 			Properties properties = new Properties();
 			properties.load(inputStreamReader);
-			Set<Object> keys = properties.keySet();
 			int numProperty = 1;
-			for (Object key : keys) {
+			for (String key : properties.stringPropertyNames()) {
 				if(key.equals("OnlySubjects")) continue;
-				String value = (String) properties.get(key);
-				String[] keyArray = key.toString().split(ResourceProperties.SEPARATOR);
-				if(Platform.getOS().equals(Platform.OS_MACOSX)) {
-					keyArray[0] = keyArray[0].replace("\\", "/");
-					value = value.replace("\\", "/");
-					
+				String value = properties.getProperty(key);
+				String[] keyArray = key.split(ResourceProperties.SEPARATOR);
+				if(keyArray.length != 2) continue;
+				// Keys and paths values may have been written on another OS
+				IPath exportedPath = IPath.fromPortableString(keyArray[0].replace('\\', '/'));
+				IPath resourcePath = experiment.getFullPath().append(exportedPath.removeFirstSegments(1));
+				if(isPathProperty(keyArray[1]) && value != null) {
+					IPath valuePath = IPath.fromPortableString(value.replace('\\', '/'));
+					if(valuePath.segmentCount() > 0) value = experiment.getFullPath().append(valuePath.removeFirstSegments(1)).toOSString();
 				}
-				if(Platform.getOS().equals(Platform.OS_WIN32)) {
-					keyArray[0] = keyArray[0].replace("/", "\\");
-					value = value.replace("/", "\\");
-				}
-				if(Platform.getOS().equals(Platform.OS_LINUX)) {
-					keyArray[0] = keyArray[0].replace("\\", "/");
-					value = value.replace("\\", "/");
-				}
-				keyArray[0] = keyArray[0].replaceAll("^/\\w+/", "/" + newExperiment.getName() + "/");
-				value = value.replaceAll("^/\\w+/", "/" + newExperiment.getName() + "/");
+				IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(resourcePath);
 				
-				IPath resourcePath = org.eclipse.core.runtime.Path.fromOSString(keyArray[0]);
-				String resourceFullPath = newExperiment.getParent().getLocation().toOSString() + File.separator + keyArray[0];
-				File resourceFile = new File(resourceFullPath);
-				boolean isFolder = resourceFile.isDirectory();
-				boolean isExperiment = keyArray[0].equals(newExperiment.getFullPath().toOSString());
-				IResource resource = null;
-				if(isExperiment) 
-					resource = newExperiment;
-				else if(isFolder) resource = ResourcesPlugin.getWorkspace().getRoot().getFolder(resourcePath);
-				else resource = ResourcesPlugin.getWorkspace().getRoot().getFile(resourcePath);
-				
-				String message = NLS.bind(DocometreMessages.ApplyingProperty, new Object[] {numProperty, nbProperties, value, resource.getFullPath().toOSString(), keyArray[1]});
+				String message = NLS.bind(DocometreMessages.ApplyingProperty, new Object[] {numProperty, nbProperties, value, resourcePath.toOSString(), keyArray[1]});
 				subMonitor.subTask(message);
 				
-				if(resource.exists()) {
+				if(resource != null && resource.exists()) {
 					QualifiedName QN = new QualifiedName(Activator.PLUGIN_ID, keyArray[1]);
-					resource.refreshLocal(IResource.DEPTH_INFINITE, null);
-					resource.setPersistentProperty(QN , value);
-					resource.refreshLocal(IResource.DEPTH_INFINITE, null);
+					ResourceProperties.setPersistentProperty(QN, resource, value);
 				}
 
 				subMonitor.worked(1);
 				numProperty++;
 			}
-			inputStreamReader.close();
-		} catch (CoreException | IOException e) {
+		} catch (IOException e) {
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
 		}
 	}
+	
+	/*
+	 * Return true if values of this property are resources full paths
+	 */
+	private static boolean isPathProperty(String localName) {
+		return ResourceProperties.DEFAULT_DACQ_QN.getLocalName().equals(localName) 
+				|| ResourceProperties.ASSOCIATED_DACQ_CONFIGURATION_FILE_QN.getLocalName().equals(localName) 
+				|| ResourceProperties.ASSOCIATED_PROCESS_FILE_QN.getLocalName().equals(localName);
+	}
+	
+	/*
+	 * Archives exported by previous versions : all entries are in a root folder (archive file name when exported).
+	 * Return this root folder name, or null if archive entries are relative to experiment, i.e. experiment 
+	 * .metadata.properties file is at archive root.
+	 */
+	protected static String getArchiveRootFolder(File file) {
+		String rootFolder = null;
+		try (ZipFile zipFile = new ZipFile(file)) {
+			Enumeration<? extends ZipEntry> entries = zipFile.entries();
+			while (entries.hasMoreElements()) {
+				String name = entries.nextElement().getName().replace('\\', '/');
+				if(("/" + name).equals(ResourceProperties.metadataFileName)) return null;
+				int index = name.indexOf('/');
+				// A file at archive root : no root folder
+				if(index <= 0) return null;
+				String firstSegment = name.substring(0, index);
+				if(rootFolder == null) rootFolder = firstSegment;
+				else if(!rootFolder.equals(firstSegment)) return null;
+			}
+		} catch (IOException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		return rootFolder;
+	}
+	
+	/*
+	 * Return null if experiment name is valid and if no experiment (or folder in workspace) has the same name, an error message otherwise
+	 */
+	protected static String validateExperimentName(String name) {
+		if(name == null || !name.matches("^[a-zA-Z][a-zA-Z0-9_]*$")) return NLS.bind(DocometreMessages.NewResourceWizard_ErrorMessage, name);
+		IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
+		IStatus status = ResourcesPlugin.getWorkspace().validateName(name, IResource.PROJECT);
+		if(!status.isOK()) return status.getMessage();
+		String message = NLS.bind(DocometreMessages.ImportExperimentNameAlreadyExists, name);
+		// File systems may be case insensitive
+		for (IProject project : workspaceRoot.getProjects()) {
+			if(project.getName().equalsIgnoreCase(name)) return message;
+		}
+		String[] workspaceFilesNames = workspaceRoot.getLocation().toFile().list();
+		if(workspaceFilesNames != null) {
+			for (String fileName : workspaceFilesNames) {
+				if(fileName.equalsIgnoreCase(name)) return message;
+			}
+		}
+		return null;
+	}
+	
+	/*
+	 * Open a dialog to get the name of experiment imported from archive file. Default name is
+	 * archive file name without extension. Return null if user cancels.
+	 */
+	private String askExperimentName(File file) {
+		String defaultName = file.getName().replaceAll("\\.zip$", "").replaceAll("\\.tar$", "");
+		String message = NLS.bind(DocometreMessages.ImportExperimentNameDialogMessage, file.getName());
+		InputDialog inputDialog = new InputDialog(getShell(), DocometreMessages.ImportExperimentNameDialogTitle, message, defaultName, ImportResourceWizard::validateExperimentName);
+		if(inputDialog.open() != Window.OK) return null;
+		return inputDialog.getValue();
+	}
 
-	private static void unzip(String zipFilePath, String destDir, IProgressMonitor monitor) {
-        File dir = new File(destDir);
-        // create output directory if it doesn't exist
-        if(!dir.exists()) dir.mkdirs();
-        FileInputStream fis;
-        try {
-        	ZipFile zipFile = new ZipFile(new File(zipFilePath));
-        	int nbFiles = zipFile.size();
-            fis = new FileInputStream(zipFilePath);
-            ZipInputStream zis = new ZipInputStream(fis);
-            ZipEntry ze = zis.getNextEntry();
-            int numFile = 1;
-            while(ze != null){
-            	String message = NLS.bind(DocometreMessages.UnzippingFile, new Object[] {numFile, nbFiles, ze.getName()});
+	/*
+	 * Extract archive in destination folder. If rootFolder is not null, it is removed from entries names.
+	 */
+	private static void unzip(String zipFilePath, String destDir, String rootFolder, IProgressMonitor monitor) {
+		File dir = new File(destDir);
+		// create output directory if it doesn't exist
+		if(!dir.exists()) dir.mkdirs();
+		try (ZipFile zipFile = new ZipFile(new File(zipFilePath)); ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFilePath))) {
+			int nbFiles = zipFile.size();
+			Path destinationPath = dir.toPath().toAbsolutePath().normalize();
+			ZipEntry ze = zis.getNextEntry();
+			int numFile = 1;
+			while(ze != null){
+				String message = NLS.bind(DocometreMessages.UnzippingFile, new Object[] {numFile, nbFiles, ze.getName()});
 				monitor.subTask(message);
-                String fileName = destDir + File.separator + ze.getName();
-                
-                extractFile(zis, ze, fileName);
-                
-                //close this ZipEntry
-                zis.closeEntry();
-                ze = zis.getNextEntry();
-                numFile++;
-                monitor.worked(1);
-            }
-            //close last ZipEntry
-            zis.closeEntry();
-            zis.close();
-            fis.close();
-            zipFile.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        
-    }
+				String entryName = ze.getName().replace('\\', '/');
+				if(rootFolder != null && entryName.startsWith(rootFolder + "/")) entryName = entryName.substring(rootFolder.length() + 1);
+				Path filePath = destinationPath.resolve(entryName).normalize();
+				// Entries must be extracted in destination folder
+				if(!entryName.isEmpty() && filePath.startsWith(destinationPath)) extractFile(zis, ze, filePath.toString());
+				//close this ZipEntry
+				zis.closeEntry();
+				ze = zis.getNextEntry();
+				numFile++;
+				monitor.worked(1);
+			}
+		} catch (IOException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+	}
 	
 	private static void extractFile(ZipInputStream zis, ZipEntry ze, String fileName) {
 		try {

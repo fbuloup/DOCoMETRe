@@ -287,6 +287,9 @@ public final class DocometreMessages extends NLS {
 	public static String UnzippingFile;
 	public static String ImportErrorMessage;
 	public static String ImportErrorDialogTitle;
+	public static String ImportExperimentNameDialogTitle;
+	public static String ImportExperimentNameDialogMessage;
+	public static String ImportExperimentNameAlreadyExists;
 	public static String DataProcessingTitle;
 	public static String Sessions_Label;
 	public static String ImportResourceWizardErrorMessage4;
