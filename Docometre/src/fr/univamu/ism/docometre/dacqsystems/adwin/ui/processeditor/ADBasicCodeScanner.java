@@ -56,6 +56,7 @@ import org.eclipse.swt.SWT;
 
 import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.ThemeColors;
+import fr.univamu.ism.docometre.analyse.matlabeditor.FloatingPointNumberRule;
 import fr.univamu.ism.docometre.editors.IdentifierDetector;
 import fr.univamu.ism.docometre.editors.WholeWordRule;
 
@@ -73,11 +74,11 @@ public final class ADBasicCodeScanner extends RuleBasedScanner {
 	private static int NB_PAR_FPAR = 80;
 	private static int NB_DATA = 200;
 	
-	private static IToken createToken(String color, String font, ADBasicSourceEditor adBasicSourceEditor) {
+	private static IToken createToken(String color, String font, int fontSize) {
 		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(color), 
 													ThemeColors.getBackgroundColor(), 
 													SWT.NORMAL, 
-													DocometreApplication.getFont(font, adBasicSourceEditor.getFontSize()));
+													DocometreApplication.getFont(font, fontSize));
 		return new Token(attribute);
 	}
 	
@@ -91,26 +92,29 @@ public final class ADBasicCodeScanner extends RuleBasedScanner {
 	 * Digits inside identifiers (ean1, Acquisition_ean1...) are consumed by the WordRule, 
 	 * so the NumberRule only colors real numbers.
 	 */
-	public static RuleBasedScanner getCodeScanner(ADBasicSourceEditor adBasicSourceEditor) {
+	public static RuleBasedScanner getCodeScanner(int fontSize) {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
 		List<IRule> rules = new ArrayList<IRule>();
 		
-		IToken segmentToken = createToken(DocometreApplication.RED, DocometreApplication.COURIER_NEW_BOLD, adBasicSourceEditor);
+		IToken segmentToken = createToken(DocometreApplication.RED, DocometreApplication.COURIER_NEW_BOLD, fontSize);
 		for (String segment : SEGMENTS) rules.add(new WholeWordRule(segment, segmentToken, true, false));
 		
 		WordRule wordRule = new WordRule(new IdentifierDetector("#"), new Token(null), true);
-		IToken blueBoldToken = createToken(DocometreApplication.BLUE, DocometreApplication.COURIER_NEW_BOLD, adBasicSourceEditor);
+		IToken blueBoldToken = createToken(DocometreApplication.BLUE, DocometreApplication.COURIER_NEW_BOLD, fontSize);
 		addWords(wordRule, DEFINE, blueBoldToken);
 		for (int i = 1; i <= NB_PAR_FPAR; i++) {
 			wordRule.addWord("PAR_" + i, blueBoldToken);
 			wordRule.addWord("FPAR_" + i, blueBoldToken);
 		}
 		for (int i = 1; i <= NB_DATA; i++) wordRule.addWord("DATA_" + i, blueBoldToken);
-		addWords(wordRule, DECLARE, createToken(DocometreApplication.ORANGE, DocometreApplication.COURIER_NEW_BOLD, adBasicSourceEditor));
-		addWords(wordRule, RESERVED_WORDS, createToken(DocometreApplication.ORANGE, DocometreApplication.COURIER_NEW, adBasicSourceEditor));
+		addWords(wordRule, DECLARE, createToken(DocometreApplication.ORANGE, DocometreApplication.COURIER_NEW_BOLD, fontSize));
+		addWords(wordRule, RESERVED_WORDS, createToken(DocometreApplication.ORANGE, DocometreApplication.COURIER_NEW, fontSize));
 		rules.add(wordRule);
 		
-		rules.add(new NumberRule(createToken(DocometreApplication.BLUE, DocometreApplication.COURIER_NEW, adBasicSourceEditor)));
+		// Decimal numbers (0.5, 1.5e-3) are colored as a whole, before integers
+		IToken numberToken = createToken(DocometreApplication.BLUE, DocometreApplication.COURIER_NEW, fontSize);
+		rules.add(new FloatingPointNumberRule(numberToken));
+		rules.add(new NumberRule(numberToken));
 		
 		ruleBasedScanner.setRules(rules.toArray(new IRule[rules.size()]));
 		return ruleBasedScanner;
@@ -119,38 +123,38 @@ public final class ADBasicCodeScanner extends RuleBasedScanner {
 	/*
 	 * IMPORT and #INCLUDE lines : only the keyword is colored, not the file path.
 	 */
-	private static RuleBasedScanner getDirectiveScanner(String[] directive, ADBasicSourceEditor adBasicSourceEditor) {
+	private static RuleBasedScanner getDirectiveScanner(String[] directive, int fontSize) {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
 		List<IRule> rules = new ArrayList<IRule>();
 		WordRule wordRule = new WordRule(new IdentifierDetector("#"), new Token(null), true);
-		addWords(wordRule, directive, createToken(DocometreApplication.BLUE, DocometreApplication.COURIER_NEW_BOLD, adBasicSourceEditor));
+		addWords(wordRule, directive, createToken(DocometreApplication.BLUE, DocometreApplication.COURIER_NEW_BOLD, fontSize));
 		rules.add(wordRule);
-		for (IRule commentRule : getCommentRules(adBasicSourceEditor)) rules.add(commentRule);
+		for (IRule commentRule : getCommentRules(fontSize)) rules.add(commentRule);
 		ruleBasedScanner.setRules(rules.toArray(new IRule[rules.size()]));
 		return ruleBasedScanner;
 	}
 	
-	public static RuleBasedScanner getImportScanner(ADBasicSourceEditor adBasicSourceEditor) {
-		return getDirectiveScanner(IMPORT, adBasicSourceEditor);
+	public static RuleBasedScanner getImportScanner(int fontSize) {
+		return getDirectiveScanner(IMPORT, fontSize);
 	}
 	
-	public static RuleBasedScanner getIncludeScanner(ADBasicSourceEditor adBasicSourceEditor) {
-		return getDirectiveScanner(INCLUDE, adBasicSourceEditor);
+	public static RuleBasedScanner getIncludeScanner(int fontSize) {
+		return getDirectiveScanner(INCLUDE, fontSize);
 	}
 	
-	public static RuleBasedScanner getStringScanner(ADBasicSourceEditor adBasicSourceEditor) {
+	public static RuleBasedScanner getStringScanner(int fontSize) {
 		// Strings keep the default color : this scanner only prevents keywords from being colored inside them
 		return new RuleBasedScanner();
 	}
 	
-	private static IRule[] getCommentRules(ADBasicSourceEditor adBasicSourceEditor) {
-		IToken token = createToken(DocometreApplication.GREEN, DocometreApplication.COURIER_NEW_BOLD, adBasicSourceEditor);
+	private static IRule[] getCommentRules(int fontSize) {
+		IToken token = createToken(DocometreApplication.GREEN, DocometreApplication.COURIER_NEW_BOLD, fontSize);
 		return new IRule[] {new EndOfLineRule("'", token), new WholeWordRule("REM", token, true, true)};
 	}
 	
-	public static RuleBasedScanner getCommentScanner(ADBasicSourceEditor adBasicSourceEditor) {
+	public static RuleBasedScanner getCommentScanner(int fontSize) {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
-		ruleBasedScanner.setRules(getCommentRules(adBasicSourceEditor));
+		ruleBasedScanner.setRules(getCommentRules(fontSize));
 		return ruleBasedScanner;
 	}
 

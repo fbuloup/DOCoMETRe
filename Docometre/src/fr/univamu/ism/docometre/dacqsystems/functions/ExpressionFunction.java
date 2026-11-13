@@ -54,7 +54,10 @@ import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocumentListener;
+import org.eclipse.jface.text.IDocumentPartitioner;
+import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.jface.text.source.SourceViewer;
+import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -79,12 +82,18 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.ISharedImages;
 
 import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinProcess;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor.ADBasicRulesPartitionScanner;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor.ADBasicSourceViewerConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoProcess;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.processeditor.ArduinoUnoRulesPartitionScanner;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.processeditor.ArduinoUnoSourceViewerConfiguration;
+import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
 import fr.univamu.ism.process.Block;
 import fr.univamu.ism.process.ScriptSegmentType;
@@ -126,7 +135,7 @@ public final class ExpressionFunction extends GenericFunction {
 		tabFolder.setSelection(0);
 		
 		Composite commentContainer = new Composite(container, SWT.NORMAL);
-		commentContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		commentContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		commentContainer.setLayout(new GridLayout(3, false));
 		
 		// Default tabitem is expressions 
@@ -170,7 +179,29 @@ public final class ExpressionFunction extends GenericFunction {
 		
 		sourceViewer = new SourceViewer(sourceContainer, null, SWT.BORDER);
 		sourceViewer.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		sourceViewer.setDocument(new Document());
+		Document document = new Document();
+		// Syntax coloring of the process language (Arduino or ADBasic), as in the process source editor
+		int fontSize = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.EDITORS_FONT_SIZE);
+		IDocumentPartitioner documentPartitioner = null;
+		SourceViewerConfiguration sourceViewerConfiguration = null;
+		if(context instanceof ArduinoUnoProcess) {
+			documentPartitioner = new FastPartitioner(new ArduinoUnoRulesPartitionScanner(), ArduinoUnoRulesPartitionScanner.PARTITIONS);
+			sourceViewerConfiguration = new ArduinoUnoSourceViewerConfiguration(fontSize);
+		}
+		if(context instanceof ADWinProcess) {
+			documentPartitioner = new FastPartitioner(new ADBasicRulesPartitionScanner(), ADBasicRulesPartitionScanner.PARTITIONS);
+			sourceViewerConfiguration = new ADBasicSourceViewerConfiguration(fontSize);
+		}
+		if(documentPartitioner != null) {
+			document.setDocumentPartitioner(documentPartitioner);
+			documentPartitioner.connect(document);
+		}
+		sourceViewer.setDocument(document);
+		if(sourceViewerConfiguration != null) {
+			// Same font as the colored tokens
+			sourceViewer.getTextWidget().setFont(DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, fontSize));
+			sourceViewer.configure(sourceViewerConfiguration);
+		}
 		
 		sourceViewer.getDocument().addDocumentListener(new IDocumentListener() {
 			@Override

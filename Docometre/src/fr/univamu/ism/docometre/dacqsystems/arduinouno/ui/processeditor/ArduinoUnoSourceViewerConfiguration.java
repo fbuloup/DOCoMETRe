@@ -51,10 +51,13 @@ import org.eclipse.jface.text.source.SourceViewerConfiguration;
 public class ArduinoUnoSourceViewerConfiguration extends SourceViewerConfiguration {
 	
 	private PresentationReconciler presentationReconciler;
-	private ArduinoUnoSourceEditor arduinoUnoSourceEditor;
+	private int fontSize;
 	
-	public ArduinoUnoSourceViewerConfiguration(ArduinoUnoSourceEditor arduinoUnoSourceEditor) {
-		this.arduinoUnoSourceEditor = arduinoUnoSourceEditor;
+	/**
+	 * @param fontSize font size of the colored tokens (the editor font size, or the editors font size preference)
+	 */
+	public ArduinoUnoSourceViewerConfiguration(int fontSize) {
+		this.fontSize = fontSize;
 	}
 
 	@Override
@@ -63,17 +66,17 @@ public class ArduinoUnoSourceViewerConfiguration extends SourceViewerConfigurati
 		
 		presentationReconciler = (PresentationReconciler) super.getPresentationReconciler(sourceViewer);
 		
-		DefaultDamagerRepairer defaultDamagerRepairer = new DefaultDamagerRepairer(ArduinoUnoCodeScanner.getCommentScanner(arduinoUnoSourceEditor));		
+		DefaultDamagerRepairer defaultDamagerRepairer = new DefaultDamagerRepairer(ArduinoUnoCodeScanner.getCommentScanner(fontSize));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, ArduinoUnoRulesPartitionScanner.COMMENT);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, ArduinoUnoRulesPartitionScanner.COMMENT);
 		presentationReconciler.setDamager(defaultDamagerRepairer, ArduinoUnoRulesPartitionScanner.MULTILINE_COMMENT);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, ArduinoUnoRulesPartitionScanner.MULTILINE_COMMENT);
 		
-		defaultDamagerRepairer = new DefaultDamagerRepairer(ArduinoUnoCodeScanner.getStringScanner(arduinoUnoSourceEditor));		
+		defaultDamagerRepairer = new DefaultDamagerRepairer(ArduinoUnoCodeScanner.getStringScanner(fontSize));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, ArduinoUnoRulesPartitionScanner.STRING);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, ArduinoUnoRulesPartitionScanner.STRING);
 		
-		defaultDamagerRepairer = new DefaultDamagerRepairer(ArduinoUnoCodeScanner.getCodeScanner(arduinoUnoSourceEditor));		
+		defaultDamagerRepairer = new DefaultDamagerRepairer(ArduinoUnoCodeScanner.getCodeScanner(fontSize));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, IDocument.DEFAULT_CONTENT_TYPE);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, IDocument.DEFAULT_CONTENT_TYPE);
 		

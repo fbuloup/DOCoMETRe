@@ -70,7 +70,7 @@ public class ADBasicSourceEditor extends SourceEditor {
 	    document.setDocumentPartitioner(adbasicFastPartitioner);
 	    adbasicFastPartitioner.connect(document);
 		sourceViewer.setDocument(document, annotationModel, -1, -1);
-		sourceViewer.configure(new ADBasicSourceViewerConfiguration(this));
+		sourceViewer.configure(new ADBasicSourceViewerConfiguration(fontSize));
 		
 		sourceViewer.getTextWidget().addKeyListener(new KeyAdapter() {
 			@Override
@@ -89,7 +89,7 @@ public class ADBasicSourceEditor extends SourceEditor {
 					lineNumberRulerColumn.setFont(DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, fontSize));
 					((Composite) sourceViewer.getControl()).layout(true);
 					sourceViewer.setHyperlinkDetectors(null, 0);
-					sourceViewer.configure(new ADBasicSourceViewerConfiguration(ADBasicSourceEditor.this));
+					sourceViewer.configure(new ADBasicSourceViewerConfiguration(fontSize));
 				}
 			}
 		});

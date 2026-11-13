@@ -51,10 +51,13 @@ import org.eclipse.jface.text.source.SourceViewerConfiguration;
 public class ADBasicSourceViewerConfiguration extends SourceViewerConfiguration {
 	
 	private PresentationReconciler presentationReconciler;
-	private ADBasicSourceEditor adBasicSourceEditor;
+	private int fontSize;
 	
-	public ADBasicSourceViewerConfiguration(ADBasicSourceEditor adBasicSourceEditor) {
-		this.adBasicSourceEditor = adBasicSourceEditor;
+	/**
+	 * @param fontSize font size of the colored tokens (the editor font size, or the editors font size preference)
+	 */
+	public ADBasicSourceViewerConfiguration(int fontSize) {
+		this.fontSize = fontSize;
 	}
 
 	@Override
@@ -63,23 +66,23 @@ public class ADBasicSourceViewerConfiguration extends SourceViewerConfiguration 
 		
 		presentationReconciler = (PresentationReconciler) super.getPresentationReconciler(sourceViewer);
 		
-		DefaultDamagerRepairer defaultDamagerRepairer = new DefaultDamagerRepairer(ADBasicCodeScanner.getCommentScanner(adBasicSourceEditor));		
+		DefaultDamagerRepairer defaultDamagerRepairer = new DefaultDamagerRepairer(ADBasicCodeScanner.getCommentScanner(fontSize));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, ADBasicRulesPartitionScanner.COMMENT);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, ADBasicRulesPartitionScanner.COMMENT);
 		
-		defaultDamagerRepairer = new DefaultDamagerRepairer(ADBasicCodeScanner.getImportScanner(adBasicSourceEditor));		
+		defaultDamagerRepairer = new DefaultDamagerRepairer(ADBasicCodeScanner.getImportScanner(fontSize));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, ADBasicRulesPartitionScanner.IMPORT);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, ADBasicRulesPartitionScanner.IMPORT);
 		
-		defaultDamagerRepairer = new DefaultDamagerRepairer(ADBasicCodeScanner.getIncludeScanner(adBasicSourceEditor));		
+		defaultDamagerRepairer = new DefaultDamagerRepairer(ADBasicCodeScanner.getIncludeScanner(fontSize));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, ADBasicRulesPartitionScanner.INCLUDE);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, ADBasicRulesPartitionScanner.INCLUDE);
 		
-		defaultDamagerRepairer = new DefaultDamagerRepairer(ADBasicCodeScanner.getStringScanner(adBasicSourceEditor));		
+		defaultDamagerRepairer = new DefaultDamagerRepairer(ADBasicCodeScanner.getStringScanner(fontSize));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, ADBasicRulesPartitionScanner.STRING);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, ADBasicRulesPartitionScanner.STRING);
 		
-		defaultDamagerRepairer = new DefaultDamagerRepairer(ADBasicCodeScanner.getCodeScanner(adBasicSourceEditor));		
+		defaultDamagerRepairer = new DefaultDamagerRepairer(ADBasicCodeScanner.getCodeScanner(fontSize));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, IDocument.DEFAULT_CONTENT_TYPE);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, IDocument.DEFAULT_CONTENT_TYPE);
 		
