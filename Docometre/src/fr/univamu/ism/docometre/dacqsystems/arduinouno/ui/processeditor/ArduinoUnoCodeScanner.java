@@ -49,6 +49,7 @@ import org.eclipse.jface.text.rules.EndOfLineRule;
 import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.MultiLineRule;
+import org.eclipse.jface.text.rules.NumberRule;
 import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.rules.WordRule;
@@ -56,86 +57,68 @@ import org.eclipse.swt.SWT;
 
 import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.ThemeColors;
-import fr.univamu.ism.docometre.editors.WordsDetector;
+import fr.univamu.ism.docometre.editors.IdentifierDetector;
 
 public class ArduinoUnoCodeScanner extends RuleBasedScanner {
 	
 	private static String[] INCLUDE = {"#include"};
-	private static String[] DEFINE = {"#ifndef", "#ifdef", "#endif"};
-	private static String[] SEGMENTS = {"setup()", "loop()", "finalize()"};
-	public static String[] RESERVED_WORDS = {"double", "for", "while", "do", "void", "auto", "signed", "const", "extern", "register", "unsigned", "int", "float", "char", "double", "long", "break", "return", "continue",
-												"if", "else", "switch", "case", "default", "sizeof", "struct", "typedef", "union", "volatile", "byte", "bool", "sprintf", "Serial", "println", "print", "begin",
-												"available", "read", "micros", "String", "wdt_enable", "exit", "EXTERNAL", "INTERNAL", "DEFAULT", "AR_EXTERNAL", "AR_DEFAULT", "AR_INTERNAL", "GPT_TIMER", "TIMER_MODE_PERIODIC", "force_use_of_pwm_reserved_timer", 
-												"FspTimer", "get_available_timer", "analogReference", "pinMode", "WDT"};
+	private static String[] DEFINE = {"#define", "#undef", "#if", "#ifdef", "#ifndef", "#elif", "#else", "#endif", "#pragma", "#error"};
+	private static String[] SEGMENTS = {"setup", "loop", "finalize"};
+	public static String[] RESERVED_WORDS = {
+			// C/C++ keywords
+			"auto", "bool", "break", "case", "char", "class", "const", "continue", "default", "delete", "do", "double", "else", "enum", 
+			"extern", "false", "float", "for", "goto", "if", "inline", "int", "long", "new", "nullptr", "operator", "private", 
+			"protected", "public", "register", "return", "short", "signed", "sizeof", "static", "struct", "switch", "template", 
+			"this", "true", "typedef", "union", "unsigned", "void", "volatile", "while",
+			// Types
+			"byte", "boolean", "word", "String", "size_t", "int8_t", "uint8_t", "int16_t", "uint16_t", "int32_t", "uint32_t", "int64_t", "uint64_t",
+			// Arduino API and constants
+			"Serial", "Wire", "println", "print", "begin", "available", "read", "write", "flush", "sprintf", "memcpy", "strlen", "exit", 
+			"micros", "millis", "delay", "delayMicroseconds", "interrupts", "noInterrupts", "cli", "sei",
+			"pinMode", "digitalRead", "digitalWrite", "analogRead", "analogWrite", "analogReference", "analogReadResolution",
+			"HIGH", "LOW", "INPUT", "OUTPUT", "INPUT_PULLUP", "EXTERNAL", "INTERNAL", "DEFAULT", "AR_EXTERNAL", "AR_DEFAULT", "AR_INTERNAL", 
+			// Watchdog and timers
+			"WDT", "wdt_enable", "FspTimer", "get_available_timer", "force_use_of_pwm_reserved_timer", "GPT_TIMER", "TIMER_MODE_PERIODIC"};
 	
-	public static RuleBasedScanner getIncludeScanner(ArduinoUnoSourceEditor arduinoUnoSourceEditor) {
-		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
-		List<IRule> rules = new ArrayList<IRule>(0);
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLUE), 
+	private static IToken createToken(String color, String font, ArduinoUnoSourceEditor arduinoUnoSourceEditor) {
+		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(color), 
 													ThemeColors.getBackgroundColor(), 
 													SWT.NORMAL, 
-													DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, arduinoUnoSourceEditor.getFontSize()));
-		IToken token = new Token(attribute);
-		WordRule wordRule = new WordRule(new WordsDetector(INCLUDE), token);
-		rules.add(wordRule);
-		ruleBasedScanner.setRules(rules.toArray(new IRule[rules.size()]));
-		
+													DocometreApplication.getFont(font, arduinoUnoSourceEditor.getFontSize()));
+		return new Token(attribute);
+	}
+	
+	/*
+	 * Scanner for the default partition : one WordRule reads complete identifiers 
+	 * (and preprocessor directives) and colors them only if they are keywords. 
+	 * Digits inside identifiers (f1, uint8_t...) are consumed by the WordRule, 
+	 * so the NumberRule only colors real numbers.
+	 */
+	public static RuleBasedScanner getCodeScanner(ArduinoUnoSourceEditor arduinoUnoSourceEditor) {
+		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
+		WordRule wordRule = new WordRule(new IdentifierDetector("#"), new Token(null));
+		addWords(wordRule, INCLUDE, createToken(DocometreApplication.BLUE, DocometreApplication.COURIER_NEW_BOLD, arduinoUnoSourceEditor));
+		addWords(wordRule, DEFINE, createToken(DocometreApplication.ORANGE, DocometreApplication.COURIER_NEW_BOLD, arduinoUnoSourceEditor));
+		addWords(wordRule, SEGMENTS, createToken(DocometreApplication.RED, DocometreApplication.COURIER_NEW_BOLD, arduinoUnoSourceEditor));
+		addWords(wordRule, RESERVED_WORDS, createToken(DocometreApplication.MAROON, DocometreApplication.COURIER_NEW_BOLD, arduinoUnoSourceEditor));
+		NumberRule numberRule = new NumberRule(createToken(DocometreApplication.BLUE, DocometreApplication.COURIER_NEW, arduinoUnoSourceEditor));
+		ruleBasedScanner.setRules(new IRule[] {wordRule, numberRule});
 		return ruleBasedScanner;
 	}
 	
-	public static RuleBasedScanner getDefineScanner(ArduinoUnoSourceEditor arduinoUnoSourceEditor) {
-		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
-		List<IRule> rules = new ArrayList<IRule>(0);
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.ORANGE), 
-													ThemeColors.getBackgroundColor(), 
-													SWT.NORMAL, 
-													DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, arduinoUnoSourceEditor.getFontSize()));
-		IToken token = new Token(attribute);
-		WordRule wordRule = new WordRule(new WordsDetector(DEFINE), token);
-		rules.add(wordRule);
-		ruleBasedScanner.setRules(rules.toArray(new IRule[rules.size()]));
-		
-		return ruleBasedScanner;
+	private static void addWords(WordRule wordRule, String[] words, IToken token) {
+		for (String word : words) wordRule.addWord(word, token);
 	}
 	
-	public static RuleBasedScanner getSegmentScanner(ArduinoUnoSourceEditor arduinoUnoSourceEditor) {
-		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
-		List<IRule> rules = new ArrayList<IRule>(0);
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.RED), 
-													ThemeColors.getBackgroundColor(), 
-													SWT.NORMAL, 
-													DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, arduinoUnoSourceEditor.getFontSize()));
-		IToken token = new Token(attribute);
-		WordRule wordRule = new WordRule(new WordsDetector(SEGMENTS), token);
-		rules.add(wordRule);
-		ruleBasedScanner.setRules(rules.toArray(new IRule[rules.size()]));
-		
-		return ruleBasedScanner;
-	}
-	
-	public static RuleBasedScanner getReservedWordsScanner(ArduinoUnoSourceEditor arduinoUnoSourceEditor) {
-		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
-		List<IRule> rules = new ArrayList<IRule>(0);
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.MAROON), 
-													ThemeColors.getBackgroundColor(), 
-													SWT.NORMAL, 
-													DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, arduinoUnoSourceEditor.getFontSize()));
-		IToken token = new Token(attribute);
-		WordRule wordRule = new WordRule(new WordsDetector(RESERVED_WORDS), token);
-		rules.add(wordRule);
-		ruleBasedScanner.setRules(rules.toArray(new IRule[rules.size()]));
-		
-		return ruleBasedScanner;
+	public static RuleBasedScanner getStringScanner(ArduinoUnoSourceEditor arduinoUnoSourceEditor) {
+		// Strings keep the default color : this scanner only prevents keywords from being colored inside them
+		return new RuleBasedScanner();
 	}
 	
 	public static RuleBasedScanner getCommentScanner(ArduinoUnoSourceEditor arduinoUnoSourceEditor) {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
 		List<IRule> rules = new ArrayList<IRule>(0);
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.GREEN), 
-													ThemeColors.getBackgroundColor(), 
-													SWT.NORMAL, 
-													DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, arduinoUnoSourceEditor.getFontSize()));
-		IToken token = new Token(attribute);
+		IToken token = createToken(DocometreApplication.GREEN, DocometreApplication.COURIER_NEW_BOLD, arduinoUnoSourceEditor);
 		IRule commentRule1 = new EndOfLineRule("//", token);
 		IRule commentRule2 = new MultiLineRule("/*", "*/", token, (char) 0, true);
 		rules.add(commentRule1);

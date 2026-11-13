@@ -46,10 +46,8 @@ import java.util.List;
 
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.EndOfLineRule;
-import org.eclipse.jface.text.rules.ICharacterScanner;
 import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
-import org.eclipse.jface.text.rules.IWordDetector;
 import org.eclipse.jface.text.rules.NumberRule;
 import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.eclipse.jface.text.rules.Token;
@@ -60,6 +58,7 @@ import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.ThemeColors;
 import fr.univamu.ism.docometre.analyse.editors.DataProcessScriptSourceEditor;
 import fr.univamu.ism.docometre.analyse.matlabeditor.FloatingPointNumberRule;
+import fr.univamu.ism.docometre.editors.IdentifierDetector;
 
 public class PythonCodeScanner extends RuleBasedScanner {
 	
@@ -77,55 +76,16 @@ public class PythonCodeScanner extends RuleBasedScanner {
 	public static String[] DOCOMETRE_RESERVED_WORDS = {"docometre", "experiments"};
 
 	public static String[] RESERVED_WORDS = {"and", "except", "lambda", "with", "as", "finally", 
-											"nonlocal", "while", "assert", "false", "None", "yield", "break", "for", 
+											"nonlocal", "while", "assert", "False", "None", "yield", "break", "for", 
 											"not", "class", "from", "or", "continue", "global", "pass", "def", "if", 
-											"raise", "del", "import", "return", "elif", "in", "True", "else"};
+											"raise", "del", "import", "return", "elif", "in", "True", "else", "is", 
+											"try", "async", "await"};
 	
-	public static String[] NUMPY_RESERVED_WORDS = {"numpy", "zeros", "ones", "arange", "nansum", "r\\_"};
+	public static String[] NUMPY_RESERVED_WORDS = {"numpy", "zeros", "ones", "arange", "nansum", "r_"};
 	
 	public static String[] SCIPY_RESERVED_WORDS = {"scipy", "signal", "butter", "filtfilt"};
 	
 	public static String[] MATH_RESERVED_WORDS = {"math", "floor"};
-	
-	private static class PythonWordDetector implements IWordDetector {
-		@Override
-		public boolean isWordStart(char c) {
-			return Character.isLetter(c);
-		}
-		@Override
-		public boolean isWordPart(char c) {
-			return Character.isLetter(c);
-		}
-	}
-	
-	private static class MyNumberRule extends NumberRule {
-		
-		private char[] operators = new char[] {'=', '+' , '*', '/', '%', '-', '(', ':'};
-		
-		public MyNumberRule(IToken token) {
-			super(token);
-		}
-		
-		@Override
-		public IToken evaluate(ICharacterScanner scanner) {
-			int c = scanner.read();
-			if (Character.isDigit((char)c)) {
-				scanner.unread();
-				scanner.unread();
-				c = scanner.read();
-				if(!isOperator((char) c)) return Token.UNDEFINED;
-			} else scanner.unread();
-			return super.evaluate(scanner);
-		}
-
-		private boolean isOperator(char c) {
-			boolean isOperator = Character.isWhitespace(c);
-			for (char operaror : operators) {
-				isOperator = isOperator || c == operaror;
-			}
-			return isOperator;
-		}
-	}
 	
 	public static RuleBasedScanner getPythonCodeScanner(DataProcessScriptSourceEditor dataProcessScriptSourceEditor) {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
@@ -142,7 +102,7 @@ public class PythonCodeScanner extends RuleBasedScanner {
 	private static List<IRule> getPythonScanner(DataProcessScriptSourceEditor dataProcessScriptSourceEditor) {
 		List<IRule> rules= new ArrayList<IRule>();
         
-        WordRule wordRule = new WordRule(new PythonWordDetector(), geDefaultTextAttributeToken(dataProcessScriptSourceEditor));
+        WordRule wordRule = new WordRule(new IdentifierDetector(), geDefaultTextAttributeToken(dataProcessScriptSourceEditor));
         
         for (int i = 0; i < FUNCTIONS.length; i++) {
         	wordRule.addWord(FUNCTIONS[i], getFunctionsTextAttributeToken(dataProcessScriptSourceEditor));
@@ -172,6 +132,13 @@ public class PythonCodeScanner extends RuleBasedScanner {
         return rules;
 	}
 	
+	public static RuleBasedScanner getStringScanner(DataProcessScriptSourceEditor dataProcessScriptSourceEditor) {
+		// Strings keep the default color and font : this scanner only prevents keywords from being colored inside them
+		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
+		ruleBasedScanner.setDefaultReturnToken(geDefaultTextAttributeToken(dataProcessScriptSourceEditor));
+		return ruleBasedScanner;
+	}
+	
 	public static RuleBasedScanner  getCommentScanner(DataProcessScriptSourceEditor dataProcessScriptSourceEditor) {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
 		List<IRule> rules= new ArrayList<IRule>();
@@ -199,7 +166,8 @@ public class PythonCodeScanner extends RuleBasedScanner {
 	    FloatingPointNumberRule floatingPointNumberRule = new FloatingPointNumberRule(numberToken);
         rules.add(floatingPointNumberRule);
 
-	    MyNumberRule numberRule = new MyNumberRule(numberToken);
+	    // Digits inside identifiers (x2, signal_1, log10...) are consumed by the WordRule
+	    NumberRule numberRule = new NumberRule(numberToken);
         rules.add(numberRule);
 	    
         return rules;

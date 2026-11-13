@@ -67,6 +67,12 @@ public class MatlabSourceViewerConfiguration extends SourceViewerConfiguration {
 		DefaultDamagerRepairer defaultDamagerRepairer = new DefaultDamagerRepairer(MatlabCodeScanner.getCommentScanner(dataProcessScriptSourceEditor));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, MatlabRulesPartitionScanner.COMMENT);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, MatlabRulesPartitionScanner.COMMENT);
+		presentationReconciler.setDamager(defaultDamagerRepairer, MatlabRulesPartitionScanner.MULTILINE_COMMENT);
+		presentationReconciler.setRepairer(defaultDamagerRepairer, MatlabRulesPartitionScanner.MULTILINE_COMMENT);
+		
+		defaultDamagerRepairer = new DefaultDamagerRepairer(MatlabCodeScanner.getStringScanner(dataProcessScriptSourceEditor));		
+		presentationReconciler.setDamager(defaultDamagerRepairer, MatlabRulesPartitionScanner.STRING);
+		presentationReconciler.setRepairer(defaultDamagerRepairer, MatlabRulesPartitionScanner.STRING);
 		
 		defaultDamagerRepairer = new DefaultDamagerRepairer(MatlabCodeScanner.getMatlabCodeScanner(dataProcessScriptSourceEditor));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, MatlabRulesPartitionScanner.DEFAULT);

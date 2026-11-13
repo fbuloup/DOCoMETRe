@@ -37,36 +37,46 @@
  * knowledge of the CeCILL-B license and that you accept its terms.
  * 
  * Contributors:
- *  - Frank Buloup - frank.buloup@univ-amu.fr - initial API and implementation [25/03/2020]
+ *  - Frank Buloup - frank.buloup@univ-amu.fr - initial API and implementation [13/11/2026]
  ******************************************************************************/
 package fr.univamu.ism.docometre.editors;
 
+import org.eclipse.jface.text.rules.ICharacterScanner;
 import org.eclipse.jface.text.rules.IWordDetector;
 
-public class WordsDetector implements IWordDetector {
-		
-		private String[] words;
-
-		public WordsDetector(String[] words) {
-			this.words = words;
-		}
-
-		@Override
-		public boolean isWordStart(char c) {
-			for (int i = 0, n = words.length; i < n; i++) {
-				String keyChar = words[i];
-				if (c == keyChar.charAt(0)) return true;
-		    }
-			return false;
-		}
-
-		@Override
-		public boolean isWordPart(char c) {
-			for (int i = 0, n = words.length; i < n; i++) {
-				String keyChar = words[i];
-				if (keyChar.indexOf(c) != -1) return true;
-		    }
-			return false;
-		}
-		
+/**
+ * Detects complete identifiers (letters, digits and '_', not starting with a digit).
+ * Used with a {@link org.eclipse.jface.text.rules.WordRule} and its addWord method, a whole identifier
+ * is read before being compared to the keywords : "int" is no more found in "interrupts",
+ * "max" in "data_max" or "1" in "ean1".
+ */
+public class IdentifierDetector implements IWordDetector {
+	
+	private String extraStartCharacters;
+	
+	public IdentifierDetector() {
+		this("");
 	}
+	
+	/**
+	 * @param extraStartCharacters characters which can also start a word, e.g. "#" for preprocessor directives
+	 */
+	public IdentifierDetector(String extraStartCharacters) {
+		this.extraStartCharacters = extraStartCharacters;
+	}
+	
+	public static boolean isIdentifierPart(int c) {
+		return c != ICharacterScanner.EOF && (Character.isLetterOrDigit(c) || c == '_');
+	}
+
+	@Override
+	public boolean isWordStart(char c) {
+		return Character.isLetter(c) || c == '_' || extraStartCharacters.indexOf(c) != -1;
+	}
+
+	@Override
+	public boolean isWordPart(char c) {
+		return isIdentifierPart(c);
+	}
+
+}

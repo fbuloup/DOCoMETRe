@@ -68,6 +68,12 @@ public class PythonSourceViewerConfiguration extends SourceViewerConfiguration {
 		presentationReconciler.setDamager(defaultDamagerRepairer, PythonRulesPartitionScanner.COMMENT);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, PythonRulesPartitionScanner.COMMENT);
 		
+		defaultDamagerRepairer = new DefaultDamagerRepairer(PythonCodeScanner.getStringScanner(dataProcessScriptSourceEditor));		
+		presentationReconciler.setDamager(defaultDamagerRepairer, PythonRulesPartitionScanner.STRING);
+		presentationReconciler.setRepairer(defaultDamagerRepairer, PythonRulesPartitionScanner.STRING);
+		presentationReconciler.setDamager(defaultDamagerRepairer, PythonRulesPartitionScanner.MULTILINE_STRING);
+		presentationReconciler.setRepairer(defaultDamagerRepairer, PythonRulesPartitionScanner.MULTILINE_STRING);
+		
 		defaultDamagerRepairer = new DefaultDamagerRepairer(PythonCodeScanner.getPythonCodeScanner(dataProcessScriptSourceEditor));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, PythonRulesPartitionScanner.DEFAULT);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, PythonRulesPartitionScanner.DEFAULT);

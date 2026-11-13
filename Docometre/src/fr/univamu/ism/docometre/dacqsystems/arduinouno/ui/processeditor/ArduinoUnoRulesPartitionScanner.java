@@ -41,8 +41,6 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.processeditor;
 
-import java.util.ArrayList;
-
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.rules.EndOfLineRule;
 import org.eclipse.jface.text.rules.IPredicateRule;
@@ -50,70 +48,33 @@ import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.MultiLineRule;
 import org.eclipse.jface.text.rules.RuleBasedPartitionScanner;
 import org.eclipse.jface.text.rules.Token;
-import org.eclipse.jface.text.rules.WordPatternRule;
 
-import fr.univamu.ism.docometre.editors.WordsDetector;
+import fr.univamu.ism.docometre.editors.StringRule;
 
+/**
+ * Partitions are only used for comments and strings. Keywords, numbers and 
+ * identifiers are colored by ArduinoUnoCodeScanner.getCodeScanner in the default partition.
+ * Each multi-line construct has its own partition type so that the partitioner 
+ * resumes it with the right rule when the document is modified.
+ */
 public class ArduinoUnoRulesPartitionScanner extends RuleBasedPartitionScanner {
 
-	public static final String INCLUDE = "INCLUDE"; 
 	public static final String COMMENT = "COMMENT"; 
-	public static final String DEFINE = "DEFINE"; 
-	public static final String SEGMENT = "SEGMENT"; 
-	public static final String RESERVED_WORDS = "RESERVED_WORDS"; 
+	public static final String MULTILINE_COMMENT = "MULTILINE_COMMENT"; 
+	public static final String STRING = "STRING"; 
 	
-	public static final String[] PARTITIONS = new String[]{IDocument.DEFAULT_CONTENT_TYPE, COMMENT, INCLUDE, DEFINE, SEGMENT, RESERVED_WORDS};
+	public static final String[] PARTITIONS = new String[]{IDocument.DEFAULT_CONTENT_TYPE, COMMENT, MULTILINE_COMMENT, STRING};
 	
 	public ArduinoUnoRulesPartitionScanner() {
-		
 	    IToken commentToken = new Token(COMMENT);
-		IToken includeToken = new Token(INCLUDE);
-		IToken defineToken = new Token(DEFINE);
-	    IToken segmentToken = new Token(SEGMENT);
-	    IToken reservedWordsToken = new Token(RESERVED_WORDS);
-	    
-	    ArrayList<IPredicateRule> rules = new ArrayList<IPredicateRule>();
-	    
-	    rules.add(new WordPatternRule(new WordsDetector(new String[] {"#include"}), "#inc", "lude", includeToken));
-	    
-		rules.add(new EndOfLineRule("//", commentToken));
-		
-		rules.add(new MultiLineRule("/*", "*/", commentToken, (char) 0, true)); 
-		
-		rules.add(new EndOfLineRule("#ifndef", defineToken));
-		rules.add(new EndOfLineRule("#define", defineToken));
-		rules.add(new EndOfLineRule("#endif", defineToken));
-		
-		rules.add(new WordPatternRule(new WordsDetector(new String[] {"setup()"}), "se", "p()", segmentToken));
-		rules.add(new WordPatternRule(new WordsDetector(new String[] {"loop()"}), "lo", "p()", segmentToken));
-		rules.add(new WordPatternRule(new WordsDetector(new String[] {"finalize()"}), "fi", "e()", segmentToken));
-		
-		
-		String[] reservedWords = ArduinoUnoCodeScanner.RESERVED_WORDS;
-		for (int i = 0; i < reservedWords.length; i++) {
-			rules.add(createWordPatternRule(reservedWords[i], "", reservedWordsToken));
-			rules.add(createWordPatternRule(reservedWords[i], "\n", reservedWordsToken));
-			rules.add(createWordPatternRule(reservedWords[i], "\t", reservedWordsToken));
-		}
-		
-	    setPredicateRules(rules.toArray(new IPredicateRule[rules.size()]));
-	}
-
-
-	private WordPatternRule createWordPatternRule(String word, String prefix, IToken token) {
-		String start = ""; 
-		String end = "";
-		if(word.length() > 3) {
-			start = word.substring(0, 2);
-			end = word.substring(word.length() - 2, word.length());
-		} else if(word.length() == 3) {
-			start = word.substring(0, 2);
-			end = word.substring(2, 3);
-		} else {
-			start = word.substring(0, 1);
-			end = word.substring(1, 2);
-		}
-		return new WordPatternRule(new WordsDetector(new String[] { word }), prefix + start, end, token);
+	    IToken multiLineCommentToken = new Token(MULTILINE_COMMENT);
+	    IToken stringToken = new Token(STRING);
+	    setPredicateRules(new IPredicateRule[] {
+	    	new EndOfLineRule("//", commentToken),
+	    	new MultiLineRule("/*", "*/", multiLineCommentToken, (char) 0, true),
+	    	new StringRule('"', stringToken, '\\', false, false),
+	    	new StringRule('\'', stringToken, '\\', false, false)
+	    });
 	}
 
 }

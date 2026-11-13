@@ -41,33 +41,40 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.analyse.matlabeditor;
 
-import java.util.ArrayList;
-
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.rules.EndOfLineRule;
 import org.eclipse.jface.text.rules.IPredicateRule;
-import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
+import org.eclipse.jface.text.rules.MultiLineRule;
 import org.eclipse.jface.text.rules.RuleBasedPartitionScanner;
 import org.eclipse.jface.text.rules.Token;
 
+import fr.univamu.ism.docometre.editors.StringRule;
+
+/**
+ * Strings are partitions so that a '%' inside a string (fprintf('%d\n', n)) doesn't start a comment.
+ * A quote following an identifier, a closing bracket, a dot or another quote is the transpose operator, 
+ * not the start of a string. Block comments %{ ... %} have their own partition type.
+ */
 public class MatlabRulesPartitionScanner extends RuleBasedPartitionScanner {
 	
 	public static final String COMMENT = "COMMENT"; 
+	public static final String MULTILINE_COMMENT = "MULTILINE_COMMENT"; 
+	public static final String STRING = "STRING"; 
 	public static final String DEFAULT = IDocument.DEFAULT_CONTENT_TYPE; 
 	
-	public static final String[] PARTITIONS = new String[]{DEFAULT, COMMENT};
+	public static final String[] PARTITIONS = new String[]{DEFAULT, COMMENT, MULTILINE_COMMENT, STRING};
 	
 	public MatlabRulesPartitionScanner() {
-		
 	    IToken commentToken = new Token(COMMENT);
-	    
-	    ArrayList<IRule> rules = new ArrayList<IRule>();
-	    
-		rules.add(new EndOfLineRule("%", commentToken));
-		rules.add(new EndOfLineRule("%%", commentToken));
-
-	    setPredicateRules(rules.toArray(new IPredicateRule[rules.size()]));
+	    IToken multiLineCommentToken = new Token(MULTILINE_COMMENT);
+	    IToken stringToken = new Token(STRING);
+	    setPredicateRules(new IPredicateRule[] {
+	    	new MultiLineRule("%{", "%}", multiLineCommentToken, (char) 0, true),
+	    	new EndOfLineRule("%", commentToken),
+	    	new StringRule('\'', stringToken, (char) 0, true, true),
+	    	new StringRule('"', stringToken, (char) 0, true, false)
+	    });
 	}
 
 }
