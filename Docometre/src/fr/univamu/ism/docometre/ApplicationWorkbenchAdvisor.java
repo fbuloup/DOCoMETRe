@@ -285,7 +285,26 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 		} catch (CoreException | ExecutionException e) {
 			e.printStackTrace();
 		}
-		
+
 		return false;
+	}
+
+	/*
+	 * Workspace is saved again once all windows, editors and views are closed (as Eclipse IDE does).
+	 * Resources modified after preShutdown save (e.g. while closing parts) would otherwise
+	 * schedule a workspace snapshot, which is then run by Workspace.close() during framework shutdown,
+	 * after DOCoMETRe bundle is stopped. If this late snapshot fails, its exception is hidden by
+	 * "endRule without matching beginRule: R/" thrown by ResourcesPlugin.stop().
+	 * A full save discards this pending snapshot.
+	 */
+	@Override
+	public void postShutdown() {
+		try {
+			ResourcesPlugin.getWorkspace().save(true, new NullProgressMonitor());
+		} catch (CoreException | RuntimeException e) {
+			Activator.logErrorMessageWithCause(e);
+			e.printStackTrace();
+		}
+		super.postShutdown();
 	}
 }
