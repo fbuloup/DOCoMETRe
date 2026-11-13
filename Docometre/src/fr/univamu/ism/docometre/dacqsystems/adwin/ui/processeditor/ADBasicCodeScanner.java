@@ -56,170 +56,114 @@ import org.eclipse.swt.SWT;
 
 import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.ThemeColors;
-import fr.univamu.ism.docometre.editors.WordsDetector;
+import fr.univamu.ism.docometre.analyse.matlabeditor.FloatingPointNumberRule;
+import fr.univamu.ism.docometre.editors.IdentifierDetector;
+import fr.univamu.ism.docometre.editors.WholeWordRule;
 
 public final class ADBasicCodeScanner extends RuleBasedScanner {
 	
 	private static String[] IMPORT = {"IMPORT"};
 	private static String[] INCLUDE = {"#INCLUDE"};
-	private static String[] DEFINE = {"#DEFINE", "FPAR_", "DATA_"};
-	private static String[] DECLARE = {"DIM", "AS", "LONG", "FLOAT", "SHORT", "INTEGER", "STRING"};
+	private static String[] DEFINE = {"#DEFINE", "#IF", "#ELSEIF", "#ELSE", "#ENDIF"};
+	private static String[] DECLARE = {"DIM", "AS", "LONG", "FLOAT", "SHORT", "INTEGER", "STRING", "FIFO"};
 	private static String[] SEGMENTS = {"LOWINIT:", "INIT:", "EVENT:", "FINISH:"};
-	private static String[] RESERVED_WORDS = {"for", "FIFO_CLEAR", "FIFO_EMPTY", "IF", "ELSE", "ENDIF", "THEN", "INC", "GLOBAL_DELAY", "DO", "UNTIL", "FOR", "TO", "NEXT", "SHIFT_RIGHT", "OR", "AND", "NOP"};
+	private static String[] RESERVED_WORDS = {"FIFO_CLEAR", "FIFO_EMPTY", "FIFO_FULL", "IF", "ELSE", "ELSEIF", "ENDIF", "THEN", "INC", "DEC", 
+											  "GLOBAL_DELAY", "GLOBALDELAY", "PROCESSDELAY", "DO", "UNTIL", "FOR", "TO", "DOWNTO", "STEP", "NEXT", "EXIT",
+											  "SELECTCASE", "CASE", "CASEELSE", "ENDSELECT", "SUB", "ENDSUB", "FUNCTION", "ENDFUNCTION", "RETURN",
+											  "SHIFT_RIGHT", "SHIFT_LEFT", "OR", "AND", "XOR", "NOT", "NOP"};
+	private static int NB_PAR_FPAR = 80;
+	private static int NB_DATA = 200;
 	
-	
-//		 // Add rule for whitespace
-//	    rules.add(new WhitespaceRule(new IWhitespaceDetector() {
-//	      public boolean isWhitespace(char c) {
-//	        return Character.isWhitespace(c);
-//	      }
-//	    }));
-	
-	public static RuleBasedScanner getSegmentScanner(ADBasicSourceEditor adBasicSourceEditor) {
-		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
-		List<IRule> rules= new ArrayList<IRule>();
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.RED), 
-													ThemeColors.getBackgroundColor(), 
-				   									SWT.NORMAL, 
-				   									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, adBasicSourceEditor.getFontSize()));
-		IToken token = new Token(attribute);
-        WordRule wordRule = new WordRule(new WordsDetector(SEGMENTS), token);
-        rules.add(wordRule);
-        ruleBasedScanner.setRules(rules.toArray(new IRule[rules.size()]));
-        return ruleBasedScanner;
+	/**
+	 * Keywords proposed by content assist in expressions : instructions and operators
+	 * (declarations, directives and segments are not used inside expressions)
+	 */
+	public static String[] getCompletionKeywords() {
+		return RESERVED_WORDS.clone();
 	}
 	
-	public static RuleBasedScanner getDefineScanner(ADBasicSourceEditor adBasicSourceEditor) {
-		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
-		List<IRule> rules= new ArrayList<IRule>();
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLUE),
-													ThemeColors.getBackgroundColor(), 
-				 									SWT.NORMAL,
-				 									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, adBasicSourceEditor.getFontSize()));
-		IToken token = new Token(attribute);
-        WordRule wordRule = new WordRule(new WordsDetector(DEFINE), token);
-        rules.add(wordRule);
-        IRule[] commentRules = getCommentRules(adBasicSourceEditor);
-        for (int i = 0; i < commentRules.length; i++) rules.add(commentRules[i]);
-        NumberRule numberRule = new NumberRule(token);
-	    rules.add(numberRule);
-        ruleBasedScanner.setRules(rules.toArray(new IRule[rules.size()]));
-        return ruleBasedScanner;
-	}
-	
-	public static RuleBasedScanner getImportScanner(ADBasicSourceEditor adBasicSourceEditor) {
-		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
-		List<IRule> rules= new ArrayList<IRule>();
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLUE),
-													ThemeColors.getBackgroundColor(), 
-				 									SWT.NORMAL,
-				 									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, adBasicSourceEditor.getFontSize()));
-		IToken token = new Token(attribute);
-        WordRule wordRule = new WordRule(new WordsDetector(IMPORT), token);
-        rules.add(wordRule);
-        IRule[] commentRules = getCommentRules(adBasicSourceEditor);
-        for (int i = 0; i < commentRules.length; i++) rules.add(commentRules[i]);
-        ruleBasedScanner.setRules(rules.toArray(new IRule[rules.size()]));
-        return ruleBasedScanner;
-	}
-	
-	public static RuleBasedScanner getIncludeScanner(ADBasicSourceEditor adBasicSourceEditor) {
-		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
-		List<IRule> rules= new ArrayList<IRule>();
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLUE),
-													ThemeColors.getBackgroundColor(), 
-				 									SWT.NORMAL,
-				 									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, adBasicSourceEditor.getFontSize()));
-		IToken token = new Token(attribute);
-        WordRule wordRule = new WordRule(new WordsDetector(INCLUDE), token);
-        rules.add(wordRule);
-        IRule[] commentRules = getCommentRules(adBasicSourceEditor);
-        for (int i = 0; i < commentRules.length; i++) rules.add(commentRules[i]);
-        ruleBasedScanner.setRules(rules.toArray(new IRule[rules.size()]));
-        return ruleBasedScanner;
-	}
-	
-	private static IRule[] getCommentRules(ADBasicSourceEditor adBasicSourceEditor) {
-		List<IRule> rules= new ArrayList<IRule>();
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.GREEN), 
+	private static IToken createToken(String color, String font, int fontSize) {
+		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(color), 
 													ThemeColors.getBackgroundColor(), 
 													SWT.NORMAL, 
-													DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, adBasicSourceEditor.getFontSize()));
-		IToken token = new Token(attribute);
-		IRule commentRule1 = new EndOfLineRule("REM", token);
-		IRule commentRule2 = new EndOfLineRule(":REM", token);
-		IRule commentRule3 = new EndOfLineRule("'", token);
-        rules.add(commentRule1);
-        rules.add(commentRule2);
-        rules.add(commentRule3);
-        return rules.toArray(new IRule[rules.size()]);
+													DocometreApplication.getFont(font, fontSize));
+		return new Token(attribute);
 	}
 	
-	public static RuleBasedScanner getCommentScanner(ADBasicSourceEditor adBasicSourceEditor) {
-		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
-        ruleBasedScanner.setRules(getCommentRules(adBasicSourceEditor));
-        return ruleBasedScanner;
+	private static void addWords(WordRule wordRule, String[] words, IToken token) {
+		for (String word : words) wordRule.addWord(word, token);
 	}
 	
-	public static RuleBasedScanner getDeclareScanner(ADBasicSourceEditor adBasicSourceEditor) {
+	/*
+	 * Scanner for the default partition : one case insensitive WordRule reads complete 
+	 * identifiers (and #directives) and colors them only if they are keywords. 
+	 * Digits inside identifiers (ean1, Acquisition_ean1...) are consumed by the WordRule, 
+	 * so the NumberRule only colors real numbers.
+	 */
+	public static RuleBasedScanner getCodeScanner(int fontSize) {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
-		List<IRule> rules= new ArrayList<IRule>();
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.ORANGE),
-													ThemeColors.getBackgroundColor(), 
-				 									SWT.NORMAL,
-				 									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, adBasicSourceEditor.getFontSize()));
-		IToken token = new Token(attribute);
-        WordRule wordRule = new WordRule(new WordsDetector(DECLARE), token);
-        rules.add(wordRule);
-        IRule[] commentRules = getCommentRules(adBasicSourceEditor);
-        for (int i = 0; i < commentRules.length; i++) rules.add(commentRules[i]);
-//        rules.add(getWhiteSpaceRule());
-        ruleBasedScanner.setRules(rules.toArray(new IRule[rules.size()]));
-        return ruleBasedScanner;
+		List<IRule> rules = new ArrayList<IRule>();
+		
+		IToken segmentToken = createToken(DocometreApplication.RED, DocometreApplication.COURIER_NEW_BOLD, fontSize);
+		for (String segment : SEGMENTS) rules.add(new WholeWordRule(segment, segmentToken, true, false));
+		
+		WordRule wordRule = new WordRule(new IdentifierDetector("#"), new Token(null), true);
+		IToken blueBoldToken = createToken(DocometreApplication.BLUE, DocometreApplication.COURIER_NEW_BOLD, fontSize);
+		addWords(wordRule, DEFINE, blueBoldToken);
+		for (int i = 1; i <= NB_PAR_FPAR; i++) {
+			wordRule.addWord("PAR_" + i, blueBoldToken);
+			wordRule.addWord("FPAR_" + i, blueBoldToken);
+		}
+		for (int i = 1; i <= NB_DATA; i++) wordRule.addWord("DATA_" + i, blueBoldToken);
+		addWords(wordRule, DECLARE, createToken(DocometreApplication.ORANGE, DocometreApplication.COURIER_NEW_BOLD, fontSize));
+		addWords(wordRule, RESERVED_WORDS, createToken(DocometreApplication.ORANGE, DocometreApplication.COURIER_NEW, fontSize));
+		rules.add(wordRule);
+		
+		// Decimal numbers (0.5, 1.5e-3) are colored as a whole, before integers
+		IToken numberToken = createToken(DocometreApplication.BLUE, DocometreApplication.COURIER_NEW, fontSize);
+		rules.add(new FloatingPointNumberRule(numberToken));
+		rules.add(new NumberRule(numberToken));
+		
+		ruleBasedScanner.setRules(rules.toArray(new IRule[rules.size()]));
+		return ruleBasedScanner;
 	}
 	
-//	private static WhitespaceRule getWhiteSpaceRule() {
-//		WhitespaceRule whitespaceRule = new WhitespaceRule(new IWhitespaceDetector() {
-//			@Override
-//			public boolean isWhitespace(char c) {
-//				return Character.isWhitespace(c);
-//			}
-//		});
-//	    return whitespaceRule;
-//	}
-	
-	public static RuleBasedScanner getReservedWordsScanner(ADBasicSourceEditor adBasicSourceEditor) {
+	/*
+	 * IMPORT and #INCLUDE lines : only the keyword is colored, not the file path.
+	 */
+	private static RuleBasedScanner getDirectiveScanner(String[] directive, int fontSize) {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
-		List<IRule> rules= new ArrayList<IRule>();
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.ORANGE),
-													ThemeColors.getBackgroundColor(), 
-				 									SWT.NORMAL,
-				 									DocometreApplication.getFont(DocometreApplication.COURIER_NEW, adBasicSourceEditor.getFontSize()));
-		IToken token = new Token(attribute);
-        WordRule wordRule = new WordRule(new WordsDetector(RESERVED_WORDS), token);
-        rules.add(wordRule);
-        IRule[] commentRules = getCommentRules(adBasicSourceEditor);
-        for (int i = 0; i < commentRules.length; i++) rules.add(commentRules[i]);
-//        rules.add(getWhiteSpaceRule());
-        ruleBasedScanner.setRules(rules.toArray(new IRule[rules.size()]));
-        return ruleBasedScanner;
+		List<IRule> rules = new ArrayList<IRule>();
+		WordRule wordRule = new WordRule(new IdentifierDetector("#"), new Token(null), true);
+		addWords(wordRule, directive, createToken(DocometreApplication.BLUE, DocometreApplication.COURIER_NEW_BOLD, fontSize));
+		rules.add(wordRule);
+		for (IRule commentRule : getCommentRules(fontSize)) rules.add(commentRule);
+		ruleBasedScanner.setRules(rules.toArray(new IRule[rules.size()]));
+		return ruleBasedScanner;
 	}
 	
-	public static RuleBasedScanner getParFparScanner(ADBasicSourceEditor adBasicSourceEditor) {
+	public static RuleBasedScanner getImportScanner(int fontSize) {
+		return getDirectiveScanner(IMPORT, fontSize);
+	}
+	
+	public static RuleBasedScanner getIncludeScanner(int fontSize) {
+		return getDirectiveScanner(INCLUDE, fontSize);
+	}
+	
+	public static RuleBasedScanner getStringScanner(int fontSize) {
+		// Strings keep the default color : this scanner only prevents keywords from being colored inside them
+		return new RuleBasedScanner();
+	}
+	
+	private static IRule[] getCommentRules(int fontSize) {
+		IToken token = createToken(DocometreApplication.GREEN, DocometreApplication.COURIER_NEW_BOLD, fontSize);
+		return new IRule[] {new EndOfLineRule("'", token), new WholeWordRule("REM", token, true, true)};
+	}
+	
+	public static RuleBasedScanner getCommentScanner(int fontSize) {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
-		List<IRule> rules= new ArrayList<IRule>();
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLUE),
-													ThemeColors.getBackgroundColor(), 
-				 									SWT.NORMAL,
-				 									DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, adBasicSourceEditor.getFontSize()));
-		IToken token = new Token(attribute);
-		String[] parfpar = new String[160];
-		for (int i = 1; i <= 80; i++) parfpar[i-1] = "PAR_" + i;
-		for (int i = 1; i <= 80; i++) parfpar[80 + i-1] = "FPAR_" + i;
-        WordRule wordRule = new WordRule(new WordsDetector(parfpar), token);
-        rules.add(wordRule);
-        ruleBasedScanner.setRules(rules.toArray(new IRule[rules.size()]));
-        return ruleBasedScanner;
+		ruleBasedScanner.setRules(getCommentRules(fontSize));
+		return ruleBasedScanner;
 	}
 
 }

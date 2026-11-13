@@ -41,59 +41,24 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.analyse.editors.functioneditor;
 
-import java.util.ArrayList;
-
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.rules.EndOfLineRule;
 import org.eclipse.jface.text.rules.IPredicateRule;
-import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.RuleBasedPartitionScanner;
 import org.eclipse.jface.text.rules.Token;
-import org.eclipse.jface.text.rules.WordPatternRule;
 
-import fr.univamu.ism.docometre.editors.WordsDetector;
-
+/**
+ * Only comments are partitions. Property keys and reserved words are colored 
+ * by CustomerFunctionCodeScanner.getCodeScanner in the default partition.
+ */
 public class CustomerFunctionRulesPartitionScanner extends RuleBasedPartitionScanner {
 
 	public static final String COMMENT = "COMMENT"; 
-	public static final String RESERVED_WORDS = "RESERVED_WORDS"; 
 	
-	public static final String[] PARTITIONS = new String[]{IDocument.DEFAULT_CONTENT_TYPE, COMMENT, RESERVED_WORDS};
+	public static final String[] PARTITIONS = new String[]{IDocument.DEFAULT_CONTENT_TYPE, COMMENT};
 	
 	public CustomerFunctionRulesPartitionScanner() {
-		
-	    IToken commentToken = new Token(COMMENT);
-	    IToken reservedWordsToken = new Token(RESERVED_WORDS);
-	    
-	    ArrayList<IPredicateRule> rules = new ArrayList<IPredicateRule>();
-		rules.add(new EndOfLineRule("#", commentToken));
-//		rules.add(new MultiLineRule("/*", "*/", commentToken, (char) 0, true)); 
-		
-		String[] reservedWords = CustomerFunctionCodeScanner.RESERVED_WORDS;
-		for (int i = 0; i < reservedWords.length; i++) {
-			rules.add(createWordPatternRule(reservedWords[i], "", reservedWordsToken));
-			rules.add(createWordPatternRule(reservedWords[i], "\n", reservedWordsToken));
-			rules.add(createWordPatternRule(reservedWords[i], "\t", reservedWordsToken));
-		}
-		
-	    setPredicateRules(rules.toArray(new IPredicateRule[rules.size()]));
-	}
-
-
-	private WordPatternRule createWordPatternRule(String word, String prefix, IToken token) {
-		String start = ""; 
-		String end = "";
-		if(word.length() > 3) {
-			start = word.substring(0, 2);
-			end = word.substring(word.length() - 2, word.length());
-		} else if(word.length() == 3) {
-			start = word.substring(0, 2);
-			end = word.substring(2, 3);
-		} else {
-			start = word.substring(0, 1);
-			end = word.substring(1, 2);
-		}
-		return new WordPatternRule(new WordsDetector(new String[] { word }), prefix + start, end, token);
+	    setPredicateRules(new IPredicateRule[] {new EndOfLineRule("#", new Token(COMMENT))});
 	}
 
 }

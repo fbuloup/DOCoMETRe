@@ -81,14 +81,14 @@ public class DataProcessScriptSourceEditor extends SourceEditor {
 		    document.setDocumentPartitioner(matlabFastPartitioner);
 		    matlabFastPartitioner.connect(document);
 			sourceViewer.setDocument(document, annotationModel, -1, -1);
-			sourceViewerConfiguration = new MatlabSourceViewerConfiguration(this);
+			sourceViewerConfiguration = new MatlabSourceViewerConfiguration(fontSize);
 		}
 		if(MathEnginePreferencesConstants.MATH_ENGINE_PYTHON.equals(mathEngine)) {
 			FastPartitioner pythonFastPartitioner = new FastPartitioner(new PythonRulesPartitionScanner(), PythonRulesPartitionScanner.PARTITIONS);
 		    document.setDocumentPartitioner(pythonFastPartitioner);
 		    pythonFastPartitioner.connect(document);
 			sourceViewer.setDocument(document, annotationModel, -1, -1);
-			sourceViewerConfiguration = new PythonSourceViewerConfiguration(this);
+			sourceViewerConfiguration = new PythonSourceViewerConfiguration(fontSize);
 		}
 
 		sourceViewer.configure(sourceViewerConfiguration);
@@ -114,9 +114,9 @@ public class DataProcessScriptSourceEditor extends SourceEditor {
 					((Composite) sourceViewer.getControl()).layout(true);
 					sourceViewer.setHyperlinkDetectors(null, 0);
 					if (sourceViewerConfiguration instanceof MatlabSourceViewerConfiguration)
-						sourceViewer.configure(new MatlabSourceViewerConfiguration(DataProcessScriptSourceEditor.this));
+						sourceViewer.configure(new MatlabSourceViewerConfiguration(fontSize));
 					if (sourceViewerConfiguration instanceof PythonSourceViewerConfiguration)
-						sourceViewer.configure(new PythonSourceViewerConfiguration(DataProcessScriptSourceEditor.this));
+						sourceViewer.configure(new PythonSourceViewerConfiguration(fontSize));
 				}
 			}
 		});

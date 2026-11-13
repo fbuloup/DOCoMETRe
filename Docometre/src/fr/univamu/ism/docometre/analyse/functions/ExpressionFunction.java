@@ -44,7 +44,7 @@ package fr.univamu.ism.docometre.analyse.functions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
+import java.util.function.Supplier;
 
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.bindings.keys.ParseException;
@@ -53,19 +53,15 @@ import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.fieldassist.TextContentAdapter;
-import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentListener;
-import org.eclipse.jface.text.ITextViewer;
-import org.eclipse.jface.text.contentassist.CompletionProposal;
+import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
-import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
-import org.eclipse.jface.text.contentassist.IContextInformation;
-import org.eclipse.jface.text.contentassist.IContextInformationValidator;
+import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
@@ -80,12 +76,12 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
-import org.eclipse.swt.events.KeyAdapter;
-import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.custom.VerifyKeyListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -96,15 +92,24 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.ISharedImages;
 
 import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.SelectedExprimentContributionItem;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.analyse.editors.ChannelsContentProvider;
+import fr.univamu.ism.docometre.analyse.matlabeditor.MatlabCodeScanner;
+import fr.univamu.ism.docometre.analyse.matlabeditor.MatlabRulesPartitionScanner;
+import fr.univamu.ism.docometre.analyse.matlabeditor.MatlabSourceViewerConfiguration;
+import fr.univamu.ism.docometre.analyse.pythoneditor.PythonCodeScanner;
+import fr.univamu.ism.docometre.analyse.pythoneditor.PythonRulesPartitionScanner;
+import fr.univamu.ism.docometre.analyse.pythoneditor.PythonSourceViewerConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.functions.DocometreContentProposalProvider;
 import fr.univamu.ism.docometre.dacqsystems.functions.GenericFunction;
 import fr.univamu.ism.docometre.dialogs.FunctionalBlockConfigurationDialog;
+import fr.univamu.ism.docometre.editors.WordsCompletionProcessor;
+import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
 import fr.univamu.ism.process.Block;
 import fr.univamu.ism.process.Script;
@@ -152,7 +157,7 @@ public final class ExpressionFunction extends GenericFunction {
 		tabFolder.setSelection(0);
 		
 		Composite commentContainer = new Composite(container, SWT.NORMAL);
-		commentContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		commentContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		commentContainer.setLayout(new GridLayout(3, false));
 		
 		// Default tabitem is expressions 
@@ -193,107 +198,61 @@ public final class ExpressionFunction extends GenericFunction {
 		
 		sourceViewer = new SourceViewer(tabFolder, null, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
 		sourceViewer.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		sourceViewer.setDocument(new Document());
+		Document document = new Document();
 		
-		IContentAssistProcessor contentAssistProcessor = new IContentAssistProcessor() {
-			
-			public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int documentOffset) {
-				List<ICompletionProposal> proposalsList = new ArrayList<ICompletionProposal>(0);
-				IDocument document = viewer.getDocument();
-				
-				String qualifier = getQualifier(document, documentOffset);
-				computeStructureProposals(viewer,qualifier, documentOffset, proposalsList);
-				ICompletionProposal[] proposals = new ICompletionProposal[proposalsList.size()];
-				proposalsList.toArray(proposals);
-				
-				return proposals;
-			}
-
-			private String getQualifier(IDocument document, int documentOffset) {
-				if(documentOffset == 0) return "";
-				StringBuffer stringBuffer = new StringBuffer();
-				try {
-					char c = document.getChar(--documentOffset);
-					while (!Character.isWhitespace(c)) {
-						stringBuffer.append(c);
-						if(documentOffset > 0) c = document.getChar(--documentOffset);
-						else break;
-					}
-					return stringBuffer.reverse().toString();
-				} catch (BadLocationException e) {
-					e.printStackTrace();
-					Activator.logErrorMessageWithCause(e);
-				} 
-				return "";
-			}
-			
-			private void computeStructureProposals(ITextViewer viewer, String qualifier, int documentOffset, List<ICompletionProposal> proposalsList) {
-				
-				ChannelsContentProvider channelsContentProvider = new ChannelsContentProvider(true, true, true, false, false, false, false);
-				Object[] elements = channelsContentProvider.getElements(SelectedExprimentContributionItem.selectedExperiment);
-				
-				for (int i = 0; i < elements.length; i++) {
-					Channel channel = ((Channel)elements[i]);
-					String keyword = channel.getFullName();
-					Image image = null;
-					if(MathEngineFactory.getMathEngine().isSignal(channel)) image = Activator.getImage(IImageKeys.SIGNAL_ICON);
-					if(MathEngineFactory.getMathEngine().isCategory(channel)) image = Activator.getImage(IImageKeys.CATEGORY_ICON);
-					if(MathEngineFactory.getMathEngine().isEvent(channel)) image = Activator.getImage(IImageKeys.EVENT_ICON);
-					if(keyword.startsWith(qualifier)) {
-						CompletionProposal proposal = new CompletionProposal(keyword,documentOffset - qualifier.length(), qualifier.length(), keyword.length(), image,null,null,null);
-						proposalsList.add(proposal);
-					}
+		// Content assist (Ctrl+Space) : channels of the loaded subjects (computed at each request),
+		// then keywords and functions of the math engine language
+		WordsCompletionProcessor contentAssistProcessor = new WordsCompletionProcessor().setExtraPrefixCharacters(".");
+		contentAssistProcessor.addWords(getChannelsNames(new ChannelsContentProvider(true, false, false, false, false, false, false)), Activator.getImage(IImageKeys.SIGNAL_ICON));
+		contentAssistProcessor.addWords(getChannelsNames(new ChannelsContentProvider(false, true, false, false, false, false, false)), Activator.getImage(IImageKeys.CATEGORY_ICON));
+		contentAssistProcessor.addWords(getChannelsNames(new ChannelsContentProvider(false, false, true, false, false, false, false)), Activator.getImage(IImageKeys.EVENT_ICON));
+		contentAssistProcessor.addWords(getChannelsNames(new ChannelsContentProvider(false, false, false, true, true, false, true)), null);
+		
+		// Syntax coloring of the math engine language, as in the script source editor
+		int fontSize = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.EDITORS_FONT_SIZE);
+		IDocumentPartitioner documentPartitioner = null;
+		SourceViewerConfiguration sourceViewerConfiguration = null;
+		if(MathEngineFactory.isMatlab()) {
+			contentAssistProcessor.addWords(MatlabCodeScanner.getCompletionKeywords(), null);
+			documentPartitioner = new FastPartitioner(new MatlabRulesPartitionScanner(), MatlabRulesPartitionScanner.PARTITIONS);
+			sourceViewerConfiguration = new MatlabSourceViewerConfiguration(fontSize) {
+				@Override
+				public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
+					return createContentAssistant(contentAssistProcessor);
 				}
-				
-				channelsContentProvider = new ChannelsContentProvider(false, false, false, true, true, false, true);
-				elements = channelsContentProvider.getElements(SelectedExprimentContributionItem.selectedExperiment);
-				for (int i = 0; i < elements.length; i++) {
-					Channel channel = ((Channel)elements[i]);
-					String keyword = channel.getFullName();
-					if(keyword.startsWith(qualifier)) {
-						CompletionProposal proposal = new CompletionProposal(keyword,documentOffset - qualifier.length(), qualifier.length(), keyword.length(), null,null,null,null);
-						proposalsList.add(proposal);
-					}
+			};
+		} else if(MathEngineFactory.isPython()) {
+			contentAssistProcessor.addWords(PythonCodeScanner.getCompletionKeywords(), null);
+			documentPartitioner = new FastPartitioner(new PythonRulesPartitionScanner(), PythonRulesPartitionScanner.PARTITIONS);
+			sourceViewerConfiguration = new PythonSourceViewerConfiguration(fontSize) {
+				@Override
+				public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
+					return createContentAssistant(contentAssistProcessor);
 				}
-			}
-
-			public char[] getCompletionProposalAutoActivationCharacters() {
-				return null;
-			}
-
-			public String getErrorMessage() {
-				return null;
-			}
-
-			public IContextInformation[] computeContextInformation(ITextViewer arg0, int arg1) {
-				return null;
-			}
-
-			public char[] getContextInformationAutoActivationCharacters() {
-				return null;
-			}
-
-			public IContextInformationValidator getContextInformationValidator() {
-				return null;
-			}
-		};
-		SourceViewerConfiguration sourceViewerConfiguration = new SourceViewerConfiguration() {
-			@Override
-			public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
-				ContentAssistant assistant = new ContentAssistant();
-				assistant.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
-				assistant.setContentAssistProcessor(contentAssistProcessor, IDocument.DEFAULT_CONTENT_TYPE);
-				assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);
-				assistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
-				return assistant;
-			}
-		};
+			};
+		} else {
+			sourceViewerConfiguration = new SourceViewerConfiguration() {
+				@Override
+				public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
+					return createContentAssistant(contentAssistProcessor);
+				}
+			};
+		}
+		if(documentPartitioner != null) {
+			document.setDocumentPartitioner(documentPartitioner);
+			documentPartitioner.connect(document);
+			// Same font as the colored tokens
+			sourceViewer.getTextWidget().setFont(DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, fontSize));
+		}
+		sourceViewer.setDocument(document);
 		sourceViewer.configure(sourceViewerConfiguration);
-		sourceViewer.getTextWidget().addKeyListener(new KeyAdapter() {
+		// Content assist on Ctrl+Space, as in the expressions tab
+		sourceViewer.appendVerifyKeyListener(new VerifyKeyListener() {
 			@Override
-			public void keyPressed(KeyEvent e) {
-				if(((e.stateMask & SWT.CTRL) == SWT.CTRL) && (e.keyCode == 32)) {
-					sourceViewer.doOperation(ISourceViewer.CONTENTASSIST_PROPOSALS);
+			public void verifyKey(VerifyEvent event) {
+				if(event.stateMask == SWT.CTRL && event.keyCode == ' ') {
+					if(sourceViewer.canDoOperation(ISourceViewer.CONTENTASSIST_PROPOSALS)) sourceViewer.doOperation(ISourceViewer.CONTENTASSIST_PROPOSALS);
+					event.doit = false;
 				}
 			}
 		});
@@ -307,6 +266,26 @@ public final class ExpressionFunction extends GenericFunction {
 			}
 		});
 		return sourceViewer.getTextWidget();
+	}
+
+	/*
+	 * Full names of the channels given by the provider for the selected experiment, computed at each call
+	 */
+	private static Supplier<String[]> getChannelsNames(ChannelsContentProvider channelsContentProvider) {
+		return () -> {
+			Object[] elements = channelsContentProvider.getElements(SelectedExprimentContributionItem.selectedExperiment);
+			if(elements == null) return new String[0];
+			return Arrays.stream(elements).map(element -> ((Channel)element).getFullName()).toArray(String[]::new);
+		};
+	}
+	
+	private static IContentAssistant createContentAssistant(IContentAssistProcessor contentAssistProcessor) {
+		ContentAssistant contentAssistant = new ContentAssistant();
+		// Proposals in code only : not in comments nor strings
+		contentAssistant.setContentAssistProcessor(contentAssistProcessor, IDocument.DEFAULT_CONTENT_TYPE);
+		contentAssistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);
+		contentAssistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
+		return contentAssistant;
 	}
 
 	private Composite createExpressionsTabItem(CTabFolder tabFolder, Object context) {

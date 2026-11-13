@@ -450,7 +450,10 @@ public class ArduinoUnoProcess extends Process {
 	    					boolean replyReceived = waitForStopReply(stopReplyTimeOut);
 	    					double replyDelayMs = (System.nanoTime() - replyStartNanos)/1e6;
 	    					if(replyReceived) appendToEventDiary("\nReceived stop 's' char after " + String.format("%.1f", replyDelayMs) + " ms");
-	    					else appendToEventDiary("\nStop 's' char not received after " + stopReplyTimeOut + " ms");
+	    					else {
+	    						appendToEventDiary("\nStop 's' char not received after " + stopReplyTimeOut + " ms");
+	    						appendErrorMarkerAtCurrentDiaryLine("Stop 's' char not received after " + stopReplyTimeOut + " ms");
+	    					}
 	    					TrialTimings.log("Arduino stop reply ('s') " + (replyReceived ? "received after " + String.format("%.1f", replyDelayMs) + " ms" : "not received (time out " + stopReplyTimeOut + " ms)"));
 	    				}
 	    				// 's' to restart the Arduino, then wait for its 'w' : restarted and ready for next start
@@ -465,7 +468,10 @@ public class ArduinoUnoProcess extends Process {
 	    				} else appendToEventDiary("\nArduino already restarted ('w' char received while waiting for its 's' char)");
 	    				double readyDelayMs = (System.nanoTime() - resetStartNanos)/1e6;
 	    				if(ready) appendToEventDiary("\nArduino restarted ('w' char received) after " + String.format("%.1f", readyDelayMs) + " ms");
-	    				else appendToEventDiary("\nArduino restart ('w' char) not received after " + READY_TIMEOUT_MS + " ms : compile and upload the process again to get it");
+	    				else {
+	    					appendToEventDiary("\nArduino restart ('w' char) not received after " + READY_TIMEOUT_MS + " ms : compile and upload the process again to get it");
+	    					appendErrorMarkerAtCurrentDiaryLine("Arduino restart ('w' char) not received : compile and upload the process again");
+	    				}
 	    				TrialTimings.log("Arduino restart ('w') " + (ready ? "received after " + String.format("%.1f", readyDelayMs) + " ms" : "not received (time out " + READY_TIMEOUT_MS + " ms, process compiled before ? compile it again)"));
 	    				TrialTimings.step("stop handshake with Arduino ('s' chars and waits)");
 	    				if(propagationExpected && propagatedValues == null) {

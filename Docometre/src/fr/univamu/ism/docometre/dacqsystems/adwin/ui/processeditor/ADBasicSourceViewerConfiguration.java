@@ -42,29 +42,22 @@
 package fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor;
 
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
-import org.eclipse.jface.text.rules.IRule;
-import org.eclipse.jface.text.rules.IToken;
-import org.eclipse.jface.text.rules.NumberRule;
-import org.eclipse.jface.text.rules.RuleBasedScanner;
-import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
-import org.eclipse.swt.SWT;
-
-import fr.univamu.ism.docometre.DocometreApplication;
-import fr.univamu.ism.docometre.ThemeColors;
 
 public class ADBasicSourceViewerConfiguration extends SourceViewerConfiguration {
 	
 	private PresentationReconciler presentationReconciler;
-	private ADBasicSourceEditor adBasicSourceEditor;
+	private int fontSize;
 	
-	public ADBasicSourceViewerConfiguration(ADBasicSourceEditor adBasicSourceEditor) {
-		this.adBasicSourceEditor = adBasicSourceEditor;
+	/**
+	 * @param fontSize font size of the colored tokens (the editor font size, or the editors font size preference)
+	 */
+	public ADBasicSourceViewerConfiguration(int fontSize) {
+		this.fontSize = fontSize;
 	}
 
 	@Override
@@ -73,51 +66,26 @@ public class ADBasicSourceViewerConfiguration extends SourceViewerConfiguration 
 		
 		presentationReconciler = (PresentationReconciler) super.getPresentationReconciler(sourceViewer);
 		
-		DefaultDamagerRepairer defaultDamagerRepairer = new DefaultDamagerRepairer(ADBasicCodeScanner.getCommentScanner(adBasicSourceEditor));		
+		DefaultDamagerRepairer defaultDamagerRepairer = new DefaultDamagerRepairer(ADBasicCodeScanner.getCommentScanner(fontSize));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, ADBasicRulesPartitionScanner.COMMENT);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, ADBasicRulesPartitionScanner.COMMENT);
 		
-		
-		defaultDamagerRepairer = new DefaultDamagerRepairer(ADBasicCodeScanner.getImportScanner(adBasicSourceEditor));		
+		defaultDamagerRepairer = new DefaultDamagerRepairer(ADBasicCodeScanner.getImportScanner(fontSize));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, ADBasicRulesPartitionScanner.IMPORT);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, ADBasicRulesPartitionScanner.IMPORT);
 		
-		defaultDamagerRepairer = new DefaultDamagerRepairer(ADBasicCodeScanner.getIncludeScanner(adBasicSourceEditor));		
+		defaultDamagerRepairer = new DefaultDamagerRepairer(ADBasicCodeScanner.getIncludeScanner(fontSize));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, ADBasicRulesPartitionScanner.INCLUDE);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, ADBasicRulesPartitionScanner.INCLUDE);
 		
-		defaultDamagerRepairer = new DefaultDamagerRepairer(ADBasicCodeScanner.getDefineScanner(adBasicSourceEditor));		
-		presentationReconciler.setDamager(defaultDamagerRepairer, ADBasicRulesPartitionScanner.DEFINE);
-		presentationReconciler.setRepairer(defaultDamagerRepairer, ADBasicRulesPartitionScanner.DEFINE);
+		defaultDamagerRepairer = new DefaultDamagerRepairer(ADBasicCodeScanner.getStringScanner(fontSize));		
+		presentationReconciler.setDamager(defaultDamagerRepairer, ADBasicRulesPartitionScanner.STRING);
+		presentationReconciler.setRepairer(defaultDamagerRepairer, ADBasicRulesPartitionScanner.STRING);
 		
-		defaultDamagerRepairer = new DefaultDamagerRepairer(ADBasicCodeScanner.getSegmentScanner(adBasicSourceEditor));		
-		presentationReconciler.setDamager(defaultDamagerRepairer, ADBasicRulesPartitionScanner.SEGMENT);
-		presentationReconciler.setRepairer(defaultDamagerRepairer, ADBasicRulesPartitionScanner.SEGMENT);
-		
-		defaultDamagerRepairer = new DefaultDamagerRepairer(ADBasicCodeScanner.getDeclareScanner(adBasicSourceEditor));		
-		presentationReconciler.setDamager(defaultDamagerRepairer, ADBasicRulesPartitionScanner.DECLARE);
-		presentationReconciler.setRepairer(defaultDamagerRepairer, ADBasicRulesPartitionScanner.DECLARE);
-		
-		defaultDamagerRepairer = new DefaultDamagerRepairer(ADBasicCodeScanner.getReservedWordsScanner(adBasicSourceEditor));		
-		presentationReconciler.setDamager(defaultDamagerRepairer, ADBasicRulesPartitionScanner.RESERVED_WORDS);
-		presentationReconciler.setRepairer(defaultDamagerRepairer, ADBasicRulesPartitionScanner.RESERVED_WORDS);
-		
-		defaultDamagerRepairer = new DefaultDamagerRepairer(ADBasicCodeScanner.getParFparScanner(adBasicSourceEditor));		
-		presentationReconciler.setDamager(defaultDamagerRepairer, ADBasicRulesPartitionScanner.PAR_FPAR);
-		presentationReconciler.setRepairer(defaultDamagerRepairer, ADBasicRulesPartitionScanner.PAR_FPAR);
-		
-		RuleBasedScanner defaultScanner = new RuleBasedScanner();
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLUE),
-													ThemeColors.getBackgroundColor(), 
-													SWT.NORMAL,
-													DocometreApplication.getFont(DocometreApplication.COURIER_NEW, adBasicSourceEditor.getFontSize()));
-		IToken token = new Token(attribute);
-		NumberRule numberRule = new NumberRule(token);		
-		defaultScanner.setRules(new IRule[]{numberRule});
-		defaultDamagerRepairer = new DefaultDamagerRepairer(defaultScanner);		
+		defaultDamagerRepairer = new DefaultDamagerRepairer(ADBasicCodeScanner.getCodeScanner(fontSize));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, IDocument.DEFAULT_CONTENT_TYPE);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, IDocument.DEFAULT_CONTENT_TYPE);
-		//
+		
 		return presentationReconciler;
 	}
 	

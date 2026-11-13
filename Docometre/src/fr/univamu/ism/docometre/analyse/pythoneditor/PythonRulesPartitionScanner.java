@@ -41,33 +41,40 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.analyse.pythoneditor;
 
-import java.util.ArrayList;
-
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.rules.EndOfLineRule;
 import org.eclipse.jface.text.rules.IPredicateRule;
-import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
+import org.eclipse.jface.text.rules.MultiLineRule;
 import org.eclipse.jface.text.rules.RuleBasedPartitionScanner;
 import org.eclipse.jface.text.rules.Token;
 
+import fr.univamu.ism.docometre.editors.StringRule;
+
+/**
+ * Strings are partitions so that a '#' inside a string doesn't start a comment.
+ * Triple quoted strings have their own partition type because they may span several lines.
+ */
 public class PythonRulesPartitionScanner extends RuleBasedPartitionScanner {
 	
 	public static final String COMMENT = "COMMENT"; 
+	public static final String STRING = "STRING"; 
+	public static final String MULTILINE_STRING = "MULTILINE_STRING"; 
 	public static final String DEFAULT = IDocument.DEFAULT_CONTENT_TYPE; 
 	
-	public static final String[] PARTITIONS = new String[]{DEFAULT, COMMENT};
+	public static final String[] PARTITIONS = new String[]{DEFAULT, COMMENT, STRING, MULTILINE_STRING};
 	
 	public PythonRulesPartitionScanner() {
-		
 	    IToken commentToken = new Token(COMMENT);
-	    
-	    ArrayList<IRule> rules = new ArrayList<IRule>();
-	    
-		rules.add(new EndOfLineRule("#", commentToken));
-//		rules.add(new EndOfLineRule("%%", commentToken));
-
-	    setPredicateRules(rules.toArray(new IPredicateRule[rules.size()]));
+	    IToken stringToken = new Token(STRING);
+	    IToken multiLineStringToken = new Token(MULTILINE_STRING);
+	    setPredicateRules(new IPredicateRule[] {
+	    	new EndOfLineRule("#", commentToken),
+	    	new MultiLineRule("\"\"\"", "\"\"\"", multiLineStringToken, '\\', true),
+	    	new MultiLineRule("'''", "'''", multiLineStringToken, '\\', true),
+	    	new StringRule('"', stringToken, '\\', false, false),
+	    	new StringRule('\'', stringToken, '\\', false, false)
+	    });
 	}
 
 }

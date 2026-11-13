@@ -271,14 +271,6 @@ public class ADWinProcess extends Process {
 		ADWinProcessProperties.populateProperties(this);
 	}
 	
-	@Override
-	public void appendToEventDiary(String event) {
-		if(event.startsWith(Activator.NEW_LINE)) {// + ) {) {
-			currentDiaryLine++;
-		}
-		super.appendToEventDiary(event);
-	}
-	
 	private void deleteAdbasicFile(String filePath) {
 		File file = new File(filePath);
 		if (file.exists()) if (!file.delete()) Activator.logWarningMessage("Clean build. File " + file + " not deleted !");

@@ -42,29 +42,22 @@
 package fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.processeditor;
 
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
-import org.eclipse.jface.text.rules.IRule;
-import org.eclipse.jface.text.rules.IToken;
-import org.eclipse.jface.text.rules.NumberRule;
-import org.eclipse.jface.text.rules.RuleBasedScanner;
-import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
-import org.eclipse.swt.SWT;
-
-import fr.univamu.ism.docometre.DocometreApplication;
-import fr.univamu.ism.docometre.ThemeColors;
 
 public class ArduinoUnoSourceViewerConfiguration extends SourceViewerConfiguration {
 	
 	private PresentationReconciler presentationReconciler;
-	private ArduinoUnoSourceEditor arduinoUnoSourceEditor;
+	private int fontSize;
 	
-	public ArduinoUnoSourceViewerConfiguration(ArduinoUnoSourceEditor arduinoUnoSourceEditor) {
-		this.arduinoUnoSourceEditor = arduinoUnoSourceEditor;
+	/**
+	 * @param fontSize font size of the colored tokens (the editor font size, or the editors font size preference)
+	 */
+	public ArduinoUnoSourceViewerConfiguration(int fontSize) {
+		this.fontSize = fontSize;
 	}
 
 	@Override
@@ -73,40 +66,20 @@ public class ArduinoUnoSourceViewerConfiguration extends SourceViewerConfigurati
 		
 		presentationReconciler = (PresentationReconciler) super.getPresentationReconciler(sourceViewer);
 		
-		DefaultDamagerRepairer defaultDamagerRepairer = new DefaultDamagerRepairer(ArduinoUnoCodeScanner.getCommentScanner(arduinoUnoSourceEditor));		
+		DefaultDamagerRepairer defaultDamagerRepairer = new DefaultDamagerRepairer(ArduinoUnoCodeScanner.getCommentScanner(fontSize));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, ArduinoUnoRulesPartitionScanner.COMMENT);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, ArduinoUnoRulesPartitionScanner.COMMENT);
+		presentationReconciler.setDamager(defaultDamagerRepairer, ArduinoUnoRulesPartitionScanner.MULTILINE_COMMENT);
+		presentationReconciler.setRepairer(defaultDamagerRepairer, ArduinoUnoRulesPartitionScanner.MULTILINE_COMMENT);
 		
-		defaultDamagerRepairer = new DefaultDamagerRepairer(ArduinoUnoCodeScanner.getIncludeScanner(arduinoUnoSourceEditor));		
-		presentationReconciler.setDamager(defaultDamagerRepairer, ArduinoUnoRulesPartitionScanner.INCLUDE);
-		presentationReconciler.setRepairer(defaultDamagerRepairer, ArduinoUnoRulesPartitionScanner.INCLUDE);
+		defaultDamagerRepairer = new DefaultDamagerRepairer(ArduinoUnoCodeScanner.getStringScanner(fontSize));		
+		presentationReconciler.setDamager(defaultDamagerRepairer, ArduinoUnoRulesPartitionScanner.STRING);
+		presentationReconciler.setRepairer(defaultDamagerRepairer, ArduinoUnoRulesPartitionScanner.STRING);
 		
-		defaultDamagerRepairer = new DefaultDamagerRepairer(ArduinoUnoCodeScanner.getDefineScanner(arduinoUnoSourceEditor));		
-		presentationReconciler.setDamager(defaultDamagerRepairer, ArduinoUnoRulesPartitionScanner.DEFINE);
-		presentationReconciler.setRepairer(defaultDamagerRepairer, ArduinoUnoRulesPartitionScanner.DEFINE);
-		
-		defaultDamagerRepairer = new DefaultDamagerRepairer(ArduinoUnoCodeScanner.getSegmentScanner(arduinoUnoSourceEditor));		
-		presentationReconciler.setDamager(defaultDamagerRepairer, ArduinoUnoRulesPartitionScanner.SEGMENT);
-		presentationReconciler.setRepairer(defaultDamagerRepairer, ArduinoUnoRulesPartitionScanner.SEGMENT);
-		
-		defaultDamagerRepairer = new DefaultDamagerRepairer(ArduinoUnoCodeScanner.getReservedWordsScanner(arduinoUnoSourceEditor));		
-		presentationReconciler.setDamager(defaultDamagerRepairer, ArduinoUnoRulesPartitionScanner.RESERVED_WORDS);
-		presentationReconciler.setRepairer(defaultDamagerRepairer, ArduinoUnoRulesPartitionScanner.RESERVED_WORDS);
-		
-		
-		//
-		RuleBasedScanner defaultScanner = new RuleBasedScanner();
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.BLUE),
-													ThemeColors.getBackgroundColor(), 
-													SWT.NORMAL,
-													DocometreApplication.getFont(DocometreApplication.COURIER_NEW, arduinoUnoSourceEditor.getFontSize()));
-		IToken token = new Token(attribute);
-		NumberRule numberRule = new NumberRule(token);		
-		defaultScanner.setRules(new IRule[]{numberRule});
-		defaultDamagerRepairer = new DefaultDamagerRepairer(defaultScanner);		
+		defaultDamagerRepairer = new DefaultDamagerRepairer(ArduinoUnoCodeScanner.getCodeScanner(fontSize));		
 		presentationReconciler.setDamager(defaultDamagerRepairer, IDocument.DEFAULT_CONTENT_TYPE);
 		presentationReconciler.setRepairer(defaultDamagerRepairer, IDocument.DEFAULT_CONTENT_TYPE);
-		//
+		
 		return presentationReconciler;
 	}
 	

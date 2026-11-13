@@ -70,7 +70,7 @@ public class ArduinoUnoSourceEditor extends SourceEditor {
 	    document.setDocumentPartitioner(arduinoUnoFastPartitioner);
 	    arduinoUnoFastPartitioner.connect(document);
 		sourceViewer.setDocument(document, annotationModel, -1, -1);
-		sourceViewer.configure(new ArduinoUnoSourceViewerConfiguration(this));
+		sourceViewer.configure(new ArduinoUnoSourceViewerConfiguration(fontSize));
 		
 		sourceViewer.getTextWidget().addKeyListener(new KeyAdapter() {
 			@Override
@@ -89,7 +89,7 @@ public class ArduinoUnoSourceEditor extends SourceEditor {
 					lineNumberRulerColumn.setFont(DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, fontSize));
 					((Composite) sourceViewer.getControl()).layout(true);
 					sourceViewer.setHyperlinkDetectors(null, 0);
-					sourceViewer.configure(new ArduinoUnoSourceViewerConfiguration(ArduinoUnoSourceEditor.this));
+					sourceViewer.configure(new ArduinoUnoSourceViewerConfiguration(fontSize));
 				}
 			}
 		});

@@ -41,13 +41,12 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.analyse.editors.functioneditor;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.EndOfLineRule;
+import org.eclipse.jface.text.rules.ICharacterScanner;
 import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
+import org.eclipse.jface.text.rules.NumberRule;
 import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.rules.WordRule;
@@ -55,44 +54,78 @@ import org.eclipse.swt.SWT;
 
 import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.ThemeColors;
-import fr.univamu.ism.docometre.editors.WordsDetector;
+import fr.univamu.ism.docometre.editors.IdentifierDetector;
 
 public class CustomerFunctionCodeScanner extends RuleBasedScanner {
 	
 	public static String[] RESERVED_WORDS = {"COMBO", "FILE", "EDITABLE", "FOLDER", "FUNCTION_CODE", "USER_FUNCTION", 
 											 "MENU_TITLE_FR", "MENU_TITLE_PL", "MENU_TITLE", "DESCRIPTION_FR", "DESCRIPTION_PL", "DESCRIPTION", "LABEL_FR", "LABEL_PL", "LABEL", 
-											 "TEXT", "TYPE", "NAME", "PARAMETERS_NUMBER", "PARAMETER_"};
+											 "TEXT", "TYPE", "NAME", "PARAMETERS_NUMBER"};
+	private static String PARAMETER_PREFIX = "PARAMETER_";
+	private static int NB_PARAMETERS = 99;
 	
+	/*
+	 * Colors a property key : an identifier at the beginning of a line followed by '=' or ':'
+	 * (e.g. FUNCTION_CODE_GOLD_II, DECLARATION, PARAMETER_1...).
+	 */
+	private static class PropertyKeyRule implements IRule {
+		
+		private IToken token;
+		
+		public PropertyKeyRule(IToken token) {
+			this.token = token;
+		}
 
-	public static RuleBasedScanner getReservedWordsScanner(CustomerFunctionEditor customerFunctionEditor) {
-		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
-		List<IRule> rules = new ArrayList<IRule>(0);
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.MAROON), 
+		@Override
+		public IToken evaluate(ICharacterScanner scanner) {
+			if(scanner.getColumn() != 0) return Token.UNDEFINED;
+			int nbRead = 0;
+			int c = scanner.read();
+			while(IdentifierDetector.isIdentifierPart(c)) {
+				nbRead++;
+				c = scanner.read();
+			}
+			int keyLength = nbRead;
+			nbRead++;
+			while(c == ' ' || c == '\t') {
+				c = scanner.read();
+				nbRead++;
+			}
+			boolean isKey = keyLength > 0 && (c == '=' || c == ':');
+			// Only the key is part of the token
+			for (int i = 0; i < (isKey ? nbRead - keyLength : nbRead); i++) scanner.unread();
+			return isKey ? token : Token.UNDEFINED;
+		}
+		
+	}
+	
+	private static IToken createToken(String color, String font, CustomerFunctionEditor customerFunctionEditor) {
+		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(color), 
 													ThemeColors.getBackgroundColor(), 
 													SWT.NORMAL, 
-													DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, customerFunctionEditor.fontSize));
-		IToken token = new Token(attribute);
-		WordRule wordRule = new WordRule(new WordsDetector(RESERVED_WORDS), token);
-		rules.add(wordRule);
-		ruleBasedScanner.setRules(rules.toArray(new IRule[rules.size()]));
-		
+													DocometreApplication.getFont(font, customerFunctionEditor.fontSize));
+		return new Token(attribute);
+	}
+	
+	/*
+	 * Scanner for the default partition : property keys and complete reserved words only 
+	 * (NAME is no more found in FILENAME, TYPE in PROTOTYPE...), then numbers.
+	 */
+	public static RuleBasedScanner getCodeScanner(CustomerFunctionEditor customerFunctionEditor) {
+		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
+		IToken reservedWordsToken = createToken(DocometreApplication.MAROON, DocometreApplication.COURIER_NEW_BOLD, customerFunctionEditor);
+		WordRule wordRule = new WordRule(new IdentifierDetector(), new Token(null));
+		for (String reservedWord : RESERVED_WORDS) wordRule.addWord(reservedWord, reservedWordsToken);
+		for (int i = 1; i <= NB_PARAMETERS; i++) wordRule.addWord(PARAMETER_PREFIX + i, reservedWordsToken);
+		NumberRule numberRule = new NumberRule(createToken(DocometreApplication.BLUE, DocometreApplication.COURIER_NEW, customerFunctionEditor));
+		ruleBasedScanner.setRules(new IRule[] {new PropertyKeyRule(reservedWordsToken), wordRule, numberRule});
 		return ruleBasedScanner;
 	}
 	
 	public static RuleBasedScanner getCommentScanner(CustomerFunctionEditor customerFunctionEditor) {
 		RuleBasedScanner ruleBasedScanner = new RuleBasedScanner();
-		List<IRule> rules = new ArrayList<IRule>(0);
-		TextAttribute attribute = new TextAttribute(DocometreApplication.getColor(DocometreApplication.GREEN), 
-													ThemeColors.getBackgroundColor(), 
-													SWT.NORMAL, 
-													DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, customerFunctionEditor.fontSize));
-		IToken token = new Token(attribute);
-		IRule commentRule1 = new EndOfLineRule("#", token);
-//		IRule commentRule2 = new MultiLineRule("/*", "*/", token, (char) 0, true);
-		rules.add(commentRule1);
-//		rules.add(commentRule2);
-		ruleBasedScanner.setRules(rules.toArray(new IRule[rules.size()]));
-		
+		IToken token = createToken(DocometreApplication.GREEN, DocometreApplication.COURIER_NEW_BOLD, customerFunctionEditor);
+		ruleBasedScanner.setRules(new IRule[] {new EndOfLineRule("#", token)});
 		return ruleBasedScanner;
 	}
 
