@@ -41,6 +41,9 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.arduinouno.diary;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.EndOfLineRule;
 import org.eclipse.jface.text.rules.IRule;
@@ -52,7 +55,7 @@ import org.eclipse.jface.text.rules.Token;
 import fr.univamu.ism.docometre.DocometreApplication;
 
 /**
- * Each diary line is colored according to its beginning. Rules only apply 
+ * Each diary line is colored according to its beginning. Errors and anomalies are red. Rules only apply 
  * at the beginning of a line (column 0) : a channel named "Attente" or a process 
  * named "dacqProcess" no more triggers the "At" or "Process" rules.
  * No font is given to the text attributes so that colored lines follow the 
@@ -66,16 +69,21 @@ public class ArduinoDiaryScanner extends RuleBasedScanner {
 	private static final String START_FOOTER = "Total samples for transferred channels";
 	private static final String STOP_FOOTER = " end.";
 	private static final String ERROR = "ERROR";
+	// Anomalies (the "Stop 's' char not received !" line is not one : stop requested by the user)
+	private static final String[] ANOMALIES = {"Stop 's' char not received after", "Arduino restart ('w' char) not received", 
+											   "Parameters not acknowledged", "Propagated parameters not acknowledged"};
 	
 	public ArduinoDiaryScanner() {
-		setRules(new IRule[] {
-			createRule(new EndOfLineRule(ERROR, createToken(DocometreApplication.RED))),
-			createRule(new EndOfLineRule(RECOVERING_CHANNEL, createToken(DocometreApplication.ORANGE))),
-			createRule(new EndOfLineRule(AT_WORKLOAD, createToken(DocometreApplication.GREEN))),
-			createRule(new EndOfLineRule(RECEIVED_STOP, createToken(DocometreApplication.MAROON))),
-			// Final block : transferred samples per channel up to the "... end." line
-			createRule(new MultiLineRule(START_FOOTER, STOP_FOOTER, createToken(DocometreApplication.BLUE)))
-		});
+		List<IRule> rules = new ArrayList<IRule>();
+		Token errorToken = createToken(DocometreApplication.RED);
+		rules.add(createRule(new EndOfLineRule(ERROR, errorToken)));
+		for (String anomaly : ANOMALIES) rules.add(createRule(new EndOfLineRule(anomaly, errorToken)));
+		rules.add(createRule(new EndOfLineRule(RECOVERING_CHANNEL, createToken(DocometreApplication.ORANGE))));
+		rules.add(createRule(new EndOfLineRule(AT_WORKLOAD, createToken(DocometreApplication.GREEN))));
+		rules.add(createRule(new EndOfLineRule(RECEIVED_STOP, createToken(DocometreApplication.MAROON))));
+		// Final block : transferred samples per channel up to the "... end." line
+		rules.add(createRule(new MultiLineRule(START_FOOTER, STOP_FOOTER, createToken(DocometreApplication.BLUE))));
+		setRules(rules.toArray(new IRule[rules.size()]));
 	}
 	
 	private static Token createToken(String color) {

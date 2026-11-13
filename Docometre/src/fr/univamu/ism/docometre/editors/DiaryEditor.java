@@ -53,6 +53,8 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.AnnotationModel;
@@ -236,23 +238,7 @@ public class DiaryEditor extends EditorPart implements PartNameRefresher {
 				}
 				document.set(content.toString());
 				
-				try {
-					IMarker[] markers = logFile.findMarkers(DocometreBuilder.MARKER_ID, true,IResource.DEPTH_INFINITE);
-					for (IMarker marker : markers) {
-						Annotation annotation = null;
-						String line = (String) marker.getAttribute(IMarker.MESSAGE);
-						if (marker.getAttribute(IMarker.SEVERITY).equals(IMarker.SEVERITY_ERROR)) annotation = new ErrorAnnotation(marker, line);
-						if (marker.getAttribute(IMarker.SEVERITY).equals(IMarker.SEVERITY_WARNING)) annotation = new WarningAnnotation(marker, line);
-						int lineNumber = (int) marker.getAttribute(IMarker.LINE_NUMBER);
-						int lineOffset = document.getLineOffset(lineNumber - 1);
-						String lengthLine = line.replaceAll("^(.|\\n)*line:\\s", "");
-						lengthLine = lengthLine.replaceAll("\\sfile:(.*)$", "");
-						annotationModel.addAnnotation(annotation, new Position(lineOffset, lengthLine.length()));
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-					Activator.logErrorMessageWithCause(e);
-				}
+				addMarkersAnnotations(logFile, document, annotationModel);
 			}
 			
 			if(Activator.ARDUINO_UNO_SYSTEM.equals(system)) {
@@ -264,6 +250,7 @@ public class DiaryEditor extends EditorPart implements PartNameRefresher {
 					content.append(lines.get(i));
 				}
 				document.set(content.toString());
+				addMarkersAnnotations(logFile, document, annotationModel);
 			}
 			
 			partListenerAdapter = new PartListenerAdapter() {
@@ -306,6 +293,30 @@ public class DiaryEditor extends EditorPart implements PartNameRefresher {
 	@Override
 	public void setFocus() {
 		sourceViewer.getTextWidget().setFocus();
+	}
+
+	/*
+	 * Error and warning markers created by the process (see Process.appendErrorMarkerAtCurrentDiaryLine)
+	 * are displayed on their whole diary line, for ADWin and Arduino diaries.
+	 */
+	private void addMarkersAnnotations(IFile logFile, IDocument document, AnnotationModel annotationModel) {
+		try {
+			IMarker[] markers = logFile.findMarkers(DocometreBuilder.MARKER_ID, true, IResource.DEPTH_INFINITE);
+			for (IMarker marker : markers) {
+				String message = marker.getAttribute(IMarker.MESSAGE, "");
+				int severity = marker.getAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
+				Annotation annotation = null;
+				if (severity == IMarker.SEVERITY_ERROR) annotation = new ErrorAnnotation(marker, message);
+				if (severity == IMarker.SEVERITY_WARNING) annotation = new WarningAnnotation(marker, message);
+				int lineNumber = marker.getAttribute(IMarker.LINE_NUMBER, -1);
+				if (annotation == null || lineNumber < 1 || lineNumber > document.getNumberOfLines()) continue;
+				IRegion lineRegion = document.getLineInformation(lineNumber - 1);
+				annotationModel.addAnnotation(annotation, new Position(lineRegion.getOffset(), lineRegion.getLength()));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			Activator.logErrorMessageWithCause(e);
+		}
 	}
 
 	@Override

@@ -210,7 +210,10 @@ public abstract class Process extends AbstractElement implements ModuleBehaviour
 	}
 	
 	public void appendToEventDiary(String event) {
-		currentDiaryLine++;
+		// The event is written followed by a line delimiter : it may also contain line delimiters
+		// ("\nERROR : ...", "Starting ... sec.\n"). The current diary line must be the last line 
+		// of the event so that an error marker is put on the right line.
+		currentDiaryLine += 1 + (event == null ? 0 : event.chars().filter(c -> c == '\n').count());
 		Logger.getLogger(Process.class).log(DiaryLogLevel.DIARY, event);
 	}
 	
