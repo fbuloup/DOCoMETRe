@@ -9,6 +9,9 @@
             primary="true">
       </toc>
       <toc
+            file="tocgeneral.xml">
+      </toc>
+      <toc
             file="tocdataacquisition.xml">
       </toc>
       <toc
