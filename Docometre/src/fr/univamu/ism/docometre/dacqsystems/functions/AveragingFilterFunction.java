@@ -124,7 +124,7 @@ public class AveragingFilterFunction extends GenericFunction {
 				e.gc.setAntialias(SWT.ON);
 				e.gc.setInterpolation(SWT.HIGH);
 				e.gc.drawImage(image, 0, 0, image.getBounds().width, image.getBounds().height, (int)withPosition, (int)heightPosition, (int)newWidth, (int)newHeight);
-				image.dispose(); 
+				// Do not dispose image with image.dispose() because it belongs to JFace Image registry
 			}
 		});
 		

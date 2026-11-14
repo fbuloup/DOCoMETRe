@@ -340,7 +340,6 @@ public class SourceEditor extends EditorPart {
 	public void dispose() {
 		ResourceEditorInput resourceEditorInput = (ResourceEditorInput)getEditorInput();
 		ObjectsController.removeHandle(resourceEditorInput.getObject());
-		docometreAnnotationAccesExtension.dispose();
 		super.dispose();
 	}
 	

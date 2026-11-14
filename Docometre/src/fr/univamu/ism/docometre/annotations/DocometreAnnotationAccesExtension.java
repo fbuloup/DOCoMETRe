@@ -59,7 +59,6 @@ import fr.univamu.ism.docometre.IImageKeys;
 
 public class DocometreAnnotationAccesExtension implements IAnnotationAccessExtension, IAnnotationAccess {
 		
-		private Image image;
 		private MouseMoveListener mouseMoveListener;
 		private Rectangle lastPosition;
 		
@@ -80,17 +79,17 @@ public class DocometreAnnotationAccesExtension implements IAnnotationAccessExten
 		public void paint(Annotation annotation, GC gc, Canvas canvas, Rectangle bounds) {
 
 			//if(image != null && !image.isDisposed()) image.dispose();
-			
+			Image image = null;
 			switch (annotation.getType()) {
-			case ErrorAnnotation.TYPE_ERROR:
-				image = Activator.getImage(IImageKeys.ERROR_ANNOTATION_ICON);
-				break;
-			case WarningAnnotation.TYPE_WARNING:
-				image = Activator.getImage(IImageKeys.WARNING_ANNOTATION_ICON);
-				break;
-			default :
-				Activator.getSharedImage("icons/full/etool16/help_contents.png"); // this is IWorkbenchGraphicConstants.IMG_ETOOL_HELP_CONTENTS from org.eclipse.ui
-				break;
+				case ErrorAnnotation.TYPE_ERROR:
+					image = Activator.getImage(IImageKeys.ERROR_ANNOTATION_ICON);
+					break;
+				case WarningAnnotation.TYPE_WARNING:
+					image = Activator.getImage(IImageKeys.WARNING_ANNOTATION_ICON);
+					break;
+				default :
+					Activator.getSharedImage("icons/full/etool16/help_contents.png"); // this is IWorkbenchGraphicConstants.IMG_ETOOL_HELP_CONTENTS from org.eclipse.ui
+					break;
 			}
 			
 			if(mouseMoveListener == null) {
@@ -143,9 +142,4 @@ public class DocometreAnnotationAccesExtension implements IAnnotationAccessExten
 			return false;
 		}
 
-		public void dispose() {
-			if(image != null && !image.isDisposed()) image.dispose();
-		}
-
-		
 	}
