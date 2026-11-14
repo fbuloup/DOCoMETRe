@@ -298,27 +298,12 @@ public class SourceEditor extends EditorPart {
 		return code;
 	}
 	
-	/*
-	 * Number of lines removed at the beginning of the generated code to get the displayed code
-	 */
-	private int getHiddenLinesNumber() {
-		String displayedCode = document == null ? "" : document.get();
-		if(!generatedCode.endsWith(displayedCode)) return 0;
-		String hiddenCode = generatedCode.substring(0, generatedCode.length() - displayedCode.length());
-		return hiddenCode.length() - hiddenCode.replace("\n", "").length();
-	}
-	
 	/**
-	 * Returns the shift between the lines of the compiled file and the lines of the displayed source code, 
-	 * if displayed source code is the one which has been compiled for the last time.
-	 * @return the number of lines to add to a compiled file line to get the displayed source code line 
-	 * (may be negative), or null if displayed source code has not been compiled (modified since last compilation or unknown)
+	 * @return true if displayed source code is the one which has been compiled for the last time
 	 */
-	public Integer getCompiledCodeLinesShift() {
+	public boolean isCompiledCode() {
 		IResource process = ObjectsController.getResourceForObject(getObject());
-		int linesShift = ResourceProperties.getCompiledCodeLinesShift(process, generatedCode);
-		if(linesShift < 0) return null;
-		return linesShift - getHiddenLinesNumber();
+		return ResourceProperties.isCompiledCode(process, generatedCode);
 	}
 
 	public void updateMarkers() {
@@ -327,10 +312,6 @@ public class SourceEditor extends EditorPart {
 			IResource process = ObjectsController.getResourceForObject(getObject());
 			IMarker[] markers = process.findMarkers(DocometreBuilder.MARKER_ID, true, IResource.DEPTH_INFINITE);
 			annotationModel.removeAllAnnotations();
-			// Markers lines refer to the compiled file, which may start lower or higher than the displayed source code (ADwin) 
-			Integer compiledCodeLinesShift = getCompiledCodeLinesShift();
-			// Source code modified since last compilation : lines are approximate
-			int linesShift = compiledCodeLinesShift != null ? compiledCodeLinesShift : -getHiddenLinesNumber();
 			for (IMarker marker : markers) {
 				Annotation annotation = null;
 				String line = (String) marker.getAttribute(IMarker.MESSAGE);
@@ -342,7 +323,8 @@ public class SourceEditor extends EditorPart {
 					if (severity.equals(IMarker.SEVERITY_WARNING))
 						annotation = new WarningAnnotation(marker, line);
 //						int lineNumber = (int) marker.getAttribute(IMarker.LINE_NUMBER);
-					int lineOffset = document.getLineOffset(Math.max(0, Math.min((int) lineNumber - 1 + linesShift, document.getNumberOfLines() - 1)));
+					// Markers lines refer to the source code page
+					int lineOffset = document.getLineOffset(Math.max(0, Math.min((int) lineNumber - 1, document.getNumberOfLines() - 1)));
 					String lengthLine = line.replaceAll("^(.|\\n)*line:\\s", "");
 					lengthLine = lengthLine.replaceAll("\\sfile:(.*)$", "");
 					annotationModel.addAnnotation(annotation, new Position(lineOffset, lengthLine.length()));

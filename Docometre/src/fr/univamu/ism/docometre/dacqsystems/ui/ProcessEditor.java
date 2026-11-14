@@ -310,16 +310,16 @@ public class ProcessEditor extends MultiPageEditorPart implements IPageChangedLi
 			if(!compilationMarkers.isEmpty()) {
 				// Regenerate source code and locate segments in it
 				Map<ScriptSegmentCodeMap, Integer> segments = sourceEditor.locateSegments();
-				Integer linesShift = sourceEditor.getCompiledCodeLinesShift();
 				// Nothing is linked if source code has been modified since last compilation
-				if(linesShift != null) {
+				if(sourceEditor.isCompiledCode()) {
 					for (IMarker marker : compilationMarkers) {
 						int severity = marker.getAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
 						int lineNumber = marker.getAttribute(IMarker.LINE_NUMBER, -1);
 						Block block = null;
 						ScriptSegmentType scriptSegmentType = null;
 						if(lineNumber >= 1) {
-							int sourceLine = lineNumber - 1 + linesShift;
+							// Markers lines refer to the source code page
+							int sourceLine = lineNumber - 1;
 							for (Map.Entry<ScriptSegmentCodeMap, Integer> entry : segments.entrySet()) {
 								int segmentLine = sourceLine - entry.getValue();
 								if(segmentLine >= 0 && segmentLine < entry.getKey().getLinesNumber()) {

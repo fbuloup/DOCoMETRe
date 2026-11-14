@@ -168,7 +168,7 @@ public class ArduinoUnoProcess extends Process {
 		try(FileWriter fileWriter = new FileWriter(file)) {
 			// Get process code
 			String processCode = process.getCode(null);
-			if(compilation) ResourceProperties.setCompiledCodeSignature(processFile, processCode, 0);
+			if(compilation) ResourceProperties.setCompiledCodeSignature(processFile, processCode);
 			// Write it to file
 			fileWriter.write(processCode);
 			return file;

@@ -124,12 +124,10 @@ public class ADWinProcess extends Process {
 			String sourceCode = process.getCode(null);
 			String processCode = sourceCode.replaceAll("^\\n", "");
 			if(compilation) {
-				// Lines to add to a line number given by the compiler to get the line in source code : 
-				// leading empty line removed from compiled file and ADbasic header lines (ADbasic >= 5), not counted by the compiler
-				int linesShift = sourceCode.length() > processCode.length() ? 1 : 0;
-				Matcher headerMatcher = Pattern.compile("^'<ADbasic Header.*\\n(.*\\n)*?'<Header End>\\n").matcher(processCode);
-				if(headerMatcher.find()) linesShift += headerMatcher.group().length() - headerMatcher.group().replace("\n", "").length();
-				ResourceProperties.setCompiledCodeSignature(processFile, sourceCode, linesShift);
+				ResourceProperties.setCompiledCodeSignature(processFile, sourceCode);
+				// Leading empty line removed from compiled file : lines given by the compiler are shifted.
+				// ADbasic header (ADbasic >= 5) is neither counted by the compiler nor displayed in source code page.
+				if(process instanceof ADWinProcess) ((ADWinProcess)process).compilerLinesShift = sourceCode.length() > processCode.length() ? 1 : 0;
 			}
 			
 			// Create ADBasic file
@@ -146,6 +144,10 @@ public class ADWinProcess extends Process {
 		return null;
 	}
 	
+	/*
+	 * Number of lines to add to a line number given by the compiler to get the line in the source code page
+	 */
+	transient private int compilerLinesShift = 0;
 	transient private double startTimeDialog = 0;
 	transient private double timeBefore;
 	transient private double timeAfter;
@@ -529,7 +531,8 @@ public class ADWinProcess extends Process {
 								
 								try {
 									int lineNumberInteger = Integer.parseInt(lineNumber);
-									marker.setAttribute(IMarker.LINE_NUMBER, lineNumberInteger);
+									// Markers lines refer to the source code page
+									marker.setAttribute(IMarker.LINE_NUMBER, lineNumberInteger + compilerLinesShift);
 								} catch (Exception e) {
 									// TODO: Nothing
 								} 

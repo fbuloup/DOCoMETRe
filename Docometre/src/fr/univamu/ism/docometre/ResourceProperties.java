@@ -985,45 +985,37 @@ public final class ResourceProperties {
 	}
 	
 	/**
-	 * Saves the signature of the source code of a process when it is compiled. Lines numbers of compilation markers 
-	 * refer to the compiled file : they can be linked to the source code only while this source code is unchanged.
+	 * Saves the signature of the generated code of a process when it is compiled. Compilation markers can be 
+	 * linked to blocks only while this generated code is unchanged.
 	 * Saved in workspace metadata only (not in properties file) as it is only a cache.
 	 * @param process the process resource
-	 * @param sourceCode the source code (as displayed in source code page)
-	 * @param linesShift the number of lines to add to a line number given by the compiler to get the line in source code
-	 * (e.g. lines removed at the beginning of the source code to get the compiled code, or lines not counted by the compiler)
+	 * @param generatedCode the generated code of the process
 	 */
-	public static void setCompiledCodeSignature(IResource process, String sourceCode, int linesShift) {
+	public static void setCompiledCodeSignature(IResource process, String generatedCode) {
 		try {
 			if(process == null || !process.exists()) return;
-			String signature = sourceCode == null ? null : getCodeSignature(sourceCode);
-			process.setPersistentProperty(COMPILED_CODE_SIGNATURE_QN, signature == null ? null : linesShift + ":" + signature);
+			String signature = generatedCode == null ? null : getCodeSignature(generatedCode);
+			process.setPersistentProperty(COMPILED_CODE_SIGNATURE_QN, signature);
 		} catch (CoreException e) {
 			Activator.logErrorMessageWithCause(e);
 		}
 	}
 	
 	/**
-	 * Returns the shift between lines of the compiled file and lines of a source code, if this source code
-	 * is the one which has been compiled for the last time.
+	 * Returns true if a generated code is the one which has been compiled for the last time.
 	 * @param process the process resource
-	 * @param sourceCode the source code (as displayed in source code page)
-	 * @return the number of lines to add to a compiled file line to get the source code line, 
-	 * or -1 if this source code has not been compiled (modified since last compilation or unknown)
+	 * @param generatedCode the generated code of the process
+	 * @return false if this generated code has not been compiled (modified since last compilation or unknown)
 	 */
-	public static int getCompiledCodeLinesShift(IResource process, String sourceCode) {
+	public static boolean isCompiledCode(IResource process, String generatedCode) {
 		try {
-			if(process == null || !process.exists() || sourceCode == null) return -1;
-			String value = process.getPersistentProperty(COMPILED_CODE_SIGNATURE_QN);
-			if(value == null) return -1;
-			int separatorIndex = value.indexOf(':');
-			if(separatorIndex < 0) return -1;
-			if(!value.substring(separatorIndex + 1).equals(getCodeSignature(sourceCode))) return -1;
-			return Integer.parseInt(value.substring(0, separatorIndex));
+			if(process == null || !process.exists() || generatedCode == null) return false;
+			String signature = process.getPersistentProperty(COMPILED_CODE_SIGNATURE_QN);
+			return signature != null && signature.equals(getCodeSignature(generatedCode));
 		} catch (Exception e) {
 			Activator.logErrorMessageWithCause(e);
 		}
-		return -1;
+		return false;
 	}
 
 }
