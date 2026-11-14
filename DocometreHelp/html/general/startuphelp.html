@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Startup and Help Menu</title>
+<style type="text/css">
+	table { border-collapse: collapse; margin-bottom: 1em; }
+	th, td { border: 1px solid #A0A0A0; padding: 4px 8px; text-align: left; vertical-align: top; }
+	kbd { border: 1px solid #A0A0A0; border-radius: 3px; padding: 0px 4px; font-family: monospace; }
+</style>
+</head>
+
+<body>
+	<h1>Startup and Help Menu</h1>
+
+	<p>This page describes what happens when DOCoMETRe starts (choice of the
+		workspace, Welcome page) and the commands of the <b>Help</b> menu.</p>
+
+	<h2><a name="workspace">Workspace</a></h2>
+
+	<p>DOCoMETRe stores your experiments in a folder called the
+		<b>workspace</b>: each experiment is a folder of the workspace. The
+		workspace also holds the preferences of DOCoMETRe (in its hidden
+		<code>.metadata</code> folder): each workspace has its own
+		preferences.</p>
+	<p>At startup, the <b>Workspace Launcher</b> dialog asks for the
+		workspace to use. Type the path of the folder, choose it with
+		Browse..., or select one of the recently used workspaces in the list.
+		The folder is created if it does not exist. When <b>Use this as the
+		default and do not ask again</b> is checked, the dialog is no longer
+		displayed and the last workspace is used at each start. To get the
+		dialog back, check <b>Show workspace selection dialog at startup</b>
+		in the <a href="preferences.html#general">general preferences</a>,
+		then restart DOCoMETRe (File &gt; Restart).</p>
+	<p>A workspace can only be used by one DOCoMETRe at a time. If you
+		choose a workspace already in use, an error message asks for another
+		one. If DOCoMETRe has been stopped abruptly (crash, computer switched
+		off), the workspace may be seen as still in use: if you are sure that
+		no other DOCoMETRe is running with it, delete the file
+		<code>.metadata/workspace.locker</code> of the workspace and start
+		DOCoMETRe again.</p>
+	<p>On macOS, File &gt; <b>Launch another session</b> starts another
+		DOCoMETRe, which must use another workspace. On Windows and Linux,
+		simply start DOCoMETRe again.</p>
+
+	<h2><a name="linux">Linux: Wayland sessions</a></h2>
+
+	<p>The OpenGL charts of DOCoMETRe (real time charts, data editor, XY and
+		3D charts) only work with the X11 display system. In a Wayland
+		session (Ubuntu 22.04 and later, Fedora, WSL2 with WSLg...),
+		DOCoMETRe therefore starts itself again automatically with the X11
+		backend of GTK (<code>GDK_BACKEND=x11</code>), which uses Xwayland.
+		The splash screen may then be displayed twice: this is normal. Nothing
+		has to be configured.</p>
+
+	<h2><a name="welcome">Welcome page</a></h2>
+
+	<p>The Welcome page is displayed at the first start of DOCoMETRe, and
+		at any time with <b>Help &gt; Welcome</b>. It contains:</p>
+	<ul>
+		<li><b>Overview</b>: a short presentation of DOCoMETRe and of its main
+			concepts (experiment, DACQ configuration, process, subjects,
+			sessions and trials);</li>
+		<li><b>Tutorials</b>: links that open the cheat sheets described
+			below.</li>
+	</ul>
+	<p>Close the Welcome page to reach the perspectives.</p>
+
+	<h2><a name="helpmenu">Help menu</a></h2>
+
+	<table>
+		<tr>
+			<th>Command</th>
+			<th>Description</th>
+		</tr>
+		<tr>
+			<td>Welcome</td>
+			<td>Displays the <a href="#welcome">Welcome page</a>.</td>
+		</tr>
+		<tr>
+			<td>Open help</td>
+			<td>Opens this help. Its pages follow the light or dark theme of
+				DOCoMETRe (see <a href="preferences.html#appearance">Appearance
+				preferences</a>).</td>
+		</tr>
+		<tr>
+			<td>Open Cheat Sheet...</td>
+			<td>Opens a <a href="#cheatsheets">cheat sheet</a>.</td>
+		</tr>
+		<tr>
+			<td>Check for updates</td>
+			<td>Looks for a new version of DOCoMETRe on its update site and
+				installs it (see <a href="#updates">below</a>).</td>
+		</tr>
+		<tr>
+			<td>About DOCoMETRe</td>
+			<td>Version and installation details of DOCoMETRe, with the
+				address of its <a target="_blank" href="https://fbuloup.github.io/DOCoMETRe/">web
+				site</a>. Give the version when you report a problem.</td>
+		</tr>
+	</table>
+
+	<h2><a name="cheatsheets">Cheat sheets</a></h2>
+
+	<p>A cheat sheet is a step by step guide displayed next to the
+		perspective: each step explains what to do, and some steps offer a
+		link that does it for you. Help &gt; Open Cheat Sheet... lists the
+		cheat sheets of the <b>Introduction</b> category:</p>
+	<ul>
+		<li><b>Quick start</b>: creation of a first experiment, with a DACQ
+			configuration, a process and a subject with a session of ten
+			trials;</li>
+		<li><b>ADBasic installation [Windows]</b>, <b>[Mac OS X]</b> and
+			<b>[Linux]</b>: installation of the ADwin software needed to use
+			ADwin systems (see <a href="../dacqsystems/ADWinTopic.html">ADwin
+			Systems</a>);</li>
+		<li><b>Arduino Installation</b>: installation of the Arduino tools
+			needed to use Arduino Uno boards (see
+			<a href="../dacqsystems/ArduinoTopic.html">Arduino Systems</a>).</li>
+	</ul>
+
+	<h2><a name="updates">Updates</a></h2>
+
+	<p>Help &gt; Check for updates connects to the DOCoMETRe update site
+		(<code>http://fbuloup.github.io/docometre-release/p2/</code>). When
+		a new version is available, the wizard lists it: press Next, accept
+		the licence, then Finish. DOCoMETRe asks to restart at the end of the
+		installation. An Internet connection is needed, and the user must be
+		allowed to write in the installation folder of DOCoMETRe.</p>
+	<p>New versions can also be downloaded from the DOCoMETRe web site and
+		installed in place of the previous one: your workspaces are not
+		modified.</p>
+</body>
+</html>

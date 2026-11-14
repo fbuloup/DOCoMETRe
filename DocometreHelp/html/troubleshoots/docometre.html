@@ -8,6 +8,10 @@
 
 <body>
 <h1>Troubleshoots with DOCoMETRe</h1>
+<h2>Why does DOCoMETRe start twice on Linux ?</h2>
+<p>In a Wayland session (Ubuntu 22.04 and later, Fedora, WSL2 with WSLg...), DOCoMETRe starts itself again
+with the X11 backend of GTK, because its OpenGL charts only work with X11 : the splash screen may then be
+displayed twice. This is normal, see <a href="../general/startuphelp.html#linux">Linux: Wayland sessions</a>.</p>
 <h2>How to debug timing during acquisition ?</h2>
 <p>When trials follow one another, you may want to know how long DOCoMETRe takes between the end of a trial
 and the start of the next one, and where this time is spent (charts creation, files, boot of the system...).

@@ -25,7 +25,8 @@
 	<ul>
 		<li><a href="#import">Import wizard</a> and
 			<a href="#importtypes">what can be imported</a></li>
-		<li><a href="#exportexperiment">Exporting an experiment</a></li>
+		<li><a href="#exportexperiment">Exporting an experiment</a> and
+			<a href="#importexperiment">importing it</a></li>
 		<li><a href="#exportadw">Exporting subjects to ADW files</a></li>
 		<li><a href="#copypaste">Copying resources inside the workspace</a></li>
 	</ul>
@@ -63,9 +64,10 @@
 			<td>Experiment (*.zip, *.tar)</td>
 			<td>Creates a new experiment from an archive made with
 				<a href="#exportexperiment">Export Experiment</a>, with all the
-				DOCoMETRe properties of its resources. The experiment takes the
-				name of the archive: import is refused if an experiment with
-				this name already exists.</td>
+				DOCoMETRe properties of its resources. DOCoMETRe asks for the
+				name of the new experiment (by default, the name of the archive
+				without its extension): see <a href="#importexperiment">Importing
+				an experiment</a>.</td>
 		</tr>
 		<tr>
 			<td>Experiment or folder</td>
@@ -150,12 +152,31 @@
 			<a href="experimentshistory.html#exportimport">Experiments
 			history</a>).</li>
 	</ul>
-	<p>The archive contains the files of the experiment and a properties file
-		that holds the DOCoMETRe properties of each resource; they are
-		restored when the archive is imported in another workspace (Import...
-		with nothing selected, type Experiment). The name of the archive
-		becomes the name of the imported experiment: <b>do not rename an
-		exported archive</b>, as this could lead to importation errors.</p>
+	<p>The archive contains the files of the experiment and its
+		<code>.metadata.properties</code> file, which holds the DOCoMETRe
+		properties of each resource (types, associated configurations and
+		processes, trials modes...). The name of the experiment is not
+		written in the archive: the archive can be renamed, and imported
+		under any name.</p>
+
+	<h2><a name="importexperiment">Importing an experiment</a></h2>
+
+	<p>To import an exported experiment, in the same workspace or in
+		another one, use File &gt; Import... with nothing selected in the
+		Experiments view, choose the type <b>Experiment</b>, the parent folder
+		and the archives (*.zip or *.tar) to import. For each archive, a dialog asks for the <b>name of
+		the imported experiment</b>; it proposes the name of the archive
+		without its extension. The name must follow the
+		<a href="designperspective.html#names">rules of the resources
+		names</a>, and no experiment (or folder of the
+		workspace) may already have this name: the dialog shows an error
+		message and its OK button stays disabled until the name is valid.
+		Cancel skips this archive.</p>
+	<p>The properties of the resources are adapted to the new name, so an
+		experiment can be imported several times under different names, for
+		example to start a new experiment from a copy of a previous one.
+		Archives exported by previous versions of DOCoMETRe can still be
+		imported, under any name too.</p>
 
 	<h2><a name="exportadw">Exporting subjects to ADW files</a></h2>
 

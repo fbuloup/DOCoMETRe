@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?NLS TYPE="org.eclipse.help.toc"?>
+
+<toc label="Getting Started and Settings" link_to="toc.xml#general">
+	<topic label="Startup and Help Menu" href="html/general/startuphelp.html">
+	</topic>
+	<topic label="Preferences" href="html/general/preferences.html">
+	</topic>
+</toc>

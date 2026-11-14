@@ -69,7 +69,12 @@
 			loading of data files, etc.).</li>
 	</ul>
 	<p>Views can be closed, moved or resized; Options &gt; Show... opens
-		the Experiments, Description and Functions views again.</p>
+		them again: Experiment view, Messages view (messages of DOCoMETRe,
+		with Clear and Scroll lock buttons), Description view, Progress view
+		(background tasks such as compilations, imports or loading of
+		subjects), Subjects view (see the
+		<a href="../dataprocessing/subjects.html">Analyse perspective</a>) and
+		Functions view.</p>
 
 	<h2><a name="toolbar">Tool bar</a></h2>
 
@@ -348,6 +353,28 @@ MyExperiment
 		(<code>diary.log</code> in English, <code>journal.log</code> in
 		French).</p>
 
+	<h2><a name="names">Names of the resources</a></h2>
+
+	<p>Names of experiments, folders, configurations, processes, subjects,
+		sessions and other resources are used as names of variables by the
+		math engines (Matlab and Python) and in the generated code. They are
+		checked when a resource is created, renamed or imported, and must:</p>
+	<ul>
+		<li>start with a letter, followed only by letters, digits and
+			"_" (no space, no accent, no "-");</li>
+		<li>be at most 63 characters long;</li>
+		<li>not be a Matlab or Python keyword (for example <code>end</code>,
+			<code>for</code>, <code>if</code>, <code>function</code>,
+			<code>class</code>, <code>import</code>, <code>None</code>,
+			<code>True</code>...);</li>
+		<li>not have the form <code>Trial_N</code> (N being a number), which is
+			reserved for the trials folders, except for trials.</li>
+	</ul>
+	<p>The wizard or the dialog shows a message explaining why a name is
+		refused, and cannot be finished until the name is valid. Names of
+		trials are described in
+		<a href="subjectsessiontrial.html#trials">Trials</a>.</p>
+
 	<h2><a name="associations">Associations between resources</a></h2>
 
 	<p>Resources are linked together:</p>
@@ -411,8 +438,10 @@ MyExperiment
 			<td>Rename... (<kbd>F2</kbd>), Refresh (<kbd>F5</kbd>)</td>
 			<td>Rename the selected resource, or reload the content of the
 				disk. Renaming a configuration or a process updates the
-				associations that refer to it. A trial must keep a name of the
-				form <code>Trial n&deg;N</code> (or <code>Trial_N</code>).</td>
+				associations that refer to it. The new name must follow the
+				<a href="#names">rules of the resources names</a>. A trial must
+				keep a name of the form <code>Trial n&deg;N</code> (or
+				<code>Trial_N</code>).</td>
 		</tr>
 		<tr>
 			<td>Associate with...</td>
@@ -501,7 +530,9 @@ MyExperiment
 	</ul>
 	<p>Compilation errors are written in the Console view and shown with an
 		error overlay on the process, on its editor tab and on the parent
-		folders.</p>
+		folders. In the process editor, they are also displayed on the blocks
+		that generated them (see <a href="dacqprocess.html#compileerrors">Errors
+		and warnings on the blocks</a>).</p>
 
 </body>
 </html>

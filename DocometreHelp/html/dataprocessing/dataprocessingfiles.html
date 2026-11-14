@@ -44,6 +44,11 @@
 		<li><b>Source code</b>: the code generated for the math engine, read
 			only.</li>
 	</ul>
+	<p>As in the acquisition processes, <kbd>Ctrl</kbd> + double click
+		(<kbd>Cmd</kbd> + double click on macOS) on a block or a connection,
+		or <b>Show in source code</b> (<kbd>F3</kbd>) in the context menu,
+		opens the Source code tab and selects the lines generated for this
+		block or connection.</p>
 	<p>A function block is assigned with right click &gt; <b>Assign</b>, then
 		configured with a double click. The Assign menu is organized as
 		follows (see the <a href="functionslibrary.html">Standard functions
@@ -98,10 +103,13 @@
 		(Python or Matlab, according to the engine) in the processing. Its
 		dialog has two tabs: <b>Expressions list</b>, where each expression is
 		typed, then added (Add), modified (select it, change it, Modify),
-		deleted or moved up and down; and <b>Source code</b>, which shows the
-		resulting code. In the Expression field,
-		<kbd>Ctrl</kbd>+<kbd>Space</kbd> proposes the names of the elements of
-		the loaded subjects (see the <a href="datamodel.html">Data model</a>).
+		deleted or moved up and down; and <b>Source code</b>, where all the
+		expressions can also be typed or pasted as text, one per line, with
+		the syntax coloring of the language of the engine. In the Expression
+		field and in the Source code tab, <kbd>Ctrl</kbd>+<kbd>Space</kbd>
+		proposes the names of the elements of the loaded subjects (see the
+		<a href="datamodel.html">Data model</a>), then, in the Source code tab,
+		the keywords and functions of Python or Matlab.
 		For example, with Python:</p>
 <pre>
 D["MyExp.S01.ForceN.Values"] = D["MyExp.S01.Force.Values"] / 9.81

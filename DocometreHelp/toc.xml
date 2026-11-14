@@ -2,19 +2,22 @@
 <?NLS TYPE="org.eclipse.help.toc"?>
 
 <toc label="DOCoMETRe Table of Contents" topic="html/toc.html">
+   <topic href="html/general/startuphelp.html" label="Getting Started and Settings">
+      <anchor id="general"/>
+   </topic>
    <topic href="html/dataacquisition/dataacquistion.html" label="Data Acquisition and Real Time Systems">
       <anchor id="dataacquisition"/>
    </topic>
    <topic href="html/dataprocessing/maintopic.html" label="Data Processing">
       <anchor id="dataprocessing"/>
    </topic>
-   <topic label="Supported DACQ Systems">
+   <topic href="html/dacqsystems/maintopic.html" label="Supported DACQ Systems">
       <anchor id="dacqsystems"/>
    </topic>
    <topic label="Troubleshoots">
       <anchor id="troubleshoots"/>
    </topic>
-   <topic label="Special topics">
+   <topic href="html/advancedconcepts/maintopic.html" label="Special topics">
       <anchor id="advancedconcepts"/>
    </topic>
 </toc>

@@ -1,0 +1,271 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Preferences</title>
+<style type="text/css">
+	table { border-collapse: collapse; margin-bottom: 1em; }
+	th, td { border: 1px solid #A0A0A0; padding: 4px 8px; text-align: left; vertical-align: top; }
+	kbd { border: 1px solid #A0A0A0; border-radius: 3px; padding: 0px 4px; font-family: monospace; }
+</style>
+</head>
+
+<body>
+	<h1>Preferences</h1>
+
+	<p>The preferences of DOCoMETRe are set in <b>Options &gt;
+		Preferences...</b> (on macOS, also in the application menu). The
+		dialog lists the preferences pages on the left; the filter field at the
+		top finds a page or a setting by its name. <b>Restore Defaults</b> sets
+		back the default values of the displayed page, <b>Apply</b> saves them
+		without closing the dialog.</p>
+	<p>Preferences are saved in the workspace: each workspace has its own
+		preferences (except the language, which is common to all the
+		workspaces). The DOCoMETRe pages are:</p>
+	<ul>
+		<li><a href="#general">General</a>;</li>
+		<li><a href="#appearance">Appearance</a>: theme and language;</li>
+		<li><a href="#history">History</a>: experiments history;</li>
+		<li><a href="#mathengine">Math Engine</a>, with its <b>Matlab</b> and
+			<b>Python</b> sub-pages;</li>
+		<li><a href="#systems">Systems</a>, with its <b>Default ADWin
+			System</b> and <b>Default Arduino Uno System</b> sub-pages.</li>
+	</ul>
+	<p>Other pages may come from the Eclipse platform DOCoMETRe is built on
+		(help, updates...).</p>
+
+	<h2><a name="general">General</a></h2>
+
+	<table>
+		<tr>
+			<th>Setting</th>
+			<th>Default</th>
+			<th>Description</th>
+		</tr>
+		<tr>
+			<td>Serialize to XML format</td>
+			<td>checked</td>
+			<td>DACQ configurations, processes, data processings, batch
+				processings and charts are saved as XML text files. Otherwise
+				they are saved in a binary format. Both formats can always be
+				read; a file takes the selected format the next time it is
+				saved. Text files are needed to show the differences between
+				snapshots of the <a href="../designperspective/experimentshistory.html">experiments
+				history</a>.</td>
+		</tr>
+		<tr>
+			<td>Build automatically</td>
+			<td>not checked</td>
+			<td>Processes are compiled each time they, or their DACQ
+				configuration, are saved. Same as <b>Options &gt; Build
+				automatically</b> (see <a href="../designperspective/designperspective.html#build">Compilation</a>).</td>
+		</tr>
+		<tr>
+			<td>Show workspace selection dialog at startup</td>
+			<td>checked at first start</td>
+			<td>Asks for the workspace each time DOCoMETRe starts (see
+				<a href="startuphelp.html#workspace">Workspace</a>). Unchecked
+				when "Use this as the default and do not ask again" is checked in
+				this dialog.</td>
+		</tr>
+		<tr>
+			<td>Real time chart library (must restart if changed)</td>
+			<td>SWT + OpenGL v2</td>
+			<td>Library used to draw the real time charts of the Acquire
+				perspective, the <a href="../designperspective/dataeditor.html#versions">data
+				editor</a>, the <a href="../dataprocessing/signaleditor.html">signal
+				and category editors</a> and the
+				<a href="../dataprocessing/xyxyzcharts.html">XY and 3D charts</a>:
+				<ul>
+					<li><b>SWT + OpenGL v2</b> (default): fastest drawing, even
+						with long signals and high frequencies. It is required by
+						the XYZ and Cursor 2D real time charts, by the 3D charts
+						and by the legend, grid and axes options of the charts;</li>
+					<li><b>SWT + OpenGL v1</b>: previous OpenGL library;</li>
+					<li><b>SWT</b>: does not use OpenGL, for computers where
+						OpenGL does not work (old graphics card or driver, remote
+						display...).</li>
+				</ul>
+				DOCoMETRe must be restarted after a change.</td>
+		</tr>
+		<tr>
+			<td>Undo history limit</td>
+			<td>10</td>
+			<td>Number of operations that can be undone with Edit &gt; Undo
+				(0 to 1000).</td>
+		</tr>
+		<tr>
+			<td>Always prompt for undo or redo</td>
+			<td>checked</td>
+			<td>Asks for a confirmation before an operation is undone or
+				redone.</td>
+		</tr>
+		<tr>
+			<td colspan="3"><b>For ADWin systems under MacOS or Linux (Docker,
+				Wine)</b></td>
+		</tr>
+		<tr>
+			<td>Use Docker (if not checked, Wine will be used)</td>
+			<td>not checked</td>
+			<td rowspan="2">How the ADbasic compiler, which is a Windows
+				program, is run on Mac OS and Linux. See
+				<a href="../dacqsystems/ADWinTopic.html">ADwin Systems</a> and
+				<a href="../advancedconcepts/adwinwithmacos.html">Can I use ADwin
+				systems with Mac OS ?</a>.</td>
+		</tr>
+		<tr>
+			<td>"Wine" file location</td>
+			<td>empty</td>
+		</tr>
+		<tr>
+			<td colspan="3"><b>Trials and test process execution mode</b></td>
+		</tr>
+		<tr>
+			<td>Full screen mode</td>
+			<td>not checked</td>
+			<td>The real time charts are displayed in
+				<a href="../dataacquisition/acquireperspective.html#fullscreen">full
+				screen mode</a> as soon as trials are run or a process is
+				tested. Press <kbd>F11</kbd> (or
+				<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd>,
+				<kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd> on macOS) to leave
+				it.</td>
+		</tr>
+		<tr>
+			<td colspan="3"><b>Trials parameters</b></td>
+		</tr>
+		<tr>
+			<td>Stop trial immediately when asked</td>
+			<td>checked</td>
+			<td>When the run is stopped, the current trial is interrupted at
+				once. Otherwise, DOCoMETRe waits for the end of the current trial
+				("Pause pending" in the status bar) before stopping.</td>
+		</tr>
+		<tr>
+			<td>Do not ask for confirmation when stopping a trial</td>
+			<td>not checked</td>
+			<td>Stops the run without displaying the Stop trial dialog.</td>
+		</tr>
+		<tr>
+			<td>Validate trials automatically</td>
+			<td>not checked</td>
+			<td rowspan="2">Override the validate and start modes of all the
+				trials (see <a href="../designperspective/subjectsessiontrial.html#trials">Trials</a>).</td>
+		</tr>
+		<tr>
+			<td>Start trials automatically</td>
+			<td>not checked</td>
+		</tr>
+		<tr>
+			<td colspan="3"><b>Charts options</b></td>
+		</tr>
+		<tr>
+			<td>Show cursor (Time charts)</td>
+			<td>not checked</td>
+			<td>Shows the cursor in the time charts of the data editor and of
+				the signal editor.</td>
+		</tr>
+		<tr>
+			<td>Show marker (Time charts)</td>
+			<td>not checked</td>
+			<td>Shows the markers in the time charts of the signal editor.</td>
+		</tr>
+		<tr>
+			<td>Synchronize charts when trial number changes</td>
+			<td>checked</td>
+			<td>Going to the next or previous trial in a signal, category or
+				chart editor changes the trial of all the opened editors.</td>
+		</tr>
+		<tr>
+			<td colspan="3"><b>Std. and Err. redirection options</b></td>
+		</tr>
+		<tr>
+			<td>Redirect consoles outputs to file</td>
+			<td>not checked</td>
+			<td rowspan="2">Standard and error outputs of DOCoMETRe are appended
+				to the given file, for example to send it with a bug report (see
+				<a href="../troubleshoots/docometre.html">How to debug ?</a>).
+				DOCoMETRe must be restarted after a change.</td>
+		</tr>
+		<tr>
+			<td>File absolute path</td>
+			<td>empty</td>
+		</tr>
+		<tr>
+			<td>Editors font size</td>
+			<td>12</td>
+			<td>Font size of the source code editors (generated code, user
+				functions, data processings, expressions) and of the diaries.
+				Applied to the editors opened after the change.</td>
+		</tr>
+	</table>
+
+	<h2><a name="appearance">Appearance</a></h2>
+
+	<table>
+		<tr>
+			<th>Setting</th>
+			<th>Default</th>
+			<th>Description</th>
+		</tr>
+		<tr>
+			<td>Theme</td>
+			<td>System</td>
+			<td><b>System</b> follows the dark or light mode of the operating
+				system, <b>Light</b> and <b>Dark</b> force a theme. The theme
+				applies to the whole application: views, editors, charts, syntax
+				coloring, and the pages of this help. DOCoMETRe proposes to
+				restart, as the theme is fully applied only at startup.</td>
+		</tr>
+		<tr>
+			<td>Language</td>
+			<td>System</td>
+			<td>Language of the user interface: <b>System</b> (language of the
+				operating system when it is available, English otherwise),
+				English, French or Polish. DOCoMETRe proposes to restart with the
+				new language. The help is only available in English.<br>
+				When DOCoMETRe is started from the Eclipse IDE (development), it
+				cannot restart itself with another language: set the
+				<code>-nl</code> argument of the launch configuration
+				instead.</td>
+		</tr>
+	</table>
+
+	<h2><a name="history">History</a></h2>
+
+	<p>Enables the experiments history and sets the author of the
+		snapshots, the automatic snapshots and the optimization of the
+		history storage. See <a href="../designperspective/experimentshistory.html#preferences">Experiments
+		history &gt; Preferences</a>.</p>
+
+	<h2><a name="mathengine">Math Engine, Matlab and Python</a></h2>
+
+	<p>Choice of the math engine used in the Analyse perspective (Matlab by
+		default, or Python), loading of subjects, and locations, time outs and
+		ports of each engine. See <a href="../dataprocessing/mathengine.html#preferences">Math
+		Engines &gt; Preferences</a>.</p>
+
+	<h2><a name="systems">Systems</a></h2>
+
+	<p>The <b>Systems</b> page only groups its sub-pages:</p>
+	<ul>
+		<li><b>Default ADWin System</b>: ADbasic compiler, boot (BTL) file,
+			libraries and user libraries paths, ADbasic version, system type,
+			CPU type, revision, IP address, port, device and module numbers,
+			time out and global frequency;</li>
+		<li><b>Default Arduino Uno System</b>: Arduino tools (arduino-cli or
+			builder and avrdude), libraries and user libraries paths, revision,
+			serial port, baud rate, global frequency and <b>Delay time after
+			serial print</b>.</li>
+	</ul>
+	<p>These values initialize each new DACQ configuration of the system.
+		They can be typed in these pages, or copied from an existing
+		configuration with the <b>Set this configuration as default</b>
+		button of its General tab. The meaning of each value is given in
+		<a href="../designperspective/dacqconfiguration.html#general">DACQ
+		Configuration &gt; General tab</a>, <a href="../dacqsystems/ADWinTopic.html">ADwin
+		Systems</a> and <a href="../dacqsystems/ArduinoTopic.html">Arduino
+		Systems</a>.</p>
+</body>
+</html>
