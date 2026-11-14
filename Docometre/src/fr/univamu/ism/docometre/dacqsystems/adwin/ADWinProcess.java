@@ -123,7 +123,14 @@ public class ADWinProcess extends Process {
 			// Get process code
 			String sourceCode = process.getCode(null);
 			String processCode = sourceCode.replaceAll("^\\n", "");
-			if(compilation) ResourceProperties.setCompiledCodeSignature(processFile, sourceCode, sourceCode.length() > processCode.length() ? 1 : 0);
+			if(compilation) {
+				// Lines to add to a line number given by the compiler to get the line in source code : 
+				// leading empty line removed from compiled file and ADbasic header lines (ADbasic >= 5), not counted by the compiler
+				int linesShift = sourceCode.length() > processCode.length() ? 1 : 0;
+				Matcher headerMatcher = Pattern.compile("^'<ADbasic Header.*\\n(.*\\n)*?'<Header End>\\n").matcher(processCode);
+				if(headerMatcher.find()) linesShift += headerMatcher.group().length() - headerMatcher.group().replace("\n", "").length();
+				ResourceProperties.setCompiledCodeSignature(processFile, sourceCode, linesShift);
+			}
 			
 			// Create ADBasic file
 			File file = new File(adbasicFilePath);

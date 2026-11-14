@@ -990,7 +990,8 @@ public final class ResourceProperties {
 	 * Saved in workspace metadata only (not in properties file) as it is only a cache.
 	 * @param process the process resource
 	 * @param sourceCode the source code (as displayed in source code page)
-	 * @param linesShift the number of lines removed at the beginning of the source code to get the compiled code
+	 * @param linesShift the number of lines to add to a line number given by the compiler to get the line in source code
+	 * (e.g. lines removed at the beginning of the source code to get the compiled code, or lines not counted by the compiler)
 	 */
 	public static void setCompiledCodeSignature(IResource process, String sourceCode, int linesShift) {
 		try {
