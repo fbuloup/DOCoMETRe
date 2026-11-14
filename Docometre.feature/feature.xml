@@ -6,18 +6,75 @@
       provider-name="ISM">
 
    <description>
-      -- 2026-11-12 - BIS
+      -- 2026-11-14
 ADDED :
-* Linux, Wayland session (Ubuntu 22.04 and later, Fedora, WSL2 with WSLg) : DOCoMETRe is relaunched
-at startup with the X11 backend of GTK (GDK_BACKEND=x11, Xwayland), as OpenGL charts only support X11.
-No relaunch in an X11 session or when GDK_BACKEND=x11 is already set
+* Process editors (ADwin, Arduino, Python, MATLAB) : CTRL (CMD on macOS) + double click on a block or a
+connection goes to the matching lines in the source code tab. Also available with the new
+&amp;quot;Show in source code&amp;quot; context menu entry (F3)
+* Process editors : compilation errors and warnings are shown on the blocks that produced them (icon and
+messages in the tooltip). Segment tabs show the most severe status of their blocks, and errors outside
+blocks are counted in the source code tab. They are linked to blocks only while the generated code
+is unchanged
+* Expression function (Arduino, ADwin) : syntax coloring and content assist (Ctrl+Space) in the source
+tab (DACQ configuration names, then Arduino or ADBasic keywords)
+* Python/MATLAB expression function : syntax coloring and content assist (Ctrl+Space) in the source tab
+(channels of the selected experiment, then the language keywords and functions)
+* Export/import experiment : an experiment can be imported under another name (dialog asking for the
+name, the archive file name by default). Archives exported by previous versions can still be imported
+* Resources names : the same rules for creation and renaming (letter first, then letters, digits and
+&apos;_&apos;, at most 63 characters). MATLAB/Python keywords and trial folder names (&amp;quot;Trial_N&amp;quot;) are
+refused. These rules also apply to the name of an imported experiment
+* Arduino diary : error markers shown, and anomalies colored in red (stop or restart character not
+received, parameters not acknowledged)
+* Default real time chart library : SWT + OpenGL V2
+* Language : French translation of the DACQ configuration editors (Arduino Uno, ADwin, meter charts),
+with the remaining labels and tooltips in French, English and Polish. AR_INTERNAL analog reference
+(Arduino Uno R4) explanation added
+* Help : startup (workspace, Wayland on Linux), Welcome page, Help menu, cheat sheets and updates,
+Preferences page, rules of resources names, import of an experiment under another name, link between
+blocks and source code, Arduino diary anomalies, Options &amp;gt; Show... views, Wayland troubleshoot,
+Arduino Uno port access on Linux, Arduino Uno with DOCoMETRe in WSL2 on Windows
+* Startup : the preferred language and relaunch information is only logged when DOCoMETRe can not be
+relaunched (e.g. when launched from the Eclipse IDE)
 FIXED :
-* Linux, Wayland session : crash of the JVM (SIGSEGV in XDisplayString) as soon as an OpenGL chart was
+* Syntax coloring of code editors (Arduino, ADBasic, Python, MATLAB, custom functions) : keywords and
+numbers were colored inside words (&amp;quot;int&amp;quot; in &amp;quot;interrupts&amp;quot;, &amp;quot;1&amp;quot; in &amp;quot;f1&amp;quot;), and comment markers and keywords
+were colored inside strings. ADBasic keywords were case sensitive, and MATLAB %{ %} block comments are
+now handled
+* Syntax coloring of diaries : rules matched anywhere in a line, hiding the colors of the following
+lines. Arduino ERROR lines were not colored. Colored lines now follow the diary zoom, and a line equal
+to the previous one is no longer merged with the next one
+* Arduino diary : error markers were placed on the wrong line
+* Arduino : compiler errors from another file than the sketch (library, core...) were reported on a
+wrong sketch line
+* ADwin : source code annotations shifted by one line
+* Arduino/ADwin expression function : no scroll bars in the source tab
+* Markers groups and features labels containing &apos;_&apos; were truncated (export of markers and features,
+EXPORT_MARKERS and EXPORT_FEATURES functions)
+* Python engine : deleting a channel, a markers group or a feature also deleted the ones whose name
+started with the same characters (e.g. &amp;quot;Acc&amp;quot; deleted &amp;quot;Acc2&amp;quot; and &amp;quot;Acc_LP&amp;quot;)
+* Process diary : process name truncated at the first &apos;_&apos; when looking for its DACQ system
+* NullPointerException when closing a DACQ configuration editor whose configuration was deleted
+(Arduino Uno). With ADwin, the editor was not removed from the configuration observers
+-- 2026-11-12 - BIS
+ADDED :
+* Linux, Wayland session (Ubuntu 22.04 and later, Fedora, WSL2
+with WSLg) : DOCoMETRe is relaunched
+at startup with the X11 backend of GTK (GDK_BACKEND=x11, Xwayland),
+as OpenGL charts only support X11.
+No relaunch in an X11 session or when GDK_BACKEND=x11 is already
+set
+FIXED :
+* Linux, Wayland session : crash of the JVM (SIGSEGV in XDisplayString)
+as soon as an OpenGL chart was
 created, e.g. the real time charts of a process test
-* Linux : &quot;Caught handled GLException ... UnsatisfiedLinkError : EGL.dispatch_eglQueryString0&quot; messages
-when libEGL is installed (e.g. WSL2) : libjogl_mobile.so was not declared in the native code of the
+* Linux : &quot;Caught handled GLException ... UnsatisfiedLinkError
+: EGL.dispatch_eglQueryString0&quot; messages
+when libEGL is installed (e.g. WSL2) : libjogl_mobile.so was
+not declared in the native code of the
 JOGL bundle
-* New Subject wizard : name, title and message of the custom function wizard were displayed
+* New Subject wizard : name, title and message of the custom
+function wizard were displayed
 -- 2026-11-12
 ADDED :
 * Arduino Uno : calibration and monitoring dialog, as with ADwin
