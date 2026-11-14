@@ -148,6 +148,8 @@
 			be copied from one process to another;</li>
 		<li>Edit... (same as a double click) and <b>Assign</b> (function of a
 			function block);</li>
+		<li><b>Show in source code</b> (<kbd>F3</kbd>): see
+			<a href="#sourcelink">below</a>;</li>
 		<li><b>Toggle activated state</b>: a deactivated block is ignored by the
 			code generation, which is useful to test variants of a process;</li>
 		<li>Delete (also with <kbd>Del</kbd> or <kbd>Backspace</kbd>);</li>
@@ -155,6 +157,13 @@
 		<li><b>Show grid</b> and <b>Block alignment helper</b> (snap to grid).
 			Zoom, grid and alignment states are saved with the process.</li>
 	</ul>
+	<p><a name="sourcelink"><b>From the blocks to the source code</b></a>:
+		<kbd>Ctrl</kbd> + double click (<kbd>Cmd</kbd> + double click on
+		macOS) on a block or a connection, or <b>Show in source code</b>
+		(<kbd>F3</kbd>) in the context menu, opens the
+		<a href="#source">Source code tab</a> and selects the lines generated
+		for this block or connection. DOCoMETRe beeps when there is no
+		corresponding code.</p>
 
 	<h2><a name="functions">Functions</a></h2>
 
@@ -190,6 +199,14 @@
 		file of 32 bits floating point values: see
 		<a href="../advancedconcepts/createstimulusfile.html">How to create
 		stimulus file with Matlab or Python ?</a>.</p>
+	<p>The dialog of the <b>Compute expression(s)</b> function has two tabs:
+		<b>Expressions List</b>, where each expression is typed, then added,
+		modified, deleted or moved; and <b>Source Code</b>, where all the
+		expressions can be typed or pasted as text, one per line. The Source
+		Code tab uses the syntax coloring of the process language (ADbasic or
+		Arduino C). In both tabs, <kbd>Ctrl</kbd>+<kbd>Space</kbd> proposes
+		the channels and variables of the DACQ configuration, then, in the
+		Source Code tab, the keywords of the language.</p>
 
 	<h2><a name="globals">Global declarations</a></h2>
 
@@ -218,7 +235,9 @@
 
 	<p>The last tab shows the code generated from the blocks, the global
 		declarations and the DACQ configuration. It is read only: modify the
-		blocks to change it. Compilation errors are marked in the margin.
+		blocks to change it. Compilation errors and warnings are marked in the
+		margin; see also <a href="#compileerrors">Errors and warnings on the
+		blocks</a>.
 		<kbd>Ctrl</kbd>+<kbd>F</kbd> (<kbd>Cmd</kbd>+<kbd>F</kbd> on macOS)
 		opens a find dialog. The generated code can also be opened in the
 		editor of the system with the <b>Open with system editor</b> command of
@@ -233,12 +252,28 @@
 		<a href="dacqconfiguration.html#general">General tab</a> of the DACQ
 		configuration. Errors are written in the Console view and shown with
 		an error overlay on the process; warnings about the blocks structure
-		are shown with a warning overlay.</p>
+		are shown with a warning overlay. Errors and warnings are also
+		displayed on the blocks (see <a href="#compileerrors">below</a>).</p>
 	<p>With Arduino Uno, the compilation is reported as failed when the build
 		fails, whatever the reason : errors of the compiler (marked at their
 		line), errors of the linker (for example <i>Link error : multiple
 		definition of `signal'</i>, marked at the line of the sketch when it is
 		known, at line 1 otherwise) or any other failure of the build.</p>
+	<p><a name="compileerrors"><b>Errors and warnings on the blocks</b></a>:
+		after a compilation, each compilation error or warning is linked to
+		the block that generated its line. The block displays an error or
+		warning icon, and its tooltip gives the messages. The tab of each
+		segment (Initialize, Loop, Finalize) displays the most severe icon of
+		its blocks. Errors and warnings located outside the blocks (variables
+		declarations, code of the modules, global declarations...) are counted
+		in the title of the Source code tab, for example <i>Source code (2
+		outside blocks)</i>. Errors and warnings of the blocks structure,
+		found when the code is generated, are also displayed on their
+		blocks.<br>
+		Lines of the compilation messages refer to the code that was compiled:
+		they are linked to the blocks only as long as the source code of the
+		process is unchanged since the last compilation. Compile again after
+		a modification to update them.</p>
 	<p>Compile the processes again after modifying the variables or the
 		parameters of their DACQ configuration. A process modified and
 		compiled again is loaded again into the real time system at its next
