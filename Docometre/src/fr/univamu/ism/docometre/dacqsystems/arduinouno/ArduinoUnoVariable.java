@@ -90,7 +90,8 @@ public class ArduinoUnoVariable extends ArduinoUnoChannel implements ParameterVa
 	
 	@Override
 	public String getParameterValue() {
-		return getProperty(ArduinoUnoVariableProperties.PARAMETER_VALUE);
+		String value = getProperty(ArduinoUnoVariableProperties.PARAMETER_VALUE);
+		return value == null ? "0" : value;
 	}
 	
 	@Override

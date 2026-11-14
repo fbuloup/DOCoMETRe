@@ -94,7 +94,8 @@ public class ADWinVariable extends ADWinChannel implements ParameterVariable {
 	
 	@Override
 	public String getParameterValue() {
-		return getProperty(ADWinVariableProperties.PARAMETER_VALUE);
+		String value = getProperty(ADWinVariableProperties.PARAMETER_VALUE);
+		return value == null ? "0" : value;
 	}
 	
 	@Override
