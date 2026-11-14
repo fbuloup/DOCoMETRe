@@ -106,6 +106,8 @@ public class SourceEditor extends EditorPart {
 	private PartListenerAdapter partListenerAdapter;
 	protected LineNumberRulerColumn lineNumberRulerColumn;
 	protected int fontSize;
+	// Last generated code, from which displayed code is extracted (see getDisplayedCode())
+	private String generatedCode = "";
 
 	public SourceEditor(MultiPageEditorPart multiPageEditorPart) {
 		this.multiPageEditorPart = multiPageEditorPart;
@@ -275,8 +277,48 @@ public class SourceEditor extends EditorPart {
 		sourceViewer.getTextWidget().setFocus();
 	}
 
+	/**
+	 * Displays generated code. Document is modified only if displayed code changes : 
+	 * replacing the whole document deletes its annotations (compilation markers).
+	 * @param code the generated code
+	 */
 	public void update(String code) {
-		sourceViewer.getDocument().set(code);
+		generatedCode = code == null ? "" : code;
+		String displayedCode = getDisplayedCode(generatedCode);
+		if(!displayedCode.equals(sourceViewer.getDocument().get())) sourceViewer.getDocument().set(displayedCode);
+	}
+	
+	/**
+	 * Returns the part of the generated code which is displayed (e.g. without ADbasic header). 
+	 * Lines can only be removed at the beginning of the generated code.
+	 * @param code the generated code
+	 * @return the displayed code
+	 */
+	protected String getDisplayedCode(String code) {
+		return code;
+	}
+	
+	/*
+	 * Number of lines removed at the beginning of the generated code to get the displayed code
+	 */
+	private int getHiddenLinesNumber() {
+		String displayedCode = document == null ? "" : document.get();
+		if(!generatedCode.endsWith(displayedCode)) return 0;
+		String hiddenCode = generatedCode.substring(0, generatedCode.length() - displayedCode.length());
+		return hiddenCode.length() - hiddenCode.replace("\n", "").length();
+	}
+	
+	/**
+	 * Returns the shift between the lines of the compiled file and the lines of the displayed source code, 
+	 * if displayed source code is the one which has been compiled for the last time.
+	 * @return the number of lines to add to a compiled file line to get the displayed source code line 
+	 * (may be negative), or null if displayed source code has not been compiled (modified since last compilation or unknown)
+	 */
+	public Integer getCompiledCodeLinesShift() {
+		IResource process = ObjectsController.getResourceForObject(getObject());
+		int linesShift = ResourceProperties.getCompiledCodeLinesShift(process, generatedCode);
+		if(linesShift < 0) return null;
+		return linesShift - getHiddenLinesNumber();
 	}
 
 	public void updateMarkers() {
@@ -285,8 +327,10 @@ public class SourceEditor extends EditorPart {
 			IResource process = ObjectsController.getResourceForObject(getObject());
 			IMarker[] markers = process.findMarkers(DocometreBuilder.MARKER_ID, true, IResource.DEPTH_INFINITE);
 			annotationModel.removeAllAnnotations();
-			// Markers lines refer to the compiled file, which may start lower than the source code (ADwin) 
-			int linesShift = Math.max(0, ResourceProperties.getCompiledCodeLinesShift(process, document.get()));
+			// Markers lines refer to the compiled file, which may start lower or higher than the displayed source code (ADwin) 
+			Integer compiledCodeLinesShift = getCompiledCodeLinesShift();
+			// Source code modified since last compilation : lines are approximate
+			int linesShift = compiledCodeLinesShift != null ? compiledCodeLinesShift : -getHiddenLinesNumber();
 			for (IMarker marker : markers) {
 				Annotation annotation = null;
 				String line = (String) marker.getAttribute(IMarker.MESSAGE);
@@ -298,7 +342,7 @@ public class SourceEditor extends EditorPart {
 					if (severity.equals(IMarker.SEVERITY_WARNING))
 						annotation = new WarningAnnotation(marker, line);
 //						int lineNumber = (int) marker.getAttribute(IMarker.LINE_NUMBER);
-					int lineOffset = document.getLineOffset(Math.min((int) lineNumber - 1 + linesShift, document.getNumberOfLines() - 1));
+					int lineOffset = document.getLineOffset(Math.max(0, Math.min((int) lineNumber - 1 + linesShift, document.getNumberOfLines() - 1)));
 					String lengthLine = line.replaceAll("^(.|\\n)*line:\\s", "");
 					lengthLine = lengthLine.replaceAll("\\sfile:(.*)$", "");
 					annotationModel.addAnnotation(annotation, new Position(lineOffset, lengthLine.length()));
@@ -385,8 +429,7 @@ public class SourceEditor extends EditorPart {
 		try {
 			// Regenerate code : segments code maps generated from now are those of the displayed code
 			long generationIndex = Script.getCodeMapsGenerationIndex();
-			String code = getCode();
-			if(!code.equals(document.get())) update(code);
+			update(getCode());
 			String source = document.get();
 			// Segments codes are appended in generation order : search each one after the previous one
 			int searchOffset = 0;

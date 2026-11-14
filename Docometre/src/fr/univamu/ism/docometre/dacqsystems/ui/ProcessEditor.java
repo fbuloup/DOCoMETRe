@@ -77,7 +77,6 @@ import fr.univamu.ism.docometre.GetResourceLabelDelegate;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.PartListenerAdapter;
-import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.dacqsystems.DocometreBuilder;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.dialogs.FindDialog;
@@ -311,9 +310,9 @@ public class ProcessEditor extends MultiPageEditorPart implements IPageChangedLi
 			if(!compilationMarkers.isEmpty()) {
 				// Regenerate source code and locate segments in it
 				Map<ScriptSegmentCodeMap, Integer> segments = sourceEditor.locateSegments();
-				int linesShift = ResourceProperties.getCompiledCodeLinesShift(resource, sourceEditor.getSourceCode());
+				Integer linesShift = sourceEditor.getCompiledCodeLinesShift();
 				// Nothing is linked if source code has been modified since last compilation
-				if(linesShift >= 0) {
+				if(linesShift != null) {
 					for (IMarker marker : compilationMarkers) {
 						int severity = marker.getAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
 						int lineNumber = marker.getAttribute(IMarker.LINE_NUMBER, -1);
