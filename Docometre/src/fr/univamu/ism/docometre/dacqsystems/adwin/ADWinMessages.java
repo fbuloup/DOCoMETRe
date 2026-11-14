@@ -327,6 +327,9 @@ public class ADWinMessages extends NLS {
 	// ADwinChannel
 	public static String ADWinChannel_StimulusFileNotFound;
 	
+	// Calibration, monitoring
+	public static String CalibrationMonitoring_Tooltip;
+	
 	static {
 		NLS.initializeMessages(BUNDLE_NAME, ADWinMessages.class);
 	}

@@ -319,19 +319,22 @@ public abstract class ModulePage extends FormPage implements PropertyObserver {
 			buttonsTableContainer.setLayout(new GridLayout());
 		}
 		if(addTransfertButton) {
-			selectAll_T_Button = createButton(buttonsTableContainer, "Transfert", SWT.PUSH, 1, 1);
+			selectAll_T_Button = createButton(buttonsTableContainer, DocometreMessages.SelectAllTransfert_Label, SWT.PUSH, 1, 1);
+			selectAll_T_Button.setToolTipText(DocometreMessages.SelectAllTransfert_Tooltip);
 			selectAll_T_Button.setImage(Activator.getImage(IImageKeys.SELECT_ALL));
 			selectAll_T_Button.setData(ChannelProperties.TRANSFER);
 			selectAll_T_Button.addSelectionListener(new SelectAllButtonHandler(selectAll_T_Button, getModule(), ChannelProperties.TRANSFER, ((ResourceEditor)getEditor()).getUndoContext()));
 		}
 		if(addAutoTransfertButton) {
-			selectAll_AT_Button = createButton(buttonsTableContainer, "Auto-T.", SWT.PUSH, 1, 1);
+			selectAll_AT_Button = createButton(buttonsTableContainer, DocometreMessages.SelectAllAutoTransfert_Label, SWT.PUSH, 1, 1);
+			selectAll_AT_Button.setToolTipText(DocometreMessages.SelectAllAutoTransfert_Tooltip);
 			selectAll_AT_Button.setImage(Activator.getImage(IImageKeys.SELECT_ALL));
 			selectAll_AT_Button.setData(ChannelProperties.AUTO_TRANSFER);
 			selectAll_AT_Button.addSelectionListener(new SelectAllButtonHandler(selectAll_AT_Button, getModule(), ChannelProperties.AUTO_TRANSFER, ((ResourceEditor)getEditor()).getUndoContext()));
 		}
 		if(addRecButton) {
-			selectAll_R_Button = createButton(buttonsTableContainer, "Rec.", SWT.PUSH, 1, 1);
+			selectAll_R_Button = createButton(buttonsTableContainer, DocometreMessages.SelectAllRecord_Label, SWT.PUSH, 1, 1);
+			selectAll_R_Button.setToolTipText(DocometreMessages.SelectAllRecord_Tooltip);
 			selectAll_R_Button.setImage(Activator.getImage(IImageKeys.SELECT_ALL));
 			selectAll_R_Button.setData(ChannelProperties.RECORD);
 			selectAll_R_Button.addSelectionListener(new SelectAllButtonHandler(selectAll_R_Button, getModule(), ChannelProperties.RECORD, ((ResourceEditor)getEditor()).getUndoContext()));

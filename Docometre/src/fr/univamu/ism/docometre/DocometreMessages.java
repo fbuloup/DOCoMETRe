@@ -373,6 +373,12 @@ public final class DocometreMessages extends NLS {
 	public static String AutoTransfert_Label;
 	public static String Record_Tooltip;
 	public static String Record_Label;
+	public static String SelectAllTransfert_Label;
+	public static String SelectAllTransfert_Tooltip;
+	public static String SelectAllAutoTransfert_Label;
+	public static String SelectAllAutoTransfert_Tooltip;
+	public static String SelectAllRecord_Label;
+	public static String SelectAllRecord_Tooltip;
 	
 	/*
 	 * Module form page

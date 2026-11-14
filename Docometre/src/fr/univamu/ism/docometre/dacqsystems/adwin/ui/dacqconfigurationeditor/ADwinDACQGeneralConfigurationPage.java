@@ -158,7 +158,7 @@ public class ADwinDACQGeneralConfigurationPage extends ModulePage {
 	private class CalibrateMonitorAction extends Action {
 		public CalibrateMonitorAction() {
 			setImageDescriptor(Activator.getImageDescriptor(IImageKeys.CALIBRATION_MONITORING_ICON));
-			setToolTipText("Calibration, monitoring");
+			setToolTipText(ADWinMessages.CalibrationMonitoring_Tooltip);
 		}
 		
 		@Override
