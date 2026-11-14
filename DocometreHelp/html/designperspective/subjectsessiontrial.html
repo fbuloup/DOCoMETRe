@@ -407,7 +407,14 @@ target;perturbation
 		channel with the time and the workload of the board. It ends with the
 		messages exchanged to stop the board. Lines starting with "ERROR" report
 		messages received from the board that could not be decoded; they are
-		marked as errors.</p>
+		marked as errors. The following anomalies are also displayed in red:
+		"Stop 's' char not received after...", "Arduino restart ('w' char) not
+		received", "Parameters not acknowledged" and "Propagated parameters not
+		acknowledged". The line "Stop 's' char not received !" is not an
+		anomaly: it is written when the run is stopped by the user.</p>
+	<p>In both kinds of diaries, the errors and warnings detected during the
+		run are highlighted on their whole line, in addition to the markers of
+		the margins described above.</p>
 	<p>Other messages (information, warnings and errors of DOCoMETRe) are
 		written in the Console view.</p>
 
