@@ -73,15 +73,6 @@ public class GLCursorChart2D extends AbstractGLPlotChart<Curve2DData, CursorChar
     public boolean isEqualAspect() {
         return renderer.isEqualAspect();
     }
-    
-    public void setLabelsVisible(boolean value) {
-    	renderer.setLabelsVisible(value);
-    }
-    
-    public boolean isLabelsVisible(boolean value) {
-    	return renderer.isLabelsVisible();
-    }
-
 
     // --- Symbol of the points ---
 
@@ -174,4 +165,14 @@ public class GLCursorChart2D extends AbstractGLPlotChart<Curve2DData, CursorChar
     public String getMeanDrawTime() {
         return null;
     }
+    
+    @Override
+	public void setGridVisibility(boolean value) {
+		setGridVisible(value);
+	}
+    
+	@Override
+	public void setLegendVisibility(boolean value) {
+		setLegendVisible(value);
+	}
 }

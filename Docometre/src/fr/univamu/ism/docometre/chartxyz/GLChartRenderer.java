@@ -183,9 +183,9 @@ public abstract class GLChartRenderer implements GLEventListener, ChartInteracti
     public boolean isLabelsVisible() { return showLabel; }
     public void toggleLabel() { toggleOption(DisplayOption.LABELS, () -> showLabel, v -> showLabel = v); }
 
-    public void setGridVisibility(boolean value) {
-        setGridVisible(value);
-    }
+//    public void setGridVisibility(boolean value) {
+//        setGridVisible(value);
+//    }
 
     // ------------------------------------------------------------------
     // Display options

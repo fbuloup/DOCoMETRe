@@ -135,4 +135,14 @@ public class GLChart2D extends AbstractGLPlotChart<Curve2DData, Chart2DRenderer>
     public String getMeanDrawTime() {
         return null;
     }
+    
+    @Override
+	public void setGridVisibility(boolean value) {
+		setGridVisible(value);
+	}
+    
+	@Override
+	public void setLegendVisibility(boolean value) {
+		setLegendVisible(value);
+	}
 }

@@ -224,4 +224,14 @@ public class GLChart3D extends AbstractGLChart<Curve3DData, Chart3DRenderer> imp
 		double[] f = renderer.getFixedScaleBounds();
 		if (f != null) renderer.setFixedScales(xMin, xMax, yMin, yMax, f[4], f[5]);
 	}
+	
+	@Override
+	public void setGridVisibility(boolean value) {
+		setGridVisible(value);
+	}
+    
+	@Override
+	public void setLegendVisibility(boolean value) {
+		setLegendVisible(value);
+	}
 }

@@ -34,7 +34,13 @@ public class RealTimeCursorChart2DTest {
 
         GLCursorChart2D graph = new GLCursorChart2D(shell, toolkit, -1.6, 1.6, -1, 1, lissajous, circle);
         graph.setLegendPosition(LegendPosition.BELOW);
+        graph.setLegendVisible(true);
+        graph.setLabelsVisible(true);
+        graph.setGridVisible(false);
         graph.setEqualAspect(true);
+        graph.setAxesVisible(true);
+        graph.setFpsVisible(true);
+        graph.setCurrentValuesVisible(true);
         graph.setCursorStyle(lissajous, CursorStyle.shape(CursorShape.STAR, 24).withFillColor(230, 40, 40).withOutline(255, 255, 255, 1.5f));
         graph.setCursorStyle(circle, (imagePath != null) ? CursorStyle.image(imagePath, 32)
                 : CursorStyle.shape(CursorShape.SQUARE, 16).withFillColor(60, 200, 90));

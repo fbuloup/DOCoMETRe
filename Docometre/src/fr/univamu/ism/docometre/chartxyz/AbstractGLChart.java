@@ -189,6 +189,22 @@ public abstract class AbstractGLChart<C extends CurveData<C>, R extends CurveCha
     public boolean isLegendVisible() {
         return renderer.isLegendVisible();
     }
+    
+	public void setLabelsVisible(boolean value) {
+		renderer.setLabelsVisible(value);
+	}
+
+	public boolean isLabelsVisible(boolean value) {
+		return renderer.isLabelsVisible();
+	}
+	
+	public boolean isAxesVisible() {
+        return renderer.isAxesVisible();
+    }
+    
+	public void setAxesVisible(boolean value) {
+		renderer.setAxesVisible(value);
+	}
 
     /**
      * Shows or hides the points of the curves (also with the P key). While
@@ -452,12 +468,8 @@ public abstract class AbstractGLChart<C extends CurveData<C>, R extends CurveCha
         if (autoscale) setDynamicScales();
     }
 
-    public void setGridVisibility(boolean value) {
-        renderer.setGridVisibility(value);
-    }
-
-    public void setLegendVisibility(boolean value) {
-        setLegendVisible(value);
+    public void setGridVisible(boolean value) {
+        renderer.setGridVisible(value);
     }
 
     /** Not supported: bounds are set together with setFixedScales(). */

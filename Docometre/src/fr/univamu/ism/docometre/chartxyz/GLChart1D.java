@@ -144,4 +144,14 @@ public class GLChart1D extends AbstractGLPlotChart<Curve1DData, Chart1DRenderer>
     public void dispose() {
     	close();
     }
+
+	@Override
+	public void setGridVisibility(boolean value) {
+		setGridVisible(value);
+	}
+	
+	@Override
+	public void setLegendVisibility(boolean value) {
+		setLegendVisible(value);
+	}
 }
