@@ -119,23 +119,30 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 	}
 	
 	public void populateChartConfigurationContainer(Composite container, ChartsConfigurationPage page, ModuleSectionPart generalConfigurationSectionPart) {
-		// 8 columns : the first seven for the general options, 
-		// the last one for the display options only available with "SWT + OpenGL v2" library
-		container.setLayout(new GridLayout(8, false));
+		container.setLayout(new GridLayout(7, false));
+		
+		Composite topButtonsContainer = new Composite(container, SWT.NORMAL);
+		topButtonsContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 7, 1));
+		topButtonsContainer.setLayout(new GridLayout(4, false));
+		
+		autoScaleButton = createOptionButton(topButtonsContainer, page, OscilloChartConfigurationProperties.AUTO_SCALE, 1 , 1, false);
+		showLegendButton = createOptionButton(topButtonsContainer, page, OscilloChartConfigurationProperties.SHOW_LEGEND, 1, 1, false);
+		legendInsideButton = createOptionButton(topButtonsContainer, page, OscilloChartConfigurationProperties.LEGEND_INSIDE, 1, 1, true);
+		legendInsideButton.setEnabled(Activator.useOpenGLV2() && showLegendButton.getSelection());
+		displayCurrentValuesButton = createOptionButton(topButtonsContainer, page, OscilloChartConfigurationProperties.DISPLAY_CURRENT_VALUES, 1, 1, false);
+		if(Activator.useOpenGLV2()) {
+			displayCurrentValuesButton.setText(DocometreMessages.DisplayValues_Title_OpenGLV2);
+			displayCurrentValuesButton.setToolTipText(DocometreMessages.DisplayValues_Tooltip_OpenGLV2);
+		} 
+		showGridButton = createOptionButton(topButtonsContainer, page, OscilloChartConfigurationProperties.SHOW_GRID, 1, 1, false);
+		showAxesButton = createOptionButton(topButtonsContainer, page, OscilloChartConfigurationProperties.SHOW_AXES, 1, 1, true);
+		showTickLabelsButton = createOptionButton(topButtonsContainer, page, OscilloChartConfigurationProperties.SHOW_TICK_LABELS, 1, 1, true);
 		
 		page.createLabel(container, DocometreMessages.TimeWidth_Title, DocometreMessages.TimeWidth_Tooltip);
 		timeWidthText = page.createText(container, getProperty(OscilloChartConfigurationProperties.TIME_WIDTH), SWT.NONE, 6, 1);
 		timeWidthText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		timeWidthText.addModifyListener(new ModifyPropertyHandler(OscilloChartConfigurationProperties.TIME_WIDTH, this, timeWidthText, OscilloChartConfigurationProperties.TIME_WIDTH.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
-		showLegendButton = createGL2OptionButton(container, page, OscilloChartConfigurationProperties.SHOW_LEGEND);
 		
-		autoScaleButton = page.createButton(container, DocometreMessages.AutoScale_Title, SWT.CHECK, 7, 1);
-		String value = getProperty(OscilloChartConfigurationProperties.AUTO_SCALE);
-		boolean autoScale = Boolean.valueOf(value);
-		autoScaleButton.setSelection(autoScale);
-		autoScaleButton.addSelectionListener(new ModifyPropertyHandler(OscilloChartConfigurationProperties.AUTO_SCALE, OscilloChartConfiguration.this, autoScaleButton, OscilloChartConfigurationProperties.AUTO_SCALE.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
-		legendInsideButton = createGL2OptionButton(container, page, OscilloChartConfigurationProperties.LEGEND_INSIDE);
-		legendInsideButton.setEnabled(Activator.useOpenGLV2() && showLegendButton.getSelection());
 		showLegendButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -147,13 +154,11 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 		ampMaxText = page.createText(container, getProperty(OscilloChartConfigurationProperties.Y_MAX), SWT.NONE, 6, 1); 
 		ampMaxText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		ampMaxText.addModifyListener(new ModifyPropertyHandler(OscilloChartConfigurationProperties.Y_MAX, this, ampMaxText, OscilloChartConfigurationProperties.Y_MAX.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
-		showGridButton = createGL2OptionButton(container, page, OscilloChartConfigurationProperties.SHOW_GRID);
 		
 		page.createLabel(container, DocometreMessages.MinAmplitude_Title, DocometreMessages.MinAmplitude_Tooltip);
 		ampMinText = page.createText(container, getProperty(OscilloChartConfigurationProperties.Y_MIN), SWT.NONE, 6, 1); 
 		ampMinText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		ampMinText.addModifyListener(new ModifyPropertyHandler(OscilloChartConfigurationProperties.Y_MIN, this, ampMinText, OscilloChartConfigurationProperties.Y_MIN.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
-		showAxesButton = createGL2OptionButton(container, page, OscilloChartConfigurationProperties.SHOW_AXES);
 		
 		autoScaleButton.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -165,7 +170,7 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 		});
 		
 		page.createLabel(container, DocometreMessages.Font_Title, DocometreMessages.Font_Tooltip);
-		value = getProperty(OscilloChartConfigurationProperties.FONT);
+		String value = getProperty(OscilloChartConfigurationProperties.FONT);
 		value = value==null?FontUtil.getDefaultFontName():value;
 		fontCombo = page.createCombo(container, FontUtil.getAvailableFontsNames(), value, 1, 1);
 		fontCombo.addModifyListener(page.getGeneralConfigurationModifyListener());
@@ -196,35 +201,17 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 		chartColorButton.setToolTipText(DocometreMessages.Color_Tooltip);
 		chartColorButton.setBackground(chartColor);
 		chartColorButton.addSelectionListener(new ModifyPropertyHandler(ChartConfigurationProperties.COLOR, this, chartColorButton, ChartConfigurationProperties.COLOR.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
-		showTickLabelsButton = createGL2OptionButton(container, page, OscilloChartConfigurationProperties.SHOW_TICK_LABELS);
-		
-		String message;
-		String messageTooltip;
-		if(Activator.useOpenGLV2()) {
-			message = DocometreMessages.DisplayValues_Title_OpenGLV2;
-			messageTooltip = DocometreMessages.DisplayValues_Tooltip_OpenGLV2;
-		} else {
-			message = DocometreMessages.DisplayValues_Title;
-			messageTooltip = DocometreMessages.DisplayValues_Tooltip;
-		}
-		displayCurrentValuesButton = page.createButton(container, message, SWT.CHECK, 8, 1);
-		displayCurrentValuesButton.setToolTipText(messageTooltip);
-		value = getProperty(OscilloChartConfigurationProperties.DISPLAY_CURRENT_VALUES);
-		boolean displayCurrentValues = Boolean.valueOf(value);
-		displayCurrentValuesButton.setSelection(displayCurrentValues);
-		displayCurrentValuesButton.addSelectionListener(new ModifyPropertyHandler(OscilloChartConfigurationProperties.DISPLAY_CURRENT_VALUES, OscilloChartConfiguration.this, displayCurrentValuesButton, OscilloChartConfigurationProperties.DISPLAY_CURRENT_VALUES.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
-		
 	}
 	
 	/*
 	 * Helper method to create a check button for a display option only available with "SWT + OpenGL v2" library
 	 */
-	private Button createGL2OptionButton(Composite container, ChartsConfigurationPage page, OscilloChartConfigurationProperties property) {
-		Button button = page.createButton(container, property.getLabel(), SWT.CHECK, 1, 1);
+	private Button createOptionButton(Composite container, ChartsConfigurationPage page, OscilloChartConfigurationProperties property, int hSpan, int vSpan, boolean onlyV2) {
+		Button button = page.createButton(container, property.getLabel(), SWT.CHECK, hSpan, vSpan);
 		button.setToolTipText(property.getTooltip());
 		button.setSelection(Boolean.parseBoolean(OscilloChartConfigurationProperties.getValue(this, property)));
 		button.addSelectionListener(new ModifyPropertyHandler(property, this, button, property.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
-		button.setEnabled(Activator.useOpenGLV2());
+		button.setEnabled((onlyV2 && Activator.useOpenGLV2()) || !onlyV2);
 		return button;
 	}
 	
@@ -372,8 +359,8 @@ public class OscilloChartConfiguration extends ChartConfiguration {
 		rtswtOscilloChart.setShowCurrentValue(displayCurrentValuesChart);
 		rtswtOscilloChart.setWindowTimeWidth(timeWidth);
 		rtswtOscilloChart.setAutoScale(autoscale);
-		rtswtOscilloChart.setGridVisibility(true);
-		rtswtOscilloChart.setLegendVisibility(true);
+		rtswtOscilloChart.setGridVisibility(showGrid);
+		rtswtOscilloChart.setLegendVisibility(showLegend);
 		rtswtOscilloChart.setLegendPosition(SWT.BOTTOM);
 		rtswtOscilloChart.setGridLinesColor(chartColor);
 		rtswtOscilloChart.setFontColor(chartColor);

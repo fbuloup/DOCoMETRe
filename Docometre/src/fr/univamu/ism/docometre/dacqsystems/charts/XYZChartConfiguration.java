@@ -123,48 +123,46 @@ public class XYZChartConfiguration extends ChartConfiguration {
 
 	@Override
 	public void populateChartConfigurationContainer(Composite container, ChartsConfigurationPage page, ModuleSectionPart generalConfigurationSectionPart) {
-		// 8 columns : the first seven for the general options, 
-		// the last one for the display options only available with "SWT + OpenGL v2" library
-		container.setLayout(new GridLayout(8, false));
+		container.setLayout(new GridLayout(7, false));
 		
-		autoScaleButton = page.createButton(container, DocometreMessages.AutoScale_Title, SWT.CHECK, 7, 1);
-		String value = getProperty(XYZChartConfigurationProperties.AUTO_SCALE);
-		boolean autoScale = Boolean.valueOf(value);
-		autoScaleButton.setSelection(autoScale);
-		autoScaleButton.addSelectionListener(new ModifyPropertyHandler(XYZChartConfigurationProperties.AUTO_SCALE, XYZChartConfiguration.this, autoScaleButton, XYZChartConfigurationProperties.AUTO_SCALE.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
-		showLegendButton = createGL2OptionButton(container, page, XYZChartConfigurationProperties.SHOW_LEGEND);
+		Composite topButtonsContainer = new Composite(container, SWT.NORMAL);
+		topButtonsContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 7, 1));
+		topButtonsContainer.setLayout(new GridLayout(4, false));
+		
+		autoScaleButton = createGL2OptionButton(topButtonsContainer, page, XYZChartConfigurationProperties.AUTO_SCALE);
+		showLegendButton = createGL2OptionButton(topButtonsContainer, page, XYZChartConfigurationProperties.SHOW_LEGEND);
+		displayCurrentValuesButton = createGL2OptionButton(topButtonsContainer, page, XYZChartConfigurationProperties.DISPLAY_CURRENT_VALUES);
+		showGridButton = createGL2OptionButton(topButtonsContainer, page, XYZChartConfigurationProperties.SHOW_GRID);
+		showAxesButton = createGL2OptionButton(topButtonsContainer, page, XYZChartConfigurationProperties.SHOW_AXES);
+		showTickLabelsButton = createGL2OptionButton(topButtonsContainer, page, XYZChartConfigurationProperties.SHOW_TICK_LABELS);
 		
 		page.createLabel(container, DocometreMessages.xMaxAmplitude_Title, DocometreMessages.xMaxAmplitude_Tooltip);
 		xAmpMaxText = page.createText(container, getProperty(XYZChartConfigurationProperties.X_MAX), SWT.NONE, 6, 1); 
 		xAmpMaxText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		xAmpMaxText.addModifyListener(new ModifyPropertyHandler(XYZChartConfigurationProperties.X_MAX, this, xAmpMaxText, XYZChartConfigurationProperties.X_MAX.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
-		displayCurrentValuesButton = createGL2OptionButton(container, page, XYZChartConfigurationProperties.DISPLAY_CURRENT_VALUES);
 		
 		page.createLabel(container, DocometreMessages.xMinAmplitude_Title, DocometreMessages.xMinAmplitude_Tooltip);
 		xAmpMinText = page.createText(container, getProperty(XYZChartConfigurationProperties.X_MIN), SWT.NONE, 6, 1); 
 		xAmpMinText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		xAmpMinText.addModifyListener(new ModifyPropertyHandler(XYZChartConfigurationProperties.X_MIN, this, xAmpMinText, XYZChartConfigurationProperties.X_MIN.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
-		showGridButton = createGL2OptionButton(container, page, XYZChartConfigurationProperties.SHOW_GRID);
 		
 		page.createLabel(container, DocometreMessages.yMaxAmplitude_Title, DocometreMessages.yMaxAmplitude_Tooltip);
 		yAmpMaxText = page.createText(container, getProperty(XYZChartConfigurationProperties.Y_MAX), SWT.NONE, 6, 1); 
 		yAmpMaxText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		yAmpMaxText.addModifyListener(new ModifyPropertyHandler(XYZChartConfigurationProperties.Y_MAX, this, yAmpMaxText, XYZChartConfigurationProperties.Y_MAX.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
-		showAxesButton = createGL2OptionButton(container, page, XYZChartConfigurationProperties.SHOW_AXES);
 		
 		page.createLabel(container, DocometreMessages.yMinAmplitude_Title, DocometreMessages.yMinAmplitude_Tooltip);
 		yAmpMinText = page.createText(container, getProperty(XYZChartConfigurationProperties.Y_MIN), SWT.NONE, 6, 1); 
 		yAmpMinText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		yAmpMinText.addModifyListener(new ModifyPropertyHandler(XYZChartConfigurationProperties.Y_MIN, this, yAmpMinText, XYZChartConfigurationProperties.Y_MIN.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
-		showTickLabelsButton = createGL2OptionButton(container, page, XYZChartConfigurationProperties.SHOW_TICK_LABELS);
 		
 		page.createLabel(container, DocometreMessages.zMaxAmplitude_Title, DocometreMessages.zMaxAmplitude_Tooltip);
-		zAmpMaxText = page.createText(container, getProperty(XYZChartConfigurationProperties.Z_MAX), SWT.NONE, 7, 1); 
+		zAmpMaxText = page.createText(container, getProperty(XYZChartConfigurationProperties.Z_MAX), SWT.NONE, 6, 1); 
 		zAmpMaxText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		zAmpMaxText.addModifyListener(new ModifyPropertyHandler(XYZChartConfigurationProperties.Z_MAX, this, zAmpMaxText, XYZChartConfigurationProperties.Z_MAX.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
 		
 		page.createLabel(container, DocometreMessages.zMinAmplitude_Title, DocometreMessages.zMinAmplitude_Tooltip);
-		zAmpMinText = page.createText(container, getProperty(XYZChartConfigurationProperties.Z_MIN), SWT.NONE, 7, 1); 
+		zAmpMinText = page.createText(container, getProperty(XYZChartConfigurationProperties.Z_MIN), SWT.NONE, 6, 1); 
 		zAmpMinText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		zAmpMinText.addModifyListener(new ModifyPropertyHandler(XYZChartConfigurationProperties.Z_MIN, this, zAmpMinText, XYZChartConfigurationProperties.Z_MIN.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
 		
@@ -182,7 +180,7 @@ public class XYZChartConfiguration extends ChartConfiguration {
 		});
 		
 		page.createLabel(container, DocometreMessages.Font_Title, DocometreMessages.Font_Tooltip);
-		value = getProperty(XYZChartConfigurationProperties.FONT);
+		String value = getProperty(XYZChartConfigurationProperties.FONT);
 		value = value==null?FontUtil.getDefaultFontName():value;
 		fontCombo = page.createCombo(container, XYZChartConfigurationProperties.FONT.getAvailableValues(), value, 1, 1);
 		fontCombo.addModifyListener(page.getGeneralConfigurationModifyListener());
@@ -213,10 +211,10 @@ public class XYZChartConfiguration extends ChartConfiguration {
 		chartColorButton.setToolTipText(DocometreMessages.Color_Tooltip);
 		chartColorButton.setBackground(chartColor);
 		chartColorButton.addSelectionListener(new ModifyPropertyHandler(ChartConfigurationProperties.COLOR, this, chartColorButton, ChartConfigurationProperties.COLOR.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
-		page.createLabel(container, "", null); // Empty cell of the last column
+//		page.createLabel(container, "", null); // Empty cell of the last column
 		
 		page.createLabel(container, DocometreMessages.HistorySize_Title, DocometreMessages.HistorySize_Tooltip);
-		historySizeText = page.createText(container, getProperty(XYZChartConfigurationProperties.HISTORY_SIZE), SWT.NONE, 7, 1);
+		historySizeText = page.createText(container, getProperty(XYZChartConfigurationProperties.HISTORY_SIZE), SWT.NONE, 6, 1);
 		historySizeText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		historySizeText.addModifyListener(new ModifyPropertyHandler(XYZChartConfigurationProperties.HISTORY_SIZE, this, historySizeText, XYZChartConfigurationProperties.HISTORY_SIZE.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
 		

@@ -139,8 +139,6 @@ public class XYChartConfiguration extends ChartConfiguration {
 
 	@Override
 	public void populateChartConfigurationContainer(Composite container, ChartsConfigurationPage page, ModuleSectionPart generalConfigurationSectionPart) {
-		// 8 columns : the first seven for the general options, 
-		// the last one for the display options only available with "SWT + OpenGL v2" library
 		container.setLayout(new GridLayout(7, false));
 		
 		Composite topButtonsContainer = new Composite(container, SWT.NORMAL);
