@@ -65,6 +65,7 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.FontUtil;
 import fr.univamu.ism.docometre.chartxyz.AbstractGLPlotChart;
 import fr.univamu.ism.docometre.chartxyz.Curve2DData;
+import fr.univamu.ism.docometre.chartxyz.GLChart2D;
 import fr.univamu.ism.docometre.chartxyz.LegendPosition;
 import fr.univamu.ism.docometre.chartxyz.LineStyle;
 import fr.univamu.ism.docometre.chartxyz.macos.NewtChart2D;
@@ -103,6 +104,7 @@ public class XYChartConfiguration extends ChartConfiguration {
 	transient private Button showGridButton;
 	transient private Button showAxesButton;
 	transient private Button showTickLabelsButton;
+	transient private Button aspectRationButton;
 
 	public XYChartConfiguration() {
 		this(ChartTypes.XY_CHART);
@@ -139,21 +141,31 @@ public class XYChartConfiguration extends ChartConfiguration {
 	public void populateChartConfigurationContainer(Composite container, ChartsConfigurationPage page, ModuleSectionPart generalConfigurationSectionPart) {
 		// 8 columns : the first seven for the general options, 
 		// the last one for the display options only available with "SWT + OpenGL v2" library
-		container.setLayout(new GridLayout(8, false));
+		container.setLayout(new GridLayout(7, false));
 		
-		autoScaleButton = page.createButton(container, DocometreMessages.AutoScale_Title, SWT.CHECK, 7, 1);
+		Composite topButtonsContainer = new Composite(container, SWT.NORMAL);
+		topButtonsContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 7, 1));
+		topButtonsContainer.setLayout(new GridLayout(4, false));
+		
+		autoScaleButton = page.createButton(topButtonsContainer, DocometreMessages.AutoScale_Title, SWT.CHECK, 1, 1);
 		String value = getProperty(XYChartConfigurationProperties.AUTO_SCALE);
 		boolean autoScale = Boolean.valueOf(value);
 		autoScaleButton.setSelection(autoScale);
 		autoScaleButton.addSelectionListener(new ModifyPropertyHandler(XYChartConfigurationProperties.AUTO_SCALE, XYChartConfiguration.this, autoScaleButton, XYChartConfigurationProperties.AUTO_SCALE.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
-		showLegendButton = createGL2OptionButton(container, page, XYChartConfigurationProperties.SHOW_LEGEND);
+		
+		aspectRationButton = createGL2OptionButton(topButtonsContainer, page, XYChartConfigurationProperties.EQUAL_ASPECT_RATIO, 1, 1);
+		showLegendButton = createGL2OptionButton(topButtonsContainer, page, XYChartConfigurationProperties.SHOW_LEGEND, 1, 1);
+		legendInsideButton = createGL2OptionButton(topButtonsContainer, page, XYChartConfigurationProperties.LEGEND_INSIDE, 1, 1);
+		legendInsideButton.setEnabled(Activator.useOpenGLV2() && showLegendButton.getSelection());
+		displayCurrentValuesButton = createGL2OptionButton(topButtonsContainer, page, XYChartConfigurationProperties.DISPLAY_CURRENT_VALUES, 1, 1);
+		showGridButton = createGL2OptionButton(topButtonsContainer, page, XYChartConfigurationProperties.SHOW_GRID, 1, 1);
+		showAxesButton = createGL2OptionButton(topButtonsContainer, page, XYChartConfigurationProperties.SHOW_AXES, 1, 1);
+		showTickLabelsButton = createGL2OptionButton(topButtonsContainer, page, XYChartConfigurationProperties.SHOW_TICK_LABELS, 1, 1);
 		
 		page.createLabel(container, DocometreMessages.xMaxAmplitude_Title, DocometreMessages.xMaxAmplitude_Tooltip);
 		xAmpMaxText = page.createText(container, getProperty(XYChartConfigurationProperties.X_MAX), SWT.NONE, 6, 1); 
 		xAmpMaxText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		xAmpMaxText.addModifyListener(new ModifyPropertyHandler(XYChartConfigurationProperties.X_MAX, this, xAmpMaxText, XYChartConfigurationProperties.X_MAX.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
-		legendInsideButton = createGL2OptionButton(container, page, XYChartConfigurationProperties.LEGEND_INSIDE);
-		legendInsideButton.setEnabled(Activator.useOpenGLV2() && showLegendButton.getSelection());
 		showLegendButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -165,19 +177,16 @@ public class XYChartConfiguration extends ChartConfiguration {
 		xAmpMinText = page.createText(container, getProperty(XYChartConfigurationProperties.X_MIN), SWT.NONE, 6, 1); 
 		xAmpMinText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		xAmpMinText.addModifyListener(new ModifyPropertyHandler(XYChartConfigurationProperties.X_MIN, this, xAmpMinText, XYChartConfigurationProperties.X_MIN.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
-		displayCurrentValuesButton = createGL2OptionButton(container, page, XYChartConfigurationProperties.DISPLAY_CURRENT_VALUES);
 		
 		page.createLabel(container, DocometreMessages.yMaxAmplitude_Title, DocometreMessages.yMaxAmplitude_Tooltip);
 		yAmpMaxText = page.createText(container, getProperty(XYChartConfigurationProperties.Y_MAX), SWT.NONE, 6, 1); 
 		yAmpMaxText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		yAmpMaxText.addModifyListener(new ModifyPropertyHandler(XYChartConfigurationProperties.Y_MAX, this, yAmpMaxText, XYChartConfigurationProperties.Y_MAX.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
-		showGridButton = createGL2OptionButton(container, page, XYChartConfigurationProperties.SHOW_GRID);
 		
 		page.createLabel(container, DocometreMessages.yMinAmplitude_Title, DocometreMessages.yMinAmplitude_Tooltip);
 		yAmpMinText = page.createText(container, getProperty(XYChartConfigurationProperties.Y_MIN), SWT.NONE, 6, 1); 
 		yAmpMinText.addModifyListener(page.getGeneralConfigurationModifyListener());
 		yAmpMinText.addModifyListener(new ModifyPropertyHandler(XYChartConfigurationProperties.Y_MIN, this, yAmpMinText, XYChartConfigurationProperties.Y_MIN.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
-		showAxesButton = createGL2OptionButton(container, page, XYChartConfigurationProperties.SHOW_AXES);
 		
 		autoScaleButton.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -222,7 +231,6 @@ public class XYChartConfiguration extends ChartConfiguration {
 		chartColorButton.setToolTipText(DocometreMessages.Color_Tooltip);
 		chartColorButton.setBackground(chartColor);
 		chartColorButton.addSelectionListener(new ModifyPropertyHandler(ChartConfigurationProperties.COLOR, this, chartColorButton, ChartConfigurationProperties.COLOR.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
-		showTickLabelsButton = createGL2OptionButton(container, page, XYChartConfigurationProperties.SHOW_TICK_LABELS);
 		
 		if(!hasHistorySize()) return;
 		page.createLabel(container, DocometreMessages.HistorySize_Title, DocometreMessages.HistorySize_Tooltip);
@@ -235,8 +243,8 @@ public class XYChartConfiguration extends ChartConfiguration {
 	/*
 	 * Helper method to create a check button for a display option only available with "SWT + OpenGL v2" library
 	 */
-	private Button createGL2OptionButton(Composite container, ChartsConfigurationPage page, XYChartConfigurationProperties property) {
-		Button button = page.createButton(container, property.getLabel(), SWT.CHECK, 1, 1);
+	private Button createGL2OptionButton(Composite container, ChartsConfigurationPage page, XYChartConfigurationProperties property, int hSpan, int vSpan) {
+		Button button = page.createButton(container, property.getLabel(), SWT.CHECK, hSpan, vSpan);
 		button.setToolTipText(property.getTooltip());
 		button.setSelection(Boolean.parseBoolean(XYChartConfigurationProperties.getValue(this, property)));
 		button.addSelectionListener(new ModifyPropertyHandler(property, this, button, property.getRegExp(), "", false, (ResourceEditor)page.getEditor()));
@@ -311,6 +319,8 @@ public class XYChartConfiguration extends ChartConfiguration {
 			updateWidget(showAxesButton, (XYChartConfigurationProperties)property);
 		if(property == XYChartConfigurationProperties.SHOW_TICK_LABELS)
 			updateWidget(showTickLabelsButton, (XYChartConfigurationProperties)property);
+		if(property == XYChartConfigurationProperties.EQUAL_ASPECT_RATIO)
+			updateWidget(aspectRationButton, (XYChartConfigurationProperties)property);
 	}
 
 	@Override
@@ -327,6 +337,8 @@ public class XYChartConfiguration extends ChartConfiguration {
 		int vSpan = Integer.parseInt(value);
 		value = getProperty(XYChartConfigurationProperties.AUTO_SCALE);
 		boolean autoscale = Boolean.parseBoolean(value);
+		value = getProperty(XYChartConfigurationProperties.EQUAL_ASPECT_RATIO);
+		boolean equalAspectRatio = Boolean.parseBoolean(value);
 		value = getProperty(XYChartConfigurationProperties.X_MAX);
 		double xMax = Double.parseDouble(value);
 		value = getProperty(XYChartConfigurationProperties.X_MIN);
@@ -380,6 +392,9 @@ public class XYChartConfiguration extends ChartConfiguration {
 			glChart.setMarkersMenuItemsVisible(false);
 			// Display options of the "SWT + OpenGL v2" library
 			applyGL2DisplayOptions(glChart);
+		}
+		if(rtswtxyChart instanceof GLChart2D) {
+			((GLChart2D)rtswtxyChart).setEqualAspect(equalAspectRatio);
 		}
 		
 		// Create curves

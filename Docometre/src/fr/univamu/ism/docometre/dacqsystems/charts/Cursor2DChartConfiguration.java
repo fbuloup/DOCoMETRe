@@ -104,6 +104,7 @@ public class Cursor2DChartConfiguration extends XYChartConfiguration {
 		int hSpan = Integer.parseInt(getProperty(ChartConfigurationProperties.HORIZONTAL_SPANNING));
 		int vSpan = Integer.parseInt(getProperty(ChartConfigurationProperties.VERTICAL_SPANNING));
 		boolean autoscale = Boolean.parseBoolean(getProperty(XYChartConfigurationProperties.AUTO_SCALE));
+		boolean equalAspectRation = Boolean.parseBoolean(getProperty(XYChartConfigurationProperties.EQUAL_ASPECT_RATIO));
 		double xMax = Double.parseDouble(getProperty(XYChartConfigurationProperties.X_MAX));
 		double xMin = Double.parseDouble(getProperty(XYChartConfigurationProperties.X_MIN));
 		double yMax = Double.parseDouble(getProperty(XYChartConfigurationProperties.Y_MAX));
@@ -117,6 +118,7 @@ public class Cursor2DChartConfiguration extends XYChartConfiguration {
 		chart.setAutoScale(autoscale);
 		chart.setGridVisibility(true);
 		chart.setLegendVisibility(true);
+		chart.setEqualAspect(equalAspectRation);
 		chart.setLegendPosition(SWT.BOTTOM);
 		// Real-time display: no markers, neither with the mouse nor in the context menu
 		chart.setMarkersInteractive(false);

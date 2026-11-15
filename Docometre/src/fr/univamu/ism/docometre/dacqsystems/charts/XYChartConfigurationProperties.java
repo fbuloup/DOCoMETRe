@@ -64,6 +64,7 @@ public final class XYChartConfigurationProperties extends Property {
 	public static final XYChartConfigurationProperties SHOW_GRID = new XYChartConfigurationProperties("XYChartConfigurationProperties.SHOW_GRID", DocometreMessages.ShowGrid_Title, DocometreMessages.ShowGrid_Tooltip, "^(true|false)$", "true:false");
 	public static final XYChartConfigurationProperties SHOW_AXES = new XYChartConfigurationProperties("XYChartConfigurationProperties.SHOW_AXES", DocometreMessages.ShowAxes_Title, DocometreMessages.ShowAxes_Tooltip, "^(true|false)$", "true:false");
 	public static final XYChartConfigurationProperties SHOW_TICK_LABELS = new XYChartConfigurationProperties("XYChartConfigurationProperties.SHOW_TICK_LABELS", DocometreMessages.ShowTickLabels_Title, DocometreMessages.ShowTickLabels_Tooltip, "^(true|false)$", "true:false");
+	public static final XYChartConfigurationProperties EQUAL_ASPECT_RATIO = new XYChartConfigurationProperties("XYChartConfigurationProperties.EQUAL_ASPECT_RATIO", DocometreMessages.EqualAspectRation_Title, DocometreMessages.EqualAspectRation_Tooltip, "^(true|false)$", "true:false");
 	
 	public static void populateProperties(XYChartConfiguration xyChartConfiguration){
 		ChartConfigurationProperties.populateProperties(xyChartConfiguration);
@@ -83,6 +84,7 @@ public final class XYChartConfigurationProperties extends Property {
 		xyChartConfiguration.setProperty(SHOW_GRID, getDefaultValue(SHOW_GRID));
 		xyChartConfiguration.setProperty(SHOW_AXES, getDefaultValue(SHOW_AXES));
 		xyChartConfiguration.setProperty(SHOW_TICK_LABELS, getDefaultValue(SHOW_TICK_LABELS));
+		xyChartConfiguration.setProperty(EQUAL_ASPECT_RATIO, getDefaultValue(EQUAL_ASPECT_RATIO));
 	}
 	
 	/*
@@ -92,6 +94,7 @@ public final class XYChartConfigurationProperties extends Property {
 	private static String getDefaultValue(XYChartConfigurationProperties property) {
 		if(property == SHOW_LEGEND || property == SHOW_GRID || property == SHOW_TICK_LABELS) return "true";
 		if(property == LEGEND_INSIDE || property == DISPLAY_CURRENT_VALUES || property == SHOW_AXES) return "false";
+		if(property == EQUAL_ASPECT_RATIO) return "false";
 		return null;
 	}
 	
@@ -129,6 +132,7 @@ public final class XYChartConfigurationProperties extends Property {
 		newXYChartConfiguration.setProperty(SHOW_GRID, new String(getValue(xyChartConfiguration, SHOW_GRID)));
 		newXYChartConfiguration.setProperty(SHOW_AXES, new String(getValue(xyChartConfiguration, SHOW_AXES)));
 		newXYChartConfiguration.setProperty(SHOW_TICK_LABELS, new String(getValue(xyChartConfiguration, SHOW_TICK_LABELS)));
+		newXYChartConfiguration.setProperty(EQUAL_ASPECT_RATIO, new String(getValue(xyChartConfiguration, EQUAL_ASPECT_RATIO)));
 		CurveConfiguration[] curveConfigurations = xyChartConfiguration.getCurvesConfiguration();
 		for (CurveConfiguration curveConfiguration : curveConfigurations) {
 			try {

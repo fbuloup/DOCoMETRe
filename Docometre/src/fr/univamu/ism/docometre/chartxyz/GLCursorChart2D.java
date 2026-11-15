@@ -69,10 +69,19 @@ public class GLCursorChart2D extends AbstractGLPlotChart<Curve2DData, CursorChar
     public void setEqualAspect(boolean equalAspect) {
         renderer.setEqualAspect(equalAspect);
     }
-
+    
     public boolean isEqualAspect() {
         return renderer.isEqualAspect();
     }
+    
+    public void setLabelsVisible(boolean value) {
+    	renderer.setLabelsVisible(value);
+    }
+    
+    public boolean isLabelsVisible(boolean value) {
+    	return renderer.isLabelsVisible();
+    }
+
 
     // --- Symbol of the points ---
 

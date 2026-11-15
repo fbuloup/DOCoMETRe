@@ -565,6 +565,8 @@ public final class DocometreMessages extends NLS {
 	public static String ShowAxes_Tooltip;
 	public static String ShowTickLabels_Title;
 	public static String ShowTickLabels_Tooltip;
+	public static String EqualAspectRation_Title;
+	public static String EqualAspectRation_Tooltip;
 
 	public static String xMaxAmplitude_Title;
 	public static String xMaxAmplitude_Tooltip;
