@@ -81,6 +81,10 @@ import org.eclipse.gef.tools.MarqueeSelectionTool;
 import org.eclipse.gef.ui.actions.ActionRegistry;
 import org.eclipse.gef.ui.actions.GEFActionConstants;
 import org.eclipse.gef.ui.actions.SelectAllAction;
+import org.eclipse.gef.ui.palette.DefaultPaletteViewerPreferences;
+import org.eclipse.gef.ui.palette.PaletteViewer;
+import org.eclipse.gef.ui.palette.PaletteViewerPreferences;
+import org.eclipse.gef.ui.palette.PaletteViewerProvider;
 import org.eclipse.gef.ui.parts.GraphicalEditorWithFlyoutPalette;
 import org.eclipse.gef.ui.parts.GraphicalViewerKeyHandler;
 import org.eclipse.gef.ui.parts.ScrollingGraphicalViewer;
@@ -90,6 +94,7 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -559,6 +564,37 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 	@Override
 	protected Control getGraphicalControl() {
 		return rulerComp;
+	}
+
+	/*
+	 * Palette preferences of process editors (ArduinoUno, ADwin, Python, MATLAB) : large icons by default in all palette layouts.
+	 * They are stored in DOCoMETRe preferences : GEF palette viewers reset GEF preferences defaults to small icons in list layout.
+	 * Choices made with the palette context menu (layout, icons size) are kept.
+	 */
+	private static PaletteViewerPreferences palettePreferences;
+	
+	private static PaletteViewerPreferences getPalettePreferences() {
+		if(palettePreferences == null) {
+			IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
+			// Defaults are set by DefaultPaletteViewerPreferences constructor : large icons defaults must be set after
+			palettePreferences = new DefaultPaletteViewerPreferences(preferenceStore);
+			preferenceStore.setDefault(PaletteViewerPreferences.PREFERENCE_LIST_ICON_SIZE, true);
+			preferenceStore.setDefault(PaletteViewerPreferences.PREFERENCE_COLUMNS_ICON_SIZE, true);
+			preferenceStore.setDefault(PaletteViewerPreferences.PREFERENCE_ICONS_ICON_SIZE, true);
+			preferenceStore.setDefault(PaletteViewerPreferences.PREFERENCE_DETAILS_ICON_SIZE, true);
+		}
+		return palettePreferences;
+	}
+	
+	@Override
+	protected PaletteViewerProvider createPaletteViewerProvider() {
+		return new PaletteViewerProvider(getEditDomain()) {
+			@Override
+			protected void configurePaletteViewer(PaletteViewer viewer) {
+				super.configurePaletteViewer(viewer);
+				viewer.setPaletteViewerPreferences(getPalettePreferences());
+			}
+		};
 	}
 
 	@Override
