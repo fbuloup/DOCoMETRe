@@ -99,6 +99,7 @@ import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.analyse.datamodel.ChannelsContainer;
 import fr.univamu.ism.docometre.analyse.handlers.UpdateWorkbenchDelegate;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
+import fr.univamu.ism.docometre.widgets.WidgetsUtil;
 
 /**
  * Common part of the signal editors: chart of the selected trials, trials
@@ -215,7 +216,7 @@ public abstract class AbstractSignalContainerEditor extends Composite implements
 		// Chart pane (chart and show/hide button) | trials list, resizable
 		SashForm channelContainer = new SashForm(this, SWT.HORIZONTAL);
 		channelContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
-		ChannelEditorWidgetsFactory.configureSashForm(channelContainer);
+		WidgetsUtil.configureSashForm(channelContainer);
 		Composite chartPane = new Composite(channelContainer, SWT.NORMAL);
 		chartPane.setLayout(createCompactGridLayout(2));
 		

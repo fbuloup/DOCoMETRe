@@ -97,7 +97,6 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
-import fr.univamu.ism.docometre.analyse.editors.ChannelEditorWidgetsFactory;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinProcess;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor.ADBasicCodeScanner;
@@ -111,6 +110,7 @@ import fr.univamu.ism.docometre.editors.WordsCompletionProcessor;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
 import fr.univamu.ism.docometre.scripteditor.actions.GlobalDeclarationsClipboard;
 import fr.univamu.ism.docometre.scripteditor.actions.GlobalDeclarationsClipboard.PastedDeclarations;
+import fr.univamu.ism.docometre.widgets.WidgetsUtil;
 import fr.univamu.ism.process.GlobalDeclarations.Constant;
 import fr.univamu.ism.process.GlobalDeclarations.Content;
 import fr.univamu.ism.process.GlobalDeclarations.Library;
@@ -408,7 +408,7 @@ public class GlobalDeclarationsDialog extends TitleAreaDialog {
 		SashForm sashForm = new SashForm(parent, SWT.HORIZONTAL);
 		// Sash made visible by theme stylesheets (css/docometre-*.css) : SWT.BORDER of composites 
 		// is drawn by the system and its color can't be changed by the dark theme 
-		ChannelEditorWidgetsFactory.configureSashForm(sashForm);
+		WidgetsUtil.configureSashForm(sashForm);
 		
 		Composite listContainer = new Composite(sashForm, SWT.NONE);
 		listContainer.setLayout(new GridLayout(2, false));

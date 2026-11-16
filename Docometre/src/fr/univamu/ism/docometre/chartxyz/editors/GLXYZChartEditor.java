@@ -70,6 +70,7 @@ import fr.univamu.ism.docometre.chartxyz.GLChart3D;
 import fr.univamu.ism.docometre.chartxyz.Point3D;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
+import fr.univamu.ism.docometre.widgets.WidgetsUtil;
 
 /**
  * XYZ chart editor with an OpenGL chart (chartxyz): OpenGL version of
@@ -205,7 +206,7 @@ public class GLXYZChartEditor extends EditorPart implements ISelectionChangedLis
 		}
 
 		// Chart pane : chart and show/hide panel button
-		ChannelEditorWidgetsFactory.configureSashForm(container);
+		WidgetsUtil.configureSashForm(container);
 		chartPane = ChannelEditorWidgetsFactory.createChartPane(container);
 		chart = GLChart3D.createChart(chartPane); // each curve keeps its own duration: all the points are displayed
 		chart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));

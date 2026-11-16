@@ -72,6 +72,7 @@ import fr.univamu.ism.docometre.analyse.MathEngine;
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
 import fr.univamu.ism.docometre.analyse.datamodel.Channel;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
+import fr.univamu.ism.docometre.widgets.WidgetsUtil;
 
 /**
  * Common part of the category editors: chart of the selected signals for the
@@ -147,7 +148,7 @@ public abstract class AbstractCategoryContainerEditor extends Composite implemen
 		// Chart pane (chart and show/hide button) | category container, resizable
 		SashForm mainSashForm = new SashForm(this, SWT.HORIZONTAL);
 		mainSashForm.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		ChannelEditorWidgetsFactory.configureSashForm(mainSashForm);
+		WidgetsUtil.configureSashForm(mainSashForm);
 		Composite chartPane = ChannelEditorWidgetsFactory.createChartPane(mainSashForm);
 		
 		if(!createChart(chartPane)) {

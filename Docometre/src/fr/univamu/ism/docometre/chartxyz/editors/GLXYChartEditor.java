@@ -78,6 +78,7 @@ import fr.univamu.ism.docometre.chartxyz.GLChart2D;
 import fr.univamu.ism.docometre.chartxyz.Point2D;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
+import fr.univamu.ism.docometre.widgets.WidgetsUtil;
 
 /**
  * XY chart editor with an OpenGL chart (chartxyz): OpenGL version of
@@ -207,7 +208,7 @@ public class GLXYChartEditor extends EditorPart implements ISelectionChangedList
 		}
 
 		// Chart pane : chart and show/hide panel button
-		ChannelEditorWidgetsFactory.configureSashForm(container);
+		WidgetsUtil.configureSashForm(container);
 		chartPane = ChannelEditorWidgetsFactory.createChartPane(container);
 		chart = GLChart2D.createChart(chartPane); // each curve keeps its own duration: all the points are displayed
 		chart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));

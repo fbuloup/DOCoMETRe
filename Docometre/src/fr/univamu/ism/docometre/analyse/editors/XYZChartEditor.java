@@ -133,6 +133,7 @@ import fr.univamu.ism.docometre.analyse.datamodel.XYChart;
 import fr.univamu.ism.docometre.analyse.datamodel.XYZChart;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
+import fr.univamu.ism.docometre.widgets.WidgetsUtil;
 
 public class XYZChartEditor extends EditorPart implements ISelectionChangedListener, /*IMarkersManager,*/ ZoomListener, TrialsEditor, ChartPropertiesListener, Chart2D3DBehaviour, IViewPointChangedListener, MouseListener {
 	
@@ -244,7 +245,7 @@ public class XYZChartEditor extends EditorPart implements ISelectionChangedListe
 			return;
 		}
 		// Chart pane : chart and show/hide panel button
-		ChannelEditorWidgetsFactory.configureSashForm(container);
+		WidgetsUtil.configureSashForm(container);
 		chartPane = ChannelEditorWidgetsFactory.createChartPane(container);
 		chartContainer = new Composite(chartPane, SWT.NONE);
 		chartContainer.setLayout(new FillLayout());

@@ -117,14 +117,6 @@ public final class ChannelEditorWidgetsFactory {
 	}
 
 	/*
-	 * Sash of editors SashForm is made visible by theme stylesheets (css/docometre-*.css)
-	 */
-	public static void configureSashForm(SashForm sashForm) {
-		sashForm.setSashWidth(5);
-		sashForm.setData("org.eclipse.e4.ui.css.CssClassName", "DocometreSashForm");
-	}
-	
-	/*
 	 * Creates in sashForm the pane holding the chart (first column) and the show/hide panel button
 	 */
 	public static Composite createChartPane(SashForm sashForm) {
