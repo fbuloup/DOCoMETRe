@@ -97,6 +97,7 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
+import fr.univamu.ism.docometre.analyse.editors.ChannelEditorWidgetsFactory;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinProcess;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor.ADBasicCodeScanner;
@@ -405,8 +406,11 @@ public class GlobalDeclarationsDialog extends TitleAreaDialog {
 	
 	private Control createSubroutinesArea(Composite parent) {
 		SashForm sashForm = new SashForm(parent, SWT.HORIZONTAL);
+		// Sash made visible by theme stylesheets (css/docometre-*.css) : SWT.BORDER of composites 
+		// is drawn by the system and its color can't be changed by the dark theme 
+		ChannelEditorWidgetsFactory.configureSashForm(sashForm);
 		
-		Composite listContainer = new Composite(sashForm, SWT.NONE | SWT.BORDER);
+		Composite listContainer = new Composite(sashForm, SWT.NONE);
 		listContainer.setLayout(new GridLayout(2, false));
 		subroutinesViewer = new ListViewer(listContainer, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
 		subroutinesViewer.getList().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -445,7 +449,7 @@ public class GlobalDeclarationsDialog extends TitleAreaDialog {
 		});
 		createButton(buttonsContainer, DocometreMessages.GlobalDeclarationsPasteButton, () -> paste());
 		
-		Composite fieldsContainer = new Composite(sashForm, SWT.NONE | SWT.BORDER);
+		Composite fieldsContainer = new Composite(sashForm, SWT.NONE);
 		fieldsContainer.setLayout(new GridLayout(2, false));
 		Label nameLabel = new Label(fieldsContainer, SWT.NONE);
 		nameLabel.setText(DocometreMessages.GlobalDeclarationsNameColumn);
