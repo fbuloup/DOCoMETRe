@@ -52,18 +52,9 @@ import java.util.regex.Pattern;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
-import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.DocumentEvent;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentListener;
-import org.eclipse.jface.text.IDocumentPartitioner;
-import org.eclipse.jface.text.contentassist.ContentAssistant;
-import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
-import org.eclipse.jface.text.contentassist.IContentAssistant;
-import org.eclipse.jface.text.rules.FastPartitioner;
-import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewer;
-import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
@@ -80,8 +71,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.custom.VerifyKeyListener;
-import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -94,20 +83,11 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Text;
 
 import fr.univamu.ism.docometre.Activator;
-import fr.univamu.ism.docometre.DocometreApplication;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinProcess;
-import fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor.ADBasicCodeScanner;
-import fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor.ADBasicRulesPartitionScanner;
-import fr.univamu.ism.docometre.dacqsystems.adwin.ui.processeditor.ADBasicSourceViewerConfiguration;
-import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoProcess;
-import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.processeditor.ArduinoUnoCodeScanner;
-import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.processeditor.ArduinoUnoRulesPartitionScanner;
-import fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.processeditor.ArduinoUnoSourceViewerConfiguration;
-import fr.univamu.ism.docometre.editors.WordsCompletionProcessor;
-import fr.univamu.ism.docometre.preferences.GeneralPreferenceConstants;
+import fr.univamu.ism.docometre.dacqsystems.ui.ProcessSourceViewerFactory;
 import fr.univamu.ism.docometre.scripteditor.actions.GlobalDeclarationsClipboard;
 import fr.univamu.ism.docometre.scripteditor.actions.GlobalDeclarationsClipboard.PastedDeclarations;
 import fr.univamu.ism.docometre.widgets.WidgetsUtil;
@@ -459,13 +439,19 @@ public class GlobalDeclarationsDialog extends TitleAreaDialog {
 		parametersLabel.setText(DocometreMessages.GlobalDeclarationsParametersLabel);
 		parametersText = new Text(fieldsContainer, SWT.BORDER);
 		parametersText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		int fontSize = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.EDITORS_FONT_SIZE);
-		Font codeFont = DocometreApplication.getFont(DocometreApplication.COURIER_NEW_BOLD, fontSize);
+		Font codeFont = ProcessSourceViewerFactory.getFont();
 		signatureLabel = new Label(fieldsContainer, SWT.NONE);
 		signatureLabel.setFont(codeFont);
 		signatureLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		// Subroutine body editor with syntax coloring of the process language (Arduino or ADBasic), as in the 
+		// process source editor, and content assist (Ctrl+Space) : names of the DACQ configuration, global constants 
+		// and subroutines, then language keywords. Global constants and subroutines are read at each proposals 
+		// request : they may be modified in this dialog. 
 		// Tab key inserts a tabulation in body instead of moving focus (multi lines StyledText default behavior)
-		bodyViewer = createBodyViewer(fieldsContainer, fontSize, codeFont);
+		bodyViewer = ProcessSourceViewerFactory.createSourceViewer(fieldsContainer, context, contentAssistProcessor -> {
+			contentAssistProcessor.addWords(() -> constants.stream().map(Constant::getName).toArray(String[]::new), Activator.getImage(IImageKeys.CONSTANT_ICON));
+			contentAssistProcessor.addWords(() -> subroutines.stream().map(Subroutine::getName).toArray(String[]::new), Activator.getImage(IImageKeys.SUBROUTINE_ICON));
+		});
 		GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
 		gridData.widthHint = 450;
 		gridData.heightHint = 220;
@@ -490,80 +476,6 @@ public class GlobalDeclarationsDialog extends TitleAreaDialog {
 		sashForm.setWeights(new int[] {2, 5});
 		updateSubroutineFields();
 		return sashForm;
-	}
-	
-	/*
-	 * Subroutine body editor with syntax coloring of the process language (Arduino or ADBasic), 
-	 * as in the process source editor, and content assist (Ctrl+Space) : names of the DACQ configuration, 
-	 * global constants and subroutines, then language keywords
-	 */
-	private SourceViewer createBodyViewer(Composite parent, int fontSize, Font codeFont) {
-		SourceViewer sourceViewer = new SourceViewer(parent, null, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
-		Document document = new Document();
-		String[] names = context instanceof Process && ((Process)context).getDACQConfiguration() != null ? ((Process)context).getDACQConfiguration().getProposal() : null;
-		IDocumentPartitioner documentPartitioner = null;
-		SourceViewerConfiguration sourceViewerConfiguration = null;
-		if(context instanceof ArduinoUnoProcess) {
-			documentPartitioner = new FastPartitioner(new ArduinoUnoRulesPartitionScanner(), ArduinoUnoRulesPartitionScanner.PARTITIONS);
-			IContentAssistProcessor contentAssistProcessor = createContentAssistProcessor(names, ArduinoUnoCodeScanner.getCompletionKeywords());
-			sourceViewerConfiguration = new ArduinoUnoSourceViewerConfiguration(fontSize) {
-				@Override
-				public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
-					return createContentAssistant(contentAssistProcessor);
-				}
-			};
-		}
-		if(context instanceof ADWinProcess) {
-			documentPartitioner = new FastPartitioner(new ADBasicRulesPartitionScanner(), ADBasicRulesPartitionScanner.PARTITIONS);
-			IContentAssistProcessor contentAssistProcessor = createContentAssistProcessor(names, ADBasicCodeScanner.getCompletionKeywords());
-			sourceViewerConfiguration = new ADBasicSourceViewerConfiguration(fontSize) {
-				@Override
-				public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
-					return createContentAssistant(contentAssistProcessor);
-				}
-			};
-		}
-		if(documentPartitioner != null) {
-			document.setDocumentPartitioner(documentPartitioner);
-			documentPartitioner.connect(document);
-		}
-		sourceViewer.setDocument(document);
-		// Same font as the colored tokens
-		sourceViewer.getTextWidget().setFont(codeFont);
-		if(sourceViewerConfiguration != null) {
-			sourceViewer.configure(sourceViewerConfiguration);
-			// Content assist on Ctrl+Space
-			sourceViewer.appendVerifyKeyListener(new VerifyKeyListener() {
-				@Override
-				public void verifyKey(VerifyEvent event) {
-					if(event.stateMask == SWT.CTRL && event.keyCode == ' ') {
-						if(sourceViewer.canDoOperation(ISourceViewer.CONTENTASSIST_PROPOSALS)) sourceViewer.doOperation(ISourceViewer.CONTENTASSIST_PROPOSALS);
-						event.doit = false;
-					}
-				}
-			});
-		}
-		return sourceViewer;
-	}
-	
-	/*
-	 * Global constants and subroutines are read at each proposals request : they may be modified in this dialog
-	 */
-	private IContentAssistProcessor createContentAssistProcessor(String[] names, String[] keywords) {
-		WordsCompletionProcessor contentAssistProcessor = new WordsCompletionProcessor();
-		contentAssistProcessor.addWords(names, Activator.getImage(IImageKeys.SIGNAL_ICON));
-		contentAssistProcessor.addWords(() -> constants.stream().map(Constant::getName).toArray(String[]::new), Activator.getImage(IImageKeys.CONSTANT_ICON));
-		contentAssistProcessor.addWords(() -> subroutines.stream().map(Subroutine::getName).toArray(String[]::new), Activator.getImage(IImageKeys.SUBROUTINE_ICON));
-		contentAssistProcessor.addWords(keywords, null);
-		return contentAssistProcessor;
-	}
-	
-	private static IContentAssistant createContentAssistant(IContentAssistProcessor contentAssistProcessor) {
-		ContentAssistant contentAssistant = new ContentAssistant();
-		// Proposals in code only : not in comments nor strings
-		contentAssistant.setContentAssistProcessor(contentAssistProcessor, IDocument.DEFAULT_CONTENT_TYPE);
-		contentAssistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);
-		return contentAssistant;
 	}
 	
 	private Composite createButtonsContainer(Composite parent) {
