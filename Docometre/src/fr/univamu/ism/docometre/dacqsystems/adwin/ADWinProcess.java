@@ -1157,7 +1157,8 @@ public class ADWinProcess extends Process {
 		String code = "REM ******** Global libraries\n";
 		for (GlobalDeclarations.Library library : libraries) {
 			if(!library.getComment().isEmpty()) code = code + "REM " + library.getComment() + "\n";
-			code = code + "#INCLUDE " + library.getFile() + "\n";
+			// Deactivated library is commented out
+			code = code + (library.isActivated() ? "" : "REM ") + "#INCLUDE " + library.getFile() + "\n";
 		}
 		return code;
 	}
@@ -1171,7 +1172,8 @@ public class ADWinProcess extends Process {
 		String code = "\nREM ******** Global constants\n";
 		for (GlobalDeclarations.Constant constant : constants) {
 			if(!constant.getComment().isEmpty()) code = code + "REM " + constant.getComment() + "\n";
-			code = code + "#DEFINE " + constant.getName() + " " + constant.getValue() + "\n";
+			// Deactivated constant is commented out
+			code = code + (constant.isActivated() ? "" : "REM ") + "#DEFINE " + constant.getName() + " " + constant.getValue() + "\n";
 		}
 		return code;
 	}
@@ -1184,10 +1186,12 @@ public class ADWinProcess extends Process {
 		if(subroutines.isEmpty()) return "";
 		String code = "\nREM ******** Global subroutines\n\n";
 		for (GlobalDeclarations.Subroutine subroutine : subroutines) {
-			code = code + "SUB " + subroutine.getName() + "(" + subroutine.getParameters() + ")\n";
+			// Each line of deactivated subroutine is commented out
+			String comment = subroutine.isActivated() ? "" : "REM ";
+			code = code + comment + "SUB " + subroutine.getName() + "(" + subroutine.getParameters() + ")\n";
 			String body = subroutine.getBody().stripTrailing();
-			if(!body.isEmpty()) for (String line : body.split("\\R")) code = code + "\t" + line + "\n";
-			code = code + "ENDSUB\n\n";
+			if(!body.isEmpty()) for (String line : body.split("\\R")) code = code + comment + "\t" + line + "\n";
+			code = code + comment + "ENDSUB\n\n";
 		}
 		return code;
 	}

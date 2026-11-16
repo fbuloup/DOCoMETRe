@@ -47,21 +47,23 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.EditingSupport;
+import org.eclipse.jface.viewers.ICheckStateProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -71,7 +73,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -85,6 +89,7 @@ import org.eclipse.swt.widgets.Text;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
+import fr.univamu.ism.docometre.ThemeColors;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinProcess;
 import fr.univamu.ism.docometre.dacqsystems.ui.ProcessSourceViewerFactory;
@@ -100,6 +105,7 @@ import fr.univamu.ism.process.GlobalDeclarations.Subroutine;
  * Edit global libraries, constants and subroutines of a process. 
  * All or part of them can be copied in order to be pasted in another process or in an external editor, 
  * and source code text copied in an external editor can be pasted.
+ * Each declaration can be deactivated (unchecked) : it is then commented out in generated code.
  */
 public class GlobalDeclarationsDialog extends TitleAreaDialog {
 	
@@ -108,6 +114,38 @@ public class GlobalDeclarationsDialog extends TitleAreaDialog {
 	private static final String[] PREDEFINED_NAMES = new String[] {"pi", "PI"};
 	// C library : <file> or "file"
 	private static final Pattern C_LIBRARY_PATTERN = Pattern.compile("<[^<>]+>|\"[^\"]+\"");
+	// Deactivated declarations color if not defined by theme
+	private static final RGB DEACTIVATED_RGB = new RGB(128, 128, 128);
+	
+	/*
+	 * Deactivated declarations are displayed with theme color and in italic
+	 */
+	private static class DeclarationLabelProvider extends ColumnLabelProvider {
+		
+		private Function<Object, String> textProvider;
+		
+		public DeclarationLabelProvider(Function<Object, String> textProvider) {
+			this.textProvider = textProvider;
+		}
+		
+		@Override
+		public String getText(Object element) {
+			return textProvider.apply(element);
+		}
+		
+		@Override
+		public Color getForeground(Object element) {
+			if(isActivated(element)) return null;
+			return ThemeColors.getColor(ThemeColors.DEACTIVATED_DECLARATION_COLOR, DEACTIVATED_RGB);
+		}
+		
+		@Override
+		public Font getFont(Object element) {
+			if(isActivated(element)) return null;
+			return Activator.getItalicFont(JFaceResources.DIALOG_FONT);
+		}
+		
+	}
 	
 	private class LibraryEditingSupport extends EditingSupport {
 		
@@ -141,7 +179,7 @@ public class GlobalDeclarationsDialog extends TitleAreaDialog {
 			if(value.equals(getColumnText(library, column))) return;
 			String file = column == 0 ? ((String) value).trim() : library.getFile();
 			String comment = column == 1 ? (String) value : library.getComment();
-			libraries.set(indexOf(libraries, library), new Library(file, comment));
+			libraries.set(indexOf(libraries, library), new Library(file, comment, library.isActivated()));
 			librariesViewer.refresh();
 			validate();
 		}
@@ -181,7 +219,7 @@ public class GlobalDeclarationsDialog extends TitleAreaDialog {
 			String name = column == 0 ? (String) value : constant.getName();
 			String constantValue = column == 1 ? (String) value : constant.getValue();
 			String comment = column == 2 ? (String) value : constant.getComment();
-			constants.set(indexOf(constants, constant), new Constant(name.trim(), constantValue.trim(), comment));
+			constants.set(indexOf(constants, constant), new Constant(name.trim(), constantValue.trim(), comment, constant.isActivated()));
 			constantsViewer.refresh();
 			validate();
 		}
@@ -198,9 +236,9 @@ public class GlobalDeclarationsDialog extends TitleAreaDialog {
 	private List<Subroutine> subroutines;
 	private Content content;
 	
-	private TableViewer librariesViewer;
-	private TableViewer constantsViewer;
-	private ListViewer subroutinesViewer;
+	private CheckboxTableViewer librariesViewer;
+	private CheckboxTableViewer constantsViewer;
+	private CheckboxTableViewer subroutinesViewer;
 	private Text nameText;
 	private Text parametersText;
 	private SourceViewer bodyViewer;
@@ -282,8 +320,9 @@ public class GlobalDeclarationsDialog extends TitleAreaDialog {
 		Composite container = new Composite(parent, SWT.NONE);
 		container.setLayout(new GridLayout(2, false));
 		
-		librariesViewer = new TableViewer(container, SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION);
-		Table table = librariesViewer.getTable();
+		// Check box of first column : declaration is activated
+		Table table = new Table(container, SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION | SWT.CHECK);
+		librariesViewer = new CheckboxTableViewer(table);
 		GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		gridData.widthHint = 600;
 		gridData.heightHint = 250;
@@ -292,17 +331,13 @@ public class GlobalDeclarationsDialog extends TitleAreaDialog {
 		table.setLinesVisible(true);
 		String[] titles = new String[] {DocometreMessages.GlobalDeclarationsFileColumn, DocometreMessages.GlobalDeclarationsCommentColumn};
 		int[] widths = new int[] {250, 330};
+		createActivationColumn(librariesViewer, libraries);
 		for (int i = 0; i < titles.length; i++) {
 			final int column = i;
 			TableViewerColumn viewerColumn = new TableViewerColumn(librariesViewer, SWT.NONE);
 			viewerColumn.getColumn().setText(titles[i]);
 			viewerColumn.getColumn().setWidth(widths[i]);
-			viewerColumn.setLabelProvider(new ColumnLabelProvider() {
-				@Override
-				public String getText(Object element) {
-					return getColumnText((Library) element, column);
-				}
-			});
+			viewerColumn.setLabelProvider(new DeclarationLabelProvider(element -> getColumnText((Library) element, column)));
 			viewerColumn.setEditingSupport(new LibraryEditingSupport(librariesViewer, column));
 		}
 		librariesViewer.setContentProvider(ArrayContentProvider.getInstance());
@@ -314,7 +349,7 @@ public class GlobalDeclarationsDialog extends TitleAreaDialog {
 			libraries.add(library);
 			librariesViewer.refresh();
 			librariesViewer.setSelection(new StructuredSelection(library));
-			librariesViewer.editElement(library, 0);
+			librariesViewer.editElement(library, 1);
 			validate();
 		});
 		createButton(buttonsContainer, DocometreMessages.GlobalDeclarationsRemoveButton, () -> {
@@ -328,6 +363,7 @@ public class GlobalDeclarationsDialog extends TitleAreaDialog {
 			copy(new Content(selectedLibraries, null, null));
 		});
 		createButton(buttonsContainer, DocometreMessages.GlobalDeclarationsPasteButton, () -> paste());
+		createActivationButtons(buttonsContainer, librariesViewer, libraries);
 		return container;
 	}
 	
@@ -335,8 +371,9 @@ public class GlobalDeclarationsDialog extends TitleAreaDialog {
 		Composite container = new Composite(parent, SWT.NONE);
 		container.setLayout(new GridLayout(2, false));
 		
-		constantsViewer = new TableViewer(container, SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION);
-		Table table = constantsViewer.getTable();
+		// Check box of first column : declaration is activated
+		Table table = new Table(container, SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION | SWT.CHECK);
+		constantsViewer = new CheckboxTableViewer(table);
 		GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		gridData.widthHint = 600;
 		gridData.heightHint = 250;
@@ -345,17 +382,13 @@ public class GlobalDeclarationsDialog extends TitleAreaDialog {
 		table.setLinesVisible(true);
 		String[] titles = new String[] {DocometreMessages.GlobalDeclarationsNameColumn, DocometreMessages.GlobalDeclarationsValueColumn, DocometreMessages.GlobalDeclarationsCommentColumn};
 		int[] widths = new int[] {150, 150, 280};
+		createActivationColumn(constantsViewer, constants);
 		for (int i = 0; i < titles.length; i++) {
 			final int column = i;
 			TableViewerColumn viewerColumn = new TableViewerColumn(constantsViewer, SWT.NONE);
 			viewerColumn.getColumn().setText(titles[i]);
 			viewerColumn.getColumn().setWidth(widths[i]);
-			viewerColumn.setLabelProvider(new ColumnLabelProvider() {
-				@Override
-				public String getText(Object element) {
-					return getColumnText((Constant) element, column);
-				}
-			});
+			viewerColumn.setLabelProvider(new DeclarationLabelProvider(element -> getColumnText((Constant) element, column)));
 			viewerColumn.setEditingSupport(new ConstantEditingSupport(constantsViewer, column));
 		}
 		constantsViewer.setContentProvider(ArrayContentProvider.getInstance());
@@ -367,7 +400,7 @@ public class GlobalDeclarationsDialog extends TitleAreaDialog {
 			constants.add(constant);
 			constantsViewer.refresh();
 			constantsViewer.setSelection(new StructuredSelection(constant));
-			constantsViewer.editElement(constant, 0);
+			constantsViewer.editElement(constant, 1);
 			validate();
 		});
 		createButton(buttonsContainer, DocometreMessages.GlobalDeclarationsRemoveButton, () -> {
@@ -381,6 +414,7 @@ public class GlobalDeclarationsDialog extends TitleAreaDialog {
 			copy(new Content(selectedConstants, null));
 		});
 		createButton(buttonsContainer, DocometreMessages.GlobalDeclarationsPasteButton, () -> paste());
+		createActivationButtons(buttonsContainer, constantsViewer, constants);
 		return container;
 	}
 	
@@ -392,15 +426,12 @@ public class GlobalDeclarationsDialog extends TitleAreaDialog {
 		
 		Composite listContainer = new Composite(sashForm, SWT.NONE);
 		listContainer.setLayout(new GridLayout(2, false));
-		subroutinesViewer = new ListViewer(listContainer, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
-		subroutinesViewer.getList().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		// List of subroutines names with check boxes : subroutine is activated
+		subroutinesViewer = CheckboxTableViewer.newCheckList(listContainer, SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION | SWT.V_SCROLL);
+		subroutinesViewer.getTable().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		subroutinesViewer.setContentProvider(ArrayContentProvider.getInstance());
-		subroutinesViewer.setLabelProvider(new LabelProvider() {
-			@Override
-			public String getText(Object element) {
-				return ((Subroutine)element).getName();
-			}
-		});
+		subroutinesViewer.setLabelProvider(new DeclarationLabelProvider(element -> ((Subroutine)element).getName()));
+		configureActivation(subroutinesViewer, subroutines);
 		subroutinesViewer.setInput(subroutines);
 		subroutinesViewer.addSelectionChangedListener(event -> {
 			if(!modifyingSubroutine) updateSubroutineFields();
@@ -428,6 +459,7 @@ public class GlobalDeclarationsDialog extends TitleAreaDialog {
 			copy(new Content(null, selectedSubroutines));
 		});
 		createButton(buttonsContainer, DocometreMessages.GlobalDeclarationsPasteButton, () -> paste());
+		createActivationButtons(buttonsContainer, subroutinesViewer, subroutines);
 		
 		Composite fieldsContainer = new Composite(sashForm, SWT.NONE);
 		fieldsContainer.setLayout(new GridLayout(2, false));
@@ -446,11 +478,11 @@ public class GlobalDeclarationsDialog extends TitleAreaDialog {
 		// Subroutine body editor with syntax coloring of the process language (Arduino or ADBasic), as in the 
 		// process source editor, and content assist (Ctrl+Space) : names of the DACQ configuration, global constants 
 		// and subroutines, then language keywords. Global constants and subroutines are read at each proposals 
-		// request : they may be modified in this dialog. 
+		// request : they may be modified in this dialog. Deactivated ones are not proposed : they are commented out. 
 		// Tab key inserts a tabulation in body instead of moving focus (multi lines StyledText default behavior)
 		bodyViewer = ProcessSourceViewerFactory.createSourceViewer(fieldsContainer, context, contentAssistProcessor -> {
-			contentAssistProcessor.addWords(() -> constants.stream().map(Constant::getName).toArray(String[]::new), Activator.getImage(IImageKeys.CONSTANT_ICON));
-			contentAssistProcessor.addWords(() -> subroutines.stream().map(Subroutine::getName).toArray(String[]::new), Activator.getImage(IImageKeys.SUBROUTINE_ICON));
+			contentAssistProcessor.addWords(() -> constants.stream().filter(Constant::isActivated).map(Constant::getName).toArray(String[]::new), Activator.getImage(IImageKeys.CONSTANT_ICON));
+			contentAssistProcessor.addWords(() -> subroutines.stream().filter(Subroutine::isActivated).map(Subroutine::getName).toArray(String[]::new), Activator.getImage(IImageKeys.SUBROUTINE_ICON));
 		});
 		GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
 		gridData.widthHint = 450;
@@ -476,6 +508,79 @@ public class GlobalDeclarationsDialog extends TitleAreaDialog {
 		sashForm.setWeights(new int[] {2, 5});
 		updateSubroutineFields();
 		return sashForm;
+	}
+	
+	/*
+	 * First column of declarations table : check box only, without title
+	 */
+	private void createActivationColumn(CheckboxTableViewer viewer, List<?> declarations) {
+		TableViewerColumn viewerColumn = new TableViewerColumn(viewer, SWT.NONE);
+		viewerColumn.getColumn().setWidth(32);
+		viewerColumn.getColumn().setResizable(false);
+		viewerColumn.setLabelProvider(new DeclarationLabelProvider(element -> ""));
+		configureActivation(viewer, declarations);
+	}
+	
+	/*
+	 * Check box state is declaration activation
+	 */
+	private void configureActivation(CheckboxTableViewer viewer, List<?> declarations) {
+		viewer.setCheckStateProvider(new ICheckStateProvider() {
+			@Override
+			public boolean isChecked(Object element) {
+				return isActivated(element);
+			}
+			@Override
+			public boolean isGrayed(Object element) {
+				return false;
+			}
+		});
+		viewer.addCheckStateListener(event -> setActivated(viewer, declarations, List.of(event.getElement()), event.getChecked()));
+	}
+	
+	/*
+	 * Activate and deactivate buttons, separated from other buttons, act on selected declarations
+	 */
+	private void createActivationButtons(Composite buttonsContainer, CheckboxTableViewer viewer, List<?> declarations) {
+		new Label(buttonsContainer, SWT.NONE);
+		createButton(buttonsContainer, DocometreMessages.GlobalDeclarationsActivateButton, () -> setActivated(viewer, declarations, viewer.getStructuredSelection().toList(), true));
+		createButton(buttonsContainer, DocometreMessages.GlobalDeclarationsDeactivateButton, () -> setActivated(viewer, declarations, viewer.getStructuredSelection().toList(), false));
+	}
+	
+	/*
+	 * Replace elements of declarations by activated or deactivated copies, selection is kept
+	 */
+	private void setActivated(CheckboxTableViewer viewer, List<?> declarations, List<?> elements, boolean activated) {
+		@SuppressWarnings("unchecked")
+		List<Object> declarationsList = (List<Object>) declarations;
+		List<Object> selection = new ArrayList<>(Arrays.asList(viewer.getStructuredSelection().toArray()));
+		for (Object element : elements) {
+			int index = indexOf(declarationsList, element);
+			if(index == -1 || isActivated(element) == activated) continue;
+			Object newElement = withActivated(element, activated);
+			declarationsList.set(index, newElement);
+			int selectionIndex = indexOf(selection, element);
+			if(selectionIndex > -1) selection.set(selectionIndex, newElement);
+		}
+		// Keep subroutine fields as they are : only activation has changed
+		modifyingSubroutine = true;
+		viewer.refresh();
+		viewer.setSelection(new StructuredSelection(selection));
+		modifyingSubroutine = false;
+	}
+	
+	private static boolean isActivated(Object declaration) {
+		if(declaration instanceof Library) return ((Library)declaration).isActivated();
+		if(declaration instanceof Constant) return ((Constant)declaration).isActivated();
+		if(declaration instanceof Subroutine) return ((Subroutine)declaration).isActivated();
+		return true;
+	}
+	
+	private static Object withActivated(Object declaration, boolean activated) {
+		if(declaration instanceof Library) return ((Library)declaration).withActivated(activated);
+		if(declaration instanceof Constant) return ((Constant)declaration).withActivated(activated);
+		if(declaration instanceof Subroutine) return ((Subroutine)declaration).withActivated(activated);
+		return declaration;
 	}
 	
 	private Composite createButtonsContainer(Composite parent) {
@@ -518,7 +623,8 @@ public class GlobalDeclarationsDialog extends TitleAreaDialog {
 		if(updatingSubroutineFields) return;
 		IStructuredSelection selection = subroutinesViewer.getStructuredSelection();
 		if(selection.size() != 1) return;
-		Subroutine subroutine = new Subroutine(nameText.getText().trim(), parametersText.getText().trim(), bodyViewer.getDocument().get());
+		boolean activated = ((Subroutine) selection.getFirstElement()).isActivated();
+		Subroutine subroutine = new Subroutine(nameText.getText().trim(), parametersText.getText().trim(), bodyViewer.getDocument().get(), activated);
 		subroutines.set(indexOf(subroutines, selection.getFirstElement()), subroutine);
 		// Keep fields as they are while user is typing
 		modifyingSubroutine = true;

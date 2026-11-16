@@ -62,10 +62,19 @@ public final class GlobalDeclarations {
 		
 		private String file;
 		private String comment;
+		private boolean activated;
 		
 		public Library(String file, String comment) {
+			this(file, comment, true);
+		}
+		
+		/**
+		 * @param activated false if library is commented out in generated code
+		 */
+		public Library(String file, String comment, boolean activated) {
 			this.file = file == null ? "" : file;
 			this.comment = comment == null ? "" : comment;
+			this.activated = activated;
 		}
 		
 		public String getFile() {
@@ -76,28 +85,42 @@ public final class GlobalDeclarations {
 			return comment;
 		}
 		
+		/**
+		 * @return false if library is commented out in generated code
+		 */
+		public boolean isActivated() {
+			return activated;
+		}
+		
+		/**
+		 * @return a copy of this library, activated or not
+		 */
+		public Library withActivated(boolean activated) {
+			return new Library(file, comment, activated);
+		}
+		
 		public Library copy() {
-			return new Library(file, comment);
+			return new Library(file, comment, activated);
 		}
 		
 		private String[] toArray() {
-			return new String[] {file, comment};
+			return new String[] {file, comment, activatedToValue(activated)};
 		}
 		
 		private static Library fromArray(String[] values) {
-			return new Library(values.length > 0 ? values[0] : "", values.length > 1 ? values[1] : "");
+			return new Library(values.length > 0 ? values[0] : "", values.length > 1 ? values[1] : "", valueToActivated(values, 2));
 		}
 		
 		@Override
 		public boolean equals(Object object) {
 			if(!(object instanceof Library)) return false;
 			Library library = (Library) object;
-			return file.equals(library.file) && comment.equals(library.comment);
+			return file.equals(library.file) && comment.equals(library.comment) && activated == library.activated;
 		}
 		
 		@Override
 		public int hashCode() {
-			return Objects.hash(file, comment);
+			return Objects.hash(file, comment, activated);
 		}
 		
 	}
@@ -110,11 +133,20 @@ public final class GlobalDeclarations {
 		private String name;
 		private String value;
 		private String comment;
+		private boolean activated;
 		
 		public Constant(String name, String value, String comment) {
+			this(name, value, comment, true);
+		}
+		
+		/**
+		 * @param activated false if constant is commented out in generated code
+		 */
+		public Constant(String name, String value, String comment, boolean activated) {
 			this.name = name == null ? "" : name;
 			this.value = value == null ? "" : value;
 			this.comment = comment == null ? "" : comment;
+			this.activated = activated;
 		}
 		
 		public String getName() {
@@ -129,28 +161,42 @@ public final class GlobalDeclarations {
 			return comment;
 		}
 		
+		/**
+		 * @return false if constant is commented out in generated code
+		 */
+		public boolean isActivated() {
+			return activated;
+		}
+		
+		/**
+		 * @return a copy of this constant, activated or not
+		 */
+		public Constant withActivated(boolean activated) {
+			return new Constant(name, value, comment, activated);
+		}
+		
 		public Constant copy() {
-			return new Constant(name, value, comment);
+			return new Constant(name, value, comment, activated);
 		}
 		
 		private String[] toArray() {
-			return new String[] {name, value, comment};
+			return new String[] {name, value, comment, activatedToValue(activated)};
 		}
 		
 		private static Constant fromArray(String[] values) {
-			return new Constant(values.length > 0 ? values[0] : "", values.length > 1 ? values[1] : "", values.length > 2 ? values[2] : "");
+			return new Constant(values.length > 0 ? values[0] : "", values.length > 1 ? values[1] : "", values.length > 2 ? values[2] : "", valueToActivated(values, 3));
 		}
 		
 		@Override
 		public boolean equals(Object object) {
 			if(!(object instanceof Constant)) return false;
 			Constant constant = (Constant) object;
-			return name.equals(constant.name) && value.equals(constant.value) && comment.equals(constant.comment);
+			return name.equals(constant.name) && value.equals(constant.value) && comment.equals(constant.comment) && activated == constant.activated;
 		}
 		
 		@Override
 		public int hashCode() {
-			return Objects.hash(name, value, comment);
+			return Objects.hash(name, value, comment, activated);
 		}
 		
 	}
@@ -164,11 +210,20 @@ public final class GlobalDeclarations {
 		private String name;
 		private String parameters;
 		private String body;
+		private boolean activated;
 		
 		public Subroutine(String name, String parameters, String body) {
+			this(name, parameters, body, true);
+		}
+		
+		/**
+		 * @param activated false if subroutine is commented out in generated code
+		 */
+		public Subroutine(String name, String parameters, String body, boolean activated) {
 			this.name = name == null ? "" : name;
 			this.parameters = parameters == null ? "" : parameters;
 			this.body = body == null ? "" : body;
+			this.activated = activated;
 		}
 		
 		public String getName() {
@@ -183,28 +238,42 @@ public final class GlobalDeclarations {
 			return body;
 		}
 		
+		/**
+		 * @return false if subroutine is commented out in generated code
+		 */
+		public boolean isActivated() {
+			return activated;
+		}
+		
+		/**
+		 * @return a copy of this subroutine, activated or not
+		 */
+		public Subroutine withActivated(boolean activated) {
+			return new Subroutine(name, parameters, body, activated);
+		}
+		
 		public Subroutine copy() {
-			return new Subroutine(name, parameters, body);
+			return new Subroutine(name, parameters, body, activated);
 		}
 		
 		private String[] toArray() {
-			return new String[] {name, parameters, body};
+			return new String[] {name, parameters, body, activatedToValue(activated)};
 		}
 		
 		private static Subroutine fromArray(String[] values) {
-			return new Subroutine(values.length > 0 ? values[0] : "", values.length > 1 ? values[1] : "", values.length > 2 ? values[2] : "");
+			return new Subroutine(values.length > 0 ? values[0] : "", values.length > 1 ? values[1] : "", values.length > 2 ? values[2] : "", valueToActivated(values, 3));
 		}
 		
 		@Override
 		public boolean equals(Object object) {
 			if(!(object instanceof Subroutine)) return false;
 			Subroutine subroutine = (Subroutine) object;
-			return name.equals(subroutine.name) && parameters.equals(subroutine.parameters) && body.equals(subroutine.body);
+			return name.equals(subroutine.name) && parameters.equals(subroutine.parameters) && body.equals(subroutine.body) && activated == subroutine.activated;
 		}
 		
 		@Override
 		public int hashCode() {
-			return Objects.hash(name, parameters, body);
+			return Objects.hash(name, parameters, body, activated);
 		}
 		
 	}
@@ -262,6 +331,18 @@ public final class GlobalDeclarations {
 			return Objects.hash(libraries, constants, subroutines);
 		}
 		
+	}
+	
+	/*
+	 * Activation state is serialized as last value of declarations arrays. 
+	 * It is missing in processes saved by previous versions : declarations are activated.
+	 */
+	private static String activatedToValue(boolean activated) {
+		return Boolean.toString(activated);
+	}
+	
+	private static boolean valueToActivated(String[] values, int index) {
+		return values.length <= index || !Boolean.FALSE.toString().equals(values[index]);
 	}
 	
 	// Fixed location of global declarations in INITIALIZE segment editor

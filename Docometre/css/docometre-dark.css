@@ -17,6 +17,10 @@ ColorDefinition#fr-univamu-ism-docometre-COMPLETION_MARK_COLOR {
 	color: #E14545;
 }
 
+ColorDefinition#fr-univamu-ism-docometre-DEACTIVATED_DECLARATION_COLOR {
+	color: #8C8C8C;
+}
+
 ColorDefinition#fr-univamu-ism-docometre-SYNTAX_RED_COLOR {
 	color: #FF6B6B;
 }

@@ -1371,6 +1371,8 @@ public final class DocometreMessages extends NLS {
 	public static String GlobalDeclarationsEmptyLibrary;
 	public static String GlobalDeclarationsInvalidLibrary;
 	public static String GlobalDeclarationsDuplicateLibrary;
+	public static String GlobalDeclarationsActivateButton;
+	public static String GlobalDeclarationsDeactivateButton;
 	public static String GlobalDeclarationsMoreItems;
 
 	public static String ChartMenu_ShowCursor;

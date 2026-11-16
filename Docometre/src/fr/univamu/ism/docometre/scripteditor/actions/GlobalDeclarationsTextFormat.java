@@ -57,6 +57,7 @@ import fr.univamu.ism.process.GlobalDeclarations.Subroutine;
  * - constants : #DEFINE NAME value ' comment, or #define NAME value // comment
  * - subroutines : SUB name(parameters) ... ENDSUB, or void name(parameters) { ... }
  * Text is used to exchange global declarations with external source code through the system clipboard.
+ * Deactivated declarations are commented out in text, so declarations read from text are activated.
  */
 public final class GlobalDeclarationsTextFormat {
 	
@@ -102,30 +103,41 @@ public final class GlobalDeclarationsTextFormat {
 	}
 	
 	/**
-	 * @return source code of libraries, constants and subroutines
+	 * @return source code of libraries, constants and subroutines. Deactivated ones are commented out.
 	 */
 	public static String format(Content content, boolean adbasic) {
 		StringBuilder text = new StringBuilder();
 		for (Library library : content.getLibraries()) {
+			text.append(getCommentPrefix(library.isActivated(), adbasic));
 			text.append(adbasic ? "#INCLUDE " : "#include ").append(library.getFile());
 			if(!library.getComment().isEmpty()) text.append(adbasic ? "   ' " : "   // ").append(library.getComment());
 			text.append("\n");
 		}
 		if(!content.getLibraries().isEmpty() && !content.getConstants().isEmpty()) text.append("\n");
 		for (Constant constant : content.getConstants()) {
+			text.append(getCommentPrefix(constant.isActivated(), adbasic));
 			text.append(adbasic ? "#DEFINE " : "#define ").append(constant.getName()).append(" ").append(constant.getValue());
 			if(!constant.getComment().isEmpty()) text.append(adbasic ? "   ' " : "   // ").append(constant.getComment());
 			text.append("\n");
 		}
 		for (Subroutine subroutine : content.getSubroutines()) {
 			if(text.length() > 0) text.append("\n");
-			if(adbasic) text.append("SUB ").append(subroutine.getName()).append("(").append(subroutine.getParameters()).append(")\n");
-			else text.append("void ").append(subroutine.getName()).append("(").append(subroutine.getParameters()).append(") {\n");
+			String commentPrefix = getCommentPrefix(subroutine.isActivated(), adbasic);
+			if(adbasic) text.append(commentPrefix).append("SUB ").append(subroutine.getName()).append("(").append(subroutine.getParameters()).append(")\n");
+			else text.append(commentPrefix).append("void ").append(subroutine.getName()).append("(").append(subroutine.getParameters()).append(") {\n");
 			String body = subroutine.getBody().stripTrailing();
-			if(!body.isEmpty()) for (String line : body.split("\\R")) text.append("\t").append(line).append("\n");
-			text.append(adbasic ? "ENDSUB\n" : "}\n");
+			if(!body.isEmpty()) for (String line : body.split("\\R")) text.append(commentPrefix).append("\t").append(line).append("\n");
+			text.append(commentPrefix).append(adbasic ? "ENDSUB\n" : "}\n");
 		}
 		return text.toString();
+	}
+	
+	/*
+	 * Deactivated declarations lines are commented out
+	 */
+	private static String getCommentPrefix(boolean activated, boolean adbasic) {
+		if(activated) return "";
+		return adbasic ? "' " : "// ";
 	}
 	
 	/**

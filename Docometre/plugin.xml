@@ -3873,6 +3873,12 @@
       </colorDefinition>
       <colorDefinition
             categoryId="fr.univamu.ism.docometre.themeElementCategory"
+            id="fr.univamu.ism.docometre.DEACTIVATED_DECLARATION_COLOR"
+            label="%ThemeColor.DeactivatedDeclaration.label"
+            value="128,128,128">
+      </colorDefinition>
+      <colorDefinition
+            categoryId="fr.univamu.ism.docometre.themeElementCategory"
             id="fr.univamu.ism.docometre.SYNTAX_RED_COLOR"
             label="%ThemeColor.SyntaxRed.label"
             value="202,0,42">

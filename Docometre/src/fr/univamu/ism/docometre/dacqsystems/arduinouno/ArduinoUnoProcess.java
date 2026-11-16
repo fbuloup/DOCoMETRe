@@ -1328,7 +1328,8 @@ public class ArduinoUnoProcess extends Process {
 		String code = "// Global libraries\n";
 		for (GlobalDeclarations.Library library : libraries) {
 			if(!library.getComment().isEmpty()) code = code + "// " + library.getComment() + "\n";
-			code = code + "#include " + library.getFile() + "\n";
+			// Deactivated library is commented out
+			code = code + (library.isActivated() ? "" : "// ") + "#include " + library.getFile() + "\n";
 		}
 		return code;
 	}
@@ -1342,7 +1343,8 @@ public class ArduinoUnoProcess extends Process {
 		String code = "\n// Global constants\n";
 		for (GlobalDeclarations.Constant constant : constants) {
 			if(!constant.getComment().isEmpty()) code = code + "// " + constant.getComment() + "\n";
-			code = code + "#define " + constant.getName() + " " + constant.getValue() + "\n";
+			// Deactivated constant is commented out
+			code = code + (constant.isActivated() ? "" : "// ") + "#define " + constant.getName() + " " + constant.getValue() + "\n";
 		}
 		return code;
 	}
@@ -1356,10 +1358,12 @@ public class ArduinoUnoProcess extends Process {
 		if(subroutines.isEmpty()) return "";
 		String code = "\n// Global subroutines\n\n";
 		for (GlobalDeclarations.Subroutine subroutine : subroutines) {
-			code = code + "void " + subroutine.getName() + "(" + subroutine.getParameters() + ") {\n";
+			// Each line of deactivated subroutine is commented out
+			String comment = subroutine.isActivated() ? "" : "// ";
+			code = code + comment + "void " + subroutine.getName() + "(" + subroutine.getParameters() + ") {\n";
 			String body = subroutine.getBody().stripTrailing();
-			if(!body.isEmpty()) for (String line : body.split("\\R")) code = code + "\t" + line + "\n";
-			code = code + "}\n\n";
+			if(!body.isEmpty()) for (String line : body.split("\\R")) code = code + comment + "\t" + line + "\n";
+			code = code + comment + "}\n\n";
 		}
 		return code;
 	}
