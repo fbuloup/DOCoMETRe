@@ -571,19 +571,20 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 	 * They are stored in DOCoMETRe preferences : GEF palette viewers reset GEF preferences defaults to small icons in list layout.
 	 * Choices made with the palette context menu (layout, icons size) are kept.
 	 */
-	private static PaletteViewerPreferences palettePreferences;
+	private static PaletteViewerPreferences paletteViewerPreferences;
 	
-	private static PaletteViewerPreferences getPalettePreferences() {
-		if(palettePreferences == null) {
+	// Not named getPalettePreferences : GraphicalEditorWithFlyoutPalette instance method (flyout palette preferences)
+	private static PaletteViewerPreferences getPaletteViewerPreferences() {
+		if(paletteViewerPreferences == null) {
 			IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
 			// Defaults are set by DefaultPaletteViewerPreferences constructor : large icons defaults must be set after
-			palettePreferences = new DefaultPaletteViewerPreferences(preferenceStore);
+			paletteViewerPreferences = new DefaultPaletteViewerPreferences(preferenceStore);
 			preferenceStore.setDefault(PaletteViewerPreferences.PREFERENCE_LIST_ICON_SIZE, true);
 			preferenceStore.setDefault(PaletteViewerPreferences.PREFERENCE_COLUMNS_ICON_SIZE, true);
 			preferenceStore.setDefault(PaletteViewerPreferences.PREFERENCE_ICONS_ICON_SIZE, true);
 			preferenceStore.setDefault(PaletteViewerPreferences.PREFERENCE_DETAILS_ICON_SIZE, true);
 		}
-		return palettePreferences;
+		return paletteViewerPreferences;
 	}
 	
 	@Override
@@ -592,7 +593,7 @@ public abstract class AbstractScriptSegmentEditor extends GraphicalEditorWithFly
 			@Override
 			protected void configurePaletteViewer(PaletteViewer viewer) {
 				super.configurePaletteViewer(viewer);
-				viewer.setPaletteViewerPreferences(getPalettePreferences());
+				viewer.setPaletteViewerPreferences(getPaletteViewerPreferences());
 			}
 		};
 	}
