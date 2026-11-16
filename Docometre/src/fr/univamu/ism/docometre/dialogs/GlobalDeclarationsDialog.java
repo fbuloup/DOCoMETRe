@@ -68,6 +68,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.TextCellEditor;
+import org.eclipse.jface.window.ToolTip;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
@@ -76,6 +77,8 @@ import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -114,6 +117,8 @@ public class GlobalDeclarationsDialog extends TitleAreaDialog {
 	private static final String[] PREDEFINED_NAMES = new String[] {"pi", "PI"};
 	// C library : <file> or "file"
 	private static final Pattern C_LIBRARY_PATTERN = Pattern.compile("<[^<>]+>|\"[^\"]+\"");
+	// Number of lines of the message area : TitleAreaDialog message area is only two lines high
+	private static final int MESSAGE_LINES = 4;
 	// Deactivated declarations color if not defined by theme
 	private static final RGB DEACTIVATED_RGB = new RGB(128, 128, 128);
 	
@@ -260,6 +265,56 @@ public class GlobalDeclarationsDialog extends TitleAreaDialog {
 		if(context instanceof Process && ((Process)context).getDACQConfiguration() != null) 
 			names.addAll(Arrays.asList(((Process)context).getDACQConfiguration().getProposal()));
 		for (String name : names) reservedNames.add(getKey(name));
+	}
+	
+	@Override
+	protected Control createContents(Composite parent) {
+		Control contents = super.createContents(parent);
+		enlargeMessageArea(false);
+		// After TitleAreaDialog resize listener which sets message area height back to two lines
+		getShell().addListener(SWT.Resize, event -> enlargeMessageArea(true));
+		return contents;
+	}
+	
+	@Override
+	public void setMessage(String newMessage, int newType) {
+		super.setMessage(newMessage, newType);
+		enlargeMessageArea(true);
+	}
+	
+	@Override
+	public void setErrorMessage(String newErrorMessage) {
+		super.setErrorMessage(newErrorMessage);
+		enlargeMessageArea(true);
+	}
+	
+	/*
+	 * TitleAreaDialog sets message area height to two lines each time a message is displayed 
+	 * or the dialog is resized : dialog message needs MESSAGE_LINES lines
+	 */
+	private void enlargeMessageArea(boolean layout) {
+		if(getTitleImageLabel() == null || getTitleImageLabel().isDisposed()) return;
+		Composite titleArea = getTitleImageLabel().getParent();
+		for (Control control : titleArea.getChildren()) {
+			// Message area is the read only text of the title area
+			if(!(control instanceof Text) || (control.getStyle() & SWT.READ_ONLY) == 0 || !(control.getLayoutData() instanceof FormData)) continue;
+			Text messageText = (Text) control;
+			FormData formData = (FormData) messageText.getLayoutData();
+			int height = messageText.getLineHeight() * MESSAGE_LINES;
+			if(formData.height >= height) continue;
+			formData.height = height;
+			if(!layout) continue;
+			titleArea.layout(true);
+			// Message tooltip was added by TitleAreaDialog if message was clipped in two lines
+			Rectangle trim = messageText.computeTrim(0, 0, 0, 0);
+			boolean clipped = messageText.computeSize(messageText.getSize().x - trim.width, SWT.DEFAULT, true).y > messageText.getSize().y - trim.height;
+			if(!clipped && messageText.getData() instanceof ToolTip) {
+				ToolTip toolTip = (ToolTip) messageText.getData();
+				toolTip.hide();
+				toolTip.deactivate();
+				messageText.setData(null);
+			}
+		}
 	}
 	
 	@Override
