@@ -6,12 +6,42 @@
       provider-name="ISM">
 
    <description>
-      -- 2026-11-15
+      -- 2026-11-16
 ADDED :
-* Equal aspect ratio property to XY charts properties (include Cursor charts)
+* Global declarations dialog : each library, constant and subroutine
+can be deactivated (check box, or
+Activate / Deactivate buttons on the selected ones) without being
+deleted. Deactivated declarations are
+displayed in italic with a theme color and commented out in generated
+code (REM in ADBasic, // in C)
+and in copied source code. Global declarations of processes saved
+by previous versions are activated
+* Global declarations dialog : syntax coloring and content assist
+(Ctrl+Space) in the subroutines body
+(DACQ configuration names, activated global constants and subroutines,
+then Arduino or ADBasic keywords)
+* Global declarations dialog : visible sash between the subroutines
+list and the subroutine fields, and
+message area enlarged to explain copy and deactivation
+* Charts configuration page (oscilloscope) : options grouped at the
+top of the page. Auto scale, legend,
+current values and grid options available with all real time chart
+libraries
+* Arduino Uno digital wait function : workload (100 %) sent every
+second while waiting for the digital
+input value
+FIXED :
+* Charts configuration page (oscilloscope) : grid and legend of the
+chart preview were always shown,
+whatever the grid and legend options
+-- 2026-11-15
+ADDED :
+* Equal aspect ratio property to XY charts properties (include
+Cursor charts)
 FIXED :
 * Shared images : registry images no longer disposed
-* If parameter has not been initialized, default returned value is 0 not bull
+* If parameter has not been initialized, default returned value
+is 0 not bull
 * ADwin : bug in compilation markers lines (regression)
 -- 2026-11-14
 ADDED :
