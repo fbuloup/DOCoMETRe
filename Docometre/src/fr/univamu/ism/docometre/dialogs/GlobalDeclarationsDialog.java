@@ -406,7 +406,7 @@ public class GlobalDeclarationsDialog extends TitleAreaDialog {
 	private Control createSubroutinesArea(Composite parent) {
 		SashForm sashForm = new SashForm(parent, SWT.HORIZONTAL);
 		
-		Composite listContainer = new Composite(sashForm, SWT.NONE);
+		Composite listContainer = new Composite(sashForm, SWT.NONE | SWT.BORDER);
 		listContainer.setLayout(new GridLayout(2, false));
 		subroutinesViewer = new ListViewer(listContainer, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
 		subroutinesViewer.getList().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -445,7 +445,7 @@ public class GlobalDeclarationsDialog extends TitleAreaDialog {
 		});
 		createButton(buttonsContainer, DocometreMessages.GlobalDeclarationsPasteButton, () -> paste());
 		
-		Composite fieldsContainer = new Composite(sashForm, SWT.NONE);
+		Composite fieldsContainer = new Composite(sashForm, SWT.NONE | SWT.BORDER);
 		fieldsContainer.setLayout(new GridLayout(2, false));
 		Label nameLabel = new Label(fieldsContainer, SWT.NONE);
 		nameLabel.setText(DocometreMessages.GlobalDeclarationsNameColumn);
