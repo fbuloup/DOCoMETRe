@@ -13,6 +13,16 @@ DESCRIPTION_PL = Czekaj, dopóki wejście cyfrowe ma zadaną wartość
 # Finally the property key FUNCTION_CODE (and optionally FUNCTION_CODE_SYSTEMTYPE_CPUTYPE) contains the effective ArduinoUno function code which will be added to
 # any of segments INITIALIZATION, LOOP or FINALIZE depending on the actual function position.
 # Take care of the fact that each key must be upper case !
-FUNCTION_CODE = do {\n\
-	__asm__("nop");\n\
+
+DECLARATION = unsigned long dWaitTime_HashCode; 
+
+FUNCTION_CODE = dWaitTime_HashCode = 0;\n\
+do {\n\
+	if(millis() - dWaitTime_HashCode > 1000) {\n\
+		sprintf(serialMessage, "%d:%lu:%d", 0, 0, 100);\n\
+		globalSerialMessage = serialMessage;\n\
+		globalSerialMessage += "\\n";\n\
+		globalSerialMessage.send();\n\
+		dWaitTime_HashCode = millis();\n\
+	}\n\
 } while(digitalRead(channelNumber) == channelValue);

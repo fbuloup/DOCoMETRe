@@ -70,6 +70,7 @@ import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDigInOutModule;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinModuleProperties;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinProcess;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoChannelProperties;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoCodeSegmentProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDigInOutChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDigInOutModule;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoProcess;
@@ -212,12 +213,16 @@ public final class DigitalWaitFunction extends GenericFunction {
 					temporaryCode = temporaryCode.replaceAll(channelValueKey, channelValue);
 					code = code + temporaryCode + "\n\n";
 				}
-				
-				
-				
 			}
 		}
 		if(process instanceof ArduinoUnoProcess) {
+			String hashCode = String.valueOf(hashCode());
+			if(step == ArduinoUnoCodeSegmentProperties.DECLARATION) {
+				code = code + "// Digital Wait Function declaration\n";
+				String key = ArduinoUnoCodeSegmentProperties.DECLARATION.toString();
+				String temporaryCode = FunctionFactory.getProperty(process, functionFileName, key.toUpperCase());
+				code = code + temporaryCode.replaceAll("HashCode", hashCode);
+			}
 			if(step == ScriptSegmentType.INITIALIZE || step == ScriptSegmentType.LOOP || step == ScriptSegmentType.FINALIZE) {
 				// Récupérer la bonne propriété dans le fichier functionFileName en fonction du bon device 
 				String indent = (step == ScriptSegmentType.FINALIZE) ? UNO_FINALIZE_INDENT : UNO_DEFAULT_INDENT;
@@ -249,6 +254,7 @@ public final class DigitalWaitFunction extends GenericFunction {
 					String channelNumber = foundChannel.getProperty(ChannelProperties.CHANNEL_NUMBER);
 					temporaryCode = UNO_DEFAULT_INDENT + temporaryCode.replaceAll(channelNameKey, channelName).replaceAll(channelNumberKey, channelNumber);
 					temporaryCode = temporaryCode.replaceAll(channelValueKey, channelValue);
+					temporaryCode = temporaryCode.replaceAll("HashCode", hashCode);
 					code = code + temporaryCode + "\n";
 				}
 			}
