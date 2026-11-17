@@ -6,7 +6,15 @@
       provider-name="ISM">
 
    <description>
-      -- 2026-11-16
+      -- 2026-11-17
+ADDED :
+* Arduino Uno analog wait function : workload (100 %) sent every
+second while waiting for the analog input value
+* Process editors palette (Arduino Uno, ADwin, Python, MATLAB) :
+large icons by default in all palette layouts. Layout and icon size
+chosen with the palette context menu are kept
+FIXED : Nothing !
+-- 2026-11-16
 ADDED :
 * Global declarations dialog : each library, constant and subroutine
 can be deactivated (check box, or
@@ -23,15 +31,18 @@ then Arduino or ADBasic keywords)
 * Global declarations dialog : visible sash between the subroutines
 list and the subroutine fields, and
 message area enlarged to explain copy and deactivation
-* Charts configuration page (oscilloscope) : options grouped at the
+* Charts configuration page (oscilloscope) : options grouped
+at the
 top of the page. Auto scale, legend,
-current values and grid options available with all real time chart
+current values and grid options available with all real time
+chart
 libraries
 * Arduino Uno digital wait function : workload (100 %) sent every
 second while waiting for the digital
 input value
 FIXED :
-* Charts configuration page (oscilloscope) : grid and legend of the
+* Charts configuration page (oscilloscope) : grid and legend
+of the
 chart preview were always shown,
 whatever the grid and legend options
 -- 2026-11-15
