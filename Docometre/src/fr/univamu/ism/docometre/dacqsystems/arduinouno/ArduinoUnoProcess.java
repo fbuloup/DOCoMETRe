@@ -230,6 +230,12 @@ public class ArduinoUnoProcess extends Process {
 		private boolean processStarted;
 		// Start requests (parameters and 'r' char) sent again because the Arduino waited for 'r' (see run())
 		private int startRequestsAgain;
+		// Uno R3 : serial port kept open from a trial to the next (see ArduinoUnoKeptSerialPort)
+		private boolean release3;
+		private String serialPortDevicePath;
+		private int serialPortBaudRate;
+		// End handshake done ('w' received) : the Arduino waits for the 'r' char of the next trial
+		private boolean readyForNextTrial;
 
 		public RealTimeLoopJob(String name) {
 			super(name);
@@ -238,16 +244,27 @@ public class ArduinoUnoProcess extends Process {
 				DecimalFormatSymbols dfs = DecimalFormatSymbols.getInstance();
         		dfs.setDecimalSeparator('.');
         		formater = new DecimalFormat("0.000000", dfs);
-				serialPort = new SerialPort(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH));
-				if(serialPort.isOpened()) serialPort.closePort();
-				serialPort.openPort();
-				String baudRate = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.BAUD_RATE);
-				serialPort.setParams(Integer.parseInt(baudRate), SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE, true, true);
-				// Uno R3 : the board restarts when the serial port is opened, and spends about 1.5 s in its bootloader.
-				// The parameters and the 'r' char sent before the process waits for them would be lost (the process
-				// would wait for 'r' forever) : its 'w' char (started, waits for 'r') is waited for
+				serialPortDevicePath = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH);
+				serialPortBaudRate = Integer.parseInt(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.BAUD_RATE));
 				String revision = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
-				if(ArduinoUnoDACQConfigurationProperties.REVISION_R3.equals(revision)) waitForReadyAfterOpening();
+				release3 = ArduinoUnoDACQConfigurationProperties.REVISION_R3.equals(revision);
+				// Uno R3 : serial port kept open since the previous trial, if any. The board has not been restarted :
+				// its process has been restarted by software at the end of the previous trial and waits for 'r'
+				SerialPort keptSerialPort = release3 ? ArduinoUnoKeptSerialPort.take(serialPortDevicePath, serialPortBaudRate) : null;
+				if(keptSerialPort != null) {
+					serialPort = keptSerialPort;
+					appendToEventDiary("Serial port kept open since the previous trial : Arduino ready without restart");
+					TrialTimings.log("serial port kept open since the previous trial (Arduino not restarted)");
+				} else {
+					serialPort = new SerialPort(serialPortDevicePath);
+					if(serialPort.isOpened()) serialPort.closePort();
+					serialPort.openPort();
+					serialPort.setParams(serialPortBaudRate, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE, true, true);
+					// Uno R3 : the board restarts when the serial port is opened, and spends about 1.5 s in its bootloader.
+					// The parameters and the 'r' char sent before the process waits for them would be lost (the process
+					// would wait for 'r' forever) : its 'w' char (started, waits for 'r') is waited for
+					if(release3) waitForReadyAfterOpening();
+				}
 				Channel[] transferedChannels = getDACQConfiguration().getTransferedChannels();
 				transferedChannelsOrderedByTransferNumber = new Channel[transferedChannels.length];
 				for (int i = 0; i < transferedChannelsOrderedByTransferNumber.length; i++) {
@@ -496,6 +513,7 @@ public class ArduinoUnoProcess extends Process {
 	    					ready = waitForChar(READY_MESSAGE.charAt(0), READY_TIMEOUT_MS);
 	    				} else appendToEventDiary("\nArduino already restarted ('w' char received while waiting for its 's' char)");
 	    				double readyDelayMs = (System.nanoTime() - resetStartNanos)/1e6;
+	    				readyForNextTrial = ready;
 	    				if(ready) appendToEventDiary("\nArduino restarted ('w' char received) after " + String.format("%.1f", readyDelayMs) + " ms");
 	    				else {
 	    					appendToEventDiary("\nArduino restart ('w' char) not received after " + READY_TIMEOUT_MS + " ms : compile and upload the process again to get it");
@@ -534,12 +552,20 @@ public class ArduinoUnoProcess extends Process {
 				TrialTimings.loopSummary("real-time loop (iterations which read bytes)", "", iterations, lastIterationNanos, maxIterationNanos);
 				ArduinoUnoProcess.this.close();
 				TrialTimings.step("ArduinoUnoProcess.close() (channels files)");
-				try {
-					serialPort.closePort();
-					TrialTimings.step("serial port closed");
-				} catch (SerialPortException e) {
-					Activator.logErrorMessageWithCause(e);
-					return new Status(Status.ERROR, Activator.PLUGIN_ID, "Error closing port: " + e.getMessage());
+				// Uno R3 : serial port kept open for the next trial if the end handshake has been done (the Arduino
+				// waits for the next 'r' char). Otherwise (error, 'w' not received...) the state of the board is not
+				// known : the port is closed, the next trial opens it again (board restarted)
+				if(release3 && readyForNextTrial && serialPort.isOpened()) {
+					ArduinoUnoKeptSerialPort.keep(serialPort, serialPortDevicePath, serialPortBaudRate);
+					TrialTimings.step("serial port kept open for the next trial");
+				} else {
+					try {
+						serialPort.closePort();
+						TrialTimings.step("serial port closed");
+					} catch (SerialPortException e) {
+						Activator.logErrorMessageWithCause(e);
+						return new Status(Status.ERROR, Activator.PLUGIN_ID, "Error closing port: " + e.getMessage());
+					}
 				}
 				double processEndTime = System.currentTimeMillis()/1000d;
 				Process.processEndTime = processEndTime;
@@ -736,11 +762,15 @@ public class ArduinoUnoProcess extends Process {
 			return null;
 		}
 		
-		/*
-		 * Reads the serial port, byte per byte (the next bytes are kept for the next
-		 * call), until the expected char is received or the time out is reached.
-		 * Returns true if the char has been received.
-		 */
+		/* Closes the serial port of this job if it is open (process not started after an error, see execute()) */
+		private void closeSerialPort() {
+			try {
+				if(serialPort != null && serialPort.isOpened()) serialPort.closePort();
+			} catch (SerialPortException e) {
+				Activator.logErrorMessageWithCause(e);
+			}
+		}
+		
 		/*
 		 * Uno R3 : waits for the 'w' char sent by the process when it has started after the opening of the serial
 		 * port (board restarted by the opening). The parameters and the 'r' char can then be sent.
@@ -779,6 +809,11 @@ public class ArduinoUnoProcess extends Process {
 			}
 		}
 		
+		/*
+		 * Reads the serial port, byte per byte (the next bytes are kept for the next
+		 * call), until the expected char is received or the time out is reached.
+		 * Returns true if the char has been received.
+		 */
 		private boolean waitForChar(char expectedChar, long timeOutMs) throws SerialPortException, InterruptedException {
 			long deadline = System.nanoTime() + timeOutMs*1_000_000L;
 			while(System.nanoTime() < deadline) {
@@ -2165,7 +2200,9 @@ public class ArduinoUnoProcess extends Process {
 	@Override
 	public void stop() throws Exception {
 		long stopStartNanos = System.nanoTime();
-		realTimeLoopJob.forceTermination();
+		// Job of the current trial not created yet (stop requested while the process is loaded)
+		RealTimeLoopJob job = realTimeLoopJob;
+		if(job != null) job.forceTermination();
 		// No time out : the termination (handshake with Arduino) is done by the real time loop
 		TrialTimings.stopMeasured(System.nanoTime() - stopStartNanos, false);
 	}
@@ -2174,6 +2211,8 @@ public class ArduinoUnoProcess extends Process {
 	public Job execute(String prefix, String suffix) throws Exception {
 		// Load process
 		boolean processLoaded = false;
+		// Job of the previous trial forgotten : its serial port may be kept for this trial (see ArduinoUnoKeptSerialPort)
+		realTimeLoopJob = null;
 		try {
 			processLoaded = loadProcess();
 			TrialTimings.step("ArduinoUnoProcess.loadProcess() (upload if needed)");
@@ -2193,11 +2232,21 @@ public class ArduinoUnoProcess extends Process {
 				return realTimeLoopJob;
 			} else throw new Exception("Impossible to load process.");
 		} catch (Exception e) {
+			// Process not started : the serial port of the job, if opened, is released
+			if(realTimeLoopJob != null) realTimeLoopJob.closeSerialPort();
 			close();
 			throw e;
 		}
 	}
 
+	/**
+	 * Closes the serial port of an Arduino Uno R3 kept open since the last trial, if any (see
+	 * ArduinoUnoKeptSerialPort). Called at the end of each run by the experiment scheduler.
+	 */
+	public static void closeKeptSerialPort() {
+		ArduinoUnoKeptSerialPort.close();
+	}
+	
 	private boolean loadProcess() throws Exception {
 		// Verify device path
 		ArduinoUnoDACQConfiguration dacqConfiguration = (ArduinoUnoDACQConfiguration)getDACQConfiguration();
@@ -2232,6 +2281,8 @@ public class ArduinoUnoProcess extends Process {
 		String currentFolder = wsPath.append(processResource.getParent().getFullPath()).toOSString();
 		String outputFolder = currentFolder + File.separator + "BinSource" + File.separator + processResource.getName().replaceAll(Activator.processFileExtension +"$", "");
 		
+		// The upload needs the serial port : a port kept open since a previous trial is closed
+		if(ArduinoUnoKeptSerialPort.close()) appendToEventDiary("Serial port kept open since the previous trial closed for the upload");
 		cmd = createUploadProcess(outputFolder);
 		
 		try {

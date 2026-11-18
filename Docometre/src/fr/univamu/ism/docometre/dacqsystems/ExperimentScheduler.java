@@ -72,6 +72,7 @@ import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.TrialNames;
 import fr.univamu.ism.docometre.TrialStartMode;
 import fr.univamu.ism.docometre.TrialValidateMode;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoProcess;
 import fr.univamu.ism.docometre.dacqsystems.charts.UIRefreshScheduler;
 import fr.univamu.ism.docometre.dialogs.NextTrialDialog;
 import fr.univamu.ism.docometre.dialogs.ValidateTrialDialog;
@@ -280,7 +281,9 @@ public class ExperimentScheduler {
 			try {
 				runTrials();
 			} finally {
-				// End of the run : the process of the last trial and its DACQ configuration are released
+				// End of the run : the serial port of an Arduino Uno R3 kept open since the last trial is closed,
+				// the process of the last trial and its DACQ configuration are released
+				ArduinoUnoProcess.closeKeptSerialPort();
 				releaseKeptProcess();
 			}
 			RunStopHandler.refresh();
