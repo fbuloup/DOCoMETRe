@@ -13,7 +13,7 @@ Videos tutorials ? It's [here](https://github.com/fbuloup/DOCoMETRe/wiki/videos)
 
 To download DOCoMETRe, please follow the link related to your platform :
 
-* [Linux64](https://github.com/fbuloup/docometre-release/releases/download/docometre/DocometreLinux.zip) (tested with Ubuntu 18.04.2 LTS)
+* [Linux64](https://github.com/fbuloup/docometre-release/releases/download/docometre/DocometreLinux.zip) (tested with Ubuntu 24.04 LTS)
 * [MacOSX - DMG file](https://github.com/fbuloup/docometre-release/releases/download/docometre/DOCoMETRe.dmg)
 * [MacOSX](https://github.com/fbuloup/docometre-release/releases/download/docometre/DocometreMacOS.zip)
 * [Win64](https://github.com/fbuloup/docometre-release/releases/download/docometre/DocometreWindows.zip)
