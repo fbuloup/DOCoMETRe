@@ -192,6 +192,11 @@ public class ArduinoUnoProcess extends Process {
 		// before restarts with a board reset (watchdog) : measured about 530 ms, 1000 ms
 		// gives a margin for slower boards.
 		private static final long READY_TIMEOUT_MS = 1000;
+		// Maximum wait for the 'w' char of an Uno R3 after the opening of the serial port : the R3 restarts when
+		// the port is opened (DTR) and spends about 1.5 s in its bootloader before the process starts
+		private static final long READY_AFTER_OPENING_TIMEOUT_MS = 3000;
+		// Start requests sent again at most when the Arduino says it waits for 'r' before any data (see run())
+		private static final int MAX_START_REQUESTS_AGAIN = 3;
 		// Maximum wait for the 's' char of the Arduino after a stop requested by the user, when parameters are
 		// propagated : the Arduino sends them before 's' and waits for the answer of the PC (2 attempts of
 		// about 500 ms at most, see ArduinoUnoParametersCode).
@@ -221,6 +226,10 @@ public class ArduinoUnoProcess extends Process {
 		private long propagationStartNanos;
 		// 'w' char received while waiting for the 's' char of the Arduino (see waitForStopReply())
 		private boolean readyReceived;
+		// A message of the process has been received : the Arduino has received the 'r' char (see run())
+		private boolean processStarted;
+		// Start requests (parameters and 'r' char) sent again because the Arduino waited for 'r' (see run())
+		private int startRequestsAgain;
 
 		public RealTimeLoopJob(String name) {
 			super(name);
@@ -234,6 +243,11 @@ public class ArduinoUnoProcess extends Process {
 				serialPort.openPort();
 				String baudRate = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.BAUD_RATE);
 				serialPort.setParams(Integer.parseInt(baudRate), SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE, true, true);
+				// Uno R3 : the board restarts when the serial port is opened, and spends about 1.5 s in its bootloader.
+				// The parameters and the 'r' char sent before the process waits for them would be lost (the process
+				// would wait for 'r' forever) : its 'w' char (started, waits for 'r') is waited for
+				String revision = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
+				if(ArduinoUnoDACQConfigurationProperties.REVISION_R3.equals(revision)) waitForReadyAfterOpening();
 				Channel[] transferedChannels = getDACQConfiguration().getTransferedChannels();
 				transferedChannelsOrderedByTransferNumber = new Channel[transferedChannels.length];
 				for (int i = 0; i < transferedChannelsOrderedByTransferNumber.length; i++) {
@@ -302,7 +316,12 @@ public class ArduinoUnoProcess extends Process {
 		                    	if(messageString.length() == 0) continue;
 		                    	message.setLength(0);
 		                    	// 'w' : the board has restarted and waits for 'r' (see end handshake), not a data message
-		                    	if(READY_MESSAGE.equals(messageString)) continue;
+		                    	if(READY_MESSAGE.equals(messageString)) {
+		                    		// Before any message of the process : the Arduino has (re)started after the start request
+		                    		// (Uno R3 restarted later than expected, board reset...) and waits for 'r' : request sent again
+		                    		if(!processStarted && !forceTermination) sendStartRequestAgain();
+		                    		continue;
+		                    	}
 		                    	// Parameters frame : N0 is sent at the start when the process expects parameters that were not sent
 		                    	ArduinoUnoParameterFrames.Frame parametersFrame = ArduinoUnoParameterFrames.parse(messageString);
 		                    	if(parametersFrame != null) {
@@ -316,6 +335,7 @@ public class ArduinoUnoProcess extends Process {
 									appendErrorMarkerAtCurrentDiaryLine("ERROR");
 									continue;
 			                    }
+			                    processStarted = true;
 			                    	
 		                    	if(segments.length == 2) {
 		                    		try {
@@ -721,6 +741,44 @@ public class ArduinoUnoProcess extends Process {
 		 * call), until the expected char is received or the time out is reached.
 		 * Returns true if the char has been received.
 		 */
+		/*
+		 * Uno R3 : waits for the 'w' char sent by the process when it has started after the opening of the serial
+		 * port (board restarted by the opening). The parameters and the 'r' char can then be sent.
+		 */
+		private void waitForReadyAfterOpening() throws SerialPortException, InterruptedException {
+			long startNanos = System.nanoTime();
+			boolean ready = waitForChar(READY_MESSAGE.charAt(0), READY_AFTER_OPENING_TIMEOUT_MS);
+			double delayMs = (System.nanoTime() - startNanos)/1e6;
+			if(ready) appendToEventDiary("Arduino ready ('w' char received) " + String.format("%.1f", delayMs) + " ms after the opening of the serial port");
+			else {
+				// The start request is sent anyway : it is sent again if the 'w' char is received later (see run())
+				appendToEventDiary("Arduino ready ('w' char) not received " + READY_AFTER_OPENING_TIMEOUT_MS + " ms after the opening of the serial port : compile and upload the process again to get it");
+				appendErrorMarkerAtCurrentDiaryLine("Arduino ready ('w' char) not received after the opening of the serial port");
+			}
+			TrialTimings.log("Arduino ready ('w') after the opening of the serial port " + (ready ? "received after " + String.format("%.1f", delayMs) + " ms" : "not received (time out " + READY_AFTER_OPENING_TIMEOUT_MS + " ms)"));
+		}
+		
+		/*
+		 * The Arduino says it waits for 'r' ('w' char) although no message of the process has been received : the
+		 * start request (parameters, then 'r' char) has been lost, it is sent again (a few times at most).
+		 */
+		private void sendStartRequestAgain() {
+			if(startRequestsAgain >= MAX_START_REQUESTS_AGAIN) return;
+			startRequestsAgain++;
+			try {
+				Map<ParameterVariable, String> parameters = getCurrentTrialParameters();
+				if(!parameters.isEmpty()) sendParameters(parameters);
+				serialPort.writeString("r");
+				appendToEventDiary("Arduino waits for 'r' char ('w' char received before any data) : start request sent again (" + startRequestsAgain + ")");
+				TrialTimings.log("Arduino waits for 'r' ('w' received before any data) : start request sent again (" + startRequestsAgain + ")");
+			} catch (Exception e) {
+				Activator.logErrorMessageWithCause(e);
+				appendToEventDiary("ERROR : start request not sent again - " + e.getMessage());
+				appendErrorMarkerAtCurrentDiaryLine("ERROR");
+				forceTermination = true;
+			}
+		}
+		
 		private boolean waitForChar(char expectedChar, long timeOutMs) throws SerialPortException, InterruptedException {
 			long deadline = System.nanoTime() + timeOutMs*1_000_000L;
 			while(System.nanoTime() < deadline) {
