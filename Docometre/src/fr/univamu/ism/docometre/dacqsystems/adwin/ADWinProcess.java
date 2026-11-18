@@ -984,6 +984,8 @@ public class ADWinProcess extends Process {
 		if (segment == ADWinCodeSegmentProperties.DECLARATION){
 				code = "\n#DEFINE PI 4*ARCTAN(1)";
 				code = code + "\n#DEFINE time FPAR_" + getProperty(ADWinProcessProperties.PROCESS_NUMBER) + "\n";
+				// Same variable as on Arduino Uno, where "rtTime" is also available (time() C function of the R4 WiFi core)
+				code = code + "#DEFINE rtTime FPAR_" + getProperty(ADWinProcessProperties.PROCESS_NUMBER) + "\n";
 				code = code + getGlobalConstantsCode();
 				code = code + "DIM FEG AS LONG\n";
 				code = code + "DIM INDEX AS LONG\n";

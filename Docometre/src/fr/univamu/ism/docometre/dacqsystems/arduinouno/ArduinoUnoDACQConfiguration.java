@@ -219,11 +219,7 @@ public class ArduinoUnoDACQConfiguration extends DACQConfiguration implements Pr
 	public String[] getProposal() {
 		HashSet<String> proposalHashSet = new HashSet<>();
 		proposalHashSet.addAll(Arrays.asList(defaultProposal));
-		String arduinoUnoRelease = getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
-		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
-		boolean isRelease3 = ArduinoUnoDACQConfigurationProperties.REVISION_R3.equals(arduinoUnoRelease);
-		if(isRelease4Wifi) proposalHashSet.remove("time");
-		if(isRelease3) proposalHashSet.remove("rtTime");
+		// "time" and "rtTime" proposed for R3 and R4 WiFi : the same variable (see ArduinoUnoProcess, DEFINE segment)
 		ArduinoUnoVariable[] variables = getVariables();
 		for (ArduinoUnoVariable arduinoUnoVariable : variables) {
 			proposalHashSet.add(arduinoUnoVariable.getProperty(ChannelProperties.NAME));

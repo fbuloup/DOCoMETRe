@@ -199,6 +199,8 @@ public class ADWinDACQConfiguration extends DACQConfiguration implements Propert
 		}
 		String[] proposal = super.getProposal();
 		proposalHashSet.addAll(Arrays.asList(proposal));
+		// Alias of time, as on Arduino Uno (see ADWinProcess, DECLARATION segment)
+		proposalHashSet.add("rtTime");
 		String[] proposals = proposalHashSet.toArray(new String[proposalHashSet.size()]);
 		Arrays.sort(proposals);
 		return proposals;

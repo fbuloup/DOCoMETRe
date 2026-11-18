@@ -773,6 +773,10 @@ public class ArduinoUnoProcess extends Process {
 		
 		if(segment == ArduinoUnoCodeSegmentProperties.DEFINE) {
 			code = code + "#define pi PI\n";
+			// "time" and "rtTime" are the same variable on R3 and R4 WiFi : processes are the same for both
+			// revisions. After all the #include (INCLUDE segment) : the headers, like the time() C function of
+			// the R4 WiFi core, are not concerned
+			code = code + "#define time rtTime\n";
 			code = code + getGlobalConstantsCode();
 			
 			code = code + getCurrentProcess().getScript().getInitializeCode(this, ArduinoUnoCodeSegmentProperties.DEFINE);
@@ -819,9 +823,10 @@ public class ArduinoUnoProcess extends Process {
 //			code = code + "unsigned long currentLoopTime;\n\n";
 //			code = code + "// Try to compensate time drift\n";
 //			code = code + "long delta;\n";
-			code = code + "// Loop time in second\n";
-			if(isRelease4Wifi) code = code + "double rtTime;\n\n";
-			if(isRelease3) code = code + "double time;\n\n";
+			// Same variable for R3 and R4 WiFi : "time" can not be declared on R4 WiFi (time() C function of
+			// its core), it is an alias of rtTime (see DEFINE segment) so that processes use either name
+			code = code + "// Loop time in second (\"time\" is an alias of rtTime)\n";
+			if(isRelease3 || isRelease4Wifi) code = code + "double rtTime;\n\n";
 			if(!isRelease3 && !isRelease4Wifi) {
 				IResource dacqResource = ObjectsController.getResourceForObject(getDACQConfiguration());
 				Activator.logErrorMessage(ArduinoUnoMessages.arduinoRevisionNotSpecified);
@@ -946,8 +951,7 @@ public class ArduinoUnoProcess extends Process {
 			if(value == 0) value = 1;
 			code = code + "\t\tsendTimeWorkload = " + value + ";\n";
 			code = code + "\t\tworkload = 0;\n";
-			if(isRelease4Wifi) code = code + "\t\trtTime = 0;\n";
-			if(isRelease3) code = code + "\t\ttime = 0;\n";
+			if(isRelease3 || isRelease4Wifi) code = code + "\t\trtTime = 0;\n";
 			code = code + "\t\ttimeIndex = 0;\n";
 			code = code + "\t\tterminateProcess = false;\n";
 			code = code + "\t\tstartLoop = false;\n";
@@ -1007,8 +1011,7 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "\t\t\t\tstartLoop = ((char)Serial.read()) != 's';\n";
 			code = code + "\t\t\t\tif(!startLoop ) terminateProcess = true;\n";
 			code = code + "\t\t}\n";
-			if(isRelease4Wifi) code = code + "\t\trtTime = timeIndex*((double)loopPeriod/1000000.0);\n";
-			if(isRelease3) code = code + "\t\ttime = timeIndex*((double)loopPeriod/1000000.0);\n";
+			if(isRelease3 || isRelease4Wifi) code = code + "\t\trtTime = timeIndex*((double)loopPeriod/1000000.0);\n";
 			code = code + "\t\ttimeIndex++;\n";
 			
 			code = code + getCurrentProcess().getScript().getInitializeCode(this, ArduinoUnoCodeSegmentProperties.ACQUISITION);
@@ -1065,7 +1068,7 @@ public class ArduinoUnoProcess extends Process {
 				
 			}
 			if(isRelease3) {
-				code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, (unsigned long)(time*1000000.0), workload);\n";
+				code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, (unsigned long)(rtTime*1000000.0), workload);\n";
 				code = code + "\t\t\t\tSerial.println(serialMessage);\n";
 				code = code + "\t\t\t\tSerial.flush();\n";
 			}
