@@ -756,6 +756,21 @@ public class Script implements Serializable {
 		if(codeGenerationStatus == null) codeGenerationStatus = new ArrayList<>(0);
 		codeGenerationStatus.add(status);
 	}
+	
+	/**
+	 * Adds a problem found by a block while its code is generated (see Block.getCode()) : reported as a
+	 * marker of the process when it is compiled, as the problems found by the script itself. A status
+	 * with the same severity and message as one already added is ignored (the code of a block may be
+	 * generated several times before the process is compiled).
+	 * @param status the problem
+	 */
+	public void addCodeGenerationStatus(IStatus status) {
+		if(status == null) return;
+		for (IStatus existingStatus : getCodeGenerationStatus()) {
+			if(existingStatus.getSeverity() == status.getSeverity() && String.valueOf(existingStatus.getMessage()).equals(status.getMessage())) return;
+		}
+		addGenerationCodeStatus(status);
+	}
 
 	public IStatus[] getCodeGenerationStatus() {
 		if(codeGenerationStatus == null) codeGenerationStatus = new ArrayList<>(0);

@@ -41,10 +41,12 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.functions;
 
-import java.util.Arrays;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
@@ -58,14 +60,17 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
+import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.Process;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinChannel;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfigurationProperties;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinProcess;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinVariable;
 import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
 import fr.univamu.ism.process.Block;
 import fr.univamu.ism.process.Operator;
@@ -107,20 +112,17 @@ public class TransferFunction extends GenericFunction {
 		
 		ComboViewer channelComboViewer = new ComboViewer(paramContainer, SWT.BORDER | SWT.READ_ONLY);
 		channelComboViewer.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		// Only the channels which can be transferred by this block (see getTransferableChannelsNames())
+		List<String> transferableChannels = getTransferableChannelsNames(dacqConfiguration);
 		channelComboViewer.getCombo().addModifyListener(new ModifyListener() {
 			
 			@Override
 			public void modifyText(ModifyEvent e) {
 				TransferFunction.this.titleAreaDialog.setErrorMessage(null);
-				String[] input = (String[])channelComboViewer.getInput();
-				if(input == null) return;
-				if(!Arrays.asList(input).contains(channelComboViewer.getCombo().getText())) {
-					Pattern pattern = Pattern.compile("[-]?\\d+(\\.\\d+)?");
-					Matcher matcher = pattern.matcher(channelComboViewer.getCombo().getText());
-					if(!matcher.matches()) {
-						String message = NLS.bind(DocometreMessages.FloatValueNotValidLabel, channelComboViewer.getCombo().getText());
-						TransferFunction.this.titleAreaDialog.setErrorMessage(message);
-					}
+				String channelName = channelComboViewer.getCombo().getText();
+				if(!channelName.isEmpty() && !transferableChannels.contains(channelName)) {
+					String message = NLS.bind(DocometreMessages.TransferFunction_ChannelNotTransferable, channelName);
+					TransferFunction.this.titleAreaDialog.setErrorMessage(message);
 				}
 			}
 		});
@@ -132,15 +134,23 @@ public class TransferFunction extends GenericFunction {
 				return super.getText(element);
 			}
 		});
-		if(dacqConfiguration instanceof ADWinDACQConfiguration) channelComboViewer.setInput(dacqConfiguration.getProposal());
+		String value  = getProperty(channelNameKey, "");
+		// A channel chosen before which can no more be transferred by this block (auto-transfer enabled
+		// since, for example) stays displayed, with an error message, instead of being silently lost
+		List<String> input = new ArrayList<>(transferableChannels);
+		if(!value.isEmpty() && !input.contains(value)) input.add(0, value);
+		channelComboViewer.setInput(input.toArray(new String[input.size()]));
+		if(transferableChannels.isEmpty()) this.titleAreaDialog.setErrorMessage(DocometreMessages.TransferFunction_NoTransferableChannel);
 		channelComboViewer.getCombo().addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
 				getTransientProperties().put(channelNameKey, channelComboViewer.getCombo().getText());
 			}
 		});
-		String value  = getProperty(channelNameKey, "");
 		channelComboViewer.getCombo().setText(value);
+		// The modify listener is not called when the text does not change : error message of a channel
+		// which can no more be transferred, displayed as soon as the dialog is opened
+		if(!value.isEmpty() && !transferableChannels.contains(value)) this.titleAreaDialog.setErrorMessage(NLS.bind(DocometreMessages.TransferFunction_ChannelNotTransferable, value));
 		
 		addCommentField(paramContainer, 2, context);
 		
@@ -148,6 +158,27 @@ public class TransferFunction extends GenericFunction {
 	}
 	
 	
+	
+	/*
+	 * Names of the channels which can be transferred to the PC by this block : transferred (to the PC,
+	 * not stimuli), without auto-transfer and not parameters. The auto-transferred channels are already
+	 * transferred at each cycle (their own FIFO may even not be declared, see ADWinTransferFifo) : a
+	 * transfer block would write each of their samples twice, or not compile.
+	 */
+	private static List<String> getTransferableChannelsNames(DACQConfiguration dacqConfiguration) {
+		List<String> names = new ArrayList<>();
+		if(!(dacqConfiguration instanceof ADWinDACQConfiguration)) return names;
+		for (Channel channel : dacqConfiguration.getChannels()) {
+			if(!(channel instanceof ADWinChannel)) continue;
+			ADWinChannel adwinChannel = (ADWinChannel) channel;
+			if(!adwinChannel.isRecoveryAllowed()) continue;
+			if("true".equals(adwinChannel.getProperty(ChannelProperties.AUTO_TRANSFER))) continue;
+			if(adwinChannel instanceof ADWinVariable && ((ADWinVariable) adwinChannel).isParameter()) continue;
+			names.add(adwinChannel.getProperty(ChannelProperties.NAME));
+		}
+		Collections.sort(names);
+		return names;
+	}
 	
 	@Override
 	public String getCode(Object context, Object step, Object...objects) {
@@ -161,6 +192,14 @@ public class TransferFunction extends GenericFunction {
 				String output = getProperty(channelNameKey, "");
 				String transferNumber = "0";
 				DACQConfiguration dacqConfiguration = process.getDACQConfiguration();
+				// Channel which can not be transferred by this block (chosen before the filtering of the dialog,
+				// or auto-transfer enabled since) : reported in the markers of the process before the ADbasic
+				// compilation, which fails if its own FIFO is not declared (single transfer FIFO), and which
+				// otherwise writes each of its samples twice
+				if(!output.isEmpty() && !getTransferableChannelsNames(dacqConfiguration).contains(output) && getScript() != null) {
+					String message = NLS.bind(DocometreMessages.TransferFunction_ChannelNotTransferableCode, output, step.toString());
+					getScript().addCodeGenerationStatus(new Status(IStatus.WARNING, Activator.PLUGIN_ID, message));
+				}
 				float globalFrequency = Float.parseFloat(dacqConfiguration.getProperty(ADWinDACQConfigurationProperties.GLOBAL_FREQUENCY));
 				float frequency = globalFrequency;
 				Channel[] channels = dacqConfiguration.getChannels();

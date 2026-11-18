@@ -770,6 +770,9 @@ public final class DocometreMessages extends NLS {
 	public static String FloatValueLabel;
 	public static String LongValueLabel;
 	public static String FloatValueNotValidLabel;
+	public static String TransferFunction_ChannelNotTransferable;
+	public static String TransferFunction_NoTransferableChannel;
+	public static String TransferFunction_ChannelNotTransferableCode;
 	public static String LongValueNotValidLabel;
 	public static String ByteValueNotValidLabel;
 	
