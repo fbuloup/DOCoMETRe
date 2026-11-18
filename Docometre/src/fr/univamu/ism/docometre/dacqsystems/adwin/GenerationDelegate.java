@@ -80,7 +80,7 @@ public class GenerationDelegate {
 						boolean noMoreData = data.length == 0;
 						if (!noMoreData) {
 							adwinDevice.SetFifo_Float(transferNum, data, data.length);
-							process.appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_Generating, new Object[] {transferNum, adwinChannel.getProperty(ChannelProperties.NAME), data.length}));
+							process.diaryGenerated(adwinChannel.getProperty(ChannelProperties.NAME), data.length);
 							if(adwinDevice.Get_Par(transferNum) > 0){
 								float real_time = adwinDevice.Get_FPar(processNumber);
 								String realTime = String.valueOf(real_time);
@@ -95,7 +95,10 @@ public class GenerationDelegate {
 									}
 								});
 							}
-						} else process.appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_NoMoreToGenerate, adwinChannel.getProperty(ChannelProperties.NAME), adwinDevice.Fifo_Full(transferNum)));
+						} else if(process.diaryNoMoreToGenerateFirstTime(adwinChannel.getProperty(ChannelProperties.NAME))) {
+							// Written once per channel and per execution, not at each iteration
+							process.appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_NoMoreToGenerate, adwinChannel.getProperty(ChannelProperties.NAME), adwinDevice.Fifo_Full(transferNum)));
+						}
 					}
 				}catch (ADwinCommunicationError e) {
 					e.printStackTrace();

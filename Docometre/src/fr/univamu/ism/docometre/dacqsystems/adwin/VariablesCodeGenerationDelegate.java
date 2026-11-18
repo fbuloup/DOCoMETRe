@@ -76,15 +76,8 @@ public final class VariablesCodeGenerationDelegate {
 				boolean isTransfered = Boolean.valueOf(transfer);
 				boolean isAutoTransfered = Boolean.valueOf(auto_transfer);
 				if(!Boolean.parseBoolean(isParameter) && isTransfered && isAutoTransfered) {
-					code = code + "\nIF (TRANSFERT_" + name + " = " + frequencyRatio + ") THEN\n";
-					code = code + "\tTRANSFERT_" + name + " = 0\n";
-					code = code + "\tIF (FIFO_EMPTY(" +  transferNumber + ") = 0) THEN\n";
-					code = code + "\t\tPAR_" +  transferNumber + " = PAR_" +  transferNumber + " + 1\n";
-					code = code + "\t\tFIFO_CLEAR(" +  transferNumber + ")\n";
-					code = code + "\tENDIF\n";
-					code = code + "\t" + name + "_TAB = " + name + "\n";
-					code = code + "ENDIF\n";
-					code = code + "INC(TRANSFERT_" + name + ")\n";
+					// Own FIFO of the channel or single transfer FIFO (see ADWinTransferFifo)
+					code = code + ADWinTransferFifo.getAutoTransferCode(variable, name, transferNumber, frequencyRatio);
 				} 
 			}
 		}

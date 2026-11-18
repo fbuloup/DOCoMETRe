@@ -178,6 +178,10 @@ public class GeneralPreferencePage extends FieldEditorPreferencePage implements 
 				DocometreMessages.AutoStartTrial, trialsGroup);
 		addField(autoTrialStartingFieldEditor);
 		
+		BooleanFieldEditor adwinSingleTransferFifoFieldEditor = new BooleanFieldEditor(GeneralPreferenceConstants.ADWIN_SINGLE_TRANSFER_FIFO,
+				DocometreMessages.GeneralPreferences_ADwinSingleTransferFifo, trialsGroup);
+		addField(adwinSingleTransferFifoFieldEditor);
+		
 		Group chartOptionsGroup = new Group(getFieldEditorParent(), SWT.NONE);
 		chartOptionsGroup.setText(DocometreMessages.Charts2DOptions);
 		chartOptionsGroup.setLayout(new FillLayout(SWT.HORIZONTAL));

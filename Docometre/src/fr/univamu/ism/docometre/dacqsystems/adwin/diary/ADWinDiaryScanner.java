@@ -67,6 +67,13 @@ public class ADWinDiaryScanner extends RuleBasedScanner {
 	private static final String DISPLAY_TIME = ADWinMessages.ADWinDiary_DisplayTime_Scanner;
 	private static final String DATA_LOSS = ADWinMessages.ADWinDiary_DataLoss_Scanner;
 	private static final String NO_MORE_TO_GENERATE = ADWinMessages.ADWinDiary_NoMoreToGenerate_Scanner;
+	// Lines of an iteration of the real-time loop (see ADWinDiaryStatisticsComputer for the means and totals)
+	private static final String ITERATION_TIMES = ADWinMessages.ADWinDiary_IterationTimes_Scanner;
+	private static final String ITERATION_MEANS = ADWinMessages.ADWinDiary_IterationMeans_Scanner;
+	private static final String ITERATION_RECOVERED = ADWinMessages.ADWinDiary_IterationRecovered_Scanner;
+	private static final String ITERATION_GENERATED = ADWinMessages.ADWinDiary_IterationGenerated_Scanner;
+	private static final String ITERATION_RECOVERED_TOTALS = ADWinMessages.ADWinDiary_IterationRecoveredTotals_Scanner;
+	private static final String ITERATION_GENERATED_TOTALS = ADWinMessages.ADWinDiary_IterationGeneratedTotals_Scanner;
 	
 	public ADWinDiaryScanner() {
 		setRules(new IRule[] {
@@ -77,7 +84,14 @@ public class ADWinDiaryScanner extends RuleBasedScanner {
 			createLineRule(RECOVERING_CHANNEL, DocometreApplication.ORANGE),
 			createLineRule(TIME_BETWEEN_TWO_ADWIN_DIALOG, DocometreApplication.BLUE),
 			createLineRule(DATA_LOSS, DocometreApplication.RED),
-			createLineRule(NO_MORE_TO_GENERATE, DocometreApplication.GREEN)
+			createLineRule(NO_MORE_TO_GENERATE, DocometreApplication.GREEN),
+			// Lines of an iteration of the real-time loop (the lines above are those of the older diaries)
+			createLineRule(ITERATION_TIMES, DocometreApplication.BLUE),
+			createLineRule(ITERATION_MEANS, DocometreApplication.BLUE),
+			createLineRule(ITERATION_RECOVERED, DocometreApplication.ORANGE),
+			createLineRule(ITERATION_RECOVERED_TOTALS, DocometreApplication.ORANGE),
+			createLineRule(ITERATION_GENERATED, DocometreApplication.GREEN),
+			createLineRule(ITERATION_GENERATED_TOTALS, DocometreApplication.GREEN)
 		});
 	}
 	

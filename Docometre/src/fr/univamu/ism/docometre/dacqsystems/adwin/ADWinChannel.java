@@ -188,10 +188,18 @@ public class ADWinChannel extends Channel {
 					fileSize = fileChannel.size();
 					int bs = Integer.parseInt(getProperty(ChannelProperties.BUFFER_SIZE));
 					float[] samples = getSamples(bs);
+					if(samples.length == 0) {
+						// ADwin refuses an empty FIFO initialization (SetFifo_Float with 0 sample)
+						String message = NLS.bind(ADWinMessages.EmptyStimulusFile, getProperty(ChannelProperties.NAME), fileName);
+						process.appendToEventDiary(message);
+						throw new IOException(message);
+					}
 					try {
 						((ADWinDACQConfiguration)process.getDACQConfiguration()).getADwinDevice().Fifo_Clear(getTransferNumber());
 						((ADWinDACQConfiguration)process.getDACQConfiguration()).getADwinDevice().SetFifo_Float(getTransferNumber(), samples, samples.length);
 						process.appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_InitGenerationBuffer, new Object[] {getTransferNumber(), getProperty(ChannelProperties.NAME), samples.length}));
+						// Counted with the samples generated during the first iteration of the real-time loop
+						if(process instanceof ADWinProcess) ((ADWinProcess)process).diaryGenerated(getProperty(ChannelProperties.NAME), samples.length);
 					} catch (ADwinCommunicationError e) {
 						Activator.logErrorMessageWithCause(e);
 						e.printStackTrace();
@@ -211,12 +219,44 @@ public class ADWinChannel extends Channel {
 			}
 			
 		} catch (FileNotFoundException e) {
+			releaseFiles();
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
 		} catch (IOException e) {
+			releaseFiles();
 			Activator.logErrorMessageWithCause(e);
 			e.printStackTrace();
+		} catch (RuntimeException e) {
+			// The process is stopped (see ADWinProcess.execute()) : the files opened here must not stay open
+			releaseFiles();
+			throw e;
 		}
+	}
+	
+	/*
+	 * Closes the files of this channel still open, without waiting for pending writes : used after
+	 * an error. Under Windows, a file left open can be neither deleted nor moved until DOCoMETRe is
+	 * closed (the output folder of the process could not be deleted any more, for example).
+	 */
+	private void releaseFiles() {
+		try {
+			if(fileChannel != null && fileChannel.isOpen()) fileChannel.close();
+		} catch (IOException e) {
+			Activator.logErrorMessageWithCause(e);
+		}
+		try {
+			if(inputFile != null) inputFile.close();
+		} catch (IOException e) {
+			Activator.logErrorMessageWithCause(e);
+		}
+		try {
+			if(outputFile != null) outputFile.close();
+		} catch (IOException e) {
+			Activator.logErrorMessageWithCause(e);
+		}
+		fileChannel = null;
+		inputFile = null;
+		outputFile = null;
 	}
 	
 	private String getStimulusFileName(ScriptSegment scriptSegment) throws FileNotFoundException {
@@ -260,10 +300,12 @@ public class ADWinChannel extends Channel {
 					if(isRecorded && file != null) recordedFileName = file.getName();
 				}
 			} else {
+				// The stimulus file is closed whether it is recorded or not : it stayed open when it
+				// was not recorded, and could then be neither deleted nor moved under Windows
+				if(fileChannel != null) fileChannel.close();
+				if(inputFile != null) inputFile.close();
 				if(isRecorded) {
 					// This is a recorded stimulus
-					if(fileChannel != null) fileChannel.close();
-					
 					String stimulusFileName = getStimulusFileName(process.getInitializeBlocksContainer());
 					if(stimulusFileName == null) stimulusFileName = getStimulusFileName(process.getLoopBlocksContainer());
 					if(stimulusFileName == null) stimulusFileName = getStimulusFileName(process.getFinalizeBlocksContainer());
@@ -283,8 +325,11 @@ public class ADWinChannel extends Channel {
 					}
 				}
 			}
-		} catch (IOException e) {
+		} catch (IOException | RuntimeException e) {
 			Logger.getLogger(Process.class).error("Exception", e);
+		} finally {
+			// Files still open after an error are closed anyway
+			releaseFiles();
 		}
 	}
 

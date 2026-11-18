@@ -213,8 +213,10 @@ public abstract class Process extends AbstractElement implements ModuleBehaviour
 		// The event is written followed by a line delimiter : it may also contain line delimiters
 		// ("\nERROR : ...", "Starting ... sec.\n"). The current diary line must be the last line 
 		// of the event so that an error marker is put on the right line.
+		long start = TrialTimings.partStart();
 		currentDiaryLine += 1 + (event == null ? 0 : event.chars().filter(c -> c == '\n').count());
 		Logger.getLogger(Process.class).log(DiaryLogLevel.DIARY, event);
+		TrialTimings.loopPart(TrialTimings.LoopPart.DIARY, start);
 	}
 	
 	public void appendErrorMarkerAtCurrentDiaryLine(String message) {

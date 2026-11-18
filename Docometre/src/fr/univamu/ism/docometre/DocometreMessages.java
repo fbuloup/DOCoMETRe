@@ -104,6 +104,7 @@ public final class DocometreMessages extends NLS {
 	public static String GeneralPreferences_UseDocker;
 	public static String GeneralPreferences_BuildAutomatically;
 	public static String TrialsParameters;
+	public static String GeneralPreferences_ADwinSingleTransferFifo;
 	public static String Charts2DOptions;
 	public static String UseOpenGLForRTSWTChart;
 	public static String UsedRTChartLibrary;

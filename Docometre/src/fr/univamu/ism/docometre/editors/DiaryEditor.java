@@ -231,14 +231,21 @@ public class DiaryEditor extends EditorPart implements PartNameRefresher {
 				IFile logFile = (IFile) ((ResourceEditorInput)getEditorInput()).getObject();
 				List<String> lines = Files.readAllLines(FileSystems.getDefault().getPath(logFile.getLocation().toOSString()), StandardCharsets.UTF_8);
 				StringBuffer content = new StringBuffer();
+				// The statistics computer may display a line of the file on several lines (means and totals
+				// of the iterations of the real-time loop) : displayed line of each line of the file, for the markers
+				int[] displayedLines = new int[lines.size()];
+				int displayedLine = 0;
 				for (int i = 0; i < lines.size(); i++) {
 					// Lines are separated by index : a line equal to the last one must not be merged with the next one
 					if(i > 0) content.append("\n");
-					content.append(diaryStatComputer.computeValue(lines.get(i)));
+					String value = diaryStatComputer.computeValue(lines.get(i));
+					displayedLines[i] = displayedLine;
+					displayedLine += 1 + (int) value.chars().filter(c -> c == '\n').count();
+					content.append(value);
 				}
 				document.set(content.toString());
 				
-				addMarkersAnnotations(logFile, document, annotationModel);
+				addMarkersAnnotations(logFile, document, annotationModel, displayedLines);
 			}
 			
 			if(Activator.ARDUINO_UNO_SYSTEM.equals(system)) {
@@ -250,7 +257,7 @@ public class DiaryEditor extends EditorPart implements PartNameRefresher {
 					content.append(lines.get(i));
 				}
 				document.set(content.toString());
-				addMarkersAnnotations(logFile, document, annotationModel);
+				addMarkersAnnotations(logFile, document, annotationModel, null);
 			}
 			
 			partListenerAdapter = new PartListenerAdapter() {
@@ -298,8 +305,9 @@ public class DiaryEditor extends EditorPart implements PartNameRefresher {
 	/*
 	 * Error and warning markers created by the process (see Process.appendErrorMarkerAtCurrentDiaryLine)
 	 * are displayed on their whole diary line, for ADWin and Arduino diaries.
+	 * displayedLines : displayed line (from 0) of each line of the diary file, null if they are the same.
 	 */
-	private void addMarkersAnnotations(IFile logFile, IDocument document, AnnotationModel annotationModel) {
+	private void addMarkersAnnotations(IFile logFile, IDocument document, AnnotationModel annotationModel, int[] displayedLines) {
 		try {
 			IMarker[] markers = logFile.findMarkers(DocometreBuilder.MARKER_ID, true, IResource.DEPTH_INFINITE);
 			for (IMarker marker : markers) {
@@ -309,6 +317,8 @@ public class DiaryEditor extends EditorPart implements PartNameRefresher {
 				if (severity == IMarker.SEVERITY_ERROR) annotation = new ErrorAnnotation(marker, message);
 				if (severity == IMarker.SEVERITY_WARNING) annotation = new WarningAnnotation(marker, message);
 				int lineNumber = marker.getAttribute(IMarker.LINE_NUMBER, -1);
+				// Line number in the file (from 1) -> displayed line number (from 1)
+				if(displayedLines != null && lineNumber >= 1 && lineNumber <= displayedLines.length) lineNumber = displayedLines[lineNumber - 1] + 1;
 				if (annotation == null || lineNumber < 1 || lineNumber > document.getNumberOfLines()) continue;
 				IRegion lineRegion = document.getLineInformation(lineNumber - 1);
 				annotationModel.addAnnotation(annotation, new Position(lineRegion.getOffset(), lineRegion.getLength()));

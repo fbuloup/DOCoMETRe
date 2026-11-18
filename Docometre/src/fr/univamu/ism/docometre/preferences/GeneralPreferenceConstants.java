@@ -73,6 +73,8 @@ public class GeneralPreferenceConstants {
 	public static final String USE_AS_DEFAULT_DO_NOT_ASK_STOP_TRIAL_NOW = "USE_AS_DEFAULT_DO_NOT_ASK_STOP_TRIAL_NOW";
 	public static final String AUTO_VALIDATE_TRIALS = "AUTO_VALIDATE_TRIALS";
 	public static final String AUTO_START_TRIALS = "AUTO_START_TRIALS";
+	/** ADwin : single transfer FIFO for the auto-transferred channels (see ADWinTransferFifo). */
+	public static final String ADWIN_SINGLE_TRANSFER_FIFO = "ADWIN_SINGLE_TRANSFER_FIFO";
 	
 	public static final String SHOW_MATLAB_WINDOW = "SHOW_MATLAB_WINDOW";
 	public static final String MATLAB_LOCATION = "MATLAB_LOCATION";

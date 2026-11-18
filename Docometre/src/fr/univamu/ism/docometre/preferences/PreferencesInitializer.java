@@ -81,6 +81,7 @@ public class PreferencesInitializer extends AbstractPreferenceInitializer {
 		defaults.putBoolean(GeneralPreferenceConstants.USE_AS_DEFAULT_DO_NOT_ASK_STOP_TRIAL_NOW, false);
 		defaults.putBoolean(GeneralPreferenceConstants.AUTO_VALIDATE_TRIALS, false);
 		defaults.putBoolean(GeneralPreferenceConstants.AUTO_START_TRIALS, false);
+		defaults.putBoolean(GeneralPreferenceConstants.ADWIN_SINGLE_TRANSFER_FIFO, true);
 		
 		defaults.putBoolean(GeneralPreferenceConstants.SHOW_MATLAB_WINDOW, false);
 		defaults.put(GeneralPreferenceConstants.MATLAB_LOCATION, "");

@@ -42,6 +42,13 @@
 package fr.univamu.ism.docometre.dacqsystems.adwin.diary;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.eclipse.osgi.util.NLS;
 
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinMessages;
 import fr.univamu.ism.docometre.editors.DiaryStatisticsComputer;
@@ -63,6 +70,14 @@ public class ADWinDiaryStatisticsComputer implements DiaryStatisticsComputer {
 	private HashMap<String, Integer> buffer_RecoveringChannel = new HashMap<>(0);
 	
 	private HashMap<String, Integer> buffer_GeneratingChannel = new HashMap<>(0);
+	
+	// Lines of the real-time loop iterations (three lines per iteration in the diary file, six lines
+	// displayed) : mean durations and total samples of each channel since the beginning of the diary
+	private static final Pattern DURATION = Pattern.compile("\\d+\\.\\d+");
+	private final double[] iterationMeans = new double[3]; // interval, recovery, generation
+	private int iterations = 0;
+	private final Map<String, Long> recoveredTotals = new LinkedHashMap<>();
+	private final Map<String, Long> generatedTotals = new LinkedHashMap<>();
 
 	@Override
 	public String computeValue(String line) {
@@ -120,7 +135,66 @@ public class ADWinDiaryStatisticsComputer implements DiaryStatisticsComputer {
 			line = line + ADWinMessages.ADWinDiary_Total + String.valueOf(newValue); 
 		}
 		
+		// Iteration of the real-time loop : durations line followed by the means line, recovered channels
+		// line, generated channels line followed by the totals lines (six displayed lines)
+		if(line.startsWith(ADWinMessages.ADWinDiary_IterationTimes_Scanner)) line = line + "\n" + computeIterationMeans(line);
+		if(line.startsWith(ADWinMessages.ADWinDiary_IterationRecovered_Scanner)) addTotals(line, ADWinMessages.ADWinDiary_IterationRecovered, recoveredTotals);
+		if(line.startsWith(ADWinMessages.ADWinDiary_IterationGenerated_Scanner)) {
+			addTotals(line, ADWinMessages.ADWinDiary_IterationGenerated, generatedTotals);
+			line = line + "\n" + NLS.bind(ADWinMessages.ADWinDiary_IterationRecoveredTotals, totalsToString(recoveredTotals))
+					+ "\n" + NLS.bind(ADWinMessages.ADWinDiary_IterationGeneratedTotals, totalsToString(generatedTotals));
+		}
+		
 		return line;
+	}
+	
+	/*
+	 * Durations line of an iteration of the real-time loop : returns the line of the mean durations
+	 * since the beginning of the diary (interval, recovery and generation).
+	 */
+	private String computeIterationMeans(String line) {
+		// The first three decimal numbers are the durations (interval, recovery, generation)
+		Matcher matcher = DURATION.matcher(line);
+		double[] durations = new double[3];
+		for (int i = 0; i < durations.length; i++) {
+			if(!matcher.find()) return NLS.bind(ADWinMessages.ADWinDiary_IterationMeans, new Object[] {"?", "?", "?"});
+			durations[i] = Double.parseDouble(matcher.group());
+		}
+		for (int i = 0; i < durations.length; i++) iterationMeans[i] = durations[i]/(iterations + 1.0) + iterations/(iterations + 1.0)*iterationMeans[i];
+		iterations++;
+		return NLS.bind(ADWinMessages.ADWinDiary_IterationMeans, new Object[] {format(iterationMeans[0]), format(iterationMeans[1]), format(iterationMeans[2])});
+	}
+	
+	/*
+	 * Adds the samples of the channels listed in the line after the label of the message
+	 * ("Recovered channels : {0}" or "Generated channels : {0}") : "name samples, name samples..."
+	 */
+	private static void addTotals(String line, String labelMessage, Map<String, Long> totals) {
+		String list = line.substring(Math.min(line.length(), labelMessage.indexOf("{0}")));
+		for (String item : list.split(",")) {
+			item = item.trim();
+			int space = item.lastIndexOf(' ');
+			if(space <= 0) continue;
+			try {
+				long samples = Long.parseLong(item.substring(space + 1).trim());
+				totals.merge(item.substring(0, space), samples, Long::sum);
+			} catch (NumberFormatException e) {
+				// Item not in the expected format : ignored
+			}
+		}
+	}
+	
+	private static String totalsToString(Map<String, Long> totals) {
+		StringBuilder string = new StringBuilder();
+		for (Map.Entry<String, Long> entry : totals.entrySet()) {
+			if(string.length() > 0) string.append(", ");
+			string.append(entry.getKey()).append(' ').append(entry.getValue());
+		}
+		return string.toString();
+	}
+	
+	private static String format(double seconds) {
+		return String.format(Locale.ROOT, "%.4f", seconds);
 	}
 
 }

@@ -148,9 +148,33 @@ public class ADWinProcess extends Process {
 	 * Number of lines to add to a line number given by the compiler to get the line in the source code page
 	 */
 	transient private int compilerLinesShift = 0;
-	transient private double startTimeDialog = 0;
-	transient private double timeBefore;
-	transient private double timeAfter;
+	/*
+	 * Samples of each channel recovered and generated since the previous diary lines of the real-time
+	 * loop, written at the end of the current iteration (see diaryRecovered(), diaryGenerated()). The
+	 * generation FIFOs initialized before the start of the process are counted in the first iteration.
+	 * Lazily created : transient fields are not initialized when the process is deserialized.
+	 */
+	transient private java.util.Map<String, Long> diaryRecoveredChannels;
+	transient private java.util.Map<String, Long> diaryGeneratedChannels;
+	// Generated channels whose "no more data" has already been written for the current execution
+	transient private java.util.Set<String> diaryNoMoreToGenerateChannels;
+
+	/*
+	 * Data loss counters (PAR_<transfer number>, incremented by ADwin when a FIFO is full) of the
+	 * recovered channels, read with a single Get_Par_Block request at each loop iteration instead
+	 * of one Get_Par request per channel (see readDataLossCounters() and getDataLossCounter()).
+	 * Range of transfer numbers computed at the first iteration and forgotten by close().
+	 */
+	transient private int[] dataLossCounters;
+	transient private int dataLossCountersFirstIndex;
+	transient private boolean dataLossCountersRead;
+	transient private boolean dataLossCountersBlockFailed;
+
+	/*
+	 * Reader of the single transfer FIFO for the current execution, null if the loaded
+	 * binary has been compiled without it (see ADWinTransferFifo).
+	 */
+	transient private volatile ADWinTransferFifo transferFifo;
 
 	private class RealTimeLoopJob extends Job {
 
@@ -168,8 +192,9 @@ public class ADWinProcess extends Process {
 		protected IStatus run(IProgressMonitor monitor) {
 			double processBeginTime = 0;
 			// Timing trace of the loop iterations (see TrialTimings)
-			long iterations = 0, lastIterationNanos = 0, maxIterationNanos = 0;
+			long iterations = 0, lastIterationNanos = 0, maxIterationNanos = 0, totalIterationNanos = 0;
 			long lastStatusLineRefreshNanos = 0;
+			long previousDialogStartNanos = 0;
 			int processNumberInt = -1;
 			try {
 				getThread().setPriority(Thread.MAX_PRIORITY);
@@ -189,32 +214,29 @@ public class ADWinProcess extends Process {
 					TrialTimings.firstLoopIteration();
 					long iterationStart = TrialTimings.trace ? System.nanoTime() : 0;
 
+					long partStart = TrialTimings.partStart();
 					active  = ((ADWinDACQConfiguration)ADWinProcess.this.getDACQConfiguration()).getADwinDevice().Process_Status(processNumberInt) == 1;
+					TrialTimings.loopPart(TrialTimings.LoopPart.PROCESS_STATUS, partStart);
 					
-					if(startTimeDialog == 0) {
-						startTimeDialog = (System.currentTimeMillis()/1000d);
-						appendToEventDiary(Activator.NEW_LINE + NLS.bind(ADWinMessages.ADWinDiary_TimeBetween, "0"));
-					} else {
-						double currentTime = System.currentTimeMillis()/1000d;
-						appendToEventDiary(Activator.NEW_LINE + NLS.bind(ADWinMessages.ADWinDiary_TimeBetween, (currentTime - startTimeDialog)));
-						startTimeDialog =  currentTime;
-					}
-					timeBefore = System.currentTimeMillis()/1000d;
+					// Diary : three lines per iteration (interval since the previous one, recovery and
+					// generation durations ; samples of the recovered channels ; samples of the generated channels)
+					long dialogStartNanos = System.nanoTime();
+					double interval = previousDialogStartNanos == 0 ? 0 : (dialogStartNanos - previousDialogStartNanos) / 1e9;
+					previousDialogStartNanos = dialogStartNanos;
 					
 					//RECOVERY
 					ADWinProcess.this.recovery();
-					timeAfter = System.currentTimeMillis()/1000d;
-					appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_RecoveryTime, (timeAfter - timeBefore)));
+					long recoveryEndNanos = System.nanoTime();
 					
-					timeBefore = System.currentTimeMillis()/1000d;
 					//GENERATION
+					partStart = TrialTimings.partStart();
 					ADWinProcess.this.generation();
+					TrialTimings.loopPart(TrialTimings.LoopPart.GENERATION, partStart);
+					long generationEndNanos = System.nanoTime();
 					
-					timeAfter = System.currentTimeMillis()/1000d;
-					appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_GenerationTime, (timeAfter - timeBefore)));
-					
-					//DISPLAY
-					timeBefore = System.currentTimeMillis()/1000d;
+					// TRANSFER TO CHARTS : the new samples are given to the charts, which are drawn later by
+					// the user interface thread (the drawing time is not part of this loop)
+					partStart = TrialTimings.partStart();
 					Channel[] channels = ADWinProcess.this.getDACQConfiguration().getChannels();
 					for (Channel channel : channels) {
 						channel.notifyChannelObservers();
@@ -226,15 +248,17 @@ public class ADWinProcess extends Process {
 							channel.notifyChannelObservers();
 						}
 					}
-					timeAfter = System.currentTimeMillis()/1000d;
-					appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_DisplayTime, (timeAfter - timeBefore)));
+					TrialTimings.loopPart(TrialTimings.LoopPart.CHARTS_TRANSFER, partStart);
+					appendIterationToEventDiary(interval, (recoveryEndNanos - dialogStartNanos) / 1e9, (generationEndNanos - recoveryEndNanos) / 1e9);
 					
 					long now = System.nanoTime();
 					if(now - lastStatusLineRefreshNanos >= STATUS_LINE_REFRESH_PERIOD_NANOS) {
 						lastStatusLineRefreshNanos = now;
+						partStart = TrialTimings.partStart();
 						// time is FPAR_<process number> (see ADWinCodeSegmentProperties.DECLARATION)
 						time = ((ADWinDACQConfiguration)ADWinProcess.this.getDACQConfiguration()).getADwinDevice().Get_FPar(processNumberInt);
 						int workload = ((ADWinDACQConfiguration)ADWinProcess.this.getDACQConfiguration()).getADwinDevice().Workload();
+						TrialTimings.loopPart(TrialTimings.LoopPart.STATUS_LINE, partStart);
 						float currentTime = time;
 						PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
 							@Override
@@ -250,6 +274,7 @@ public class ADWinProcess extends Process {
 						iterations++;
 						lastIterationNanos = System.nanoTime() - iterationStart;
 						if(lastIterationNanos > maxIterationNanos) maxIterationNanos = lastIterationNanos;
+						totalIterationNanos += lastIterationNanos;
 					}
 				}
 			} catch (ADwinCommunicationError e) {
@@ -257,6 +282,7 @@ public class ADWinProcess extends Process {
 			} finally {
 				TrialTimings.processEnded();
 				TrialTimings.loopSummary(iterations, lastIterationNanos, maxIterationNanos);
+				TrialTimings.loopPartsSummary(iterations, totalIterationNanos);
 				logInitDuration();
 				// CLOSE
 				ADWinProcess.this.close();
@@ -416,6 +442,8 @@ public class ADWinProcess extends Process {
 		if(warningFile.exists()) {
 			createMarker(IMarker.SEVERITY_WARNING, processResource, warningFile);
 		}
+		// Mode of the new binary (single transfer FIFO or one FIFO per channel), read at each execution
+		if(!errorFile.exists() && !generalErrorfile.exists()) ADWinTransferFifo.saveCompiledMode(getBinaryFilePath(), getDACQConfiguration());
 
 		Bundle librariesBundle = Platform.getBundle("Libraries");
 		String message = NLS.bind(DocometreMessages.CurrentLibrariesVersion, librariesBundle.getVersion().toString());
@@ -957,6 +985,7 @@ public class ADWinProcess extends Process {
 				code = code + "DIM FEG AS LONG\n";
 				code = code + "DIM INDEX AS LONG\n";
 				code = code + "DIM TERMINATE_PROCESS AS SHORT\n";
+				code = code + ADWinTransferFifo.getDeclarationCode(getDACQConfiguration());
 				if(TrialTimings.trace) 
 					code = code + "DIM DOCO_INIT_TIMER AS LONG ' Timing trace : start of INIT section\n";
 
@@ -980,6 +1009,7 @@ public class ADWinProcess extends Process {
 			code = code + "INDEX = 0\n";
 			code = code + "TERMINATE_PROCESS = 0\n";
 			code = code + "time = 0\n";
+			code = code + ADWinTransferFifo.getInitializationCode(getDACQConfiguration());
 			
 			
 			code = code + getCurrentProcess().getScript().getInitializeCode(this, ADWinCodeSegmentProperties.INITIALIZATION);
@@ -1114,6 +1144,8 @@ public class ADWinProcess extends Process {
 			TrialTimings.step("ADWinProcess.loadProcess()");
 			RealTimeLoopJob realTimeLoopJob = new RealTimeLoopJob(DocometreMessages.RunningProcess);
 			open(this, prefix, suffix);
+			// Single transfer FIFO if the loaded binary has been compiled with it
+			transferFifo = ADWinTransferFifo.open(this, getBinaryFilePath());
 			TrialTimings.step("ADWinProcess.open() (channels files)");
 			//generation();
 //			for (int i = 0; i < getDACQConfiguration().getModulesNumber(); i++) {
@@ -1197,6 +1229,15 @@ public class ADWinProcess extends Process {
 	}
 	
 	public void recovery() {
+		readDataLossCounters();
+		if(transferFifo != null) {
+			try {
+				transferFifo.recover();
+			} catch (ADwinCommunicationError e) {
+				e.printStackTrace();
+				Activator.logErrorMessageWithCause(e);
+			}
+		}
 		ADWinVariable[] variables = ((ADWinDACQConfiguration)getDACQConfiguration()).getVariables();
 		RecoveryDelegate.recover(variables, null, this);
 		for (int i = 0; i < getDACQConfiguration().getModulesNumber(); i++) {
@@ -1205,6 +1246,130 @@ public class ADWinProcess extends Process {
 		}
 	}
 	
+	/*
+	 * Reads the data loss counters of all the recovered channels (variables and modules channels)
+	 * with a single ADwin request. If it fails, getDataLossCounter() falls back on Get_Par.
+	 */
+	private void readDataLossCounters() {
+		dataLossCountersRead = false;
+		if(dataLossCountersBlockFailed) return; // Already failed during this execution : Get_Par is used
+		if(dataLossCounters == null) {
+			int min = Integer.MAX_VALUE, max = Integer.MIN_VALUE;
+			List<Channel> channels = new ArrayList<>();
+			ADWinVariable[] variables = ((ADWinDACQConfiguration)getDACQConfiguration()).getVariables();
+			if(variables != null) for (ADWinVariable variable : variables) channels.add(variable);
+			for (int i = 0; i < getDACQConfiguration().getModulesNumber(); i++) {
+				ModuleBehaviour module = getDACQConfiguration().getModule(i);
+				Channel[] moduleChannels = module instanceof Module ? ((Module)module).getChannels() : null;
+				if(moduleChannels != null) for (Channel channel : moduleChannels) channels.add(channel);
+			}
+			for (Channel channel : channels) {
+				if(!(channel instanceof ADWinChannel) || !((ADWinChannel)channel).isRecoveryAllowed()) continue;
+				try {
+					int transferNumber = ((ADWinChannel)channel).getTransferNumber();
+					min = Math.min(min, transferNumber);
+					max = Math.max(max, transferNumber);
+				} catch (NumberFormatException e) {
+					// Channel without valid transfer number : not taken into account here, Get_Par will be used
+				}
+			}
+			if(min > max || min < 1) return; // No channel to recover (or invalid range) : Get_Par will be used
+			dataLossCountersFirstIndex = min;
+			dataLossCounters = new int[max - min + 1];
+		}
+		try {
+			long start = TrialTimings.partStart();
+			((ADWinDACQConfiguration)getDACQConfiguration()).getADwinDevice().Get_Par_Block(dataLossCounters, dataLossCountersFirstIndex, dataLossCounters.length);
+			TrialTimings.loopPart(TrialTimings.LoopPart.DATA_LOSS_COUNTERS, start);
+			dataLossCountersRead = true;
+		} catch (ADwinCommunicationError | IllegalArgumentException e) {
+			// Logged once : Get_Par is used for the rest of this execution
+			dataLossCountersBlockFailed = true;
+			Activator.logErrorMessageWithCause(e);
+		}
+	}
+
+	/*
+	 * Data loss counter (PAR_<transferNumber>) read at the beginning of the current loop
+	 * iteration, or read now from ADwin if it is not part of this block.
+	 */
+	public int getDataLossCounter(int transferNumber) throws ADwinCommunicationError {
+		int index = transferNumber - dataLossCountersFirstIndex;
+		if(dataLossCountersRead && index >= 0 && index < dataLossCounters.length) return dataLossCounters[index];
+		return ((ADWinDACQConfiguration)getDACQConfiguration()).getADwinDevice().Get_Par(transferNumber);
+	}
+
+	/*
+	 * True if the samples of this channel are read from the single transfer FIFO during
+	 * the current execution (see ADWinTransferFifo), not from its own FIFO.
+	 */
+	public boolean isReadFromTransferFifo(Channel channel) {
+		return transferFifo != null && transferFifo.contains(channel);
+	}
+
+	/*
+	 * Samples recovered for a channel during the current iteration of the real-time loop :
+	 * written on the diary lines of this iteration (see appendIterationToEventDiary()).
+	 */
+	public void diaryRecovered(String channelName, int samples) {
+		if(diaryRecoveredChannels == null) diaryRecoveredChannels = new java.util.LinkedHashMap<>();
+		diaryRecoveredChannels.merge(channelName, (long) samples, Long::sum);
+	}
+	
+	/*
+	 * Samples sent to the generation FIFO of a channel : written on the diary lines of the current
+	 * iteration of the real-time loop (see appendIterationToEventDiary()). Also called when the FIFO
+	 * is initialized, before the start of the process (see ADWinChannel.open()) : these samples are
+	 * counted in the first iteration, so that the totals of the diary editor include them.
+	 */
+	public void diaryGenerated(String channelName, int samples) {
+		if(diaryGeneratedChannels == null) diaryGeneratedChannels = new java.util.LinkedHashMap<>();
+		diaryGeneratedChannels.merge(channelName, (long) samples, Long::sum);
+	}
+	
+	/*
+	 * "name samples, name samples..." and clears the counts
+	 */
+	private static String takeDiaryChannels(java.util.Map<String, Long> channels) {
+		if(channels == null || channels.isEmpty()) return "";
+		StringBuilder string = new StringBuilder();
+		for (java.util.Map.Entry<String, Long> entry : channels.entrySet()) {
+			if(string.length() > 0) string.append(", ");
+			string.append(entry.getKey()).append(' ').append(entry.getValue());
+		}
+		channels.clear();
+		return string.toString();
+	}
+	
+	/*
+	 * True the first time it is called for a channel during an execution : "no more data to
+	 * generate" is written once per channel instead of at each iteration.
+	 */
+	public boolean diaryNoMoreToGenerateFirstTime(String channelName) {
+		if(diaryNoMoreToGenerateChannels == null) diaryNoMoreToGenerateChannels = new java.util.HashSet<>();
+		return diaryNoMoreToGenerateChannels.add(channelName);
+	}
+	
+	/*
+	 * Diary lines of an iteration of the real-time loop (durations in seconds), written with a single
+	 * diary event : durations, then samples of the recovered channels, then samples of the generated
+	 * channels ("name samples, name samples..."). Data losses and errors of the iteration have already
+	 * been written on their own lines. The diary editor adds the means and totals (see
+	 * ADWinDiaryStatisticsComputer).
+	 */
+	private void appendIterationToEventDiary(double interval, double recovery, double generation) {
+		String recovered = takeDiaryChannels(diaryRecoveredChannels);
+		String generated = takeDiaryChannels(diaryGeneratedChannels);
+		String times = NLS.bind(ADWinMessages.ADWinDiary_IterationTimes, new Object[] {formatDiaryDuration(interval), formatDiaryDuration(recovery), formatDiaryDuration(generation)});
+		appendToEventDiary(times + Activator.NEW_LINE
+				+ NLS.bind(ADWinMessages.ADWinDiary_IterationRecovered, recovered) + Activator.NEW_LINE
+				+ NLS.bind(ADWinMessages.ADWinDiary_IterationGenerated, generated));
+	}
+	
+	private static String formatDiaryDuration(double seconds) {
+		return String.format(Locale.ROOT, "%.4f", seconds);
+	}
+
 	public void generation(){
 		ADWinVariable[] variables = ((ADWinDACQConfiguration)getDACQConfiguration()).getVariables();
 		GenerationDelegate.generate(variables, null, this);
@@ -1225,13 +1390,31 @@ public class ADWinProcess extends Process {
 	}
 	
 	public void close() {
+		// Channels may change before the next execution : range of the data loss counters computed again
+		dataLossCounters = null;
+		dataLossCountersRead = false;
+		dataLossCountersBlockFailed = false;
+		transferFifo = null;
+		if(diaryRecoveredChannels != null) diaryRecoveredChannels.clear();
+		if(diaryGeneratedChannels != null) diaryGeneratedChannels.clear();
+		if(diaryNoMoreToGenerateChannels != null) diaryNoMoreToGenerateChannels.clear();
+		// Each variable and module is closed even if another one fails : a channel file left open
+		// could be neither deleted nor moved under Windows until DOCoMETRe is closed
 		ADWinVariable[] variables = ((ADWinDACQConfiguration)getDACQConfiguration()).getVariables();
 		for (ADWinVariable variable : variables) {
-			variable.close(this);
+			try {
+				variable.close(this);
+			} catch (RuntimeException e) {
+				Activator.logErrorMessageWithCause(e);
+			}
 		}
 		for (int i = 0; i < getDACQConfiguration().getModulesNumber(); i++) {
 			ModuleBehaviour module = getDACQConfiguration().getModule(i);
-			module.close();
+			try {
+				module.close();
+			} catch (RuntimeException e) {
+				Activator.logErrorMessageWithCause(e);
+			}
 		}
 		// The workspace is refreshed by postExecute (see refreshChannelsFiles)
 	}

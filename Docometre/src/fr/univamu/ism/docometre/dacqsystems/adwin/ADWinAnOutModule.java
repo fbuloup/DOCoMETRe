@@ -151,15 +151,8 @@ public class ADWinAnOutModule extends Module {
 			
 			if (segment==ADWinCodeSegmentProperties.TRANSFER){
 				if (!isStimuli && isAutoTransfered){
-					code = code + "\nIF (TRANSFERT_" + name + " = " + frequencyRatio + ") THEN\n";
-					code = code + "\tTRANSFERT_" + name + " = 0\n";
-					code = code + "\tIF (FIFO_EMPTY(" +  transferNumber + ") = 0) THEN\n";
-					code = code + "\t\tPAR_" +  transferNumber + " = PAR_" +  transferNumber + " + 1\n";
-					code = code + "\t\tFIFO_CLEAR(" +  transferNumber + ")\n";
-					code = code + "\tENDIF\n";
-					code = code + "\t" + name + "_TAB = " + name + "\n";
-					code = code + "ENDIF\n";
-					code = code + "INC(TRANSFERT_" + name + ")\n";
+					// Own FIFO of the channel or single transfer FIFO (see ADWinTransferFifo)
+					code = code + ADWinTransferFifo.getAutoTransferCode(channel, name, transferNumber, frequencyRatio);
 				}
 			}
 		

@@ -1,5 +1,7 @@
 package fr.univamu.ism.docometre.dacqsystems;
 
+import java.util.Arrays;
+
 import fr.univamu.ism.docometre.Activator;
 
 /**
@@ -37,6 +39,35 @@ public final class TrialTimings {
 	private static boolean firstOtherDataLogged;
 	// Number of calls to stop() for the current trial
 	private static int stopCalls;
+
+	/**
+	 * Parts of a real-time loop iteration whose durations are accumulated
+	 * (see {@link #loopPart}) and summarized at the end of the trial
+	 * (see {@link #loopPartsSummary}).
+	 */
+	public enum LoopPart {
+		PROCESS_STATUS("Process_Status"),
+		DATA_LOSS_COUNTERS("Get_Par_Block (data loss counters)"),
+		FIFO_FULL("Fifo_Full"),
+		GET_FIFO("GetFifo_Float"),
+		ADD_SAMPLES("addSamples (copy + file queue)"),
+		DIARY("diary (appendToEventDiary)"),
+		GENERATION("generation"),
+		CHARTS_TRANSFER("transfer to charts (notifyChannelObservers)"),
+		STATUS_LINE("status line (Get_FPar + Workload)");
+
+		private final String label;
+
+		LoopPart(String label) {
+			this.label = label;
+		}
+	}
+
+	// Accumulated durations of the loop parts for the current trial (reset at Start_Process)
+	private static final long[] partTotalNanos = new long[LoopPart.values().length];
+	private static final long[] partMaxNanos = new long[LoopPart.values().length];
+	private static final long[] partCalls = new long[LoopPart.values().length];
+	private static long getFifoSamples;
 
 	private TrialTimings() {
 	}
@@ -82,7 +113,67 @@ public final class TrialTimings {
 			firstCANDataLogged = false;
 			firstOtherDataLogged = false;
 			stopCalls = 0;
+			Arrays.fill(partTotalNanos, 0);
+			Arrays.fill(partMaxNanos, 0);
+			Arrays.fill(partCalls, 0);
+			getFifoSamples = 0;
 		}
+	}
+
+	/** Start of a measured part: System.nanoTime(), or 0 when not measuring (no cost). */
+	public static long partStart() {
+		return trace ? System.nanoTime() : 0;
+	}
+
+	/** Adds the duration of a loop part, started at startNanos (see {@link #partStart}). */
+	public static void loopPart(LoopPart part, long startNanos) {
+		if (!trace || startNanos == 0) return;
+		long duration = System.nanoTime() - startNanos;
+		synchronized (TrialTimings.class) {
+			int i = part.ordinal();
+			partTotalNanos[i] += duration;
+			partCalls[i]++;
+			if (duration > partMaxNanos[i]) partMaxNanos[i] = duration;
+		}
+	}
+
+	/** Same as {@link #loopPart(LoopPart, long)} for GetFifo_Float, with the number of samples read. */
+	public static void getFifo(long startNanos, int samples) {
+		if (!trace || startNanos == 0) return;
+		loopPart(LoopPart.GET_FIFO, startNanos);
+		synchronized (TrialTimings.class) {
+			getFifoSamples += samples;
+		}
+	}
+
+	/**
+	 * Summary of the loop parts, logged when the process has ended: for each
+	 * part, number of calls, total, share of the loop time, mean and max per
+	 * call, mean per iteration.
+	 *
+	 * @param iterations number of loop iterations
+	 * @param loopNanos  total duration of the iterations
+	 */
+	public static void loopPartsSummary(long iterations, long loopNanos) {
+		if (!trace || iterations <= 0) return;
+		StringBuilder message = new StringBuilder();
+		message.append(String.format("real-time loop parts (%d iterations, mean iteration = %.2f ms) :", iterations, loopNanos / 1e6 / iterations));
+		long measured = 0;
+		synchronized (TrialTimings.class) {
+			for (LoopPart part : LoopPart.values()) {
+				int i = part.ordinal();
+				if (partCalls[i] == 0) continue;
+				measured += partTotalNanos[i];
+				message.append(String.format("%n    %-38s calls = %6d   total = %9.1f ms (%5.1f %%)   mean/call = %7.3f ms   max/call = %7.1f ms   mean/iteration = %6.2f ms",
+						part.label, partCalls[i], partTotalNanos[i] / 1e6, loopNanos > 0 ? 100.0 * partTotalNanos[i] / loopNanos : 0,
+						partTotalNanos[i] / 1e6 / partCalls[i], partMaxNanos[i] / 1e6, partTotalNanos[i] / 1e6 / iterations));
+				if (part == LoopPart.GET_FIFO) message.append(String.format("   samples/call = %.1f", (double) getFifoSamples / partCalls[i]));
+			}
+		}
+		long other = loopNanos - measured;
+		message.append(String.format("%n    %-38s                  total = %9.1f ms (%5.1f %%)                                                mean/iteration = %6.2f ms",
+				"other (not measured)", other / 1e6, loopNanos > 0 ? 100.0 * other / loopNanos : 0, other / 1e6 / iterations));
+		log(message.toString());
 	}
 
 	/** First iteration of the real-time loop (logged once per trial). */

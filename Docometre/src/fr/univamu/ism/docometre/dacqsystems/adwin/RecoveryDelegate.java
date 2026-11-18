@@ -74,29 +74,23 @@ public class RecoveryDelegate {
 		
 //		for (int j = 0; j < module.getChannelsNumber(); j++) {
 //			ADWinChannel channel = (ADWinChannel)module.getChannel(j);
-			if(adwinChannel.isRecoveryAllowed()) {
+			// Channels read from the single transfer FIFO (see ADWinTransferFifo) are recovered by ADWinProcess.recovery()
+			if(adwinChannel.isRecoveryAllowed() && !process.isReadFromTransferFifo(adwinChannel)) {
 				int transferNum = adwinChannel.getTransferNumber();
 				try {
+					long start = TrialTimings.partStart();
 					int nbData = adwinDevice.Fifo_Full(transferNum);
+					TrialTimings.loopPart(TrialTimings.LoopPart.FIFO_FULL, start);
 					if (nbData > 0){
 						TrialTimings.dataReceived(channel.getProperty(ChannelProperties.NAME), module instanceof ADWinCANModule);
+						start = TrialTimings.partStart();
 						float[] signal = process.getData(transferNum, nbData);
+						TrialTimings.getFifo(start, nbData);
+						start = TrialTimings.partStart();
 						channel.addSamples(signal);
-						process.appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_Recovering, new Object[] {transferNum, channel.getProperty(ChannelProperties.NAME), nbData}));
-						if(adwinDevice.Get_Par(transferNum) > 0){
-							float real_time = adwinDevice.Get_FPar(processNumber);
-							String realTime = String.valueOf(real_time);
-							process.appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_DataLoss, new Object[] {transferNum, channel.getProperty(ChannelProperties.NAME), realTime}));
-							process.appendErrorMarkerAtCurrentDiaryLine(ADWinMessages.ADWinDiary_TryIncreaseBufferSize);
-							adwinDevice.Set_Par(transferNum,0);
-							PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
-								@Override
-								public void run() {
-									StatusLineManager statusLineManger = ((WorkbenchWindow)PlatformUI.getWorkbench().getActiveWorkbenchWindow()).getStatusLineManager();
-									statusLineManger.setErrorMessage(Activator.getImage(IImageKeys.ERROR_ANNOTATION_ICON), ADWinMessages.ProcessDataLoss_Label);
-								}
-							});
-						}
+						TrialTimings.loopPart(TrialTimings.LoopPart.ADD_SAMPLES, start);
+						process.diaryRecovered(channel.getProperty(ChannelProperties.NAME), nbData);
+						checkDataLoss(process, adwinDevice, processNumber, channel, transferNum);
 					}
 				} catch (ADwinCommunicationError e) {
 					e.printStackTrace();
@@ -104,6 +98,27 @@ public class RecoveryDelegate {
 				}
 			}
 		}
+	}
+	
+	/**
+	 * Reports a data loss for a channel if its counter (PAR_<transfer number>, read with all
+	 * the others at the beginning of the iteration, see ADWinProcess.recovery()) is not null,
+	 * and resets this counter.
+	 */
+	static void checkDataLoss(ADWinProcess process, ADwinDevice adwinDevice, int processNumber, Channel channel, int transferNum) throws ADwinCommunicationError {
+		if(process.getDataLossCounter(transferNum) <= 0) return;
+		float real_time = adwinDevice.Get_FPar(processNumber);
+		String realTime = String.valueOf(real_time);
+		process.appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_DataLoss, new Object[] {transferNum, channel.getProperty(ChannelProperties.NAME), realTime}));
+		process.appendErrorMarkerAtCurrentDiaryLine(ADWinMessages.ADWinDiary_TryIncreaseBufferSize);
+		adwinDevice.Set_Par(transferNum,0);
+		PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+			@Override
+			public void run() {
+				StatusLineManager statusLineManger = ((WorkbenchWindow)PlatformUI.getWorkbench().getActiveWorkbenchWindow()).getStatusLineManager();
+				statusLineManger.setErrorMessage(Activator.getImage(IImageKeys.ERROR_ANNOTATION_ICON), ADWinMessages.ProcessDataLoss_Label);
+			}
+		});
 	}
 
 }

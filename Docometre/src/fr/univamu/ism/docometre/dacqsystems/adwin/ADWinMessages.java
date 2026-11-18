@@ -95,6 +95,7 @@ public class ADWinMessages extends NLS {
 	public static String DeleteModule_Tooltip;
 	public static String AddModule_Tooltip;
 	public static String NoStimulusFileFound;
+	public static String EmptyStimulusFile;
 	
 	// ADD module dialog
 	public static String AddModuleDialog_ShellTitle;
@@ -320,6 +321,19 @@ public class ADWinMessages extends NLS {
 	public static String ADWinDiary_DisplayTime_Scanner;
 	public static String ADWinDiary_DataLoss_Scanner;
 	public static String ADWinDiary_NoMoreToGenerate_Scanner;
+	// Three lines per iteration of the real-time loop in the diary file, six lines in the diary editor
+	public static String ADWinDiary_IterationTimes;
+	public static String ADWinDiary_IterationMeans;
+	public static String ADWinDiary_IterationRecovered;
+	public static String ADWinDiary_IterationGenerated;
+	public static String ADWinDiary_IterationRecoveredTotals;
+	public static String ADWinDiary_IterationGeneratedTotals;
+	public static String ADWinDiary_IterationTimes_Scanner;
+	public static String ADWinDiary_IterationMeans_Scanner;
+	public static String ADWinDiary_IterationRecovered_Scanner;
+	public static String ADWinDiary_IterationGenerated_Scanner;
+	public static String ADWinDiary_IterationRecoveredTotals_Scanner;
+	public static String ADWinDiary_IterationGeneratedTotals_Scanner;
 	
 	// RS232 ADWin module
 	public static String RS232ModuleFrequencyEmptyErrorMessage;
