@@ -135,6 +135,15 @@ public final class ADWinTransferFifo {
 	private static boolean generatesTransferFifoCode(Channel channel) {
 		return isEnabled() && isTransferFifoChannel(channel);
 	}
+	
+	/**
+	 * True if the code generated from now on declares and clears the own FIFO of this transferred
+	 * channel (DATA_<transfer number>, <name>_TAB) : false for the channels written in the single
+	 * transfer FIFO, which do not use it (stimuli and channels written by the user code keep it).
+	 */
+	public static boolean declaresOwnFifo(Channel channel) {
+		return !generatesTransferFifoCode(channel);
+	}
 
 	// ------------------------------------------------------------------------------------------
 	// ADbasic code generation

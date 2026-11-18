@@ -129,8 +129,11 @@ public final class VariablesCodeGenerationDelegate {
 					code = code + "DIM " + name + size + " AS " + type +  "\n";
 					if(isTransfered){
 						code = code + "\nREM ******** Variables pour transfert de: " + name + " \'Utilisées par Transfert\n";
-						code = code + "#DEFINE " + name + "_TAB DATA_" + transferNumber + " \'Utilisé par Transfert\n";
-						code = code + "DIM " + name + "_TAB[" + bufferSize + "] AS FLOAT AS FIFO \'Utilisé par Transfert\n";
+						// Own FIFO not declared for a channel written in the single transfer FIFO (see ADWinTransferFifo)
+						if(ADWinTransferFifo.declaresOwnFifo(variable)) {
+							code = code + "#DEFINE " + name + "_TAB DATA_" + transferNumber + " \'Utilisé par Transfert\n";
+							code = code + "DIM " + name + "_TAB[" + bufferSize + "] AS FLOAT AS FIFO \'Utilisé par Transfert\n";
+						}
 						code = code + "DIM TRANSFERT_" + name + " AS LONG \'Utilisé par Transfert\n\n";
 					}
 					
@@ -223,7 +226,7 @@ public final class VariablesCodeGenerationDelegate {
 				}
 				if(!isStimulus && isTransfered && !isParameter){
 					code = code + "TRANSFERT_" + name + " = " + frequencyRatio + "\n";
-					code = code + "FIFO_CLEAR(" + transferNumber + ")\n";
+					if(ADWinTransferFifo.declaresOwnFifo(variable)) code = code + "FIFO_CLEAR(" + transferNumber + ")\n";
 					code = code + "PAR_" + transferNumber + " = 0\n";
 				}
 			}
