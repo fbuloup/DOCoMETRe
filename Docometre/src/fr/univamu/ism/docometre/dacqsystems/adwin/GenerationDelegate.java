@@ -41,22 +41,31 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.adwin;
 
-import org.eclipse.jface.action.StatusLineManager;
 import org.eclipse.osgi.util.NLS;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.internal.WorkbenchWindow;
 
 import de.adwin.driver.ADwinCommunicationError;
 import de.adwin.driver.ADwinDevice;
 import fr.univamu.ism.docometre.Activator;
-import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 
-@SuppressWarnings("restriction")
 public class GenerationDelegate {
 	
+	/**
+	 * Sends the next samples of each stimulus to its generation FIFO.
+	 * <ul>
+	 * <li>The FIFO is refilled only when about a quarter of it has been consumed since the previous
+	 * refill (see ADWinChannel.isGenerationRefillDue()), not at each iteration of the real-time loop :
+	 * a refill costs about four network round trips with ADwin (Fifo_Empty, SetFifo_Float).</li>
+	 * <li>The underflow counter of the stimulus (PAR_<transfer number>, see STIMULUS.FUN) is read with
+	 * all the data loss counters at the beginning of the iteration (see ADWinProcess.recovery()) :
+	 * checked at each iteration without any request.</li>
+	 * <li>The charts are given the samples played by ADwin since the start of the process (elapsed time
+	 * multiplied by the actual frequency of the stimulus), at each iteration and until the end of the
+	 * stimulus : the display does not depend on the refills.</li>
+	 * </ul>
+	 */
 	public static void generate(Channel[] channels, Module module, ADWinProcess process) {
 		if(channels != null && module != null) {
 			Activator.logErrorMessage("Cannot generate channels and channels' module at same time !");
@@ -69,41 +78,43 @@ public class GenerationDelegate {
 		
 		if(module != null) channels = module.getChannels();
 		
+		long now = System.nanoTime();
 		for (Channel channel : channels) {
 			ADWinChannel adwinChannel = (ADWinChannel) channel;
-			if(adwinChannel.isGenerationAllowed()){
-				int transferNum = adwinChannel.getTransferNumber();
-				try {
-					int nbData = adwinDevice.Fifo_Empty(transferNum);
-					if (nbData > 0){
-						float[] data = adwinChannel.getSamples(nbData);
-						boolean noMoreData = data.length == 0;
-						if (!noMoreData) {
-							adwinDevice.SetFifo_Float(transferNum, data, data.length);
-							process.diaryGenerated(adwinChannel.getProperty(ChannelProperties.NAME), data.length);
-							if(adwinDevice.Get_Par(transferNum) > 0){
-								float real_time = adwinDevice.Get_FPar(processNumber);
-								String realTime = String.valueOf(real_time);
-								process.appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_DataLoss, new Object[] {transferNum, adwinChannel.getProperty(ChannelProperties.NAME), realTime}));
-								process.appendErrorMarkerAtCurrentDiaryLine(ADWinMessages.ADWinDiary_TryIncreaseBufferSize);
-								adwinDevice.Set_Par(transferNum,0);
-								PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
-									@Override
-									public void run() {
-										StatusLineManager statusLineManger = ((WorkbenchWindow)PlatformUI.getWorkbench().getActiveWorkbenchWindow()).getStatusLineManager();
-										statusLineManger.setErrorMessage(Activator.getImage(IImageKeys.ERROR_ANNOTATION_ICON), ADWinMessages.ProcessDataLoss_Label);
-									}
-								});
-							}
-						} else if(process.diaryNoMoreToGenerateFirstTime(adwinChannel.getProperty(ChannelProperties.NAME))) {
-							// Written once per channel and per execution, not at each iteration
-							process.appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_NoMoreToGenerate, adwinChannel.getProperty(ChannelProperties.NAME), adwinDevice.Fifo_Full(transferNum)));
+			if(!adwinChannel.isGenerationAllowed()) continue;
+			// Display : samples played since the start of the process (all the samples sent if the
+			// frequency is unknown), also after the last refill, until the end of the stimulus
+			double frequency = adwinChannel.getGenerationFrequency();
+			long playedSamples = frequency > 0 ? (long) ((now - process.getStartProcessNanos()) / 1e9 * frequency) + 1 : Long.MAX_VALUE;
+			adwinChannel.notifyPlayedStimulusSamples(playedSamples);
+			// When all the samples of the stimulus file have been sent, nothing more to send (as before,
+			// the underflows at the end of the stimulus are not reported)
+			if(adwinChannel.isGenerationFinished()) continue;
+			int transferNum = adwinChannel.getTransferNumber();
+			String name = adwinChannel.getProperty(ChannelProperties.NAME);
+			try {
+				// Underflow of the generation FIFO : counter read with all the others, no request
+				RecoveryDelegate.checkDataLoss(process, adwinDevice, processNumber, channel, transferNum);
+				
+				if(!adwinChannel.isGenerationRefillDue(now)) continue;
+				int nbData = adwinDevice.Fifo_Empty(transferNum);
+				if (nbData > 0){
+					float[] data = adwinChannel.getSamples(nbData);
+					if (data.length == 0) {
+						adwinChannel.setGenerationFinished();
+						// Written once per channel and per execution
+						if(process.diaryNoMoreToGenerateFirstTime(name)) {
+							process.appendToEventDiary(NLS.bind(ADWinMessages.ADWinDiary_NoMoreToGenerate, name, adwinDevice.Fifo_Full(transferNum)));
 						}
+						continue;
 					}
-				}catch (ADwinCommunicationError e) {
-					e.printStackTrace();
-					Activator.logErrorMessageWithCause(e);
+					adwinDevice.SetFifo_Float(transferNum, data, data.length);
+					process.diaryGenerated(name, data.length);
 				}
+				adwinChannel.generationRefilled(now);
+			} catch (ADwinCommunicationError e) {
+				e.printStackTrace();
+				Activator.logErrorMessageWithCause(e);
 			}
 		}	
 		

@@ -175,6 +175,9 @@ public class ADWinProcess extends Process {
 	 * binary has been compiled without it (see ADWinTransferFifo).
 	 */
 	transient private volatile ADWinTransferFifo transferFifo;
+	
+	// System.nanoTime() just after Start_Process : time reference of the stimuli display (see GenerationDelegate)
+	transient private volatile long startProcessNanos;
 
 	private class RealTimeLoopJob extends Job {
 
@@ -1159,6 +1162,7 @@ public class ADWinProcess extends Process {
 			// Timing trace : -1 = INIT section duration not (yet) written by the process
 			if(TrialTimings.trace) ((ADWinDACQConfiguration)getDACQConfiguration()).getADwinDevice().Set_FPar(TrialTimings.INIT_DURATION_FPAR, -1);
 			((ADWinDACQConfiguration)getDACQConfiguration()).getADwinDevice().Start_Process(processNumberInt);
+			startProcessNanos = System.nanoTime();
 			TrialTimings.end("Start_Process");
 			return realTimeLoopJob;
 		} catch (Exception e) {
@@ -1247,8 +1251,9 @@ public class ADWinProcess extends Process {
 	}
 	
 	/*
-	 * Reads the data loss counters of all the recovered channels (variables and modules channels)
-	 * with a single ADwin request. If it fails, getDataLossCounter() falls back on Get_Par.
+	 * Reads the data loss counters of all the recovered and generated channels (variables and modules
+	 * channels) with a single ADwin request : FIFO overflows of the recovered channels and underflows
+	 * of the stimuli. If it fails, getDataLossCounter() falls back on Get_Par.
 	 */
 	private void readDataLossCounters() {
 		dataLossCountersRead = false;
@@ -1264,7 +1269,9 @@ public class ADWinProcess extends Process {
 				if(moduleChannels != null) for (Channel channel : moduleChannels) channels.add(channel);
 			}
 			for (Channel channel : channels) {
-				if(!(channel instanceof ADWinChannel) || !((ADWinChannel)channel).isRecoveryAllowed()) continue;
+				if(!(channel instanceof ADWinChannel)) continue;
+				ADWinChannel adwinChannel = (ADWinChannel)channel;
+				if(!adwinChannel.isRecoveryAllowed() && !adwinChannel.isGenerationAllowed()) continue;
 				try {
 					int transferNumber = ((ADWinChannel)channel).getTransferNumber();
 					min = Math.min(min, transferNumber);
@@ -1273,7 +1280,7 @@ public class ADWinProcess extends Process {
 					// Channel without valid transfer number : not taken into account here, Get_Par will be used
 				}
 			}
-			if(min > max || min < 1) return; // No channel to recover (or invalid range) : Get_Par will be used
+			if(min > max || min < 1) return; // No channel to recover or generate (or invalid range) : Get_Par will be used
 			dataLossCountersFirstIndex = min;
 			dataLossCounters = new int[max - min + 1];
 		}
@@ -1303,6 +1310,11 @@ public class ADWinProcess extends Process {
 	 * True if the samples of this channel are read from the single transfer FIFO during
 	 * the current execution (see ADWinTransferFifo), not from its own FIFO.
 	 */
+	/* System.nanoTime() just after Start_Process of the current execution */
+	long getStartProcessNanos() {
+		return startProcessNanos;
+	}
+	
 	public boolean isReadFromTransferFifo(Channel channel) {
 		return transferFifo != null && transferFifo.contains(channel);
 	}

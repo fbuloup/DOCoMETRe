@@ -99,6 +99,71 @@ public class ExperimentScheduler {
 	private  boolean runProcess;
 	private volatile boolean running;
 	
+	/*
+	 * Process of the last trial and its DACQ configuration, kept in memory from a trial to the next one
+	 * as long as the same process is executed, and released when another process is executed or at the
+	 * end of the run (see acquireProcess() and releaseKeptProcess()). Without them, when no editor keeps
+	 * these objects, the last handles were removed at the end of each trial : the process and its DACQ
+	 * configuration were deserialized again for the next trial, and the real-time charts were created
+	 * again (about 20 ms) instead of being cleared, since their DACQ configuration was a new object.
+	 * Used by the scheduler job and the process jobs, one after the other (joined).
+	 */
+	private IResource keptProcessFile;
+	private Process keptProcess;
+	private DACQConfiguration keptDACQConfiguration;
+	// Deserialized by the scheduler : the handle added to its DACQ configuration by Process.getDACQConfiguration() must also be removed
+	private boolean keptProcessDeserialized;
+	
+	/*
+	 * Process to execute for a trial : the kept one if it is the same, otherwise the one in memory (an editor
+	 * may keep it) or a deserialized one. The scheduler adds its own handles on the process and its DACQ
+	 * configuration (an editor closed during the run must not make them forgotten). The new process is
+	 * acquired BEFORE the previous one is released : if both use the same DACQ configuration, it stays in
+	 * memory (same object, the real-time charts are only cleared).
+	 */
+	private Process acquireProcess(IResource processFile) {
+		Object object = ResourceProperties.getObjectSessionProperty(processFile);
+		// Same process, still the object in memory for this file (it is forgotten if its file is replaced)
+		if(keptProcess != null && processFile.equals(keptProcessFile) && object == keptProcess) return keptProcess;
+		boolean deserialized = false;
+		if(object == null) {
+			object = ObjectsController.deserialize((IFile) processFile);
+			ResourceProperties.setObjectSessionProperty(processFile, object);
+			deserialized = true;
+		}
+		ObjectsController.addHandle(object);
+		Process process = (Process) object;
+		DACQConfiguration dacqConfiguration = process.getDACQConfiguration();
+		if(dacqConfiguration != null) ObjectsController.addHandle(dacqConfiguration);
+		releaseKeptProcess();
+		keptProcessFile = processFile;
+		keptProcess = process;
+		keptDACQConfiguration = dacqConfiguration;
+		keptProcessDeserialized = deserialized;
+		return process;
+	}
+	
+	/*
+	 * Removes the handles of the scheduler on the kept process and its DACQ configuration : they are
+	 * forgotten if nothing else (an editor for example) keeps them.
+	 */
+	private void releaseKeptProcess() {
+		if(keptProcess == null) return;
+		try {
+			if(keptDACQConfiguration != null) ObjectsController.removeHandle(keptDACQConfiguration);
+			if(keptProcessDeserialized) {
+				DACQConfiguration dacqConfiguration = keptProcess.getDACQConfiguration();
+				if(dacqConfiguration != null) ObjectsController.removeHandle(dacqConfiguration);
+			}
+			ObjectsController.removeHandle(keptProcess);
+		} finally {
+			keptProcessFile = null;
+			keptProcess = null;
+			keptDACQConfiguration = null;
+			keptProcessDeserialized = false;
+		}
+	}
+	
 	private class RunProcessJob extends Job {
 		
 		private IResource processFile;
@@ -116,17 +181,11 @@ public class ExperimentScheduler {
 		@Override
 		protected IStatus run(IProgressMonitor monitor) {
 			IStatus returnStatus = Status.OK_STATUS;
-			boolean removeProcessHandle = false;
-			Object object = ResourceProperties.getObjectSessionProperty(processFile);
-			if(object == null) {
-				object = ObjectsController.deserialize((IFile) processFile);
-				ResourceProperties.setObjectSessionProperty(processFile, object);
-				ObjectsController.addHandle(object);
-				removeProcessHandle = true;
-			}
-			process = (Process) object;
+			// Kept from the previous trial if it is the same process, released at the end of the run
+			Process previousProcess = keptProcess;
+			process = acquireProcess(processFile);
 			int priority = Thread.currentThread().getPriority();
-			TrialTimings.step("RunProcessJob started (process deserialized)");
+			TrialTimings.step(process == previousProcess ? "RunProcessJob started (process kept)" : "RunProcessJob started (process loaded)");
 			try {
 				process.preExecute((trial==null)?processFile:trial);
 				TrialTimings.step("Process.preExecute()");
@@ -193,11 +252,8 @@ public class ExperimentScheduler {
 					Activator.logErrorMessageWithCause(e);
 					e.printStackTrace();
 				} finally {
+					// The handles on the process and its DACQ configuration are kept for the next trial
 					Thread.currentThread().setPriority(priority);
-					if(removeProcessHandle) {
-						ObjectsController.removeHandle(process.getDACQConfiguration());
-						ObjectsController.removeHandle(process);
-					}
 				}
 			}
 			return returnStatus;
@@ -221,6 +277,17 @@ public class ExperimentScheduler {
 		@Override
 		protected IStatus run(IProgressMonitor monitor) {
 			
+			try {
+				runTrials();
+			} finally {
+				// End of the run : the process of the last trial and its DACQ configuration are released
+				releaseKeptProcess();
+			}
+			RunStopHandler.refresh();
+			return Status.OK_STATUS;
+		}
+		
+		private void runTrials() {
 			while(running) {
 				IResource process = selectedResource;
 				if(!runProcess && currentTrial == null) running = false;
@@ -299,8 +366,6 @@ public class ExperimentScheduler {
 					}
 				}
 			}
-			RunStopHandler.refresh();
-			return Status.OK_STATUS;
 		}
 		
 	}

@@ -89,6 +89,19 @@ public class ADWinChannel extends Channel {
 	transient long fileSize;
 	transient private String recordedFileName;
 	
+	/*
+	 * Stimulus (see GenerationDelegate) : the generation FIFO is refilled only when about a quarter of
+	 * it has been consumed since the previous refill, estimated from its buffer size and the actual
+	 * sample frequency of the channel, instead of at each iteration of the real-time loop (each refill
+	 * costs about four network round trips with ADwin).
+	 */
+	private static final double GENERATION_REFILL_FRACTION = 0.25;
+	transient private long generationRefillPeriodNanos; // 0 : refilled at each iteration
+	transient private boolean generationRefillScheduled; // false : refilled at the next iteration
+	transient private long generationNextRefillNanos;    // System.nanoTime() of the next refill
+	transient private boolean generationFinished;       // no more samples in the stimulus file
+	transient private double generationFrequency;       // actual sample frequency of the stimulus (Hz), 0 if unknown
+	
 	public ADWinChannel(Module module) {
 		super(module);
 	}
@@ -120,35 +133,57 @@ public class ADWinChannel extends Channel {
 		if(fileChannel == null || !fileChannel.isOpen()) return new float[nbData];
 		ByteBuffer byteBuffer = ByteBuffer.allocate(nbData*4);
 		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-		floatBuffer = byteBuffer.asFloatBuffer();
-		notify = true;
 		float[] array = new float[nbData];
 		try {
-			// Read data for adwin in array
+			// Samples sent to ADwin. They are given to the charts when they are played, not now
+			// (see notifyPlayedStimulusSamples())
 			fileChannel.read(byteBuffer);
-			for (int i = 0; i < array.length; i++) array[i] = floatBuffer.get();
-			// Read for observers
-			if(adwinLastPosition == -1) {
-				// This is first adwin read.FIFO has been filled and
-				// We do not need to notify as process is not running 
-				observersLastPosition = 0;
-				notify = false;
-			}
-			// Save last adwin position
+			// Whole buffer (as before : zeros if the file could not be read entirely)
+			byteBuffer.rewind();
+			byteBuffer.asFloatBuffer().get(array);
+			if(adwinLastPosition == -1) observersLastPosition = 0; // First read : nothing given to the charts yet
 			adwinLastPosition = fileChannel.position(); 
-			if(notify) {
-				//Rewind to observers position
-				fileChannel.position(observersLastPosition);
-				byteBuffer.rewind();
-				fileChannel.read(byteBuffer);
-				observersLastPosition = observersLastPosition + nbData*4;
-				// Reset position to previous position for next adwin read
-				fileChannel.position(adwinLastPosition); 
-			}
 		} catch (IOException e) {
 			Logger.getLogger(Process.class).error("Exception", e);
 		}
 		return array;
+	}
+	
+	/*
+	 * Stimulus : gives to the charts the samples played by ADwin since the start of the process and not
+	 * yet given, read again in the stimulus file (positional read : the position of the next samples
+	 * to send to ADwin is not changed). Called at each iteration of the real-time loop, also once all the
+	 * samples have been sent (see GenerationDelegate) : the charts display the stimulus continuously and
+	 * up to its end, whatever the refills of the generation FIFO.
+	 * @param playedSamples number of samples played by ADwin since the start of the process (estimated)
+	 */
+	void notifyPlayedStimulusSamples(long playedSamples) {
+		if(fileChannel == null || !fileChannel.isOpen() || observersLastPosition < 0) return;
+		// Not more than the samples sent to ADwin
+		long target = Math.min(playedSamples, totalReadSamples);
+		long displayed = observersLastPosition / 4;
+		int nbData = (int) Math.min(Integer.MAX_VALUE / 4, target - displayed);
+		if(nbData <= 0) return;
+		ByteBuffer byteBuffer = ByteBuffer.allocate(nbData*4);
+		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+		try {
+			while(byteBuffer.hasRemaining()) {
+				if(fileChannel.read(byteBuffer, observersLastPosition + byteBuffer.position()) < 0) break;
+			}
+			byteBuffer.flip();
+			floatBuffer = byteBuffer.asFloatBuffer();
+			// FloatBuffer given to the observers in the state of the recovered samples (see addSamples())
+			floatBuffer.position(floatBuffer.limit());
+			observersLastPosition = observersLastPosition + (long) floatBuffer.limit() * 4;
+			notify = true;
+		} catch (IOException e) {
+			Logger.getLogger(Process.class).error("Exception", e);
+		}
+	}
+	
+	/* Actual sample frequency of this stimulus (Hz), 0 if unknown (see computeGenerationRefillPeriodNanos()) */
+	double getGenerationFrequency() {
+		return generationFrequency;
 	}
 
 	public void open(Process process, String prefix, String suffix) {
@@ -157,6 +192,10 @@ public class ADWinChannel extends Channel {
 			observersLastPosition = -1;
 			totalReadSamples = 0;
 			fileSize = 0;
+			generationRefillPeriodNanos = 0;
+			generationRefillScheduled = false;
+			generationFinished = false;
+			generationFrequency = 0;
 			this.prefix = prefix;
 			this.suffix = suffix;
 			boolean isStimulus = false;
@@ -179,6 +218,7 @@ public class ADWinChannel extends Channel {
 			}
 			
 			if(isStimulus) {
+				generationRefillPeriodNanos = computeGenerationRefillPeriodNanos(process);
 				fileName = getStimulusFileName(process.getInitializeBlocksContainer());
 				if(fileName == null) fileName = getStimulusFileName(process.getLoopBlocksContainer());
 				if(fileName == null) fileName = getStimulusFileName(process.getFinalizeBlocksContainer());
@@ -231,6 +271,50 @@ public class ADWinChannel extends Channel {
 			releaseFiles();
 			throw e;
 		}
+	}
+	
+	/*
+	 * Time to consume GENERATION_REFILL_FRACTION of the generation FIFO, from the buffer size and the
+	 * sample frequency of this channel in the DACQ configuration of the process. The actual frequency
+	 * is the global frequency divided by an integer ratio, as in the generated ADbasic code
+	 * (see STIMULUS.FUN). 0 (refilled at each iteration) if these properties are not valid.
+	 */
+	private long computeGenerationRefillPeriodNanos(Process process) {
+		try {
+			double globalFrequency = Double.parseDouble(process.getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.GLOBAL_FREQUENCY));
+			double sampleFrequency = Double.parseDouble(getProperty(ChannelProperties.SAMPLE_FREQUENCY));
+			int bufferSize = Integer.parseInt(getProperty(ChannelProperties.BUFFER_SIZE));
+			if(globalFrequency <= 0 || sampleFrequency <= 0 || bufferSize <= 0) return 0;
+			int frequencyRatio = Math.max(1, (int) (globalFrequency / sampleFrequency));
+			double actualFrequency = globalFrequency / frequencyRatio;
+			generationFrequency = actualFrequency;
+			return (long) (GENERATION_REFILL_FRACTION * bufferSize / actualFrequency * 1e9);
+		} catch (RuntimeException e) {
+			return 0;
+		}
+	}
+	
+	/*
+	 * True if the generation FIFO of this stimulus must be refilled at this iteration of the real-time
+	 * loop (see GenerationDelegate) : always at the first one, then once per refill period.
+	 */
+	boolean isGenerationRefillDue(long nowNanos) {
+		return !generationFinished && (!generationRefillScheduled || nowNanos - generationNextRefillNanos >= 0);
+	}
+	
+	/* The generation FIFO of this stimulus has just been refilled (or found full) */
+	void generationRefilled(long nowNanos) {
+		generationNextRefillNanos = nowNanos + generationRefillPeriodNanos;
+		generationRefillScheduled = true;
+	}
+	
+	/* All the samples of the stimulus file have been sent to ADwin */
+	void setGenerationFinished() {
+		generationFinished = true;
+	}
+	
+	boolean isGenerationFinished() {
+		return generationFinished;
 	}
 	
 	/*
