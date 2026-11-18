@@ -21,8 +21,6 @@ To download DOCoMETRe, please follow the link related to your platform :
 <ins>**You are using OSX ?**</ins> You could unfortunately get an error the first time you launch DOCoMETRe.
 Please read this page to get a solution : [note for OSX users](https://github.com/fbuloup/DOCoMETRe/wiki/Note-for-OSX-Users).
 
-<ins>**Your OS is Linux GTK**</ins>, 3D charts won't work because of this [bug](https://jogamp.org/bugzilla//show_bug.cgi?id=1362). It should be resolved once Jogamp release 2.4.0 will be available.
-
 There is no installer : simply unzip downloaded file and copy/paste resulting folder where you want, but in a folder where you have all rights.
 
 DOCoMETRe stands for "Dispositif d'Observation et de COntrôle du Mouvement En Temps Réel". It's obviously a very bad acronym, but has the advantage to evoke a meter device ! It is composed of a multiplatform software developed in Java using [Eclipse RCP](https://wiki.eclipse.org/Rich_Client_Platform) framework and for now is able to handle these hardwares : 
