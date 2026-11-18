@@ -6,43 +6,76 @@
       provider-name="ISM">
 
    <description>
-      -- 2026-11-18
+      -- 2026-11-19
 ADDED :
-* ADwin real-time loop : all the auto-transferred channels are read
+* Arduino Uno R3 : serial port kept open from a trial to the next
+when the same process is executed : the board is no more reset at
+each trial (about 1.5 s saved between trials). The port is closed
+before an upload and at the end of the session
+* Processes (ADwin, Arduino Uno R3 and R4 WiFi) : &amp;quot;time&amp;quot; and
+&amp;quot;rtTime&amp;quot; can both be used whatever the system or the board
+revision, and both are proposed in the blocks. Existing processes
+only have to be compiled again
+* Dark theme icon for numpy data files
+FIXED :
+* Arduino Uno R3 : the parameters and the start request sent just after
+the opening of the serial port were lost while the board was restarting
+(about 1.5 s in its bootloader) : the process never started and no
+data was received. The board readiness (&amp;quot;w&amp;quot; char) is now waited
+for (3 s at most), and a lost start request is sent again (3 times at
+most, all boards)
+-- 2026-11-18
+ADDED :
+* ADwin real-time loop : all the auto-transferred channels are
+read
 from a single FIFO (DATA_198) with two requests instead of about
-three per channel : real-time display updated about 100 times per
+three per channel : real-time display updated about 100 times
+per
 second instead of 15. General preference &quot;ADwin : single transfer
-FIFO&quot; (enabled by default), processes must be recompiled. The own
+FIFO&quot; (enabled by default), processes must be recompiled. The
+own
 FIFOs of these channels are no more declared
-* ADwin real-time loop : data loss counters of all the channels read
+* ADwin real-time loop : data loss counters of all the channels
+read
 with a single request per iteration
-* ADwin signal generation : generation FIFO refilled when about a
-quarter of it has been consumed, underflow counters read with the
+* ADwin signal generation : generation FIFO refilled when about
+a
+quarter of it has been consumed, underflow counters read with
+the
 data loss counters (generation from 1.8 ms to 0.02 ms per iteration)
-* Trials (ADwin and Arduino Uno) : process and DACQ configuration kept
-from a trial to the next while the same process is executed : real
+* Trials (ADwin and Arduino Uno) : process and DACQ configuration
+kept
+from a trial to the next while the same process is executed :
+real
 time charts cleared instead of created again (about 45 ms saved
 between trials when no editor is open)
-* ADwin events diary : three lines per iteration (durations, recovered
+* ADwin events diary : three lines per iteration (durations,
+recovered
 channels, generated channels) instead of about fourteen, displayed
 on six lines in the diary editor with means and totals
-* Timing trace (-traceTrialTimings) : durations of the parts of the
+* Timing trace (-traceTrialTimings) : durations of the parts
+of the
 real-time loop iterations summarized at the end of each trial
 * Transfer block : only the channels transferred without auto-transfer
 are proposed, other channels reported in the process markers
 FIXED :
 * ADwin : a stimulus file not recorded was never closed and could
 neither be deleted nor moved under Windows (a process test could
-no more be run again). Channel files are now closed after an error
+no more be run again). Channel files are now closed after an
+error
 too
-* ADwin : empty stimulus file reported in the diary instead of a
+* ADwin : empty stimulus file reported in the diary instead of
+a
 driver exception
 * ADwin : stimulus displayed by chunks and its last buffer never
 displayed in real-time charts
-* ADwin events diary : &quot;display&quot; duration was not the display time
+* ADwin events diary : &quot;display&quot; duration was not the display
+time
 (removed), first interval of a trial was the time since the previous
-trial, generation FIFO initialization not counted in generated samples
-* Transfer block on an auto-transferred channel : each sample was
+trial, generation FIFO initialization not counted in generated
+samples
+* Transfer block on an auto-transferred channel : each sample
+was
 transferred twice
 -- 2026-11-17
 ADDED :
