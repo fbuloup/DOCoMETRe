@@ -2117,7 +2117,7 @@ public class ArduinoUnoProcess extends Process {
 	/*
 	 * Portenta Machine Control : errors of the DACQ configuration, which stop the compilation. Its processes are
 	 * compiled and uploaded with arduino-cli. Opening its serial port at 1200 bauds starts its bootloader. Its inputs
-	 * and outputs are not supported yet : no channel of the modules can be used.
+	 * and outputs are not supported yet : no channel of the modules can be used, no ADS1115 module.
 	 */
 	private List<String> getPMCConfigurationErrors() {
 		List<String> errors = new ArrayList<>();
@@ -2127,6 +2127,11 @@ public class ArduinoUnoProcess extends Process {
 		for (int i = 0; i < dacqConfiguration.getModulesNumber(); i++) {
 			ModuleBehaviour module = dacqConfiguration.getModule(i);
 			if(!(module instanceof Module)) continue;
+			// ADS1115 module : its code is generated even if none of its channels is used
+			if(module instanceof ArduinoUnoADS1115Module) {
+				errors.add(NLS.bind(ArduinoUnoMessages.PMC_ADS1115NotSupported, ArduinoUnoModulesList.getDescription((Module)module)));
+				continue;
+			}
 			for (Channel channel : ((Module)module).getChannels()) {
 				if(!Boolean.valueOf(channel.getProperty(ArduinoUnoChannelProperties.USED))) continue;
 				// The DAC channel of Uno R4 WiFi is not used with other boards (see ArduinoUnoAnOutModule)

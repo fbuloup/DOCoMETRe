@@ -61,7 +61,10 @@ public class ArduinoUnoAnInModule extends Module {
 	public String getCodeSegment(Object segment) throws Exception {
 		String code = "";
 		
-		if (segment == ArduinoUnoCodeSegmentProperties.INITIALIZATION) {
+		// Portenta Machine Control : no analogReference() (DEFAULT, AR_DEFAULT... are not defined by its mbed core),
+		// its analog inputs are configured with the Arduino_PortentaMachineControl library
+		boolean isPMC = ArduinoUnoDACQConfigurationProperties.isPMC(dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION));
+		if (segment == ArduinoUnoCodeSegmentProperties.INITIALIZATION && !isPMC) {
 			// Reference of the revision of the board (configurations saved with a reference of the other revision)
 			String analogReference = ArduinoUnoAnInModuleProperties.getReferenceOfRevision(getProperty(ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE), ArduinoUnoAnInModuleProperties.isR4(dacqConfiguration));
 			code = code +  "\t\t// Set analog ref.\n";
