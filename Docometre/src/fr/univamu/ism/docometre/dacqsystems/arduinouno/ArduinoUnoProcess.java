@@ -846,10 +846,8 @@ public class ArduinoUnoProcess extends Process {
 		
 		if(segment == ArduinoUnoCodeSegmentProperties.INCLUDE) {
 			if(isRelease4Wifi) {
-				code = code + "#include \"WDT.h\"\n";
 				code = code + "#include \"FspTimer.h\"\n";
 			}
-			if(isRelease3) code = code + "#include <avr/wdt.h>\n";
 			if(getDACQConfiguration().getParameters().length > 0) {
 				code = code + "// Parameters reading (see readParameterValue())\n";
 				code = code + "#include <errno.h>\n";
