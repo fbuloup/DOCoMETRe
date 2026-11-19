@@ -890,15 +890,16 @@ public class ArduinoUnoProcess extends Process {
 				code = code + "#include \"FspTimer.h\"\n";
 			}
 			if(isRelease3) code = code + "#include <avr/wdt.h>\n";
-			if(isPMC) {
-				code = code + "#include \"mbed.h\"\n";
-				code = code + "#include <Arduino_PortentaMachineControl.h>\n";
-			}
 			if(getDACQConfiguration().getParameters().length > 0) {
 				code = code + "// Parameters reading (see readParameterValue())\n";
 				code = code + "#include <errno.h>\n";
 				code = code + "#include <limits.h>\n";
 				code = code + "#include <string.h>\n";
+			}
+			// Portenta Machine Control : mbed (real time loop thread and ticker) and its library
+			if(isPMC) {
+				code = code + "#include \"mbed.h\"\n";
+				code = code + "#include <Arduino_PortentaMachineControl.h>\n";
 			}
 			code = code + getGlobalLibrariesCode();
 			
