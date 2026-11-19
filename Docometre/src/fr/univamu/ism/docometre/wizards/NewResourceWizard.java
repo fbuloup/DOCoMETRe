@@ -234,6 +234,8 @@ public class NewResourceWizard extends Wizard implements INewWizard, IPageChange
 	public void pageChanged(PageChangedEvent event) {
 		if(event.getSelectedPage() == organizeSessionWizardPage) {
 			organizeSessionWizardPage.updateFocus();
+			// Trials number may have been modified in previous page : check again associations
+			organizeSessionWizardPage.validateResultAssociation();
 		}
 		
 	}

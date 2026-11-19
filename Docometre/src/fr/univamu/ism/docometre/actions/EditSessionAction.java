@@ -54,6 +54,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
@@ -62,6 +63,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 
 import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.ResourceProperties;
 import fr.univamu.ism.docometre.ResourceType;
 import fr.univamu.ism.docometre.TrialNames;
@@ -115,6 +117,11 @@ public class EditSessionAction extends Action implements ISelectionListener, IWo
 				Set<Integer> trialsNumbers = resultAssociation.keySet();
 				for (Integer trialNumber : trialsNumbers) {
 					IFolder trial = TrialNames.getTrial(session, trialNumber);
+					// Should not happen as wizard checks associations, but never try to set a property on a missing trial
+					if(!trial.exists()) {
+						Activator.logErrorMessage(NLS.bind(DocometreMessages.OrganizeSessionWizardPage_TrialNotFound, trial.getFullPath().toOSString()));
+						continue;
+					}
 					IResource process = resultAssociation.get(trialNumber);
 					ResourceProperties.setAssociatedProcessProperty(trial, process.getFullPath().toOSString());
 				}

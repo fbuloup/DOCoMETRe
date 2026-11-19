@@ -60,6 +60,7 @@ import org.eclipse.swt.widgets.Spinner;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Random;
@@ -130,6 +131,10 @@ public class OrganizeSessionWizardPage extends WizardPage {
 	private CTabFolder selectDistributionMethodTabFolder;
 	private CTabItem selectedTrialsTabItem;
 	private CTabItem packTrialsTabItem;
+	// Error messages currently raised by this page (null when no error)
+	private String trialsListErrorMessage;
+	private String packetSizeErrorMessage;
+	private String associationErrorMessage;
 
 	public OrganizeSessionWizardPage() {
 		super(PageName);
@@ -304,13 +309,14 @@ public class OrganizeSessionWizardPage extends WizardPage {
 		trialsListText.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
-				setErrorMessage(null);
+				trialsListErrorMessage = null;
 				trialsList = trialsListText.getText();
 				Pattern pattern = Pattern.compile("^(?!([ \\d]*-){2})\\d+(?: *[-,:;] *\\d+)*$");
 				Matcher matcher = pattern.matcher(trialsList);
 				if(!matcher.matches()) {
-					setErrorMessage(DocometreMessages.BadTrialsList);
+					trialsListErrorMessage = DocometreMessages.BadTrialsList;
 				}
+				updateErrorMessage();
 			}
 		});
 		
@@ -367,14 +373,15 @@ public class OrganizeSessionWizardPage extends WizardPage {
 		packTrialsSizeSpinner.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
-				setErrorMessage(null);
+				packetSizeErrorMessage = null;
 				packetSize = 0;
 				String packetSizeString = packTrialsSizeSpinner.getText();
 				Pattern pattern = Pattern.compile("^\\d+$");
 				Matcher matcher = pattern.matcher(packetSizeString);
 				if(!matcher.matches()) {
-					setErrorMessage(DocometreMessages.BadPacketTrialsSize);
+					packetSizeErrorMessage = DocometreMessages.BadPacketTrialsSize;
 				} else packetSize = packTrialsSizeSpinner.getSelection();
+				updateErrorMessage();
 			}
 		});
 		packTrialsSizeSpinner.addMouseWheelListener(new MouseWheelListener() {
@@ -532,7 +539,8 @@ public class OrganizeSessionWizardPage extends WizardPage {
 						@Override
 						public void run() {
 							((WizardPage)OrganizeSessionWizardPage.this.getPreviousPage()).setPageComplete(true);
-							OrganizeSessionWizardPage.this.setPageComplete(true);
+							// Check that each associated trial exists in session (updates messages and Finish button)
+							validateResultAssociation();
 							
 						}
 					});
@@ -810,6 +818,75 @@ public class OrganizeSessionWizardPage extends WizardPage {
 
 	public HashMap<Integer, IResource> getResultAssociation() {
 		return resultAssociation;
+	}
+
+	/*
+	 * Returns trials numbers present in result association list 
+	 * that are not in range [1, number of trials of the session], sorted.
+	 */
+	private ArrayList<Integer> getOutOfRangeTrialsNumbers() {
+		ArrayList<Integer> outOfRangeTrialsNumbers = new ArrayList<Integer>();
+		if(getWizard() == null) return outOfRangeTrialsNumbers;
+		int nbTrials = ((NewResourceWizard)getWizard()).getTrialsNumber();
+		for (Integer trialNumber : resultAssociation.keySet()) {
+			if(trialNumber < 1 || trialNumber > nbTrials) outOfRangeTrialsNumbers.add(trialNumber);
+		}
+		Collections.sort(outOfRangeTrialsNumbers);
+		return outOfRangeTrialsNumbers;
+	}
+	
+	/*
+	 * Result association is valid when each associated trial exists in session,
+	 * i.e. its number is in range [1, number of trials set in previous page].
+	 */
+	public boolean isResultAssociationValid() {
+		return getOutOfRangeTrialsNumbers().isEmpty();
+	}
+	
+	/*
+	 * Page is complete only if result association is valid.
+	 * As this is evaluated each time wizard buttons are updated, Finish button 
+	 * is also disabled from previous page when trials number is modified there.
+	 */
+	@Override
+	public boolean isPageComplete() {
+		return isResultAssociationValid();
+	}
+	
+	/*
+	 * Check result association against session trials number, 
+	 * then update error/warning messages and wizard buttons.
+	 */
+	public void validateResultAssociation() {
+		associationErrorMessage = null;
+		ArrayList<Integer> outOfRangeTrialsNumbers = getOutOfRangeTrialsNumbers();
+		int nbTrials = getWizard() != null ? ((NewResourceWizard)getWizard()).getTrialsNumber() : 0;
+		if(!outOfRangeTrialsNumbers.isEmpty()) {
+			StringBuilder trialsString = new StringBuilder();
+			int maxDisplayed = 10;
+			for (int i = 0; i < outOfRangeTrialsNumbers.size() && i < maxDisplayed; i++) {
+				if(i > 0) trialsString.append(", ");
+				trialsString.append(outOfRangeTrialsNumbers.get(i));
+			}
+			if(outOfRangeTrialsNumbers.size() > maxDisplayed) trialsString.append(", ...");
+			associationErrorMessage = NLS.bind(DocometreMessages.OrganizeSessionWizardPage_TrialsOutOfRange, trialsString.toString(), String.valueOf(nbTrials));
+			setMessage(null);
+		} else {
+			int nbAssociatedTrials = resultAssociation.size();
+			if(nbAssociatedTrials > 0 && nbAssociatedTrials < nbTrials) {
+				String message = NLS.bind(DocometreMessages.OrganizeSessionWizardPage_TrialsNotAssociated, String.valueOf(nbTrials - nbAssociatedTrials), String.valueOf(nbTrials));
+				setMessage(message, WARNING);
+			} else setMessage(null);
+		}
+		updateErrorMessage();
+		if(getContainer() != null && isCurrentPage()) getContainer().updateButtons();
+	}
+	
+	private void updateErrorMessage() {
+		String errorMessage = associationErrorMessage;
+		if(errorMessage == null) errorMessage = trialsListErrorMessage;
+		if(errorMessage == null) errorMessage = packetSizeErrorMessage;
+		setErrorMessage(errorMessage);
 	}
 
 	public void updateFocus() {

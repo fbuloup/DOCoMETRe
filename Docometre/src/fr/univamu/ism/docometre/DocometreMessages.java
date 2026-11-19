@@ -972,6 +972,9 @@ public final class DocometreMessages extends NLS {
 	public static String ChooseProcess;
 	public static String AssociatingProcess;
 	public static String BadPacketTrialsSize;
+	public static String OrganizeSessionWizardPage_TrialsOutOfRange;
+	public static String OrganizeSessionWizardPage_TrialsNotAssociated;
+	public static String OrganizeSessionWizardPage_TrialNotFound;
 	
 	public static String SelectExperimentDialogMessage;
 	public static String SelectExperimentDialogTitle;
