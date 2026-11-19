@@ -2,6 +2,9 @@ package fr.univamu.ism.docometre.dacqsystems;
 
 import java.util.Arrays;
 
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
+
 import fr.univamu.ism.docometre.Activator;
 
 /**
@@ -69,6 +72,44 @@ public final class TrialTimings {
 	private static final long[] partCalls = new long[LoopPart.values().length];
 	private static long getFifoSamples;
 
+	/**
+	 * Tasks of the user interface thread measured during a trial (see {@link #uiPart}) : a task longer than
+	 * {@link #UI_TASK_LOG_THRESHOLD_MS} is logged with the time of the trial, all are summarized at its end.
+	 */
+	public enum UIPart {
+		CHARTS_POINTS("charts : points added to the series"),
+		CHARTS_RENDERING("charts : OpenGL rendering (one frame)");
+
+		private final String label;
+
+		UIPart(String label) {
+			this.label = label;
+		}
+	}
+
+	/** A task of the user interface thread longer than this is logged */
+	public static final int UI_TASK_LOG_THRESHOLD_MS = 30;
+	/** Period of the watchdog of the user interface thread (see {@link #startUIWatchdog()}) */
+	private static final int UI_WATCHDOG_PERIOD_MS = 20;
+	/** A delay of the watchdog longer than this is logged : the user interface thread was blocked */
+	private static final int UI_BLOCK_LOG_THRESHOLD_MS = 80;
+	/** An interval without points added to the charts longer than this is logged */
+	private static final int UI_POINTS_GAP_LOG_THRESHOLD_MS = 200;
+
+	// Accumulated durations of the tasks of the user interface thread for the current trial (reset at Start_Process)
+	private static final long[] uiTotalNanos = new long[UIPart.values().length];
+	private static final long[] uiMaxNanos = new long[UIPart.values().length];
+	private static final long[] uiCalls = new long[UIPart.values().length];
+	// Watchdog of the user interface thread : generation of the running watchdog (an older one stops), time of its
+	// previous tick, number of delays logged and longest delay
+	private static int uiWatchdogGeneration;
+	private static long uiWatchdogLastTick;
+	private static long uiBlocks;
+	private static long uiMaxDelayNanos;
+	// Points added to the charts : time of the last addition, longest interval without addition
+	private static long uiLastPointsNanos;
+	private static long uiMaxPointsGapNanos;
+
 	private TrialTimings() {
 	}
 
@@ -81,7 +122,10 @@ public final class TrialTimings {
 	/** The process has ended on the acquisition system: starts the measure. */
 	public static void processEnded() {
 		if (!trace) return;
+		uiSummary();
 		synchronized (TrialTimings.class) {
+			// Watchdog of the user interface thread stopped
+			uiWatchdogGeneration++;
 			origin = System.nanoTime();
 			last = origin;
 			startOrigin = -1;
@@ -117,7 +161,109 @@ public final class TrialTimings {
 			Arrays.fill(partMaxNanos, 0);
 			Arrays.fill(partCalls, 0);
 			getFifoSamples = 0;
+			Arrays.fill(uiTotalNanos, 0);
+			Arrays.fill(uiMaxNanos, 0);
+			Arrays.fill(uiCalls, 0);
+			uiBlocks = 0;
+			uiMaxDelayNanos = 0;
+			uiLastPointsNanos = 0;
+			uiMaxPointsGapNanos = 0;
 		}
+		startUIWatchdog();
+	}
+
+	/*
+	 * Time since the start of the current trial in seconds, negative when the trial is not measured (caller
+	 * synchronized on TrialTimings.class)
+	 */
+	private static double trialTime(long nanos) {
+		return startOrigin < 0 ? -1 : (nanos - startOrigin) / 1e9;
+	}
+
+	/**
+	 * Adds the duration of a task of the user interface thread, started at startNanos (see {@link #partStart}) :
+	 * logged if it is longer than {@link #UI_TASK_LOG_THRESHOLD_MS}. Measured only during a trial.
+	 */
+	public static void uiPart(UIPart part, long startNanos) {
+		if (!trace || startNanos == 0) return;
+		long now = System.nanoTime();
+		long duration = now - startNanos;
+		String message = null;
+		synchronized (TrialTimings.class) {
+			if (startOrigin < 0) return;
+			int i = part.ordinal();
+			uiTotalNanos[i] += duration;
+			uiCalls[i]++;
+			if (duration > uiMaxNanos[i]) uiMaxNanos[i] = duration;
+			if (duration > UI_TASK_LOG_THRESHOLD_MS * 1_000_000L)
+				message = String.format("user interface thread : %s lasted %.1f ms (t = %.3f s of the trial)", part.label, duration / 1e6, trialTime(startNanos));
+			if (part == UIPart.CHARTS_POINTS) {
+				long gap = uiLastPointsNanos == 0 ? 0 : startNanos - uiLastPointsNanos;
+				if (gap > uiMaxPointsGapNanos) uiMaxPointsGapNanos = gap;
+				if (gap > UI_POINTS_GAP_LOG_THRESHOLD_MS * 1_000_000L) {
+					String gapMessage = String.format("charts : no points added for %.1f ms (until t = %.3f s of the trial)", gap / 1e6, trialTime(startNanos));
+					message = message == null ? gapMessage : gapMessage + System.lineSeparator() + PREFIX + message;
+				}
+				uiLastPointsNanos = now;
+			}
+		}
+		if (message != null) log(message);
+	}
+
+	/*
+	 * Watchdog of the user interface thread during a trial : a task run every UI_WATCHDOG_PERIOD_MS by the user
+	 * interface thread. When it runs late, the user interface thread was blocked (by the charts or by any other task) :
+	 * a delay longer than UI_BLOCK_LOG_THRESHOLD_MS is logged with the time of the trial. Stopped by processEnded().
+	 */
+	private static void startUIWatchdog() {
+		Display display = PlatformUI.isWorkbenchRunning() ? PlatformUI.getWorkbench().getDisplay() : null;
+		if (display == null || display.isDisposed()) return;
+		int generation;
+		synchronized (TrialTimings.class) {
+			generation = ++uiWatchdogGeneration;
+		}
+		display.asyncExec(() -> {
+			synchronized (TrialTimings.class) {
+				uiWatchdogLastTick = System.nanoTime();
+			}
+			if (!display.isDisposed()) display.timerExec(UI_WATCHDOG_PERIOD_MS, () -> uiWatchdogTick(display, generation));
+		});
+	}
+
+	private static void uiWatchdogTick(Display display, int generation) {
+		String message = null;
+		synchronized (TrialTimings.class) {
+			if (!trace || generation != uiWatchdogGeneration) return;
+			long now = System.nanoTime();
+			long delay = now - uiWatchdogLastTick - UI_WATCHDOG_PERIOD_MS * 1_000_000L;
+			uiWatchdogLastTick = now;
+			if (delay > uiMaxDelayNanos) uiMaxDelayNanos = delay;
+			if (delay > UI_BLOCK_LOG_THRESHOLD_MS * 1_000_000L) {
+				uiBlocks++;
+				message = String.format("user interface thread blocked about %.1f ms (until t = %.3f s of the trial)", delay / 1e6, trialTime(now));
+			}
+		}
+		if (message != null) log(message);
+		if (!display.isDisposed()) display.timerExec(UI_WATCHDOG_PERIOD_MS, () -> uiWatchdogTick(display, generation));
+	}
+
+	/*
+	 * Summary of the user interface thread during the trial (called at its end, by processEnded())
+	 */
+	private static void uiSummary() {
+		StringBuilder message = new StringBuilder();
+		synchronized (TrialTimings.class) {
+			if (startOrigin < 0) return;
+			message.append(String.format("user interface thread during the trial : blocked %d times more than %d ms, longest delay of the watchdog = %.1f ms, longest interval without points added to the charts = %.1f ms",
+					uiBlocks, UI_BLOCK_LOG_THRESHOLD_MS, uiMaxDelayNanos / 1e6, uiMaxPointsGapNanos / 1e6));
+			for (UIPart part : UIPart.values()) {
+				int i = part.ordinal();
+				if (uiCalls[i] == 0) continue;
+				message.append(String.format("%n    %-38s calls = %6d   total = %9.1f ms   mean/call = %7.3f ms   max/call = %7.1f ms",
+						part.label, uiCalls[i], uiTotalNanos[i] / 1e6, uiTotalNanos[i] / 1e6 / uiCalls[i], uiMaxNanos[i] / 1e6));
+			}
+		}
+		log(message.toString());
 	}
 
 	/** Start of a measured part: System.nanoTime(), or 0 when not measuring (no cost). */
