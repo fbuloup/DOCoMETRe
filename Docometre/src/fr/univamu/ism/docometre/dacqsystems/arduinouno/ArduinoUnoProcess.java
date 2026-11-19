@@ -1308,6 +1308,8 @@ public class ArduinoUnoProcess extends Process {
 				if(hasPropagatedParameters()) {
 					code = code + "\t\t// End of process : values of the propagated parameters sent before 's' char\n";
 					code = code + "\t\tif(propagationInProgress) {\n";
+					// Last messages of the real time loop, added after send() above, sent before the parameters
+					code = code + "\t\t\t\tglobalSerialMessage.send();\n";
 					code = code + "\t\t\t\tsendPropagatedParameters();\n";
 					code = code + "\t\t\t\tpropagationInProgress = false;\n";
 					code = code + "\t\t}\n";
@@ -1316,6 +1318,10 @@ public class ArduinoUnoProcess extends Process {
 				
 				if(hasPropagatedParameters()) code = code + "\t\t\t\tif(!startLoop && !propagationInProgress) {\n";
 				else code = code + "\t\t\t\tif(!startLoop) {\n";
+				// The last messages of the real time loop (time and workload...) may have been added after send() above,
+				// before the end of the process : they are sent before the 's' char
+				code = code + "\t\t\t\t\t\t// Last messages of the real time loop sent before 's' char\n";
+				code = code + "\t\t\t\t\t\tglobalSerialMessage.send();\n";
 				code = code + "\t\t\t\t\t\tSerial.println('s');\n";
 				code = code + "\t\t\t\t\t\tSerial.flush();\n";
 				if(delay > 0) code = code + "\t\t\t\t\t\t\t\tdelayMicroseconds(" + delay + ");\n";
@@ -2414,18 +2420,22 @@ public class ArduinoUnoProcess extends Process {
 		cmd = createUploadProcess(outputFolder);
 		
 		try {
-			java.lang.Process processCMD = Runtime.getRuntime().exec(new String[] {cmd});
-			processCMD.waitFor();
-			String line;
-			BufferedReader error = new BufferedReader(new InputStreamReader(processCMD.getErrorStream()));
-			String message = "";
-			while((line = error.readLine()) != null){
-				message = message + line + "\n";
+			// Outputs of the upload tool read while it runs (dfu-util writes its progress : a full pipe, never read,
+			// blocked the upload forever), upload stopped after a time out
+			ArduinoUnoUploadDelegate.UploadResult uploadResult = ArduinoUnoUploadDelegate.runUpload(cmd, ArduinoUnoUploadDelegate.UPLOAD_TIMEOUT_MS);
+			String message = uploadResult.getErrorOutput();
+			// Portenta Machine Control : dfu-util writes an error when the board restarts at the end of a successful
+			// upload, only its exit code is used
+			boolean isPMC = ArduinoUnoDACQConfigurationProperties.isPMC(arduinoUnoRelease);
+			boolean failed = uploadResult.hasFailed(isPMC);
+			if(!message.equals("")) {
+				if(failed) Activator.logErrorMessage(message);
+				else Activator.logInfoMessage(message, ArduinoUnoProcess.class);
 			}
-			error.close();
-			
-			if(!message.equals("")) Activator.logErrorMessage(message);
-			if(message.toLowerCase().contains("error")) {
+			if(failed) {
+				if(uploadResult.isTimedOut()) appendToEventDiary("ERROR : upload of " + processResource.getFullPath() + " stopped after " + ArduinoUnoUploadDelegate.UPLOAD_TIMEOUT_MS/1000 + " s");
+				else appendToEventDiary("ERROR : upload of " + processResource.getFullPath() + " failed (exit code " + uploadResult.getExitCode() + ")");
+				appendErrorMarkerAtCurrentDiaryLine("ERROR");
 				forceUpload = true;
 				return false;
 			}

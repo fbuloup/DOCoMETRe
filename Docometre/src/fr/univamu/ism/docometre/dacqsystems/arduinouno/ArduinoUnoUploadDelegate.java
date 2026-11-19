@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.runtime.Platform;
 
@@ -110,19 +111,90 @@ public final class ArduinoUnoUploadDelegate {
 	}
 	
 	/**
-	 * Runs an upload script (see {@link #createUploadScript(String, String)})
+	 * Maximum duration of an upload : the upload tool is stopped after it
+	 */
+	public static final long UPLOAD_TIMEOUT_MS = 120000;
+	
+	/**
+	 * Result of an upload script : exit code of the script (exit code of the upload tool), error output of the upload
+	 * tool, and whether the upload has been stopped because it lasted too long
+	 */
+	public static final class UploadResult {
+		private final int exitCode;
+		private final String errorOutput;
+		private final boolean timedOut;
+		
+		public UploadResult(int exitCode, String errorOutput, boolean timedOut) {
+			this.exitCode = exitCode;
+			this.errorOutput = errorOutput;
+			this.timedOut = timedOut;
+		}
+		
+		public int getExitCode() {
+			return exitCode;
+		}
+		
+		public String getErrorOutput() {
+			return errorOutput;
+		}
+		
+		public boolean isTimedOut() {
+			return timedOut;
+		}
+		
+		/**
+		 * @param exitCodeOnly true if the error output is not used : dfu-util (Portenta Machine Control) writes "Error
+		 * during download get_status" when the board restarts at the end of a successful upload
+		 * @return true if the upload failed : time out, exit code not 0 or, if not exitCodeOnly, "error" in the error output
+		 */
+		public boolean hasFailed(boolean exitCodeOnly) {
+			if(timedOut || exitCode != 0) return true;
+			return !exitCodeOnly && ArduinoUnoUploadDelegate.hasFailed(errorOutput);
+		}
+	}
+	
+	/**
+	 * Runs an upload script (see {@link #createUploadScript(String, String)}). The standard output of the upload tool
+	 * (progress of dfu-util, bossac...) is written in uploadOutput.txt, next to the script, and its error output is read
+	 * while it runs : a full pipe, never read, would block the tool. The tool is stopped after timeOutMs.
+	 */
+	public static UploadResult runUpload(String scriptPath, long timeOutMs) throws IOException, InterruptedException {
+		ProcessBuilder processBuilder = new ProcessBuilder(scriptPath);
+		processBuilder.redirectOutput(new File(new File(scriptPath).getParentFile(), "uploadOutput.txt"));
+		java.lang.Process process = processBuilder.start();
+		StringBuilder message = new StringBuilder();
+		Thread errorReader = new Thread(() -> {
+			try (BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+				String line;
+				while((line = error.readLine()) != null) {
+					synchronized (message) {
+						message.append(line).append("\n");
+					}
+				}
+			} catch (IOException e) {
+				// Stream closed : the tool has been stopped
+			}
+		}, "Upload error output");
+		errorReader.setDaemon(true);
+		errorReader.start();
+		boolean finished = process.waitFor(timeOutMs, TimeUnit.MILLISECONDS);
+		if(!finished) {
+			// The script runs the upload tool (arduino-cli, avrdude) : both are stopped
+			process.descendants().forEach(ProcessHandle::destroyForcibly);
+			process.destroyForcibly();
+		}
+		errorReader.join(1000);
+		synchronized (message) {
+			return new UploadResult(finished ? process.exitValue() : -1, message.toString(), !finished);
+		}
+	}
+	
+	/**
+	 * Runs an upload script (see {@link #runUpload(String, long)}, time out of {@link #UPLOAD_TIMEOUT_MS})
 	 * @return the error output of the upload tool, empty if there is none
 	 */
 	public static String runUploadScript(String scriptPath) throws IOException, InterruptedException {
-		java.lang.Process processCMD = Runtime.getRuntime().exec(new String[] {scriptPath});
-		// Error output read before waiting for the end : the tool could be blocked by a full pipe
-		StringBuilder message = new StringBuilder();
-		try (BufferedReader error = new BufferedReader(new InputStreamReader(processCMD.getErrorStream()))) {
-			String line;
-			while((line = error.readLine()) != null) message.append(line).append("\n");
-		}
-		processCMD.waitFor();
-		return message.toString();
+		return runUpload(scriptPath, UPLOAD_TIMEOUT_MS).getErrorOutput();
 	}
 	
 	/**
