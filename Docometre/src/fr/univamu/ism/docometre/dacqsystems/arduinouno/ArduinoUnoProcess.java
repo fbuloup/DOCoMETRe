@@ -1145,12 +1145,16 @@ public class ArduinoUnoProcess extends Process {
 			if(isRelease3) code = "}\n\nISR(TIMER1_COMPA_vect){\n";
 			if(isRelease4Wifi) {
 				code = "}\n\nvoid processing(timer_callback_args_t *p_args){\n\n";
-				code = code + "\t\tunsigned long dt = micros();\n\n";
+				// Prefixed name : a variable "dt" of the process would be hidden by it (its values transferred instead of the
+				// ones of the process) and would change the workload
+				code = code + "\t\tunsigned long realtimeLoop_StartMicros = micros();\n\n";
 			}
 			if(isPMC) {
 				// Run by the real time loop thread (see realtimeLoop_Run())
 				code = "}\n\nvoid processing() {\n\n";
-				code = code + "\t\tunsigned long dt = micros();\n\n";
+				// Prefixed name : a variable "dt" of the process would be hidden by it (its values transferred instead of the
+				// ones of the process) and would change the workload
+				code = code + "\t\tunsigned long realtimeLoop_StartMicros = micros();\n\n";
 			}
 			
 			
@@ -1220,8 +1224,7 @@ public class ArduinoUnoProcess extends Process {
 			double dt = 1/(16000000.0/prescaler)*1000000;
 			if(isRelease3) code = code + "\t\t\t\tworkload = computeWorkload(TCNT0*" + dt + ");\n";
 			if(isARM) {
-				code = code + "\t\t\t\tdt = micros() - dt;\n";
-				code = code + "\t\t\t\tworkload = computeWorkload((unsigned long)dt);\n";
+				code = code + "\t\t\t\tworkload = computeWorkload(micros() - realtimeLoop_StartMicros);\n";
 			}
 //			code = code + "\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, loopTime_MS, workload);\n";
 //			code = code + "\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, 10000.0 /*(unsigned long)(time*1000000)*/, workload);\n";
