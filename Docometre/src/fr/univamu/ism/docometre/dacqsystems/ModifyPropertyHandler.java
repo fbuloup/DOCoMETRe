@@ -42,6 +42,7 @@
 package fr.univamu.ism.docometre.dacqsystems;
 
 import java.io.File;
+import java.util.Arrays;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.IOperationHistory;
@@ -68,6 +69,46 @@ import fr.univamu.ism.docometre.dacqsystems.charts.ChartConfigurationProperties;
 import fr.univamu.ism.docometre.editors.ResourceEditor;
 
 public class ModifyPropertyHandler extends SelectionAdapter implements ModifyListener {
+
+		/**
+		 * Data key of a combo whose items are labels displayed to the user : its data is the array of the values
+		 * saved in the property, same order as the items (see {@link #setComboValues(Combo, String[])})
+		 */
+		public static final String COMBO_VALUES_KEY = "comboValues";
+
+		/**
+		 * Values saved in the property for the items of the combo, displayed to the user, same order as the items
+		 */
+		public static void setComboValues(Combo combo, String[] values) {
+			combo.setData(COMBO_VALUES_KEY, values);
+		}
+
+		/**
+		 * @return the value of the selected item of the combo : the value associated with it (see
+		 * {@link #setComboValues(Combo, String[])}), or its text if no value is associated with the items
+		 */
+		public static String getComboValue(Combo combo) {
+			Object values = combo.getData(COMBO_VALUES_KEY);
+			int index = combo.getSelectionIndex();
+			if(values instanceof String[] && index >= 0 && index < ((String[])values).length) return ((String[])values)[index];
+			return combo.getText();
+		}
+
+		/**
+		 * Selects the item of the combo whose value is value (see {@link #setComboValues(Combo, String[])}), or whose text
+		 * is value if no value is associated with the items
+		 */
+		public static void selectComboValue(Combo combo, String value) {
+			Object values = combo.getData(COMBO_VALUES_KEY);
+			if(values instanceof String[]) {
+				int index = Arrays.asList((String[])values).indexOf(value);
+				if(index >= 0) {
+					combo.select(index);
+					return;
+				}
+			}
+			combo.select(combo.indexOf(value));
+		}
 	
 		private Control control;
 		private String regexp;
@@ -97,7 +138,7 @@ public class ModifyPropertyHandler extends SelectionAdapter implements ModifyLis
 			messageManager.removeMessage(control, control);
 			String text = "";
 			if(control instanceof Text) text = ((Text)control).getText();
-			if(control instanceof Combo) text = ((Combo)control).getText();
+			if(control instanceof Combo) text = getComboValue((Combo)control);
 			if(!text.matches(regexp)) {
 				String tempErrorMessage = errorMessage;
 				if(fileOrFolder) tempErrorMessage = NLS.bind(errorMessage, text);

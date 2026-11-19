@@ -123,6 +123,20 @@ public class Activator extends AbstractUIPlugin {
 	//public static String NI_600X_SYSTEM = "NI 600X";
 	public static final String ARDUINO_UNO_SYSTEM = "Arduino UNO";
 	public static final String[] SYSTEMS = new String[]{ADWIN_SYSTEM, ARDUINO_UNO_SYSTEM/*, NI_600X_SYSTEM*/};
+	// System types displayed to the user, same order as SYSTEMS. The system type saved with the DACQ configurations
+	// does not change ("Arduino UNO") : the Arduino system gathers several boards (Uno R3, Uno R4 WiFi...), chosen with
+	// the revision of the DACQ configuration
+	public static final String ARDUINO_SYSTEM_LABEL = "Arduino";
+	public static final String[] SYSTEMS_LABELS = new String[]{ADWIN_SYSTEM, ARDUINO_SYSTEM_LABEL};
+
+	/**
+	 * @param system a system type (see SYSTEMS), as saved with the DACQ configurations
+	 * @return the system type displayed to the user, or system itself if it is unknown
+	 */
+	public static String getSystemLabel(String system) {
+		for (int i = 0; i < SYSTEMS.length; i++) if(SYSTEMS[i].equals(system)) return SYSTEMS_LABELS[i];
+		return system;
+	}
 	
 	/*
 	 * The constructor
