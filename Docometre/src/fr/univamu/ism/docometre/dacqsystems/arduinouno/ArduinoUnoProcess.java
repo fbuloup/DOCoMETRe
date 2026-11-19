@@ -271,11 +271,11 @@ public class ArduinoUnoProcess extends Process {
 					// Uno R3 : the board restarts when the serial port is opened, and spends about 1.5 s in its bootloader.
 					// The parameters and the 'r' char sent before the process waits for them would be lost (the process
 					// would wait for 'r' forever) : its 'w' char (started, waits for 'r') is waited for
-					if(release3) waitForReadyAfterOpening(true);
-					// Portenta Machine Control : the uploaded process may still be starting. Its 'w' char may also have
-					// been sent before the opening (USB serial port, the board does not restart when it is opened) : it is
-					// then not received, which is not an error (the start request is sent again if 'w' arrives later)
-					if(pmcUploaded) waitForReadyAfterOpening(false);
+					if(release3) waitForReadyAfterOpening();
+					// Portenta Machine Control : its 'w' char is not waited for. Its USB serial port exists only when the
+					// uploaded process runs and the board does not restart when it is opened : the 'w' char has been sent
+					// before the opening and is lost. The start request (parameters, 'r' char) is kept in the reception
+					// buffer of the board until the process reads it, and is sent again if a 'w' char arrives first (see run())
 				}
 				Channel[] transferedChannels = getDACQConfiguration().getTransferedChannels();
 				transferedChannelsOrderedByTransferNumber = new Channel[transferedChannels.length];
@@ -784,20 +784,19 @@ public class ArduinoUnoProcess extends Process {
 		}
 		
 		/*
-		 * Waits for the 'w' char sent by the process when it has started after the opening of the serial port : Uno R3
-		 * restarted by the opening, Portenta Machine Control after an upload. The parameters and the 'r' char can then
-		 * be sent. If errorIfNotReceived, an error marker is added in the diary when it is not received.
+		 * Uno R3 : waits for the 'w' char sent by the process when it has started after the opening of the serial
+		 * port (board restarted by the opening). The parameters and the 'r' char can then be sent.
 		 */
-		private void waitForReadyAfterOpening(boolean errorIfNotReceived) throws SerialPortException, InterruptedException {
+		private void waitForReadyAfterOpening() throws SerialPortException, InterruptedException {
 			long startNanos = System.nanoTime();
 			boolean ready = waitForChar(READY_MESSAGE.charAt(0), READY_AFTER_OPENING_TIMEOUT_MS);
 			double delayMs = (System.nanoTime() - startNanos)/1e6;
 			if(ready) appendToEventDiary("Arduino ready ('w' char received) " + String.format("%.1f", delayMs) + " ms after the opening of the serial port");
-			else if(errorIfNotReceived) {
+			else {
 				// The start request is sent anyway : it is sent again if the 'w' char is received later (see run())
 				appendToEventDiary("Arduino ready ('w' char) not received " + READY_AFTER_OPENING_TIMEOUT_MS + " ms after the opening of the serial port : compile and upload the process again to get it");
 				appendErrorMarkerAtCurrentDiaryLine("Arduino ready ('w' char) not received after the opening of the serial port");
-			} else appendToEventDiary("Arduino ready ('w' char) not received " + READY_AFTER_OPENING_TIMEOUT_MS + " ms after the opening of the serial port : start request sent anyway");
+			}
 			TrialTimings.log("Arduino ready ('w') after the opening of the serial port " + (ready ? "received after " + String.format("%.1f", delayMs) + " ms" : "not received (time out " + READY_AFTER_OPENING_TIMEOUT_MS + " ms)"));
 		}
 		
