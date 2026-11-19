@@ -44,6 +44,7 @@ package fr.univamu.ism.docometre.history.ui;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -82,7 +83,8 @@ public final class HistoryStatusCache implements IResourceChangeListener {
 	/*
 	 * Delay before trying again while trials are running : the status (reading the Git repository) and the update of the
 	 * decorations of the experiments tree (user interface thread, about 400 ms with many trials) are done after the run.
-	 * They were done about 1 s after the end of each trial, which froze the real time charts of the next one.
+	 * They were done about 1 s after the end of each trial, even for an experiment without history (the decorator is
+	 * always active), which froze the real time charts of the next one.
 	 */
 	private static final long RUNNING_RETRY_DELAY = 2000;
 	
@@ -119,6 +121,9 @@ public final class HistoryStatusCache implements IResourceChangeListener {
 				}
 				List<IProject> projects = new ArrayList<>(projectsToUpdate);
 				projectsToUpdate.removeAll(projects);
+				// Decorations updated only if a status has changed : the update decorates again every element of the
+				// experiments tree (user interface thread). Without history, the status of an experiment does not change
+				boolean changed = false;
 				for (IProject project : projects) {
 					if(monitor.isCanceled()) return Status.CANCEL_STATUS;
 					// Experiment must not be closed, deleted or modified while its history is read
@@ -131,9 +136,10 @@ public final class HistoryStatusCache implements IResourceChangeListener {
 					} finally {
 						Job.getJobManager().endRule(project);
 					}
-					if(status == null) statuses.remove(project.getName());
-					else statuses.put(project.getName(), status);
+					ExperimentStatus previous = status == null ? statuses.remove(project.getName()) : statuses.put(project.getName(), status);
+					if(!Objects.equals(previous, status)) changed = true;
 				}
+				if(!changed) return Status.OK_STATUS;
 				Display display = PlatformUI.isWorkbenchRunning() ? PlatformUI.getWorkbench().getDisplay() : null;
 				if(display != null && !display.isDisposed()) display.asyncExec(() -> {
 					if(PlatformUI.isWorkbenchRunning()) PlatformUI.getWorkbench().getDecoratorManager().update(HistoryLabelDecorator.ID);
