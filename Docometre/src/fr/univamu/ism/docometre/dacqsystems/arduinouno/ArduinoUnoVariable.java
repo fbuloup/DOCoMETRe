@@ -120,11 +120,11 @@ public class ArduinoUnoVariable extends ArduinoUnoChannel implements ParameterVa
 	}
 	
 	/*
-	 * int is on 32 bits for R4 WiFi (ARM), on 16 bits for R3 (AVR) and by default
+	 * int is on 32 bits for R4 WiFi and Portenta Machine Control (ARM), on 16 bits for R3 (AVR) and by default
 	 */
 	private boolean isInt32() {
 		if(dacqConfiguration == null) return false;
-		return ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION));
+		return ArduinoUnoDACQConfigurationProperties.isARM(dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION));
 	}
 
 }

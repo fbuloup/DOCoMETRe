@@ -213,6 +213,9 @@ public class ArduinoUnoCalibrationTask extends CalibrationTimerTask {
 	 * Connection to the firmware, uploaded when the board does not run it (or another version)
 	 */
 	private void connect(IProgressMonitor monitor) throws Exception {
+		// No calibration firmware for the Portenta Machine Control yet
+		if(ArduinoUnoDACQConfigurationProperties.isPMC(dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION))) 
+			throw new Exception(ArduinoUnoMessages.Calibration_PMCNotAvailable);
 		String expectedBoard = getExpectedBoard();
 		monitor.subTask(NLS.bind(ArduinoUnoMessages.Calibration_Connecting, devicePath));
 		board = identify();

@@ -63,12 +63,15 @@ public final class ArduinoUnoUploadDelegate {
 	/**
 	 * @param dacqConfiguration the DACQ configuration (upload tool and its path, revision of the board)
 	 * @param devicePath the serial port of the board
-	 * @param binaryFilePath the file to upload : .hex file (R3), .bin file (R4 WiFi, arduino-cli only)
+	 * @param binaryFilePath the file to upload : .hex file (R3), .bin file (R4 WiFi and Portenta Machine Control,
+	 * arduino-cli only)
 	 * @return the upload command line
 	 */
 	public static String getUploadCommand(DACQConfiguration dacqConfiguration, String devicePath, String binaryFilePath) {
+		String arduinoUnoRelease = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
 		boolean useCLI = "true".equals(dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI));
-		if(!useCLI) {
+		// Portenta Machine Control : arduino-cli only (avrdude uploads to AVR microcontrollers)
+		if(!useCLI && !ArduinoUnoDACQConfigurationProperties.isPMC(arduinoUnoRelease)) {
 			String avrDudePath = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.AVRDUDE_PATH);
 			String confFilePath = "";
 			if(Platform.getOS().equals(Platform.OS_WIN32)) confFilePath = avrDudePath.replaceAll("avrdude.exe$", "");
@@ -77,10 +80,7 @@ public final class ArduinoUnoUploadDelegate {
 			if(Platform.getOS().equals(Platform.OS_WIN32)) confFilePath = "\"" + confFilePath + "\"";
 			return avrDudePath + " -C " + confFilePath +  " -p m328p -c arduino -P " + devicePath + " -U flash:w:" + binaryFilePath + ":i"; 
 		}
-		String arduinoUnoRelease = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
-		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
-		String fullQualifiedBoardName = "arduino:avr:uno";
-		if(isRelease4Wifi) fullQualifiedBoardName = "arduino:renesas_uno:unor4wifi";
+		String fullQualifiedBoardName = ArduinoUnoDACQConfigurationProperties.getFullyQualifiedBoardName(arduinoUnoRelease);
 		String arduinoCLIPATH = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH);
 		return arduinoCLIPATH + " upload -p " + devicePath + " --fqbn " + fullQualifiedBoardName + " -i " + binaryFilePath;
 	}

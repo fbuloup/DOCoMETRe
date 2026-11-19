@@ -41,7 +41,10 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.arduinouno;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
@@ -58,6 +61,30 @@ public class ArduinoUnoRevisionsLabelsTest {
 		assertEquals(ArduinoUnoDACQConfigurationProperties.REVISIONS.length, ArduinoUnoDACQConfigurationProperties.REVISIONS_LABELS.length);
 		assertEquals("Uno R3", ArduinoUnoDACQConfigurationProperties.getRevisionLabel("R3"));
 		assertEquals("Uno R4 WiFi", ArduinoUnoDACQConfigurationProperties.getRevisionLabel("R4_WIFI"));
+		assertEquals("Portenta Machine Control", ArduinoUnoDACQConfigurationProperties.getRevisionLabel("PMC"));
+	}
+	
+	@Test
+	public void eachRevisionIsValid() {
+		for (String revision : ArduinoUnoDACQConfigurationProperties.REVISIONS) 
+			assertTrue(revision.matches(ArduinoUnoDACQConfigurationProperties.REVISION.getRegExp()), revision);
+		assertArrayEquals(ArduinoUnoDACQConfigurationProperties.REVISIONS, ArduinoUnoDACQConfigurationProperties.REVISION.getAvailableValues());
+	}
+	
+	@Test
+	public void boardOfEachRevision() {
+		assertEquals("arduino:avr:uno", ArduinoUnoDACQConfigurationProperties.getFullyQualifiedBoardName("R3"));
+		assertEquals("arduino:renesas_uno:unor4wifi", ArduinoUnoDACQConfigurationProperties.getFullyQualifiedBoardName("R4_WIFI"));
+		assertEquals("arduino:mbed_portenta:envie_m7", ArduinoUnoDACQConfigurationProperties.getFullyQualifiedBoardName("PMC"));
+		// Uno R3 by default (revision not specified)
+		assertEquals("arduino:avr:uno", ArduinoUnoDACQConfigurationProperties.getFullyQualifiedBoardName(null));
+		assertFalse(ArduinoUnoDACQConfigurationProperties.isARM("R3"));
+		assertTrue(ArduinoUnoDACQConfigurationProperties.isARM("R4_WIFI"));
+		assertTrue(ArduinoUnoDACQConfigurationProperties.isARM("PMC"));
+		assertFalse(ArduinoUnoDACQConfigurationProperties.isUploadedAsBinFile("R3"));
+		assertTrue(ArduinoUnoDACQConfigurationProperties.isUploadedAsBinFile("PMC"));
+		assertTrue(ArduinoUnoDACQConfigurationProperties.isPMC("PMC"));
+		assertFalse(ArduinoUnoDACQConfigurationProperties.isPMC("R4_WIFI"));
 	}
 
 	@Test

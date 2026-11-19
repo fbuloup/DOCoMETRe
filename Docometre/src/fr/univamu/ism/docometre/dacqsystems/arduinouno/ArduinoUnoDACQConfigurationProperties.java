@@ -62,7 +62,7 @@ public final class ArduinoUnoDACQConfigurationProperties extends Property {
 	public static final ArduinoUnoDACQConfigurationProperties GLOBAL_FREQUENCY = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY", ArduinoUnoMessages.GlobalFrequency_Label, ArduinoUnoMessages.GlobalFrequency_Tooltip, "(^\\d{1,10}$)");
 	public static final ArduinoUnoDACQConfigurationProperties LIBRARIES_ABSOLUTE_PATH = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH", ArduinoUnoMessages.LibrariesAbsolutePath_Label, ArduinoUnoMessages.LibrariesAbsolutePath_Tooltip, "(.)+");
 	public static final ArduinoUnoDACQConfigurationProperties USER_LIBRARIES_ABSOLUTE_PATH = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH", ArduinoUnoMessages.UserLibrariesAbsolutePath_Label, ArduinoUnoMessages.UserLibrariesAbsolutePath_Tooltip, "(.)+");
-	public static final ArduinoUnoDACQConfigurationProperties REVISION = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.REVISION", ArduinoUnoMessages.Revision_Label, ArduinoUnoMessages.Revision_Tooltip, "^(R3|R4_WIFI)$", "R3:R4_WIFI");
+	public static final ArduinoUnoDACQConfigurationProperties REVISION = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.REVISION", ArduinoUnoMessages.Revision_Label, ArduinoUnoMessages.Revision_Tooltip, "^(R3|R4_WIFI|PMC)$", "R3:R4_WIFI:PMC");
 
 	public static String BAUD_RATE_300 = "300";
 	public static String BAUD_RATE_600 = "600";
@@ -117,9 +117,11 @@ public final class ArduinoUnoDACQConfigurationProperties extends Property {
 	
 	public static String REVISION_R3 = "R3";
 	public static String REVISION_R4_WIFI = "R4_WIFI";
-	public static String[] REVISIONS = new String[] { REVISION_R3, REVISION_R4_WIFI };
+	// Portenta Machine Control (Portenta H7, Arduino Pro)
+	public static String REVISION_PMC = "PMC";
+	public static String[] REVISIONS = new String[] { REVISION_R3, REVISION_R4_WIFI, REVISION_PMC };
 	// Boards displayed to the user, same order as REVISIONS : the revisions saved in the DACQ configurations do not change
-	public static String[] REVISIONS_LABELS = new String[] { ArduinoUnoMessages.Revision_UnoR3, ArduinoUnoMessages.Revision_UnoR4WiFi };
+	public static String[] REVISIONS_LABELS = new String[] { ArduinoUnoMessages.Revision_UnoR3, ArduinoUnoMessages.Revision_UnoR4WiFi, ArduinoUnoMessages.Revision_PMC };
 
 	/**
 	 * @param revision a revision of REVISIONS, as saved in the DACQ configurations
@@ -138,6 +140,39 @@ public final class ArduinoUnoDACQConfigurationProperties extends Property {
 	public static String getRevision(String revisionLabel) {
 		for (int i = 0; i < REVISIONS_LABELS.length; i++) if(REVISIONS_LABELS[i].equals(revisionLabel)) return REVISIONS[i];
 		return revisionLabel;
+	}
+	
+	/**
+	 * @return true if the revision is the Portenta Machine Control
+	 */
+	public static boolean isPMC(String revision) {
+		return REVISION_PMC.equals(revision);
+	}
+	
+	/**
+	 * @return true if the board of the revision has an ARM microcontroller (Uno R4 WiFi, Portenta Machine Control) :
+	 * int on 32 bits, floats written with snprintf(), messages of the real time loop sent by loop() (see SerialMessages
+	 * in ArduinoUnoProcess)
+	 */
+	public static boolean isARM(String revision) {
+		return REVISION_R4_WIFI.equals(revision) || REVISION_PMC.equals(revision);
+	}
+	
+	/**
+	 * @return the fully qualified board name of the revision for arduino-builder and arduino-cli (Uno R3 by default)
+	 */
+	public static String getFullyQualifiedBoardName(String revision) {
+		if(REVISION_R4_WIFI.equals(revision)) return "arduino:renesas_uno:unor4wifi";
+		if(REVISION_PMC.equals(revision)) return "arduino:mbed_portenta:envie_m7";
+		return "arduino:avr:uno";
+	}
+	
+	/**
+	 * @return true if the compiled sketch is uploaded as a .bin file (arduino-cli, Uno R4 WiFi and Portenta Machine
+	 * Control), false if it is uploaded as a .hex file (avrdude or arduino-cli, Uno R3)
+	 */
+	public static boolean isUploadedAsBinFile(String revision) {
+		return isARM(revision);
 	}
 	
 	public static void populateProperties(DACQConfiguration daqGeneralConfiguration) {

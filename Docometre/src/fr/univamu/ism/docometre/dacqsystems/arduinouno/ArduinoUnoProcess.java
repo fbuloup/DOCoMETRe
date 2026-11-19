@@ -135,6 +135,10 @@ public class ArduinoUnoProcess extends Process {
 	// parameters management, board issue).
 	private static final long PARAMETERS_ANSWER_TIMEOUT_MS = 1000;
 	private static final int PARAMETERS_SENDING_ATTEMPTS = 2;
+	// Portenta Machine Control : stack of the real time loop thread, in bytes (variables of the process are global)
+	private static final int PMC_REALTIME_LOOP_STACK_SIZE = 16384;
+	// Portenta Machine Control : after an upload, its USB serial port is available again after some time
+	private static final long PMC_SERIAL_PORT_AFTER_UPLOAD_TIMEOUT_MS = 15000;
 
 	public static final long serialVersionUID = DACQConfiguration.serialVersionUID;
 	public static String previousINOHexFilePath = "";
@@ -256,14 +260,22 @@ public class ArduinoUnoProcess extends Process {
 					appendToEventDiary("Serial port kept open since the previous trial : Arduino ready without restart");
 					TrialTimings.log("serial port kept open since the previous trial (Arduino not restarted)");
 				} else {
+					// Portenta Machine Control : its USB serial port disappears during an upload and is available again
+					// when the uploaded process has started
+					boolean pmcUploaded = ArduinoUnoDACQConfigurationProperties.isPMC(revision) && uploadedForThisTrial;
 					serialPort = new SerialPort(serialPortDevicePath);
 					if(serialPort.isOpened()) serialPort.closePort();
-					serialPort.openPort();
+					if(pmcUploaded) openSerialPortAfterUpload();
+					else serialPort.openPort();
 					serialPort.setParams(serialPortBaudRate, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE, true, true);
 					// Uno R3 : the board restarts when the serial port is opened, and spends about 1.5 s in its bootloader.
 					// The parameters and the 'r' char sent before the process waits for them would be lost (the process
 					// would wait for 'r' forever) : its 'w' char (started, waits for 'r') is waited for
-					if(release3) waitForReadyAfterOpening();
+					if(release3) waitForReadyAfterOpening(true);
+					// Portenta Machine Control : the uploaded process may still be starting. Its 'w' char may also have
+					// been sent before the opening (USB serial port, the board does not restart when it is opened) : it is
+					// then not received, which is not an error (the start request is sent again if 'w' arrives later)
+					if(pmcUploaded) waitForReadyAfterOpening(false);
 				}
 				Channel[] transferedChannels = getDACQConfiguration().getTransferedChannels();
 				transferedChannelsOrderedByTransferNumber = new Channel[transferedChannels.length];
@@ -694,7 +706,7 @@ public class ArduinoUnoProcess extends Process {
 				types[i] = ((ArduinoUnoVariable)parameters[i]).getProperty(ArduinoUnoVariableProperties.TYPE);
 				sizes[i] = ((ArduinoUnoVariable)parameters[i]).getSize();
 			}
-			boolean int32 = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION));
+			boolean int32 = ArduinoUnoDACQConfigurationProperties.isARM(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION));
 			return new ArduinoUnoParameterFrames.Reception(types, sizes, int32, getPropagatedFlags());
 		}
 		
@@ -772,20 +784,42 @@ public class ArduinoUnoProcess extends Process {
 		}
 		
 		/*
-		 * Uno R3 : waits for the 'w' char sent by the process when it has started after the opening of the serial
-		 * port (board restarted by the opening). The parameters and the 'r' char can then be sent.
+		 * Waits for the 'w' char sent by the process when it has started after the opening of the serial port : Uno R3
+		 * restarted by the opening, Portenta Machine Control after an upload. The parameters and the 'r' char can then
+		 * be sent. If errorIfNotReceived, an error marker is added in the diary when it is not received.
 		 */
-		private void waitForReadyAfterOpening() throws SerialPortException, InterruptedException {
+		private void waitForReadyAfterOpening(boolean errorIfNotReceived) throws SerialPortException, InterruptedException {
 			long startNanos = System.nanoTime();
 			boolean ready = waitForChar(READY_MESSAGE.charAt(0), READY_AFTER_OPENING_TIMEOUT_MS);
 			double delayMs = (System.nanoTime() - startNanos)/1e6;
 			if(ready) appendToEventDiary("Arduino ready ('w' char received) " + String.format("%.1f", delayMs) + " ms after the opening of the serial port");
-			else {
+			else if(errorIfNotReceived) {
 				// The start request is sent anyway : it is sent again if the 'w' char is received later (see run())
 				appendToEventDiary("Arduino ready ('w' char) not received " + READY_AFTER_OPENING_TIMEOUT_MS + " ms after the opening of the serial port : compile and upload the process again to get it");
 				appendErrorMarkerAtCurrentDiaryLine("Arduino ready ('w' char) not received after the opening of the serial port");
-			}
+			} else appendToEventDiary("Arduino ready ('w' char) not received " + READY_AFTER_OPENING_TIMEOUT_MS + " ms after the opening of the serial port : start request sent anyway");
 			TrialTimings.log("Arduino ready ('w') after the opening of the serial port " + (ready ? "received after " + String.format("%.1f", delayMs) + " ms" : "not received (time out " + READY_AFTER_OPENING_TIMEOUT_MS + " ms)"));
+		}
+		
+		/*
+		 * Portenta Machine Control : opens the serial port after an upload, as soon as it is available again (its USB
+		 * serial port disappears while the board is in its bootloader)
+		 */
+		private void openSerialPortAfterUpload() throws SerialPortException, InterruptedException {
+			long startNanos = System.nanoTime();
+			long deadline = startNanos + PMC_SERIAL_PORT_AFTER_UPLOAD_TIMEOUT_MS*1_000_000L;
+			while(true) {
+				try {
+					serialPort.openPort();
+					break;
+				} catch (SerialPortException e) {
+					if(System.nanoTime() > deadline) throw e;
+					Thread.sleep(200);
+				}
+			}
+			double delayMs = (System.nanoTime() - startNanos)/1e6;
+			appendToEventDiary("Serial port available " + String.format("%.1f", delayMs) + " ms after the upload");
+			TrialTimings.log("serial port available " + String.format("%.1f", delayMs) + " ms after the upload");
 		}
 		
 		/*
@@ -829,6 +863,9 @@ public class ArduinoUnoProcess extends Process {
 
 	private transient String devicePath;
 	private transient RealTimeLoopJob realTimeLoopJob;
+	// Portenta Machine Control : process uploaded by the last loadProcess(), the USB serial port of the board is available
+	// again after some time (see RealTimeLoopJob)
+	private transient boolean uploadedForThisTrial;
 	// Values of the propagated parameters received and acknowledged at the end of the process, null if not received
 	private transient Map<ParameterVariable, String> propagatedValues;
 
@@ -841,6 +878,10 @@ public class ArduinoUnoProcess extends Process {
 		String arduinoUnoRelease = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
 		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
 		boolean isRelease3 = ArduinoUnoDACQConfigurationProperties.REVISION_R3.equals(arduinoUnoRelease);
+		// Portenta Machine Control : real time loop run by a thread woken up by a ticker (see DECLARATION segment)
+		boolean isPMC = ArduinoUnoDACQConfigurationProperties.isPMC(arduinoUnoRelease);
+		// Uno R4 WiFi and Portenta Machine Control : messages of the real time loop sent by loop() (see SerialMessages)
+		boolean isARM = ArduinoUnoDACQConfigurationProperties.isARM(arduinoUnoRelease);
 		
 		int delay = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.ARDUINO_DELAY_TIME_AFTER_SERIAL_PRINT);
 		
@@ -850,6 +891,10 @@ public class ArduinoUnoProcess extends Process {
 				code = code + "#include \"FspTimer.h\"\n";
 			}
 			if(isRelease3) code = code + "#include <avr/wdt.h>\n";
+			if(isPMC) {
+				code = code + "#include \"mbed.h\"\n";
+				code = code + "#include <Arduino_PortentaMachineControl.h>\n";
+			}
 			if(getDACQConfiguration().getParameters().length > 0) {
 				code = code + "// Parameters reading (see readParameterValue())\n";
 				code = code + "#include <errno.h>\n";
@@ -881,6 +926,25 @@ public class ArduinoUnoProcess extends Process {
 		if(segment == ArduinoUnoCodeSegmentProperties.DECLARATION) {
 			if(isRelease4Wifi) {
 				code = code + "FspTimer realtimeLoop_Timer;\n";
+			}
+			if(isPMC) {
+				code = code + "// Real time loop : the ticker interrupt wakes up the real time loop thread, which runs processing().\n";
+				code = code + "// processing() can not be run by the interrupt : with mbed, the ADC, the PWM and the I2C bus use\n";
+				code = code + "// mutexes, which can not be used in an interrupt. The thread has the highest priority.\n";
+				code = code + "mbed::Ticker realtimeLoop_Ticker;\n";
+				code = code + "rtos::Thread realtimeLoop_Thread(osPriorityRealtime, " + PMC_REALTIME_LOOP_STACK_SIZE + ");\n";
+				code = code + "void processing();\n";
+				code = code + "// Ticker interrupt : wakes up the real time loop thread\n";
+				code = code + "void realtimeLoop_Tick() {\n";
+				code = code + "\t\trealtimeLoop_Thread.flags_set(0x1);\n";
+				code = code + "}\n";
+				code = code + "// Real time loop thread : one run of processing() per tick\n";
+				code = code + "void realtimeLoop_Run() {\n";
+				code = code + "\t\twhile(true) {\n";
+				code = code + "\t\t\t\trtos::ThisThread::flags_wait_any(0x1);\n";
+				code = code + "\t\t\t\tprocessing();\n";
+				code = code + "\t\t}\n";
+				code = code + "}\n\n";
 			}
 			String gf = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY);
 			code = code + "// Loop frequency in Hz\n";
@@ -919,8 +983,8 @@ public class ArduinoUnoProcess extends Process {
 			// Same variable for R3 and R4 WiFi : "time" can not be declared on R4 WiFi (time() C function of
 			// its core), it is an alias of rtTime (see DEFINE segment) so that processes use either name
 			code = code + "// Loop time in second (\"time\" is an alias of rtTime)\n";
-			if(isRelease3 || isRelease4Wifi) code = code + "double rtTime;\n\n";
-			if(!isRelease3 && !isRelease4Wifi) {
+			if(isRelease3 || isRelease4Wifi || isPMC) code = code + "double rtTime;\n\n";
+			if(!isRelease3 && !isRelease4Wifi && !isPMC) {
 				IResource dacqResource = ObjectsController.getResourceForObject(getDACQConfiguration());
 				Activator.logErrorMessage(ArduinoUnoMessages.arduinoRevisionNotSpecified);
 				Activator.logErrorMessage(NLS.bind(ArduinoUnoMessages.fixArduinoRevisionProperty, dacqResource.getFullPath().toPortableString()));
@@ -946,7 +1010,7 @@ public class ArduinoUnoProcess extends Process {
 //			code = code + "bool firstLoop = true;\n\n";
 			code = code + "// String serialMessage\n";
 			code = code + "char serialMessage[64];\n";
-			if(isRelease4Wifi) {
+			if(isARM) {
 				// Messages added in the real time loop interrupt : no dynamic memory (String) in the interrupt, the
 				// memory allocator is not reentrant (interrupt adding messages while loop() releases them)
 				code = code + "// Messages for the PC : added by the real time loop interrupt (globalSerialMessage += ...),\n";
@@ -1033,6 +1097,10 @@ public class ArduinoUnoProcess extends Process {
 			}
 			String baudRate = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.BAUD_RATE);
 			code = code + "\t\tSerial.begin(" + baudRate + ");\n";
+			if(isPMC) {
+				code = code + "\t\t// Real time loop thread, waiting for the ticks of the real time loop (see startProcess())\n";
+				code = code + "\t\trealtimeLoop_Thread.start(mbed::callback(realtimeLoop_Run));\n";
+			}
 			code = code + "\t\tstartProcess();\n";
 			code = code + "}\n\n";
 			
@@ -1044,12 +1112,12 @@ public class ArduinoUnoProcess extends Process {
 			if(value == 0) value = 1;
 			code = code + "\t\tsendTimeWorkload = " + value + ";\n";
 			code = code + "\t\tworkload = 0;\n";
-			if(isRelease3 || isRelease4Wifi) code = code + "\t\trtTime = 0;\n";
+			if(isRelease3 || isRelease4Wifi || isPMC) code = code + "\t\trtTime = 0;\n";
 			code = code + "\t\ttimeIndex = 0;\n";
 			code = code + "\t\tterminateProcess = false;\n";
 			code = code + "\t\tstartLoop = false;\n";
 			code = code + "\t\trestartRequested = false;\n";
-			if(isRelease4Wifi) code = code + "\t\tglobalSerialMessage = \"\";\n";
+			if(isARM) code = code + "\t\tglobalSerialMessage = \"\";\n";
 			code = code + "\t\t// Tell the PC that the board has (re)started and waits for 'r' char (end handshake)\n";
 			code = code + "\t\tSerial.println('" + READY_MESSAGE + "');\n";
 			code = code + "\t\tSerial.flush();\n";
@@ -1080,6 +1148,11 @@ public class ArduinoUnoProcess extends Process {
 				code = "}\n\nvoid processing(timer_callback_args_t *p_args){\n\n";
 				code = code + "\t\tunsigned long dt = micros();\n\n";
 			}
+			if(isPMC) {
+				// Run by the real time loop thread (see realtimeLoop_Run())
+				code = "}\n\nvoid processing() {\n\n";
+				code = code + "\t\tunsigned long dt = micros();\n\n";
+			}
 			
 			
 			code = code + "\t\tif(terminateProcess) {\n";
@@ -1104,7 +1177,7 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "\t\t\t\tstartLoop = ((char)Serial.read()) != 's';\n";
 			code = code + "\t\t\t\tif(!startLoop ) terminateProcess = true;\n";
 			code = code + "\t\t}\n";
-			if(isRelease3 || isRelease4Wifi) code = code + "\t\trtTime = timeIndex*((double)loopPeriod/1000000.0);\n";
+			if(isRelease3 || isRelease4Wifi || isPMC) code = code + "\t\trtTime = timeIndex*((double)loopPeriod/1000000.0);\n";
 			code = code + "\t\ttimeIndex++;\n";
 			
 			code = code + getCurrentProcess().getScript().getInitializeCode(this, ArduinoUnoCodeSegmentProperties.ACQUISITION);
@@ -1147,14 +1220,14 @@ public class ArduinoUnoProcess extends Process {
 			int prescaler = computeCounter0Prescaler(gf);
 			double dt = 1/(16000000.0/prescaler)*1000000;
 			if(isRelease3) code = code + "\t\t\t\tworkload = computeWorkload(TCNT0*" + dt + ");\n";
-			if(isRelease4Wifi) {
+			if(isARM) {
 				code = code + "\t\t\t\tdt = micros() - dt;\n";
 				code = code + "\t\t\t\tworkload = computeWorkload((unsigned long)dt);\n";
 			}
 //			code = code + "\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, loopTime_MS, workload);\n";
 //			code = code + "\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, 10000.0 /*(unsigned long)(time*1000000)*/, workload);\n";
 			
-			if(isRelease4Wifi) {
+			if(isARM) {
 				code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, (unsigned long)(rtTime*1000000.0), workload);\n";
 				code = code + "\t\t\t\tglobalSerialMessage += serialMessage;\n";
 				code = code + "\t\t\t\tglobalSerialMessage += \"\\n\";\n";
@@ -1193,7 +1266,7 @@ public class ArduinoUnoProcess extends Process {
 				code = code + "\t\t// Propagated parameters, then 's' char, are sent by loop()\n";
 				code = code + "\t\tpropagationInProgress = true;\n";
 			}
-			if(isRelease4Wifi) code = code + "\t\tstartLoop = false;\n";
+			if(isARM) code = code + "\t\tstartLoop = false;\n";
 			if(isRelease3 && !hasPropagatedParameters()) {
 				code = code + "\t\tSerial.println('s');\n";
 				code = code + "\t\tSerial.flush();\n";
@@ -1220,12 +1293,17 @@ public class ArduinoUnoProcess extends Process {
 				code = code + "\t\t// Stop real time loop timer\n";
 				code = code + "\t\trealtimeLoop_Timer.stop();\n";
 			}
+			if(isPMC) {
+				// Called by loop() : the real time loop thread, of higher priority, waits for the next tick
+				code = code + "\t\t// Stop real time loop ticker : the real time loop thread is no more woken up\n";
+				code = code + "\t\trealtimeLoop_Ticker.detach();\n";
+			}
 			code = code + getOutputsResetCode();
 			code = code + "\t\tstartProcess();\n";
 			code = code + "}\n\n";
 			
 			code = code + "void loop() {\n";
-			if(isRelease4Wifi) {
+			if(isARM) {
 				code = code + "\t\tglobalSerialMessage.send();\n";
 				if(hasPropagatedParameters()) {
 					code = code + "\t\t// End of process : values of the propagated parameters sent before 's' char\n";
@@ -1311,7 +1389,7 @@ public class ArduinoUnoProcess extends Process {
 				code = code + "\t\t\t\tSerial.println(serialMessage);\n";
 				code = code + "\t\t\t\tSerial.flush();\n";
 			}
-			if(isRelease4Wifi) {
+			if(isARM) {
 				code = code + "\t\t\t\tglobalSerialMessage += serialMessage;\n";
 				code = code + "\t\t\t\tglobalSerialMessage += \"\\n\";\n";
 			}
@@ -1333,7 +1411,7 @@ public class ArduinoUnoProcess extends Process {
 				if(isRelease3) code = code + "\t\tnoInterrupts();\n";
 				code = code + "\t\tif(transfert) {\n";
 				code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%d\", transferNumber, value);\n";
-				if(isRelease4Wifi) {
+				if(isARM) {
 					// Sent by loop() : in the real time loop interrupt, Serial would wait forever (see acquireAnalogInput())
 					code = code + "\t\t\t\tglobalSerialMessage += serialMessage;\n";
 					code = code + "\t\t\t\tglobalSerialMessage += \"\\n\";\n";
@@ -1613,6 +1691,7 @@ public class ArduinoUnoProcess extends Process {
 		String arduinoUnoRelease = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
 		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
 		boolean isRelease3 = ArduinoUnoDACQConfigurationProperties.REVISION_R3.equals(arduinoUnoRelease);
+		boolean isPMC = ArduinoUnoDACQConfigurationProperties.isPMC(arduinoUnoRelease);
 		
 		reset();
 		
@@ -1707,6 +1786,13 @@ public class ArduinoUnoProcess extends Process {
 					code = code + "\t\t}\n";
 					code = code + "\t\tfirstStart = false;\n";
 				}
+				if(isPMC) {
+					double gf = Double.parseDouble(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY));
+					long periodMicroseconds = getPMCRealtimeLoopPeriod(gf);
+					code = code + "\t\t// Real time loop : a tick every " + periodMicroseconds + " us (" + gf + " Hz)\n";
+					code = code + "\t\trealtimeLoop_Ticker.attach(&realtimeLoop_Tick, std::chrono::microseconds(" + periodMicroseconds + "));\n";
+					code = code + "\t\tfirstStart = false;\n";
+				}
 			}
 			if(segments[i].equals(ArduinoUnoCodeSegmentProperties.TRANSFER)) {
 				// Variables transfer
@@ -1736,6 +1822,18 @@ public class ArduinoUnoProcess extends Process {
 		}
 		
 		return code;
+	}
+	
+	/*
+	 * Period of the real time loop of the Portenta Machine Control (ticker), a whole number of microseconds : a warning
+	 * is logged if the global frequency does not give a whole number of microseconds
+	 */
+	private long getPMCRealtimeLoopPeriod(double gf) {
+		double period = 1000000.0/gf;
+		long periodMicroseconds = Math.max(1, Math.round(period));
+		if(Math.abs(period - periodMicroseconds) > 1e-6) 
+			Activator.logWarningMessage(NLS.bind(ArduinoUnoMessages.PMC_PeriodRounded, new Object[] {periodMicroseconds, period, gf}));
+		return periodMicroseconds;
 	}
 	
 	private int computeCounter0Prescaler(double gf) {
@@ -1861,8 +1959,17 @@ public class ArduinoUnoProcess extends Process {
 				marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
 			}
 		}
+		// Portenta Machine Control : what it does not support yet stops the compilation
+		List<String> pmcErrors = ArduinoUnoDACQConfigurationProperties.isPMC(value) ? getPMCConfigurationErrors() : new ArrayList<>();
+		for (String pmcError : pmcErrors) {
+			IMarker marker = getDACQConfiguration().getResource().createMarker(DocometreBuilder.MARKER_ID);
+			marker.setAttribute(IMarker.MESSAGE, pmcError);
+			marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+			Activator.logErrorMessage(pmcError);
+		}
 		ExperimentsView.refresh(getDACQConfiguration().getResource(), null);
-		
+		if(!pmcErrors.isEmpty()) throw new Exception(pmcErrors.get(0));
+
 		IResource processResource = ObjectsController.getResourceForObject(this);
 		IPath wsPath = new Path(Platform.getInstanceLocation().getURL().getPath());
 		String currentFolder = wsPath.append(processResource.getParent().getFullPath()).toOSString();
@@ -2007,6 +2114,29 @@ public class ArduinoUnoProcess extends Process {
 		
 	}
 	
+	/*
+	 * Portenta Machine Control : errors of the DACQ configuration, which stop the compilation. Its processes are
+	 * compiled and uploaded with arduino-cli. Opening its serial port at 1200 bauds starts its bootloader. Its inputs
+	 * and outputs are not supported yet : no channel of the modules can be used.
+	 */
+	private List<String> getPMCConfigurationErrors() {
+		List<String> errors = new ArrayList<>();
+		DACQConfiguration dacqConfiguration = getDACQConfiguration();
+		if(!"true".equals(dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI))) errors.add(ArduinoUnoMessages.PMC_RequiresArduinoCLI);
+		if("1200".equals(dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.BAUD_RATE))) errors.add(ArduinoUnoMessages.PMC_SerialPortBaudRate);
+		for (int i = 0; i < dacqConfiguration.getModulesNumber(); i++) {
+			ModuleBehaviour module = dacqConfiguration.getModule(i);
+			if(!(module instanceof Module)) continue;
+			for (Channel channel : ((Module)module).getChannels()) {
+				if(!Boolean.valueOf(channel.getProperty(ArduinoUnoChannelProperties.USED))) continue;
+				// The DAC channel of Uno R4 WiFi is not used with other boards (see ArduinoUnoAnOutModule)
+				if(module instanceof ArduinoUnoAnOutModule && ArduinoUnoAnOutModule.isDACChannel(channel)) continue;
+				errors.add(NLS.bind(ArduinoUnoMessages.PMC_InputsOutputsNotSupported, channel.getProperty(ChannelProperties.NAME), ArduinoUnoModulesList.getDescription((Module)module)));
+			}
+		}
+		return errors;
+	}
+
 	private void createMarker(int severity, IResource processResource, final int numLine, final int numColumn, final String message) {
 		PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
 			@Override
@@ -2072,10 +2202,7 @@ public class ArduinoUnoProcess extends Process {
 		cmd = cmd + "mkdir \"" + outputFolder + File.separator + "Build\"\n";
 		
 		String arduinoUnoRelease = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
-		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
-//		boolean isRelease3 = ArduinoUnoDACQConfigurationProperties.REVISION_R3.equals(arduinoUnoRelease);
-		String fullQualifiedBoardName = "arduino:avr:uno"; //$NON-NLS-N$ default is release 3
-		if(isRelease4Wifi) fullQualifiedBoardName = "arduino:renesas_uno:unor4wifi"; //$NON-NLS-N$ Release 4 Wifi
+		String fullQualifiedBoardName = ArduinoUnoDACQConfigurationProperties.getFullyQualifiedBoardName(arduinoUnoRelease);
 		
 		boolean useCLI = "true".equals(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI))?true:false;
 		if(!useCLI) {			
@@ -2118,9 +2245,7 @@ public class ArduinoUnoProcess extends Process {
 		cmd = cmd + "mkdir " + outputFolder + File.separator + "Build\n";
 		
 		String arduinoUnoRelease = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
-		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
-		String fullQualifiedBoardName = "arduino:avr:uno"; //$NON-NLS-N$ default is release 3
-		if(isRelease4Wifi) fullQualifiedBoardName = "arduino:renesas_uno:unor4wifi"; //$NON-NLS-N$ Release 4 Wifi
+		String fullQualifiedBoardName = ArduinoUnoDACQConfigurationProperties.getFullyQualifiedBoardName(arduinoUnoRelease);
 		
 		boolean useCLI = "true".equals(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI))?true:false;
 		if(!useCLI) {
@@ -2161,9 +2286,7 @@ public class ArduinoUnoProcess extends Process {
 		cmd = cmd + "mkdir " + outputFolder + File.separator + "Build\n";
 		
 		String arduinoUnoRelease = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
-		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
-		String fullQualifiedBoardName = "arduino:avr:uno"; //$NON-NLS-N$ default is release 3
-		if(isRelease4Wifi) fullQualifiedBoardName = "arduino:renesas_uno:unor4wifi"; //$NON-NLS-N$ Release 4 Wifi
+		String fullQualifiedBoardName = ArduinoUnoDACQConfigurationProperties.getFullyQualifiedBoardName(arduinoUnoRelease);
 		
 		boolean useCLI = "true".equals(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI))?true:false;
 		if(!useCLI) {
@@ -2271,8 +2394,8 @@ public class ArduinoUnoProcess extends Process {
 		String resourcePath = processResource.getParent().getLocation().toOSString() + File.separatorChar + "BinSource" + File.separator + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + File.separator + "Build" + File.separator;
 		String inoHexFilePath = resourcePath + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + ".ino.hex";
 		String arduinoUnoRelease = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
-		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
-		if(isRelease4Wifi) inoHexFilePath = resourcePath + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + ".ino.bin";
+		if(ArduinoUnoDACQConfigurationProperties.isUploadedAsBinFile(arduinoUnoRelease)) inoHexFilePath = resourcePath + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + ".ino.bin";
+		uploadedForThisTrial = false;
 		if(previousINOHexFilePath.equals(inoHexFilePath) && !forceUpload) {
 			appendToEventDiary("Process " + processResource.getFullPath() + " was already loaded\n" );
 			return true;
@@ -2302,6 +2425,7 @@ public class ArduinoUnoProcess extends Process {
 				return false;
 			}
 			appendToEventDiary("Process " + processResource.getFullPath() + " loaded\n" );
+			uploadedForThisTrial = true;
 			return true;
 //			message = "";
 //			BufferedReader input = new BufferedReader(new InputStreamReader(processCMD.getInputStream()));
@@ -2322,10 +2446,10 @@ public class ArduinoUnoProcess extends Process {
 		String resourcePath = processResource.getParent().getLocation().toOSString() + File.separatorChar + "BinSource" + File.separator + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + File.separator + "Build" + File.separator;
 		boolean useCLI = "true".equals(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI))?true:false;
 		String arduinoUnoRelease = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
-		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
-		// .hex file with avrdude, .bin file with arduino-cli for R4 WiFi
+		// .hex file with avrdude, .bin file with arduino-cli for R4 WiFi and Portenta Machine Control (arduino-cli only)
 		String inoHexFilePath = resourcePath + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + ".ino.hex";
-		if(useCLI && isRelease4Wifi) inoHexFilePath = resourcePath + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + ".ino.bin";
+		boolean binFile = ArduinoUnoDACQConfigurationProperties.isUploadedAsBinFile(arduinoUnoRelease);
+		if((useCLI || ArduinoUnoDACQConfigurationProperties.isPMC(arduinoUnoRelease)) && binFile) inoHexFilePath = resourcePath + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + ".ino.bin";
 		previousINOHexFilePath = inoHexFilePath;
 		String cmd = ArduinoUnoUploadDelegate.getUploadCommand(getDACQConfiguration(), devicePath, inoHexFilePath);
 		forceUpload = false;
