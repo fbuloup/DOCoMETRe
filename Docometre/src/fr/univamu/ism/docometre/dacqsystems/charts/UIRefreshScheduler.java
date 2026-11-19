@@ -49,6 +49,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 
+import fr.univamu.ism.docometre.dacqsystems.TrialTimings;
+
 /**
  * Coalesced and asynchronous refresh of a real time chart.
  * <p>
@@ -109,7 +111,10 @@ public final class UIRefreshScheduler {
 		// Reset before refreshing : data received during the refresh will lead to a new refresh
 		scheduled.set(false);
 		scheduledInstances.remove(this);
+		// Timing trace (-traceTrialTimings) : duration of the refresh, intervals without refresh
+		long start = TrialTimings.partStart();
 		refreshRunnable.run();
+		TrialTimings.uiPart(TrialTimings.UIPart.CHARTS_POINTS, start);
 	}
 	
 	/**

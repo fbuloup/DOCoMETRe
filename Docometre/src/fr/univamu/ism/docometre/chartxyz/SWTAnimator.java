@@ -2,6 +2,8 @@ package fr.univamu.ism.docometre.chartxyz;
 
 import org.eclipse.swt.widgets.Control;
 
+import fr.univamu.ism.docometre.dacqsystems.TrialTimings;
+
 /**
  * Animator for SWT GLCanvas: calls repaint about fps times per second, IN
  * the SWT user interface thread (Display.timerExec).
@@ -61,7 +63,10 @@ public final class SWTAnimator implements Runnable {
             running = false;
             return;
         }
+        // Timing trace (-traceTrialTimings) : duration of the frame during a trial
+        long start = TrialTimings.partStart();
         repaint.run();
+        TrialTimings.uiPart(TrialTimings.UIPart.CHARTS_RENDERING, start);
 
         // Next deadline; if we are late (drawing too long), we restart from now
         long now = System.nanoTime();
