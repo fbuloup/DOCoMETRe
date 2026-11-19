@@ -14,3 +14,6 @@ DESCRIPTION_PL = Akwizycja bieżącej wartości wejścia analogowego w trybie as
 # any of segments INITIALIZATION, LOOP or FINALIZE depending on the actual function position.
 # Take care of the fact that each key must be upper case !
 FUNCTION_CODE = channelName = analogRead(channelNumber);
+# Portenta Machine Control : FUNCTION_CODE_PMC (and optionally DECLARATION_PMC...), when defined, replaces FUNCTION_CODE :
+# its inputs are read with the Arduino_PortentaMachineControl library.
+FUNCTION_CODE_PMC = channelName = MachineControl_AnalogIn.read(channelNumber);

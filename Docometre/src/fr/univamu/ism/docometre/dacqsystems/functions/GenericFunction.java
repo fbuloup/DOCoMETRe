@@ -56,6 +56,7 @@ import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfiguration;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfigurationProperties;
 import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
 import fr.univamu.ism.process.Function;
 import fr.univamu.ism.process.Script;
@@ -68,6 +69,19 @@ public class GenericFunction extends Function {
 	public static String UNO_FINALIZE_INDENT = "";
 	
 	private static final long serialVersionUID = 1L;
+	
+	/**
+	 * Arduino : property of the function file for the board of the DACQ configuration. For the Portenta Machine Control,
+	 * the key suffixed by "_PMC" (e.g. FUNCTION_CODE_PMC) if the file defines it : its inputs and outputs are not read or
+	 * written with analogRead(), digitalWrite()... Otherwise the key itself.
+	 */
+	public static String getArduinoProperty(Object context, String functionFileName, String key, DACQConfiguration dacqConfiguration) {
+		if(dacqConfiguration != null && ArduinoUnoDACQConfigurationProperties.isPMC(dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION))) {
+			String pmcProperty = FunctionFactory.getProperty(context, functionFileName, key + "_PMC");
+			if(pmcProperty != null && !pmcProperty.isEmpty()) return pmcProperty;
+		}
+		return FunctionFactory.getProperty(context, functionFileName, key);
+	}
 	
 	public static String getCommentedCode(GenericFunction genericFunction, Object context) {
 		String comment = "";

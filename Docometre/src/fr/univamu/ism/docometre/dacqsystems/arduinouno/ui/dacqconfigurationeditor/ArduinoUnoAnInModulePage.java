@@ -46,11 +46,16 @@ import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.widgets.FormText;
@@ -63,6 +68,7 @@ import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.Property;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnInChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnInModuleProperties;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoBoardChannels;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoMessages;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoModulesList;
@@ -73,6 +79,10 @@ import fr.univamu.ism.docometre.editors.ResourceEditor;
 public class ArduinoUnoAnInModulePage extends ArduinoUnoModulePage {
 
 	private Combo analogRefCombo;
+	private Label analogRefLabel;
+	// Portenta Machine Control : type of sensor of its analog inputs, instead of the analog reference
+	private Combo sensorTypeCombo;
+	private Label sensorTypeLabel;
 	
 	private class AnalogInputsComparator extends Comparator {
 		@Override
@@ -151,7 +161,13 @@ public class ArduinoUnoAnInModulePage extends ArduinoUnoModulePage {
 
 	public ArduinoUnoAnInModulePage(FormEditor editor, String id, String title, Module module) {
 		super(editor, id, title, module);
-		// TODO Auto-generated constructor stub
+	}
+	
+	@Override
+	public void init(IEditorSite site, IEditorInput input) {
+		// Channels of the board of the configuration (before the observers of the channels are added)
+		ArduinoUnoBoardChannels.update(module.getDACQConfiguration());
+		super.init(site, input);
 	}
 
 	@Override
@@ -176,7 +192,7 @@ public class ArduinoUnoAnInModulePage extends ArduinoUnoModulePage {
 		explanationsFormText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 		
 		
-		createLabel(generalconfigurationContainer, ArduinoUnoMessages.AnalogReference_Label, ArduinoUnoMessages.AnalogReference_Tooltip);
+		analogRefLabel = createLabel(generalconfigurationContainer, ArduinoUnoMessages.AnalogReference_Label, ArduinoUnoMessages.AnalogReference_Tooltip);
 		// Only the references of the revision of the board (see updateAnalogReferenceCombo())
 		boolean r4 = ArduinoUnoAnInModuleProperties.isR4(dacqConfiguration);
 		value = module.getProperty(ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE);
@@ -186,6 +202,14 @@ public class ArduinoUnoAnInModulePage extends ArduinoUnoModulePage {
 		String[] items = ArduinoUnoAnInModuleProperties.getReferences(r4);
 		analogRefCombo = createCombo(generalconfigurationContainer, items, referenceOfRevision, 1, 1);
 		analogRefCombo.addModifyListener(new ModifyPropertyHandler(ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE, module, analogRefCombo, ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE.getRegExp(), "", false, (ResourceEditor)getEditor()));
+		
+		// Portenta Machine Control : type of sensor (labels displayed, types saved)
+		sensorTypeLabel = createLabel(generalconfigurationContainer, ArduinoUnoMessages.SensorType_Label, ArduinoUnoMessages.SensorType_Tooltip);
+		sensorTypeCombo = createCombo(generalconfigurationContainer, ArduinoUnoAnInModuleProperties.SENSOR_TYPES_LABELS, "", 1, 1);
+		ModifyPropertyHandler.setComboValues(sensorTypeCombo, ArduinoUnoAnInModuleProperties.SENSOR_TYPES);
+		ModifyPropertyHandler.selectComboValue(sensorTypeCombo, ArduinoUnoAnInModuleProperties.getSensorType(module));
+		sensorTypeCombo.addModifyListener(new ModifyPropertyHandler(ArduinoUnoAnInModuleProperties.SENSOR_TYPE, module, sensorTypeCombo, ArduinoUnoAnInModuleProperties.SENSOR_TYPE.getRegExp(), "", false, (ResourceEditor)getEditor()));
+		updateBoardWidgets();
 		
 		
 		/*
@@ -284,14 +308,50 @@ public class ArduinoUnoAnInModulePage extends ArduinoUnoModulePage {
 			}
 		});
 		AnalogInputsComparator analogInputsComparator = new AnalogInputsComparator();
-//		analogInputsComparator.setSortingColumn(1);
 		configureSorter(analogInputsComparator, tableViewer.getTable().getColumn(1));
+		// Channels of the board only (Portenta Machine Control : AIN0 to AIN2)
+		tableViewer.addFilter(new ViewerFilter() {
+			@Override
+			public boolean select(Viewer viewer, Object parentElement, Object element) {
+				return ArduinoUnoBoardChannels.isAvailable((Channel)element);
+			}
+		});
 		tableViewer.setInput(module.getChannels());
 	}
 	
 	/*
 	 * Helper method to update widget associated with specific key
 	 */
+	/*
+	 * Analog reference (Uno) or type of sensor (Portenta Machine Control) shown, depending on the board
+	 */
+	private void updateBoardWidgets() {
+		if(analogRefCombo == null || analogRefCombo.isDisposed()) return;
+		boolean pmc = ArduinoUnoDACQConfigurationProperties.isPMC(dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION));
+		setShown(analogRefLabel, !pmc);
+		setShown(analogRefCombo, !pmc);
+		setShown(sensorTypeLabel, pmc);
+		setShown(sensorTypeCombo, pmc);
+		generalconfigurationContainer.layout(true, true);
+	}
+	
+	private static void setShown(Control control, boolean shown) {
+		if(control.getLayoutData() instanceof GridData) ((GridData)control.getLayoutData()).exclude = !shown;
+		control.setVisible(shown);
+	}
+	
+	/*
+	 * Type of sensor of the module selected (undo, redo)
+	 */
+	private void updateSensorTypeCombo() {
+		if(sensorTypeCombo == null || sensorTypeCombo.isDisposed()) return;
+		Listener[] listeners = sensorTypeCombo.getListeners(SWT.Modify);
+		for (Listener listener : listeners) sensorTypeCombo.removeListener(SWT.Modify, listener);
+		ModifyPropertyHandler.selectComboValue(sensorTypeCombo, ArduinoUnoAnInModuleProperties.getSensorType(module));
+		for (Listener listener : listeners) sensorTypeCombo.addListener(SWT.Modify , listener);
+		generalConfigurationSectionPart.markDirty();
+	}
+	
 	/*
 	 * References of the revision of the board, current reference selected
 	 */
@@ -316,6 +376,12 @@ public class ArduinoUnoAnInModulePage extends ArduinoUnoModulePage {
 		super.update(property, newValue, oldValue, element);
 		if(property == ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE || property == ArduinoUnoDACQConfigurationProperties.REVISION)
 			updateAnalogReferenceCombo();
+		if(property == ArduinoUnoAnInModuleProperties.SENSOR_TYPE) updateSensorTypeCombo();
+		// Board of the configuration : analog reference or type of sensor, channels of the board
+		if(property == ArduinoUnoDACQConfigurationProperties.REVISION) {
+			updateBoardWidgets();
+			if(tableViewer != null && tableViewer.getTable() != null && !tableViewer.getTable().isDisposed()) tableViewer.refresh();
+		}
 		if(property instanceof ArduinoUnoAnInChannelProperties) {
 			if(tableViewer != null && tableViewer.getTable() != null && !tableViewer.getTable().isDisposed()) {
 				tableViewer.refresh();

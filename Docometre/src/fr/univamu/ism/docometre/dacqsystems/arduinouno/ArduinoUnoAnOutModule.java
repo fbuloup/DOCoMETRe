@@ -120,15 +120,25 @@ public class ArduinoUnoAnOutModule extends Module {
 		String code = "";
 		
 		int delay = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.ARDUINO_DELAY_TIME_AFTER_SERIAL_PRINT);
+		String revision = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
+		// Messages of the real time loop sent by loop() (Uno R4 WiFi and Portenta Machine Control, see SerialMessages)
+		boolean isARM = ArduinoUnoDACQConfigurationProperties.isARM(revision);
+		
+		// Portenta Machine Control : PWM of its analog outputs (period 2 ms), configured once
+		if(segment == ArduinoUnoCodeSegmentProperties.INITIALIZATION && ArduinoUnoDACQConfigurationProperties.isPMC(revision) && hasUsedChannel()) {
+			code = code + "\t\t// Analog outputs (PWM, period 2 ms)\n";
+			code = code + "\t\tif(firstStart) MachineControl_AnalogOut.begin();\n";
+		}
 		
 		for (int i = 0; i < getChannelsNumber(); i++) {
 			
 			Channel channel = getChannel(i);
 			
-			String used = channel.getProperty(ArduinoUnoChannelProperties.USED);
 			boolean isDAC = isDACChannel(channel);
-			// The DAC exists on R4 WiFi only
-			boolean isUsed = Boolean.valueOf(used) && (!isDAC || ArduinoUnoAnInModuleProperties.isR4(dacqConfiguration));
+			// Portenta Machine Control : outputs AO0 to AO3, values in volts (0 to 10.5 V)
+			boolean isPMC = ArduinoUnoBoardChannels.isPMCChannel(channel);
+			// Used and existing on the board (DAC on R4 WiFi only, AO0 to AO3 on the Portenta Machine Control only)
+			boolean isUsed = ArduinoUnoBoardChannels.isUsed(channel);
 			String name = channel.getProperty(ChannelProperties.NAME);
 			String transferNumber = channel.getProperty(ChannelProperties.TRANSFER_NUMBER);
 			String channelNumber = channel.getProperty(ChannelProperties.CHANNEL_NUMBER);
@@ -145,7 +155,7 @@ public class ArduinoUnoAnOutModule extends Module {
 					code = code + "#error \"Pin A0 can't be used both as analog input (AIN0) and as DAC output (" + name + ") : uncheck one of them in the DACQ configuration\"\n";
 				if(isUsed) {
 					code = code + "// ******** Sortie analogique : " + name + "\n";
-					code = code + "unsigned int " + name + ";\n";
+					code = code + (isPMC ? "float " : "unsigned int ") + name + ";\n";
 					code = code + "byte generate_" + name + "_index = " + frequencyRatio + ";\n";
 //					code = code + "unsigned long lastGenerateTime_" + name + ";\n\n";
 				}
@@ -157,8 +167,8 @@ public class ArduinoUnoAnOutModule extends Module {
 					code = code + "\t\t" + name + " = 0;\n";
 					code = code + "\t\tgenerate_" + name + "_index = " + frequencyRatio + ";\n";
 					// Pin mode set once : on R4, a DAC pin whose mode is changed after
-					// its first analogWrite is no more connected to the DAC
-					code = code + "\t\tif(firstStart) pinMode(" + channelNumber + ", OUTPUT);\n";
+					// its first analogWrite is no more connected to the DAC. Portenta Machine Control : see begin()
+					if(!isPMC) code = code + "\t\tif(firstStart) pinMode(" + channelNumber + ", OUTPUT);\n";
 				}
 			}
 			
@@ -166,15 +176,19 @@ public class ArduinoUnoAnOutModule extends Module {
 				if(isUsed) {
 					code = code + "\n\t\tif(generate_" + name + "_index == " + frequencyRatio + ") {\n";
 					code = code + "\t\t\t\tgenerate_" + name + "_index = 0;\n";
-					if(isDAC) {
+					if(isPMC) {
+						code = code + "\t\t\t\tMachineControl_AnalogOut.write(" + channelNumber + ", " + name + ");\n";
+					} else if(isDAC) {
 						// 12 bits for the DAC only : the resolution is common to all the analog outputs (PWM outputs stay 8 bits)
 						code = code + "\t\t\t\tanalogWriteResolution(12);\n";
 						code = code + "\t\t\t\tanalogWrite(" + channelNumber + ", " + name + ");\n";
 						code = code + "\t\t\t\tanalogWriteResolution(8);\n";
 					} else code = code + "\t\t\t\tanalogWrite(" + channelNumber + ", " + name + ");\n";
 					if(isTransfered) {
-						code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%d\", " + transferNumber + ", " + name + ");\n";
-						if(ArduinoUnoAnInModuleProperties.isR4(dacqConfiguration)) {
+						// Portenta Machine Control : value in volts (float), same format as the float variables
+						if(isPMC) code = code + "\t\t\t\tsnprintf(serialMessage, sizeof(serialMessage), \"%d:%+.6E\", " + transferNumber + ", (double)" + name + ");\n";
+						else code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%d\", " + transferNumber + ", " + name + ");\n";
+						if(isARM) {
 							// R4 WiFi : sent by loop(). In the real time loop interrupt, Serial would wait forever for the
 							// end of the transmission, signaled by an interrupt of the same priority
 							code = code + "\t\t\t\tglobalSerialMessage += serialMessage;\n";
@@ -190,6 +204,14 @@ public class ArduinoUnoAnOutModule extends Module {
 		}
 		
 		return code;
+	}
+
+	/*
+	 * True if a channel of the module is used and exists on the board
+	 */
+	private boolean hasUsedChannel() {
+		for (Channel channel : getChannels()) if(ArduinoUnoBoardChannels.isUsed(channel)) return true;
+		return false;
 	}
 
 	@Override
@@ -212,8 +234,11 @@ public class ArduinoUnoAnOutModule extends Module {
 
 	@Override
 	public void update(Property property, Object newValue, Object oldValue, AbstractElement element) {
-		// DAC channel of the new revision of the board
-		if(property == ArduinoUnoDACQConfigurationProperties.REVISION) updateDACChannel();
+		// DAC channel and channels of the Portenta Machine Control of the new revision of the board
+		if(property == ArduinoUnoDACQConfigurationProperties.REVISION) {
+			updateDACChannel();
+			ArduinoUnoBoardChannels.update(dacqConfiguration);
+		}
 	}
 
 	@Override

@@ -61,11 +61,11 @@ import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.Property;
-import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnInModuleProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnOutChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnOutModule;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfigurationProperties;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoBoardChannels;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoMessages;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoModulesList;
 import fr.univamu.ism.docometre.editors.ModulePage;
@@ -128,8 +128,10 @@ public class ArduinoUnoAnOutModulePage extends ArduinoUnoModulePage {
 	
 	@Override
 	public void init(IEditorSite site, IEditorInput input) {
-		// DAC channel added to R4 WiFi configurations created before (before the observers of the channels are added)
+		// DAC channel added to R4 WiFi configurations created before, analog outputs of the Portenta Machine Control
+		// (before the observers of the channels are added)
 		((ArduinoUnoAnOutModule)module).updateDACChannel();
+		ArduinoUnoBoardChannels.update(module.getDACQConfiguration());
 		super.init(site, input);
 	}
 
@@ -220,11 +222,11 @@ public class ArduinoUnoAnOutModulePage extends ArduinoUnoModulePage {
 			}
 		});
 		configureSorter(new AnalogOutputsComparator(), tableViewer.getTable().getColumn(1));
-		// DAC channel shown for R4 WiFi only
+		// Channels of the board only : DAC for R4 WiFi only, AO0 to AO3 for the Portenta Machine Control only
 		tableViewer.addFilter(new ViewerFilter() {
 			@Override
 			public boolean select(Viewer viewer, Object parentElement, Object element) {
-				return !ArduinoUnoAnOutModule.isDACChannel((Channel)element) || ArduinoUnoAnInModuleProperties.isR4(dacqConfiguration);
+				return ArduinoUnoBoardChannels.isAvailable((Channel)element);
 			}
 		});
 		tableViewer.setInput(module.getChannels());
@@ -268,8 +270,10 @@ public class ArduinoUnoAnOutModulePage extends ArduinoUnoModulePage {
 //		}
 		// DAC channel of the new revision of the board
 		if(property == ArduinoUnoDACQConfigurationProperties.REVISION && tableViewer != null && !tableViewer.getTable().isDisposed()) {
-			Channel dacChannel = ((ArduinoUnoAnOutModule)module).updateDACChannel();
-			if(dacChannel != null) dacChannel.addObserver(this);
+			((ArduinoUnoAnOutModule)module).updateDACChannel();
+			ArduinoUnoBoardChannels.update(dacqConfiguration);
+			// Channels added (DAC, analog outputs of the Portenta Machine Control) observed
+			for (Channel channel : module.getChannels()) channel.addObserver(this);
 			tableViewer.setInput(module.getChannels());
 			tableConfigurationSectionPart.markDirty();
 		}

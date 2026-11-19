@@ -76,6 +76,11 @@ public class ArduinoUnoMessages extends NLS {
 	public static String PMC_RequiresArduinoCLI;
 	public static String PMC_InputsOutputsNotSupported;
 	public static String PMC_ADS1115NotSupported;
+	public static String SensorType_Label;
+	public static String SensorType_Tooltip;
+	public static String SensorType_V_0_10;
+	public static String SensorType_MA_4_20;
+	public static String SensorType_NTC;
 	public static String PMC_SerialPortBaudRate;
 	public static String PMC_PeriodRounded;
 	public static String Calibration_PMCNotAvailable;

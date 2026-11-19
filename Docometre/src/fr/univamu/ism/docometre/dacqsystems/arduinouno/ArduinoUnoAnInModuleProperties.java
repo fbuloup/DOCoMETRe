@@ -49,6 +49,27 @@ public final class ArduinoUnoAnInModuleProperties extends Property {
 	
 	public static final ArduinoUnoAnInModuleProperties ANALOG_REFERENCE = new ArduinoUnoAnInModuleProperties("ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE", ArduinoUnoMessages.AnalogReference_Label, ArduinoUnoMessages.AnalogReference_Tooltip, "^(DEFAULT|INTERNAL|EXTERNAL|AR_DEFAULT|AR_INTERNAL|AR_EXTERNAL)$", "DEFAULT:INTERNAL:EXTERNAL:AR_DEFAULT:AR_INTERNAL:AR_EXTERNAL");
 	
+	/**
+	 * Portenta Machine Control : type of sensor of its three analog inputs (SensorType of the Arduino_PortentaMachineControl
+	 * library), common to the three inputs. Not defined (null) for the configurations created before : V_0_10.
+	 */
+	public static final ArduinoUnoAnInModuleProperties SENSOR_TYPE = new ArduinoUnoAnInModuleProperties("ArduinoUnoAnInModuleProperties.SENSOR_TYPE", ArduinoUnoMessages.SensorType_Label, ArduinoUnoMessages.SensorType_Tooltip, "^(V_0_10|MA_4_20|NTC)$", "V_0_10:MA_4_20:NTC");
+	public static String SENSOR_TYPE_V_0_10 = "V_0_10";
+	public static String SENSOR_TYPE_MA_4_20 = "MA_4_20";
+	public static String SENSOR_TYPE_NTC = "NTC";
+	public static String[] SENSOR_TYPES = new String[] {SENSOR_TYPE_V_0_10, SENSOR_TYPE_MA_4_20, SENSOR_TYPE_NTC};
+	// Displayed to the user, same order as SENSOR_TYPES
+	public static String[] SENSOR_TYPES_LABELS = new String[] {ArduinoUnoMessages.SensorType_V_0_10, ArduinoUnoMessages.SensorType_MA_4_20, ArduinoUnoMessages.SensorType_NTC};
+	
+	/**
+	 * @return the type of sensor of the analog inputs of the Portenta Machine Control (V_0_10 if it is not defined)
+	 */
+	public static String getSensorType(Module module) {
+		String sensorType = module.getProperty(SENSOR_TYPE);
+		for (String type : SENSOR_TYPES) if(type.equals(sensorType)) return type;
+		return SENSOR_TYPE_V_0_10;
+	}
+	
 	// Analog references of Arduino Uno R3 : DEFAULT, INTERNAL, EXTERNAL ; of Arduino Uno R4 WiFi : AR_DEFAULT, AR_INTERNAL, AR_EXTERNAL
 	public static String DEFAULT = "DEFAULT";
 	public static String INTERNAL = "INTERNAL";
@@ -91,11 +112,13 @@ public final class ArduinoUnoAnInModuleProperties extends Property {
 	
 	public static void populateProperties(Module module){
 		module.setProperty(ANALOG_REFERENCE, DEFAULT); 
+		module.setProperty(SENSOR_TYPE, SENSOR_TYPE_V_0_10);
 	}
 	
 	public static Module cloneModule(Module module) {
 		ArduinoUnoAnInModule newModule = new ArduinoUnoAnInModule(null);
 		newModule.setProperty(ANALOG_REFERENCE, new String(module.getProperty(ANALOG_REFERENCE)));
+		newModule.setProperty(SENSOR_TYPE, getSensorType(module));
 		return newModule;
 	}
 	

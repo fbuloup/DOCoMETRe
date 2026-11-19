@@ -64,6 +64,12 @@ public class ArduinoUnoAnInModule extends Module {
 		// Portenta Machine Control : no analogReference() (DEFAULT, AR_DEFAULT... are not defined by its mbed core),
 		// its analog inputs are configured with the Arduino_PortentaMachineControl library
 		boolean isPMC = ArduinoUnoDACQConfigurationProperties.isPMC(dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION));
+		if (segment == ArduinoUnoCodeSegmentProperties.INITIALIZATION && isPMC && hasUsedChannel()) {
+			// Portenta Machine Control : type of sensor of the three inputs, ADC on 16 bits. Done once : the inputs keep
+			// their configuration when the process is restarted by software
+			code = code + "\t\t// Analog inputs : sensor type, ADC on 16 bits\n";
+			code = code + "\t\tif(firstStart) MachineControl_AnalogIn.begin(SensorType::" + ArduinoUnoAnInModuleProperties.getSensorType(this) + ", 16);\n";
+		}
 		if (segment == ArduinoUnoCodeSegmentProperties.INITIALIZATION && !isPMC) {
 			// Reference of the revision of the board (configurations saved with a reference of the other revision)
 			String analogReference = ArduinoUnoAnInModuleProperties.getReferenceOfRevision(getProperty(ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE), ArduinoUnoAnInModuleProperties.isR4(dacqConfiguration));
@@ -76,8 +82,8 @@ public class ArduinoUnoAnInModule extends Module {
 			
 			Channel channel = getChannel(i);
 			
-			String used = channel.getProperty(ArduinoUnoChannelProperties.USED);
-			boolean isUsed = Boolean.valueOf(used);
+			// Used and existing on the board (AIN0 to AIN2 only on the Portenta Machine Control)
+			boolean isUsed = ArduinoUnoBoardChannels.isUsed(channel);
 			String name = channel.getProperty(ChannelProperties.NAME);
 			String transferNumber = channel.getProperty(ChannelProperties.TRANSFER_NUMBER);
 			String channelNumber = channel.getProperty(ChannelProperties.CHANNEL_NUMBER);
@@ -126,6 +132,14 @@ public class ArduinoUnoAnInModule extends Module {
 		}
 		
 		return code;
+	}
+
+	/*
+	 * True if a channel of the module is used and exists on the board
+	 */
+	private boolean hasUsedChannel() {
+		for (Channel channel : getChannels()) if(ArduinoUnoBoardChannels.isUsed(channel)) return true;
+		return false;
 	}
 
 	@Override

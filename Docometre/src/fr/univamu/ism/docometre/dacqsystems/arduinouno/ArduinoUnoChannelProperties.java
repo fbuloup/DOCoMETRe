@@ -48,15 +48,23 @@ import fr.univamu.ism.docometre.dacqsystems.Property;
 public final class ArduinoUnoChannelProperties extends Property {
 	
 	public static final ArduinoUnoChannelProperties USED = new ArduinoUnoChannelProperties("ArduinoUnoChannelProperties.USED", ArduinoUnoMessages.Used_Label, ArduinoUnoMessages.Used_Tooltip, "^(true|false)$", "true:false");
+	/**
+	 * "true" for a channel of the Portenta Machine Control only (analog outputs AO0 to AO3...), added to the module when
+	 * the board of the DACQ configuration is the Portenta Machine Control (see ArduinoUnoBoardChannels). Not defined
+	 * (null) for the channels of the configurations created before.
+	 */
+	public static final ArduinoUnoChannelProperties PMC = new ArduinoUnoChannelProperties("ArduinoUnoChannelProperties.PMC", ArduinoUnoMessages.Revision_PMC, ArduinoUnoMessages.Revision_PMC, "^(true|false)$", "true:false");
 	
 	public static void populateProperties(Channel channel){
 		ChannelProperties.populateProperties(channel);
 		channel.setProperty(USED, "false");
+		channel.setProperty(PMC, "false");
 	}
 	
 	public static Channel cloneChannel(Channel channel, Channel newChannel) {
 		ChannelProperties.cloneChannel(channel, newChannel);
 		newChannel.setProperty(USED, new String(channel.getProperty(USED)));
+		newChannel.setProperty(PMC, "true".equals(channel.getProperty(PMC)) ? "true" : "false");
 		return channel;
 	}
 	

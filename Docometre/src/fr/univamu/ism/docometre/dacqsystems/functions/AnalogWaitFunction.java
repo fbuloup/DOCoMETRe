@@ -252,7 +252,7 @@ public final class AnalogWaitFunction extends GenericFunction {
 			if(step == ArduinoUnoCodeSegmentProperties.DECLARATION) {
 				code = code + "// Analog Wait Function declaration\n";
 				String key = ArduinoUnoCodeSegmentProperties.DECLARATION.toString();
-				String temporaryCode = FunctionFactory.getProperty(process, functionFileName, key.toUpperCase());
+				String temporaryCode = getArduinoProperty(process, functionFileName, key.toUpperCase(), dacqConfiguration);
 				code = code + temporaryCode.replaceAll("HashCode", hashCode);
 			}
 			if(step == ScriptSegmentType.INITIALIZE || step == ScriptSegmentType.LOOP || step == ScriptSegmentType.FINALIZE) {
@@ -260,7 +260,7 @@ public final class AnalogWaitFunction extends GenericFunction {
 				String indent = (step == ScriptSegmentType.FINALIZE) ? UNO_FINALIZE_INDENT : UNO_DEFAULT_INDENT;
 				code = code + "\n" +  indent + "// Analog Input Function\n";
 				String key = FUNCTION_CODE;
-				String temporaryCode = FunctionFactory.getProperty(process, functionFileName, key.toUpperCase());
+				String temporaryCode = getArduinoProperty(process, functionFileName, key.toUpperCase(), dacqConfiguration);
 
 				channelName  = getProperty(channelNameKey, "");
 				channelValue  = getProperty(channelValueKey, "");

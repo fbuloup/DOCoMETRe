@@ -196,7 +196,7 @@ public final class AnalogInputFunction extends GenericFunction {
 				String indent = (step == ScriptSegmentType.FINALIZE) ? UNO_FINALIZE_INDENT : UNO_DEFAULT_INDENT;
 				code = code + "\n" +  indent + "// Analog Input Function\n";
 				String key = FUNCTION_CODE;
-				String temporaryCode = FunctionFactory.getProperty(process, functionFileName, key.toUpperCase());
+				String temporaryCode = getArduinoProperty(process, functionFileName, key.toUpperCase(), dacqConfiguration);
 				// Retrieve associated analog input module
 				channelName  = getProperty(channelNameKey, "");
 				Module[] modules = dacqConfiguration.getModules();

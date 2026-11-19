@@ -1385,7 +1385,9 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "}\n\n";
 			code = code + "unsigned int acquireAnalogInput(byte inputNumber, bool transfert, byte transferNumber) {\n";
 			//code = code + "\t\t//unsigned long dt = micros();\n";
-			code = code + "\t\tint value = analogRead(inputNumber);\n";
+			// Portenta Machine Control : inputs AI0 to AI2 of its library (analogRead() reads the pins of the Portenta H7)
+			if(isPMC) code = code + "\t\tint value = MachineControl_AnalogIn.read(inputNumber);\n";
+			else code = code + "\t\tint value = analogRead(inputNumber);\n";
 			//code = code + "\t\t//dt = micros() - dt;\n";
 			//code = code + "\t\t//Serial.println(dt);\n";
 			//code = code + "\t\t//serialMessage = String(inputNumber) + \":\" + String(loopTime - *lastAcquisitionTime) + \":\" + String(value);\n";
@@ -1482,9 +1484,13 @@ public class ArduinoUnoProcess extends Process {
 			ModuleBehaviour module = getDACQConfiguration().getModule(i);
 			if(!(module instanceof ArduinoUnoDigInOutModule) && !(module instanceof ArduinoUnoAnOutModule)) continue;
 			for (Channel channel : ((Module)module).getChannels()) {
-				if(!Boolean.valueOf(channel.getProperty(ArduinoUnoChannelProperties.USED))) continue;
+				// Used and existing on the board
+				if(!ArduinoUnoBoardChannels.isUsed(channel)) continue;
 				String channelNumber = channel.getProperty(ChannelProperties.CHANNEL_NUMBER);
-				if(module instanceof ArduinoUnoAnOutModule) {
+				if(module instanceof ArduinoUnoAnOutModule && ArduinoUnoBoardChannels.isPMCChannel(channel)) {
+					// Portenta Machine Control : analog outputs AO0 to AO3 to 0 V
+					code = code + "\t\tMachineControl_AnalogOut.write(" + channelNumber + ", 0);\n";
+				} else if(module instanceof ArduinoUnoAnOutModule) {
 					code = code + "\t\tanalogWrite(" + channelNumber + ", 0);\n";
 				} else {
 					String inOut = channel.getProperty(ArduinoUnoDigInOutChannelProperties.IN_OUT);
@@ -2123,8 +2129,8 @@ public class ArduinoUnoProcess extends Process {
 	
 	/*
 	 * Portenta Machine Control : errors of the DACQ configuration, which stop the compilation. Its processes are
-	 * compiled and uploaded with arduino-cli. Opening its serial port at 1200 bauds starts its bootloader. Its inputs
-	 * and outputs are not supported yet : no channel of the modules can be used, no ADS1115 module.
+	 * compiled and uploaded with arduino-cli. Opening its serial port at 1200 bauds starts its bootloader. Only its
+	 * analog inputs and outputs are supported : no other channel of the modules can be used, no ADS1115 module.
 	 */
 	private List<String> getPMCConfigurationErrors() {
 		List<String> errors = new ArrayList<>();
@@ -2141,8 +2147,8 @@ public class ArduinoUnoProcess extends Process {
 			}
 			for (Channel channel : ((Module)module).getChannels()) {
 				if(!Boolean.valueOf(channel.getProperty(ArduinoUnoChannelProperties.USED))) continue;
-				// The DAC channel of Uno R4 WiFi is not used with other boards (see ArduinoUnoAnOutModule)
-				if(module instanceof ArduinoUnoAnOutModule && ArduinoUnoAnOutModule.isDACChannel(channel)) continue;
+				// Analog inputs AIN0 to AIN2 and outputs AO0 to AO3 : supported (see ArduinoUnoBoardChannels)
+				if(ArduinoUnoBoardChannels.isAvailable(channel)) continue;
 				errors.add(NLS.bind(ArduinoUnoMessages.PMC_InputsOutputsNotSupported, channel.getProperty(ChannelProperties.NAME), ArduinoUnoModulesList.getDescription((Module)module)));
 			}
 		}
