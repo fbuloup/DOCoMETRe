@@ -108,6 +108,27 @@ public final class ArduinoUnoDACQConfigurationProperties extends Property {
 	public static String REVISION_R3 = "R3";
 	public static String REVISION_R4_WIFI = "R4_WIFI";
 	public static String[] REVISIONS = new String[] { REVISION_R3, REVISION_R4_WIFI };
+	// Boards displayed to the user, same order as REVISIONS : the revisions saved in the DACQ configurations do not change
+	public static String[] REVISIONS_LABELS = new String[] { ArduinoUnoMessages.Revision_UnoR3, ArduinoUnoMessages.Revision_UnoR4WiFi };
+
+	/**
+	 * @param revision a revision of REVISIONS, as saved in the DACQ configurations
+	 * @return the board displayed to the user (e.g. "Uno R4 WiFi" for R4_WIFI), or revision itself if it is unknown
+	 */
+	public static String getRevisionLabel(String revision) {
+		for (int i = 0; i < REVISIONS.length; i++) if(REVISIONS[i].equals(revision)) return REVISIONS_LABELS[i];
+		return revision;
+	}
+
+	/**
+	 * @param revisionLabel a board displayed to the user (see REVISIONS_LABELS)
+	 * @return the corresponding revision of REVISIONS, saved in the DACQ configurations, or revisionLabel itself if it is
+	 * not a displayed board
+	 */
+	public static String getRevision(String revisionLabel) {
+		for (int i = 0; i < REVISIONS_LABELS.length; i++) if(REVISIONS_LABELS[i].equals(revisionLabel)) return REVISIONS[i];
+		return revisionLabel;
+	}
 	
 	public static void populateProperties(DACQConfiguration daqGeneralConfiguration) {
 		IEclipsePreferences defaults = DefaultScope.INSTANCE.getNode(Activator.PLUGIN_ID);

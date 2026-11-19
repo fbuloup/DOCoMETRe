@@ -87,7 +87,8 @@ public class NewDACQConfigurationWizardPage extends NewResourceWizardPage {
 		
 		configurationCombo = new Combo(container, SWT.READ_ONLY | SWT.BORDER);
 		configurationCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		configurationCombo.setItems(Activator.SYSTEMS);
+		// Labels displayed, system types of Activator.SYSTEMS saved (see modifyHandler())
+		configurationCombo.setItems(Activator.SYSTEMS_LABELS);
 		configurationCombo.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -129,7 +130,7 @@ public class NewDACQConfigurationWizardPage extends NewResourceWizardPage {
 			} else {
 				if(isPageComplete()) setErrorMessage(null);
 				controlDecoration2.hide();
-				system = configurationCombo.getText();
+				system = Activator.SYSTEMS[configurationCombo.getSelectionIndex()];
 			}
 		}
 	}

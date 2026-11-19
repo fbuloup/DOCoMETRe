@@ -143,7 +143,7 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 		useArduinoCLIButton.setSelection(useCLI);
 		arduinoCLIText.setEnabled(useCLI);
 		browsearduinoCLIButton.setEnabled(useCLI);
-		revisionCombo.setText(getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.REVISION.getKey()));
+		revisionCombo.setText(ArduinoUnoDACQConfigurationProperties.getRevisionLabel(getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.REVISION.getKey())));
 	}
 	
 	@Override
@@ -159,7 +159,8 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH.getKey(), userLibraryPathText.getText());
 		preferenceStore.putValue(GeneralPreferenceConstants.ARDUINO_DELAY_TIME_AFTER_SERIAL_PRINT, delayTimeSpinner.getText());
 		preferenceStore.putValue(GeneralPreferenceConstants.ARDUINO_USER_LIBRARIES_ABSOLUTE_PATH, docoUserLibrariesAbsolutePathText.getText());
-		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.REVISION.getKey(), revisionCombo.getText());
+		// Revision saved (R3, R4_WIFI), not the board displayed
+		preferenceStore.putValue(ArduinoUnoDACQConfigurationProperties.REVISION.getKey(), ArduinoUnoDACQConfigurationProperties.getRevision(revisionCombo.getText()));
 		boolean value = super.performOk();
 		FunctionsView.refresh(false);
 		return value;
@@ -332,10 +333,11 @@ public class DefaultArduinoUnoSystemPreferencePage extends PreferencePage implem
 		revisionLabel.setText(ArduinoUnoDACQConfigurationProperties.REVISION.getLabel());
 		GridDataFactory.fillDefaults().align(SWT.RIGHT, SWT.CENTER).applyTo(revisionLabel);
 		revisionCombo = new Combo(container, SWT.READ_ONLY);
-		revisionCombo.setItems(ArduinoUnoDACQConfigurationProperties.REVISIONS);
+		// Boards displayed (Uno R3, Uno R4 WiFi), revisions saved (see performOk())
+		revisionCombo.setItems(ArduinoUnoDACQConfigurationProperties.REVISIONS_LABELS);
 		String value = getPreferenceStore().getString(ArduinoUnoDACQConfigurationProperties.REVISION.getKey());
 		value = value == null ? ArduinoUnoDACQConfigurationProperties.REVISION_R3 : "".equals(value) ? ArduinoUnoDACQConfigurationProperties.REVISION_R3 : value;
-		revisionCombo.setText(value);
+		revisionCombo.setText(ArduinoUnoDACQConfigurationProperties.getRevisionLabel(value));
 		GridDataFactory.fillDefaults().grab(true, false).span(2, 1).applyTo(revisionCombo);
 		
 		return container;

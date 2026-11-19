@@ -141,7 +141,8 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 			values.add(globalFrequencyHyperlink.getText());
 			values.add(arduinoCLIPathText.getText());
 			values.add(useCLIButton.getSelection()?"true":"false");
-			values.add(revisionCombo.getText());
+			// Revision saved, not the board displayed
+			values.add(ModifyPropertyHandler.getComboValue(revisionCombo));
 			IPreferenceStore preferences = Activator.getDefault().getPreferenceStore();
 			preferences.putValue(ArduinoUnoDACQConfigurationProperties.DEVICE_PATH.getKey(), values.get(0));
 			preferences.putValue(ArduinoUnoDACQConfigurationProperties.BAUD_RATE.getKey(), values.get(1));
@@ -272,7 +273,9 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 		createLabel(generalconfigurationContainer, ArduinoUnoMessages.Revision_Label, ArduinoUnoMessages.Revision_Tooltip);
 		value = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
 		regExp = ArduinoUnoDACQConfigurationProperties.REVISION.getRegExp();
-		revisionCombo = createCombo(generalconfigurationContainer, ArduinoUnoDACQConfigurationProperties.REVISIONS, value == null ? "" : value, 2 , 1);
+		// Boards displayed (Uno R3, Uno R4 WiFi), revisions saved (R3, R4_WIFI)
+		revisionCombo = createCombo(generalconfigurationContainer, ArduinoUnoDACQConfigurationProperties.REVISIONS_LABELS, ArduinoUnoDACQConfigurationProperties.getRevisionLabel(value == null ? "" : value), 2 , 1);
+		ModifyPropertyHandler.setComboValues(revisionCombo, ArduinoUnoDACQConfigurationProperties.REVISIONS);
 		revisionCombo.addModifyListener(new ModifyPropertyHandler(ArduinoUnoDACQConfigurationProperties.REVISION, dacqConfiguration, revisionCombo, regExp, "", false, (ResourceEditor)getEditor()));
 		revisionCombo.addModifyListener(getGeneralConfigurationModifyListener());
 		
@@ -389,7 +392,7 @@ public class ArduinoUnoDACQGeneralConfigurationPage extends ModulePage {
 			if(!text.getText().equals(value)) text.setText(value);
 		}
 		if(widget instanceof Hyperlink) ((Hyperlink)widget).setText(value);
-		if(widget instanceof Combo) ((Combo)widget).select(((Combo)widget).indexOf(value));
+		if(widget instanceof Combo) ModifyPropertyHandler.selectComboValue((Combo)widget, value);
 		for (Listener listener : listeners) widget.addListener(SWT.Modify , listener);
 		generalConfigurationSectionPart.markDirty();
 	}

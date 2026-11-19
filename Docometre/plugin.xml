@@ -1107,7 +1107,7 @@
                </command>
                <command
                      commandId="SetSystemTypeCommand"
-                     label="Arduino UNO"
+                     label="Arduino"
                      style="radio">
                   <parameter
                         name="Docometre.system.type.parameter"
@@ -2047,7 +2047,7 @@
             </command>
             <command
                   commandId="SetSystemTypeCommand"
-                  label="Arduino UNO"
+                  label="Arduino"
                   style="radio">
                <parameter
                      name="Docometre.system.type.parameter"

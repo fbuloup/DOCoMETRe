@@ -54,7 +54,7 @@ public class GetResourceLabelDelegate {
 	public static String getLabel(IResource resource) {
 		if(resource instanceof IProject && !((IProject) resource).isOpen()) return null;
 		if(ResourceType.isDACQConfiguration(resource)) {
-			String suffix = ResourceProperties.getSystemPersistentProperty(resource); 
+			String suffix = Activator.getSystemLabel(ResourceProperties.getSystemPersistentProperty(resource));
 			suffix = " [" + suffix + "]";
 			return resource.getName().replaceAll(Activator.daqFileExtension + "$", "") + suffix;
 		}
