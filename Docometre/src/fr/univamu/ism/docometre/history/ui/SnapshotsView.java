@@ -100,6 +100,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
 import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.dacqsystems.ExperimentScheduler;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.ResourceProperties;
@@ -141,6 +142,9 @@ public class SnapshotsView extends ViewPart implements ISelectionListener, IReso
 	private HistoryData historyData;
 	private final IPropertyChangeListener preferenceListener = this::preferenceChanged;
 	private Job loadJob;
+	// Read of the history after a change waiting for the end of the trials (see loadAfterChange())
+	private boolean loadAfterRunPending;
+	private static final int RUNNING_RETRY_DELAY_MS = 2000;
 	private Job detailsJob;
 	
 	private ScrolledComposite scrolledComposite;
@@ -771,8 +775,27 @@ public class SnapshotsView extends ViewPart implements ISelectionListener, IReso
 		Display.getDefault().asyncExec(() -> {
 			if(headerLabel.isDisposed() || !project.equals(experiment)) return;
 			if(projectDelta.getKind() == IResourceDelta.REMOVED) experiment = null;
-			load(1000);
+			loadAfterChange();
 		});
+	}
+	
+	/*
+	 * UI thread : history read again after a change of the experiment, 1 s later. While trials are running, it is read
+	 * after the run : reading it and updating the view about 1 s after the end of each trial froze the real time charts
+	 * of the next one.
+	 */
+	private void loadAfterChange() {
+		if(headerLabel.isDisposed()) return;
+		if(ExperimentScheduler.getInstance().isRunning()) {
+			if(loadAfterRunPending) return;
+			loadAfterRunPending = true;
+			Display.getDefault().timerExec(RUNNING_RETRY_DELAY_MS, () -> {
+				loadAfterRunPending = false;
+				loadAfterChange();
+			});
+			return;
+		}
+		load(1000);
 	}
 
 	@Override

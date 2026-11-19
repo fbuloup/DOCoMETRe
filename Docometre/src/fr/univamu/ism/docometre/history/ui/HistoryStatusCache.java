@@ -62,6 +62,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.dacqsystems.ExperimentScheduler;
 import fr.univamu.ism.docometre.history.GitResources;
 import fr.univamu.ism.docometre.history.Snapshot;
 import fr.univamu.ism.docometre.history.SnapshotException;
@@ -77,6 +78,13 @@ public final class HistoryStatusCache implements IResourceChangeListener {
 	
 	/* Delay before computing status after experiment content changes */
 	private static final long CHANGE_DELAY = 1000;
+	
+	/*
+	 * Delay before trying again while trials are running : the status (reading the Git repository) and the update of the
+	 * decorations of the experiments tree (user interface thread, about 400 ms with many trials) are done after the run.
+	 * They were done about 1 s after the end of each trial, which froze the real time charts of the next one.
+	 */
+	private static final long RUNNING_RETRY_DELAY = 2000;
 	
 	/**
 	 * History status of an experiment.
@@ -104,6 +112,11 @@ public final class HistoryStatusCache implements IResourceChangeListener {
 		job = new Job(HistoryStatusCache.class.getSimpleName()) {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
+				if(ExperimentScheduler.getInstance().isRunning()) {
+					// Trials running : status computed after the run (see RUNNING_RETRY_DELAY)
+					this.schedule(RUNNING_RETRY_DELAY);
+					return Status.OK_STATUS;
+				}
 				List<IProject> projects = new ArrayList<>(projectsToUpdate);
 				projectsToUpdate.removeAll(projects);
 				for (IProject project : projects) {
