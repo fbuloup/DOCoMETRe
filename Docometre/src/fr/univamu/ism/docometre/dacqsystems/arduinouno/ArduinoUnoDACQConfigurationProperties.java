@@ -41,7 +41,8 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.arduinouno;
 
-import org.eclipse.core.runtime.Platform;
+import java.util.Locale;
+
 import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 
@@ -56,7 +57,7 @@ public final class ArduinoUnoDACQConfigurationProperties extends Property {
 	public static final ArduinoUnoDACQConfigurationProperties AVRDUDE_PATH = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.AVRDUDE_PATH", ArduinoUnoMessages.AVRDudePath_Label, ArduinoUnoMessages.AVRDudePath_Tooltip, "(.)+");
 	public static final ArduinoUnoDACQConfigurationProperties ARDUINOCLI_PATH = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH", ArduinoUnoMessages.ArduinoCLIPath_Label, ArduinoUnoMessages.ArduinoCLIPath_Tooltip, "(.)+");
 	public static final ArduinoUnoDACQConfigurationProperties USE_ARDUINOCLI = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI", ArduinoUnoMessages.UseArduinoCLI_Label, ArduinoUnoMessages.UseArduinoCLI_Tooltip, "^(true|false)$", "true:false");	
-	public static final ArduinoUnoDACQConfigurationProperties DEVICE_PATH = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.DEVICE_PATH", ArduinoUnoMessages.DevicePath_Label, ArduinoUnoMessages.DevicePath_Tooltip, Platform.getOS().equals(Platform.OS_WIN32)?"^COM\\d+$":"(.)+");
+	public static final ArduinoUnoDACQConfigurationProperties DEVICE_PATH = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.DEVICE_PATH", ArduinoUnoMessages.DevicePath_Label, ArduinoUnoMessages.DevicePath_Tooltip, isWindows()?"^COM\\d+$":"(.)+");
 	public static final ArduinoUnoDACQConfigurationProperties BAUD_RATE = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.BAUD_RATE", ArduinoUnoMessages.DeviceBaudRate_Label, ArduinoUnoMessages.DeviceBaudRate_Tooltip, "^(300|600|1200|2400|4800|9600|14400|19200|28800|38400|57600|115200|230400|250000|460800|500000|921600|1000000|1500000|2000000)$", "300:600:1200:2400:4800:9600:14400:19200:28800:38400:57600:115200:230400:250000:460800:500000:921600:1000000:1500000:2000000");
 	public static final ArduinoUnoDACQConfigurationProperties GLOBAL_FREQUENCY = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY", ArduinoUnoMessages.GlobalFrequency_Label, ArduinoUnoMessages.GlobalFrequency_Tooltip, "(^\\d{1,10}$)");
 	public static final ArduinoUnoDACQConfigurationProperties LIBRARIES_ABSOLUTE_PATH = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH", ArduinoUnoMessages.LibrariesAbsolutePath_Label, ArduinoUnoMessages.LibrariesAbsolutePath_Tooltip, "(.)+");
@@ -105,6 +106,15 @@ public final class ArduinoUnoDACQConfigurationProperties extends Property {
 		    BAUD_RATE_1500000,
 		    BAUD_RATE_2000000
 		};
+	/**
+	 * Operating system read from the Java system properties, not from the Eclipse platform : this class is used in the
+	 * static initialization of its fields (DEVICE_PATH), which must work without a running platform (unit tests)
+	 * @return true if the operating system is Windows (serial ports COM1, COM2...)
+	 */
+	private static boolean isWindows() {
+		return System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH).startsWith("windows");
+	}
+	
 	public static String REVISION_R3 = "R3";
 	public static String REVISION_R4_WIFI = "R4_WIFI";
 	public static String[] REVISIONS = new String[] { REVISION_R3, REVISION_R4_WIFI };
@@ -137,7 +147,7 @@ public final class ArduinoUnoDACQConfigurationProperties extends Property {
 		daqGeneralConfiguration.setProperty(AVRDUDE_PATH, "");
 		daqGeneralConfiguration.setProperty(ARDUINOCLI_PATH, "");
 		daqGeneralConfiguration.setProperty(USE_ARDUINOCLI, "false");
-		if(Platform.OS_WIN32.equals(Platform.getOS())) daqGeneralConfiguration.setProperty(DEVICE_PATH, "COM3");
+		if(isWindows()) daqGeneralConfiguration.setProperty(DEVICE_PATH, "COM3");
 		else daqGeneralConfiguration.setProperty(DEVICE_PATH, "/dev/tty.usb*");
 		daqGeneralConfiguration.setProperty(BAUD_RATE, BAUD_RATE_2000000);
 		daqGeneralConfiguration.setProperty(GLOBAL_FREQUENCY, "100");
