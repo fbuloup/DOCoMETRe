@@ -81,6 +81,8 @@ public class ArduinoUnoMessages extends NLS {
 	public static String SensorType_V_0_10;
 	public static String SensorType_MA_4_20;
 	public static String SensorType_NTC;
+	public static String DoubleRead_Label;
+	public static String DoubleRead_Tooltip;
 	public static String PMC_SerialPortBaudRate;
 	public static String PMC_PeriodRounded;
 	public static String Calibration_PMCNotAvailable;

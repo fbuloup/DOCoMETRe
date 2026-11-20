@@ -62,6 +62,20 @@ public final class ArduinoUnoAnInModuleProperties extends Property {
 	public static String[] SENSOR_TYPES_LABELS = new String[] {ArduinoUnoMessages.SensorType_V_0_10, ArduinoUnoMessages.SensorType_MA_4_20, ArduinoUnoMessages.SensorType_NTC};
 	
 	/**
+	 * Each analog input is read twice, the first value is discarded : the ADC is multiplexed, the voltage of the input
+	 * converted just before remains partly in its sampling capacitor (crosstalk between inputs). Doubles the conversion
+	 * time of the analog inputs. Not defined (null) for the configurations created before : false.
+	 */
+	public static final ArduinoUnoAnInModuleProperties DOUBLE_READ = new ArduinoUnoAnInModuleProperties("ArduinoUnoAnInModuleProperties.DOUBLE_READ", ArduinoUnoMessages.DoubleRead_Label, ArduinoUnoMessages.DoubleRead_Tooltip, "^(true|false)$", "true:false");
+	
+	/**
+	 * @return true if the analog inputs of the module are read twice (see {@link #DOUBLE_READ}), false if it is not defined
+	 */
+	public static boolean isDoubleRead(Module module) {
+		return module != null && "true".equals(module.getProperty(DOUBLE_READ));
+	}
+	
+	/**
 	 * @return the type of sensor of the analog inputs of the Portenta Machine Control (V_0_10 if it is not defined)
 	 */
 	public static String getSensorType(Module module) {
@@ -113,12 +127,14 @@ public final class ArduinoUnoAnInModuleProperties extends Property {
 	public static void populateProperties(Module module){
 		module.setProperty(ANALOG_REFERENCE, DEFAULT); 
 		module.setProperty(SENSOR_TYPE, SENSOR_TYPE_V_0_10);
+		module.setProperty(DOUBLE_READ, "false");
 	}
 	
 	public static Module cloneModule(Module module) {
 		ArduinoUnoAnInModule newModule = new ArduinoUnoAnInModule(null);
 		newModule.setProperty(ANALOG_REFERENCE, new String(module.getProperty(ANALOG_REFERENCE)));
 		newModule.setProperty(SENSOR_TYPE, getSensorType(module));
+		newModule.setProperty(DOUBLE_READ, String.valueOf(isDoubleRead(module)));
 		return newModule;
 	}
 	

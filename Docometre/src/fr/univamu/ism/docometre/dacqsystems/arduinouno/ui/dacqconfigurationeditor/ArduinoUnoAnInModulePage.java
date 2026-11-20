@@ -50,20 +50,30 @@ import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.widgets.FormText;
 
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.osgi.util.NLS;
+
+import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyHandler;
+import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyOperation;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.Property;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnInChannelProperties;
@@ -83,6 +93,7 @@ public class ArduinoUnoAnInModulePage extends ArduinoUnoModulePage {
 	// Portenta Machine Control : type of sensor of its analog inputs, instead of the analog reference
 	private Combo sensorTypeCombo;
 	private Label sensorTypeLabel;
+	private Button doubleReadButton;
 	
 	private class AnalogInputsComparator extends Comparator {
 		@Override
@@ -209,6 +220,25 @@ public class ArduinoUnoAnInModulePage extends ArduinoUnoModulePage {
 		ModifyPropertyHandler.setComboValues(sensorTypeCombo, ArduinoUnoAnInModuleProperties.SENSOR_TYPES);
 		ModifyPropertyHandler.selectComboValue(sensorTypeCombo, ArduinoUnoAnInModuleProperties.getSensorType(module));
 		sensorTypeCombo.addModifyListener(new ModifyPropertyHandler(ArduinoUnoAnInModuleProperties.SENSOR_TYPE, module, sensorTypeCombo, ArduinoUnoAnInModuleProperties.SENSOR_TYPE.getRegExp(), "", false, (ResourceEditor)getEditor()));
+		
+		// Each input read twice against the crosstalk between inputs (doubles the conversion time)
+		doubleReadButton = createButton(generalconfigurationContainer, ArduinoUnoMessages.DoubleRead_Label, SWT.CHECK, 2, 1);
+		doubleReadButton.setToolTipText(ArduinoUnoMessages.DoubleRead_Tooltip);
+		doubleReadButton.setSelection(ArduinoUnoAnInModuleProperties.isDoubleRead(module));
+		doubleReadButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				// Undoable modification (see update())
+				String newValue = String.valueOf(doubleReadButton.getSelection());
+				if(newValue.equals(String.valueOf(ArduinoUnoAnInModuleProperties.isDoubleRead(module)))) return;
+				try {
+					String label = NLS.bind(DocometreMessages.ModifyPropertyOperation_Label, ArduinoUnoAnInModuleProperties.DOUBLE_READ.getLabel() + " : " + module.toString());
+					PlatformUI.getWorkbench().getOperationSupport().getOperationHistory().execute(new ModifyPropertyOperation(doubleReadButton, label, ArduinoUnoAnInModuleProperties.DOUBLE_READ, module, newValue, ((ResourceEditor)getEditor()).getUndoContext()), null, null);
+				} catch (ExecutionException exception) {
+					Activator.logErrorMessageWithCause(exception);
+				}
+			}
+		});
 		updateBoardWidgets();
 		
 		
@@ -377,6 +407,10 @@ public class ArduinoUnoAnInModulePage extends ArduinoUnoModulePage {
 		if(property == ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE || property == ArduinoUnoDACQConfigurationProperties.REVISION)
 			updateAnalogReferenceCombo();
 		if(property == ArduinoUnoAnInModuleProperties.SENSOR_TYPE) updateSensorTypeCombo();
+		if(property == ArduinoUnoAnInModuleProperties.DOUBLE_READ && doubleReadButton != null && !doubleReadButton.isDisposed()) {
+			doubleReadButton.setSelection(ArduinoUnoAnInModuleProperties.isDoubleRead(module));
+			generalConfigurationSectionPart.markDirty();
+		}
 		// Board of the configuration : analog reference or type of sensor, channels of the board
 		if(property == ArduinoUnoDACQConfigurationProperties.REVISION) {
 			updateBoardWidgets();

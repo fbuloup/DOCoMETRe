@@ -1386,8 +1386,12 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "unsigned int acquireAnalogInput(byte inputNumber, bool transfert, byte transferNumber) {\n";
 			//code = code + "\t\t//unsigned long dt = micros();\n";
 			// Portenta Machine Control : inputs AI0 to AI2 of its library (analogRead() reads the pins of the Portenta H7)
-			if(isPMC) code = code + "\t\tint value = MachineControl_AnalogIn.read(inputNumber);\n";
-			else code = code + "\t\tint value = analogRead(inputNumber);\n";
+			String analogRead = isPMC ? "MachineControl_AnalogIn.read(inputNumber)" : "analogRead(inputNumber)";
+			if(isAnalogInputsDoubleRead()) {
+				// Crosstalk : the first conversion takes the voltage of the input converted before (see ArduinoUnoAnInModuleProperties.DOUBLE_READ)
+				code = code + "\t\t" + analogRead + ";\n";
+			}
+			code = code + "\t\tint value = " + analogRead + ";\n";
 			//code = code + "\t\t//dt = micros() - dt;\n";
 			//code = code + "\t\t//Serial.println(dt);\n";
 			//code = code + "\t\t//serialMessage = String(inputNumber) + \":\" + String(loopTime - *lastAcquisitionTime) + \":\" + String(value);\n";
@@ -1645,6 +1649,15 @@ public class ArduinoUnoProcess extends Process {
 	
 	private boolean hasPropagatedParameters() {
 		return ArduinoUnoParametersCode.hasPropagatedParameters(getPropagatedFlags());
+	}
+
+	/*
+	 * True if the analog inputs of the board are read twice (option of the analog inputs module)
+	 */
+	private boolean isAnalogInputsDoubleRead() {
+		for (Module module : getDACQConfiguration().getModules())
+			if(module instanceof ArduinoUnoAnInModule) return ArduinoUnoAnInModuleProperties.isDoubleRead(module);
+		return false;
 	}
 	
 	@Override
