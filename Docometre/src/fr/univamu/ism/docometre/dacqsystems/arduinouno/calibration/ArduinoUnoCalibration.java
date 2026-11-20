@@ -143,7 +143,7 @@ public final class ArduinoUnoCalibration {
 	}
 	
 	/**
-	 * @param board ArduinoUnoCalibrationProtocol.BOARD_R3 or BOARD_R4
+	 * @param dacqConfiguration the DACQ configuration : the firmware of its revision (Uno R3 when not specified)
 	 * @return a copy of the calibration firmware of this board in the state folder of DOCoMETRe (path without
 	 * the folders of the installation, which can contain spaces)
 	 */
