@@ -840,12 +840,13 @@ public class ArduinoUnoProcess extends Process {
 		
 		String arduinoUnoRelease = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
 		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
+		boolean isRelease4Minima = ArduinoUnoDACQConfigurationProperties.REVISION_R4_MINIMA.equals(arduinoUnoRelease);
 		boolean isRelease3 = ArduinoUnoDACQConfigurationProperties.REVISION_R3.equals(arduinoUnoRelease);
 		
 		int delay = Activator.getDefault().getPreferenceStore().getInt(GeneralPreferenceConstants.ARDUINO_DELAY_TIME_AFTER_SERIAL_PRINT);
 		
 		if(segment == ArduinoUnoCodeSegmentProperties.INCLUDE) {
-			if(isRelease4Wifi) {
+			if(isRelease4Wifi || isRelease4Minima) {
 				code = code + "#include \"FspTimer.h\"\n";
 			}
 			if(getDACQConfiguration().getParameters().length > 0) {
@@ -877,7 +878,7 @@ public class ArduinoUnoProcess extends Process {
 		}
 		
 		if(segment == ArduinoUnoCodeSegmentProperties.DECLARATION) {
-			if(isRelease4Wifi) {
+			if(isRelease4Wifi || isRelease4Minima) {
 				code = code + "FspTimer realtimeLoop_Timer;\n";
 			}
 			String gf = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY);
@@ -917,8 +918,8 @@ public class ArduinoUnoProcess extends Process {
 			// Same variable for R3 and R4 WiFi : "time" can not be declared on R4 WiFi (time() C function of
 			// its core), it is an alias of rtTime (see DEFINE segment) so that processes use either name
 			code = code + "// Loop time in second (\"time\" is an alias of rtTime)\n";
-			if(isRelease3 || isRelease4Wifi) code = code + "double rtTime;\n\n";
-			if(!isRelease3 && !isRelease4Wifi) {
+			if(isRelease3 || isRelease4Wifi || isRelease4Minima) code = code + "double rtTime;\n\n";
+			if(!isRelease3 && !isRelease4Wifi && !isRelease4Minima) {
 				IResource dacqResource = ObjectsController.getResourceForObject(getDACQConfiguration());
 				Activator.logErrorMessage(ArduinoUnoMessages.arduinoRevisionNotSpecified);
 				Activator.logErrorMessage(NLS.bind(ArduinoUnoMessages.fixArduinoRevisionProperty, dacqResource.getFullPath().toPortableString()));
@@ -944,7 +945,7 @@ public class ArduinoUnoProcess extends Process {
 //			code = code + "bool firstLoop = true;\n\n";
 			code = code + "// String serialMessage\n";
 			code = code + "char serialMessage[64];\n";
-			if(isRelease4Wifi) {
+			if(isRelease4Wifi || isRelease4Minima) {
 				// Messages added in the real time loop interrupt : no dynamic memory (String) in the interrupt, the
 				// memory allocator is not reentrant (interrupt adding messages while loop() releases them)
 				code = code + "// Messages for the PC : added by the real time loop interrupt (globalSerialMessage += ...),\n";
@@ -1024,7 +1025,7 @@ public class ArduinoUnoProcess extends Process {
 				code = code + "\t\t// Then ADC is enabled and ADSP[2:0] = 100\n";
 				code = code + "\t\tADCSRA  =  bit (ADEN) | 1*bit (ADPS2) | 0*bit (ADPS1) | 0*bit (ADPS0);\n";
 			}
-			if(isRelease4Wifi) code = code + "\t\tanalogReadResolution(14);\n";
+			if(isRelease4Wifi || isRelease4Minima) code = code + "\t\tanalogReadResolution(14);\n";
 			if(((ArduinoUnoDACQConfiguration)getDACQConfiguration()).hasADS1115Module()) {
 				code = code + "\t\t// Start I2C interface\n";
 				code = code + "\t\tWire.begin();\n";
@@ -1042,12 +1043,12 @@ public class ArduinoUnoProcess extends Process {
 			if(value == 0) value = 1;
 			code = code + "\t\tsendTimeWorkload = " + value + ";\n";
 			code = code + "\t\tworkload = 0;\n";
-			if(isRelease3 || isRelease4Wifi) code = code + "\t\trtTime = 0;\n";
+			if(isRelease3 || isRelease4Wifi || isRelease4Minima) code = code + "\t\trtTime = 0;\n";
 			code = code + "\t\ttimeIndex = 0;\n";
 			code = code + "\t\tterminateProcess = false;\n";
 			code = code + "\t\tstartLoop = false;\n";
 			code = code + "\t\trestartRequested = false;\n";
-			if(isRelease4Wifi) code = code + "\t\tglobalSerialMessage = \"\";\n";
+			if(isRelease4Wifi || isRelease4Minima) code = code + "\t\tglobalSerialMessage = \"\";\n";
 			code = code + "\t\t// Tell the PC that the board has (re)started and waits for 'r' char (end handshake)\n";
 			code = code + "\t\tSerial.println('" + READY_MESSAGE + "');\n";
 			code = code + "\t\tSerial.flush();\n";
@@ -1074,7 +1075,7 @@ public class ArduinoUnoProcess extends Process {
 		if(segment == ArduinoUnoCodeSegmentProperties.ACQUISITION) {
 			
 			if(isRelease3) code = "}\n\nISR(TIMER1_COMPA_vect){\n";
-			if(isRelease4Wifi) {
+			if(isRelease4Wifi || isRelease4Minima) {
 				code = "}\n\nvoid processing(timer_callback_args_t *p_args){\n\n";
 				code = code + "\t\tunsigned long dt = micros();\n\n";
 			}
@@ -1102,7 +1103,7 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "\t\t\t\tstartLoop = ((char)Serial.read()) != 's';\n";
 			code = code + "\t\t\t\tif(!startLoop ) terminateProcess = true;\n";
 			code = code + "\t\t}\n";
-			if(isRelease3 || isRelease4Wifi) code = code + "\t\trtTime = timeIndex*((double)loopPeriod/1000000.0);\n";
+			if(isRelease3 || isRelease4Wifi || isRelease4Minima) code = code + "\t\trtTime = timeIndex*((double)loopPeriod/1000000.0);\n";
 			code = code + "\t\ttimeIndex++;\n";
 			
 			code = code + getCurrentProcess().getScript().getInitializeCode(this, ArduinoUnoCodeSegmentProperties.ACQUISITION);
@@ -1145,14 +1146,14 @@ public class ArduinoUnoProcess extends Process {
 			int prescaler = computeCounter0Prescaler(gf);
 			double dt = 1/(16000000.0/prescaler)*1000000;
 			if(isRelease3) code = code + "\t\t\t\tworkload = computeWorkload(TCNT0*" + dt + ");\n";
-			if(isRelease4Wifi) {
+			if(isRelease4Wifi || isRelease4Minima) {
 				code = code + "\t\t\t\tdt = micros() - dt;\n";
 				code = code + "\t\t\t\tworkload = computeWorkload((unsigned long)dt);\n";
 			}
 //			code = code + "\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, loopTime_MS, workload);\n";
 //			code = code + "\t\t\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, 10000.0 /*(unsigned long)(time*1000000)*/, workload);\n";
 			
-			if(isRelease4Wifi) {
+			if(isRelease4Wifi || isRelease4Minima) {
 				code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", 0, (unsigned long)(rtTime*1000000.0), workload);\n";
 				code = code + "\t\t\t\tglobalSerialMessage += serialMessage;\n";
 				code = code + "\t\t\t\tglobalSerialMessage += \"\\n\";\n";
@@ -1191,7 +1192,7 @@ public class ArduinoUnoProcess extends Process {
 				code = code + "\t\t// Propagated parameters, then 's' char, are sent by loop()\n";
 				code = code + "\t\tpropagationInProgress = true;\n";
 			}
-			if(isRelease4Wifi) code = code + "\t\tstartLoop = false;\n";
+			if(isRelease4Wifi || isRelease4Minima) code = code + "\t\tstartLoop = false;\n";
 			if(isRelease3 && !hasPropagatedParameters()) {
 				code = code + "\t\tSerial.println('s');\n";
 				code = code + "\t\tSerial.flush();\n";
@@ -1214,7 +1215,7 @@ public class ArduinoUnoProcess extends Process {
 				code = code + "\t\tTCCR1B = 0;\n";
 				code = code + "\t\tTIFR1 = (1 << OCF1A);\n";
 			}
-			if(isRelease4Wifi) {
+			if(isRelease4Wifi || isRelease4Minima) {
 				code = code + "\t\t// Stop real time loop timer\n";
 				code = code + "\t\trealtimeLoop_Timer.stop();\n";
 			}
@@ -1223,7 +1224,7 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "}\n\n";
 			
 			code = code + "void loop() {\n";
-			if(isRelease4Wifi) {
+			if(isRelease4Wifi || isRelease4Minima) {
 				code = code + "\t\tglobalSerialMessage.send();\n";
 				if(hasPropagatedParameters()) {
 					code = code + "\t\t// End of process : values of the propagated parameters sent before 's' char\n";
@@ -1309,7 +1310,7 @@ public class ArduinoUnoProcess extends Process {
 				code = code + "\t\t\t\tSerial.println(serialMessage);\n";
 				code = code + "\t\t\t\tSerial.flush();\n";
 			}
-			if(isRelease4Wifi) {
+			if(isRelease4Wifi || isRelease4Minima) {
 				code = code + "\t\t\t\tglobalSerialMessage += serialMessage;\n";
 				code = code + "\t\t\t\tglobalSerialMessage += \"\\n\";\n";
 			}
@@ -1331,7 +1332,7 @@ public class ArduinoUnoProcess extends Process {
 				if(isRelease3) code = code + "\t\tnoInterrupts();\n";
 				code = code + "\t\tif(transfert) {\n";
 				code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%d\", transferNumber, value);\n";
-				if(isRelease4Wifi) {
+				if(isRelease4Wifi || isRelease4Minima) {
 					// Sent by loop() : in the real time loop interrupt, Serial would wait forever (see acquireAnalogInput())
 					code = code + "\t\t\t\tglobalSerialMessage += serialMessage;\n";
 					code = code + "\t\t\t\tglobalSerialMessage += \"\\n\";\n";
@@ -1610,6 +1611,7 @@ public class ArduinoUnoProcess extends Process {
 		
 		String arduinoUnoRelease = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
 		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
+		boolean isRelease4Minima = ArduinoUnoDACQConfigurationProperties.REVISION_R4_MINIMA.equals(arduinoUnoRelease);
 		boolean isRelease3 = ArduinoUnoDACQConfigurationProperties.REVISION_R3.equals(arduinoUnoRelease);
 		
 		reset();
@@ -1682,7 +1684,7 @@ public class ArduinoUnoProcess extends Process {
 					code = code + "\t\tsei();\n";
 					code = code + "\t\tfirstStart = false;\n";
 				}
-				if(isRelease4Wifi) {
+				if(isRelease4Wifi || isRelease4Minima) {
 					String sf = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY);
 					code = code + "\t\tbool realtimeLoop_Timer_Started = true;\n";
 					code = code + "\t\t// The timer is configured once : at restart, it has only been stopped (see restartProcess())\n";
@@ -2071,9 +2073,11 @@ public class ArduinoUnoProcess extends Process {
 		
 		String arduinoUnoRelease = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
 		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
+		boolean isRelease4Minima = ArduinoUnoDACQConfigurationProperties.REVISION_R4_MINIMA.equals(arduinoUnoRelease);
 //		boolean isRelease3 = ArduinoUnoDACQConfigurationProperties.REVISION_R3.equals(arduinoUnoRelease);
 		String fullQualifiedBoardName = "arduino:avr:uno"; //$NON-NLS-N$ default is release 3
 		if(isRelease4Wifi) fullQualifiedBoardName = "arduino:renesas_uno:unor4wifi"; //$NON-NLS-N$ Release 4 Wifi
+		if(isRelease4Minima) fullQualifiedBoardName = "arduino:renesas_uno:minima"; //$NON-NLS-N$ Release 4 Minima
 		
 		boolean useCLI = "true".equals(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI))?true:false;
 		if(!useCLI) {			
@@ -2117,8 +2121,10 @@ public class ArduinoUnoProcess extends Process {
 		
 		String arduinoUnoRelease = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
 		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
+		boolean isRelease4Minima = ArduinoUnoDACQConfigurationProperties.REVISION_R4_MINIMA.equals(arduinoUnoRelease);
 		String fullQualifiedBoardName = "arduino:avr:uno"; //$NON-NLS-N$ default is release 3
 		if(isRelease4Wifi) fullQualifiedBoardName = "arduino:renesas_uno:unor4wifi"; //$NON-NLS-N$ Release 4 Wifi
+		if(isRelease4Minima) fullQualifiedBoardName = "arduino:renesas_uno:minima"; //$NON-NLS-N$ Release 4 Minima
 		
 		boolean useCLI = "true".equals(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI))?true:false;
 		if(!useCLI) {
@@ -2160,8 +2166,10 @@ public class ArduinoUnoProcess extends Process {
 		
 		String arduinoUnoRelease = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
 		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
+		boolean isRelease4Minima = ArduinoUnoDACQConfigurationProperties.REVISION_R4_MINIMA.equals(arduinoUnoRelease);
 		String fullQualifiedBoardName = "arduino:avr:uno"; //$NON-NLS-N$ default is release 3
 		if(isRelease4Wifi) fullQualifiedBoardName = "arduino:renesas_uno:unor4wifi"; //$NON-NLS-N$ Release 4 Wifi
+		if(isRelease4Minima) fullQualifiedBoardName = "arduino:renesas_uno:minima"; //$NON-NLS-N$ Release 4 Minima
 		
 		boolean useCLI = "true".equals(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI))?true:false;
 		if(!useCLI) {
@@ -2270,7 +2278,8 @@ public class ArduinoUnoProcess extends Process {
 		String inoHexFilePath = resourcePath + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + ".ino.hex";
 		String arduinoUnoRelease = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
 		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
-		if(isRelease4Wifi) inoHexFilePath = resourcePath + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + ".ino.bin";
+		boolean isRelease4Minima = ArduinoUnoDACQConfigurationProperties.REVISION_R4_MINIMA.equals(arduinoUnoRelease);
+		if(isRelease4Wifi || isRelease4Minima) inoHexFilePath = resourcePath + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + ".ino.bin";
 		if(previousINOHexFilePath.equals(inoHexFilePath) && !forceUpload) {
 			appendToEventDiary("Process " + processResource.getFullPath() + " was already loaded\n" );
 			return true;
@@ -2321,9 +2330,10 @@ public class ArduinoUnoProcess extends Process {
 		boolean useCLI = "true".equals(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI))?true:false;
 		String arduinoUnoRelease = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
 		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
+		boolean isRelease4Minima = ArduinoUnoDACQConfigurationProperties.REVISION_R4_MINIMA.equals(arduinoUnoRelease);
 		// .hex file with avrdude, .bin file with arduino-cli for R4 WiFi
 		String inoHexFilePath = resourcePath + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + ".ino.hex";
-		if(useCLI && isRelease4Wifi) inoHexFilePath = resourcePath + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + ".ino.bin";
+		if(useCLI && (isRelease4Wifi || isRelease4Minima)) inoHexFilePath = resourcePath + processResource.getName().replaceAll(Activator.processFileExtension + "$", "") + ".ino.bin";
 		previousINOHexFilePath = inoHexFilePath;
 		String cmd = ArduinoUnoUploadDelegate.getUploadCommand(getDACQConfiguration(), devicePath, inoHexFilePath);
 		forceUpload = false;

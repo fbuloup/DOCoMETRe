@@ -86,7 +86,9 @@ public final class ArduinoUnoAnInModuleProperties extends Property {
 	 * @return true if the revision of the DACQ configuration is Arduino Uno R4 WiFi
 	 */
 	public static boolean isR4(DACQConfiguration dacqConfiguration) {
-		return ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION));
+		boolean isR4 = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION));
+		isR4 = isR4 || ArduinoUnoDACQConfigurationProperties.REVISION_R4_MINIMA.equals(dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION));
+		return isR4;
 	}
 	
 	public static void populateProperties(Module module){

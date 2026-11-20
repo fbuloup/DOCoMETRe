@@ -65,6 +65,7 @@ public class ArduinoUnoDigInOutModule extends Module {
 		
 		String arduinoUnoRelease = getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
 		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
+		boolean isRelease4Minima = ArduinoUnoDACQConfigurationProperties.REVISION_R4_MINIMA.equals(arduinoUnoRelease);
 		boolean isRelease3 = ArduinoUnoDACQConfigurationProperties.REVISION_R3.equals(arduinoUnoRelease);
 		
 		String code = "";
@@ -127,7 +128,7 @@ public class ArduinoUnoDigInOutModule extends Module {
 							code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%d\", " + transferNumber + ", " + name + ");\n";
 							code = code + "\t\t\t\tSerial.println(serialMessage);\n";
 						}
-						if(isRelease4Wifi) {
+						if(isRelease4Wifi || isRelease4Minima) {
 							code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%d\", " + transferNumber + ", " + name + ");\n";
 							code = code + "\t\t\t\tglobalSerialMessage += serialMessage;\n";
 							code = code + "\t\t\t\tglobalSerialMessage += \"\\n\";\n";
@@ -151,7 +152,7 @@ public class ArduinoUnoDigInOutModule extends Module {
 							code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%d\", " + transferNumber + ", " + name + ");\n";
 							code = code + "\t\t\t\tSerial.println(serialMessage);\n";
 						}
-						if(isRelease4Wifi) {
+						if(isRelease4Wifi || isRelease4Minima) {
 							code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%d\", " + transferNumber + ", " + name + ");\n";
 							code = code + "\t\t\t\tglobalSerialMessage += serialMessage;\n";
 							code = code + "\t\t\t\tglobalSerialMessage += \"\\n\";\n";

@@ -59,8 +59,8 @@ public class ArduinoUnoAnOutModule extends Module {
 	private static final long serialVersionUID = AbstractElement.serialVersionUID;;
 	
 	/**
-	 * Channel of the DAC of Arduino Uno R4 WiFi (true analog output, 12 bits) : pin A0, number 14 of the board.
-	 * It is added to the module of R4 WiFi configurations only (see {@link #updateDACChannel()}).
+	 * Channel of the DAC of Arduino Uno R4 WiFi/Minima (true analog output, 12 bits) : pin A0, number 14 of the board.
+	 * It is added to the module of R4 WiFi/Minima configurations only (see {@link #updateDACChannel()}).
 	 */
 	public static final String DAC_CHANNEL_NUMBER = "14";
 	public static final String DAC_CHANNEL_NAME = "AOUT_DAC";
@@ -82,7 +82,7 @@ public class ArduinoUnoAnOutModule extends Module {
 	}
 	
 	/**
-	 * DAC channel of the revision of the board : added (not used) for R4 WiFi if the module has none (new
+	 * DAC channel of the revision of the board : added (not used) for R4 WiFi/Minima if the module has none (new
 	 * configurations, configurations created before), no more used, transferred or recorded for R3.
 	 * @return the DAC channel when it has been added, null otherwise
 	 */

@@ -79,8 +79,10 @@ public final class ArduinoUnoUploadDelegate {
 		}
 		String arduinoUnoRelease = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
 		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
+		boolean isRelease4Minima = ArduinoUnoDACQConfigurationProperties.REVISION_R4_MINIMA.equals(arduinoUnoRelease);
 		String fullQualifiedBoardName = "arduino:avr:uno";
 		if(isRelease4Wifi) fullQualifiedBoardName = "arduino:renesas_uno:unor4wifi";
+		if(isRelease4Minima) fullQualifiedBoardName = "arduino:renesas_uno:minima";
 		String arduinoCLIPATH = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.ARDUINOCLI_PATH);
 		return arduinoCLIPATH + " upload -p " + devicePath + " --fqbn " + fullQualifiedBoardName + " -i " + binaryFilePath;
 	}

@@ -148,7 +148,9 @@ public class ArduinoUnoAnInModule extends Module {
 		// Analog reference of the new revision of the board (DEFAULT <-> AR_DEFAULT...)
 		if(property == ArduinoUnoDACQConfigurationProperties.REVISION) {
 			String reference = getProperty(ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE);
-			String newReference = ArduinoUnoAnInModuleProperties.getReferenceOfRevision(reference, ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(newValue));
+			boolean newValueIsR4 = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(newValue);
+			newValueIsR4 = newValueIsR4 || ArduinoUnoDACQConfigurationProperties.REVISION_R4_MINIMA.equals(newValue);
+			String newReference = ArduinoUnoAnInModuleProperties.getReferenceOfRevision(reference, newValueIsR4);
 			if(!newReference.equals(reference)) setProperty(ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE, newReference);
 		}
 	}

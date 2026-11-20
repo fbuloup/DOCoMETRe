@@ -62,7 +62,7 @@ public final class ArduinoUnoDACQConfigurationProperties extends Property {
 	public static final ArduinoUnoDACQConfigurationProperties GLOBAL_FREQUENCY = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY", ArduinoUnoMessages.GlobalFrequency_Label, ArduinoUnoMessages.GlobalFrequency_Tooltip, "(^\\d{1,10}$)");
 	public static final ArduinoUnoDACQConfigurationProperties LIBRARIES_ABSOLUTE_PATH = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.LIBRARIES_ABSOLUTE_PATH", ArduinoUnoMessages.LibrariesAbsolutePath_Label, ArduinoUnoMessages.LibrariesAbsolutePath_Tooltip, "(.)+");
 	public static final ArduinoUnoDACQConfigurationProperties USER_LIBRARIES_ABSOLUTE_PATH = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.USER_LIBRARIES_ABSOLUTE_PATH", ArduinoUnoMessages.UserLibrariesAbsolutePath_Label, ArduinoUnoMessages.UserLibrariesAbsolutePath_Tooltip, "(.)+");
-	public static final ArduinoUnoDACQConfigurationProperties REVISION = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.REVISION", ArduinoUnoMessages.Revision_Label, ArduinoUnoMessages.Revision_Tooltip, "^(R3|R4_WIFI)$", "R3:R4_WIFI");
+	public static final ArduinoUnoDACQConfigurationProperties REVISION = new ArduinoUnoDACQConfigurationProperties("ArduinoUnoDACQConfigurationProperties.REVISION", ArduinoUnoMessages.Revision_Label, ArduinoUnoMessages.Revision_Tooltip, "^(R3|R4_WIFI|R4_MINIMA)$", "R3:R4_WIFI:R4_MINIMA");
 
 	public static String BAUD_RATE_300 = "300";
 	public static String BAUD_RATE_600 = "600";
@@ -117,9 +117,10 @@ public final class ArduinoUnoDACQConfigurationProperties extends Property {
 	
 	public static String REVISION_R3 = "R3";
 	public static String REVISION_R4_WIFI = "R4_WIFI";
-	public static String[] REVISIONS = new String[] { REVISION_R3, REVISION_R4_WIFI };
+	public static String REVISION_R4_MINIMA = "R4_MINIMA";
+	public static String[] REVISIONS = new String[] { REVISION_R3, REVISION_R4_WIFI, REVISION_R4_MINIMA };
 	// Boards displayed to the user, same order as REVISIONS : the revisions saved in the DACQ configurations do not change
-	public static String[] REVISIONS_LABELS = new String[] { ArduinoUnoMessages.Revision_UnoR3, ArduinoUnoMessages.Revision_UnoR4WiFi };
+	public static String[] REVISIONS_LABELS = new String[] { ArduinoUnoMessages.Revision_UnoR3, ArduinoUnoMessages.Revision_UnoR4WiFi, ArduinoUnoMessages.Revision_UnoR4Minima };
 
 	/**
 	 * @param revision a revision of REVISIONS, as saved in the DACQ configurations

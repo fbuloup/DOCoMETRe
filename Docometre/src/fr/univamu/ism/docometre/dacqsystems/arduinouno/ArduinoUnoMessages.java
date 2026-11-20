@@ -72,6 +72,7 @@ public class ArduinoUnoMessages extends NLS {
 	public static String Revision_Tooltip;
 	public static String Revision_UnoR3;
 	public static String Revision_UnoR4WiFi;
+	public static String Revision_UnoR4Minima;
 	
 	// Variables
 	public static String Size_Label;

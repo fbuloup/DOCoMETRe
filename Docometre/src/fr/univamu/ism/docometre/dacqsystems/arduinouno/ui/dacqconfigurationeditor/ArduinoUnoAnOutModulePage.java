@@ -220,7 +220,7 @@ public class ArduinoUnoAnOutModulePage extends ArduinoUnoModulePage {
 			}
 		});
 		configureSorter(new AnalogOutputsComparator(), tableViewer.getTable().getColumn(1));
-		// DAC channel shown for R4 WiFi only
+		// DAC channel shown for R4 WiFi/Minima only
 		tableViewer.addFilter(new ViewerFilter() {
 			@Override
 			public boolean select(Viewer viewer, Object parentElement, Object element) {
