@@ -58,7 +58,6 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfigurationProperties;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinVariable;
-import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoADS1115Module;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnInModule;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnOutModule;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoChannel;
@@ -152,8 +151,11 @@ public class ModifyPropertyOperation extends AbstractOperation {
 					return true;
 				}
 			}
-			for (Module otherModule : modules) {
-				if(otherModule != module && (otherModule instanceof ArduinoUnoAnOutModule || otherModule instanceof ArduinoUnoDigInOutModule) && !(module instanceof ArduinoUnoADS1115Module)) {
+			// Same digital pin used by an analog output (PWM) and a digital input/output. The numbers of the analog inputs
+			// (pins A0 to A5) and of the ADS1115 inputs are not pin numbers of the digital pins : they are not compared
+			boolean isDigitalPin = module instanceof ArduinoUnoAnOutModule || module instanceof ArduinoUnoDigInOutModule;
+			if(isDigitalPin) for (Module otherModule : modules) {
+				if(otherModule != module && (otherModule instanceof ArduinoUnoAnOutModule || otherModule instanceof ArduinoUnoDigInOutModule)) {
 					Channel[] channels = otherModule.getChannels();
 					for (Channel channel : channels) {
 						if(channel.getProperty(ChannelProperties.CHANNEL_NUMBER).equals(channelNumber) && channel.getProperty(ArduinoUnoChannelProperties.USED).equals("true")) {
