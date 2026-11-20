@@ -83,7 +83,7 @@ public final class ArduinoUnoAnInModuleProperties extends Property {
 	}
 	
 	/**
-	 * @return true if the revision of the DACQ configuration is Arduino Uno R4 WiFi
+	 * @return true if the revision of the DACQ configuration is Arduino Uno R4 WiFi or Minima
 	 */
 	public static boolean isR4(DACQConfiguration dacqConfiguration) {
 		boolean isR4 = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION));

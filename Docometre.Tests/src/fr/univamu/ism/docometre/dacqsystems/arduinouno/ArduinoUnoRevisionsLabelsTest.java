@@ -58,6 +58,7 @@ public class ArduinoUnoRevisionsLabelsTest {
 		assertEquals(ArduinoUnoDACQConfigurationProperties.REVISIONS.length, ArduinoUnoDACQConfigurationProperties.REVISIONS_LABELS.length);
 		assertEquals("Uno R3", ArduinoUnoDACQConfigurationProperties.getRevisionLabel("R3"));
 		assertEquals("Uno R4 WiFi", ArduinoUnoDACQConfigurationProperties.getRevisionLabel("R4_WIFI"));
+		assertEquals("Uno R4 Minima", ArduinoUnoDACQConfigurationProperties.getRevisionLabel("R4_MINIMA"));
 	}
 
 	@Test
