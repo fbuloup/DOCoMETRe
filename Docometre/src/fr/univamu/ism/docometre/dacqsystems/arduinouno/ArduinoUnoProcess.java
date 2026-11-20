@@ -226,7 +226,7 @@ public class ArduinoUnoProcess extends Process {
 		private long propagationStartNanos;
 		// 'w' char received while waiting for the 's' char of the Arduino (see waitForStopReply())
 		private boolean readyReceived;
-		// Samples received during the end handshake, kept (see handleSampleAtEnd())
+		// Samples received during the end handshake, kept (see handleMessageAtEnd())
 		private int samplesReceivedAtEnd;
 		// A message of the process has been received : the Arduino has received the 'r' char (see run())
 		private boolean processStarted;
@@ -413,15 +413,8 @@ public class ArduinoUnoProcess extends Process {
 		                    			appendToEventDiary("At : " + formater.format(realTime) + "sec. - Workload : " + workload + "%");
 			                    		timeBefore = timeAfter;
 		                    		}
-									
-			    					PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
-										@Override
-			    						public void run() {
-//				    							StatusLineManager statusLineManger = ((WorkbenchWindow)PlatformUI.getWorkbench().getActiveWorkbenchWindow()).getStatusLineManager();
-//				    							statusLineManger.setMessage(NLS.bind(DocometreMessages.Workload_Time, workload, formater.format(realTime)));
-			    							ApplicationActionBarAdvisor.workloadTimeContributionItem.setText(NLS.bind(DocometreMessages.Workload_Time, workload, formater.format(realTime)));
-			    						}
-			    					});
+
+		                    		showWorkloadTime();
 		                    	} else {
 		                    		try {
 //				                    		timeBefore = System.currentTimeMillis()/1000d;
@@ -722,7 +715,7 @@ public class ArduinoUnoProcess extends Process {
 		/*
 		 * Reads the serial port, byte per byte (the next bytes are kept for the next call), until the 's' char
 		 * (at the beginning of a line) is received or the time out is reached. Parameters frames received before
-		 * (propagated parameters) are handled, samples are kept (see handleSampleAtEnd()). Returns true if 's' has been received.
+		 * (propagated parameters), samples, time and workload are handled (see handleMessageAtEnd()). Returns true if 's' has been received.
 		 * If the 'w' char is received, the Arduino had already sent its 's' and has been restarted by the 's'
 		 * of the PC : readyReceived is set and true is returned (the restart must not be requested again).
 		 */
@@ -740,10 +733,8 @@ public class ArduinoUnoProcess extends Process {
 							readyReceived = true;
 							return true;
 						}
-						ArduinoUnoParameterFrames.Frame frame = ArduinoUnoParameterFrames.parse(line.toString());
-						if(frame != null) handleParametersFrame(frame);
-						// Samples acquired by the Arduino before it received the stop request : kept
-						else handleSampleAtEnd(line.toString());
+						// Propagated parameters, samples acquired by the Arduino before it received the stop request, time and workload
+						handleMessageAtEnd(line.toString(), false);
 						line.setLength(0);
 					} else if(b == 's' && line.length() == 0) {
 						// Rest of the line of 's' ("\r\n") and next bytes : read by waitForReady()
@@ -757,8 +748,8 @@ public class ArduinoUnoProcess extends Process {
 
 		/*
 		 * Reads the serial port, line per line, until the 'w' char (the Arduino has restarted and waits for 'r')
-		 * is received or the time out is reached. Returns true if 'w' has been received. Samples received
-		 * before 'w' are kept (see handleSampleAtEnd()) : before, all the bytes before 'w' were ignored, the
+		 * is received or the time out is reached. Returns true if 'w' has been received. Messages received
+		 * before 'w' are handled (see handleMessageAtEnd()) : before, all the bytes before 'w' were ignored, the
 		 * samples sent by the Arduino after its 's' char were lost.
 		 */
 		private boolean waitForReady(long timeOutMs) throws SerialPortException, InterruptedException {
@@ -772,7 +763,7 @@ public class ArduinoUnoProcess extends Process {
 					for (byte b : bytes) {
 						if(b == '\r' || b == '\n') {
 							if(READY_MESSAGE.equals(line.toString())) return true;
-							handleSampleAtEnd(line.toString());
+							handleMessageAtEnd(line.toString(), true);
 							line.setLength(0);
 						} else line.append((char)b);
 					}
@@ -796,19 +787,38 @@ public class ArduinoUnoProcess extends Process {
 		}
 
 		/*
-		 * Sample received during the end handshake ("transferNumber:value" line), added to its channel as in the
-		 * real time loop. Other lines (time and workload, empty lines...) are ignored. The Arduino sends its last
-		 * samples before its 's' char : samples received later come from a process compiled before this order, or
-		 * have been acquired between the stop request of the user and the end of the process.
+		 * Message received during the end handshake, handled as in the real time loop :
+		 *  - parameters frame : propagated parameters (see handleParametersFrame()). The Arduino sends them
+		 *    before its 's' char : a frame received after it (afterStopChar) is written in the diary,
+		 *    and handled all the same so that the parameters are propagated ;
+		 *  - "transferNumber:value" : sample added to its channel ;
+		 *  - "0:time:workload" : time and workload shown in the status bar.
+		 * The Arduino sends its last samples before its 's' char : samples received later come from a process
+		 * compiled before this order. Samples received before it have been acquired between the stop request
+		 * of the user and the end of the process. Empty lines are ignored, other messages (e.g. "ERROR :
+		 * messages lost...") are written in the diary.
 		 */
-		private void handleSampleAtEnd(String line) {
+		private void handleMessageAtEnd(String line, boolean afterStopChar) throws SerialPortException {
 			line = line.trim();
 			if(line.length() == 0) return;
+			ArduinoUnoParameterFrames.Frame frame = ArduinoUnoParameterFrames.parse(line);
+			if(frame != null) {
+				if(afterStopChar) {
+					appendToEventDiary("ERROR : parameters frame received after the 's' char of the Arduino : " + line);
+					appendErrorMarkerAtCurrentDiaryLine("ERROR");
+				}
+				handleParametersFrame(frame);
+				return;
+			}
 			String[] segments = line.split(":");
-			// Time and workload
-			if(segments.length == 3) return;
-			if(segments.length == 2) {
-				try {
+			try {
+				if(segments.length == 3 && Integer.parseInt(segments[0]) == 0) {
+					realTime = Float.parseFloat(segments[1])/1000000f;
+					workload = Float.parseFloat(segments[2]);
+					showWorkloadTime();
+					return;
+				}
+				if(segments.length == 2) {
 					int transferNumber = Integer.parseInt(segments[0]);
 					if(transferNumber >= 1 && transferNumber <= transferedChannelsOrderedByTransferNumber.length) {
 						float sampleValue = Float.parseFloat(segments[1]);
@@ -819,14 +829,23 @@ public class ArduinoUnoProcess extends Process {
 						samplesReceivedAtEnd++;
 						return;
 					}
-				} catch (NumberFormatException e) {
-					// Not a sample : written in the diary below
 				}
+			} catch (NumberFormatException e) {
+				// Not a data message : written in the diary below
 			}
-			// Parameters frame already handled (propagated parameters are sent before 's' char)
-			if(ArduinoUnoParameterFrames.parse(line) != null) return;
-			// Other message of the Arduino (e.g. "ERROR : messages lost...") : written in the diary
 			appendToEventDiary("Message received during the end handshake : " + line);
+		}
+		
+		/*
+		 * Time and workload of the last "0:time:workload" message shown in the status bar
+		 */
+		private void showWorkloadTime() {
+			PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+				@Override
+				public void run() {
+					ApplicationActionBarAdvisor.workloadTimeContributionItem.setText(NLS.bind(DocometreMessages.Workload_Time, workload, formater.format(realTime)));
+				}
+			});
 		}
 		
 		/*
