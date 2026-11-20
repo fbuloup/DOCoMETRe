@@ -59,8 +59,10 @@ import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
+import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.Property;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnInChannelProperties;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfigurationProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoMessages;
 import fr.univamu.ism.docometre.widgets.CalibrationHeader;
 import fr.univamu.ism.docometre.widgets.CalibrationListener;
@@ -145,8 +147,15 @@ public final class ArduinoUnoCalibration {
 	 * @return a copy of the calibration firmware of this board in the state folder of DOCoMETRe (path without
 	 * the folders of the installation, which can contain spaces)
 	 */
-	static File getFirmwareFile(String board) throws IOException {
-		String fileName = ArduinoUnoCalibrationProtocol.BOARD_R4.equals(board) ? "ArduinoUnoCalibration_R4WiFi.bin" : "ArduinoUnoCalibration_R3.hex";
+	static File getFirmwareFile(DACQConfiguration dacqConfiguration, String board) throws IOException {
+		String arduinoUnoRelease = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
+		boolean isRelease3 = ArduinoUnoDACQConfigurationProperties.REVISION_R3.equals(arduinoUnoRelease);
+		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
+		boolean isRelease4Minima = ArduinoUnoDACQConfigurationProperties.REVISION_R4_MINIMA.equals(arduinoUnoRelease);
+		String fileName = null;
+		if(isRelease3) fileName = "ArduinoUnoCalibration_R4WiFi.bin";
+		if(isRelease4Wifi) fileName = "ArduinoUnoCalibration_R4WiFi.bin";
+		if(isRelease4Minima) fileName = "ArduinoUnoCalibration_R4Minima.bin";
 		Bundle librariesBundle = Platform.getBundle("Libraries");
 		URL url = librariesBundle == null ? null : librariesBundle.getEntry(FIRMWARE_FOLDER + fileName);
 		if(url == null) throw new IOException(NLS.bind(ArduinoUnoMessages.Calibration_FirmwareNotFound, FIRMWARE_FOLDER + fileName));

@@ -40,7 +40,7 @@
  *  - Frank Buloup - frank.buloup@univ-amu.fr - initial API and implementation [11/11/2026]
  ******************************************************************************/
 /*
- * Generic calibration and monitoring firmware for Arduino Uno R3 and R4 WiFi :
+ * Generic calibration and monitoring firmware for Arduino Uno R3, R4 WiFi and Minima :
  * serial protocol, independent of the board (see ArduinoUnoCalibration.ino for
  * the hardware functions). This file is also compiled on the computer to test the
  * protocol (see ArduinoUnoCalibrationProtocolTest in Docometre.Tests).
@@ -62,7 +62,7 @@
  *   G                          starts the measures -> "K"
  *   H                          stops the measures, outputs reset -> "K"
  *   W<pin>:<value>             writes a digital output (0 or 1), no answer
- *   O<pin>:<value>             writes an analog output (0 to 255 ; 0 to 4095 for the DAC of R4 WiFi, pin A0 = 14), no answer
+ *   O<pin>:<value>             writes an analog output (0 to 255 ; 0 to 4095 for the DAC of R4 WiFi and Minima, pin A0 = 14), no answer
  * A wrong command is answered by "E:<command>".
  * While started, the values of the inputs, in the order they were added, are sent
  * every period : "M:<value 1>;<value 2>;..." (raw values of the converters).
@@ -121,7 +121,7 @@ static CalOutput calOutputs[CAL_MAX_OUTPUTS];
 static uint8_t calOutputsNumber = 0;
 static bool calADSStarted[CAL_MAX_ADS];
 // Pins whose mode has been set as analog output since the start of the board (pins 0 to 31) : the mode is set
-// once, as in acquisition processes (on R4 WiFi, the DAC pin is no more connected to the DAC when its mode is
+// once, as in acquisition processes (on R4 WiFi and Minima, the DAC pin is no more connected to the DAC when its mode is
 // changed after its first analogWrite)
 static uint32_t calAnalogOutputModeSet = 0;
 static bool calRunning = false;

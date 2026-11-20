@@ -40,7 +40,7 @@
  *  - Frank Buloup - frank.buloup@univ-amu.fr - initial API and implementation [11/11/2026]
  ******************************************************************************/
 /*
- * Generic calibration and monitoring firmware for Arduino Uno R3 and R4 WiFi,
+ * Generic calibration and monitoring firmware for Arduino Uno R3, R4 WiFi and R4 Minima,
  * precompiled and uploaded by DOCoMETRe (Calibration, monitoring dialog of the
  * Arduino DACQ configurations). See CalibrationProtocol.h for the serial protocol
  * and README.txt to compile it again.
@@ -69,7 +69,7 @@ const char* calBoardName() {
 
 /*
  * Analog reference given by its name in the DACQ configuration : DEFAULT, INTERNAL or
- * EXTERNAL on R3, AR_DEFAULT, AR_INTERNAL or AR_EXTERNAL on R4 WiFi
+ * EXTERNAL on R3, AR_DEFAULT, AR_INTERNAL or AR_EXTERNAL on R4 WiFi and Minima
  */
 bool calAnalogReference(const char* name) {
 #if defined(ARDUINO_ARCH_RENESAS)

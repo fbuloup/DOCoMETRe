@@ -197,7 +197,10 @@ public class ArduinoUnoCalibrationTask extends CalibrationTimerTask {
 	 * Board of the revision of the DACQ configuration
 	 */
 	private String getExpectedBoard() {
-		return ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION)) ? ArduinoUnoCalibrationProtocol.BOARD_R4 : ArduinoUnoCalibrationProtocol.BOARD_R3;
+		if(ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION))) return ArduinoUnoCalibrationProtocol.BOARD_R4;
+		if(ArduinoUnoDACQConfigurationProperties.REVISION_R4_MINIMA.equals(dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION))) return ArduinoUnoCalibrationProtocol.BOARD_R4;
+		if(ArduinoUnoDACQConfigurationProperties.REVISION_R3.equals(dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION))) return ArduinoUnoCalibrationProtocol.BOARD_R3;
+		return null;
 	}
 	
 	private boolean hasAnalogInput() {
@@ -261,7 +264,7 @@ public class ArduinoUnoCalibrationTask extends CalibrationTimerTask {
 	private void upload(String expectedBoard) throws Exception {
 		boolean useCLI = "true".equals(dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.USE_ARDUINOCLI));
 		if(ArduinoUnoCalibrationProtocol.BOARD_R4.equals(expectedBoard) && !useCLI) throw new Exception(ArduinoUnoMessages.Calibration_R4RequiresArduinoCLI);
-		File firmwareFile = ArduinoUnoCalibration.getFirmwareFile(expectedBoard);
+		File firmwareFile = ArduinoUnoCalibration.getFirmwareFile(dacqConfiguration, expectedBoard);
 		String command = ArduinoUnoUploadDelegate.getUploadCommand(dacqConfiguration, devicePath, firmwareFile.getAbsolutePath());
 		String scriptPath = ArduinoUnoUploadDelegate.createUploadScript(ArduinoUnoCalibration.getWorkingFolder(), command);
 		String errorOutput = ArduinoUnoUploadDelegate.runUploadScript(scriptPath);
