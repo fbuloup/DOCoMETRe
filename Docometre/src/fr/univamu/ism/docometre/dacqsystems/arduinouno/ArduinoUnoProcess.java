@@ -226,6 +226,8 @@ public class ArduinoUnoProcess extends Process {
 		private long propagationStartNanos;
 		// 'w' char received while waiting for the 's' char of the Arduino (see waitForStopReply())
 		private boolean readyReceived;
+		// Samples received during the end handshake, kept (see handleSampleAtEnd())
+		private int samplesReceivedAtEnd;
 		// A message of the process has been received : the Arduino has received the 'r' char (see run())
 		private boolean processStarted;
 		// Start requests (parameters and 'r' char) sent again because the Arduino waited for 'r' (see run())
@@ -510,8 +512,15 @@ public class ArduinoUnoProcess extends Process {
 	    				if(!readyReceived) {
 	    					appendToEventDiary("\nSend 's' char to start reset");
 	    					serialPort.writeByte((byte) 's');
-	    					ready = waitForChar(READY_MESSAGE.charAt(0), READY_TIMEOUT_MS);
+	    					ready = waitForReady(READY_TIMEOUT_MS);
 	    				} else appendToEventDiary("\nArduino already restarted ('w' char received while waiting for its 's' char)");
+	    				if(samplesReceivedAtEnd > 0) {
+	    					String samplesMessage = samplesReceivedAtEnd + " sample(s) received during the end handshake : kept";
+	    					// After the 's' char of the Arduino : process compiled before the last samples were sent first
+	    					if(stopReceived) samplesMessage = samplesMessage + " (received after the 's' char of the Arduino : compile the process again)";
+	    					appendToEventDiary("\n" + samplesMessage);
+	    					TrialTimings.log(samplesMessage);
+	    				}
 	    				double readyDelayMs = (System.nanoTime() - resetStartNanos)/1e6;
 	    				readyForNextTrial = ready;
 	    				if(ready) appendToEventDiary("\nArduino restarted ('w' char received) after " + String.format("%.1f", readyDelayMs) + " ms");
@@ -713,12 +722,13 @@ public class ArduinoUnoProcess extends Process {
 		/*
 		 * Reads the serial port, byte per byte (the next bytes are kept for the next call), until the 's' char
 		 * (at the beginning of a line) is received or the time out is reached. Parameters frames received before
-		 * (propagated parameters) are handled, data frames are ignored. Returns true if 's' has been received.
+		 * (propagated parameters) are handled, samples are kept (see handleSampleAtEnd()). Returns true if 's' has been received.
 		 * If the 'w' char is received, the Arduino had already sent its 's' and has been restarted by the 's'
 		 * of the PC : readyReceived is set and true is returned (the restart must not be requested again).
 		 */
 		private boolean waitForStopReply(long timeOutMs) throws SerialPortException, InterruptedException {
-			StringBuilder line = new StringBuilder();
+			// Line in progress in the real time loop (its end is still to come)
+			StringBuilder line = takePendingLine();
 			long deadline = System.nanoTime() + timeOutMs*1_000_000L;
 			while(System.nanoTime() < deadline) {
 				if(serialPort.getInputBufferBytesCount() > 0) {
@@ -732,12 +742,91 @@ public class ArduinoUnoProcess extends Process {
 						}
 						ArduinoUnoParameterFrames.Frame frame = ArduinoUnoParameterFrames.parse(line.toString());
 						if(frame != null) handleParametersFrame(frame);
+						// Samples acquired by the Arduino before it received the stop request : kept
+						else handleSampleAtEnd(line.toString());
 						line.setLength(0);
-					} else if(b == 's' && line.length() == 0) return true;
+					} else if(b == 's' && line.length() == 0) {
+						// Rest of the line of 's' ("\r\n") and next bytes : read by waitForReady()
+						return true;
+					}
 					else line.append((char)b);
 				} else Thread.sleep(1);
 			}
 			return false;
+		}
+
+		/*
+		 * Reads the serial port, line per line, until the 'w' char (the Arduino has restarted and waits for 'r')
+		 * is received or the time out is reached. Returns true if 'w' has been received. Samples received
+		 * before 'w' are kept (see handleSampleAtEnd()) : before, all the bytes before 'w' were ignored, the
+		 * samples sent by the Arduino after its 's' char were lost.
+		 */
+		private boolean waitForReady(long timeOutMs) throws SerialPortException, InterruptedException {
+			// Line in progress when 's' char was received (bytes read with 's' in the real time loop)
+			StringBuilder line = takePendingLine();
+			long deadline = System.nanoTime() + timeOutMs*1_000_000L;
+			while(System.nanoTime() < deadline) {
+				if(serialPort.getInputBufferBytesCount() > 0) {
+					byte[] bytes = serialPort.readBytes();
+					if(bytes == null) continue;
+					for (byte b : bytes) {
+						if(b == '\r' || b == '\n') {
+							if(READY_MESSAGE.equals(line.toString())) return true;
+							handleSampleAtEnd(line.toString());
+							line.setLength(0);
+						} else line.append((char)b);
+					}
+				} else Thread.sleep(1);
+			}
+			return false;
+		}
+
+		/*
+		 * Returns the line in progress of the real time loop (without end of line chars) and empties it :
+		 * the end handshake goes on reading the serial port from there.
+		 */
+		private StringBuilder takePendingLine() {
+			StringBuilder line = new StringBuilder();
+			for (int i = 0; i < message.length(); i++) {
+				char c = message.charAt(i);
+				if(c != '\r' && c != '\n') line.append(c);
+			}
+			message.setLength(0);
+			return line;
+		}
+
+		/*
+		 * Sample received during the end handshake ("transferNumber:value" line), added to its channel as in the
+		 * real time loop. Other lines (time and workload, empty lines...) are ignored. The Arduino sends its last
+		 * samples before its 's' char : samples received later come from a process compiled before this order, or
+		 * have been acquired between the stop request of the user and the end of the process.
+		 */
+		private void handleSampleAtEnd(String line) {
+			line = line.trim();
+			if(line.length() == 0) return;
+			String[] segments = line.split(":");
+			// Time and workload
+			if(segments.length == 3) return;
+			if(segments.length == 2) {
+				try {
+					int transferNumber = Integer.parseInt(segments[0]);
+					if(transferNumber >= 1 && transferNumber <= transferedChannelsOrderedByTransferNumber.length) {
+						float sampleValue = Float.parseFloat(segments[1]);
+						Channel channel = transferedChannelsOrderedByTransferNumber[transferNumber - 1];
+						channel.addSamples(new float[] {sampleValue});
+						nbSamples[transferNumber - 1] += 1;
+						channel.notifyChannelObservers();
+						samplesReceivedAtEnd++;
+						return;
+					}
+				} catch (NumberFormatException e) {
+					// Not a sample : written in the diary below
+				}
+			}
+			// Parameters frame already handled (propagated parameters are sent before 's' char)
+			if(ArduinoUnoParameterFrames.parse(line) != null) return;
+			// Other message of the Arduino (e.g. "ERROR : messages lost...") : written in the diary
+			appendToEventDiary("Message received during the end handshake : " + line);
 		}
 		
 		/*
