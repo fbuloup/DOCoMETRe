@@ -90,6 +90,7 @@ public class VariablesCodeGenerationDelegate {
 	private static String getTransferCode() {
 		String arduinoUnoRelease = ((ArduinoUnoDACQConfiguration)process.getDACQConfiguration()).getProperty(ArduinoUnoDACQConfigurationProperties.REVISION);
 		boolean isRelease4Wifi = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(arduinoUnoRelease);
+		boolean isReleaseMinima = ArduinoUnoDACQConfigurationProperties.REVISION_R4_MINIMA.equals(arduinoUnoRelease);
 		boolean isRelease3 = ArduinoUnoDACQConfigurationProperties.REVISION_R3.equals(arduinoUnoRelease);
 		
 		String  code = "";
@@ -123,7 +124,7 @@ public class VariablesCodeGenerationDelegate {
 					code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%ld\"," + transferNumber + ", " + name + ");\n";
 				}
 				if(type.equals(ArduinoUnoVariableProperties.FLOAT)) {
-					if(isRelease4Wifi) {
+					if(isRelease4Wifi || isReleaseMinima) {
 						code = code + "\t\t\t\tsnprintf(temporaryBuffer, sizeof(temporaryBuffer), \"%+.6E\"," + name + ");\n";
 					}
 					if(isRelease3) {
@@ -133,7 +134,7 @@ public class VariablesCodeGenerationDelegate {
 				}
 				
 				if(isRelease3) code = code + "\t\t\t\tSerial.println(serialMessage);\n";
-				if(isRelease4Wifi) {
+				if(isRelease4Wifi || isReleaseMinima) {
 					code = code + "\t\t\t\tglobalSerialMessage += serialMessage;\n";
 					code = code + "\t\t\t\tglobalSerialMessage += \"\\n\";\n";
 				}

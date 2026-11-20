@@ -124,7 +124,9 @@ public class ArduinoUnoVariable extends ArduinoUnoChannel implements ParameterVa
 	 */
 	private boolean isInt32() {
 		if(dacqConfiguration == null) return false;
-		return ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION));
+		boolean isInt32 = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION));
+		isInt32 = isInt32 || ArduinoUnoDACQConfigurationProperties.REVISION_R4_MINIMA.equals(dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.REVISION));
+		return isInt32;
 	}
 
 }

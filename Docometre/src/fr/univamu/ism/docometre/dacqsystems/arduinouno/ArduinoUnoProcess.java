@@ -695,6 +695,7 @@ public class ArduinoUnoProcess extends Process {
 				sizes[i] = ((ArduinoUnoVariable)parameters[i]).getSize();
 			}
 			boolean int32 = ArduinoUnoDACQConfigurationProperties.REVISION_R4_WIFI.equals(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION));
+			int32 = int32 || ArduinoUnoDACQConfigurationProperties.REVISION_R4_MINIMA.equals(getDACQConfiguration().getProperty(ArduinoUnoDACQConfigurationProperties.REVISION));
 			return new ArduinoUnoParameterFrames.Reception(types, sizes, int32, getPropagatedFlags());
 		}
 		
