@@ -930,7 +930,7 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "// Loop index to compute time\n";
 			code = code + "unsigned long timeIndex;\n\n";
 			code = code + "// Start loop when true\n";
-			code = code + "bool startLoop;\n\n";
+			code = code + "volatile bool startLoop;\n\n";
 			code = code + "// Restart requested when true : end of process and 's' char received.\n";
 			code = code + "// The process is then restarted by software (see loop() and restartProcess()),\n";
 			code = code + "// without board reset (a board reset takes about 0.5 s).\n";
@@ -941,7 +941,7 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "void restartProcess();\n";
 			code = code + "void finalize();\n\n";
 			code = code + "// Stop loop when true\n";
-			code = code + "bool terminateProcess;\n\n";
+			code = code + "volatile bool terminateProcess;\n\n";
 //			code = code + "// First loop flag\n";
 //			code = code + "bool firstLoop = true;\n\n";
 			code = code + "// String serialMessage\n";
@@ -1226,15 +1226,26 @@ public class ArduinoUnoProcess extends Process {
 			
 			code = code + "void loop() {\n";
 			if(isRelease4Wifi || isRelease4Minima) {
+				// The end of process state is read BEFORE sending the messages. The real time loop interrupt can occur
+				// while loop() runs : if it ends the process after send() (last samples added, then terminateProcess,
+				// startLoop and propagationInProgress set by finalize()), 's' char was sent before these last samples.
+				// The PC discards what it receives after 's' (it waits for 'w') : the last samples were lost at random
+				// (e.g. 1000 samples instead of 1001). Now the last samples are sent first, by the next loop() call.
+				code = code + "\t\t// End of process state read before sending the messages : the last samples added by the\n";
+				code = code + "\t\t// real time loop interrupt are always sent before the propagated parameters and 's' char\n";
+				code = code + "\t\tnoInterrupts();\n";
+				code = code + "\t\tbool processTerminated = terminateProcess;\n";
+				if(hasPropagatedParameters()) code = code + "\t\tbool propagationRequested = propagationInProgress;\n";
+				code = code + "\t\tinterrupts();\n";
 				code = code + "\t\tglobalSerialMessage.send();\n";
 				if(hasPropagatedParameters()) {
 					code = code + "\t\t// End of process : values of the propagated parameters sent before 's' char\n";
-					code = code + "\t\tif(propagationInProgress) {\n";
+					code = code + "\t\tif(propagationRequested) {\n";
 					code = code + "\t\t\t\tsendPropagatedParameters();\n";
 					code = code + "\t\t\t\tpropagationInProgress = false;\n";
 					code = code + "\t\t}\n";
 				}
-				code = code + "\t\tif(terminateProcess) {\n";
+				code = code + "\t\tif(processTerminated) {\n";
 				
 				if(hasPropagatedParameters()) code = code + "\t\t\t\tif(!startLoop && !propagationInProgress) {\n";
 				else code = code + "\t\t\t\tif(!startLoop) {\n";
