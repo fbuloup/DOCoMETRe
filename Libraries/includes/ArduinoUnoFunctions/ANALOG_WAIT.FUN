@@ -17,6 +17,8 @@ DESCRIPTION_PL = Czekaj, aż wejście analogowe przekroczy zadaną wartość
 DECLARATION = unsigned long aWaitTime_HashCode; 
 
 FUNCTION_CODE = aWaitTime_HashCode = 0;\n\
+// First read discarded : memory effect of the sample-and-hold\n\
+analogRead(channelNumber);\n\
 do {\n\
 	if(millis() - aWaitTime_HashCode > 1000) {\n\
 		sprintf(serialMessage, "%d:%lu:%d", 0, 0, 100);\n\

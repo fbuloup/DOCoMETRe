@@ -13,7 +13,9 @@ DESCRIPTION_PL = Akwizycja bieżącej wartości wejścia analogowego w trybie as
 # Finally the property key FUNCTION_CODE (and optionally FUNCTION_CODE_SYSTEMTYPE_CPUTYPE) contains the effective ArduinoUno function code which will be added to
 # any of segments INITIALIZATION, LOOP or FINALIZE depending on the actual function position.
 # Take care of the fact that each key must be upper case !
-FUNCTION_CODE = channelName = analogRead(channelNumber);
+FUNCTION_CODE = // First read discarded : memory effect of the sample-and-hold\n\
+analogRead(channelNumber);\n\
+channelName = analogRead(channelNumber);
 # Portenta Machine Control : FUNCTION_CODE_PMC (and optionally DECLARATION_PMC...), when defined, replaces FUNCTION_CODE :
 # its inputs are read with the Arduino_PortentaMachineControl library.
 FUNCTION_CODE_PMC = channelName = MachineControl_AnalogIn.read(channelNumber);
