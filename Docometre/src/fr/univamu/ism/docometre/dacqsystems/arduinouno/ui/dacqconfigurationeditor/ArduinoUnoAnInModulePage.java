@@ -93,7 +93,7 @@ public class ArduinoUnoAnInModulePage extends ArduinoUnoModulePage {
 	// Portenta Machine Control : type of sensor of its analog inputs, instead of the analog reference
 	private Combo sensorTypeCombo;
 	private Label sensorTypeLabel;
-	private Button doubleReadButton;
+	private Button memoryEffectButton;
 	
 	private class AnalogInputsComparator extends Comparator {
 		@Override
@@ -221,19 +221,19 @@ public class ArduinoUnoAnInModulePage extends ArduinoUnoModulePage {
 		ModifyPropertyHandler.selectComboValue(sensorTypeCombo, ArduinoUnoAnInModuleProperties.getSensorType(module));
 		sensorTypeCombo.addModifyListener(new ModifyPropertyHandler(ArduinoUnoAnInModuleProperties.SENSOR_TYPE, module, sensorTypeCombo, ArduinoUnoAnInModuleProperties.SENSOR_TYPE.getRegExp(), "", false, (ResourceEditor)getEditor()));
 		
-		// Each input read twice against the memory effect of the sample-and-hold (doubles the conversion time)
-		doubleReadButton = createButton(generalconfigurationContainer, ArduinoUnoMessages.DoubleRead_Label, SWT.CHECK, 2, 1);
-		doubleReadButton.setToolTipText(ArduinoUnoMessages.DoubleRead_Tooltip);
-		doubleReadButton.setSelection(ArduinoUnoAnInModuleProperties.isDoubleRead(module));
-		doubleReadButton.addSelectionListener(new SelectionAdapter() {
+		// Memory effect of the sample-and-hold reduced (cost depending on the board, see its tooltip)
+		memoryEffectButton = createButton(generalconfigurationContainer, ArduinoUnoMessages.MemoryEffect_Label, SWT.CHECK, 2, 1);
+		memoryEffectButton.setToolTipText(ArduinoUnoMessages.MemoryEffect_Tooltip);
+		memoryEffectButton.setSelection(ArduinoUnoAnInModuleProperties.isMemoryEffectReduced(module));
+		memoryEffectButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				// Undoable modification (see update())
-				String newValue = String.valueOf(doubleReadButton.getSelection());
-				if(newValue.equals(String.valueOf(ArduinoUnoAnInModuleProperties.isDoubleRead(module)))) return;
+				String newValue = String.valueOf(memoryEffectButton.getSelection());
+				if(newValue.equals(String.valueOf(ArduinoUnoAnInModuleProperties.isMemoryEffectReduced(module)))) return;
 				try {
-					String label = NLS.bind(DocometreMessages.ModifyPropertyOperation_Label, ArduinoUnoAnInModuleProperties.DOUBLE_READ.getLabel() + " : " + module.toString());
-					PlatformUI.getWorkbench().getOperationSupport().getOperationHistory().execute(new ModifyPropertyOperation(doubleReadButton, label, ArduinoUnoAnInModuleProperties.DOUBLE_READ, module, newValue, ((ResourceEditor)getEditor()).getUndoContext()), null, null);
+					String label = NLS.bind(DocometreMessages.ModifyPropertyOperation_Label, ArduinoUnoAnInModuleProperties.REDUCE_MEMORY_EFFECT.getLabel() + " : " + module.toString());
+					PlatformUI.getWorkbench().getOperationSupport().getOperationHistory().execute(new ModifyPropertyOperation(memoryEffectButton, label, ArduinoUnoAnInModuleProperties.REDUCE_MEMORY_EFFECT, module, newValue, ((ResourceEditor)getEditor()).getUndoContext()), null, null);
 				} catch (ExecutionException exception) {
 					Activator.logErrorMessageWithCause(exception);
 				}
@@ -407,8 +407,8 @@ public class ArduinoUnoAnInModulePage extends ArduinoUnoModulePage {
 		if(property == ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE || property == ArduinoUnoDACQConfigurationProperties.REVISION)
 			updateAnalogReferenceCombo();
 		if(property == ArduinoUnoAnInModuleProperties.SENSOR_TYPE) updateSensorTypeCombo();
-		if(property == ArduinoUnoAnInModuleProperties.DOUBLE_READ && doubleReadButton != null && !doubleReadButton.isDisposed()) {
-			doubleReadButton.setSelection(ArduinoUnoAnInModuleProperties.isDoubleRead(module));
+		if(property == ArduinoUnoAnInModuleProperties.REDUCE_MEMORY_EFFECT && memoryEffectButton != null && !memoryEffectButton.isDisposed()) {
+			memoryEffectButton.setSelection(ArduinoUnoAnInModuleProperties.isMemoryEffectReduced(module));
 			generalConfigurationSectionPart.markDirty();
 		}
 		// Board of the configuration : analog reference or type of sensor, channels of the board

@@ -1387,8 +1387,9 @@ public class ArduinoUnoProcess extends Process {
 			//code = code + "\t\t//unsigned long dt = micros();\n";
 			// Portenta Machine Control : inputs AI0 to AI2 of its library (analogRead() reads the pins of the Portenta H7)
 			String analogRead = isPMC ? "MachineControl_AnalogIn.read(inputNumber)" : "analogRead(inputNumber)";
-			if(isAnalogInputsDoubleRead()) {
-				// Memory effect of the sample-and-hold : the first conversion keeps part of the voltage of the input converted before (see ArduinoUnoAnInModuleProperties.DOUBLE_READ)
+			if(isAnalogInputsReadTwice()) {
+				// Memory effect of the sample-and-hold : the first conversion keeps part of the voltage of the input converted
+				// before (see ArduinoUnoAnInModuleProperties.REDUCE_MEMORY_EFFECT)
 				code = code + "\t\t" + analogRead + ";\n";
 			}
 			code = code + "\t\tint value = " + analogRead + ";\n";
@@ -1652,11 +1653,13 @@ public class ArduinoUnoProcess extends Process {
 	}
 
 	/*
-	 * True if the analog inputs of the board are read twice (option of the analog inputs module)
+	 * True if the analog inputs are read twice against the memory effect of the sample-and-hold : Uno R3 and Portenta
+	 * Machine Control (the sampling time of the Uno R4 is lengthened instead, see ArduinoUnoAnInModule)
 	 */
-	private boolean isAnalogInputsDoubleRead() {
+	private boolean isAnalogInputsReadTwice() {
+		if(ArduinoUnoAnInModuleProperties.isR4(getDACQConfiguration())) return false;
 		for (Module module : getDACQConfiguration().getModules())
-			if(module instanceof ArduinoUnoAnInModule) return ArduinoUnoAnInModuleProperties.isDoubleRead(module);
+			if(module instanceof ArduinoUnoAnInModule) return ArduinoUnoAnInModuleProperties.isMemoryEffectReduced(module);
 		return false;
 	}
 	

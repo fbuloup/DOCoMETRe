@@ -50,6 +50,29 @@ public final class ArduinoUnoAnInModuleProperties extends Property {
 	public static final ArduinoUnoAnInModuleProperties ANALOG_REFERENCE = new ArduinoUnoAnInModuleProperties("ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE", ArduinoUnoMessages.AnalogReference_Label, ArduinoUnoMessages.AnalogReference_Tooltip, "^(DEFAULT|INTERNAL|EXTERNAL|AR_DEFAULT|AR_INTERNAL|AR_EXTERNAL)$", "DEFAULT:INTERNAL:EXTERNAL:AR_DEFAULT:AR_INTERNAL:AR_EXTERNAL");
 	
 	/**
+	 * Memory effect of the sample-and-hold of the multiplexed converter reduced : its capacitor keeps part of the voltage
+	 * of the input converted just before, it is connected to the next input only during the sampling time of the
+	 * conversion. Uno R3 and Portenta Machine Control (sampling time set by its mbed core) : each input is read twice, the
+	 * first value is discarded. Uno R4 : sampling time of {@link #R4_SAMPLING_STATES} states of the ADC clock instead of 13.
+	 * True for the new configurations, not defined (null) for the configurations created before : false.
+	 */
+	public static final ArduinoUnoAnInModuleProperties REDUCE_MEMORY_EFFECT = new ArduinoUnoAnInModuleProperties("ArduinoUnoAnInModuleProperties.REDUCE_MEMORY_EFFECT", ArduinoUnoMessages.MemoryEffect_Label, ArduinoUnoMessages.MemoryEffect_Tooltip, "^(true|false)$", "true:false");
+	
+	/**
+	 * Uno R4 : sampling time (states of the ADC clock) of the analog inputs when the memory effect is reduced. Measured
+	 * with a source of 10 kOhm : influence of the previous input of 5.4 % with 13 states (default), less than 1 LSB with 160.
+	 */
+	public static final int R4_SAMPLING_STATES = 160;
+	
+	/**
+	 * @return true if the memory effect of the sample-and-hold is reduced (see {@link #REDUCE_MEMORY_EFFECT}), false if it
+	 * is not defined
+	 */
+	public static boolean isMemoryEffectReduced(Module module) {
+		return module != null && "true".equals(module.getProperty(REDUCE_MEMORY_EFFECT));
+	}
+	
+	/**
 	 * Portenta Machine Control : type of sensor of its three analog inputs (SensorType of the Arduino_PortentaMachineControl
 	 * library), common to the three inputs. Not defined (null) for the configurations created before : V_0_10.
 	 */
@@ -60,21 +83,6 @@ public final class ArduinoUnoAnInModuleProperties extends Property {
 	public static String[] SENSOR_TYPES = new String[] {SENSOR_TYPE_V_0_10, SENSOR_TYPE_MA_4_20, SENSOR_TYPE_NTC};
 	// Displayed to the user, same order as SENSOR_TYPES
 	public static String[] SENSOR_TYPES_LABELS = new String[] {ArduinoUnoMessages.SensorType_V_0_10, ArduinoUnoMessages.SensorType_MA_4_20, ArduinoUnoMessages.SensorType_NTC};
-	
-	/**
-	 * Each analog input is read twice, the first value is discarded : the ADC is multiplexed, the voltage of the input
-	 * converted just before remains partly in the capacitor of its sample-and-hold (memory effect), which is connected to
-	 * the input only during the sampling time of the conversion. The first conversion charges it to the voltage of the
-	 * input (sampling time doubled). Doubles the conversion time of the analog inputs. Not defined (null) for the configurations created before : false.
-	 */
-	public static final ArduinoUnoAnInModuleProperties DOUBLE_READ = new ArduinoUnoAnInModuleProperties("ArduinoUnoAnInModuleProperties.DOUBLE_READ", ArduinoUnoMessages.DoubleRead_Label, ArduinoUnoMessages.DoubleRead_Tooltip, "^(true|false)$", "true:false");
-	
-	/**
-	 * @return true if the analog inputs of the module are read twice (see {@link #DOUBLE_READ}), false if it is not defined
-	 */
-	public static boolean isDoubleRead(Module module) {
-		return module != null && "true".equals(module.getProperty(DOUBLE_READ));
-	}
 	
 	/**
 	 * @return the type of sensor of the analog inputs of the Portenta Machine Control (V_0_10 if it is not defined)
@@ -128,14 +136,14 @@ public final class ArduinoUnoAnInModuleProperties extends Property {
 	public static void populateProperties(Module module){
 		module.setProperty(ANALOG_REFERENCE, DEFAULT); 
 		module.setProperty(SENSOR_TYPE, SENSOR_TYPE_V_0_10);
-		module.setProperty(DOUBLE_READ, "false");
+		module.setProperty(REDUCE_MEMORY_EFFECT, "true");
 	}
 	
 	public static Module cloneModule(Module module) {
 		ArduinoUnoAnInModule newModule = new ArduinoUnoAnInModule(null);
 		newModule.setProperty(ANALOG_REFERENCE, new String(module.getProperty(ANALOG_REFERENCE)));
 		newModule.setProperty(SENSOR_TYPE, getSensorType(module));
-		newModule.setProperty(DOUBLE_READ, String.valueOf(isDoubleRead(module)));
+		newModule.setProperty(REDUCE_MEMORY_EFFECT, String.valueOf(isMemoryEffectReduced(module)));
 		return newModule;
 	}
 	

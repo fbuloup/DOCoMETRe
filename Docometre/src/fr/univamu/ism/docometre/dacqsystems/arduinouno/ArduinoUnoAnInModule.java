@@ -75,6 +75,16 @@ public class ArduinoUnoAnInModule extends Module {
 			String analogReference = ArduinoUnoAnInModuleProperties.getReferenceOfRevision(getProperty(ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE), ArduinoUnoAnInModuleProperties.isR4(dacqConfiguration));
 			code = code +  "\t\t// Set analog ref.\n";
 			code = code + "\t\tanalogReference(" + analogReference + ");\n";
+			if(ArduinoUnoAnInModuleProperties.isR4(dacqConfiguration) && ArduinoUnoAnInModuleProperties.isMemoryEffectReduced(this)) {
+				// Uno R4 : sampling time of the ADC lengthened against the memory effect of its sample-and-hold. Written after
+				// the opening of the ADC by a first read of the inputs used (analogRead() keeps it afterwards)
+				int states = ArduinoUnoAnInModuleProperties.R4_SAMPLING_STATES;
+				code = code + "\t\t// Memory effect of the sample-and-hold reduced : sampling time of " + states + " states instead of 13\n";
+				for (Channel channel : getChannels()) 
+					if(ArduinoUnoBoardChannels.isUsed(channel)) code = code + "\t\tanalogRead(" + channel.getProperty(ChannelProperties.CHANNEL_NUMBER) + ");\n";
+				code = code + "\t\tfor(int i = 0; i < 16; i++) R_ADC0->ADSSTR[i] = " + states + ";\n";
+				code = code + "\t\tR_ADC0->ADSSTRL = " + states + ";\n";
+			}
 		}
 		
 		
