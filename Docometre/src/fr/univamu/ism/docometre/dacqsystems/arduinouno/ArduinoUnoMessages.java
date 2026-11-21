@@ -150,6 +150,8 @@ public class ArduinoUnoMessages extends NLS {
 	// Analog input module
 	public static String AnalogReference_Label;
 	public static String AnalogReference_Tooltip;
+	public static String MemoryEffect_Label;
+	public static String MemoryEffect_Tooltip;
 	public static String Used_Label;
 	public static String Used_Tooltip;
 	

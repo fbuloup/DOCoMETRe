@@ -1419,6 +1419,11 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "}\n\n";
 			code = code + "unsigned int acquireAnalogInput(byte inputNumber, bool transfert, byte transferNumber) {\n";
 			//code = code + "\t\t//unsigned long dt = micros();\n";
+			if(isAnalogInputsReadTwice()) {
+				// Memory effect of the sample-and-hold : the first conversion keeps part of the voltage of the input converted
+				// before (see ArduinoUnoAnInModuleProperties.REDUCE_MEMORY_EFFECT)
+				code = code + "\t\tanalogRead(inputNumber);\n";
+			}
 			code = code + "\t\tint value = analogRead(inputNumber);\n";
 			//code = code + "\t\t//dt = micros() - dt;\n";
 			//code = code + "\t\t//Serial.println(dt);\n";
@@ -1673,6 +1678,17 @@ public class ArduinoUnoProcess extends Process {
 	
 	private boolean hasPropagatedParameters() {
 		return ArduinoUnoParametersCode.hasPropagatedParameters(getPropagatedFlags());
+	}
+	
+	/*
+	 * True if the analog inputs are read twice against the memory effect of the sample-and-hold : Uno R3 (the sampling
+	 * time of the Uno R4 is lengthened instead, see ArduinoUnoAnInModule)
+	 */
+	private boolean isAnalogInputsReadTwice() {
+		if(ArduinoUnoAnInModuleProperties.isR4(getDACQConfiguration())) return false;
+		for (Module module : getDACQConfiguration().getModules())
+			if(module instanceof ArduinoUnoAnInModule) return ArduinoUnoAnInModuleProperties.isMemoryEffectReduced(module);
+		return false;
 	}
 	
 	@Override

@@ -49,6 +49,29 @@ public final class ArduinoUnoAnInModuleProperties extends Property {
 	
 	public static final ArduinoUnoAnInModuleProperties ANALOG_REFERENCE = new ArduinoUnoAnInModuleProperties("ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE", ArduinoUnoMessages.AnalogReference_Label, ArduinoUnoMessages.AnalogReference_Tooltip, "^(DEFAULT|INTERNAL|EXTERNAL|AR_DEFAULT|AR_INTERNAL|AR_EXTERNAL)$", "DEFAULT:INTERNAL:EXTERNAL:AR_DEFAULT:AR_INTERNAL:AR_EXTERNAL");
 	
+	/**
+	 * Memory effect of the sample-and-hold of the multiplexed converter reduced : its capacitor keeps part of the voltage
+	 * of the input converted just before, it is connected to the next input only during the sampling time of the
+	 * conversion. Uno R3 : each input is read twice, the first value is discarded. Uno R4 : sampling time of
+	 * {@link #R4_SAMPLING_STATES} states of the ADC clock instead of 13. True for the new configurations, not defined
+	 * (null) for the configurations created before : false.
+	 */
+	public static final ArduinoUnoAnInModuleProperties REDUCE_MEMORY_EFFECT = new ArduinoUnoAnInModuleProperties("ArduinoUnoAnInModuleProperties.REDUCE_MEMORY_EFFECT", ArduinoUnoMessages.MemoryEffect_Label, ArduinoUnoMessages.MemoryEffect_Tooltip, "^(true|false)$", "true:false");
+	
+	/**
+	 * Uno R4 : sampling time (states of the ADC clock) of the analog inputs when the memory effect is reduced. Measured
+	 * with a source of 10 kOhm : influence of the previous input of 5.4 % with 13 states (default), less than 1 LSB with 160.
+	 */
+	public static final int R4_SAMPLING_STATES = 160;
+	
+	/**
+	 * @return true if the memory effect of the sample-and-hold is reduced (see {@link #REDUCE_MEMORY_EFFECT}), false if it
+	 * is not defined
+	 */
+	public static boolean isMemoryEffectReduced(Module module) {
+		return module != null && "true".equals(module.getProperty(REDUCE_MEMORY_EFFECT));
+	}
+	
 	// Analog references of Arduino Uno R3 : DEFAULT, INTERNAL, EXTERNAL ; of Arduino Uno R4 WiFi : AR_DEFAULT, AR_INTERNAL, AR_EXTERNAL
 	public static String DEFAULT = "DEFAULT";
 	public static String INTERNAL = "INTERNAL";
@@ -93,11 +116,13 @@ public final class ArduinoUnoAnInModuleProperties extends Property {
 	
 	public static void populateProperties(Module module){
 		module.setProperty(ANALOG_REFERENCE, DEFAULT); 
+		module.setProperty(REDUCE_MEMORY_EFFECT, "true");
 	}
 	
 	public static Module cloneModule(Module module) {
 		ArduinoUnoAnInModule newModule = new ArduinoUnoAnInModule(null);
 		newModule.setProperty(ANALOG_REFERENCE, new String(module.getProperty(ANALOG_REFERENCE)));
+		newModule.setProperty(REDUCE_MEMORY_EFFECT, String.valueOf(isMemoryEffectReduced(module)));
 		return newModule;
 	}
 	
