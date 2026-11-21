@@ -18,4 +18,6 @@ analogRead(channelNumber);\n\
 channelName = analogRead(channelNumber);
 # Portenta Machine Control : FUNCTION_CODE_PMC (and optionally DECLARATION_PMC...), when defined, replaces FUNCTION_CODE :
 # its inputs are read with the Arduino_PortentaMachineControl library.
-FUNCTION_CODE_PMC = channelName = MachineControl_AnalogIn.read(channelNumber);
+FUNCTION_CODE_PMC = // First read discarded : memory effect of the sample-and-hold\n\
+MachineControl_AnalogIn.read(channelNumber);\n\
+channelName = MachineControl_AnalogIn.read(channelNumber);

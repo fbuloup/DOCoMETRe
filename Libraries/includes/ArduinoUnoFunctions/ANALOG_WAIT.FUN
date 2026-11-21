@@ -32,6 +32,8 @@ do {\n\
 # Portenta Machine Control : FUNCTION_CODE_PMC (and optionally DECLARATION_PMC...), when defined, replaces FUNCTION_CODE :
 # its inputs are read with the Arduino_PortentaMachineControl library.
 FUNCTION_CODE_PMC = aWaitTime_HashCode = 0;\n\
+// First read discarded : memory effect of the sample-and-hold\n\
+MachineControl_AnalogIn.read(channelNumber);\n\
 do {\n\
 	if(millis() - aWaitTime_HashCode > 1000) {\n\
 		sprintf(serialMessage, "%d:%lu:%d", 0, 0, 100);\n\
