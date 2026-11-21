@@ -1424,7 +1424,12 @@ public class ArduinoUnoProcess extends Process {
 				// before (see ArduinoUnoAnInModuleProperties.REDUCE_MEMORY_EFFECT)
 				code = code + "\t\tanalogRead(inputNumber);\n";
 			}
-			code = code + "\t\tint value = analogRead(inputNumber);\n";
+			if(ArduinoUnoAnInModuleProperties.isR4(getDACQConfiguration())) {
+				// Uno R4 : value converted by the scan of the ADC of the period (see ArduinoUnoAnInModule), in the data register
+				// of the channel of the ADC of the input (A0 : AN009, A1 to A3 : AN000 to AN002, A4 : AN021, A5 : AN022)
+				code = code + "\t\tstatic const byte ADC_CHANNELS[6] = {9, 0, 1, 2, 21, 22};\n";
+				code = code + "\t\tint value = R_ADC0->ADDR[ADC_CHANNELS[inputNumber]];\n";
+			} else code = code + "\t\tint value = analogRead(inputNumber);\n";
 			//code = code + "\t\t//dt = micros() - dt;\n";
 			//code = code + "\t\t//Serial.println(dt);\n";
 			//code = code + "\t\t//serialMessage = String(inputNumber) + \":\" + String(loopTime - *lastAcquisitionTime) + \":\" + String(value);\n";
