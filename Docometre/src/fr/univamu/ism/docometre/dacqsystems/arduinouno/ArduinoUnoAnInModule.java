@@ -75,16 +75,39 @@ public class ArduinoUnoAnInModule extends Module {
 			String analogReference = ArduinoUnoAnInModuleProperties.getReferenceOfRevision(getProperty(ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE), ArduinoUnoAnInModuleProperties.isR4(dacqConfiguration));
 			code = code +  "\t\t// Set analog ref.\n";
 			code = code + "\t\tanalogReference(" + analogReference + ");\n";
-			if(ArduinoUnoAnInModuleProperties.isR4(dacqConfiguration) && ArduinoUnoAnInModuleProperties.isMemoryEffectReduced(this)) {
-				// Uno R4 : sampling time of the ADC lengthened against the memory effect of its sample-and-hold. Written after
-				// the opening of the ADC by a first read of the inputs used (analogRead() keeps it afterwards)
-				int states = ArduinoUnoAnInModuleProperties.R4_SAMPLING_STATES;
-				code = code + "\t\t// Memory effect of the sample-and-hold reduced : sampling time of " + states + " states instead of 13\n";
+			if(ArduinoUnoAnInModuleProperties.isR4(dacqConfiguration) && hasUsedChannel()) {
+				// Uno R4 : a first read of each input used opens the ADC and adds the input to its scan (analogRead() of the core
+				// converts all the inputs already read) : one scan per period then converts all the inputs (see ACQUISITION)
+				code = code + "\t\t// Analog inputs used added to the scan of the ADC\n";
 				for (Channel channel : getChannels()) 
-					if(ArduinoUnoBoardChannels.isUsed(channel)) code = code + "\t\tanalogRead(" + channel.getProperty(ChannelProperties.CHANNEL_NUMBER) + ");\n";
-				code = code + "\t\tfor(int i = 0; i < 16; i++) R_ADC0->ADSSTR[i] = " + states + ";\n";
-				code = code + "\t\tR_ADC0->ADSSTRL = " + states + ";\n";
+					if(isUsed(channel)) code = code + "\t\tanalogRead(" + channel.getProperty(ChannelProperties.CHANNEL_NUMBER) + ");\n";
+				if(ArduinoUnoAnInModuleProperties.isMemoryEffectReduced(this)) {
+					// Sampling time of the ADC lengthened against the memory effect of its sample-and-hold, written after the
+					// opening of the ADC (analogRead() keeps it afterwards)
+					int states = ArduinoUnoAnInModuleProperties.R4_SAMPLING_STATES;
+					code = code + "\t\t// Memory effect of the sample-and-hold reduced : sampling time of " + states + " states instead of 13\n";
+					code = code + "\t\tfor(int i = 0; i < 16; i++) R_ADC0->ADSSTR[i] = " + states + ";\n";
+					code = code + "\t\tR_ADC0->ADSSTRL = " + states + ";\n";
+				}
 			}
+		}
+		
+		if (segment == ArduinoUnoCodeSegmentProperties.ACQUISITION && ArduinoUnoAnInModuleProperties.isR4(dacqConfiguration) && hasUsedChannel()) {
+			// Uno R4 : one scan of the ADC per period, when at least one input is acquired, converts all the inputs used. Started
+			// in its control register : analogRead() of the core would reconfigure the ADC, convert all the inputs and clear the
+			// data register of its input (cleared after reading). The values are read in the data registers by acquireAnalogInput()
+			String condition = "";
+			for (Channel channel : getChannels()) {
+				if(!isUsed(channel)) continue;
+				String name = channel.getProperty(ChannelProperties.NAME);
+				int frequencyRatio = getFrequencyRatio(channel);
+				condition = condition + (condition.isEmpty() ? "" : " || ") + "acquire_" + name + "_index == " + frequencyRatio;
+			}
+			code = code + "\n\t\t// Analog inputs : one scan of the ADC converts all the inputs used\n";
+			code = code + "\t\tif(" + condition + ") {\n";
+			code = code + "\t\t\t\tR_ADC0->ADCSR_b.ADST = 1;\n";
+			code = code + "\t\t\t\twhile(R_ADC0->ADCSR_b.ADST);\n";
+			code = code + "\t\t}\n";
 		}
 		
 		
@@ -148,8 +171,24 @@ public class ArduinoUnoAnInModule extends Module {
 	 * True if a channel of the module is used and exists on the board
 	 */
 	private boolean hasUsedChannel() {
-		for (Channel channel : getChannels()) if(ArduinoUnoBoardChannels.isUsed(channel)) return true;
+		for (Channel channel : getChannels()) if(isUsed(channel)) return true;
 		return false;
+	}
+	
+	/*
+	 * True if the channel is used and exists on the board (see ArduinoUnoBoardChannels)
+	 */
+	private static boolean isUsed(Channel channel) {
+		return ArduinoUnoBoardChannels.isUsed(channel);
+	}
+	
+	/*
+	 * Number of periods of the real time loop between two acquisitions of the channel
+	 */
+	private int getFrequencyRatio(Channel channel) {
+		float gsfFloat = Float.parseFloat(dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY));
+		float sfFloat = Float.parseFloat(channel.getProperty(ChannelProperties.SAMPLE_FREQUENCY));
+		return (int) (gsfFloat/sfFloat);
 	}
 
 	@Override
