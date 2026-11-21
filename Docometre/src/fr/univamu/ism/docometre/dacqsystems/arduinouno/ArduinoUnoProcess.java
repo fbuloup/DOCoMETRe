@@ -1388,7 +1388,7 @@ public class ArduinoUnoProcess extends Process {
 			// Portenta Machine Control : inputs AI0 to AI2 of its library (analogRead() reads the pins of the Portenta H7)
 			String analogRead = isPMC ? "MachineControl_AnalogIn.read(inputNumber)" : "analogRead(inputNumber)";
 			if(isAnalogInputsDoubleRead()) {
-				// Crosstalk : the first conversion takes the voltage of the input converted before (see ArduinoUnoAnInModuleProperties.DOUBLE_READ)
+				// Memory effect of the sample-and-hold : the first conversion keeps part of the voltage of the input converted before (see ArduinoUnoAnInModuleProperties.DOUBLE_READ)
 				code = code + "\t\t" + analogRead + ";\n";
 			}
 			code = code + "\t\tint value = " + analogRead + ";\n";

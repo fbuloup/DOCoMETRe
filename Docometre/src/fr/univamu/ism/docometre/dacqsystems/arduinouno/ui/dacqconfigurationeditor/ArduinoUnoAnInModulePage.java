@@ -221,7 +221,7 @@ public class ArduinoUnoAnInModulePage extends ArduinoUnoModulePage {
 		ModifyPropertyHandler.selectComboValue(sensorTypeCombo, ArduinoUnoAnInModuleProperties.getSensorType(module));
 		sensorTypeCombo.addModifyListener(new ModifyPropertyHandler(ArduinoUnoAnInModuleProperties.SENSOR_TYPE, module, sensorTypeCombo, ArduinoUnoAnInModuleProperties.SENSOR_TYPE.getRegExp(), "", false, (ResourceEditor)getEditor()));
 		
-		// Each input read twice against the crosstalk between inputs (doubles the conversion time)
+		// Each input read twice against the memory effect of the sample-and-hold (doubles the conversion time)
 		doubleReadButton = createButton(generalconfigurationContainer, ArduinoUnoMessages.DoubleRead_Label, SWT.CHECK, 2, 1);
 		doubleReadButton.setToolTipText(ArduinoUnoMessages.DoubleRead_Tooltip);
 		doubleReadButton.setSelection(ArduinoUnoAnInModuleProperties.isDoubleRead(module));

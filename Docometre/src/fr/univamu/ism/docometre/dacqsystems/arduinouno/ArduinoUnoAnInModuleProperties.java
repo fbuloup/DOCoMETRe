@@ -63,8 +63,9 @@ public final class ArduinoUnoAnInModuleProperties extends Property {
 	
 	/**
 	 * Each analog input is read twice, the first value is discarded : the ADC is multiplexed, the voltage of the input
-	 * converted just before remains partly in its sampling capacitor (crosstalk between inputs). Doubles the conversion
-	 * time of the analog inputs. Not defined (null) for the configurations created before : false.
+	 * converted just before remains partly in the capacitor of its sample-and-hold (memory effect), which is connected to
+	 * the input only during the sampling time of the conversion. The first conversion charges it to the voltage of the
+	 * input (sampling time doubled). Doubles the conversion time of the analog inputs. Not defined (null) for the configurations created before : false.
 	 */
 	public static final ArduinoUnoAnInModuleProperties DOUBLE_READ = new ArduinoUnoAnInModuleProperties("ArduinoUnoAnInModuleProperties.DOUBLE_READ", ArduinoUnoMessages.DoubleRead_Label, ArduinoUnoMessages.DoubleRead_Tooltip, "^(true|false)$", "true:false");
 	
