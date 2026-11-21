@@ -49,16 +49,26 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.widgets.FormText;
 
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.osgi.util.NLS;
+
+import fr.univamu.ism.docometre.Activator;
+import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyHandler;
+import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyOperation;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.Property;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnInChannelProperties;
@@ -73,6 +83,7 @@ import fr.univamu.ism.docometre.editors.ResourceEditor;
 public class ArduinoUnoAnInModulePage extends ArduinoUnoModulePage {
 
 	private Combo analogRefCombo;
+	private Button memoryEffectButton;
 	
 	private class AnalogInputsComparator extends Comparator {
 		@Override
@@ -186,6 +197,25 @@ public class ArduinoUnoAnInModulePage extends ArduinoUnoModulePage {
 		String[] items = ArduinoUnoAnInModuleProperties.getReferences(r4);
 		analogRefCombo = createCombo(generalconfigurationContainer, items, referenceOfRevision, 1, 1);
 		analogRefCombo.addModifyListener(new ModifyPropertyHandler(ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE, module, analogRefCombo, ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE.getRegExp(), "", false, (ResourceEditor)getEditor()));
+		
+		// Memory effect of the sample-and-hold reduced (cost depending on the board, see its tooltip)
+		memoryEffectButton = createButton(generalconfigurationContainer, ArduinoUnoMessages.MemoryEffect_Label, SWT.CHECK, 2, 1);
+		memoryEffectButton.setToolTipText(ArduinoUnoMessages.MemoryEffect_Tooltip);
+		memoryEffectButton.setSelection(ArduinoUnoAnInModuleProperties.isMemoryEffectReduced(module));
+		memoryEffectButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				// Undoable modification (see update())
+				String newValue = String.valueOf(memoryEffectButton.getSelection());
+				if(newValue.equals(String.valueOf(ArduinoUnoAnInModuleProperties.isMemoryEffectReduced(module)))) return;
+				try {
+					String label = NLS.bind(DocometreMessages.ModifyPropertyOperation_Label, ArduinoUnoAnInModuleProperties.REDUCE_MEMORY_EFFECT.getLabel() + " : " + module.toString());
+					PlatformUI.getWorkbench().getOperationSupport().getOperationHistory().execute(new ModifyPropertyOperation(memoryEffectButton, label, ArduinoUnoAnInModuleProperties.REDUCE_MEMORY_EFFECT, module, newValue, ((ResourceEditor)getEditor()).getUndoContext()), null, null);
+				} catch (ExecutionException exception) {
+					Activator.logErrorMessageWithCause(exception);
+				}
+			}
+		});
 		
 		
 		/*
@@ -316,6 +346,10 @@ public class ArduinoUnoAnInModulePage extends ArduinoUnoModulePage {
 		super.update(property, newValue, oldValue, element);
 		if(property == ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE || property == ArduinoUnoDACQConfigurationProperties.REVISION)
 			updateAnalogReferenceCombo();
+		if(property == ArduinoUnoAnInModuleProperties.REDUCE_MEMORY_EFFECT && memoryEffectButton != null && !memoryEffectButton.isDisposed()) {
+			memoryEffectButton.setSelection(ArduinoUnoAnInModuleProperties.isMemoryEffectReduced(module));
+			generalConfigurationSectionPart.markDirty();
+		}
 		if(property instanceof ArduinoUnoAnInChannelProperties) {
 			if(tableViewer != null && tableViewer.getTable() != null && !tableViewer.getTable().isDisposed()) {
 				tableViewer.refresh();
