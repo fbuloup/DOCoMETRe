@@ -6,23 +6,85 @@
       provider-name="ISM">
 
    <description>
-      -- 2026-11-19
+      -- 2026-11-22
 ADDED :
-* Arduino Uno R3 : serial port kept open from a trial to the next
-when the same process is executed : the board is no more reset at
+* Arduino Uno R4 Minima board supported : DACQ configuration,
+parameters, code generation, upload and calibration (dedicated
+calibration firmware uploaded with arduino-cli). True analog output
+of the DAC on pin A0 (AOUT_DAC) as on the Uno R4 WiFi
+* Arduino system : presented as &quot;Arduino&quot; in the user interface
+(new DACQ configuration wizard, experiments view, system type menus,
+preferences). The &quot;Revision&quot; field becomes &quot;Board&quot; (Uno R3,
+Uno R4 WiFi, Uno R4 Minima). Saved values are unchanged : existing
+experiments open as before
+* Arduino analog inputs module : option to reduce the memory effect
+of the sample-and-hold (influence of the input converted just
+before, up to 6.4 % measured). Uno R3 : each input is read twice,
+the first value is discarded. Uno R4 : sampling time of 160 states
+instead of 13. Enabled for new configurations, disabled for the
+configurations saved before
+* Arduino Uno R4 : one scan of the ADC per period converts all the
+analog inputs used (each analogRead() converted all the inputs
+already read and reconfigured the ADC, about 20 us per call).
+Processes must be compiled again
+* Arduino &quot;Acquire analog input&quot; and &quot;Wait analog input&quot; blocks :
+first read discarded (memory effect), a value read once in the
+initialization segment or the first read of the analog wait could
+be wrong
+* Timing trace (-traceTrialTimings) : user interface thread measured
+during the trials (watchdog every 20 ms, charts tasks and OpenGL
+frames), summary at the end of each trial
+FIXED :
+* Real-time charts frozen about 380 ms at the beginning of each trial
+(except the first) : the experiments history status and the history
+view are now updated after the trials, not during them
+* History decorations of the experiments tree updated (about 400 ms
+in the user interface thread) 1 s after each change even when no
+history status had changed
+* Session wizard : Finish no more allowed when the trials list refers
+to trials beyond the session trials number (error &quot;Resource
+.../Trial_6 does not exist&quot;). Missing trials listed in an error,
+warning when only part of the trials is covered
+* Arduino Uno R4 : last samples sometimes lost at the end of the
+process (1000 samples instead of 1001 at random)
+* Arduino Uno : samples, propagated parameters, time and workload
+received during the end handshake are now handled (they were
+ignored : last samples lost)
+* Arduino : analog inputs were wrongly compared with the digital pins
+and analog outputs (AIN3 could not be used with AOUT3, AIN0 to AIN5
+with DIGITAL0 to DIGITAL5)
+* Arduino Uno R3 calibration : the R3 firmware is uploaded again (the
+R4 WiFi firmware was selected). DACQ configurations without board
+are calibrated as an Uno R3
+* Arduino Uno R4 WiFi : warning at each compilation removed (WDT
+library no more included in the sketches ; a process using the
+watchdog includes its library in the global declarations)
+-- 2026-11-19
+ADDED :
+* Arduino Uno R3 : serial port kept open from a trial to the
+next
+when the same process is executed : the board is no more reset
+at
 each trial (about 1.5 s saved between trials). The port is closed
 before an upload and at the end of the session
-* Processes (ADwin, Arduino Uno R3 and R4 WiFi) : &amp;quot;time&amp;quot; and
-&amp;quot;rtTime&amp;quot; can both be used whatever the system or the board
+* Processes (ADwin, Arduino Uno R3 and R4 WiFi) : &amp;quot;time&amp;quot;
+and
+&amp;quot;rtTime&amp;quot; can both be used whatever the system or the
+board
 revision, and both are proposed in the blocks. Existing processes
 only have to be compiled again
 * Dark theme icon for numpy data files
 FIXED :
-* Arduino Uno R3 : the parameters and the start request sent just after
-the opening of the serial port were lost while the board was restarting
-(about 1.5 s in its bootloader) : the process never started and no
-data was received. The board readiness (&amp;quot;w&amp;quot; char) is now waited
-for (3 s at most), and a lost start request is sent again (3 times at
+* Arduino Uno R3 : the parameters and the start request sent
+just after
+the opening of the serial port were lost while the board was
+restarting
+(about 1.5 s in its bootloader) : the process never started and
+no
+data was received. The board readiness (&amp;quot;w&amp;quot; char) is
+now waited
+for (3 s at most), and a lost start request is sent again (3
+times at
 most, all boards)
 -- 2026-11-18
 ADDED :
