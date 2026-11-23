@@ -86,6 +86,7 @@ public class LoadProcessDelegate {
 			if(systemType.contentEquals(ADWinDACQConfigurationProperties.PRO)) filePath = filePath + "CalibrationPro2";
 		}
 		loadProcess(filePath, processNumber, adwinDacqConfiguration, null);
+		ADWinProcess.previousADWINBinFilePath = filePath;
 	}
 
 }

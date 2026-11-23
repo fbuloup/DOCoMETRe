@@ -268,6 +268,7 @@ public class ArduinoUnoCalibrationTask extends CalibrationTimerTask {
 		String scriptPath = ArduinoUnoUploadDelegate.createUploadScript(ArduinoUnoCalibration.getWorkingFolder(), command);
 		String errorOutput = ArduinoUnoUploadDelegate.runUploadScript(scriptPath);
 		ArduinoUnoProcess.forceUpload = true;
+		ArduinoUnoProcess.previousINOHexFilePath = firmwareFile.getAbsolutePath();
 		if(!errorOutput.isEmpty()) Activator.logInfoMessage(errorOutput, ArduinoUnoCalibrationTask.class);
 		if(ArduinoUnoUploadDelegate.hasFailed(errorOutput)) throw new Exception(NLS.bind(ArduinoUnoMessages.Calibration_UploadFailed, errorOutput));
 	}
