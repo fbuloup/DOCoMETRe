@@ -42,6 +42,7 @@
 package fr.univamu.ism.docometre.widgets;
 
 import java.text.DecimalFormat;
+import java.util.Arrays;
 
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
@@ -60,6 +61,8 @@ import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.IImageKeys;
 import fr.univamu.ism.docometre.calibration.AbstractCalibrateMonitorDialog;
 import fr.univamu.ism.docometre.calibration.CalibrationFactory;
+import fr.univamu.ism.docometre.chartxyz.Curve1DData;
+import fr.univamu.ism.docometre.chartxyz.GLChart1D;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.rtswtchart.IRTSWTOscilloChart;
@@ -68,12 +71,25 @@ import fr.univamu.ism.rtswtchart.RTSWTChartsFactory;
 
 public class ChannelViewer extends Composite {
 	
+	// Duration of the time window of the graph, in seconds
+	private static final double WINDOW_TIME_WIDTH = 10;
+	// Sampling frequency of the curves of the "SWT + OpenGL v2" library (Hz). The calibration/monitoring
+	// processes deliver samples at an irregular rate, with their time : they are resampled at this frequency
+	// (sample and hold), because the time of a Curve1DData is derived from its sample index.
+	private static final double OPENGL_V2_SAMPLE_FREQUENCY = 100;
+	// Maximum number of samples added at once (time window), e.g. after a long gap between two samples 
+	private static final int OPENGL_V2_MAX_SAMPLES = (int)(WINDOW_TIME_WIDTH * OPENGL_V2_SAMPLE_FREQUENCY) + 1;
+	
 	private boolean traceVisible ;
 	private String title;
 	private Label separator;
 	private DecimalFormat decimalFormater;
 	private IRTSWTSerie rtswtOscilloSerie;
 	private IRTSWTOscilloChart rtswtOscilloChart; 
+	// Container of the graph, disposed with it
+	private Composite graphContainer;
+	// Number of samples already added to the curve of the "SWT + OpenGL v2" library 
+	private long openGLV2SamplesCount;
 	private boolean firstSample = true;
 	private double initialTime;
 	private Image imageLeft;
@@ -189,9 +205,7 @@ public class ChannelViewer extends Composite {
 					createGraph();
 					showGraphButton.setImage(imageDown);
 				} else {
-					rtswtOscilloChart.dispose();
-//					rtswtOscilloChart.dispose();
-					separator.dispose();
+					disposeGraph();
 					showGraphButton.setImage(imageLeft);
 				}
 				Composite sc = getParent().getParent();
@@ -231,29 +245,69 @@ public class ChannelViewer extends Composite {
 	}
 	
 	private void createGraph() {
-		Composite container = new Composite(this, SWT.NONE);
-		container.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		container.setLayout(new GridLayout());
-		GridLayout gl = (GridLayout)container.getLayout();
+		graphContainer = new Composite(this, SWT.NONE);
+		graphContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		graphContainer.setLayout(new GridLayout());
+		GridLayout gl = (GridLayout)graphContainer.getLayout();
 		gl.horizontalSpacing = 0;
 		gl.verticalSpacing = 0;
 		gl.marginHeight = 5;
 		gl.marginWidth = 0;
 		
-		rtswtOscilloChart = RTSWTChartsFactory.createPureSWTOscilloChart(container, SWT.DOUBLE_BUFFERED, container.getFont().getFontData()[0].getName(), SWT.BOLD, 10);;
-		rtswtOscilloChart.setGridLinesColor(Display.getDefault().getSystemColor(SWT.COLOR_WHITE));
-		rtswtOscilloChart.setFontColor(container.getBackground());
-		rtswtOscilloChart.setLegendVisibility(false);
-		rtswtOscilloChart.setAutoScale(true);
-		rtswtOscilloChart.setWindowTimeWidth(10);
-		rtswtOscilloChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		rtswtOscilloSerie = rtswtOscilloChart.createSerie(title, Display.getDefault().getSystemColor(SWT.COLOR_GREEN));
+		if(Activator.useOpenGLV2()) createOpenGLV2Graph(graphContainer);
+		else createPureSWTGraph(graphContainer);
 		
-		GridData gd = (GridData) rtswtOscilloChart.getLayoutData();
+		GridData gd = rtswtOscilloChart.getLayoutData();
 		gd.heightHint = 150;
 
 		separator = new Label(this, SWT.HORIZONTAL | SWT.SEPARATOR);
 		separator.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+	}
+	
+	/*
+	 * Graph of the "Pure SWT" library (also used with "SWT + OpenGL v1" library)
+	 */
+	private void createPureSWTGraph(Composite container) {
+		rtswtOscilloChart = RTSWTChartsFactory.createPureSWTOscilloChart(container, SWT.DOUBLE_BUFFERED, container.getFont().getFontData()[0].getName(), SWT.BOLD, 10);
+		rtswtOscilloChart.setGridLinesColor(Display.getDefault().getSystemColor(SWT.COLOR_WHITE));
+		rtswtOscilloChart.setFontColor(container.getBackground());
+		rtswtOscilloChart.setLegendVisibility(false);
+		rtswtOscilloChart.setAutoScale(true);
+		rtswtOscilloChart.setWindowTimeWidth(WINDOW_TIME_WIDTH);
+		rtswtOscilloChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		rtswtOscilloSerie = rtswtOscilloChart.createSerie(title, Display.getDefault().getSystemColor(SWT.COLOR_GREEN));
+	}
+	
+	/*
+	 * Graph of the "SWT + OpenGL v2" library (package fr.univamu.ism.docometre.chartxyz) : 
+	 * SWT GLCanvas on Windows and Linux, NEWT on macOS, with a dynamic vertical scale
+	 */
+	private void createOpenGLV2Graph(Composite container) {
+		Curve1DData curve = new Curve1DData(title, OPENGL_V2_SAMPLE_FREQUENCY);
+		curve.setColor(0, 255, 0);
+		openGLV2SamplesCount = 0;
+		GLChart1D glChart1D = GLChart1D.createChart(container, WINDOW_TIME_WIDTH, curve);
+		glChart1D.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		// Real-time display : sweep mode and pause available (keyboard and context menu), no markers
+		glChart1D.setRealTime(true);
+		glChart1D.setMarkersInteractive(false);
+		glChart1D.setMarkersMenuItemsVisible(false);
+		glChart1D.setLegendVisible(false);
+		glChart1D.setXAxisLabel(null);
+		rtswtOscilloChart = glChart1D;
+		rtswtOscilloSerie = curve;
+	}
+	
+	/*
+	 * Disposes the graph, its container and its separator
+	 */
+	private void disposeGraph() {
+		if(rtswtOscilloChart != null) rtswtOscilloChart.dispose();
+		if(graphContainer != null && !graphContainer.isDisposed()) graphContainer.dispose();
+		if(separator != null && !separator.isDisposed()) separator.dispose();
+		rtswtOscilloChart = null;
+		rtswtOscilloSerie = null;
+		graphContainer = null;
 	}
 	
 	public void addSample(double x, double y) {
@@ -273,12 +327,28 @@ public class ChannelViewer extends Composite {
 				}
 			});
 		
-		if(!traceVisible) return;
+		if(!traceVisible || rtswtOscilloSerie == null) return;
 		if(firstSample) {
 			initialTime = x;
 			firstSample = false;
 		}
-		rtswtOscilloSerie.addPoints(new Double[] {x- initialTime}, new Double[] {yComputed});
+		if(rtswtOscilloSerie instanceof Curve1DData) addOpenGLV2Sample((Curve1DData) rtswtOscilloSerie, x - initialTime, yComputed);
+		else rtswtOscilloSerie.addPoints(new Double[] {x- initialTime}, new Double[] {yComputed});
+	}
+	
+	/*
+	 * Resamples at OPENGL_V2_SAMPLE_FREQUENCY the irregular samples of the calibration/monitoring
+	 * process (sample and hold) : value is repeated until time, so that the time axis of the curve
+	 * follows the real time. Nothing is added while time has not reached the next sampling period.
+	 */
+	private void addOpenGLV2Sample(Curve1DData curve, double time, double value) {
+		long expectedSamplesCount = (long)Math.floor(time * OPENGL_V2_SAMPLE_FREQUENCY) + 1;
+		long nbSamples = expectedSamplesCount - openGLV2SamplesCount;
+		if(nbSamples <= 0) return;
+		float[] values = new float[(int)Math.min(nbSamples, OPENGL_V2_MAX_SAMPLES)];
+		Arrays.fill(values, (float) value);
+		curve.addSamples(values);
+		openGLV2SamplesCount = expectedSamplesCount;
 	}
 	
 	public Channel getChannel() {
