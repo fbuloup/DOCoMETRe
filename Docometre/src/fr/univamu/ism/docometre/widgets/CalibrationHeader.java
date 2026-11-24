@@ -43,7 +43,9 @@ package fr.univamu.ism.docometre.widgets;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.function.Supplier;
 
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.KeyAdapter;
@@ -74,6 +76,11 @@ public final class CalibrationHeader/* implements DisposeListener*/  {
 	private ArrayList<CalibrationListener> aMaxListener = new ArrayList<>();
 	private ArrayList<CalibrationListener> uMinListener = new ArrayList<>();
 	private ArrayList<CalibrationListener> uMaxListener = new ArrayList<>();
+	// Called after a reset of the calibration to the default calibration of the hardware (see defaultCalibrationSupplier)
+	private ArrayList<Runnable> resetListeners = new ArrayList<>();
+	// Resets the calibration of the channel to the default calibration of the hardware and returns
+	// its new values {aMin, aMax, uMin, uMax}, null if the default calibration can not be determined
+	private Supplier<double[]> defaultCalibrationSupplier;
 	
 	private double aMinValue;
 	private double aMaxValue;
@@ -88,6 +95,8 @@ public final class CalibrationHeader/* implements DisposeListener*/  {
 	private Button captureAMinValueButton;
 
 	private Button captureAMaxValueButton;
+	
+	private Button defaultCalibrationButton;
 
 	private Image captureValueImage;
 	
@@ -165,9 +174,59 @@ public final class CalibrationHeader/* implements DisposeListener*/  {
 		uMaxText.setText(physicalValueFormat.format(initialValues[3]));
 		addKeyHandler(uMaxText);
 		
+		defaultCalibrationButton = new Button(parent, SWT.FLAT);
+		defaultCalibrationButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
+		((GridData)defaultCalibrationButton.getLayoutData()).heightHint = uMaxText.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
+		defaultCalibrationButton.setImage(Activator.getImage(IImageKeys.APPLY_DEFAULT_SETTINGS_ICON));
+		defaultCalibrationButton.setToolTipText(DocometreMessages.ResetCalibrationTooltip);
+		defaultCalibrationButton.setEnabled(false);
+		defaultCalibrationButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent event) {
+				resetCalibration();
+			}
+		});
+		
 		Label labelSeparator2 = new Label(parent, SWT.SEPARATOR | SWT.VERTICAL);
 		labelSeparator2.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 		((GridData) labelSeparator2.getLayoutData()).heightHint = ((GridData) labelSeparator.getLayoutData()).heightHint;
+	}
+	
+	/**
+	 * @param defaultCalibrationSupplier resets the calibration of the channel to the default calibration of the hardware and
+	 * returns its new values {aMin, aMax, uMin, uMax}, null if the default calibration can not be determined. The "Default"
+	 * button of the header is enabled when it is set.
+	 */
+	public void setDefaultCalibrationSupplier(Supplier<double[]> defaultCalibrationSupplier) {
+		this.defaultCalibrationSupplier = defaultCalibrationSupplier;
+		defaultCalibrationButton.setEnabled(defaultCalibrationSupplier != null);
+	}
+	
+	private void resetCalibration() {
+		if(defaultCalibrationSupplier == null) return;
+		if(!MessageDialog.openQuestion(defaultCalibrationButton.getShell(), DocometreMessages.ResetCalibrationDialogTitle, DocometreMessages.ResetCalibrationDialogQuestion)) return;
+		double[] values = defaultCalibrationSupplier.get();
+		if(values == null) {
+			MessageDialog.openError(defaultCalibrationButton.getShell(), DocometreMessages.ResetCalibrationDialogTitle, DocometreMessages.ResetCalibrationImpossible);
+			return;
+		}
+		aMinValue = values[0];
+		aMaxValue = values[1];
+		uMinValue = values[2];
+		uMaxValue = values[3];
+		aMinText.setText(rawValueFormat.format(aMinValue));
+		aMaxText.setText(rawValueFormat.format(aMaxValue));
+		uMinText.setText(physicalValueFormat.format(uMinValue));
+		uMaxText.setText(physicalValueFormat.format(uMaxValue));
+		for (Runnable resetListener : resetListeners) resetListener.run();
+	}
+	
+	public void addResetListener(Runnable resetListener) {
+		resetListeners.add(resetListener);
+	}
+	
+	public void removeResetListener(Runnable resetListener) {
+		resetListeners.remove(resetListener);
 	}
 	
 	private void addMouseHandler(final Button button) {

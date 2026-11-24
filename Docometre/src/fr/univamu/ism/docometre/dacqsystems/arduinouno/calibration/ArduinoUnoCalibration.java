@@ -96,6 +96,12 @@ public final class ArduinoUnoCalibration {
 		calibrationHeader.addAMinListener(new ChannelCalibrationListener(channel, ArduinoUnoAnInChannelProperties.AMPLITUDE_MIN));
 		calibrationHeader.addUMaxListener(new ChannelCalibrationListener(channel, ArduinoUnoAnInChannelProperties.UNIT_MAX));
 		calibrationHeader.addUMinListener(new ChannelCalibrationListener(channel, ArduinoUnoAnInChannelProperties.UNIT_MIN));
+		// Reset to the default calibration of the hardware (see ArduinoUnoAnInChannelProperties#getDefaultRange)
+		calibrationHeader.setDefaultCalibrationSupplier(() -> {
+			if(!ArduinoUnoAnInChannelProperties.CALIBRATION.applyDefault(channel)) return null;
+			ObjectsController.serialize(channel.getModule().getDACQConfiguration());
+			return ArduinoUnoAnInChannelProperties.CALIBRATION.getCalibration(channel);
+		});
 		return calibrationHeader;
 	}
 	

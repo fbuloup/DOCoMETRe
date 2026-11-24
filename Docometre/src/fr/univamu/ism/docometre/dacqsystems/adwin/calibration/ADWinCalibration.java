@@ -107,6 +107,12 @@ public final class ADWinCalibration {
 				return ADWinRWDelegate.getAnalogValue(channel);
 			}
 		});
+		// Reset to the default calibration of the module (see ADWinAnInChannelProperties#getDefaultRange)
+		calibrationHeaderDelegate.setDefaultCalibrationSupplier(() -> {
+			if(!ADWinAnInChannelProperties.CALIBRATION.applyDefault(channel)) return null;
+			ObjectsController.serialize(channel.getModule().getDACQConfiguration());
+			return ADWinAnInChannelProperties.CALIBRATION.getCalibration(channel);
+		});
 		return calibrationHeaderDelegate;
 	}
 

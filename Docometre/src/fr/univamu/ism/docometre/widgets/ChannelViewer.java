@@ -161,7 +161,7 @@ public class ChannelViewer extends Composite {
 		imageLeft = Activator.getImage(IImageKeys.SHOW_GRAPH_ICON);
 		imageDown = Activator.getImage(IImageKeys.HIDE_GRAPH_ICON);
 		
-		int nbColumn = (input && analog == true) ? 14 : 3;
+		int nbColumn = (input && analog == true) ? 15 : 3;
 		
 		Composite titleComposite = new Composite(this, SWT.NONE);
 		titleComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
@@ -202,7 +202,7 @@ public class ChannelViewer extends Composite {
 				// Analog input with calibration header
 				titleLabel.setLayoutData(new GridData(SWT.BEGINNING, SWT.FILL, false, false));
 				showCalibratedValuesButton = new Button(titleComposite, SWT.CHECK);
-				showCalibratedValuesButton.setLayoutData(new GridData(SWT.END, SWT.FILL, true, false, 13, 1));
+				showCalibratedValuesButton.setLayoutData(new GridData(SWT.END, SWT.FILL, true, false, 14, 1));
 				showCalibratedValuesButton.setText(DocometreMessages.ShowCalibratedValues);
 				// Create calibrate header 
 				CalibrationHeader calibrationHeader = CalibrationFactory.createHeader(titleComposite, channel);
@@ -210,6 +210,7 @@ public class ChannelViewer extends Composite {
 				calibrationHeader.addAMinListener(AbstractCalibrateMonitorDialog.getGlobalCalibrationListener());
 				calibrationHeader.addUMaxListener(AbstractCalibrateMonitorDialog.getGlobalCalibrationListener());
 				calibrationHeader.addUMinListener(AbstractCalibrateMonitorDialog.getGlobalCalibrationListener());
+				calibrationHeader.addResetListener(() -> AbstractCalibrateMonitorDialog.getGlobalCalibrationListener().push(0));
 			}
 			// Analog or digital input
 			valueLabel = new Label(titleComposite, SWT.NONE);

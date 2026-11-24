@@ -46,9 +46,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.eclipse.core.commands.operations.IOperationHistory;
 import org.junit.jupiter.api.Test;
 
 import fr.univamu.ism.docometre.calibration.RawCalibration;
+import fr.univamu.ism.docometre.calibration.ResetCalibrationOperation;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 
 /**
@@ -89,6 +91,25 @@ public class ADWinRawCalibrationTest {
 		assertTrue(ADWinAnInChannelProperties.CALIBRATION.isCalibrated(channel));
 		module.setProperty(ADWinAnInModuleProperties.AMPLITUDE_MIN, "0");
 		assertCalibration(channel, "0", "65535", "-10", "100", "true");
+	}
+
+	@Test
+	public void resetOfTheCalibrationCanBeUndone() throws Exception {
+		ADWinAnInModule module = new ADWinAnInModule(null);
+		Channel channel = module.createChannel();
+		channel.setProperty(ADWinAnInChannelProperties.AMPLITUDE_MIN, "100");
+		channel.setProperty(ADWinAnInChannelProperties.UNIT_MAX, "50");
+		assertCalibration(channel, "100", "65535", "-10", "50", "true");
+		ResetCalibrationOperation operation = new ResetCalibrationOperation(null, "reset", ADWinAnInChannelProperties.CALIBRATION, channel, IOperationHistory.GLOBAL_UNDO_CONTEXT);
+		assertTrue(operation.execute(null, null).isOK());
+		assertCalibration(channel, "0", "65535", "-10", "10", "false");
+		// Not calibrated again : follows the range of the module
+		module.setProperty(ADWinAnInModuleProperties.AMPLITUDE_MIN, "0");
+		assertCalibration(channel, "0", "65535", "0", "10", "false");
+		assertTrue(operation.undo(null, null).isOK());
+		assertCalibration(channel, "100", "65535", "-10", "50", "true");
+		assertTrue(operation.redo(null, null).isOK());
+		assertCalibration(channel, "0", "65535", "0", "10", "false");
 	}
 
 	@Test

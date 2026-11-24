@@ -389,6 +389,11 @@
 		<a href="#calibration">calibration and monitoring</a> dialog), the
 		input is calibrated (column Calibrated checked) and its values no
 		longer change with the hardware.</p>
+	<p>To come back to the default values of the hardware, <b>reset</b> the
+		calibration of the input: uncheck its Calibrated column in the table
+		(this can be undone with Edit &gt; Undo) or press the
+		<b>default calibration</b> button of its header in the
+		<a href="#calibration">calibration and monitoring</a> dialog.</p>
 	<p>The configurations saved by former versions, whose AMin and AMax were
 		voltages, are converted when they are opened: the calibration line
 		and thus the physical values are unchanged (AMin and AMax may then have
@@ -553,7 +558,9 @@
 		(integers, validate with <kbd>Enter</kbd>), and the corresponding
 		physical values typed: they become the
 		<a href="#calibrationvalues">calibration values</a> (AMin, AMax, UMin,
-		UMax) of the channel, which is then calibrated. The values are saved
+		UMax) of the channel, which is then calibrated. The default
+		calibration button, at the right of UMax, resets the channel to the
+		default values of the hardware (after confirmation). The values are saved
 		at once in the configuration file. "Show calibrated values" displays the values in physical
 		unit. When the calibration has been modified, do not forget to save
 		the configuration and to recompile the associated processes.</p>

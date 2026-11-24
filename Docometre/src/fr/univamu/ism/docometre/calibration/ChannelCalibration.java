@@ -97,6 +97,14 @@ public final class ChannelCalibration {
 	}
 
 	/**
+	 * @return the property which tells if the input is calibrated ("true"), not calibrated ("false") or has a calibration
+	 * saved before the raw values (null)
+	 */
+	public Property getCalibratedProperty() {
+		return calibrated;
+	}
+
+	/**
 	 * @return true if aMin, aMax, uMin or uMax of this input have been set by the user
 	 */
 	public boolean isCalibrated(Channel channel) {
@@ -191,6 +199,27 @@ public final class ChannelCalibration {
 		if(value != null) to.setProperty(property, new String(value));
 	}
 
+	/**
+	 * @return the values of the calibration properties of this input (aMin, aMax, uMin, uMax, calibrated), as saved,
+	 * to be restored by {@link #restore(Channel, String[])}
+	 */
+	public String[] getValues(Channel channel) {
+		return new String[] {channel.getProperty(aMin), channel.getProperty(aMax), channel.getProperty(uMin), channel.getProperty(uMax), channel.getProperty(calibrated)};
+	}
+	
+	/**
+	 * Restores values given by {@link #getValues(Channel)} (undo of a reset of the calibration, see ResetCalibrationOperation)
+	 */
+	public void restore(Channel channel, String[] values) {
+		writeByProgram(() -> {
+			channel.setProperty(aMin, values[0]);
+			channel.setProperty(aMax, values[1]);
+			channel.setProperty(uMin, values[2]);
+			channel.setProperty(uMax, values[3]);
+			channel.setProperty(calibrated, values[4]);
+		});
+	}
+	
 	/**
 	 * Conversion of the calibration of an input saved before the raw values (property calibrated not defined) :
 	 * <ul>
