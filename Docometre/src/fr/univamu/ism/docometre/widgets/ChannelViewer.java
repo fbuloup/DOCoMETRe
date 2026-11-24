@@ -80,6 +80,27 @@ public class ChannelViewer extends Composite {
 	// Maximum number of samples added at once (time window), e.g. after a long gap between two samples 
 	private static final int OPENGL_V2_MAX_SAMPLES = (int)(WINDOW_TIME_WIDTH * OPENGL_V2_SAMPLE_FREQUENCY) + 1;
 	
+	/**
+	 * Time origin common to the graphs of the "SWT + OpenGL v2" library of several viewers (see 
+	 * {@link ChannelViewer#setTimeBase(TimeBase)}) : set by the first sample received after a reset.
+	 */
+	public static final class TimeBase {
+		private double origin = Double.NaN;
+		/**
+		 * @return time relative to the origin, which is set to time if there is none (first sample after a reset)
+		 */
+		public synchronized double getTime(double time) {
+			if(Double.isNaN(origin)) origin = time;
+			return time - origin;
+		}
+		/**
+		 * The next sample received will be the new origin
+		 */
+		public synchronized void reset() {
+			origin = Double.NaN;
+		}
+	}
+	
 	private boolean traceVisible ;
 	private String title;
 	private Label separator;
@@ -90,6 +111,10 @@ public class ChannelViewer extends Composite {
 	private Composite graphContainer;
 	// Number of samples already added to the curve of the "SWT + OpenGL v2" library 
 	private long openGLV2SamplesCount;
+	// Time origin of the graph of the "SWT + OpenGL v2" library, own one by default
+	private TimeBase timeBase = new TimeBase();
+	// Called each time the graph is shown or hidden
+	private Runnable graphVisibilityListener;
 	private boolean firstSample = true;
 	private double initialTime;
 	private Image imageLeft;
@@ -215,12 +240,40 @@ public class ChannelViewer extends Composite {
 				
 				getParent().setSize(getParent().computeSize(width, SWT.DEFAULT));
 				traceVisible = !traceVisible;
+				if(graphVisibilityListener != null) graphVisibilityListener.run();
 			}
 		});
 		
 		Label separator2 = new Label(this, SWT.HORIZONTAL | SWT.SEPARATOR);
 		separator2.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, nbColumn, 1));
 		
+	}
+	
+	/**
+	 * Time origin of the graph of the "SWT + OpenGL v2" library, to be shared by the viewers 
+	 * whose graphs must have the same time axis
+	 */
+	public void setTimeBase(TimeBase timeBase) {
+		this.timeBase = timeBase == null ? new TimeBase() : timeBase;
+	}
+	
+	/**
+	 * Listener called each time the graph is shown or hidden (UI thread)
+	 */
+	public void setGraphVisibilityListener(Runnable graphVisibilityListener) {
+		this.graphVisibilityListener = graphVisibilityListener;
+	}
+	
+	/**
+	 * Clears the curve of the graph of the "SWT + OpenGL v2" library : it restarts at time 0 of its time base
+	 * (to be reset too). Nothing to do with the other libraries : their graphs are reset when they are resized,
+	 * when a graph is shown or hidden.
+	 */
+	public void resetGraph() {
+		if(rtswtOscilloSerie instanceof Curve1DData) {
+			((Curve1DData) rtswtOscilloSerie).clear();
+			openGLV2SamplesCount = 0;
+		}
 	}
 	
 	public void setInitialDigitalOutputStates(int dioValue) {
@@ -328,12 +381,16 @@ public class ChannelViewer extends Composite {
 			});
 		
 		if(!traceVisible || rtswtOscilloSerie == null) return;
+		if(rtswtOscilloSerie instanceof Curve1DData) {
+			// Time common to the viewers sharing the time base
+			addOpenGLV2Sample((Curve1DData) rtswtOscilloSerie, timeBase.getTime(x), yComputed);
+			return;
+		}
 		if(firstSample) {
 			initialTime = x;
 			firstSample = false;
 		}
-		if(rtswtOscilloSerie instanceof Curve1DData) addOpenGLV2Sample((Curve1DData) rtswtOscilloSerie, x - initialTime, yComputed);
-		else rtswtOscilloSerie.addPoints(new Double[] {x- initialTime}, new Double[] {yComputed});
+		rtswtOscilloSerie.addPoints(new Double[] {x- initialTime}, new Double[] {yComputed});
 	}
 	
 	/*

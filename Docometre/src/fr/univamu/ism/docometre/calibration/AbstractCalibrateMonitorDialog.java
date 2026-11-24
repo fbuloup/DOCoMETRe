@@ -101,6 +101,8 @@ public abstract class AbstractCalibrateMonitorDialog extends TitleAreaDialog {
 	private String system;
 	private boolean started; 
 	protected ArrayList<ChannelViewer> channelsViewers = new ArrayList<>();
+	// Time origin common to the graphs of the viewers ("SWT + OpenGL v2" library)
+	private ChannelViewer.TimeBase timeBase = new ChannelViewer.TimeBase();
 
 	/**
 	 * @param system the DACQ system (see Activator.ADWIN_SYSTEM, Activator.ARDUINO_UNO_SYSTEM)
@@ -131,8 +133,22 @@ public abstract class AbstractCalibrateMonitorDialog extends TitleAreaDialog {
 	protected ChannelViewer createChannelViewer(Composite container, Channel channel, boolean input, boolean analog) {
 		ChannelViewer channelViewer = new ChannelViewer(container, SWT.NONE, channel, input, analog);
 		channelViewer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		channelViewer.setTimeBase(timeBase);
+		channelViewer.setGraphVisibilityListener(this::resetGraphs);
 		channelsViewers.add(channelViewer);
 		return channelViewer;
+	}
+	
+	/**
+	 * Called each time a graph is shown or hidden : all the graphs restart together at time 0, with a 
+	 * common time origin. The graphs of the "SWT + OpenGL v2" library are cleared here, the others are
+	 * reset by the resizing due to the layout.
+	 */
+	private void resetGraphs() {
+		timeBase.reset();
+		for (ChannelViewer channelViewer : channelsViewers) {
+			if(!channelViewer.isDisposed()) channelViewer.resetGraph();
+		}
 	}
 	
 	@Override
