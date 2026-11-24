@@ -209,6 +209,9 @@ public class ArduinoUnoProcess extends Process {
 		private float value;
 		private float realTime, workload;
 		private Channel[] transferedChannelsOrderedByTransferNumber;
+		// True for the transferred float variables, in the order of the transfer numbers : values received as the
+		// IEEE 754 bits of the float in hexadecimal (see VariablesCodeGenerationDelegate)
+		private boolean[] floatTransferedChannels;
 		private int[] nbSamples;
 		private int trsfrNum;
 		private DecimalFormat formater;
@@ -272,6 +275,13 @@ public class ArduinoUnoProcess extends Process {
 				for (int i = 0; i < transferedChannelsOrderedByTransferNumber.length; i++) {
 					trsfrNum = Integer.parseInt(transferedChannels[i].getProperty(ChannelProperties.TRANSFER_NUMBER));
 					transferedChannelsOrderedByTransferNumber[trsfrNum - 1] = transferedChannels[i];
+				}
+				// Type of each transferred channel, from its name, in the DACQ configuration of the process
+				ArduinoUnoDACQConfiguration arduinoUnoDACQConfiguration = (ArduinoUnoDACQConfiguration) getDACQConfiguration();
+				floatTransferedChannels = new boolean[transferedChannelsOrderedByTransferNumber.length];
+				for (int i = 0; i < floatTransferedChannels.length; i++) {
+					String channelName = transferedChannelsOrderedByTransferNumber[i].getProperty(ChannelProperties.NAME);
+					floatTransferedChannels[i] = arduinoUnoDACQConfiguration.isFloatVariable(channelName);
 				}
 				nbSamples = new int[transferedChannelsOrderedByTransferNumber.length];
 				appendToEventDiary("Transfered channels :");
@@ -359,7 +369,7 @@ public class ArduinoUnoProcess extends Process {
 		                    	if(segments.length == 2) {
 		                    		try {
 										trsfrNum = Integer.parseInt(segments[0]);
-										value = Float.parseFloat(segments[1]);
+										value = parseValue(trsfrNum, segments[1]);
 									} catch (Exception e) {
 										Activator.logErrorMessageWithCause(e);
 										e.printStackTrace();
@@ -787,6 +797,18 @@ public class ArduinoUnoProcess extends Process {
 		}
 
 		/*
+		 * Value of a "transferNumber:value" message : IEEE 754 bits of the float in hexadecimal for a float
+		 * variable (see VariablesCodeGenerationDelegate), decimal value otherwise. The type of the channel
+		 * decides : a hexadecimal value can contain only digits (e.g. 41200000 for 10.0)
+		 */
+		private float parseValue(int transferNumber, String value) {
+			boolean floatVariable = floatTransferedChannels != null && transferNumber >= 1 && transferNumber <= floatTransferedChannels.length 
+					&& floatTransferedChannels[transferNumber - 1];
+			if(floatVariable) return Float.intBitsToFloat(Integer.parseUnsignedInt(value.trim(), 16));
+			return Float.parseFloat(value);
+		}
+		
+		/*
 		 * Message received during the end handshake, handled as in the real time loop :
 		 *  - parameters frame : propagated parameters (see handleParametersFrame()). The Arduino sends them
 		 *    before its 's' char : a frame received after it (afterStopChar) is written in the diary,
@@ -821,7 +843,7 @@ public class ArduinoUnoProcess extends Process {
 				if(segments.length == 2) {
 					int transferNumber = Integer.parseInt(segments[0]);
 					if(transferNumber >= 1 && transferNumber <= transferedChannelsOrderedByTransferNumber.length) {
-						float sampleValue = Float.parseFloat(segments[1]);
+						float sampleValue = parseValue(transferNumber, segments[1]);
 						Channel channel = transferedChannelsOrderedByTransferNumber[transferNumber - 1];
 						channel.addSamples(new float[] {sampleValue});
 						nbSamples[transferNumber - 1] += 1;

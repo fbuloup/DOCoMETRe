@@ -128,6 +128,17 @@ public class ArduinoUnoDACQConfiguration extends DACQConfiguration implements Pr
 		return succeed; 
 	}
 	
+	/**
+	 * @param channelName name of a channel (variable or channel of a module)
+	 * @return true if this channel is a variable of type float : its transferred values are the IEEE 754 bits
+	 * of the float in hexadecimal (see VariablesCodeGenerationDelegate and ArduinoUnoProcess)
+	 */
+	public boolean isFloatVariable(String channelName) {
+		Channel channel = getChannelFromName(channelName);
+		if(!(channel instanceof ArduinoUnoVariable)) return false;
+		return ArduinoUnoVariableProperties.FLOAT.equals(channel.getProperty(ArduinoUnoVariableProperties.TYPE));
+	}
+	
 	@Override
 	public ArduinoUnoVariable[] getVariables() {
 		ArduinoUnoVariable[] variablesArray = variables.toArray(new ArduinoUnoVariable[variables.size()]);

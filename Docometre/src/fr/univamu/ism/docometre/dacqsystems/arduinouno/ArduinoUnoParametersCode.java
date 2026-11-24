@@ -286,7 +286,7 @@ public final class ArduinoUnoParametersCode {
 				code.append(indent).append("Serial.println(").append(names[i]).append(" ? 1 : 0);\n");
 				break;
 			case ArduinoUnoVariableProperties.FLOAT:
-				// Same format as the transferred values : %+.6E
+				// %+.6E format (the transferred float variables are sent in hexadecimal, see VariablesCodeGenerationDelegate)
 				if(avr) code.append(indent).append("dtostre(").append(names[i]).append(", propagationBuffer, 6, DTOSTR_ALWAYS_SIGN | DTOSTR_PLUS_SIGN | DTOSTR_UPPERCASE);\n");
 				else code.append(indent).append("snprintf(propagationBuffer, sizeof(propagationBuffer), \"%+.6E\", ").append(names[i]).append(");\n");
 				code.append(indent).append("Serial.println(propagationBuffer);\n");
