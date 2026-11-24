@@ -1,15 +1,15 @@
 '<ADbasic Header, Headerversion 001.001>
-' Process_Number                 = 1
+' Process_Number                 = 7
 ' Initial_Processdelay           = 400000
 ' Eventsource                    = Timer
 ' Control_long_Delays_for_Stop   = No
 ' Priority                       = High
 ' Version                        = 1
-' ADbasic_Version                = 6.2.0
+' ADbasic_Version                = 6.4.0
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Stacksize                      = 1000
-' Info_Last_Save                 = DESKTOP-G130F9I  DESKTOP-G130F9I\Utilisateur
+' Info_Last_Save                 = PREC7670-BULOUP  PREC7670-BULOUP\Buloup
 '<Header End>
 #include adwinpro.inc
 #include adwpad.inc
@@ -36,13 +36,13 @@ par_16 = 0 ' Programmation SE/DIFF entrï¿½es analogiques
 par_5=0'Numï¿½ro de la sortie analogique 1 .. 4
 par_6=0'Valeur associï¿½e ï¿½ la sortie analogique sï¿½lectionnï¿½e 0 .. 65535
 par_17=0'Numï¿½ro de la sortie analogique 1 .. 4. Pour lecture valeur courante de la sortie.
-par_18=0'Valeur associée. Pour lecture valeur courante de la sortie
+par_18=0'Valeur associï¿½e. Pour lecture valeur courante de la sortie
 
 'Prog du DIO tout en entrï¿½e par dï¿½faut ï¿½ la mise sous tension
 par_9 = 0 ' 1 : mode programmation
 par_10 = 0 ' 16 premiers bits
 par_11 = 0 ' 16 derniers bits
-'par_13 : utilisé pour la valeur initiale des sorties
+'par_13 : utilisï¿½ pour la valeur initiale des sorties
 
 'Entrï¿½es numï¿½riques
 par_3 = 0'Numï¿½ro de l'entrï¿½e numï¿½rique : masque binaire. Par ex. : 0000 0010 : entrÃ©e numÃ©rique numÃ©ro deux
@@ -103,6 +103,7 @@ IF (par_7 > -1) then
   par_7 = -1
 ENDIF
 
+' Read actual analog output value
 IF (par_17 > 0) THEN
   par_17 = ((par_17-1) OR 080h) OR (SHIFT_LEFT(par_15,8))
   POKE(ADRD,par_17)

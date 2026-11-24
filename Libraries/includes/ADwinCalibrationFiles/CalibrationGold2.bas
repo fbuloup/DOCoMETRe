@@ -1,5 +1,5 @@
 '<ADbasic Header, Headerversion 001.001>
-' Process_Number                 = 10
+' Process_Number                 = 9
 ' Initial_Processdelay           = 400000
 ' Eventsource                    = Timer
 ' Control_long_Delays_for_Stop   = No
@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Stacksize                      = 1000
-' Info_Last_Save                 = PREC3650BULOUP  PREC3650BULOUP\buloup
+' Info_Last_Save                 = PREC7670-BULOUP  PREC7670-BULOUP\Buloup
 '<Header End>
 #Include ADwinGoldII.Inc
 

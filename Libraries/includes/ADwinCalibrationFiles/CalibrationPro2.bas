@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Stacksize                      = 1000
-' Info_Last_Save                 = PREC3650BULOUP  PREC3650BULOUP\buloup
+' Info_Last_Save                 = PREC7670-BULOUP  PREC7670-BULOUP\Buloup
 '<Header End>
 #include adwinpro1.inc
 #include adwinpro2.inc

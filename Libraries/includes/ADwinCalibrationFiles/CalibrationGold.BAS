@@ -1,15 +1,15 @@
 '<ADbasic Header, Headerversion 001.001>
-' Process_Number                 = 10
+' Process_Number                 = 9
 ' Initial_Processdelay           = 400000
 ' Eventsource                    = Timer
 ' Control_long_Delays_for_Stop   = No
 ' Priority                       = High
 ' Version                        = 1
-' ADbasic_Version                = 6.0.0
+' ADbasic_Version                = 6.4.0
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Stacksize                      = 1000
-' Info_Last_Save                 = FRANK-PC  frank-PC\frank
+' Info_Last_Save                 = PREC7670-BULOUP  PREC7670-BULOUP\Buloup
 '<Header End>
 'Pour l'ampli multiplexé des entrées analogiques
 DIM bits_AnIn,bits_AnIn_Temp2 AS LONG
