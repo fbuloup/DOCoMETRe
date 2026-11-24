@@ -43,6 +43,7 @@ package fr.univamu.ism.docometre.dacqsystems.adwin;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -90,6 +91,19 @@ public class ADWinRawCalibrationTest {
 		assertCalibration(channel, "0", "65535", "-10", "100", "true");
 	}
 
+	@Test
+	public void gainCodeOfThePGA() {
+		ADWinAnInModule module = new ADWinAnInModule(null);
+		Channel channel = module.createChannel();
+		String[] gains = {"1", "2", "4", "8"};
+		for (int code = 0; code < gains.length; code++) {
+			channel.setProperty(ADWinAnInChannelProperties.GAIN, gains[code]);
+			assertEquals(code, ADWinAnInChannelProperties.getGainCode(channel));
+		}
+		channel.setProperty(ADWinAnInChannelProperties.GAIN, "3");
+		assertThrows(IllegalArgumentException.class, () -> ADWinAnInChannelProperties.getGainCode(channel));
+	}
+	
 	@Test
 	public void formerIdentityCalibrationIsConvertedToTheDefaultOne() {
 		ADWinAnInModule module = new ADWinAnInModule(null);

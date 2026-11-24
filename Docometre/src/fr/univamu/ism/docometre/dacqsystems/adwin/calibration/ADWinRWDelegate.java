@@ -62,6 +62,9 @@ public class ADWinRWDelegate {
 		adwinDacqConfiguration = (ADWinDACQConfiguration) channel.getModule().getDACQConfiguration();
 	}
 	
+	/**
+	 * @return the raw value of the converter of an analog input (0 .. 65535), as Call_AnIn_Raw (see CALLANIN*.INC)
+	 */
 	public static double getAnalogValue(Channel channel) throws ADwinCommunicationError {
 		update(channel);
 		adwinDacqConfiguration.getADwinDevice().Set_Par(15, moduleNumber);
@@ -70,9 +73,8 @@ public class ADWinRWDelegate {
 		adwinDacqConfiguration.getADwinDevice().Set_Par(1, channelNumber);
 		do {
 		} while ((adwinDacqConfiguration.getADwinDevice().Get_Par(1) != 0) && (adwinDacqConfiguration.getADwinDevice().Process_Status(1) != 0));
-		double value = adwinDacqConfiguration.getADwinDevice().Get_Par(2);
-		value = ADWinAnInChannelProperties.toVolt((ADWinChannel) channel, value);
-		return value;
+		// Raw value : the calibration (AMPLITUDE_MIN/MAX) is made from the raw values of the converter
+		return adwinDacqConfiguration.getADwinDevice().Get_Par(2);
 	}
 
 	public static void putAnalogValue(Channel channel, double value) throws ADwinCommunicationError {

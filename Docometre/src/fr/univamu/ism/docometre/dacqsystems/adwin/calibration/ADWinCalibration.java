@@ -46,6 +46,7 @@ import org.eclipse.swt.widgets.Composite;
 
 import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.calibration.CalibrationTimerTask;
+import fr.univamu.ism.docometre.calibration.RawCalibration;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinAnInChannelProperties;
 import fr.univamu.ism.docometre.widgets.CalibrationHeader;
@@ -65,7 +66,7 @@ public final class ADWinCalibration {
 		calibrationHeaderDelegate.addAMaxListener(new CalibrationListener() {
 			@Override
 			public void push(double value) {
-				channel.setProperty(ADWinAnInChannelProperties.AMPLITUDE_MAX, Double.toString(value));
+				channel.setProperty(ADWinAnInChannelProperties.AMPLITUDE_MAX, RawCalibration.format(value));
 				ObjectsController.serialize(channel.getModule().getDACQConfiguration());
 			}
 			@Override
@@ -76,7 +77,7 @@ public final class ADWinCalibration {
 		calibrationHeaderDelegate.addAMinListener(new CalibrationListener() {
 			@Override
 			public void push(double value) {
-				channel.setProperty(ADWinAnInChannelProperties.AMPLITUDE_MIN, Double.toString(value));
+				channel.setProperty(ADWinAnInChannelProperties.AMPLITUDE_MIN, RawCalibration.format(value));
 				ObjectsController.serialize(channel.getModule().getDACQConfiguration());
 			}
 			@Override
@@ -87,7 +88,7 @@ public final class ADWinCalibration {
 		calibrationHeaderDelegate.addUMaxListener(new CalibrationListener() {
 			@Override
 			public void push(double value) {
-				channel.setProperty(ADWinAnInChannelProperties.UNIT_MAX, Double.toString(value));
+				channel.setProperty(ADWinAnInChannelProperties.UNIT_MAX, RawCalibration.format(value));
 				ObjectsController.serialize(channel.getModule().getDACQConfiguration());
 			}
 			@Override
@@ -98,7 +99,7 @@ public final class ADWinCalibration {
 		calibrationHeaderDelegate.addUMinListener(new CalibrationListener() {
 			@Override
 			public void push(double value) {
-				channel.setProperty(ADWinAnInChannelProperties.UNIT_MIN, Double.toString(value));
+				channel.setProperty(ADWinAnInChannelProperties.UNIT_MIN, RawCalibration.format(value));
 				ObjectsController.serialize(channel.getModule().getDACQConfiguration());
 			}
 			@Override
@@ -110,16 +111,17 @@ public final class ADWinCalibration {
 	}
 
 	
+	/**
+	 * @param y raw value of the converter (see ADWinRWDelegate#getAnalogValue)
+	 * @return the physical value, NaN if the calibration of the input is not valid
+	 */
 	public static double computeCalibration(double y, Channel channel) {
-		double uMax = Double.parseDouble(channel.getProperty(ADWinAnInChannelProperties.UNIT_MAX));
-		double uMin = Double.parseDouble(channel.getProperty(ADWinAnInChannelProperties.UNIT_MIN));
-		double ampMax = Double.parseDouble(channel.getProperty(ADWinAnInChannelProperties.AMPLITUDE_MAX));
-		double ampMin = Double.parseDouble(channel.getProperty(ADWinAnInChannelProperties.AMPLITUDE_MIN));
-//		double moduleAmpMax = Double.parseDouble(((ADWinAnInModule)channel.getModule()).getProperty(ADWinAnInModuleProperties.AMPLITUDE_MAX));
-//		double moduleAmpMin = Double.parseDouble(((ADWinAnInModule)channel.getModule()).getProperty(ADWinAnInModuleProperties.AMPLITUDE_MIN));
-//		double value = (moduleAmpMax - moduleAmpMin)/65535*y + moduleAmpMin;
-		double value = (uMax - uMin)/(ampMax - ampMin)*(y - ampMin) + uMin;
-		return value;
+		double[] calibration = ADWinAnInChannelProperties.CALIBRATION.getCalibration(channel);
+		try {
+			return RawCalibration.compute(y, calibration[0], calibration[1], calibration[2], calibration[3]);
+		} catch (IllegalArgumentException e) {
+			return Double.NaN;
+		}
 	}
 	
 	public static CalibrationTimerTask runCalibrationTask(ChannelViewer[] channelsViewers) throws Exception {

@@ -64,6 +64,23 @@ public class RawCalibrationTest {
 	}
 	
 	@Test
+	public void codeOfThePhysicalValue() {
+		// ADwin, range of +/-10 V : k = 20 / 65535, b = -10
+		assertEquals(RawCalibration.format(20.0 / 65535) + " * Call_AnIn_Raw(1, 3, 0) - 10", RawCalibration.getCode("Call_AnIn_Raw(1, 3, 0)", 0, 65535, -10, 10));
+		// b > 0
+		assertEquals("0.5 * raw + 2", RawCalibration.getCode("raw", 0, 10, 2, 7));
+		// b = 0 : no constant term
+		assertEquals("0.25 * raw", RawCalibration.getCode("raw", 0, 4, 0, 1));
+		// k < 0
+		assertEquals("-2 * raw + 10", RawCalibration.getCode("raw", 0, 5, 10, 0));
+		// No exponent in the generated code
+		String code = RawCalibration.getCode("raw", 0, 1e9, 0, 1);
+		assertFalse(code.contains("E"));
+		assertThrows(IllegalArgumentException.class, () -> RawCalibration.getCode("raw", 3, 3, 0, 1));
+		assertThrows(IllegalArgumentException.class, () -> RawCalibration.getCode("raw", 0, 1, Double.NaN, 1));
+	}
+	
+	@Test
 	public void rangeConversions() {
 		RawCalibration.Range adwin = new RawCalibration.Range(0, 65535, -10, 10);
 		assertEquals(-10, adwin.toVolt(0), EPSILON);

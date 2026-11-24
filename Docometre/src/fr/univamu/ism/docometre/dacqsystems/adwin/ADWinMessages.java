@@ -253,6 +253,8 @@ public class ADWinMessages extends NLS {
 	public static String AmpMinValue_Tooltip;
 	public static String Calibrated_Label;
 	public static String Calibrated_Tooltip;
+	public static String InvalidCalibration_Message;
+	public static String InvalidGain_Message;
 
 	/*
 	 * ADWin modules properties

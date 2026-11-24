@@ -132,6 +132,22 @@ public final class RawCalibration {
 	}
 	
 	/**
+	 * @param rawCode code of the raw value (call of a function of the DACQ system...)
+	 * @return the code of the physical value, for the code generation : "k * rawCode + b", "k * rawCode - |b|" or
+	 * "k * rawCode" when b = 0, numbers without exponent
+	 * @throws IllegalArgumentException if aMin equals aMax or if a value is not a finite number
+	 */
+	public static String getCode(String rawCode, double aMin, double aMax, double uMin, double uMax) {
+		if(!Double.isFinite(aMin) || !Double.isFinite(aMax) || !Double.isFinite(uMin) || !Double.isFinite(uMax))
+			throw new IllegalArgumentException("Calibration values must be finite");
+		double[] kb = getCoefficients(aMin, aMax, uMin, uMax);
+		String code = format(kb[0]) + " * " + rawCode;
+		if(kb[1] > 0) code = code + " + " + format(kb[1]);
+		if(kb[1] < 0) code = code + " - " + format(-kb[1]);
+		return code;
+	}
+	
+	/**
 	 * Calibration of the format used before the raw values (aMin and aMax in volts) : identity (aMin = uMin and
 	 * aMax = uMax) means that the input was not calibrated, its physical values being its voltages.
 	 */

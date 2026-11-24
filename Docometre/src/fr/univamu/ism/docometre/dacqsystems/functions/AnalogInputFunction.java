@@ -65,7 +65,6 @@ import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinAnInChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinAnInModule;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfigurationProperties;
-import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinModuleProperties;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinProcess;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnInModule;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoProcess;
@@ -80,13 +79,9 @@ public final class AnalogInputFunction extends GenericFunction {
 	private static final long serialVersionUID = 1L;
 	
 	private static final String channelNameKey = "channelName";
-	private static final String moduleNumberKey = "moduleNumber";
 	private static final String channelNumberKey = "channelNumber";
-	private static final String gainKey = "gain";
-	private static final String ampMinKey = "ampMin";
-	private static final String ampMaxKey = "ampMax";
-	private static final String unitMinKey = "unitMin";
-	private static final String unitMaxKey = "unitMax";
+	// ADwin : code of the physical value of the analog input, k * Call_AnIn_Raw(...) + b (see ADWinAnInChannelProperties)
+	private static final String physicalValueKey = "physicalValue";
 	
 	private String channelName;
 	
@@ -177,15 +172,9 @@ public final class AnalogInputFunction extends GenericFunction {
 					}
 				}
 				if(foundModule != null && foundChannel != null) {
-					String gain = foundChannel.getProperty(ADWinAnInChannelProperties.GAIN);
-					String unitMax = foundChannel.getProperty(ADWinAnInChannelProperties.UNIT_MAX);
-					String unitMin = foundChannel.getProperty(ADWinAnInChannelProperties.UNIT_MIN);
-					String channelNumber = foundChannel.getProperty(ChannelProperties.CHANNEL_NUMBER);
-					String ampMax = foundChannel.getProperty(ADWinAnInChannelProperties.AMPLITUDE_MAX);
-					String ampMin = foundChannel.getProperty(ADWinAnInChannelProperties.AMPLITUDE_MIN);
-					String moduleNumber = foundModule.getProperty(ADWinModuleProperties.MODULE_NUMBER);
-					temporaryCode = temporaryCode.replaceAll(channelNameKey, channelName).replaceAll(gainKey, gain).replaceAll(unitMaxKey, unitMax).replaceAll(unitMinKey, unitMin);
-					temporaryCode = temporaryCode.replaceAll(channelNumberKey, channelNumber).replaceAll(ampMaxKey, ampMax).replaceAll(ampMinKey, ampMin).replaceAll(moduleNumberKey, moduleNumber);
+					// Physical value computed from the raw value of the converter (calibration from the raw values)
+					String physicalValue = ADWinAnInChannelProperties.getPhysicalValueCode(foundChannel);
+					temporaryCode = temporaryCode.replace(physicalValueKey, physicalValue).replace(channelNameKey, channelName);
 					code = code + temporaryCode + "\n\n";
 				}
 			}

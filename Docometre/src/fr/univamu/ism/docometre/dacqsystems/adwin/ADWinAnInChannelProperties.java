@@ -41,6 +41,8 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.adwin;
 
+import org.eclipse.osgi.util.NLS;
+
 import fr.univamu.ism.docometre.calibration.ChannelCalibration;
 import fr.univamu.ism.docometre.calibration.RawCalibration;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
@@ -114,14 +116,49 @@ public final class ADWinAnInChannelProperties extends Property {
 		return newChannel;
 	}
 	
-	public static double toVolt(ADWinChannel channel, double value) {
-		if(channel.getModule() instanceof ADWinAnInModule) {
-			ADWinAnInModule adwinAnInModule = (ADWinAnInModule) channel.getModule();
-			double aMax = Double.parseDouble(adwinAnInModule.getProperty(ADWinAnInModuleProperties.AMPLITUDE_MAX));
-			double aMin = Double.parseDouble(adwinAnInModule.getProperty(ADWinAnInModuleProperties.AMPLITUDE_MIN));
-			return (aMax - aMin)/65535*value + aMin;
+	/**
+	 * @return the code of the gain of the PGA of an analog input : 0, 1, 2, 3 for a gain of 1, 2, 4, 8 (see
+	 * Call_AnIn_Raw in CALLANIN*.INC)
+	 * @throws IllegalArgumentException if the gain is not 1, 2, 4 or 8
+	 */
+	public static int getGainCode(Channel channel) {
+		String gain = channel.getProperty(GAIN);
+		gain = gain == null ? "" : gain.trim();
+		for (int i = 0; i < GAINS.length; i++) if(GAINS[i].equals(gain)) return i;
+		throw new IllegalArgumentException(NLS.bind(ADWinMessages.InvalidGain_Message, channel.getProperty(ChannelProperties.NAME), gain));
+	}
+	
+	/**
+	 * @return the ADbasic code of the raw value of an analog input : Call_AnIn_Raw(channelNumber, gainCode) on Gold,
+	 * Call_AnIn_Raw(moduleNumber, channelNumber, gainCode) on Pro (see CALLANIN*.INC)
+	 * @throws IllegalArgumentException if the channel is not in an analog inputs module or if its gain is not valid
+	 */
+	public static String getRawValueCode(Channel channel) {
+		Module module = channel.getModule();
+		if(!(module instanceof ADWinAnInModule) || module.getDACQConfiguration() == null) 
+			throw new IllegalArgumentException("Not an analog input : " + channel.getProperty(ChannelProperties.NAME));
+		String channelNumber = channel.getProperty(ChannelProperties.CHANNEL_NUMBER);
+		int gainCode = getGainCode(channel);
+		String systemType = module.getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.SYSTEM_TYPE);
+		if(ADWinDACQConfigurationProperties.PRO.equals(systemType)) 
+			return "Call_AnIn_Raw(" + module.getProperty(ADWinModuleProperties.MODULE_NUMBER) + ", " + channelNumber + ", " + gainCode + ")";
+		return "Call_AnIn_Raw(" + channelNumber + ", " + gainCode + ")";
+	}
+	
+	/**
+	 * @return the ADbasic code of the physical value of an analog input : k * Call_AnIn_Raw(...) + b, from its
+	 * calibration (see RawCalibration)
+	 * @throws IllegalArgumentException if the calibration of the input is not valid (AMPLITUDE_MIN = AMPLITUDE_MAX or
+	 * a value which is not a number), or its gain
+	 */
+	public static String getPhysicalValueCode(Channel channel) {
+		String rawValueCode = getRawValueCode(channel);
+		double[] calibration = CALIBRATION.getCalibration(channel);
+		try {
+			return RawCalibration.getCode(rawValueCode, calibration[0], calibration[1], calibration[2], calibration[3]);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException(NLS.bind(ADWinMessages.InvalidCalibration_Message, channel.getProperty(ChannelProperties.NAME)), e);
 		}
-		return 0;
 	}
 	
 	private ADWinAnInChannelProperties(String key, String label, String tooltip, String regExp) {
