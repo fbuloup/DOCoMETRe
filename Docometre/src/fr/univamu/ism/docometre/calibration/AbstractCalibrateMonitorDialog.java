@@ -231,14 +231,14 @@ public abstract class AbstractCalibrateMonitorDialog extends TitleAreaDialog {
 	
 	@Override
 	protected void createButtonsForButtonBar(Composite parent) {
-		Button proceedButton = createButton(parent, IDialogConstants.PROCEED_ID, IDialogConstants.PROCEED_LABEL, false);
+		Button proceedButton = createButton(parent, IDialogConstants.PROCEED_ID, DocometreMessages.StartMonitoring, false);
 		proceedButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent event) {
 				if(!started) {
 					try {
 						startCalibrationProcess();
-						proceedButton.setText(IDialogConstants.STOP_LABEL);
+						proceedButton.setText(DocometreMessages.StopMonitoring);
 						started = !started;
 					} catch (Exception e) {
 						Activator.logErrorMessageWithCause(e);
@@ -246,26 +246,33 @@ public abstract class AbstractCalibrateMonitorDialog extends TitleAreaDialog {
 						MessageDialog.openError(getShell(), "Error", e.getMessage());
 					}
 				} else {
-					proceedButton.setText(IDialogConstants.PROCEED_LABEL);
-					CalibrationFactory.stopCalibrationProcess();
-					started = !started;
+					if(MessageDialog.openQuestion(getParentShell(), DocometreMessages.StopMonitoring, DocometreMessages.AreYouSureStopMonitoring)) {
+						proceedButton.setText(DocometreMessages.StartMonitoring);
+						CalibrationFactory.stopCalibrationProcess();
+						started = !started;
+					}
+					
 				}
 			}
 		});
-		Button terminatedButton = createButton(parent, IDialogConstants.OK_ID, IDialogConstants.FINISH_LABEL, false);
-		terminatedButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				if(started) {
-					CalibrationFactory.stopCalibrationProcess();
-				}
-			}
-		});
+		createButton(parent, IDialogConstants.OK_ID, IDialogConstants.FINISH_LABEL, false);
 	}
 	
 	@Override
 	protected boolean isResizable() {
 		return true;
+	}
+	
+	@Override
+	protected void buttonPressed(int buttonId) {
+		if(buttonId == IDialogConstants.OK_ID) {
+			if(started) {
+				if(MessageDialog.openQuestion(getParentShell(), DocometreMessages.StopMonitoring, DocometreMessages.AreYouSureStopMonitoring)) {
+					CalibrationFactory.stopCalibrationProcess();
+					super.buttonPressed(buttonId);
+				}
+			}
+		} else super.buttonPressed(buttonId);
 	}
 	
 }
