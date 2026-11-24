@@ -73,8 +73,11 @@
 			<td>Analog inputs</td>
 			<td><code>AIN0</code> to <code>AIN5</code></td>
 			<td>A0 to A5</td>
-			<td>0 to 5V with the default reference. Calibration values (Unit,
-				UMax, UMin, AMax, AMin) convert the values in physical units.
+			<td>0 to 5V with the default reference. The values are float
+				variables in physical units (volts by default), computed on the
+				board from the raw values of the converter with the
+				<a href="../designperspective/dacqconfiguration.html#calibrationvalues">calibration
+				values</a> (Unit, UMax, UMin, AMax, AMin).
 				On the R3, a conversion takes about 19&micro;s.</td>
 		</tr>
 		<tr>
@@ -211,15 +214,24 @@
 		bauds whatever the baud rate of the DACQ configuration. Its sources and
 		the way to compile it again are in the <code>Libraries</code> plugin
 		(<code>includes/ArduinoUnoCalibrationFiles</code>).</p>
-	<p>The values of the analog inputs are converted in volts from the analog
-		reference: 5V for DEFAULT (R3) and AR_DEFAULT (R4 WiFi), 1.1V for
-		INTERNAL (R3), 1.5V for AR_INTERNAL (R4 WiFi), full scale of the gain
-		for ADS1115 inputs. With EXTERNAL
-		and AR_EXTERNAL, the voltage of the AREF pin is not known: raw values
-		of the converter are displayed (0 to 1023 on R3, 0 to 16383 on R4
-		WiFi).</p>
-	<p>The calibration values are saved in the DACQ configuration. The data
-		of the trials are still recorded as raw values of the converters.</p>
+	<p>The values of the analog inputs are displayed as raw values of the
+		converters (0 to 1023 on R3, 0 to 16383 on R4, signed values of the
+		ADS1115): the calibration values AMin and AMax are raw values. By
+		default, the physical values are volts, from the voltage of the analog
+		reference: 5V for DEFAULT (R3) and AR_DEFAULT (R4), 1.1V for INTERNAL
+		(R3), 1.5V for AR_INTERNAL (R4), the External reference voltage of the
+		analog inputs module for EXTERNAL and AR_EXTERNAL, full scale of the
+		gain for ADS1115 inputs. With DEFAULT, the reference is the 5V supply
+		of the board, which may be lower (4.75V for example when supplied by
+		USB): calibrate the inputs, or use an EXTERNAL reference, for accurate
+		values.</p>
+	<p>The calibration values are saved in the DACQ configuration. The
+		physical values are computed on the board (float variables) and
+		transferred as the IEEE 754 bits of the floats in hexadecimal: the
+		data of the trials are recorded in physical units. The value waited for
+		by the Analog wait function is also a physical value. Processes written
+		before this version, which used the analog inputs as raw values (int
+		variables), must be adapted.</p>
 	<p>If something goes wrong, see
 		<a href="../troubleshoots/arduinouno.html#calibration">Troubleshoots
 		with Arduino Uno system</a>.</p>

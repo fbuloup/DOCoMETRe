@@ -54,6 +54,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
@@ -83,6 +84,7 @@ import fr.univamu.ism.docometre.editors.ResourceEditor;
 public class ArduinoUnoAnInModulePage extends ArduinoUnoModulePage {
 
 	private Combo analogRefCombo;
+	private Text externalReferenceVoltageText;
 	private Button memoryEffectButton;
 	
 	private class AnalogInputsComparator extends Comparator {
@@ -153,6 +155,11 @@ public class ArduinoUnoAnInModulePage extends ArduinoUnoModulePage {
 				e2 = in2.getProperty(ArduinoUnoAnInChannelProperties.AMPLITUDE_MIN);
 				result = super.compare(viewer, (String)e1, (String)e2);
 				break;
+			case 12:
+				e1 = String.valueOf(ArduinoUnoAnInChannelProperties.CALIBRATION.isCalibrated(in1));
+				e2 = String.valueOf(ArduinoUnoAnInChannelProperties.CALIBRATION.isCalibrated(in2));
+				result = super.compare(viewer, (String)e1, (String)e2);
+				break;
 			default:
 				break;
 			}
@@ -197,6 +204,15 @@ public class ArduinoUnoAnInModulePage extends ArduinoUnoModulePage {
 		String[] items = ArduinoUnoAnInModuleProperties.getReferences(r4);
 		analogRefCombo = createCombo(generalconfigurationContainer, items, referenceOfRevision, 1, 1);
 		analogRefCombo.addModifyListener(new ModifyPropertyHandler(ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE, module, analogRefCombo, ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE.getRegExp(), "", false, (ResourceEditor)getEditor()));
+		
+		// Voltage of the EXTERNAL reference (AREF pin) : default calibration of the analog inputs, only with this reference
+		createLabel(generalconfigurationContainer, ArduinoUnoMessages.ExternalReferenceVoltage_Label, ArduinoUnoMessages.ExternalReferenceVoltage_Tooltip);
+		value = module.getProperty(ArduinoUnoAnInModuleProperties.EXTERNAL_REFERENCE_VOLTAGE);
+		if(value == null) value = ArduinoUnoAnInModuleProperties.DEFAULT_EXTERNAL_REFERENCE_VOLTAGE;
+		externalReferenceVoltageText = createText(generalconfigurationContainer, value, SWT.NONE, 1, 1);
+		externalReferenceVoltageText.setToolTipText(ArduinoUnoMessages.ExternalReferenceVoltage_Tooltip);
+		externalReferenceVoltageText.addModifyListener(new ModifyPropertyHandler(ArduinoUnoAnInModuleProperties.EXTERNAL_REFERENCE_VOLTAGE, module, externalReferenceVoltageText, ArduinoUnoAnInModuleProperties.EXTERNAL_REFERENCE_VOLTAGE.getRegExp(), "", false, (ResourceEditor)getEditor()));
+		externalReferenceVoltageText.setEnabled(ArduinoUnoAnInModuleProperties.isExternalReference(module));
 		
 		// Memory effect of the sample-and-hold reduced (cost depending on the board, see its tooltip)
 		memoryEffectButton = createButton(generalconfigurationContainer, ArduinoUnoMessages.MemoryEffect_Label, SWT.CHECK, 2, 1);
@@ -246,11 +262,14 @@ public class ArduinoUnoAnInModulePage extends ArduinoUnoModulePage {
 		createColumn(ChannelProperties.RECORD.getTooltip(), channelsTableColumnLayout, ChannelProperties.RECORD, defaultColumnWidth, 6);
 		//createColumn(ChannelProperties.BUFFER_SIZE.getTooltip(), channelsTableColumnLayout, ChannelProperties.BUFFER_SIZE, defaultColumnWidth, 7);
 		//createColumn(ADWinAnInChannelProperties.GAIN.getTooltip(), channelsTableColumnLayout, ADWinAnInChannelProperties.GAIN, defaultColumnWidth, 8);
-//		createColumn(ArduinoUnoAnInChannelProperties.UNIT.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.UNIT, defaultColumnWidth, 7);
-//		createColumn(ArduinoUnoAnInChannelProperties.UNIT_MAX.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.UNIT_MAX, defaultColumnWidth, 8);
-//		createColumn(ArduinoUnoAnInChannelProperties.UNIT_MIN.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.UNIT_MIN, defaultColumnWidth, 9);
-//		createColumn(ArduinoUnoAnInChannelProperties.AMPLITUDE_MAX.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.AMPLITUDE_MAX, defaultColumnWidth, 10);
-//		createColumn(ArduinoUnoAnInChannelProperties.AMPLITUDE_MIN.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.AMPLITUDE_MIN, defaultColumnWidth, 11);
+		// Calibration : physical values (UMax, UMin) of two raw values of the converter (AMax, AMin), see RawCalibration
+		createColumn(ArduinoUnoAnInChannelProperties.UNIT.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.UNIT, defaultColumnWidth, 7);
+		createColumn(ArduinoUnoAnInChannelProperties.UNIT_MAX.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.UNIT_MAX, defaultColumnWidth, 8);
+		createColumn(ArduinoUnoAnInChannelProperties.UNIT_MIN.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.UNIT_MIN, defaultColumnWidth, 9);
+		createColumn(ArduinoUnoAnInChannelProperties.AMPLITUDE_MAX.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.AMPLITUDE_MAX, defaultColumnWidth, 10);
+		createColumn(ArduinoUnoAnInChannelProperties.AMPLITUDE_MIN.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.AMPLITUDE_MIN, defaultColumnWidth, 11);
+		// Read only : checked when the calibration values have been set by the user
+		createColumn(ArduinoUnoAnInChannelProperties.CALIBRATED.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.CALIBRATED, defaultColumnWidth, 12);
 		tableViewer.setContentProvider(new ArrayContentProvider());
 		tableViewer.setLabelProvider(new ITableLabelProvider() {
 			public void removeListener(ILabelProviderListener listener) {
@@ -308,6 +327,8 @@ public class ArduinoUnoAnInModulePage extends ArduinoUnoModulePage {
 				case 6:
 					value = channel.getProperty(ChannelProperties.RECORD);
 					return value.equals("true") ? ModulePage.checkedImage : ModulePage.uncheckedImage;
+				case 12:
+					return ArduinoUnoAnInChannelProperties.CALIBRATION.isCalibrated(channel) ? ModulePage.checkedImage : ModulePage.uncheckedImage;
 				default:
 					return null;
 				}
@@ -325,6 +346,20 @@ public class ArduinoUnoAnInModulePage extends ArduinoUnoModulePage {
 	/*
 	 * References of the revision of the board, current reference selected
 	 */
+	/*
+	 * Voltage of the EXTERNAL reference : value of the module (undo / redo), field enabled only with this reference
+	 */
+	private void updateExternalReferenceVoltageText() {
+		if(externalReferenceVoltageText == null || externalReferenceVoltageText.isDisposed()) return;
+		externalReferenceVoltageText.setEnabled(ArduinoUnoAnInModuleProperties.isExternalReference(module));
+		String value = module.getProperty(ArduinoUnoAnInModuleProperties.EXTERNAL_REFERENCE_VOLTAGE);
+		if(value == null || value.equals(externalReferenceVoltageText.getText())) return;
+		Listener[] listeners = externalReferenceVoltageText.getListeners(SWT.Modify);
+		for (Listener listener : listeners) externalReferenceVoltageText.removeListener(SWT.Modify, listener);
+		externalReferenceVoltageText.setText(value);
+		for (Listener listener : listeners) externalReferenceVoltageText.addListener(SWT.Modify , listener);
+	}
+	
 	private void updateAnalogReferenceCombo() {
 		if(analogRefCombo == null || analogRefCombo.isDisposed()) return;
 		Listener[] listeners = analogRefCombo.getListeners(SWT.Modify);
@@ -332,6 +367,7 @@ public class ArduinoUnoAnInModulePage extends ArduinoUnoModulePage {
 		analogRefCombo.setItems(ArduinoUnoAnInModuleProperties.getReferences(ArduinoUnoAnInModuleProperties.isR4(dacqConfiguration)));
 		analogRefCombo.select(analogRefCombo.indexOf(module.getProperty(ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE)));
 		for (Listener listener : listeners) analogRefCombo.addListener(SWT.Modify , listener);
+		updateExternalReferenceVoltageText();
 		generalConfigurationSectionPart.markDirty();
 	}
 	
@@ -346,6 +382,7 @@ public class ArduinoUnoAnInModulePage extends ArduinoUnoModulePage {
 		super.update(property, newValue, oldValue, element);
 		if(property == ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE || property == ArduinoUnoDACQConfigurationProperties.REVISION)
 			updateAnalogReferenceCombo();
+		if(property == ArduinoUnoAnInModuleProperties.EXTERNAL_REFERENCE_VOLTAGE) updateExternalReferenceVoltageText();
 		if(property == ArduinoUnoAnInModuleProperties.REDUCE_MEMORY_EFFECT && memoryEffectButton != null && !memoryEffectButton.isDisposed()) {
 			memoryEffectButton.setSelection(ArduinoUnoAnInModuleProperties.isMemoryEffectReduced(module));
 			generalConfigurationSectionPart.markDirty();

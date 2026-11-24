@@ -155,6 +155,11 @@ public class ArduinoUnoADS1115ModulePage extends ArduinoUnoModulePage {
 				e2 = in2.getProperty(ArduinoUnoAnInChannelProperties.GAIN);
 				result = super.compare(viewer, (String)e1, (String)e2);
 				break;
+			case 13:
+				e1 = String.valueOf(ArduinoUnoAnInChannelProperties.CALIBRATION.isCalibrated(in1));
+				e2 = String.valueOf(ArduinoUnoAnInChannelProperties.CALIBRATION.isCalibrated(in2));
+				result = super.compare(viewer, (String)e1, (String)e2);
+				break;
 			default:
 				break;
 			}
@@ -232,12 +237,15 @@ public class ArduinoUnoADS1115ModulePage extends ArduinoUnoModulePage {
 		createColumn(ChannelProperties.RECORD.getTooltip(), channelsTableColumnLayout, ChannelProperties.RECORD, defaultColumnWidth, 6);
 		//createColumn(ChannelProperties.BUFFER_SIZE.getTooltip(), channelsTableColumnLayout, ChannelProperties.BUFFER_SIZE, defaultColumnWidth, 7);
 		//createColumn(ADWinAnInChannelProperties.GAIN.getTooltip(), channelsTableColumnLayout, ADWinAnInChannelProperties.GAIN, defaultColumnWidth, 8);
-//		createColumn(ArduinoUnoAnInChannelProperties.UNIT.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.UNIT, defaultColumnWidth, 7);
-//		createColumn(ArduinoUnoAnInChannelProperties.UNIT_MAX.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.UNIT_MAX, defaultColumnWidth, 8);
-//		createColumn(ArduinoUnoAnInChannelProperties.UNIT_MIN.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.UNIT_MIN, defaultColumnWidth, 9);
-//		createColumn(ArduinoUnoAnInChannelProperties.AMPLITUDE_MAX.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.AMPLITUDE_MAX, defaultColumnWidth, 10);
-//		createColumn(ArduinoUnoAnInChannelProperties.AMPLITUDE_MIN.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.AMPLITUDE_MIN, defaultColumnWidth, 11);
 		createColumn(ArduinoUnoAnInChannelProperties.GAIN.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.GAIN, defaultColumnWidth, 12);
+		// Calibration : physical values (UMax, UMin) of two raw values of the converter (AMax, AMin), see RawCalibration
+		createColumn(ArduinoUnoAnInChannelProperties.UNIT.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.UNIT, defaultColumnWidth, 7);
+		createColumn(ArduinoUnoAnInChannelProperties.UNIT_MAX.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.UNIT_MAX, defaultColumnWidth, 8);
+		createColumn(ArduinoUnoAnInChannelProperties.UNIT_MIN.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.UNIT_MIN, defaultColumnWidth, 9);
+		createColumn(ArduinoUnoAnInChannelProperties.AMPLITUDE_MAX.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.AMPLITUDE_MAX, defaultColumnWidth, 10);
+		createColumn(ArduinoUnoAnInChannelProperties.AMPLITUDE_MIN.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.AMPLITUDE_MIN, defaultColumnWidth, 11);
+		// Read only : checked when the calibration values have been set by the user
+		createColumn(ArduinoUnoAnInChannelProperties.CALIBRATED.getTooltip(), channelsTableColumnLayout, ArduinoUnoAnInChannelProperties.CALIBRATED, defaultColumnWidth, 13);
 		tableViewer.setContentProvider(new ArrayContentProvider());
 		tableViewer.setLabelProvider(new ITableLabelProvider() {
 			public void removeListener(ILabelProviderListener listener) {
@@ -297,6 +305,8 @@ public class ArduinoUnoADS1115ModulePage extends ArduinoUnoModulePage {
 				case 6:
 					value = channel.getProperty(ChannelProperties.RECORD);
 					return value.equals("true") ? ModulePage.checkedImage : ModulePage.uncheckedImage;
+				case 13:
+					return ArduinoUnoAnInChannelProperties.CALIBRATION.isCalibrated(channel) ? ModulePage.checkedImage : ModulePage.uncheckedImage;
 				default:
 					return null;
 				}
@@ -338,7 +348,8 @@ public class ArduinoUnoADS1115ModulePage extends ArduinoUnoModulePage {
 			updateWidget(modeCombo, (ArduinoUnoADS1115ModuleProperties)property, true);
 		if(property == ArduinoUnoADS1115ModuleProperties.DATA_RATE)
 			updateWidget(dataRateCombo, (ArduinoUnoADS1115ModuleProperties)property, true);
-		if(property == ArduinoUnoAnInChannelProperties.GAIN) {
+		// Gain and calibration values (the default calibration follows the gain, see ChannelCalibration)
+		if(property instanceof ArduinoUnoAnInChannelProperties) {
 			if(tableViewer != null && tableViewer.getTable() != null && !tableViewer.getTable().isDisposed()) {
 				tableViewer.refresh();
 				tableConfigurationSectionPart.markDirty();

@@ -184,6 +184,11 @@ public class ADWinAnInModulePage extends ADWinModulePage {
 				e2 = in2.getProperty(ADWinAnInChannelProperties.AMPLITUDE_MIN);
 				result = super.compare(viewer, (String)e1, (String)e2);
 				break;
+			case 14:
+				e1 = String.valueOf(ADWinAnInChannelProperties.CALIBRATION.isCalibrated(in1));
+				e2 = String.valueOf(ADWinAnInChannelProperties.CALIBRATION.isCalibrated(in2));
+				result = super.compare(viewer, (String)e1, (String)e2);
+				break;
 			default:
 				break;
 			}
@@ -269,6 +274,8 @@ public class ADWinAnInModulePage extends ADWinModulePage {
 		createColumn(ADWinAnInChannelProperties.UNIT_MIN.getTooltip(), channelsTableColumnLayout, ADWinAnInChannelProperties.UNIT_MIN, defaultColumnWidth, 11);
 		createColumn(ADWinAnInChannelProperties.AMPLITUDE_MAX.getTooltip(), channelsTableColumnLayout, ADWinAnInChannelProperties.AMPLITUDE_MAX, defaultColumnWidth, 12);
 		createColumn(ADWinAnInChannelProperties.AMPLITUDE_MIN.getTooltip(), channelsTableColumnLayout, ADWinAnInChannelProperties.AMPLITUDE_MIN, defaultColumnWidth, 13);
+		// Read only : checked when the calibration values have been set by the user
+		createColumn(ADWinAnInChannelProperties.CALIBRATED.getTooltip(), channelsTableColumnLayout, ADWinAnInChannelProperties.CALIBRATED, defaultColumnWidth, 14);
 		
 		tableViewer.setContentProvider(new ArrayContentProvider());
 		tableViewer.setLabelProvider(new ITableLabelProvider() {
@@ -329,6 +336,8 @@ public class ADWinAnInModulePage extends ADWinModulePage {
 				case 6:
 					value = channel.getProperty(ChannelProperties.RECORD);
 					return value.equals("true") ? ModulePage.checkedImage : ModulePage.uncheckedImage;
+				case 14:
+					return ADWinAnInChannelProperties.CALIBRATION.isCalibrated(channel) ? ModulePage.checkedImage : ModulePage.uncheckedImage;
 				default:
 					return null;
 				}
