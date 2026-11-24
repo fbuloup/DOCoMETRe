@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde version="3.8"?>
-<target name="DOCoMETRe - Eclipse 2025-03" sequenceNumber="3">
+<target name="DOCoMETRe - Eclipse 2025-03" sequenceNumber="4">
 	<!--
 		Plate-forme cible de DOCoMETRe : les memes bundles, dans les memes versions, que le produit
 		construit par Tycho (configuration/org.eclipse.equinox.simpleconfigurator/bundles.info).
@@ -238,6 +238,13 @@
 			<unit id="junit-platform-launcher" version="1.11.4"/>
 			<unit id="org.apiguardian.api" version="1.1.2"/>
 			<unit id="org.opentest4j" version="1.3.0"/>
+			<!-- Lancement des tests en "JUnit Plug-in Test" : bundles ajoutes par PDE au lancement (sinon
+			     "missing constraint : Require-Bundle org.eclipse.jdt.junit.runtime"). Leurs dependances (JUnit 4,
+			     vintage, suite...) sont ajoutees par le mode "planner". -->
+			<unit id="org.eclipse.jdt.junit.runtime" version="3.7.600.v20250118-1031"/>
+			<unit id="org.eclipse.jdt.junit4.runtime" version="1.3.100.v20231214-1952"/>
+			<unit id="org.eclipse.jdt.junit5.runtime" version="1.1.300.v20231214-1952"/>
+			<unit id="org.eclipse.pde.junit.runtime" version="3.8.100.v20240130-1723"/>
 		</location>
 		<!-- GEF Classic : 2 bundles -->
 		<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="false" type="InstallableUnit">
