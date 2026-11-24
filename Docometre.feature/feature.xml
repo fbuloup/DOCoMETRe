@@ -6,28 +6,67 @@
       provider-name="ISM">
 
    <description>
-      -- 2026-11-22
+      -- 2026-11-24
+ADDED :
+* Calibration/monitoring dialog : the &amp;quot;Proceed&amp;quot; button becomes
+&amp;quot;Start monitoring&amp;quot; / &amp;quot;Stop monitoring&amp;quot; (English, French and Polish). A confirmation is asked before stopping the monitoring,
+with the &amp;quot;Stop monitoring&amp;quot; button as well as with &quot;Finish&quot;
+* Calibration/monitoring dialog : the graphs of the channels use the
+&quot;SWT + OpenGL v2&quot; library when it is selected in the preferences
+(10 s time window, sweep mode and pause). All the graphs share the
+same time origin and restart together at time 0 each time a graph
+is shown or hidden
+FIXED :
+* Calibration : connection frozen when a calibration process was
+loaded after an acquisition process and that same acquisition
+process was then run again (the process was not reloaded)
+* Calibration/monitoring dialog : closing the window during the
+monitoring now asks for confirmation and stops the calibration
+process (it kept running before)
+* ADwin Pro II and Gold II : gain of 8 for the analog inputs applied
+as a gain of 4 (the gain code of the amplifier was truncated : 2.999
+gave 2). Same correction in the calibration files. Processes must be
+compiled again
+* ADwin Pro II acquisition : the gain given to the analog inputs
+subroutine was not used (unknown variable gain_AnIn)
+* ADwin Pro II calibration : only module 1 could be calibrated or
+monitored. The module number is now sent before each access to an
+input or an output, and the Pro II functions are used, as in the
+acquisition. SE/DIFF mode and digital inputs/outputs programming
+are sent for each module, as with the Pro I. The current value of
+the analog outputs is no longer read on Pro II (only the Pro I
+modules have this register)
+* ADwin Pro calibration : with several digital inputs/outputs
+modules, the initial states of the outputs of one module were given
+to the viewers of all the modules
+* ADwin calibration files recompiled (Gold, Gold II, Pro, Pro II)
+-- 2026-11-22
 ADDED :
 * Arduino Uno R4 Minima board supported : DACQ configuration,
 parameters, code generation, upload and calibration (dedicated
-calibration firmware uploaded with arduino-cli). True analog output
+calibration firmware uploaded with arduino-cli). True analog
+output
 of the DAC on pin A0 (AOUT_DAC) as on the Uno R4 WiFi
 * Arduino system : presented as &quot;Arduino&quot; in the user interface
-(new DACQ configuration wizard, experiments view, system type menus,
+(new DACQ configuration wizard, experiments view, system type
+menus,
 preferences). The &quot;Revision&quot; field becomes &quot;Board&quot; (Uno R3,
 Uno R4 WiFi, Uno R4 Minima). Saved values are unchanged : existing
 experiments open as before
-* Arduino analog inputs module : option to reduce the memory effect
+* Arduino analog inputs module : option to reduce the memory
+effect
 of the sample-and-hold (influence of the input converted just
 before, up to 6.4 % measured). Uno R3 : each input is read twice,
 the first value is discarded. Uno R4 : sampling time of 160 states
 instead of 13. Enabled for new configurations, disabled for the
 configurations saved before
-* Arduino Uno R4 : one scan of the ADC per period converts all the
+* Arduino Uno R4 : one scan of the ADC per period converts all
+the
 analog inputs used (each analogRead() converted all the inputs
 already read and reconfigured the ADC, about 20 us per call).
 Processes must be compiled again
-* Arduino &quot;Acquire analog input&quot; and &quot;Wait analog input&quot; blocks :
+* Arduino &quot;Acquire analog input&quot; and &quot;Wait analog input&quot; blocks
+:
 first read discarded (memory effect), a value read once in the
 initialization segment or the first read of the analog wait could
 be wrong
@@ -35,25 +74,33 @@ be wrong
 during the trials (watchdog every 20 ms, charts tasks and OpenGL
 frames), summary at the end of each trial
 FIXED :
-* Real-time charts frozen about 380 ms at the beginning of each trial
+* Real-time charts frozen about 380 ms at the beginning of each
+trial
 (except the first) : the experiments history status and the history
 view are now updated after the trials, not during them
-* History decorations of the experiments tree updated (about 400 ms
-in the user interface thread) 1 s after each change even when no
+* History decorations of the experiments tree updated (about
+400 ms
+in the user interface thread) 1 s after each change even when
+no
 history status had changed
-* Session wizard : Finish no more allowed when the trials list refers
+* Session wizard : Finish no more allowed when the trials list
+refers
 to trials beyond the session trials number (error &quot;Resource
 .../Trial_6 does not exist&quot;). Missing trials listed in an error,
 warning when only part of the trials is covered
-* Arduino Uno R4 : last samples sometimes lost at the end of the
+* Arduino Uno R4 : last samples sometimes lost at the end of
+the
 process (1000 samples instead of 1001 at random)
 * Arduino Uno : samples, propagated parameters, time and workload
 received during the end handshake are now handled (they were
 ignored : last samples lost)
-* Arduino : analog inputs were wrongly compared with the digital pins
-and analog outputs (AIN3 could not be used with AOUT3, AIN0 to AIN5
+* Arduino : analog inputs were wrongly compared with the digital
+pins
+and analog outputs (AIN3 could not be used with AOUT3, AIN0 to
+AIN5
 with DIGITAL0 to DIGITAL5)
-* Arduino Uno R3 calibration : the R3 firmware is uploaded again (the
+* Arduino Uno R3 calibration : the R3 firmware is uploaded again
+(the
 R4 WiFi firmware was selected). DACQ configurations without board
 are calibrated as an Uno R3
 * Arduino Uno R4 WiFi : warning at each compilation removed (WDT
