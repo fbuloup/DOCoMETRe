@@ -131,6 +131,15 @@ public class ArduinoUnoRawCalibrationTest {
 		// Values of the analog inputs transferred as floats (IEEE 754 in hexadecimal), not those of the digital inputs/outputs
 		assertTrue(dacqConfiguration.isFloatTransfer(channel.getProperty(ChannelProperties.NAME)));
 		assertFalse(dacqConfiguration.isFloatTransfer("DIGITAL0"));
+		// Variables : float values transferred as floats, the other types as decimal values
+		ArduinoUnoVariable floatVariable = dacqConfiguration.createVariable();
+		floatVariable.setProperty(ChannelProperties.NAME, "floatVariable");
+		floatVariable.setProperty(ArduinoUnoVariableProperties.TYPE, ArduinoUnoVariableProperties.FLOAT);
+		assertTrue(dacqConfiguration.isFloatTransfer("floatVariable"));
+		ArduinoUnoVariable intVariable = dacqConfiguration.createVariable();
+		intVariable.setProperty(ChannelProperties.NAME, "intVariable");
+		intVariable.setProperty(ArduinoUnoVariableProperties.TYPE, ArduinoUnoVariableProperties.INT);
+		assertFalse(dacqConfiguration.isFloatTransfer("intVariable"));
 		// Invalid calibration : explicit error
 		channel.setProperty(ArduinoUnoAnInChannelProperties.AMPLITUDE_MAX, "0");
 		assertThrows(IllegalArgumentException.class, () -> ArduinoUnoAnInChannelProperties.getCoefficientsCode(channel));
