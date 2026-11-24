@@ -42,23 +42,28 @@ par_7=-1'Num�ro de la sortie num�rique 0 .. 31
 par_8=0'Valeur associ�e � la sortie num�rique s�lectionn�e 0 ou 1
 
 'Prog du DIO tout en entr�e par d�faut � la mise sous tension
-'par_9=0
-'par_10=0
-'par_11=0
-'par_12=0 'SE ou DIFF
+par_9=0 ' 1 : DIO programming of module par_15 (P2_DIGPROG with par_10), done in EVENT
+par_10=0 ' P2_DIGPROG pattern : bit i set if the group of 8 channels i is an output
+'par_13 : initial state of the digital outputs, read after the programming
+par_12=0 ' 0 : SE mode, 1 : DIFF mode
+par_16=0 ' 1 : SE/DIFF programming of analog input module par_15 with par_12, done in EVENT
 par_14=1 'gain des entr�es analogiques 1,2,4 ou 8
 GLOBALDELAY = 3*10^8/1000 ' T11 timer at 300 MHz (10/3 ns) : 10^9/(1000*3.3) gave a period 1 % too long
 
-'par_12  : 0, mode SE ou 1, mode DIFF
-SE_DIFF(1,par_12)
-
-IF (par_9=1) THEN
-  P2_DIGPROG(1,par_10)
+EVENT :
+' SE/DIFF programming of analog input module par_15 (sent by DOCoMETRe for each module, as Pro I)
+IF (par_16=1) THEN
+  P2_SE_Diff(par_15,par_12)
+  par_16=0
 ENDIF
 
-par_13=P2_GET_DIGOUT_LONG(1) 'Lecture etat initial des ESnum
+' Programming of digital inputs/outputs module par_15 (sent by DOCoMETRe for each module, as Pro I)
+IF (par_9=1) THEN
+  P2_DIGPROG(par_15,par_10)
+  par_13=P2_GET_DIGOUT_LONG(par_15) 'Lecture etat initial des ESnum
+  par_9=0
+ENDIF
 
-EVENT :
 'Acquisition entr�e analogique
 IF (par_1>0) then      
   ' Gain code of the PGA (0, 1, 2, 3 for a gain of 1, 2, 4, 8) : + 0.1 so that a result
