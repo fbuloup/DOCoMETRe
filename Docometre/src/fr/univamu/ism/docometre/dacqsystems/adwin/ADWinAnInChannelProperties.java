@@ -111,7 +111,7 @@ public final class ADWinAnInChannelProperties extends Property {
 		newChannel.setProperty(GAIN, new String(channel.getProperty(GAIN)));
 		newChannel.setProperty(UNIT, new String(channel.getProperty(UNIT)));
 		CALIBRATION.copy(channel, newChannel);
-		return channel;
+		return newChannel;
 	}
 	
 	public static double toVolt(ADWinChannel channel, double value) {

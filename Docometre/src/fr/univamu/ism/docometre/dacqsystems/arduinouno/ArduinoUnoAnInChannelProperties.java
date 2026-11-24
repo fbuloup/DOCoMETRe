@@ -174,7 +174,7 @@ public final class ArduinoUnoAnInChannelProperties extends Property {
 		newChannel.setProperty(UNIT, new String(channel.getProperty(UNIT)));
 		newChannel.setProperty(GAIN, new String(channel.getProperty(GAIN)));
 		CALIBRATION.copy(channel, newChannel);
-		return channel;
+		return newChannel;
 	}
 	
 	public static double toVolt(ArduinoUnoChannel channel, double value) {
