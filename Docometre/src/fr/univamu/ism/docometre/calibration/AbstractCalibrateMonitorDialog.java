@@ -101,6 +101,8 @@ public abstract class AbstractCalibrateMonitorDialog extends TitleAreaDialog {
 	private String system;
 	private boolean started; 
 	protected ArrayList<ChannelViewer> channelsViewers = new ArrayList<>();
+	// Time origin common to the graphs of the viewers ("SWT + OpenGL v2" library)
+	private ChannelViewer.TimeBase timeBase = new ChannelViewer.TimeBase();
 
 	/**
 	 * @param system the DACQ system (see Activator.ADWIN_SYSTEM, Activator.ARDUINO_UNO_SYSTEM)
@@ -131,8 +133,22 @@ public abstract class AbstractCalibrateMonitorDialog extends TitleAreaDialog {
 	protected ChannelViewer createChannelViewer(Composite container, Channel channel, boolean input, boolean analog) {
 		ChannelViewer channelViewer = new ChannelViewer(container, SWT.NONE, channel, input, analog);
 		channelViewer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		channelViewer.setTimeBase(timeBase);
+		channelViewer.setGraphVisibilityListener(this::resetGraphs);
 		channelsViewers.add(channelViewer);
 		return channelViewer;
+	}
+	
+	/**
+	 * Called each time a graph is shown or hidden : all the graphs restart together at time 0, with a 
+	 * common time origin. The graphs of the "SWT + OpenGL v2" library are cleared here, the others are
+	 * reset by the resizing due to the layout.
+	 */
+	private void resetGraphs() {
+		timeBase.reset();
+		for (ChannelViewer channelViewer : channelsViewers) {
+			if(!channelViewer.isDisposed()) channelViewer.resetGraph();
+		}
 	}
 	
 	@Override
@@ -146,6 +162,11 @@ public abstract class AbstractCalibrateMonitorDialog extends TitleAreaDialog {
 		setMessage(message, IMessageProvider.INFORMATION);
 		setTitleImage(Activator.getImage(IImageKeys.CALIBRATE_MONITOR_WIZBAN));
 		getShell().setMaximized(true);
+	}
+	
+	@Override
+	protected void handleShellCloseEvent() {
+		buttonPressed(IDialogConstants.OK_ID);
 	}
 	
 	@Override
@@ -265,14 +286,12 @@ public abstract class AbstractCalibrateMonitorDialog extends TitleAreaDialog {
 	
 	@Override
 	protected void buttonPressed(int buttonId) {
-		if(buttonId == IDialogConstants.OK_ID) {
-			if(started) {
-				if(MessageDialog.openQuestion(getParentShell(), DocometreMessages.StopMonitoring, DocometreMessages.AreYouSureStopMonitoring)) {
-					CalibrationFactory.stopCalibrationProcess();
-					super.buttonPressed(buttonId);
-				}
-			}
-		} else super.buttonPressed(buttonId);
+		if(buttonId == IDialogConstants.OK_ID && started) {
+			if(!MessageDialog.openQuestion(getShell(), DocometreMessages.StopMonitoring, DocometreMessages.AreYouSureStopMonitoring)) return;
+			CalibrationFactory.stopCalibrationProcess();
+			started = false;
+		}
+		super.buttonPressed(buttonId);
 	}
 	
 }
