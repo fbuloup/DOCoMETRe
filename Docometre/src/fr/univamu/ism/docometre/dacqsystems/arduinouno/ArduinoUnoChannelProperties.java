@@ -57,7 +57,7 @@ public final class ArduinoUnoChannelProperties extends Property {
 	public static Channel cloneChannel(Channel channel, Channel newChannel) {
 		ChannelProperties.cloneChannel(channel, newChannel);
 		newChannel.setProperty(USED, new String(channel.getProperty(USED)));
-		return channel;
+		return newChannel;
 	}
 	
 	
