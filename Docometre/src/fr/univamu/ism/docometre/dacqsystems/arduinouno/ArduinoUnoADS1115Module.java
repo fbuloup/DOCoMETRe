@@ -188,8 +188,11 @@ public class ArduinoUnoADS1115Module extends Module {
 	public Channel initializeChannelProperties() {
 		ArduinoUnoChannel arduinoUnoChannel = new ArduinoUnoChannel(this);
 		ArduinoUnoAnInChannelProperties.populateProperties(arduinoUnoChannel);
-		String gsfProcess = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY);
-		arduinoUnoChannel.setProperty(ChannelProperties.SAMPLE_FREQUENCY, gsfProcess);
+		// No DACQ configuration for a module created by clone() : sample frequency of the cloned channel
+		if(dacqConfiguration != null) {
+			String gsfProcess = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY);
+			arduinoUnoChannel.setProperty(ChannelProperties.SAMPLE_FREQUENCY, gsfProcess);
+		}
 		arduinoUnoChannel.setProperty(ChannelProperties.NAME, "A");
 		arduinoUnoChannel.setProperty(ChannelProperties.CHANNEL_NUMBER, "0");
 		arduinoUnoChannel.setProperty(ChannelProperties.TRANSFER_NUMBER,"0");
@@ -198,8 +201,11 @@ public class ArduinoUnoADS1115Module extends Module {
 
 	@Override
 	public Object clone() throws CloneNotSupportedException {
-		// TODO Auto-generated method stub
-		return null;
+		Module newModule = ArduinoUnoADS1115ModuleProperties.cloneModule(this);
+		// The constructor creates the four default channels : replaced by the clones of the channels of this module
+		for (Channel channel : newModule.getChannels()) newModule.removeChannel(channel);
+		addClonedChannels(newModule);
+		return newModule;
 	}
 
 	@Override

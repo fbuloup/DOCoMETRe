@@ -245,8 +245,9 @@ public class ArduinoUnoAnInModule extends Module {
 
 	@Override
 	public Object clone() throws CloneNotSupportedException {
-		// TODO Auto-generated method stub
-		return null;
+		Module newModule = ArduinoUnoAnInModuleProperties.cloneModule(this);
+		addClonedChannels(newModule);
+		return newModule;
 	}
 
 	@Override

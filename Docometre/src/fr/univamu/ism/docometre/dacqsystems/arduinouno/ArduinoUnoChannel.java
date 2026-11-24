@@ -214,7 +214,8 @@ public class ArduinoUnoChannel extends Channel {
 	@Override
 	public Object clone() throws CloneNotSupportedException {
 		Channel channel = null;
-		if(module instanceof ArduinoUnoAnInModule) channel = ArduinoUnoAnInChannelProperties.cloneChannel(this);
+		// Analog inputs of the board and of the ADS1115 modules : same properties
+		if(module instanceof ArduinoUnoAnInModule || module instanceof ArduinoUnoADS1115Module) channel = ArduinoUnoAnInChannelProperties.cloneChannel(this);
 		else if(module instanceof ArduinoUnoAnOutModule) channel = ArduinoUnoAnOutChannelProperties.cloneChannel(this);
 		else if(module instanceof ArduinoUnoDigInOutModule) channel = ArduinoUnoDigInOutChannelProperties.cloneChannel(this);
 		return channel;

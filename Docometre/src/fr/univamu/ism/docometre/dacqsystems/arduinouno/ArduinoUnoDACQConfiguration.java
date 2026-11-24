@@ -129,6 +129,8 @@ public class ArduinoUnoDACQConfiguration extends DACQConfiguration implements Pr
 	@Override
 	public Object clone() throws CloneNotSupportedException {
 		ArduinoUnoDACQConfiguration clonedConfiguration  = ArduinoUnoDACQConfigurationProperties.cloneConfiguration(this);
+		// The constructor creates the default modules : replaced by the clones of the modules of this configuration
+		for (Module module : clonedConfiguration.getModules()) clonedConfiguration.removeModule(module);
 		ArduinoUnoVariable[] variablesArray = getVariables();
 		for (int i = 0; i < variablesArray.length; i++) {
 			ArduinoUnoVariable variable = (ArduinoUnoVariable) variablesArray[i].clone();
