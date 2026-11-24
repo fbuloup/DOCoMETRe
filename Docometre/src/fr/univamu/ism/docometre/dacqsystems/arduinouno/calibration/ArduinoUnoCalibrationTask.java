@@ -151,8 +151,6 @@ public class ArduinoUnoCalibrationTask extends CalibrationTimerTask {
 			List<String> commands = ArduinoUnoCalibrationProtocol.getConfigurationCommands(hasAnalogInput() ? analogReference : null, modules, inputs, digitalOutputs, analogOutputs);
 			commands.add(ArduinoUnoCalibrationProtocol.START);
 			for (String command : commands) sendCommand(command);
-			if(Double.isNaN(ArduinoUnoCalibrationProtocol.getReferenceVoltage(analogReference, board)) && hasAnalogInput())
-				Activator.logWarningMessage(NLS.bind(ArduinoUnoMessages.Calibration_ExternalReference, getAnalogMaximum()));
 		} catch (Exception e) {
 			closePort();
 			throw e;
@@ -205,10 +203,6 @@ public class ArduinoUnoCalibrationTask extends CalibrationTimerTask {
 	private boolean hasAnalogInput() {
 		for (Input input : inputs) if(input.getType() == InputType.ANALOG) return true;
 		return false;
-	}
-	
-	private int getAnalogMaximum() {
-		return ArduinoUnoCalibrationProtocol.BOARD_R4.equals(board) ? 16383 : 1023;
 	}
 	
 	/*
@@ -334,14 +328,11 @@ public class ArduinoUnoCalibrationTask extends CalibrationTimerTask {
 	}
 	
 	/*
-	 * Value displayed for an input : volts for analog inputs (raw value when the voltage of the reference is not known), 0 or 1 for digital inputs
+	 * Value displayed for an input : raw value of the converter for analog inputs (the calibration is made from the raw
+	 * values, as in the acquisition processes : 0 .. 1023 on R3, 0 .. 16383 on R4, signed value of the ADS1115), 0 or 1
+	 * for digital inputs
 	 */
 	private double getValue(Input input, long raw) {
-		if(input.getType() == InputType.ADS1115) return ArduinoUnoCalibrationProtocol.getADS1115Voltage(raw, input.getGain());
-		if(input.getType() == InputType.ANALOG) {
-			double voltage = ArduinoUnoCalibrationProtocol.getAnalogVoltage(raw, analogReference, board);
-			return Double.isNaN(voltage) ? raw : voltage;
-		}
 		return raw;
 	}
 

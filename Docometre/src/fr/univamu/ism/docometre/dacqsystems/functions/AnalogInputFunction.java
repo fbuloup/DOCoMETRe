@@ -66,6 +66,7 @@ import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinAnInChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinAnInModule;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfigurationProperties;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinProcess;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnInChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnInModule;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoProcess;
 import fr.univamu.ism.docometre.scripteditor.actions.FunctionFactory;
@@ -80,7 +81,8 @@ public final class AnalogInputFunction extends GenericFunction {
 	
 	private static final String channelNameKey = "channelName";
 	private static final String channelNumberKey = "channelNumber";
-	// ADwin : code of the physical value of the analog input, k * Call_AnIn_Raw(...) + b (see ADWinAnInChannelProperties)
+	// Code of the physical value of the analog input : k * Call_AnIn_Raw(...) + b with ADwin (see ADWinAnInChannelProperties),
+	// k * analogRead(...) + b with Arduino Uno (see ArduinoUnoAnInChannelProperties)
 	private static final String physicalValueKey = "physicalValue";
 	
 	private String channelName;
@@ -207,6 +209,9 @@ public final class AnalogInputFunction extends GenericFunction {
 				}
 				if(foundModule != null && foundChannel != null) {
 					String channelNumber = foundChannel.getProperty(ChannelProperties.CHANNEL_NUMBER);
+					// Physical value computed from the raw value of the converter (calibration from the raw values)
+					String physicalValue = ArduinoUnoAnInChannelProperties.getPhysicalValueCode(foundChannel, "analogRead(" + channelNumber + ")");
+					temporaryCode = temporaryCode.replace(physicalValueKey, physicalValue);
 					temporaryCode = UNO_DEFAULT_INDENT + temporaryCode.replaceAll(channelNameKey, channelName).replaceAll(channelNumberKey, channelNumber);
 					code = code + temporaryCode + "\n";
 				}

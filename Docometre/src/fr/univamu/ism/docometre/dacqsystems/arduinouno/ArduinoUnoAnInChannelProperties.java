@@ -41,9 +41,12 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.arduinouno;
 
+import org.eclipse.osgi.util.NLS;
+
 import fr.univamu.ism.docometre.calibration.ChannelCalibration;
 import fr.univamu.ism.docometre.calibration.RawCalibration;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
+import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.Property;
@@ -177,13 +180,33 @@ public final class ArduinoUnoAnInChannelProperties extends Property {
 		return newChannel;
 	}
 	
-	public static double toVolt(ArduinoUnoChannel channel, double value) {
-		if(channel.getModule() instanceof ArduinoUnoAnInModule) {
-			double aMax = 5;
-			double aMin = 0;
-			return (aMax - aMin)/1024*value + aMin;
+	/**
+	 * @return {k, b} of the calibration of an analog input (physical value = k * raw value + b, see RawCalibration),
+	 * as C float literals, for the code of the acquisition (see acquireAnalogInput() in ArduinoUnoProcess)
+	 * @throws IllegalArgumentException if the calibration of the input is not valid (AMPLITUDE_MIN = AMPLITUDE_MAX or
+	 * a value which is not a number)
+	 */
+	public static String[] getCoefficientsCode(Channel channel) {
+		double[] calibration = CALIBRATION.getCalibration(channel);
+		try {
+			return RawCalibration.getCFloatCoefficients(calibration[0], calibration[1], calibration[2], calibration[3]);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException(NLS.bind(ArduinoUnoMessages.InvalidCalibration_Message, channel.getProperty(ChannelProperties.NAME)), e);
 		}
-		return 0;
+	}
+	
+	/**
+	 * @param rawValueCode code of the raw value of the input (analogRead(...))
+	 * @return the C code of the physical value of an analog input : k * rawValueCode + b, in single precision
+	 * @throws IllegalArgumentException if the calibration of the input is not valid
+	 */
+	public static String getPhysicalValueCode(Channel channel, String rawValueCode) {
+		double[] calibration = CALIBRATION.getCalibration(channel);
+		try {
+			return RawCalibration.getCode(rawValueCode, calibration[0], calibration[1], calibration[2], calibration[3], true);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException(NLS.bind(ArduinoUnoMessages.InvalidCalibration_Message, channel.getProperty(ChannelProperties.NAME)), e);
+		}
 	}
 	
 	private ArduinoUnoAnInChannelProperties(String key, String label, String tooltip, String regExp) {

@@ -209,6 +209,9 @@ public class ArduinoUnoProcess extends Process {
 		private float value;
 		private float realTime, workload;
 		private Channel[] transferedChannelsOrderedByTransferNumber;
+		// True for the channels whose values are transferred as the IEEE 754 bits of a float in hexadecimal, in the
+		// order of the transfer numbers (see ArduinoUnoDACQConfiguration#isFloatTransfer)
+		private boolean[] floatTransferedChannels;
 		private int[] nbSamples;
 		private int trsfrNum;
 		private DecimalFormat formater;
@@ -272,6 +275,13 @@ public class ArduinoUnoProcess extends Process {
 				for (int i = 0; i < transferedChannelsOrderedByTransferNumber.length; i++) {
 					trsfrNum = Integer.parseInt(transferedChannels[i].getProperty(ChannelProperties.TRANSFER_NUMBER));
 					transferedChannelsOrderedByTransferNumber[trsfrNum - 1] = transferedChannels[i];
+				}
+				// Format of the values of each transferred channel, from its name, in the DACQ configuration of the process
+				ArduinoUnoDACQConfiguration arduinoUnoDACQConfiguration = (ArduinoUnoDACQConfiguration) getDACQConfiguration();
+				floatTransferedChannels = new boolean[transferedChannelsOrderedByTransferNumber.length];
+				for (int i = 0; i < floatTransferedChannels.length; i++) {
+					String channelName = transferedChannelsOrderedByTransferNumber[i].getProperty(ChannelProperties.NAME);
+					floatTransferedChannels[i] = arduinoUnoDACQConfiguration.isFloatTransfer(channelName);
 				}
 				nbSamples = new int[transferedChannelsOrderedByTransferNumber.length];
 				appendToEventDiary("Transfered channels :");
@@ -359,7 +369,7 @@ public class ArduinoUnoProcess extends Process {
 		                    	if(segments.length == 2) {
 		                    		try {
 										trsfrNum = Integer.parseInt(segments[0]);
-										value = Float.parseFloat(segments[1]);
+										value = parseValue(trsfrNum, segments[1]);
 									} catch (Exception e) {
 										Activator.logErrorMessageWithCause(e);
 										e.printStackTrace();
@@ -787,6 +797,18 @@ public class ArduinoUnoProcess extends Process {
 		}
 
 		/*
+		 * Value of a "transferNumber:value" message : IEEE 754 bits of a float in hexadecimal for the channels whose values
+		 * are transferred so (see ArduinoUnoDACQConfiguration#isFloatTransfer), decimal value otherwise. The type of the
+		 * channel decides : a hexadecimal value can contain only digits (e.g. 41200000 for 10.0)
+		 */
+		private float parseValue(int transferNumber, String value) {
+			boolean floatTransfer = floatTransferedChannels != null && transferNumber >= 1 && transferNumber <= floatTransferedChannels.length 
+					&& floatTransferedChannels[transferNumber - 1];
+			if(floatTransfer) return Float.intBitsToFloat(Integer.parseUnsignedInt(value.trim(), 16));
+			return Float.parseFloat(value);
+		}
+		
+		/*
 		 * Message received during the end handshake, handled as in the real time loop :
 		 *  - parameters frame : propagated parameters (see handleParametersFrame()). The Arduino sends them
 		 *    before its 's' char : a frame received after it (afterStopChar) is written in the diary,
@@ -821,7 +843,7 @@ public class ArduinoUnoProcess extends Process {
 				if(segments.length == 2) {
 					int transferNumber = Integer.parseInt(segments[0]);
 					if(transferNumber >= 1 && transferNumber <= transferedChannelsOrderedByTransferNumber.length) {
-						float sampleValue = Float.parseFloat(segments[1]);
+						float sampleValue = parseValue(transferNumber, segments[1]);
 						Channel channel = transferedChannelsOrderedByTransferNumber[transferNumber - 1];
 						channel.addSamples(new float[] {sampleValue});
 						nbSamples[transferNumber - 1] += 1;
@@ -1417,7 +1439,9 @@ public class ArduinoUnoProcess extends Process {
 			code = code + "\t\tif(computeTime <= loopPeriod) return 100;\n";
 			code = code + "\t\tif(computeTime > loopPeriod) return 200;\n";
 			code = code + "}\n\n";
-			code = code + "unsigned int acquireAnalogInput(byte inputNumber, bool transfert, byte transferNumber) {\n";
+			// Physical value of an analog input : k * raw value + b (calibration from the raw values, see RawCalibration),
+			// transferred as the IEEE 754 bits of the float in hexadecimal (decoded by ArduinoUnoProcess, see parseValue())
+			code = code + "float acquireAnalogInput(byte inputNumber, float k, float b, bool transfert, byte transferNumber) {\n";
 			//code = code + "\t\t//unsigned long dt = micros();\n";
 			if(isAnalogInputsReadTwice()) {
 				// Memory effect of the sample-and-hold : the first conversion keeps part of the voltage of the input converted
@@ -1433,9 +1457,12 @@ public class ArduinoUnoProcess extends Process {
 			//code = code + "\t\t//dt = micros() - dt;\n";
 			//code = code + "\t\t//Serial.println(dt);\n";
 			//code = code + "\t\t//serialMessage = String(inputNumber) + \":\" + String(loopTime - *lastAcquisitionTime) + \":\" + String(value);\n";
+			code = code + "\t\tfloat physicalValue = k * value + b;\n";
 			code = code + "\t\tif(transfert) {\n";
 //			code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%lu:%d\", transferNumber, (loopTime_MS - *lastAcquisitionTime), value);\n";
-			code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%d\", transferNumber, value);\n";
+			code = code + "\t\t\t\tuint32_t physicalValueBits;\n";
+			code = code + "\t\t\t\tmemcpy(&physicalValueBits, &physicalValue, sizeof(physicalValueBits));\n";
+			code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%08lX\", transferNumber, (unsigned long)physicalValueBits);\n";
 			if(isRelease3) {
 				code = code + "\t\t\t\tSerial.println(serialMessage);\n";
 				code = code + "\t\t\t\tSerial.flush();\n";
@@ -1446,12 +1473,13 @@ public class ArduinoUnoProcess extends Process {
 			}
 			if(delay > 0)code = code + "\t\t\t\tdelayMicroseconds(" + delay + ");\n";
 			code = code + "\t\t}\n";
-			code = code + "\t\treturn value;\n";
+			code = code + "\t\treturn physicalValue;\n";
 			code = code + "}\n";
 			
 			if(((ArduinoUnoDACQConfiguration)getDACQConfiguration()).hasADS1115Module()) {
 				// Signed values (int16_t of the ADS1X15 library) : a voltage slightly lower than 0V gives a small negative value
-				code = code + "int acquireADS1115AnalogInput(ADS1115 ads, byte inputNumber, byte gain, bool transfert, byte transferNumber) {\n";
+				// Physical value : k * raw value + b, transferred as for acquireAnalogInput()
+				code = code + "float acquireADS1115AnalogInput(ADS1115 ads, byte inputNumber, byte gain, float k, float b, bool transfert, byte transferNumber) {\n";
 				code = code + "\t\tint value = 0;\n";
 				code = code + "\t\tads.setGain(gain);\n";
 				// R3 : interrupts are disabled in the real time loop interrupt, I2C needs them. R4 : I2C interrupts can
@@ -1460,8 +1488,11 @@ public class ArduinoUnoProcess extends Process {
 				if(isRelease3) code = code + "\t\tinterrupts();\n";
 				code = code + "\t\tvalue = ads.readADC(inputNumber);\n";
 				if(isRelease3) code = code + "\t\tnoInterrupts();\n";
+				code = code + "\t\tfloat physicalValue = k * value + b;\n";
 				code = code + "\t\tif(transfert) {\n";
-				code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%d\", transferNumber, value);\n";
+				code = code + "\t\t\t\tuint32_t physicalValueBits;\n";
+				code = code + "\t\t\t\tmemcpy(&physicalValueBits, &physicalValue, sizeof(physicalValueBits));\n";
+				code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%08lX\", transferNumber, (unsigned long)physicalValueBits);\n";
 				if(isRelease4Wifi || isRelease4Minima) {
 					// Sent by loop() : in the real time loop interrupt, Serial would wait forever (see acquireAnalogInput())
 					code = code + "\t\t\t\tglobalSerialMessage += serialMessage;\n";
@@ -1471,7 +1502,7 @@ public class ArduinoUnoProcess extends Process {
 					code = code + "\t\t\t\tSerial.flush();\n";
 				}
 				code = code + "\t\t}\n";
-				code = code + "\t\treturn value;\n";
+				code = code + "\t\treturn physicalValue;\n";
 				code = code + "}\n";
 //				code = code + "unsigned int acquireADS1115AnalogInput(int moduleAddress, byte inputNumber, byte gain, byte frequency, bool transfert, byte transferNumber) {\n";
 //				code = code + "\t\tint wordValue = 0;\n";

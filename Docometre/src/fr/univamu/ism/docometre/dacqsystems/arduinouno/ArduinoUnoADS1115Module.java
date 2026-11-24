@@ -114,8 +114,8 @@ public class ArduinoUnoADS1115Module extends Module {
 			if (segment == ArduinoUnoCodeSegmentProperties.DECLARATION) {
 				if(isUsed) {
 					code = code + "// ******** ADS1115 Entree analogique : " + name + "\n";
-					// Signed value, see acquireADS1115AnalogInput()
-					code = code + "int " + name + ";\n";
+					// Physical value : calibration from the raw (signed) value of the converter (see acquireADS1115AnalogInput())
+					code = code + "float " + name + ";\n";
 					code = code + "byte acquire_" + name + "_index = " + frequencyRatio + ";\n";
 				}
 			}
@@ -139,7 +139,9 @@ public class ArduinoUnoADS1115Module extends Module {
 					if(gain.equals(ArduinoUnoAnInChannelProperties.GAIN_0)) gain = "0";
 					code = code + "\n\t\tif(acquire_" + name + "_index == " + frequencyRatio + ") {\n";
 					code = code + "\t\t\t\tacquire_" + name + "_index = 0;\n";
-					code = code + "\t\t\t\t" + name + " = acquireADS1115AnalogInput(" + ADSName + ", " + channelNumber + ", " + gain + ", " + transfer + ", " + transferNumber +  ");\n";
+					// Physical value = k * raw value + b (calibration from the raw values, see RawCalibration)
+					String[] coefficients = ArduinoUnoAnInChannelProperties.getCoefficientsCode(channel);
+					code = code + "\t\t\t\t" + name + " = acquireADS1115AnalogInput(" + ADSName + ", " + channelNumber + ", " + gain + ", " + coefficients[0] + ", " + coefficients[1] + ", " + transfer + ", " + transferNumber +  ");\n";
 					code = code + "\t\t}\n";
 					code = code + "\t\tacquire_" + name + "_index += 1;\n\n";
 					

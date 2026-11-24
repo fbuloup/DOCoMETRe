@@ -138,13 +138,54 @@ public final class RawCalibration {
 	 * @throws IllegalArgumentException if aMin equals aMax or if a value is not a finite number
 	 */
 	public static String getCode(String rawCode, double aMin, double aMax, double uMin, double uMax) {
+		return getCode(rawCode, aMin, aMax, uMin, uMax, false);
+	}
+	
+	/**
+	 * @param cFloatLiterals true for C float literals (see {@link #formatCFloat(double)}), false for numbers without suffix
+	 * @see #getCode(String, double, double, double, double)
+	 */
+	public static String getCode(String rawCode, double aMin, double aMax, double uMin, double uMax, boolean cFloatLiterals) {
+		double[] kb = getCheckedCoefficients(aMin, aMax, uMin, uMax);
+		String code = format(kb[0], cFloatLiterals) + " * " + rawCode;
+		if(kb[1] > 0) code = code + " + " + format(kb[1], cFloatLiterals);
+		if(kb[1] < 0) code = code + " - " + format(-kb[1], cFloatLiterals);
+		return code;
+	}
+	
+	/**
+	 * @return {k, b} of the line, as C float literals (see {@link #formatCFloat(double)})
+	 * @throws IllegalArgumentException if aMin equals aMax or if a value is not a finite number
+	 */
+	public static String[] getCFloatCoefficients(double aMin, double aMax, double uMin, double uMax) {
+		double[] kb = getCheckedCoefficients(aMin, aMax, uMin, uMax);
+		return new String[] {formatCFloat(kb[0]), formatCFloat(kb[1])};
+	}
+	
+	private static double[] getCheckedCoefficients(double aMin, double aMax, double uMin, double uMax) {
 		if(!Double.isFinite(aMin) || !Double.isFinite(aMax) || !Double.isFinite(uMin) || !Double.isFinite(uMax))
 			throw new IllegalArgumentException("Calibration values must be finite");
 		double[] kb = getCoefficients(aMin, aMax, uMin, uMax);
-		String code = format(kb[0]) + " * " + rawCode;
-		if(kb[1] > 0) code = code + " + " + format(kb[1]);
-		if(kb[1] < 0) code = code + " - " + format(-kb[1]);
-		return code;
+		if(!Double.isFinite(kb[0]) || !Double.isFinite(kb[1])) throw new IllegalArgumentException("Calibration coefficients must be finite");
+		return kb;
+	}
+	
+	private static String format(double value, boolean cFloatLiteral) {
+		return cFloatLiteral ? formatCFloat(value) : format(value);
+	}
+	
+	/**
+	 * @return a C float literal : the shortest decimal value of the float nearest to value (which the C compiler converts
+	 * back to the same float), with a decimal point and the f suffix (10.0f, -0.5f, 0.0048828125f), so that the
+	 * computation is made in single precision (FPU of the Uno R4, double precision emulated)
+	 * @throws IllegalArgumentException if value is not a finite float
+	 */
+	public static String formatCFloat(double value) {
+		float floatValue = (float) value;
+		if(!Float.isFinite(floatValue)) throw new IllegalArgumentException("Not a finite float : " + value);
+		String literal = floatValue == 0 ? "0" : new BigDecimal(Float.toString(floatValue)).stripTrailingZeros().toPlainString();
+		if(!literal.contains(".")) literal = literal + ".0";
+		return literal + "f";
 	}
 	
 	/**

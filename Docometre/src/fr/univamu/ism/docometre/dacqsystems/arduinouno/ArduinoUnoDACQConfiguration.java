@@ -154,6 +154,18 @@ public class ArduinoUnoDACQConfiguration extends DACQConfiguration implements Pr
 		return succeed; 
 	}
 	
+	/**
+	 * @param channelName name of a channel (variable or channel of a module)
+	 * @return true if the values of this channel are transferred as the IEEE 754 bits of a float in hexadecimal :
+	 * analog inputs of the board and of the ADS1115 modules (physical values, see acquireAnalogInput() in ArduinoUnoProcess)
+	 */
+	public boolean isFloatTransfer(String channelName) {
+		Channel channel = getChannelFromName(channelName);
+		if(channel == null) return false;
+		Module module = channel.getModule();
+		return module instanceof ArduinoUnoAnInModule || module instanceof ArduinoUnoADS1115Module;
+	}
+	
 	@Override
 	public ArduinoUnoVariable[] getVariables() {
 		ArduinoUnoVariable[] variablesArray = variables.toArray(new ArduinoUnoVariable[variables.size()]);

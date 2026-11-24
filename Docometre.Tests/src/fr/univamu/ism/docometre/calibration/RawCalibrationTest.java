@@ -81,6 +81,21 @@ public class RawCalibrationTest {
 	}
 	
 	@Test
+	public void cFloatLiterals() {
+		assertEquals("10.0f", RawCalibration.formatCFloat(10));
+		assertEquals("-0.5f", RawCalibration.formatCFloat(-0.5));
+		assertEquals("0.0f", RawCalibration.formatCFloat(0));
+		assertEquals("0.0f", RawCalibration.formatCFloat(-0.0));
+		// Shortest value of the float : 300 / 614.4 = 0.48828124999999994 in double precision
+		assertEquals("0.48828125f", RawCalibration.formatCFloat(300 / (819.2 - 204.8)));
+		assertFalse(RawCalibration.formatCFloat(1e-7).contains("E"));
+		assertThrows(IllegalArgumentException.class, () -> RawCalibration.formatCFloat(1e300));
+		// Arduino Uno R3, DEFAULT reference : 0 / 1024 <-> 0 / 5 V
+		assertArrayEquals(new String[] {"0.0048828125f", "0.0f"}, RawCalibration.getCFloatCoefficients(0, 1024, 0, 5));
+		assertEquals("0.48828125f * analogRead(3) - 100.0f", RawCalibration.getCode("analogRead(3)", 204.8, 819.2, 0, 300, true));
+	}
+	
+	@Test
 	public void rangeConversions() {
 		RawCalibration.Range adwin = new RawCalibration.Range(0, 65535, -10, 10);
 		assertEquals(-10, adwin.toVolt(0), EPSILON);

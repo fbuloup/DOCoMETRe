@@ -142,7 +142,8 @@ public class ArduinoUnoAnInModule extends Module {
 			if (segment == ArduinoUnoCodeSegmentProperties.DECLARATION) {
 				if(isUsed) {
 					code = code + "// ******** Entree analogique : " + name + "\n";
-					code = code + "unsigned int " + name + ";\n";
+					// Physical value : calibration from the raw value of the converter (see acquireAnalogInput())
+					code = code + "float " + name + ";\n";
 					code = code + "byte acquire_" + name + "_index = " + frequencyRatio + ";\n";
 				}
 			}
@@ -159,7 +160,9 @@ public class ArduinoUnoAnInModule extends Module {
 				if(isUsed) {
 					code = code + "\n\t\tif(acquire_" + name + "_index == " + frequencyRatio + ") {\n";
 					code = code + "\t\t\t\tacquire_" + name + "_index = 0;\n";
-					code = code + "\t\t\t\t" + name + " = acquireAnalogInput(" + channelNumber + ", " + transfer + ", " + transferNumber + ");\n";
+					// Physical value = k * raw value + b (calibration from the raw values, see RawCalibration)
+					String[] coefficients = ArduinoUnoAnInChannelProperties.getCoefficientsCode(channel);
+					code = code + "\t\t\t\t" + name + " = acquireAnalogInput(" + channelNumber + ", " + coefficients[0] + ", " + coefficients[1] + ", " + transfer + ", " + transferNumber + ");\n";
 					code = code + "\t\t}\n";
 					code = code + "\t\tacquire_" + name + "_index += 1;\n\n";
 					

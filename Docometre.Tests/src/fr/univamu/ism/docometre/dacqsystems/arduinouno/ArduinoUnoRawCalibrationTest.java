@@ -41,12 +41,17 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.arduinouno;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
 import fr.univamu.ism.docometre.dacqsystems.Channel;
+import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.Module;
 
 /**
@@ -114,6 +119,23 @@ public class ArduinoUnoRawCalibrationTest {
 		assertCalibration(channel, "-32768", "32768", "-0.256", "0.256", "false");
 	}
 
+	@Test
+	public void codeOfTheAcquisition() {
+		ArduinoUnoDACQConfiguration dacqConfiguration = new ArduinoUnoDACQConfiguration();
+		dacqConfiguration.setProperty(ArduinoUnoDACQConfigurationProperties.REVISION, ArduinoUnoDACQConfigurationProperties.REVISION_R3);
+		ArduinoUnoAnInModule module = getAnalogInputsModule(dacqConfiguration);
+		Channel channel = module.getChannel(0);
+		// k and b of acquireAnalogInput() : 5 V / 1024
+		assertArrayEquals(new String[] {"0.0048828125f", "0.0f"}, ArduinoUnoAnInChannelProperties.getCoefficientsCode(channel));
+		assertEquals("0.0048828125f * analogRead(0)", ArduinoUnoAnInChannelProperties.getPhysicalValueCode(channel, "analogRead(0)"));
+		// Values of the analog inputs transferred as floats (IEEE 754 in hexadecimal), not those of the digital inputs/outputs
+		assertTrue(dacqConfiguration.isFloatTransfer(channel.getProperty(ChannelProperties.NAME)));
+		assertFalse(dacqConfiguration.isFloatTransfer("DIGITAL0"));
+		// Invalid calibration : explicit error
+		channel.setProperty(ArduinoUnoAnInChannelProperties.AMPLITUDE_MAX, "0");
+		assertThrows(IllegalArgumentException.class, () -> ArduinoUnoAnInChannelProperties.getCoefficientsCode(channel));
+	}
+	
 	@Test
 	public void formerCalibrationsAreConverted() {
 		ArduinoUnoDACQConfiguration dacqConfiguration = new ArduinoUnoDACQConfiguration();
