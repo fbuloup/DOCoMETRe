@@ -152,6 +152,10 @@ public class ArduinoUnoMessages extends NLS {
 	public static String AnalogReference_Tooltip;
 	public static String MemoryEffect_Label;
 	public static String MemoryEffect_Tooltip;
+	public static String ExternalReferenceVoltage_Label;
+	public static String ExternalReferenceVoltage_Tooltip;
+	public static String Calibrated_Label;
+	public static String Calibrated_Tooltip;
 	public static String Used_Label;
 	public static String Used_Tooltip;
 	

@@ -63,6 +63,32 @@ public class ArduinoUnoDACQConfiguration extends DACQConfiguration implements Pr
 
 	protected HashSet<ArduinoUnoVariable> variables = new HashSet<ArduinoUnoVariable>();
 	
+	/*
+	 * Revision of the board changed : default calibration of the analog inputs which are not calibrated (resolution
+	 * of the converter, voltage of the INTERNAL reference)
+	 */
+	@Override
+	public void setProperty(Property property, String value) {
+		super.setProperty(property, value);
+		if(ArduinoUnoDACQConfigurationProperties.REVISION.equals(property)) {
+			for (Module module : getModules()) 
+				if(module instanceof ArduinoUnoAnInModule) ((ArduinoUnoAnInModule) module).updateDefaultCalibration();
+		}
+	}
+	
+	/*
+	 * Called when the configuration is deserialized (Java serialization and XStream) : calibration of the analog inputs
+	 * saved before the calibration from the raw values converted (see ArduinoUnoAnInChannelProperties#migrate). Saved
+	 * in the new format the next time the configuration is saved.
+	 */
+	private Object readResolve() {
+		for (Module module : getModules()) {
+			if(!(module instanceof ArduinoUnoAnInModule) && !(module instanceof ArduinoUnoADS1115Module)) continue;
+			for (Channel channel : module.getChannels()) ArduinoUnoAnInChannelProperties.migrate(channel);
+		}
+		return this;
+	}
+	
 	public ArduinoUnoDACQConfiguration() {
 		ArduinoUnoDACQConfigurationProperties.populateProperties(this);
 		// For Arduino uno system, modules are statically added

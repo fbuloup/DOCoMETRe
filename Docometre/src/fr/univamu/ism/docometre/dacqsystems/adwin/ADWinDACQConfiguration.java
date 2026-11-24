@@ -66,6 +66,19 @@ public class ADWinDACQConfiguration extends DACQConfiguration implements Propert
 		ADWinDACQConfigurationProperties.populateProperties(this);
 	}
 	
+	/*
+	 * Called when the configuration is deserialized (Java serialization and XStream) : calibration of the analog inputs
+	 * saved before the calibration from the raw values converted (AMPLITUDE_MIN/MAX from volts to raw values, see
+	 * ChannelCalibration#migrate). Saved in the new format the next time the configuration is saved.
+	 */
+	private Object readResolve() {
+		for (Module module : getModules()) {
+			if(!(module instanceof ADWinAnInModule)) continue;
+			for (Channel channel : module.getChannels()) ADWinAnInChannelProperties.CALIBRATION.migrate(channel, true);
+		}
+		return this;
+	}
+	
 	public ADwinDevice getADwinDevice() {
 		return adwinDevice;
 	}

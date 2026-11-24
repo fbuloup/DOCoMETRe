@@ -77,6 +77,18 @@ public class ArduinoUnoChannel extends Channel {
 		super(module);
 	}
 	
+	/*
+	 * AMPLITUDE_MIN/MAX or UNIT_MIN/MAX of an analog input set by the user : the input is calibrated (see
+	 * ChannelCalibration). Gain of an ADS1115 input changed : default calibration updated if it is not calibrated.
+	 */
+	@Override
+	public void setProperty(Property property, String value) {
+		super.setProperty(property, value);
+		ArduinoUnoAnInChannelProperties.CALIBRATION.propertyChanged(this, property);
+		if(ArduinoUnoAnInChannelProperties.GAIN.equals(property) && module instanceof ArduinoUnoADS1115Module) 
+			ArduinoUnoAnInChannelProperties.CALIBRATION.updateDefault(this);
+	}
+	
 	public String getID() {
 		return (channelID == null || channelID.equals(""))? getProperty(ChannelProperties.NAME) : channelID;
 	}

@@ -251,6 +251,8 @@ public class ADWinMessages extends NLS {
 	public static String AmpMaxValue_Tooltip;
 	public static String AmpMinValue_Label;
 	public static String AmpMinValue_Tooltip;
+	public static String Calibrated_Label;
+	public static String Calibrated_Tooltip;
 
 	/*
 	 * ADWin modules properties

@@ -56,6 +56,25 @@ public class ArduinoUnoAnInModule extends Module {
 		super(daqGeneralConfiguration);
 		ArduinoUnoAnInModuleProperties.populateProperties(this);
 	}
+	
+	/*
+	 * Analog reference or voltage of the EXTERNAL reference changed : default calibration of the analog inputs which
+	 * are not calibrated
+	 */
+	@Override
+	public void setProperty(Property property, String value) {
+		super.setProperty(property, value);
+		if(ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE.equals(property) || ArduinoUnoAnInModuleProperties.EXTERNAL_REFERENCE_VOLTAGE.equals(property))
+			updateDefaultCalibration();
+	}
+	
+	/**
+	 * Default calibration of the analog inputs which are not calibrated updated (change of the analog reference, of
+	 * the voltage of the EXTERNAL reference or of the revision of the board)
+	 */
+	public void updateDefaultCalibration() {
+		for (Channel channel : getChannels()) ArduinoUnoAnInChannelProperties.CALIBRATION.updateDefault(channel);
+	}
 
 	@Override
 	public String getCodeSegment(Object segment) throws Exception {

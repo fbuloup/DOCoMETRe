@@ -58,6 +58,16 @@ public class ADWinAnInModule extends Module {
 	
 	private boolean includeSegmentPassed;
 
+	/*
+	 * Range of the module changed : default calibration of its analog inputs which are not calibrated
+	 */
+	@Override
+	public void setProperty(Property property, String value) {
+		super.setProperty(property, value);
+		if(ADWinAnInModuleProperties.AMPLITUDE_MAX.equals(property) || ADWinAnInModuleProperties.AMPLITUDE_MIN.equals(property)) 
+			for (Channel channel : getChannels()) ADWinAnInChannelProperties.CALIBRATION.updateDefault(channel);
+	}
+
 	public ADWinAnInModule(DACQConfiguration daqGeneralConfiguration) {
 		super(daqGeneralConfiguration);
 		ADWinAnInModuleProperties.populateProperties(this);
