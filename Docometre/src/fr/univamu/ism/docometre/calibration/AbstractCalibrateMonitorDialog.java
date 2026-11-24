@@ -165,6 +165,11 @@ public abstract class AbstractCalibrateMonitorDialog extends TitleAreaDialog {
 	}
 	
 	@Override
+	protected void handleShellCloseEvent() {
+		buttonPressed(IDialogConstants.OK_ID);
+	}
+	
+	@Override
 	protected Control createDialogArea(Composite parent) {
 
 		Composite container = new Composite(parent, SWT.BORDER);
@@ -281,14 +286,12 @@ public abstract class AbstractCalibrateMonitorDialog extends TitleAreaDialog {
 	
 	@Override
 	protected void buttonPressed(int buttonId) {
-		if(buttonId == IDialogConstants.OK_ID) {
-			if(started) {
-				if(MessageDialog.openQuestion(getParentShell(), DocometreMessages.StopMonitoring, DocometreMessages.AreYouSureStopMonitoring)) {
-					CalibrationFactory.stopCalibrationProcess();
-					super.buttonPressed(buttonId);
-				}
-			}
-		} else super.buttonPressed(buttonId);
+		if(buttonId == IDialogConstants.OK_ID && started) {
+			if(!MessageDialog.openQuestion(getShell(), DocometreMessages.StopMonitoring, DocometreMessages.AreYouSureStopMonitoring)) return;
+			CalibrationFactory.stopCalibrationProcess();
+			started = false;
+		}
+		super.buttonPressed(buttonId);
 	}
 	
 }
