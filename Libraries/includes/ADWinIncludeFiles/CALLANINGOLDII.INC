@@ -7,7 +7,9 @@ FUNCTION Call_AnIn(canal_AnIn,gain_AnIn,Amin_AnIn,Amax_AnIn,Umin_AnIn,Umax_AnIn)
   DIM Call_AnIn_Temp AS FLOAT
   DIM numADC AS LONG
      
-  bits_AnIn_Temp = LOG(gain_AnIn)/LOG(2)
+  ' Gain code of the PGA (0, 1, 2, 3 for a gain of 1, 2, 4, 8) : + 0.1 so that a result
+  ' of LOG(gain)/LOG(2) slightly below the integer value is not truncated
+  bits_AnIn_Temp = LOG(gain_AnIn)/LOG(2) + 0.1
   bits_AnIn = bits_AnIn_Temp 'Gain PGA
     
   if ((canal_AnIn = 1) or (canal_AnIn=2)) then 

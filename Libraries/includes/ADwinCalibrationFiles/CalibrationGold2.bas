@@ -55,7 +55,9 @@ par_13=DIGIN_WORD1() + shift_left(GET_DIGOUT_WORD2(),16)'Lecture etat initial de
 EVENT :
 'Acquisition entrée analogique
 IF (par_1>0) then        
-  bits_AnIn_Temp = LOG(par_14)/LOG(2)
+  ' Gain code of the PGA (0, 1, 2, 3 for a gain of 1, 2, 4, 8) : + 0.1 so that a result
+  ' of LOG(par_14)/LOG(2) slightly below the integer value is not truncated
+  bits_AnIn_Temp = LOG(par_14)/LOG(2) + 0.1
   bits_AnIn = bits_AnIn_Temp 'Gain PGA
   
   if ((par_1 = 1) or (par_1=2)) then 
