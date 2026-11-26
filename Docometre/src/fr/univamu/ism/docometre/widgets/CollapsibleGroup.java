@@ -72,10 +72,9 @@ import org.eclipse.swt.widgets.Layout;
  *  ╰──────────────────────────────────────────────────────────╯
  *  ╭──────────────────────────────────────────────────────────╮
  *  │ Title                       [tool bar widgets...]  [▼]  │   expanded
- *  ╰──────────────────────────────────────────────────────────╯
- *  ┌──────────────────────────────────────────────────────────┐
+ *  │                                                          │
  *  │ body                                                     │
- *  └──────────────────────────────────────────────────────────┘
+ *  ╰──────────────────────────────────────────────────────────╯
  * </pre>
  * Widgets of the header bar are created with {@link #getToolBar()} as parent (they are laid out from left 
  * to right, vertically centered, RowData can be used). The content is created with {@link #getBody()} as 
@@ -90,6 +89,9 @@ public class CollapsibleGroup extends Composite {
 	private static final int HEADER_V_PADDING = 8;
 	// Diameter of the arcs of the corners of the header
 	private static final int HEADER_ARC = 14;
+	// Space between the border and the left, right and bottom sides of the body : the body must not hide
+	// the rounded corners of the border
+	private static final int BODY_INSET = HEADER_ARC/2;
 	// Colors of the border, for dark and light backgrounds
 	private static final RGB DARK_BACKGROUND_BORDER_RGB = new RGB(200, 200, 200);
 	private static final RGB LIGHT_BACKGROUND_BORDER_RGB = new RGB(160, 160, 160);
@@ -121,10 +123,10 @@ public class CollapsibleGroup extends Composite {
 			int width = headerSize.x + 2*HEADER_H_PADDING;
 			int height = headerSize.y + 2*HEADER_V_PADDING;
 			if(expanded) {
-				int bodyWHint = wHint == SWT.DEFAULT ? SWT.DEFAULT : Math.max(0, wHint - 2);
+				int bodyWHint = wHint == SWT.DEFAULT ? SWT.DEFAULT : Math.max(0, wHint - 2*BODY_INSET);
 				Point bodySize = body.computeSize(bodyWHint, SWT.DEFAULT, flushCache);
-				width = Math.max(width, bodySize.x + 2);
-				height += bodySize.y + 2;
+				width = Math.max(width, bodySize.x + 2*BODY_INSET);
+				height += bodySize.y + BODY_INSET;
 			}
 			if(wHint != SWT.DEFAULT) width = wHint;
 			if(hHint != SWT.DEFAULT) height = hHint;
@@ -138,7 +140,7 @@ public class CollapsibleGroup extends Composite {
 			int headerContentHeight = header.computeSize(headerWidth, SWT.DEFAULT, flushCache).y;
 			headerHeight = headerContentHeight + 2*HEADER_V_PADDING;
 			header.setBounds(clientArea.x + HEADER_H_PADDING, clientArea.y + HEADER_V_PADDING, headerWidth, headerContentHeight);
-			if(expanded) body.setBounds(clientArea.x + 1, clientArea.y + headerHeight + 1, Math.max(0, clientArea.width - 2), Math.max(0, clientArea.height - headerHeight - 2));
+			if(expanded) body.setBounds(clientArea.x + BODY_INSET, clientArea.y + headerHeight, Math.max(0, clientArea.width - 2*BODY_INSET), Math.max(0, clientArea.height - headerHeight - BODY_INSET));
 		}
 		
 	}
@@ -189,8 +191,11 @@ public class CollapsibleGroup extends Composite {
 		// Body : content, visible when expanded
 		body = new Composite(this, SWT.NONE);
 		gl = new GridLayout();
-		gl.marginWidth = 10;
-		gl.marginHeight = 10;
+		// With the insets of the body : 10 pixels from the border
+		gl.marginWidth = 10 - BODY_INSET;
+		gl.marginHeight = 0;
+		gl.marginTop = 2;
+		gl.marginBottom = 10 - BODY_INSET;
 		body.setLayout(gl);
 		body.setVisible(false);
 		
@@ -221,7 +226,7 @@ public class CollapsibleGroup extends Composite {
 	}
 	
 	/*
-	 * Rounded border around the header and, when expanded, rectangle around the body, just under the header
+	 * Rounded border around the header, or around the header and the body when expanded
 	 */
 	private void paintBorders(GC gc) {
 		Rectangle clientArea = getClientArea();
@@ -229,12 +234,8 @@ public class CollapsibleGroup extends Composite {
 		gc.setAntialias(SWT.ON);
 		gc.setLineWidth(1);
 		gc.setForeground(getBorderColor());
-		gc.drawRoundRectangle(clientArea.x, clientArea.y, clientArea.width - 1, headerHeight - 1, HEADER_ARC, HEADER_ARC);
-		if(expanded) {
-			int y = clientArea.y + headerHeight;
-			gc.setAntialias(SWT.OFF);
-			gc.drawRectangle(clientArea.x, y, clientArea.width - 1, clientArea.y + clientArea.height - y - 1);
-		}
+		int height = expanded ? clientArea.height : headerHeight;
+		gc.drawRoundRectangle(clientArea.x, clientArea.y, clientArea.width - 1, height - 1, HEADER_ARC, HEADER_ARC);
 	}
 	
 	/*
