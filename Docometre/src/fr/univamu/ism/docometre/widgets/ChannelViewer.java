@@ -42,7 +42,9 @@
 package fr.univamu.ism.docometre.widgets;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -52,13 +54,16 @@ import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Layout;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
@@ -166,7 +171,7 @@ public class ChannelViewer extends CollapsibleGroup {
 		else decimalFormater = new DecimalFormat("#");
 		
 		// Title : "name (number)" for outputs, "name (number) - value" for inputs
-		setText(input ? title + " : " + UNKNOWN_VALUE : title);
+		setText(input ? title + " - " + UNKNOWN_VALUE : title);
 		setToggleImages(Activator.getImage(IImageKeys.SHOW_GRAPH_ICON), Activator.getImage(IImageKeys.HIDE_GRAPH_ICON));
 		setToggleToolTipText(DocometreMessages.ShowHideGraph);
 		
@@ -209,12 +214,8 @@ public class ChannelViewer extends CollapsibleGroup {
 			calibrationHeader.addUMaxListener(AbstractCalibrateMonitorDialog.getGlobalCalibrationListener());
 			calibrationHeader.addUMinListener(AbstractCalibrateMonitorDialog.getGlobalCalibrationListener());
 			calibrationHeader.addResetListener(() -> AbstractCalibrateMonitorDialog.getGlobalCalibrationListener().push(0));
-			// One column for each widget of the calibration header
-			GridLayout gl = new GridLayout(Math.max(1, calibrationComposite.getChildren().length), false);
-			gl.marginWidth = 0;
-			gl.marginHeight = 0;
-			gl.horizontalSpacing = 8;
-			calibrationComposite.setLayout(gl);
+			// On one line, or on two lines when the viewer is narrow
+			calibrationComposite.setLayout(new CalibrationLayout());
 		}
 		
 		// Graph created when the group is expanded, disposed when collapsed
@@ -242,6 +243,99 @@ public class ChannelViewer extends CollapsibleGroup {
 		else getParent().layout(true);
 		traceVisible = visible;
 		if(graphVisibilityListener != null) graphVisibilityListener.run();
+	}
+	
+	/*
+	 * Layout of the calibration fields of an analog input (see CalibrationHeader) : on one line when the width is 
+	 * sufficient, otherwise on two lines, broken at the vertical separator, which is then hidden : Amax and Amin on 
+	 * the first line, Umax, Umin and the default calibration button on the second one. The width and height hints 
+	 * of the GridData of the fields are used.
+	 */
+	private static final class CalibrationLayout extends Layout {
+		
+		private static final int HORIZONTAL_SPACING = 8;
+		private static final int VERTICAL_SPACING = 6;
+		
+		private static boolean isSeparator(Control control) {
+			return (control.getStyle() & SWT.SEPARATOR) != 0;
+		}
+		
+		private static Point getSize(Control control, boolean flushCache) {
+			int wHint = SWT.DEFAULT, hHint = SWT.DEFAULT;
+			if(control.getLayoutData() instanceof GridData gridData) {
+				wHint = gridData.widthHint;
+				hHint = gridData.heightHint;
+			}
+			return control.computeSize(wHint, hHint, flushCache);
+		}
+		
+		/*
+		 * One line : all the fields. Two lines : the fields before and after the separators (excluded)
+		 */
+		private static List<List<Control>> getRows(Composite composite, boolean twoLines) {
+			List<List<Control>> rows = new ArrayList<>();
+			List<Control> row = new ArrayList<>();
+			rows.add(row);
+			for (Control child : composite.getChildren()) {
+				if(twoLines && isSeparator(child)) {
+					if(!row.isEmpty()) rows.add(row = new ArrayList<>());
+					continue;
+				}
+				row.add(child);
+			}
+			if(row.isEmpty() && rows.size() > 1) rows.remove(row);
+			return rows;
+		}
+		
+		private static Point getRowSize(List<Control> row, boolean flushCache) {
+			int width = 0, height = 0;
+			for (Control control : row) {
+				Point size = getSize(control, flushCache);
+				width += size.x;
+				height = Math.max(height, size.y);
+			}
+			if(row.size() > 1) width += (row.size() - 1) * HORIZONTAL_SPACING;
+			return new Point(width, height);
+		}
+		
+		private static Point getSize(List<List<Control>> rows, boolean flushCache) {
+			int width = 0, height = 0;
+			for (List<Control> row : rows) {
+				Point size = getRowSize(row, flushCache);
+				width = Math.max(width, size.x);
+				height += size.y;
+			}
+			if(rows.size() > 1) height += (rows.size() - 1) * VERTICAL_SPACING;
+			return new Point(width, height);
+		}
+		
+		@Override
+		protected Point computeSize(Composite composite, int wHint, int hHint, boolean flushCache) {
+			Point size = getSize(getRows(composite, false), flushCache);
+			if(wHint != SWT.DEFAULT && wHint < size.x) size = getSize(getRows(composite, true), flushCache);
+			if(wHint != SWT.DEFAULT) size.x = wHint;
+			if(hHint != SWT.DEFAULT) size.y = hHint;
+			return size;
+		}
+		
+		@Override
+		protected void layout(Composite composite, boolean flushCache) {
+			Rectangle area = composite.getClientArea();
+			boolean twoLines = area.width < getSize(getRows(composite, false), flushCache).x;
+			if(twoLines) for (Control child : composite.getChildren()) if(isSeparator(child)) child.setBounds(0, 0, 0, 0);
+			int y = area.y;
+			for (List<Control> row : getRows(composite, twoLines)) {
+				int rowHeight = getRowSize(row, flushCache).y;
+				int x = area.x;
+				for (Control control : row) {
+					Point size = getSize(control, flushCache);
+					control.setBounds(x, y + (rowHeight - size.y)/2, size.x, size.y);
+					x += size.x + HORIZONTAL_SPACING;
+				}
+				y += rowHeight + VERTICAL_SPACING;
+			}
+		}
+		
 	}
 	
 	/**
@@ -367,7 +461,7 @@ public class ChannelViewer extends CollapsibleGroup {
 				Display.getDefault().syncExec(new Runnable() {
 					@Override
 					public void run() {
-						if(!isDisposed()) setText(title + " : " + decimalFormater.format(yComputed));
+						if(!isDisposed()) setText(title + " - " + decimalFormater.format(yComputed));
 					}
 				});
 		}
