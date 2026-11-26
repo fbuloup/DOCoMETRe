@@ -78,7 +78,11 @@ public class DeactivateCommand extends Command {
 	
 	private void refresh() {
 		BlockEditPart blockEditPart = BlockEditPart.getBlockEditPart(viewer, block);
-		if(blockEditPart != null) blockEditPart.refresh();
+		if(blockEditPart != null) {
+			blockEditPart.refresh();
+			// A deactivated function displays COMMENTED instead of its code
+			blockEditPart.updateFigureLabel();
+		}
 	}
 	
 	private void activateSegmentProcessEditor() {

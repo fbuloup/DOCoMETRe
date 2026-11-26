@@ -47,7 +47,6 @@ import java.util.List;
 import org.eclipse.draw2d.ConnectionAnchor;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.gef.ConnectionEditPart;
-import org.eclipse.gef.DefaultEditDomain;
 import org.eclipse.gef.EditPartViewer;
 import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef.GraphicalEditPart;
@@ -73,7 +72,6 @@ import fr.univamu.ism.process.SizeAndLocationListener;
 import fr.univamu.ism.docometre.scripteditor.figures.BlockFigure;
 import fr.univamu.ism.docometre.scripteditor.figures.PerpendicularAnchor;
 import fr.univamu.ism.docometre.scripteditor.actions.EditBlockAction;
-import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.scripteditor.actions.AssignFunctionAction;
 import fr.univamu.ism.docometre.scripteditor.actions.DeactivateBlockAction;
 import fr.univamu.ism.docometre.scripteditor.commands.AssignFunctionBlockCommand;
@@ -104,9 +102,7 @@ public class BlockEditPart extends AbstractGraphicalEditPart implements SizeAndL
 	
 	@Override
 	protected IFigure createFigure() {
-		ResourceEditorInput resourceEditorInput = (ResourceEditorInput) ((DefaultEditDomain) getRoot().getViewer().getEditDomain()).getEditorPart().getEditorInput();
-		Object object =resourceEditorInput.getObject();
-		figure = new BlockFigure(getModel().getName(object), this) ;
+		figure = new BlockFigure(this) ;
 		return figure ;
 	}
 	

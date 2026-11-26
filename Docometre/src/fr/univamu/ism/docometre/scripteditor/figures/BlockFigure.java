@@ -41,6 +41,9 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.scripteditor.figures;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw2d.GridData;
@@ -62,13 +65,22 @@ import org.eclipse.swt.widgets.Display;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.IImageKeys;
+import fr.univamu.ism.docometre.analyse.MathEngineFactory;
+import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
+import fr.univamu.ism.docometre.dacqsystems.Process;
+import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfiguration;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfiguration;
 import fr.univamu.ism.docometre.editors.ResourceEditorInput;
 import fr.univamu.ism.docometre.scripteditor.editparts.BlockEditPart;
+import fr.univamu.ism.docometre.scripteditor.figures.FunctionCodeLines.Language;
 import fr.univamu.ism.process.Block;
 import fr.univamu.ism.process.Comment;
 import fr.univamu.ism.process.DoBlock;
 import fr.univamu.ism.process.Function;
 import fr.univamu.ism.process.IfBlock;
+import fr.univamu.ism.process.Script;
+import fr.univamu.ism.process.ScriptSegment;
+import fr.univamu.ism.process.ScriptSegmentType;
 
 public class BlockFigure extends RoundedRectangle {
 	
@@ -121,11 +133,15 @@ public class BlockFigure extends RoundedRectangle {
 		JFaceResources.getColorRegistry().put(DEACTIVATED_BORDER_COLOR, new RGB(34,139,34));
 	}
 	
+	// Text displayed by a deactivated function
+	private static final String COMMENTED = "COMMENTED";
+	
 	private BlockEditPart blockEditPart;
-	protected Label label;
+	// One label per displayed line : a function displays the first lines of its code, other blocks their name
+	protected List<Label> labels = new ArrayList<>();
 	private RoundedRectangle roundedRectangle;
 
-	public BlockFigure(String title, BlockEditPart blockEditPart) {
+	public BlockFigure(BlockEditPart blockEditPart) {
 		this.blockEditPart = blockEditPart;
 
 		setCornerDimensions(new Dimension(15, 15));
@@ -152,25 +168,23 @@ public class BlockFigure extends RoundedRectangle {
 		gd2.verticalSpacing = 0;
 		roundedRectangle.setLayoutManager(gd2);
 		
-		label = new Label(title);
+		updateLabel();
 		setToolTipFigure(null);
-		label.setForegroundColor(Display.getDefault().getSystemColor(SWT.COLOR_BLACK));
-		roundedRectangle.add(label);
-		roundedRectangle.getLayoutManager().setConstraint(label, new GridData(GridData.FILL_BOTH));
 	}
 	
+	/*
+	 * Tooltip is set on the figure holding the labels : it is displayed whatever the line under the mouse
+	 */
 	private void setToolTipFigure(String message) {
 		if(message == null) {
-			label.setToolTip(null);
+			roundedRectangle.setToolTip(null);
 			if(blockEditPart.getModel() instanceof Function) {
-				ResourceEditorInput resourceEditorInput = (ResourceEditorInput) ((DefaultEditDomain) blockEditPart.getRoot().getViewer().getEditDomain()).getEditorPart().getEditorInput();
-				Object object = resourceEditorInput.getObject();
-				String tooltip = ((Function)blockEditPart.getModel()).getDescription(object);
-				if(tooltip != null && !tooltip.equals("")) label.setToolTip(new TooltipFigure(tooltip));
+				String tooltip = ((Function)blockEditPart.getModel()).getDescription(getContext());
+				if(tooltip != null && !tooltip.equals("")) roundedRectangle.setToolTip(new TooltipFigure(tooltip));
 			}
 		} else {
 			TooltipFigure tooltipFigure = new TooltipFigure(message);
-			label.setToolTip(tooltipFigure);
+			roundedRectangle.setToolTip(tooltipFigure);
 		}
 	}
 	
@@ -185,8 +199,9 @@ public class BlockFigure extends RoundedRectangle {
 		roundedRectangle.setForegroundColor(getColor());
 		
 		fillShape(graphics);
-		//if(label.getIcon() != null && !label.getIcon().isDisposed()) label.getIcon().dispose();
-		label.setIcon(null);
+		// Status icon is displayed in the first label
+		Label label = labels.isEmpty() ? null : labels.get(0);
+		if(label != null) label.setIcon(null);
 		setToolTipFigure(null);
 		// Code generation status (warning) and compilation status (errors and warnings located in this block)
 		IStatus status = blockEditPart.getModel().getStatus();
@@ -194,8 +209,10 @@ public class BlockFigure extends RoundedRectangle {
 		if(status != null || compilationStatus != null) {
 			boolean error = (status != null && status.getSeverity() == IStatus.ERROR) || (compilationStatus != null && compilationStatus.getSeverity() == IStatus.ERROR);
 			Image image = Activator.getImage(error ? IImageKeys.ERROR_ANNOTATION_ICON : IImageKeys.WARNING_ANNOTATION_ICON);
-			if(image != null && !image.isDisposed()) label.setIcon(image);
-			label.setIconAlignment(PositionConstants.LEFT);
+			if(label != null) {
+				if(image != null && !image.isDisposed()) label.setIcon(image);
+				label.setIconAlignment(PositionConstants.LEFT);
+			}
 			String message = status != null ? status.getMessage() : "";
 			if(compilationStatus != null) message = message + (message.isEmpty() ? "" : "\n") + compilationStatus.getMessage();
 			setToolTipFigure(message);
@@ -218,10 +235,97 @@ public class BlockFigure extends RoundedRectangle {
 		return JFaceResources.getColorRegistry().get(FUNCTION_BORDER_COLOR);
 	} 
 	
-	public void updateLabel() {
+	/*
+	 * Returns the object edited : ADwin or Arduino Uno process for acquisition, script for data processing
+	 */
+	private Object getContext() {
 		ResourceEditorInput resourceEditorInput = (ResourceEditorInput) ((DefaultEditDomain) blockEditPart.getRoot().getViewer().getEditDomain()).getEditorPart().getEditorInput();
-		Object object = resourceEditorInput.getObject();
-		label.setText(((Block)blockEditPart.getModel()).getName(object));
+		return resourceEditorInput.getObject();
+	}
+	
+	/**
+	 * Updates displayed lines : 
+	 * - a deactivated function displays COMMENTED,
+	 * - an activated function displays the first lines of its code, without comments (see FunctionCodeLines),
+	 * - other blocks display their name.
+	 */
+	public void updateLabel() {
+		Object context = getContext();
+		Block block = blockEditPart.getModel();
+		List<String> lines = new ArrayList<>();
+		if(block instanceof Function) lines = getFunctionLines((Function) block, context);
+		else lines.add(block.getName(context));
+		setLines(lines);
+	}
+	
+	private List<String> getFunctionLines(Function function, Object context) {
+		List<String> lines = new ArrayList<>();
+		if(!function.isActivated()) {
+			lines.add(COMMENTED);
+			return lines;
+		}
+		try {
+			String code = function.getCode(context, getStep());
+			lines = FunctionCodeLines.getDisplayedLines(code, getLanguage(context));
+		} catch (Exception e) {
+			Activator.logErrorMessageWithCause(e);
+		}
+		// No code to display (e.g. function not yet assigned or not available for this system) : display function title
+		if(lines.isEmpty()) {
+			String title = function.getTitle(context);
+			lines.add(title == null || title.isEmpty() ? function.getName(context) : title);
+		}
+		return lines;
+	}
+	
+	/*
+	 * Code generation step is the type of the segment holding the block
+	 */
+	private ScriptSegmentType getStep() {
+		Object segment = blockEditPart.getParent() != null ? blockEditPart.getParent().getModel() : null;
+		if(segment instanceof ScriptSegment) return ((ScriptSegment) segment).getScriptSegmentType();
+		return ScriptSegmentType.LOOP;
+	}
+	
+	private Language getLanguage(Object context) {
+		if(context instanceof Process) {
+			DACQConfiguration dacqConfiguration = ((Process) context).getDACQConfiguration();
+			if(dacqConfiguration instanceof ADWinDACQConfiguration) return Language.ADBASIC;
+			if(dacqConfiguration instanceof ArduinoUnoDACQConfiguration) return Language.ARDUINO;
+		}
+		if(context instanceof Script) {
+			if(MathEngineFactory.isMatlab()) return Language.MATLAB;
+			if(MathEngineFactory.isPython()) return Language.PYTHON;
+		}
+		return Language.UNKNOWN;
+	}
+	
+	/*
+	 * Creates one label per line, lines group being vertically centered
+	 */
+	private void setLines(List<String> lines) {
+		if(lines.size() != labels.size()) {
+			for (Label label : labels) roundedRectangle.remove(label);
+			labels.clear();
+			for (int i = 0; i < lines.size(); i++) {
+				Label label = new Label();
+				label.setForegroundColor(Display.getDefault().getSystemColor(SWT.COLOR_BLACK));
+				roundedRectangle.add(label);
+				roundedRectangle.getLayoutManager().setConstraint(label, getLabelLayoutData(i, lines.size()));
+				labels.add(label);
+			}
+		}
+		for (int i = 0; i < lines.size(); i++) labels.get(i).setText(lines.get(i));
+	}
+	
+	/*
+	 * Extra vertical space is shared between first and last labels : above first one and below last one
+	 */
+	private GridData getLabelLayoutData(int index, int nbLabels) {
+		if(nbLabels == 1) return new GridData(GridData.FILL_BOTH);
+		if(index == 0) return new GridData(SWT.FILL, SWT.END, true, true);
+		if(index == nbLabels - 1) return new GridData(SWT.FILL, SWT.BEGINNING, true, true);
+		return new GridData(SWT.FILL, SWT.CENTER, true, false);
 	}
 	
 }
