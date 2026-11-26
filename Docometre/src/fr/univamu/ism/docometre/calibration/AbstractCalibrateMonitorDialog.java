@@ -218,17 +218,21 @@ public abstract class AbstractCalibrateMonitorDialog extends TitleAreaDialog {
 
 		populate(inputsContainer, outputsContainer);
 		
+		inputsScrolledComposite.setExpandHorizontal(true);
+		inputsScrolledComposite.setExpandVertical(true);
 		inputsScrolledComposite.addControlListener(new ControlAdapter() {
 			@Override
 			public void controlResized(ControlEvent e) {
-				inputsContainer.setSize(inputsContainer.computeSize(inputsScrolledComposite.getSize().x, SWT.DEFAULT));
+				updateScrolledContent(inputsScrolledComposite);
 			}
 		});
 		
+		outputsScrolledComposite.setExpandHorizontal(true);
+		outputsScrolledComposite.setExpandVertical(true);
 		outputsScrolledComposite.addControlListener(new ControlAdapter() {
 			@Override
 			public void controlResized(ControlEvent e) {
-				outputsContainer.setSize(outputsContainer.computeSize(outputsScrolledComposite.getSize().x, SWT.DEFAULT));
+				updateScrolledContent(outputsScrolledComposite);
 			}
 		});
 		
@@ -244,6 +248,21 @@ public abstract class AbstractCalibrateMonitorDialog extends TitleAreaDialog {
 		return container;
 		
 		
+	}
+	
+	/**
+	 * Updates the content of a scrolled composite of the dialog after a change of its size or of the size of its content
+	 * (graph of a viewer shown or hidden). The width of the content is the width of the visible area, without the vertical
+	 * scroll bar when it is visible (horizontal expansion of the scrolled composite) : the content must not be wider than
+	 * the visible area, its right side would be hidden. The vertical scroll bar is shown when the content is higher than
+	 * the visible area.
+	 */
+	public static void updateScrolledContent(ScrolledComposite scrolledComposite) {
+		Control content = scrolledComposite.getContent();
+		if(content == null || content.isDisposed()) return;
+		scrolledComposite.setMinHeight(content.computeSize(scrolledComposite.getClientArea().width, SWT.DEFAULT).y);
+		// Lays out the viewers even if the size of the content did not change (content smaller than the visible area)
+		if(content instanceof Composite) ((Composite) content).layout(true);
 	}
 	
 	/**

@@ -45,6 +45,7 @@ import java.text.DecimalFormat;
 import java.util.Arrays;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ExpandEvent;
 import org.eclipse.swt.events.ExpandListener;
 import org.eclipse.swt.events.MouseAdapter;
@@ -237,11 +238,8 @@ public class ChannelViewer extends CollapsibleGroup {
 	 */
 	private void graphVisibilityChanged(boolean visible) {
 		// The body is laid out when the viewer is resized (with its new height : the chart must not be laid out with a null height)
-		Composite sc = getParent().getParent();
-		sc.layout(true);
-		getParent().setSize(getParent().computeSize(SWT.DEFAULT, SWT.DEFAULT));
-		int width = getParent().getSize().y < sc.getSize().y ? sc.getSize().x : sc.getClientArea().width;
-		getParent().setSize(getParent().computeSize(width, SWT.DEFAULT));
+		if(getParent().getParent() instanceof ScrolledComposite) AbstractCalibrateMonitorDialog.updateScrolledContent((ScrolledComposite) getParent().getParent());
+		else getParent().layout(true);
 		traceVisible = visible;
 		if(graphVisibilityListener != null) graphVisibilityListener.run();
 	}
