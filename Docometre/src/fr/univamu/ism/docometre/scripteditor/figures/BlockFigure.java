@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.draw2d.FigureUtilities;
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw2d.GridData;
 import org.eclipse.draw2d.GridLayout;
@@ -59,6 +60,7 @@ import org.eclipse.gef.DefaultEditDomain;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
@@ -135,6 +137,20 @@ public class BlockFigure extends RoundedRectangle {
 	
 	// Text displayed by a deactivated function
 	private static final String COMMENTED = "COMMENTED";
+	// Margin between block border and inner rounded rectangle holding the labels
+	private static final int MARGIN = 2;
+	
+	/**
+	 * Returns the default height of a function block : enough to display FunctionCodeLines.MAX_LINES lines of code.
+	 * Labels use the font of the editor canvas, which is the system font.
+	 * @return the height in pixels
+	 */
+	public static int getFunctionBlockDefaultHeight() {
+		Font font = Display.getDefault().getSystemFont();
+		int lineHeight = FigureUtilities.getFontMetrics(font).getHeight();
+		// Top and bottom margins, plus one pixel above and below the lines so that they don't touch rounded corners
+		return FunctionCodeLines.MAX_LINES * lineHeight + 2 * MARGIN + 2;
+	}
 	
 	private BlockEditPart blockEditPart;
 	// One label per displayed line : a function displays the first lines of its code, other blocks their name
@@ -149,8 +165,8 @@ public class BlockFigure extends RoundedRectangle {
 		
 		GridLayout gd1 = new GridLayout(1, false);
 		gd1.horizontalSpacing = 0;
-		gd1.marginHeight = 2;
-		gd1.marginWidth = 2;
+		gd1.marginHeight = MARGIN;
+		gd1.marginWidth = MARGIN;
 		gd1.verticalSpacing = 0;
 		setLayoutManager(gd1);
 		

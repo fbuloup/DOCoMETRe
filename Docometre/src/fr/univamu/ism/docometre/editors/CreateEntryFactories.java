@@ -45,6 +45,7 @@ import org.eclipse.gef.requests.CreationFactory;
 import org.eclipse.gef.requests.SimpleFactory;
 
 import fr.univamu.ism.docometre.DocometreMessages;
+import fr.univamu.ism.docometre.scripteditor.figures.BlockFigure;
 import fr.univamu.ism.process.Comment;
 import fr.univamu.ism.process.DoBlock;
 import fr.univamu.ism.process.Function;
@@ -80,6 +81,8 @@ public final class CreateEntryFactories {
 			@Override
 			public Function getNewObject() {
 				Function block = new Function(script, DocometreMessages.NewFunctionName);
+				// Height to display the first lines of function code
+				block.setHeight(BlockFigure.getFunctionBlockDefaultHeight());
 //				block.setToolTip(DocometreMessages.NewFunctionTooltip);
 				return block;
 			}
