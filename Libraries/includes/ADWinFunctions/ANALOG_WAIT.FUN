@@ -15,16 +15,16 @@ DESCRIPTION_PL = Czekaj, aż wejście analogowe przekroczy zadaną wartość
 # Take care of the fact that each key must be upper case !
 FUNCTION_CODE_PRO_I = DO\n\
 	NOP\n\
-UNTIL (Call_AnIn(moduleNumber, channelNumber, gain, ampMin, ampMax, unitMin, unitMax) comparator channelValue) 
+UNTIL (physicalValue comparator channelValue)
 
 FUNCTION_CODE_PRO_II = DO\n\
 	NOP\n\
-UNTIL (Call_AnIn(moduleNumber, channelNumber, gain, ampMin, ampMax, unitMin, unitMax) comparator channelValue)
+UNTIL (physicalValue comparator channelValue)
 
 FUNCTION_CODE_GOLD_I = DO\n\
 	NOP\n\
-UNTIL (Call_AnIn(channelNumber, gain, ampMin, ampMax, unitMin, unitMax) comparator channelValue)  
+UNTIL (physicalValue comparator channelValue)
 
 FUNCTION_CODE_GOLD_II = DO\n\
 	NOP\n\
-UNTIL (Call_AnIn(channelNumber, gain, ampMin, ampMax, unitMin, unitMax) comparator channelValue)  
+UNTIL (physicalValue comparator channelValue)

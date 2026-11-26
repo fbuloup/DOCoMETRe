@@ -41,7 +41,14 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.arduinouno;
 
+import org.eclipse.osgi.util.NLS;
+
+import fr.univamu.ism.docometre.calibration.ChannelCalibration;
+import fr.univamu.ism.docometre.calibration.RawCalibration;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
+import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
+import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
+import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.Property;
 
 public final class ArduinoUnoAnInChannelProperties extends Property {
@@ -49,8 +56,12 @@ public final class ArduinoUnoAnInChannelProperties extends Property {
 	public static final ArduinoUnoAnInChannelProperties UNIT = new ArduinoUnoAnInChannelProperties("ArduinoUnoAnInChannelProperties.UNIT", ArduinoUnoMessages.Unit_Label, ArduinoUnoMessages.Unit_Tooltip, "^[a-z|A-Z]+[0-9|a-z|A-Z]*$");
 	public static final ArduinoUnoAnInChannelProperties UNIT_MAX = new ArduinoUnoAnInChannelProperties("ArduinoUnoAnInChannelProperties.UNIT_MAX", ArduinoUnoMessages.UnitMaxValue_Label, ArduinoUnoMessages.UnitMaxValue_Tooltip, "(^[+-]?\\d*\\.?\\d*[1-9]+\\d*([eE][-+]?[0-9]+)?$)|(^[+]?[1-9]+\\d*\\.\\d*([eE][-+]?[0-9]+)?$)");
 	public static final ArduinoUnoAnInChannelProperties UNIT_MIN = new ArduinoUnoAnInChannelProperties("ArduinoUnoAnInChannelProperties.UNIT_MIN", ArduinoUnoMessages.UnitMinValue_Label, ArduinoUnoMessages.UnitMinValue_Tooltip, "(^[+-]?\\d*\\.?\\d*[1-9]+\\d*([eE][-+]?[0-9]+)?$)|(^[+]?[1-9]+\\d*\\.\\d*([eE][-+]?[0-9]+)?$)");
-	public static final ArduinoUnoAnInChannelProperties AMPLITUDE_MAX = new ArduinoUnoAnInChannelProperties("ArduinoUnoAnInChannelProperties.AMPLITUDE_MAX", ArduinoUnoMessages.AmpMaxValue_Label, ArduinoUnoMessages.AmpMaxValue_Tooltip, "(^[+-]?\\d*\\.?\\d*[1-9]+\\d*([eE][-+]?[0-9]+)?$)|(^[+]?[1-9]+\\d*\\.\\d*([eE][-+]?[0-9]+)?$)");
-	public static final ArduinoUnoAnInChannelProperties AMPLITUDE_MIN = new ArduinoUnoAnInChannelProperties("ArduinoUnoAnInChannelProperties.AMPLITUDE_MIN", ArduinoUnoMessages.AmpMinValue_Label, ArduinoUnoMessages.AmpMinValue_Tooltip, "(^[+-]?\\d*\\.?\\d*[1-9]+\\d*([eE][-+]?[0-9]+)?$)|(^[+]?[1-9]+\\d*\\.\\d*([eE][-+]?[0-9]+)?$)");
+	// Raw values of the converter (see RawCalibration) : integers
+	public static final ArduinoUnoAnInChannelProperties AMPLITUDE_MAX = new ArduinoUnoAnInChannelProperties("ArduinoUnoAnInChannelProperties.AMPLITUDE_MAX", ArduinoUnoMessages.AmpMaxValue_Label, ArduinoUnoMessages.AmpMaxValue_Tooltip, "^[+-]?\\d+$");
+	public static final ArduinoUnoAnInChannelProperties AMPLITUDE_MIN = new ArduinoUnoAnInChannelProperties("ArduinoUnoAnInChannelProperties.AMPLITUDE_MIN", ArduinoUnoMessages.AmpMinValue_Label, ArduinoUnoMessages.AmpMinValue_Tooltip, "^[+-]?\\d+$");
+	// True when AMPLITUDE_MIN/MAX or UNIT_MIN/MAX have been set by the user, false for the default calibration of the
+	// hardware, not defined for the configurations saved before the calibration from the raw values (see ChannelCalibration)
+	public static final ArduinoUnoAnInChannelProperties CALIBRATED = new ArduinoUnoAnInChannelProperties("ArduinoUnoAnInChannelProperties.CALIBRATED", ArduinoUnoMessages.Calibrated_Label, ArduinoUnoMessages.Calibrated_Tooltip, "^(true|false)$", "true:false");
 	/*  GAIN PROPERTY IS ONLY USED WITH ADS1115 ANALOG INPUTS MODULES
 		  
 		0   (gain = 2/3)   ± 6.144 volts (valeur par défaut)
@@ -80,44 +91,122 @@ public final class ArduinoUnoAnInChannelProperties extends Property {
 	public static String[] GAINS = new String[] {GAIN_0, GAIN_1, GAIN_2, GAIN_4, GAIN_8, GAIN_16};
 	
 	public static float getMaxVoltageForADS1115Gain(String gain) {
-		if(GAIN_0.equals(gain)) return (float) 6.144;
-		if(GAIN_1.equals(gain)) return (float) 4.096;
-		if(GAIN_2.equals(gain)) return (float) 2.048;
-		if(GAIN_4.equals(gain)) return (float) 1.024;
-		if(GAIN_8.equals(gain)) return (float) 0.512;
-		if(GAIN_16.equals(gain)) return (float) 0.256;
+		return (float) getADS1115FullScale(gain);
+	}
+	
+	/**
+	 * @param gain the gain of an ADS1115 input : 2/3 (or 0, gain of the ADS1X15 library for 2/3), 1, 2, 4, 8 or 16
+	 * @return the full scale of the input (V), 0 if the gain is not known
+	 */
+	public static double getADS1115FullScale(String gain) {
+		gain = gain == null ? "" : gain.trim();
+		if(GAIN_0.equals(gain) || "0".equals(gain)) return 6.144;
+		if(GAIN_1.equals(gain)) return 4.096;
+		if(GAIN_2.equals(gain)) return 2.048;
+		if(GAIN_4.equals(gain)) return 1.024;
+		if(GAIN_8.equals(gain)) return 0.512;
+		if(GAIN_16.equals(gain)) return 0.256;
 		return 0;
+	}
+	
+	/**
+	 * Raw values of the converters for the minimum and maximum voltages : the line of the conversion of the
+	 * acquisition processes and of the calibration (see ArduinoUnoCalibrationProtocol#getAnalogVoltage and
+	 * #getADS1115Voltage) : voltage = raw * reference / levels
+	 */
+	public static final int R3_LEVELS = 1024; // 10 bits
+	public static final int R4_LEVELS = 16384; // 14 bits
+	public static final int ADS1115_LEVELS = 32768; // 16 bits signed
+	
+	/**
+	 * Default calibration of an analog input : raw values of the converter <-> voltages, given by
+	 * <ul>
+	 * <li>analog inputs of the board : 0 / levels <-> 0 V / voltage of the analog reference of the module (DEFAULT,
+	 * INTERNAL or EXTERNAL), levels of the revision of the board (1024 on R3, 16384 on R4) ;</li>
+	 * <li>ADS1115 inputs : -32768 / 32768 <-> -/+ full scale of the gain of the input.</li>
+	 * </ul>
+	 * @return null if the channel is not in an analog inputs module or if its configuration is not known
+	 */
+	public static RawCalibration.Range getDefaultRange(Channel channel) {
+		Module module = channel.getModule();
+		if(module instanceof ArduinoUnoADS1115Module) {
+			double fullScale = getADS1115FullScale(channel.getProperty(GAIN));
+			if(fullScale <= 0) return null;
+			return new RawCalibration.Range(-ADS1115_LEVELS, ADS1115_LEVELS, -fullScale, fullScale);
+		}
+		if(module instanceof ArduinoUnoAnInModule) {
+			DACQConfiguration dacqConfiguration = module.getDACQConfiguration();
+			if(dacqConfiguration == null) return null;
+			int levels = ArduinoUnoAnInModuleProperties.isR4(dacqConfiguration) ? R4_LEVELS : R3_LEVELS;
+			return new RawCalibration.Range(0, levels, 0, ArduinoUnoAnInModuleProperties.getReferenceVoltage(module));
+		}
+		return null;
+	}
+	
+	/**
+	 * Calibration of the analog inputs : default values, changes of the hardware, conversion of the configurations
+	 * saved before the calibration from the raw values
+	 */
+	public static final ChannelCalibration CALIBRATION = new ChannelCalibration(AMPLITUDE_MIN, AMPLITUDE_MAX, UNIT_MIN, UNIT_MAX, CALIBRATED, ArduinoUnoAnInChannelProperties::getDefaultRange);
+	
+	// Calibration of a channel created without analog inputs module : R3, reference of 5 V
+	private static final RawCalibration.Range FALLBACK_RANGE = new RawCalibration.Range(0, R3_LEVELS, 0, 5);
+	
+	/**
+	 * Conversion of the calibration of an analog input saved before the calibration from the raw values (see
+	 * ChannelCalibration#migrate). AMPLITUDE_MIN/MAX have been captured in volts by the calibration dialog, except
+	 * with the EXTERNAL reference, whose voltage was not known : raw values.
+	 */
+	public static void migrate(Channel channel) {
+		Module module = channel.getModule();
+		boolean amplitudesInVolts = !(module instanceof ArduinoUnoAnInModule) || !ArduinoUnoAnInModuleProperties.isExternalReference(module);
+		CALIBRATION.migrate(channel, amplitudesInVolts);
 	}
 	
 	public static void populateProperties(Channel channel) {
 		ArduinoUnoChannelProperties.populateProperties(channel);
 		channel.setProperty(UNIT, "Volt");
-		channel.setProperty(UNIT_MAX, "5");
-		channel.setProperty(UNIT_MIN, "0");
-		channel.setProperty(AMPLITUDE_MAX, "5");
-		channel.setProperty(AMPLITUDE_MIN, "0");
 		channel.setProperty(GAIN, "0");
+		// Default calibration : raw values of the converter <-> voltages
+		CALIBRATION.applyDefault(channel, FALLBACK_RANGE);
 	}
 
 	public static Channel cloneChannel(ArduinoUnoChannel channel) {
 		ArduinoUnoChannel newChannel = new ArduinoUnoChannel(null);
 		ArduinoUnoChannelProperties.cloneChannel(channel, newChannel);
 		newChannel.setProperty(UNIT, new String(channel.getProperty(UNIT)));
-		newChannel.setProperty(UNIT_MAX, new String(channel.getProperty(UNIT_MAX)));
-		newChannel.setProperty(UNIT_MIN, new String(channel.getProperty(UNIT_MIN)));
-		newChannel.setProperty(AMPLITUDE_MAX, new String(channel.getProperty(AMPLITUDE_MAX)));
-		newChannel.setProperty(AMPLITUDE_MIN, new String(channel.getProperty(AMPLITUDE_MIN)));
 		newChannel.setProperty(GAIN, new String(channel.getProperty(GAIN)));
-		return channel;
+		CALIBRATION.copy(channel, newChannel);
+		return newChannel;
 	}
 	
-	public static double toVolt(ArduinoUnoChannel channel, double value) {
-		if(channel.getModule() instanceof ArduinoUnoAnInModule) {
-			double aMax = 5;
-			double aMin = 0;
-			return (aMax - aMin)/1024*value + aMin;
+	/**
+	 * @return {k, b} of the calibration of an analog input (physical value = k * raw value + b, see RawCalibration),
+	 * as C float literals, for the code of the acquisition (see acquireAnalogInput() in ArduinoUnoProcess)
+	 * @throws IllegalArgumentException if the calibration of the input is not valid (AMPLITUDE_MIN = AMPLITUDE_MAX or
+	 * a value which is not a number)
+	 */
+	public static String[] getCoefficientsCode(Channel channel) {
+		double[] calibration = CALIBRATION.getCalibration(channel);
+		try {
+			return RawCalibration.getCFloatCoefficients(calibration[0], calibration[1], calibration[2], calibration[3]);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException(NLS.bind(ArduinoUnoMessages.InvalidCalibration_Message, channel.getProperty(ChannelProperties.NAME)), e);
 		}
-		return 0;
+	}
+	
+	/**
+	 * @param rawValueCode code of the raw value of the input (analogRead(...))
+	 * @return the C code of the physical value of an analog input : k * rawValueCode + b, in single precision
+	 * @throws IllegalArgumentException if the calibration of the input is not valid
+	 */
+	public static String getPhysicalValueCode(Channel channel, String rawValueCode) {
+		double[] calibration = CALIBRATION.getCalibration(channel);
+		try {
+			return RawCalibration.getCode(rawValueCode, calibration[0], calibration[1], calibration[2], calibration[3], true);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException(NLS.bind(ArduinoUnoMessages.InvalidCalibration_Message, channel.getProperty(ChannelProperties.NAME)), e);
+		}
 	}
 	
 	private ArduinoUnoAnInChannelProperties(String key, String label, String tooltip, String regExp) {

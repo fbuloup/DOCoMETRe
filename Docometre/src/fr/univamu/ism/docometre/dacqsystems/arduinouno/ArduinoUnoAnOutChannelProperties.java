@@ -55,7 +55,7 @@ public final class  ArduinoUnoAnOutChannelProperties extends Property {
 	public static Channel cloneChannel(ArduinoUnoChannel channel) {
 		ArduinoUnoChannel newChannel = new ArduinoUnoChannel(null);
 		ArduinoUnoChannelProperties.cloneChannel(channel, newChannel);
-		return channel;
+		return newChannel;
 	}
 	
 	private ArduinoUnoAnOutChannelProperties(String key, String label, String tooltip, String regExp) {

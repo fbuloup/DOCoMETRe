@@ -152,6 +152,11 @@ public class ArduinoUnoMessages extends NLS {
 	public static String AnalogReference_Tooltip;
 	public static String MemoryEffect_Label;
 	public static String MemoryEffect_Tooltip;
+	public static String ExternalReferenceVoltage_Label;
+	public static String ExternalReferenceVoltage_Tooltip;
+	public static String Calibrated_Label;
+	public static String Calibrated_Tooltip;
+	public static String InvalidCalibration_Message;
 	public static String Used_Label;
 	public static String Used_Tooltip;
 	
@@ -230,7 +235,6 @@ public class ArduinoUnoMessages extends NLS {
 	public static String Calibration_CommandRefused;
 	public static String Calibration_TooManyInputs;
 	public static String Calibration_TooManyOutputs;
-	public static String Calibration_ExternalReference;
 	public static String Calibration_R4RequiresArduinoCLI;
 	public static String Calibration_NoChannel;
 	public static String Calibration_NoValue;

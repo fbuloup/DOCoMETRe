@@ -207,6 +207,7 @@ public class ChannelViewer extends CollapsibleGroup {
 			calibrationHeader.addAMinListener(AbstractCalibrateMonitorDialog.getGlobalCalibrationListener());
 			calibrationHeader.addUMaxListener(AbstractCalibrateMonitorDialog.getGlobalCalibrationListener());
 			calibrationHeader.addUMinListener(AbstractCalibrateMonitorDialog.getGlobalCalibrationListener());
+			calibrationHeader.addResetListener(() -> AbstractCalibrateMonitorDialog.getGlobalCalibrationListener().push(0));
 			// One column for each widget of the calibration header
 			GridLayout gl = new GridLayout(Math.max(1, calibrationComposite.getChildren().length), false);
 			gl.marginWidth = 0;

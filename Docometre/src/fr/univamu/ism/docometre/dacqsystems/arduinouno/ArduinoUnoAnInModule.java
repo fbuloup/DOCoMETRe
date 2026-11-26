@@ -56,6 +56,25 @@ public class ArduinoUnoAnInModule extends Module {
 		super(daqGeneralConfiguration);
 		ArduinoUnoAnInModuleProperties.populateProperties(this);
 	}
+	
+	/*
+	 * Analog reference or voltage of the EXTERNAL reference changed : default calibration of the analog inputs which
+	 * are not calibrated
+	 */
+	@Override
+	public void setProperty(Property property, String value) {
+		super.setProperty(property, value);
+		if(ArduinoUnoAnInModuleProperties.ANALOG_REFERENCE.equals(property) || ArduinoUnoAnInModuleProperties.EXTERNAL_REFERENCE_VOLTAGE.equals(property))
+			updateDefaultCalibration();
+	}
+	
+	/**
+	 * Default calibration of the analog inputs which are not calibrated updated (change of the analog reference, of
+	 * the voltage of the EXTERNAL reference or of the revision of the board)
+	 */
+	public void updateDefaultCalibration() {
+		for (Channel channel : getChannels()) ArduinoUnoAnInChannelProperties.CALIBRATION.updateDefault(channel);
+	}
 
 	@Override
 	public String getCodeSegment(Object segment) throws Exception {
@@ -123,7 +142,8 @@ public class ArduinoUnoAnInModule extends Module {
 			if (segment == ArduinoUnoCodeSegmentProperties.DECLARATION) {
 				if(isUsed) {
 					code = code + "// ******** Entree analogique : " + name + "\n";
-					code = code + "unsigned int " + name + ";\n";
+					// Physical value : calibration from the raw value of the converter (see acquireAnalogInput())
+					code = code + "float " + name + ";\n";
 					code = code + "byte acquire_" + name + "_index = " + frequencyRatio + ";\n";
 				}
 			}
@@ -140,7 +160,9 @@ public class ArduinoUnoAnInModule extends Module {
 				if(isUsed) {
 					code = code + "\n\t\tif(acquire_" + name + "_index == " + frequencyRatio + ") {\n";
 					code = code + "\t\t\t\tacquire_" + name + "_index = 0;\n";
-					code = code + "\t\t\t\t" + name + " = acquireAnalogInput(" + channelNumber + ", " + transfer + ", " + transferNumber + ");\n";
+					// Physical value = k * raw value + b (calibration from the raw values, see RawCalibration)
+					String[] coefficients = ArduinoUnoAnInChannelProperties.getCoefficientsCode(channel);
+					code = code + "\t\t\t\t" + name + " = acquireAnalogInput(" + channelNumber + ", " + coefficients[0] + ", " + coefficients[1] + ", " + transfer + ", " + transferNumber + ");\n";
 					code = code + "\t\t}\n";
 					code = code + "\t\tacquire_" + name + "_index += 1;\n\n";
 					
@@ -223,8 +245,9 @@ public class ArduinoUnoAnInModule extends Module {
 
 	@Override
 	public Object clone() throws CloneNotSupportedException {
-		// TODO Auto-generated method stub
-		return null;
+		Module newModule = ArduinoUnoAnInModuleProperties.cloneModule(this);
+		addClonedChannels(newModule);
+		return newModule;
 	}
 
 	@Override

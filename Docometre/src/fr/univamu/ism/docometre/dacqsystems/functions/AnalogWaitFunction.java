@@ -67,8 +67,8 @@ import fr.univamu.ism.docometre.dacqsystems.Process;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinAnInChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinAnInModule;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfigurationProperties;
-import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinModuleProperties;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinProcess;
+import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnInChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnInModule;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoCodeSegmentProperties;
@@ -86,13 +86,10 @@ public final class AnalogWaitFunction extends GenericFunction {
 	private static final String channelNameKey = "channelName";
 	private static final String comparatorKey = "comparator";
 	private static final String channelValueKey = "channelValue";
-	private static final String moduleNumberKey = "moduleNumber";
 	private static final String channelNumberKey = "channelNumber";
-	private static final String gainKey = "gain";
-	private static final String ampMinKey = "ampMin";
-	private static final String ampMaxKey = "ampMax";
-	private static final String unitMinKey = "unitMin";
-	private static final String unitMaxKey = "unitMax";
+	// Code of the physical value of the analog input : k * Call_AnIn_Raw(...) + b with ADwin (see ADWinAnInChannelProperties),
+	// k * analogRead(...) + b with Arduino Uno (see ArduinoUnoAnInChannelProperties)
+	private static final String physicalValueKey = "physicalValue";
 	
 	private String channelName;
 	private String channelValue;
@@ -230,15 +227,9 @@ public final class AnalogWaitFunction extends GenericFunction {
 					}
 				}
 				if(foundModule != null && foundChannel != null) {
-					String gain = foundChannel.getProperty(ADWinAnInChannelProperties.GAIN);
-					String unitMax = foundChannel.getProperty(ADWinAnInChannelProperties.UNIT_MAX);
-					String unitMin = foundChannel.getProperty(ADWinAnInChannelProperties.UNIT_MIN);
-					String channelNumber = foundChannel.getProperty(ChannelProperties.CHANNEL_NUMBER);
-					String ampMax = foundChannel.getProperty(ADWinAnInChannelProperties.AMPLITUDE_MAX);
-					String ampMin = foundChannel.getProperty(ADWinAnInChannelProperties.AMPLITUDE_MIN);
-					String moduleNumber = foundModule.getProperty(ADWinModuleProperties.MODULE_NUMBER);
-					temporaryCode = temporaryCode.replaceAll(channelNameKey, channelName).replaceAll(gainKey, gain).replaceAll(unitMaxKey, unitMax).replaceAll(unitMinKey, unitMin);
-					temporaryCode = temporaryCode.replaceAll(channelNumberKey, channelNumber).replaceAll(ampMaxKey, ampMax).replaceAll(ampMinKey, ampMin).replaceAll(moduleNumberKey, moduleNumber);
+					// Physical value computed from the raw value of the converter (calibration from the raw values)
+					String physicalValue = ADWinAnInChannelProperties.getPhysicalValueCode(foundChannel);
+					temporaryCode = temporaryCode.replace(physicalValueKey, physicalValue).replace(channelNameKey, channelName);
 					temporaryCode = temporaryCode.replaceAll(channelValueKey, channelValue).replaceAll(comparatorKey, comparator);
 					code = code + temporaryCode + "\n\n";
 				}
@@ -285,6 +276,10 @@ public final class AnalogWaitFunction extends GenericFunction {
 				}
 				if(foundModule != null && foundChannel != null) {
 					String channelNumber = foundChannel.getProperty(ChannelProperties.CHANNEL_NUMBER);
+					// Physical value computed from the raw value of the converter (calibration from the raw values) : the
+					// value to wait for (channelValue) is a physical value
+					String physicalValue = ArduinoUnoAnInChannelProperties.getPhysicalValueCode(foundChannel, "analogRead(" + channelNumber + ")");
+					temporaryCode = temporaryCode.replace(physicalValueKey, physicalValue);
 					temporaryCode = UNO_DEFAULT_INDENT + temporaryCode.replaceAll(channelNameKey, channelName).replaceAll(channelNumberKey, channelNumber);
 					temporaryCode = temporaryCode.replaceAll(channelValueKey, channelValue).replaceAll(comparatorKey, comparator);
 					temporaryCode = temporaryCode.replaceAll("HashCode", hashCode);

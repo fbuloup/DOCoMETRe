@@ -68,7 +68,7 @@ import java.util.Locale;
  * <li>bool : 0 or 1 ;</li>
  * <li>char : the character ;</li>
  * <li>int, long : integer in base 10, without + sign ;</li>
- * <li>float : %+.6E format (e.g. +1.234567E+00), as the transferred values ;</li>
+ * <li>float : %+.6E format (e.g. +1.234567E+00) ;</li>
  * <li>string : the characters.</li>
  * </ul>
  */

@@ -124,13 +124,12 @@ public class VariablesCodeGenerationDelegate {
 					code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%ld\"," + transferNumber + ", " + name + ");\n";
 				}
 				if(type.equals(ArduinoUnoVariableProperties.FLOAT)) {
-					if(isRelease4Wifi || isReleaseMinima) {
-						code = code + "\t\t\t\tsnprintf(temporaryBuffer, sizeof(temporaryBuffer), \"%+.6E\"," + name + ");\n";
-					}
-					if(isRelease3) {
-						code = code + "\t\t\t\tdtostre(" + name + ", temporaryBuffer, 6, DTOSTR_ALWAYS_SIGN + DTOSTR_PLUS_SIGN + DTOSTR_UPPERCASE);\n";
-					}
-					code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%s\"," + transferNumber + ", temporaryBuffer);\n";
+					// All boards : IEEE 754 bits of the float in hexadecimal (8 characters), as the analog inputs (see
+					// acquireAnalogInput() in ArduinoUnoProcess), decoded by ArduinoUnoProcess (see
+					// ArduinoUnoDACQConfiguration#isFloatTransfer). Exact value, short message and no float formatting
+					// (snprintf("%E"), dtostre()), costly on the board
+					code = code + "\t\t\t\tmemcpy(&floatTransferBits, &" + name + ", sizeof(floatTransferBits));\n";
+					code = code + "\t\t\t\tsprintf(serialMessage, \"%d:%08lX\"," + transferNumber + ", (unsigned long)floatTransferBits);\n";
 				}
 				
 				if(isRelease3) code = code + "\t\t\t\tSerial.println(serialMessage);\n";
@@ -151,7 +150,7 @@ public class VariablesCodeGenerationDelegate {
 	private static String getDeclarationCode() {
 		String  code = "";
 		ArduinoUnoVariable[] variables = ((ArduinoUnoDACQConfiguration)process.getDACQConfiguration()).getVariables();
-		boolean temporaryBufferAlreadyDeclared = false;
+		boolean floatTransferBitsAlreadyDeclared = false;
 		for (ArduinoUnoVariable variable : variables) {
 			String name = variable.getProperty(ChannelProperties.NAME);
 			String type = variable.getProperty(ArduinoUnoVariableProperties.TYPE);
@@ -198,9 +197,10 @@ public class VariablesCodeGenerationDelegate {
 			code = code + "\n" + type + " " + name + size + ";\n";
 			
 			if(isTransfered) {
-				if(!temporaryBufferAlreadyDeclared && type.equals(ArduinoUnoVariableProperties.FLOAT)) {
-					code = code + "char temporaryBuffer[64];\n";
-					temporaryBufferAlreadyDeclared = true;
+				if(!floatTransferBitsAlreadyDeclared && type.equals(ArduinoUnoVariableProperties.FLOAT)) {
+					// IEEE 754 bits of a transferred float (32 bits, as a float, on AVR and ARM)
+					code = code + "uint32_t floatTransferBits;\n";
+					floatTransferBitsAlreadyDeclared = true;
 				}
 				code = code + "byte transfer_" + name + " = " + frequencyRatio + ";\n";
 			}

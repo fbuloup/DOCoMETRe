@@ -13,7 +13,7 @@ DESCRIPTION_PL = Akwizycja bieżącej wartości wejścia analogowego w trybie as
 # Finally the property keys FUNCTION_CODE (and optionally FUNCTION_CODE_SYSTEMTYPE_CPUTYPE) contain the effective ADBasic function code which will be added to
 # any of segments INITIALIZATION, EVENT or FINISH depending on the actual function position.
 # Take care of the fact that each key must be upper case !
-FUNCTION_CODE_PRO_I = channelName = Call_AnIn(moduleNumber, channelNumber, gain, ampMin, ampMax, unitMin, unitMax)
-FUNCTION_CODE_PRO_II = channelName = Call_AnIn(moduleNumber, channelNumber, gain, ampMin, ampMax, unitMin, unitMax)
-FUNCTION_CODE_GOLD_I = channelName = Call_AnIn(channelNumber, gain, ampMin, ampMax, unitMin, unitMax)
-FUNCTION_CODE_GOLD_II = channelName = Call_AnIn(channelNumber, gain, ampMin, ampMax, unitMin, unitMax)
+FUNCTION_CODE_PRO_I = channelName = physicalValue
+FUNCTION_CODE_PRO_II = channelName = physicalValue
+FUNCTION_CODE_GOLD_I = channelName = physicalValue
+FUNCTION_CODE_GOLD_II = channelName = physicalValue

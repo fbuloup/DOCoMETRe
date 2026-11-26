@@ -27,4 +27,4 @@ do {\n\
 		globalSerialMessage.send();\n\
 		aWaitTime_HashCode = millis();\n\
 	}\n\
-} while(analogRead(channelNumber) comparator channelValue);
+} while(physicalValue comparator channelValue);

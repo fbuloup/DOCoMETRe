@@ -102,6 +102,16 @@ public class ADWinChannel extends Channel {
 	transient private boolean generationFinished;       // no more samples in the stimulus file
 	transient private double generationFrequency;       // actual sample frequency of the stimulus (Hz), 0 if unknown
 	
+	/*
+	 * AMPLITUDE_MIN/MAX or UNIT_MIN/MAX of an analog input set by the user : the input is calibrated (see
+	 * ChannelCalibration)
+	 */
+	@Override
+	public void setProperty(Property property, String value) {
+		super.setProperty(property, value);
+		ADWinAnInChannelProperties.CALIBRATION.propertyChanged(this, property);
+	}
+	
 	public ADWinChannel(Module module) {
 		super(module);
 	}

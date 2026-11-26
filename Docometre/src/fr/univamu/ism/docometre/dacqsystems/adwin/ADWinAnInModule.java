@@ -58,6 +58,16 @@ public class ADWinAnInModule extends Module {
 	
 	private boolean includeSegmentPassed;
 
+	/*
+	 * Range of the module changed : default calibration of its analog inputs which are not calibrated
+	 */
+	@Override
+	public void setProperty(Property property, String value) {
+		super.setProperty(property, value);
+		if(ADWinAnInModuleProperties.AMPLITUDE_MAX.equals(property) || ADWinAnInModuleProperties.AMPLITUDE_MIN.equals(property)) 
+			for (Channel channel : getChannels()) ADWinAnInChannelProperties.CALIBRATION.updateDefault(channel);
+	}
+
 	public ADWinAnInModule(DACQConfiguration daqGeneralConfiguration) {
 		super(daqGeneralConfiguration);
 		ADWinAnInModuleProperties.populateProperties(this);
@@ -112,12 +122,6 @@ public class ADWinAnInModule extends Module {
 			String name = channel.getProperty(ChannelProperties.NAME);
 			String transferNumber = channel.getProperty(ChannelProperties.TRANSFER_NUMBER);
 			String bufferSize = channel.getProperty(ChannelProperties.BUFFER_SIZE);
-			String channelNumber = channel.getProperty(ChannelProperties.CHANNEL_NUMBER);
-			String gain=channel.getProperty(ADWinAnInChannelProperties.GAIN);
-			String ampMax = channel.getProperty(ADWinAnInChannelProperties.AMPLITUDE_MAX);
-			String ampMin = channel.getProperty(ADWinAnInChannelProperties.AMPLITUDE_MIN);
-			String unitMax = channel.getProperty(ADWinAnInChannelProperties.UNIT_MAX);
-			String unitMin = channel.getProperty(ADWinAnInChannelProperties.UNIT_MIN);
 			String transfer = channel.getProperty(ChannelProperties.TRANSFER);
 			String auto_transfer = channel.getProperty(ChannelProperties.AUTO_TRANSFER);
 			boolean isTransfered = Boolean.valueOf(transfer);
@@ -168,15 +172,11 @@ public class ADWinAnInModule extends Module {
 			}
 			
 			if (segment == ADWinCodeSegmentProperties.ACQUISITION){
-				String systemType = getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.SYSTEM_TYPE);
 //				code = code + "\nNouveau_" + name + " = 0\n";
 				code = code + "IF (Acquisition_" + name + " = " + frequencyRatio + ") THEN\n";
 				code = code + "\tAcquisition_" + name + " = 0\n"; 
-				if(systemType.equals(ADWinDACQConfigurationProperties.GOLD)) code = code + "\t" + name + " = Call_AnIn(" + channelNumber + ", " + gain + ", " + ampMin + ", " + ampMax + ", " + unitMin + ", " + unitMax + ")\n";
-				if(systemType.equals(ADWinDACQConfigurationProperties.PRO)) {
-					String moduleNumber = getProperty(ADWinModuleProperties.MODULE_NUMBER);
-					code = code + "\t" + name + " = Call_AnIn(" + moduleNumber + ", " + channelNumber + ", " + gain + ", " + ampMin + ", " + ampMax + ", " + unitMin + ", " + unitMax + ")\n";
-				}
+				// Physical value computed from the raw value of the converter : k * Call_AnIn_Raw(...) + b (see RawCalibration)
+				code = code + "\t" + name + " = " + ADWinAnInChannelProperties.getPhysicalValueCode(channel) + "\n";
 //				code = code + "\tNouveau_" + name + " = 1\n";
 				code = code + "ENDIF\n";
 				code = code + "INC(Acquisition_" + name + ")\n";

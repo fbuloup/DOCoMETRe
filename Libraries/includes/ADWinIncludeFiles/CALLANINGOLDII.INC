@@ -1,16 +1,15 @@
 '<ADbasic Header, Headerversion 001.001>
 '<Header End>
-FUNCTION Call_AnIn(canal_AnIn,gain_AnIn,Amin_AnIn,Amax_AnIn,Umin_AnIn,Umax_AnIn) AS FLOAT
+' Raw value of the converter of an analog input (0 .. 65535 for the minimum .. maximum voltage of the range of the
+' module). gainCode_AnIn : code of the gain of the PGA, 0, 1, 2, 3 for a gain of 1, 2, 4, 8 (computed by DOCoMETRe).
+' The physical value is computed by the generated code : k * Call_AnIn_Raw(...) + b (calibration from the raw values).
+FUNCTION Call_AnIn_Raw(canal_AnIn,gainCode_AnIn) AS FLOAT
   
   DIM bits_AnIn AS LONG
-  DIM bits_AnIn_Temp AS FLOAT
   DIM Call_AnIn_Temp AS FLOAT
   DIM numADC AS LONG
      
-  ' Gain code of the PGA (0, 1, 2, 3 for a gain of 1, 2, 4, 8) : + 0.1 so that a result
-  ' of LOG(gain)/LOG(2) slightly below the integer value is not truncated
-  bits_AnIn_Temp = LOG(gain_AnIn)/LOG(2) + 0.1
-  bits_AnIn = bits_AnIn_Temp 'Gain PGA
+  bits_AnIn = gainCode_AnIn 'Gain PGA
     
   if ((canal_AnIn = 1) or (canal_AnIn=2)) then 
     bits_AnIn = shift_left(bits_AnIn,3)
@@ -92,7 +91,22 @@ FUNCTION Call_AnIn(canal_AnIn,gain_AnIn,Amin_AnIn,Amax_AnIn,Umin_AnIn,Umax_AnIn)
     Call_AnIn_Temp = read_adc(2)
   endif
   
-  Call_AnIn_Temp = (Analog_In_Max-Analog_In_Min)/65535*Call_AnIn_Temp +Analog_In_Min
+  Call_AnIn_Raw = Call_AnIn_Temp
+    
+ENDFUNCTION
+
+' Former function : voltage of the input, then calibration from volts (Amin_AnIn, Amax_AnIn). Kept for the code
+' written before the calibration from the raw values, not generated anymore by DOCoMETRe.
+FUNCTION Call_AnIn(canal_AnIn,gain_AnIn,Amin_AnIn,Amax_AnIn,Umin_AnIn,Umax_AnIn) AS FLOAT
+  
+  DIM gainCode_AnIn AS LONG
+  DIM gainCode_AnIn_Temp AS FLOAT
+  DIM Call_AnIn_Temp AS FLOAT
+     
+  ' + 0.1 so that a result of LOG(gain)/LOG(2) slightly below the integer value is not truncated
+  gainCode_AnIn_Temp = LOG(gain_AnIn)/LOG(2) + 0.1
+  gainCode_AnIn = gainCode_AnIn_Temp
+  Call_AnIn_Temp = (Analog_In_Max-Analog_In_Min)/65535*Call_AnIn_Raw(canal_AnIn,gainCode_AnIn) +Analog_In_Min
   Call_AnIn = (Umax_Anin-Umin_Anin)/(Amax_AnIn-Amin_AnIn)*(Call_AnIn_Temp-Amin_AnIn)+Umin_AnIn
     
 ENDFUNCTION

@@ -811,6 +811,11 @@ public final class DocometreMessages extends NLS {
 	public static String UnitMaxTooltip;
 	public static String CaptureValueMin;
 	public static String CaptureValueMax;
+	public static String ResetCalibrationTooltip;
+	public static String ResetCalibrationDialogTitle;
+	public static String ResetCalibrationDialogQuestion;
+	public static String ResetCalibrationImpossible;
+	public static String ResetCalibrationOperationLabel;
 	public static String CalibrationMonitoringDialogShellTitle;
 	public static String CalibrationMonitoringDialogTitle;
 	public static String CalibrationMonitoringDialogMessage;

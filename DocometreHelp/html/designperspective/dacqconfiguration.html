@@ -286,10 +286,14 @@
 			<td>Analog inputs (ADwin)</td>
 			<td>Module: maximum and minimum amplitude (&plusmn;10V, &plusmn;5V or
 				0-10V), single ended or differential inputs.<br/>
-				Channels: <b>Gain</b> (1, 2, 4 or 8), and calibration values:
-				<b>Unit</b> (physical unit of the sensor), <b>UMax</b> /
-				<b>UMin</b> (values in physical unit) and <b>AMax</b> /
-				<b>AMin</b> (corresponding values in electrical unit).</td>
+				Channels: <b>Gain</b> (1, 2, 4 or 8), and
+				<a href="#calibrationvalues">calibration values</a>:
+				<b>Unit</b> (physical unit of the sensor), <b>AMax</b> /
+				<b>AMin</b> (raw values of the converter, 0 to 65535) and
+				<b>UMax</b> / <b>UMin</b> (corresponding physical values),
+				<b>Calibrated</b>. By default, 0 / 65535 correspond to the
+				minimum / maximum voltages of the range of the module (the gain
+				is not taken into account).</td>
 		</tr>
 		<tr>
 			<td>Analog outputs (ADwin)</td>
@@ -333,10 +337,14 @@
 				for R3, AR_DEFAULT, AR_INTERNAL, AR_EXTERNAL for R4 WiFi): only
 				the references of the revision of the General tab are proposed,
 				and the reference is converted when the revision is changed
-				(DEFAULT to AR_DEFAULT for example).<br/>
+				(DEFAULT to AR_DEFAULT for example). <b>External reference
+				voltage</b>: voltage applied on the AREF pin, used with the
+				EXTERNAL / AR_EXTERNAL reference (5V by default).<br/>
 				Channels: <b>Used</b> (the channels of the board are listed;
-				check the ones you use), calibration values (Unit, UMax, UMin,
-				AMax, AMin).</td>
+				check the ones you use),
+				<a href="#calibrationvalues">calibration values</a> (Unit, UMax,
+				UMin, AMax, AMin, Calibrated). By default, 0 / 1024 (R3) or 0 /
+				16384 (R4) correspond to 0V / voltage of the reference.</td>
 		</tr>
 		<tr>
 			<td>Analog outputs, digital inputs/outputs (Arduino)</td>
@@ -352,13 +360,45 @@
 				recommended for several channels) and <b>conversion time</b> (0
 				to 7, 7 being the fastest, about 2.7ms).<br/>
 				Channels: Used, <b>Gain</b> of the amplifier (0 for 2/3, 1, 2, 4,
-				8 or 16) and calibration values.</td>
+				8 or 16) and <a href="#calibrationvalues">calibration values</a>.
+				By default, -32768 / 32768 correspond to -/+ the full scale of
+				the gain.</td>
 		</tr>
 	</table>
 	<p>When a channel is removed or no longer transferred, the curves that
 		display it in the Charts tab are removed. After a modification of the
 		calibration values, recompile the processes associated with the
 		configuration.</p>
+
+	<h3><a name="calibrationvalues">Calibration values of the analog inputs</a></h3>
+
+	<p>The physical value of an analog input is computed from the
+		<b>raw value</b> of its converter, in one step:
+		<code>value = k * raw value + b</code>, the line going through
+		(<b>AMin</b>, <b>UMin</b>) and (<b>AMax</b>, <b>UMax</b>). AMin and AMax
+		are raw values of the converter (integers), UMin and UMax the
+		corresponding physical values. k and b are computed when the process
+		is generated: the computation is done by the DACQ system (ADwin or
+		Arduino board) and the recorded values are physical values.</p>
+	<p>By default, an input is not <b>calibrated</b>: UMin and UMax are the
+		voltages of the converter for AMin and AMax, so that the values are in
+		volts. These default values follow the configuration of the hardware
+		(range of the ADwin module, analog reference, its voltage and the
+		revision of the Arduino board, gain of the ADS1115 inputs). As soon as
+		one of the four values is set by the user (in the table or in the
+		<a href="#calibration">calibration and monitoring</a> dialog), the
+		input is calibrated (column Calibrated checked) and its values no
+		longer change with the hardware.</p>
+	<p>To come back to the default values of the hardware, <b>reset</b> the
+		calibration of the input: uncheck its Calibrated column in the table
+		(this can be undone with Edit &gt; Undo) or press the
+		<b>default calibration</b> button of its header in the
+		<a href="#calibration">calibration and monitoring</a> dialog.</p>
+	<p>The configurations saved by former versions, whose AMin and AMax were
+		voltages, are converted when they are opened: the calibration line
+		and thus the physical values are unchanged (AMin and AMax may then have
+		decimals). With the Arduino EXTERNAL reference, AMin and AMax were
+		already raw values and are kept.</p>
 
 	<h2><a name="variables">Variables tab</a></h2>
 
@@ -513,11 +553,15 @@
 		proceed button has been pressed, the inputs are monitored and the
 		outputs take the values given in the dialog: set these values before
 		starting the monitoring. For each analog input, the minimum and
-		maximum electrical values can be captured from the current value
-		(buttons Capture Min Value and Capture Max Value) or typed (validate
-		with <kbd>Enter</kbd>), and the corresponding physical values typed:
-		they become the calibration values (UMin, UMax, AMin, AMax) of the
-		channel. "Show calibrated values" displays the values in physical
+		maximum raw values of the converter can be captured from the current
+		value (buttons Capture Min Value and Capture Max Value) or typed
+		(integers, validate with <kbd>Enter</kbd>), and the corresponding
+		physical values typed: they become the
+		<a href="#calibrationvalues">calibration values</a> (AMin, AMax, UMin,
+		UMax) of the channel, which is then calibrated. The default
+		calibration button, at the right of UMax, resets the channel to the
+		default values of the hardware (after confirmation). The values are saved
+		at once in the configuration file. "Show calibrated values" displays the values in physical
 		unit. When the calibration has been modified, do not forget to save
 		the configuration and to recompile the associated processes.</p>
 	<p>With <b>ADwin</b> systems, a calibration program is loaded in the
@@ -532,9 +576,10 @@
 		on the board if it does not already run it (this takes a few seconds),
 		then it is configured from the DACQ configuration: analog reference of
 		the analog inputs module, used channels, ADS1115 addresses, gains and
-		conversion times. Analog values are displayed in volts (raw values of
-		the converter with the EXTERNAL reference, whose voltage is not
-		known). As the acquisition process has been replaced on the board by
+		conversion times. Analog values are displayed as raw values of the
+		converters (0 to 1023 on R3, 0 to 16383 on R4, signed values of the
+		ADS1115), or in physical units with "Show calibrated values". As the
+		acquisition process has been replaced on the board by
 		the firmware, it is uploaded again before the next trial. See
 		<a href="../dacqsystems/ArduinoUnoTopic.html#calibration">Arduino Uno
 		system</a>.</p>

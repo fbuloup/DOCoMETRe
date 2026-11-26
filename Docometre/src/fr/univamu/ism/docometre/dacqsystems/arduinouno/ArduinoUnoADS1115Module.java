@@ -114,8 +114,8 @@ public class ArduinoUnoADS1115Module extends Module {
 			if (segment == ArduinoUnoCodeSegmentProperties.DECLARATION) {
 				if(isUsed) {
 					code = code + "// ******** ADS1115 Entree analogique : " + name + "\n";
-					// Signed value, see acquireADS1115AnalogInput()
-					code = code + "int " + name + ";\n";
+					// Physical value : calibration from the raw (signed) value of the converter (see acquireADS1115AnalogInput())
+					code = code + "float " + name + ";\n";
 					code = code + "byte acquire_" + name + "_index = " + frequencyRatio + ";\n";
 				}
 			}
@@ -139,7 +139,9 @@ public class ArduinoUnoADS1115Module extends Module {
 					if(gain.equals(ArduinoUnoAnInChannelProperties.GAIN_0)) gain = "0";
 					code = code + "\n\t\tif(acquire_" + name + "_index == " + frequencyRatio + ") {\n";
 					code = code + "\t\t\t\tacquire_" + name + "_index = 0;\n";
-					code = code + "\t\t\t\t" + name + " = acquireADS1115AnalogInput(" + ADSName + ", " + channelNumber + ", " + gain + ", " + transfer + ", " + transferNumber +  ");\n";
+					// Physical value = k * raw value + b (calibration from the raw values, see RawCalibration)
+					String[] coefficients = ArduinoUnoAnInChannelProperties.getCoefficientsCode(channel);
+					code = code + "\t\t\t\t" + name + " = acquireADS1115AnalogInput(" + ADSName + ", " + channelNumber + ", " + gain + ", " + coefficients[0] + ", " + coefficients[1] + ", " + transfer + ", " + transferNumber +  ");\n";
 					code = code + "\t\t}\n";
 					code = code + "\t\tacquire_" + name + "_index += 1;\n\n";
 					
@@ -186,8 +188,11 @@ public class ArduinoUnoADS1115Module extends Module {
 	public Channel initializeChannelProperties() {
 		ArduinoUnoChannel arduinoUnoChannel = new ArduinoUnoChannel(this);
 		ArduinoUnoAnInChannelProperties.populateProperties(arduinoUnoChannel);
-		String gsfProcess = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY);
-		arduinoUnoChannel.setProperty(ChannelProperties.SAMPLE_FREQUENCY, gsfProcess);
+		// No DACQ configuration for a module created by clone() : sample frequency of the cloned channel
+		if(dacqConfiguration != null) {
+			String gsfProcess = dacqConfiguration.getProperty(ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY);
+			arduinoUnoChannel.setProperty(ChannelProperties.SAMPLE_FREQUENCY, gsfProcess);
+		}
 		arduinoUnoChannel.setProperty(ChannelProperties.NAME, "A");
 		arduinoUnoChannel.setProperty(ChannelProperties.CHANNEL_NUMBER, "0");
 		arduinoUnoChannel.setProperty(ChannelProperties.TRANSFER_NUMBER,"0");
@@ -196,8 +201,11 @@ public class ArduinoUnoADS1115Module extends Module {
 
 	@Override
 	public Object clone() throws CloneNotSupportedException {
-		// TODO Auto-generated method stub
-		return null;
+		Module newModule = ArduinoUnoADS1115ModuleProperties.cloneModule(this);
+		// The constructor creates the four default channels : replaced by the clones of the channels of this module
+		for (Channel channel : newModule.getChannels()) newModule.removeChannel(channel);
+		addClonedChannels(newModule);
+		return newModule;
 	}
 
 	@Override

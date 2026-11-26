@@ -132,7 +132,7 @@ public final class ADWinCANModuleProperties extends Property {
 	public static Channel cloneChannel(ADWinChannel channel) {
 		ADWinChannel newChannel = new ADWinChannel(null);
 		ChannelProperties.cloneChannel(channel, newChannel);
-		return channel;
+		return newChannel;
 	}
 	
 	private ADWinCANModuleProperties(String key, String label, String tooltip, String regExp) {

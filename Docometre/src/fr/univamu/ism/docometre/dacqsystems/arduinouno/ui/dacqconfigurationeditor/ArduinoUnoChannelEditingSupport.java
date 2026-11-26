@@ -44,6 +44,8 @@ package fr.univamu.ism.docometre.dacqsystems.arduinouno.ui.dacqconfigurationedit
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.IOperationHistory;
 import org.eclipse.core.commands.operations.IUndoContext;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.CheckboxCellEditor;
@@ -65,6 +67,7 @@ import org.eclipse.ui.PlatformUI;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
 import fr.univamu.ism.docometre.PartListenerAdapter;
+import fr.univamu.ism.docometre.calibration.ResetCalibrationOperation;
 import fr.univamu.ism.docometre.dacqsystems.AbstractElement;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
@@ -214,6 +217,11 @@ public class ArduinoUnoChannelEditingSupport extends EditingSupport implements P
 			cellEditor = new TextCellEditor((Composite) viewer.getControl());
 			cellEditor.setValidator(new Validator(ArduinoUnoAnInChannelProperties.AMPLITUDE_MAX.getRegExp()));
 		}
+		if(property == ArduinoUnoAnInChannelProperties.CALIBRATED) {
+			// Only unchecked by the user : reset of the calibration of the input (see setValue). The input becomes
+			// calibrated when its AMin, AMax, UMin or UMax are modified
+			cellEditor = new CheckboxCellEditor((Composite) viewer.getControl());
+		}
 		if(property == ArduinoUnoAnInChannelProperties.AMPLITUDE_MIN) {
 			cellEditor = new TextCellEditor((Composite) viewer.getControl());
 			cellEditor.setValidator(new Validator(ArduinoUnoAnInChannelProperties.AMPLITUDE_MIN.getRegExp()));
@@ -260,6 +268,24 @@ public class ArduinoUnoChannelEditingSupport extends EditingSupport implements P
 		}
 	}
 
+	/*
+	 * Undoable reset of the calibration of the input to the default calibration of the hardware
+	 */
+	private void resetCalibration(Channel channel) {
+		try {
+			String label = DocometreMessages.ResetCalibrationOperationLabel + " : " + channel.toString();
+			IOperationHistory operationHistory = PlatformUI.getWorkbench().getOperationSupport().getOperationHistory();
+			ResetCalibrationOperation resetCalibrationOperation = new ResetCalibrationOperation(getViewer().getControl(), label, ArduinoUnoAnInChannelProperties.CALIBRATION, channel, undoContext);
+			getViewer().getControl().setData(Integer.toString(resetCalibrationOperation.hashCode()), ((TableViewer)getViewer()).getTable().getSelectionIndex());
+			IStatus status = operationHistory.execute(resetCalibrationOperation, null, null);
+			if(!status.isOK()) MessageDialog.openError(getViewer().getControl().getShell(), DocometreMessages.ResetCalibrationDialogTitle, DocometreMessages.ResetCalibrationImpossible);
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+			Activator.logErrorMessageWithCause(e);
+		} 
+		getViewer().refresh(channel);
+	}
+
 	@Override
 	public void update(Property property, Object newValue, Object oldValue, AbstractElement element) {
 		if(property == ArduinoUnoDACQConfigurationProperties.GLOBAL_FREQUENCY) {
@@ -282,6 +308,7 @@ public class ArduinoUnoChannelEditingSupport extends EditingSupport implements P
 
 	@Override
 	protected boolean canEdit(Object element) {
+		if(property == ArduinoUnoAnInChannelProperties.CALIBRATED) return element instanceof Channel && ArduinoUnoAnInChannelProperties.CALIBRATION.isCalibrated((Channel)element);
 		return true;
 	}
 
@@ -298,6 +325,11 @@ public class ArduinoUnoChannelEditingSupport extends EditingSupport implements P
 
 	@Override
 	protected void setValue(Object element, Object value) {
+		if(property == ArduinoUnoAnInChannelProperties.CALIBRATED) {
+			if(Boolean.FALSE.equals(value) && element instanceof Channel && ArduinoUnoAnInChannelProperties.CALIBRATION.isCalibrated((Channel)element)) 
+				resetCalibration((Channel)element);
+			return;
+		}
 		if((value != null && getValue(element) == null) || !value.toString().equals(getValue(element).toString())) {
 			try {
 				String label = NLS.bind(DocometreMessages.ModifyPropertyOperation_Label, property.getLabel() + " : " + element.toString());

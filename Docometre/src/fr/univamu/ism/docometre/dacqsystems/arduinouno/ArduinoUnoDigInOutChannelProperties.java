@@ -66,7 +66,7 @@ public final class ArduinoUnoDigInOutChannelProperties extends Property {
 		ArduinoUnoChannel newChannel = new ArduinoUnoChannel(null);
 		ArduinoUnoChannelProperties.cloneChannel(channel, newChannel);
 		newChannel.setProperty(IN_OUT, new String(channel.getProperty(IN_OUT)));
-		return channel;
+		return newChannel;
 	}
 
 	private ArduinoUnoDigInOutChannelProperties(String key, String label, String tooltip, String regExp) {
