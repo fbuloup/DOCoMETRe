@@ -53,16 +53,28 @@ import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseWheelListener;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 
+/**
+ * Field of a decimal value with two arrows to decrease or increase it (at the position of the caret, continuously while the
+ * mouse button is pressed). The arrows are painted with the color of the text, and the colors of the spinner (e.g. set by 
+ * the CSS theme engine, see docometre-dark.css) are those of its text field and its arrows : the spinner fits dark and 
+ * light themes, and its height is that of a single-line text field.
+ */
 public class SpinnerValue extends Composite {
 
+	// Width of the arrows
+	private static final int ARROW_WIDTH = 14;
+	
 	private StyledText valueText;
-	private Button increaseButton;
-	private Button decreaseButton;
+	private Canvas increaseButton;
+	private Canvas decreaseButton;
 	private double value;
 	private double maxValue;
 	private double minValue;
@@ -134,8 +146,7 @@ public class SpinnerValue extends Composite {
 				}
 			}
 		});
-		decreaseButton = new Button(this,  SWT.ARROW | SWT.LEFT);
-		decreaseButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
+		decreaseButton = createArrow(false);
 		decreaseButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent e) {
@@ -149,8 +160,7 @@ public class SpinnerValue extends Composite {
 				stopTimers();
 			}
 		});
-		increaseButton = new Button(this,  SWT.ARROW | SWT.RIGHT);
-		increaseButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
+		increaseButton = createArrow(true);
 		increaseButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent e) {
@@ -170,6 +180,51 @@ public class SpinnerValue extends Composite {
 		maxValue = 10.0;
 		minValue = -10.0;
 		
+	}
+	
+	/*
+	 * Arrow painted with the foreground color of the spinner, pointing right to increase, left to decrease
+	 */
+	private Canvas createArrow(boolean increase) {
+		Canvas arrow = new Canvas(this, SWT.DOUBLE_BUFFERED);
+		GridData gd = new GridData(SWT.FILL, SWT.FILL, false, true);
+		gd.widthHint = ARROW_WIDTH;
+		// Height of the text field (default size of a canvas : 64 pixels)
+		gd.heightHint = 1;
+		arrow.setLayoutData(gd);
+		arrow.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_HAND));
+		arrow.addPaintListener(e -> paintArrow(e.gc, arrow, increase));
+		return arrow;
+	}
+	
+	private void paintArrow(GC gc, Canvas arrow, boolean increase) {
+		Rectangle area = arrow.getClientArea();
+		int size = Math.max(3, Math.min(area.width, area.height) / 3);
+		int cx = area.x + area.width/2;
+		int cy = area.y + area.height/2;
+		gc.setAntialias(SWT.ON);
+		gc.setBackground(getForeground());
+		if(increase) gc.fillPolygon(new int[] {cx - size/2, cy - size, cx + size/2 + 1, cy, cx - size/2, cy + size});
+		else gc.fillPolygon(new int[] {cx + size/2, cy - size, cx - size/2 - 1, cy, cx + size/2, cy + size});
+	}
+	
+	/*
+	 * The colors of the spinner are those of its text field and its arrows
+	 */
+	@Override
+	public void setForeground(Color color) {
+		super.setForeground(color);
+		valueText.setForeground(color);
+		increaseButton.redraw();
+		decreaseButton.redraw();
+	}
+	
+	@Override
+	public void setBackground(Color color) {
+		super.setBackground(color);
+		valueText.setBackground(color);
+		increaseButton.setBackground(color);
+		decreaseButton.setBackground(color);
 	}
 	
 	protected void stopTimers() {
