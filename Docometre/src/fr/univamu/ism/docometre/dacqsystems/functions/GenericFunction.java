@@ -41,6 +41,8 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.functions;
 
+import java.util.regex.Matcher;
+
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -70,18 +72,21 @@ public class GenericFunction extends Function {
 	private static final long serialVersionUID = 1L;
 	
 	public static String getCommentedCode(GenericFunction genericFunction, Object context) {
-		String comment = "";
+		String commentChar = "";
 		if(context instanceof Process) {
 			Process process = (Process)context;
 			DACQConfiguration dacqConfiguration = process.getDACQConfiguration();
-			if(dacqConfiguration instanceof ADWinDACQConfiguration) comment = "REM";
-			if(dacqConfiguration instanceof ArduinoUnoDACQConfiguration) comment = "//";
+			if(dacqConfiguration instanceof ADWinDACQConfiguration) commentChar = "REM";
+			if(dacqConfiguration instanceof ArduinoUnoDACQConfiguration) commentChar = "//";
 		}
 		if(context instanceof Script) { 
-			if(MathEngineFactory.isMatlab()) comment = "%";
-			if(MathEngineFactory.isPython()) comment = "#";
+			if(MathEngineFactory.isMatlab()) commentChar = "%";
+			if(MathEngineFactory.isPython()) commentChar = "#";
 		}
-		return comment + " NOT ACTIVATED (COMMENTED) - " + genericFunction.getDescription(context) + "\n" ;
+		String comment = genericFunction.getDescription(context);
+		if(comment == null) comment = "";
+		comment = comment.replaceAll("\\R", Matcher.quoteReplacement("\n" + commentChar + " "));
+		return commentChar + " NOT ACTIVATED (COMMENTED) - " + comment + "\n" ;
 	}
 	
 	protected boolean checkPreBuildGUI(TitleAreaDialog titleAreaDialog, Composite container, int hIndent, Object context) {

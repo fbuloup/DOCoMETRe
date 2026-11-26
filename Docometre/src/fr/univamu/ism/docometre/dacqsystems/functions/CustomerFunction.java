@@ -392,17 +392,16 @@ public class CustomerFunction extends GenericFunction {
 	private String parseCode(Object context, String keyCode, String code) {
 		String temporaryCode = FunctionFactory.getProperty(context, functionFileName, keyCode.toUpperCase(), true);
 		if(temporaryCode != null && !"".equals(temporaryCode)) {
-			String comment = "\n";
+			String commentChar = "";
 			if(context instanceof Process) {
 				DACQConfiguration dacqConfiguration = ((Process)context).getDACQConfiguration();
-				if(dacqConfiguration instanceof ADWinDACQConfiguration) comment += "REM";
-				if(dacqConfiguration instanceof ArduinoUnoDACQConfiguration) comment += "//";
+				if(dacqConfiguration instanceof ADWinDACQConfiguration) commentChar = "REM";
+				if(dacqConfiguration instanceof ArduinoUnoDACQConfiguration) commentChar = "//";
 			}
 			if(context instanceof Script) { 
-				if(MathEngineFactory.isMatlab()) comment += "%";
-				if(MathEngineFactory.isPython()) comment += "#";
+				if(MathEngineFactory.isMatlab()) commentChar = "%";
+				if(MathEngineFactory.isPython()) commentChar = "#";
 			}
-			temporaryCode = comment + " Customer Function : " + getName(context) + "\n" + temporaryCode;
 			HashMap<String, String> properties = getProperties();
 			Set<String> propertiesKeys = properties.keySet();
 			String hashCode = String.valueOf(hashCode());
@@ -413,6 +412,10 @@ public class CustomerFunction extends GenericFunction {
 				String propertyValue = properties.get(propertyKey);
 				temporaryCode = temporaryCode.replaceAll(propertyKeyRegExp, propertyValue);
 			}
+			String name = getName(context);
+			if(name == null) name = "";
+			name = name.replaceAll("\\R", Matcher.quoteReplacement("\n" + commentChar + " "));
+			temporaryCode = "\n" + commentChar + " Customer Function : " + name + "\n" + temporaryCode;
 		}
 		return (temporaryCode != null && !"".equals(temporaryCode)) ? code + temporaryCode + "\n\n" : code;
 	}

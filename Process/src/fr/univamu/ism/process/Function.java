@@ -43,6 +43,7 @@ package fr.univamu.ism.process;
 
 import java.util.HashMap;
 import java.util.Set;
+import java.util.regex.Matcher;
 
 /**
  * 
@@ -118,12 +119,16 @@ public class Function extends Block {
 	@Override
 	public String getCode(Object context, Object step, Object...objects) {
 		if(step == ScriptSegmentType.INITIALIZE || step == ScriptSegmentType.LOOP || step == ScriptSegmentType.FINALIZE) {
-			if(context.getClass().getSimpleName().equals(Activator.ADWinProcess))
-				return "\nREM Function " + getName(context) + "\n\n";
-			if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess))
-				return "\n// Function " + getName(context) + "\n\n";
+			String commentChar = null;
+			if(context.getClass().getSimpleName().equals(Activator.ADWinProcess)) commentChar = "REM";
+			if(context.getClass().getSimpleName().equals(Activator.ArduinoUnoProcess)) commentChar = "//";
+			if(commentChar != null) {
+				String name = getName(context);
+				if(name == null) name = "";
+				name = name.replaceAll("\\R", Matcher.quoteReplacement("\n" + commentChar + " "));
+				return "\n" + commentChar + " Function " + name + "\n\n";
+			}
 		}
-		
 		return "";
 	}
 	
