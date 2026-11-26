@@ -50,6 +50,8 @@ import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -109,6 +111,8 @@ public class CollapsibleGroup extends Composite {
 	private int headerHeight;
 	private Color darkBackgroundBorderColor;
 	private Color lightBackgroundBorderColor;
+	// Bold font of the title, disposed with the group
+	private Font titleFont;
 	private ArrayList<ExpandListener> expandListeners = new ArrayList<>();
 	
 	/*
@@ -163,6 +167,11 @@ public class CollapsibleGroup extends Composite {
 		
 		titleLabel = new Label(header, SWT.NONE);
 		titleLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		// Title in bold
+		FontData[] fontData = titleLabel.getFont().getFontData();
+		for (FontData fd : fontData) fd.setStyle(fd.getStyle() | SWT.BOLD);
+		titleFont = new Font(getDisplay(), fontData);
+		titleLabel.setFont(titleFont);
 		
 		toolBar = new Composite(header, SWT.NONE) {
 			@Override
@@ -222,6 +231,7 @@ public class CollapsibleGroup extends Composite {
 		addDisposeListener(e -> {
 			darkBackgroundBorderColor.dispose();
 			lightBackgroundBorderColor.dispose();
+			titleFont.dispose();
 		});
 	}
 	
