@@ -166,6 +166,7 @@ public class ChannelViewer extends CollapsibleGroup {
 		
 		// Title : "name (number)" for outputs, "name (number) - value" for inputs
 		setText(input ? title + " - " + UNKNOWN_VALUE : title);
+		setToggleImages(Activator.getImage(IImageKeys.SHOW_GRAPH_ICON), Activator.getImage(IImageKeys.HIDE_GRAPH_ICON));
 		setToggleToolTipText(DocometreMessages.ShowHideGraph);
 		
 		Composite toolBar = getToolBar();

@@ -51,13 +51,13 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
@@ -68,19 +68,20 @@ import org.eclipse.swt.widgets.Layout;
  * Collapsible group in the style of the Nebula PGroup, whose header bar can contain any widget : 
  * <pre>
  *  ╭──────────────────────────────────────────────────────────╮
- *  │ Title                       [tool bar widgets...]    &lt;&lt; │   collapsed
+ *  │ Title                       [tool bar widgets...]  [◄]  │   collapsed
  *  ╰──────────────────────────────────────────────────────────╯
  *  ╭──────────────────────────────────────────────────────────╮
- *  │ Title                       [tool bar widgets...]    ∨∨ │   expanded
+ *  │ Title                       [tool bar widgets...]  [▼]  │   expanded
  *  ╰──────────────────────────────────────────────────────────╯
- *  ┌──────────────────────────────────────────────────────────┐
+ *  ╭──────────────────────────────────────────────────────────╮
  *  │ body                                                     │
- *  └──────────────────────────────────────────────────────────┘
+ *  ╰──────────────────────────────────────────────────────────╯
  * </pre>
  * Widgets of the header bar are created with {@link #getToolBar()} as parent (they are laid out from left 
  * to right, vertically centered, RowData can be used). The content is created with {@link #getBody()} as 
  * parent, whose layout is a GridLayout with one column by default. Clicking the toggle, the title or 
- * any free area of the header expands or collapses the group. The layout of this composite must not be changed.
+ * any free area of the header expands or collapses the group. The images of the toggle are set with 
+ * {@link #setToggleImages(Image, Image)}. The layout of this composite must not be changed.
  */
 public class CollapsibleGroup extends Composite {
 	
@@ -89,25 +90,27 @@ public class CollapsibleGroup extends Composite {
 	private static final int HEADER_V_PADDING = 8;
 	// Diameter of the arcs of the corners of the header
 	private static final int HEADER_ARC = 14;
-	// Size of the expand/collapse toggle
-	private static final int TOGGLE_WIDTH = 28;
-	private static final int TOGGLE_HEIGHT = 20;
-	// Colors of the border, for dark and light backgrounds, and of the toggle
+	// Diameter of the arcs of the corners of the body
+	private static final int BODY_ARC = 14;
+	// Vertical space between the header and the body
+	private static final int BODY_GAP = 3;
+	// Colors of the border, for dark and light backgrounds
 	private static final RGB DARK_BACKGROUND_BORDER_RGB = new RGB(200, 200, 200);
 	private static final RGB LIGHT_BACKGROUND_BORDER_RGB = new RGB(160, 160, 160);
-	private static final RGB TOGGLE_RGB = new RGB(33, 150, 243);
 	
 	private Composite header;
 	private Label titleLabel;
 	private Composite toolBar;
-	private Canvas toggle;
+	private Label toggle;
+	// Images of the toggle when collapsed and expanded (text if null)
+	private Image collapsedImage;
+	private Image expandedImage;
 	private Composite body;
 	private boolean expanded;
 	// Height of the header including its border, updated by the layout
 	private int headerHeight;
 	private Color darkBackgroundBorderColor;
 	private Color lightBackgroundBorderColor;
-	private Color toggleColor;
 	private ArrayList<ExpandListener> expandListeners = new ArrayList<>();
 	
 	/*
@@ -125,7 +128,7 @@ public class CollapsibleGroup extends Composite {
 				int bodyWHint = wHint == SWT.DEFAULT ? SWT.DEFAULT : Math.max(0, wHint - 2);
 				Point bodySize = body.computeSize(bodyWHint, SWT.DEFAULT, flushCache);
 				width = Math.max(width, bodySize.x + 2);
-				height += bodySize.y + 2;
+				height += BODY_GAP + bodySize.y + 2;
 			}
 			if(wHint != SWT.DEFAULT) width = wHint;
 			if(hHint != SWT.DEFAULT) height = hHint;
@@ -139,7 +142,7 @@ public class CollapsibleGroup extends Composite {
 			int headerContentHeight = header.computeSize(headerWidth, SWT.DEFAULT, flushCache).y;
 			headerHeight = headerContentHeight + 2*HEADER_V_PADDING;
 			header.setBounds(clientArea.x + HEADER_H_PADDING, clientArea.y + HEADER_V_PADDING, headerWidth, headerContentHeight);
-			if(expanded) body.setBounds(clientArea.x + 1, clientArea.y + headerHeight + 1, Math.max(0, clientArea.width - 2), Math.max(0, clientArea.height - headerHeight - 2));
+			if(expanded) body.setBounds(clientArea.x + 1, clientArea.y + headerHeight + BODY_GAP + 1, Math.max(0, clientArea.width - 2), Math.max(0, clientArea.height - headerHeight - BODY_GAP - 2));
 		}
 		
 	}
@@ -151,7 +154,6 @@ public class CollapsibleGroup extends Composite {
 		
 		darkBackgroundBorderColor = new Color(getDisplay(), DARK_BACKGROUND_BORDER_RGB);
 		lightBackgroundBorderColor = new Color(getDisplay(), LIGHT_BACKGROUND_BORDER_RGB);
-		toggleColor = new Color(getDisplay(), TOGGLE_RGB);
 		
 		// Header : title, tool bar and expand/collapse toggle
 		header = new Composite(this, SWT.NONE);
@@ -183,13 +185,10 @@ public class CollapsibleGroup extends Composite {
 		rl.marginBottom = 0;
 		toolBar.setLayout(rl);
 		
-		toggle = new Canvas(header, SWT.DOUBLE_BUFFERED);
-		GridData gd = new GridData(SWT.END, SWT.CENTER, false, false);
-		gd.widthHint = TOGGLE_WIDTH;
-		gd.heightHint = TOGGLE_HEIGHT;
-		toggle.setLayoutData(gd);
+		toggle = new Label(header, SWT.NONE);
+		toggle.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
 		toggle.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_HAND));
-		toggle.addPaintListener(e -> paintToggle(e.gc));
+		updateToggle();
 		
 		// Body : content, visible when expanded
 		body = new Composite(this, SWT.NONE);
@@ -222,12 +221,11 @@ public class CollapsibleGroup extends Composite {
 		addDisposeListener(e -> {
 			darkBackgroundBorderColor.dispose();
 			lightBackgroundBorderColor.dispose();
-			toggleColor.dispose();
 		});
 	}
 	
 	/*
-	 * Rounded border around the header and, when expanded, rectangle around the body
+	 * Rounded borders around the header and, when expanded, around the body
 	 */
 	private void paintBorders(GC gc) {
 		Rectangle clientArea = getClientArea();
@@ -237,32 +235,19 @@ public class CollapsibleGroup extends Composite {
 		gc.setForeground(getBorderColor());
 		gc.drawRoundRectangle(clientArea.x, clientArea.y, clientArea.width - 1, headerHeight - 1, HEADER_ARC, HEADER_ARC);
 		if(expanded) {
-			gc.setAntialias(SWT.OFF);
-			gc.drawRectangle(clientArea.x, clientArea.y + headerHeight, clientArea.width - 1, clientArea.height - headerHeight - 1);
+			int y = clientArea.y + headerHeight + BODY_GAP;
+			gc.drawRoundRectangle(clientArea.x, y, clientArea.width - 1, clientArea.y + clientArea.height - y - 1, BODY_ARC, BODY_ARC);
 		}
 	}
 	
 	/*
-	 * Two chevrons : pointing left when collapsed, pointing down when expanded
+	 * Image of the toggle depending on the state, or text if there is no image
 	 */
-	private void paintToggle(GC gc) {
-		Rectangle area = toggle.getClientArea();
-		gc.setAntialias(SWT.ON);
-		gc.setLineWidth(2);
-		gc.setLineCap(SWT.CAP_ROUND);
-		gc.setLineJoin(SWT.JOIN_ROUND);
-		gc.setForeground(toggleColor);
-		int cx = area.x + area.width/2;
-		int cy = area.y + area.height/2;
-		if(expanded) {
-			int dx = 10, dy = 6;
-			gc.drawPolyline(new int[] {cx - dx, cy - dy - 1, cx, cy - 1, cx + dx, cy - dy - 1});
-			gc.drawPolyline(new int[] {cx - dx, cy + 1, cx, cy + dy + 1, cx + dx, cy + 1});
-		} else {
-			int dx = 6, dy = 8;
-			gc.drawPolyline(new int[] {cx - 1, cy - dy, cx - dx - 1, cy, cx - 1, cy + dy});
-			gc.drawPolyline(new int[] {cx + dx + 1, cy - dy, cx + 1, cy, cx + dx + 1, cy + dy});
-		}
+	private void updateToggle() {
+		Image image = expanded ? expandedImage : collapsedImage;
+		if(image != null) toggle.setImage(image);
+		else toggle.setText(expanded ? "\u25BC" : "\u25C4");
+		header.layout(new Control[] {toggle});
 	}
 	
 	private Color getBorderColor() {
@@ -307,6 +292,18 @@ public class CollapsibleGroup extends Composite {
 		return titleLabel.getText();
 	}
 	
+	/**
+	 * Images of the expand/collapse toggle
+	 * @param collapsedImage shown when the group is collapsed (click to expand)
+	 * @param expandedImage shown when the group is expanded (click to collapse)
+	 */
+	public void setToggleImages(Image collapsedImage, Image expandedImage) {
+		checkWidget();
+		this.collapsedImage = collapsedImage;
+		this.expandedImage = expandedImage;
+		updateToggle();
+	}
+	
 	public void setToggleToolTipText(String toolTipText) {
 		checkWidget();
 		toggle.setToolTipText(toolTipText);
@@ -326,7 +323,7 @@ public class CollapsibleGroup extends Composite {
 		if(this.expanded == expanded) return;
 		this.expanded = expanded;
 		body.setVisible(expanded);
-		toggle.redraw();
+		updateToggle();
 		layout(true);
 		redraw();
 		Event event = new Event();
