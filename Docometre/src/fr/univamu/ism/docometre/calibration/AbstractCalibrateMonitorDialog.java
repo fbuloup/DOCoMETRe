@@ -76,7 +76,7 @@ import fr.univamu.ism.docometre.widgets.ChannelViewer;
 
 /**
  * Calibration and monitoring dialog, common to the DACQ systems : inputs on the left,
- * outputs on the right, a ChannelViewer for each channel. The subclass of each system
+ * outputs on the right, a ChannelViewer (collapsible group) for each channel. The subclass of each system
  * creates the viewers of its channels (see {@link #populate(Composite, Composite)}) ;
  * the calibration process of the system is run by {@link CalibrationFactory}.
  */
@@ -189,9 +189,10 @@ public abstract class AbstractCalibrateMonitorDialog extends TitleAreaDialog {
 		inputsScrolledComposite.setContent(inputsContainer);
 		gl = new GridLayout();
 		gl.horizontalSpacing = 0;
-		gl.verticalSpacing = 0;
-		gl.marginWidth = 0;
-		gl.marginHeight = 0;
+		// Space between the channels viewers (collapsible groups)
+		gl.verticalSpacing = 8;
+		gl.marginWidth = 6;
+		gl.marginHeight = 6;
 		inputsContainer.setLayout(gl);
 		Label labelInputs = new Label(inputsContainer, SWT.NORMAL);
 		labelInputs.setText(DocometreMessages.Inputs);
@@ -205,9 +206,10 @@ public abstract class AbstractCalibrateMonitorDialog extends TitleAreaDialog {
 		outputsScrolledComposite.setContent(outputsContainer);
 		gl = new GridLayout();
 		gl.horizontalSpacing = 0;
-		gl.verticalSpacing = 0;
-		gl.marginWidth = 0;
-		gl.marginHeight = 0;
+		// Space between the channels viewers (collapsible groups)
+		gl.verticalSpacing = 8;
+		gl.marginWidth = 6;
+		gl.marginHeight = 6;
 		outputsContainer.setLayout(gl);
 		Label labelOutputs = new Label(outputsContainer, SWT.NORMAL);
 		labelOutputs.setText(DocometreMessages.Outputs);
