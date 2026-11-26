@@ -88,7 +88,11 @@ public class CollapsibleGroup extends Composite {
 	
 	// Horizontal and vertical paddings between the rounded border of the header and its content
 	private static final int HEADER_H_PADDING = 12;
-	private static final int HEADER_V_PADDING = 8;
+	private static final int HEADER_V_PADDING = 5;
+	// Space added to the height of the title for the minimum height of the content of the header : room for a 
+	// single-line field with a border (e.g. SpinnerValue) in the tool bar, so that all the groups have the same 
+	// height whatever the widgets of their tool bar
+	private static final int HEADER_FIELD_ALLOWANCE = 6;
 	// Diameter of the arcs of the corners of the header
 	private static final int HEADER_ARC = 14;
 	// Space between the border and the left, right and bottom sides of the body : the body must not hide
@@ -120,12 +124,16 @@ public class CollapsibleGroup extends Composite {
 	 */
 	private final class CollapsibleGroupLayout extends Layout {
 		
+		private int getMinimumHeaderContentHeight() {
+			return titleLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT).y + HEADER_FIELD_ALLOWANCE;
+		}
+		
 		@Override
 		protected Point computeSize(Composite composite, int wHint, int hHint, boolean flushCache) {
 			int headerWHint = wHint == SWT.DEFAULT ? SWT.DEFAULT : Math.max(0, wHint - 2*HEADER_H_PADDING);
 			Point headerSize = header.computeSize(headerWHint, SWT.DEFAULT, flushCache);
 			int width = headerSize.x + 2*HEADER_H_PADDING;
-			int height = headerSize.y + 2*HEADER_V_PADDING;
+			int height = Math.max(headerSize.y, getMinimumHeaderContentHeight()) + 2*HEADER_V_PADDING;
 			if(expanded) {
 				int bodyWHint = wHint == SWT.DEFAULT ? SWT.DEFAULT : Math.max(0, wHint - 2*BODY_INSET);
 				Point bodySize = body.computeSize(bodyWHint, SWT.DEFAULT, flushCache);
@@ -141,7 +149,7 @@ public class CollapsibleGroup extends Composite {
 		protected void layout(Composite composite, boolean flushCache) {
 			Rectangle clientArea = composite.getClientArea();
 			int headerWidth = Math.max(0, clientArea.width - 2*HEADER_H_PADDING);
-			int headerContentHeight = header.computeSize(headerWidth, SWT.DEFAULT, flushCache).y;
+			int headerContentHeight = Math.max(header.computeSize(headerWidth, SWT.DEFAULT, flushCache).y, getMinimumHeaderContentHeight());
 			headerHeight = headerContentHeight + 2*HEADER_V_PADDING;
 			header.setBounds(clientArea.x + HEADER_H_PADDING, clientArea.y + HEADER_V_PADDING, headerWidth, headerContentHeight);
 			if(expanded) body.setBounds(clientArea.x + BODY_INSET, clientArea.y + headerHeight, Math.max(0, clientArea.width - 2*BODY_INSET), Math.max(0, clientArea.height - headerHeight - BODY_INSET));
@@ -164,9 +172,10 @@ public class CollapsibleGroup extends Composite {
 		gl.marginHeight = 0;
 		gl.horizontalSpacing = 12;
 		header.setLayout(gl);
+		// The widgets of the header are vertically centered in its whole height (see getMinimumHeaderContentHeight)
 		
 		titleLabel = new Label(header, SWT.NONE);
-		titleLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		titleLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
 		// Title in bold
 		FontData[] fontData = titleLabel.getFont().getFontData();
 		for (FontData fd : fontData) fd.setStyle(fd.getStyle() | SWT.BOLD);
@@ -181,7 +190,7 @@ public class CollapsibleGroup extends Composite {
 				return super.computeSize(wHint, hHint, changed);
 			}
 		};
-		toolBar.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
+		toolBar.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, true));
 		RowLayout rl = new RowLayout(SWT.HORIZONTAL);
 		rl.center = true;
 		rl.wrap = false;
@@ -193,7 +202,7 @@ public class CollapsibleGroup extends Composite {
 		toolBar.setLayout(rl);
 		
 		toggle = new Label(header, SWT.NONE);
-		toggle.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
+		toggle.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, true));
 		toggle.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_HAND));
 		updateToggle();
 		
