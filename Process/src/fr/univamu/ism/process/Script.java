@@ -487,7 +487,7 @@ public class Script implements Serializable {
 	}
 	
 	private String getBlockName(Block block, Object context) {
-		return String.valueOf(block.getName(context)).replaceAll("\n", " ");
+		return String.valueOf(block.getName(context)).replaceAll("\\R", " ");
 	}
 	
 	/*
