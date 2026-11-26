@@ -110,26 +110,9 @@ public final class CalibrationHeader/* implements DisposeListener*/  {
 		captureValueImage = Activator.getImage(IImageKeys.CAPTURE_VALUE_ICON);
 		
 		
-		Label aMinLabel = new Label(parent, SWT.NONE);
-		aMinLabel.setText("Amin :");
-		aMinLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
-		aMinLabel.setToolTipText(DocometreMessages.AmpMinTooltip);
-		aMinText = new StyledText(parent, SWT.SINGLE | SWT.BORDER);
-		aMinText.setToolTipText(DocometreMessages.AmpMinTooltip);
-		aMinText.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
-		aMinText.setText(RAW_VALUE_WIDTH_TEMPLATE);
-		((GridData)aMinText.getLayoutData()).widthHint = aMinText.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
-		aMinText.setText(rawValueFormat.format(initialValues[0]));
-		addKeyHandler(aMinText);
-		captureAMinValueButton = new Button(parent, SWT.FLAT);
-		captureAMinValueButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
-		((GridData)captureAMinValueButton.getLayoutData()).heightHint = aMinText.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
-		captureAMinValueButton.setImage(captureValueImage);
-		captureAMinValueButton.setToolTipText(DocometreMessages.CaptureValueMin);
-		addMouseHandler(captureAMinValueButton);
-		
+		// Order of the widgets : Amax, capture, Amin, capture, | Umax, Umin, default calibration
 		Label aMaxLabel = new Label(parent, SWT.NONE);
-		aMaxLabel.setText("Amax :");
+		aMaxLabel.setText("Amax");
 		aMaxLabel.setToolTipText(DocometreMessages.AmpMaxTooltip);
 		aMaxLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		aMaxText = new StyledText(parent, SWT.SINGLE | SWT.BORDER);
@@ -146,24 +129,30 @@ public final class CalibrationHeader/* implements DisposeListener*/  {
 		captureAMaxValueButton.setToolTipText(DocometreMessages.CaptureValueMax);
 		addMouseHandler(captureAMaxValueButton);
 		
+		Label aMinLabel = new Label(parent, SWT.NONE);
+		aMinLabel.setText("Amin");
+		aMinLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+		aMinLabel.setToolTipText(DocometreMessages.AmpMinTooltip);
+		aMinText = new StyledText(parent, SWT.SINGLE | SWT.BORDER);
+		aMinText.setToolTipText(DocometreMessages.AmpMinTooltip);
+		aMinText.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
+		aMinText.setText(RAW_VALUE_WIDTH_TEMPLATE);
+		((GridData)aMinText.getLayoutData()).widthHint = aMinText.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
+		aMinText.setText(rawValueFormat.format(initialValues[0]));
+		addKeyHandler(aMinText);
+		captureAMinValueButton = new Button(parent, SWT.FLAT);
+		captureAMinValueButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
+		((GridData)captureAMinValueButton.getLayoutData()).heightHint = aMinText.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
+		captureAMinValueButton.setImage(captureValueImage);
+		captureAMinValueButton.setToolTipText(DocometreMessages.CaptureValueMin);
+		addMouseHandler(captureAMinValueButton);
+		
 		Label labelSeparator = new Label(parent, SWT.SEPARATOR | SWT.VERTICAL);
 		labelSeparator.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 		((GridData) labelSeparator.getLayoutData()).heightHint = captureAMaxValueButton.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
 		
-		Label uMinLabel = new Label(parent, SWT.NONE);
-		uMinLabel.setText("Umin :");
-		uMinLabel.setToolTipText(DocometreMessages.UnitMinTooltip);
-		uMinLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
-		uMinText = new StyledText(parent, SWT.SINGLE | SWT.BORDER);
-		uMinText.setToolTipText(DocometreMessages.UnitMinTooltip);
-		uMinText.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
-		uMinText.setText(PHYSICAL_VALUE_WIDTH_TEMPLATE);
-		((GridData)uMinText.getLayoutData()).widthHint = uMinText.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
-		uMinText.setText(physicalValueFormat.format(initialValues[2]));
-		addKeyHandler(uMinText);
-		
 		Label uMaxLabel = new Label(parent, SWT.NONE);
-		uMaxLabel.setText("Umax :");
+		uMaxLabel.setText("Umax");
 		uMaxLabel.setToolTipText(DocometreMessages.UnitMaxTooltip);
 		uMaxLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		uMaxText = new StyledText(parent, SWT.SINGLE | SWT.BORDER);
@@ -173,6 +162,18 @@ public final class CalibrationHeader/* implements DisposeListener*/  {
 		((GridData)uMaxText.getLayoutData()).widthHint = uMaxText.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
 		uMaxText.setText(physicalValueFormat.format(initialValues[3]));
 		addKeyHandler(uMaxText);
+		
+		Label uMinLabel = new Label(parent, SWT.NONE);
+		uMinLabel.setText("Umin");
+		uMinLabel.setToolTipText(DocometreMessages.UnitMinTooltip);
+		uMinLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+		uMinText = new StyledText(parent, SWT.SINGLE | SWT.BORDER);
+		uMinText.setToolTipText(DocometreMessages.UnitMinTooltip);
+		uMinText.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
+		uMinText.setText(PHYSICAL_VALUE_WIDTH_TEMPLATE);
+		((GridData)uMinText.getLayoutData()).widthHint = uMinText.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
+		uMinText.setText(physicalValueFormat.format(initialValues[2]));
+		addKeyHandler(uMinText);
 		
 		defaultCalibrationButton = new Button(parent, SWT.FLAT);
 		defaultCalibrationButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
@@ -186,10 +187,6 @@ public final class CalibrationHeader/* implements DisposeListener*/  {
 				resetCalibration();
 			}
 		});
-		
-		Label labelSeparator2 = new Label(parent, SWT.SEPARATOR | SWT.VERTICAL);
-		labelSeparator2.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
-		((GridData) labelSeparator2.getLayoutData()).heightHint = ((GridData) labelSeparator.getLayoutData()).heightHint;
 	}
 	
 	/**
