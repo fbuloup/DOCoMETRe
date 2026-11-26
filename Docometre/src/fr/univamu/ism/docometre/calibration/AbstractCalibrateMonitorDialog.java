@@ -57,6 +57,7 @@ import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -64,6 +65,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
@@ -161,7 +163,6 @@ public abstract class AbstractCalibrateMonitorDialog extends TitleAreaDialog {
 		message = message.replaceAll("&", "");
 		setMessage(message, IMessageProvider.INFORMATION);
 		setTitleImage(Activator.getImage(IImageKeys.CALIBRATE_MONITOR_WIZBAN));
-		getShell().setMaximized(true);
 	}
 	
 	@Override
@@ -292,6 +293,19 @@ public abstract class AbstractCalibrateMonitorDialog extends TitleAreaDialog {
 			started = false;
 		}
 		super.buttonPressed(buttonId);
+	}
+	
+	@Override
+	protected void configureShell(Shell newShell) {
+		super.configureShell(newShell);
+		Rectangle parentShellBounds = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell().getBounds();
+		int dx = parentShellBounds.width/10;
+		int dy = parentShellBounds.height/10;
+		int x = parentShellBounds.x + dx/2;
+		int y = parentShellBounds.y + dy/2;
+		int w = parentShellBounds.width - dx;
+		int h = parentShellBounds.height - dy;
+		newShell.setBounds(x, y, w, h);
 	}
 	
 }
