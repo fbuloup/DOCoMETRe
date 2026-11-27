@@ -47,12 +47,8 @@ import org.eclipse.swt.widgets.Shell;
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.calibration.AbstractCalibrateMonitorDialog;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
-import fr.univamu.ism.docometre.dacqsystems.Module;
-import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinAnInModule;
-import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinAnOutModule;
+import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration.ChannelType;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfiguration;
-import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDigInOutChannelProperties;
-import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDigInOutModule;
 
 public class CalibrateMonitorDialog extends AbstractCalibrateMonitorDialog {
 	
@@ -65,58 +61,14 @@ public class CalibrateMonitorDialog extends AbstractCalibrateMonitorDialog {
 	
 	@Override
 	protected void populate(Composite inputsContainer, Composite outputsContainer) {
-		Module[] modules = adwinDACQConfiguration.getModules();
-		
-		// Populate analog inputs
-		for (Module module : modules) {
-			if(module instanceof ADWinAnInModule) {
-				module = (ADWinAnInModule)module; 
-				Channel[] channels = module.getChannels();
-				for (Channel channel : channels) {
-					createChannelViewer(inputsContainer, channel, true, true);
-				}
-			}
-		}
-		
-		// Populate digital inputs
-		for (Module module : modules) {
-			if(module instanceof ADWinDigInOutModule) {
-				module = (ADWinDigInOutModule)module;
-				Channel[] channels = module.getChannels();
-				for (Channel channel : channels) {
-					String inOut = channel.getProperty(ADWinDigInOutChannelProperties.IN_OUT);
-					if(inOut.equals(ADWinDigInOutChannelProperties.INPUT)) {
-						createChannelViewer(inputsContainer, channel, true, false);
-					}
-				}
-			}
-		}
-		
-		// Populate analog outputs
-		for (Module module : modules) {
-			if(module instanceof ADWinAnOutModule) {
-				module = (ADWinAnOutModule)module;
-				Channel[] channels = module.getChannels();
-				for (Channel channel : channels) {
-					createChannelViewer(outputsContainer, channel, false, true);
-				}
-			}
-		}
-		
-		// Populate digital outputs
-		for (Module module : modules) {
-			if(module instanceof ADWinDigInOutModule) {
-				module = (ADWinDigInOutModule)module;
-				Channel[] channels = module.getChannels();
-				for (Channel channel : channels) {
-					String inOut = channel.getProperty(ADWinDigInOutChannelProperties.IN_OUT);
-					if(inOut.equals(ADWinDigInOutChannelProperties.OUTPUT)) {
-						createChannelViewer(outputsContainer, channel, false, false);
-					}
-					
-				}
-			}
-		}
+	    for (Channel channel : adwinDACQConfiguration.getChannels(ChannelType.ANALOG_INPUT))
+	        createChannelViewer(inputsContainer, channel, true, true);
+	    for (Channel channel : adwinDACQConfiguration.getChannels(ChannelType.DIGITAL_INPUT))
+	        createChannelViewer(inputsContainer, channel, true, false);
+	    for (Channel channel : adwinDACQConfiguration.getChannels(ChannelType.ANALOG_OUTPUT))
+	        createChannelViewer(outputsContainer, channel, false, true);
+	    for (Channel channel : adwinDACQConfiguration.getChannels(ChannelType.DIGITAL_OUTPUT))
+	        createChannelViewer(outputsContainer, channel, false, false);
 	}
 	
 }

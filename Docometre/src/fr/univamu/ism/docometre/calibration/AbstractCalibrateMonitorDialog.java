@@ -107,6 +107,10 @@ public abstract class AbstractCalibrateMonitorDialog extends TitleAreaDialog {
 	// Time origin common to the graphs of the viewers ("SWT + OpenGL v2" library)
 	private ChannelViewer.TimeBase timeBase = new ChannelViewer.TimeBase();
 
+	private ScrolledComposite inputsScrolledComposite;
+
+	private ScrolledComposite outputsScrolledComposite;
+
 	/**
 	 * @param system the DACQ system (see Activator.ADWIN_SYSTEM, Activator.ARDUINO_UNO_SYSTEM)
 	 */
@@ -183,7 +187,7 @@ public abstract class AbstractCalibrateMonitorDialog extends TitleAreaDialog {
 		gl.marginHeight = 2;
 		container.setLayout(gl);
 
-		ScrolledComposite inputsScrolledComposite = new ScrolledComposite(container, SWT.V_SCROLL /*| SWT.H_SCROLL*/ | SWT.NORMAL);
+		inputsScrolledComposite = new ScrolledComposite(container, SWT.V_SCROLL /*| SWT.H_SCROLL*/ | SWT.NORMAL);
 		inputsScrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
 		Composite inputsContainer = new Composite(inputsScrolledComposite, SWT.NONE);
@@ -200,7 +204,7 @@ public abstract class AbstractCalibrateMonitorDialog extends TitleAreaDialog {
 		labelInputs.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, false));
 		labelInputs.setFont(Activator.getBoldFont(JFaceResources.DEFAULT_FONT));
 		
-		ScrolledComposite outputsScrolledComposite = new ScrolledComposite(container, SWT.V_SCROLL /*| SWT.H_SCROLL*/ | SWT.NORMAL);
+		outputsScrolledComposite = new ScrolledComposite(container, SWT.V_SCROLL /*| SWT.H_SCROLL*/ | SWT.NORMAL);
 		outputsScrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
 		Composite outputsContainer = new Composite(outputsScrolledComposite, SWT.NONE);
@@ -257,7 +261,6 @@ public abstract class AbstractCalibrateMonitorDialog extends TitleAreaDialog {
 		
 		return container;
 		
-		
 	}
 	
 	/**
@@ -306,6 +309,7 @@ public abstract class AbstractCalibrateMonitorDialog extends TitleAreaDialog {
 				}
 			}
 		});
+		proceedButton.setEnabled(!inputsScrolledComposite.isDisposed() || !outputsScrolledComposite.isDisposed());
 		createButton(parent, IDialogConstants.OK_ID, IDialogConstants.CLOSE_LABEL, false);
 	}
 	
