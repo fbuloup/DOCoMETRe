@@ -6,7 +6,54 @@
       provider-name="ISM">
 
    <description>
-      -- 2026-11-24
+-- 2026-11-27
+ADDED :
+* Calibration of the analog inputs (ADwin and Arduino) : AMin and
+AMax are now raw values of the converter (integers), UMin and UMax
+the corresponding physical values (voltages by default). The
+physical value is computed in one step (k * raw value + b) by the
+DACQ system and the recorded values are physical values. Processes
+must be compiled again
+* Analog inputs : new &quot;Calibrated&quot; column. A not calibrated input
+uses the default values of the hardware, which follow the changes of
+the range of the module (ADwin), of the analog reference, of the
+board or of the gain of the ADS1115 inputs (Arduino). The input
+becomes calibrated as soon as AMin, AMax, UMin or UMax is modified
+* Reset of the calibration of an analog input : uncheck its
+&quot;Calibrated&quot; column (can be undone), or press the &quot;default
+calibration&quot; button of its header in the calibration/monitoring
+dialog
+* Arduino analog inputs module : &quot;External reference voltage&quot;
+field, used with the EXTERNAL / AR_EXTERNAL reference
+* Arduino : the analog inputs (board and ADS1115) are computed in
+physical units on the board and transferred as the IEEE 754 bits of
+the float in hexadecimal. The float variables are transferred the
+same way (exact value, shorter messages)
+* DACQ configurations saved before : calibration of the analog inputs
+converted when they are opened, with the same physical values (AMin
+and AMax may then have decimals). With the Arduino EXTERNAL
+reference, AMin and AMax were already raw values and are kept
+* Calibration/monitoring dialog : each channel in a collapsible group
+with a &quot;Calibrated values&quot; check box, calibration fields on two
+lines when the dialog is narrow, analog outputs viewers with the
+same height as the other channels and a spinner using the theme
+colors. The inputs or outputs area is not shown when the
+configuration has no input or no output, and the monitoring cannot
+be started without any channel. The dialog is no longer maximized
+(90 % of the main window)
+* &quot;SWT + OpenGL v2&quot; charts library (JOGL) loaded at startup when it
+is selected in the preferences
+* Processes : functions comments on several lines in the generated
+code
+FIXED :
+* Arduino : copy (clone) of a DACQ configuration and of its modules :
+modules duplicated, channels and module properties (calibration,
+external reference voltage) not copied
+* Console : text color of the theme used when the messages contain
+ANSI color sequences
+* Processes : names of the blocks with Windows line breaks (\r\n) not
+displayed on one line
+-- 2026-11-24
 ADDED :
 * Calibration/monitoring dialog : the &amp;quot;Proceed&amp;quot; button becomes
 &amp;quot;Start monitoring&amp;quot; / &amp;quot;Stop monitoring&amp;quot; (English, French and Polish). A confirmation is asked before stopping the monitoring,
