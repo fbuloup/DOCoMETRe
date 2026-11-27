@@ -61,6 +61,13 @@ public abstract class DACQConfiguration extends AbstractElement {
 	
 	protected static String[] defaultProposal = new String[]{"time"};
 	
+	public enum ChannelType { ANALOG_INPUT, 
+							  ANALOG_OUTPUT, 
+							  DIGITAL_INPUT, 
+							  DIGITAL_OUTPUT, 
+							  ALL				//Variables, CAN, RS232 (except ICE), analogs in/ou, dig in/out etc.
+							}
+	
 	/**
 	 * Collection of charts for this DACQ configuration
 	 */
@@ -229,7 +236,15 @@ public abstract class DACQConfiguration extends AbstractElement {
 //		return proposals;
 //	}
 
-	public abstract Channel[] getChannels();
+	public Channel[] getChannels() {
+	    return getChannels(ChannelType.ALL);
+	}
+	
+	public boolean hasChannels(ChannelType channelType) {
+		return getChannels(channelType).length > 0;
+	}
+	
+	public abstract Channel[] getChannels(ChannelType channelType);
 	
 	public abstract Channel[] getVariables();
 	

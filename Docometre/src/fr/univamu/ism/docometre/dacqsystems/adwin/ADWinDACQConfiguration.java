@@ -152,17 +152,6 @@ public class ADWinDACQConfiguration extends DACQConfiguration implements Propert
 		addObserver(this);
 	}
 	
-	public Channel[] getChannels() {
-		ArrayList<Channel> channelsArrayList = new ArrayList<>(0);
-		channelsArrayList.addAll(Arrays.asList(getVariables()));
-		Module[] modules = getModules();
-		for (Module module : modules) {
-			boolean getChannels = !(module instanceof ADWinRS232Module && module.getProperty(ADWinRS232ModuleProperties.SYSTEM_TYPE).equals(ADWinRS232ModuleProperties.ICE_SYSTEM_TYPE));
-			if(getChannels) channelsArrayList.addAll(Arrays.asList(module.getChannels()));
-		}
-		return channelsArrayList.toArray(new Channel[channelsArrayList.size()]);
-	}
-	
 	@Override
 	public void updateChannelsTransferNumber() {
 		int nbTransferedChannels = 1;
@@ -238,6 +227,39 @@ public class ADWinDACQConfiguration extends DACQConfiguration implements Propert
 	@Override
 	public String[] getProposal() {
 		return getProposalImpl(false, false, false);
+	}
+
+	@Override
+	public Channel[] getChannels(ChannelType channelType) {
+		ArrayList<Channel> channels = new ArrayList<>(0);
+		if(channelType == ChannelType.ALL) channels.addAll(Arrays.asList(getVariables()));
+		for (Module module : getModules()) {
+			for (Channel channel : module.getChannels()) {
+				if(isOfType(module, channel, channelType)) channels.add(channel);
+			}
+		}
+		return channels.toArray(new Channel[channels.size()]);
+	}
+
+	/*
+	 * With ADwin, all the channels of a module are used (no USED property as with Arduino Uno)
+	 */
+	private static boolean isOfType(Module module, Channel channel, ChannelType channelType) {
+		switch (channelType) {
+		case ALL:
+			// Channels of an ICE RS232 module are excluded, as before
+			return !(module instanceof ADWinRS232Module && ADWinRS232ModuleProperties.ICE_SYSTEM_TYPE.equals(module.getProperty(ADWinRS232ModuleProperties.SYSTEM_TYPE)));
+		case ANALOG_INPUT:
+			return module instanceof ADWinAnInModule;
+		case ANALOG_OUTPUT:
+			return module instanceof ADWinAnOutModule;
+		case DIGITAL_INPUT:
+			return module instanceof ADWinDigInOutModule && ADWinDigInOutChannelProperties.INPUT.equals(channel.getProperty(ADWinDigInOutChannelProperties.IN_OUT));
+		case DIGITAL_OUTPUT:
+			return module instanceof ADWinDigInOutModule && ADWinDigInOutChannelProperties.OUTPUT.equals(channel.getProperty(ADWinDigInOutChannelProperties.IN_OUT));
+		default:
+			return false;
+		}
 	}
 
 }

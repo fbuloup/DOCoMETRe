@@ -58,6 +58,7 @@ import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -218,23 +219,32 @@ public abstract class AbstractCalibrateMonitorDialog extends TitleAreaDialog {
 
 		populate(inputsContainer, outputsContainer);
 		
-		inputsScrolledComposite.setExpandHorizontal(true);
-		inputsScrolledComposite.setExpandVertical(true);
-		inputsScrolledComposite.addControlListener(new ControlAdapter() {
-			@Override
-			public void controlResized(ControlEvent e) {
-				updateScrolledContent(inputsScrolledComposite);
-			}
-		});
+		if(inputsContainer.getChildren().length == 1) inputsScrolledComposite.dispose();
+		else {
+			inputsScrolledComposite.setExpandHorizontal(true);
+			inputsScrolledComposite.setExpandVertical(true);
+			inputsScrolledComposite.addControlListener(new ControlAdapter() {
+				@Override
+				public void controlResized(ControlEvent e) {
+					updateScrolledContent(inputsScrolledComposite);
+				}
+			});
+		}
+		if(outputsContainer.getChildren().length == 1) outputsScrolledComposite.dispose();
+		else {
+			outputsScrolledComposite.setExpandHorizontal(true);
+			outputsScrolledComposite.setExpandVertical(true);
+			outputsScrolledComposite.addControlListener(new ControlAdapter() {
+				@Override
+				public void controlResized(ControlEvent e) {
+					updateScrolledContent(outputsScrolledComposite);
+				}
+			});
+		}
 		
-		outputsScrolledComposite.setExpandHorizontal(true);
-		outputsScrolledComposite.setExpandVertical(true);
-		outputsScrolledComposite.addControlListener(new ControlAdapter() {
-			@Override
-			public void controlResized(ControlEvent e) {
-				updateScrolledContent(outputsScrolledComposite);
-			}
-		});
+		if(inputsScrolledComposite.isDisposed() || outputsScrolledComposite.isDisposed()) {
+			container.setLayout(new FillLayout());
+		}
 		
 		getShell().addDisposeListener(new DisposeListener() {
 			
