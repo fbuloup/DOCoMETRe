@@ -200,7 +200,7 @@ public class ModifyPropertyOperation extends AbstractOperation {
 		}
 	}
 	
-	private void setFocus() {
+	protected void setFocus() {
 		if(uiElement instanceof Control) {
 			Control control = ((Control)uiElement);
 			if(control != null && !control.isDisposed()) {

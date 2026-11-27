@@ -57,6 +57,7 @@ import org.osgi.framework.Bundle;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.ObjectsController;
+import fr.univamu.ism.docometre.calibration.RawCalibration;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration;
@@ -95,6 +96,12 @@ public final class ArduinoUnoCalibration {
 		calibrationHeader.addAMinListener(new ChannelCalibrationListener(channel, ArduinoUnoAnInChannelProperties.AMPLITUDE_MIN));
 		calibrationHeader.addUMaxListener(new ChannelCalibrationListener(channel, ArduinoUnoAnInChannelProperties.UNIT_MAX));
 		calibrationHeader.addUMinListener(new ChannelCalibrationListener(channel, ArduinoUnoAnInChannelProperties.UNIT_MIN));
+		// Reset to the default calibration of the hardware (see ArduinoUnoAnInChannelProperties#getDefaultRange)
+		calibrationHeader.setDefaultCalibrationSupplier(() -> {
+			if(!ArduinoUnoAnInChannelProperties.CALIBRATION.applyDefault(channel)) return null;
+			ObjectsController.serialize(channel.getModule().getDACQConfiguration());
+			return ArduinoUnoAnInChannelProperties.CALIBRATION.getCalibration(channel);
+		});
 		return calibrationHeader;
 	}
 	
@@ -113,7 +120,7 @@ public final class ArduinoUnoCalibration {
 		
 		@Override
 		public void push(double value) {
-			channel.setProperty(property, Double.toString(value));
+			channel.setProperty(property, RawCalibration.format(value));
 			ObjectsController.serialize(channel.getModule().getDACQConfiguration());
 		}
 		
@@ -126,12 +133,17 @@ public final class ArduinoUnoCalibration {
 		
 	}
 	
+	/**
+	 * @param y raw value of the converter (see ArduinoUnoCalibrationTask)
+	 * @return the physical value, NaN if the calibration of the input is not valid
+	 */
 	public static double computeCalibration(double y, Channel channel) {
-		double uMax = Double.parseDouble(channel.getProperty(ArduinoUnoAnInChannelProperties.UNIT_MAX));
-		double uMin = Double.parseDouble(channel.getProperty(ArduinoUnoAnInChannelProperties.UNIT_MIN));
-		double ampMax = Double.parseDouble(channel.getProperty(ArduinoUnoAnInChannelProperties.AMPLITUDE_MAX));
-		double ampMin = Double.parseDouble(channel.getProperty(ArduinoUnoAnInChannelProperties.AMPLITUDE_MIN));
-		return (uMax - uMin)/(ampMax - ampMin)*(y - ampMin) + uMin;
+		double[] calibration = ArduinoUnoAnInChannelProperties.CALIBRATION.getCalibration(channel);
+		try {
+			return RawCalibration.compute(y, calibration[0], calibration[1], calibration[2], calibration[3]);
+		} catch (IllegalArgumentException e) {
+			return Double.NaN;
+		}
 	}
 	
 	static void setLastValue(Channel channel, double value) {

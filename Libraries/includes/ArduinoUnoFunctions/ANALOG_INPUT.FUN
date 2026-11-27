@@ -15,4 +15,4 @@ DESCRIPTION_PL = Akwizycja bieżącej wartości wejścia analogowego w trybie as
 # Take care of the fact that each key must be upper case !
 FUNCTION_CODE = // First read discarded : memory effect of the sample-and-hold\n\
 analogRead(channelNumber);\n\
-channelName = analogRead(channelNumber);
+channelName = physicalValue;

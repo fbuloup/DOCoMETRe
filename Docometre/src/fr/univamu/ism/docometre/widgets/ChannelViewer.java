@@ -42,19 +42,28 @@
 package fr.univamu.ism.docometre.widgets;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.ExpandEvent;
+import org.eclipse.swt.events.ExpandListener;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Layout;
 
 import fr.univamu.ism.docometre.Activator;
 import fr.univamu.ism.docometre.DocometreMessages;
@@ -69,7 +78,19 @@ import fr.univamu.ism.rtswtchart.IRTSWTOscilloChart;
 import fr.univamu.ism.rtswtchart.IRTSWTSerie;
 import fr.univamu.ism.rtswtchart.RTSWTChartsFactory;
 
-public class ChannelViewer extends Composite {
+/**
+ * Viewer of a channel in the calibration and monitoring dialog : a {@link CollapsibleGroup} whose header 
+ * bar contains, depending on the type of the channel :
+ * <ul>
+ * <li>analog input : current value in the title, "calibrated values" check box ; 
+ * calibration fields (Amax, Amin, Umax, Umin) in the body</li>
+ * <li>digital input : current value in the title</li>
+ * <li>analog output : spinner of the value</li>
+ * <li>digital output : ON/OFF switch</li>
+ * </ul>
+ * The graph of the channel is created in the body when the group is expanded and disposed when it is collapsed.
+ */
+public class ChannelViewer extends CollapsibleGroup {
 	
 	// Duration of the time window of the graph, in seconds
 	private static final double WINDOW_TIME_WIDTH = 10;
@@ -79,6 +100,8 @@ public class ChannelViewer extends Composite {
 	private static final double OPENGL_V2_SAMPLE_FREQUENCY = 100;
 	// Maximum number of samples added at once (time window), e.g. after a long gap between two samples 
 	private static final int OPENGL_V2_MAX_SAMPLES = (int)(WINDOW_TIME_WIDTH * OPENGL_V2_SAMPLE_FREQUENCY) + 1;
+	// Displayed value of an input until the first sample is received
+	private static final String UNKNOWN_VALUE = "?????";
 	
 	/**
 	 * Time origin common to the graphs of the "SWT + OpenGL v2" library of several viewers (see 
@@ -103,7 +126,6 @@ public class ChannelViewer extends Composite {
 	
 	private boolean traceVisible ;
 	private String title;
-	private Label separator;
 	private DecimalFormat decimalFormater;
 	private IRTSWTSerie rtswtOscilloSerie;
 	private IRTSWTOscilloChart rtswtOscilloChart; 
@@ -117,8 +139,6 @@ public class ChannelViewer extends Composite {
 	private Runnable graphVisibilityListener;
 	private boolean firstSample = true;
 	private double initialTime;
-	private Image imageLeft;
-	private Image imageDown;
 	private Image imageOn;
 	private Image imageOff;
 	private boolean input;
@@ -131,15 +151,14 @@ public class ChannelViewer extends Composite {
 	private SpinnerValue spinnerValue;
 	// When digital output
 	private boolean stateOn;
-	// When analog or digital input
-	private Label valueLabel;
 	private Label stateLabel;
+	// When analog or digital input : last displayed value
+	private volatile double inputValue = Double.NaN;
 	
 	public Object getValue() {
 		if(analog && !input) return spinnerValue.getValue();
 		if(!analog && !input) return stateOn;
-		String value = valueLabel.getText();
-		return Double.parseDouble(value);
+		return inputValue;
 	}
 	
 	public ChannelViewer(Composite parent, int style, Channel channel, boolean input, boolean analog) {
@@ -150,38 +169,21 @@ public class ChannelViewer extends Composite {
 		this.input = input;
 		if(analog) decimalFormater = new DecimalFormat("#.####");
 		else decimalFormater = new DecimalFormat("#");
-
-		GridLayout gl = new GridLayout();
-		gl.horizontalSpacing = 0;
-		gl.verticalSpacing = 0;
-		gl.marginWidth = 0;
-		gl.marginHeight = 0;
-		setLayout(gl);
 		
-		imageLeft = Activator.getImage(IImageKeys.SHOW_GRAPH_ICON);
-		imageDown = Activator.getImage(IImageKeys.HIDE_GRAPH_ICON);
+		// Title : "name (number)" for outputs, "name (number) - value" for inputs
+		setText(input ? title + " - " + UNKNOWN_VALUE : title);
+		setToggleImages(Activator.getImage(IImageKeys.SHOW_GRAPH_ICON), Activator.getImage(IImageKeys.HIDE_GRAPH_ICON));
+		setToggleToolTipText(DocometreMessages.ShowHideGraph);
 		
-		int nbColumn = (input && analog == true) ? 14 : 3;
-		
-		Composite titleComposite = new Composite(this, SWT.NONE);
-		titleComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		titleComposite.setLayout(new GridLayout(nbColumn, false));
-		
-		Label titleLabel = new Label(titleComposite, SWT.NONE);
-		titleLabel.setText(title);
-		titleLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		titleLabel.setFont(Activator.getBoldFont(JFaceResources.DEFAULT_FONT));
-		titleLabel.setFont(Activator.getItalicFont(JFaceResources.DEFAULT_FONT));
-		
+		Composite toolBar = getToolBar();
 		if(!this.input) {
 			if(!this.analog) {
-				// Digital output
+				// Digital output : ON/OFF switch
 				imageOn = Activator.getImage(IImageKeys.ON_ICON);
 				imageOff = Activator.getImage(IImageKeys.OFF_ICON);
-				stateLabel = new Label(titleComposite, SWT.NONE);
-				stateLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
+				stateLabel = new Label(toolBar, SWT.NONE);
 				stateLabel.setImage(imageOff);
-				stateLabel.setCursor(Display.getDefault().getSystemCursor(SWT.CURSOR_HAND));//new Cursor(getDisplay(), SWT.CURSOR_HAND));
+				stateLabel.setCursor(Display.getDefault().getSystemCursor(SWT.CURSOR_HAND));
 				stateLabel.addMouseListener(new MouseAdapter() {
 					@Override
 					public void mouseUp(MouseEvent e) {
@@ -191,61 +193,148 @@ public class ChannelViewer extends Composite {
 					}
 				});
 			} else {
-				// Analog output
-				spinnerValue = new SpinnerValue(titleComposite, SWT.BORDER);
-				spinnerValue.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
+				// Analog output : spinner, wide enough for the values from -99.9999 to 99.9999
+				spinnerValue = new SpinnerValue(toolBar, SWT.BORDER);
+				spinnerValue.setValue(-10);
+				Point size = spinnerValue.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+				spinnerValue.setValue(0);
+				spinnerValue.setLayoutData(new RowData(size.x + 10, SWT.DEFAULT));
 			}
-			
-		}
-		if(this.input) {
-			if(this.analog) {
-				// Analog input with calibration header
-				titleLabel.setLayoutData(new GridData(SWT.BEGINNING, SWT.FILL, false, false));
-				showCalibratedValuesButton = new Button(titleComposite, SWT.CHECK);
-				showCalibratedValuesButton.setLayoutData(new GridData(SWT.END, SWT.FILL, true, false, 13, 1));
-				showCalibratedValuesButton.setText(DocometreMessages.ShowCalibratedValues);
-				// Create calibrate header 
-				CalibrationHeader calibrationHeader = CalibrationFactory.createHeader(titleComposite, channel);
-				calibrationHeader.addAMaxListener(AbstractCalibrateMonitorDialog.getGlobalCalibrationListener());
-				calibrationHeader.addAMinListener(AbstractCalibrateMonitorDialog.getGlobalCalibrationListener());
-				calibrationHeader.addUMaxListener(AbstractCalibrateMonitorDialog.getGlobalCalibrationListener());
-				calibrationHeader.addUMinListener(AbstractCalibrateMonitorDialog.getGlobalCalibrationListener());
-			}
-			// Analog or digital input
-			valueLabel = new Label(titleComposite, SWT.NONE);
-			valueLabel.setText("?????");
-			valueLabel.setLayoutData(new GridData(SWT.END, SWT.TOP, true, false));
+		} else if(this.analog) {
+			// Analog input : "calibrated values" check box in the header bar...
+			showCalibratedValuesButton = new Button(toolBar, SWT.CHECK);
+			showCalibratedValuesButton.setText(DocometreMessages.CalibratedValues);
+			showCalibratedValuesButton.setToolTipText(DocometreMessages.ShowCalibratedValues);
+			// ... and calibration fields in the body
+			Composite calibrationComposite = new Composite(getBody(), SWT.NONE);
+			calibrationComposite.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
+			CalibrationHeader calibrationHeader = CalibrationFactory.createHeader(calibrationComposite, channel);
+			calibrationHeader.addAMaxListener(AbstractCalibrateMonitorDialog.getGlobalCalibrationListener());
+			calibrationHeader.addAMinListener(AbstractCalibrateMonitorDialog.getGlobalCalibrationListener());
+			calibrationHeader.addUMaxListener(AbstractCalibrateMonitorDialog.getGlobalCalibrationListener());
+			calibrationHeader.addUMinListener(AbstractCalibrateMonitorDialog.getGlobalCalibrationListener());
+			calibrationHeader.addResetListener(() -> AbstractCalibrateMonitorDialog.getGlobalCalibrationListener().push(0));
+			// On one line, or on two lines when the viewer is narrow
+			calibrationComposite.setLayout(new CalibrationLayout());
 		}
 		
-		Label showGraphButton = new Label(titleComposite, SWT.NONE);
-		showGraphButton.setImage(imageLeft);
-		showGraphButton.setLayoutData(new GridData(SWT.END, SWT.TOP, false, false));
-		
-		showGraphButton.setCursor(Display.getDefault().getSystemCursor(SWT.CURSOR_HAND));//new Cursor(getDisplay(), SWT.CURSOR_HAND));
-		showGraphButton.addMouseListener(new MouseAdapter() {
+		// Graph created when the group is expanded, disposed when collapsed
+		addExpandListener(new ExpandListener() {
 			@Override
-			public void mouseUp(MouseEvent e) {
-				if(!traceVisible) {
-					firstSample = true;
-					createGraph();
-					showGraphButton.setImage(imageDown);
-				} else {
-					disposeGraph();
-					showGraphButton.setImage(imageLeft);
-				}
-				Composite sc = getParent().getParent();
-				sc.layout(true);
-				getParent().setSize(getParent().computeSize(SWT.DEFAULT, SWT.DEFAULT));
-				int width = getParent().getSize().y < sc.getSize().y ? sc.getSize().x : sc.getClientArea().width;
-				
-				getParent().setSize(getParent().computeSize(width, SWT.DEFAULT));
-				traceVisible = !traceVisible;
-				if(graphVisibilityListener != null) graphVisibilityListener.run();
+			public void itemExpanded(ExpandEvent e) {
+				firstSample = true;
+				createGraph();
+				graphVisibilityChanged(true);
+			}
+			@Override
+			public void itemCollapsed(ExpandEvent e) {
+				disposeGraph();
+				graphVisibilityChanged(false);
 			}
 		});
+	}
+	
+	/*
+	 * Resizes the content of the scrolled composite containing the viewers, then notifies the graph visibility listener
+	 */
+	private void graphVisibilityChanged(boolean visible) {
+		// The body is laid out when the viewer is resized (with its new height : the chart must not be laid out with a null height)
+		if(getParent().getParent() instanceof ScrolledComposite) AbstractCalibrateMonitorDialog.updateScrolledContent((ScrolledComposite) getParent().getParent());
+		else getParent().layout(true);
+		traceVisible = visible;
+		if(graphVisibilityListener != null) graphVisibilityListener.run();
+	}
+	
+	/*
+	 * Layout of the calibration fields of an analog input (see CalibrationHeader) : on one line when the width is 
+	 * sufficient, otherwise on two lines, broken at the vertical separator, which is then hidden : Amax and Amin on 
+	 * the first line, Umax, Umin and the default calibration button on the second one. The width and height hints 
+	 * of the GridData of the fields are used.
+	 */
+	private static final class CalibrationLayout extends Layout {
 		
-		Label separator2 = new Label(this, SWT.HORIZONTAL | SWT.SEPARATOR);
-		separator2.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, nbColumn, 1));
+		private static final int HORIZONTAL_SPACING = 8;
+		private static final int VERTICAL_SPACING = 6;
+		
+		private static boolean isSeparator(Control control) {
+			return (control.getStyle() & SWT.SEPARATOR) != 0;
+		}
+		
+		private static Point getSize(Control control, boolean flushCache) {
+			int wHint = SWT.DEFAULT, hHint = SWT.DEFAULT;
+			if(control.getLayoutData() instanceof GridData gridData) {
+				wHint = gridData.widthHint;
+				hHint = gridData.heightHint;
+			}
+			return control.computeSize(wHint, hHint, flushCache);
+		}
+		
+		/*
+		 * One line : all the fields. Two lines : the fields before and after the separators (excluded)
+		 */
+		private static List<List<Control>> getRows(Composite composite, boolean twoLines) {
+			List<List<Control>> rows = new ArrayList<>();
+			List<Control> row = new ArrayList<>();
+			rows.add(row);
+			for (Control child : composite.getChildren()) {
+				if(twoLines && isSeparator(child)) {
+					if(!row.isEmpty()) rows.add(row = new ArrayList<>());
+					continue;
+				}
+				row.add(child);
+			}
+			if(row.isEmpty() && rows.size() > 1) rows.remove(row);
+			return rows;
+		}
+		
+		private static Point getRowSize(List<Control> row, boolean flushCache) {
+			int width = 0, height = 0;
+			for (Control control : row) {
+				Point size = getSize(control, flushCache);
+				width += size.x;
+				height = Math.max(height, size.y);
+			}
+			if(row.size() > 1) width += (row.size() - 1) * HORIZONTAL_SPACING;
+			return new Point(width, height);
+		}
+		
+		private static Point getSize(List<List<Control>> rows, boolean flushCache) {
+			int width = 0, height = 0;
+			for (List<Control> row : rows) {
+				Point size = getRowSize(row, flushCache);
+				width = Math.max(width, size.x);
+				height += size.y;
+			}
+			if(rows.size() > 1) height += (rows.size() - 1) * VERTICAL_SPACING;
+			return new Point(width, height);
+		}
+		
+		@Override
+		protected Point computeSize(Composite composite, int wHint, int hHint, boolean flushCache) {
+			Point size = getSize(getRows(composite, false), flushCache);
+			if(wHint != SWT.DEFAULT && wHint < size.x) size = getSize(getRows(composite, true), flushCache);
+			if(wHint != SWT.DEFAULT) size.x = wHint;
+			if(hHint != SWT.DEFAULT) size.y = hHint;
+			return size;
+		}
+		
+		@Override
+		protected void layout(Composite composite, boolean flushCache) {
+			Rectangle area = composite.getClientArea();
+			boolean twoLines = area.width < getSize(getRows(composite, false), flushCache).x;
+			if(twoLines) for (Control child : composite.getChildren()) if(isSeparator(child)) child.setBounds(0, 0, 0, 0);
+			int y = area.y;
+			for (List<Control> row : getRows(composite, twoLines)) {
+				int rowHeight = getRowSize(row, flushCache).y;
+				int x = area.x;
+				for (Control control : row) {
+					Point size = getSize(control, flushCache);
+					control.setBounds(x, y + (rowHeight - size.y)/2, size.x, size.y);
+					x += size.x + HORIZONTAL_SPACING;
+				}
+				y += rowHeight + VERTICAL_SPACING;
+			}
+		}
 		
 	}
 	
@@ -298,13 +387,13 @@ public class ChannelViewer extends Composite {
 	}
 	
 	private void createGraph() {
-		graphContainer = new Composite(this, SWT.NONE);
+		graphContainer = new Composite(getBody(), SWT.NONE);
 		graphContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		graphContainer.setLayout(new GridLayout());
 		GridLayout gl = (GridLayout)graphContainer.getLayout();
 		gl.horizontalSpacing = 0;
 		gl.verticalSpacing = 0;
-		gl.marginHeight = 5;
+		gl.marginHeight = 0;
 		gl.marginWidth = 0;
 		
 		if(Activator.useOpenGLV2()) createOpenGLV2Graph(graphContainer);
@@ -312,9 +401,6 @@ public class ChannelViewer extends Composite {
 		
 		GridData gd = rtswtOscilloChart.getLayoutData();
 		gd.heightHint = 150;
-
-		separator = new Label(this, SWT.HORIZONTAL | SWT.SEPARATOR);
-		separator.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 	}
 	
 	/*
@@ -352,12 +438,11 @@ public class ChannelViewer extends Composite {
 	}
 	
 	/*
-	 * Disposes the graph, its container and its separator
+	 * Disposes the graph and its container
 	 */
 	private void disposeGraph() {
 		if(rtswtOscilloChart != null) rtswtOscilloChart.dispose();
 		if(graphContainer != null && !graphContainer.isDisposed()) graphContainer.dispose();
-		if(separator != null && !separator.isDisposed()) separator.dispose();
 		rtswtOscilloChart = null;
 		rtswtOscilloSerie = null;
 		graphContainer = null;
@@ -369,16 +454,17 @@ public class ChannelViewer extends Composite {
 			// Compute calibration
 			yComputed = CalibrationFactory.compute(y, channel);
 		
-		if(Display.getDefault() != null && !Display.getDefault().isDisposed())
-			Display.getDefault().syncExec(new Runnable() {
-				@Override
-				public void run() {
-					if(valueLabel != null && !valueLabel.isDisposed()) {
-						valueLabel.setText(decimalFormater.format(yComputed));
-						valueLabel.getParent().layout();
+		if(input) {
+			// Current value in the title of the inputs
+			inputValue = yComputed;
+			if(Display.getDefault() != null && !Display.getDefault().isDisposed())
+				Display.getDefault().syncExec(new Runnable() {
+					@Override
+					public void run() {
+						if(!isDisposed()) setText(title + " - " + decimalFormater.format(yComputed));
 					}
-				}
-			});
+				});
+		}
 		
 		if(!traceVisible || rtswtOscilloSerie == null) return;
 		if(rtswtOscilloSerie instanceof Curve1DData) {
@@ -412,4 +498,4 @@ public class ChannelViewer extends Composite {
 		return channel;
 	}
 
-}
+}

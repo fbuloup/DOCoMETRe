@@ -81,6 +81,7 @@ import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 
 import fr.univamu.ism.docometre.analyse.MathEngineFactory;
+import fr.univamu.ism.docometre.chartxyz.GLPreloader;
 import fr.univamu.ism.docometre.dacqsystems.ExperimentScheduler;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfigurationProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfigurationProperties;
@@ -118,6 +119,9 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 		// Trials folders of previous versions (e.g. "Essai n°N") are renamed "Trial_N", before editors
 		// of their files are restored
 		migrateTrialsFolders();
+		// Loading of the "SWT + OpenGL v2" charts library (a few seconds) now rather than when the first chart is shown :
+		// in background on Windows and Linux, in the user interface thread on macOS (splash screen still displayed)
+		if(Activator.useOpenGLV2()) GLPreloader.start();
 	}
 	
 	/*

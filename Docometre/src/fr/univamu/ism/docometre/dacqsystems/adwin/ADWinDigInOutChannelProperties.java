@@ -65,7 +65,7 @@ public final class ADWinDigInOutChannelProperties extends Property {
 		ChannelProperties.cloneChannel(channel, newChannel);
 		newChannel.setProperty(IN_OUT, new String(channel.getProperty(IN_OUT)));
 		newChannel.setProperty(STIMULUS, new String(channel.getProperty(STIMULUS)));
-		return channel;
+		return newChannel;
 	}
 
 	private ADWinDigInOutChannelProperties(String key, String label, String tooltip, String regExp) {

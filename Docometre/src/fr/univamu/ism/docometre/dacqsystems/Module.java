@@ -152,6 +152,16 @@ public abstract class Module extends AbstractElement implements ModuleBehaviour,
 	 * method calls {@link Module#initializeChannelProperties()}
 	 */
 	public abstract Channel initializeChannelProperties();
+	
+	/**
+	 * Adds a clone of each channel of this module to newModule (see clone() of the modules)
+	 */
+	protected void addClonedChannels(Module newModule) throws CloneNotSupportedException {
+		for (Channel channel : getChannels()) {
+			Channel newChannel = (Channel) channel.clone();
+			if(newChannel != null) newModule.addChannel(newChannel);
+		}
+	}
 
 	/**
 	 * This method opens each module's channels

@@ -146,9 +146,9 @@ arduino-cli core install arduino:renesas_uno
 			real time loop. The workload displayed during a trial must stay
 			well below 100%;</li>
 		<li>the Uno R3 has no floating point unit: floating point computations
-			are slow, and the calibration values are not applied during
-			acquisition (the calibration and monitoring dialog can still be used
-			to check the wiring and compute them). The time base of the R3
+			are slow (emulated), including the computation of the physical
+			values of the analog inputs from their raw values (the R4 has a
+			single precision floating point unit). The time base of the R3
 			is a ceramic resonator, less stable than a crystal: see
 			<a href="../troubleshoots/timingConsideration.html">Timing
 			consideration</a>;</li>

@@ -43,7 +43,9 @@ package fr.univamu.ism.docometre.widgets;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.function.Supplier;
 
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.KeyAdapter;
@@ -62,12 +64,23 @@ import fr.univamu.ism.docometre.IImageKeys;
 
 public final class CalibrationHeader/* implements DisposeListener*/  {
 	
-	private DecimalFormat decimalFormat = new DecimalFormat("#0.0000");
+	// AMin, AMax : raw values of the converter, integers (decimals only for calibrations converted from the former format,
+	// see ChannelCalibration#migrate). UMin, UMax : physical values
+	private DecimalFormat rawValueFormat = new DecimalFormat("#0.##");
+	private DecimalFormat physicalValueFormat = new DecimalFormat("#0.####");
+	// Width of the fields : the values can be longer than their initial values (0 for AMin...)
+	private static final String RAW_VALUE_WIDTH_TEMPLATE = "-0000000";
+	private static final String PHYSICAL_VALUE_WIDTH_TEMPLATE = "-00000.0000";
 	
 	private ArrayList<CalibrationListener> aMinListener = new ArrayList<>();
 	private ArrayList<CalibrationListener> aMaxListener = new ArrayList<>();
 	private ArrayList<CalibrationListener> uMinListener = new ArrayList<>();
 	private ArrayList<CalibrationListener> uMaxListener = new ArrayList<>();
+	// Called after a reset of the calibration to the default calibration of the hardware (see defaultCalibrationSupplier)
+	private ArrayList<Runnable> resetListeners = new ArrayList<>();
+	// Resets the calibration of the channel to the default calibration of the hardware and returns
+	// its new values {aMin, aMax, uMin, uMax}, null if the default calibration can not be determined
+	private Supplier<double[]> defaultCalibrationSupplier;
 	
 	private double aMinValue;
 	private double aMaxValue;
@@ -82,6 +95,8 @@ public final class CalibrationHeader/* implements DisposeListener*/  {
 	private Button captureAMinValueButton;
 
 	private Button captureAMaxValueButton;
+	
+	private Button defaultCalibrationButton;
 
 	private Image captureValueImage;
 	
@@ -95,32 +110,17 @@ public final class CalibrationHeader/* implements DisposeListener*/  {
 		captureValueImage = Activator.getImage(IImageKeys.CAPTURE_VALUE_ICON);
 		
 		
-		Label aMinLabel = new Label(parent, SWT.NONE);
-		aMinLabel.setText("Amin :");
-		aMinLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
-		aMinLabel.setToolTipText(DocometreMessages.AmpMinTooltip);
-		aMinText = new StyledText(parent, SWT.SINGLE | SWT.BORDER);
-		aMinText.setToolTipText(DocometreMessages.AmpMinTooltip);
-		aMinText.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
-		aMinText.setText(decimalFormat.format(initialValues[0]));
-		((GridData)aMinText.getLayoutData()).widthHint = aMinText.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
-		addKeyHandler(aMinText);
-		captureAMinValueButton = new Button(parent, SWT.FLAT);
-		captureAMinValueButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
-		((GridData)captureAMinValueButton.getLayoutData()).heightHint = aMinText.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
-		captureAMinValueButton.setImage(captureValueImage);
-		captureAMinValueButton.setToolTipText(DocometreMessages.CaptureValueMin);
-		addMouseHandler(captureAMinValueButton);
-		
+		// Order of the widgets : Amax, capture, Amin, capture, | Umax, Umin, default calibration
 		Label aMaxLabel = new Label(parent, SWT.NONE);
-		aMaxLabel.setText("Amax :");
+		aMaxLabel.setText("Amax");
 		aMaxLabel.setToolTipText(DocometreMessages.AmpMaxTooltip);
 		aMaxLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		aMaxText = new StyledText(parent, SWT.SINGLE | SWT.BORDER);
 		aMaxText.setToolTipText(DocometreMessages.AmpMaxTooltip);
 		aMaxText.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
-		aMaxText.setText(decimalFormat.format(initialValues[1]));
+		aMaxText.setText(RAW_VALUE_WIDTH_TEMPLATE);
 		((GridData)aMaxText.getLayoutData()).widthHint = aMaxText.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
+		aMaxText.setText(rawValueFormat.format(initialValues[1]));
 		addKeyHandler(aMaxText);
 		captureAMaxValueButton = new Button(parent, SWT.FLAT);
 		captureAMaxValueButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
@@ -129,35 +129,101 @@ public final class CalibrationHeader/* implements DisposeListener*/  {
 		captureAMaxValueButton.setToolTipText(DocometreMessages.CaptureValueMax);
 		addMouseHandler(captureAMaxValueButton);
 		
+		Label aMinLabel = new Label(parent, SWT.NONE);
+		aMinLabel.setText("Amin");
+		aMinLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+		aMinLabel.setToolTipText(DocometreMessages.AmpMinTooltip);
+		aMinText = new StyledText(parent, SWT.SINGLE | SWT.BORDER);
+		aMinText.setToolTipText(DocometreMessages.AmpMinTooltip);
+		aMinText.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
+		aMinText.setText(RAW_VALUE_WIDTH_TEMPLATE);
+		((GridData)aMinText.getLayoutData()).widthHint = aMinText.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
+		aMinText.setText(rawValueFormat.format(initialValues[0]));
+		addKeyHandler(aMinText);
+		captureAMinValueButton = new Button(parent, SWT.FLAT);
+		captureAMinValueButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
+		((GridData)captureAMinValueButton.getLayoutData()).heightHint = aMinText.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
+		captureAMinValueButton.setImage(captureValueImage);
+		captureAMinValueButton.setToolTipText(DocometreMessages.CaptureValueMin);
+		addMouseHandler(captureAMinValueButton);
+		
 		Label labelSeparator = new Label(parent, SWT.SEPARATOR | SWT.VERTICAL);
 		labelSeparator.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 		((GridData) labelSeparator.getLayoutData()).heightHint = captureAMaxValueButton.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
 		
-		Label uMinLabel = new Label(parent, SWT.NONE);
-		uMinLabel.setText("Umin :");
-		uMinLabel.setToolTipText(DocometreMessages.UnitMinTooltip);
-		uMinLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
-		uMinText = new StyledText(parent, SWT.SINGLE | SWT.BORDER);
-		uMinText.setToolTipText(DocometreMessages.UnitMinTooltip);
-		uMinText.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
-		uMinText.setText(decimalFormat.format(initialValues[2]));
-		((GridData)uMinText.getLayoutData()).widthHint = uMinText.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
-		addKeyHandler(uMinText);
-		
 		Label uMaxLabel = new Label(parent, SWT.NONE);
-		uMaxLabel.setText("Umax :");
+		uMaxLabel.setText("Umax");
 		uMaxLabel.setToolTipText(DocometreMessages.UnitMaxTooltip);
 		uMaxLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		uMaxText = new StyledText(parent, SWT.SINGLE | SWT.BORDER);
 		uMaxText.setToolTipText(DocometreMessages.UnitMaxTooltip);
 		uMaxText.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
-		uMaxText.setText(decimalFormat.format(initialValues[3]));
+		uMaxText.setText(PHYSICAL_VALUE_WIDTH_TEMPLATE);
 		((GridData)uMaxText.getLayoutData()).widthHint = uMaxText.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
+		uMaxText.setText(physicalValueFormat.format(initialValues[3]));
 		addKeyHandler(uMaxText);
 		
-		Label labelSeparator2 = new Label(parent, SWT.SEPARATOR | SWT.VERTICAL);
-		labelSeparator2.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
-		((GridData) labelSeparator2.getLayoutData()).heightHint = ((GridData) labelSeparator.getLayoutData()).heightHint;
+		Label uMinLabel = new Label(parent, SWT.NONE);
+		uMinLabel.setText("Umin");
+		uMinLabel.setToolTipText(DocometreMessages.UnitMinTooltip);
+		uMinLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+		uMinText = new StyledText(parent, SWT.SINGLE | SWT.BORDER);
+		uMinText.setToolTipText(DocometreMessages.UnitMinTooltip);
+		uMinText.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
+		uMinText.setText(PHYSICAL_VALUE_WIDTH_TEMPLATE);
+		((GridData)uMinText.getLayoutData()).widthHint = uMinText.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
+		uMinText.setText(physicalValueFormat.format(initialValues[2]));
+		addKeyHandler(uMinText);
+		
+		defaultCalibrationButton = new Button(parent, SWT.FLAT);
+		defaultCalibrationButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
+		((GridData)defaultCalibrationButton.getLayoutData()).heightHint = uMaxText.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
+		defaultCalibrationButton.setImage(Activator.getImage(IImageKeys.APPLY_DEFAULT_SETTINGS_ICON));
+		defaultCalibrationButton.setToolTipText(DocometreMessages.ResetCalibrationTooltip);
+		defaultCalibrationButton.setEnabled(false);
+		defaultCalibrationButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent event) {
+				resetCalibration();
+			}
+		});
+	}
+	
+	/**
+	 * @param defaultCalibrationSupplier resets the calibration of the channel to the default calibration of the hardware and
+	 * returns its new values {aMin, aMax, uMin, uMax}, null if the default calibration can not be determined. The "Default"
+	 * button of the header is enabled when it is set.
+	 */
+	public void setDefaultCalibrationSupplier(Supplier<double[]> defaultCalibrationSupplier) {
+		this.defaultCalibrationSupplier = defaultCalibrationSupplier;
+		defaultCalibrationButton.setEnabled(defaultCalibrationSupplier != null);
+	}
+	
+	private void resetCalibration() {
+		if(defaultCalibrationSupplier == null) return;
+		if(!MessageDialog.openQuestion(defaultCalibrationButton.getShell(), DocometreMessages.ResetCalibrationDialogTitle, DocometreMessages.ResetCalibrationDialogQuestion)) return;
+		double[] values = defaultCalibrationSupplier.get();
+		if(values == null) {
+			MessageDialog.openError(defaultCalibrationButton.getShell(), DocometreMessages.ResetCalibrationDialogTitle, DocometreMessages.ResetCalibrationImpossible);
+			return;
+		}
+		aMinValue = values[0];
+		aMaxValue = values[1];
+		uMinValue = values[2];
+		uMaxValue = values[3];
+		aMinText.setText(rawValueFormat.format(aMinValue));
+		aMaxText.setText(rawValueFormat.format(aMaxValue));
+		uMinText.setText(physicalValueFormat.format(uMinValue));
+		uMaxText.setText(physicalValueFormat.format(uMaxValue));
+		for (Runnable resetListener : resetListeners) resetListener.run();
+	}
+	
+	public void addResetListener(Runnable resetListener) {
+		resetListeners.add(resetListener);
+	}
+	
+	public void removeResetListener(Runnable resetListener) {
+		resetListeners.remove(resetListener);
 	}
 	
 	private void addMouseHandler(final Button button) {
@@ -172,7 +238,7 @@ public final class CalibrationHeader/* implements DisposeListener*/  {
 						value = cls.get(0).get();
 						StyledText text = aMinText;
 						if(button == captureAMaxValueButton) text = aMaxText;
-						text.setText(decimalFormat.format(value));
+						text.setText(rawValueFormat.format(value));
 						validateValue(text);
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -192,13 +258,18 @@ public final class CalibrationHeader/* implements DisposeListener*/  {
 		if(text == aMaxText) cls = aMaxListener;
 		if(text == uMinText) cls = uMinListener;
 		if(text == uMaxText) cls = uMaxListener;
+		boolean rawValue = text == aMinText || text == aMaxText;
+		DecimalFormat format = rawValue ? rawValueFormat : physicalValueFormat;
 		try {
 			String textValue = text.getText().replaceAll(",", ".");
 			double newValue = Double.valueOf(textValue);
+			if(!Double.isFinite(newValue)) throw new NumberFormatException(textValue);
+			// Raw values of the converter : integers
+			if(rawValue) newValue = Math.rint(newValue);
 			notifyObservers(cls, newValue);
-			text.setText(decimalFormat.format(newValue));
+			text.setText(format.format(newValue));
 		} catch (NumberFormatException e1) {
-			text.setText(decimalFormat.format(oldValue));
+			text.setText(format.format(oldValue));
 		}
 	}
 

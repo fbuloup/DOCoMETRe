@@ -59,6 +59,19 @@ public final class ArduinoUnoAnInModuleProperties extends Property {
 	public static final ArduinoUnoAnInModuleProperties REDUCE_MEMORY_EFFECT = new ArduinoUnoAnInModuleProperties("ArduinoUnoAnInModuleProperties.REDUCE_MEMORY_EFFECT", ArduinoUnoMessages.MemoryEffect_Label, ArduinoUnoMessages.MemoryEffect_Tooltip, "^(true|false)$", "true:false");
 	
 	/**
+	 * Voltage (V) applied on the AREF pin when the analog reference is EXTERNAL (AR_EXTERNAL on R4) : gives the default
+	 * calibration of the analog inputs (see ArduinoUnoAnInChannelProperties#getDefaultRange). Not defined (null) for
+	 * the configurations created before : {@link #DEFAULT_EXTERNAL_REFERENCE_VOLTAGE}.
+	 */
+	public static final ArduinoUnoAnInModuleProperties EXTERNAL_REFERENCE_VOLTAGE = new ArduinoUnoAnInModuleProperties("ArduinoUnoAnInModuleProperties.EXTERNAL_REFERENCE_VOLTAGE", ArduinoUnoMessages.ExternalReferenceVoltage_Label, ArduinoUnoMessages.ExternalReferenceVoltage_Tooltip, "^(\\d+\\.?\\d*|\\.\\d+)$");
+	public static final String DEFAULT_EXTERNAL_REFERENCE_VOLTAGE = "5";
+	
+	// Voltages of the DEFAULT and INTERNAL references of R3 and R4 (as ArduinoUnoCalibrationProtocol#getReferenceVoltage)
+	public static final double DEFAULT_REFERENCE_VOLTAGE = 5;
+	public static final double R3_INTERNAL_REFERENCE_VOLTAGE = 1.1;
+	public static final double R4_INTERNAL_REFERENCE_VOLTAGE = 1.5;
+	
+	/**
 	 * Uno R4 : sampling time (states of the ADC clock) of the analog inputs when the memory effect is reduced. Measured
 	 * with a source of 10 kOhm : influence of the previous input of 5.4 % with 13 states (default), less than 1 LSB with 160.
 	 */
@@ -114,15 +127,61 @@ public final class ArduinoUnoAnInModuleProperties extends Property {
 		return isR4;
 	}
 	
+	/**
+	 * @return the analog reference of the module, of the revision of its DACQ configuration (R3 when it is not known)
+	 */
+	public static String getReferenceOfModule(Module module) {
+		boolean r4 = module.getDACQConfiguration() != null && isR4(module.getDACQConfiguration());
+		return getReferenceOfRevision(module.getProperty(ANALOG_REFERENCE), r4);
+	}
+	
+	/**
+	 * @return true if the analog reference of the module is EXTERNAL (AR_EXTERNAL on R4)
+	 */
+	public static boolean isExternalReference(Module module) {
+		String reference = getReferenceOfModule(module);
+		return EXTERNAL.equals(reference) || AR_EXTERNAL.equals(reference);
+	}
+	
+	/**
+	 * @return the voltage of the EXTERNAL reference (see {@link #EXTERNAL_REFERENCE_VOLTAGE}), the default one when
+	 * it is not defined or not valid
+	 */
+	public static double getExternalReferenceVoltage(Module module) {
+		String value = module.getProperty(EXTERNAL_REFERENCE_VOLTAGE);
+		try {
+			double voltage = Double.parseDouble(value.trim());
+			if(Double.isFinite(voltage) && voltage > 0) return voltage;
+		} catch (NullPointerException | NumberFormatException e) {
+			// Default voltage
+		}
+		return Double.parseDouble(DEFAULT_EXTERNAL_REFERENCE_VOLTAGE);
+	}
+	
+	/**
+	 * @return the voltage of the analog reference of the module : 5 V (DEFAULT), 1.1 V (INTERNAL on R3), 1.5 V
+	 * (INTERNAL on R4) or the voltage of the EXTERNAL reference
+	 */
+	public static double getReferenceVoltage(Module module) {
+		String reference = getReferenceOfModule(module);
+		if(INTERNAL.equals(reference)) return R3_INTERNAL_REFERENCE_VOLTAGE;
+		if(AR_INTERNAL.equals(reference)) return R4_INTERNAL_REFERENCE_VOLTAGE;
+		if(EXTERNAL.equals(reference) || AR_EXTERNAL.equals(reference)) return getExternalReferenceVoltage(module);
+		return DEFAULT_REFERENCE_VOLTAGE;
+	}
+	
 	public static void populateProperties(Module module){
 		module.setProperty(ANALOG_REFERENCE, DEFAULT); 
 		module.setProperty(REDUCE_MEMORY_EFFECT, "true");
+		module.setProperty(EXTERNAL_REFERENCE_VOLTAGE, DEFAULT_EXTERNAL_REFERENCE_VOLTAGE);
 	}
 	
 	public static Module cloneModule(Module module) {
 		ArduinoUnoAnInModule newModule = new ArduinoUnoAnInModule(null);
 		newModule.setProperty(ANALOG_REFERENCE, new String(module.getProperty(ANALOG_REFERENCE)));
 		newModule.setProperty(REDUCE_MEMORY_EFFECT, String.valueOf(isMemoryEffectReduced(module)));
+		String externalReferenceVoltage = module.getProperty(EXTERNAL_REFERENCE_VOLTAGE);
+		newModule.setProperty(EXTERNAL_REFERENCE_VOLTAGE, externalReferenceVoltage == null ? DEFAULT_EXTERNAL_REFERENCE_VOLTAGE : new String(externalReferenceVoltage));
 		return newModule;
 	}
 	

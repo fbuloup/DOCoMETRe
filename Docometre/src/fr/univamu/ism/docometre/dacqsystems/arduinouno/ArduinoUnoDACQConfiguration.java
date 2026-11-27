@@ -63,6 +63,32 @@ public class ArduinoUnoDACQConfiguration extends DACQConfiguration implements Pr
 
 	protected HashSet<ArduinoUnoVariable> variables = new HashSet<ArduinoUnoVariable>();
 	
+	/*
+	 * Revision of the board changed : default calibration of the analog inputs which are not calibrated (resolution
+	 * of the converter, voltage of the INTERNAL reference)
+	 */
+	@Override
+	public void setProperty(Property property, String value) {
+		super.setProperty(property, value);
+		if(ArduinoUnoDACQConfigurationProperties.REVISION.equals(property)) {
+			for (Module module : getModules()) 
+				if(module instanceof ArduinoUnoAnInModule) ((ArduinoUnoAnInModule) module).updateDefaultCalibration();
+		}
+	}
+	
+	/*
+	 * Called when the configuration is deserialized (Java serialization and XStream) : calibration of the analog inputs
+	 * saved before the calibration from the raw values converted (see ArduinoUnoAnInChannelProperties#migrate). Saved
+	 * in the new format the next time the configuration is saved.
+	 */
+	private Object readResolve() {
+		for (Module module : getModules()) {
+			if(!(module instanceof ArduinoUnoAnInModule) && !(module instanceof ArduinoUnoADS1115Module)) continue;
+			for (Channel channel : module.getChannels()) ArduinoUnoAnInChannelProperties.migrate(channel);
+		}
+		return this;
+	}
+	
 	public ArduinoUnoDACQConfiguration() {
 		ArduinoUnoDACQConfigurationProperties.populateProperties(this);
 		// For Arduino uno system, modules are statically added
@@ -103,6 +129,8 @@ public class ArduinoUnoDACQConfiguration extends DACQConfiguration implements Pr
 	@Override
 	public Object clone() throws CloneNotSupportedException {
 		ArduinoUnoDACQConfiguration clonedConfiguration  = ArduinoUnoDACQConfigurationProperties.cloneConfiguration(this);
+		// The constructor creates the default modules : replaced by the clones of the modules of this configuration
+		for (Module module : clonedConfiguration.getModules()) clonedConfiguration.removeModule(module);
 		ArduinoUnoVariable[] variablesArray = getVariables();
 		for (int i = 0; i < variablesArray.length; i++) {
 			ArduinoUnoVariable variable = (ArduinoUnoVariable) variablesArray[i].clone();
@@ -126,6 +154,20 @@ public class ArduinoUnoDACQConfiguration extends DACQConfiguration implements Pr
 		boolean succeed = variables.add(variable);
 		notifyObservers(ChannelProperties.ADD, variable, null);
 		return succeed; 
+	}
+	
+	/**
+	 * @param channelName name of a channel (variable or channel of a module)
+	 * @return true if the values of this channel are transferred as the IEEE 754 bits of a float in hexadecimal :
+	 * analog inputs of the board and of the ADS1115 modules (physical values, see acquireAnalogInput() in ArduinoUnoProcess)
+	 * and variables of type float (see VariablesCodeGenerationDelegate)
+	 */
+	public boolean isFloatTransfer(String channelName) {
+		Channel channel = getChannelFromName(channelName);
+		if(channel == null) return false;
+		if(channel instanceof ArduinoUnoVariable) return ArduinoUnoVariableProperties.FLOAT.equals(channel.getProperty(ArduinoUnoVariableProperties.TYPE));
+		Module module = channel.getModule();
+		return module instanceof ArduinoUnoAnInModule || module instanceof ArduinoUnoADS1115Module;
 	}
 	
 	@Override
@@ -199,15 +241,40 @@ public class ArduinoUnoDACQConfiguration extends DACQConfiguration implements Pr
 	}
 
 	@Override
-	public Channel[] getChannels() {
-		ArrayList<Channel> channelsArrayList = new ArrayList<>(0);
-		channelsArrayList.addAll(Arrays.asList(getVariables()));
-		Module[] modules = getModules();
-		for (Module module : modules) {
-			//boolean getChannels = !(module instanceof ADWinRS232Module && module.getProperty(ADWinRS232ModuleProperties.SYSTEM_TYPE).equals(ADWinRS232ModuleProperties.ICE_SYSTEM_TYPE));
-			/*if(getChannels)*/ channelsArrayList.addAll(Arrays.asList(module.getChannels()));
+	public Channel[] getChannels(ChannelType channelType) {
+		ArrayList<Channel> channels = new ArrayList<>(0);
+		if(channelType == ChannelType.ALL) channels.addAll(Arrays.asList(getVariables()));
+		for (Module module : getModules()) {
+			for (Channel channel : module.getChannels()) {
+				if(isOfType(module, channel, channelType)) channels.add(channel);
+			}
 		}
-		return channelsArrayList.toArray(new Channel[channelsArrayList.size()]);
+		return channels.toArray(new Channel[channels.size()]);
+	}
+
+	/*
+	 * The modules of an Arduino Uno configuration are always present (created with the configuration) : 
+	 * only its used channels (USED property) are taken into account, except for ALL
+	 */
+	private boolean isOfType(Module module, Channel channel, ChannelType channelType) {
+		if(channelType == ChannelType.ALL) return true;
+		if(!Boolean.valueOf(channel.getProperty(ArduinoUnoChannelProperties.USED))) return false;
+		String inOut = channel.getProperty(ArduinoUnoDigInOutChannelProperties.IN_OUT);
+		switch (channelType) {
+		case ANALOG_INPUT:
+			// Analog inputs of the board and ADS1115 inputs
+			return module instanceof ArduinoUnoAnInModule || module instanceof ArduinoUnoADS1115Module;
+		case ANALOG_OUTPUT:
+			// PWM outputs, and DAC output of the R4 boards only
+			return module instanceof ArduinoUnoAnOutModule && (!ArduinoUnoAnOutModule.isDACChannel(channel) || ArduinoUnoAnInModuleProperties.isR4(this));
+		case DIGITAL_INPUT:
+			// input or input_pullup
+			return module instanceof ArduinoUnoDigInOutModule && !ArduinoUnoDigInOutChannelProperties.OUTPUT.equals(inOut);
+		case DIGITAL_OUTPUT:
+			return module instanceof ArduinoUnoDigInOutModule && ArduinoUnoDigInOutChannelProperties.OUTPUT.equals(inOut);
+		default:
+			return false;
+		}
 	}
 
 	@Override

@@ -58,6 +58,7 @@ import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -76,7 +77,7 @@ import fr.univamu.ism.docometre.widgets.ChannelViewer;
 
 /**
  * Calibration and monitoring dialog, common to the DACQ systems : inputs on the left,
- * outputs on the right, a ChannelViewer for each channel. The subclass of each system
+ * outputs on the right, a ChannelViewer (collapsible group) for each channel. The subclass of each system
  * creates the viewers of its channels (see {@link #populate(Composite, Composite)}) ;
  * the calibration process of the system is run by {@link CalibrationFactory}.
  */
@@ -105,6 +106,10 @@ public abstract class AbstractCalibrateMonitorDialog extends TitleAreaDialog {
 	protected ArrayList<ChannelViewer> channelsViewers = new ArrayList<>();
 	// Time origin common to the graphs of the viewers ("SWT + OpenGL v2" library)
 	private ChannelViewer.TimeBase timeBase = new ChannelViewer.TimeBase();
+
+	private ScrolledComposite inputsScrolledComposite;
+
+	private ScrolledComposite outputsScrolledComposite;
 
 	/**
 	 * @param system the DACQ system (see Activator.ADWIN_SYSTEM, Activator.ARDUINO_UNO_SYSTEM)
@@ -182,32 +187,34 @@ public abstract class AbstractCalibrateMonitorDialog extends TitleAreaDialog {
 		gl.marginHeight = 2;
 		container.setLayout(gl);
 
-		ScrolledComposite inputsScrolledComposite = new ScrolledComposite(container, SWT.V_SCROLL /*| SWT.H_SCROLL*/ | SWT.BORDER);
+		inputsScrolledComposite = new ScrolledComposite(container, SWT.V_SCROLL /*| SWT.H_SCROLL*/ | SWT.NORMAL);
 		inputsScrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
 		Composite inputsContainer = new Composite(inputsScrolledComposite, SWT.NONE);
 		inputsScrolledComposite.setContent(inputsContainer);
 		gl = new GridLayout();
 		gl.horizontalSpacing = 0;
-		gl.verticalSpacing = 0;
-		gl.marginWidth = 0;
-		gl.marginHeight = 0;
+		// Space between the channels viewers (collapsible groups)
+		gl.verticalSpacing = 3;
+		gl.marginWidth = 6;
+		gl.marginHeight = 6;
 		inputsContainer.setLayout(gl);
 		Label labelInputs = new Label(inputsContainer, SWT.NORMAL);
 		labelInputs.setText(DocometreMessages.Inputs);
 		labelInputs.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, false));
 		labelInputs.setFont(Activator.getBoldFont(JFaceResources.DEFAULT_FONT));
 		
-		ScrolledComposite outputsScrolledComposite = new ScrolledComposite(container, SWT.V_SCROLL /*| SWT.H_SCROLL*/ | SWT.BORDER);
+		outputsScrolledComposite = new ScrolledComposite(container, SWT.V_SCROLL /*| SWT.H_SCROLL*/ | SWT.NORMAL);
 		outputsScrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
 		Composite outputsContainer = new Composite(outputsScrolledComposite, SWT.NONE);
 		outputsScrolledComposite.setContent(outputsContainer);
 		gl = new GridLayout();
 		gl.horizontalSpacing = 0;
-		gl.verticalSpacing = 0;
-		gl.marginWidth = 0;
-		gl.marginHeight = 0;
+		// Space between the channels viewers (collapsible groups)
+		gl.verticalSpacing = 3;
+		gl.marginWidth = 6;
+		gl.marginHeight = 6;
 		outputsContainer.setLayout(gl);
 		Label labelOutputs = new Label(outputsContainer, SWT.NORMAL);
 		labelOutputs.setText(DocometreMessages.Outputs);
@@ -216,19 +223,32 @@ public abstract class AbstractCalibrateMonitorDialog extends TitleAreaDialog {
 
 		populate(inputsContainer, outputsContainer);
 		
-		inputsScrolledComposite.addControlListener(new ControlAdapter() {
-			@Override
-			public void controlResized(ControlEvent e) {
-				inputsContainer.setSize(inputsContainer.computeSize(inputsScrolledComposite.getSize().x, SWT.DEFAULT));
-			}
-		});
+		if(inputsContainer.getChildren().length == 1) inputsScrolledComposite.dispose();
+		else {
+			inputsScrolledComposite.setExpandHorizontal(true);
+			inputsScrolledComposite.setExpandVertical(true);
+			inputsScrolledComposite.addControlListener(new ControlAdapter() {
+				@Override
+				public void controlResized(ControlEvent e) {
+					updateScrolledContent(inputsScrolledComposite);
+				}
+			});
+		}
+		if(outputsContainer.getChildren().length == 1) outputsScrolledComposite.dispose();
+		else {
+			outputsScrolledComposite.setExpandHorizontal(true);
+			outputsScrolledComposite.setExpandVertical(true);
+			outputsScrolledComposite.addControlListener(new ControlAdapter() {
+				@Override
+				public void controlResized(ControlEvent e) {
+					updateScrolledContent(outputsScrolledComposite);
+				}
+			});
+		}
 		
-		outputsScrolledComposite.addControlListener(new ControlAdapter() {
-			@Override
-			public void controlResized(ControlEvent e) {
-				outputsContainer.setSize(outputsContainer.computeSize(outputsScrolledComposite.getSize().x, SWT.DEFAULT));
-			}
-		});
+		if(inputsScrolledComposite.isDisposed() || outputsScrolledComposite.isDisposed()) {
+			container.setLayout(new FillLayout());
+		}
 		
 		getShell().addDisposeListener(new DisposeListener() {
 			
@@ -241,7 +261,21 @@ public abstract class AbstractCalibrateMonitorDialog extends TitleAreaDialog {
 		
 		return container;
 		
-		
+	}
+	
+	/**
+	 * Updates the content of a scrolled composite of the dialog after a change of its size or of the size of its content
+	 * (graph of a viewer shown or hidden). The width of the content is the width of the visible area, without the vertical
+	 * scroll bar when it is visible (horizontal expansion of the scrolled composite) : the content must not be wider than
+	 * the visible area, its right side would be hidden. The vertical scroll bar is shown when the content is higher than
+	 * the visible area.
+	 */
+	public static void updateScrolledContent(ScrolledComposite scrolledComposite) {
+		Control content = scrolledComposite.getContent();
+		if(content == null || content.isDisposed()) return;
+		scrolledComposite.setMinHeight(content.computeSize(scrolledComposite.getClientArea().width, SWT.DEFAULT).y);
+		// Lays out the viewers even if the size of the content did not change (content smaller than the visible area)
+		if(content instanceof Composite) ((Composite) content).layout(true);
 	}
 	
 	/**
@@ -268,16 +302,15 @@ public abstract class AbstractCalibrateMonitorDialog extends TitleAreaDialog {
 						MessageDialog.openError(getShell(), "Error", e.getMessage());
 					}
 				} else {
-					if(MessageDialog.openQuestion(getParentShell(), DocometreMessages.StopMonitoring, DocometreMessages.AreYouSureStopMonitoring)) {
-						proceedButton.setText(DocometreMessages.StartMonitoring);
-						CalibrationFactory.stopCalibrationProcess();
-						started = !started;
-					}
+					proceedButton.setText(DocometreMessages.StartMonitoring);
+					CalibrationFactory.stopCalibrationProcess();
+					started = !started;
 					
 				}
 			}
 		});
-		createButton(parent, IDialogConstants.OK_ID, IDialogConstants.FINISH_LABEL, false);
+		proceedButton.setEnabled(!inputsScrolledComposite.isDisposed() || !outputsScrolledComposite.isDisposed());
+		createButton(parent, IDialogConstants.OK_ID, IDialogConstants.CLOSE_LABEL, false);
 	}
 	
 	@Override

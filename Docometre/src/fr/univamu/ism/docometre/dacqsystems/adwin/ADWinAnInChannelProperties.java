@@ -41,8 +41,13 @@
  ******************************************************************************/
 package fr.univamu.ism.docometre.dacqsystems.adwin;
 
+import org.eclipse.osgi.util.NLS;
+
+import fr.univamu.ism.docometre.calibration.ChannelCalibration;
+import fr.univamu.ism.docometre.calibration.RawCalibration;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.ChannelProperties;
+import fr.univamu.ism.docometre.dacqsystems.Module;
 import fr.univamu.ism.docometre.dacqsystems.Property;
 
 public final class ADWinAnInChannelProperties extends Property {
@@ -51,8 +56,42 @@ public final class ADWinAnInChannelProperties extends Property {
 	public static final ADWinAnInChannelProperties UNIT = new ADWinAnInChannelProperties("ADWinAnInChannelProperties.UNIT", ADWinMessages.Unit_Label, ADWinMessages.Unit_Tooltip, "^[a-z|A-Z]+[0-9|a-z|A-Z]*$");
 	public static final ADWinAnInChannelProperties UNIT_MAX = new ADWinAnInChannelProperties("ADWinAnInChannelProperties.UNIT_MAX", ADWinMessages.UnitMaxValue_Label, ADWinMessages.UnitMaxValue_Tooltip, "(^[+-]?\\d*\\.?\\d*[1-9]+\\d*([eE][-+]?[0-9]+)?$)|(^[+]?[1-9]+\\d*\\.\\d*([eE][-+]?[0-9]+)?$)");
 	public static final ADWinAnInChannelProperties UNIT_MIN = new ADWinAnInChannelProperties("ADWinAnInChannelProperties.UNIT_MIN", ADWinMessages.UnitMinValue_Label, ADWinMessages.UnitMinValue_Tooltip, "(^[+-]?\\d*\\.?\\d*[1-9]+\\d*([eE][-+]?[0-9]+)?$)|(^[+]?[1-9]+\\d*\\.\\d*([eE][-+]?[0-9]+)?$)");
-	public static final ADWinAnInChannelProperties AMPLITUDE_MAX = new ADWinAnInChannelProperties("ADWinAnInChannelProperties.AMPLITUDE_MAX", ADWinMessages.AmpMaxValue_Label, ADWinMessages.AmpMaxValue_Tooltip, "(^[+-]?\\d*\\.?\\d*[1-9]+\\d*([eE][-+]?[0-9]+)?$)|(^[+]?[1-9]+\\d*\\.\\d*([eE][-+]?[0-9]+)?$)");
-	public static final ADWinAnInChannelProperties AMPLITUDE_MIN = new ADWinAnInChannelProperties("ADWinAnInChannelProperties.AMPLITUDE_MIN", ADWinMessages.AmpMinValue_Label, ADWinMessages.AmpMinValue_Tooltip, "(^[+-]?\\d*\\.?\\d*[1-9]+\\d*([eE][-+]?[0-9]+)?$)|(^[+]?[1-9]+\\d*\\.\\d*([eE][-+]?[0-9]+)?$)");
+	// Raw values of the converter (see RawCalibration) : integers
+	public static final ADWinAnInChannelProperties AMPLITUDE_MAX = new ADWinAnInChannelProperties("ADWinAnInChannelProperties.AMPLITUDE_MAX", ADWinMessages.AmpMaxValue_Label, ADWinMessages.AmpMaxValue_Tooltip, "^[+-]?\\d+$");
+	public static final ADWinAnInChannelProperties AMPLITUDE_MIN = new ADWinAnInChannelProperties("ADWinAnInChannelProperties.AMPLITUDE_MIN", ADWinMessages.AmpMinValue_Label, ADWinMessages.AmpMinValue_Tooltip, "^[+-]?\\d+$");
+	// True when AMPLITUDE_MIN/MAX or UNIT_MIN/MAX have been set by the user, false for the default calibration of the
+	// module, not defined for the configurations saved before the calibration from the raw values (see ChannelCalibration)
+	public static final ADWinAnInChannelProperties CALIBRATED = new ADWinAnInChannelProperties("ADWinAnInChannelProperties.CALIBRATED", ADWinMessages.Calibrated_Label, ADWinMessages.Calibrated_Tooltip, "^(true|false)$", "true:false");
+	
+	/**
+	 * Raw values of the 16 bits converter of the analog inputs modules, for the minimum and maximum voltages of their
+	 * range (as Call_AnIn in CALLANIN*.INC)
+	 */
+	public static final int RAW_MIN = 0;
+	public static final int RAW_MAX = 65535;
+	
+	/**
+	 * Default calibration of an analog input : raw values of the converter <-> voltages of the range of its module
+	 * (the gain of the input is not taken into account : voltages seen by the converter)
+	 * @return null if the channel is not in an analog inputs module
+	 */
+	public static RawCalibration.Range getDefaultRange(Channel channel) {
+		Module module = channel.getModule();
+		if(!(module instanceof ADWinAnInModule)) return null;
+		double voltMin = RawCalibration.parse(module.getProperty(ADWinAnInModuleProperties.AMPLITUDE_MIN));
+		double voltMax = RawCalibration.parse(module.getProperty(ADWinAnInModuleProperties.AMPLITUDE_MAX));
+		if(Double.isNaN(voltMin) || Double.isNaN(voltMax)) return null;
+		return new RawCalibration.Range(RAW_MIN, RAW_MAX, voltMin, voltMax);
+	}
+	
+	/**
+	 * Calibration of the analog inputs : default values, changes of the module, conversion of the configurations saved
+	 * before the calibration from the raw values
+	 */
+	public static final ChannelCalibration CALIBRATION = new ChannelCalibration(AMPLITUDE_MIN, AMPLITUDE_MAX, UNIT_MIN, UNIT_MAX, CALIBRATED, ADWinAnInChannelProperties::getDefaultRange);
+	
+	// Calibration of a channel created without analog inputs module : range of +/-10 V
+	private static final RawCalibration.Range FALLBACK_RANGE = new RawCalibration.Range(RAW_MIN, RAW_MAX, -10, 10);
 	
 	public static String GAIN_1 = "1";
 	public static String GAIN_2 = "2";
@@ -64,10 +103,8 @@ public final class ADWinAnInChannelProperties extends Property {
 		ChannelProperties.populateProperties(channel);
 		channel.setProperty(UNIT, "Volt");
 		channel.setProperty(GAIN, "1");
-		channel.setProperty(UNIT_MAX, "10");
-		channel.setProperty(UNIT_MIN, "-10");
-		channel.setProperty(AMPLITUDE_MAX, "10");
-		channel.setProperty(AMPLITUDE_MIN, "-10");
+		// Default calibration : raw values of the converter <-> voltages of the range of the module
+		CALIBRATION.applyDefault(channel, FALLBACK_RANGE);
 	}
 
 	public static Channel cloneChannel(ADWinChannel channel) {
@@ -75,21 +112,53 @@ public final class ADWinAnInChannelProperties extends Property {
 		ChannelProperties.cloneChannel(channel, newChannel);
 		newChannel.setProperty(GAIN, new String(channel.getProperty(GAIN)));
 		newChannel.setProperty(UNIT, new String(channel.getProperty(UNIT)));
-		newChannel.setProperty(UNIT_MAX, new String(channel.getProperty(UNIT_MAX)));
-		newChannel.setProperty(UNIT_MIN, new String(channel.getProperty(UNIT_MIN)));
-		newChannel.setProperty(AMPLITUDE_MAX, new String(channel.getProperty(AMPLITUDE_MAX)));
-		newChannel.setProperty(AMPLITUDE_MIN, new String(channel.getProperty(AMPLITUDE_MIN)));
-		return channel;
+		CALIBRATION.copy(channel, newChannel);
+		return newChannel;
 	}
 	
-	public static double toVolt(ADWinChannel channel, double value) {
-		if(channel.getModule() instanceof ADWinAnInModule) {
-			ADWinAnInModule adwinAnInModule = (ADWinAnInModule) channel.getModule();
-			double aMax = Double.parseDouble(adwinAnInModule.getProperty(ADWinAnInModuleProperties.AMPLITUDE_MAX));
-			double aMin = Double.parseDouble(adwinAnInModule.getProperty(ADWinAnInModuleProperties.AMPLITUDE_MIN));
-			return (aMax - aMin)/65535*value + aMin;
+	/**
+	 * @return the code of the gain of the PGA of an analog input : 0, 1, 2, 3 for a gain of 1, 2, 4, 8 (see
+	 * Call_AnIn_Raw in CALLANIN*.INC)
+	 * @throws IllegalArgumentException if the gain is not 1, 2, 4 or 8
+	 */
+	public static int getGainCode(Channel channel) {
+		String gain = channel.getProperty(GAIN);
+		gain = gain == null ? "" : gain.trim();
+		for (int i = 0; i < GAINS.length; i++) if(GAINS[i].equals(gain)) return i;
+		throw new IllegalArgumentException(NLS.bind(ADWinMessages.InvalidGain_Message, channel.getProperty(ChannelProperties.NAME), gain));
+	}
+	
+	/**
+	 * @return the ADbasic code of the raw value of an analog input : Call_AnIn_Raw(channelNumber, gainCode) on Gold,
+	 * Call_AnIn_Raw(moduleNumber, channelNumber, gainCode) on Pro (see CALLANIN*.INC)
+	 * @throws IllegalArgumentException if the channel is not in an analog inputs module or if its gain is not valid
+	 */
+	public static String getRawValueCode(Channel channel) {
+		Module module = channel.getModule();
+		if(!(module instanceof ADWinAnInModule) || module.getDACQConfiguration() == null) 
+			throw new IllegalArgumentException("Not an analog input : " + channel.getProperty(ChannelProperties.NAME));
+		String channelNumber = channel.getProperty(ChannelProperties.CHANNEL_NUMBER);
+		int gainCode = getGainCode(channel);
+		String systemType = module.getDACQConfiguration().getProperty(ADWinDACQConfigurationProperties.SYSTEM_TYPE);
+		if(ADWinDACQConfigurationProperties.PRO.equals(systemType)) 
+			return "Call_AnIn_Raw(" + module.getProperty(ADWinModuleProperties.MODULE_NUMBER) + ", " + channelNumber + ", " + gainCode + ")";
+		return "Call_AnIn_Raw(" + channelNumber + ", " + gainCode + ")";
+	}
+	
+	/**
+	 * @return the ADbasic code of the physical value of an analog input : k * Call_AnIn_Raw(...) + b, from its
+	 * calibration (see RawCalibration)
+	 * @throws IllegalArgumentException if the calibration of the input is not valid (AMPLITUDE_MIN = AMPLITUDE_MAX or
+	 * a value which is not a number), or its gain
+	 */
+	public static String getPhysicalValueCode(Channel channel) {
+		String rawValueCode = getRawValueCode(channel);
+		double[] calibration = CALIBRATION.getCalibration(channel);
+		try {
+			return RawCalibration.getCode(rawValueCode, calibration[0], calibration[1], calibration[2], calibration[3]);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException(NLS.bind(ADWinMessages.InvalidCalibration_Message, channel.getProperty(ChannelProperties.NAME)), e);
 		}
-		return 0;
 	}
 	
 	private ADWinAnInChannelProperties(String key, String label, String tooltip, String regExp) {

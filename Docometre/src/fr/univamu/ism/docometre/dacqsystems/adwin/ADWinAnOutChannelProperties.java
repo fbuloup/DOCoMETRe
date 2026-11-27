@@ -58,7 +58,7 @@ public final class ADWinAnOutChannelProperties extends Property {
 		ADWinChannel newChannel = new ADWinChannel(null);
 		ChannelProperties.cloneChannel(channel, newChannel);
 		newChannel.setProperty(STIMULUS, new String(channel.getProperty(STIMULUS)));
-		return channel;
+		return newChannel;
 	}
 	
 	public static int toDigit(ADWinChannel channel, double value) {

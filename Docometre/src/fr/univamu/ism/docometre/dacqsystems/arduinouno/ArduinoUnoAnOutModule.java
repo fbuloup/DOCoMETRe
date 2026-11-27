@@ -230,8 +230,10 @@ public class ArduinoUnoAnOutModule extends Module {
 
 	@Override
 	public Object clone() throws CloneNotSupportedException {
-		// TODO Auto-generated method stub
-		return null;
+		// No property for this module
+		Module newModule = new ArduinoUnoAnOutModule(null);
+		addClonedChannels(newModule);
+		return newModule;
 	}
 
 	@Override

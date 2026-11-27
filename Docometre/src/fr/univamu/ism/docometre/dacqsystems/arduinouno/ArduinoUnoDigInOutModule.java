@@ -207,8 +207,9 @@ public class ArduinoUnoDigInOutModule extends Module {
 
 	@Override
 	public Object clone() throws CloneNotSupportedException {
-		// TODO Auto-generated method stub
-		return null;
+		Module newModule = ArduinoUnoDigInOutModuleProperties.cloneModule(this);
+		addClonedChannels(newModule);
+		return newModule;
 	}
 
 	@Override

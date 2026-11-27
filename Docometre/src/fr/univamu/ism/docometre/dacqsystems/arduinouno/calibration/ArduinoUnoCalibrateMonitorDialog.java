@@ -56,16 +56,10 @@ import fr.univamu.ism.docometre.ObjectsController;
 import fr.univamu.ism.docometre.calibration.AbstractCalibrateMonitorDialog;
 import fr.univamu.ism.docometre.calibration.CalibrationFactory;
 import fr.univamu.ism.docometre.dacqsystems.Channel;
-import fr.univamu.ism.docometre.dacqsystems.Module;
-import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoADS1115Module;
-import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnInModule;
-import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnInModuleProperties;
+import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration.ChannelType;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoAnOutModule;
-import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoChannelProperties;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfiguration;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDACQConfigurationProperties;
-import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDigInOutChannelProperties;
-import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoDigInOutModule;
 import fr.univamu.ism.docometre.dacqsystems.arduinouno.ArduinoUnoMessages;
 import fr.univamu.ism.docometre.dacqsystems.ui.DeviceSelectionDialog;
 import fr.univamu.ism.docometre.dacqsystems.ui.DeviceSelectionHandler.DeviceType;
@@ -86,42 +80,23 @@ public class ArduinoUnoCalibrateMonitorDialog extends AbstractCalibrateMonitorDi
 		this.dacqConfiguration = dacqConfiguration;
 	}
 	
-	private static boolean isUsed(Channel channel) {
-		return Boolean.valueOf(channel.getProperty(ArduinoUnoChannelProperties.USED));
-	}
-	
-	private static boolean isDigitalOutput(Channel channel) {
-		return ArduinoUnoDigInOutChannelProperties.OUTPUT.equals(channel.getProperty(ArduinoUnoDigInOutChannelProperties.IN_OUT));
-	}
-	
 	@Override
 	protected void populate(Composite inputsContainer, Composite outputsContainer) {
-		Module[] modules = dacqConfiguration.getModules();
 		// Analog inputs of the board, then ADS1115 inputs
-		for (Module module : modules) 
-			if(module instanceof ArduinoUnoAnInModule)
-				for (Channel channel : module.getChannels()) if(isUsed(channel)) createChannelViewer(inputsContainer, channel, true, true);
-		for (Module module : modules) 
-			if(module instanceof ArduinoUnoADS1115Module)
-				for (Channel channel : module.getChannels()) if(isUsed(channel)) createChannelViewer(inputsContainer, channel, true, true);
-		// Digital inputs
-		for (Module module : modules) 
-			if(module instanceof ArduinoUnoDigInOutModule)
-				for (Channel channel : module.getChannels()) if(isUsed(channel) && !isDigitalOutput(channel)) createChannelViewer(inputsContainer, channel, true, false);
-		// Analog outputs (analogWrite values) : PWM outputs, and DAC of R4 WiFi (12 bits)
-		boolean r4 = ArduinoUnoAnInModuleProperties.isR4(dacqConfiguration);
-		for (Module module : modules) 
-			if(module instanceof ArduinoUnoAnOutModule)
-				for (Channel channel : module.getChannels()) {
-					boolean isDAC = ArduinoUnoAnOutModule.isDACChannel(channel);
-					if(!isUsed(channel) || (isDAC && !r4)) continue;
-					int maximum = isDAC ? ArduinoUnoCalibrationProtocol.DAC_OUTPUT_MAXIMUM : ArduinoUnoCalibrationProtocol.ANALOG_OUTPUT_MAXIMUM;
-					createChannelViewer(outputsContainer, channel, false, true).setOutputRange(0, maximum);
-				}
+		for (Channel channel : dacqConfiguration.getChannels(ChannelType.ANALOG_INPUT))
+			createChannelViewer(inputsContainer, channel, true, true);
+		// Digital inputs (input or input_pullup)
+		for (Channel channel : dacqConfiguration.getChannels(ChannelType.DIGITAL_INPUT))
+			createChannelViewer(inputsContainer, channel, true, false);
+		// Analog outputs (analogWrite values) : PWM outputs, and DAC of R4 boards (12 bits)
+		for (Channel channel : dacqConfiguration.getChannels(ChannelType.ANALOG_OUTPUT)) {
+			boolean isDAC = ArduinoUnoAnOutModule.isDACChannel(channel);
+			int maximum = isDAC ? ArduinoUnoCalibrationProtocol.DAC_OUTPUT_MAXIMUM : ArduinoUnoCalibrationProtocol.ANALOG_OUTPUT_MAXIMUM;
+			createChannelViewer(outputsContainer, channel, false, true).setOutputRange(0, maximum);
+		}
 		// Digital outputs
-		for (Module module : modules) 
-			if(module instanceof ArduinoUnoDigInOutModule)
-				for (Channel channel : module.getChannels()) if(isUsed(channel) && isDigitalOutput(channel)) createChannelViewer(outputsContainer, channel, false, false);
+		for (Channel channel : dacqConfiguration.getChannels(ChannelType.DIGITAL_OUTPUT))
+			createChannelViewer(outputsContainer, channel, false, false);
 	}
 	
 	@Override

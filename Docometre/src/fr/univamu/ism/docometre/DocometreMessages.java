@@ -803,12 +803,19 @@ public final class DocometreMessages extends NLS {
 	
 	/* Calibration monitoring */
 	public static String ShowCalibratedValues;
+	public static String CalibratedValues;
+	public static String ShowHideGraph;
 	public static String AmpMinTooltip;
 	public static String AmpMaxTooltip;
 	public static String UnitMinTooltip;
 	public static String UnitMaxTooltip;
 	public static String CaptureValueMin;
 	public static String CaptureValueMax;
+	public static String ResetCalibrationTooltip;
+	public static String ResetCalibrationDialogTitle;
+	public static String ResetCalibrationDialogQuestion;
+	public static String ResetCalibrationImpossible;
+	public static String ResetCalibrationOperationLabel;
 	public static String CalibrationMonitoringDialogShellTitle;
 	public static String CalibrationMonitoringDialogTitle;
 	public static String CalibrationMonitoringDialogMessage;

@@ -141,8 +141,20 @@ public final class ArduinoUnoDACQConfigurationProperties extends Property {
 		return revisionLabel;
 	}
 	
+	/*
+	 * Default value of a preference of DOCoMETRe, defaultValue when the preferences are not available
+	 * (OSGi framework not running : tests launched as simple JUnit tests)
+	 */
+	private static String getDefaultPreference(String key, String defaultValue) {
+		try {
+			IEclipsePreferences defaults = DefaultScope.INSTANCE.getNode(Activator.PLUGIN_ID);
+			return defaults.get(key, defaultValue);
+		} catch (RuntimeException | LinkageError e) {
+			return defaultValue;
+		}
+	}
+	
 	public static void populateProperties(DACQConfiguration daqGeneralConfiguration) {
-		IEclipsePreferences defaults = DefaultScope.INSTANCE.getNode(Activator.PLUGIN_ID);
 		DACQConfigurationProperties.populateProperties(daqGeneralConfiguration);
 		daqGeneralConfiguration.setProperty(BUILDER_PATH, "");
 		daqGeneralConfiguration.setProperty(AVRDUDE_PATH, "");
@@ -152,7 +164,7 @@ public final class ArduinoUnoDACQConfigurationProperties extends Property {
 		else daqGeneralConfiguration.setProperty(DEVICE_PATH, "/dev/tty.usb*");
 		daqGeneralConfiguration.setProperty(BAUD_RATE, BAUD_RATE_2000000);
 		daqGeneralConfiguration.setProperty(GLOBAL_FREQUENCY, "100");
-		daqGeneralConfiguration.setProperty(LIBRARIES_ABSOLUTE_PATH, defaults.get(LIBRARIES_ABSOLUTE_PATH.getKey(), ""));
+		daqGeneralConfiguration.setProperty(LIBRARIES_ABSOLUTE_PATH, getDefaultPreference(LIBRARIES_ABSOLUTE_PATH.getKey(), ""));
 		daqGeneralConfiguration.setProperty(USER_LIBRARIES_ABSOLUTE_PATH, "");
 		daqGeneralConfiguration.setProperty(REVISION, REVISION_R3);
 	}
