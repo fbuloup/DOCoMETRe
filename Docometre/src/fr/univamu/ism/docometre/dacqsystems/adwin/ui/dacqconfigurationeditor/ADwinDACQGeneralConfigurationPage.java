@@ -98,7 +98,7 @@ import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinModulesList;
 import fr.univamu.ism.docometre.dacqsystems.adwin.BootDelegate;
 import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyHandler;
 import fr.univamu.ism.docometre.dacqsystems.ModifyPropertyOperation;
-import fr.univamu.ism.docometre.dacqsystems.adwin.calibration.CalibrateMonitorDialog;
+import fr.univamu.ism.docometre.dacqsystems.adwin.calibration.ADWinCalibrateMonitorDialog;
 import fr.univamu.ism.docometre.dacqsystems.ui.DeviceSelectionHandler;
 import fr.univamu.ism.docometre.dacqsystems.ui.DeviceSelectionHandler.DeviceType;
 import fr.univamu.ism.docometre.dialogs.DialogSelectionHandler;
@@ -164,9 +164,9 @@ public class ADwinDACQGeneralConfigurationPage extends ModulePage {
 		@Override
 		public void run() {
 			Shell shell = ADwinDACQGeneralConfigurationPage.this.getSite().getShell();
-			CalibrateMonitorDialog calibrateMonitorDialog = new CalibrateMonitorDialog(shell, (ADWinDACQConfiguration) dacqConfiguration);
+			ADWinCalibrateMonitorDialog calibrateMonitorDialog = new ADWinCalibrateMonitorDialog(shell, (ADWinDACQConfiguration) dacqConfiguration);
 			calibrateMonitorDialog.open();
-			if(CalibrateMonitorDialog.hasCalibrationBeenModified()) 
+			if(ADWinCalibrateMonitorDialog.hasCalibrationBeenModified()) 
 				Activator.logWarningMessage(NLS.bind(DocometreMessages.CalibrationHasBeenModified, dacqConfiguration.getResource().getFullPath()));
 		}
 	}

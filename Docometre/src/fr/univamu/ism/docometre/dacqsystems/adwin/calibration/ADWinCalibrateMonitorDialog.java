@@ -50,11 +50,11 @@ import fr.univamu.ism.docometre.dacqsystems.Channel;
 import fr.univamu.ism.docometre.dacqsystems.DACQConfiguration.ChannelType;
 import fr.univamu.ism.docometre.dacqsystems.adwin.ADWinDACQConfiguration;
 
-public class CalibrateMonitorDialog extends AbstractCalibrateMonitorDialog {
+public class ADWinCalibrateMonitorDialog extends AbstractCalibrateMonitorDialog {
 	
 	private ADWinDACQConfiguration adwinDACQConfiguration;
 
-	public CalibrateMonitorDialog(Shell parentShell, ADWinDACQConfiguration adwinDACQConfiguration) {
+	public ADWinCalibrateMonitorDialog(Shell parentShell, ADWinDACQConfiguration adwinDACQConfiguration) {
 		super(parentShell, Activator.ADWIN_SYSTEM);
 		this.adwinDACQConfiguration = adwinDACQConfiguration;
 	}
