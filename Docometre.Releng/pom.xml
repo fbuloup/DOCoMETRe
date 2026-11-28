@@ -49,26 +49,48 @@
 
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-packaging-plugin</artifactId>
+				<version>${tycho.version}</version>
+				<dependencies>
+					<dependency>
+						<groupId>org.eclipse.tycho</groupId>
+						<artifactId>tycho-buildtimestamp-jgit</artifactId>
+						<version>${tycho.version}</version>
+					</dependency>
+				</dependencies>
+				<configuration>
+					<timestampProvider>jgit</timestampProvider>
+					<jgit.ignore>
+						pom.xml
+						.tycho-consumer-pom.xml
+					</jgit.ignore>
+					<jgit.dirtyWorkingTree>error</jgit.dirtyWorkingTree>
+					<format>yyyyMMddHHmm</format>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>target-platform-configuration</artifactId>
 				<version>${tycho.version}</version>
 				<configuration>
 
 					<environments>
-<!-- 						<environment> -->
-<!-- 							<os>win32</os> -->
-<!-- 							<ws>win32</ws> -->
-<!-- 							<arch>x86</arch> -->
-<!-- 						</environment> -->
+						<!-- 						<environment> -->
+						<!-- 							<os>win32</os> -->
+						<!-- 							<ws>win32</ws> -->
+						<!-- 							<arch>x86</arch> -->
+						<!-- 						</environment> -->
 						<environment>
 							<os>win32</os>
 							<ws>win32</ws>
 							<arch>x86_64</arch>
 						</environment>
-<!-- 						<environment> -->
-<!-- 							<os>linux</os> -->
-<!-- 							<ws>gtk</ws> -->
-<!-- 							<arch>x86</arch> -->
-<!-- 						</environment> -->
+						<!-- 						<environment> -->
+						<!-- 							<os>linux</os> -->
+						<!-- 							<ws>gtk</ws> -->
+						<!-- 							<arch>x86</arch> -->
+						<!-- 						</environment> -->
 						<environment>
 							<os>linux</os>
 							<ws>gtk</ws>
